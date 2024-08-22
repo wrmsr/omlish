@@ -45,14 +45,14 @@ def test_activation_base():
 def test_activation_crash():
     async def main():
         await sleep(0.01)
-        raise ValueError("Dead")
+        raise ValueError('Dead')
 
     a = _TestActivation()
     kern = Kernel(activations=[a])
     try:
         kern.run(main)
         assert False
-    except ValueError as e:
+    except ValueError:
         assert a.events == ['activate', 'created', 'running', 'suspended', 'running', 'suspended', 'terminated']
 
     kern.run(shutdown=True)

@@ -21,9 +21,11 @@ log = logging.getLogger(__name__)
 # -- Curio
 
 from . import socket
-from .errors import CurioError, TaskTimeout
-from .io import StreamBase, FileStream
 from . import thread
+from .errors import CurioError
+from .errors import TaskTimeout
+from .io import FileStream
+from .io import StreamBase
 from .time import timeout_after
 
 
@@ -50,12 +52,12 @@ class AuthenticationError(ConnectionError):
     pass
 
 
-class Connection(object):
-    '''
+class Connection:
+    """
     A communication channel for sending size-prefixed messages of bytes
     or pickled Python objects.  Must be passed a pair of reader/writer
     streams for performing the underlying communication.
-    '''
+    """
 
     def __init__(self, reader, writer):
         assert isinstance(reader, StreamBase) and isinstance(writer, StreamBase)
@@ -64,7 +66,7 @@ class Connection(object):
 
     @classmethod
     def from_Connection(cls, conn):
-        '''
+        """
         Creates a channel from a multiprocessing Connection. Note: The
         multiprocessing connection is detached by having its handle set to None.
 
@@ -75,7 +77,7 @@ class Connection(object):
               p1 = Connection.from_Connection(p1)
               p2 = Connection.from_Connection(p2)
 
-        '''
+        """
         assert isinstance(conn, mpc._ConnectionBase)
         reader = FileStream(open(conn._handle, 'rb', buffering=0))
         writer = FileStream(open(conn._handle, 'wb', buffering=0, closefd=False))
@@ -100,23 +102,23 @@ class Connection(object):
             await self._writer.close()
 
     async def send_bytes(self, buf, offset=0, size=None):
-        '''
+        """
         Send a buffer of bytes as a single message
-        '''
+        """
         m = memoryview(buf)
         if m.itemsize > 1:
             m = memoryview(bytes(m))
         n = len(m)
         if offset < 0:
-            raise ValueError("offset is negative")
+            raise ValueError('offset is negative')
         if n < offset:
-            raise ValueError("buffer length < offset")
+            raise ValueError('buffer length < offset')
         if size is None:
             size = n - offset
         elif size < 0:
-            raise ValueError("size is negative")
+            raise ValueError('size is negative')
         elif offset + size > n:
-            raise ValueError("buffer length < offset + size")
+            raise ValueError('buffer length < offset + size')
 
         header = struct.pack('!i', size)
         if size >= 16384:
@@ -128,21 +130,21 @@ class Connection(object):
         return size
 
     async def recv_bytes(self, maxlength=None):
-        '''
+        """
         Receive a message of bytes as a single message.
-        '''
+        """
         header = await self._reader.read_exactly(4)
         size, = struct.unpack('!i', header)
         if maxlength and size > maxlength:
-            raise IOError("Message too large")
+            raise OSError('Message too large')
         msg = await self._reader.read_exactly(size)
         return msg
 
     async def recv_bytes_into(self, buf, offset=0):
-        '''
+        """
         Receive bytes into a writable memory buffer.  The buffer must be large enough to
         hold the message.  The number of bytes received in the message is returned.
-        '''
+        """
         header = await self._reader.read_exactly(4)
         size, = struct.unpack('!i', header)
         with memoryview(buf).cast('B') as m:
@@ -154,22 +156,22 @@ class Connection(object):
                     if not data:
                         break
                     size -= len(data)
-                raise IOError('Message is too large to fit')
+                raise OSError('Message is too large to fit')
             nread = await self._reader.readinto(m[offset:offset + size])
             if nread != size:
                 raise EOFError('Expected end of data')
             return nread
 
     async def send(self, obj):
-        '''
+        """
         Send an arbitrary Python object. Uses pickle to serialize.
-        '''
+        """
         await self.send_bytes(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL))
 
     async def recv(self):
-        '''
+        """
         Receive a Python object. Uses pickle to unserialize.
-        '''
+        """
         msg = await self.recv_bytes()
         return pickle.loads(msg)
 
@@ -204,7 +206,7 @@ class Connection(object):
         await self._deliver_challenge(authkey)
 
 
-class Channel(object):
+class Channel:
     def __init__(self, address, family=socket.AF_INET, check_address=None):
         self.address = address
         self.family = family
@@ -282,7 +284,7 @@ class Channel(object):
             del c
             del sock_stream
             # Note: Raising an OSError.
-            raise TimeoutError("Connection timed out")
+            raise TimeoutError('Connection timed out')
 
     async def close(self):
         if self.sock:

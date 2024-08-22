@@ -12,8 +12,8 @@ log = logging.getLogger(__name__)
 
 # -- Curio
 
-from .kernel import Activation
 from .errors import TaskCancelled
+from .kernel import Activation
 
 
 class DebugBase(Activation):
@@ -29,9 +29,9 @@ class DebugBase(Activation):
 
 
 class longblock(DebugBase):
-    '''
+    """
     Report warnings for tasks that block the event loop for a long duration.
-    '''
+    """
 
     def __init__(self, *, max_time=0.05, level=logging.WARNING, **kwargs):
         super().__init__(level=level, **kwargs)
@@ -49,9 +49,9 @@ class longblock(DebugBase):
 
 
 class logcrash(DebugBase):
-    '''
+    """
     Report tasks that crash with an uncaught exception
-    '''
+    """
 
     def __init__(self, level=logging.ERROR, **kwargs):
         super().__init__(level=level, **kwargs)
@@ -64,9 +64,9 @@ class logcrash(DebugBase):
 
 
 class schedtrace(DebugBase):
-    '''
+    """
     Report when tasks run
-    '''
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -89,9 +89,9 @@ class schedtrace(DebugBase):
 
 
 class traptrace(schedtrace):
-    '''
+    """
     Report traps executed
-    '''
+    """
 
     def suspended(self, task, trap):
         if self.check_filter(task):
@@ -101,9 +101,9 @@ class traptrace(schedtrace):
 
 
 def _create_debuggers(debug):
-    '''
+    """
     Create debugger objects.  Called by the kernel to instantiate the objects.
-    '''
+    """
     if debug is True:
         # Set a default set of debuggers
         debug = [schedtrace]

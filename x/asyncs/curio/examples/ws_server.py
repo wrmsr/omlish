@@ -57,14 +57,14 @@ async def ws_adapter(in_q, out_q, client, _):
             # We got something from the out queue.
             if result is None:
                 # Terminate the connection.
-                print("Closing the connection.")
+                print('Closing the connection.')
                 wsconn.close()
                 closed = True
             else:
                 wsconn.send_data(result)
             payload = wsconn.bytes_to_send()
             await client.sendall(payload)
-    print("Bridge done.")
+    print('Bridge done.')
 
 
 async def ws_echo_server(in_queue, out_queue):
@@ -75,7 +75,7 @@ async def ws_echo_server(in_queue, out_queue):
             # The ws connection was closed.
             break
         await out_queue.put(msg[::-1])
-    print("Handler done.")
+    print('Handler done.')
 
 
 def serve_ws(handler):
@@ -88,7 +88,7 @@ def serve_ws(handler):
         await out_q.put(None)
         await ws_task.join()  # Wait until it's done.
         # Curio will close the socket for us after we drop off here.
-        print("Master task done.")
+        print('Master task done.')
 
     return run_ws
 

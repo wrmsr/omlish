@@ -9,7 +9,7 @@ import tkinter as tk
 from .. import *
 
 
-class EchoApp(object):
+class EchoApp:
     def __init__(self):
         self.gui_ops = UniversalQueue(withfd=True)
         self.coro_ops = UniversalQueue()

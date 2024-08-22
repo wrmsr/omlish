@@ -210,8 +210,8 @@ def test_connection_send_partial_bytes(kernel, conns):
                        ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="not supported on Windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='not supported on Windows')
 def test_connection_from_connection(kernel):
     import multiprocessing
     p1, p2 = multiprocessing.Pipe()

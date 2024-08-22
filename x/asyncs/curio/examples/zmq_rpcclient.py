@@ -2,6 +2,7 @@
 
 import curio_zmq as zmq
 from fibserve import fib
+
 from .. import sleep
 from .. import spawn
 

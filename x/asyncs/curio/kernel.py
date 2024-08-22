@@ -49,30 +49,31 @@ __all__ = ['Kernel', 'run']
 # -- Standard Library
 
 import errno
+
 # Logger where uncaught exceptions from crashed tasks are logged
 import logging
 import os
 import socket
 import time
 from collections import deque
-from selectors import DefaultSelector
 from selectors import EVENT_READ
 from selectors import EVENT_WRITE
+from selectors import DefaultSelector
 
 
 log = logging.getLogger(__name__)
 
 # -- Curio
 
+from . import meta
 from .errors import *
 from .task import Task
-from .traps import _read_wait
-from . import meta
 from .timequeue import TimeQueue
+from .traps import _read_wait
 
 
-class Kernel(object):
-    '''
+class Kernel:
+    """
     Curio run-time kernel.  The selector argument specifies a
     different I/O selector. The debug argument specifies a list of
     debugger objects to apply. For example:
@@ -81,7 +82,7 @@ class Kernel(object):
         k = Kernel(debug=[schedtrace, traptrace])
 
     Use the kernel run() method to submit work to the kernel.
-    '''
+    """
 
     def __init__(self, *, selector=None, debug=None, activations=None, taskcls=Task,
                  max_select_timeout=None if os.name != 'nt' else 1.0):
@@ -160,7 +161,7 @@ class Kernel(object):
 
                 tocancel = sorted(self._tasks.values(), key=lambda t: t.id, reverse=True)
                 self._runner(_shutdown_tasks(tocancel))
-                assert not self._tasks, "New tasks created during shutdown"
+                assert not self._tasks, 'New tasks created during shutdown'
                 self._runner = None
 
                 # Call registered shutdown functions
@@ -798,7 +799,7 @@ class Kernel(object):
 
 def run(corofunc, *args, with_monitor=False, selector=None,
         debug=None, activations=None, **kernel_extra):
-    '''
+    """
     Run the curio kernel with an initial task and execute until all
     tasks terminate.  Returns the task's final result (if any). This
     is a convenience function that should primarily be used for
@@ -809,7 +810,7 @@ def run(corofunc, *args, with_monitor=False, selector=None,
     Don't use this function if you're repeatedly launching a lot of
     new tasks to run in curio. Instead, create a Kernel instance and
     use its run() method instead.
-    '''
+    """
     kernel = Kernel(selector=selector, debug=debug, activations=activations,
                     **kernel_extra)
 
@@ -832,28 +833,28 @@ def run(corofunc, *args, with_monitor=False, selector=None,
 class Activation:
 
     def activate(self, kernel):
-        '''
+        """
         Called each time the kernel sets up its environment and is ready to run.
         kernel is an instance of the kernel that's executing.
-        '''
+        """
 
     def created(self, task):
-        '''
+        """
         Called immediately after a task has been created.
-        '''
+        """
 
     def running(self, task):
-        '''
+        """
         Called right before the next execution cycle of a task.
-        '''
+        """
 
     def suspended(self, task, trap):
-        '''
+        """
         Called after the task has suspended due to a trap.
-        '''
+        """
 
     def terminated(self, task):
-        '''
+        """
         Called after a task has terminated, but prior to the task
         being collected by any associated join() operation.
-        '''
+        """

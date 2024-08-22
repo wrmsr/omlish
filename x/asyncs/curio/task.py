@@ -4,7 +4,7 @@
 
 __all__ = [
     'Task', 'TaskGroup', 'current_task', 'spawn',
-    'disable_cancellation', 'check_cancellation', 'set_cancellation'
+    'disable_cancellation', 'check_cancellation', 'set_cancellation',
 ]
 
 # -- Standard library
@@ -20,17 +20,17 @@ log = logging.getLogger(__name__)
 
 # -- Curio
 
-from .errors import *
-from .traps import *
-from .sched import SchedBarrier
 from . import meta
+from .errors import *
+from .sched import SchedBarrier
+from .traps import *
 
 
 # Internal functions used for debugging/diagnostics
 def _get_stack(coro):
-    '''
+    """
     Extracts a list of stack frames from a chain of generator/coroutine calls
-    '''
+    """
     frames = []
     while coro:
         if hasattr(coro, 'cr_frame'):
@@ -55,9 +55,9 @@ def _get_stack(coro):
 
 # Create a stack traceback for a task
 def _format_stack(task, complete=False):
-    '''
+    """
     Formats a traceback from a stack of coroutines/generators
-    '''
+    """
     dirname = os.path.dirname(__file__)
     extracted_list = []
     checked = set()
@@ -95,12 +95,12 @@ def _where(task):
     return None, None
 
 
-class Task(object):
-    '''
+class Task:
+    """
     The Task class wraps a coroutine and provides some additional attributes
     related to execution state and debugging.  Tasks are not normally 
     instantiated directly. Instead, use spawn().
-    '''
+    """
     _lastid = 1
 
     def __init__(self, coro, parent=None):
@@ -165,11 +165,11 @@ class Task(object):
         assert not self._last_io
 
     def send(self, value):
-        '''
+        """
         Send the next value into the task coroutine.  This method is
         a wrapper around the actual method and may be subclassed to
         implement different kinds of low-level functionality.
-        '''
+        """
         return self._send(value)
 
     async def _task_runner(self, coro):
@@ -181,10 +181,10 @@ class Task(object):
                 await self.taskgroup._task_done(self)
 
     async def join(self):
-        '''
+        """
         Wait for a task to terminate.  Returns the return value (if any)
         or raises a TaskError if the task crashed with an exception.
-        '''
+        """
         await self.wait()
         if self.taskgroup:
             self.taskgroup._task_discard(self)
@@ -195,17 +195,17 @@ class Task(object):
             return self.result
 
     async def wait(self):
-        '''
+        """
         Wait for a task to terminate. Does not return any value.
-        '''
+        """
         if not self.terminated:
             await self.joining.suspend('TASK_JOIN')
 
     @property
     def result(self):
-        '''
+        """
         Return the result of a task. The task must be terminated already.
-        '''
+        """
         if not self.terminated:
             raise RuntimeError('Task not terminated')
         self.joined = True
@@ -221,9 +221,9 @@ class Task(object):
 
     @property
     def exception(self):
-        '''
+        """
         Return any pending exception of a task or None.
-        '''
+        """
         if not self.terminated:
             raise RuntimeError('Task not terminated')
         return self._final_exc
@@ -234,14 +234,14 @@ class Task(object):
         self._final_exc = value
 
     async def cancel(self, *, exc=TaskCancelled, blocking=True):
-        '''
+        """
         Cancel a task by raising a CancelledError exception.
 
         If blocking=False, schedules the cancellation and returns immediately.
 
         If blocking=True (the default), then does not
         return until the task actually terminates.
-        '''
+        """
         if self.terminated:
             self.joined = True
             return
@@ -250,23 +250,23 @@ class Task(object):
             await self.wait()
 
     def traceback(self):
-        '''
+        """
         Return a formatted traceback showing where the task is currently executing.
-        '''
+        """
         return _format_stack(self)
 
     def where(self):
-        '''
+        """
         Return a tuple (filename, lineno) where task is executing
-        '''
+        """
         return _where(self)
 
 
 class ContextTask(Task):
-    '''
+    """
     Task class that provides support for contextvars.  Use with the
     taskcls keyword argument to the Curio kernel.
-    '''
+    """
 
     def __init__(self, coro, parent=None):
         import contextvars
@@ -280,7 +280,7 @@ class ContextTask(Task):
         return self._context.run(super().send, value)
 
 
-class TaskGroup(object):
+class TaskGroup:
     '''
     A TaskGroup represents a collection of managed tasks.  A group can
     be used to ensure that all tasks terminate together, to monitor
@@ -381,7 +381,7 @@ class TaskGroup(object):
         self._wait = wait  # Wait policy
         self.completed = None  # First completed task
         for task in tasks:
-            assert not task.taskgroup, "Task already assigned to a task group"
+            assert not task.taskgroup, 'Task already assigned to a task group'
             task.taskgroup = self
             if not task.daemon:
                 self._tasks.add(task)
@@ -403,32 +403,32 @@ class TaskGroup(object):
     @property
     def result(self):
         if not self._joined:
-            raise RuntimeError("Task group not yet terminated")
+            raise RuntimeError('Task group not yet terminated')
         if not self.completed:
-            raise RuntimeError("No task successfully completed")
+            raise RuntimeError('No task successfully completed')
         return self.completed.result
 
     # Property that returns the exception of the first completed task
     @property
     def exception(self):
         if not self._joined:
-            raise RuntimeError("Task group not yet terminated")
+            raise RuntimeError('Task group not yet terminated')
         return self.completed.exception if self.completed else None
 
     # Property that returns all task results (in task creation order)
     @property
     def results(self):
         if not self._joined:
-            raise RuntimeError("Task group not yet terminated")
+            raise RuntimeError('Task group not yet terminated')
         return [task.result for task in self.tasks]
 
     @property
     def exceptions(self):
         if not self._joined:
-            raise RuntimeError("Task group not yet terminated")
+            raise RuntimeError('Task group not yet terminated')
         return [task.exception for task in self.tasks]
 
-    # Triggered on task completion. 
+    # Triggered on task completion.
     async def _task_done(self, task):
         if task.daemon:
             self._daemonic.discard(task)
@@ -448,14 +448,14 @@ class TaskGroup(object):
         task.taskgroup = None
 
     async def add_task(self, task):
-        '''
+        """
         Add an already existing task to the group.
-        '''
+        """
         if task.taskgroup:
             raise RuntimeError('Task is already part of a task group')
 
         if self._joined:
-            raise RuntimeError("TaskGroup already joined")
+            raise RuntimeError('TaskGroup already joined')
 
         task.taskgroup = self
         if not task.daemon:
@@ -468,31 +468,31 @@ class TaskGroup(object):
             self._running.add(task)
 
     async def spawn(self, coro, *args, daemon=False):
-        '''
+        """
         Spawn a new task into the task group.
-        '''
+        """
         if self._joined:
-            raise RuntimeError("TaskGroup already joined")
+            raise RuntimeError('TaskGroup already joined')
         task = await spawn(coro, *args, daemon=daemon)
         await self.add_task(task)
         return task
 
     async def spawn_thread(self, func, *args, daemon=False):
-        '''
+        """
         Spawn a new async thread into a task group
-        '''
+        """
         from . import thread
         if self._joined:
-            raise RuntimeError("TaskGroup already joined")
+            raise RuntimeError('TaskGroup already joined')
         thr = await thread.spawn_thread(func, *args, daemon=daemon)
         await self.add_task(thr)
         return thr
 
     async def next_done(self):
-        '''
+        """
         Wait for the next task to finish and return it.  This removes it
         from the group.
-        '''
+        """
         while not self._finished and self._running:
             await self._sema.acquire()
 
@@ -507,10 +507,10 @@ class TaskGroup(object):
         return task
 
     async def next_result(self):
-        '''
+        """
         Return the result of the next task that finishes. Note: if task
         terminated via exception, that exception is raised here.
-        '''
+        """
         task = await self.next_done()
         if task:
             return task.result
@@ -518,10 +518,10 @@ class TaskGroup(object):
             raise RuntimeError('No task available')
 
     async def cancel_remaining(self):
-        '''
+        """
         Cancel all remaining non-daemonic tasks. Tasks are removed
         from the task group when explicitly cancelled.
-        '''
+        """
         running = list(self._running)
         for task in running:
             await task.cancel(blocking=False)
@@ -530,10 +530,10 @@ class TaskGroup(object):
             self._task_discard(task)
 
     async def join(self):
-        '''
+        """
         Wait for tasks in a task group to terminate according to the
         wait policy set for the group.  
-        '''
+        """
         try:
             if self._wait is None:
                 # We wait for no-one. Tasks get cancelled on return.
@@ -612,17 +612,17 @@ class TaskGroup(object):
 # -----------------------------------------------------------------------
 
 async def current_task():
-    '''
+    """
     Returns a reference to the current task
-    '''
+    """
     return await _get_current()
 
 
 async def spawn(corofunc, *args, daemon=False):
-    '''
+    """
     Create a new task, running corofunc(*args). Use the daemon=True
     option if the task runs forever as a background task. 
-    '''
+    """
     coro = meta.instantiate_coroutine(corofunc, *args)
     task = await _spawn(coro)
     task.daemon = daemon
@@ -630,7 +630,7 @@ async def spawn(corofunc, *args, daemon=False):
 
 
 # Context manager for supervising cancellation masking
-class _CancellationManager(object):
+class _CancellationManager:
 
     async def __aenter__(self):
         self.task = await current_task()
@@ -644,7 +644,7 @@ class _CancellationManager(object):
 
         # If a CancelledError is being raised on exit from a block, it
         # becomes pending in the task if cancellation is not allowed
-        # in the outer context.  Curio should never have delivered 
+        # in the outer context.  Curio should never have delivered
         # such an exception on its own--it could be manually raised however.
         if isinstance(val, CancelledError) and not self.task.allow_cancel:
             self.task.cancel_pending = val
@@ -673,7 +673,7 @@ def disable_cancellation(coro=None, *args):
 
 
 async def check_cancellation(exc_type=None):
-    '''
+    """
     Check if there is any kind of pending cancellation. If cancellations
     are currently allowed, and there is a pending exception, it raises the
     exception.  If cancellations are not allowed, it returns the pending
@@ -682,7 +682,7 @@ async def check_cancellation(exc_type=None):
     If exc_type is specified, the function checks the type of the specified
     exception against the given type.  If there is a match, the exception
     is returned and cleared.
-    '''
+    """
     task = await current_task()
 
     if exc_type and not isinstance(task.cancel_pending, exc_type):
@@ -702,9 +702,9 @@ async def check_cancellation(exc_type=None):
 
 
 async def set_cancellation(exc):
-    '''
+    """
     Set a new pending cancellation exception. Returns the old exception.
-    '''
+    """
     task = await current_task()
     result = task.cancel_pending
     task.cancel_pending = exc
@@ -712,5 +712,5 @@ async def set_cancellation(exc):
 
 
 # Here to avoid circular import issues
-from . import thread
 from . import sync
+from . import thread

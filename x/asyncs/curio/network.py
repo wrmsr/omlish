@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)
 
 from . import socket
 from . import ssl as curiossl
-from .task import TaskGroup
 from .io import Socket
+from .task import TaskGroup
 
 
 async def _wrap_ssl_client(sock, ssl, server_hostname, alpn_protocols):
@@ -64,9 +64,9 @@ async def _wrap_ssl_client(sock, ssl, server_hostname, alpn_protocols):
 
 async def open_connection(host, port, *, ssl=None, source_addr=None, server_hostname=None,
                           alpn_protocols=None):
-    '''
+    """
     Create a TCP connection to a given Internet host and port with optional SSL applied to it.
-    '''
+    """
     if server_hostname and not ssl:
         raise ValueError('server_hostname is only applicable with SSL')
 
@@ -143,7 +143,7 @@ def tcp_server_socket(host, port, family=socket.AF_INET, backlog=100,
         if reuse_port:
             try:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, True)
-            except (AttributeError, OSError) as e:
+            except (AttributeError, OSError):
                 log.warning('reuse_port=True option failed', exc_info=True)
 
         sock.bind((host, port))

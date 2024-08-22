@@ -30,41 +30,39 @@ class SchedBase(ABC):
 
     @abstractmethod
     def _kernel_suspend(self, task):
-        '''
+        """
         Suspends a task.  This method *must* return a zero-argument
         callable that removes the just added task from the scheduler
         on cancellation. Called by the kernel.
-        '''
-        pass
+        """
 
     @abstractmethod
     def _kernel_wake(self, ntasks=1):
-        '''
+        """
         Wake one or more tasks. Returns a list of the awakened tasks.
         Called by the kernel.
-        '''
-        pass
+        """
 
     async def suspend(self, reason='SUSPEND'):
-        '''
+        """
         Suspend the calling task. reason is a string containing
         descriptive text to indicate why (used to set the task state).
-        '''
+        """
         await _scheduler_wait(self, reason)
 
     async def wake(self, n=1):
-        '''
+        """
         Wake one or more suspended tasks.
-        '''
+        """
         await _scheduler_wake(self, n)
 
 
 class SchedFIFO(SchedBase):
-    '''
+    """
     A scheduling FIFO. Tasks sleep and awake in the order of arrival.
     The wake method only awakens a single task. Commonly used to
     implement locks and queues.
-    '''
+    """
 
     def __init__(self):
         self._queue = deque()
@@ -99,11 +97,11 @@ class SchedFIFO(SchedBase):
 
 
 class SchedBarrier(SchedBase):
-    '''
+    """
     A scheduling barrier.  Sleeping tasks are collected into a set.
     Waking makes all of the blocked tasks reawaken at the same time.
     Commonly used to implement Event and join().
-    '''
+    """
 
     def __init__(self):
         self._tasks = set()
@@ -124,8 +122,8 @@ class SchedBarrier(SchedBase):
         return result
 
     async def wake(self, n=None):
-        '''
+        """
         Wake all or a specified number of tasks.
-        '''
+        """
         n = len(self._tasks) if n is None else n
         await _scheduler_wake(self, n)

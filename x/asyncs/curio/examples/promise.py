@@ -19,24 +19,24 @@ class Promise:
         return f'<{res[1:-1]} [{extra}]>'
 
     def is_set(self):
-        '''Return `True` if the promise is set'''
+        """Return `True` if the promise is set"""
         return self._event.is_set()
 
     def clear(self):
-        '''Clear the promise'''
+        """Clear the promise"""
         self._data = None
         self._exception = None
         self._event.clear()
 
     async def set(self, data):
-        '''Set the promise. Wake all waiting tasks (if any).'''
+        """Set the promise. Wake all waiting tasks (if any)."""
         self._data = data
         await self._event.set()
 
     async def get(self):
-        '''Wait for the promise to be set, and return the data.
+        """Wait for the promise to be set, and return the data.
 
-        If an exception was set, it will be raised.'''
+        If an exception was set, it will be raised."""
         await self._event.wait()
 
         if self._exception is not None:
@@ -69,7 +69,7 @@ def test_promise(kernel):
 
         producer_task = await curio.spawn(producer(promise))
 
-        assert 42 == await consumer(promise)
+        assert await consumer(promise) == 42
         assert promise.is_set()
         await producer_task.join()
 
@@ -79,7 +79,7 @@ def test_promise(kernel):
 def test_promise_exception(kernel):
     async def exception_producer(promise):
         async with promise:
-            raise RuntimeError()
+            raise RuntimeError
 
     async def main():
         promise = Promise()
@@ -124,7 +124,7 @@ def test_promise_internals(kernel):
         assert repr(promise).endswith('[unset]>')
 
         async with promise:
-            raise RuntimeError()
+            raise RuntimeError
 
         assert promise.is_set()
         assert promise._data is None

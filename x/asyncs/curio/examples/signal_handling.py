@@ -21,15 +21,15 @@ def sig_handler(signo, frame):
 
 # A Curio task waiting for an event
 async def coro():
-    print("Waiting....")
+    print('Waiting....')
     await signal_evt.wait()
-    print("Got a signal!")
+    print('Got a signal!')
 
 
 # Set up and execution
 def main():
     signal.signal(signal.SIGHUP, sig_handler)
-    print("Send me a SIGHUP", os.getpid())
+    print('Send me a SIGHUP', os.getpid())
     curio.run(coro)
 
 

@@ -25,7 +25,7 @@
 # Where host and port configure the network address on which the monitor
 # operates.
 #
-# To connect to the monitor, run python3 -m curio.monitor -H [host] -p [port]. 
+# To connect to the monitor, run python3 -m curio.monitor -H [host] -p [port].
 #
 # Theory of operation:
 # --------------------
@@ -104,11 +104,11 @@ def where(taskid, kernel=None, out=sys.stdout):
         out.write('No task %d\n' % taskid)
 
 
-class Monitor(object):
-    '''
+class Monitor:
+    """
     Task monitor that runs concurrently to the curio kernel in a
     separate thread. This can watch the kernel and provide debugging.
-    '''
+    """
 
     def __init__(self, kern, host=MONITOR_HOST, port=MONITOR_PORT):
         self.kernel = kern
@@ -123,19 +123,19 @@ class Monitor(object):
             self._ui_thread.join()
 
     def start(self):
-        '''
+        """
         Function to start the monitor
-        '''
+        """
         log.info('Starting Curio monitor at %s', self.address)
         self._closing = threading.Event()
         self._ui_thread = threading.Thread(target=self.server, args=(), daemon=True)
         self._ui_thread.start()
 
     def server(self):
-        '''
+        """
         Synchronous kernel for the monitor.  This runs in a separate thread
         from curio itself.
-        '''
+        """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
 
@@ -166,19 +166,19 @@ class Monitor(object):
                                     if not chunk:
                                         break
                                     buffer.extend(chunk)
-                                except socket.timeout:
+                                except TimeoutError:
                                     pass
 
                         sout = client.makefile('w', encoding='latin-1')
                         self.interactive_loop(sout, readlines())
                         sout.close()
-                except socket.timeout:
+                except TimeoutError:
                     continue
 
     def interactive_loop(self, sout, input_lines):
-        '''
+        """
         Main interactive loop of the monitor
-        '''
+        """
         sout.write('\nCurio Monitor: %d tasks running\n' % len(self.kernel._tasks))
         sout.write('Type help for commands\n')
         while True:
@@ -216,12 +216,12 @@ class Monitor(object):
 
     def command_help(self, sout):
         sout.write(
-            '''Commands:
+            """Commands:
          ps               : Show task table
          where taskid     : Show stack frames for a task
          parents taskid   : List task parents
          quit             : Leave the monitor
-''')
+""")
 
     def command_ps(self, sout):
         ps(self.kernel, sout)
@@ -244,9 +244,9 @@ class Monitor(object):
 
 
 def monitor_client(host, port):
-    '''
+    """
     Client to connect to the monitor via a socket
-    '''
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
 
@@ -264,14 +264,14 @@ def monitor_client(host, port):
 
 
 def main():
-    parser = argparse.ArgumentParser("usage: python -m curio.monitor [options]")
-    parser.add_argument("-H", "--host", dest="monitor_host",
+    parser = argparse.ArgumentParser('usage: python -m curio.monitor [options]')
+    parser.add_argument('-H', '--host', dest='monitor_host',
                         default=MONITOR_HOST, type=str,
-                        help="monitor host ip")
+                        help='monitor host ip')
 
-    parser.add_argument("-p", "--port", dest="monitor_port",
+    parser.add_argument('-p', '--port', dest='monitor_port',
                         default=MONITOR_PORT, type=int,
-                        help="monitor port number")
+                        help='monitor port number')
     args = parser.parse_args()
     monitor_client(args.monitor_host, args.monitor_port)
 

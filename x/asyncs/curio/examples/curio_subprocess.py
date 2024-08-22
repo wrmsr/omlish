@@ -12,11 +12,11 @@ __all__ = ['run', 'Popen', 'CompletedProcess', 'CalledProcessError',
 import os
 import subprocess
 import sys
-from subprocess import CalledProcessError
-from subprocess import CompletedProcess
 from subprocess import DEVNULL
 from subprocess import PIPE
 from subprocess import STDOUT
+from subprocess import CalledProcessError
+from subprocess import CompletedProcess
 from subprocess import SubprocessError
 
 from .. import thread
@@ -33,15 +33,15 @@ if sys.platform.startswith('win'):
     from ..file import AsyncFile as FileStream
 
 
-class Popen(object):
-    '''
+class Popen:
+    """
     Curio wrapper around the Popen class from the subprocess module. All of the
     methods from subprocess.Popen should be available, but the associated file
     objects for stdin, stdout, stderr have been replaced by async versions.
     Certain blocking operations (e.g., wait() and communicate()) have been
     replaced by async compatible implementations.   Explicit timeouts
     are not available. Use the timeout_after() function for timeouts.
-    '''
+    """
 
     def __init__(self, args, **kwargs):
         if 'universal_newlines' in kwargs:
@@ -77,13 +77,13 @@ class Popen(object):
         return retcode
 
     async def communicate(self, input=b''):
-        '''
+        """
         Communicates with a subprocess.  input argument gives data to
         feed to the subprocess stdin stream.  Returns a tuple (stdout, stderr)
         corresponding to the process output.  If cancelled, the resulting
         cancellation exception has stdout_completed and stderr_completed
         attributes attached containing the bytes read so far.
-        '''
+        """
         stdout_task = await spawn(self.stdout.readall) if self.stdout else None
         stderr_task = await spawn(self.stderr.readall) if self.stderr else None
         try:
@@ -132,9 +132,9 @@ class Popen(object):
 
 
 async def run(args, *, stdin=None, input=None, stdout=None, stderr=None, shell=False, check=False):
-    '''
+    """
     Curio-compatible version of subprocess.run()
-    '''
+    """
     if input:
         stdin = subprocess.PIPE
     else:
@@ -162,9 +162,9 @@ async def run(args, *, stdin=None, input=None, stdout=None, stderr=None, shell=F
 
 
 async def check_output(args, *, stdin=None, stderr=None, shell=False, input=None):
-    '''
+    """
     Curio compatible version of subprocess.check_output()
-    '''
+    """
     out = await run(args, stdout=PIPE, stdin=stdin, stderr=stderr, shell=shell,
                     check=True, input=input)
     return out.stdout

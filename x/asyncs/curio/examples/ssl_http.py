@@ -9,9 +9,9 @@ import curio
 from .. import ssl
 
 
-KEYFILE = "ssl_test_rsa"  # Private key
+KEYFILE = 'ssl_test_rsa'  # Private key
 # Certificate (self-signed)
-CERTFILE = "ssl_test.crt"
+CERTFILE = 'ssl_test.crt'
 
 
 async def handler(client, addr):
@@ -23,11 +23,11 @@ async def handler(client, addr):
         print(line)
 
     await s.write(
-        b'''HTTP/1.0 200 OK\r
+        b"""HTTP/1.0 200 OK\r
 Content-type: text/plain\r
 \r
 If you're seeing this, it probably worked. Yay!
-''')
+""")
     await s.write(time.asctime().encode('ascii'))
     await client.close()
 

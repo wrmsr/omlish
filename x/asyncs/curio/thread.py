@@ -56,17 +56,18 @@ log = logging.getLogger(__name__)
 
 # -- Curio
 
-from . import sync
-from .task import spawn, disable_cancellation
-from .traps import _future_wait
 from . import errors
 from . import meta
+from . import sync
+from .task import disable_cancellation
+from .task import spawn
+from .traps import _future_wait
 
 
 _locals = threading.local()
 
 
-class AsyncThread(object):
+class AsyncThread:
 
     def __init__(self, target=None, args=(), kwargs={}, daemon=False):
         self.target = target
@@ -141,14 +142,14 @@ class AsyncThread(object):
             self._final_result = None
             self._final_exc = e
             if not isinstance(e, errors.CancelledError):
-                log.warning("Unexpected exception in cancelled async thread", exc_info=True)
+                log.warning('Unexpected exception in cancelled async thread', exc_info=True)
 
         finally:
             self._request.set_result(None)
 
     async def start(self):
         if self.target is None:
-            raise RuntimeError("Async thread must be given a target")
+            raise RuntimeError('Async thread must be given a target')
 
         # Launch the backing coroutine
         self._task = await spawn(self._coro_runner, daemon=True)
@@ -213,10 +214,10 @@ class AsyncThread(object):
 
 
 def AWAIT(coro, *args, **kwargs):
-    '''
+    """
     Await for a coroutine in an asynchronous thread.  If coro is
     not a proper coroutine, this function acts a no-op, returning coro.
-    '''
+    """
     # If the coro is a callable and it's identifiable as a coroutine function,
     # wrap it inside a coroutine and pass that.
     if callable(coro):
@@ -243,14 +244,14 @@ def AWAIT(coro, *args, **kwargs):
 
 
 def spawn_thread(func, *args, daemon=False):
-    '''
+    """
     Launch an async thread.  This mimicks the way a task is normally spawned. For
     example:
 
          t = await spawn_thread(func, arg1, arg2)
          ...
          await t.join()
-    '''
+    """
     if iscoroutine(func) or meta.iscoroutinefunction(func):
         raise TypeError("spawn_thread() can't be used on coroutines")
 
@@ -263,7 +264,7 @@ def spawn_thread(func, *args, daemon=False):
 
 
 def is_async_thread():
-    '''
+    """
     Returns True if current thread is an async thread.
-    '''
+    """
     return hasattr(_locals, 'thread')

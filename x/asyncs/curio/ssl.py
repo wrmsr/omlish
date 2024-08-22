@@ -27,8 +27,8 @@ except ImportError:
 
 # -- Curio
 
-from .workers import run_in_thread
 from .io import Socket
+from .workers import run_in_thread
 
 
 if _ssl:
@@ -51,7 +51,7 @@ if _ssl:
 
 
     # Small wrapper class to make sure the wrap_socket() method returns the right type
-    class CurioSSLContext(object):
+    class CurioSSLContext:
 
         def __init__(self, context):
             self._context = context

@@ -11,7 +11,7 @@ import curio
 import curio.monitor
 
 
-assert (sys.version_info.major >= 3 and sys.version_info.minor >= 8), "console requires Python 3.8+"
+assert (sys.version_info.major >= 3 and sys.version_info.minor >= 8), 'console requires Python 3.8+'
 
 
 class CurioIOInteractiveConsole(code.InteractiveConsole):

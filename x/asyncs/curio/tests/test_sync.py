@@ -49,7 +49,7 @@ class TestEvent:
             'event_set',
             'wait_done',
             True,
-            False
+            False,
         ]
 
     def test_event_get_immediate(self, kernel):
@@ -174,7 +174,7 @@ class TestEvent:
             'event_set',
             'got event',
             'event_set',
-            'got event'
+            'got event',
         ]
 
 
@@ -331,7 +331,7 @@ class TestRLock:
             'work2 inner releasing',
             'work2 releasing',
             'simple acquired',
-            'simple releasing'
+            'simple releasing',
         ]
 
     def test_rlock_notowner(self, kernel):
@@ -558,7 +558,7 @@ class TestCondition:
             ('ending', 0),
             ('cons1 done'),
             ('ending', 1),
-            ('cons2 done')
+            ('cons2 done'),
         ]
 
     def test_cond_wait_cancel(self, kernel):
@@ -618,7 +618,7 @@ class TestCondition:
             'sleep',
             'cond_wait',
             'worker_timeout',
-            'done'
+            'done',
         ]
 
     def test_cond_notify_all(self, kernel):
@@ -698,7 +698,7 @@ class TestCondition:
             'cons1 done',
             ('producing', 3),
             ('cons2', 4),
-            'cons2 done'
+            'cons2 done',
         ]
 
     def test_condition_error(self, kernel):
@@ -748,7 +748,7 @@ class TestUniversalEvent:
             'event_set',
             'wait_done',
             True,
-            False
+            False,
         ]
 
     def test_uevent_get_twait(self, kernel):
@@ -785,7 +785,7 @@ class TestUniversalEvent:
             'event_set',
             'wait_done',
             True,
-            False
+            False,
         ]
 
     def test_uevent_get_asyncio_set(self, kernel):
@@ -823,7 +823,7 @@ class TestUniversalEvent:
             'event_set',
             'wait_done',
             True,
-            False
+            False,
         ]
 
     def test_uevent_get_asyncio_wait(self, kernel):
@@ -861,7 +861,7 @@ class TestUniversalEvent:
             'event_set',
             'wait_done',
             True,
-            False
+            False,
         ]
 
     def test_uevent_get_wait_timeout(self, kernel):
@@ -922,7 +922,7 @@ class TestResult:
 
         async def main():
             r = Result()
-            await spawn(work, 2, "3", r)
+            await spawn(work, 2, '3', r)
             with pytest.raises(TypeError):
                 await r.unwrap()
 
@@ -965,7 +965,7 @@ class TestUniversalResult:
         r1 = UniversalResult()
         r2 = UniversalResult()
         r3 = UniversalResult()
-        threading.Thread(target=work, args=[2, "3", r1]).start()
+        threading.Thread(target=work, args=[2, '3', r1]).start()
         threading.Thread(target=asyncio.run, args=[main(r1, r2)]).start()
         kernel.run(main, r2, r3)
         with pytest.raises(TypeError):

@@ -11,9 +11,9 @@ from ..socket import *
 
 
 def test_socket_blocking(kernel, portno):
-    '''
+    """
     Test of exposing a socket in blocking mode
-    '''
+    """
     done = Event()
 
     results = []
@@ -52,16 +52,16 @@ def test_socket_blocking(kernel, portno):
     assert results == [
         'handler start',
         ('client', b'Message'),
-        'handler done'
+        'handler done',
     ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="not supported on Windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='not supported on Windows')
 def test_socketstream_blocking(kernel, portno):
-    '''
+    """
     Test of exposing a socket stream in blocking mode
-    '''
+    """
     done = Event()
     results = []
 
@@ -100,16 +100,16 @@ def test_socketstream_blocking(kernel, portno):
     assert results == [
         'handler start',
         ('client', b'Message'),
-        'handler done'
+        'handler done',
     ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="not supported on Windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='not supported on Windows')
 def test_filestream_blocking(kernel, portno):
-    '''
+    """
     Test of exposing a socket in blocking mode
-    '''
+    """
     done = Event()
     results = []
 
@@ -148,16 +148,16 @@ def test_filestream_blocking(kernel, portno):
     assert results == [
         'handler start',
         ('client', b'Message'),
-        'handler done'
+        'handler done',
     ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="not supported on Windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='not supported on Windows')
 def test_filestream_bad_blocking(kernel, portno):
-    '''
+    """
     Test of exposing a socket in blocking mode with buffered data error
-    '''
+    """
     done = Event()
     results = []
 
@@ -169,7 +169,7 @@ def test_filestream_bad_blocking(kernel, portno):
         try:
             with s.blocking() as f:
                 pass
-        except IOError:
+        except OSError:
             results.append(True)
         else:
             results.append(False)
@@ -194,12 +194,12 @@ def test_filestream_bad_blocking(kernel, portno):
     assert results[0]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="not supported on Windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='not supported on Windows')
 def test_socketstream_bad_blocking(kernel, portno):
-    '''
+    """
     Test of exposing a socket in blocking mode with buffered data error
-    '''
+    """
     done = Event()
     results = []
 
@@ -211,7 +211,7 @@ def test_socketstream_bad_blocking(kernel, portno):
         try:
             with s.blocking() as f:
                 pass
-        except IOError:
+        except OSError:
             results.append(True)
         else:
             results.append(False)
@@ -308,7 +308,7 @@ def test_readall(kernel, portno):
     assert results == [
         'handler start',
         b'Msg1\nMsg2\nMsg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -377,7 +377,7 @@ def test_readall_timeout(kernel, portno):
     assert results == [
         'handler start',
         b'Msg1\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -415,7 +415,7 @@ def test_read_exactly(kernel, portno):
         b'Msg1\n',
         b'Msg2\n',
         b'Msg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -489,7 +489,7 @@ def test_read_exactly_timeout(kernel, portno):
     assert results == [
         'handler start',
         b'Msg1\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -527,7 +527,7 @@ def test_readline(kernel, portno):
         b'Msg1\n',
         b'Msg2\n',
         b'Msg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -564,7 +564,7 @@ def test_readlines(kernel, portno):
         b'Msg1\n',
         b'Msg2\n',
         b'Msg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -605,7 +605,7 @@ def test_readlines_timeout(kernel, portno):
         'handler start',
         b'Msg1\n',
         b'Msg2\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -641,7 +641,7 @@ def test_writelines(kernel, portno):
     assert results == [
         'handler start',
         b'Msg1\nMsg2\nMsg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -685,8 +685,8 @@ def test_writelines_timeout(kernel, portno):
     assert results[0] == len(results[1])
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
-                    reason="fails on windows")
+@pytest.mark.skipif(sys.platform.startswith('win'),
+                    reason='fails on windows')
 def test_write_timeout(kernel, portno):
     done = Event()
     results = []
@@ -754,7 +754,7 @@ def test_iterline(kernel, portno):
         b'Msg1\n',
         b'Msg2\n',
         b'Msg3\n',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -768,7 +768,7 @@ def test_double_recv(kernel, portno):
         try:
             await client.recv(1000)  # <- This needs to fail. Task already reading on the socket
             results.append('why am I here?')
-        except ReadResourceBusy as e:
+        except ReadResourceBusy:
             results.append('good handler')
 
     async def handler(client, addr):
@@ -802,7 +802,7 @@ def test_double_recv(kernel, portno):
         'bad handler',
         'good handler',
         b'Msg',
-        'handler done'
+        'handler done',
     ]
 
 

@@ -30,7 +30,7 @@ from .traps import _future_wait
 # -- Curio
 
 
-class Event(object):
+class Event:
 
     def __init__(self):
         self._set = False
@@ -57,10 +57,10 @@ class Event(object):
         await self._waiting.wake()
 
 
-class UniversalEvent(object):
-    '''
+class UniversalEvent:
+    """
     An event that's safe to use from Curio and threads.
-    '''
+    """
 
     def __init__(self):
         self._set = False
@@ -147,7 +147,7 @@ class UniversalEvent(object):
         # Base class for all synchronization primitives that operate as context managers.
 
 
-class _LockBase(object):
+class _LockBase:
 
     async def __aenter__(self):
         await self.acquire()
@@ -217,7 +217,7 @@ class RLock(_LockBase):
     async def release(self):
         if not self.locked():
             raise RuntimeError('RLock is not locked')
-        if not await current_task() is self._owner:
+        if await current_task() is not self._owner:
             raise RuntimeError('RLock can only be released by the owner')
         self._count -= 1
         if self._count == 0:
@@ -321,7 +321,7 @@ class Result:
         else:
             return f'<{res[1:-1]}, not set>'
 
-        status = "set" if self.is_set() else "not set"
+        status = 'set' if self.is_set() else 'not set'
         return f'<Result status={status}>'
 
     def is_set(self):

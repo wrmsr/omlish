@@ -6,7 +6,7 @@
 #    zmq_puller.py/zmq_pusher.py    - Push/pull socket example
 #    zmq_rpclient.py/zmq_rpcserv.py - RPC Server
 #
-'''
+"""
 ZeroMQ wrapper module
 ---------------------
 
@@ -65,7 +65,7 @@ Here is an example of a Curio task that receives messages::
 
     if __name__ == '__main__':
         zmq.run(puller('tcp://localhost:9000'))
-'''
+"""
 
 import pickle
 

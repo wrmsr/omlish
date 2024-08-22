@@ -28,10 +28,10 @@ __all__ = ['Queue', 'PriorityQueue', 'LifoQueue', 'UniversalQueue']
 
 
 class QueueBase:
-    '''
+    """
     Base class for queues used to communicate between Curio tasks.
     Not safe for use with external threads or processes.
-    '''
+    """
 
     def __init__(self, maxsize=0):
         self.maxsize = maxsize
@@ -98,10 +98,10 @@ class QueueBase:
 # using whatever mechanism the runtime environment uses to do that.
 
 class UniversalQueueBase:
-    '''
+    """
     A queue for communicating between Curio and external threads,
     including foreign event loops running in different threads.
-    '''
+    """
 
     def __init__(self, *, maxsize=0, withfd=False):
         self.maxsize = maxsize
@@ -142,7 +142,7 @@ class UniversalQueueBase:
             self._get_sock.close()
 
     def fileno(self):
-        assert self._get_sock, "Queue not created with I/O polling enabled"
+        assert self._get_sock, 'Queue not created with I/O polling enabled'
         return self._get_sock.fileno()
 
     def _put_send(self):
@@ -197,7 +197,7 @@ class UniversalQueueBase:
             try:
                 await _future_wait(fut)
                 item = fut.result()
-            except CancelledError as e:
+            except CancelledError:
                 # If we're cancelled, but the future completes successfully anyways,
                 # we must arrange for the item to go back onto the queue.  Note:
                 # the Curio kernel cancels futures when _future_wait() is cancelled.
@@ -356,35 +356,31 @@ class LIFOImpl:
 # Concrete Queue implementations
 
 class Queue(QueueBase, FIFOImpl):
-    '''
+    """
     A First-In First-Out queue for communicating between Curio tasks.
     not safe for communicating between Curio and external
     threads, processes, etc.
-    '''
-    pass
+    """
 
 
 class PriorityQueue(QueueBase, PriorityImpl):
-    '''
+    """
     A priority queue for communicating between Curio tasks.
     not safe for communicating between Curio and external
     threads, processes, etc.
-    '''
-    pass
+    """
 
 
 class LifoQueue(QueueBase, LIFOImpl):
-    '''
+    """
     A Last-In First-Out queue for communicating between Curio tasks.
     Not safe for communicating between Curio and external
     threads, processes, etc.
-    '''
-    pass
+    """
 
 
 class UniversalQueue(UniversalQueueBase, FIFOImpl):
-    '''
+    """
     A FIFO queue for communicating between Curio and external threads,
     including foreign event loops running in different threads.
-    '''
-    pass
+    """

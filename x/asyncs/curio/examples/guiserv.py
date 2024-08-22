@@ -6,7 +6,7 @@ import tkinter as tk
 from .. import *
 
 
-class EchoApp(object):
+class EchoApp:
     def __init__(self):
         # Pending coroutines
         self.pending = []

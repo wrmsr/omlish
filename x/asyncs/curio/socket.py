@@ -10,11 +10,12 @@ import socket as _socket
 
 __all__ = _socket.__all__
 
+from functools import partial
+from functools import wraps
 from socket import *
-from functools import wraps, partial
 
-from . import workers
 from . import io
+from . import workers
 
 
 @wraps(_socket.socket)
@@ -41,9 +42,9 @@ def fromfd(*args, **kwargs):
 #    return io.Socket(sock)
 
 async def create_connection(address, timeout=None, source_address=None):
-    '''
+    """
     Pure async implementation of the socket.create_connection function in standard library
-    '''
+    """
     host, port = address
     err = None
     for res in await getaddrinfo(host, port, 0, SOCK_STREAM):
@@ -66,7 +67,7 @@ async def create_connection(address, timeout=None, source_address=None):
     if err is not None:
         raise err
     else:
-        raise OSError("getaddrinfo returns an empty list")
+        raise OSError('getaddrinfo returns an empty list')
 
 
 @wraps(_socket.getaddrinfo)

@@ -49,9 +49,9 @@ def _is_coroutine(obj):
 
 def pytest_configure(config):
     """Inject documentation."""
-    config.addinivalue_line("markers",
-                            "curio: "
-                            "mark the test as a coroutine, it will be run using a Curio kernel.")
+    config.addinivalue_line('markers',
+                            'curio: '
+                            'mark the test as a coroutine, it will be run using a Curio kernel.')
 
 
 @pytest.mark.tryfirst

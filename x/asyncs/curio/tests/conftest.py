@@ -29,4 +29,4 @@ def portno():
 
 collect_ignore = []
 if sys.version_info < (3, 6):
-    collect_ignore.append("test_asyncgen.py")
+    collect_ignore.append('test_asyncgen.py')

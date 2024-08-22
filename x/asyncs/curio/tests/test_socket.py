@@ -71,7 +71,7 @@ def test_tcp_echo(kernel, portno):
         'recv wait',
         ('client', b'Msg2'),
         'client close',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -132,7 +132,7 @@ def test_tcp_file_echo(kernel, portno):
         ('handler', b'Msg2\n'),
         ('client', b'Msg2\n'),
         'client close',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -174,11 +174,11 @@ def test_udp_echo(kernel):
         ('server', b'Msg1'),
         'server close',
         ('client', b'Msg1'),
-        'client close'
+        'client close',
     ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
+@pytest.mark.skipif(sys.platform.startswith('win'),
                     reason='currently broken')
 def test_fromfd_tcp_echo(kernel, portno):
     results = []
@@ -243,7 +243,7 @@ def test_fromfd_tcp_echo(kernel, portno):
         'recv wait',
         ('client', b'Msg2'),
         'client close',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -267,7 +267,7 @@ def test_accept_timeout(kernel, portno):
 
     assert results == [
         'accept wait',
-        'accept timeout'
+        'accept timeout',
     ]
 
 
@@ -295,7 +295,7 @@ def test_accept_cancel(kernel, portno):
     kernel.run(canceller())
     assert results == [
         'accept wait',
-        'accept cancel'
+        'accept cancel',
     ]
 
 
@@ -338,7 +338,7 @@ def test_recv_timeout(kernel):
         'client connect',
         'recv wait',
         'recv timeout',
-        'client done'
+        'client done',
     ]
 
 
@@ -381,7 +381,7 @@ def test_recv_cancel(kernel):
         'client connect',
         'recv wait',
         'recv cancel',
-        'client done'
+        'client done',
     ]
 
 
@@ -411,7 +411,7 @@ def test_recvfrom_timeout(kernel):
     assert results == [
         'recvfrom wait',
         'recvfrom timeout',
-        'client done'
+        'client done',
     ]
 
 
@@ -441,7 +441,7 @@ def test_recvfrom_cancel(kernel):
     assert results == [
         'recvfrom wait',
         'recvfrom cancel',
-        'client done'
+        'client done',
     ]
 
 
@@ -520,7 +520,7 @@ def test_buffer_stream_into(kernel):
     assert all(n == x for n, x in enumerate(results[0]))
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"),
+@pytest.mark.skipif(sys.platform.startswith('win'),
                     reason='broken on Windows')
 def test_buffer_makefile_into(kernel):
     from array import array
@@ -569,11 +569,11 @@ def test_read_write_on_same_socket(kernel):
         t1 = await spawn(s1.recv, 1000)
         # Large enough send to trigger blocking on write:
         N = 10000000
-        t2 = await spawn(s1.sendall, b"x" * N)
+        t2 = await spawn(s1.sendall, b'x' * N)
         # Above is the actual test -- right now it triggers a crash.
         # Rest of this is just to clean up:
         # Let t1 finish:
-        await s2.sendall(b"x")
+        await s2.sendall(b'x')
         # Let t2 finish:
         n = 0
         while n < N:

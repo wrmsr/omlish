@@ -39,7 +39,7 @@ def threaded_echo_server(addr):
 
 # An async server
 async def async_echo_server(addr):
-    import curio.socket as socket
+    from curio import socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     sock.bind(addr)

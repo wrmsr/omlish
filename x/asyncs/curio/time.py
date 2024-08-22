@@ -15,38 +15,38 @@ log = logging.getLogger(__name__)
 
 # --- Curio
 
+from . import meta
+from .errors import *
 from .task import current_task
 from .traps import *
-from .errors import *
-from . import meta
 
 
 async def clock():
-    '''
+    """
     Immediately return the current value of the kernel clock. There
     are no side-effects such as task preemption or cancellation.
-    '''
+    """
     return await _clock()
 
 
 async def sleep(seconds):
-    '''
+    """
     Sleep for a specified number of seconds.  Sleeping for 0 seconds
     makes a task immediately switch to the next ready task (if any).
     Returns the value of the kernel clock when awakened.
-    '''
+    """
     return await _sleep(seconds)
 
 
-class _TimeoutAfter(object):
-    '''
+class _TimeoutAfter:
+    """
     Helper class used by timeout_after() and ignore_after() functions
     when used as a context manager.  For example:
 
         async with timeout_after(delay):
             statements
             ...
-    '''
+    """
 
     def __init__(self, clock, ignore=False, timeout_result=None):
         self._clock = clock
@@ -112,11 +112,10 @@ class _TimeoutAfter(object):
                     self.expired = True
                     if self._ignore:
                         return True
+                    elif ty is TimeoutCancellationError:
+                        raise TaskTimeout(val.args[0]).with_traceback(tb) from None
                     else:
-                        if ty is TimeoutCancellationError:
-                            raise TaskTimeout(val.args[0]).with_traceback(tb) from None
-                        else:
-                            return False
+                        return False
             elif ty is None:
                 if current_clock > self._deadlines[-1]:
                     # Further discussion.  In the presence of threads and blocking
@@ -146,7 +145,7 @@ async def _timeout_after_func(clock, coro, args,
 
 
 def timeout_after(seconds, coro=None, *args):
-    '''
+    """
     Raise a TaskTimeout exception in the calling task after seconds
     have elapsed.  This function may be used in two ways. You can
     apply it to the execution of a single coroutine:
@@ -160,7 +159,7 @@ def timeout_after(seconds, coro=None, *args):
              await coro1(args)
              await coro2(args)
              ...
-    '''
+    """
     if coro is None:
         return _TimeoutAfter(seconds)
     else:
@@ -168,7 +167,7 @@ def timeout_after(seconds, coro=None, *args):
 
 
 def ignore_after(seconds, coro=None, *args, timeout_result=None):
-    '''
+    """
     Stop the enclosed task or block of code after seconds have
     elapsed.  No exception is raised when time expires. Instead, None
     is returned.  This is often more convenient that catching an
@@ -194,7 +193,7 @@ def ignore_after(seconds, coro=None, *args, timeout_result=None):
 
     You can change the return result to a different value using
     the timeout_result keyword argument.
-    '''
+    """
     if coro is None:
         return _TimeoutAfter(seconds, ignore=True, timeout_result=timeout_result)
     else:

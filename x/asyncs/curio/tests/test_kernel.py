@@ -25,12 +25,12 @@ def test_raise(kernel):
         pass
 
     async def boom():
-        raise Error()
+        raise Error
 
     try:
         kernel.run(boom)
         assert False, 'boom() did not raise'
-    except Error as e:
+    except Error:
         pass
     except:
         assert False, 'boom() raised wrong error'
@@ -367,7 +367,7 @@ def test_task_ready_cancel(kernel):
         'cancel start',
         'child slept',
         'child cancelled',
-        'cancel done'
+        'cancel done',
     ]
 
 
@@ -400,7 +400,7 @@ def test_double_cancel(kernel):
         'cancel request',
         'retry',
         'cancelled',
-        'done cancel'
+        'done cancel',
     ]
 
 
@@ -442,7 +442,7 @@ def test_nested_timeout(kernel):
         'coro1 start',
         'coro1 timeout cancel',
         'coro2 start',
-        'parent timeout'
+        'parent timeout',
     ]
 
 
@@ -486,7 +486,7 @@ def test_nested_context_timeout(kernel):
         'coro1 start',
         'coro1 timeout cancel',
         'coro2 start',
-        'parent timeout'
+        'parent timeout',
     ]
 
 
@@ -576,7 +576,7 @@ def test_nested_timeout_uncaught(kernel):
     kernel.run(parent)
     assert results == [
         'coro1 start',
-        'uncaught timeout'
+        'uncaught timeout',
     ]
 
 
@@ -605,7 +605,7 @@ def test_nested_context_timeout_uncaught(kernel):
     kernel.run(parent)
     assert results == [
         'coro1 start',
-        'uncaught timeout'
+        'uncaught timeout',
     ]
 
 
@@ -640,7 +640,7 @@ def test_nested_timeout_none(kernel):
         #        'coro1 done',
         #        'coro1 success',
         #        'coro2 start',
-        'parent timeout'
+        'parent timeout',
     ]
 
 
@@ -652,11 +652,11 @@ def test_task_run_error(kernel):
 
     try:
         kernel.run(main)
-        assert False, "Exception not raised"
-    except ValueError as e:
+        assert False, 'Exception not raised'
+    except ValueError:
         pass
     except:
-        assert False, "Wrong exception raised"
+        assert False, 'Wrong exception raised'
 
 
 def test_sleep_0_starvation(kernel):
@@ -664,18 +664,18 @@ def test_sleep_0_starvation(kernel):
     # cancellable. We used to have a bug where neither were true...
     async def loop_forever():
         while True:
-            print("Sleeping 0")
+            print('Sleeping 0')
             await sleep(0)
 
     async def io1(sock):
         await sock.recv(1)
-        await sock.send(b"x")
+        await sock.send(b'x')
         await sock.recv(1)
 
     async def io2(sock):
-        await sock.send(b"x")
+        await sock.send(b'x')
         await sock.recv(1)
-        await sock.send(b"x")
+        await sock.send(b'x')
 
     async def main():
         loop_task = await spawn(loop_forever)
@@ -700,17 +700,17 @@ def test_ping_pong_starvation(kernel):
     async def i_will_survive():
         for _ in range(10):
             await sleep(0)
-        return "i survived!"
+        return 'i survived!'
 
     async def main():
         q1 = Queue()
         q2 = Queue()
-        await q1.put("something")
+        await q1.put('something')
         pp1 = await spawn(pingpong, q1, q2)
         pp2 = await spawn(pingpong, q2, q1)
         iws = await spawn(i_will_survive)
 
-        assert (await iws.join()) == "i survived!"
+        assert (await iws.join()) == 'i survived!'
         await pp1.cancel()
         await pp2.cancel()
 
@@ -933,7 +933,7 @@ def test_kernel_no_shutdown():
 def test_kernel_exit():
     # Code coverage test
     async def main():
-        raise SystemExit()
+        raise SystemExit
 
     with pytest.raises(SystemExit):
         with Kernel() as k:
@@ -974,7 +974,8 @@ def test_kernel_multischedule(kernel):
 
 
 def test_kernel_debug():
-    from ..debug import schedtrace, traptrace
+    from ..debug import schedtrace
+    from ..debug import traptrace
     async def hello():
         await sleep(0)
 

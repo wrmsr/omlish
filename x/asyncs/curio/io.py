@@ -32,8 +32,8 @@ __all__ = ['Socket', 'FileStream', 'SocketStream']
 import io
 import os
 from contextlib import contextmanager
-from socket import SOL_SOCKET
 from socket import SO_ERROR
+from socket import SOL_SOCKET
 
 from . import errors
 from . import thread
@@ -50,7 +50,8 @@ from .traps import _write_wait
 # are raised.  Here we're just making some aliases for the possible exceptions.
 
 try:
-    from ssl import SSLWantReadError, SSLWantWriteError
+    from ssl import SSLWantReadError
+    from ssl import SSLWantWriteError
 
 
     WantRead = (BlockingIOError, InterruptedError, SSLWantReadError)
@@ -73,7 +74,7 @@ except ImportError:
 # See also: https://github.com/dabeaz/curio/issues/104
 
 
-class _Fd(object):
+class _Fd:
     __slots__ = ('fd',)
 
     def __init__(self, fd):
@@ -94,11 +95,11 @@ class _Fd(object):
 # other, the KISSS (Keep it Stupid Simple Stupid) principle might be a
 # better policy--just in case someone needs to debug it.
 
-class Socket(object):
-    '''
+class Socket:
+    """
     Non-blocking wrapper around a socket object.   The original socket is put
     into a non-blocking mode when it's wrapped.
-    '''
+    """
 
     def __init__(self, sock):
         self._socket = sock
@@ -134,16 +135,16 @@ class Socket(object):
         return FileStream(f)
 
     def as_stream(self):
-        '''
+        """
         Create a stream-based interface to the socket.
-        '''
+        """
         return SocketStream(self._socket)
 
     @contextmanager
     def blocking(self):
-        '''
+        """
         Allow temporary access to the underlying socket in blocking mode
-        '''
+        """
         try:
             self._socket.setblocking(True)
             yield self._socket
@@ -322,10 +323,10 @@ class Socket(object):
 MAX_READ = 65536
 
 
-class StreamBase(object):
-    '''
+class StreamBase:
+    """
     Base class for file-like objects.
-    '''
+    """
 
     def __init__(self, fileobj):
         self._file = fileobj
@@ -340,10 +341,10 @@ class StreamBase(object):
 
     # ---- Methods that must be implemented in child classes
     async def _read(self, maxbytes=-1):  # pragma: no cover
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def write(self, data):  # pragma: no cover
-        raise NotImplementedError()
+        raise NotImplementedError
 
     # ---- General I/O methods for streams
     async def read(self, maxbytes=-1):
@@ -401,7 +402,7 @@ class StreamBase(object):
             # It's possible that there is data already buffered on this stream.
             # If so, we have to copy into the memory buffer first.
             buffered = len(self._buffer)
-            tocopy = remaining if (remaining < buffered) else buffered
+            tocopy = min(buffered, remaining)
             if tocopy:
                 view[:tocopy] = self._buffer[:tocopy]
                 del self._buffer[:tocopy]
@@ -509,10 +510,10 @@ class StreamBase(object):
 
 
 class FileStream(StreamBase):
-    '''
+    """
     Wrapper around a file-like object.  File is put into non-blocking mode.
     The underlying file must be in binary mode.
-    '''
+    """
 
     def __init__(self, fileobj):
         assert not isinstance(fileobj, io.TextIOBase), 'Only binary mode files allowed'
@@ -526,11 +527,11 @@ class FileStream(StreamBase):
 
     @contextmanager
     def blocking(self):
-        '''
+        """
         Allow temporary access to the underlying file in blocking mode
-        '''
+        """
         if self._buffer:
-            raise IOError('There is unread buffered data.')
+            raise OSError('There is unread buffered data.')
         try:
             os.set_blocking(int(self._fileno), True)
             yield self._file
@@ -560,7 +561,7 @@ class FileStream(StreamBase):
                 try:
                     nbytes = self._file_write(view)
                     if nbytes is None:
-                        raise BlockingIOError()
+                        raise BlockingIOError
                     nwritten += nbytes
                     view = view[nbytes:]
                 except WantWrite as e:
@@ -578,7 +579,7 @@ class FileStream(StreamBase):
 
     async def flush(self):
         if not self._file:
-            return
+            return None
         while True:
             try:
                 return self._file.flush()
@@ -589,9 +590,9 @@ class FileStream(StreamBase):
 
 
 class SocketStream(StreamBase):
-    '''
+    """
     Stream wrapper for a socket.
-    '''
+    """
 
     def __init__(self, sock):
         super().__init__(sock)
@@ -604,11 +605,11 @@ class SocketStream(StreamBase):
 
     @contextmanager
     def blocking(self):
-        '''
+        """
         Allow temporary access to the underlying file in blocking mode
-        '''
+        """
         if self._buffer:
-            raise IOError('There is unread buffered data.')
+            raise OSError('There is unread buffered data.')
         try:
             self._file.setblocking(True)
             yield open(int(self._fileno), 'rb+', buffering=0, closefd=False)

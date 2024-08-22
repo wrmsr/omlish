@@ -55,12 +55,12 @@ from .workers import run_in_thread
 # -- Curio
 
 
-class AsyncFile(object):
-    '''
+class AsyncFile:
+    """
     An async wrapper around a standard file object.  Uses threads to
     execute various I/O operations in a way that avoids blocking
     the Curio kernel loop.
-    '''
+    """
 
     def __init__(self, fileobj, open_args=None, open_kwargs=None):
         self._fileobj = fileobj
@@ -72,9 +72,9 @@ class AsyncFile(object):
 
     @contextmanager
     def blocking(self):
-        '''
+        """
         Expose the underlying file in blocking mode for use with synchronous code.
-        '''
+        """
         yield self._file
 
     @property
@@ -173,19 +173,19 @@ class AsyncFile(object):
 
 
 def aopen(*args, **kwargs):
-    '''
+    """
     Async version of the builtin open() function that returns an async-compatible
     file object.  Takes the same arguments.  Returns a wrapped file in which
     blocking I/O operations must be awaited.
-    '''
+    """
     return AsyncFile(None, args, kwargs)
 
 
 async def anext(f, sentinel=object):
-    '''
+    """
     Async version of the builtin next() function that advances an async iterator.
     Sometimes used to skip a single line in files.
-    '''
+    """
     try:
         return await f.__anext__()
     except StopAsyncIteration:

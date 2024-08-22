@@ -45,9 +45,9 @@ def running(kernel):
 
 
 def curio_running():
-    '''
+    """
     Return a flag that indicates whether or not Curio is running in the current thread.
-    '''
+    """
     return getattr(_locals, 'running', False)
 
 
@@ -63,29 +63,17 @@ def from_coroutine(level=2, _cache={}):
     if f_code.co_flags & _CO_FROM_COROUTINE:
         _cache[f_code] = True
         return True
+    elif (f_code.co_flags & _CO_NESTED and f_code.co_name[0] == '<'):
+        return from_coroutine(level + 2)
     else:
-        # Comment:  It's possible that we could end up here if one calls a function
-        # from the context of a list comprehension or a generator expression. For
-        # example:
-        #
-        #   async def coro():
-        #        ...
-        #        a = [ func() for x in s ]
-        #        ...
-        #
-        # Where func() is some function that we've wrapped with one of the decorators
-        # below.  If so, the code object is nested and has a name such as <listcomp> or <genexpr>
-        if (f_code.co_flags & _CO_NESTED and f_code.co_name[0] == '<'):
-            return from_coroutine(level + 2)
-        else:
-            _cache[f_code] = False
-            return False
+        _cache[f_code] = False
+        return False
 
 
 def iscoroutinefunction(func):
-    '''
+    """
     Modified test for a coroutine function with awareness of functools.partial
-    '''
+    """
     if isinstance(func, partial):
         return iscoroutinefunction(func.func)
     if hasattr(func, '__func__'):
@@ -94,13 +82,13 @@ def iscoroutinefunction(func):
 
 
 def instantiate_coroutine(corofunc, *args, **kwargs):
-    '''
+    """
     Try to instantiate a coroutine. If corofunc is already a coroutine,
     we're done.  If it's a coroutine function, we call it inside an
     async context with the given arguments to create a coroutine.  If
     it's not a coroutine, we call corofunc(*args, **kwargs) and hope
     for the best.
-    '''
+    """
     if isinstance(corofunc, collections.abc.Coroutine) or inspect.isgenerator(corofunc):
         assert not args and not kwargs, "arguments can't be passed to an already instantiated coroutine"
         return corofunc
@@ -121,7 +109,7 @@ def instantiate_coroutine(corofunc, *args, **kwargs):
 
 
 def awaitable(syncfunc):
-    '''
+    """
     Decorator that allows an asynchronous function to be paired with a
     synchronous function in a single function call.  The selection of
     which function executes depends on the calling context.  For example:
@@ -146,7 +134,7 @@ def awaitable(syncfunc):
             r = await spam(s, 1024)    # Calls async function (B) above
             ...
 
-    '''
+    """
 
     def decorate(asyncfunc):
         if inspect.signature(syncfunc) != inspect.signature(asyncfunc):
@@ -169,7 +157,7 @@ def awaitable(syncfunc):
 
 
 def asyncioable(awaitablefunc):
-    '''
+    """
     Decorator that additionally allows an asyncio compatible call to
     be attached to an already awaitable function. For example:
 
@@ -186,7 +174,7 @@ def asyncioable(awaitablefunc):
 
     This only works if Curio/Asyncio are running in different threads.
     Main use is in the implementation of UniversalQueue.
-    '''
+    """
 
     def decorate(asyncfunc):
         @wraps(asyncfunc)
@@ -206,12 +194,12 @@ def asyncioable(awaitablefunc):
     return decorate
 
 
-class finalize(object):
-    '''
+class finalize:
+    """
     Context manager that safely finalizes an asynchronous generator.
     This might be needed if an asynchronous generator uses async functions
     in try-finally and other constructs.
-    '''
+    """
 
     def __init__(self, aobj):
         self.aobj = aobj
@@ -236,11 +224,11 @@ def asyncgen_manager():
 
         def _fini_async_gen(agen):
             if agen.ag_frame is not None:
-                raise RuntimeError("Async generator with async finalization must be wrapped by\n"
-                                   "async with curio.meta.finalize(agen) as agen:\n"
-                                   "    async for n in agen:\n"
-                                   "         ...\n"
-                                   "See PEP 533 for further discussion.")
+                raise RuntimeError('Async generator with async finalization must be wrapped by\n'
+                                   'async with curio.meta.finalize(agen) as agen:\n'
+                                   '    async for n in agen:\n'
+                                   '         ...\n'
+                                   'See PEP 533 for further discussion.')
 
         sys.set_asyncgen_hooks(None, _fini_async_gen)
     try:

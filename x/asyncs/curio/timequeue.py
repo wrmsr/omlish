@@ -40,9 +40,9 @@ class TimeQueue:
         self.far_min_deadline = float('inf')
 
     def _far_to_near(self):
-        '''
+        """
         Move items from the far queue to the near queue (if any).
-        '''
+        """
         removed = []
         min_deadline = float('inf')
         for item, expires in self.far.items():
@@ -56,31 +56,31 @@ class TimeQueue:
         self.far_min_deadline = min_deadline
 
     def next_deadline(self, current_clock):
-        '''
+        """
         Returns the number of seconds to delay until the next deadline
         expires.  current_clock is the current value of the clock.
         Returns None if there are no pending deadlines.
-        '''
+        """
         self.near_deadline = current_clock + self.cutoff
         if self.near_deadline > self.far_min_deadline:
             self._far_to_near()
 
         if self.near:
             delta = self.near[0][0] - current_clock
-            return delta if delta > 0 else 0
+            return max(0, delta)
 
         # There are no near deadlines. Use the closest far deadline
         if self.far:
             delta = self.far_min_deadline - current_clock
-            return delta if delta > 0 else 0
+            return max(0, delta)
 
         # There are no sleeping tasks of any kind.
         return None
 
     def push(self, item, expires):
-        '''
+        """
         Push a new item onto the time queue.
-        '''
+        """
         # If the expiration time is closer than the current near deadline,
         # it gets pushed onto a heap in order to preserve order
         if expires <= self.near_deadline:
@@ -89,13 +89,12 @@ class TimeQueue:
             # Otherwise the item gets put into a dict for far-in-future handling
             if item not in self.far or self.far[item] > expires:
                 self.far[item] = expires
-            if expires < self.far_min_deadline:
-                self.far_min_deadline = expires
+            self.far_min_deadline = min(expires, self.far_min_deadline)
 
     def expired(self, deadline):
-        '''
+        """
         An iterator that returns all items that have expired up to a given deadline
-        '''
+        """
         near = self.near
         if deadline >= self.far_min_deadline:
             self.near_deadline = deadline + self.cutoff
@@ -105,8 +104,8 @@ class TimeQueue:
             yield heapq.heappop(near)
 
     def cancel(self, item, expires):
-        '''
+        """
         Cancel a time event. The combination of (item, expires) should
         match a prior push() operation (but if not, it's ignored).
-        '''
+        """
         self.far.pop(item, None)

@@ -60,7 +60,7 @@ def test_cancel_custom_exception_instance(kernel):
     class MyException(Exception):
         pass
 
-    exc = MyException("Test")
+    exc = MyException('Test')
 
     async def child():
         nonlocal child_exit
@@ -106,7 +106,7 @@ def test_task_group_daemon(kernel):
         async with TaskGroup([t0], wait=all) as g:
             t1 = await g.spawn(child, 1, 1)
             t2 = await g.spawn(child, 2, 2, daemon=True)
-            t3 = await g.spawn(child, 3, "3", daemon=True)
+            t3 = await g.spawn(child, 3, '3', daemon=True)
             t4 = await g.spawn(sleep, 5, daemon=True)
 
         assert t1.result == 2
@@ -124,7 +124,7 @@ def test_task_group_daemon_error(kernel):
         try:
             async with TaskGroup(wait=all) as g:
                 t = await g.spawn(sleep, 5, daemon=True)
-                raise ValueError()
+                raise ValueError
         except ValueError:
             pass
         # Verify that the daemon task got cancelled
@@ -305,7 +305,7 @@ def test_task_group_error_block(kernel):
                 t1 = await g.spawn(child, 1, 1)
                 t2 = await g.spawn(child, 2, 2)
                 t3 = await g.spawn(child, 3, 3)
-                raise RuntimeError()
+                raise RuntimeError
         except RuntimeError:
             assert True
         else:

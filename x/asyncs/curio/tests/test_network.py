@@ -62,7 +62,7 @@ def test_tcp_echo(kernel):
         'recv wait',
         ('client', b'Msg2'),
         'client close',
-        'handler done'
+        'handler done',
     ]
 
 
@@ -118,7 +118,7 @@ if not sys.platform.startswith('win'):
             'recv wait',
             ('client', b'Msg2'),
             'client close',
-            'handler done'
+            'handler done',
         ]
 
 

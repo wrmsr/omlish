@@ -38,7 +38,7 @@ def test_cpu(kernel):
 
     assert results == [
         10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
-        ('fib', 14930352)
+        ('fib', 14930352),
     ]
 
 
@@ -108,7 +108,7 @@ def test_worker_cancel(kernel, runner):
     kernel.run(main())
 
     assert results == [
-        10, 9, 8, 7, 6, 5, 'cancel', 4, 3, 2, 1
+        10, 9, 8, 7, 6, 5, 'cancel', 4, 3, 2, 1,
     ]
 
 
@@ -136,7 +136,7 @@ def test_worker_timeout(kernel, runner):
     kernel.run(main())
 
     assert results == [
-        10, 9, 8, 7, 6, 5, 'cancel', 4, 3, 2, 1
+        10, 9, 8, 7, 6, 5, 'cancel', 4, 3, 2, 1,
     ]
 
 
@@ -158,5 +158,5 @@ def test_exception(kernel):
 
     assert results == [
         TypeError,
-        None
+        None,
     ]

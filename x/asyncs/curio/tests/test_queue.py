@@ -159,7 +159,7 @@ def test_queue_get_cancel(kernel):
     kernel.run(driver())
     assert results == [
         'consumer waiting',
-        'consumer cancelled'
+        'consumer cancelled',
     ]
 
 
@@ -185,7 +185,7 @@ def test_queue_put_cancel(kernel):
     kernel.run(driver())
     assert results == [
         'producer_start',
-        'producer_cancel'
+        'producer_cancel',
     ]
 
 
@@ -205,7 +205,7 @@ def test_queue_get_timeout(kernel):
     kernel.run(consumer())
     assert results == [
         'consumer waiting',
-        'consumer timeout'
+        'consumer timeout',
     ]
 
 
@@ -226,7 +226,7 @@ def test_queue_put_timeout(kernel):
     kernel.run(producer())
     assert results == [
         'producer start',
-        'producer timeout'
+        'producer timeout',
     ]
 
 

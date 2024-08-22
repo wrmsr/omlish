@@ -47,7 +47,7 @@ def test_bad_result(kernel):
         try:
             result = await t.result
             assert False
-        except TypeError as e:
+        except TypeError:
             assert True
         else:
             assert False

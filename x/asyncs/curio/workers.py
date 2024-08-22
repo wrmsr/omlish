@@ -56,9 +56,9 @@ MAX_WORKER_THREADS = 64
 
 
 async def reserve_thread_worker():
-    '''
+    """
     Reserve a thread pool worker
-    '''
+    """
     kernel = await _get_kernel()
     if not hasattr(kernel, 'thread_pool'):
         kernel.thread_pool = WorkerPool(ThreadWorker, MAX_WORKER_THREADS)
@@ -67,12 +67,12 @@ async def reserve_thread_worker():
 
 
 async def run_in_thread(callable, *args, call_on_cancel=None):
-    '''
+    """
     Run callable(*args) in a separate thread and return the result. If
     cancelled, be aware that the requested callable may or may not have
     executed.  If it start running, it will run fully to completion
     as a kind of zombie.
-    '''
+    """
     assert call_on_cancel is None, call_on_cancel
     worker = None
     try:
@@ -87,7 +87,7 @@ MAX_WORKER_PROCESSES = multiprocessing.cpu_count()
 
 
 async def run_in_process(callable, *args):
-    '''
+    """
     Run callable(*args) in a separate process and return the
     result.  In the event of cancellation, the worker process is
     immediately terminated.
@@ -109,7 +109,7 @@ async def run_in_process(callable, *args):
     The worker process is a separate isolated Python interpreter.
     Nothing should be assumed about its global state including shared
     variables, files, or connections.
-    '''
+    """
     kernel = await _get_kernel()
     if not hasattr(kernel, 'process_pool'):
         kernel.process_pool = WorkerPool(ProcessWorker, MAX_WORKER_PROCESSES)
@@ -133,7 +133,7 @@ async def run_in_process(callable, *args):
 # faster.
 
 
-class _FutureLess(object):
+class _FutureLess:
     __slots__ = ('_callback', '_exception', '_result')
 
     def set_result(self, result):
@@ -164,10 +164,10 @@ class _FutureLess(object):
 # for a result to be set on an internal Future.
 
 
-class ThreadWorker(object):
-    '''
+class ThreadWorker:
+    """
     Worker that executes a callable on behalf of a curio task in a separate thread.
-    '''
+    """
 
     def __init__(self, pool):
         self.thread = None
@@ -205,9 +205,9 @@ class ThreadWorker(object):
             self.start_evt.set()
 
     async def apply(self, func, args=(), call_on_cancel=None):
-        '''
+        """
         Run the callable func in a separate thread and return the result.
-        '''
+        """
         if self.thread is None:
             self._launch()
 
@@ -231,7 +231,7 @@ class ThreadWorker(object):
         try:
             await _future_wait(future, self.start_evt)
             return future.result()
-        except CancelledError as e:
+        except CancelledError:
             cancelled = True
             self.shutdown()
             raise
@@ -239,14 +239,14 @@ class ThreadWorker(object):
             done_evt.set()
 
 
-class ProcessWorker(object):
-    '''
+class ProcessWorker:
+    """
     Managed process worker for running CPU-intensive tasks.  The main
     purpose of this class is to run workers with reliable
     cancellation/timeout semantics. Specifically, if a worker is
     cancelled, the underlying process is also killed.   This, as
     opposed to having it linger on running until work is complete.
-    '''
+    """
 
     def __init__(self, pool):
         self.process = None
@@ -366,7 +366,7 @@ if sys.platform.startswith('win'):
 # on the same thread.  By reserving/releasing workers, we get more
 # control over the whole process of how workers get managed.
 
-class WorkerPool(object):
+class WorkerPool:
     def __init__(self, workercls, nworkers):
         self.nworkers = sync.Semaphore(nworkers)
         self.workercls = workercls
