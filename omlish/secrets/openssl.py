@@ -1,8 +1,19 @@
+"""
+TODO:
+ - LibreSSL supports aes-256-gcm: https://crypto.stackexchange.com/a/76178
+"""
 import hashlib
 import secrets
+import subprocess
 import typing as ta
 
 from .. import lang
+from .crypto import Crypto
+from .crypto import DecryptionError
+from .crypto import EncryptionError
+from .subprocesses import SubprocessFileInputMethod
+from .subprocesses import pipe_fd_subprocess_file_input  # noqa
+from .subprocesses import temp_subprocess_file_input  # noqa
 
 
 if ta.TYPE_CHECKING:
@@ -16,7 +27,22 @@ else:
     cry_modes = lang.proxy_import('cryptography.hazmat.primitives.ciphers.modes')
 
 
-class OpensslAes265CbcPbkdf2:
+##
+
+
+DEFAULT_KEY_SIZE = 64
+
+
+def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
+    # !! https://docs.openssl.org/3.0/man7/passphrase-encoding/
+    # Must not contain null bytes!
+    return secrets.token_hex(sz).encode('ascii')
+
+
+##
+
+
+class OpensslAes265CbcCrypto(Crypto):
     """
     !!! https://docs.openssl.org/3.0/man7/passphrase-encoding/
     https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/#cryptography.hazmat.primitives.ciphers.Cipher
@@ -31,6 +57,10 @@ class OpensslAes265CbcPbkdf2:
     ) -> None:
         super().__init__()
         self._iters = iters
+
+    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
+        # This actually can handle null bytes, but we don't generate keys with them for compatibility.
+        return generate_key(sz)
 
     block_size = 16
     key_length = 32
@@ -56,10 +86,10 @@ class OpensslAes265CbcPbkdf2:
         if salt is None:
             salt = secrets.token_bytes(self.salt_length)
         elif len(salt) != self.salt_length:
-            raise Exception('bad salt length')
+            raise EncryptionError('bad salt length')
 
         last_byte = self.block_size - (len(data) % self.block_size)
-        raw = bytes([last_byte] * last_byte)
+        raw = data + bytes([last_byte] * last_byte)
 
         cipher = self._make_cipher(key, salt)
 
@@ -74,7 +104,7 @@ class OpensslAes265CbcPbkdf2:
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         if not data.startswith(self.prefix):
-            raise Exception('bad prefix')
+            raise DecryptionError('bad prefix')
 
         salt = data[len(self.prefix):self.block_size]
         cipher = self._make_cipher(key, salt)
@@ -84,6 +114,94 @@ class OpensslAes265CbcPbkdf2:
 
         last_byte = dec[-1]
         if last_byte > self.block_size:
-            raise Exception('bad padding')
+            raise DecryptionError('bad padding')
 
         return dec[:-last_byte]
+
+
+##
+
+
+class OpensslSubprocessAes256CbcCrypto(Crypto):
+    def __init__(
+            self,
+            *,
+            cmd: ta.Sequence[str] = ('openssl',),
+            timeout: float = 5.,
+            file_input: SubprocessFileInputMethod = temp_subprocess_file_input,
+    ) -> None:
+        super().__init__()
+        self._cmd = cmd
+        self._timeout = timeout
+        self._file_input = file_input
+
+    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
+        return generate_key(sz)
+
+    def encrypt(self, data: bytes, key: bytes) -> bytes:
+        # !! https://docs.openssl.org/3.0/man7/passphrase-encoding/
+        # Must not contain null bytes!
+        if 0 in key:
+            raise Exception('invalid key')
+        with self._file_input(key) as fi:
+            proc = subprocess.Popen(
+                [
+                    *self._cmd,
+                    'aes-256-cbc',
+
+                    '-e',
+
+                    '-pbkdf2',
+                    '-salt',
+                    '-iter', '10000',
+
+                    '-in', '-',
+                    '-out', '-',
+                    '-kfile', fi.file_path,
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                pass_fds=[*fi.pass_fds],
+            )
+            out, err = proc.communicate(
+                data,
+                timeout=self._timeout,
+            )
+            if proc.returncode != 0:
+                raise EncryptionError
+            return out
+
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        # !! https://docs.openssl.org/3.0/man7/passphrase-encoding/
+        # Must not contain null bytes!
+        if 0 in key:
+            raise Exception('invalid key')
+        with self._file_input(key) as fi:
+            proc = subprocess.Popen(
+                [
+                    *self._cmd,
+                    'aes-256-cbc',
+
+                    '-d',
+
+                    '-pbkdf2',
+                    '-salt',
+                    '-iter', '10000',
+
+                    '-in', '-',
+                    '-out', '-',
+                    '-kfile', fi.file_path,
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                pass_fds=[*fi.pass_fds],
+            )
+            out, err = proc.communicate(
+                data,
+                timeout=self._timeout,
+            )
+            if proc.returncode != 0:
+                raise DecryptionError
+            return out
