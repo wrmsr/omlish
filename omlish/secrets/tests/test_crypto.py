@@ -37,8 +37,10 @@ from ..subprocesses import temp_subprocess_file_input
 
 
 class Crypto(abc.ABC):
+    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 1024
+
     @abc.abstractmethod
-    def generate_key(self) -> bytes:
+    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -63,7 +65,7 @@ class OpensslShellCrypto(Crypto):
         self._timeout = timeout
         self._file_input = file_input
 
-    def generate_key(self, sz: int = 128) -> bytes:
+    def generate_key(self, sz: int = Crypto.DEFAULT_KEY_SIZE) -> bytes:
         check.arg(sz > 0)
         ret = subprocess.run(
             [
