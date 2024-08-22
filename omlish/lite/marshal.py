@@ -17,6 +17,7 @@ import weakref  # noqa
 
 from .check import check_isinstance
 from .check import check_not_none
+from .reflect import deep_subclasses
 from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
 from .reflect import is_union_alias
@@ -242,13 +243,13 @@ def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
 
 def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     if isinstance(ty, type) and abc.ABC in ty.__bases__:
-        impls = [
+        impls = [  # type: ignore
             PolymorphicObjMarshaler.Impl(
                 ity,
                 ity.__qualname__,
                 get_obj_marshaler(ity),
             )
-            for ity in ty.__subclasses__()
+            for ity in deep_subclasses(ty)
             if abc.ABC not in ity.__bases__
         ]
         return PolymorphicObjMarshaler(

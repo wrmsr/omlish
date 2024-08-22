@@ -1,6 +1,9 @@
 # ruff: noqa: UP006
+import abc
 import collections
 import typing as ta
+
+from omlish.lite.reflect import deep_subclasses
 
 from .providers import InterpProvider
 from .providers import RunningInterpProvider
@@ -8,6 +11,11 @@ from .pyenv import PyenvInterpProvider
 from .system import SystemInterpProvider
 from .types import Interp
 from .types import InterpSpecifier
+
+
+INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, type[InterpProvider]] = {
+    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
+}
 
 
 class InterpResolver:
@@ -59,7 +67,10 @@ class InterpResolver:
 
 
 DEFAULT_INTERP_RESOLVER = InterpResolver([
-    ('running', RunningInterpProvider()),
+    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
     ('pyenv', PyenvInterpProvider()),
+
+    ('running', RunningInterpProvider()),
+
     ('system', SystemInterpProvider()),
 ])

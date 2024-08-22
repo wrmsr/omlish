@@ -529,6 +529,85 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
+# ../../../omlish/lite/reflect.py
+# ruff: noqa: UP006
+
+
+_GENERIC_ALIAS_TYPES = (
+    ta._GenericAlias,  # type: ignore  # noqa
+    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
+)
+
+
+def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
+    return (
+        isinstance(obj, _GENERIC_ALIAS_TYPES) and
+        (origin is None or ta.get_origin(obj) is origin)
+    )
+
+
+is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+
+
+def is_optional_alias(spec: ta.Any) -> bool:
+    return (
+        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
+        ta.get_origin(spec) is ta.Union and
+        len(ta.get_args(spec)) == 2 and
+        any(a in (None, type(None)) for a in ta.get_args(spec))
+    )
+
+
+def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
+    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
+    return it
+
+
+def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
+    seen = set()
+    todo = list(reversed(cls.__subclasses__()))
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        yield cur
+        todo.extend(reversed(cur.__subclasses__()))
+
+
+########################################
+# ../../../omlish/lite/strings.py
+
+
+def camel_case(name: str) -> str:
+    return ''.join(map(str.capitalize, name.split('_')))  # noqa
+
+
+def snake_case(name: str) -> str:
+    uppers: list[int | None] = [i for i, c in enumerate(name) if c.isupper()]
+    return '_'.join([name[l:r].lower() for l, r in zip([None, *uppers], [*uppers, None])]).strip('_')
+
+
+def is_dunder(name: str) -> bool:
+    return (
+        name[:2] == name[-2:] == '__' and
+        name[2:3] != '_' and
+        name[-3:-2] != '_' and
+        len(name) > 4
+    )
+
+
+def is_sunder(name: str) -> bool:
+    return (
+        name[0] == name[-1] == '_' and
+        name[1:2] != '_' and
+        name[-2:-1] != '_' and
+        len(name) > 2
+    )
+
+
+########################################
 # ../../versioning/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
@@ -1430,6 +1509,16 @@ TODO:
 
 
 class InterpProvider(abc.ABC):
+    name: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
     @abc.abstractmethod
     def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
@@ -1917,6 +2006,11 @@ class SystemInterpProvider(InterpProvider):
 # ruff: noqa: UP006
 
 
+INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, type[InterpProvider]] = {
+    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
+}
+
+
 class InterpResolver:
     def __init__(
             self,
@@ -1966,8 +2060,11 @@ class InterpResolver:
 
 
 DEFAULT_INTERP_RESOLVER = InterpResolver([
-    ('running', RunningInterpProvider()),
+    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
     ('pyenv', PyenvInterpProvider()),
+
+    ('running', RunningInterpProvider()),
+
     ('system', SystemInterpProvider()),
 ])
 

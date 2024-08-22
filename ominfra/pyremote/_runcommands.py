@@ -258,6 +258,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
+# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -289,6 +290,18 @@ def is_optional_alias(spec: ta.Any) -> bool:
 def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
     return it
+
+
+def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
+    seen = set()
+    todo = list(reversed(cls.__subclasses__()))
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        yield cur
+        todo.extend(reversed(cur.__subclasses__()))
 
 
 ########################################
@@ -569,13 +582,13 @@ def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
 
 def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     if isinstance(ty, type) and abc.ABC in ty.__bases__:
-        impls = [
+        impls = [  # type: ignore
             PolymorphicObjMarshaler.Impl(
                 ity,
                 ity.__qualname__,
                 get_obj_marshaler(ity),
             )
-            for ity in ty.__subclasses__()
+            for ity in deep_subclasses(ty)
             if abc.ABC not in ity.__bases__
         ]
         return PolymorphicObjMarshaler(

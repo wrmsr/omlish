@@ -11,6 +11,7 @@ import sys
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.strings import snake_case
 
 from .inspect import InterpInspector
 from .types import Interp
@@ -22,6 +23,16 @@ from .types import InterpVersion
 
 
 class InterpProvider(abc.ABC):
+    name: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
     @abc.abstractmethod
     def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
