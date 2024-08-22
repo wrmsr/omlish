@@ -36,6 +36,11 @@ from .impl.as_ import (  # noqa
     astuple,
 )
 
+from .impl.params import (  # noqa
+    FieldExtras,
+    get_field_extras,
+)
+
 from .impl.replace import (  # noqa
     replace,
 )
@@ -89,5 +94,6 @@ from .utils import (  # noqa
     field_modifier,
     maybe_post_init,
     opt_repr,
+    update_field_extras,
     update_field_metadata,
 )

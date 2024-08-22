@@ -154,7 +154,7 @@ class SdHandler(Handler_):
 
     @handles(Route.post('/sd'))
     async def handle_post_sd(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        if not _check_auth(scope, self._secrets.get('sd_auth_token')):
+        if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
             await send_response(send, 401)
             return
 
@@ -166,11 +166,11 @@ class SdHandler(Handler_):
 
     @handles(Route.post('/sd2'))
     async def handle_post_sd2(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        if not _check_auth(scope, self._secrets.get('sd_auth_token')):
+        if not _check_auth(scope, self._secrets.get('sd_auth_token').reveal()):
             await send_response(send, 401)
             return
 
-        sd2_url = self._secrets.get('sd2_url')
+        sd2_url = self._secrets.get('sd2_url').reveal()
 
         req_body = await read_body(recv)
 
