@@ -23,6 +23,7 @@ class OpensslAes265CbcPbkdf2:
     https://stackoverflow.com/questions/16761458/how-to-decrypt-openssl-aes-encrypted-files-in-python
     https://github.com/openssl/openssl/blob/3c1713aeed4dc7d1ac25e9e365b8bd98afead638/apps/enc.c#L555-L573
     """
+
     def __init__(
             self,
             *,
@@ -44,7 +45,7 @@ class OpensslAes265CbcPbkdf2:
             salt,
             self._iters,
             self.key_length + self.iv_length,
-            )
+        )
 
         return cry_ciphs.Cipher(
             cry_algs.AES256(dk[:self.key_length]),
@@ -54,9 +55,8 @@ class OpensslAes265CbcPbkdf2:
     def encrypt(self, data: bytes, key: bytes, *, salt: bytes | None = None) -> bytes:
         if salt is None:
             salt = secrets.token_bytes(self.salt_length)
-        else:
-            if len(salt) != self.salt_length:
-                raise Exception('bad salt length')
+        elif len(salt) != self.salt_length:
+            raise Exception('bad salt length')
 
         last_byte = self.block_size - (len(data) % self.block_size)
         raw = bytes([last_byte] * last_byte)
