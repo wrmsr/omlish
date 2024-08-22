@@ -3,6 +3,7 @@ import datetime
 import typing as ta
 
 from .. import check
+from .. import datetimes as dts
 from .base import MarshalContext
 from .base import Marshaler
 from .base import TypeMapMarshalerFactory
@@ -10,6 +11,18 @@ from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .values import Value
+
+
+DatetimeLikeT = ta.TypeVar('DatetimeLikeT', bound=datetime.datetime | datetime.date | datetime.time)
+
+_DATETIME_LIKES = (
+    datetime.datetime,
+    datetime.date,
+    datetime.time,
+)
+
+
+##
 
 
 DATE_FORMATS: ta.Sequence[str] = [
@@ -42,48 +55,92 @@ DATETIME_FORMATS: ta.Sequence[str] = [
 ]
 
 
+##
+
+
 @dc.dataclass(frozen=True)
-class DatetimeMarshaler(Marshaler):
+class DatetimeMarshaler(Marshaler, ta.Generic[DatetimeLikeT]):
+    cls: type[DatetimeLikeT]
     fmt: str
 
-    def marshal(self, ctx: MarshalContext, o: datetime.datetime) -> Value:
+    def marshal(self, ctx: MarshalContext, o: DatetimeLikeT) -> Value:
         return o.strftime(self.fmt)
 
 
+_ZERO_DATE = datetime.datetime.now().strptime('', '').date()  # noqa
+_ZERO_TIME = datetime.time(0)
+
+
 @dc.dataclass(frozen=True)
-class DatetimeUnmarshaler(Unmarshaler):
+class DatetimeUnmarshaler(Unmarshaler, ta.Generic[DatetimeLikeT]):
+    cls: type[DatetimeLikeT]
     fmts: ta.Sequence[str]
     try_iso: bool = False
 
-    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> datetime.datetime:
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> DatetimeLikeT:
         v = check.isinstance(v, str)
 
         if self.try_iso:
             try:
-                return datetime.datetime.fromisoformat(v)
+                return self.cls.fromisoformat(v)  # type: ignore
             except ValueError:
                 pass
 
         for fmt in self.fmts:
             try:
-                return datetime.datetime.strptime(v, fmt)  # FIXME: timezone  # noqa
+                dt = datetime.datetime.strptime(v, fmt)  # FIXME: timezone  # noqa
             except ValueError:
                 pass
+            else:
+                if self.cls is datetime.datetime:
+                    return dt  # type: ignore
+                elif self.cls is datetime.date:
+                    if dt.time() != _ZERO_TIME:
+                        raise ValueError(dt)
+                    return dt.date()  # type: ignore
+                elif self.cls is datetime.time:
+                    if dt.date() != _ZERO_DATE:
+                        raise ValueError(dt)
+                    return dt.time()  # type: ignore
+                else:
+                    raise TypeError(self.cls)
 
         raise ValueError(v)
 
 
-DATETIME_MARSHALER = DatetimeMarshaler(DATETIME_FORMATS[0])
-DATETIME_UNMARSHALER = DatetimeUnmarshaler(DATETIME_FORMATS, try_iso=True)
-
-DATETIME_MARSHALER_FACTORY = TypeMapMarshalerFactory({datetime.datetime: DATETIME_MARSHALER})
-DATETIME_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({datetime.datetime: DATETIME_UNMARSHALER})
+##
 
 
-class IsoDatetimeMarshalerUnmarshaler(Marshaler, Unmarshaler):
+class IsoDatetimeMarshalerUnmarshaler(Marshaler, Unmarshaler, ta.Generic[DatetimeLikeT]):
+    cls: type[DatetimeLikeT]
 
-    def marshal(self, ctx: MarshalContext, o: datetime.datetime) -> Value:
+    def marshal(self, ctx: MarshalContext, o: DatetimeLikeT) -> Value:
         return o.isoformat()
 
-    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> datetime.datetime:
-        return datetime.datetime.fromisoformat(v)  # type: ignore
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> DatetimeLikeT:
+        return self.cls.fromisoformat(v)  # type: ignore
+
+
+##
+
+
+class TimedeltaMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    def marshal(self, ctx: MarshalContext, o: datetime.timedelta) -> Value:
+        return str(o)
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        return dts.parse_timedelta(check.isinstance(v, str))
+
+
+##
+
+
+DATETIME_MARSHALER_FACTORY = TypeMapMarshalerFactory({
+    **{cls: DatetimeMarshaler(cls, DATETIME_FORMATS[0]) for cls in _DATETIME_LIKES},
+    datetime.timedelta: TimedeltaMarshalerUnmarshaler(),
+})
+
+DATETIME_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({
+    **{cls: DatetimeUnmarshaler(cls, DATETIME_FORMATS, try_iso=True) for cls in _DATETIME_LIKES},
+    datetime.timedelta: TimedeltaMarshalerUnmarshaler(),
+})
