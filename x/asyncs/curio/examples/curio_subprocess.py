@@ -9,30 +9,29 @@ __all__ = ['run', 'Popen', 'CompletedProcess', 'CalledProcessError',
 
 # -- Standard Library
 
-import subprocess
 import os
+import subprocess
 import sys
+from subprocess import CalledProcessError
+from subprocess import CompletedProcess
+from subprocess import DEVNULL
+from subprocess import PIPE
+from subprocess import STDOUT
+from subprocess import SubprocessError
 
-from subprocess import (
-    CompletedProcess,
-    SubprocessError,
-    CalledProcessError,
-    PIPE,
-    STDOUT,
-    DEVNULL,
-)
+from .. import thread
+from ..errors import CancelledError
+from ..io import FileStream
+from ..task import spawn
+from ..workers import run_in_thread
+
 
 # -- Curio
 
-from ..task import spawn
-from ..time import sleep
-from ..errors import CancelledError
-from ..io import FileStream
-from .. import thread
-from ..workers import run_in_thread
 
 if sys.platform.startswith('win'):
     from ..file import AsyncFile as FileStream
+
 
 class Popen(object):
     '''

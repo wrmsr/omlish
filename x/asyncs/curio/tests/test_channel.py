@@ -1,12 +1,22 @@
 # test_channel.py
 
-import pytest
-from socket import *
-from ..channel import Connection, Channel, AuthenticationError
-from ..io import SocketStream
-from .. import spawn, sleep, CancelledError, TaskTimeout, timeout_after, TaskError, TaskGroup
 import copy
 import sys
+from socket import *
+
+import pytest
+
+from .. import CancelledError
+from .. import TaskGroup
+from .. import TaskTimeout
+from .. import sleep
+from .. import spawn
+from .. import timeout_after
+from ..channel import AuthenticationError
+from ..channel import Channel
+from ..channel import Connection
+from ..io import SocketStream
+
 
 @pytest.fixture
 def conns():
@@ -16,6 +26,7 @@ def conns():
     c1 = Connection(sock1_s, sock1_s)
     c2 = Connection(sock2_s, sock2_s)
     return (c1, c2)
+
 
 def test_connection_hello(kernel, conns):
     results = []
@@ -117,7 +128,6 @@ def test_connection_auth(kernel, conns):
                        'client hello world']
 
 
-
 def test_connection_auth_fail(kernel, conns):
     async def server(c):
         async with c:
@@ -199,6 +209,7 @@ def test_connection_send_partial_bytes(kernel, conns):
 
                        ]
 
+
 @pytest.mark.skipif(sys.platform.startswith("win"),
                     reason="not supported on Windows")
 def test_connection_from_connection(kernel):
@@ -278,7 +289,7 @@ def test_connection_send_cancel(kernel, conns):
     async def client(c):
         async with c:
             try:
-                msg = 'x' * 10000000   # Should be large enough to cause send blocking
+                msg = 'x' * 10000000  # Should be large enough to cause send blocking
                 await c.send(msg)
                 await c.send(msg)  # Send twice to get blocking
                 results.append('success')
@@ -324,6 +335,7 @@ def chs():
     ch1.bind()
     ch2 = copy.deepcopy(ch1)
     return ch1, ch2
+
 
 def test_channel_hello(kernel, chs):
     results = []
@@ -396,12 +408,14 @@ def test_channel_hello_auth_fail(kernel, chs):
 
     kernel.run(main(*chs))
 
+
 def test_recv_bytes_into(kernel, chs):
     import array
-    results = { }
+    results = {}
+
     async def client(ch):
         c = await ch.connect(authkey=b'peekaboo')
-        a = array.array('i', [0]*100000)
+        a = array.array('i', [0] * 100000)
         nrecv = await c.recv_bytes_into(a)
         results['nrecv'] = nrecv
         results['got'] = a

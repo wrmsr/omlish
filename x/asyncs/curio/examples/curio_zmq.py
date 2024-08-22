@@ -68,16 +68,19 @@ Here is an example of a Curio task that receives messages::
 '''
 
 import pickle
-from zmq.utils import jsonapi
-import zmq
 
-from ..kernel import run  # for import compatibility
-from ..traps import _read_wait, _write_wait
+import zmq
+from zmq.utils import jsonapi
+
+from ..traps import _read_wait
+from ..traps import _write_wait
+
 
 # Pull all ZMQ constants and exceptions into our namespace
 globals().update((key, val) for key, val in vars(zmq).items()
                  if key.isupper() or
-                    (isinstance(val, type) and issubclass(val, zmq.ZMQBaseError)))
+                 (isinstance(val, type) and issubclass(val, zmq.ZMQBaseError)))
+
 
 class CurioZMQSocket(zmq.Socket):
 
@@ -89,11 +92,11 @@ class CurioZMQSocket(zmq.Socket):
                 await _write_wait(self)
 
     async def recv(self, flags=0, copy=True, track=False):
-         while True:
-             try:
-                 return super().recv(flags | zmq.NOBLOCK, copy, track)
-             except zmq.Again:
-                 await _read_wait(self)
+        while True:
+            try:
+                return super().recv(flags | zmq.NOBLOCK, copy, track)
+            except zmq.Again:
+                await _read_wait(self)
 
     async def send_multipart(self, msg_parts, flags=0, copy=True, track=False):
         for msg in msg_parts[:-1]:
@@ -101,10 +104,10 @@ class CurioZMQSocket(zmq.Socket):
         return await self.send(msg_parts[-1], flags, copy=copy, track=track)
 
     async def recv_multipart(self, flags=0, copy=True, track=False):
-         parts = [ await self.recv(flags, copy=copy, track=track) ]
-         while self.getsockopt(zmq.RCVMORE):
-             parts.append(await self.recv(flags, copy=copy, track=track))
-         return parts
+        parts = [await self.recv(flags, copy=copy, track=track)]
+        while self.getsockopt(zmq.RCVMORE):
+            parts.append(await self.recv(flags, copy=copy, track=track))
+        return parts
 
     async def send_pyobj(self, obj, flags=0, protocol=pickle.DEFAULT_PROTOCOL):
         return await self.send(pickle.dumps(obj, protocol), flags)
@@ -123,6 +126,7 @@ class CurioZMQSocket(zmq.Socket):
 
     async def recv_string(self, flags=0, encoding='utf-8'):
         return (await self.recv(flags=flags)).decode(encoding)
+
 
 class Context(zmq.Context):
     _socket_class = CurioZMQSocket

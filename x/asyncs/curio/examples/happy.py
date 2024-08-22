@@ -2,8 +2,13 @@
 # An implementation of RFC 6555 (Happy Eyeballs).
 # See: https://tools.ietf.org/html/rfc6555
 
-from .. import socket, TaskGroup, ignore_after, run
 import itertools
+
+from .. import TaskGroup
+from .. import ignore_after
+from .. import run
+from .. import socket
+
 
 async def open_tcp_stream(hostname, port, delay=0.3):
     # Get all of the possible targets for a given host/port
@@ -13,8 +18,8 @@ async def open_tcp_stream(hostname, port, delay=0.3):
 
     # Cluster the targets into unique address families (e.g., AF_INET, AF_INET6, etc.)
     # and make sure the first entries are from a different family.
-    families = [ list(g) for _, g in itertools.groupby(targets, key=lambda t: t[0]) ]
-    targets = [ fam.pop(0) for fam in families ]
+    families = [list(g) for _, g in itertools.groupby(targets, key=lambda t: t[0])]
+    targets = [fam.pop(0) for fam in families]
     targets.extend(itertools.chain(*families))
 
     # List of accumulated errors to report in case of total failure
@@ -34,7 +39,7 @@ async def open_tcp_stream(hostname, port, delay=0.3):
                 await sock.close()
                 errors.append(e)
 
-       # Walk the list of targets and try connections with a staggered delay
+        # Walk the list of targets and try connections with a staggered delay
         for *sockargs, _, addr in targets:
             await group.spawn(try_connect, sockargs, addr, errors)
             async with ignore_after(delay):
@@ -53,14 +58,6 @@ async def main():
     result = await open_tcp_stream('www.python.org', 80)
     print(result)
 
+
 if __name__ == '__main__':
     run(main)
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,10 @@
 # test_activation.py
 
-from .. import Kernel, sleep, run
+from .. import Kernel
+from .. import run
+from .. import sleep
 from ..kernel import Activation
+
 
 class _TestActivation(Activation):
     def __init__(self):
@@ -26,6 +29,7 @@ class _TestActivation(Activation):
         if task.name.endswith('main'):
             self.events.append('terminated')
 
+
 def test_activation_base():
     async def main():
         await sleep(0.01)
@@ -35,7 +39,8 @@ def test_activation_base():
     a = _TestActivation()
     run(main, activations=[a])
     assert a.events == ['activate', 'created', 'running', 'suspended', 'running', 'suspended',
-                       'running', 'suspended', 'running', 'suspended', 'terminated']
+                        'running', 'suspended', 'running', 'suspended', 'terminated']
+
 
 def test_activation_crash():
     async def main():
@@ -52,12 +57,14 @@ def test_activation_crash():
 
     kern.run(shutdown=True)
 
+
 class _TestActivationCreate(Activation):
     def __init__(self):
         self.events = set()
 
     def created(self, task):
         self.events.add(task.name.split('.')[-1])
+
 
 def test_activation_count():
     async def main():
@@ -66,5 +73,4 @@ def test_activation_count():
     a = _TestActivationCreate()
     run(main, activations=[a])
     # There should be three tasks. main(), an in-kernel task, and a shutdown task
-    assert a.events == { 'main', '_kernel_task', '_shutdown_tasks' }
-
+    assert a.events == {'main', '_kernel_task', '_shutdown_tasks'}

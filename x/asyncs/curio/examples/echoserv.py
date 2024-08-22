@@ -1,6 +1,7 @@
 # Example: A simple echo server written directly with sockets
 
-from .. import run, spawn
+from .. import run
+from .. import spawn
 from ..socket import *
 
 

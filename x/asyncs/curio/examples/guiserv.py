@@ -2,7 +2,9 @@
 #
 # An example of connecting Curio and the Tkinter event loop
 import tkinter as tk
+
 from .. import *
+
 
 class EchoApp(object):
     def __init__(self):
@@ -66,7 +68,7 @@ class EchoApp(object):
             self.pending = []
             await sleep(0.05)
 
+
 if __name__ == '__main__':
     app = EchoApp()
     run(app.main)
-

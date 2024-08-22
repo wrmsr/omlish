@@ -7,18 +7,21 @@ __all__ = ['run_in_thread', 'run_in_process']
 
 # -- Standard Library
 
-import sys
 import multiprocessing
+import signal
+import sys
 import threading
 import traceback
-import signal
+
+from . import sync
+from .channel import Connection
+from .errors import CancelledError
+from .traps import _future_wait
+from .traps import _get_kernel
+
 
 # -- Curio
 
-from .errors import CancelledError
-from .traps import _future_wait, _get_kernel
-from . import sync
-from .channel import Connection
 
 # Code to embed a traceback in a remote exception.  This is borrowed
 # straight from multiprocessing.pool.  Copied here to avoid possible
@@ -51,6 +54,7 @@ def rebuild_exc(exc, tb):
 
 MAX_WORKER_THREADS = 64
 
+
 async def reserve_thread_worker():
     '''
     Reserve a thread pool worker
@@ -60,6 +64,7 @@ async def reserve_thread_worker():
         kernel.thread_pool = WorkerPool(ThreadWorker, MAX_WORKER_THREADS)
         kernel._call_at_shutdown(kernel.thread_pool.shutdown)
     return (await kernel.thread_pool.reserve())
+
 
 async def run_in_thread(callable, *args, call_on_cancel=None):
     '''
@@ -79,6 +84,7 @@ async def run_in_thread(callable, *args, call_on_cancel=None):
 
 
 MAX_WORKER_PROCESSES = multiprocessing.cpu_count()
+
 
 async def run_in_process(callable, *args):
     '''
@@ -116,6 +122,7 @@ async def run_in_process(callable, *args):
         if worker:
             await worker.release()
 
+
 # The _FutureLess class is a custom "Future" implementation solely for
 # use by curio. It is used by the ThreadWorker class below and
 # provides only the minimal set of functionality needed to transmit a
@@ -148,6 +155,7 @@ class _FutureLess(object):
 
     def cancel(self):
         pass
+
 
 # A ThreadWorker represents a thread that performs work on behalf of a
 # curio task.   A curio task initiates work by executing the
@@ -230,6 +238,7 @@ class ThreadWorker(object):
         finally:
             done_evt.set()
 
+
 class ProcessWorker(object):
     '''
     Managed process worker for running CPU-intensive tasks.  The main
@@ -238,6 +247,7 @@ class ProcessWorker(object):
     cancelled, the underlying process is also killed.   This, as
     opposed to having it linger on running until work is complete.
     '''
+
     def __init__(self, pool):
         self.process = None
         self.client_ch = None
@@ -248,7 +258,7 @@ class ProcessWorker(object):
         context = multiprocessing.get_context('spawn')
         client_ch, server_ch = context.Pipe()
         self.process = context.Process(
-            target=self.run_server, args=(server_ch, ), daemon=True)
+            target=self.run_server, args=(server_ch,), daemon=True)
         self.process.start()
         server_ch.close()
         self.client_ch = Connection.from_Connection(client_ch)
@@ -293,6 +303,7 @@ class ProcessWorker(object):
             self.shutdown()
             raise
 
+
 # Windows-compatible process worker.  It differs from ProcessWorker in
 # that client communication is handled synchronously by a thread.
 class WinProcessWorker(ProcessWorker):
@@ -300,7 +311,7 @@ class WinProcessWorker(ProcessWorker):
         context = multiprocessing.get_context('spawn')
         client_ch, server_ch = context.Pipe()
         self.process = context.Process(
-            target=self.run_server, args=(server_ch, ), daemon=True)
+            target=self.run_server, args=(server_ch,), daemon=True)
         self.process.start()
         server_ch.close()
         self.client_ch = client_ch
@@ -324,8 +335,10 @@ class WinProcessWorker(ProcessWorker):
             self.shutdown()
             raise
 
+
 if sys.platform.startswith('win'):
     ProcessWorker = WinProcessWorker
+
 
 # Pool of workers for carrying out jobs on behalf of curio tasks.
 #
@@ -375,4 +388,3 @@ class WorkerPool(object):
         if not worker.terminated:
             self.workers.append(worker)
         await self.nworkers.release()
-

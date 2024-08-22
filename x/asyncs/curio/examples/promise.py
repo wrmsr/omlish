@@ -3,6 +3,7 @@
 
 from .. import Event
 
+
 class Promise:
     def __init__(self):
         self._event = Event()
@@ -53,8 +54,10 @@ class Promise:
 
             return True
 
+
 async def consumer(promise):
     return await promise.get()
+
 
 def test_promise(kernel):
     async def producer(promise):
@@ -72,6 +75,7 @@ def test_promise(kernel):
 
     kernel.run(main())
 
+
 def test_promise_exception(kernel):
     async def exception_producer(promise):
         async with promise:
@@ -88,6 +92,7 @@ def test_promise_exception(kernel):
 
     kernel.run(main())
 
+
 def test_promise_no_exception(kernel):
     async def main():
         promise = Promise()
@@ -96,6 +101,7 @@ def test_promise_no_exception(kernel):
         assert not promise.is_set()
 
     kernel.run(main())
+
 
 def test_promise_internals(kernel):
     async def main():

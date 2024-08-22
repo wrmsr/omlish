@@ -42,25 +42,24 @@
 # you can connect, look at the task table, and see what the tasks are
 # doing.
 
-import os
-import signal
-import time
-import socket
-import threading
 import argparse
 import logging
+import os
+import socket
 import sys
+import threading
+import time
 
 # --- Curio
-from .task import spawn
 from . import meta
-from . import queue
+
 
 # ---
 log = logging.getLogger(__name__)
 
 MONITOR_HOST = '127.0.0.1'
 MONITOR_PORT = 48802
+
 
 # Implementation of the 'ps' command
 def ps(kernel=None, out=sys.stdout):
@@ -93,6 +92,7 @@ def ps(kernel=None, out=sys.stdout):
                                                          widths[5], task.name)
     out.write(sout)
 
+
 # Implementation of the 'where' command
 def where(taskid, kernel=None, out=sys.stdout):
     if kernel is None:
@@ -102,7 +102,8 @@ def where(taskid, kernel=None, out=sys.stdout):
         out.write(task.traceback() + '\n')
     else:
         out.write('No task %d\n' % taskid)
-    
+
+
 class Monitor(object):
     '''
     Task monitor that runs concurrently to the curio kernel in a
@@ -126,7 +127,7 @@ class Monitor(object):
         Function to start the monitor
         '''
         log.info('Starting Curio monitor at %s', self.address)
-        self._closing = threading.Event()        
+        self._closing = threading.Event()
         self._ui_thread = threading.Thread(target=self.server, args=(), daemon=True)
         self._ui_thread.start()
 
@@ -149,6 +150,7 @@ class Monitor(object):
                     client, addr = sock.accept()
                     with client:
                         client.settimeout(0.5)
+
                         # This bit of magic is for reading lines of input while still allowing timeouts
                         # and the ability for the monitor to die when curio exits.  See Issue #108.
                         def readlines():
@@ -240,22 +242,26 @@ class Monitor(object):
         sout.write('Leaving monitor.\n')
         sout.flush()
 
+
 def monitor_client(host, port):
     '''
     Client to connect to the monitor via a socket
     '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
+
     def display(sock):
         while (chunk := sock.recv(1000)):
             sys.stdout.write(chunk.decode('utf-8'))
             sys.stdout.flush()
         os._exit(0)
+
     threading.Thread(target=display, args=[sock], daemon=True).start()
     while True:
         line = sys.stdin.readline()
         sock.sendall(line.encode('utf-8'))
     sock.close()
+
 
 def main():
     parser = argparse.ArgumentParser("usage: python -m curio.monitor [options]")

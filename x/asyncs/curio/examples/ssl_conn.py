@@ -2,13 +2,14 @@
 
 import curio
 
+
 async def main():
     sock = await curio.open_connection(
         'www.python.org',
         443,
         ssl=True,
         server_hostname='www.python.org'
-        )
+    )
     async with sock:
         await sock.sendall(b'GET / HTTP/1.0\r\nHost: www.python.org\r\n\r\n')
         chunks = []

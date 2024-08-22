@@ -8,26 +8,25 @@
 __all__ = [
     'iscoroutinefunction', 'finalize', 'awaitable', 'asyncioable',
     'curio_running', 'instantiate_coroutine', 'from_coroutine',
- ]
+]
 
 # -- Standard Library
 
-from sys import _getframe
-import sys
+import collections.abc
 import inspect
-from functools import wraps, partial
-import dis
-import asyncio
+import sys
 import threading
 from contextlib import contextmanager
-import collections.abc
+from functools import partial
+from functools import wraps
+from sys import _getframe
+
 
 # -- Curio
 
-from .errors import SyncIOError
-
 
 _locals = threading.local()
+
 
 # Context manager that is used when the kernel is executing.
 
@@ -44,15 +43,18 @@ def running(kernel):
         _locals.running = False
         _locals.kernel = None
 
+
 def curio_running():
     '''
     Return a flag that indicates whether or not Curio is running in the current thread.
     '''
     return getattr(_locals, 'running', False)
 
+
 _CO_NESTED = inspect.CO_NESTED
 _CO_FROM_COROUTINE = inspect.CO_COROUTINE | inspect.CO_ITERABLE_COROUTINE | inspect.CO_ASYNC_GENERATOR
 _isasyncgenfunction = inspect.isasyncgenfunction
+
 
 def from_coroutine(level=2, _cache={}):
     f_code = _getframe(level).f_code
@@ -79,6 +81,7 @@ def from_coroutine(level=2, _cache={}):
             _cache[f_code] = False
             return False
 
+
 def iscoroutinefunction(func):
     '''
     Modified test for a coroutine function with awareness of functools.partial
@@ -88,6 +91,7 @@ def iscoroutinefunction(func):
     if hasattr(func, '__func__'):
         return iscoroutinefunction(func.__func__)
     return inspect.iscoroutinefunction(func) or hasattr(func, '_awaitable') or _isasyncgenfunction(func)
+
 
 def instantiate_coroutine(corofunc, *args, **kwargs):
     '''
@@ -114,6 +118,7 @@ def instantiate_coroutine(corofunc, *args, **kwargs):
         context().send(None)
     except StopIteration as e:
         return e.value
+
 
 def awaitable(syncfunc):
     '''
@@ -142,6 +147,7 @@ def awaitable(syncfunc):
             ...
 
     '''
+
     def decorate(asyncfunc):
         if inspect.signature(syncfunc) != inspect.signature(asyncfunc):
             raise TypeError(f'{syncfunc.__name__} and async {asyncfunc.__name__} have different signatures')
@@ -152,12 +158,15 @@ def awaitable(syncfunc):
                 return asyncfunc(*args, **kwargs)
             else:
                 return syncfunc(*args, **kwargs)
+
         wrapper._syncfunc = syncfunc
         wrapper._asyncfunc = asyncfunc
         wrapper._awaitable = True
         wrapper.__doc__ = syncfunc.__doc__ or asyncfunc.__doc__
         return wrapper
+
     return decorate
+
 
 def asyncioable(awaitablefunc):
     '''
@@ -178,6 +187,7 @@ def asyncioable(awaitablefunc):
     This only works if Curio/Asyncio are running in different threads.
     Main use is in the implementation of UniversalQueue.
     '''
+
     def decorate(asyncfunc):
         @wraps(asyncfunc)
         def wrapper(*args, **kwargs):
@@ -189,9 +199,12 @@ def asyncioable(awaitablefunc):
                     return asyncfunc(*args, **kwargs)
             else:
                 return awaitablefunc._syncfunc(*args, **kwargs)
+
         wrapper._awaitable = True
         return wrapper
+
     return decorate
+
 
 class finalize(object):
     '''
@@ -199,6 +212,7 @@ class finalize(object):
     This might be needed if an asynchronous generator uses async functions
     in try-finally and other constructs.
     '''
+
     def __init__(self, aobj):
         self.aobj = aobj
 
@@ -219,6 +233,7 @@ class finalize(object):
 def asyncgen_manager():
     if hasattr(sys, 'get_asyncgen_hooks'):
         old_asyncgen_hooks = sys.get_asyncgen_hooks()
+
         def _fini_async_gen(agen):
             if agen.ag_frame is not None:
                 raise RuntimeError("Async generator with async finalization must be wrapped by\n"
@@ -233,4 +248,3 @@ def asyncgen_manager():
     finally:
         if hasattr(sys, 'get_asyncgen_hooks'):
             sys.set_asyncgen_hooks(*old_asyncgen_hooks)
-

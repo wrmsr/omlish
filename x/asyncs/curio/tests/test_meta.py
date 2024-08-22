@@ -1,15 +1,19 @@
-from .. import meta
-from .. import *
-from functools import partial
-import pytest
-import sys
 import inspect
+import sys
+from functools import partial
+
+import pytest
+
+from .. import *
+from .. import meta
+
 
 def test_iscoroutinefunc():
     async def spam(x, y):
         pass
 
     assert meta.iscoroutinefunction(partial(spam, 1))
+
 
 def test_instantiate_coroutine():
     async def coro(x, y):
@@ -18,14 +22,14 @@ def test_instantiate_coroutine():
     def func(x, y):
         pass
 
-    c = meta.instantiate_coroutine(coro(2,3))
+    c = meta.instantiate_coroutine(coro(2, 3))
     assert inspect.iscoroutine(c)
 
     d = meta.instantiate_coroutine(coro, 2, 3)
     assert inspect.iscoroutine(d)
 
     with pytest.raises(TypeError):
-        meta.instantiate_coroutine(func(2,3))
+        meta.instantiate_coroutine(func(2, 3))
 
     with pytest.raises(TypeError):
         meta.instantiate_coroutine(func, 2, 3)
@@ -54,14 +58,14 @@ def test_awaitable_partial(kernel):
 
     async def main():
         assert await func(1, 2, 3)
-        assert await ignore_after(1, func(1,2,3))
+        assert await ignore_after(1, func(1, 2, 3))
         assert await ignore_after(1, func, 1, 2, 3)
         assert await ignore_after(1, partial(func, 1, 2), 3)
         assert await ignore_after(1, partial(func, z=3), 1, 2)
         assert await ignore_after(1, partial(partial(func, 1), 2), 3)
 
         # Try spawns
-        t = await spawn(func(1,2,3))
+        t = await spawn(func(1, 2, 3))
         assert await t.join()
 
         t = await spawn(func, 1, 2, 3)
@@ -76,22 +80,25 @@ def test_awaitable_partial(kernel):
         t = await spawn(partial(partial(func, 1), 2), 3)
         assert await t.join()
 
-
     kernel.run(main)
     kernel.run(func, 1, 2, 3)
     kernel.run(partial(func, 1, 2), 3)
     kernel.run(partial(func, z=3), 1, 2)
 
-if sys.version_info >= (3,7):
+
+if sys.version_info >= (3, 7):
     import contextlib
+
+
     def test_asynccontextmanager(kernel):
         results = []
+
         @contextlib.asynccontextmanager
         async def manager():
-             try:
-                 yield (await coro())
-             finally:
-                 await cleanup()
+            try:
+                yield (await coro())
+            finally:
+                await cleanup()
 
         async def coro():
             results.append('coro')
@@ -110,11 +117,12 @@ if sys.version_info >= (3,7):
 
     def test_missing_asynccontextmanager(kernel):
         results = []
+
         async def manager():
-             try:
-                 yield (await coro())
-             finally:
-                 await cleanup()
+            try:
+                yield (await coro())
+            finally:
+                await cleanup()
 
         async def coro():
             results.append('coro')
@@ -124,8 +132,8 @@ if sys.version_info >= (3,7):
             results.append('cleanup')
 
         async def main():
-             async for x in manager():
-                  break
+            async for x in manager():
+                break
 
         kernel.run(main)
         assert results == ['coro']

@@ -1,9 +1,12 @@
 import socket
 import sys
+
 import pytest
+
 from .. import Kernel
-from ..monitor import Monitor
 from ..debug import *
+from ..monitor import Monitor
+
 
 @pytest.fixture(scope='session')
 def kernel(request):
@@ -23,7 +26,7 @@ def portno():
     s.close()
     return port
 
-collect_ignore = []
-if sys.version_info < (3,6):
-    collect_ignore.append("test_asyncgen.py")
 
+collect_ignore = []
+if sys.version_info < (3, 6):
+    collect_ignore.append("test_asyncgen.py")

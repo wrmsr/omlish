@@ -6,6 +6,7 @@
 
 from .. import Semaphore
 
+
 class BoundedSemaphore(Semaphore):
 
     def __init__(self, value=1):
@@ -20,4 +21,3 @@ class BoundedSemaphore(Semaphore):
         if self._value >= self._bound:
             raise ValueError('BoundedSemaphore released too many times')
         await super().release()
-

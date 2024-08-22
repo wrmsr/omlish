@@ -1,15 +1,17 @@
 # test_socket.py
 
-import os
+import sys
+
+import pytest
 
 from .. import *
-from ..socket import *
 from .. import io
-import pytest
-import sys
+from ..socket import *
+
 
 def test_tcp_echo(kernel, portno):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -75,6 +77,7 @@ def test_tcp_echo(kernel, portno):
 
 def test_tcp_file_echo(kernel, portno):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -114,8 +117,8 @@ def test_tcp_file_echo(kernel, portno):
 
     async def main():
         async with TaskGroup() as g:
-             await g.spawn(server, ('', portno))
-             await g.spawn(client, ('localhost', portno))
+            await g.spawn(server, ('', portno))
+            await g.spawn(client, ('localhost', portno))
 
     kernel.run(main())
 
@@ -135,6 +138,7 @@ def test_tcp_file_echo(kernel, portno):
 
 def test_udp_echo(kernel):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_DGRAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -173,11 +177,12 @@ def test_udp_echo(kernel):
         'client close'
     ]
 
+
 @pytest.mark.skipif(sys.platform.startswith("win"),
                     reason='currently broken')
-
 def test_fromfd_tcp_echo(kernel, portno):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -244,6 +249,7 @@ def test_fromfd_tcp_echo(kernel, portno):
 
 def test_accept_timeout(kernel, portno):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -267,6 +273,7 @@ def test_accept_timeout(kernel, portno):
 
 def test_accept_cancel(kernel, portno):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -294,6 +301,7 @@ def test_accept_cancel(kernel, portno):
 
 def test_recv_timeout(kernel):
     results = []
+
     async def server(address, accepting_event):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -336,6 +344,7 @@ def test_recv_timeout(kernel):
 
 def test_recv_cancel(kernel):
     results = []
+
     async def server(address, accepting_event):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -378,6 +387,7 @@ def test_recv_cancel(kernel):
 
 def test_recvfrom_timeout(kernel):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_DGRAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -407,6 +417,7 @@ def test_recvfrom_timeout(kernel):
 
 def test_recvfrom_cancel(kernel):
     results = []
+
     async def server(address):
         sock = socket(AF_INET, SOCK_DGRAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -437,6 +448,7 @@ def test_recvfrom_cancel(kernel):
 def test_buffer_into(kernel):
     from array import array
     results = []
+
     async def sender(s1):
         a = array('i', range(1000000))
         await s1.sendall(a)
@@ -471,6 +483,7 @@ def test_buffer_into(kernel):
 def test_buffer_stream_into(kernel):
     from array import array
     results = []
+
     async def sender(s1):
         a = array('i', range(1000000))
         await s1.sendall(b'Hello world\n')
@@ -506,11 +519,13 @@ def test_buffer_stream_into(kernel):
 
     assert all(n == x for n, x in enumerate(results[0]))
 
+
 @pytest.mark.skipif(sys.platform.startswith("win"),
                     reason='broken on Windows')
 def test_buffer_makefile_into(kernel):
     from array import array
     results = []
+
     async def sender(s1):
         a = array('i', range(1000000))
         await s1.sendall(b'Hello world\n')
@@ -548,7 +563,6 @@ def test_buffer_makefile_into(kernel):
     assert all(n == x for n, x in enumerate(results[0]))
 
 
-
 def test_read_write_on_same_socket(kernel):
     async def main():
         s1, s2 = socketpair()
@@ -569,8 +583,10 @@ def test_read_write_on_same_socket(kernel):
 
     kernel.run(main())
 
+
 def test_create_connection(kernel):
     evt = Event()
+
     async def server(addr):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, True)
@@ -596,6 +612,7 @@ def test_create_connection(kernel):
 
     kernel.run(main)
 
+
 # Smoke test on various socket functions
 @pytest.mark.skipif(True,
                     reason='unreliable')
@@ -608,5 +625,5 @@ def test_socket_funcs(kernel):
         r = await gethostname()
         r = await gethostbyaddr('127.0.0.1')
         r = await getnameinfo(('127.0.0.1', 80), NI_NUMERICHOST)
-    kernel.run(main)
 
+    kernel.run(main)

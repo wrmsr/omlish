@@ -2,7 +2,8 @@
 #
 # Echo server using the run_server() function
 
-from .. import run, tcp_server
+from .. import run
+from .. import tcp_server
 
 
 async def echo_client(client, addr):

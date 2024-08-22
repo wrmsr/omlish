@@ -4,22 +4,28 @@
 
 # -- Standard library
 
-from collections import deque
-from heapq import heappush, heappop
-from concurrent.futures import Future
-import threading
-import socket as std_socket
 import asyncio
+import socket as std_socket
+import threading
+from collections import deque
+from concurrent.futures import Future
+from heapq import heappop
+from heapq import heappush
+
+from . import workers
+from .errors import CancelledError
+from .meta import asyncioable
+from .meta import awaitable
+from .sched import SchedBarrier
+from .sched import SchedFIFO
+from .traps import _future_wait
+
 
 # -- Curio
 
-from .traps import _future_wait
-from .sched import SchedFIFO, SchedBarrier
-from .errors import CurioError, CancelledError
-from .meta import awaitable, asyncioable
-from . import workers
 
 __all__ = ['Queue', 'PriorityQueue', 'LifoQueue', 'UniversalQueue']
+
 
 class QueueBase:
     '''
@@ -346,6 +352,7 @@ class LIFOImpl:
 
     _unget_item = _put_item
 
+
 # Concrete Queue implementations
 
 class Queue(QueueBase, FIFOImpl):
@@ -355,6 +362,7 @@ class Queue(QueueBase, FIFOImpl):
     threads, processes, etc.
     '''
     pass
+
 
 class PriorityQueue(QueueBase, PriorityImpl):
     '''
@@ -380,5 +388,3 @@ class UniversalQueue(UniversalQueueBase, FIFOImpl):
     including foreign event loops running in different threads.
     '''
     pass
-
-

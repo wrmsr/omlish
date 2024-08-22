@@ -4,16 +4,19 @@
 # scheduling operations needed by higher-level abstractions such
 # as Events, Locks, Semaphores, and Queues.
 
-__all__ = [ 'SchedFIFO', 'SchedBarrier' ]
+__all__ = ['SchedFIFO', 'SchedBarrier']
 
 # -- Standard Library
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from collections import deque
 
-# -- Curio
+from .traps import _scheduler_wait
+from .traps import _scheduler_wake
 
-from .traps import _scheduler_wait, _scheduler_wake
+
+# -- Curio
 
 
 class SchedBase(ABC):
@@ -62,6 +65,7 @@ class SchedFIFO(SchedBase):
     The wake method only awakens a single task. Commonly used to
     implement locks and queues.
     '''
+
     def __init__(self):
         self._queue = deque()
         self._actual_len = 0
@@ -80,6 +84,7 @@ class SchedFIFO(SchedBase):
         def remove():
             item[0] = None
             self._actual_len -= 1
+
         return remove
 
     def _kernel_wake(self, ntasks=1):
@@ -92,12 +97,14 @@ class SchedFIFO(SchedBase):
         self._actual_len -= len(tasks)
         return tasks
 
+
 class SchedBarrier(SchedBase):
     '''
     A scheduling barrier.  Sleeping tasks are collected into a set.
     Waking makes all of the blocked tasks reawaken at the same time.
     Commonly used to implement Event and join().
     '''
+
     def __init__(self):
         self._tasks = set()
 
@@ -122,4 +129,3 @@ class SchedBarrier(SchedBase):
         '''
         n = len(self._tasks) if n is None else n
         await _scheduler_wake(self, n)
-

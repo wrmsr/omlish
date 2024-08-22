@@ -1,16 +1,18 @@
 import ast
-import curio
-import curio.monitor
 import code
 import inspect
+import signal
 import sys
+import threading
 import types
 import warnings
-import threading
-import signal
-import os
+
+import curio
+import curio.monitor
+
 
 assert (sys.version_info.major >= 3 and sys.version_info.minor >= 8), "console requires Python 3.8+"
+
 
 class CurioIOInteractiveConsole(code.InteractiveConsole):
 
@@ -44,6 +46,7 @@ class CurioIOInteractiveConsole(code.InteractiveConsole):
             async def watch_ctrl_c(evt, repl_task):
                 await evt.wait()
                 await repl_task.cancel()
+
             evt = curio.UniversalEvent()
             try:
                 hand = signal.signal(signal.SIGINT, lambda signo, frame: evt.set())
@@ -85,6 +88,7 @@ class CurioIOInteractiveConsole(code.InteractiveConsole):
         finally:
             signal.signal(signal.SIGINT, hand)
 
+
 def run_repl(console):
     try:
         banner = (
@@ -93,7 +97,7 @@ def run_repl(console):
             f'Type "help", "copyright", "credits" or "license" '
             f'for more information.\n'
             f'{getattr(sys, "ps1", ">>> ")}import curio'
-            )
+        )
         console.interact(
             banner=banner,
             exitmsg='exiting curio REPL...')
@@ -103,12 +107,13 @@ def run_repl(console):
             message=r'^coroutine .* was never awaited$',
             category=RuntimeWarning)
         console.requests.put(None)
-    
+
+
 if __name__ == '__main__':
-    repl_locals = { 'curio': curio,
-                    'ps': curio.monitor.ps,
-                    'where': curio.monitor.where,
-    }
+    repl_locals = {'curio': curio,
+                   'ps': curio.monitor.ps,
+                   'where': curio.monitor.where,
+                   }
     for key in {'__name__', '__package__',
                 '__loader__', '__spec__',
                 '__builtins__', '__file__'}:

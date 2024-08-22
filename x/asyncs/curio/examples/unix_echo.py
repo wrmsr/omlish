@@ -1,6 +1,7 @@
 # Example: A simple Unix  echo server
 
-from .. import run, unix_server
+from .. import run
+from .. import unix_server
 
 
 async def echo_handler(client, address):
@@ -15,6 +16,8 @@ async def echo_handler(client, address):
 
 if __name__ == '__main__':
     import os
+
+
     try:
         os.remove('/tmp/curiounixecho')
     except:

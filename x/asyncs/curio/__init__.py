@@ -2,17 +2,18 @@
 
 __version__ = '1.6'
 
-from .errors import *
-from .queue import *
-from .task import *
-from .time import *
-from .kernel import *
-from .sync import *
-from .workers import *
-from .network import *
-from .file import *
 from .channel import *
+from .errors import *
+from .file import *
+from .kernel import *
+from .network import *
+from .queue import *
+from .sync import *
+from .task import *
 from .thread import *
+from .time import *
+from .workers import *
+
 
 __all__ = [*errors.__all__,
            *queue.__all__,

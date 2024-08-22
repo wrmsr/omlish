@@ -4,7 +4,11 @@
 # as a normal threaded application
 
 import threading
-from .. import run, spawn_thread, AWAIT
+
+from .. import AWAIT
+from .. import run
+from .. import spawn_thread
+
 
 # This is a normal synchronous function.  It is used in both synchronous
 # and asynchronous code.
@@ -19,6 +23,7 @@ def echo_handler(client, addr):
             AWAIT(client.sendall, b'Got:' + data)
     print('Connection closed')
 
+
 # A Traditional threaded server
 def threaded_echo_server(addr):
     import socket
@@ -30,6 +35,7 @@ def threaded_echo_server(addr):
     while True:
         client, addr = sock.accept()
         threading.Thread(target=echo_handler, args=(client, addr), daemon=True).start()
+
 
 # An async server
 async def async_echo_server(addr):
@@ -43,9 +49,7 @@ async def async_echo_server(addr):
         client, addr = await sock.accept()
         await spawn_thread(echo_handler, client, addr, daemon=True)
 
+
 if __name__ == '__main__':
-    threading.Thread(target=threaded_echo_server, args=(('',25000),)).start()
-    run(async_echo_server, ('',26000))
-
-
-
+    threading.Thread(target=threaded_echo_server, args=(('', 25000),)).start()
+    run(async_echo_server, ('', 26000))

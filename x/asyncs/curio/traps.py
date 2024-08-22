@@ -14,16 +14,19 @@ __all__ = [
     '_cancel_task', '_scheduler_wait', '_scheduler_wake',
     '_get_kernel', '_get_current', '_set_timeout', '_unset_timeout',
     '_clock', '_io_waiting', '_io_release',
-    ]
+]
 
 # -- Standard library
 
+from selectors import EVENT_READ
+from selectors import EVENT_WRITE
 from types import coroutine
-from selectors import EVENT_READ, EVENT_WRITE
+
+from . import errors
+
 
 # -- Curio
 
-from . import errors
 
 # This is the only entry point to the Curio kernel and the
 # only place where the @types.coroutine decorator is used.
@@ -35,6 +38,7 @@ def _kernel_trap(*request):
     else:
         return result
 
+
 # Higher-level trap functions that make use of async/await
 async def _read_wait(fileobj):
     '''
@@ -43,6 +47,7 @@ async def _read_wait(fileobj):
     '''
     return await _kernel_trap('trap_io', fileobj, EVENT_READ, 'READ_WAIT')
 
+
 async def _write_wait(fileobj):
     '''
     Wait until writing can be performed. If another task is waiting
@@ -50,11 +55,13 @@ async def _write_wait(fileobj):
     '''
     return await _kernel_trap('trap_io', fileobj, EVENT_WRITE, 'WRITE_WAIT')
 
+
 async def _io_release(fileobj):
     '''
     Release kernel resources associated with a file
     '''
     return await _kernel_trap('trap_io_release', fileobj)
+
 
 async def _io_waiting(fileobj):
     '''
@@ -63,11 +70,13 @@ async def _io_waiting(fileobj):
     '''
     return await _kernel_trap('trap_io_waiting', fileobj)
 
+
 async def _future_wait(future, event=None):
     '''
     Wait for the result of a Future to be ready.
     '''
     return await _kernel_trap('trap_future_wait', future, event)
+
 
 async def _sleep(clock):
     '''
@@ -76,11 +85,13 @@ async def _sleep(clock):
     '''
     return await _kernel_trap('trap_sleep', clock)
 
+
 async def _spawn(coro):
     '''
     Create a new task. Returns the resulting Task object.
     '''
     return await _kernel_trap('trap_spawn', coro)
+
 
 async def _cancel_task(task, exc=errors.TaskCancelled, val=None):
     '''
@@ -89,11 +100,13 @@ async def _cancel_task(task, exc=errors.TaskCancelled, val=None):
     '''
     return await _kernel_trap('trap_cancel_task', task, exc, val)
 
+
 async def _scheduler_wait(sched, state):
     '''
     Put the task to sleep on a scheduler primitive.
     '''
     return await _kernel_trap('trap_sched_wait', sched, state)
+
 
 async def _scheduler_wake(sched, n=1):
     '''
@@ -101,17 +114,20 @@ async def _scheduler_wake(sched, n=1):
     '''
     return await _kernel_trap('trap_sched_wake', sched, n)
 
+
 async def _get_kernel():
     '''
     Get the kernel executing the task.
     '''
     return await _kernel_trap('trap_get_kernel')
 
+
 async def _get_current():
     '''
     Get the currently executing task
     '''
     return await _kernel_trap('trap_get_current')
+
 
 async def _set_timeout(clock):
     '''
@@ -120,11 +136,13 @@ async def _set_timeout(clock):
     '''
     return await _kernel_trap('trap_set_timeout', clock)
 
+
 async def _unset_timeout(previous):
     '''
     Restore the previous timeout for the current task.
     '''
     return await _kernel_trap('trap_unset_timeout', previous)
+
 
 async def _clock():
     '''

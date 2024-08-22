@@ -2,12 +2,14 @@
 #
 # Different test scenarios designed to run under management of a kernel
 
-from collections import deque
-from .. import *
-import pytest
-import threading
-import time
 import asyncio
+import threading
+from collections import deque
+
+import pytest
+
+from .. import *
+
 
 # ---- Synchronization primitives
 
@@ -16,6 +18,7 @@ class TestEvent:
 
     def test_event_get_wait(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await sleep(seconds)
@@ -51,6 +54,7 @@ class TestEvent:
 
     def test_event_get_immediate(self, kernel):
         results = []
+
         async def event_setter(evt):
             results.append('event_set')
             await evt.set()
@@ -79,6 +83,7 @@ class TestEvent:
 
     def test_event_wait_cancel(self, kernel):
         results = []
+
         async def event_waiter(evt):
             results.append('event_wait')
             try:
@@ -107,6 +112,7 @@ class TestEvent:
 
     def test_event_wait_timeout(self, kernel):
         results = []
+
         async def event_waiter(evt):
             results.append('event_wait')
             try:
@@ -133,6 +139,7 @@ class TestEvent:
 
     def test_event_wait_notimeout(self, kernel):
         results = []
+
         async def event_waiter(evt):
             results.append('event_wait')
             try:
@@ -171,11 +178,11 @@ class TestEvent:
         ]
 
 
-
 class TestLock:
 
     def test_lock_sequence(self, kernel):
         results = []
+
         async def worker(lck, label):
             results.append(label + ' wait')
             results.append(lck.locked())
@@ -211,6 +218,7 @@ class TestLock:
 
     def test_lock_acquire_cancel(self, kernel):
         results = []
+
         async def worker(lck):
             results.append('lock_wait')
             try:
@@ -241,6 +249,7 @@ class TestLock:
 
     def test_lock_acquire_timeout(self, kernel):
         results = []
+
         async def worker(lck):
             results.append('lock_wait')
             try:
@@ -353,6 +362,7 @@ class TestSemaphore:
 
     def test_sema_sequence(self, kernel):
         results = []
+
         async def worker(sema, label):
             results.append(label + ' wait')
             results.append(sema.locked())
@@ -390,6 +400,7 @@ class TestSemaphore:
 
     def test_sema_sequence2(self, kernel):
         results = []
+
         async def worker(sema, label, seconds):
             results.append(label + ' wait')
             results.append(sema.locked())
@@ -409,7 +420,7 @@ class TestSemaphore:
 
         kernel.run(main())
         assert results == [
-            'work1 wait',            # Both work1 and work2 admitted
+            'work1 wait',  # Both work1 and work2 admitted
             False,
             'work1 acquire',
             'work2 wait',
@@ -425,6 +436,7 @@ class TestSemaphore:
 
     def test_sema_acquire_cancel(self, kernel):
         results = []
+
         async def worker(lck):
             results.append('lock_wait')
             try:
@@ -455,6 +467,7 @@ class TestSemaphore:
 
     def test_sema_acquire_timeout(self, kernel):
         results = []
+
         async def worker(lck):
             results.append('lock_wait')
             try:
@@ -487,6 +500,7 @@ class TestCondition:
 
     def test_cond_sequence(self, kernel):
         results = []
+
         async def consumer(cond, q, label):
             while True:
                 async with cond:
@@ -549,6 +563,7 @@ class TestCondition:
 
     def test_cond_wait_cancel(self, kernel):
         results = []
+
         async def worker(cond):
             try:
                 async with cond:
@@ -579,6 +594,7 @@ class TestCondition:
 
     def test_cond_wait_timeout(self, kernel):
         results = []
+
         async def worker(cond):
             try:
                 async with cond:
@@ -607,6 +623,7 @@ class TestCondition:
 
     def test_cond_notify_all(self, kernel):
         results = []
+
         async def worker(cond):
             async with cond:
                 results.append('cond_wait')
@@ -644,6 +661,7 @@ class TestCondition:
 
     def test_cond_waitfor(self, kernel):
         results = []
+
         async def consumer(cond, q, label):
             async with cond:
                 results.append(label + ' waitfor')
@@ -694,10 +712,12 @@ class TestCondition:
 
         kernel.run(main)
 
+
 class TestUniversalEvent:
 
     def test_uevent_get_wait(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await sleep(seconds)
@@ -731,9 +751,9 @@ class TestUniversalEvent:
             False
         ]
 
-
     def test_uevent_get_twait(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await sleep(seconds)
@@ -770,6 +790,7 @@ class TestUniversalEvent:
 
     def test_uevent_get_asyncio_set(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await asyncio.sleep(seconds)
@@ -805,9 +826,9 @@ class TestUniversalEvent:
             False
         ]
 
-
     def test_uevent_get_asyncio_wait(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await sleep(seconds)
@@ -845,6 +866,7 @@ class TestUniversalEvent:
 
     def test_uevent_get_wait_timeout(self, kernel):
         results = []
+
         async def event_setter(evt, seconds):
             results.append('sleep')
             await sleep(seconds)
@@ -876,12 +898,13 @@ class TestUniversalEvent:
             False,
             'event_set',
         ]
-        
+
+
 class TestResult:
     def test_value(self, kernel):
-        
+
         async def work(x, y, r):
-            await r.set_value(x+y)
+            await r.set_value(x + y)
 
         async def main():
             r = Result()
@@ -893,7 +916,7 @@ class TestResult:
     def test_error(self, kernel):
         async def work(x, y, r):
             try:
-                await r.set_value(x+y)
+                await r.set_value(x + y)
             except Exception as err:
                 await r.set_exception(err)
 
@@ -905,12 +928,12 @@ class TestResult:
 
         kernel.run(main)
 
-        
+
 class TestUniversalResult:
     def test_universal_value(self, kernel):
-        
+
         def work(x, y, r):
-            r.set_value(x+y)
+            r.set_value(x + y)
 
         async def main(r1, r2):
             value = await r1.unwrap()
@@ -919,16 +942,16 @@ class TestUniversalResult:
         r1 = UniversalResult()
         r2 = UniversalResult()
         r3 = UniversalResult()
-        threading.Thread(target=work, args=[2,3,r1]).start()
+        threading.Thread(target=work, args=[2, 3, r1]).start()
         threading.Thread(target=asyncio.run, args=[main(r1, r2)]).start()
         kernel.run(main, r2, r3)
         assert r3.unwrap() == 5
 
     def test_universal_error(self, kernel):
-        
+
         def work(x, y, r):
             try:
-                r.set_value(x+y)
+                r.set_value(x + y)
             except Exception as err:
                 r.set_exception(err)
 
@@ -942,7 +965,7 @@ class TestUniversalResult:
         r1 = UniversalResult()
         r2 = UniversalResult()
         r3 = UniversalResult()
-        threading.Thread(target=work, args=[2,"3",r1]).start()
+        threading.Thread(target=work, args=[2, "3", r1]).start()
         threading.Thread(target=asyncio.run, args=[main(r1, r2)]).start()
         kernel.run(main, r2, r3)
         with pytest.raises(TypeError):
@@ -951,5 +974,5 @@ class TestUniversalResult:
 
 def test_repr():
     # For test coverage
-    for cls in [Lock, Event, Semaphore, Condition, RLock, UniversalEvent, Result, UniversalResult ]:
+    for cls in [Lock, Event, Semaphore, Condition, RLock, UniversalEvent, Result, UniversalResult]:
         repr(cls())

@@ -30,15 +30,16 @@ Example:
         kernel.run(my_aapp)
 """
 
-import inspect
 import functools
+import inspect
 
 import pytest
 
 from .. import Kernel
 from .. import meta
 from .. import monitor
-from ..debug import longblock, logcrash
+from ..debug import logcrash
+from ..debug import longblock
 
 
 def _is_coroutine(obj):
@@ -73,10 +74,12 @@ def pytest_pyfunc_call(pyfuncitem):
 
 def wrap_in_sync(func):
     """Return a sync wrapper around an async function executing it in a Kernel."""
+
     @functools.wraps(func)
     def inner(**kwargs):
         coro = func(**kwargs)
         Kernel().run(coro, shutdown=True)
+
     return inner
 
 

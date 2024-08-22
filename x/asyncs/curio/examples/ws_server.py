@@ -3,11 +3,20 @@
 pip install wsproto before running this.
 
 """
-from .. import Queue, run, spawn, TaskGroup
-from ..socket import IPPROTO_TCP, TCP_NODELAY
-from wsproto.connection import WSConnection, SERVER
-from wsproto.events import (ConnectionClosed, ConnectionRequested, TextReceived,
-                            BytesReceived)
+from wsproto.connection import SERVER
+from wsproto.connection import WSConnection
+from wsproto.events import BytesReceived
+from wsproto.events import ConnectionClosed
+from wsproto.events import ConnectionRequested
+from wsproto.events import TextReceived
+
+from .. import Queue
+from .. import TaskGroup
+from .. import run
+from .. import spawn
+from ..socket import IPPROTO_TCP
+from ..socket import TCP_NODELAY
+
 
 DATA_TYPES = (TextReceived, BytesReceived)
 
@@ -71,6 +80,7 @@ async def ws_echo_server(in_queue, out_queue):
 
 def serve_ws(handler):
     """Start processing web socket messages using the given handler."""
+
     async def run_ws(client, addr):
         in_q, out_q = Queue(), Queue()
         ws_task = await spawn(ws_adapter, in_q, out_q, client, addr)
@@ -85,6 +95,8 @@ def serve_ws(handler):
 
 if __name__ == '__main__':
     from .. import tcp_server
+
+
     port = 5000
     print(f'Listening on port {port}.')
     run(tcp_server, '', port, serve_ws(ws_echo_server))

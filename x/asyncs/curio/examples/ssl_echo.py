@@ -2,14 +2,16 @@
 #
 # An example of a simple SSL echo server.   Use ssl_echo_client.py to test.
 
-import os
 import curio
-from .. import ssl
-from .. import network
 
-KEYFILE = 'ssl_test_rsa'    # Private key
+from .. import network
+from .. import ssl
+
+
+KEYFILE = 'ssl_test_rsa'  # Private key
 # Certificate (self-signed)
 CERTFILE = 'ssl_test.crt'
+
 
 async def handle(client, addr):
     print('Connection from', addr)

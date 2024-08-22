@@ -8,12 +8,13 @@ __all__ = ['Channel']
 
 # -- Standard Library
 
+import hmac
+import logging
+import multiprocessing.connection as mpc
 import os
 import pickle
 import struct
-import hmac
-import multiprocessing.connection as mpc
-import logging
+
 
 log = logging.getLogger(__name__)
 
@@ -23,22 +24,22 @@ from . import socket
 from .errors import CurioError, TaskTimeout
 from .io import StreamBase, FileStream
 from . import thread
-from .time import timeout_after, sleep
+from .time import timeout_after
+
 
 # Authentication parameters (copied from multiprocessing)
 
-AUTH_MESSAGE_LENGTH = mpc.MESSAGE_LENGTH    # 20
+AUTH_MESSAGE_LENGTH = mpc.MESSAGE_LENGTH  # 20
 try:
     # Python 3.12+
-    CHALLENGE = mpc._CHALLENGE              # b'#CHALLENGE#'
-    WELCOME = mpc._WELCOME                  # b'#WELCOME#'
-    FAILURE = mpc._FAILURE                  # b'#FAILURE#'
+    CHALLENGE = mpc._CHALLENGE  # b'#CHALLENGE#'
+    WELCOME = mpc._WELCOME  # b'#WELCOME#'
+    FAILURE = mpc._FAILURE  # b'#FAILURE#'
 except AttributeError:
     # Python 3.7-3.11
-    CHALLENGE = mpc.CHALLENGE               # b'#CHALLENGE#'
-    WELCOME = mpc.WELCOME                   # b'#WELCOME#'
-    FAILURE = mpc.FAILURE                   # b'#FAILURE#'
-
+    CHALLENGE = mpc.CHALLENGE  # b'#CHALLENGE#'
+    WELCOME = mpc.WELCOME  # b'#WELCOME#'
+    FAILURE = mpc.FAILURE  # b'#FAILURE#'
 
 
 class ConnectionError(CurioError):
@@ -154,7 +155,7 @@ class Connection(object):
                         break
                     size -= len(data)
                 raise IOError('Message is too large to fit')
-            nread = await self._reader.readinto(m[offset:offset+size])
+            nread = await self._reader.readinto(m[offset:offset + size])
             if nread != size:
                 raise EOFError('Expected end of data')
             return nread
@@ -201,6 +202,7 @@ class Connection(object):
     async def authenticate_client(self, authkey):
         await self._answer_challenge(authkey)
         await self._deliver_challenge(authkey)
+
 
 class Channel(object):
     def __init__(self, address, family=socket.AF_INET, check_address=None):

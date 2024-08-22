@@ -3,8 +3,9 @@
 # An example of a simple SSL echo client.  Use ssl_echo.py for the server.
 
 import curio
-from .. import ssl
+
 from .. import network
+from .. import ssl
 
 
 async def main(host, port):

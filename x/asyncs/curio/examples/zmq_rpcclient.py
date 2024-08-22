@@ -1,9 +1,10 @@
 # zmq RPC client example. Requires zmq_rpcserv.py to be runnig
 
 import curio_zmq as zmq
-from .. import sleep, spawn
-
 from fibserve import fib
+from .. import sleep
+from .. import spawn
+
 
 async def ticker():
     n = 0
@@ -11,6 +12,7 @@ async def ticker():
         await sleep(1)
         print('Tick:', n)
         n += 1
+
 
 async def client(address):
     # Run a background task to make sure the message passing operations don't block
@@ -24,6 +26,7 @@ async def client(address):
         await sock.send_pyobj((fib, (n,), {}))
         result = await sock.recv_pyobj()
         print(n, result)
+
 
 if __name__ == '__main__':
     zmq.run(client, 'tcp://localhost:9000')

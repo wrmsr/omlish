@@ -1,8 +1,11 @@
 # test_file.py
 
 import os.path
-from .. import *
+
 import pytest
+
+from .. import *
+
 
 dirname = os.path.dirname(__file__)
 testinput = os.path.join(dirname, 'testdata.txt')
@@ -104,6 +107,7 @@ def test_readiter(kernel):
 
     kernel.run(main())
 
+
 def test_read_anext(kernel):
     async def main():
         async with aopen(testinput, 'r') as f:
@@ -118,6 +122,7 @@ def test_read_anext(kernel):
 
     kernel.run(main())
 
+
 def test_read_anext2(kernel):
     async def main():
         async with aopen(testinput, 'r') as f:
@@ -131,11 +136,13 @@ def test_read_anext2(kernel):
 
     kernel.run(main())
 
+
 def test_bad_usage(kernel):
     async def main():
         f = aopen(testinput, 'r')
         with pytest.raises(RuntimeError):
             await f.read()
+
 
 wlines = ['line1\n', 'line2\n', 'line3\n']
 
@@ -182,6 +189,7 @@ def test_seek_tell(kernel):
 
     kernel.run(main())
 
+
 def test_truncate(kernel, tmpdir):
     async def main():
         outname = tmpdir.join('tmp.txt')
@@ -198,6 +206,7 @@ def test_truncate(kernel, tmpdir):
             assert data == b'126789'
 
     kernel.run(main())
+
 
 def test_sync_iter(kernel):
     async def main():
@@ -225,6 +234,7 @@ def test_sync_with(kernel):
 
     kernel.run(main())
 
+
 def test_must_be_asynccontext(kernel):
     async def main():
         f = aopen(testinput, 'r')
@@ -232,6 +242,7 @@ def test_must_be_asynccontext(kernel):
             data = await f.read()
 
     kernel.run(main())
+
 
 def test_blocking(kernel):
     async def main():
@@ -242,6 +253,7 @@ def test_blocking(kernel):
         assert data == 'line 1\nline 2\nline 3\n'
 
     kernel.run(main())
+
 
 def test_file_misc(kernel):
     async def main():

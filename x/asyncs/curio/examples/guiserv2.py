@@ -3,9 +3,11 @@
 # Another example of integrating Curio with the Tkinter
 # event loop using UniversalQueue and threads.
 
-import tkinter as tk
 import threading
+import tkinter as tk
+
 from .. import *
+
 
 class EchoApp(object):
     def __init__(self):
@@ -78,8 +80,7 @@ class EchoApp(object):
         threading.Thread(target=run, args=(self.main,)).start()
         self.root.mainloop()
 
+
 if __name__ == '__main__':
     app = EchoApp()
     app.run_forever()
-
-

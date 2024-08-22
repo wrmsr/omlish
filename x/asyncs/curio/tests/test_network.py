@@ -1,15 +1,17 @@
 # test_network.py
-from os.path import dirname, join
-import sys
 import os
 import ssl
-from functools import partial
+import sys
+from os.path import dirname
+from os.path import join
+
 import pytest
 
 from .. import *
 from .. import network
 from .. import ssl as curiossl
 from ..socket import *
+
 
 def test_tcp_echo(kernel):
     results = []
@@ -62,6 +64,7 @@ def test_tcp_echo(kernel):
         'client close',
         'handler done'
     ]
+
 
 if not sys.platform.startswith('win'):
     def test_unix_echo(kernel):
@@ -158,6 +161,7 @@ def test_ssl_server(kernel):
 
     kernel.run(main())
 
+
 if not sys.platform.startswith('win'):
     def test_unix_ssl_server(kernel):
         async def client(address, context):
@@ -251,6 +255,7 @@ def test_ssl_wrapping(kernel):
 
     kernel.run(main())
 
+
 @pytest.mark.internet
 def test_ssl_outgoing(kernel):
     async def main():
@@ -263,8 +268,8 @@ def test_ssl_outgoing(kernel):
         c = await network.open_connection('google.com', 443, ssl=True, alpn_protocols=['h2'])
         await c.close()
 
-
     kernel.run(main)
+
 
 def test_ssl_manual_wrapping(kernel):
 
@@ -314,6 +319,7 @@ def test_ssl_manual_wrapping(kernel):
 
     kernel.run(main())
 
+
 @pytest.mark.internet
 def test_errors(kernel):
     async def main():
@@ -328,7 +334,6 @@ def test_errors(kernel):
         with pytest.raises(ValueError):
             await network.tcp_server('localhost', 25000, None, ssl=True)
 
-
         if not sys.platform.startswith('win'):
             with pytest.raises(OSError):
                 await network.tcp_server('localhost', 80, None)
@@ -341,4 +346,3 @@ def test_errors(kernel):
                 await c.close()
 
     kernel.run(main)
-

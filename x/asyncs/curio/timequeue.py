@@ -29,11 +29,13 @@
 
 import heapq
 
+
 class TimeQueue:
-    cutoff = 1.0         # Threshhold for near/far events (seconds)
+    cutoff = 1.0  # Threshhold for near/far events (seconds)
+
     def __init__(self):
-        self.near = [ ]
-        self.far = { }
+        self.near = []
+        self.far = {}
         self.near_deadline = 0
         self.far_min_deadline = float('inf')
 
@@ -100,7 +102,7 @@ class TimeQueue:
             self._far_to_near()
 
         while near and near[0][0] <= deadline:
-            yield  heapq.heappop(near)
+            yield heapq.heappop(near)
 
     def cancel(self, item, expires):
         '''

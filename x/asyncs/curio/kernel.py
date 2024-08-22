@@ -44,20 +44,22 @@
 #    asyncio where many parts of the implementation are required to
 #    carry a reference to the underlying event loop.
 
-__all__ = [ 'Kernel', 'run' ]
+__all__ = ['Kernel', 'run']
 
 # -- Standard Library
 
-import socket
-import time
-import os
 import errno
-from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
-from collections import deque
-import threading
-
 # Logger where uncaught exceptions from crashed tasks are logged
 import logging
+import os
+import socket
+import time
+from collections import deque
+from selectors import DefaultSelector
+from selectors import EVENT_READ
+from selectors import EVENT_WRITE
+
+
 log = logging.getLogger(__name__)
 
 # -- Curio
@@ -110,7 +112,6 @@ class Kernel(object):
 
         self._max_select_timeout = max_select_timeout
 
-
     def __del__(self):
         if self._shutdown_funcs is not None:
             raise RuntimeError(
@@ -125,7 +126,6 @@ class Kernel(object):
 
     def _call_at_shutdown(self, func):
         self._shutdown_funcs.append(func)
-
 
     # ----------
     # Submit a new task to the kernel
@@ -190,12 +190,12 @@ class Kernel(object):
         # Motto:  "What happens in the kernel stays in the kernel"
 
         # ---- Kernel State
-        current = None                          # Currently running task
-        selector = kernel._selector             # Event selector
-        ready = deque()                         # Ready queue
-        tasks = kernel._tasks                   # Task table
-        sleepq = TimeQueue()                    # Sleeping task queue
-        wake_queue = deque()                    # Thread wake queue
+        current = None  # Currently running task
+        selector = kernel._selector  # Event selector
+        ready = deque()  # Ready queue
+        tasks = kernel._tasks  # Task table
+        sleepq = TimeQueue()  # Sleeping task queue
+        wake_queue = deque()  # Thread wake queue
         _activations = []
 
         # ---- Bound methods
@@ -459,8 +459,8 @@ class Kernel(object):
                 event.set()
 
             suspend_task('FUTURE_WAIT',
-                          lambda task=current:
-                              setattr(task, 'future', future.cancel() and None))
+                         lambda task=current:
+                         setattr(task, 'future', future.cancel() and None))
 
         # ----------------------------------------
         # Add a new task to the kernel
@@ -540,7 +540,8 @@ class Kernel(object):
 
             set_timeout(clock + time_monotonic(), 'sleep')
             suspend_task('TIME_SLEEP',
-                          lambda task=current: (sleepq.cancel((task.id, 'sleep'), task.sleep), setattr(task, 'sleep', None)))
+                         lambda task=current: (
+                         sleepq.cancel((task.id, 'sleep'), task.sleep), setattr(task, 'sleep', None)))
 
         # ----------------------------------------
         # Set a timeout to be delivered to the calling task
@@ -598,13 +599,13 @@ class Kernel(object):
         # ------------------------------------------------------------
 
         # Create the traps tables
-        kernel._traps = traps = { key:value for key, value in locals().items()
-                                  if key.startswith('trap_') }
+        kernel._traps = traps = {key: value for key, value in locals().items()
+                                 if key.startswith('trap_')}
 
         # Initialize activations
         kernel._activations = _activations = \
-            [ act() if (isinstance(act, type) and issubclass(act, Activation)) else act
-                    for act in kernel._activations ]
+            [act() if (isinstance(act, type) and issubclass(act, Activation)) else act
+             for act in kernel._activations]
 
         for act in _activations:
             act.activate(kernel)
@@ -685,7 +686,6 @@ class Kernel(object):
                             selector_modify(key.fileobj, emask, (rtask, wtask))
                         else:
                             selector_unregister(key.fileobj)
-
 
                 # ------------------------------------------------------------
                 # Time handling (sleep/timeouts)
@@ -822,6 +822,7 @@ def run(corofunc, *args, with_monitor=False, selector=None,
 
     with kernel:
         return kernel.run(corofunc, *args)
+
 
 # An Activation is used to monitor and effect what happens
 # during task execution in the Curio kernel. They are often used to

@@ -10,22 +10,25 @@
 # a queue.  When a task releases a lock, it wakes a sleeping task.
 # Task scheduling is provided by the SchedFIFO and SchedBarrier classes in sched.py
 
-__all__ = ['Event', 'UniversalEvent', 'Lock', 'RLock', 'Semaphore', 'Condition', 'Result', 'UniversalResult' ]
+__all__ = ['Event', 'UniversalEvent', 'Lock', 'RLock', 'Semaphore', 'Condition', 'Result', 'UniversalResult']
 
 # -- Standard library
 
+import asyncio
 import threading
 from concurrent.futures import Future
-import asyncio
+
+from . import thread
+from .meta import asyncioable
+from .meta import awaitable
+from .sched import SchedBarrier
+from .sched import SchedFIFO
+from .task import current_task
+from .traps import _future_wait
+
 
 # -- Curio
 
-from .sched import SchedFIFO, SchedBarrier
-from . import workers
-from .task import current_task
-from .meta import awaitable, asyncioable, iscoroutinefunction
-from . import thread
-from .traps import _future_wait
 
 class Event(object):
 
@@ -53,10 +56,12 @@ class Event(object):
         self._set = True
         await self._waiting.wake()
 
+
 class UniversalEvent(object):
     '''
     An event that's safe to use from Curio and threads.
     '''
+
     def __init__(self):
         self._set = False
         self._lock = threading.Lock()
@@ -115,7 +120,7 @@ class UniversalEvent(object):
         for fut in now_waiting:
             if not fut.done():
                 fut.set_result(True)
-            
+
     def set(self):
         with self._lock:
             if self._set:
@@ -129,7 +134,7 @@ class UniversalEvent(object):
             if self._set:
                 return
             self._set = True
-            self._unblock_waiters()        
+            self._unblock_waiters()
 
     @asyncioable(set)
     async def set(self):
@@ -137,9 +142,10 @@ class UniversalEvent(object):
             if self._set:
                 return
             self._set = True
-            self._unblock_waiters()                
+            self._unblock_waiters()
 
-# Base class for all synchronization primitives that operate as context managers.
+        # Base class for all synchronization primitives that operate as context managers.
+
 
 class _LockBase(object):
 
@@ -155,6 +161,7 @@ class _LockBase(object):
 
     def __exit__(self, *args):
         return thread.AWAIT(self.__aexit__(*args))
+
 
 class Lock(_LockBase):
 
@@ -182,6 +189,7 @@ class Lock(_LockBase):
 
     def locked(self):
         return self._acquired
+
 
 class RLock(_LockBase):
 
@@ -299,6 +307,7 @@ class Condition(_LockBase):
     async def notify_all(self):
         await self.notify(len(self._waiting))
 
+
 class Result:
     def __init__(self):
         self._evt = Event()
@@ -306,15 +315,15 @@ class Result:
         self._exc = None
 
     def __repr__(self):
-        res = super().__repr__()        
+        res = super().__repr__()
         if self._evt.is_set():
             return f'<{res[1:-1]}, value={self._value!r}, exc={self._exc!r}>'
         else:
             return f'<{res[1:-1]}, not set>'
-        
+
         status = "set" if self.is_set() else "not set"
         return f'<Result status={status}>'
-    
+
     def is_set(self):
         return self._evt.is_set()
 
@@ -328,13 +337,14 @@ class Result:
     async def set_value(self, value):
         self._value = value
         await self._evt.set()
-        
+
     async def set_exception(self, exc):
         self._exc = exc
         await self._evt.set()
 
+
 class UniversalResult:
-    
+
     def __init__(self):
         self._evt = UniversalEvent()
         self._value = None
@@ -382,5 +392,3 @@ class UniversalResult:
     async def set_exception(self, exc):
         self._exc = exc
         await self._evt.set()
-
-

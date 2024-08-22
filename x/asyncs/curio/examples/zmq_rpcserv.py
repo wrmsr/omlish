@@ -2,6 +2,7 @@
 
 import curio_zmq as zmq
 
+
 async def rpc_server(address):
     ctx = zmq.Context()
     sock = ctx.socket(zmq.REP)
@@ -13,6 +14,7 @@ async def rpc_server(address):
             await sock.send_pyobj(result)
         except Exception as e:
             await sock.send_pyobj(e)
+
 
 if __name__ == '__main__':
     zmq.run(rpc_server, 'tcp://*:9000')

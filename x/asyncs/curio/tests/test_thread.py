@@ -1,22 +1,25 @@
 # test_thread.py
 
 import pytest
+
 from .. import *
-from ..thread import AWAIT, spawn_thread, is_async_thread
 from ..file import aopen
-import time
-import pytest
+from ..thread import AWAIT
+from ..thread import is_async_thread
+from ..thread import spawn_thread
 
 
 def simple_func(x, y):
     assert is_async_thread()
-    AWAIT(sleep(0.25))     # Execute a blocking operation
-    AWAIT(sleep, 0.25)     # Alternative
+    AWAIT(sleep(0.25))  # Execute a blocking operation
+    AWAIT(sleep, 0.25)  # Alternative
     return x + y
+
 
 async def simple_coro(x, y):
     await sleep(0.5)
     return x + y
+
 
 def test_good_result(kernel):
     async def main():
@@ -27,6 +30,7 @@ def test_good_result(kernel):
         assert t.exception is None
 
     kernel.run(main)
+
 
 def test_bad_result(kernel):
     async def main():
@@ -50,6 +54,7 @@ def test_bad_result(kernel):
 
     kernel.run(main)
 
+
 def test_cancel_result(kernel):
     async def main():
         t = await spawn_thread(simple_func, 2, 3)
@@ -61,7 +66,9 @@ def test_cancel_result(kernel):
         except TaskError as e:
             assert isinstance(e.__cause__, TaskCancelled)
             assert True
+
     kernel.run(main)
+
 
 def test_thread_good_result(kernel):
     def coro():
@@ -75,6 +82,7 @@ def test_thread_good_result(kernel):
 
     kernel.run(main)
 
+
 def test_thread_bad_result(kernel):
     def coro():
         with pytest.raises(TypeError):
@@ -85,6 +93,7 @@ def test_thread_bad_result(kernel):
         await t.join()
 
     kernel.run(main)
+
 
 def test_thread_cancel_result(kernel):
     def func():
@@ -98,8 +107,10 @@ def test_thread_cancel_result(kernel):
 
     kernel.run(main)
 
+
 def test_thread_sync(kernel):
     results = []
+
     def func(lock):
         with lock:
             results.append('func')
@@ -114,7 +125,7 @@ def test_thread_sync(kernel):
         await t.join()
 
     kernel.run(main())
-    assert results == [ 'main', 'main done', 'func' ]
+    assert results == ['main', 'main done', 'func']
 
 
 def test_thread_timeout(kernel):
@@ -152,9 +163,13 @@ def test_thread_disable_cancellation(kernel):
 
     kernel.run(main)
 
+
 import os
+
+
 dirname = os.path.dirname(__file__)
 testinput = os.path.join(dirname, 'testdata.txt')
+
 
 def test_thread_read(kernel):
     def func():
@@ -170,8 +185,10 @@ def test_thread_read(kernel):
 
     kernel.run(main)
 
+
 def test_task_group_thread(kernel):
     results = []
+
     async def add(x, y):
         return x + y
 
@@ -192,6 +209,7 @@ def test_task_group_thread(kernel):
     kernel.run(main)
     assert results == [2, 4, 6]
 
+
 def test_task_group_spawn_thread(kernel):
     def add(x, y):
         return x + y
@@ -208,17 +226,21 @@ def test_task_group_spawn_thread(kernel):
 
     kernel.run(task)
 
+
 def test_await_passthrough(kernel):
     import time
     def add(x, y):
         AWAIT(time.sleep(0.1))
         AWAIT(time.sleep, 0.1)
         return x + y
+
     async def main():
         t = await spawn_thread(add, 2, 3)
         await t.wait()
         assert t.result == 5
+
     kernel.run(main)
+
 
 def test_errors(kernel):
     # spawn_thread used on a coroutine
@@ -230,7 +252,7 @@ def test_errors(kernel):
 
     # AWAIT used on coroutine outside of async-thread
     with pytest.raises(AsyncOnlyError):
-        AWAIT(simple_coro(2,3))
+        AWAIT(simple_coro(2, 3))
 
     # Premature result
     async def f():
@@ -251,5 +273,3 @@ def test_errors(kernel):
             await t.start()
 
     kernel.run(g)
-
-

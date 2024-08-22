@@ -1,5 +1,5 @@
-
 from ..timequeue import TimeQueue
+
 
 def test_timequeue_expired():
     q = TimeQueue()
@@ -18,4 +18,3 @@ def test_timequeue_expired():
 
     items = list(q.expired(101))
     assert items == [(50, 'a'), (100, 'c')]
-

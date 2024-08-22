@@ -46,11 +46,14 @@ __all__ = ['aopen', 'anext']
 from contextlib import contextmanager
 from functools import partial
 
+from . import thread
+from .errors import CancelledError
+from .errors import SyncIOError
+from .workers import run_in_thread
+
+
 # -- Curio
 
-from .workers import run_in_thread
-from .errors import SyncIOError, CancelledError
-from . import thread
 
 class AsyncFile(object):
     '''
@@ -168,6 +171,7 @@ class AsyncFile(object):
             if len(chunk) == maxread:
                 maxread *= 2
 
+
 def aopen(*args, **kwargs):
     '''
     Async version of the builtin open() function that returns an async-compatible
@@ -175,6 +179,7 @@ def aopen(*args, **kwargs):
     blocking I/O operations must be awaited.
     '''
     return AsyncFile(None, args, kwargs)
+
 
 async def anext(f, sentinel=object):
     '''

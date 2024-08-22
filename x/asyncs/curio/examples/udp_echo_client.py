@@ -3,6 +3,7 @@
 # An example of a UDP echo client
 
 import curio
+
 from .. import socket
 
 

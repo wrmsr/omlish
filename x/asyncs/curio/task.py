@@ -3,17 +3,18 @@
 # Task class and task related functions such as spawning and cancellation.
 
 __all__ = [
-    'Task', 'TaskGroup', 'current_task', 'spawn', 
+    'Task', 'TaskGroup', 'current_task', 'spawn',
     'disable_cancellation', 'check_cancellation', 'set_cancellation'
 ]
 
 # -- Standard library
 
-import logging
-from collections import deque
 import linecache
-import traceback
+import logging
 import os.path
+import traceback
+from collections import deque
+
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ from .errors import *
 from .traps import *
 from .sched import SchedBarrier
 from . import meta
+
 
 # Internal functions used for debugging/diagnostics
 def _get_stack(coro):
@@ -49,6 +51,7 @@ def _get_stack(coro):
         if f is not None:
             frames.append(f)
     return frames
+
 
 # Create a stack traceback for a task
 def _format_stack(task, complete=False):
@@ -77,6 +80,7 @@ def _format_stack(task, complete=False):
         resp += ''.join(traceback.format_list(extracted_list))
     return resp
 
+
 # Return the (filename, lineno) where a task is currently executing
 def _where(task):
     dirname = os.path.dirname(__file__)
@@ -90,6 +94,7 @@ def _where(task):
         return filename, lineno
     return None, None
 
+
 class Task(object):
     '''
     The Task class wraps a coroutine and provides some additional attributes
@@ -97,47 +102,48 @@ class Task(object):
     instantiated directly. Instead, use spawn().
     '''
     _lastid = 1
+
     def __init__(self, coro, parent=None):
         # Informational attributes about the task itself
         self.id = Task._lastid
         Task._lastid += 1
         self.parentid = None if parent is None else parent.id  # Parent task id (if any)
-        self.coro = coro              # Underlying generator/coroutine
+        self.coro = coro  # Underlying generator/coroutine
         self.name = getattr(coro, '__qualname__', str(coro))
-        self.daemon = False           # Daemonic flag
+        self.daemon = False  # Daemonic flag
 
         # Attributes updated during execution (safe to inspect)
-        self.cycles = 0               # Execution cycles completed
-        self.state = 'INITIAL'        # Execution state
-        self.cancel_func = None       # Cancellation function
-        self.future = None            # Pending Future (if any)
-        self.sleep = None             # Pending sleep (if any)
-        self.timeout = None           # Pending timeout (if any)
-        self.joining = SchedBarrier() # Set of tasks waiting to join with this one
-        self.cancelled = None         # Has the task been cancelled?
-        self.terminated = False       # Has the task actually Terminated?
-        self.cancel_pending = None    # Deferred cancellation exception pending (if any)
-        self.allow_cancel = True      # Can cancellation exceptions be delivered?
-        self.taskgroup = None         # Containing task group (if any)
-        self.joined = False           # Set if the task has actually been joined or result collected
+        self.cycles = 0  # Execution cycles completed
+        self.state = 'INITIAL'  # Execution state
+        self.cancel_func = None  # Cancellation function
+        self.future = None  # Pending Future (if any)
+        self.sleep = None  # Pending sleep (if any)
+        self.timeout = None  # Pending timeout (if any)
+        self.joining = SchedBarrier()  # Set of tasks waiting to join with this one
+        self.cancelled = None  # Has the task been cancelled?
+        self.terminated = False  # Has the task actually Terminated?
+        self.cancel_pending = None  # Deferred cancellation exception pending (if any)
+        self.allow_cancel = True  # Can cancellation exceptions be delivered?
+        self.taskgroup = None  # Containing task group (if any)
+        self.joined = False  # Set if the task has actually been joined or result collected
 
         # Final result of coroutine execution (use properties to access)
-        self._final_result = None     # Final result of execution
-        self._final_exc = None        # Final exception of execution
+        self._final_result = None  # Final result of execution
+        self._final_exc = None  # Final exception of execution
 
         # Actual execution is wrapped by a supporting coroutine
         self._run_coro = self._task_runner(self.coro)
 
         # Result of the last trap
-        self._trap_result = None 
+        self._trap_result = None
 
         # Last I/O operation performed
-        self._last_io = None          
+        self._last_io = None
 
         # Bound coroutine methods
-        self._send = self._run_coro.send   
+        self._send = self._run_coro.send
         self._throw = self._run_coro.throw
-        
+
         # Timeout deadline stack
         self._deadlines = []
 
@@ -194,7 +200,7 @@ class Task(object):
         '''
         if not self.terminated:
             await self.joining.suspend('TASK_JOIN')
-        
+
     @property
     def result(self):
         '''
@@ -255,11 +261,13 @@ class Task(object):
         '''
         return _where(self)
 
+
 class ContextTask(Task):
     '''
     Task class that provides support for contextvars.  Use with the
     taskcls keyword argument to the Curio kernel.
     '''
+
     def __init__(self, coro, parent=None):
         import contextvars
         super().__init__(coro)
@@ -270,6 +278,7 @@ class ContextTask(Task):
 
     def send(self, value):
         return self._context.run(super().send, value)
+
 
 class TaskGroup(object):
     '''
@@ -362,16 +371,17 @@ class TaskGroup(object):
         except Exception as e:
             print("FAILED:", e)
     '''
+
     def __init__(self, tasks=(), *, wait=all):
-        self._running = set()        # All running tasks
-        self._finished = deque()     # All finished tasks
-        self._daemonic = set()       # All running daemon tasks
-        self._tasks = set()          # Set of all tasks tracked by the group
+        self._running = set()  # All running tasks
+        self._finished = deque()  # All finished tasks
+        self._daemonic = set()  # All running daemon tasks
+        self._tasks = set()  # Set of all tasks tracked by the group
         self._joined = False
-        self._wait = wait            # Wait policy 
-        self.completed = None        # First completed task
+        self._wait = wait  # Wait policy
+        self.completed = None  # First completed task
         for task in tasks:
-            assert not task.taskgroup,  "Task already assigned to a task group"
+            assert not task.taskgroup, "Task already assigned to a task group"
             task.taskgroup = self
             if not task.daemon:
                 self._tasks.add(task)
@@ -410,14 +420,14 @@ class TaskGroup(object):
     def results(self):
         if not self._joined:
             raise RuntimeError("Task group not yet terminated")
-        return [ task.result for task in self.tasks ]
+        return [task.result for task in self.tasks]
 
     @property
     def exceptions(self):
         if not self._joined:
             raise RuntimeError("Task group not yet terminated")
-        return [ task.exception for task in self.tasks ]
-        
+        return [task.exception for task in self.tasks]
+
     # Triggered on task completion. 
     async def _task_done(self, task):
         if task.daemon:
@@ -519,7 +529,6 @@ class TaskGroup(object):
             await task.wait()
             self._task_discard(task)
 
-            
     async def join(self):
         '''
         Wait for tasks in a task group to terminate according to the
@@ -542,12 +551,12 @@ class TaskGroup(object):
                     if self.completed is None:
                         # For wait=object, the self.completed attribute is the first non-None result
                         if not ((self._wait is object) and (not task.exception) and (task.result is None)):
-                            self.completed = task 
+                            self.completed = task
 
-                    # What happens next depends on the wait and error handling policies
+                            # What happens next depends on the wait and error handling policies
                     if task.exception or \
-                       (self._wait is any) or \
-                       ((self._wait is object) and (task.result is not None)):
+                            (self._wait is any) or \
+                            ((self._wait is object) and (task.result is not None)):
                         return
 
         # Task groups guarantee all tasks cancelled/terminated upon join()
@@ -594,6 +603,7 @@ class TaskGroup(object):
         except StopAsyncIteration:
             raise StopIteration
 
+
 # ----------------------------------------------------------------------
 # Public-facing task-related functions.  Some of these functions are
 # merely a layer over a low-level trap using async/await.  One reason
@@ -607,6 +617,7 @@ async def current_task():
     '''
     return await _get_current()
 
+
 async def spawn(corofunc, *args, daemon=False):
     '''
     Create a new task, running corofunc(*args). Use the daemon=True
@@ -616,6 +627,7 @@ async def spawn(corofunc, *args, daemon=False):
     task = await _spawn(coro)
     task.daemon = daemon
     return task
+
 
 # Context manager for supervising cancellation masking
 class _CancellationManager(object):
@@ -646,15 +658,19 @@ class _CancellationManager(object):
     def __exit__(self, *args):
         return thread.AWAIT(self.__aexit__(*args))
 
+
 def disable_cancellation(coro=None, *args):
     if coro is None:
         return _CancellationManager()
     else:
         coro = meta.instantiate_coroutine(coro, *args)
+
         async def run():
             async with _CancellationManager():
                 return await coro
+
         return run()
+
 
 async def check_cancellation(exc_type=None):
     '''
@@ -684,6 +700,7 @@ async def check_cancellation(exc_type=None):
             if exc_type:
                 task.cancel_pending = None
 
+
 async def set_cancellation(exc):
     '''
     Set a new pending cancellation exception. Returns the old exception.
@@ -693,8 +710,7 @@ async def set_cancellation(exc):
     task.cancel_pending = exc
     return result
 
+
 # Here to avoid circular import issues
 from . import thread
 from . import sync
-
-

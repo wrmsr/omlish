@@ -4,11 +4,13 @@
 
 __all__ = [
     'clock', 'sleep', 'timeout_after', 'ignore_after',
-    ]
+]
 
 # -- Standard library
 
 import logging
+
+
 log = logging.getLogger(__name__)
 
 # --- Curio
@@ -18,12 +20,14 @@ from .traps import *
 from .errors import *
 from . import meta
 
+
 async def clock():
     '''
     Immediately return the current value of the kernel clock. There
     are no side-effects such as task preemption or cancellation.
     '''
     return await _clock()
+
 
 async def sleep(seconds):
     '''
@@ -32,6 +36,7 @@ async def sleep(seconds):
     Returns the value of the kernel clock when awakened.
     '''
     return await _sleep(seconds)
+
 
 class _TimeoutAfter(object):
     '''
@@ -132,11 +137,13 @@ class _TimeoutAfter(object):
     def __exit__(self, *args):
         return thread.AWAIT(self.__aexit__(*args))
 
+
 async def _timeout_after_func(clock, coro, args,
                               ignore=False, timeout_result=None):
     coro = meta.instantiate_coroutine(coro, *args)
     async with _TimeoutAfter(clock, ignore=ignore, timeout_result=timeout_result):
         return await coro
+
 
 def timeout_after(seconds, coro=None, *args):
     '''
@@ -158,6 +165,7 @@ def timeout_after(seconds, coro=None, *args):
         return _TimeoutAfter(seconds)
     else:
         return _timeout_after_func(seconds, coro, args)
+
 
 def ignore_after(seconds, coro=None, *args, timeout_result=None):
     '''
@@ -191,5 +199,6 @@ def ignore_after(seconds, coro=None, *args, timeout_result=None):
         return _TimeoutAfter(seconds, ignore=True, timeout_result=timeout_result)
     else:
         return _timeout_after_func(seconds, coro, args, ignore=True, timeout_result=timeout_result)
+
 
 from . import thread

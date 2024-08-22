@@ -2,13 +2,14 @@
 #
 # An example of a simple SSL server.  To test, connect via browser
 
-import os
-import curio
-from .. import ssl
 import time
 
+import curio
 
-KEYFILE = "ssl_test_rsa"    # Private key
+from .. import ssl
+
+
+KEYFILE = "ssl_test_rsa"  # Private key
 # Certificate (self-signed)
 CERTFILE = "ssl_test.crt"
 

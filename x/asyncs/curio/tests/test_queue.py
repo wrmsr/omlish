@@ -1,14 +1,16 @@
 # test_queue.py
 
-from collections import deque
-from .. import *
-import time
-import threading
 import asyncio
+import threading
+import time
+
+from .. import *
 from ..traps import _read_wait
+
 
 def test_queue_simple(kernel):
     results = []
+
     async def consumer(queue, label):
         while True:
             item = await queue.get()
@@ -53,6 +55,7 @@ def test_queue_simple(kernel):
 
 def test_queue_unbounded(kernel):
     results = []
+
     async def consumer(queue, label):
         while True:
             item = await queue.get()
@@ -92,6 +95,7 @@ def test_queue_unbounded(kernel):
 
 def test_queue_bounded(kernel):
     results = []
+
     async def consumer(queue, label):
         while True:
             item = await queue.get()
@@ -137,6 +141,7 @@ def test_queue_bounded(kernel):
 def test_queue_get_cancel(kernel):
     # Make sure a blocking get can be cancelled
     results = []
+
     async def consumer():
         queue = Queue()
         try:
@@ -187,6 +192,7 @@ def test_queue_put_cancel(kernel):
 def test_queue_get_timeout(kernel):
     # Make sure a blocking get respects timeouts
     results = []
+
     async def consumer():
         queue = Queue()
         try:
@@ -223,13 +229,16 @@ def test_queue_put_timeout(kernel):
         'producer timeout'
     ]
 
+
 def test_queue_qsize(kernel):
     async def main():
         q = Queue()
         repr(q)
         await q.put(1)
         assert q.qsize() == 1
+
     kernel.run(main)
+
 
 def test_priority_queue(kernel):
     results = []
@@ -290,14 +299,17 @@ def test_lifo_queue(kernel):
     kernel.run(producer())
     assert results == list(reversed(items))
 
+
 def test_univ_queue_basic(kernel):
     q = UniversalQueue()
     assert q.empty()
     assert q.qsize() == 0
     assert not q.full()
 
+
 def test_univ_queue_sync_async(kernel):
-    result = [ ]
+    result = []
+
     async def consumer(q):
         while True:
             item = await q.get()
@@ -322,12 +334,14 @@ def test_univ_queue_sync_async(kernel):
         await run_in_thread(t2.join)
         await q.put(None)
         await t1.join()
-        assert result == [0,1,2,3,4,5,6,7,8,9]
+        assert result == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     kernel.run(main())
 
+
 def test_univ_queue_async_sync(kernel):
     result = []
+
     def consumer(q):
         while True:
             item = q.get()
@@ -351,9 +365,10 @@ def test_univ_queue_async_sync(kernel):
         await t2.join()
         await q.put(None)
         await run_in_thread(t1.join)
-        assert result == [0,1,2,3,4,5,6,7,8,9]
+        assert result == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     kernel.run(main())
+
 
 def test_univ_queue_cancel(kernel):
     result = []
@@ -383,9 +398,10 @@ def test_univ_queue_cancel(kernel):
         await run_in_thread(t2.join)
         await q.put(None)
         await t1.join()
-        assert result == [0,1,2,3,4,5,6,7,8,9]
+        assert result == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     kernel.run(main())
+
 
 def test_univ_queue_multiple_consumer(kernel):
     result = []
@@ -465,8 +481,10 @@ def test_univ_queue_multiple_kernels(kernel):
 
     kernel.run(main())
 
+
 def test_univ_queue_withfd(kernel):
-    result = [ ]
+    result = []
+
     async def consumer(q):
         while True:
             await _read_wait(q)
@@ -491,10 +509,9 @@ def test_univ_queue_withfd(kernel):
         await run_in_thread(t2.join)
         await q.put(None)
         await t1.join()
-        assert result == [0,1,2,3,4,5,6,7,8,9]
+        assert result == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     kernel.run(main())
-
 
 
 def test_uqueue_asyncio_prod(kernel):
@@ -523,8 +540,10 @@ def test_uqueue_asyncio_prod(kernel):
 
     kernel.run(consumer())
 
+
 def test_uqueue_asyncio_consumer(kernel):
     results = []
+
     async def consumer(queue):
         while True:
             item = await queue.get()
@@ -546,18 +565,19 @@ def test_uqueue_asyncio_consumer(kernel):
     t1.join()
     assert results == list(range(10))
 
+
 def test_uqueue_withfd_corner(kernel):
     async def main():
         queue = UniversalQueue(withfd=True)
         await queue.put(1)
-        queue._get_sock.recv(1000)    # Drain the socket
+        queue._get_sock.recv(1000)  # Drain the socket
         item = await queue.get()
         assert item == 1
 
         # Fill the I/O buffer
         while True:
             try:
-                queue._put_sock.send(b'x'*10000)
+                queue._put_sock.send(b'x' * 10000)
             except BlockingIOError:
                 break
 
@@ -567,6 +587,7 @@ def test_uqueue_withfd_corner(kernel):
         assert item == 2
 
     kernel.run(main)
+
 
 def test_uqueue_put_cancel(kernel):
     async def main():
@@ -579,13 +600,3 @@ def test_uqueue_put_cancel(kernel):
             assert True
 
     kernel.run(main)
-
-
-
-
-
-
-
-
-
-

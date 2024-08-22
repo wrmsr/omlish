@@ -41,29 +41,30 @@
 #   |________| result |___________| Event  |_________|
 #
 
-__all__ = [ 'AWAIT', 'spawn_thread' ]
+__all__ = ['AWAIT', 'spawn_thread']
 
 # -- Standard Library
 
+import logging
 import threading
 from concurrent.futures import Future
-from functools import wraps
-from inspect import iscoroutine, isgenerator
-from contextlib import contextmanager
-import logging
+from inspect import iscoroutine
+from inspect import isgenerator
+
 
 log = logging.getLogger(__name__)
 
 # -- Curio
 
 from . import sync
-from . import queue
-from .task import spawn, disable_cancellation, check_cancellation, set_cancellation
+from .task import spawn, disable_cancellation
 from .traps import _future_wait
 from . import errors
 from . import meta
 
+
 _locals = threading.local()
+
 
 class AsyncThread(object):
 
@@ -210,6 +211,7 @@ class AsyncThread(object):
     def state(self):
         return self._task.state
 
+
 def AWAIT(coro, *args, **kwargs):
     '''
     Await for a coroutine in an asynchronous thread.  If coro is
@@ -221,6 +223,7 @@ def AWAIT(coro, *args, **kwargs):
         if meta.iscoroutinefunction(coro) and hasattr(_locals, 'thread'):
             async def _coro(coro):
                 return await coro(*args, **kwargs)
+
             coro = _coro(coro)
         else:
             coro = coro(*args, **kwargs)
@@ -238,6 +241,7 @@ def AWAIT(coro, *args, **kwargs):
     else:
         return coro
 
+
 def spawn_thread(func, *args, daemon=False):
     '''
     Launch an async thread.  This mimicks the way a task is normally spawned. For
@@ -248,7 +252,7 @@ def spawn_thread(func, *args, daemon=False):
          await t.join()
     '''
     if iscoroutine(func) or meta.iscoroutinefunction(func):
-          raise TypeError("spawn_thread() can't be used on coroutines")
+        raise TypeError("spawn_thread() can't be used on coroutines")
 
     async def runner(args, daemon):
         t = AsyncThread(func, args=args, daemon=daemon)
@@ -256,6 +260,7 @@ def spawn_thread(func, *args, daemon=False):
         return t
 
     return runner(args, daemon)
+
 
 def is_async_thread():
     '''

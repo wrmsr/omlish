@@ -1,10 +1,15 @@
 # test_kernel.py
 
 import time
+
 import pytest
+
 from .. import *
+
+
 kernel_clock = clock
 from .. import traps
+
 
 def test_hello(kernel):
 
@@ -13,6 +18,7 @@ def test_hello(kernel):
 
     result = kernel.run(hello)
     assert result == 'hello'
+
 
 def test_raise(kernel):
     class Error(Exception):
@@ -29,8 +35,10 @@ def test_raise(kernel):
     except:
         assert False, 'boom() raised wrong error'
 
+
 def test_sleep(kernel):
     start = end = 0
+
     async def main():
         nonlocal start, end
         start = time.time()
@@ -41,13 +49,16 @@ def test_sleep(kernel):
     elapsed = end - start
     assert elapsed > 0.5
 
+
 def test_clock(kernel):
     async def main():
         start = await clock()
         await sleep(0.1)
         end = await clock()
         assert (end - start) >= 0.1
+
     kernel.run(main)
+
 
 def test_sleep_cancel(kernel):
     cancelled = False
@@ -68,6 +79,7 @@ def test_sleep_cancel(kernel):
     kernel.run(main)
     assert cancelled
 
+
 def test_sleep_timeout(kernel):
     cancelled = True
 
@@ -85,6 +97,7 @@ def test_sleep_timeout(kernel):
 
     kernel.run(main)
     assert cancelled
+
 
 def test_sleep_ignore_timeout(kernel):
     async def sleeper():
@@ -108,6 +121,7 @@ def test_sleep_ignore_timeout(kernel):
 
     kernel.run(main)
 
+
 def test_sleep_notimeout(kernel):
     async def sleeper():
         try:
@@ -124,6 +138,7 @@ def test_sleep_notimeout(kernel):
 
     kernel.run(main)
 
+
 def test_task_join(kernel):
     async def child():
         return 37
@@ -134,6 +149,7 @@ def test_task_join(kernel):
         assert r == 37
 
     kernel.run(main)
+
 
 def test_task_join_error(kernel):
     async def child():
@@ -149,8 +165,10 @@ def test_task_join_error(kernel):
 
     kernel.run(main)
 
+
 def test_task_cancel(kernel):
     cancelled = False
+
     async def child():
         nonlocal cancelled
         try:
@@ -165,6 +183,7 @@ def test_task_cancel(kernel):
         assert cancelled
 
     kernel.run(main)
+
 
 def test_task_cancel_poll(kernel):
     results = []
@@ -185,6 +204,7 @@ def test_task_cancel_poll(kernel):
 
     kernel.run(main)
     assert results == ['success', 'cancelled', 'done']
+
 
 def test_task_cancel_not_blocking(kernel):
     async def child(e1, e2):
@@ -212,6 +232,7 @@ def test_task_cancel_not_blocking(kernel):
 
 def test_task_cancel_join(kernel):
     child_evt = Event()
+
     async def child():
         await child_evt.wait()
         assert False
@@ -232,6 +253,7 @@ def test_task_cancel_join(kernel):
 
     kernel.run(main)
 
+
 def test_task_cancel_join_wait(kernel):
     evt = Event()
 
@@ -247,7 +269,7 @@ def test_task_cancel_join_wait(kernel):
         await task2.join()
         assert not evt.is_set()
         try:
-            await task1.join()     # Should raise TaskError... with CancelledError as cause
+            await task1.join()  # Should raise TaskError... with CancelledError as cause
             assert False
         except TaskError as e:
             assert isinstance(e.__cause__, CancelledError)
@@ -255,6 +277,7 @@ def test_task_cancel_join_wait(kernel):
             assert False
 
     kernel.run(main)
+
 
 def test_task_child_cancel(kernel):
     results = []
@@ -333,7 +356,7 @@ def test_task_ready_cancel(kernel):
     async def main():
         task = await spawn(parent)
         await sleep(0.1)
-        time.sleep(1)      # Forced block of the event loop. Both tasks should awake when we come back
+        time.sleep(1)  # Forced block of the event loop. Both tasks should awake when we come back
         await sleep(0.1)
 
     kernel.run(main)
@@ -368,7 +391,7 @@ def test_double_cancel(kernel):
             await timeout_after(1, task.cancel())
         except TaskTimeout:
             results.append('retry')
-            await task.cancel()    # This second cancel should not abort any operation in sleeper
+            await task.cancel()  # This second cancel should not abort any operation in sleeper
             results.append('done cancel')
 
     kernel.run(main)
@@ -466,6 +489,7 @@ def test_nested_context_timeout(kernel):
         'parent timeout'
     ]
 
+
 def test_nested_context_timeout2(kernel):
     async def coro1():
         try:
@@ -498,6 +522,7 @@ def test_nested_context_timeout2(kernel):
 
     kernel.run(parent)
 
+
 def test_nested_context_timeout3(kernel):
     async def coro1():
         try:
@@ -526,6 +551,7 @@ def test_nested_context_timeout3(kernel):
             assert False
 
     kernel.run(parent)
+
 
 def test_nested_timeout_uncaught(kernel):
     results = []
@@ -611,9 +637,9 @@ def test_nested_timeout_none(kernel):
     kernel.run(parent)
     assert results == [
         'coro1 start',
-#        'coro1 done',
-#        'coro1 success',
-#        'coro2 start',
+        #        'coro1 done',
+        #        'coro1 success',
+        #        'coro2 start',
         'parent timeout'
     ]
 
@@ -631,6 +657,7 @@ def test_task_run_error(kernel):
         pass
     except:
         assert False, "Wrong exception raised"
+
 
 def test_sleep_0_starvation(kernel):
     # This task should not block other tasks from running, and should be
@@ -689,6 +716,7 @@ def test_ping_pong_starvation(kernel):
 
     kernel.run(main)
 
+
 def test_task_cancel_timeout(kernel):
     # Test that cancellation also cancels timeouts
     results = []
@@ -706,7 +734,7 @@ def test_task_cancel_timeout(kernel):
         results.append('child')
         try:
             async with timeout_after(1):
-                 await coro()
+                await coro()
         except TaskTimeout:
             results.append('timeout')
 
@@ -716,7 +744,8 @@ def test_task_cancel_timeout(kernel):
         await task.cancel()
 
     kernel.run(main)
-    assert results == [ 'child', 'cancelled', 'done cancel' ]
+    assert results == ['child', 'cancelled', 'done cancel']
+
 
 def test_reentrant_kernel(kernel):
     async def child():
@@ -728,7 +757,9 @@ def test_reentrant_kernel(kernel):
 
     kernel.run(main)
 
+
 from ..traps import *
+
 
 def test_pending_cancellation(kernel):
     async def main():
@@ -755,10 +786,10 @@ def test_pending_cancellation(kernel):
 
     kernel.run(main)
 
-from functools import partial
 
 def test_single_stepping(kernel):
     value = 0
+
     async def child():
         nonlocal value
         await sleep(0)
@@ -774,6 +805,7 @@ def test_single_stepping(kernel):
     kernel.run()
     assert value == 2
 
+
 def test_io_registration(kernel):
     # Tests some tricky corner cases of the kernel that are difficult
     # to get to under normal socket usage
@@ -785,7 +817,7 @@ def test_io_registration(kernel):
     # Fill the send buffer
     while True:
         try:
-            s1.send(b'x'*100000)
+            s1.send(b'x' * 100000)
         except BlockingIOError:
             break
 
@@ -815,7 +847,9 @@ def test_io_registration(kernel):
 
     kernel.run(main)
 
+
 from functools import partial
+
 
 def test_coro_partial(kernel):
     async def func(x, y, z):
@@ -826,13 +860,13 @@ def test_coro_partial(kernel):
 
     async def main():
         assert await func(1, 2, 3)
-        assert await ignore_after(1, func(1,2,3))
+        assert await ignore_after(1, func(1, 2, 3))
         assert await ignore_after(1, func, 1, 2, 3)
         assert await ignore_after(1, partial(func, 1, 2), 3)
         assert await ignore_after(1, partial(func, z=3), 1, 2)
 
         # Try spawns
-        t = await spawn(func(1,2,3))
+        t = await spawn(func(1, 2, 3))
         assert await t.join()
 
         t = await spawn(func, 1, 2, 3)
@@ -846,11 +880,13 @@ def test_coro_partial(kernel):
 
     kernel.run(main)
 
+
 def test_custom_cancel(kernel):
     class CustomCancelled(CancelledError):
         pass
 
     evt = Event()
+
     async def child():
         try:
             await evt.wait()
@@ -867,11 +903,12 @@ def test_custom_cancel(kernel):
 
     kernel.run(main)
 
+
 def test_timeout_badness(kernel):
     import time
     async def main():
         async with timeout_after(0.1):
-            time.sleep(0.2)   # Timeout will take too long. Should issue a warning.
+            time.sleep(0.2)  # Timeout will take too long. Should issue a warning.
 
         # Execution should make it here.  There were no blocking operations to cancel.
         # It makes no sense to issue a cancellation on the next operation because we're
@@ -879,6 +916,7 @@ def test_timeout_badness(kernel):
         assert True
 
     kernel.run(main)
+
 
 def test_kernel_no_shutdown():
     # Code coverage test
@@ -898,8 +936,8 @@ def test_kernel_exit():
         raise SystemExit()
 
     with pytest.raises(SystemExit):
-         with Kernel() as k:
-             k.run(main)
+        with Kernel() as k:
+            k.run(main)
 
 
 def test_kernel_badtrap():
@@ -909,8 +947,9 @@ def test_kernel_badtrap():
         await _kernel_trap('bogus', 1)
 
     with pytest.raises(KeyError):
-         with Kernel() as k:
-             k.run(main)
+        with Kernel() as k:
+            k.run(main)
+
 
 def test_kernel_multischedule(kernel):
     async def sleeper():
@@ -920,37 +959,33 @@ def test_kernel_multischedule(kernel):
         except TaskTimeout:
             assert False
 
-        await sleep(0.1)    # Should not crash!
+        await sleep(0.1)  # Should not crash!
         return True
 
     async def main():
         import time
         t = await spawn(sleeper)
         await sleep(0.1)
-        time.sleep(1)     # Force time clock to elapse past both the sleep and outer timeout
+        time.sleep(1)  # Force time clock to elapse past both the sleep and outer timeout
         r = await t.join()
         assert r
 
     kernel.run(main)
+
 
 def test_kernel_debug():
     from ..debug import schedtrace, traptrace
     async def hello():
         await sleep(0)
 
-    with Kernel(debug=[schedtrace,traptrace]) as k:
-         k.run(hello)
+    with Kernel(debug=[schedtrace, traptrace]) as k:
+        k.run(hello)
 
     with Kernel(debug=True) as k:
-         k.run(hello)
+        k.run(hello)
 
     with Kernel(debug=schedtrace) as k:
-         k.run(hello)
+        k.run(hello)
 
     with Kernel(debug=schedtrace(filter='none')) as k:
         k.run(hello)
-
-
-
-
-

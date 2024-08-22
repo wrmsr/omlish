@@ -1,7 +1,10 @@
 # An example of a server involving a CPU-intensive task.  We'll farm the
 # CPU-intensive work out to a separate process.
 
-from .. import run, run_in_process, tcp_server
+from .. import run
+from .. import run_in_process
+from .. import tcp_server
+
 
 def fib(n):
     if n <= 2:
