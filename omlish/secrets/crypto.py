@@ -99,7 +99,7 @@ class OpensslSubprocessCrypto(Crypto):
         return secrets.token_bytes(sz)
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(key) as fi:
+        with self._file_input(key.hex().upper().encode('ascii')) as fi:
             proc = subprocess.Popen(
                 [
                     *self._cmd,
@@ -109,7 +109,7 @@ class OpensslSubprocessCrypto(Crypto):
                     '-e',
                     '-aes256',
                     '-pbkdf2',
-                    '-kfile', fi.file_path,
+                    '-pass', f'file:{fi.file_path}',
                 ],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -125,7 +125,7 @@ class OpensslSubprocessCrypto(Crypto):
             return out
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(key) as fi:
+        with self._file_input(key.hex().upper().encode('ascii')) as fi:
             proc = subprocess.Popen(
                 [
                     *self._cmd,
@@ -134,7 +134,7 @@ class OpensslSubprocessCrypto(Crypto):
                     '-pbkdf2',
                     '-in', '-',
                     '-out', '-',
-                    '-kfile', fi.file_path,
+                    '-pass', f'file:{fi.file_path}',
                 ],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,

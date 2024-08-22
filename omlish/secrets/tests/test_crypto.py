@@ -7,8 +7,8 @@ from ..subprocesses import temp_subprocess_file_input
 
 @pytest.mark.parametrize('sec', [
     crypto.OpensslSubprocessCrypto(),
-    crypto.OpensslSubprocessCrypto(file_input=temp_subprocess_file_input),  # noqa
-    # crypto.OpensslSubprocessCrypto(file_input=pipe_fd_subprocess_file_input),  # noqa
+    # crypto.OpensslSubprocessCrypto(file_input=temp_subprocess_file_input),  # noqa
+    crypto.OpensslSubprocessCrypto(file_input=pipe_fd_subprocess_file_input),  # noqa
 ])
 def test_openssl_subproc_crypto(sec: crypto.Crypto) -> None:
     key = sec.generate_key()
