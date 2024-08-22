@@ -1,5 +1,9 @@
+# ruff: noqa: UP006
 import functools
 import typing as ta
+
+
+T = ta.TypeVar('T')
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -31,3 +35,15 @@ def is_optional_alias(spec: ta.Any) -> bool:
 def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
     return it
+
+
+def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
+    seen = set()
+    todo = list(reversed(cls.__subclasses__()))
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        yield cur
+        todo.extend(reversed(cur.__subclasses__()))
