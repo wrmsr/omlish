@@ -1,13 +1,12 @@
 from ... import dataclasses as dc
 from ... import marshal as msh
-from ..marshal import marshal_secret_field
 from ..secrets import SecretRef
 
 
 @dc.dataclass(frozen=True)
 class Cred:
     username: str
-    password: str | SecretRef = dc.field() | marshal_secret_field
+    password: str | SecretRef = dc.field()
 
 
 def test_secrets():

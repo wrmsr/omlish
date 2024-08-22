@@ -3,6 +3,10 @@ TODO:
  - SqlFunctionSecrets (in .sql?)
  - crypto is just Transformed, bound with a key
  - crypto key in env + values in file?
+ - Secret:
+  - hold ref to Secret, and key
+  - time of retrieval
+  - logs accesses
 """
 import abc
 import collections
@@ -18,6 +22,20 @@ from .. import lang
 
 
 log = logging.getLogger(__name__)
+
+
+##
+
+
+class Secret(lang.NotPicklable, lang.Final):
+    _VALUE_ATTR = '__secret_value__'
+
+    def __init__(self, value: str) -> None:
+        super().__init__()
+        setattr(self, self._VALUE_ATTR, lambda: value)
+
+    def reveal(self) -> str:
+        return getattr(self, self._VALUE_ATTR)()
 
 
 ##
@@ -41,16 +59,26 @@ def secret_repr(o: str | SecretRef | None) -> str | None:
 
 
 class Secrets(lang.Abstract):
-    def fix(self, obj: str | SecretRef) -> str:
-        if isinstance(obj, str):
+    def fix(self, obj: str | SecretRef | Secret) -> Secret:
+        if isinstance(obj, Secret):
             return obj
+        elif isinstance(obj, str):
+            return Secret(obj)
         elif isinstance(obj, SecretRef):
             return self.get(obj.key)
         else:
             raise TypeError(obj)
 
+    def get(self, key: str) -> Secret:
+        try:
+            raw = self._get_raw(key)
+        except KeyError:
+            raise
+        else:
+            return Secret(raw)
+
     @abc.abstractmethod
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         raise NotImplementedError
 
 
@@ -58,7 +86,7 @@ class Secrets(lang.Abstract):
 
 
 class EmptySecrets(Secrets):
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         raise KeyError(key)
 
 
@@ -76,7 +104,7 @@ class MappingSecrets(Secrets):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({{{", ".join(map(repr, self._dct.keys()))}}})'
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         return self._dct[key]
 
 
@@ -87,7 +115,7 @@ class MappingSecrets(Secrets):
 class FnSecrets(Secrets):
     fn: ta.Callable[[str], str]
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         return self.fn(key)
 
 
@@ -99,8 +127,9 @@ class TransformedSecrets(Secrets):
     fn: ta.Callable[[str], str]
     child: Secrets
 
-    def get(self, key: str) -> str:
-        return self.fn(self.child.get(key))
+    def _get_raw(self, key: str) -> str:
+        # FIXME: hm..
+        return self.fn(self.child._get_raw(key))
 
 
 ##
@@ -133,13 +162,13 @@ class CachingSecrets(Secrets):
             del self._dct[k]
             self._deque.popleft()
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         self.evict()
         try:
             return self._dct[key]
         except KeyError:
             pass
-        out = self._child.get(key)
+        out = self._child._get_raw(key)
         self._dct[key] = out
         if self._ttl_s is not None:
             dl = self._clock() + self._ttl_s
@@ -155,10 +184,10 @@ class CompositeSecrets(Secrets):
         super().__init__()
         self._children = children
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         for c in self._children:
             try:
-                return c.get(key)
+                return c._get_raw(key)
             except KeyError:
                 pass
         raise KeyError(key)
@@ -201,11 +230,11 @@ class LoggingSecrets(Secrets):
             f = f.f_back
         return ', '.join(l)
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         cs = self._get_caller_str()
         self._log.info('Attempting to access secret: %s, %s', key, cs)
         try:
-            ret = self._child.get(key)
+            ret = self._child._get_raw(key)
         except KeyError:
             self._log.info('Failed to access secret: %s, cs', key, cs)
             raise
@@ -232,7 +261,7 @@ class EnvVarSecrets(Secrets):
         self._prefix = prefix
         self._pop = pop
 
-    def get(self, key: str) -> str:
+    def _get_raw(self, key: str) -> str:
         ekey = key
         if self._upcase:
             ekey = ekey.upper()

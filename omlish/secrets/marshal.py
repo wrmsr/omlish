@@ -1,5 +1,6 @@
 """
 TODO:
+ - ensure import order or at least warn or smth lol
  - auto-register forbidden factory for Secret
  - auto-register union - need consistent placement in marshal - raise exception on ambiguous 'registered' impls
 """
@@ -8,8 +9,13 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
+from .. import lang
 from .. import marshal as msh
+from .. import reflect as rfl
 from .secrets import SecretRef
+
+
+SecretRefOrStr: ta.TypeAlias = SecretRef | str
 
 
 class StrOrSecretRefMarshalerUnmarshaler(msh.Marshaler, msh.Unmarshaler):
@@ -42,3 +48,17 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
             unmarshaler=StrOrSecretRefMarshalerUnmarshaler(),
         ),
     })
+
+
+@lang.cached_function
+def _install_standard_marshalling() -> None:
+    msh.STANDARD_MARSHALER_FACTORIES.insert(0, msh.TypeMapMarshalerFactory({
+        rfl.type_(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+    }))
+
+    msh.STANDARD_UNMARSHALER_FACTORIES.insert(0, msh.TypeMapUnmarshalerFactory({
+        rfl.type_(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+    }))
+
+
+_install_standard_marshalling()

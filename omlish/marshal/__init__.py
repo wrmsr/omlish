@@ -5,6 +5,15 @@ from .base import (  # noqa
     MarshalerFactory,
     UnmarshalerFactory,
 
+    MarshalerFactoryMatchClass,
+    UnmarshalerFactoryMatchClass,
+
+    TypeMapMarshalerFactory,
+    TypeMapUnmarshalerFactory,
+
+    TypeCacheMarshalerFactory,
+    TypeCacheUnmarshalerFactory,
+
     FuncMarshaler,
     FuncUnmarshaler,
 
@@ -22,6 +31,11 @@ from .exceptions import (  # noqa
     ForbiddenTypeError,
     MarshalError,
     UnhandledTypeError,
+)
+
+from .forbidden import (  # noqa
+    ForbiddenTypeMarshalerFactory,
+    ForbiddenTypeUnmarshalerFactory,
 )
 
 from .naming import (  # noqa
