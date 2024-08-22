@@ -104,11 +104,11 @@ class OpensslSubprocessCrypto(Crypto):
                 [
                     *self._cmd,
                     'enc',
-                    '-in', '-',
-                    '-out', '-',
-                    '-e',
                     '-aes256',
                     '-pbkdf2',
+
+                    '-in', '-',
+                    '-out', '-',
                     '-pass', f'file:{fi.file_path}',
                 ],
                 stdin=subprocess.PIPE,
@@ -132,6 +132,7 @@ class OpensslSubprocessCrypto(Crypto):
                     'aes-256-cbc',
                     '-d',
                     '-pbkdf2',
+
                     '-in', '-',
                     '-out', '-',
                     '-pass', f'file:{fi.file_path}',
