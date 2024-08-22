@@ -43,10 +43,8 @@ else:
 
 
 class Crypto(abc.ABC):
-    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 1024
-
     @abc.abstractmethod
-    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
+    def generate_key(self) -> bytes:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -74,7 +72,9 @@ class OpensslSubprocessCrypto(Crypto):
         self._timeout = timeout
         self._file_input = file_input
 
-    def generate_key(self, sz: int = Crypto.DEFAULT_KEY_SIZE) -> bytes:
+    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 1024
+
+    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
         check.arg(sz > 0)
         ret = subprocess.run(
             [
@@ -141,7 +141,7 @@ class OpensslSubprocessCrypto(Crypto):
 
 class FernetCrypto(Crypto):
 
-    def generate_key(self, sz: int = Crypto.DEFAULT_KEY_SIZE) -> bytes:
+    def generate_key(self) -> bytes:
         return fernet.Fernet.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:

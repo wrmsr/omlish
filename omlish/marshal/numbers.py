@@ -1,0 +1,53 @@
+import decimal
+import fractions
+import typing as ta
+
+from .. import check
+from .base import MarshalContext
+from .base import Marshaler
+from .base import TypeMapMarshalerFactory
+from .base import TypeMapUnmarshalerFactory
+from .base import UnmarshalContext
+from .base import Unmarshaler
+from .values import Value
+
+
+class ComplexMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        c = check.isinstance(o, complex)
+        return [c.real, c.imag]
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        real, imag = check.isinstance(v, list)
+        return complex(real, imag)  # type: ignore
+
+
+class DecimalMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        return str(check.isinstance(o, decimal.Decimal))
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        return decimal.Decimal(check.isinstance(v, str))
+
+
+class FractionMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        fr = check.isinstance(o, fractions.Fraction)
+        return [fr.numerator, fr.denominator]
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        num, denom = check.isinstance(v, list)
+        return fractions.Fraction(num, denom)  # type: ignore
+
+
+NUMBERS_MARSHALER_FACTORY = TypeMapMarshalerFactory({
+    complex: ComplexMarshalerUnmarshaler(),
+    decimal.Decimal: DecimalMarshalerUnmarshaler(),
+    fractions.Fraction: FractionMarshalerUnmarshaler(),
+})
+
+NUMBERS_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({
+    complex: ComplexMarshalerUnmarshaler(),
+    decimal.Decimal: DecimalMarshalerUnmarshaler(),
+    fractions.Fraction: FractionMarshalerUnmarshaler(),
+})
