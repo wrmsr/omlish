@@ -21,7 +21,7 @@ def _build_engine(
 ) -> sql.AsyncEngine:
     check.equal(spec.type, dbs.DbTypes.POSTGRES)
     ul = check.isinstance(spec.loc, dbs.UrlDbLoc)
-    e = sql.async_adapt(saa.create_async_engine(secrets.fix(ul.url), echo=True))
+    e = sql.async_adapt(saa.create_async_engine(secrets.fix(ul.url).reveal(), echo=True))
 
     log.info('Sqlalchemy engine created: %r', e)
 

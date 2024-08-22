@@ -4,6 +4,8 @@ import types
 import typing as ta
 
 from .. import check
+from .impl.params import FieldExtras
+from .impl.params import get_field_extras
 
 
 T = ta.TypeVar('T')
@@ -42,6 +44,16 @@ def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
     check.isinstance(f, dc.Field)
     f.metadata = chain_metadata(nmd, f.metadata)
     return f
+
+
+def update_field_extras(f: dc.Field, **kwargs: ta.Any) -> dc.Field:
+    # check.isinstance(f, dc.Field)
+    # f.metadata = chain_metadata(nmd, f.metadata)
+    # return f
+    fe = get_field_extras(f)
+    return update_field_metadata(f, {
+        FieldExtras: dc.replace(fe, **kwargs),
+    })
 
 
 def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]) -> T:

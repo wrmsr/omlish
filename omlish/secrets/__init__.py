@@ -8,7 +8,9 @@ from .secrets import (  # noqa
     LoggingSecrets,
     MappingSecrets,
     SecretRef,
+    SecretRefOrStr,
     Secrets,
+    secret_field,
     secret_repr,
 )
 

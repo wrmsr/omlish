@@ -34,6 +34,9 @@ class Secret(lang.NotPicklable, lang.Final):
         super().__init__()
         setattr(self, self._VALUE_ATTR, lambda: value)
 
+    def __str__(self) -> ta.NoReturn:
+        raise TypeError
+
     def reveal(self) -> str:
         return getattr(self, self._VALUE_ATTR)()
 
@@ -46,13 +49,26 @@ class SecretRef:
     key: str
 
 
-def secret_repr(o: str | SecretRef | None) -> str | None:
+SecretRefOrStr: ta.TypeAlias = SecretRef | str
+
+
+def secret_repr(o: SecretRefOrStr | None) -> str | None:
     if isinstance(o, str):
         return '...'
     elif isinstance(o, SecretRef):
         return repr(o)
-    else:
+    elif o is None:
         return None
+    else:
+        raise TypeError(o)
+
+
+@dc.field_modifier
+def secret_field(f: dc.Field) -> dc.Field:
+    return dc.update_field_extras(
+        f,
+        repr_fn=secret_repr,
+    )
 
 
 ##
@@ -71,8 +87,8 @@ class Secrets(lang.Abstract):
 
     def get(self, key: str) -> Secret:
         try:
-            raw = self._get_raw(key)
-        except KeyError:
+            raw = self._get_raw(key)  # noqa
+        except KeyError:  # noqa
             raise
         else:
             return Secret(raw)
@@ -129,7 +145,7 @@ class TransformedSecrets(Secrets):
 
     def _get_raw(self, key: str) -> str:
         # FIXME: hm..
-        return self.fn(self.child._get_raw(key))
+        return self.fn(self.child._get_raw(key))  # noqa
 
 
 ##
@@ -168,7 +184,7 @@ class CachingSecrets(Secrets):
             return self._dct[key]
         except KeyError:
             pass
-        out = self._child._get_raw(key)
+        out = self._child._get_raw(key)  # noqa
         self._dct[key] = out
         if self._ttl_s is not None:
             dl = self._clock() + self._ttl_s
@@ -187,7 +203,7 @@ class CompositeSecrets(Secrets):
     def _get_raw(self, key: str) -> str:
         for c in self._children:
             try:
-                return c._get_raw(key)
+                return c._get_raw(key)  # noqa
             except KeyError:
                 pass
         raise KeyError(key)
@@ -234,12 +250,12 @@ class LoggingSecrets(Secrets):
         cs = self._get_caller_str()
         self._log.info('Attempting to access secret: %s, %s', key, cs)
         try:
-            ret = self._child._get_raw(key)
+            ret = self._child._get_raw(key)  # noqa
         except KeyError:
-            self._log.info('Failed to access secret: %s, cs', key, cs)
+            self._log.info('Failed to access secret: %s, %s', key, cs)
             raise
         else:
-            self._log.info('Successfully accessed secret: %s, cs', key, cs)
+            self._log.info('Successfully accessed secret: %s, %s', key, cs)
             return ret
 
 
