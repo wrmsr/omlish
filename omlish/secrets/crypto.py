@@ -27,9 +27,16 @@ import subprocess
 import typing as ta
 
 from .. import check
+from .. import lang
 from .subprocesses import SubprocessFileInputMethod
 from .subprocesses import pipe_fd_subprocess_file_input  # noqa
 from .subprocesses import temp_subprocess_file_input  # noqa
+
+
+if ta.TYPE_CHECKING:
+    from cryptography import fernet
+else:
+    fernet = lang.proxy_import('cryptography.fernet')
 
 
 ##
@@ -135,7 +142,7 @@ class OpensslSubprocessCrypto(Crypto):
 class CryptographyCrypto(Crypto):
 
     def generate_key(self, sz: int = Crypto.DEFAULT_KEY_SIZE) -> bytes:
-        raise NotImplementedError
+        return fernet.Fernet.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         raise NotImplementedError
