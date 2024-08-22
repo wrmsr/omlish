@@ -50,8 +50,8 @@ class Crypto(abc.ABC):
 
 
 class SubprocessFileInput(ta.NamedTuple):
-    fp: str
-    kw: ta.Mapping[str, ta.Any]
+    file_path: str
+    pass_fds: ta.Sequence[int]
 
 
 @contextlib.contextmanager
@@ -59,7 +59,7 @@ def _temp_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInput]:
     with tempfile.NamedTemporaryFile() as kf:
         kf.write(buf)
         kf.flush()
-        yield SubprocessFileInput(kf.name, {})
+        yield SubprocessFileInput(kf.name, [])
 
 
 @contextlib.contextmanager
@@ -72,7 +72,7 @@ def _pipe_fd_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInpu
         os.write(wfd, buf)
         os.close(wfd)
         closed_wfd = True
-        yield SubprocessFileInput(f'/dev/fd/{rfd}', dict(pass_fds=[rfd]))
+        yield SubprocessFileInput(f'/dev/fd/{rfd}', [rfd])
     finally:
         if not closed_wfd:
             os.close(wfd)
@@ -121,13 +121,13 @@ class OpensslShellCrypto(Crypto):
                     '-e',
                     '-aes256',
                     '-pbkdf2',
-                    '-kfile', fi.fp,
+                    '-kfile', fi.file_path,
                 ],
                 input=data,
                 stdout=subprocess.PIPE,
                 timeout=self._timeout,
                 check=True,
-                **fi.kw,
+                pass_fds=[*fi.pass_fds],
             )
             out = ret.stdout
             return out
@@ -142,13 +142,13 @@ class OpensslShellCrypto(Crypto):
                     '-pbkdf2',
                     '-in', '-',
                     '-out', '-',
-                    '-kfile', fi.fp,
+                    '-kfile', fi.file_path,
                 ],
                 input=data,
                 stdout=subprocess.PIPE,
                 timeout=self._timeout,
                 check=True,
-                **fi.kw,
+                pass_fds=[*fi.pass_fds],
             )
             out = ret.stdout
             return out

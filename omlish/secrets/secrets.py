@@ -106,7 +106,7 @@ class LoggingSecrets(Secrets):
         self._child = child
         self._log = log if log is not None else globals()['log']
 
-    _IGNORE_PACKAGES: ta.ClassVar[ta.AbstractSet[str]] = {
+    IGNORE_PACKAGES: ta.ClassVar[ta.AbstractSet[str]] = {
         __package__,
     }
 
@@ -120,7 +120,7 @@ class LoggingSecrets(Secrets):
             except KeyError:
                 pkg = None
             else:
-                if pkg in self._IGNORE_PACKAGES:
+                if pkg in self.IGNORE_PACKAGES:
                     continue
             if (fn := f.f_code.co_filename):
                 l.append(f'{fn}:{f.f_lineno}')
