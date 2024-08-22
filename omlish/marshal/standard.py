@@ -19,6 +19,8 @@ from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
 from .mappings import MappingMarshalerFactory
 from .mappings import MappingUnmarshalerFactory
+from .numbers import NUMBERS_MARSHALER_FACTORY
+from .numbers import NUMBERS_UNMARSHALER_FACTORY
 from .optionals import OptionalMarshalerFactory
 from .optionals import OptionalUnmarshalerFactory
 from .primitives import PRIMITIVE_MARSHALER_FACTORY
@@ -35,6 +37,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     OptionalMarshalerFactory(),
     DataclassMarshalerFactory(),
     EnumMarshalerFactory(),
+    NUMBERS_MARSHALER_FACTORY,
     UUID_MARSHALER_FACTORY,
     BASE64_MARSHALER_FACTORY,
     DATETIME_MARSHALER_FACTORY,
@@ -62,6 +65,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     OptionalUnmarshalerFactory(),
     DataclassUnmarshalerFactory(),
     EnumUnmarshalerFactory(),
+    NUMBERS_UNMARSHALER_FACTORY,
     UUID_UNMARSHALER_FACTORY,
     BASE64_UNMARSHALER_FACTORY,
     DATETIME_UNMARSHALER_FACTORY,
