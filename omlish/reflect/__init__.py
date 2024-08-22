@@ -15,15 +15,8 @@ from .types import (  # noqa
 )
 
 from .ops import (  # noqa
-    ALIAS_UPDATING_GENERIC_SUBSTITUTION,
-    DEFAULT_GENERIC_SUBSTITUTION,
-    GenericSubstitution,
-    generic_mro,
     get_concrete_type,
-    get_generic_bases,
-    get_type_var_replacements,
     get_underlying,
-    replace_type_vars,
     strip_annotations,
     strip_objs,
     to_annotation,
@@ -33,4 +26,14 @@ from .ops import (  # noqa
 from .isinstance import (  # noqa
     KNOWN_ISINSTANCE_GENERICS,
     isinstance_of,
+)
+
+from .subst import (  # noqa
+    ALIAS_UPDATING_GENERIC_SUBSTITUTION,
+    DEFAULT_GENERIC_SUBSTITUTION,
+    GenericSubstitution,
+    generic_mro,
+    get_generic_bases,
+    get_type_var_replacements,
+    replace_type_vars,
 )
