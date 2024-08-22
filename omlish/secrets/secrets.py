@@ -1,6 +1,8 @@
 """
 TODO:
- - encryption? key in env + values in file?
+ - SqlFunctionSecrets (in .sql?)
+ - crypto is just Transformed, bound with a key
+ - crypto key in env + values in file?
 """
 import abc
 import collections
@@ -87,6 +89,18 @@ class FnSecrets(Secrets):
 
     def get(self, key: str) -> str:
         return self.fn(key)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class TransformedSecrets(Secrets):
+    fn: ta.Callable[[str], str]
+    child: Secrets
+
+    def get(self, key: str) -> str:
+        return self.fn(self.child.get(key))
 
 
 ##

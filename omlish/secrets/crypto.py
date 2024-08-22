@@ -139,13 +139,13 @@ class OpensslSubprocessCrypto(Crypto):
 ##
 
 
-class CryptographyCrypto(Crypto):
+class FernetCrypto(Crypto):
 
     def generate_key(self, sz: int = Crypto.DEFAULT_KEY_SIZE) -> bytes:
         return fernet.Fernet.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        raise NotImplementedError
+        return fernet.Fernet(key).encrypt(data)
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        raise NotImplementedError
+        return fernet.Fernet(key).decrypt(data)
