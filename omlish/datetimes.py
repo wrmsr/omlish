@@ -1,3 +1,4 @@
+# @omlish-lite
 import datetime
 import re
 
@@ -19,7 +20,6 @@ def months_ago(date: datetime.date, num: int) -> datetime.date:
 
 
 def parse_date(s: str, tz: datetime.timezone | None = None) -> datetime.date:
-
     if s.lower() in ['today', 'now']:
         return datetime.datetime.now(tz=tz)
     elif s.lower() == 'yesterday':
@@ -39,7 +39,8 @@ _TIMEDELTA_STR_RE = re.compile(
     r'((?P<days>-?\d+)\s*days?,\s*)?'
     r'(?P<hours>\d?\d):(?P<minutes>\d\d)'
     r':(?P<seconds>\d\d+(\.\d+)?)'
-    r'\s*$')
+    r'\s*$',
+)
 
 
 _TIMEDELTA_DHMS_RE = re.compile(
@@ -49,7 +50,8 @@ _TIMEDELTA_DHMS_RE = re.compile(
     r',?\s*((?P<hours>\d+(\.\d+)?)\s*(h|hours?))?'
     r',?\s*((?P<minutes>\d+(\.\d+)?)\s*(m|minutes?))?'
     r',?\s*((?P<seconds>\d+(\.\d+)?)\s*(s|secs?|seconds?))?'
-    r'\s*$')
+    r'\s*$',
+)
 
 
 def parse_timedelta(s: str) -> datetime.timedelta:

@@ -1,5 +1,8 @@
 import dataclasses as dc
+import datetime
+import decimal
 import enum
+import fractions
 import typing as ta
 
 from ..base import MarshalContext
@@ -21,6 +24,11 @@ class Foo(Foox):
     s: str
     f: ta.Optional['Foo'] = None
     e: E | None = None
+    frac: fractions.Fraction = fractions.Fraction(1, 9)
+    dec: decimal.Decimal = decimal.Decimal('3.140000000000000124344978758017532527446746826171875')
+    dt: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+    d: datetime.date = dc.field(default_factory=lambda: datetime.datetime.now().date())  # noqa
+    t: datetime.time = dc.field(default_factory=lambda: datetime.datetime.now().time())  # noqa
 
 
 def test_marshal():
