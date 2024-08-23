@@ -363,4 +363,4 @@ pg-repl: venv
 
 .PHONY: secret-pg-repl
 secret-pg-repl: venv
-	${PYTHON} -m omdev.tools.sqlrepl repl postgres secrets.yml:postgres
+	${PYTHON} -m omdev.tools.sqlrepl repl postgres ~/Dropbox/.dotfiles/secrets.yml:postgres
