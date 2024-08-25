@@ -1,5 +1,6 @@
 """
 TODO:
+ - * break apart into subobjects *
  - pydevd connect-back
  - (more) logging
  - env vars, files
@@ -10,6 +11,8 @@ TODO:
  - chdir
  - pidfile
  - daemonize
+ - sigquit thread/coro dump + pdb enter
+ - option to install in pdb? *or* entrypoint ala runmodule.py
 """
 import faulthandler
 import gc
