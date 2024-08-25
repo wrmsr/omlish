@@ -69,7 +69,7 @@ sympy==1.13.2
 
 wgpu==0.16.0
 
-hypothesis==6.111.1
+hypothesis==6.111.2
 
 hexdump==3.3
 
@@ -156,7 +156,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.35.4
+boto3>=1.35.5
 
 google-cloud-compute==1.19.2
 
@@ -170,7 +170,7 @@ soco==0.30.4
 sounddevice==0.5.0
 # vosk==0.3.45
 
-bellows==0.40.4
+bellows==0.40.5
 zigpy==0.65.4
 
 # python-openzwave
