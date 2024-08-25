@@ -85,41 +85,43 @@ class Ref(lang.Final, ta.Generic[T]):
 ##
 
 
-# EffectFn: ta.TypeAlias = ta.Callable[[], None]
-#
-#
-# @dc.dataclass(frozen=True)
-# class Effect:
-#     fn: EffectFn
-#     refs: ta.MutableSet[Ref] = dc.field(default_factory=set)
-#
-#
-# class Effects:
-#     def __init__(self) -> None:
-#         super().__init__()
-#
-#         self._effects_by_fn: ta.MutableMapping[EffectFn, Effect] = {}
-#
-#     def create_effect(self, fn: ta.Callable[[], None]) -> None:
-#         if fn in self._effects_by_fn:
-#             raise KeyError(fn)
-#         effect = Effect(
-#             fn=fn,
-#         )
-#         self._effects_by_fn[fn] = effect
-#         with self._push_effect(fn):
-#             fn()
+@dc.dataclass(frozen=True, eq=False)
+class Effect:
+    fn: ta.Callable[[], None]
+    refs: ta.MutableSet[Ref] = dc.field(default_factory=set)
 
 
-def create_effect(fn: ta.Callable[[], None]) -> None:
-    refs: set[Ref] = set()
-    with Ref.push_access_listener(refs.add):
-        fn()
-    for r in refs:
-        r.add_listener(lambda _: fn())
+class Effects:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._effects_by_fn: dict[ta.Callable[[], None], Effect] = {}
+        self._effects_by_ref: dict[Ref, set[Effect]] = {}
+        self._refs: set[Ref] = set()
+
+    def create_effect(self, fn: ta.Callable[[], None]) -> None:
+        if fn in self._effects_by_fn:
+            raise KeyError(fn)
+        e = Effect(fn)
+        self._effects_by_fn[fn] = e
+        with Ref.push_access_listener(e.refs.add):
+            fn()
+        for r in e.refs:
+            self._effects_by_ref.setdefault(r, set()).add(e)
+            if r not in self._refs:
+                r.add_listener(self._on_ref_update)
+
+    def _on_ref_update(self, ref: Ref) -> None:
+        for e in self._effects_by_ref[ref]:
+            e.fn()
 
 
 ##
+
+
+EFFECTS = Effects()
+
+create_effect = EFFECTS.create_effect
 
 
 def _main() -> None:
