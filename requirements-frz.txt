@@ -26,14 +26,14 @@ babel==2.16.0
 bayesian-optimization==1.4.0
 bcrypt==4.2.0
 beautifulsoup4==4.12.3
-bellows==0.40.4
+bellows==0.40.5
 bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.35.4
-botocore==1.35.4
+boto3==1.35.5
+botocore==1.35.5
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -112,7 +112,7 @@ httpcore==1.0.5
 httpx==0.27.0
 huggingface-hub==0.24.6
 hyperframe==6.0.1
-hypothesis==6.111.1
+hypothesis==6.111.2
 idna==3.7
 ifaddr==0.2.0
 imageio==2.35.1
@@ -181,7 +181,7 @@ multiprocess==0.70.16
 murmurhash==1.0.10
 mwparserfromhell==0.6.6
 mycli==1.27.2
-mypy==1.11.1
+mypy==1.11.2
 mypy-extensions==1.0.0
 mysql-connector-python==9.0.0
 mysqlclient==2.2.4
