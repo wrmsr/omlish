@@ -89,6 +89,17 @@ PGPASSWORD=secrets_reader_password .venv/bin/pgcli --host 127.0.0.1 --port 35225
 
 set search_path to secrets, public;
 
+--
+
+create or replace function barf() returns varchar as $$ begin
+  raise notice 'c %', current_user;
+  raise notice 's %', session_user;
+  raise notice 'i %', inet_client_addr();
+  return null;
+end $$
+  language plpgsql
+  security definer;
+
 """
 import contextlib
 
