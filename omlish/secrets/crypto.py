@@ -29,21 +29,6 @@ openssl aes-256-cbc -d -pbkdf2 -in secret.txt.enc -out secret3.txt -kfile barf.k
 
 https://wiki.openssl.org/index.php/Enc#Options
 -pass 'file:...'
-
-==
-
-https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/#cryptography.hazmat.primitives.ciphers.Cipher
-
-import os
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-key = os.urandom(32)
-iv = os.urandom(16)
-cipher = Cipher(algorithms.AES256(key), modes.CBC(iv))
-encryptor = cipher.encryptor()
-ct = encryptor.update(b"a secret message") + encryptor.finalize()
-decryptor = cipher.decryptor()
-decryptor.update(ct) + decryptor.finalize()
-
 """
 import abc
 import secrets

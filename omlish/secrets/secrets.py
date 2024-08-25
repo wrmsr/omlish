@@ -7,6 +7,7 @@ TODO:
   - hold ref to Secret, and key
   - time of retrieval
   - logs accesses
+ - types? ssh / url / pw / basicauthtoken / tls / str
 """
 import abc
 import collections

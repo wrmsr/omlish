@@ -43,6 +43,10 @@ compression=[
     'zstd',
 ]
 
+crypto=[
+    'cryptography',
+]
+
 formats = [
     'orjson',
     'cloudpickle',
