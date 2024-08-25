@@ -28,18 +28,26 @@ COMMIT;
 
 ======
 
+create database omlish;
+grant connect on database omlish to postgres;
+use omlish;
+
+--
+
 drop schema if exists secrets;
 
 drop user if exists secrets_reader;
 drop user if exists secrets_owner;
 
-do $$
-declare
+do $$ declare
   r text;
 begin
-  foreach r in array array['secrets_owner_role', 'secrets_reader_role'] loop
-    if exists (select 1 from pg_roles where rolname = 'secrets_owner_role') then
-      execute format('drop owned by %', r);
+  foreach r in array array[
+      'secrets_owner_role',
+      'secrets_reader_role'
+  ] loop
+    if exists (select 1 from pg_roles where rolname = r) then
+      execute format('drop owned by %s', r);
     end if;
   end loop;
 end $$;
@@ -49,28 +57,29 @@ drop role if exists secrets_owner_role;
 
 --
 
-
-create database omlish;
-grant connect on database omlish to postgres;
-use omlish;
-
 create role secrets_owner_role;
 grant connect on database omlish to secrets_owner_role;
-create schema secrets authorization secrets_owner_role;
-
 create user secrets_owner with password 'secrets_owner_password';
 grant secrets_owner_role to secrets_owner;
 
+create role secrets_reader_role;
+grant connect on database omlish to secrets_reader_role;
+create user secrets_reader with password 'secrets_reader_password';
+grant secrets_reader_role to secrets_reader;
+
+create schema secrets authorization secrets_owner_role;
 create table secrets.secrets (
   key varchar(50) primary key not null,
   value varchar(1024) not null
-) authorization secrets_owner_role;
-
-create role secrets_reader_role;
+);
+alter table secrets.secrets owner to secrets_owner_role;
 
 --
 
 PGPASSWORD=secrets_owner_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_owner --dbname omlish
+PGPASSWORD=secrets_reader_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_reader --dbname omlish
+
+set search_path to secrets, public;
 
 """
 import contextlib
