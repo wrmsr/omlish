@@ -46,6 +46,38 @@ class CwdBootstrap(Bootstrap['CwdBootstrap.Config']):
 ##
 
 
+class GcBootstrap(Bootstrap['GcBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        disable: bool = False
+        debug:
+
+    @contextlib.contextmanager
+    def __call__(self) -> ta.Iterator[None]:
+        DEBUG_COLLECTABLE = 2
+        DEBUG_LEAK = 38
+        DEBUG_SAVEALL = 32
+        DEBUG_STATS = 1
+        DEBUG_UNCOLLECTABLE = 4
+        yield
+
+
+##
+
+
+class LogBootstrap(Bootstrap['LogBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        level: str | int
+
+    @contextlib.contextmanager
+    def __call__(self) -> ta.Iterator[None]:
+        yield
+
+
+##
+
+
 class BootstrapHarness:
     def __init__(self, lst: ta.Sequence[Bootstrap]) -> None:
         super().__init__()
