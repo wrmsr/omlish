@@ -28,28 +28,49 @@ COMMIT;
 
 ======
 
+drop schema if exists secrets;
+
+drop user if exists secrets_reader;
+drop user if exists secrets_owner;
+
+do $$
+declare
+  r text;
+begin
+  foreach r in array array['secrets_owner_role', 'secrets_reader_role'] loop
+    if exists (select 1 from pg_roles where rolname = 'secrets_owner_role') then
+      execute format('drop owned by %', r);
+    end if;
+  end loop;
+end $$;
+
+drop role if exists secrets_reader_role;
+drop role if exists secrets_owner_role;
+
+--
+
+
 create database omlish;
 grant connect on database omlish to postgres;
 use omlish;
 
 create role secrets_owner_role;
 grant connect on database omlish to secrets_owner_role;
-
-create schema secrets;
-grant create, usage on schema secrets to secrets_owner_role;
+create schema secrets authorization secrets_owner_role;
 
 create user secrets_owner with password 'secrets_owner_password';
 grant secrets_owner_role to secrets_owner;
 
+create table secrets.secrets (
+  key varchar(50) primary key not null,
+  value varchar(1024) not null
+) authorization secrets_owner_role;
+
+create role secrets_reader_role;
+
 --
 
 PGPASSWORD=secrets_owner_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_owner --dbname omlish
-
---
-
-create table secrets.secrets (key varchar(50) primary key not null, value varchar(1024) not null);
-
-create role secrets_reader_role;
 
 """
 import contextlib
