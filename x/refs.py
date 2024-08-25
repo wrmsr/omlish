@@ -4,17 +4,24 @@ https://pomb.us/build-your-own-react/
 """
 from __future__ import annotations
 
+import contextlib
+import dataclasses as dc
+import threading
 import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import lang
 from omlish import reflect as rfl
 
 
 T = ta.TypeVar('T')
 
 
-class Ref(ta.Generic[T]):
+##
+
+
+class Ref(lang.Final, ta.Generic[T]):
     def __init__(
             self,
             initial: T,
@@ -27,6 +34,27 @@ class Ref(ta.Generic[T]):
         self._listeners: list[ta.Callable[[Ref[T]], None]] = list(listeners) if listeners is not None else []
         self.set(initial)
 
+    #
+
+    _access_listeners_tl: ta.ClassVar[threading.local] = threading.local()
+    _access_listeners_tl.lst = []
+
+    @classmethod
+    def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[[Ref], None]]:
+        return cls._access_listeners_tl.lst
+
+    @classmethod
+    @contextlib.contextmanager
+    def push_access_listener(cls, fn: ta.Callable[[Ref], None]) -> ta.Iterator[None]:
+        cls._access_listeners_tl.lst.append(fn)
+        try:
+            yield
+        finally:
+            if cls._access_listeners_tl.lst.pop() is not fn:
+                raise RuntimeError
+
+    #
+
     _v: T
 
     @cached.property
@@ -38,7 +66,15 @@ class Ref(ta.Generic[T]):
         return self
 
     def get(self) -> T:
+        for fn in self._current_access_listeners():
+            fn(self)
         return self._v
+
+    def __call__(self) -> T:
+        return self.get()
+
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
 
     def set(self, v: T) -> None:
         self._v = v
@@ -46,8 +82,56 @@ class Ref(ta.Generic[T]):
             l(self)
 
 
+##
+
+
+# EffectFn: ta.TypeAlias = ta.Callable[[], None]
+#
+#
+# @dc.dataclass(frozen=True)
+# class Effect:
+#     fn: EffectFn
+#     refs: ta.MutableSet[Ref] = dc.field(default_factory=set)
+#
+#
+# class Effects:
+#     def __init__(self) -> None:
+#         super().__init__()
+#
+#         self._effects_by_fn: ta.MutableMapping[EffectFn, Effect] = {}
+#
+#     def create_effect(self, fn: ta.Callable[[], None]) -> None:
+#         if fn in self._effects_by_fn:
+#             raise KeyError(fn)
+#         effect = Effect(
+#             fn=fn,
+#         )
+#         self._effects_by_fn[fn] = effect
+#         with self._push_effect(fn):
+#             fn()
+
+
+def create_effect(fn: ta.Callable[[], None]) -> None:
+    refs: set[Ref] = set()
+    with Ref.push_access_listener(refs.add):
+        fn()
+    for r in refs:
+        r.add_listener(lambda _: fn())
+
+
+##
+
+
 def _main() -> None:
-    print(Ref[int](0)._value_type)
+    x = Ref[int](0)
+    y = Ref[int](0)
+
+    @create_effect
+    def print_x_plus_y() -> None:
+        print(f'{x()=} + {y()=} = {(x() + y())=}')
+
+    x.set(1)
+    y.set(2)
 
 
 if __name__ == '__main__':
