@@ -68,11 +68,19 @@ create user secrets_reader with password 'secrets_reader_password';
 grant secrets_reader_role to secrets_reader;
 
 create schema secrets authorization secrets_owner_role;
+
 create table secrets.secrets (
+  key varchar(50) primary key not null,
+  value varchar(1024) not null,
+  created_at timestamp not null default now()
+);
+alter table secrets.secrets owner to secrets_owner_role;
+
+create table secrets.secrets_access (
   key varchar(50) primary key not null,
   value varchar(1024) not null
 );
-alter table secrets.secrets owner to secrets_owner_role;
+alter table secrets.secrets_access owner to secrets_owner_role;
 
 --
 
