@@ -104,8 +104,11 @@ class Effects:
             raise KeyError(fn)
         e = Effect(fn)
         self._effects_by_fn[fn] = e
+        self._run_effect(e)
+
+    def _run_effect(self, e: Effect) -> None:
         with Ref.push_access_listener(e.refs.add):
-            fn()
+            e.fn()
         for r in e.refs:
             self._effects_by_ref.setdefault(r, set()).add(e)
             if r not in self._refs:
@@ -113,7 +116,7 @@ class Effects:
 
     def _on_ref_update(self, ref: Ref) -> None:
         for e in self._effects_by_ref[ref]:
-            e.fn()
+            self._run_effect(e)
 
 
 ##
