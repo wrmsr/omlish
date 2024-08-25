@@ -51,7 +51,7 @@ def new_standard_marshaler_factory() -> MarshalerFactory:
     return TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
             mfs.MultiMatchFn(
-                STANDARD_MARSHALER_FACTORIES,
+                list(STANDARD_MARSHALER_FACTORIES),
             ),
         ),
     )
@@ -79,7 +79,7 @@ def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
     return TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
             mfs.MultiMatchFn(
-                STANDARD_UNMARSHALER_FACTORIES,
+                list(STANDARD_UNMARSHALER_FACTORIES),
             ),
         ),
     )
