@@ -91,7 +91,9 @@ set search_path to secrets, public;
 
 --
 
-create or replace function barf() returns varchar as $$ begin
+create or replace function access_secret(
+  key varchar
+) returns varchar as $$ begin
   raise notice 'c %', current_user;
   raise notice 's %', session_user;
   raise notice 'i %', inet_client_addr();
