@@ -305,19 +305,38 @@ class _TomlRenderer:
             self._render_value(v)
             self._w('\n')
 
-    def _render_key(self, k: ta.Any) -> None:
-        if isinstance(k, str):
-            self._w(repr(k))
-        elif isinstance(k, int):
-            self._w(repr(str(k)))
-        else:
-            raise TypeError(k)
+    def _render_inline_table(self, obj: ta.Mapping) -> None:
+        for i, (k, v) in enumerate(obj.items()):
+            self._render_key(k)
+            self._w(' = ')
+            self._render_value(v)
+            self._w('\n')
 
-    def _render_value(self, v: ta.Any) -> None:
-        if isinstance(v, str):
-            self._w(repr(v))
+    def _render_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        for i, e in enumerate(obj):
+            if i:
+                self._w(', ')
+            self._render_value(e)
+        self._w(']')
+
+    def _render_key(self, obj: ta.Any) -> None:
+        if isinstance(obj, str):
+            self._w(repr(obj))
+        elif isinstance(obj, int):
+            self._w(repr(str(obj)))
         else:
-            raise TypeError(v)
+            raise TypeError(obj)
+
+    def _render_value(self, obj: ta.Any) -> None:
+        if isinstance(obj, str):
+            self._w(repr(obj))
+        elif isinstance(obj, ta.Mapping):
+            self._render_inline_table(obj)
+        elif isinstance(obj, ta.Sequence):
+            self._render_array(obj)
+        else:
+            raise TypeError(obj)
 
 
 def _main():
