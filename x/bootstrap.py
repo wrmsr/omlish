@@ -3,11 +3,11 @@ TODO:
  - pydevd connect-back
  - (more) logging
  - env vars, files
+ - debugging
  - repl server
  - packaging fixups
  - profiling
  - pidfile
- - import arbitrary stuff
  - daemonize
  - sigquit thread/coro dump + pdb enter
  - option to install in pdb? *or* entrypoint ala runmodule.py
@@ -30,12 +30,14 @@ from omlish import lang
 
 
 if ta.TYPE_CHECKING:
+    import cProfile
     import runpy
 
     from omlish import libc
     from omlish import logs
 
 else:
+    cProfile = lang.proxy_import('cProfile')
     runpy = lang.proxy_import('runpy')
 
     libc = lang.proxy_import('omlish.libc')
@@ -203,14 +205,15 @@ class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        if self._config.enabled is not None:
-            prev = faulthandler.is_enabled()
-            if self._config.enabled:
-                faulthandler.enable()
-            else:
-                faulthandler.disable()
+        if self._config.enabled is None:
+            yield
+            return
+
+        prev = faulthandler.is_enabled()
+        if self._config.enabled:
+            faulthandler.enable()
         else:
-            prev = None
+            faulthandler.disable()
 
         try:
             yield
@@ -248,7 +251,7 @@ RLIMITS_BY_NAME = {
     for a in dir(resource)
     if a.startswith('RLIMIT_')
     and a == a.upper()
-    and isinstance((v := getattr(a)), int)
+    and isinstance((v := getattr(resource, a)), int)
 }
 
 
@@ -259,26 +262,25 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        if self._config.limits:
-            def or_infin(l: int | None) -> int:
-                return l if l is not None else resource.RLIM_INFINITY
+        if self._config.limits is None:
+            yield
+            return
 
-            prev = {}
-            for k, (s, h) in self._config.limits.items():
-                i = RLIMITS_BY_NAME[k.upper()]
-                prev[i] = resource.getrlimit(i)
-                resource.setrlimit(i, (or_infin(s), or_infin(h)))
+        def or_infin(l: int | None) -> int:
+            return l if l is not None else resource.RLIM_INFINITY
 
-        else:
-            prev = None
+        prev = {}
+        for k, (s, h) in self._config.limits.items():
+            i = RLIMITS_BY_NAME[k.upper()]
+            prev[i] = resource.getrlimit(i)
+            resource.setrlimit(i, (or_infin(s), or_infin(h)))
 
         try:
             yield
 
         finally:
-            if prev is not None:
-                for k, v in prev.items():
-                    resource.setrlimit(k, v)
+            for k, v in prev.items():
+                resource.setrlimit(k, v)
 
 
 ##
@@ -292,6 +294,28 @@ class ImportBootstrap(SimpleBootstrap['ImportBootstrap.Config']):
     def run(self) -> None:
         for m in self._config.modules or ():
             importlib.import_module(m)
+
+
+##
+
+
+class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        enable: bool = False
+
+        outfile: str | None = None
+
+        print: bool = False
+        sort: str = 'cumtime'
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.enable:
+            yield
+            return
+
+        yield
 
 
 ##
@@ -315,24 +339,33 @@ class BootstrapHarness:
             yield
 
 
+@contextlib.contextmanager
+def bootstrap() -> ta.Iterator[None]:
+    with BootstrapHarness([
+
+    ])():
+        yield
+
+
 ##
 
 
 def _main() -> int:
-    # Run the module specified as the next command line argument
-    if len(sys.argv) < 2:
-        print('No module specified for execution', file=sys.stderr)
-        return 1
+    with bootstrap():
+        # Run the module specified as the next command line argument
+        if len(sys.argv) < 2:
+            print('No module specified for execution', file=sys.stderr)
+            return 1
 
-    if sys.argv[1] == '--wait':
-        import os
-        print(os.getpid())
-        input()
-        sys.argv.pop(1)
+        if sys.argv[1] == '--wait':
+            import os
+            print(os.getpid())
+            input()
+            sys.argv.pop(1)
 
-    del sys.argv[0]  # Make the requested module sys.argv[0]
-    runpy._run_module_as_main(sys.argv[0])  # type: ignore  # noqa
-    return 0
+        del sys.argv[0]  # Make the requested module sys.argv[0]
+        runpy._run_module_as_main(sys.argv[0])  # type: ignore  # noqa
+        return 0
 
 
 if __name__ == '__main__':
