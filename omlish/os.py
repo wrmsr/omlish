@@ -44,7 +44,7 @@ def tmp_file(
                 shutil.rmtree(f.name, ignore_errors=True)
 
 
-class PidFile:
+class Pidfile:
     def __init__(self, path: str) -> None:
         super().__init__()
         self._path = path
