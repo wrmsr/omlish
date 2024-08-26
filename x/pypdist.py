@@ -295,10 +295,12 @@ optional (bool) –
 py_limited_api (bool) –
     opt-in flag for the usage of Python’s limited API.
 """
+import dataclasses as dc
 import os.path
 import shutil
 import subprocess
 import sys
+import typing as ta
 
 from omdev.toml.writer import TomlWriter
 
@@ -355,10 +357,6 @@ class Setuptools:
 ##
 
 
-def _strip_underscore_keys(m):
-    return {k: v for k, v in m.items() if not k.startswith('_')}
-
-
 SETUP_PY_TMPL = """
 import setuptools as st
 
@@ -377,6 +375,34 @@ st.setup(
     ],
 )
 """
+
+
+@dc.dataclass(frozen=True)
+class Ext:
+    name: str
+    sources: ta.List[str]
+    include_dirs: ta.Optional[ta.List[str]] = None
+    define_macros: ta.Optional[ta.List[ta.Tuple[str, ta.Optional[str]]]] = None
+    undef_macros: ta.Optional[ta.List[str]] = None
+    library_dirs: ta.Optional[ta.List[str]] = None
+    libraries: ta.Optional[ta.List[str]] = None
+    runtime_library_dirs: ta.Optional[ta.List[str]] = None
+    extra_objects: ta.Optional[ta.List[str]] = None
+    extra_compile_args: ta.Optional[ta.List[str]] = None
+    extra_link_args: ta.Optional[ta.List[str]] = None
+    export_symbols: ta.Optional[ta.List[str]] = None
+    swig_opts: ta.Optional[ta.List[str]] = None
+    depends: ta.Optional[ta.List[str]] = None
+    language: ta.Optional[str] = None
+    optional: ta.Optional[bool] = None
+    py_limited_api: ta.Optional[bool] = None
+
+
+##
+
+
+def _strip_underscore_keys(m):
+    return {k: v for k, v in m.items() if not k.startswith('_')}
 
 
 def _main():
