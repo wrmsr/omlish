@@ -463,7 +463,7 @@ class SetuptoolsBase:
 #
 
 
-class Project(ProjectBase):
+class OmlishProject(ProjectBase):
     name = 'omlish'
     description = 'omlish'
 
@@ -478,9 +478,30 @@ class Project(ProjectBase):
     }
 
 
-class Setuptools(SetuptoolsBase):
+class OmlishSetuptools(SetuptoolsBase):
     find_packages = {
         'include': ['omlish', 'omlish.*'],
+        'exclude': [*SetuptoolsBase.find_packages['exclude']],
+    }
+
+
+#
+
+
+class OmdevProject(ProjectBase):
+    name = 'omdev'
+    description = 'omdev'
+
+    optional_dependencies = {
+        'mypy': [
+            'mypy',
+        ],
+    }
+
+
+class OmdevSetuptools(SetuptoolsBase):
+    find_packages = {
+        'include': ['omdev', 'omdev.*'],
         'exclude': [*SetuptoolsBase.find_packages['exclude']],
     }
 
@@ -492,14 +513,23 @@ def _main() -> None:
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
 
-    dir_name = 'omlish'
     build_root = os.path.join('build', 'pypdist')
+    run_build = False
 
     build_pypdist_dir(
-        dir_name,
-        Project,
-        Setuptools,
+        'omlish',
+        OmlishProject,
+        OmlishSetuptools,
         build_root,
+        run_build=run_build,
+    )
+
+    build_pypdist_dir(
+        'omdev',
+        OmdevProject,
+        OmdevSetuptools,
+        build_root,
+        run_build=run_build,
     )
 
 
