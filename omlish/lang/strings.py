@@ -140,5 +140,14 @@ BOOL_STRINGS: ta.Sequence[tuple[str, str]] = [
     ('0', '1'),
 ]
 
-BOOL_TRUE_STRINGS = frozenset(tup[0] for tup in BOOL_STRINGS)
-BOOL_FALSE_STRINGS = frozenset(tup[1] for tup in BOOL_STRINGS)
+BOOL_FALSE_STRINGS = frozenset(tup[0] for tup in BOOL_STRINGS)
+BOOL_TRUE_STRINGS = frozenset(tup[1] for tup in BOOL_STRINGS)
+
+STRING_BOOL_VALUES: ta.Mapping[str, bool] = {
+    k: v
+    for ks, v in [
+        (BOOL_FALSE_STRINGS, False),
+        (BOOL_TRUE_STRINGS, True),
+    ]
+    for k in ks
+}
