@@ -586,6 +586,8 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
                 kw.update(const=True, nargs=0)
             elif fld.type in or_opt(int):
                 kw.update(type=int)
+            elif fld.type in or_opt(float):
+                kw.update(type=float)
             elif fld.type in or_opt(ta.Union[int, str]):
                 kw.update(type=int_or_str)
             elif fld.type in or_opt(ta.Sequence[str]):
