@@ -561,13 +561,14 @@ class _OrderedArgsAction(argparse.Action):
         namespace.ordered_args.append((self.dest, value))
 
 
+def _or_opt(ty):
+    return (ty, ta.Optional[ty])
+
+
 def _add_arguments(parser: argparse.ArgumentParser) -> None:
     # typing.Optional[typing.Mapping[str, tuple[typing.Optional[int], typing.Optional[int]]]]
     # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
     # typing.Optional[typing.Sequence[tuple[int, typing.Union[int, str]]]]
-
-    def or_opt(ty):
-        return (ty, ta.Optional[ty])
 
     def int_or_str(v):
         try:
@@ -580,17 +581,17 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
             aname = f'--{cname}:{fld.name}'
             kw = {}
 
-            if fld.type in or_opt(str):
+            if fld.type in _or_opt(str):
                 pass
-            elif fld.type in or_opt(bool):
+            elif fld.type in _or_opt(bool):
                 kw.update(const=True, nargs=0)
-            elif fld.type in or_opt(int):
+            elif fld.type in _or_opt(int):
                 kw.update(type=int)
-            elif fld.type in or_opt(float):
+            elif fld.type in _or_opt(float):
                 kw.update(type=float)
-            elif fld.type in or_opt(ta.Union[int, str]):
+            elif fld.type in _or_opt(ta.Union[int, str]):
                 kw.update(type=int_or_str)
-            elif fld.type in or_opt(ta.Sequence[str]):
+            elif fld.type in _or_opt(ta.Sequence[str]):
                 if aname[-1] != 's':
                     raise NameError(aname)
                 aname = aname[:-1]
@@ -618,7 +619,12 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         for aname, aval in cargs:
             k = aname.partition(':')[2]
             if k not in flds:
-                kw.setdefault(k + 's', []).append(aval)
+                k += 's'
+                fld = flds[k]
+                if fld.type in _or_opt(ta.Sequence[str]):
+                    kw.setdefault(k, []).append(aval)
+                else:
+                    raise TypeError(fld)
             else:
                 kw[k] = aval
 
