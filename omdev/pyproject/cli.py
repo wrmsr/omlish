@@ -40,7 +40,7 @@ from omlish.lite.subprocesses import subprocess_check_call
 
 from ..interp.resolvers import DEFAULT_INTERP_RESOLVER
 from ..interp.types import InterpSpecifier
-from ..toml.toml import toml_loads
+from ..toml.parser import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
 from .configs import VenvConfig
