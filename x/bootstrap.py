@@ -2,6 +2,7 @@
 TODO:
  - more logging options
  - argparse / marshal
+ - a more powerful interface would be run_fn_with_bootstrap..
 
 TODO new items:
  - pydevd connect-back
@@ -36,6 +37,7 @@ if ta.TYPE_CHECKING:
 
     from omlish import libc
     from omlish import logs
+    from omlish.diag import threads as diagt
     from omlish.formats import dotenv
 
 else:
@@ -45,6 +47,7 @@ else:
 
     libc = lang.proxy_import('omlish.libc')
     logs = lang.proxy_import('omlish.logs')
+    diagt = lang.proxy_import('omlish.diag.threads')
     dotenv = lang.proxy_import('omlish.formats.dotenv')
 
 
@@ -377,6 +380,19 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
         finally:
             for k, v in prev.items():
                 do(k, v)
+
+
+##
+
+
+class DumpBootstrap(ContextBootstrap['DumpBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        pass
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        yield
 
 
 ##

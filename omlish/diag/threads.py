@@ -4,7 +4,6 @@ import os
 import signal
 import sys
 import threading
-import time
 import traceback
 import typing as ta
 
@@ -39,6 +38,58 @@ def dump_threads_str() -> str:
 ##
 
 
+class StoppableThread:
+    def __init__(
+            self,
+            fn: ta.Callable[[], None],
+            interval_s: float,
+            *,
+            tick_immediately: bool = False,
+            start: bool = False,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__()
+        self._fn = fn
+        self._interval_s = interval_s
+        self._tick_immediately = tick_immediately
+        self._thread = threading.Thread(target=self._loop, **kwargs)
+        self._stop_event = threading.Event()
+        if start:
+            self.start()
+
+    @property
+    def thread(self) -> threading.Thread:
+        return self._thread
+
+    @property
+    def ident(self) -> int:
+        return self._thread.ident
+
+    def start(self) -> None:
+        return self._thread.start()
+
+    def stop_nowait(self) -> None:
+        self._stop_event.set()
+
+    def stop_wait(self, timeout: float | None = None) -> None:
+        self.stop_nowait()
+        self._thread.join(timeout)
+
+    def _loop(self) -> None:
+        if self._tick_immediately:
+            self._fn()
+
+        while True:
+            self._stop_event.wait(self._interval_s)
+            if self._stop_event.is_set():
+                return
+
+            self._fn()
+
+
+##
+
+
 _DEBUG_THREAD_COUNTER = itertools.count()
 
 
@@ -48,26 +99,20 @@ def create_thread_dump_thread(
         out: ta.TextIO = sys.stderr,
         start: bool = False,
         nodaemon: bool = False,
-) -> threading.Thread:
-    def dump():
-        out.write(dump_threads())
+) -> StoppableThread:
+    def proc() -> None:
+        try:
+            out.write(dump_threads_str())
+        except Exception as e:  # noqa
+            out.write(repr(e) + '\n\n')
 
-    def proc():
-        while True:
-            time.sleep(interval_s)
-            try:
-                dump()
-            except Exception as e:  # noqa
-                out.write(repr(e) + '\n\n')
-
-    dthr = threading.Thread(
-        target=proc,
+    return StoppableThread(
+        proc,
+        interval_s,
         daemon=not nodaemon,
         name=f'thread-dump-thread-{next(_DEBUG_THREAD_COUNTER)}',
+        start=start,
     )
-    if start:
-        dthr.start()
-    return dthr
 
 
 ##
@@ -79,20 +124,19 @@ def create_suicide_thread(
         interval_s: float = 1.,
         parent_thread: threading.Thread | None = None,
         start: bool = False,
-) -> threading.Thread:
+) -> StoppableThread:
+    """Kills process when parent_thread dies."""
+
     if parent_thread is None:
         parent_thread = threading.current_thread()
 
-    def proc():
-        while True:
-            parent_thread.join(interval_s)
-            if not parent_thread.is_alive():
-                os.kill(os.getpid(), sig)
+    def proc() -> None:
+        if not parent_thread.is_alive():
+            os.kill(os.getpid(), sig)
 
-    dthr = threading.Thread(
-        target=proc,
+    return StoppableThread(
+        proc,
+        interval_s,
         name=f'suicide-thread-{next(_DEBUG_THREAD_COUNTER)}',
+        start=start,
     )
-    if start:
-        dthr.start()
-    return dthr

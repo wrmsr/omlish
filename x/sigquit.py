@@ -4,6 +4,7 @@ import sys
 import time
 
 from omlish.diag.threads import dump_threads_str
+import pdb
 
 
 def handler(signum, frame):
