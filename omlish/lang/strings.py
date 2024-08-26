@@ -126,3 +126,19 @@ def is_ident_cont(c: str) -> bool:
 
 def is_ident(name: str) -> bool:
     return is_ident_start(name[0]) and all(is_ident_cont(c) for c in name[1:])
+
+
+##
+
+
+BOOL_STRINGS: ta.Sequence[tuple[str, str]] = [
+    ('n', 'y'),
+    ('no', 'yes'),
+    ('f', 't'),
+    ('false', 'true'),
+    ('off', 'on'),
+    ('0', '1'),
+]
+
+BOOL_TRUE_STRINGS = frozenset(tup[0] for tup in BOOL_STRINGS)
+BOOL_FALSE_STRINGS = frozenset(tup[1] for tup in BOOL_STRINGS)

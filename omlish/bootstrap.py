@@ -562,6 +562,15 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
     def or_opt(ty):
         return (ty, ta.Optional[ty])
 
+    def int_or_bool(v):
+        try:
+            return int(v)
+        except ValueError:
+            return {'true'}
+
+    def int_or_str(v):
+        raise NotImplementedError
+
     for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
         for fld in dc.fields(cls.Config):
             aname = f'--{cname}:{fld.name}'
@@ -573,6 +582,10 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
                 kw.update(const=True, nargs=0)
             elif fld.type in or_opt(int):
                 kw.update(type=int)
+            elif fld.type in or_opt(ta.Union[int, bool]):
+                kw.update(type=int_or_bool)
+            elif fld.type in or_opt(ta.Union[int, str]):
+                kw.update(type=int_or_str)
             else:
                 continue
 
