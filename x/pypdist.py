@@ -378,10 +378,10 @@ class _TomlRenderer:
             raise TypeError(obj)
 
     def _render_value(self, obj: ta.Any) -> None:
-        if isinstance(obj, (str, int, float)):
-            self._w(repr(obj))
-        elif isinstance(obj, bool):
+        if isinstance(obj, bool):
             self._w(str(obj).lower())
+        elif isinstance(obj, (str, int, float)):
+            self._w(repr(obj))
         elif isinstance(obj, ta.Mapping):
             self._render_inline_table(obj)
         elif isinstance(obj, ta.Sequence):
