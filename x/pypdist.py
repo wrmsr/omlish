@@ -306,11 +306,14 @@ class _TomlRenderer:
             self._w('\n')
 
     def _render_inline_table(self, obj: ta.Mapping) -> None:
+        self._w('{')
         for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._w(', ')
             self._render_key(k)
             self._w(' = ')
             self._render_value(v)
-            self._w('\n')
+        self._w('}')
 
     def _render_array(self, obj: ta.Sequence) -> None:
         self._w('[')
@@ -320,9 +323,15 @@ class _TomlRenderer:
             self._render_value(e)
         self._w(']')
 
+    def _needs_quote(self, s: str) -> bool:
+        return any(c in s for c in '-\'\"')
+
     def _render_key(self, obj: ta.Any) -> None:
         if isinstance(obj, str):
-            self._w(repr(obj))
+            if self._needs_quote(obj):
+                self._w(repr(obj))
+            else:
+                self._w(obj)
         elif isinstance(obj, int):
             self._w(repr(str(obj)))
         else:
