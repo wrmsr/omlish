@@ -564,7 +564,6 @@ class _OrderedArgsAction(argparse.Action):
 def _add_arguments(parser: argparse.ArgumentParser) -> None:
     # typing.Optional[typing.Mapping[str, tuple[typing.Optional[int], typing.Optional[int]]]]
     # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
-    # typing.Optional[typing.Sequence[str]]
     # typing.Optional[typing.Sequence[tuple[int, typing.Union[int, str]]]]
 
     def or_opt(ty):
@@ -617,8 +616,9 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         for aname, aval in cargs:
             k = aname.partition(':')[2]
             if k not in flds:
-                k += 's'
-            kw[k] = aval
+                kw.setdefault(k + 's', []).append(aval)
+            else:
+                kw[k] = aval
 
         cfg = ccls(**kw)
         cfgs.append(cfg)
