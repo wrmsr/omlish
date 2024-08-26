@@ -401,8 +401,14 @@ class Ext:
 ##
 
 
-def _strip_underscore_keys(m):
-    return {k: v for k, v in m.items() if not k.startswith('_')}
+def build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:
+    dct = {}
+    for b in reversed(cls.__mro__):
+        for k, v in b.__dict__.items():
+            if k.startswith('_'):
+                continue
+            dct[k] = v
+    return dct
 
 
 def _main():
@@ -427,12 +433,12 @@ def _main():
         'build-backend': 'setuptools.build_meta',
     }
 
-    prj = _strip_underscore_keys(Project.__dict__)
+    prj = build_cls_dct(Project)
     dct['project'] = prj
     if 'optional_dependencies' in prj:
         dct['project.optional-dependencies'] = prj.pop('optional_dependencies')
 
-    st = _strip_underscore_keys(Setuptools.__dict__)
+    st = build_cls_dct(Setuptools)
     dct['tool.setuptools'] = st
     if 'find_packages' in st:
         dct['tool.setuptools.packages.find'] = st.pop('find_packages')
