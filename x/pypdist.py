@@ -227,6 +227,7 @@ setup(
 )
 """
 import os.path
+import shutil
 
 
 ##
@@ -281,6 +282,15 @@ class Setuptools:
 def _main():
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
+
+    project_name = 'omlish'
+
+    build_root = os.path.join('build', 'pypdist', project_name)
+    if os.path.isdir(build_root):
+        shutil.rmtree(build_root)
+    os.makedirs(build_root)
+
+    os.symlink(os.path.relpath(project_name, build_root), os.path.join(build_root, project_name))
 
 
 if __name__ == '__main__':
