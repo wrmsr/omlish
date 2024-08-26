@@ -350,11 +350,11 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        if not self._config.vars or self._config.files:
+        if not (self._config.vars or self._config.files):
             yield
             return
 
-        new = dict(self._config.vars)
+        new = dict(self._config.vars or {})
         for f in self._config.files or ():
             new.update(dotenv.dotenv_values(f, env=os.environ))
 
@@ -373,7 +373,7 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
             yield
 
         finally:
-            for k, v in old.items():
+            for k, v in prev.items():
                 do(k, v)
 
 
@@ -405,6 +405,9 @@ def bootstrap() -> ta.Iterator[None]:
         ProfilingBootstrap(ProfilingBootstrap.Config(
             enable=True,
             print=True,
+        )),
+        EnvBootstrap(EnvBootstrap.Config(
+            files=['.env'],
         )),
     ])():
         yield
