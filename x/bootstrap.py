@@ -11,7 +11,6 @@ TODO new items:
  - packaging fixups
  - pidfile
  - daemonize
- - sigquit thread/coro dump + pdb enter
 """
 import abc
 import contextlib
@@ -24,6 +23,7 @@ import logging
 import os
 import pwd
 import resource
+import signal
 import sys
 import typing as ta
 
@@ -385,14 +385,43 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
 ##
 
 
-class DumpBootstrap(ContextBootstrap['DumpBootstrap.Config']):
+class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        pass
+        interval_s: float | None = None
+
+        on_sigquit: bool = False
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        yield
+        if self._config.interval_s:
+            tdt = diagt.create_thread_dump_thread(
+                self._config.interval_s,
+                start=True,
+            )
+        else:
+            tdt = None
+
+        if self._config.on_sigquit:
+            dump_threads_str = diagt.dump_threads_str
+
+            def handler(signum, frame):
+                print(dump_threads_str(), file=sys.stderr)
+
+            prev_sq = lang.just(signal.signal(signal.SIGQUIT, handler))
+
+        else:
+            prev_sq = lang.empty()
+
+        try:
+            yield
+
+        finally:
+            if tdt is not None:
+                tdt.stop_nowait()
+
+            if prev_sq.present:
+                signal.signal(signal.SIGQUIT, prev_sq.must())
 
 
 ##
