@@ -523,6 +523,9 @@ def _main() -> None:
     build_output_dir = 'dist'
     run_build = True
 
+    if run_build:
+        os.makedirs(build_output_dir, exist_ok=True)
+
     for dir_name, project_cls, setuptools_cls in [
         ('omlish', OmlishProject, OmlishSetuptools),
         ('omdev', OmdevProject, OmdevSetuptools),
