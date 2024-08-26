@@ -232,6 +232,8 @@ import shutil
 import typing as ta
 import sys
 
+from omlish.lite.check import check_isinstance
+
 
 ##
 
@@ -282,8 +284,40 @@ class Setuptools:
 ##
 
 
-def _render_toml(out: ta.TextIO, obj: ta.Any) -> None:
-    pass
+class _TomlRenderer:
+    def __init__(self, out: ta.TextIO) -> None:
+        super().__init__()
+        self._out = out
+
+    def _w(self, s: str) -> None:
+        self._out.write(s)
+
+    def render(self, obj: ta.Any) -> None:
+        if isinstance(obj, ta.Mapping):
+            self._render_table(obj)
+        else:
+            raise TypeError(obj)
+
+    def _render_table(self, obj: ta.Mapping) -> None:
+        for k, v in obj.items():
+            self._render_key(k)
+            self._w(' = ')
+            self._render_value(v)
+            self._w('\n')
+
+    def _render_key(self, k: ta.Any) -> None:
+        if isinstance(k, str):
+            self._w(repr(k))
+        elif isinstance(k, int):
+            self._w(repr(str(k)))
+        else:
+            raise TypeError(k)
+
+    def _render_value(self, v: ta.Any) -> None:
+        if isinstance(v, str):
+            self._w(repr(v))
+        else:
+            raise TypeError(v)
 
 
 def _main():
@@ -299,7 +333,7 @@ def _main():
 
     os.symlink(os.path.relpath(project_name, build_root), os.path.join(build_root, project_name))
 
-    _render_toml(sys.stdout,)
+    _TomlRenderer(sys.stdout).render({k: v for k, v in Project.__dict__.items() if not k.startswith('_')})
 
 
 if __name__ == '__main__':
