@@ -371,7 +371,7 @@ class _TomlRenderer:
 
     def _render_key(self, obj: ta.Any) -> None:
         if isinstance(obj, str):
-            self._w(self._maybe_quote(obj))
+            self._w(self._maybe_quote(obj.replace('_', '-')))
         elif isinstance(obj, int):
             self._w(repr(str(obj)))
         else:
