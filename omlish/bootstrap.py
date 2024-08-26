@@ -285,7 +285,7 @@ RLIMITS_BY_NAME = {
 class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        limits: ta.Optional[ta.Mapping[str, tuple[ta.Optional[int], ta.Optional[int]]]] = None
+        limits: ta.Optional[ta.Mapping[str, ta.Tuple[ta.Optional[int], ta.Optional[int]]]] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -467,7 +467,7 @@ class PidfileBootstrap(ContextBootstrap['PidfileBootstrap.Config']):
 class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        redirects: ta.Optional[ta.Sequence[tuple[int, ta.Union[int, str]]]] = None
+        redirects: ta.Optional[ta.Sequence[ta.Tuple[int, ta.Union[int, str]]]] = None
 
     def run(self) -> None:
         for dst, src in self._config.redirects or ():
@@ -566,9 +566,9 @@ def _or_opt(ty):
 
 
 def _add_arguments(parser: argparse.ArgumentParser) -> None:
-    # typing.Optional[typing.Mapping[str, tuple[typing.Optional[int], typing.Optional[int]]]]
+    # typing.Optional[typing.Mapping[str, ta.Tuple[typing.Optional[int], typing.Optional[int]]]]
     # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
-    # typing.Optional[typing.Sequence[tuple[int, typing.Union[int, str]]]]
+    # typing.Optional[typing.Sequence[ta.Tuple[int, typing.Union[int, str]]]]
 
     def int_or_str(v):
         try:
@@ -591,10 +591,15 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
                 kw.update(type=float)
             elif fld.type in _or_opt(ta.Union[int, str]):
                 kw.update(type=int_or_str)
-            elif fld.type in _or_opt(ta.Sequence[str]):
+
+            elif fld.type in (
+                    *_or_opt(ta.Sequence[str]),
+                    *_or_opt(ta.Mapping[str, ta.Optional[str]]),
+            ):
                 if aname[-1] != 's':
                     raise NameError(aname)
                 aname = aname[:-1]
+
             else:
                 continue
 
@@ -618,13 +623,24 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         kw = {}
         for aname, aval in cargs:
             k = aname.partition(':')[2]
+
             if k not in flds:
                 k += 's'
                 fld = flds[k]
+
                 if fld.type in _or_opt(ta.Sequence[str]):
                     kw.setdefault(k, []).append(aval)
+
+                elif fld.type in _or_opt(ta.Mapping[str, ta.Optional[str]]):
+                    if '=' not in aval:
+                        kw.setdefault(k, {})[aval] = None
+                    else:
+                        ek, _, ev = aval.partition('=')
+                        kw.setdefault(k, {})[ek] = ev
+
                 else:
                     raise TypeError(fld)
+
             else:
                 kw[k] = aval
 
