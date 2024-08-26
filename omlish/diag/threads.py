@@ -9,6 +9,36 @@ import traceback
 import typing as ta
 
 
+##
+
+
+def dump_threads(out: ta.IO) -> None:
+    thrs_by_tid = {t.ident: t for t in threading.enumerate()}
+
+    for tid, fr in sys._current_frames().items():  # noqa
+        try:
+            thr = thrs_by_tid[tid]
+        except KeyError:
+            thr_rpr = repr(tid)
+        else:
+            thr_rpr = repr(thr)
+
+        tb = traceback.format_stack(fr)
+
+        out.write(f'{thr_rpr}\n')
+        out.write('\n'.join(l.strip() for l in tb))
+        out.write('\n\n')
+
+
+def dump_threads_str() -> str:
+    out = io.StringIO()
+    dump_threads(out)
+    return out.getvalue()
+
+
+##
+
+
 _DEBUG_THREAD_COUNTER = itertools.count()
 
 
@@ -20,28 +50,7 @@ def create_thread_dump_thread(
         nodaemon: bool = False,
 ) -> threading.Thread:
     def dump():
-        cthr = threading.current_thread()
-        thrs_by_tid = {t.ident: t for t in threading.enumerate()}
-
-        buf = io.StringIO()
-        for tid, fr in sys._current_frames().items():  # noqa
-            if tid == cthr.ident:
-                continue
-
-            try:
-                thr = thrs_by_tid[tid]
-            except KeyError:
-                thr_rpr = repr(tid)
-            else:
-                thr_rpr = repr(thr)
-
-            tb = traceback.format_stack(fr)
-
-            buf.write(f'{thr_rpr}\n')
-            buf.write('\n'.join(l.strip() for l in tb))
-            buf.write('\n\n')
-
-        out.write(buf.getvalue())
+        out.write(dump_threads())
 
     def proc():
         while True:
@@ -59,6 +68,9 @@ def create_thread_dump_thread(
     if start:
         dthr.start()
     return dthr
+
+
+##
 
 
 def create_suicide_thread(
