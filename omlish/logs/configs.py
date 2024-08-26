@@ -55,6 +55,7 @@ def configure_standard_logging(
 ) -> logging.Handler:
     handler = logging.StreamHandler()
 
+    formatter: logging.Formatter
     if json:
         formatter = JsonLogFormatter()
     else:
