@@ -1,15 +1,14 @@
 """
 TODO:
  - pydevd connect-back
- - (more) logging
+ - more logging options
  - env vars, files
- - debugging
+ - debugging / pdb
  - repl server
  - packaging fixups
  - pidfile
  - daemonize
  - sigquit thread/coro dump + pdb enter
- - option to install in pdb? *or* entrypoint ala runmodule.py
 """
 import abc
 import contextlib
@@ -35,6 +34,7 @@ if ta.TYPE_CHECKING:
 
     from omlish import libc
     from omlish import logs
+    from omlish.formats import dotenv
 
 else:
     cProfile = lang.proxy_import('cProfile')
@@ -43,6 +43,7 @@ else:
 
     libc = lang.proxy_import('omlish.libc')
     logs = lang.proxy_import('omlish.logs')
+    dotenv = lang.proxy_import('omlish.formats.dotenv')
 
 
 BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
@@ -336,6 +337,44 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
 
             if self._config.outfile is not None:
                 prof.dump_stats(self._config.outfile)
+
+
+##
+
+
+class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        vars: ta.Mapping[str, str | None] | None = None
+        files: ta.Sequence[str] | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.vars or self._config.files:
+            yield
+            return
+
+        new = dict(self._config.vars)
+        for f in self._config.files or ():
+            new.update(dotenv.dotenv_values(f, env=os.environ))
+
+        prev: dict[str, str | None] = {k: os.environ.get(k) for k in new}
+
+        def do(k: str, v: str | None) -> None:
+            if v is not None:
+                os.environ[k] = v
+            else:
+                del os.environ[k]
+
+        for k, v in new.items():
+            do(k, v)
+
+        try:
+            yield
+
+        finally:
+            for k, v in old.items():
+                do(k, v)
 
 
 ##
