@@ -242,21 +242,31 @@ class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
 ##
 
 
+SIGNALS_BY_NAME = {
+    a[len('SIG'):]: v  # noqa
+    for a in dir(signal)
+    if a.startswith('SIG')
+    and not a.startswith('SIG_')
+    and a == a.upper()
+    and isinstance((v := getattr(signal, a)), int)
+}
+
+
 class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         dumpable: bool = False
-        deathsig: ta.Union[bool, int, None] = False
+        deathsig: ta.Union[int, str, None] = None
 
     def run(self) -> None:
         if self._config.dumpable:
             libc.prctl(libc.PR_SET_DUMPABLE, 1, 0, 0, 0, 0)
 
-        if self._config.deathsig not in (None, False):
+        if self._config.deathsig is not None:
             if isinstance(self._config.deathsig, int):
                 sig = self._config.deathsig
             else:
-                sig = signal.SIGTERM
+                sig = SIGNALS_BY_NAME[self._config.deathsig.upper()]
             libc.prctl(libc.PR_SET_PDEATHSIG, sig, 0, 0, 0, 0)
 
 
@@ -264,7 +274,7 @@ class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
 
 
 RLIMITS_BY_NAME = {
-    a: v  # noqa
+    a[len('RLIMIT_'):]: v  # noqa
     for a in dir(resource)
     if a.startswith('RLIMIT_')
     and a == a.upper()
@@ -562,14 +572,11 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
     def or_opt(ty):
         return (ty, ta.Optional[ty])
 
-    def int_or_bool(v):
+    def int_or_str(v):
         try:
             return int(v)
         except ValueError:
-            return {'true'}
-
-    def int_or_str(v):
-        raise NotImplementedError
+            return v
 
     for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
         for fld in dc.fields(cls.Config):
@@ -582,8 +589,6 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
                 kw.update(const=True, nargs=0)
             elif fld.type in or_opt(int):
                 kw.update(type=int)
-            elif fld.type in or_opt(ta.Union[int, bool]):
-                kw.update(type=int_or_bool)
             elif fld.type in or_opt(ta.Union[int, str]):
                 kw.update(type=int_or_str)
             else:
