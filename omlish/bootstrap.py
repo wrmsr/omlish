@@ -544,9 +544,11 @@ class OrderedArgsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if 'ordered_args' not in namespace:
             setattr(namespace, 'ordered_args', [])
-        previous = namespace.ordered_args
-        previous.append((self.dest, values))
-        setattr(namespace, 'ordered_args', previous)
+        if self.const is not None:
+            value = self.const
+        else:
+            value = values
+        namespace.ordered_args.append((self.dest, value))
 
 
 def _add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -560,29 +562,41 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
     for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
         for fld in dc.fields(cls.Config):
             aname = f'--{cname}:{fld.name}'
-            kwargs = {}
+            kw = {}
 
             if fld.type in (str, ta.Optional[str]):
                 pass
             elif fld.type in (bool, ta.Optional[bool]):
-                kwargs.update(const=True, nargs=0)
+                kw.update(const=True, nargs=0)
             elif fld.type in (int, ta.Optional[int]):
-                kwargs.update(type=int)
+                kw.update(type=int)
             else:
                 continue
 
-            parser.add_argument(aname, action=OrderedArgsAction, **kwargs)
+            parser.add_argument(aname, action=OrderedArgsAction, **kw)
 
 
 def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
+    if not (oa := getattr(args, 'ordered_args', None)):
+        return []
+
     cfgs: ta.List[Bootstrap.Config] = []
+
     for cname, cargs in [
         (n, list(g))
         for n, g in
-        itertools.groupby(args.ordered_args or (), key=lambda s: s[0].partition(':')[0])
+        itertools.groupby(oa, key=lambda s: s[0].partition(':')[0])
     ]:
-        pass
-    raise NotImplementedError
+        ccls = BOOTSTRAP_TYPES_BY_NAME[cname].Config
+
+        kw = {}
+        for aname, aval in cargs:
+            kw[aname.partition(':')[2]] = aval
+
+        cfg = ccls(**kw)
+        cfgs.append(cfg)
+
+    return cfgs
 
 
 def _main() -> int:
