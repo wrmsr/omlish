@@ -189,9 +189,7 @@ def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> ta.
     try:
         s = b.decode()
     except AttributeError:
-        raise TypeError(
-            "File must be opened in binary mode, e.g. use `open('foo.toml', 'rb')`",
-        ) from None
+        raise TypeError("File must be opened in binary mode, e.g. use `open('foo.toml', 'rb')`") from None
     return toml_loads(s, parse_float=parse_float)
 
 
@@ -447,7 +445,11 @@ def toml_create_list_rule(src: str, pos: TomlPos, out: TomlOutput) -> ta.Tuple[T
 
 
 def toml_key_value_rule(
-        src: str, pos: TomlPos, out: TomlOutput, header: TomlKey, parse_float: TomlParseFloat,
+        src: str,
+        pos: TomlPos,
+        out: TomlOutput,
+        header: TomlKey,
+        parse_float: TomlParseFloat,
 ) -> TomlPos:
     pos, key, value = toml_parse_key_value_pair(src, pos, parse_float)
     key_parent, key_stem = key[:-1], key[-1]
@@ -464,7 +466,9 @@ def toml_key_value_rule(
 
     if out.flags.is_(abs_key_parent, TomlFlags.FROZEN):
         raise toml_suffixed_err(
-            src, pos, f'Cannot mutate immutable namespace {abs_key_parent}',
+            src,
+            pos,
+            f'Cannot mutate immutable namespace {abs_key_parent}',
         )
 
     try:
@@ -481,7 +485,9 @@ def toml_key_value_rule(
 
 
 def toml_parse_key_value_pair(
-        src: str, pos: TomlPos, parse_float: TomlParseFloat,
+        src: str,
+        pos: TomlPos,
+        parse_float: TomlParseFloat,
 ) -> ta.Tuple[TomlPos, TomlKey, ta.Any]:
     pos, key = toml_parse_key(src, pos)
     try:
@@ -592,7 +598,10 @@ def toml_parse_inline_table(src: str, pos: TomlPos, parse_float: TomlParseFloat)
 
 
 def toml_parse_basic_str_escape(
-        src: str, pos: TomlPos, *, multiline: bool = False,
+        src: str,
+        pos: TomlPos,
+        *,
+        multiline: bool = False,
 ) -> ta.Tuple[TomlPos, str]:
     escape_id = src[pos:pos + 2]
     pos += 2
@@ -707,7 +716,9 @@ def toml_parse_basic_str(src: str, pos: TomlPos, *, multiline: bool) -> ta.Tuple
 
 
 def toml_parse_value(  # noqa: C901
-        src: str, pos: TomlPos, parse_float: TomlParseFloat,
+        src: str,
+        pos: TomlPos,
+        parse_float: TomlParseFloat,
 ) -> ta.Tuple[TomlPos, ta.Any]:
     try:
         char: ta.Optional[str] = src[pos]
