@@ -1,0 +1,44 @@
+[build-system]
+requires = [
+    'setuptools',
+]
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'omlish'
+authors = [
+    {name = 'wrmsr'},
+]
+urls = {source = 'https://github.com/wrmsr/omlish'}
+license = {text = 'BSD-3-Clause'}
+requires-python = '>=3.12'
+version = '0.0.0.dev7'
+classifiers = [
+    'License :: OSI Approved :: BSD License',
+    'Development Status :: 2 - Pre-Alpha',
+    'Intended Audience :: Developers',
+    'Operating System :: OS Independent',
+    'Operating System :: POSIX',
+]
+description = 'omlish'
+
+[project.optional-dependencies]
+async = [
+    'anyio',
+]
+compression = [
+    'lz4',
+]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = [
+    'omlish',
+    'omlish.*',
+]
+exclude = [
+    '*.tests',
+    '*.tests.*',
+]
