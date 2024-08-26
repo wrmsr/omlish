@@ -174,18 +174,19 @@ class NiceBootstrap(SimpleBootstrap['NiceBootstrap.Config']):
 class LogBootstrap(ContextBootstrap['LogBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        level: str | int
+        level: str | int | None = None
         json: bool = False
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        if self._config.level is not None:
-            handler = logs.configure_standard_logging(
-                self._config.level,
-                json=self._config.json,
-            )
-        else:
-            handler = None
+        if self._config.level is None:
+            yield
+            return
+
+        handler = logs.configure_standard_logging(
+            self._config.level,
+            json=self._config.json,
+        )
 
         try:
             yield
@@ -219,9 +220,9 @@ class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
             yield
 
         finally:
-            if prev is True:
+            if prev:
                 faulthandler.enable()
-            elif prev is False:
+            else:
                 faulthandler.disable()
 
 
@@ -262,7 +263,7 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
-        if self._config.limits is None:
+        if not self._config.limits:
             yield
             return
 
