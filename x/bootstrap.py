@@ -6,7 +6,6 @@ TODO:
  - debugging
  - repl server
  - packaging fixups
- - profiling
  - pidfile
  - daemonize
  - sigquit thread/coro dump + pdb enter
@@ -31,6 +30,7 @@ from omlish import lang
 
 if ta.TYPE_CHECKING:
     import cProfile
+    import pstats
     import runpy
 
     from omlish import libc
@@ -38,6 +38,7 @@ if ta.TYPE_CHECKING:
 
 else:
     cProfile = lang.proxy_import('cProfile')
+    pstats = lang.proxy_import('pstats')
     runpy = lang.proxy_import('runpy')
 
     libc = lang.proxy_import('omlish.libc')
@@ -310,6 +311,7 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
 
         print: bool = False
         sort: str = 'cumtime'
+        topn: int = 100
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -327,7 +329,10 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
             prof.create_stats()
 
             if self._config.print:
-                prof.print_stats(self._config.sort)
+                pstats.Stats(prof) \
+                    .strip_dirs() \
+                    .sort_stats(self._config.sort) \
+                    .print_stats(self._config.topn)
 
             if self._config.outfile is not None:
                 prof.dump_stats(self._config.outfile)
@@ -358,7 +363,10 @@ class BootstrapHarness:
 @contextlib.contextmanager
 def bootstrap() -> ta.Iterator[None]:
     with BootstrapHarness([
-
+        ProfilingBootstrap(ProfilingBootstrap.Config(
+            enable=True,
+            print=True,
+        )),
     ])():
         yield
 
