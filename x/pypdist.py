@@ -425,6 +425,12 @@ def _main():
     with open(os.path.join(build_root, 'MANIFEST.in'), 'w') as f:
         f.write('\n'.join(mani_in))
 
+    for fn in [
+        'LICENSE',
+        'README.rst',
+    ]:
+        shutil.copyfile(fn, os.path.join(build_root, fn))
+
 
 if __name__ == '__main__':
     _main()
