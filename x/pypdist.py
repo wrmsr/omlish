@@ -293,7 +293,29 @@ def _strip_underscore_keys(m):
     return {k: v for k, v in m.items() if not k.startswith('_')}
 
 
+SETUP_PY_TMPL = """
+import setuptools as st
+
+st.setup(
+    ext_modules=[
+        st.Extension(
+            'mypackage.mymodule',
+            [
+                'lib/mymodule.c',
+                'lib/mypackage.c',
+                'lib/myalloc.c',
+            ],
+            include_dirs=['lib'],
+            py_limited_api=True
+        ),
+    ],
+)
+"""
+
+
 def _main():
+    run_build = False
+
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
 
@@ -339,14 +361,15 @@ def _main():
         if os.path.exists(fn):
             shutil.copyfile(fn, os.path.join(build_root, fn))
 
-    subprocess.check_call(
-        [
-            sys.executable,
-            '-m',
-            'build',
-        ],
-        cwd=build_root,
-    )
+    if run_build:
+        subprocess.check_call(
+            [
+                sys.executable,
+                '-m',
+                'build',
+            ],
+            cwd=build_root,
+        )
 
 
 if __name__ == '__main__':
