@@ -249,6 +249,13 @@ def _venv_cmd(args) -> None:
     if not cmd:
         pass
 
+    elif cmd == 'python':
+        os.execl(
+            (exe := venv.exe()),
+            exe,
+            *args.args,
+        )
+
     elif cmd == 'exe':
         check_not(args.args)
         print(venv.exe())
@@ -289,7 +296,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve.add_argument('name')
     parser_resolve.add_argument('-e', '--docker-env', action='append')
     parser_resolve.add_argument('cmd', nargs='?')
-    parser_resolve.add_argument('args', nargs='*')
+    parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_venv_cmd)
 
     return parser
