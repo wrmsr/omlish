@@ -135,6 +135,7 @@ def _main() -> None:
     ))
 
     for ext_name, ext_src in [
+        ('_boilerplate', 'omdev/exts/_boilerplate.cc'),
         ('junk', 'x/dev/c/junk.cc'),
         ('_uuid', 'x/dev/c/_uuid.cc'),
     ]:
