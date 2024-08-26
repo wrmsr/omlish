@@ -11,6 +11,7 @@ https://stackoverflow.com/a/66479252
 
 https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """
 
 """
