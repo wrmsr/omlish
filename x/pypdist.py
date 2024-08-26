@@ -1,9 +1,16 @@
 """
+TODO:
+ - wire up ext scanning
+ - __revision__
+
 https://setuptools.pypa.io/en/latest/references/keywords.html
 https://packaging.python.org/en/latest/specifications/pyproject-toml
 
 How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
 https://stackoverflow.com/a/66479252
+
+https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
+vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 """
 
 """
@@ -387,8 +394,11 @@ def build_pypdist_dir(
 
     prj = build_cls_dct(project_cls)
     dct['project'] = prj
-    if 'optional_dependencies' in prj:
-        dct['project.optional-dependencies'] = prj.pop('optional_dependencies')
+    for sk, dk in [
+        ('optional_dependencies', 'project.optional-dependencies'),
+    ]:
+        if sk in prj:
+            dct[dk] = prj.pop(sk)
 
     st = build_cls_dct(setuptools_cls)
     dct['tool.setuptools'] = st
@@ -497,6 +507,10 @@ class OmlishSetuptools(SetuptoolsBase):
 class OmdevProject(ProjectBase):
     name = 'omdev'
     description = 'omdev'
+
+    dependencies = [
+        f'omlish == {__version__}'
+    ]
 
     optional_dependencies = {
         'mypy': [
