@@ -1,4 +1,9 @@
 """
+https://setuptools.pypa.io/en/latest/references/keywords.html
+https://packaging.python.org/en/latest/specifications/pyproject-toml
+"""
+
+"""
 [build-system]
 requires = [
     'setuptools',
@@ -221,40 +226,62 @@ setup(
     },
 )
 """
+import os.path
 
-name = 'omlish'
-authors = [{'name': 'wrmsr'}]
-urls = {'source': 'https://github.com/wrmsr/omlish'}
-license = {'text': 'BSD-3-Clause'}
-requires_python = '>=3.12'
 
-dynamic = ['version']
+##
 
-description = 'omlish'
-classifiers = [
-    'License :: OSI Approved :: BSD License',
-    'Development Status :: 2 - Pre-Alpha',
-    'Intended Audience :: Developers',
 
-    'Operating System :: OS Independent',
-    'Operating System :: POSIX',
-]
+class Project:
+    name = 'omlish'
+    authors = [{'name': 'wrmsr'}]
+    urls = {'source': 'https://github.com/wrmsr/omlish'}
+    license = {'text': 'BSD-3-Clause'}
+    requires_python = '>=3.12'
 
-optional_dependencies = {
-    'async': [
-        'anyio',
-    ],
+    version = '0.0.0.dev7'
 
-    'compression': [
-        'lz4',
-    ],
-}
+    description = 'omlish'
+    classifiers = [
+        'License :: OSI Approved :: BSD License',
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
 
-setuptools = {
-    'include_package_data': False,
+        'Operating System :: OS Independent',
+        'Operating System :: POSIX',
+    ]
 
-    'find': {
+    optional_dependencies = {
+        'async': [
+            'anyio',
+        ],
+
+        'compression': [
+            'lz4',
+        ],
+    }
+
+
+class Setuptools:
+    manifest_in = [
+        'global-exclude **/conftest.py',
+    ]
+
+    include_package_data = False
+
+    find = {
         'include': ['omlish', 'omlish.*'],
         'exclude': ['*.tests', '*.tests.*'],
     }
-}
+
+
+##
+
+
+def _main():
+    if not os.path.isfile('pyproject.toml'):
+        raise RuntimeError('must run in project root')
+
+
+if __name__ == '__main__':
+    _main()
