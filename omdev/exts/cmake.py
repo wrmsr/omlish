@@ -134,11 +134,12 @@ def _main() -> None:
         ),
     ))
 
-    for ext_name, ext_src in [
-        ('_boilerplate', 'omdev/exts/_boilerplate.cc'),
-        ('junk', 'x/dev/c/junk.cc'),
-        ('_uuid', 'x/dev/c/_uuid.cc'),
+    for ext_src in [
+        'omdev/exts/_boilerplate.cc',
+        'x/dev/c/junk.cc',
+        'x/dev/c/_uuid.cc',
     ]:
+        ext_name = ext_src.rpartition('.')[0].replace('/', '__')
         so_name = ''.join([
             os.path.basename(ext_src).split('.')[0],
             '.',

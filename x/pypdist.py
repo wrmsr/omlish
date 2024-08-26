@@ -1,6 +1,9 @@
 """
 https://setuptools.pypa.io/en/latest/references/keywords.html
 https://packaging.python.org/en/latest/specifications/pyproject-toml
+
+How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
+https://stackoverflow.com/a/66479252
 """
 
 """
@@ -229,8 +232,9 @@ setup(
 import io
 import os.path
 import shutil
-import typing as ta
+import string
 import sys
+import typing as ta
 
 from omlish.lite.check import check_isinstance
 
@@ -305,17 +309,31 @@ class _TomlRenderer:
         self._wrote_indent = False
 
     def _needs_quote(self, s: str) -> bool:
-        return any(c in s for c in '-\'\"\n')
+        return (
+            not s or
+            any(c in s for c in '\'\"\n') or
+            s[0] not in string.ascii_letters
+        )
+
+    def _maybe_quote(self, s: str) -> str:
+        if self._needs_quote(s):
+            return repr(s)
+        else:
+            return s
 
     #
 
-    def render(self, obj: ta.Any) -> None:
-        if isinstance(obj, ta.Mapping):
-            self._render_table(obj)
-        else:
-            raise TypeError(obj)
+    def render(self, obj: ta.Mapping) -> None:
+        for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._nl()
+            self._w('[')
+            self._w(self._maybe_quote(k))
+            self._w(']')
+            self._nl()
+            self._render_table_contents(v)
 
-    def _render_table(self, obj: ta.Mapping) -> None:
+    def _render_table_contents(self, obj: ta.Mapping) -> None:
         for k, v in obj.items():
             self._render_key(k)
             self._w(' = ')
@@ -324,10 +342,13 @@ class _TomlRenderer:
 
     def _render_array(self, obj: ta.Sequence) -> None:
         self._w('[')
-        for i, e in enumerate(obj):
-            if i:
-                self._w(', ')
+        self._nl()
+        self._indent += 1
+        for e in obj:
             self._render_value(e)
+            self._w(',')
+            self._nl()
+        self._indent -= 1
         self._w(']')
 
     def _render_inline_table(self, obj: ta.Mapping) -> None:
@@ -350,10 +371,7 @@ class _TomlRenderer:
 
     def _render_key(self, obj: ta.Any) -> None:
         if isinstance(obj, str):
-            if self._needs_quote(obj):
-                self._w(repr(obj))
-            else:
-                self._w(obj)
+            self._w(self._maybe_quote(obj))
         elif isinstance(obj, int):
             self._w(repr(str(obj)))
         else:
@@ -370,6 +388,10 @@ class _TomlRenderer:
             raise TypeError(obj)
 
 
+def _strip_underscore_keys(m):
+    return {k: v for k, v in m.items() if not k.startswith('_')}
+
+
 def _main():
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
@@ -383,7 +405,12 @@ def _main():
 
     os.symlink(os.path.relpath(project_name, build_root), os.path.join(build_root, project_name))
 
-    _TomlRenderer(sys.stdout).render({k: v for k, v in Project.__dict__.items() if not k.startswith('_')})
+    dct = {
+        'project': _strip_underscore_keys(Project.__dict__),
+    }
+    dct['project.optional-dependencies'] = dct['project'].pop('optional_dependencies')
+
+    _TomlRenderer(sys.stdout).render(dct)
 
 
 if __name__ == '__main__':
