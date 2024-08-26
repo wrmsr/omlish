@@ -369,6 +369,7 @@ def build_pypdist_dir(
         build_root: str,
         *,
         run_build: bool = False,
+        build_output_dir: ta.Optional[str] = None,
 ) -> str:
     build_dir: str = os.path.join(build_root, dir_name)
     if os.path.isdir(build_dir):
@@ -417,8 +418,13 @@ def build_pypdist_dir(
                 '-m',
                 'build',
             ],
-            cwd=build_root,
+            cwd=build_dir,
         )
+
+        if build_output_dir is not None:
+            dist_dir = os.path.join(build_dir, 'dist')
+            for fn in os.listdir(dist_dir):
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
 
     return build_dir
 
@@ -514,23 +520,21 @@ def _main() -> None:
         raise RuntimeError('must run in project root')
 
     build_root = os.path.join('build', 'pypdist')
-    run_build = False
+    build_output_dir = 'dist'
+    run_build = True
 
-    build_pypdist_dir(
-        'omlish',
-        OmlishProject,
-        OmlishSetuptools,
-        build_root,
-        run_build=run_build,
-    )
-
-    build_pypdist_dir(
-        'omdev',
-        OmdevProject,
-        OmdevSetuptools,
-        build_root,
-        run_build=run_build,
-    )
+    for dir_name, project_cls, setuptools_cls in [
+        ('omlish', OmlishProject, OmlishSetuptools),
+        ('omdev', OmdevProject, OmdevSetuptools),
+    ]:
+        build_pypdist_dir(
+            dir_name,
+            project_cls,
+            setuptools_cls,
+            build_root,
+            run_build=run_build,
+            build_output_dir=build_output_dir,
+        )
 
 
 if __name__ == '__main__':
