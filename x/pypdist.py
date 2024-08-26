@@ -419,7 +419,7 @@ def build_pypdist_dir(
         'README.rst',
     ]:
         if os.path.exists(fn):
-            shutil.copyfile(fn, os.path.join(build_dir, fn))
+            os.symlink(os.path.relpath(fn, build_dir), os.path.join(build_dir, fn))
 
     if run_build:
         subprocess.check_call(
@@ -533,9 +533,9 @@ def _main() -> None:
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
 
-    build_root = os.path.join('build', 'pypdist')
+    build_root = os.path.join('.pip')
     build_output_dir = 'dist'
-    run_build = True
+    run_build = False
 
     if run_build:
         os.makedirs(build_output_dir, exist_ok=True)
