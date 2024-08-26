@@ -9,8 +9,7 @@ TODO new items:
  - debugging / pdb
  - repl server
  - packaging fixups
- - pidfile
- - daemonize
+ - daemonize ( https://github.com/thesharp/daemonize/blob/master/daemonize.py )
 """
 import abc
 import contextlib
@@ -37,6 +36,7 @@ if ta.TYPE_CHECKING:
 
     from omlish import libc
     from omlish import logs
+    from omlish import os as osu
     from omlish.diag import threads as diagt
     from omlish.formats import dotenv
 
@@ -47,6 +47,7 @@ else:
 
     libc = lang.proxy_import('omlish.libc')
     logs = lang.proxy_import('omlish.logs')
+    osu = lang.proxy_import('omlish.os')
     diagt = lang.proxy_import('omlish.diag.threads')
     dotenv = lang.proxy_import('omlish.formats.dotenv')
 
@@ -409,7 +410,6 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
                 print(dump_threads_str(), file=sys.stderr)
 
             prev_sq = lang.just(signal.signal(signal.SIGQUIT, handler))
-
         else:
             prev_sq = lang.empty()
 
@@ -422,6 +422,45 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
 
             if prev_sq.present:
                 signal.signal(signal.SIGQUIT, prev_sq.must())
+
+
+##
+
+
+class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        path: str | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.path is None:
+            yield
+            return
+
+        with osu.PidFile(self._config.path) as pf:
+            pf.write()
+            yield
+
+
+##
+
+
+class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        redirects: ta.Sequence[tuple[int, int | str]] | None = None
+
+    def run(self) -> None:
+        for dst, src in self._config.redirects or ():
+            if isinstance(src, int):
+                os.dup2(src, dst)
+            elif isinstance(src, str):
+                sfd = os.open(src, os.O_RDWR)
+                os.dup2(sfd, dst)
+                os.close(sfd)
+            else:
+                raise TypeError(src)
 
 
 ##

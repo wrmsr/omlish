@@ -63,7 +63,7 @@ class StoppableThread:
         return self._thread
 
     @property
-    def ident(self) -> int:
+    def ident(self) -> int | None:
         return self._thread.ident
 
     def start(self) -> None:
