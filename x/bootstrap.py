@@ -2,7 +2,6 @@
 TODO:
  - pydevd connect-back
  - more logging options
- - env vars, files
  - debugging / pdb
  - repl server
  - packaging fixups
