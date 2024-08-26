@@ -308,55 +308,6 @@ from omdev.toml.writer import TomlWriter
 ##
 
 
-__version__ = '0.0.0.dev7'
-
-
-class Project:
-    name = 'omlish'
-    authors = [{'name': 'wrmsr'}]
-    urls = {'source': 'https://github.com/wrmsr/omlish'}
-    license = {'text': 'BSD-3-Clause'}
-    requires_python = '>=3.12'
-
-    version = __version__
-
-    description = 'omlish'
-    classifiers = [
-        'License :: OSI Approved :: BSD License',
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-
-        'Operating System :: OS Independent',
-        'Operating System :: POSIX',
-    ]
-
-    optional_dependencies = {
-        'async': [
-            'anyio',
-        ],
-
-        'compression': [
-            'lz4',
-        ],
-    }
-
-
-class Setuptools:
-    manifest_in = [
-        'global-exclude **/conftest.py',
-    ]
-
-    include_package_data = False
-
-    find_packages = {
-        'include': ['omlish', 'omlish.*'],
-        'exclude': ['*.tests', '*.tests.*'],
-    }
-
-
-##
-
-
 SETUP_PY_TMPL = """
 import setuptools as st
 
@@ -411,20 +362,20 @@ def build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:
     return dct
 
 
-def _main():
-    run_build = False
+def build_pypdist_dir(
+        dir_name: str,
+        project_cls: type,
+        setuptools_cls: type,
+        build_root: str,
+        *,
+        run_build: bool = False,
+) -> str:
+    build_dir: str = os.path.join(build_root, dir_name)
+    if os.path.isdir(build_dir):
+        shutil.rmtree(build_dir)
+    os.makedirs(build_dir)
 
-    if not os.path.isfile('pyproject.toml'):
-        raise RuntimeError('must run in project root')
-
-    project_name = 'omlish'
-
-    build_root = os.path.join('build', 'pypdist', project_name)
-    if os.path.isdir(build_root):
-        shutil.rmtree(build_root)
-    os.makedirs(build_root)
-
-    os.symlink(os.path.relpath(project_name, build_root), os.path.join(build_root, project_name))
+    os.symlink(os.path.relpath(dir_name, build_dir), os.path.join(build_dir, dir_name))
 
     dct = {}
 
@@ -433,23 +384,23 @@ def _main():
         'build-backend': 'setuptools.build_meta',
     }
 
-    prj = build_cls_dct(Project)
+    prj = build_cls_dct(project_cls)
     dct['project'] = prj
     if 'optional_dependencies' in prj:
         dct['project.optional-dependencies'] = prj.pop('optional_dependencies')
 
-    st = build_cls_dct(Setuptools)
+    st = build_cls_dct(setuptools_cls)
     dct['tool.setuptools'] = st
     if 'find_packages' in st:
         dct['tool.setuptools.packages.find'] = st.pop('find_packages')
 
     mani_in = st.pop('manifest_in', None)
 
-    with open(os.path.join(build_root, 'pyproject.toml'), 'w') as f:
+    with open(os.path.join(build_dir, 'pyproject.toml'), 'w') as f:
         TomlWriter(f).write_root(dct)
 
     if mani_in:
-        with open(os.path.join(build_root, 'MANIFEST.in'), 'w') as f:
+        with open(os.path.join(build_dir, 'MANIFEST.in'), 'w') as f:
             f.write('\n'.join(mani_in))  # noqa
 
     for fn in [
@@ -457,7 +408,7 @@ def _main():
         'README.rst',
     ]:
         if os.path.exists(fn):
-            shutil.copyfile(fn, os.path.join(build_root, fn))
+            shutil.copyfile(fn, os.path.join(build_dir, fn))
 
     if run_build:
         subprocess.check_call(
@@ -468,6 +419,88 @@ def _main():
             ],
             cwd=build_root,
         )
+
+    return build_dir
+
+
+##
+
+
+__version__ = '0.0.0.dev7'
+
+
+class ProjectBase:
+    name = None
+    authors = [{'name': 'wrmsr'}]
+    urls = {'source': 'https://github.com/wrmsr/omlish'}
+    license = {'text': 'BSD-3-Clause'}
+    requires_python = '>=3.12'
+
+    version = __version__
+
+    classifiers = [
+        'License :: OSI Approved :: BSD License',
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+
+        'Operating System :: OS Independent',
+        'Operating System :: POSIX',
+    ]
+
+
+class SetuptoolsBase:
+    manifest_in = [
+        'global-exclude **/conftest.py',
+    ]
+
+    include_package_data = False
+
+    find_packages = {
+        'exclude': ['*.tests', '*.tests.*'],
+    }
+
+
+#
+
+
+class Project(ProjectBase):
+    name = 'omlish'
+    description = 'omlish'
+
+    optional_dependencies = {
+        'async': [
+            'anyio',
+        ],
+
+        'compression': [
+            'lz4',
+        ],
+    }
+
+
+class Setuptools(SetuptoolsBase):
+    find_packages = {
+        'include': ['omlish', 'omlish.*'],
+        'exclude': [*SetuptoolsBase.find_packages['exclude']],
+    }
+
+
+##
+
+
+def _main() -> None:
+    if not os.path.isfile('pyproject.toml'):
+        raise RuntimeError('must run in project root')
+
+    dir_name = 'omlish'
+    build_root = os.path.join('build', 'pypdist')
+
+    build_pypdist_dir(
+        dir_name,
+        Project,
+        Setuptools,
+        build_root,
+    )
 
 
 if __name__ == '__main__':
