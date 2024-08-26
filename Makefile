@@ -49,8 +49,13 @@ srcs:
 venv:
 	${PYTHON} --version
 
-	if [ "${VENV}" == "default" ] && ! $$(${PYTHON} -c 'import tinygrad.tensor') ; then \
-		${MAKE} tg ; \
+	if [ "${VENV}" == "default" ] ; then \
+		if [ ! -d .venv ] ; then \
+			ln -s .venvs/default .venv ; \
+		fi ; \
+		if ! $$(${PYTHON} -c 'import tinygrad.tensor') ; then \
+			${MAKE} tg ; \
+		fi ; \
 	fi
 
 .PHONY: tg
