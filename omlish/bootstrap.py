@@ -445,6 +445,30 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
 ##
 
 
+class TimebombBootstrap(ContextBootstrap['TimebombBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        delay_s: ta.Optional[float] = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.delay_s:
+            yield
+            return
+
+        tbt = diagt.create_timebomb_thread(
+            self._config.delay_s,
+            start=True,
+        )
+        try:
+            yield
+        finally:
+            tbt.stop_nowait()
+
+
+##
+
+
 class PidfileBootstrap(ContextBootstrap['PidfileBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
