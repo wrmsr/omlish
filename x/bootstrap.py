@@ -1,7 +1,10 @@
 """
 TODO:
- - pydevd connect-back
  - more logging options
+ - argparse / marshal
+
+TODO new items:
+ - pydevd connect-back
  - debugging / pdb
  - repl server
  - packaging fixups

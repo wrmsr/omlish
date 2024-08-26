@@ -54,7 +54,7 @@ async def foo():
 
 
 def _main():
-    g = foo().__await__()
+    gi = foo().__await__()
     while True:
         try:
             t = gi.send(None)
