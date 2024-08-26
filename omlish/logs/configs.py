@@ -3,6 +3,7 @@ import logging
 import typing as ta
 
 from .filters import TidFilter
+from .formatters import JsonLogFormatter
 from .formatters import StandardLogFormatter
 
 
@@ -47,10 +48,21 @@ def build_log_format(parts: ta.Iterable[tuple[str, str]]) -> str:
     return ' '.join(v for k, v in parts)
 
 
-def configure_standard_logging(level: ta.Any = None) -> logging.Handler:
+def configure_standard_logging(
+        level: ta.Any = None,
+        *,
+        json: bool = False,
+) -> logging.Handler:
     handler = logging.StreamHandler()
-    handler.setFormatter(StandardLogFormatter(build_log_format(STANDARD_LOG_FORMAT_PARTS)))
+
+    if json:
+        formatter = JsonLogFormatter()
+    else:
+        formatter = StandardLogFormatter(build_log_format(STANDARD_LOG_FORMAT_PARTS))
+    handler.setFormatter(formatter)
+
     handler.addFilter(TidFilter())
+
     logging.root.addHandler(handler)
 
     if level is not None:
