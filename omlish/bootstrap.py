@@ -559,16 +559,19 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
     # typing.Union[bool, int, NoneType]
     # typing.Union[str, int, NoneType]
 
+    def or_opt(ty):
+        return (ty, ta.Optional[ty])
+
     for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
         for fld in dc.fields(cls.Config):
             aname = f'--{cname}:{fld.name}'
             kw = {}
 
-            if fld.type in (str, ta.Optional[str]):
+            if fld.type in or_opt(str):
                 pass
-            elif fld.type in (bool, ta.Optional[bool]):
+            elif fld.type in or_opt(bool):
                 kw.update(const=True, nargs=0)
-            elif fld.type in (int, ta.Optional[int]):
+            elif fld.type in or_opt(int):
                 kw.update(type=int)
             else:
                 continue
