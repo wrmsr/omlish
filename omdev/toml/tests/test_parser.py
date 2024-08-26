@@ -1,6 +1,6 @@
 import unittest
 
-from .. import toml
+from .. import parser
 
 
 TEST_SRC = """
@@ -32,4 +32,4 @@ role = "backend"
 
 class TestToml(unittest.TestCase):
     def test_toml_loads(self):
-        assert toml.toml_loads(TEST_SRC) is not None
+        assert parser.toml_loads(TEST_SRC) is not None

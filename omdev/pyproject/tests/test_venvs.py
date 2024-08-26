@@ -3,7 +3,7 @@ import unittest
 
 from omlish.lite.marshal import marshal_obj
 
-from ...toml.toml import toml_loads
+from ...toml.parser import toml_loads
 from ..cli import VersionsFile
 from ..configs import PyprojectConfigPreparer
 

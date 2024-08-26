@@ -233,6 +233,7 @@ import io
 import os.path
 import shutil
 import string
+import subprocess
 import sys
 import typing as ta
 
@@ -288,7 +289,7 @@ class Setuptools:
 ##
 
 
-class _TomlRenderer:
+class _TomlWriter:
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()
         self._out = out
@@ -323,7 +324,7 @@ class _TomlRenderer:
 
     #
 
-    def render(self, obj: ta.Mapping) -> None:
+    def write_root(self, obj: ta.Mapping) -> None:
         for i, (k, v) in enumerate(obj.items()):
             if i:
                 self._nl()
@@ -331,45 +332,45 @@ class _TomlRenderer:
             self._w(self._maybe_quote(k))
             self._w(']')
             self._nl()
-            self._render_table_contents(v)
+            self.write_table_contents(v)
 
-    def _render_table_contents(self, obj: ta.Mapping) -> None:
+    def write_table_contents(self, obj: ta.Mapping) -> None:
         for k, v in obj.items():
-            self._render_key(k)
+            self.write_key(k)
             self._w(' = ')
-            self._render_value(v)
+            self.write_value(v)
             self._nl()
 
-    def _render_array(self, obj: ta.Sequence) -> None:
+    def write_array(self, obj: ta.Sequence) -> None:
         self._w('[')
         self._nl()
         self._indent += 1
         for e in obj:
-            self._render_value(e)
+            self.write_value(e)
             self._w(',')
             self._nl()
         self._indent -= 1
         self._w(']')
 
-    def _render_inline_table(self, obj: ta.Mapping) -> None:
+    def write_inline_table(self, obj: ta.Mapping) -> None:
         self._w('{')
         for i, (k, v) in enumerate(obj.items()):
             if i:
                 self._w(', ')
-            self._render_key(k)
+            self.write_key(k)
             self._w(' = ')
-            self._render_value(v)
+            self.write_value(v)
         self._w('}')
 
-    def _render_inline_array(self, obj: ta.Sequence) -> None:
+    def write_inline_array(self, obj: ta.Sequence) -> None:
         self._w('[')
         for i, e in enumerate(obj):
             if i:
                 self._w(', ')
-            self._render_value(e)
+            self.write_value(e)
         self._w(']')
 
-    def _render_key(self, obj: ta.Any) -> None:
+    def write_key(self, obj: ta.Any) -> None:
         if isinstance(obj, str):
             self._w(self._maybe_quote(obj.replace('_', '-')))
         elif isinstance(obj, int):
@@ -377,15 +378,15 @@ class _TomlRenderer:
         else:
             raise TypeError(obj)
 
-    def _render_value(self, obj: ta.Any) -> None:
+    def write_value(self, obj: ta.Any) -> None:
         if isinstance(obj, bool):
             self._w(str(obj).lower())
         elif isinstance(obj, (str, int, float)):
             self._w(repr(obj))
         elif isinstance(obj, ta.Mapping):
-            self._render_inline_table(obj)
+            self.write_inline_table(obj)
         elif isinstance(obj, ta.Sequence):
-            self._render_array(obj)
+            self.write_array(obj)
         else:
             raise TypeError(obj)
 
@@ -409,6 +410,11 @@ def _main():
 
     dct = {}
 
+    dct['build-system'] = {
+        'requires': ['setuptools'],
+        'build-backend': 'setuptools.build_meta',
+    }
+
     prj = _strip_underscore_keys(Project.__dict__)
     dct['project'] = prj
     dct['project.optional-dependencies'] = prj.pop('optional_dependencies')
@@ -420,7 +426,7 @@ def _main():
     mani_in = st.pop('manifest_in')
 
     with open(os.path.join(build_root, 'pyproject.toml'), 'w') as f:
-        _TomlRenderer(f).render(dct)
+        _TomlWriter(f).write_root(dct)
 
     with open(os.path.join(build_root, 'MANIFEST.in'), 'w') as f:
         f.write('\n'.join(mani_in))
@@ -430,6 +436,15 @@ def _main():
         'README.rst',
     ]:
         shutil.copyfile(fn, os.path.join(build_root, fn))
+
+    subprocess.check_call(
+        [
+            sys.executable,
+            '-m',
+            'build',
+        ],
+        cwd=build_root,
+    )
 
 
 if __name__ == '__main__':
