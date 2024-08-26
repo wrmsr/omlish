@@ -490,10 +490,15 @@ class PrintPidBootstrap(SimpleBootstrap['PrintPidBootstrap.Config']):
 ##
 
 
-_BOOTSTRAP_TYPES_BY_NAME = {
+BOOTSTRAP_TYPES_BY_NAME: ta.Mapping[str, ta.Type[Bootstrap]] = {  # noqa
     lang.snake_case(cls.__name__[:-len('Bootstrap')]): cls
     for cls in lang.deep_subclasses(Bootstrap)
     if not lang.is_abstract_class(cls)
+}
+
+BOOTSTRAP_TYPES_BY_CONFIG_TYPE: ta.Mapping[ta.Type[Bootstrap.Config], ta.Type[Bootstrap]] = {
+    cls.Config: cls
+    for cls in BOOTSTRAP_TYPES_BY_NAME.values()
 }
 
 
@@ -523,23 +528,35 @@ class BootstrapHarness:
 
 
 @contextlib.contextmanager
-def _bootstrap() -> ta.Iterator[None]:
-    # FIXME: config lol
-
+def bootstrap(*cfgs: Bootstrap.Config) -> ta.Iterator[None]:
     with BootstrapHarness([
-        # ProfilingBootstrap(ProfilingBootstrap.Config(
-        #     enable=True,
-        #     print=True,
-        # )),
-        # EnvBootstrap(EnvBootstrap.Config(
-        #     files=['.env'],
-        # )),
+        BOOTSTRAP_TYPES_BY_CONFIG_TYPE[type(c)](c)
+        for c in cfgs
     ])():
         yield
 
 
+##
+
+
+class OrderedArgsAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if 'ordered_args' not in namespace:
+            setattr(namespace, 'ordered_args', [])
+        previous = namespace.ordered_args
+        previous.append((self.dest, values))
+        setattr(namespace, 'ordered_args', previous)
+
+
+class StoreTrueOrderedArgsAction(OrderedArgsAction):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, nargs=0, const=True, **kwargs)  # type: ignore
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--gc:disable', action=StoreTrueOrderedArgsAction)
 
     parser.add_argument('-m', '--module', action='store_true')
     parser.add_argument('target')
@@ -547,7 +564,7 @@ def _main() -> int:
 
     args = parser.parse_args()
 
-    with _bootstrap():
+    with bootstrap():
         if args.module:
             sys.argv = [args.target, *(args.args or ())]
             runpy._run_module_as_main(args.target)  # type: ignore  # noqa
