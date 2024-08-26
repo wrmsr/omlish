@@ -467,10 +467,12 @@ class PidfileBootstrap(ContextBootstrap['PidfileBootstrap.Config']):
 class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        redirects: ta.Optional[ta.Sequence[ta.Tuple[int, ta.Union[int, str]]]] = None
+        redirects: ta.Optional[ta.Mapping[int, ta.Union[int, str, None]]] = None
 
     def run(self) -> None:
-        for dst, src in self._config.redirects or ():
+        for dst, src in (self._config.redirects or {}).items():
+            if src is None:
+                src = '/dev/null'
             if isinstance(src, int):
                 os.dup2(src, dst)
             elif isinstance(src, str):
@@ -565,21 +567,20 @@ def _or_opt(ty):
     return (ty, ta.Optional[ty])
 
 
-def _add_arguments(parser: argparse.ArgumentParser) -> None:
-    # typing.Optional[typing.Mapping[str, ta.Tuple[typing.Optional[int], typing.Optional[int]]]]
-    # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
-    # typing.Optional[typing.Sequence[ta.Tuple[int, typing.Union[int, str]]]]
+def _int_or_str(v):
+    try:
+        return int(v)
+    except ValueError:
+        return v
 
-    def int_or_str(v):
-        try:
-            return int(v)
-        except ValueError:
-            return v
+
+def _add_arguments(parser: argparse.ArgumentParser) -> None:
+    # ta.Optional[ta.Mapping[str, ta.Tuple[ta.Optional[int], ta.Optional[int]]]]
 
     for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
         for fld in dc.fields(cls.Config):
             aname = f'--{cname}:{fld.name}'
-            kw = {}
+            kw: ta.Dict[str, ta.Any] = {}
 
             if fld.type in _or_opt(str):
                 pass
@@ -590,18 +591,20 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
             elif fld.type in _or_opt(float):
                 kw.update(type=float)
             elif fld.type in _or_opt(ta.Union[int, str]):
-                kw.update(type=int_or_str)
+                kw.update(type=_int_or_str)
 
             elif fld.type in (
                     *_or_opt(ta.Sequence[str]),
                     *_or_opt(ta.Mapping[str, ta.Optional[str]]),
+                    *_or_opt(ta.Mapping[int, ta.Union[int, str, None]]),
+                    *_or_opt(ta.Mapping[str, ta.Tuple[ta.Optional[int], ta.Optional[int]]]),
             ):
                 if aname[-1] != 's':
                     raise NameError(aname)
                 aname = aname[:-1]
 
             else:
-                continue
+                raise TypeError(fld)
 
             parser.add_argument(aname, action=_OrderedArgsAction, **kw)
 
@@ -620,7 +623,7 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         ccls = BOOTSTRAP_TYPES_BY_NAME[cname].Config
         flds = {f.name: f for f in dc.fields(ccls)}
 
-        kw = {}
+        kw: ta.Dict[str, ta.Any] = {}
         for aname, aval in cargs:
             k = aname.partition(':')[2]
 
@@ -638,6 +641,21 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
                         ek, _, ev = aval.partition('=')
                         kw.setdefault(k, {})[ek] = ev
 
+                elif fld.type in _or_opt(ta.Mapping[int, ta.Union[int, str, None]]):
+                    fk, _, fv = aval.partition('=')
+                    if not fv:
+                        kw.setdefault(k, {})[int(fk)] = None
+                    else:
+                        kw.setdefault(k, {})[int(fk)] = _int_or_str(fv)
+
+                elif fld.type in _or_opt(ta.Mapping[str, ta.Tuple[ta.Optional[int], ta.Optional[int]]]):
+                    fk, _, fv = aval.partition('=')
+                    if ',' in fv:
+                        tl, tr = fv.split(',')
+                    else:
+                        tl, tr = None, None
+                    kw.setdefault(k, {})[fk] = (_int_or_str(tl) if tl else None, _int_or_str(tr) if tr else None)
+
                 else:
                     raise TypeError(fld)
 
@@ -648,6 +666,9 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         cfgs.append(cfg)
 
     return cfgs
+
+
+##
 
 
 def _main() -> int:
