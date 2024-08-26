@@ -419,7 +419,11 @@ def _main():
 
     mani_in = st.pop('manifest_in')
 
-    _TomlRenderer(sys.stdout).render(dct)
+    with open(os.path.join(build_root, 'pyproject.toml'), 'w') as f:
+        _TomlRenderer(f).render(dct)
+
+    with open(os.path.join(build_root, 'MANIFEST.in'), 'w') as f:
+        f.write('\n'.join(mani_in))
 
 
 if __name__ == '__main__':
