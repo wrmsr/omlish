@@ -8,6 +8,7 @@ TODO:
  - ci
  - build / package / publish / version roll
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
+ - env vars - PYTHONPATH
 
 lookit:
  - https://pdm-project.org/en/latest/
