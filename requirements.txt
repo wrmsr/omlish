@@ -1,5 +1,6 @@
 #### optional
 
+# git+https://github.com/vstinner/greenlet@py313
 greenlet==3.0.3; python_version < '3.13'
 
 wrapt>=1.14.1
