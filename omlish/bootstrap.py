@@ -11,6 +11,7 @@ TODO new items:
  - packaging fixups
  - daemonize ( https://github.com/thesharp/daemonize/blob/master/daemonize.py )
 """
+# ruff: noqa: UP006 UP007
 import abc
 import contextlib
 import dataclasses as dc
@@ -91,7 +92,7 @@ class ContextBootstrap(Bootstrap[BootstrapConfigT], abc.ABC):
 class CwdBootstrap(ContextBootstrap['CwdBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        path: str | None = None
+        path: ta.Optional[str] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -115,7 +116,7 @@ class CwdBootstrap(ContextBootstrap['CwdBootstrap.Config']):
 class SetuidBootstrap(SimpleBootstrap['SetuidBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        setuid: str | None = None
+        setuid: ta.Optional[str] = None
 
     def run(self) -> None:
         if self._config.setuid is not None:
@@ -138,7 +139,7 @@ class GcBootstrap(ContextBootstrap['GcBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         disable: bool = False
-        debug: int | None = None
+        debug: ta.Optional[int] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -169,7 +170,7 @@ class GcBootstrap(ContextBootstrap['GcBootstrap.Config']):
 class NiceBootstrap(SimpleBootstrap['NiceBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        nice: int | None = None
+        nice: ta.Optional[int] = None
 
     def run(self) -> None:
         if self._config.nice is not None:
@@ -182,7 +183,7 @@ class NiceBootstrap(SimpleBootstrap['NiceBootstrap.Config']):
 class LogBootstrap(ContextBootstrap['LogBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        level: str | int | None = None
+        level: ta.Union[str, int, None] = None
         json: bool = False
 
     @contextlib.contextmanager
@@ -210,7 +211,7 @@ class LogBootstrap(ContextBootstrap['LogBootstrap.Config']):
 class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        enabled: bool | None = None
+        enabled: ta.Optional[bool] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -241,7 +242,7 @@ class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         dumpable: bool = False
-        deathsig: bool | int | None = False
+        deathsig: ta.Union[bool, int, None] = False
 
     def run(self) -> None:
         if self._config.dumpable:
@@ -270,7 +271,7 @@ RLIMITS_BY_NAME = {
 class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        limits: ta.Mapping[str, tuple[int | None, int | None]] | None = None
+        limits: ta.Optional[ta.Mapping[str, tuple[ta.Optional[int], ta.Optional[int]]]] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -278,7 +279,7 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
             yield
             return
 
-        def or_infin(l: int | None) -> int:
+        def or_infin(l: ta.Optional[int]) -> int:
             return l if l is not None else resource.RLIM_INFINITY
 
         prev = {}
@@ -301,7 +302,7 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
 class ImportBootstrap(SimpleBootstrap['ImportBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        modules: ta.Sequence[str] | None = None
+        modules: ta.Optional[ta.Sequence[str]] = None
 
     def run(self) -> None:
         for m in self._config.modules or ():
@@ -317,7 +318,7 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
         enable: bool = False
         builtins: bool = True
 
-        outfile: str | None = None
+        outfile: ta.Optional[str] = None
 
         print: bool = False
         sort: str = 'cumtime'
@@ -354,8 +355,8 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
 class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        vars: ta.Mapping[str, str | None] | None = None
-        files: ta.Sequence[str] | None = None
+        vars: ta.Optional[ta.Mapping[str, ta.Optional[str]]] = None
+        files: ta.Optional[ta.Sequence[str]] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -367,9 +368,9 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
         for f in self._config.files or ():
             new.update(dotenv.dotenv_values(f, env=os.environ))
 
-        prev: dict[str, str | None] = {k: os.environ.get(k) for k in new}
+        prev: ta.Dict[str, ta.Optional[str]] = {k: os.environ.get(k) for k in new}
 
-        def do(k: str, v: str | None) -> None:
+        def do(k: str, v: ta.Optional[str]) -> None:
             if v is not None:
                 os.environ[k] = v
             else:
@@ -392,7 +393,7 @@ class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
 class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        interval_s: float | None = None
+        interval_s: ta.Optional[float] = None
 
         on_sigquit: bool = False
 
@@ -433,7 +434,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
 class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        path: str | None = None
+        path: ta.Optional[str] = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -452,7 +453,7 @@ class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
 class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        redirects: ta.Sequence[tuple[int, int | str]] | None = None
+        redirects: ta.Optional[ta.Sequence[tuple[int, ta.Union[int, str]]]] = None
 
     def run(self) -> None:
         for dst, src in self._config.redirects or ():
