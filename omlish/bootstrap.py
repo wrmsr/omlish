@@ -550,7 +550,7 @@ def bootstrap(*cfgs: Bootstrap.Config) -> ta.Iterator[None]:
 ##
 
 
-class OrderedArgsAction(argparse.Action):
+class _OrderedArgsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if 'ordered_args' not in namespace:
             setattr(namespace, 'ordered_args', [])
@@ -566,8 +566,6 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
     # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
     # typing.Optional[typing.Sequence[str]]
     # typing.Optional[typing.Sequence[tuple[int, typing.Union[int, str]]]]
-    # typing.Union[bool, int, NoneType]
-    # typing.Union[str, int, NoneType]
 
     def or_opt(ty):
         return (ty, ta.Optional[ty])
@@ -591,10 +589,14 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
                 kw.update(type=int)
             elif fld.type in or_opt(ta.Union[int, str]):
                 kw.update(type=int_or_str)
+            elif fld.type in or_opt(ta.Sequence[str]):
+                if aname[-1] != 's':
+                    raise NameError(aname)
+                aname = aname[:-1]
             else:
                 continue
 
-            parser.add_argument(aname, action=OrderedArgsAction, **kw)
+            parser.add_argument(aname, action=_OrderedArgsAction, **kw)
 
 
 def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
@@ -609,10 +611,14 @@ def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
         itertools.groupby(oa, key=lambda s: s[0].partition(':')[0])
     ]:
         ccls = BOOTSTRAP_TYPES_BY_NAME[cname].Config
+        flds = {f.name: f for f in dc.fields(ccls)}
 
         kw = {}
         for aname, aval in cargs:
-            kw[aname.partition(':')[2]] = aval
+            k = aname.partition(':')[2]
+            if k not in flds:
+                k += 's'
+            kw[k] = aval
 
         cfg = ccls(**kw)
         cfgs.append(cfg)
