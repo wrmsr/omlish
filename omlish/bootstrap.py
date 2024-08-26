@@ -20,6 +20,7 @@ import enum
 import faulthandler
 import gc
 import importlib
+import itertools
 import logging
 import os
 import pwd
@@ -548,23 +549,55 @@ class OrderedArgsAction(argparse.Action):
         setattr(namespace, 'ordered_args', previous)
 
 
-class StoreTrueOrderedArgsAction(OrderedArgsAction):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, nargs=0, const=True, **kwargs)  # type: ignore
+def _add_arguments(parser: argparse.ArgumentParser) -> None:
+    # typing.Optional[typing.Mapping[str, tuple[typing.Optional[int], typing.Optional[int]]]]
+    # typing.Optional[typing.Mapping[str, typing.Optional[str]]]
+    # typing.Optional[typing.Sequence[str]]
+    # typing.Optional[typing.Sequence[tuple[int, typing.Union[int, str]]]]
+    # typing.Union[bool, int, NoneType]
+    # typing.Union[str, int, NoneType]
+
+    for cname, cls in BOOTSTRAP_TYPES_BY_NAME.items():
+        for fld in dc.fields(cls.Config):
+            aname = f'--{cname}:{fld.name}'
+            kwargs = {}
+
+            if fld.type in (str, ta.Optional[str]):
+                pass
+            elif fld.type in (bool, ta.Optional[bool]):
+                kwargs.update(const=True, nargs=0)
+            elif fld.type in (int, ta.Optional[int]):
+                kwargs.update(type=int)
+            else:
+                continue
+
+            parser.add_argument(aname, action=OrderedArgsAction, **kwargs)
+
+
+def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
+    cfgs: ta.List[Bootstrap.Config] = []
+    for cname, cargs in [
+        (n, list(g))
+        for n, g in
+        itertools.groupby(args.ordered_args or (), key=lambda s: s[0].partition(':')[0])
+    ]:
+        pass
+    raise NotImplementedError
 
 
 def _main() -> int:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--gc:disable', action=StoreTrueOrderedArgsAction)
+    _add_arguments(parser)
 
     parser.add_argument('-m', '--module', action='store_true')
     parser.add_argument('target')
     parser.add_argument('args', nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
+    cfgs = _process_arguments(args)
 
-    with bootstrap():
+    with bootstrap(*cfgs):
         if args.module:
             sys.argv = [args.target, *(args.args or ())]
             runpy._run_module_as_main(args.target)  # type: ignore  # noqa
