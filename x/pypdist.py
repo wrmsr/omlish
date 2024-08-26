@@ -289,8 +289,25 @@ class _TomlRenderer:
         super().__init__()
         self._out = out
 
+        self._indent = 0
+        self._wrote_indent = False
+
+    #
+
     def _w(self, s: str) -> None:
+        if not self._wrote_indent:
+            self._out.write('    ' * self._indent)
+            self._wrote_indent = True
         self._out.write(s)
+
+    def _nl(self) -> None:
+        self._out.write('\n')
+        self._wrote_indent = False
+
+    def _needs_quote(self, s: str) -> bool:
+        return any(c in s for c in '-\'\"\n')
+
+    #
 
     def render(self, obj: ta.Any) -> None:
         if isinstance(obj, ta.Mapping):
@@ -303,7 +320,15 @@ class _TomlRenderer:
             self._render_key(k)
             self._w(' = ')
             self._render_value(v)
-            self._w('\n')
+            self._nl()
+
+    def _render_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        for i, e in enumerate(obj):
+            if i:
+                self._w(', ')
+            self._render_value(e)
+        self._w(']')
 
     def _render_inline_table(self, obj: ta.Mapping) -> None:
         self._w('{')
@@ -315,16 +340,13 @@ class _TomlRenderer:
             self._render_value(v)
         self._w('}')
 
-    def _render_array(self, obj: ta.Sequence) -> None:
+    def _render_inline_array(self, obj: ta.Sequence) -> None:
         self._w('[')
         for i, e in enumerate(obj):
             if i:
                 self._w(', ')
             self._render_value(e)
         self._w(']')
-
-    def _needs_quote(self, s: str) -> bool:
-        return any(c in s for c in '-\'\"')
 
     def _render_key(self, obj: ta.Any) -> None:
         if isinstance(obj, str):
