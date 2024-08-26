@@ -1,7 +1,6 @@
 """
 TODO:
  - more logging options
- - argparse / marshal
  - a more powerful interface would be run_fn_with_bootstrap..
 
 TODO new items:
@@ -20,6 +19,7 @@ import enum
 import faulthandler
 import gc
 import importlib
+import io
 import itertools
 import logging
 import os
@@ -684,11 +684,27 @@ def _main() -> int:
     cfgs = _process_arguments(args)
 
     with bootstrap(*cfgs):
+        tgt = args.target
+
         if args.module:
-            sys.argv = [args.target, *(args.args or ())]
-            runpy._run_module_as_main(args.target)  # type: ignore  # noqa
+            sys.argv = [tgt, *(args.args or ())]
+            runpy._run_module_as_main(tgt)  # type: ignore  # noqa
+
         else:
-            raise NotImplementedError
+            with io.open_code(tgt) as fp:
+                src = fp.read()
+
+            ns = dict(
+                __name__='__main__',
+                __file__=tgt,
+                __builtins__=__builtins__,
+                __spec__=None,
+            )
+
+            import __main__  # noqa
+            __main__.__dict__.clear()
+            __main__.__dict__.update(ns)
+            exec(compile(src, tgt, 'exec'), __main__.__dict__, __main__.__dict__)
 
         return 0
 
