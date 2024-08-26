@@ -4,8 +4,6 @@ https://packaging.python.org/en/latest/specifications/pyproject-toml
 
 How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
 https://stackoverflow.com/a/66479252
-
-https://setuptools.pypa.io/en/latest/userguide/ext_modules.html#extension-api-reference
 """
 
 """
@@ -233,6 +231,8 @@ setup(
 """
 
 """
+# https://setuptools.pypa.io/en/latest/userguide/ext_modules.html#extension-api-reference
+
 name (str) –
     the full name of the extension, including any packages – ie. not a filename or pathname, but Python dotted name
 
