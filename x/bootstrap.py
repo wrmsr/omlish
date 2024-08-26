@@ -7,6 +7,7 @@ TODO:
  - packaging fixups
  - profiling
  - pidfile
+ - import arbitrary stuff
  - daemonize
  - sigquit thread/coro dump + pdb enter
  - option to install in pdb? *or* entrypoint ala runmodule.py
@@ -19,18 +20,26 @@ import faulthandler
 import gc
 import logging
 import os
+import importlib
 import pwd
+import sys
 import resource
 import typing as ta
 
 from omlish import lang
-from omlish import logs
 
 
 if ta.TYPE_CHECKING:
+    import runpy
+
     from omlish import libc
+    from omlish import logs
+
 else:
+    runpy = lang.proxy_import('runpy')
+
     libc = lang.proxy_import('omlish.libc')
+    logs = lang.proxy_import('omlish.logs')
 
 
 BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
@@ -275,6 +284,19 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
 ##
 
 
+class ImportBootstrap(SimpleBootstrap['ImportBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        modules: ta.Sequence[str] | None = None
+
+    def run(self) -> None:
+        for m in self._config.modules or ():
+            importlib.import_module(m)
+
+
+##
+
+
 class BootstrapHarness:
     def __init__(self, lst: ta.Sequence[Bootstrap]) -> None:
         super().__init__()
@@ -296,14 +318,22 @@ class BootstrapHarness:
 ##
 
 
-def _main() -> None:
-    with BootstrapHarness([
-        CwdBootstrap(CwdBootstrap.Config(
-            path='..',
-        )),
-    ])():
-        print(os.getcwd())
+def _main() -> int:
+    # Run the module specified as the next command line argument
+    if len(sys.argv) < 2:
+        print('No module specified for execution', file=sys.stderr)
+        return 1
+
+    if sys.argv[1] == '--wait':
+        import os
+        print(os.getpid())
+        input()
+        sys.argv.pop(1)
+
+    del sys.argv[0]  # Make the requested module sys.argv[0]
+    runpy._run_module_as_main(sys.argv[0])  # type: ignore  # noqa
+    return 0
 
 
 if __name__ == '__main__':
-    _main()
+    sys.exit(_main())
