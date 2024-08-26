@@ -18,12 +18,12 @@ import dataclasses as dc
 import enum
 import faulthandler
 import gc
+import importlib
 import logging
 import os
-import importlib
 import pwd
-import sys
 import resource
+import sys
 import typing as ta
 
 from omlish import lang
@@ -304,6 +304,7 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         enable: bool = False
+        builtins: bool = True
 
         outfile: str | None = None
 
@@ -316,7 +317,20 @@ class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
             yield
             return
 
-        yield
+        prof = cProfile.Profile()
+        prof.enable()
+        try:
+            yield
+
+        finally:
+            prof.disable()
+            prof.create_stats()
+
+            if self._config.print:
+                prof.print_stats(self._config.sort)
+
+            if self._config.outfile is not None:
+                prof.dump_stats(self._config.outfile)
 
 
 ##
@@ -337,6 +351,7 @@ class BootstrapHarness:
                     es.enter_context(c.enter())
                 else:
                     raise TypeError(c)
+
             yield
 
 
