@@ -13,6 +13,7 @@ TODO new items:
 """
 # ruff: noqa: UP006 UP007
 import abc
+import argparse
 import contextlib
 import dataclasses as dc
 import enum
@@ -70,6 +71,8 @@ class Bootstrap(abc.ABC, ta.Generic[BootstrapConfigT]):
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
+        if not cls.__name__.endswith('Bootstrap'):
+            raise NameError(cls)
         if abc.ABC not in cls.__bases__ and not issubclass(cls.__dict__['Config'], Bootstrap.Config):
             raise TypeError(cls)
 
@@ -116,11 +119,11 @@ class CwdBootstrap(ContextBootstrap['CwdBootstrap.Config']):
 class SetuidBootstrap(SimpleBootstrap['SetuidBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        setuid: ta.Optional[str] = None
+        user: ta.Optional[str] = None
 
     def run(self) -> None:
-        if self._config.setuid is not None:
-            user = pwd.getpwnam(self._config.setuid)
+        if self._config.user is not None:
+            user = pwd.getpwnam(self._config.user)
             os.setuid(user.pw_uid)
 
 
@@ -431,7 +434,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
 ##
 
 
-class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
+class PidfileBootstrap(ContextBootstrap['PidfileBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         path: ta.Optional[str] = None
@@ -442,7 +445,7 @@ class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
             yield
             return
 
-        with osu.PidFile(self._config.path) as pf:
+        with osu.Pidfile(self._config.path) as pf:
             pf.write()
             yield
 
@@ -465,6 +468,33 @@ class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
                 os.close(sfd)
             else:
                 raise TypeError(src)
+
+
+##
+
+
+class PrintPidBootstrap(SimpleBootstrap['PrintPidBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        enable: bool = False
+        pause: bool = False
+
+    def run(self) -> None:
+        if not (self._config.enable or self._config.pause):
+            return
+        print(str(os.getpid()), file=sys.stderr)
+        if self._config.pause:
+            input()
+
+
+##
+
+
+_BOOTSTRAP_TYPES_BY_NAME = {
+    lang.snake_case(cls.__name__[:-len('Bootstrap')]): cls
+    for cls in lang.deep_subclasses(Bootstrap)
+    if not lang.is_abstract_class(cls)
+}
 
 
 ##
@@ -497,32 +527,33 @@ def _bootstrap() -> ta.Iterator[None]:
     # FIXME: config lol
 
     with BootstrapHarness([
-        ProfilingBootstrap(ProfilingBootstrap.Config(
-            enable=True,
-            print=True,
-        )),
-        EnvBootstrap(EnvBootstrap.Config(
-            files=['.env'],
-        )),
+        # ProfilingBootstrap(ProfilingBootstrap.Config(
+        #     enable=True,
+        #     print=True,
+        # )),
+        # EnvBootstrap(EnvBootstrap.Config(
+        #     files=['.env'],
+        # )),
     ])():
         yield
 
 
 def _main() -> int:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-m', '--module', action='store_true')
+    parser.add_argument('target')
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+
+    args = parser.parse_args()
+
     with _bootstrap():
-        # Run the module specified as the next command line argument
-        if len(sys.argv) < 2:
-            print('No module specified for execution', file=sys.stderr)
-            return 1
+        if args.module:
+            sys.argv = [args.target, *(args.args or ())]
+            runpy._run_module_as_main(args.target)  # type: ignore  # noqa
+        else:
+            raise NotImplementedError
 
-        if sys.argv[1] == '--wait':
-            import os
-            print(os.getpid())
-            input()
-            sys.argv.pop(1)
-
-        del sys.argv[0]  # Make the requested module sys.argv[0]
-        runpy._run_module_as_main(sys.argv[0])  # type: ignore  # noqa
         return 0
 
 
