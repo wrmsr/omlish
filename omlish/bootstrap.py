@@ -1,0 +1,529 @@
+"""
+TODO:
+ - more logging options
+ - argparse / marshal
+ - a more powerful interface would be run_fn_with_bootstrap..
+
+TODO new items:
+ - pydevd connect-back
+ - debugging / pdb
+ - repl server
+ - packaging fixups
+ - daemonize ( https://github.com/thesharp/daemonize/blob/master/daemonize.py )
+"""
+import abc
+import contextlib
+import dataclasses as dc
+import enum
+import faulthandler
+import gc
+import importlib
+import logging
+import os
+import pwd
+import resource
+import signal
+import sys
+import typing as ta
+
+from . import lang
+
+
+if ta.TYPE_CHECKING:
+    import cProfile  # noqa
+    import pstats
+    import runpy
+
+    from . import libc
+    from . import logs
+    from . import os as osu
+    from .diag import threads as diagt
+    from .formats import dotenv
+
+else:
+    cProfile = lang.proxy_import('cProfile')  # noqa
+    pstats = lang.proxy_import('pstats')
+    runpy = lang.proxy_import('runpy')
+
+    libc = lang.proxy_import('.libc', __package__)
+    logs = lang.proxy_import('.logs', __package__)
+    osu = lang.proxy_import('.os', __package__)
+    diagt = lang.proxy_import('.diag.threads', __package__)
+    dotenv = lang.proxy_import('.formats.dotenv', __package__)
+
+
+BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
+
+
+##
+
+
+class Bootstrap(abc.ABC, ta.Generic[BootstrapConfigT]):
+    @dc.dataclass(frozen=True)
+    class Config(abc.ABC):  # noqa
+        pass
+
+    def __init__(self, config: BootstrapConfigT) -> None:
+        super().__init__()
+        self._config = config
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if abc.ABC not in cls.__bases__ and not issubclass(cls.__dict__['Config'], Bootstrap.Config):
+            raise TypeError(cls)
+
+
+class SimpleBootstrap(Bootstrap[BootstrapConfigT], abc.ABC):
+    @abc.abstractmethod
+    def run(self) -> None:
+        raise NotImplementedError
+
+
+class ContextBootstrap(Bootstrap[BootstrapConfigT], abc.ABC):
+    @abc.abstractmethod
+    def enter(self) -> ta.ContextManager[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class CwdBootstrap(ContextBootstrap['CwdBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        path: str | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.path is not None:
+            prev = os.getcwd()
+            os.chdir(self._config.path)
+        else:
+            prev = None
+
+        try:
+            yield
+
+        finally:
+            if prev is not None:
+                os.chdir(prev)
+
+
+##
+
+
+class SetuidBootstrap(SimpleBootstrap['SetuidBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        setuid: str | None = None
+
+    def run(self) -> None:
+        if self._config.setuid is not None:
+            user = pwd.getpwnam(self._config.setuid)
+            os.setuid(user.pw_uid)
+
+
+##
+
+
+class GcDebugFlag(enum.Enum):
+    STATS = gc.DEBUG_STATS
+    COLLECTABLE = gc.DEBUG_COLLECTABLE
+    UNCOLLECTABLE = gc.DEBUG_UNCOLLECTABLE
+    SAVEALL = gc.DEBUG_SAVEALL
+    LEAK = gc.DEBUG_LEAK
+
+
+class GcBootstrap(ContextBootstrap['GcBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        disable: bool = False
+        debug: int | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        prev_enabled = gc.isenabled()
+        if self._config.disable:
+            gc.disable()
+
+        if self._config.debug is not None:
+            prev_debug = gc.get_debug()
+            gc.set_debug(self._config.debug)
+        else:
+            prev_debug = None
+
+        try:
+            yield
+
+        finally:
+            if prev_enabled:
+                gc.enable()
+
+            if prev_debug is not None:
+                gc.set_debug(prev_debug)
+
+
+##
+
+
+class NiceBootstrap(SimpleBootstrap['NiceBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        nice: int | None = None
+
+    def run(self) -> None:
+        if self._config.nice is not None:
+            os.nice(self._config.nice)
+
+
+##
+
+
+class LogBootstrap(ContextBootstrap['LogBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        level: str | int | None = None
+        json: bool = False
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.level is None:
+            yield
+            return
+
+        handler = logs.configure_standard_logging(
+            self._config.level,
+            json=self._config.json,
+        )
+
+        try:
+            yield
+
+        finally:
+            if handler is not None:
+                logging.root.removeHandler(handler)
+
+
+##
+
+
+class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        enabled: bool | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.enabled is None:
+            yield
+            return
+
+        prev = faulthandler.is_enabled()
+        if self._config.enabled:
+            faulthandler.enable()
+        else:
+            faulthandler.disable()
+
+        try:
+            yield
+
+        finally:
+            if prev:
+                faulthandler.enable()
+            else:
+                faulthandler.disable()
+
+
+##
+
+
+class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        dumpable: bool = False
+        deathsig: bool | int | None = False
+
+    def run(self) -> None:
+        if self._config.dumpable:
+            libc.prctl(libc.PR_SET_DUMPABLE, 1, 0, 0, 0, 0)
+
+        if self._config.deathsig not in (None, False):
+            if isinstance(self._config.deathsig, int):
+                sig = self._config.deathsig
+            else:
+                sig = signal.SIGTERM
+            libc.prctl(libc.PR_SET_PDEATHSIG, sig, 0, 0, 0, 0)
+
+
+##
+
+
+RLIMITS_BY_NAME = {
+    a: v  # noqa
+    for a in dir(resource)
+    if a.startswith('RLIMIT_')
+    and a == a.upper()
+    and isinstance((v := getattr(resource, a)), int)
+}
+
+
+class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        limits: ta.Mapping[str, tuple[int | None, int | None]] | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.limits:
+            yield
+            return
+
+        def or_infin(l: int | None) -> int:
+            return l if l is not None else resource.RLIM_INFINITY
+
+        prev = {}
+        for k, (s, h) in self._config.limits.items():
+            i = RLIMITS_BY_NAME[k.upper()]
+            prev[i] = resource.getrlimit(i)
+            resource.setrlimit(i, (or_infin(s), or_infin(h)))
+
+        try:
+            yield
+
+        finally:
+            for i, (s, h) in prev.items():
+                resource.setrlimit(i, (s, h))
+
+
+##
+
+
+class ImportBootstrap(SimpleBootstrap['ImportBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        modules: ta.Sequence[str] | None = None
+
+    def run(self) -> None:
+        for m in self._config.modules or ():
+            importlib.import_module(m)
+
+
+##
+
+
+class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        enable: bool = False
+        builtins: bool = True
+
+        outfile: str | None = None
+
+        print: bool = False
+        sort: str = 'cumtime'
+        topn: int = 100
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.enable:
+            yield
+            return
+
+        prof = cProfile.Profile()
+        prof.enable()
+        try:
+            yield
+
+        finally:
+            prof.disable()
+            prof.create_stats()
+
+            if self._config.print:
+                pstats.Stats(prof) \
+                    .strip_dirs() \
+                    .sort_stats(self._config.sort) \
+                    .print_stats(self._config.topn)
+
+            if self._config.outfile is not None:
+                prof.dump_stats(self._config.outfile)
+
+
+##
+
+
+class EnvBootstrap(ContextBootstrap['EnvBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        vars: ta.Mapping[str, str | None] | None = None
+        files: ta.Sequence[str] | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not (self._config.vars or self._config.files):
+            yield
+            return
+
+        new = dict(self._config.vars or {})
+        for f in self._config.files or ():
+            new.update(dotenv.dotenv_values(f, env=os.environ))
+
+        prev: dict[str, str | None] = {k: os.environ.get(k) for k in new}
+
+        def do(k: str, v: str | None) -> None:
+            if v is not None:
+                os.environ[k] = v
+            else:
+                del os.environ[k]
+
+        for k, v in new.items():
+            do(k, v)
+
+        try:
+            yield
+
+        finally:
+            for k, v in prev.items():
+                do(k, v)
+
+
+##
+
+
+class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        interval_s: float | None = None
+
+        on_sigquit: bool = False
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.interval_s:
+            tdt = diagt.create_thread_dump_thread(
+                interval_s=self._config.interval_s,
+                start=True,
+            )
+        else:
+            tdt = None
+
+        if self._config.on_sigquit:
+            dump_threads_str = diagt.dump_threads_str
+
+            def handler(signum, frame):
+                print(dump_threads_str(), file=sys.stderr)
+
+            prev_sq = lang.just(signal.signal(signal.SIGQUIT, handler))
+        else:
+            prev_sq = lang.empty()
+
+        try:
+            yield
+
+        finally:
+            if tdt is not None:
+                tdt.stop_nowait()
+
+            if prev_sq.present:
+                signal.signal(signal.SIGQUIT, prev_sq.must())
+
+
+##
+
+
+class PidFileBootstrap(ContextBootstrap['PidFileBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        path: str | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.path is None:
+            yield
+            return
+
+        with osu.PidFile(self._config.path) as pf:
+            pf.write()
+            yield
+
+
+##
+
+
+class FdsBootstrap(SimpleBootstrap['FdsBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        redirects: ta.Sequence[tuple[int, int | str]] | None = None
+
+    def run(self) -> None:
+        for dst, src in self._config.redirects or ():
+            if isinstance(src, int):
+                os.dup2(src, dst)
+            elif isinstance(src, str):
+                sfd = os.open(src, os.O_RDWR)
+                os.dup2(sfd, dst)
+                os.close(sfd)
+            else:
+                raise TypeError(src)
+
+
+##
+
+
+class BootstrapHarness:
+    def __init__(self, lst: ta.Sequence[Bootstrap]) -> None:
+        super().__init__()
+        self._lst = lst
+
+    @contextlib.contextmanager
+    def __call__(self) -> ta.Iterator[None]:
+        with contextlib.ExitStack() as es:
+            for c in self._lst:
+                if isinstance(c, SimpleBootstrap):
+                    c.run()
+                elif isinstance(c, ContextBootstrap):
+                    es.enter_context(c.enter())
+                else:
+                    raise TypeError(c)
+
+            yield
+
+
+##
+
+
+@contextlib.contextmanager
+def _bootstrap() -> ta.Iterator[None]:
+    # FIXME: config lol
+
+    with BootstrapHarness([
+        ProfilingBootstrap(ProfilingBootstrap.Config(
+            enable=True,
+            print=True,
+        )),
+        EnvBootstrap(EnvBootstrap.Config(
+            files=['.env'],
+        )),
+    ])():
+        yield
+
+
+def _main() -> int:
+    with _bootstrap():
+        # Run the module specified as the next command line argument
+        if len(sys.argv) < 2:
+            print('No module specified for execution', file=sys.stderr)
+            return 1
+
+        if sys.argv[1] == '--wait':
+            import os
+            print(os.getpid())
+            input()
+            sys.argv.pop(1)
+
+        del sys.argv[0]  # Make the requested module sys.argv[0]
+        runpy._run_module_as_main(sys.argv[0])  # type: ignore  # noqa
+        return 0
+
+
+if __name__ == '__main__':
+    sys.exit(_main())
