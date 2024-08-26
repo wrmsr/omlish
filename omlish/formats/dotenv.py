@@ -545,6 +545,7 @@ def dotenv_values(
     verbose: bool = False,
     interpolate: bool = True,
     encoding: str | None = 'utf-8',
+    env: ta.Mapping[str, str] | None = None,
 ) -> dict[str, str | None]:
     """
     Parse a .env file and return its content as a dict.
@@ -572,4 +573,5 @@ def dotenv_values(
         interpolate=interpolate,
         override=True,
         encoding=encoding,
+        env=env,
     ).dict()
