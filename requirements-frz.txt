@@ -70,6 +70,7 @@ discord.py==2.4.0
 distro==1.9.0
 docstring_parser==0.16
 docutils==0.21.2
+docutils-stubs==0.0.22
 duckdb==1.0.0
 einops==0.8.0
 evaluate==0.4.2
