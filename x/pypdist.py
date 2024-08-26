@@ -336,7 +336,8 @@ def _main():
         'LICENSE',
         'README.rst',
     ]:
-        shutil.copyfile(fn, os.path.join(build_root, fn))
+        if os.path.exists(fn):
+            shutil.copyfile(fn, os.path.join(build_root, fn))
 
     subprocess.check_call(
         [
