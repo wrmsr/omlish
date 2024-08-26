@@ -279,7 +279,7 @@ class Setuptools:
 
     include_package_data = False
 
-    find = {
+    find_packages = {
         'include': ['omlish', 'omlish.*'],
         'exclude': ['*.tests', '*.tests.*'],
     }
@@ -378,8 +378,10 @@ class _TomlRenderer:
             raise TypeError(obj)
 
     def _render_value(self, obj: ta.Any) -> None:
-        if isinstance(obj, str):
+        if isinstance(obj, (str, int, float)):
             self._w(repr(obj))
+        elif isinstance(obj, bool):
+            self._w(str(obj).lower())
         elif isinstance(obj, ta.Mapping):
             self._render_inline_table(obj)
         elif isinstance(obj, ta.Sequence):
@@ -405,10 +407,17 @@ def _main():
 
     os.symlink(os.path.relpath(project_name, build_root), os.path.join(build_root, project_name))
 
-    dct = {
-        'project': _strip_underscore_keys(Project.__dict__),
-    }
-    dct['project.optional-dependencies'] = dct['project'].pop('optional_dependencies')
+    dct = {}
+
+    prj = _strip_underscore_keys(Project.__dict__)
+    dct['project'] = prj
+    dct['project.optional-dependencies'] = prj.pop('optional_dependencies')
+
+    st = _strip_underscore_keys(Setuptools.__dict__)
+    dct['tool.setuptools'] = st
+    dct['tool.setuptools.packages.find'] = st.pop('find_packages')
+
+    mani_in = st.pop('manifest_in')
 
     _TomlRenderer(sys.stdout).render(dct)
 
