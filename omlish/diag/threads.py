@@ -13,6 +13,8 @@ import typing as ta
 
 
 def dump_threads(out: ta.IO) -> None:
+    out.write('\n\n')
+
     thrs_by_tid = {t.ident: t for t in threading.enumerate()}
 
     for tid, fr in sys._current_frames().items():  # noqa
