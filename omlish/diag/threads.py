@@ -4,6 +4,7 @@ import os
 import signal
 import sys
 import threading
+import time
 import traceback
 import typing as ta
 
@@ -138,5 +139,29 @@ def create_suicide_thread(
         proc,
         interval_s,
         name=f'suicide-thread-{next(_DEBUG_THREAD_COUNTER)}',
+        start=start,
+    )
+
+
+##
+
+
+def create_timebomb_thread(
+        delay_s: float,
+        *,
+        sig: int = signal.SIGKILL,
+        interval_s: float = 1.,
+        start: bool = False,
+) -> StoppableThread:
+    def proc() -> None:
+        if time.time() >= deadline:
+            os.kill(os.getpid(), sig)
+
+    deadline = time.time() + delay_s
+
+    return StoppableThread(
+        proc,
+        interval_s,
+        name=f'timebomb-thread-{next(_DEBUG_THREAD_COUNTER)}',
         start=start,
     )
