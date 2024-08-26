@@ -26,30 +26,30 @@ import signal
 import sys
 import typing as ta
 
-from omlish import lang
+from . import lang
 
 
 if ta.TYPE_CHECKING:
-    import cProfile
+    import cProfile  # noqa
     import pstats
     import runpy
 
-    from omlish import libc
-    from omlish import logs
-    from omlish import os as osu
-    from omlish.diag import threads as diagt
-    from omlish.formats import dotenv
+    from . import libc
+    from . import logs
+    from . import os as osu
+    from .diag import threads as diagt
+    from .formats import dotenv
 
 else:
-    cProfile = lang.proxy_import('cProfile')
+    cProfile = lang.proxy_import('cProfile')  # noqa
     pstats = lang.proxy_import('pstats')
     runpy = lang.proxy_import('runpy')
 
-    libc = lang.proxy_import('omlish.libc')
-    logs = lang.proxy_import('omlish.logs')
-    osu = lang.proxy_import('omlish.os')
-    diagt = lang.proxy_import('omlish.diag.threads')
-    dotenv = lang.proxy_import('omlish.formats.dotenv')
+    libc = lang.proxy_import('.libc', __package__)
+    logs = lang.proxy_import('.logs', __package__)
+    osu = lang.proxy_import('.os', __package__)
+    diagt = lang.proxy_import('.diag.threads', __package__)
+    dotenv = lang.proxy_import('.formats.dotenv', __package__)
 
 
 BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
@@ -60,7 +60,7 @@ BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
 
 class Bootstrap(abc.ABC, ta.Generic[BootstrapConfigT]):
     @dc.dataclass(frozen=True)
-    class Config(abc.ABC):
+    class Config(abc.ABC):  # noqa
         pass
 
     def __init__(self, config: BootstrapConfigT) -> None:
@@ -210,7 +210,7 @@ class LogBootstrap(ContextBootstrap['LogBootstrap.Config']):
 class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        enabled: bool = False
+        enabled: bool | None = None
 
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
@@ -248,7 +248,10 @@ class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
             libc.prctl(libc.PR_SET_DUMPABLE, 1, 0, 0, 0, 0)
 
         if self._config.deathsig not in (None, False):
-            sig = self._config.prctl_deathsig if isinstance(self._config.prctl_deathsig, int) else signal.SIGTERM  # noqa
+            if isinstance(self._config.deathsig, int):
+                sig = self._config.deathsig
+            else:
+                sig = signal.SIGTERM
             libc.prctl(libc.PR_SET_PDEATHSIG, sig, 0, 0, 0, 0)
 
 
@@ -288,8 +291,8 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
             yield
 
         finally:
-            for k, v in prev.items():
-                resource.setrlimit(k, v)
+            for i, (s, h) in prev.items():
+                resource.setrlimit(i, (s, h))
 
 
 ##
@@ -397,7 +400,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
     def enter(self) -> ta.Iterator[None]:
         if self._config.interval_s:
             tdt = diagt.create_thread_dump_thread(
-                self._config.interval_s,
+                interval_s=self._config.interval_s,
                 start=True,
             )
         else:
@@ -485,8 +488,13 @@ class BootstrapHarness:
             yield
 
 
+##
+
+
 @contextlib.contextmanager
-def bootstrap() -> ta.Iterator[None]:
+def _bootstrap() -> ta.Iterator[None]:
+    # FIXME: config lol
+
     with BootstrapHarness([
         ProfilingBootstrap(ProfilingBootstrap.Config(
             enable=True,
@@ -499,11 +507,8 @@ def bootstrap() -> ta.Iterator[None]:
         yield
 
 
-##
-
-
 def _main() -> int:
-    with bootstrap():
+    with _bootstrap():
         # Run the module specified as the next command line argument
         if len(sys.argv) < 2:
             print('No module specified for execution', file=sys.stderr)
