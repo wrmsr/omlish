@@ -34,7 +34,7 @@ def make_http_map(*kvs: tuple[str, str]) -> HttpMap:
 @dc.dataclass(frozen=True)
 class Credentials:
     access_key: str
-    secret_key: str
+    secret_key: str = dc.field(repr=False)
 
 
 @dc.dataclass(frozen=True)
@@ -78,6 +78,7 @@ def _sha256_sign_hex(key: bytes, msg: str | bytes) -> str:
 
 
 _EMPTY_SHA256 = _sha256(b'')
+
 _ISO8601 = '%Y%m%dT%H%M%SZ'
 
 _SIGNED_HEADERS_BLACKLIST = frozenset([
@@ -123,12 +124,19 @@ class V4AwsSigner:
     ) -> HttpMap:
         self._validate_request(req)
 
+        #
+
         if utcnow is None:
             utcnow = datetime.datetime.utcnow()  # noqa
+        req_dt = utcnow.strftime(_ISO8601)
+
+        #
 
         parsed_url = urllib.parse.urlsplit(req.url)
         canon_uri = parsed_url.path
         canon_qs = parsed_url.query
+
+        #
 
         headers_to_sign = {
             k: v
@@ -139,7 +147,6 @@ class V4AwsSigner:
         if 'host' not in headers_to_sign:
             headers_to_sign['host'] = [_host_from_url(req.url)]
 
-        req_dt = utcnow.strftime(_ISO8601)
         headers_to_sign['x-amz-date'] = [req_dt]
 
         hashed_payload = _sha256(req.payload) if req.payload else _EMPTY_SHA256
@@ -152,6 +159,9 @@ class V4AwsSigner:
             for k in sorted_header_names
         ])
         signed_headers = ';'.join(sorted_header_names)
+
+        #
+
         canon_req = '\n'.join([
             req.method,
             canon_uri,
@@ -160,6 +170,8 @@ class V4AwsSigner:
             signed_headers,
             hashed_payload,
         ])
+
+        #
 
         algorithm = 'AWS4-HMAC-SHA256'
         scope_parts = [
@@ -177,12 +189,16 @@ class V4AwsSigner:
             hashed_canon_req,
         ])
 
+        #
+
         key = self._creds.secret_key
         key_date = _sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
         key_region = _sha256_sign(key_date, self._region_name)
         key_service = _sha256_sign(key_region, self._service_name)
         key_signing = _sha256_sign(key_service, 'aws4_request')
-        signature = _sha256_sign_hex(key_signing, string_to_sign)
+        sig = _sha256_sign_hex(key_signing, string_to_sign)
+
+        #
 
         cred_scope = '/'.join([
             self._creds.access_key,
@@ -191,8 +207,10 @@ class V4AwsSigner:
         auth = f'{algorithm} ' + ', '.join([
             f'Credential={cred_scope}',
             f'SignedHeaders={signed_headers}',
-            f'Signature={signature}',
+            f'Signature={sig}',
         ])
+
+        #
 
         out = {
             'Authorization': [auth],
