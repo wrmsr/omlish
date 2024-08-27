@@ -5,14 +5,14 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omml'
+name = 'ommlx'
 authors = [
     {name = 'wrmsr'},
 ]
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
 requires-python = '>=3.12'
-version = '0.0.0.dev8'
+version = '0.0.0.dev9'
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
@@ -20,9 +20,9 @@ classifiers = [
     'Operating System :: OS Independent',
     'Operating System :: POSIX',
 ]
-description = 'omml'
+description = 'ommlx'
 dependencies = [
-    'omlish == 0.0.0.dev8',
+    'omlish == 0.0.0.dev9',
 ]
 
 [project.optional-dependencies]
@@ -35,8 +35,8 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 include = [
-    'omml',
-    'omml.*',
+    'ommlx',
+    'ommlx.*',
 ]
 exclude = [
     '*.tests',
