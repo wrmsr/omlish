@@ -296,9 +296,13 @@ def _pkg_cmd(args) -> None:
     cmd = args.cmd
     if cmd == 'gen':
         build_root = os.path.join('.pkg')
-        build_output_dir = 'dist'
 
+        if os.path.exists(build_root):
+            shutil.rmtree(build_root)
+
+        build_output_dir = 'dist'
         run_build = bool(args.build)
+
         num_threads = 8
 
         if run_build:
