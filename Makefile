@@ -26,8 +26,9 @@ _clean: clean-venv clean-package
 
 ### Venv
 
+PYPROJECT_SRC=omdev/scripts/pyproject.py
 PYPROJECT_PYTHON=python3
-PYPROJECT=${PYPROJECT_PYTHON} omdev/scripts/pyproject.py
+PYPROJECT=${PYPROJECT_PYTHON} ${PYPROJECT_SRC}
 
 VENV?=default
 PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
@@ -348,8 +349,8 @@ _ci:
 ### Package
 
 .PHONY: package
-package: clean-package
-	PYTHONPATH=. ${PYPROJECT} pkg -b gen
+package: venv clean-package
+	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b gen
 
 
 ### Publish
