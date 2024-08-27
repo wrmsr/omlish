@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output runcommands.py
-# ruff: noqa: UP007
+# ruff: noqa: FA100 UP007
 import abc
 import base64
 import collections.abc
