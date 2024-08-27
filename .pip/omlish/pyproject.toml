@@ -51,12 +51,6 @@ misc = [
 secrets = [
     'cryptography >= 43',
 ]
-server = [
-    'h11 >= 0.14',
-    'h2 >= 4.1',
-    'priority >= 2',
-    'wsproto >= 1.2',
-]
 sql = [
     'sqlalchemy >= 2; python_version >= "3.13"',
     'sqlalchemy[asyncio] >= 2; python_version < "3.13"',
@@ -65,6 +59,10 @@ sql = [
     'aiomysql >= 0.2',
     'aiosqlite >= 0.20',
     'asyncpg >= 0.29; python_version < "3.13"',
+]
+sqlx = [
+    "sqlean.py >= 3.45; python_version < '3.13'",
+    'duckdb >= 1',
 ]
 testing = [
     'pytest >= 8',
