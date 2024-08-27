@@ -12,6 +12,7 @@ import abc
 import argparse
 import collections
 import dataclasses as dc
+import datetime
 import functools
 import inspect
 import itertools
@@ -24,6 +25,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import threading
 import typing as ta
 
 
@@ -1136,10 +1138,23 @@ class SpecifierSet(BaseSpecifier):
 TODO:
  - debug
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP007 N802
 
 
 log = logging.getLogger(__name__)
+
+
+##
+
+
+class TidLogFilter(logging.Filter):
+
+    def filter(self, record):
+        record.tid = threading.get_native_id()
+        return True
+
+
+##
 
 
 class JsonLogFormatter(logging.Formatter):
@@ -1177,9 +1192,62 @@ class JsonLogFormatter(logging.Formatter):
         return json_dumps_compact(dct)
 
 
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
+##
+
+
+STANDARD_LOG_FORMAT_PARTS = [
+    ('asctime', '%(asctime)-15s'),
+    ('process', 'pid=%(process)-6s'),
+    ('thread', 'tid=%(thread)-16s'),
+    ('levelname', '%(levelname)-8s'),
+    ('name', '%(name)s'),
+    ('separator', '::'),
+    ('message', '%(message)s'),
+]
+
+
+class StandardLogFormatter(logging.Formatter):
+
+    @staticmethod
+    def build_log_format(parts: ta.Iterable[tuple[str, str]]) -> str:
+        return ' '.join(v for k, v in parts)
+
+    converter = datetime.datetime.fromtimestamp  # type: ignore
+
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)  # type: ignore
+        if datefmt:
+            return ct.strftime(datefmt)  # noqa
+        else:
+            t = ct.strftime("%Y-%m-%d %H:%M:%S")  # noqa
+            return '%s.%03d' % (t, record.msecs)
+
+
+##
+
+
+def configure_standard_logging(
+        level: ta.Union[int, str] = logging.INFO,
+        *,
+        json: bool = False,
+) -> logging.Handler:
+    handler = logging.StreamHandler()
+
+    formatter: logging.Formatter
+    if json:
+        formatter = JsonLogFormatter()
+    else:
+        formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+    handler.setFormatter(formatter)
+
+    handler.addFilter(TidLogFilter())
+
+    logging.root.addHandler(handler)
+
+    if level is not None:
+        logging.root.setLevel(level)
+
+    return handler
 
 
 ########################################
