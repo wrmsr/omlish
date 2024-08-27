@@ -22,12 +22,12 @@ if ta.TYPE_CHECKING:
     import lzma as _lzma
     import pickle as _pickle
     import struct as _struct
+    import tomllib as _tomllib
 
     import cloudpickle as _cloudpickle
     import json5 as _json5
     import lz4.frame as _lz4_frame
     import snappy as _snappy
-    import tomllib as _tomllib
     import yaml as _yaml
     import zstd as _zstd
 
