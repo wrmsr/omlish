@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: FA100 UP006
 import abc
 import collections
 import typing as ta

@@ -289,7 +289,7 @@ class Deploy(ConcernsContainer[DeployConcern, DeployConfig]):
 TODO:
  - debug
 """
-# ruff: noqa: UP007
+# ruff: noqa: FA100 UP007
 
 
 log = logging.getLogger(__name__)
@@ -475,7 +475,7 @@ class SiteImpl(Site):
 
 ########################################
 # ../../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: FA100 UP006 UP007
 
 
 ##
