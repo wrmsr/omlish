@@ -1,4 +1,4 @@
-# ruff: noqa: FA100 PT009
+# ruff: noqa: UP006 PT009
 import io
 import json
 import typing as ta

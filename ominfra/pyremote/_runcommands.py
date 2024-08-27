@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output runcommands.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 import abc
 import base64
 import collections.abc
@@ -198,7 +198,7 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -258,7 +258,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -362,7 +362,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -675,7 +675,7 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output ../pyproject/cli.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - check / tests, src dir sets
@@ -109,7 +109,7 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 
 
 ##
@@ -906,7 +906,7 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1313,7 +1313,7 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -1373,7 +1373,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -1474,7 +1474,7 @@ def is_sunder(name: str) -> bool:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2031,7 +2031,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2344,7 +2344,7 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../interp/types.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 # See https://peps.python.org/pep-3149/
@@ -2433,7 +2433,7 @@ class Interp:
 
 ########################################
 # ../configs.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -2530,7 +2530,7 @@ class PyprojectConfigPreparer:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2637,7 +2637,7 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../../interp/inspect.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -2800,7 +2800,7 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -3132,7 +3132,7 @@ TODO:
  - python, python3, python3.12, ...
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -3241,7 +3241,7 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../../interp/resolvers.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, type[InterpProvider]] = {
