@@ -8,7 +8,7 @@ class Project(ProjectBase):
     description = 'omml'
 
     dependencies = [
-        f'omlish == {__version__}'
+        f'omlish == {__version__}',
     ]
 
     optional_dependencies = {
