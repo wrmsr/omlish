@@ -1,3 +1,21 @@
+"""
+TODO:
+ - ext scanning
+ - __revision__
+ - entry_points
+
+https://setuptools.pypa.io/en/latest/references/keywords.html
+https://packaging.python.org/en/latest/specifications/pyproject-toml
+
+How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
+https://stackoverflow.com/a/66479252
+
+https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
+
+https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
+vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+"""
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 import importlib
