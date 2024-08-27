@@ -27,7 +27,10 @@ dependencies = [
 
 [project.optional-dependencies]
 mypy = [
-    'mypy',
+    'mypy >= 1.11',
+]
+tokens = [
+    'tokenize_rt >= 6',
 ]
 
 [tool.setuptools]
