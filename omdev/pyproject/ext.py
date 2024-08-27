@@ -36,17 +36,17 @@ runtime_library_dirs (list[str]) -
     loaded). Setting this will cause an exception during build on Windows platforms.
 
 extra_objects (list[str]) -
-    list of extra files to link with (eg. object files not implied by ‘sources', static library that must be explicitly
+    list of extra files to link with (eg. object files not implied by 'sources', static library that must be explicitly
     specified, binary resource files, etc.)
 
 extra_compile_args (list[str]) -
-    any extra platform- and compiler-specific information to use when compiling the source files in ‘sources'. For
+    any extra platform- and compiler-specific information to use when compiling the source files in 'sources'. For
     platforms and compilers where “command line” makes sense, this is typically a list of command-line arguments, but
     for other platforms it could be anything.
 
 extra_link_args (list[str]) -
     any extra platform- and compiler-specific information to use when linking object files together to create the
-    extension (or to create a new static Python interpreter). Similar interpretation as for ‘extra_compile_args'.
+    extension (or to create a new static Python interpreter). Similar interpretation as for 'extra_compile_args'.
 
 export_symbols (list[str]) -
     list of symbols to be exported from a shared extension. Not used on all platforms, and not generally necessary for
