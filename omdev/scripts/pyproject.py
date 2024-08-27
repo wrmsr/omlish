@@ -3244,7 +3244,7 @@ class SystemInterpProvider(InterpProvider):
 # ruff: noqa: UP006
 
 
-INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, type[InterpProvider]] = {
+INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
     cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
 }
 

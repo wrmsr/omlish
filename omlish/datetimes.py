@@ -1,6 +1,8 @@
+# ruff: noqa: UP007
 # @omlish-lite
 import datetime
 import re
+import typing as ta
 
 
 def to_seconds(value: datetime.timedelta) -> float:
@@ -19,7 +21,7 @@ def months_ago(date: datetime.date, num: int) -> datetime.date:
     return datetime.date(ago_year, ago_month, 1)
 
 
-def parse_date(s: str, tz: datetime.timezone | None = None) -> datetime.date:
+def parse_date(s: str, tz: ta.Optional[datetime.timezone] = None) -> datetime.date:
     if s.lower() in ['today', 'now']:
         return datetime.datetime.now(tz=tz)
     elif s.lower() == 'yesterday':
