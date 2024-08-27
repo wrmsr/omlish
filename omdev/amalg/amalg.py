@@ -279,7 +279,8 @@ def make_src_file(
 SECTION_SEP = '#' * 40 + '\n'
 
 RUFF_DISABLES: ta.Sequence[str] = [
-    # 'FA100',  # future-rewritable-type-annotation
+    # 'UP006',  # non-pep585-annotation
+    # 'UP007',  # non-pep604-annotation
 ]
 
 OUTPUT_COMMENT = '# @omdev-amalg-output '
