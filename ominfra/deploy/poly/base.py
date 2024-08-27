@@ -1,11 +1,11 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: FA100 UP006 UP007
 import abc
 import dataclasses as dc
 import typing as ta
 
-from .configs import DeployConcernConfig
+from .configs import DeployConcernConfig  # noqa
 from .configs import DeployConfig
-from .configs import SiteConcernConfig
+from .configs import SiteConcernConfig  # noqa
 from .configs import SiteConfig
 
 

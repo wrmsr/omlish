@@ -40,7 +40,7 @@ spec = <name>--<rev>--<when>
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
 """  # noqa
-# ruff: noqa: UP007
+# ruff: noqa: FA100 UP007
 import argparse
 import json
 import sys

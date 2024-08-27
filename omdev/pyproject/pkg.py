@@ -1,3 +1,4 @@
+# ruff: noqa: FA100
 import dataclasses as dc
 import importlib
 import os.path
