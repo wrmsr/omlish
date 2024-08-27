@@ -39,7 +39,7 @@
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: FA100 UP006 UP007
 import datetime
 import functools
 import re

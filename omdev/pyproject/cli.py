@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @omdev-amalg ../scripts/pyproject.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: FA100 UP006 UP007
 """
 TODO:
  - check / tests, src dir sets
