@@ -4,8 +4,8 @@ from omlish.__about__ import __version__
 
 
 class Project(ProjectBase):
-    name = 'omml'
-    description = 'omml'
+    name = 'ommlx'
+    description = 'ommlx'
 
     dependencies = [
         f'omlish == {__version__}',
