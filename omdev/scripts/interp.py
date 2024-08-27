@@ -1136,7 +1136,7 @@ class SpecifierSet(BaseSpecifier):
 TODO:
  - debug
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 
 
 log = logging.getLogger(__name__)

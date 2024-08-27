@@ -227,7 +227,7 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 TODO:
  - debug
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 
 
 log = logging.getLogger(__name__)

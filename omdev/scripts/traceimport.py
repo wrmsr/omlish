@@ -13,7 +13,7 @@ start / end / cumulative / exclusive time / vm_rss / vm_vms
 
 jq '..?|.loaded_name?|select(.!=null)'
 """
-# ruff: noqa: FA100 S608
+# ruff: noqa: S608
 import dataclasses as dc
 import functools
 import inspect

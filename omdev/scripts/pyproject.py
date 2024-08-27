@@ -109,7 +109,7 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1979,7 +1979,7 @@ class SpecifierSet(BaseSpecifier):
 TODO:
  - debug
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 
 
 log = logging.getLogger(__name__)
