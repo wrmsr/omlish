@@ -16,8 +16,9 @@ class VenvConfig:
 
 @dc.dataclass(frozen=True)
 class PyprojectConfig:
-    srcs: ta.Mapping[str, ta.Sequence[str]]
-    venvs: ta.Mapping[str, VenvConfig]
+    pkgs: ta.Sequence[str] = dc.field(default_factory=list)
+    srcs: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
+    venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
 
     venvs_dir: str = '.venvs'
     versions_file: ta.Optional[str] = '.versions'

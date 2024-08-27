@@ -1,4 +1,12 @@
 ##
+[tool.omlish.pyproject]
+pkgs = [
+    'omdev',
+    'ominfra',
+    'omlish',
+    'omml',
+    'omserv',
+]
 
 [tool.omlish.pyproject.srcs]
 main = [

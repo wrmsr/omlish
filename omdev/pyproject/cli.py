@@ -21,7 +21,9 @@ lookit:
  - https://github.com/tox-dev/tox/
 """
 import argparse
+import concurrent.futures as cf
 import dataclasses as dc
+import functools
 import glob
 import itertools
 import os.path
@@ -44,6 +46,7 @@ from ..toml.parser import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
 from .configs import VenvConfig
+from .pkg import PyprojectPackageGenerator
 
 
 ##
@@ -287,6 +290,42 @@ def _venv_cmd(args) -> None:
 ##
 
 
+def _pkg_cmd(args) -> None:
+    run = Run()
+
+    cmd = args.cmd
+    if cmd == 'gen':
+        build_root = os.path.join('.pkg')
+        build_output_dir = 'dist'
+
+        run_build = bool(args.build)
+        num_threads = 8
+
+        if run_build:
+            os.makedirs(build_output_dir, exist_ok=True)
+
+        with cf.ThreadPoolExecutor(num_threads) as ex:
+            futs = [
+                ex.submit(functools.partial(
+                    PyprojectPackageGenerator(
+                        dir_name,
+                        build_root,
+                    ).gen,
+                    run_build=run_build,
+                    build_output_dir=build_output_dir,
+                ))
+                for dir_name in run.cfg().pkgs
+            ]
+            for fut in futs:
+                fut.result()
+
+    else:
+        raise Exception(f'unknown subcommand: {cmd}')
+
+
+##
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--_docker_container', help=argparse.SUPPRESS)
@@ -299,6 +338,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_venv_cmd)
+
+    parser_resolve = subparsers.add_parser('pkg')
+    parser_resolve.add_argument('-b', '--build', action='store_true')
+    parser_resolve.add_argument('cmd', nargs='?')
+    parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
+    parser_resolve.set_defaults(func=_pkg_cmd)
 
     return parser
 

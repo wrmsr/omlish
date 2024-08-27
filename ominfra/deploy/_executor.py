@@ -278,6 +278,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
+ - nonstrict toggle
 """
 # ruff: noqa: UP006 UP007
 
@@ -399,12 +400,13 @@ class IterableObjMarshaler(ObjMarshaler):
 class DataclassObjMarshaler(ObjMarshaler):
     ty: type
     fs: ta.Mapping[str, ObjMarshaler]
+    nonstrict: bool = False
 
     def marshal(self, o: ta.Any) -> ta.Any:
         return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items()})
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items() if self.nonstrict or k in self.fs})
 
 
 @dc.dataclass(frozen=True)
