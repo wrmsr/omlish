@@ -23,6 +23,6 @@ class Project(ProjectBase):
 
 class Setuptools(SetuptoolsBase):
     find_packages = {
-        'include': ['omserv', 'omserv.*'],
+        'include': [Project.name, f'{Project.name}.*'],
         'exclude': [*SetuptoolsBase.find_packages['exclude']],
     }

@@ -4,7 +4,7 @@ pkgs = [
     'omdev',
     'ominfra',
     'omlish',
-    'omml',
+    'ommlx',
     'omserv',
 ]
 
@@ -19,7 +19,7 @@ main = [
 
 ml = [
     '@main',
-    'omml',
+    'ommlx',
 ]
 
 all = [
