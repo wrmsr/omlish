@@ -141,7 +141,7 @@ class ExtModule:
 ##
 
 
-class PypDistGenerator:
+class PyprojectPackageGenerator:
     def __init__(
             self,
             dir_name: str,
@@ -239,7 +239,7 @@ class PypDistGenerator:
 
         mani_in = st.pop('manifest_in', None)
 
-        return PypDistGenerator.FileContents(
+        return self.FileContents(
             pyp_dct,
             mani_in,
         )
@@ -313,7 +313,7 @@ def _main() -> None:
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
 
-    build_root = os.path.join('.pip')
+    build_root = os.path.join('.pkg')
     build_output_dir = 'dist'
 
     run_build = True
@@ -333,7 +333,7 @@ def _main() -> None:
     with cf.ThreadPoolExecutor(num_threads) as ex:
         futs = [
             ex.submit(functools.partial(
-                PypDistGenerator(
+                PyprojectPackageGenerator(
                     dir_name,
                     build_root,
                 ).gen,
