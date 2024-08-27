@@ -24,9 +24,9 @@ class TomlWriter:
 
     def _needs_quote(self, s: str) -> bool:
         return (
-                not s or
-                any(c in s for c in '\'\"\n') or
-                s[0] not in string.ascii_letters
+            not s or
+            any(c in s for c in '\'\"\n') or
+            s[0] not in string.ascii_letters
         )
 
     def _maybe_quote(self, s: str) -> str:

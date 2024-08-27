@@ -158,6 +158,7 @@ ignore = [
     'EM102',  # f-string-in-exception
     'ERA001',  # commented-out-code
     'F541',  # f-string-missing-placeholders
+    'FA102',  # future-required-type-annotation
     'FBT001',  # boolean-type-hint-positional-argument
     'FBT002',  # boolean-default-value-positional-argument
     'FBT003',  # boolean-positional-value-in-call
