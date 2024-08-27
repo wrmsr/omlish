@@ -165,6 +165,7 @@ ignore = [
     'FIX',  # fixmes
     'FLY002',  # static-join-to-f-string
     'N804',  # invalid-first-argument-name-for-class-method
+    'PERF203',  # try-except-in-loop
     'PERF401',  # manual-list-comprehension
     'PGH003',  # blanket-type-ignore
     'PGH004',  # blanket-noqa
