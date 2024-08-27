@@ -32,8 +32,8 @@ black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.35.5
-botocore==1.35.5
+boto3==1.35.6
+botocore==1.35.6
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -110,7 +110,7 @@ h5py==3.11.0
 hexdump==3.3
 hpack==4.0.0
 httpcore==1.0.5
-httpx==0.27.0
+httpx==0.27.2
 huggingface-hub==0.24.6
 hyperframe==6.0.1
 hypothesis==6.111.2
@@ -195,7 +195,7 @@ networkx==3.3
 nevergrad==1.0.4
 nh3==0.2.18
 nltk==3.9.1
-notebook==7.2.1
+notebook==7.2.2
 notebook_shim==0.2.4
 numba==0.60.0
 numpy==1.26.4
