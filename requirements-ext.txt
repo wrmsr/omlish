@@ -97,7 +97,7 @@ ipykernel==6.29.4
 ipywidgets==8.1.2
 jupyter-console==6.6.3
 nbconvert==7.16.4
-notebook==7.2.1
+notebook==7.2.2
 qtconsole==5.5.1
 
 fairscale==0.4.13
@@ -156,7 +156,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.35.5
+boto3>=1.35.6
 
 google-cloud-compute==1.19.2
 

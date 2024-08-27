@@ -2058,14 +2058,14 @@ class InterpResolver:
                     print(f'    {si}')
 
 
-DEFAULT_INTERP_RESOLVER = InterpResolver([
+DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
     # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
-    ('pyenv', PyenvInterpProvider()),
+    PyenvInterpProvider(),
 
-    ('running', RunningInterpProvider()),
+    RunningInterpProvider(),
 
-    ('system', SystemInterpProvider()),
-])
+    SystemInterpProvider(),
+]])
 
 
 ########################################
