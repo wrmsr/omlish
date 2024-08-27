@@ -1,4 +1,4 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 UP007
 import typing as ta
 import unittest
 

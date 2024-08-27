@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @omdev-amalg ./_runcommands.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import io
 import json
