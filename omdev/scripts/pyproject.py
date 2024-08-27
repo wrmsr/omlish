@@ -26,6 +26,7 @@ import argparse
 import base64
 import collections
 import collections.abc
+import concurrent.futures as cf
 import dataclasses as dc
 import datetime
 import decimal
@@ -33,6 +34,7 @@ import enum
 import fractions
 import functools
 import glob
+import importlib
 import inspect
 import itertools
 import json
@@ -883,6 +885,112 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 ########################################
+# ../../toml/writer.py
+
+
+class TomlWriter:
+    def __init__(self, out: ta.TextIO) -> None:
+        super().__init__()
+        self._out = out
+
+        self._indent = 0
+        self._wrote_indent = False
+
+    #
+
+    def _w(self, s: str) -> None:
+        if not self._wrote_indent:
+            self._out.write('    ' * self._indent)
+            self._wrote_indent = True
+        self._out.write(s)
+
+    def _nl(self) -> None:
+        self._out.write('\n')
+        self._wrote_indent = False
+
+    def _needs_quote(self, s: str) -> bool:
+        return (
+            not s or
+            any(c in s for c in '\'"\n') or
+            s[0] not in string.ascii_letters
+        )
+
+    def _maybe_quote(self, s: str) -> str:
+        if self._needs_quote(s):
+            return repr(s)
+        else:
+            return s
+
+    #
+
+    def write_root(self, obj: ta.Mapping) -> None:
+        for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._nl()
+            self._w('[')
+            self._w(self._maybe_quote(k))
+            self._w(']')
+            self._nl()
+            self.write_table_contents(v)
+
+    def write_table_contents(self, obj: ta.Mapping) -> None:
+        for k, v in obj.items():
+            self.write_key(k)
+            self._w(' = ')
+            self.write_value(v)
+            self._nl()
+
+    def write_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        self._nl()
+        self._indent += 1
+        for e in obj:
+            self.write_value(e)
+            self._w(',')
+            self._nl()
+        self._indent -= 1
+        self._w(']')
+
+    def write_inline_table(self, obj: ta.Mapping) -> None:
+        self._w('{')
+        for i, (k, v) in enumerate(obj.items()):
+            if i:
+                self._w(', ')
+            self.write_key(k)
+            self._w(' = ')
+            self.write_value(v)
+        self._w('}')
+
+    def write_inline_array(self, obj: ta.Sequence) -> None:
+        self._w('[')
+        for i, e in enumerate(obj):
+            if i:
+                self._w(', ')
+            self.write_value(e)
+        self._w(']')
+
+    def write_key(self, obj: ta.Any) -> None:
+        if isinstance(obj, str):
+            self._w(self._maybe_quote(obj.replace('_', '-')))
+        elif isinstance(obj, int):
+            self._w(repr(str(obj)))
+        else:
+            raise TypeError(obj)
+
+    def write_value(self, obj: ta.Any) -> None:
+        if isinstance(obj, bool):
+            self._w(str(obj).lower())
+        elif isinstance(obj, (str, int, float)):
+            self._w(repr(obj))
+        elif isinstance(obj, ta.Mapping):
+            self.write_inline_table(obj)
+        elif isinstance(obj, ta.Sequence):
+            self.write_array(obj)
+        else:
+            raise TypeError(obj)
+
+
+########################################
 # ../../versioning/versions.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
@@ -1448,6 +1556,194 @@ def is_sunder(name: str) -> bool:
         name[-2:-1] != '_' and
         len(name) > 2
     )
+
+
+########################################
+# ../pkg.py
+"""
+TODO:
+ - ext scanning
+ - __revision__
+ - entry_points
+
+https://setuptools.pypa.io/en/latest/references/keywords.html
+https://packaging.python.org/en/latest/specifications/pyproject-toml
+
+How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
+https://stackoverflow.com/a/66479252
+
+https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
+
+https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
+vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+"""
+# ruff: noqa: UP006 UP007
+
+
+class PyprojectPackageGenerator:
+    def __init__(
+            self,
+            dir_name: str,
+            build_root: str,
+    ) -> None:
+        super().__init__()
+        self._dir_name = dir_name
+        self._build_root = build_root
+
+    #
+
+    @cached_nullary
+    def about(self) -> types.ModuleType:
+        return importlib.import_module(f'{self._dir_name}.__about__')
+
+    @cached_nullary
+    def project_cls(self) -> type:
+        return self.about().Project
+
+    @cached_nullary
+    def setuptools_cls(self) -> type:
+        return self.about().Setuptools
+
+    #
+
+    @cached_nullary
+    def _build_dir(self) -> str:
+        build_dir: str = os.path.join(self._build_root, self._dir_name)
+        if os.path.isdir(build_dir):
+            shutil.rmtree(build_dir)
+        os.makedirs(build_dir)
+        return build_dir
+
+    #
+
+    def _write_git_ignore(self) -> None:
+        git_ignore = [
+            '/*.egg-info/',
+            '/dist',
+        ]
+        with open(os.path.join(self._build_dir(), '.gitignore'), 'w') as f:
+            f.write('\n'.join(git_ignore))
+
+    #
+
+    def _symlink_source_dir(self) -> None:
+        os.symlink(
+            os.path.relpath(self._dir_name, self._build_dir()),
+            os.path.join(self._build_dir(), self._dir_name),
+        )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
+    @staticmethod
+    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
+        dct = {}
+        for b in reversed(cls.__mro__):
+            for k, v in b.__dict__.items():
+                if k.startswith('_'):
+                    continue
+                dct[k] = v
+        return dct
+
+    @staticmethod
+    def _move_dict_key(
+            sd: ta.Dict[str, ta.Any],
+            sk: str,
+            dd: ta.Dict[str, ta.Any],
+            dk: str,
+    ) -> None:
+        if sk in sd:
+            dd[dk] = sd.pop(sk)
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = self._build_cls_dct(self.project_cls())
+        pyp_dct['project'] = prj
+        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, 'project.optional-dependencies')
+
+        st = self._build_cls_dct(self.setuptools_cls())
+        pyp_dct['tool.setuptools'] = st
+        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+
+        mani_in = st.pop('manifest_in', None)
+
+        return self.FileContents(
+            pyp_dct,
+            mani_in,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._build_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        if fc.manifest_in:
+            with open(os.path.join(self._build_dir(), 'MANIFEST.in'), 'w') as f:
+                f.write('\n'.join(fc.manifest_in))  # noqa
+
+    #
+
+    _STANDARD_FILES: ta.Sequence[str] = [
+        'LICENSE',
+        'README.rst',
+    ]
+
+    def _symlink_standard_files(self) -> None:
+        for fn in self._STANDARD_FILES:
+            if os.path.exists(fn):
+                os.symlink(os.path.relpath(fn, self._build_dir()), os.path.join(self._build_dir(), fn))
+
+    #
+
+    def _run_build(
+            self,
+            build_output_dir: ta.Optional[str] = None,
+    ) -> None:
+        subprocess.check_call(
+            [
+                sys.executable,
+                '-m',
+                'build',
+            ],
+            cwd=self._build_dir(),
+        )
+
+        if build_output_dir is not None:
+            dist_dir = os.path.join(self._build_dir(), 'dist')
+            for fn in os.listdir(dist_dir):
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
+
+    #
+
+    def gen(
+            self,
+            *,
+            run_build: bool = False,
+            build_output_dir: ta.Optional[str] = None,
+    ) -> str:
+        self._build_dir()
+        self._write_git_ignore()
+        self._symlink_source_dir()
+        self._write_file_contents()
+        self._symlink_standard_files()
+
+        if run_build:
+            self._run_build(build_output_dir)
+
+        return self._build_dir()
 
 
 ########################################
@@ -2030,6 +2326,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
+ - nonstrict toggle
 """
 # ruff: noqa: UP006 UP007
 
@@ -2151,12 +2448,13 @@ class IterableObjMarshaler(ObjMarshaler):
 class DataclassObjMarshaler(ObjMarshaler):
     ty: type
     fs: ta.Mapping[str, ObjMarshaler]
+    nonstrict: bool = False
 
     def marshal(self, o: ta.Any) -> ta.Any:
         return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items()})
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items() if self.nonstrict or k in self.fs})
 
 
 @dc.dataclass(frozen=True)
@@ -2447,8 +2745,9 @@ class VenvConfig:
 
 @dc.dataclass(frozen=True)
 class PyprojectConfig:
-    srcs: ta.Mapping[str, ta.Sequence[str]]
-    venvs: ta.Mapping[str, VenvConfig]
+    pkgs: ta.Sequence[str] = dc.field(default_factory=list)
+    srcs: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
+    venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
 
     venvs_dir: str = '.venvs'
     versions_file: ta.Optional[str] = '.versions'
@@ -3552,6 +3851,42 @@ def _venv_cmd(args) -> None:
 ##
 
 
+def _pkg_cmd(args) -> None:
+    run = Run()
+
+    cmd = args.cmd
+    if cmd == 'gen':
+        build_root = os.path.join('.pkg')
+        build_output_dir = 'dist'
+
+        run_build = bool(args.build)
+        num_threads = 8
+
+        if run_build:
+            os.makedirs(build_output_dir, exist_ok=True)
+
+        with cf.ThreadPoolExecutor(num_threads) as ex:
+            futs = [
+                ex.submit(functools.partial(
+                    PyprojectPackageGenerator(
+                        dir_name,
+                        build_root,
+                    ).gen,
+                    run_build=run_build,
+                    build_output_dir=build_output_dir,
+                ))
+                for dir_name in run.cfg().pkgs
+            ]
+            for fut in futs:
+                fut.result()
+
+    else:
+        raise Exception(f'unknown subcommand: {cmd}')
+
+
+##
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--_docker_container', help=argparse.SUPPRESS)
@@ -3564,6 +3899,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_venv_cmd)
+
+    parser_resolve = subparsers.add_parser('pkg')
+    parser_resolve.add_argument('-b', '--build', action='store_true')
+    parser_resolve.add_argument('cmd', nargs='?')
+    parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
+    parser_resolve.set_defaults(func=_pkg_cmd)
 
     return parser
 
