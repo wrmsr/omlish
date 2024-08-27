@@ -100,7 +100,7 @@ dep-refresh: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg
+gen: gen-amalg gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -108,6 +108,10 @@ gen-amalg: venv
 		-m omlish \
 		-m omdev \
 		${SRCS}
+
+.PHONY: gen-pkg
+gen-pkg: gen-pkg
+	PYTHONPATH=. ${PYPROJECT} pkg gen
 
 
 ### Check
@@ -343,9 +347,9 @@ _ci:
 
 ### Package
 
-.PYTHON: package
+.PHONY: package
 package: clean-package
-	${PYTHON} -mbuild
+	PYTHONPATH=. ${PYPROJECT} pkg -b gen
 
 
 ### Publish

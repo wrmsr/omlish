@@ -27,6 +27,7 @@ import types
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.logs import log
 
 from ..toml.writer import TomlWriter
 
@@ -184,6 +185,8 @@ class PyprojectPackageGenerator:
             run_build: bool = False,
             build_output_dir: ta.Optional[str] = None,
     ) -> str:
+        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
+
         self._build_dir()
         self._write_git_ignore()
         self._symlink_source_dir()
