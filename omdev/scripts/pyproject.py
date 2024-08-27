@@ -2813,6 +2813,8 @@ class PyprojectPackageGenerator:
     def file_contents(self) -> FileContents:
         pyp_dct = {}
 
+        #
+
         pyp_dct['build-system'] = {
             'requires': ['setuptools'],
             'build-backend': 'setuptools.build_meta',
@@ -2820,13 +2822,28 @@ class PyprojectPackageGenerator:
 
         prj = self._build_cls_dct(self.project_cls())
         pyp_dct['project'] = prj
-        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, 'project.optional-dependencies')
+
+        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
+        if (extras := pyp_dct.get(extrask)):
+            pyp_dct[extrask] = {
+                'all': [
+                    e
+                    for lst in extras.values()
+                    for e in lst
+                ],
+                **extras,
+            }
+
+        #
 
         st = self._build_cls_dct(self.setuptools_cls())
         pyp_dct['tool.setuptools'] = st
+
         self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
 
         mani_in = st.pop('manifest_in', None)
+
+        #
 
         return self.FileContents(
             pyp_dct,
@@ -3925,7 +3942,10 @@ def _pkg_cmd(args) -> None:
     run = Run()
 
     cmd = args.cmd
-    if cmd == 'gen':
+    if not cmd:
+        raise Exception('must specify command')
+
+    elif cmd == 'gen':
         build_root = os.path.join('.pkg')
 
         if os.path.exists(build_root):

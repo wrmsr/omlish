@@ -294,7 +294,10 @@ def _pkg_cmd(args) -> None:
     run = Run()
 
     cmd = args.cmd
-    if cmd == 'gen':
+    if not cmd:
+        raise Exception('must specify command')
+
+    elif cmd == 'gen':
         build_root = os.path.join('.pkg')
 
         if os.path.exists(build_root):
