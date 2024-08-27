@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output ../interp/cli.py
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 """
 TODO:
  - partial best-matches - '3.12'
@@ -63,7 +63,7 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -470,7 +470,7 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -530,7 +530,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -631,7 +631,7 @@ def is_sunder(name: str) -> bool:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1202,7 +1202,7 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../types.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 # See https://peps.python.org/pep-3149/
@@ -1291,7 +1291,7 @@ class Interp:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1398,7 +1398,7 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../inspect.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -1561,7 +1561,7 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1893,7 +1893,7 @@ TODO:
  - python, python3, python3.12, ...
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2002,7 +2002,7 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../resolvers.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, type[InterpProvider]] = {

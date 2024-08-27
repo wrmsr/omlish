@@ -26,7 +26,7 @@ DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcernCo
 
 ########################################
 # ../configs.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006
 
 
 ##
@@ -117,7 +117,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../base.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -475,7 +475,7 @@ class SiteImpl(Site):
 
 ########################################
 # ../../../../omlish/lite/subprocesses.py
-# ruff: noqa: FA100
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -582,7 +582,7 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../runtime.py
-# ruff: noqa: FA100
+# ruff: noqa: UP007
 
 
 class RuntimeImpl(Runtime):
