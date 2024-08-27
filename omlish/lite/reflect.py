@@ -1,4 +1,4 @@
-# ruff: noqa: FA100 UP006
+# ruff: noqa: FA100
 import functools
 import typing as ta
 

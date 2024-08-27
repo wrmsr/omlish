@@ -2,7 +2,7 @@
 TODO:
  - debug
 """
-# ruff: noqa: FA100 UP007
+# ruff: noqa: FA100
 import logging
 import typing as ta
 

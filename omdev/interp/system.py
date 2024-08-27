@@ -3,7 +3,7 @@ TODO:
  - python, python3, python3.12, ...
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 import dataclasses as dc
 import os
 import re

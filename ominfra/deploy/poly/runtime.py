@@ -1,4 +1,4 @@
-# ruff: noqa: FA100 UP007
+# ruff: noqa: FA100
 import os.path
 import stat
 import typing as ta
