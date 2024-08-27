@@ -3,6 +3,7 @@ https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
 
 TODO:
  - https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html
+  - boto / s3transfer upload_fileobj doesn't stream either lol - eagerly calcs Content-MD5
  - sts tokens
  - !! fix canonical_qs - sort params
 """
