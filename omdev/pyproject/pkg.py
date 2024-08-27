@@ -73,7 +73,7 @@ class PyprojectPackageGenerator:
         manifest_in: ta.Optional[ta.Sequence[str]]
 
     @staticmethod
-    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:
+    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
         dct = {}
         for b in reversed(cls.__mro__):
             for k, v in b.__dict__.items():
@@ -128,7 +128,7 @@ class PyprojectPackageGenerator:
 
     #
 
-    _STANDARD_FILES = [
+    _STANDARD_FILES: ta.Sequence[str] = [
         'LICENSE',
         'README.rst',
     ]
