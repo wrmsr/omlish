@@ -5,7 +5,7 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omdev'
+name = 'omserv'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -20,22 +20,17 @@ classifiers = [
     'Operating System :: OS Independent',
     'Operating System :: POSIX',
 ]
-description = 'omdev'
+description = 'omserv'
 dependencies = [
     'omlish == 0.0.0.dev7',
 ]
 
 [project.optional-dependencies]
-c = [
-    'pycparser >= 2.22',
-    'cffi >= 1.17',
-    'pcpp >= 1.30',
-]
-mypy = [
-    'mypy >= 1.11',
-]
-tokens = [
-    'tokenize_rt >= 6',
+server = [
+    'h11 >= 0.14',
+    'h2 >= 4.1',
+    'priority >= 2',
+    'wsproto >= 1.2',
 ]
 
 [tool.setuptools]
@@ -43,8 +38,8 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 include = [
-    'omdev',
-    'omdev.*',
+    'omserv',
+    'omserv.*',
 ]
 exclude = [
     '*.tests',
