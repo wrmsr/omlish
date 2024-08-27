@@ -4,7 +4,7 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 import abc
 import dataclasses as dc
 import itertools

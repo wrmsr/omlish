@@ -41,7 +41,7 @@ spec = <name>--<rev>--<when>
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
 """  # noqa
-# ruff: noqa: UP007
+# ruff: noqa: FA100
 import abc
 import argparse
 import base64
@@ -115,7 +115,7 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../../omlish/lite/check.py
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -175,7 +175,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../../omlish/lite/reflect.py
-# ruff: noqa: FA100 UP006
+# ruff: noqa: FA100
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -227,7 +227,7 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 TODO:
  - debug
 """
-# ruff: noqa: FA100 UP007
+# ruff: noqa: FA100
 
 
 log = logging.getLogger(__name__)
@@ -279,7 +279,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
 """
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 
 
 ##
@@ -592,7 +592,7 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../../../omlish/lite/subprocesses.py
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 
 
 ##
@@ -699,7 +699,7 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../base.py
-# ruff: noqa: FA100 UP006
+# ruff: noqa: FA100
 
 
 ##

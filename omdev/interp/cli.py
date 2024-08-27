@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @omdev-amalg ../scripts/interp.py
-# ruff: noqa: FA100 UP007
+# ruff: noqa: FA100
 """
 TODO:
  - partial best-matches - '3.12'

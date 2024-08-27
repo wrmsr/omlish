@@ -1,4 +1,4 @@
-# ruff: noqa: FA100 PT009 UP006 UP007
+# ruff: noqa: FA100 PT009
 import abc
 import dataclasses as dc
 import datetime

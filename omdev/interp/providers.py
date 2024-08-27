@@ -5,7 +5,6 @@ TODO:
   - deadsnakes?
  - loose versions
 """
-# ruff: noqa: UP007
 import abc
 import sys
 import typing as ta
