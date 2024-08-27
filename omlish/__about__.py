@@ -5,7 +5,7 @@ __version__ = '0.0.0.dev7'
 
 
 class ProjectBase:
-    name = None
+    name: str | None = None
     authors = [{'name': 'wrmsr'}]
     urls = {'source': 'https://github.com/wrmsr/omlish'}
     license = {'text': 'BSD-3-Clause'}
