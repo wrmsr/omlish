@@ -24,7 +24,7 @@ class Project(ProjectBase):
 
         'tokens': [
             'tokenize_rt >= 6',
-        ]
+        ],
     }
 
 
