@@ -5,7 +5,7 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omdev'
+name = 'ominfra'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -20,22 +20,15 @@ classifiers = [
     'Operating System :: OS Independent',
     'Operating System :: POSIX',
 ]
-description = 'omdev'
+description = 'ominfra'
 dependencies = [
     'omlish == 0.0.0.dev7',
 ]
 
 [project.optional-dependencies]
-c = [
-    'pycparser >= 2.22',
-    'cffi >= 1.17',
-    'pcpp >= 1.30',
-]
-mypy = [
-    'mypy >= 1.11',
-]
-tokens = [
-    'tokenize_rt >= 6',
+ssh = [
+    'paramiko >= 3.4',
+    "asyncssh >= 2.16; python_version < '3.13'",
 ]
 
 [tool.setuptools]
@@ -43,8 +36,8 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 include = [
-    'omdev',
-    'omdev.*',
+    'ominfra',
+    'ominfra.*',
 ]
 exclude = [
     '*.tests',
