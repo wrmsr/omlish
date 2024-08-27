@@ -20,6 +20,6 @@ class Project(ProjectBase):
 
 class Setuptools(SetuptoolsBase):
     find_packages = {
-        'include': ['omml', 'omml.*'],
+        'include': [Project.name, f'{Project.name}.*'],
         'exclude': [*SetuptoolsBase.find_packages['exclude']],
     }

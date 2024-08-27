@@ -1,8 +1,9 @@
 """
 TODO:
+ - translate json keys
  - debug
 """
-# ruff: noqa: UP007 N802
+# ruff: noqa: UP006 UP007 N802
 import datetime
 import logging
 import threading
@@ -79,7 +80,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 class StandardLogFormatter(logging.Formatter):
 
     @staticmethod
-    def build_log_format(parts: ta.Iterable[tuple[str, str]]) -> str:
+    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
         return ' '.join(v for k, v in parts)
 
     converter = datetime.datetime.fromtimestamp  # type: ignore

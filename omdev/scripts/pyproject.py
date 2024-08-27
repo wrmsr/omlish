@@ -2086,9 +2086,10 @@ class SpecifierSet(BaseSpecifier):
 # ../../../omlish/lite/logs.py
 """
 TODO:
+ - translate json keys
  - debug
 """
-# ruff: noqa: UP007 N802
+# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -2159,7 +2160,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 class StandardLogFormatter(logging.Formatter):
 
     @staticmethod
-    def build_log_format(parts: ta.Iterable[tuple[str, str]]) -> str:
+    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
         return ' '.join(v for k, v in parts)
 
     converter = datetime.datetime.fromtimestamp  # type: ignore
@@ -3926,9 +3927,13 @@ def _pkg_cmd(args) -> None:
     cmd = args.cmd
     if cmd == 'gen':
         build_root = os.path.join('.pkg')
-        build_output_dir = 'dist'
 
+        if os.path.exists(build_root):
+            shutil.rmtree(build_root)
+
+        build_output_dir = 'dist'
         run_build = bool(args.build)
+
         num_threads = 8
 
         if run_build:
