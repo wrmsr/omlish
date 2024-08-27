@@ -2,7 +2,7 @@
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
 """
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 import abc
 import base64
 import collections.abc

@@ -10,7 +10,7 @@ TODO new items:
  - packaging fixups
  - daemonize ( https://github.com/thesharp/daemonize/blob/master/daemonize.py )
 """
-# ruff: noqa: FA100 UP006 UP007
+# ruff: noqa: FA100
 import abc
 import argparse
 import contextlib
