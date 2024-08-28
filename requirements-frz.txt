@@ -31,7 +31,7 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-blobfile==3.0.0
+blobfile==2.1.1
 boto==2.49.0
 boto3==1.35.7
 botocore==1.35.7
@@ -394,7 +394,7 @@ wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
 yarl==1.9.4
-zigpy==0.65.4
+zigpy==0.66.0
 zipp==3.20.1
 zstd==1.5.5.1
 zwave-js-server-python==0.57.0
