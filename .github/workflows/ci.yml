@@ -4,6 +4,11 @@
 
 name: Ci
 
+permissions:
+  contents: read
+  checks: write
+  id-token: write
+
 on:
   push:
     branches:
