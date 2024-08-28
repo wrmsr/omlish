@@ -163,7 +163,7 @@ TypeT = ta.TypeVar('TypeT', bound=type)
 def bind(
         scope: PytestScope | str = PytestScope.SESSION,
         *,
-        eager: bool = False,
+        eager: bool = False,  # FIXME
 ) -> ta.Callable[[TypeT], TypeT]:
     def inner(cls):
         pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
