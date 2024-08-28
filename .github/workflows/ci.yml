@@ -26,31 +26,35 @@ jobs:
         with:
           access_token: '${{ github.token }}'
 
-      - name: 'Cache'
-        uses: 'actions/cache@v4.0.2'
-        id: 'cache'
-        with:
-          path: '~/.cache'
-          key: >
-            omlish-ci-${{ github.ref }}-${{ hashFiles(
-              '.dockertimestamp',
-              'docker/ci/Dockerfile',
-              'requirements.txt',
-              'requirements-dev.txt'
-            ) }}
-          restore-keys: |
-            omlish-ci-${{ github.ref }}-
-            omlish-ci-
+      # - name: 'Cache'
+      #   uses: 'actions/cache@v4.0.2'
+      #   id: 'cache'
+      #   with:
+      #     path: '~/.cache'
+      #     key: >
+      #       omlish-ci-${{ github.ref }}-${{ hashFiles(
+      #         '.dockertimestamp',
+      #         'docker/ci/Dockerfile',
+      #         'requirements.txt',
+      #         'requirements-dev.txt'
+      #       ) }}
+      #     restore-keys: |
+      #       omlish-ci-${{ github.ref }}-
+      #       omlish-ci-
 
-      - name: 'Docker cache load'
-        run: >
-          tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
-          docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
-          docker image history wrmsr/omlish-ci ||: ;
+      # - name: 'Docker cache load'
+      #   run: >
+      #     tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
+      #     docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
+      #     docker image history wrmsr/omlish-ci ||: ;
 
       # - uses: 'mxschmitt/action-tmate@v3.18'
 
-      - name: 'Run tests'
+      - name: 'Build CI image'
+        run: >
+          make ci-images
+
+      - name: 'Run CI tests'
         run: >
           OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace -e OMLISH_JUNIT_XML_PATH'
           OMLISH_JUNIT_XML_PATH=${{ github.workspace }}/test-results.xml
@@ -60,13 +64,13 @@ jobs:
         with:
           report_paths: ${{ github.workspace }}/test-results.xml
 
-      - name: 'Docker cache save'
-        if: "steps.cache.outputs.cache-hit != 'true'"
-        run: >
-          mkdir -p ~/.cache/docker/ &&
-          docker image history wrmsr/omlish-ci &&
-          docker history wrmsr/omlish-ci | 
-            tail -n+2 | 
-            awk '{print $1}' | 
-            egrep -v '<missing>' |
-            xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
+      # - name: 'Docker cache save'
+      #   if: "steps.cache.outputs.cache-hit != 'true'"
+      #   run: >
+      #     mkdir -p ~/.cache/docker/ &&
+      #     docker image history wrmsr/omlish-ci &&
+      #     docker history wrmsr/omlish-ci |
+      #       tail -n+2 |
+      #       awk '{print $1}' |
+      #       egrep -v '<missing>' |
+      #       xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
