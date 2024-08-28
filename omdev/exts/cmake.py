@@ -138,6 +138,7 @@ def _main() -> None:
         'omdev/exts/_boilerplate.cc',
         'x/dev/c/junk.cc',
         'x/dev/c/_uuid.cc',
+        'x/dev/c/csv/_csvloader.cc',
     ]:
         ext_name = ext_src.rpartition('.')[0].replace('/', '__')
         so_name = ''.join([
@@ -186,7 +187,7 @@ def _main() -> None:
             ],
         ))
 
-    print(out.getvalue())
+    # print(out.getvalue())
     with open(os.path.join(cmake_dir, 'CMakeLists.txt'), 'w') as f:
         f.write(out.getvalue())
 

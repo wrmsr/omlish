@@ -1,5 +1,8 @@
 """
 https://github.com/wrmsr/omlish/blob/f80afa5bf7f325ecf76d6bb7539818bb79e51806/x/omni/nodal/tests/SubsTest.java
+
+TODO:
+ - nodals aren't necessarily dataclasses - orthogonal
 """
 import abc
 import dataclasses as dc

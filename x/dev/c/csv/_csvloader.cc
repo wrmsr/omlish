@@ -1,3 +1,4 @@
+// @omdev-ext
 /*
 Copyright (c) 2016 Jeroen van der Heijden / Transceptor Technology
 
@@ -25,26 +26,27 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #define INIT_ALLOC_SZ 64
 
 
-// FIXME: no globals.
-static char *quoted_str = NULL;
-static Py_ssize_t quoted_len = 0;
+typedef struct loader_ctx {
+    char *quoted_str;
+    Py_ssize_t quoted_len;
+} loader_ctx;
 
 
 static char *
-replace_str(const char *content, Py_ssize_t *length)
+replace_str(loader_ctx &ctx, const char *content, Py_ssize_t *length)
 {
     *length -= 2;
-    if (quoted_len < *length) {
-        char *tmp = (char *) realloc(quoted_str, *length);
+    if (ctx.quoted_len < *length) {
+        char *tmp = (char *) realloc(ctx.quoted_str, *length);
         if (tmp == NULL) {
             PyErr_SetString(PyExc_MemoryError, "Memory re-allocation error.");
             return NULL;
         }
-        quoted_str = tmp;
+        ctx.quoted_str = tmp;
     }
 
     content++;
-    char *dp = quoted_str;
+    char *dp = ctx.quoted_str;
 
     for (Py_ssize_t i = *length; i--; content++, dp++) {
         if (*content == '"') {
@@ -55,12 +57,12 @@ replace_str(const char *content, Py_ssize_t *length)
         *dp = *content;
     }
 
-    return quoted_str;
+    return ctx.quoted_str;
 }
 
 
 static int
-loads(PyObject *grid, Py_ssize_t length, const char *content)
+loads(loader_ctx &ctx, PyObject *grid, Py_ssize_t length, const char *content)
 {
     PyObject *row;
     if ((row = PyList_New(0)) == NULL) {
@@ -73,7 +75,7 @@ loads(PyObject *grid, Py_ssize_t length, const char *content)
     bool is_int = true;
     bool is_float = true;
     Py_ssize_t word_len = 0;
-    Py_ssize_t replace_len;
+    Py_ssize_t replace_len = 0;
     PyObject *obj;
 
     // Loop through the content using the length
@@ -95,11 +97,11 @@ loads(PyObject *grid, Py_ssize_t length, const char *content)
             }
             else if (is_quoted) {
                 replace_len = word_len;
-                if (replace_str(content, &replace_len) == NULL) {
+                if (replace_str(ctx, content, &replace_len) == NULL) {
                     Py_DECREF(row);
                     return -1;
                 }
-                obj = PyUnicode_FromStringAndSize(quoted_str, replace_len);
+                obj = PyUnicode_FromStringAndSize(ctx.quoted_str, replace_len);
             }
             else {
                 obj = PyUnicode_FromStringAndSize(content, word_len);
@@ -190,11 +192,11 @@ loads(PyObject *grid, Py_ssize_t length, const char *content)
     }
     else if (is_quoted) {
         replace_len = word_len;
-        if (replace_str(content, &replace_len) == NULL) {
+        if (replace_str(ctx, content, &replace_len) == NULL) {
             Py_DECREF(row);
             return -1;
         }
-        obj = PyUnicode_FromStringAndSize(quoted_str, replace_len);
+        obj = PyUnicode_FromStringAndSize(ctx.quoted_str, replace_len);
     }
     else {
         obj = PyUnicode_FromStringAndSize(content, word_len);
@@ -249,18 +251,19 @@ csvloader_loads(PyObject *self, PyObject *args)
 
     // Warning: we use a static quoted_str so we do not need to allocate space for each quoted string. This is however
     // not thread safe and should be solved different in case we need to be.
-    quoted_len = INIT_ALLOC_SZ;
-    quoted_str = (char *) malloc(quoted_len);
+    loader_ctx ctx = {0};
+    ctx.quoted_len = INIT_ALLOC_SZ;
+    ctx.quoted_str = (char *) malloc(ctx.quoted_len);
 
-    if (quoted_str == NULL || loads(obj, length, content)) {
-        if (quoted_str == NULL) {
+    if (ctx.quoted_str == NULL || loads(ctx, obj, length, content)) {
+        if (ctx.quoted_str == NULL) {
             PyErr_SetString(PyExc_MemoryError, "Memory allocation error");
         }
         Py_DECREF(obj);
         obj = NULL;
     }
 
-    free(quoted_str);
+    free(ctx.quoted_str);
 
     return obj;
 }
