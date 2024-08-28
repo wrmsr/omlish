@@ -100,7 +100,7 @@ class BMul(BNode):
 
 class AEval(AVisitor[A, None, int]):
     def visit_a_add(self, node: 'AAdd[A]', ctx: None) -> int:
-        return node.left.accept_a_visitor(self, ctx) * node.right.accept_a_visitor(self, ctx)
+        return node.left.accept_a_visitor(self, ctx) + node.right.accept_a_visitor(self, ctx)
 
     def visit_a_const(self, node: 'AConst[A]', ctx: None) -> int:
         return node.val
