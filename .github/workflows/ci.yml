@@ -26,6 +26,8 @@ jobs:
         with:
           access_token: '${{ github.token }}'
 
+      ##
+
       - name: 'Cache'
         uses: 'actions/cache@v4.0.2'
         id: 'cache'
@@ -48,6 +50,8 @@ jobs:
           docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
           docker image history wrmsr/omlish-ci ||: ;
 
+      ##
+
       # - uses: 'mxschmitt/action-tmate@v3.18'
 
       - name: 'Build CI image'
@@ -65,6 +69,8 @@ jobs:
         with:
           report_paths: ${{ github.workspace }}/test-results.xml
 
+      ##
+
       - name: 'Docker cache save'
         # if: "steps.cache.outputs.cache-hit != 'true'"
         if: 'always()'
@@ -79,6 +85,7 @@ jobs:
 
       - name: 'Cache save'
         uses: 'actions/cache/save@v4.0.2'
+        # if: "steps.cache.outputs.cache-hit != 'true'"
         if: 'always()'
         with:
           path: '~/.cache'
