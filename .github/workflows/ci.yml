@@ -57,7 +57,7 @@ jobs:
       - name: 'Run CI tests'
         run: >
           OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace -e OMLISH_JUNIT_XML_PATH'
-          OMLISH_JUNIT_XML_PATH=${{ github.workspace }}/test-results.xml
+          OMLISH_JUNIT_XML_PATH=/github/workspace/test-results.xml
           make ci
 
       - uses: 'mikepenz/action-junit-report@v4.3.1'
