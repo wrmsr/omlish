@@ -28,27 +28,27 @@ jobs:
 
       ##
 
-      - name: 'Cache'
-        uses: 'actions/cache@v4.0.2'
-        id: 'cache'
-        with:
-          path: '~/.cache'
-          key: >
-            omlish-ci-${{ github.ref }}-${{ hashFiles(
-              'docker/.dockertimestamp',
-              'docker/ci/Dockerfile',
-              'requirements.txt',
-              'requirements-dev.txt'
-            ) }}
-          restore-keys: |
-            omlish-ci-${{ github.ref }}-
-            omlish-ci-
+      # - name: 'Cache'
+      #   uses: 'actions/cache@v4.0.2'
+      #   id: 'cache'
+      #   with:
+      #     path: '~/.cache'
+      #     key: >
+      #       omlish-ci-${{ github.ref }}-${{ hashFiles(
+      #         'docker/.dockertimestamp',
+      #         'docker/ci/Dockerfile',
+      #         'requirements.txt',
+      #         'requirements-dev.txt'
+      #       ) }}
+      #     restore-keys: |
+      #       omlish-ci-${{ github.ref }}-
+      #       omlish-ci-
 
-      - name: 'Docker cache load'
-        run: >
-          tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
-          docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
-          docker image history wrmsr/omlish-ci ||: ;
+      # - name: 'Docker cache load'
+      #   run: >
+      #     tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
+      #     docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
+      #     docker image history wrmsr/omlish-ci ||: ;
 
       ##
 
@@ -60,8 +60,8 @@ jobs:
 
       - name: 'Run CI tests'
         run: >
-          OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace -e OMLISH_JUNIT_XML_PATH'
-          OMLISH_JUNIT_XML_PATH=/github/workspace/test-results.xml
+          CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace -e PYTEST_JUNIT_XML_PATH'
+          PYTEST_JUNIT_XML_PATH=/github/workspace/test-results.xml
           make ci
 
       - uses: 'mikepenz/action-junit-report@v4.3.1'
@@ -71,28 +71,28 @@ jobs:
 
       ##
 
-      - name: 'Docker cache save'
-        # if: "steps.cache.outputs.cache-hit != 'true'"
-        if: 'always()'
-        run: >
-          mkdir -p ~/.cache/docker/ &&
-          docker image history wrmsr/omlish-ci &&
-          docker history wrmsr/omlish-ci |
-            tail -n+2 |
-            awk '{print $1}' |
-            egrep -v '<missing>' |
-            xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
+      # - name: 'Docker cache save'
+      #   # if: "steps.cache.outputs.cache-hit != 'true'"
+      #   if: 'always()'
+      #   run: >
+      #     mkdir -p ~/.cache/docker/ &&
+      #     docker image history wrmsr/omlish-ci &&
+      #     docker history wrmsr/omlish-ci |
+      #       tail -n+2 |
+      #       awk '{print $1}' |
+      #       egrep -v '<missing>' |
+      #       xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
 
-      - name: 'Cache save'
-        uses: 'actions/cache/save@v4.0.2'
-        # if: "steps.cache.outputs.cache-hit != 'true'"
-        if: 'always()'
-        with:
-          path: '~/.cache'
-          key: >
-            omlish-ci-${{ github.ref }}-${{ hashFiles(
-              'docker/.dockertimestamp',
-              'docker/ci/Dockerfile',
-              'requirements.txt',
-              'requirements-dev.txt'
-            ) }}
+      # - name: 'Cache save'
+      #   uses: 'actions/cache/save@v4.0.2'
+      #   # if: "steps.cache.outputs.cache-hit != 'true'"
+      #   if: 'always()'
+      #   with:
+      #     path: '~/.cache'
+      #     key: >
+      #       omlish-ci-${{ github.ref }}-${{ hashFiles(
+      #         'docker/.dockertimestamp',
+      #         'docker/ci/Dockerfile',
+      #         'requirements.txt',
+      #         'requirements-dev.txt'
+      #       ) }}

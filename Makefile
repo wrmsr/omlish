@@ -177,7 +177,7 @@ pre-commit:
 ### Test
 
 PYTEST_OPTS=
-PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
+PYTEST_JUNIT_XML_PATH:=$$(echo "$${PYTEST_JUNIT_XML_PATH}")
 
 .PHONY: test-all
 test-all: test test-13 test-lite
@@ -344,7 +344,7 @@ ci-images:
 
 .PHONY: ci
 ci: ci-images
-	${DOCKER_COMPOSE} run --rm $$OMLISH_CI_DOCKER_OPTS omlish-ci
+	${DOCKER_COMPOSE} run --rm $$CI_DOCKER_OPTS omlish-ci
 
 .PHONY: _ci
 _ci:
