@@ -66,7 +66,8 @@ jobs:
           report_paths: ${{ github.workspace }}/test-results.xml
 
       - name: 'Docker cache save'
-        if: "steps.cache.outputs.cache-hit != 'true'"
+        # if: "steps.cache.outputs.cache-hit != 'true'"
+        if: 'always()'
         run: >
           mkdir -p ~/.cache/docker/ &&
           docker image history wrmsr/omlish-ci &&
