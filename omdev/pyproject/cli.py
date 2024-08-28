@@ -248,7 +248,6 @@ def _venv_cmd(args) -> None:
         )
         return
 
-
     cmd = args.cmd
     if not cmd:
         venv.create()

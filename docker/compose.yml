@@ -45,8 +45,10 @@ services:
     platform: 'linux/x86_64'
     restart: 'no'
     depends_on:
+      - 'omlish-mysql'
       - 'omlish-postgres'
     links:
+      - 'omlish-mysql'
       - 'omlish-postgres'
 
   omlish-mysql:
