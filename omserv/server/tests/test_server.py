@@ -240,9 +240,16 @@ async def test_curl_h2() -> None:
                 err_lines = [l.strip() for l in err.decode().splitlines()]
                 for p in [
                     '< upgrade: h2c',
-                    '* Received 101',
-                    '* Using HTTP2, server supports multiplexing',
-                    '* Connection state changed (HTTP/2 confirmed)',
+
+                    # darwin:
+                    # '* Received 101',
+                    # '* Using HTTP2, server supports multiplexing',
+                    # '* Connection state changed (HTTP/2 confirmed)',
+
+                    # ci:
+                    # '> Connection: Upgrade, HTTP2-Settings'
+                    # '* Received 101, Switching to HTTP/2',
+
                     '< HTTP/2 200',
                 ]:
                     assert p in err_lines

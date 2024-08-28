@@ -19,7 +19,7 @@ cryptography==43.0.0
 
 lz4==4.3.3
 python-snappy==0.7.2; python_version < "3.13"
-zstd==1.5.5.1
+# zstd==1.5.5.1
 
 
 ### db:
