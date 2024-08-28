@@ -39,7 +39,9 @@ https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d
 """  # noqa
 import functools
 import inspect
+import sys
 import typing as ta
+import warnings
 
 import pytest
 
@@ -79,6 +81,20 @@ class AsyncsPlugin:
     ASYNC_BACKENDS: ta.ClassVar[ta.Sequence[str]] = [
         *[s for s in KNOWN_BACKENDS if lang.can_import(s)],
     ]
+
+    def pytest_cmdline_main(self, config):
+        if (aio_plugin := sys.modules.get('pytest_asyncio.plugin')):
+            # warnings.filterwarnings is clobbered by pytest using warnings.catch_warnings
+            def aio_plugin_warn(message, *args, **kwargs):
+                if (
+                        isinstance(message, pytest.PytestDeprecationWarning) and
+                        message.args[0].startswith('The configuration option "asyncio_default_fixture_loop_scope" is unset.')  # noqa
+                ):
+                    return
+                warnings.warn(message, *args, **kwargs)
+
+            aio_plugin.warnings = lang.proxy_import('warnings')  # type: ignore
+            aio_plugin.warnings.warn = aio_plugin_warn  # type: ignore
 
     def pytest_configure(self, config):
         config.addinivalue_line('markers', f'{ASYNCS_MARK}: marks for all async backends')
