@@ -328,8 +328,8 @@ docker-invalidate:
 
 ### CI
 
-.PHONY: ci-images
-ci-images:
+.PHONY: ci-image
+ci-image:
 	tar cvh \
 		--exclude "__pycache__" \
 		${SRCS} \
@@ -348,7 +348,7 @@ ci-images:
 			-
 
 .PHONY: ci
-ci: ci-images
+ci: ci-image
 	${DOCKER_COMPOSE} run --rm $$CI_DOCKER_OPTS -e CI=1 omlish-ci
 
 .PHONY: _ci
@@ -364,7 +364,7 @@ _ci:
 		${SRCS}
 
 .PHONY: ci-bash
-ci-bash: ci-images
+ci-bash: ci-image
 	${DOCKER_COMPOSE} run --rm -e CI=1 omlish-ci bash
 
 
