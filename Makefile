@@ -347,8 +347,6 @@ ci: ci-images
 
 .PHONY: _ci
 _ci:
-	pwd
-	ls -al
 	python -mpytest omlish omdev omserv
 
 
