@@ -20,6 +20,7 @@ RUN \
         build-essential \
         clang \
         cmake \
+        curl \
         gdb \
         libdb-dev \
         llvm \
