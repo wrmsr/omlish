@@ -76,3 +76,16 @@ jobs:
             awk '{print $1}' |
             egrep -v '<missing>' |
             xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
+
+      - name: 'Cache save'
+        uses: 'actions/cache/save@v4.0.2'
+        if: 'always()'
+        with:
+          path: '~/.cache'
+          key: >
+            omlish-ci-${{ github.ref }}-${{ hashFiles(
+              'docker/.dockertimestamp',
+              'docker/ci/Dockerfile',
+              'requirements.txt',
+              'requirements-dev.txt'
+            ) }}
