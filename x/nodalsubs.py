@@ -76,13 +76,13 @@ class BVisitor(AVisitor[BNode, C, R]):
 
 
 @dc.dataclass(frozen=True)
-class BAdd(AAdd[BNode]):
+class BAdd(AAdd[BNode], BNode):
     def accept_b_visitor(self, visitor: BVisitor[C, R], ctx: C) -> R:
         return visitor.visit_b_add(self, ctx)
 
 
 @dc.dataclass(frozen=True)
-class BConst(AConst[BNode]):
+class BConst(AConst[BNode], BNode):
     def accept_b_visitor(self, visitor: BVisitor[C, R], ctx: C) -> R:
         return visitor.visit_b_const(self, ctx)
 
