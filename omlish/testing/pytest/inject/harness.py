@@ -120,29 +120,44 @@ class Harness:
 
 @plugins.register
 class HarnessPlugin:
+    def __init__(self) -> None:
+        super().__init__()
+        self._harnesses_by_session = {}
+
+    def get_session_harness(self, session):
+        return self._harnesses_by_session[session]
 
     @pytest.fixture(scope='session', autouse=True)
-    def _harness_scope_listener_session(self, harness, request):
-        with harness._pytest_scope_manager(PytestScope.SESSION, request):  # noqa
-            yield
+    def _harness_scope_listener_session(self, request):
+        with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)).activate() as harness:
+            self._harnesses_by_session[request.session] = harness
+            try:
+                with harness._pytest_scope_manager(PytestScope.SESSION, request):  # noqa
+                    yield
+            finally:
+                del self._harnesses_by_session[request.session]
 
     @pytest.fixture(scope='package', autouse=True)
-    def _harness_scope_listener_package(self, harness, request):
+    def _harness_scope_listener_package(self, request):
+        harness = self.get_session_harness(request.session)
         with harness._pytest_scope_manager(PytestScope.PACKAGE, request):  # noqa
             yield
 
     @pytest.fixture(scope='module', autouse=True)
-    def _harness_scope_listener_module(self, harness, request):
+    def _harness_scope_listener_module(self, request):
+        harness = self.get_session_harness(request.session)
         with harness._pytest_scope_manager(PytestScope.MODULE, request):  # noqa
             yield
 
     @pytest.fixture(scope='class', autouse=True)
-    def _harness_scope_listener_class(self, harness, request):
+    def _harness_scope_listener_class(self, request):
+        harness = self.get_session_harness(request.session)
         with harness._pytest_scope_manager(PytestScope.CLASS, request):  # noqa
             yield
 
     @pytest.fixture(scope='function', autouse=True)  # noqa
-    def _harness_scope_listener_function(self, harness, request):
+    def _harness_scope_listener_function(self, request):
+        harness = self.get_session_harness(request.session)
         with harness._pytest_scope_manager(PytestScope.FUNCTION, request):  # noqa
             yield
 
@@ -175,7 +190,8 @@ def bind(
     return inner
 
 
-@pytest.fixture(scope='session', autouse=True)
-def harness() -> ta.Generator[Harness, None, None]:
-    with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)).activate() as h:
-        yield h
+@pytest.fixture
+def harness(request) -> Harness:
+    pm = request.session.config.pluginmanager
+    hp = check.single(p for n, p in pm.list_name_plugin() if isinstance(p, HarnessPlugin))
+    return hp.get_session_harness(request.session)
