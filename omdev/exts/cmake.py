@@ -56,13 +56,13 @@ def _main() -> None:
     with open(os.path.join(cmake_dir, '.gitignore'), 'w') as f:
         f.write('\n'.join(sorted(['/cmake-*', '/build'])))
 
-    # idea_dir = os.path.join(cmake_dir, '.idea')
-    # if not os.path.isdir(idea_dir):
-    #     os.mkdir(idea_dir)
-    # idea_name_file = os.path.join(idea_dir, '.name')
-    # if not os.path.isfile(idea_name_file):
-    #     with open(idea_name_file, 'w') as f:
-    #         f.write('omlish')
+    idea_dir = os.path.join(cmake_dir, '.idea')
+    if not os.path.isdir(idea_dir):
+        os.mkdir(idea_dir)
+    idea_name_file = os.path.join(idea_dir, '.name')
+    if not os.path.isfile(idea_name_file):
+        with open(idea_name_file, 'w') as f:
+            f.write('omlish')
 
     venv_exe = sys.executable
     venv_root = os.path.abspath(os.path.join(os.path.dirname(venv_exe), '..'))
