@@ -23,14 +23,15 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #include <math.h>
 #include <stddef.h>
 
-#define INIT_ALLOC_SZ 64
 
+///
+
+#define INIT_ALLOC_SZ 64
 
 typedef struct loader_ctx {
     char *quoted_str;
     Py_ssize_t quoted_len;
 } loader_ctx;
-
 
 static char *
 replace_str(loader_ctx &ctx, const char *content, Py_ssize_t *length)
@@ -59,7 +60,6 @@ replace_str(loader_ctx &ctx, const char *content, Py_ssize_t *length)
 
     return ctx.quoted_str;
 }
-
 
 static int
 loads(loader_ctx &ctx, PyObject *grid, Py_ssize_t length, const char *content)
@@ -220,6 +220,13 @@ loads(loader_ctx &ctx, PyObject *grid, Py_ssize_t length, const char *content)
     return rc;
 }
 
+static const char *loads_docstring =
+        "Returns a 2 dimensional array for the given CSV content.\n"
+        "\n"
+        "Each field in the CSV will be type casted to either a integer, float,\n"
+        "string or None value. An empty field will be casted to None, except when\n"
+        "the field explicit has an empty string defined by two. In that case we\n"
+        "will return an empty string instead of None.";
 
 static PyObject *
 csvloader_loads(PyObject *self, PyObject *args)
@@ -268,45 +275,72 @@ csvloader_loads(PyObject *self, PyObject *args)
     return obj;
 }
 
+///
 
-static const char *loads_docstring =
-    "Returns a 2 dimensional array for the given CSV content.\n"
-    "\n"
-    "Each field in the CSV will be type casted to either a integer, float,\n"
-    "string or None value. An empty field will be casted to None, except when\n"
-    "the field explicit has an empty string defined by two. In that case we\n"
-    "will return an empty string instead of None.";
+typedef struct _csvloader_state {
+} _csvloader_state;
 
-
-static PyMethodDef module_methods[] =
+static inline _csvloader_state * get_csvloader_state(PyObject *module)
 {
-    {"loads", (PyCFunction)csvloader_loads, METH_VARARGS, loads_docstring},
-    {NULL, NULL, 0, NULL}
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (_csvloader_state *)state;
+}
+
+//
+
+PyDoc_STRVAR(_csvloader_doc, "csvloader");
+
+static int _csvloader_exec(PyObject *module)
+{
+    get_csvloader_state(module);
+    return 0;
+}
+
+static int _csvloader_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    get_csvloader_state(module);
+    return 0;
+}
+
+static int _csvloader_clear(PyObject *module)
+{
+    get_csvloader_state(module);
+    return 0;
+}
+
+static void _csvloader_free(void *module)
+{
+    _csvloader_clear((PyObject *)module);
+}
+
+static PyMethodDef _csvloader_methods[] = {
+        {"loads", (PyCFunction)csvloader_loads, METH_VARARGS, loads_docstring},
+        {NULL, NULL, 0, NULL}
 };
 
-
-static struct PyModuleDef module_def = {
-    PyModuleDef_HEAD_INIT,
-    "csvloader",
-    "omnibus csvloader",
-    -1,
-    module_methods
+static struct PyModuleDef_Slot _csvloader_slots[] = {
+        {Py_mod_exec, (void *) _csvloader_exec},
+        {0, NULL}
 };
 
+static struct PyModuleDef _csvloader_module = {
+        .m_base = PyModuleDef_HEAD_INIT,
+        .m_name = "_csvloader",
+        .m_doc = _csvloader_doc,
+        .m_size = sizeof(_csvloader_state),
+        .m_methods = _csvloader_methods,
+        .m_slots = _csvloader_slots,
+        .m_traverse = _csvloader_traverse,
+        .m_clear = _csvloader_clear,
+        .m_free = _csvloader_free,
+};
 
 extern "C" {
 
-PyMODINIT_FUNC
-PyInit_csvloader(void)
+PyMODINIT_FUNC PyInit__csvloader(void)
 {
-    PyObject *m;
-
-    m = PyModule_Create(&module_def);
-
-    if (m == NULL) {
-        return NULL;
-    }
-    return m;
+    return PyModuleDef_Init(&_csvloader_module);
 }
 
 }
