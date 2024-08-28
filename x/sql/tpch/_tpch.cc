@@ -1,3 +1,4 @@
+// @omdev-ext
 /*
 https://github.com/wrmsr/bane/blob/27647abdcfb323b73e6982a5c318c7029496b203/core/tpch/text.go
 https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/omnibus/_ext/cy/tpch.pyx

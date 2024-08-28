@@ -29,8 +29,8 @@ class Column:
 
     name: str
     type: Type
-    precision: ta.Optional[int] = dc.field(default=0, kw_only=True)
-    scale: ta.Optional[int] = dc.field(default=0, kw_only=True)
+    precision: int | None = dc.field(default=0, kw_only=True)
+    scale: int | None = dc.field(default=0, kw_only=True)
 
 
 @dc.dataclass(frozen=True)
@@ -147,7 +147,7 @@ class LineItem(Entity):
     comment: str = dc.field(metadata={Column: Column('l_comment', Column.Type.VARCHAR, precision=44)})
 
 
-ENTITIES: ta.Sequence[ta.Type[Entity]] = (
+ENTITIES: ta.Sequence[type[Entity]] = (
     Customer,
     LineItem,
     Nation,
