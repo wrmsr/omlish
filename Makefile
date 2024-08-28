@@ -177,7 +177,6 @@ pre-commit:
 ### Test
 
 PYTEST_OPTS=
-PYTEST_JUNIT_XML_PATH:=$$(echo "$${PYTEST_JUNIT_XML_PATH}")
 
 .PHONY: test-all
 test-all: test test-13 test-lite
