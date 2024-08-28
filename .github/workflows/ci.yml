@@ -44,7 +44,7 @@ jobs:
           docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
           docker image history wrmsr/omlish-ci ||: ;
 
-      # - uses: 'mxschmitt/action-tmate@v2'
+      # - uses: 'mxschmitt/action-tmate@v3.18'
 
       - name: 'Run tests'
         run: >
