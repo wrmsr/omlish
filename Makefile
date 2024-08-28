@@ -347,7 +347,16 @@ ci: ci-images
 
 .PHONY: _ci
 _ci:
-	python -mpytest omlish omdev omserv
+	if [ ! -z "${PYTEST_JUNIT_XML_PATH}" ] && [ -f "${PYTEST_JUNIT_XML_PATH}" ] ; then \
+		rm "${PYTEST_JUNIT_XML_PATH}" ; \
+	fi
+
+	python \
+		-m pytest \
+		${PYTEST_OPTS} \
+		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
+		--no-slow \
+
 
 
 ### Package
