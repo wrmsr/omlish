@@ -101,7 +101,7 @@ dep-refresh: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-pkg
+gen: gen-amalg gen-cmake gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -109,6 +109,10 @@ gen-amalg: venv
 		-m omlish \
 		-m omdev \
 		${SRCS}
+
+.PHONY: gen-cmake
+gen-cmake:
+	${PYTHON} -m omdev.exts.cmake
 
 .PHONY: gen-pkg
 gen-pkg: gen-pkg
