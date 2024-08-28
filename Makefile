@@ -354,7 +354,8 @@ _ci:
 	python \
 		-m pytest \
 		${PYTEST_OPTS} \
-		--junitxml="${PYTEST_JUNIT_XML_PATH}"
+		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
+		${SRCS}
 
 
 ### Package
