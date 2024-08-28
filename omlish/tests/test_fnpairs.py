@@ -52,7 +52,6 @@ def _test_compression(cls: type[fnpairs.Compression]) -> None:
     fnpairs.Gzip,
     fnpairs.Lzma,
     fnpairs.Lz4,
-    fnpairs.Zstd,
 ])
 def test_compression(cls: type[fnpairs.Compression]) -> None:
     _test_compression(cls)
@@ -61,6 +60,11 @@ def test_compression(cls: type[fnpairs.Compression]) -> None:
 @ptu.skip_if_cant_import('snappy')
 def test_compression_snappy() -> None:
     _test_compression(fnpairs.Snappy)
+
+
+@ptu.skip_if_cant_import('zstd')
+def test_compression_zstd() -> None:
+    _test_compression(fnpairs.Zstd)
 
 
 @pytest.mark.parametrize('cls', [
