@@ -65,10 +65,9 @@ def translate_brace_python(
                 ret.write(':\n' + ' ' * indent)
             elif newline:
                 ret.write('\n' + ' ' * indent)
-            else:
-                if not skip:
-                    ret.write(t.string)
-                    ret.write(' ')
+            elif not skip:
+                ret.write(t.string)
+                ret.write(' ')
 
             newline = False
             indent_up = False
@@ -85,15 +84,21 @@ def translate_brace_python(
     return ret.getvalue()
 
 
-def _main() -> None:
-    print()
-    for s in [
-        'def f(x): { x += 2; return x }',
-        'class Foo: { def __init__(x): { self._x = x } def f(self, x): { return self._x + x } }',
-    ]:
-        print(s)
-        print(translate_brace_python(s))
-        print()
+def _main(argv=None) -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-x', '--exec', action='store_true')
+    parser.add_argument('cmd')
+
+    args = parser.parse_args(argv)
+
+    src = translate_brace_python(args.cmd)
+
+    if args.exec:
+        exec(src)
+    else:
+        print(src)
 
 
 if __name__ == '__main__':
