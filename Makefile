@@ -115,7 +115,7 @@ gen-cmake:
 	${PYTHON} -m omdev.exts.cmake
 
 .PHONY: gen-pkg
-gen-pkg: gen-pkg
+gen-pkg:
 	PYTHONPATH=. ${PYPROJECT} pkg gen
 
 

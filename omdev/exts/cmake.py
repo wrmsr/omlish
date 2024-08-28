@@ -18,18 +18,23 @@ Done:
 
 """  # noqa
 import io
+import logging
 import os.path
 import shutil
 import sys
 import sysconfig
 
 from omlish import check
+from omlish import logs
 
 from .. import cmake
 
 
+log = logging.getLogger(__name__)
+
+
 def _main() -> None:
-    # py_root = '$ENV{HOME}/.pyenv/versions/3.11.8/'
+    logs.configure_standard_logging('INFO')
 
     prj_root = os.path.abspath(os.getcwd())
     if not os.path.isfile(os.path.join(prj_root, 'pyproject.toml')):
@@ -141,6 +146,9 @@ def _main() -> None:
         'x/dev/c/csv/_csvloader.cc',
     ]:
         ext_name = ext_src.rpartition('.')[0].replace('/', '__')
+
+        log.info('Adding cmake c extension: %s -> %s', ext_src, ext_name)
+
         so_name = ''.join([
             os.path.basename(ext_src).split('.')[0],
             '.',
