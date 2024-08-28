@@ -146,6 +146,7 @@ from .objects import (  # noqa
     SimpleProxy,
     arg_repr,
     attr_repr,
+    build_mro_dict,
     can_weakref,
     deep_subclasses,
     new_type,

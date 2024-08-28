@@ -3,46 +3,6 @@ import pytest  # noqa
 from .. import methods
 
 
-def test_build_mro_dct():
-    class A:
-        x = 'A.x'
-        y = 'A.y'
-        z = 'A.z'
-
-    class B(A):
-        x = 'B.x'
-        z = 'B.z'
-
-    class C(A):
-        y = 'C.y'
-        z = 'C.z'
-
-    class D(B, C):
-        x = 'D.x'
-        y = 'D.y'
-        z = 'D.z'
-
-    print()
-    for ic, oc in [
-        (D, D),
-        (D, C),
-        (D, B),
-        (D, A),
-
-        (C, C),
-        (C, A),
-
-        (B, B),
-        (B, A),
-
-        (A, A),
-    ]:
-        print((ic, oc))
-        dct = methods.build_mro_dct(ic, oc)
-        print({k: dct[k] for k in dct if not k.startswith('_')})
-        print()
-
-
 def test_method():
     class A:
         @methods.method

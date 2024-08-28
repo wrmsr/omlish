@@ -1,3 +1,9 @@
+"""
+TODO:
+ - unify MatchFnClass with dispatch.method?
+  - __call__ = mfs.method(); @__call__.register(lambda: ...) def _call_... ?
+  - not really the same thing, dispatch is unordered this is necessarily ordered
+"""
 import abc
 import dataclasses as dc
 import typing as ta
@@ -117,7 +123,7 @@ class MultiMatchFn(MatchFn[P, T]):
         )
 
 
-def multi(*children: MatchFn[P, T], strict: bool = False):
+def multi(*children: MatchFn[P, T], strict: bool = False) -> MultiMatchFn:  # MultiMatchFn[P[0], T[-1]]
     return MultiMatchFn(children, strict=strict)  # noqa
 
 
@@ -200,7 +206,7 @@ class MatchFnClass(MatchFn[P, T]):
             mf = self.__match_fn = self._cls_match_fn.__get__(self)
         return mf
 
-    def __init_subclass__(cls, strict: bool = False, **kwargs):
+    def __init_subclass__(cls, strict: bool = False, **kwargs: ta.Any) -> None:
         super().__init_subclass__()
         if '_cls_match_fn' in cls.__dict__:
             raise AttributeError('_cls_match_fn')

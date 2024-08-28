@@ -11,6 +11,12 @@ import typing as ta
 DEFAULT_TIMEOUT_S = 30
 
 T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+
+
+def assert_dicts_equal_ordered(l: ta.Mapping[K, V], r: ta.Mapping[K, V]) -> None:
+    assert list(l.items()) == list(r.items())
 
 
 def call_many_with_timeout(

@@ -10,25 +10,12 @@ import typing as ta
 import weakref
 
 from .. import check
+from .. import lang
 from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
 
 T = ta.TypeVar('T')
-
-
-def build_mro_dct(instance_cls: type, owner_cls: type | None = None) -> ta.Mapping[str, ta.Any]:
-    if owner_cls is None:
-        owner_cls = instance_cls
-    mro = instance_cls.__mro__[-2::-1]
-    try:
-        pos = mro.index(owner_cls)
-    except ValueError:
-        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
-    dct: dict[str, ta.Any] = {}
-    for cur_cls in mro[:pos + 1]:
-        dct.update(cur_cls.__dict__)
-    return dct
 
 
 class Method:
@@ -91,7 +78,7 @@ class Method:
     def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
-        mro_dct = build_mro_dct(instance_cls, owner_cls)
+        mro_dct = lang.build_mro_dict(instance_cls, owner_cls)
         seen: ta.Mapping[ta.Any, str] = {}
         for nam, att in mro_dct.items():
             if att in self._impls:
