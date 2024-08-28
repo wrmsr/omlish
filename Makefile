@@ -159,6 +159,10 @@ check-scripts: venv
 
 ## pre-commit
 
+GIT_BLACKLIST_FILES=\
+	.env \
+	secrets.yml \
+
 .PHONY: pre-commit
 pre-commit:
 	if git rev-parse --verify HEAD >/dev/null 2>&1 ; then \
@@ -167,11 +171,13 @@ pre-commit:
 		against=$$(git hash-object -t tree /dev/null) ; \
 	fi
 
-	st=$$(git status -s secrets.yml) ; \
-	if [ ! -z "$$st" ] ; then \
-		echo 'must not checkin secrets.yml' ; \
-		exit 1 ; \
-	fi
+	for F in ${GIT_BLACKLIST_FILES} ; do \
+		ST=$$(git status -s "$$F") ; \
+		if [ ! -z "$$ST" ] ; then \
+			echo "must not checkin $$F" ; \
+			exit 1 ; \
+		fi ; \
+	done
 
 
 ### Test
