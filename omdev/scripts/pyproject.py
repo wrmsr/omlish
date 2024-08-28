@@ -3226,8 +3226,10 @@ class Pyenv:
         return os.path.join(check_not_none(self.root()), 'bin', 'pyenv')
 
     def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
+        if (root := self.root()) is None:
+            return []
         ret = []
-        vp = os.path.join(self.root(), 'versions')
+        vp = os.path.join(root, 'versions')
         for dn in os.listdir(vp):
             ep = os.path.join(vp, dn, 'bin', 'python')
             if not os.path.isfile(ep):
@@ -3236,6 +3238,8 @@ class Pyenv:
         return ret
 
     def installable_versions(self) -> ta.List[str]:
+        if self.root() is None:
+            return []
         ret = []
         s = subprocess_check_output_str(self.exe(), 'install', '--list')
         for l in s.splitlines():
