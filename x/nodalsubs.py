@@ -37,7 +37,7 @@ class AAdd(ANode[A]):
     left: ANode[A]
     right: ANode[A]
 
-    def accept_a_visitor(self, visitor: AVisitor[A, R, C], ctx: C) -> R:
+    def accept_a_visitor(self, visitor: AVisitor[A, C, R], ctx: C) -> R:
         return visitor.visit_a_add(self, ctx)
 
 
@@ -45,7 +45,7 @@ class AAdd(ANode[A]):
 class AConst(ANode[A]):
     val: int
 
-    def accept_a_visitor(self, visitor: AVisitor[A, R, C], ctx: C) -> R:
+    def accept_a_visitor(self, visitor: AVisitor[A, C, R], ctx: C) -> R:
         return visitor.visit_a_const(self, ctx)
 
 
