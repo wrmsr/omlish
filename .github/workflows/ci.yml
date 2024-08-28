@@ -56,7 +56,7 @@ jobs:
 
       - name: 'Build CI image'
         run: >
-          make ci-images
+          make ci-image
 
       - name: 'Run CI tests'
         run: >
