@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build>=1.2.1
-twine>=5.1.1; python_version < '3.13'
+twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
 pytest==8.3.2
@@ -26,7 +26,7 @@ mypy==1.11.2
 pipdeptree==2.23.1
 
 gprof2dot==2024.6.6
-guppy3==3.1.4.post1; python_version < '3.13'
+guppy3==3.1.4.post1; python_version < "3.13"
 objgraph==3.6.1
 
 ipython==8.26.0
@@ -34,9 +34,9 @@ ipython==8.26.0
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.11.0; python_version < '3.13'
-mycli==1.27.2; python_version < '3.13'
-pgcli==4.1.0; python_version < '3.13'
+litecli==1.11.0; python_version < "3.13"
+mycli==1.27.2; python_version < "3.13"
+pgcli==4.1.0; python_version < "3.13"
 
 
 ##
@@ -45,7 +45,7 @@ cython==3.0.11
 
 jinja2==3.1.4
 
-lxml==4.9.4; python_version < '3.13'
+lxml==4.9.4; python_version < "3.13"
 
 #clang
 
@@ -60,10 +60,10 @@ json5==0.9.25
 
 ##
 
-psycopg2==2.9.9; python_version < '3.13'
+psycopg2==2.9.9; python_version < "3.13"
 
 mysql-connector-python==9.0.0
-mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
+mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 
 ujson==5.10.0
 python-rapidjson==1.20
@@ -72,7 +72,7 @@ markupsafe==2.1.5
 
 redis==5.0.8
 
-sqlean.py==3.45.1; python_version < '3.13'
+sqlean.py==3.45.1; python_version < "3.13"
 duckdb==1.0.0
 
 tokenize_rt==6.0.0

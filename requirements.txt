@@ -1,7 +1,7 @@
 #### optional
 
 # git+https://github.com/vstinner/greenlet@py313
-greenlet==3.0.3; python_version < '3.13'
+greenlet==3.0.3; python_version < "3.13"
 
 wrapt>=1.14.1
 
@@ -18,14 +18,14 @@ cryptography==43.0.0
 ### compress:
 
 lz4==4.3.3
-python-snappy==0.7.2; python_version < '3.13'
+python-snappy==0.7.2; python_version < "3.13"
 zstd==1.5.5.1
 
 
 ### db:
 
-sqlalchemy[asyncio]==2.0.32; python_version < '3.13'
-sqlalchemy==2.0.32; python_version >= '3.13'  # greenlet
+sqlalchemy[asyncio]==2.0.32; python_version < "3.13"
+sqlalchemy==2.0.32; python_version >= "3.13"  # greenlet
 
 ## sql
 
@@ -33,7 +33,7 @@ pg8000==1.31.2
 #> psycopg2==2.9.9
 
 #> mysql-connector-python==9.0.0
-#> mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
+#> mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 pymysql==1.1.1
 
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -92,10 +92,10 @@ httpx[http2]==0.27.2  # FIXME: ,zstd,cli (dev only)
 ### async
 
 trio==0.26.2
-trio-asyncio==0.15.0; python_version < '3.13'  # greenlet
+trio-asyncio==0.15.0; python_version < "3.13"  # greenlet
 
 aiomysql==0.2.0
 aiosqlite==0.20.0
-asyncpg==0.29.0; python_version < '3.13'  # greenlet
+asyncpg==0.29.0; python_version < "3.13"  # greenlet
 
-asyncssh==2.16.0; python_version < '3.13'  # cffi
+asyncssh==2.16.0; python_version < "3.13"  # cffi
