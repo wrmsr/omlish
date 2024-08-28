@@ -77,7 +77,7 @@ class Project(ProjectBase):
         ],
 
         'sqlx': [
-            "sqlean.py >= 3.45; python_version < '3.13'",
+            'sqlean.py >= 3.45; python_version < "3.13"',
 
             'duckdb >= 1',
         ],
