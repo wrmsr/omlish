@@ -122,9 +122,9 @@ class Harness:
 class HarnessPlugin:
     def __init__(self) -> None:
         super().__init__()
-        self._harnesses_by_session = {}
+        self._harnesses_by_session: dict[ta.Any, Harness] = {}
 
-    def get_session_harness(self, session):
+    def get_session_harness(self, session: ta.Any) -> Harness:
         return self._harnesses_by_session[session]
 
     @pytest.fixture(scope='session', autouse=True)
