@@ -14,6 +14,7 @@ from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
+from omlish.tests.ci import Ci
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s
@@ -39,7 +40,7 @@ def randhex(l: int) -> str:
     # 'trio_asyncio',
 )
 @au.with_adapter_loop(wait=True)
-async def test_auth():
+async def test_auth(harness):
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('DEBUG')  # noqa
 
@@ -120,15 +121,31 @@ async def test_auth():
 
             async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
                 r = await client.post(
-                    base_url + 'tik',
-                    content='foo bar baz qux hi there',
+                    base_url + 'check-auth',
+                )
+                assert r.status_code == 401
+
+                r = await client.post(
+                    base_url + 'check-auth',
                     headers={'Authorization': 'Bearer ' + auth_token},
                 )
                 assert r.status_code == 200
 
                 dct = json.loads(r.read().decode())
                 assert dct['user_name'] == name
-                assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
+
+            if not harness[Ci].is_ci:
+                async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
+                    r = await client.post(
+                        base_url + 'tik',
+                        content='foo bar baz qux hi there',
+                        headers={'Authorization': 'Bearer ' + auth_token},
+                    )
+                    assert r.status_code == 200
+
+                    dct = json.loads(r.read().decode())
+                    assert dct['user_name'] == name
+                    assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with inj.create_async_managed_injector(
         bind_app(),

@@ -343,7 +343,7 @@ ci-images:
 
 .PHONY: ci
 ci: ci-images
-	${DOCKER_COMPOSE} run --rm $$CI_DOCKER_OPTS omlish-ci
+	${DOCKER_COMPOSE} run --rm $$CI_DOCKER_OPTS -e CI=1 omlish-ci
 
 .PHONY: _ci
 _ci:

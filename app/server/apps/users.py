@@ -2,6 +2,7 @@ import contextvars
 import dataclasses as dc
 import logging
 
+from omlish import http as hu
 from omlish import lang
 from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiRecv
@@ -61,3 +62,20 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
 
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return lang.decorator(self._wrap)(app)  # noqa
+
+
+##
+
+
+async def get_auth_user(scope: AsgiScope, users: UserStore) -> User | None:
+    hdrs = dict(scope['headers'])
+    auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
+    if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
+        return None
+
+    auth_token = auth[len(hu.consts.BEARER_AUTH_HEADER_PREFIX):].decode()
+    for u in await users.get_all():
+        if u.auth_token and u.auth_token == auth_token:
+            return u
+
+    return None
