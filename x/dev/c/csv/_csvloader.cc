@@ -315,25 +315,25 @@ static void _csvloader_free(void *module)
 }
 
 static PyMethodDef _csvloader_methods[] = {
-        {"loads", (PyCFunction)csvloader_loads, METH_VARARGS, loads_docstring},
-        {NULL, NULL, 0, NULL}
+    {"loads", (PyCFunction)csvloader_loads, METH_VARARGS, loads_docstring},
+    {NULL, NULL, 0, NULL}
 };
 
 static struct PyModuleDef_Slot _csvloader_slots[] = {
-        {Py_mod_exec, (void *) _csvloader_exec},
-        {0, NULL}
+    {Py_mod_exec, (void *) _csvloader_exec},
+    {0, NULL}
 };
 
 static struct PyModuleDef _csvloader_module = {
-        .m_base = PyModuleDef_HEAD_INIT,
-        .m_name = "_csvloader",
-        .m_doc = _csvloader_doc,
-        .m_size = sizeof(_csvloader_state),
-        .m_methods = _csvloader_methods,
-        .m_slots = _csvloader_slots,
-        .m_traverse = _csvloader_traverse,
-        .m_clear = _csvloader_clear,
-        .m_free = _csvloader_free,
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = "_csvloader",
+    .m_doc = _csvloader_doc,
+    .m_size = sizeof(_csvloader_state),
+    .m_methods = _csvloader_methods,
+    .m_slots = _csvloader_slots,
+    .m_traverse = _csvloader_traverse,
+    .m_clear = _csvloader_clear,
+    .m_free = _csvloader_free,
 };
 
 extern "C" {
