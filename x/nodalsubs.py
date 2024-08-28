@@ -15,7 +15,7 @@ R = ta.TypeVar('R')
 A = ta.TypeVar('A')
 
 
-class ANode(abc.ABC, ta.Generic[A, C, R]):
+class ANode(abc.ABC, ta.Generic[A]):
     @abc.abstractmethod
     def accept_a_visitor(self, visitor: 'AVisitor[A, C, R]', ctx: C) -> R:
         raise NotImplementedError
@@ -50,8 +50,6 @@ class AConst(ANode[A]):
 
 
 # B
-
-B = ta.TypeVar('B')
 
 
 class BNode(ANode['BNode'], abc.ABC, ta.Generic[C, R]):
@@ -98,62 +96,40 @@ class BMul(BNode):
         return visitor.visit_b_mul(self, ctx)
 
 
+# AEval
+
+class AEval(AVisitor[A, None, int]):
+    def visit_a_add(self, node: 'AAdd[A]', ctx: None) -> int:
+        return node.left.accept_a_visitor(self, ctx) * node.right.accept_a_visitor(self, ctx)
+
+    def visit_a_const(self, node: 'AConst[A]', ctx: None) -> int:
+        return node.val
+
+
+def a_eval(node: ANode[A]) -> int:
+    return node.accept_a_visitor(AEval(), None)
+
+
+# BEval
+
+class BEval(AEval[BNode], BVisitor[None, int]):
+    def visit_b_mul(self, node: BMul, ctx: None) -> int:
+        return node.left.accept_b_visitor(self, ctx) * node.right.accept_b_visitor(self, ctx)
+
+
+def b_eval(node: BNode) -> int:
+    return node.accept_b_visitor(BEval(), None)
+
+
 #
 
-"""
-## AEval
-
-public static class AEval<A>
-        implements AVisitor<A, Integer, Void>
-{
-    @Override
-    public Integer visitAAdd(AAdd<A> node, Void ctx)
-    {
-        return node.left.acceptAVisitor(this, ctx) + node.right.acceptAVisitor(this, ctx);
-    }
-
-    @Override
-    public Integer visitAConst(AConst<A> node, Void ctx)
-    {
-        return node.val;
-    }
-}
-
-public static <A> int aEval(ANode<A> node)
-{
-    return node.acceptAVisitor(new AEval<A>(), null);
-}
+def _main() -> None:
+    assert a_eval(AConst(1)) == 1
+    assert a_eval(AAdd(AConst(1), AConst(2))) == 1 + 2
+    assert b_eval(BMul(BConst(2), BConst(3))) == 2 * 3
+    assert b_eval(BMul(BConst(2), BAdd(BConst(3), BConst(4)))) == 2 + (3 * 4)
+    assert b_eval(BMul(BConst(2), BAdd(BConst(3), BMul(BConst(4), BConst(5))))) == 2 * (3 + (4 * 5))
 
 
-## BEval
-
-public static class BEval
-        extends AEval<BNode>
-        implements BVisitor<Integer, Void>
-{
-    @Override
-    public Integer visitBMul(BMul node, Void ctx)
-    {
-        return node.left.acceptBVisitor(this, ctx) * node.right.acceptBVisitor(this, ctx);
-    }
-}
-
-public static int bEval(BNode node)
-{
-    return node.acceptBVisitor(new BEval(), null);
-}
-
-
-##
-
-@Test
-public void testSubs()
-        throws Throwable
-{
-    assertEquals(aEval(aConst(1)), 1);
-    assertEquals(aEval(aAdd(aConst(1), aConst(2))), 1 + 2);
-    assertEquals(bEval(bMul(bConst(2), bConst(3))), 2 * 3);
-    assertEquals(bEval(bMul(bConst(2), bAdd(bConst(3), bConst(4)))), 2 + (3 * 4));
-    assertEquals(bEval(bMul(bConst(2), bAdd(bConst(3), bMul(bConst(4), bConst(5))))), 2 * (3 + (4 * 5)));
-}
-"""
+if __name__ == '__main__':
+    _main()
