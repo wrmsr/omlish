@@ -26,6 +26,7 @@ import dataclasses as dc
 import functools
 import glob
 import itertools
+import multiprocessing as mp
 import os.path
 import shlex
 import shutil
@@ -306,11 +307,10 @@ def _pkg_cmd(args) -> None:
         build_output_dir = 'dist'
         run_build = bool(args.build)
 
-        num_threads = 8
-
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
 
+        num_threads = max(mp.cpu_count() // 2, 1)
         with cf.ThreadPoolExecutor(num_threads) as ex:
             futs = [
                 ex.submit(functools.partial(

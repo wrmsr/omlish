@@ -39,6 +39,7 @@ import inspect
 import itertools
 import json
 import logging
+import multiprocessing as mp
 import os
 import os.path
 import re
@@ -3954,11 +3955,10 @@ def _pkg_cmd(args) -> None:
         build_output_dir = 'dist'
         run_build = bool(args.build)
 
-        num_threads = 8
-
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
 
+        num_threads = max(mp.cpu_count() // 2, 1)
         with cf.ThreadPoolExecutor(num_threads) as ex:
             futs = [
                 ex.submit(functools.partial(

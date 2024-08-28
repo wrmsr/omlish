@@ -47,7 +47,7 @@ all = [
     'aiomysql >= 0.2',
     'aiosqlite >= 0.20',
     'asyncpg >= 0.29; python_version < "3.13"',
-    "sqlean.py >= 3.45; python_version < '3.13'",
+    'sqlean.py >= 3.45; python_version < "3.13"',
     'duckdb >= 1',
     'pytest >= 8',
 ]
@@ -89,7 +89,7 @@ sql = [
     'asyncpg >= 0.29; python_version < "3.13"',
 ]
 sqlx = [
-    "sqlean.py >= 3.45; python_version < '3.13'",
+    'sqlean.py >= 3.45; python_version < "3.13"',
     'duckdb >= 1',
 ]
 testing = [

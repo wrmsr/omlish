@@ -97,6 +97,31 @@ def deep_subclasses(cls: type) -> ta.Iterator[type]:
         todo.extend(reversed(cur.__subclasses__()))
 
 
+def build_mro_dict(
+        instance_cls: type,
+        owner_cls: type | None = None,
+        *,
+        bottom_up_key_order: bool = False,
+) -> ta.Mapping[str, ta.Any]:
+    if owner_cls is None:
+        owner_cls = instance_cls
+    mro = instance_cls.__mro__[-2::-1]
+    try:
+        pos = mro.index(owner_cls)
+    except ValueError:
+        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
+    dct: dict[str, ta.Any] = {}
+    if not bottom_up_key_order:
+        for cur_cls in mro[:pos + 1][::-1]:
+            for k, v in cur_cls.__dict__.items():
+                if k not in dct:
+                    dct[k] = v
+    else:
+        for cur_cls in mro[:pos + 1]:
+            dct.update(cur_cls.__dict__)
+    return dct
+
+
 ##
 
 
