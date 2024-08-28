@@ -354,9 +354,7 @@ _ci:
 	python \
 		-m pytest \
 		${PYTEST_OPTS} \
-		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
-		--no-slow \
-
+		--junitxml="${PYTEST_JUNIT_XML_PATH}"
 
 
 ### Package

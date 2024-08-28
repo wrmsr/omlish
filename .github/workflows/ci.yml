@@ -56,16 +56,17 @@ jobs:
           OMLISH_JUNIT_XML_PATH=${{ github.workspace }}/test-results.xml
           make ci
 
+      - uses: 'mikepenz/action-junit-report@v4.3.1'
+        with:
+          report_paths: ${{ github.workspace }}/test-results.xml
+
       - name: 'Docker cache save'
-        # if: "steps.cache.outputs.cache-hit != 'true'"
-        if: 'always()'
+        if: "steps.cache.outputs.cache-hit != 'true'"
         run: >
           mkdir -p ~/.cache/docker/ &&
           docker image history wrmsr/omlish-ci &&
-          docker history wrmsr/omlish-ci | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' |
+          docker history wrmsr/omlish-ci | 
+            tail -n+2 | 
+            awk '{print $1}' | 
+            egrep -v '<missing>' |
             xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
-
-      - uses: 'mikepenz/action-junit-report@v4.3.1'
-        if: 'always()'
-        with:
-          report_paths: ${{ github.workspace }}/test-results.xml
