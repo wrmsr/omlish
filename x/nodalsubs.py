@@ -5,6 +5,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish import check
+
 
 C = ta.TypeVar('C')
 R = ta.TypeVar('R')
@@ -54,7 +56,7 @@ class AConst(ANode[A]):
 
 class BNode(ANode['BNode'], abc.ABC, ta.Generic[C, R]):
     def accept_a_visitor(self, visitor: AVisitor['BNode', C, R], ctx: C) -> R:
-        return self.accept_b_visitor(visitor, ctx)
+        return self.accept_b_visitor(check.isinstance(visitor, BVisitor), ctx)
 
     @abc.abstractmethod
     def accept_b_visitor(self, visitor: 'BVisitor[C, R]', ctx: C) -> R:
