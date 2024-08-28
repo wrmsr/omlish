@@ -328,6 +328,7 @@ ci-images:
 	tar cvh \
 		--exclude "__pycache__" \
 		${SRCS} \
+		.versions \
 		LICENSE \
 		Makefile \
 		docker \
