@@ -54,9 +54,9 @@ class AConst(ANode[A]):
 # B
 
 
-class BNode(ANode['BNode'], abc.ABC, ta.Generic[C, R]):
+class BNode(ANode['BNode'], abc.ABC):
     def accept_a_visitor(self, visitor: AVisitor['BNode', C, R], ctx: C) -> R:
-        return self.accept_b_visitor(check.isinstance(visitor, BVisitor), ctx)
+        return self.accept_b_visitor(ta.cast(BVisitor[C, R], visitor), ctx)
 
     @abc.abstractmethod
     def accept_b_visitor(self, visitor: 'BVisitor[C, R]', ctx: C) -> R:
