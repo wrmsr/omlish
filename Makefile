@@ -363,6 +363,10 @@ _ci:
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
 		${SRCS}
 
+.PHONY: ci-bash
+ci-bash: ci-images
+	${DOCKER_COMPOSE} run --rm -e CI=1 omlish-ci bash
+
 
 ### Package
 
