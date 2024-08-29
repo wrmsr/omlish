@@ -14,6 +14,12 @@ from .base import UnmarshalerFactoryMatchClass
 from .values import Value
 
 
+DEFAULT_MAPPING_CONCRETE_TYPES: dict[type[collections.abc.Mapping], type[collections.abc.Mapping]] = {
+    collections.abc.Mapping: dict,  # type: ignore
+    collections.abc.MutableMapping: dict,  # type: ignore
+}
+
+
 @dc.dataclass(frozen=True)
 class MappingMarshaler(Marshaler):
     ke: Marshaler
@@ -55,8 +61,9 @@ class MappingUnmarshalerFactory(UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
     def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         gty = check.isinstance(rty, rfl.Generic)
+        cty = DEFAULT_MAPPING_CONCRETE_TYPES.get(gty.cls, gty.cls)  # noqa
         kt, vt = gty.args
-        return MappingUnmarshaler(gty.cls, ctx.make(kt), ctx.make(vt))
+        return MappingUnmarshaler(cty, ctx.make(kt), ctx.make(vt))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
     def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
