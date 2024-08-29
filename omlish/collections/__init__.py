@@ -52,7 +52,7 @@ from .indexed import (  # noqa
 from .mappings import (  # noqa
     MissingDict,
     TypeMap,
-    TypeMultiMap,
+    DynamicTypeMap,
     guarded_map_update,
     multikey_dict,
     yield_dict_init,
