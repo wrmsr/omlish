@@ -77,7 +77,7 @@ class RevisionAdder:
             for ti in tf:
                 tis[ti.name] = ti
                 if ti.type == tarfile.REGTYPE:
-                    with tf.extractfile(ti.name) as tif:
+                    with tf.extractfile(ti.name) as tif:  # type: ignore
                         dct[ti.name] = tif.read()
 
         if self.add_to_contents(dct):
