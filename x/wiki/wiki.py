@@ -323,6 +323,7 @@ class RevisionText:
     sha1: str | None = None  # att
     text: str | None = None  # text
 
+
 #
 
 
