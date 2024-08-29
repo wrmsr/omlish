@@ -43,7 +43,7 @@ class MaybeUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         if v:
-            return lang.just(self.e.unmarshal(ctx, check.single(v)))
+            return lang.just(self.e.unmarshal(ctx, check.single(v)))  # type: ignore
         else:
             return lang.empty()
 
