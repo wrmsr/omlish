@@ -3,7 +3,7 @@ TODO:
  - omlish-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
-# ruff: noqa: UP006 UP007
+# ruff: noqa: TCH003 UP006 UP007
 # @omlish-lite
 import argparse
 import io
@@ -11,6 +11,7 @@ import os.path
 import subprocess
 import tarfile
 import typing as ta
+import zipfile
 
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
@@ -50,8 +51,8 @@ class RevisionAdder:
             raise Exception(f)
         log.info('Scanning wheel %s', f)
 
-        zis: dict = {}
-        dct: dict = {}
+        zis: ta.Dict[str, zipfile.ZipInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
         with WheelFile(f) as wf:
             for zi in wf.filelist:
                 if zi.filename == wf.record_path:
@@ -72,8 +73,8 @@ class RevisionAdder:
             raise Exception(f)
         log.info('Scanning tgz %s', f)
 
-        tis: dict = {}
-        dct: dict = {}
+        tis: ta.Dict[str, tarfile.TarInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
         with tarfile.open(f, 'r:gz') as tf:
             for ti in tf:
                 tis[ti.name] = ti
@@ -82,12 +83,18 @@ class RevisionAdder:
                         dct[ti.name] = tif.read()
 
         if self.add_to_contents(dct):
-            of = f[:-6] + (self._output_suffix or '') + '.tar.gz'
+            of = f[:-7] + (self._output_suffix or '') + '.tar.gz'
             log.info('Repacking tgz %s', of)
             with tarfile.open(of, 'w:gz') as tf:
                 for n, ti in tis.items():
                     log.info('Adding tarinfo %s', n)
-                    tf.addfile(ti, fileobj=io.BytesIO(dct[n]) if n in dct else None)
+                    if n in dct:
+                        data = dct[n]
+                        ti.size = len(data)
+                        fo = io.BytesIO(data)
+                    else:
+                        fo = None
+                    tf.addfile(ti, fileobj=fo)
 
     EXTS = ('.tar.gz', '.whl')
 
