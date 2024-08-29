@@ -182,23 +182,35 @@ class Bz2ReaderWrapper(BytesReaderWrapper):
     def __init__(self, f: ta.IO[bytes]) -> None:
         super().__init__(f)
         self._b = bz2.BZ2Decompressor()
+        self._c = 0
+        self._e = False
         self._x: bytes | None = None
 
     def read(self, n=-1):
         while True:
-            if not (r := self._f.read(n)):
-                if not self._b.eof:
+            if self._e or not (r := self._f.read(n)):
+                self._e = True
+
+                if self._x:
+                    r = self._x
+                    self._x = None
+                    return r
+
+                if self._c and not self._b.eof:
                     raise Exception('not at eof')
+
                 return b''
 
-            if self._x:
-                r = self._x + r
-                self._x = None
+            self._c += len(r)
             ret = self._b.decompress(r)
+            if self._x:
+                ret = self._x + ret
+                self._x = None
 
             if self._b.eof:
                 u = self._b.unused_data
                 self._b = bz2.BZ2Decompressor()
+                self._c = 0
                 if u:
                     self._x = self._b.decompress(u)
 
@@ -217,6 +229,7 @@ def _main() -> None:
     fp = INDEX_FILE_PATH
     # fp = XML_FILE_PATH
 
+    st = os.stat(fp)
     with open(fp, 'rb') as f:
         br = io.BufferedReader(f, 1024 * 1024)
         bs = Bz2ReaderWrapper(br)
@@ -226,8 +239,15 @@ def _main() -> None:
         #     # print(chunk)
         #     pass
 
+        lp = 0
+        pi = 10_000_000
         while (line := cs.readline()):
-            print(line.strip())
+            cp = f.tell()
+            if cp - lp >= pi:
+                print(f'{cp:_} / {st.st_size:_} - {st.st_size / cp:.2f} %')
+                lp = cp
+
+            # print(line.strip())
 
 
 if __name__ == '__main__':
