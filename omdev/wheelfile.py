@@ -17,8 +17,6 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from __future__ import annotations
-
 import base64
 import csv
 import hashlib
@@ -125,9 +123,9 @@ class WheelFile(zipfile.ZipFile):
 
     def open(  # type: ignore  # noqa
             self,
-            name_or_info: str | zipfile.ZipInfo,
+            name_or_info: ta.Union[str, zipfile.ZipInfo],
             mode: str = 'r',  # ta.Literal["r", "w"]
-            pwd: bytes | None = None,
+            pwd: ta.Optional[bytes] = None,
     ) -> ta.IO[bytes]:
         def _update_crc(newdata: bytes) -> None:
             eof = ef._eof  # type: ignore  # noqa
@@ -154,7 +152,7 @@ class WheelFile(zipfile.ZipFile):
 
         return ef
 
-    def write_files(self, base_dir: str):
+    def write_files(self, base_dir: str) -> None:
         deferred: list[tuple[str, str]] = []
         for root, dirnames, filenames in os.walk(base_dir):
             # Sort the directory names so that `os.walk` will walk them in a defined order on the next iteration.
@@ -177,8 +175,8 @@ class WheelFile(zipfile.ZipFile):
     def write(  # type: ignore  # noqa
             self,
             filename: str,
-            arcname: str | None = None,
-            compress_type: int | None = None,
+            arcname: ta.Optional[str] = None,
+            compress_type: ta.Optional[int] = None,
     ) -> None:
         with open(filename, 'rb') as f:
             st = os.fstat(f.fileno())
@@ -195,7 +193,7 @@ class WheelFile(zipfile.ZipFile):
     _MINIMUM_TIMESTAMP = 315532800  # 1980-01-01 00:00:00 UTC
 
     @classmethod
-    def _get_zipinfo_datetime(cls, timestamp: float | None = None):
+    def _get_zipinfo_datetime(cls, timestamp: ta.Optional[float] = None) -> ta.Any:
         # Some applications need reproducible .whl files, but they can't do this without forcing the timestamp of the
         # individual ZipInfo objects. See issue #143.
         timestamp = int(os.environ.get('SOURCE_DATE_EPOCH', timestamp or time.time()))
@@ -204,9 +202,9 @@ class WheelFile(zipfile.ZipFile):
 
     def writestr(  # type: ignore  # noqa
             self,
-            zinfo_or_arcname: str | zipfile.ZipInfo,
+            zinfo_or_arcname: ta.Union[str, zipfile.ZipInfo],
             data: ta.Any,  # SizedBuffer | str,
-            compress_type: int | None = None,
+            compress_type: ta.Optional[int] = None,
     ) -> None:
         if isinstance(zinfo_or_arcname, str):
             zinfo_or_arcname = zipfile.ZipInfo(
