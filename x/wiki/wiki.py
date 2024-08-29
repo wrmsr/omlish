@@ -84,7 +84,7 @@ from omlish import check
 
 def cut_chunks(
         chunks: ta.Iterable[str],
-        sep: str,
+        sep: str = os.linesep,
         *,
         max_buf_size=10 * 1024 * 1024,
         buf_cls=io.StringIO,
