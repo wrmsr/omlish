@@ -15,6 +15,13 @@ from .base import UnmarshalerFactoryMatchClass
 from .values import Value
 
 
+DEFAULT_ITERABLE_CONCRETE_TYPES: dict[type[collections.abc.Iterable], type[collections.abc.Iterable]] = {
+    collections.abc.Iterable: tuple,  # type: ignore
+    collections.abc.Sequence: tuple,  # type: ignore
+    collections.abc.MutableSequence: list,  # type: ignore
+}
+
+
 @dc.dataclass(frozen=True)
 class IterableMarshaler(Marshaler):
     e: Marshaler
@@ -47,7 +54,8 @@ class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
     def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         gty = check.isinstance(rty, rfl.Generic)
-        return IterableUnmarshaler(gty.cls, ctx.make(check.single(gty.args)))
+        cty = DEFAULT_ITERABLE_CONCRETE_TYPES.get(gty.cls, gty.cls)  # noqa
+        return IterableUnmarshaler(cty, ctx.make(check.single(gty.args)))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
     def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
