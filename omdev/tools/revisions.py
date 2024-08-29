@@ -3,26 +3,26 @@ TODO:
  - omlish-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 import argparse
 import io
-import logging
 import os.path
 import subprocess
 import tarfile
+import typing as ta
 
-import wheel.wheelfile
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.logs import log
 
-from omlish import logs
-
-
-log = logging.getLogger(__name__)
+from ..wheelfile import WheelFile
 
 
 class RevisionAdder:
     def __init__(
             self,
             revision: str,
-            output_suffix: str | None = None,
+            output_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
         self._revision = revision
@@ -30,7 +30,7 @@ class RevisionAdder:
 
     REVISION_ATTR = '__revision__'
 
-    def add_to_contents(self, dct: dict[str, bytes]) -> bool:
+    def add_to_contents(self, dct: ta.Dict[str, bytes]) -> bool:
         changed = False
         for n in dct:
             if not n.endswith('__about__.py'):
@@ -52,7 +52,7 @@ class RevisionAdder:
 
         zis: dict = {}
         dct: dict = {}
-        with wheel.wheelfile.WheelFile(f) as wf:
+        with WheelFile(f) as wf:
             for zi in wf.filelist:
                 if zi.filename == wf.record_path:
                     continue
@@ -62,8 +62,9 @@ class RevisionAdder:
         if self.add_to_contents(dct):
             of = f[:-4] + (self._output_suffix or '') + '.whl'
             log.info('Repacking wheel %s', of)
-            with wheel.wheelfile.WheelFile(of, 'w') as wf:
+            with WheelFile(of, 'w') as wf:
                 for n, d in dct.items():
+                    log.info('Adding zipinfo %s', n)
                     wf.writestr(zis[n], d)
 
     def add_to_tgz(self, f: str) -> None:
@@ -142,7 +143,7 @@ def _add_cmd(args) -> None:
 
 
 def _main(argv=None) -> None:
-    logs.configure_standard_logging('INFO')
+    configure_standard_logging('INFO')
 
     parser = argparse.ArgumentParser()
 

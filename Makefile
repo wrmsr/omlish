@@ -373,6 +373,7 @@ ci-bash: ci-image
 .PHONY: package
 package: venv clean-package
 	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b gen
+	${PYTHON} -m omdev.tools.revisions add dist
 
 
 ### Publish
