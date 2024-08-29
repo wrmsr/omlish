@@ -19,6 +19,8 @@ from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
 from .mappings import MappingMarshalerFactory
 from .mappings import MappingUnmarshalerFactory
+from .maybes import MaybeMarshalerFactory
+from .maybes import MaybeUnmarshalerFactory
 from .numbers import NUMBERS_MARSHALER_FACTORY
 from .numbers import NUMBERS_UNMARSHALER_FACTORY
 from .optionals import OptionalMarshalerFactory
@@ -41,6 +43,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     UUID_MARSHALER_FACTORY,
     BASE64_MARSHALER_FACTORY,
     DATETIME_MARSHALER_FACTORY,
+    MaybeMarshalerFactory(),
     MappingMarshalerFactory(),
     IterableMarshalerFactory(),
     ANY_MARSHALER_FACTORY,
@@ -69,6 +72,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     UUID_UNMARSHALER_FACTORY,
     BASE64_UNMARSHALER_FACTORY,
     DATETIME_UNMARSHALER_FACTORY,
+    MaybeUnmarshalerFactory(),
     MappingUnmarshalerFactory(),
     IterableUnmarshalerFactory(),
     ANY_UNMARSHALER_FACTORY,
