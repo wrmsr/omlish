@@ -45,6 +45,8 @@ import sqlalchemy.sql.schema
 
 from omlish import collections as col
 from omlish import lang
+from omlish import marshal as msh
+from omlish.formats import json
 
 
 #
@@ -66,7 +68,7 @@ class String(Datatype, lang.Singleton):
 
 
 @dc.dataclass(frozen=True)
-class Timestamp(Datatype, lang.Singleton):
+class Datetime(Datatype, lang.Singleton):
     pass
 
 
@@ -84,8 +86,8 @@ class Element(lang.Abstract, lang.Sealed):
 class Column(Element, lang.Final):
     name: str
     type: Datatype
-    nullable: bool = False
-    default: lang.Maybe[ta.Any] = lang.empty()
+    nullable: bool = dc.field(default=False, kw_only=True)
+    default: lang.Maybe[ta.Any] = dc.field(default=lang.empty(), kw_only=True)
 
 
 @dc.dataclass(frozen=True)
@@ -176,11 +178,11 @@ def lower_table_elements(td: TableDef) -> TableDef:
                 ])
 
             case CreatedAt():
-                out.append(Column('created_at', Timestamp()))
+                out.append(Column('created_at', Datetime()))
 
             case UpdatedAt():
                 out.extend([
-                    Column('updated_at', Timestamp()),
+                    Column('updated_at', Datetime()),
                     UpdatedAtTrigger('updated_at'),
                 ])
 
@@ -227,10 +229,11 @@ def _main() -> None:
             Column('name', String()),
         ]),
     )
-    print(users)
+    print(json.dumps_pretty(msh.marshal(users)))
 
     users_lowered = lower_table_elements(users)
-    print(users_lowered)
+    print(json.dumps_pretty(msh.marshal(users_lowered)))
+
     print(users_lowered.elements.by_type[Column])
 
 
