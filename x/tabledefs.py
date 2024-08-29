@@ -47,6 +47,8 @@ class Element(lang.Abstract, lang.Sealed):
 class Column(Element, lang.Final):
     name: str
     type: Datatype
+    nullable: bool = False
+    default: lang.Maybe[ta.Any] = lang.empty()
 
 
 @dc.dataclass(frozen=True)
