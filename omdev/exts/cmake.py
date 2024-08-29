@@ -33,6 +33,11 @@ from .. import cmake
 log = logging.getLogger(__name__)
 
 
+class CmakeProjectGen:
+    def run(self) -> None:
+        pass
+
+
 def _main() -> None:
     logs.configure_standard_logging('INFO')
 
@@ -56,13 +61,16 @@ def _main() -> None:
     with open(os.path.join(cmake_dir, '.gitignore'), 'w') as f:
         f.write('\n'.join(sorted(['/cmake-*', '/build'])))
 
+    prj_name = os.path.basename(os.path.dirname(prj_root))
+    log.info('Generating cmake project %s', prj_name)
+
     idea_dir = os.path.join(cmake_dir, '.idea')
     if not os.path.isdir(idea_dir):
         os.mkdir(idea_dir)
     idea_name_file = os.path.join(idea_dir, '.name')
     if not os.path.isfile(idea_name_file):
         with open(idea_name_file, 'w') as f:
-            f.write('omlish')
+            f.write(prj_name)
 
     venv_exe = sys.executable
     venv_root = os.path.abspath(os.path.join(os.path.dirname(venv_exe), '..'))
@@ -73,7 +81,6 @@ def _main() -> None:
     out = io.StringIO()
     gen = cmake.CmakeGen(out)
 
-    prj_name = 'omlish'
     var_prefix = prj_name.upper()
 
     gen.write(gen.preamble)
