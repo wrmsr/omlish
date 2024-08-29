@@ -77,7 +77,7 @@ class CmakeProjectGen:
 
     @lang.cached_function
     def prj_name(self) -> str:
-        return os.path.basename(os.path.dirname(self.prj_root))
+        return os.path.basename(self.prj_root)
 
     @lang.cached_function
     def cmake_dir(self) -> str:
