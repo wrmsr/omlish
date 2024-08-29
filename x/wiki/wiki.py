@@ -78,6 +78,7 @@ import abc
 import bz2
 import io
 import os.path
+import subprocess
 import time
 import typing as ta
 
@@ -266,6 +267,9 @@ def _main() -> None:
     # fp = INDEX_FILE_PATH
     fp = XML_FILE_PATH
 
+    proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+    for c in iter(lambda: proc.stdout.read(1024 * 1024), b""):
+        print(c)
 
 
 if __name__ == '__main__':
