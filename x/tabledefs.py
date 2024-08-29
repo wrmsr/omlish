@@ -37,13 +37,14 @@ class User(BaseTable, lang.Final):
     name: str
 
 """
-import dataclasses as dc
 import typing as ta
 
 import sqlalchemy as sa
 import sqlalchemy.sql.schema
 
+from omlish import check
 from omlish import collections as col
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
@@ -97,7 +98,7 @@ class PrimaryKey(Element, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Index(Element, lang.Final):
-    columns: ta.Sequence[str]
+    columns: ta.Sequence[str] = dc.xfield(coerce=col.seq)
     name: str | None = None
 
 
@@ -137,7 +138,7 @@ class CreatedAtUpdatedAt(Element, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Elements(ta.Sequence[Element], lang.Final):
-    lst: ta.Sequence[Element]
+    lst: ta.Sequence[Element] = dc.xfield(coerce=col.seq_of(check.of_isinstance(Element)))
 
     def __iter__(self) -> ta.Iterator[Element]:
         return iter(self.lst)
@@ -239,7 +240,8 @@ def _main() -> None:
     )
     print(users_json := json.dumps_pretty(msh.marshal(users)))
 
-    assert msh.unmarshal(json.loads(users_json), TableDef) == users
+    users2 = msh.unmarshal(json.loads(users_json), TableDef)
+    assert users2 == users
 
     users_lowered = lower_table_elements(users)
     print(json.dumps_pretty(msh.marshal(users_lowered)))
