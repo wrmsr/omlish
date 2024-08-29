@@ -52,9 +52,7 @@ else:
 
 
 F = ta.TypeVar('F')
-F2 = ta.TypeVar('F2')
 T = ta.TypeVar('T')
-T2 = ta.TypeVar('T2')
 U = ta.TypeVar('U')
 
 
@@ -121,6 +119,9 @@ class Inverted(FnPair[F, T]):
         return self.fp.forward(t)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Composite(FnPair[F, T]):
     children: ta.Sequence[FnPair]
@@ -136,7 +137,69 @@ class Composite(FnPair[F, T]):
         return ta.cast(F, t)
 
 
+I0 = ta.TypeVar('I0')
+I1 = ta.TypeVar('I1')
+I2 = ta.TypeVar('I2')
+I3 = ta.TypeVar('I3')
+I4 = ta.TypeVar('I4')
+
+
+@ta.overload
+def compose(
+        fp0: FnPair[F, I0],
+        f01: FnPair[I0, T],
+) -> FnPair[F, T]:
+    ...
+
+
+@ta.overload
+def compose(
+        fp0: FnPair[F, I0],
+        f01: FnPair[I0, I1],
+        fp2: FnPair[I1, T],
+) -> FnPair[F, T]:
+    ...
+
+
+@ta.overload
+def compose(
+        fp0: FnPair[F, I0],
+        f01: FnPair[I0, I1],
+        fp2: FnPair[I1, I2],
+        fp3: FnPair[I2, T],
+) -> FnPair[F, T]:
+    ...
+
+
+@ta.overload
+def compose(
+        fp0: FnPair[F, I0],
+        f01: FnPair[I0, I1],
+        fp2: FnPair[I1, I2],
+        fp3: FnPair[I2, I3],
+        fp4: FnPair[I3, T],
+) -> FnPair[F, T]:
+    ...
+
+
+@ta.overload
+def compose(
+        fp0: FnPair[F, I0],
+        f01: FnPair[I0, I1],
+        fp2: FnPair[I1, I2],
+        fp3: FnPair[I2, I3],
+        fp4: FnPair[I3, I4],
+        fp5: FnPair[I4, T],
+) -> FnPair[F, T]:
+    ...
+
+
+@ta.overload
 def compose(*ps: FnPair) -> FnPair:
+    ...
+
+
+def compose(*ps):
     if not ps:
         return NOP
     if len(ps) == 1:
