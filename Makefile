@@ -385,7 +385,7 @@ PYPI_VERSION:=$$(curl -s https://pypi.org/rss/project/omlish/releases.xml | grep
 publish: gen package
 	ls -al dist/*
 
-	if $$(git diff-index --quiet --cached HEAD --) ; then \
+	if ! git diff-index --quiet HEAD -- ; then \
 		echo 'Uncommitted changes' ; \
 		exit 1 ; \
 	fi
