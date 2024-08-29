@@ -75,10 +75,11 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 """
 
 import bz2
-import codecs
 import io
 import os.path
 import typing as ta
+
+from omlish import check
 
 
 def cut_lines(
@@ -110,6 +111,82 @@ def cut_lines(
         yield buf.getvalue()
 
 
+class ChunkMappingBytesReader(ta.IO[bytes]):
+    def __init__(
+            self,
+            f: ta.IO[bytes],
+            map_fn: ta.Callable[[bytes], bytes],
+            end_fn: ta.Callable[[], None] | None = None,
+    ) -> None:
+        super().__init__()
+        self._f = f
+        self._map_fn = map_fn
+        self._end_fn = end_fn
+
+    def close(self):
+        raise TypeError
+
+    def fileno(self):
+        return self._f.fileno()
+
+    def flush(self):
+        raise TypeError
+
+    def isatty(self):
+        return self._f.isatty()
+
+    def read(self, n=-1):
+        while True:
+            if not (buf := self._f.read(n)):
+                if self._end_fn is not None:
+                    self._end_fn()
+                return buf
+            if (buf := self._map_fn(buf)):
+                return buf
+
+    def readable(self):
+        return self._f.readable()
+
+    def readline(self, limit=-1):
+        raise TypeError
+
+    def readlines(self, hint=-1):
+        raise TypeError
+
+    def seek(self, offset, whence=0):
+        raise TypeError
+
+    def seekable(self):
+        return False
+
+    def tell(self):
+        return self._f.tell()
+
+    def truncate(self, size=None):
+        raise TypeError
+
+    def writable(self):
+        return self._f.writable()
+
+    def write(self, s):
+        raise TypeError
+
+    def writelines(self, lines):
+        raise TypeError
+
+    def __next__(self):
+        raise TypeError
+
+    def __iter__(self):
+        raise TypeError
+
+    def __enter__(self):
+        raise TypeError
+
+    def __exit__(self, et, e, tb):
+        raise TypeError
+
+
 INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
@@ -120,81 +197,12 @@ def _main() -> None:
 
     with open(INDEX_FILE_PATH, 'rb') as f:
         bd = bz2.BZ2Decompressor()
-
-        class BzStream(ta.IO[bytes]):
-            def __init__(self, f, fn):
-                super().__init__()
-                self._f = f
-                self._fn = fn
-
-            def read(self, n=-1):
-                while True:
-                    if not (buf := self._f.read(n)):
-                        return buf
-                    if (buf := self._fn(buf)):
-                        return buf
-
-            def close(self):
-                raise TypeError
-
-            def fileno(self):
-                raise TypeError
-
-            def flush(self):
-                raise TypeError
-
-            def isatty(self):
-                raise TypeError
-
-            def readable(self):
-                return f.readable()
-
-            def readline(self, __limit=-1):
-                raise TypeError
-
-            def readlines(self, __hint=-1):
-                raise TypeError
-
-            def seek(self, __offset, __whence=0):
-                raise TypeError
-
-            def seekable(self):
-                return False
-
-            def tell(self):
-                raise TypeError
-
-            def truncate(self, __size=None):
-                raise TypeError
-
-            def writable(self):
-                return f.writable()
-
-            def write(self, __s):
-                raise TypeError
-
-            def writelines(self, __lines):
-                raise TypeError
-
-            def __next__(self):
-                raise TypeError
-
-            def __iter__(self):
-                raise TypeError
-
-            def __enter__(self):
-                raise TypeError
-
-            def __exit__(self, __type, __value, __traceback):
-                raise TypeError
-
-        cs = io.TextIOWrapper(BzStream(f, bd.decompress), 'utf-8')
-
-        # while (line := cs.readline()):
-        #     print(line)
+        bs = ChunkMappingBytesReader(f, bd.decompress, lambda: check.state(bd.eof))
+        cs = io.TextIOWrapper(bs, 'utf-8')
 
         while (chunk := cs.read(1024)):
-            print(chunk)
+            # print(chunk)
+            pass
 
 
 if __name__ == '__main__':
