@@ -82,18 +82,20 @@ import typing as ta
 from omlish import check
 
 
-def cut_lines(
+def cut_chunks(
         chunks: ta.Iterable[str],
+        sep: str,
+        *,
         max_buf_size=10 * 1024 * 1024,
         buf_cls=io.StringIO,
 ):
     buf = buf_cls()
 
     for chunk in chunks:
-        if os.linesep not in chunk:
+        if sep not in chunk:
             buf.write(chunk)
         else:
-            line_chunks = chunk.splitlines()
+            line_chunks = chunk.split(sep)
             buf.write(line_chunks[0])
             yield buf.getvalue()
             if buf.tell() > max_buf_size:
