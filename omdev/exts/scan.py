@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 SCAN_COMMENT = '// @omdev-ext'
 
 
-def _scan_one(
+def scan_one(
         input_path: str,
         **kwargs: ta.Any,
 ) -> None:
@@ -42,7 +42,7 @@ def _scan_cmd(args) -> None:
         log.info('Scanning %s', i)
         for we_dirpath, we_dirnames, we_filenames in os.walk(i):  # noqa
             for fname in we_filenames:
-                _scan_one(
+                scan_one(
                     os.path.abspath(os.path.join(we_dirpath, fname)),
                 )
 

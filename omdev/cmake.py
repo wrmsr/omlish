@@ -1,5 +1,4 @@
 import abc
-import io
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -80,7 +79,7 @@ class CmakeGen:
 
     def __init__(
             self,
-            out: io.TextIOBase,
+            out: ta.TextIO,
             *,
             indent: int = 4,
     ) -> None:
