@@ -196,12 +196,15 @@ def _main() -> None:
     # input()
 
     with open(INDEX_FILE_PATH, 'rb') as f:
-        bd = bz2.BZ2Decompressor()
-        bs = ChunkMappingBytesReader(f, bd.decompress, lambda: check.state(bd.eof))
+        br = io.BufferedReader(f, 1024 * 1024)
+        bs = ChunkMappingBytesReader(br, (bd := bz2.BZ2Decompressor()).decompress, lambda: check.state(bd.eof))
         cs = io.TextIOWrapper(bs, 'utf-8')
 
-        while (chunk := cs.read(1024)):
-            # print(chunk)
+        # while (chunk := cs.read(1024)):
+        #     # print(chunk)
+        #     pass
+
+        while (line := cs.readline()):
             pass
 
 
