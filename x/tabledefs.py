@@ -221,6 +221,14 @@ def build_sa_table(
 
 
 def _main() -> None:
+    def install_msh_poly(cls: type) -> None:
+        p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
+        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
+        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+
+    install_msh_poly(Datatype)
+    install_msh_poly(Element)
+
     users = TableDef(
         'users',
         Elements([
@@ -229,7 +237,9 @@ def _main() -> None:
             Column('name', String()),
         ]),
     )
-    print(json.dumps_pretty(msh.marshal(users)))
+    print(users_json := json.dumps_pretty(msh.marshal(users)))
+
+    assert msh.unmarshal(json.loads(users_json), TableDef) == users
 
     users_lowered = lower_table_elements(users)
     print(json.dumps_pretty(msh.marshal(users_lowered)))

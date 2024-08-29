@@ -56,6 +56,8 @@ from .objects import (  # noqa
 from .polymorphism import (  # noqa
     Impl,
     Polymorphism,
+    PolymorphismMarshalerFactory,
+    PolymorphismUnmarshalerFactory,
     polymorphism_from_subclasses,
 )
 
