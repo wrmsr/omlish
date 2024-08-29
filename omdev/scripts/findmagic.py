@@ -28,8 +28,11 @@ def find_magic(
                     continue
 
                 fp = os.path.join(dp, fn)
-                with open(fp) as f:
-                    src = f.read()
+                try:
+                    with open(fp) as f:
+                        src = f.read()
+                except UnicodeDecodeError:
+                    continue
 
                 if not any(
                         any(pat.fullmatch(l) for pat in pats)
