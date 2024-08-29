@@ -16,18 +16,18 @@
 #
 # For more information, please refer to <http://unlicense.org>
 # Chapter 7 & 8 - Mutable variables and Compiling to Object Code
-from collections import namedtuple
-from ctypes import CFUNCTYPE
-from ctypes import c_double
-from enum import Enum
+import collections
+import ctypes as ct
+import enum
+import os
 
 import llvmlite.binding as llvm
-import llvmlite.ir as ir
+from llvmlite import ir
 
 
 # Each token is a tuple of kind and value. kind is one of the enumeration values
 # in TokenKind. value is the textual value of the token in the input.
-class TokenKind(Enum):
+class TokenKind(enum.Enum):
     EOF = -1
     DEF = -2
     EXTERN = -3
@@ -44,19 +44,20 @@ class TokenKind(Enum):
     VAR = -14
 
 
-Token = namedtuple('Token', 'kind value')
+Token = collections.namedtuple('Token', 'kind value')
 
 
-class Lexer(object):
-    """Lexer for Kaleidoscope.
+class Lexer:
+    """
+    Lexer for Kaleidoscope.
 
-    Initialize the lexer with a string buffer. tokens() returns a generator that
-    can be queried for tokens. The generator will emit an EOF token before
-    stopping.
+    Initialize the lexer with a string buffer. tokens() returns a generator that can be queried for tokens. The
+    generator will emit an EOF token before stopping.
     """
 
     def __init__(self, buf):
-        assert len(buf) >= 1
+        if not buf:
+            raise ValueError(buf)
         self.buf = buf
         self.pos = 0
         self.lastchar = self.buf[0]
@@ -116,7 +117,7 @@ class Lexer(object):
 
 
 # AST hierarchy
-class ASTNode(object):
+class ASTNode:
     def dump(self, indent=0):
         raise NotImplementedError
 
@@ -139,8 +140,7 @@ class VariableExprAST(ExprAST):
         self.name = name
 
     def dump(self, indent=0):
-        return '{0}{1}[{2}]'.format(
-            ' ' * indent, self.__class__.__name__, self.name)
+        return '{0}{1}[{2}]'.format(' ' * indent, self.__class__.__name__, self.name)
 
 
 class VarExprAST(ExprAST):
@@ -151,14 +151,14 @@ class VarExprAST(ExprAST):
 
     def dump(self, indent=0):
         prefix = ' ' * indent
-        s = '{0}{1}\n'.format(prefix, self.__class__.__name__)
+        s = f'{prefix}{self.__class__.__name__}\n'
         for name, init in self.vars:
-            s += '{0} {1}'.format(prefix, name)
+            s += f'{prefix} {name}'
             if init is None:
                 s += '\n'
             else:
                 s += '=\n' + init.dump(indent + 2) + '\n'
-        s += '{0} Body:\n'.format(prefix)
+        s += f'{prefix} Body:\n'
         s += self.body.dump(indent + 2)
         return s
 
@@ -197,13 +197,10 @@ class IfExprAST(ExprAST):
 
     def dump(self, indent=0):
         prefix = ' ' * indent
-        s = '{0}{1}\n'.format(prefix, self.__class__.__name__)
-        s += '{0} Condition:\n{1}\n'.format(
-            prefix, self.cond_expr.dump(indent + 2))
-        s += '{0} Then:\n{1}\n'.format(
-            prefix, self.then_expr.dump(indent + 2))
-        s += '{0} Else:\n{1}'.format(
-            prefix, self.else_expr.dump(indent + 2))
+        s = f'{prefix}{self.__class__.__name__}\n'
+        s += f'{prefix} Condition:\n{self.cond_expr.dump(indent + 2)}\n'
+        s += f'{prefix} Then:\n{self.then_expr.dump(indent + 2)}\n'
+        s += f'{prefix} Else:\n{self.else_expr.dump(indent + 2)}'
         return s
 
 
@@ -217,15 +214,11 @@ class ForExprAST(ExprAST):
 
     def dump(self, indent=0):
         prefix = ' ' * indent
-        s = '{0}{1}\n'.format(prefix, self.__class__.__name__)
-        s += '{0} Start [{1}]:\n{2}\n'.format(
-            prefix, self.id_name, self.start_expr.dump(indent + 2))
-        s += '{0} End:\n{1}\n'.format(
-            prefix, self.end_expr.dump(indent + 2))
-        s += '{0} Step:\n{1}\n'.format(
-            prefix, self.step_expr.dump(indent + 2))
-        s += '{0} Body:\n{1}\n'.format(
-            prefix, self.body.dump(indent + 2))
+        s = f'{prefix}{self.__class__.__name__}\n'
+        s += f'{prefix} Start [{self.id_name}]:\n{self.start_expr.dump(indent + 2)}\n'
+        s += f'{prefix} End:\n{self.end_expr.dump(indent + 2)}\n'
+        s += f'{prefix} Step:\n{self.step_expr.dump(indent + 2)}\n'
+        s += f'{prefix} Body:\n{self.body.dump(indent + 2)}\n'
         return s
 
 
@@ -256,15 +249,19 @@ class PrototypeAST(ASTNode):
         return self.isoperator and len(self.argnames) == 2
 
     def get_op_name(self):
-        assert self.isoperator
+        if not self.isoperator:
+            raise Exception('must be operator')
         return self.name[-1]
 
     def dump(self, indent=0):
         s = '{0}{1} {2}({3})'.format(
-            ' ' * indent, self.__class__.__name__, self.name,
-            ', '.join(self.argnames))
+            ' ' * indent,
+            self.__class__.__name__,
+            self.name,
+            ', '.join(self.argnames),
+        )
         if self.isoperator:
-            s += '[operator with prec={0}]'.format(self.prec)
+            s += f'[operator with prec={self.prec}]'
         return s
 
 
@@ -280,7 +277,7 @@ class FunctionAST(ASTNode):
         """Create an anonymous function to hold an expression."""
         klass._anonymous_function_counter += 1
         return klass(
-            PrototypeAST('_anon{0}'.format(klass._anonymous_function_counter),
+            PrototypeAST(f'_anon{klass._anonymous_function_counter}',
                          []),
             expr)
 
@@ -298,11 +295,11 @@ class ParseError(Exception):
     pass
 
 
-class Parser(object):
-    """Parser for the Kaleidoscope language.
+class Parser:
+    """
+    Parser for the Kaleidoscope language.
 
-    After the parser is created, invoke parse_toplevel multiple times to parse
-    Kaleidoscope source into an AST.
+    After the parser is created, invoke parse_toplevel multiple times to parse Kaleidoscope source into an AST.
     """
 
     def __init__(self):
@@ -336,9 +333,9 @@ class Parser(object):
         """
         if (expected_kind == TokenKind.OPERATOR and
                 not self._cur_tok_is_operator(expected_value)):
-            raise ParseError('Expected "{0}"'.format(expected_value))
+            raise ParseError(f'Expected "{expected_value}"')
         elif expected_kind != self.cur_tok.kind:
-            raise ParseError('Expected "{0}"'.format(expected_kind))
+            raise ParseError(f'Expected "{expected_kind}"')
         self._get_next_token()
 
     _precedence_map = {'=': 2, '<': 10, '+': 20, '-': 20, '*': 40}
@@ -479,8 +476,7 @@ class Parser(object):
     #   ::= <op> unary
     def _parse_unary(self):
         # no unary operator before a primary
-        if (not self.cur_tok.kind == TokenKind.OPERATOR or
-                self.cur_tok.value in ('(', ',')):
+        if (self.cur_tok.kind != TokenKind.OPERATOR or self.cur_tok.value in ('(', ',')):
             return self._parse_primary()
 
         # unary operator
@@ -490,18 +486,18 @@ class Parser(object):
 
     # binoprhs ::= (<binop> primary)*
     def _parse_binop_rhs(self, expr_prec, lhs):
-        """Parse the right-hand-side of a binary expression.
+        """
+        Parse the right-hand-side of a binary expression.
 
         expr_prec: minimal precedence to keep going (precedence climbing).
         lhs: AST of the left-hand-side.
         """
         while True:
             cur_prec = self._cur_tok_precedence()
-            # If this is a binary operator with precedence lower than the
-            # currently parsed sub-expression, bail out. If it binds at least
-            # as tightly, keep going.
-            # Note that the precedence of non-operators is defined to be -1,
-            # so this condition handles cases when the expression ended.
+            # If this is a binary operator with precedence lower than the currently parsed sub-expression, bail out. If
+            # it binds at least as tightly, keep going.
+            # Note that the precedence of non-operators is defined to be -1, so this condition handles cases when the
+            # expression ended.
             if cur_prec < expr_prec:
                 return lhs
             op = self.cur_tok.value
@@ -511,10 +507,9 @@ class Parser(object):
             next_prec = self._cur_tok_precedence()
             # There are three options:
             # 1. next_prec > cur_prec: we need to make a recursive call
-            # 2. next_prec == cur_prec: no need for a recursive call, the next
-            #    iteration of this loop will handle it.
-            # 3. next_prec < cur_prec: no need for a recursive call, combine
-            #    lhs and the next iteration will immediately bail out.
+            # 2. next_prec == cur_prec: no need for a recursive call, the next iteration of this loop will handle it.
+            # 3. next_prec < cur_prec: no need for a recursive call, combine lhs and the next iteration will immediately
+            #    bail out.
             if cur_prec < next_prec:
                 rhs = self._parse_binop_rhs(cur_prec + 1, rhs)
 
@@ -524,8 +519,7 @@ class Parser(object):
     # expression ::= primary binoprhs
     def _parse_expression(self):
         lhs = self._parse_unary()
-        # Start with precedence 0 because we want to bind any operator to the
-        # expression at this point.
+        # Start with precedence 0 because we want to bind any operator to the expression at this point.
         return self._parse_binop_rhs(0, lhs)
 
     # prototype
@@ -540,13 +534,13 @@ class Parser(object):
             self._get_next_token()
             if self.cur_tok.kind != TokenKind.OPERATOR:
                 raise ParseError('Expected operator after "unary"')
-            name = 'unary{0}'.format(self.cur_tok.value)
+            name = f'unary{self.cur_tok.value}'
             self._get_next_token()
         elif self.cur_tok.kind == TokenKind.BINARY:
             self._get_next_token()
             if self.cur_tok.kind != TokenKind.OPERATOR:
                 raise ParseError('Expected operator after "binary"')
-            name = 'binary{0}'.format(self.cur_tok.value)
+            name = f'binary{self.cur_tok.value}'
             self._get_next_token()
 
             # Try to parse precedence
@@ -556,8 +550,7 @@ class Parser(object):
                     raise ParseError('Invalid precedence', prec)
                 self._get_next_token()
 
-            # Add the new operator to our precedence table so we can properly
-            # parse it.
+            # Add the new operator to our precedence table so we can properly parse it.
             self._precedence_map[name[-1]] = prec
 
         self._match(TokenKind.OPERATOR, '(')
@@ -597,29 +590,28 @@ class CodegenError(Exception):
     pass
 
 
-class LLVMCodeGenerator(object):
+class LLVMCodeGenerator:
     def __init__(self):
-        """Initialize the code generator.
+        """
+        Initialize the code generator.
 
-        This creates a new LLVM module into which code is generated. The
-        generate_code() method can be called multiple times. It adds the code
-        generated for this node into the module, and returns the IR value for
-        the node.
+        This creates a new LLVM module into which code is generated. The generate_code() method can be called multiple
+        times. It adds the code generated for this node into the module, and returns the IR value for the node.
 
-        At any time, the current LLVM module being constructed can be obtained
-        from the module attribute.
+        At any time, the current LLVM module being constructed can be obtained from the module attribute.
         """
         self.module = ir.Module()
 
         # Current IR builder.
         self.builder = None
 
-        # Manages a symbol table while a function is being codegen'd. Maps var
-        # names to ir.Value which represents the var's address (alloca).
+        # Manages a symbol table while a function is being codegen'd. Maps var names to ir.Value which represents the
+        # var's address (alloca).
         self.func_symtab = {}
 
     def generate_code(self, node):
-        assert isinstance(node, (PrototypeAST, FunctionAST))
+        if not isinstance(node, (PrototypeAST, FunctionAST)):
+            raise TypeError(node)
         return self._codegen(node)
 
     def _create_entry_block_alloca(self, name):
@@ -629,10 +621,10 @@ class LLVMCodeGenerator(object):
         return builder.alloca(ir.DoubleType(), size=None, name=name)
 
     def _codegen(self, node):
-        """Node visitor. Dispathces upon node type.
+        """
+        Node visitor. Dispathces upon node type.
 
-        For AST node of class Foo, calls self._codegen_Foo. Each visitor is
-        expected to return a llvmlite.ir.Value.
+        For AST node of class Foo, calls self._codegen_Foo. Each visitor is expected to return a llvmlite.ir.Value.
         """
         method = '_codegen_' + node.__class__.__name__
         return getattr(self, method)(node)
@@ -646,12 +638,11 @@ class LLVMCodeGenerator(object):
 
     def _codegen_UnaryExprAST(self, node):
         operand = self._codegen(node.operand)
-        func = self.module.get_global('unary{0}'.format(node.op))
+        func = self.module.get_global(f'unary{node.op}')
         return self.builder.call(func, [operand], 'unop')
 
     def _codegen_BinaryExprAST(self, node):
-        # Assignment is handled specially because it doesn't follow the general
-        # recipe of binary ops.
+        # Assignment is handled specially because it doesn't follow the general recipe of binary ops.
         if node.op == '=':
             if not isinstance(node.lhs, VariableExprAST):
                 raise CodegenError('lhs of "=" must be a variable')
@@ -675,20 +666,17 @@ class LLVMCodeGenerator(object):
         else:
             # Note one of predefined operator, so it must be a user-defined one.
             # Emit a call to it.
-            func = self.module.get_global('binary{0}'.format(node.op))
+            func = self.module.get_global(f'binary{node.op}')
             return self.builder.call(func, [lhs, rhs], 'binop')
 
     def _codegen_IfExprAST(self, node):
         # Emit comparison value
         cond_val = self._codegen(node.cond_expr)
-        cmp = self.builder.fcmp_ordered(
-            '!=', cond_val, ir.Constant(ir.DoubleType(), 0.0))
+        cmp = self.builder.fcmp_ordered('!=', cond_val, ir.Constant(ir.DoubleType(), 0.0))
 
-        # Create basic blocks to express the control flow, with a conditional
-        # branch to either then_bb or else_bb depending on cmp. else_bb and
-        # merge_bb are not yet attached to the function's list of BBs because
-        # if a nested IfExpr is generated we want to have a reasonably nested
-        # order of BBs generated into the function.
+        # Create basic blocks to express the control flow, with a conditional branch to either then_bb or else_bb
+        # depending on cmp. else_bb and merge_bb are not yet attached to the function's list of BBs because if a nested
+        # IfExpr is generated we want to have a reasonably nested order of BBs generated into the function.
         then_bb = self.builder.function.append_basic_block('then')
         else_bb = ir.Block(self.builder.function, 'else')
         merge_bb = ir.Block(self.builder.function, 'ifcont')
@@ -699,8 +687,8 @@ class LLVMCodeGenerator(object):
         then_val = self._codegen(node.then_expr)
         self.builder.branch(merge_bb)
 
-        # Emission of then_val could have modified the current basic block. To
-        # properly set up the PHI, remember which block the 'then' part ends in.
+        # Emission of then_val could have modified the current basic block. To properly set up the PHI, remember which
+        # block the 'then' part ends in.
         then_bb = self.builder.block
 
         # Emit the 'else' part
@@ -740,15 +728,13 @@ class LLVMCodeGenerator(object):
         #   br endcond, loop, afterloop
         # afterloop:
 
-        # Create an alloca for the induction var. Save and restore location of
-        # our builder because _create_entry_block_alloca may modify it (llvmlite
-        # issue #44).
+        # Create an alloca for the induction var. Save and restore location of our builder because
+        # _create_entry_block_alloca may modify it (llvmlite issue #44).
         saved_block = self.builder.block
         var_addr = self._create_entry_block_alloca(node.id_name)
         self.builder.position_at_end(saved_block)
 
-        # Emit the start expr first, without the variable in scope. Store it
-        # into the var.
+        # Emit the start expr first, without the variable in scope. Store it into the var.
         start_val = self._codegen(node.start_expr)
         self.builder.store(start_val, var_addr)
         loop_bb = self.builder.function.append_basic_block('loop')
@@ -757,13 +743,13 @@ class LLVMCodeGenerator(object):
         self.builder.branch(loop_bb)
         self.builder.position_at_start(loop_bb)
 
-        # Within the loop, the variable now refers to our alloca slot. If it
-        # shadows an existing variable, we'll have to restore, so save it now.
+        # Within the loop, the variable now refers to our alloca slot. If it shadows an existing variable, we'll have to
+        # restore, so save it now.
         old_var_addr = self.func_symtab.get(node.id_name)
         self.func_symtab[node.id_name] = var_addr
 
-        # Emit the body of the loop. This, like any other expr, can change the
-        # current BB. Note that we ignore the value computed by the body.
+        # Emit the body of the loop. This, like any other expr, can change the current BB. Note that we ignore the value
+        # computed by the body.
         body_val = self._codegen(node.body)
 
         # Compute the end condition
@@ -802,23 +788,21 @@ class LLVMCodeGenerator(object):
         old_bindings = []
 
         for name, init in node.vars:
-            # Emit the initializer before adding the variable to scope. This
-            # prefents the initializer from referencing the variable itself.
+            # Emit the initializer before adding the variable to scope. This prefents the initializer from referencing
+            # the variable itself.
             if init is not None:
                 init_val = self._codegen(init)
             else:
                 init_val = ir.Constant(ir.DoubleType(), 0.0)
 
-            # Create an alloca for the induction var and store the init value to
-            # it. Save and restore location of our builder because
-            # _create_entry_block_alloca may modify it (llvmlite issue #44).
+            # Create an alloca for the induction var and store the init value to it. Save and restore location of our
+            # builder because _create_entry_block_alloca may modify it (llvmlite issue #44).
             saved_block = self.builder.block
             var_addr = self._create_entry_block_alloca(name)
             self.builder.position_at_end(saved_block)
             self.builder.store(init_val, var_addr)
 
-            # We're going to shadow this name in the symbol table now; remember
-            # what to restore.
+            # We're going to shadow this name in the symbol table now; remember what to restore.
             old_bindings.append(self.func_symtab.get(name))
             self.func_symtab[name] = var_addr
 
@@ -846,18 +830,17 @@ class LLVMCodeGenerator(object):
     def _codegen_PrototypeAST(self, node):
         funcname = node.name
         # Create a function type
-        func_ty = ir.FunctionType(ir.DoubleType(),
-                                  [ir.DoubleType()] * len(node.argnames))
+        func_ty = ir.FunctionType(ir.DoubleType(), [ir.DoubleType()] * len(node.argnames))
 
         # If a function with this name already exists in the module...
         if funcname in self.module.globals:
-            # We only allow the case in which a declaration exists and now the
-            # function is defined (or redeclared) with the same number of args.
+            # We only allow the case in which a declaration exists and now the function is defined (or redeclared) with
+            # the same number of args.
             existing_func = self.module[funcname]
             if not isinstance(existing_func, ir.Function):
                 raise CodegenError('Function/Global name collision', funcname)
             if not existing_func.is_declaration():
-                raise CodegenError('Redifinition of {0}'.format(funcname))
+                raise CodegenError(f'Redifinition of {funcname}')
             if len(existing_func.function_type.args) != len(func_ty.args):
                 raise CodegenError(
                     'Redifinition with different number of arguments')
@@ -868,8 +851,7 @@ class LLVMCodeGenerator(object):
         return func
 
     def _codegen_FunctionAST(self, node):
-        # Reset the symbol table. Prototype generation will pre-populate it with
-        # function arguments.
+        # Reset the symbol table. Prototype generation will pre-populate it with function arguments.
         self.func_symtab = {}
         # Create the function skeleton from the prototype.
         func = self._codegen(node.proto)
@@ -889,13 +871,13 @@ class LLVMCodeGenerator(object):
         return func
 
 
-class KaleidoscopeEvaluator(object):
-    """Evaluator for Kaleidoscope expressions.
+class KaleidoscopeEvaluator:
+    """
+    Evaluator for Kaleidoscope expressions.
 
-    Once an object is created, calls to evaluate() add new expressions to the
-    module. Definitions (including externs) are only added into the IR - no
-    JIT compilation occurs. When a toplevel expression is evaluated, the whole
-    module is JITed and the result of the expression is returned.
+    Once an object is created, calls to evaluate() add new expressions to the module. Definitions (including externs)
+    are only added into the IR - no JIT compilation occurs. When a toplevel expression is evaluated, the whole module is
+    JITed and the result of the expression is returned.
     """
 
     def __init__(self):
@@ -910,10 +892,10 @@ class KaleidoscopeEvaluator(object):
         self.target = llvm.Target.from_default_triple()
 
     def evaluate(self, codestr, optimize=True, llvmdump=False):
-        """Evaluate code in codestr.
+        """
+        Evaluate code in codestr.
 
-        Returns None for definitions and externs, and the evaluated expression
-        value for toplevel expressions.
+        Returns None for definitions and externs, and the evaluated expression value for toplevel expressions.
         """
         # Parse the given code and generate code from it
         ast = self.parser.parse_toplevel(codestr)
@@ -923,10 +905,8 @@ class KaleidoscopeEvaluator(object):
             print('======== Unoptimized LLVM IR')
             print(str(self.codegen.module))
 
-        # If we're evaluating a definition or extern declaration, don't do
-        # anything else. If we're evaluating an anonymous wrapper for a toplevel
-        # expression, JIT-compile the module and run the function to get its
-        # result.
+        # If we're evaluating a definition or extern declaration, don't do anything else. If we're evaluating an
+        # anonymous wrapper for a toplevel expression, JIT-compile the module and run the function to get its result.
         if not (isinstance(ast, FunctionAST) and ast.is_anonymous()):
             return None
 
@@ -945,9 +925,8 @@ class KaleidoscopeEvaluator(object):
                 print('======== Optimized LLVM IR')
                 print(str(llvmmod))
 
-        # Create a MCJIT execution engine to JIT-compile the module. Note that
-        # ee takes ownership of target_machine, so it has to be recreated anew
-        # each time we call create_mcjit_compiler.
+        # Create a MCJIT execution engine to JIT-compile the module. Note that ee takes ownership of target_machine, so
+        # it has to be recreated anew each time we call create_mcjit_compiler.
         target_machine = self.target.create_target_machine()
         with llvm.create_mcjit_compiler(llvmmod, target_machine) as ee:
             ee.finalize_object()
@@ -956,25 +935,22 @@ class KaleidoscopeEvaluator(object):
                 print('======== Machine code')
                 print(target_machine.emit_assembly(llvmmod))
 
-            fptr = CFUNCTYPE(c_double)(ee.get_function_address(ast.proto.name))
+            fptr = ct.CFUNCTYPE(ct.c_double)(ee.get_function_address(ast.proto.name))
             result = fptr()
             return result
 
     def compile_to_object_code(self):
-        """Compile previously evaluated code into an object file.
-
-        The object file is created for the native target, and its contents are
-        returned as a bytes object.
         """
-        # We use the small code model here, rather than the default one
-        # `jitdefault`.
+        Compile previously evaluated code into an object file.
+
+        The object file is created for the native target, and its contents are returned as a bytes object.
+        """
+        # We use the small code model here, rather than the default one `jitdefault`.
         #
-        # The reason is that only ELF format is supported under the `jitdefault`
-        # code model on Windows. However, COFF is commonly used by compilers on
-        # Windows.
+        # The reason is that only ELF format is supported under the `jitdefault` code model on Windows. However, COFF is
+        # commonly used by compilers on Windows.
         #
-        # Please refer to https://github.com/numba/llvmlite/issues/181
-        # for more information about this issue.
+        # Please refer to https://github.com/numba/llvmlite/issues/181 for more information about this issue.
         target_machine = self.target.create_target_machine(codemodel='small')
 
         # Convert LLVM IR into in-memory representation
@@ -982,11 +958,9 @@ class KaleidoscopeEvaluator(object):
         return target_machine.emit_object(llvmmod)
 
     def _add_builtins(self, module):
-        # The C++ tutorial adds putchard() simply by defining it in the host C++
-        # code, which is then accessible to the JIT. It doesn't work as simply
-        # for us; but luckily it's very easy to define new "C level" functions
-        # for our JITed code to use - just emit them as LLVM IR. This is what
-        # this method does.
+        # The C++ tutorial adds putchard() simply by defining it in the host C++ code, which is then accessible to the
+        # JIT. It doesn't work as simply for us; but luckily it's very easy to define new "C level" functions for our
+        # JITed code to use - just emit them as LLVM IR. This is what this method does.
 
         # Add the declaration of putchar
         putchar_ty = ir.FunctionType(ir.IntType(32), [ir.IntType(32)])
@@ -1016,8 +990,7 @@ class TestParser(unittest.TestCase):
         elif isinstance(ast, UnaryExprAST):
             return ['Unary', ast.op, self._flatten(ast.operand)]
         elif isinstance(ast, BinaryExprAST):
-            return ['Binop', ast.op,
-                    self._flatten(ast.lhs), self._flatten(ast.rhs)]
+            return ['Binop', ast.op, self._flatten(ast.lhs), self._flatten(ast.rhs)]
         elif isinstance(ast, VarExprAST):
             vars = [[name, self._flatten(init)] for name, init in ast.vars]
             return ['Var', vars, self._flatten(ast.body)]
@@ -1027,10 +1000,9 @@ class TestParser(unittest.TestCase):
         elif isinstance(ast, PrototypeAST):
             return ['Proto', ast.name, ' '.join(ast.argnames)]
         elif isinstance(ast, FunctionAST):
-            return ['Function',
-                    self._flatten(ast.proto), self._flatten(ast.body)]
+            return ['Function', self._flatten(ast.proto), self._flatten(ast.body)]
         else:
-            raise TypeError('unknown type in _flatten: {0}'.format(type(ast)))
+            raise TypeError(f'unknown type in _flatten: {type(ast)}')
 
     def _assert_body(self, toplevel, expected):
         """Assert the flattened body of the given toplevel function"""
@@ -1040,66 +1012,66 @@ class TestParser(unittest.TestCase):
     def test_assignment(self):
         p = Parser()
         ast = p.parse_toplevel('def text(x) x = 5')
-        self._assert_body(ast,
-                          ['Binop', '=', ['Variable', 'x'], ['Number', '5']])
+        self._assert_body(ast, ['Binop', '=', ['Variable', 'x'], ['Number', '5']])
 
     def test_varexpr(self):
         p = Parser()
         ast = p.parse_toplevel('def foo(x y) var t = 1 in y')
-        self._assert_body(ast,
-                          ['Var', [['t', ['Number', '1']]], ['Variable', 'y']])
+        self._assert_body(ast, ['Var', [['t', ['Number', '1']]], ['Variable', 'y']])
         ast = p.parse_toplevel('def foo(x y) var t = x, p = y + 1 in y')
-        self._assert_body(ast,
-                          ['Var',
-                           [['t', ['Variable', 'x']],
-                            ['p', ['Binop', '+', ['Variable', 'y'], ['Number', '1']]]],
-                           ['Variable', 'y']])
+        self._assert_body(
+            ast,
+            ['Var',
+             [['t', ['Variable', 'x']],
+              ['p', ['Binop', '+', ['Variable', 'y'], ['Number', '1']]]],
+             ['Variable', 'y']],
+        )
 
 
 class TestEvaluator(unittest.TestCase):
     def test_var_expr(self):
         e = KaleidoscopeEvaluator()
-        e.evaluate('''
+        e.evaluate("""
             def foo(x y z)
                 var s1 = x + y, s2 = z + y in
                     s1 * s2
-            ''')
+            """)
         self.assertEqual(e.evaluate('foo(1, 2, 3)'), 15)
 
         e = KaleidoscopeEvaluator()
         e.evaluate('def binary : 1 (x y) y')
-        e.evaluate('''
+        e.evaluate("""
             def foo(step)
                 var accum in
                     (for i = 0, i < 10, step in
                         accum = accum + i) : accum
-            ''')
-        # Note that Kaleidoscope's 'for' loop executes the last iteration even
-        # when the condition is no longer fulfilled after the step is done.
+            """)
+        # Note that Kaleidoscope's 'for' loop executes the last iteration even when the condition is no longer fulfilled
+        # after the step is done.
         # 0 + 2 + 4 + 6 + 8 + 10
         self.assertEqual(e.evaluate('foo(2)'), 30)
 
     def test_nested_var_exprs(self):
         e = KaleidoscopeEvaluator()
-        e.evaluate('''
+        e.evaluate("""
             def foo(x y z)
                 var s1 = x + y, s2 = z + y in
                     var s3 = s1 * s2 in
                         s3 * 100
-            ''')
+            """)
         self.assertEqual(e.evaluate('foo(1, 2, 3)'), 1500)
 
     def test_assignments(self):
         e = KaleidoscopeEvaluator()
         e.evaluate('def binary : 1 (x y) y')
-        e.evaluate('''
+        e.evaluate("""
             def foo(a b)
                 var s, p, r in
                    s = a + b :
                    p = a * b :
                    r = s + 100 * p :
                    r
-            ''')
+            """)
         self.assertEqual(e.evaluate('foo(2, 3)'), 605)
         self.assertEqual(e.evaluate('foo(10, 20)'), 20030)
 
@@ -1126,11 +1098,11 @@ if __name__ == '__main__':
     # Evaluate some code.
     kalei = KaleidoscopeEvaluator()
     kalei.evaluate('def binary: 1 (x y) y')
-    kalei.evaluate('''
+    kalei.evaluate("""
         def foo(x y z)
             var s1 = x + y, s2 = z + y in
                 s1 * s2
-        ''')
+        """)
     print(kalei.evaluate('foo(1, 2, 3)'))
 
     obj = kalei.compile_to_object_code()
@@ -1140,3 +1112,4 @@ if __name__ == '__main__':
     with open(filename, 'wb') as obj_file:
         obj_file.write(obj)
         print('Wrote ' + filename)
+    os.unlink(filename)
