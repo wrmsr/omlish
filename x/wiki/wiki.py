@@ -261,8 +261,10 @@ def _stream_decompress(fp: str) -> None:
 ##
 
 
-INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
-XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+@dc.dataclass(frozen=True)
+class MediaWiki:
+    siteinfo: ta.Optional['SiteInfo'] = None
+    pages: ta.Sequence['Page'] = None
 
 
 @dc.dataclass(frozen=True)
@@ -327,6 +329,10 @@ class RevisionText:
 #
 
 
+INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+
+
 def _main() -> None:
     # print(os.getpid())
     # input()
@@ -340,7 +346,9 @@ def _main() -> None:
     #     print(c)
 
     tag_stack = []
-    kw_stack = []
+    # kw_stack = []
+
+    # xml.etree.ElementTree.ParseError: no element found: line 32794611, column 0
 
     # "start", "end", "comment", "pi", "start-ns", "end-ns"
     for ev, el in xml.etree.ElementTree.iterparse(proc.stdout, ('start', 'end')):
@@ -355,15 +363,17 @@ def _main() -> None:
                 if tag != 'mediawiki':
                     raise RuntimeError('unexpected root tag')
 
-            else:
-                kw_stack.append({})
+            # else:
+            #     kw_stack.append({})
 
             tag_stack.append(tag)
 
         elif ev == 'end':
+            # kw_stack.pop()
+
             tag_stack.pop()
 
-        print((ev, el, tag_stack))
+        # print((ev, el, tag_stack))
 
 
 if __name__ == '__main__':
