@@ -1,4 +1,5 @@
 import collections.abc
+import dataclasses as dc
 import pprint
 import typing as ta
 
@@ -99,3 +100,20 @@ def test_generic_type():
 
 def test_annotated():
     rfl.type_(ta.Annotated[int, 'foo'])
+
+
+def test_normalize_generic():
+    @dc.dataclass(frozen=True)
+    class Foo(ta.Sequence[int]):
+        l: list[int]
+
+        def __iter__(self):
+            return iter(self.l)
+
+        def __len__(self):
+            return len(self.l)
+
+        def __getitem__(self, item):
+            return self.l[item]
+
+    assert rfl.type_(Foo) is Foo

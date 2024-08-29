@@ -250,12 +250,13 @@ def type_(obj: ta.Any) -> Type:
     if isinstance(obj, type):
         if issubclass(obj, ta.Generic):  # type: ignore
             params = get_params(obj)
-            return Generic(
-                obj,
-                params,
-                params,
-                obj,
-            )
+            if params:
+                return Generic(
+                    obj,
+                    params,
+                    params,
+                    obj,
+                )
         return obj
 
     if isinstance(obj, _SpecialGenericAlias):
