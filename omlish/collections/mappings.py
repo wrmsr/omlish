@@ -78,7 +78,7 @@ class TypeMap(ta.Generic[T]):
         return self._dct[ty]
 
 
-class TypeMultiMap(ta.Generic[V]):
+class DynamicTypeMap(ta.Generic[V]):
 
     def __init__(self, items: ta.Iterable[V] = (), *, weak: bool = False) -> None:
         super().__init__()
