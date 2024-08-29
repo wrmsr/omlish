@@ -39,6 +39,9 @@ from ..scripts import findmagic
 log = logging.getLogger(__name__)
 
 
+##
+
+
 MAGIC = '@omdev-ext'
 MAGIC_COMMENT = f'// {MAGIC}'
 
@@ -306,19 +309,33 @@ class CmakeProjectGen:
             f.write(out.getvalue())
 
 
-def _main() -> None:
-    logs.configure_standard_logging('INFO')
+##
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('exts', nargs='*')
 
-    args = parser.parse_args()
-
+def _gen_cmd(args) -> None:
     if not args.exts:
         raise Exception('must specify exts')
 
     cpg = CmakeProjectGen(args.exts)
     cpg.run()
+
+
+def _main(argv=None) -> None:
+    logs.configure_standard_logging('INFO')
+
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers()
+
+    parser_gen = subparsers.add_parser('gen')
+    parser_gen.add_argument('exts', nargs='*')
+    parser_gen.set_defaults(func=_gen_cmd)
+
+    args = parser.parse_args(argv)
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func(args)
 
 
 if __name__ == '__main__':
