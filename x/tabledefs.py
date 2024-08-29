@@ -1,3 +1,8 @@
+"""
+TODO:
+ - QualifiedName
+ - datatypes
+"""
 import dataclasses as dc
 import typing as ta
 
@@ -25,7 +30,13 @@ class TableDef(lang.Final):
 
 
 def _main() -> None:
-    users_table_def = TableDef()
+    users_table_def = TableDef(
+        'users',
+        [
+            TableColumn('id', 'integer'),
+            TableColumn('name', 'string'),
+        ],
+    )
 
 
 if __name__ == '__main__':
