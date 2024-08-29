@@ -180,6 +180,11 @@ class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
 
 
 class Bz2ReaderWrapper(BytesReaderWrapper):
+    """
+    TODO:
+     - parallel decompress
+    """
+
     def __init__(self, f: ta.IO[bytes]) -> None:
         super().__init__(f)
         self._b = bz2.BZ2Decompressor()
@@ -219,17 +224,7 @@ class Bz2ReaderWrapper(BytesReaderWrapper):
                 return ret
 
 
-INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
-XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
-
-
-def _main() -> None:
-    # print(os.getpid())
-    # input()
-
-    fp = INDEX_FILE_PATH
-    # fp = XML_FILE_PATH
-
+def _stream_decompress(fp: str) -> None:
     fst = os.stat(fp)
     with open(fp, 'rb') as f:
         br = io.BufferedReader(f, 1024 * 1024)
@@ -258,6 +253,19 @@ def _main() -> None:
                 st = ct
 
             # print(line.strip())
+
+
+INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+
+
+def _main() -> None:
+    # print(os.getpid())
+    # input()
+
+    # fp = INDEX_FILE_PATH
+    fp = XML_FILE_PATH
+
 
 
 if __name__ == '__main__':
