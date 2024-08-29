@@ -1,10 +1,47 @@
 """
 TODO:
  - QualifiedName
- - datatypes
+ - hybrid dataclass scheme
+
+==
+
+@td.tableclass([
+    IdIntegerPrimaryKey(),
+    CreatedAtUpdatedAt(),
+])
+@dc.dataclass(frozen=True)
+class User(lang.Final):
+    id: int
+
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    name: str
+
+==
+
+@td.tableclass([
+    IdIntegerPrimaryKey(),
+    CreatedAtUpdatedAt(),
+])
+@dc.dataclass(frozen=True)
+class BaseTable(lang.Abstract):
+    id: int
+
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+@td.tableclass('user')
+@dc.dataclass(frozen=True)
+class User(BaseTable, lang.Final):
+    name: str
+
 """
 import dataclasses as dc
 import typing as ta
+
+import sqlalchemy as sa
+import sqlalchemy.sql.schema
 
 from omlish import collections as col
 from omlish import lang
@@ -157,6 +194,25 @@ def lower_table_elements(td: TableDef) -> TableDef:
                 raise TypeError(e)
 
     return dc.replace(td, elements=Elements(out))
+
+
+#
+
+
+def build_sa_table(
+        td: TableDef,
+        *,
+        metadata: sa.MetaData | None = None,
+        **kwargs: ta.Any
+) -> sa.Table:
+    items: list[sa.sql.schema.SchemaItem] = []
+
+    return sa.Table(
+        td.name,
+        metadata if metadata is not None else sa.MetaData(),
+        *items,
+        **kwargs,
+    )
 
 
 #
