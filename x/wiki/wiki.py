@@ -78,6 +78,7 @@ import abc
 import bz2
 import io
 import os.path
+import time
 import typing as ta
 
 from omlish import check
@@ -229,7 +230,7 @@ def _main() -> None:
     fp = INDEX_FILE_PATH
     # fp = XML_FILE_PATH
 
-    st = os.stat(fp)
+    fst = os.stat(fp)
     with open(fp, 'rb') as f:
         br = io.BufferedReader(f, 1024 * 1024)
         bs = Bz2ReaderWrapper(br)
@@ -240,12 +241,21 @@ def _main() -> None:
         #     pass
 
         lp = 0
+        st = time.time()
         pi = 10_000_000
         while (line := cs.readline()):
             cp = f.tell()
             if cp - lp >= pi:
-                print(f'{cp:_} / {st.st_size:_} - {st.st_size / cp:.2f} %')
+                ct = time.time()
+                nr = cp - lp
+                et = ct - st
+                print(
+                    f'{cp:_} b / {fst.st_size:_} b - '
+                    f'{cp / fst.st_size * 100.:.2f} % - '
+                    f'{int(nr / et):_} b/s'
+                )
                 lp = cp
+                st = ct
 
             # print(line.strip())
 
