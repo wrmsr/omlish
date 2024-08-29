@@ -76,11 +76,13 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 
 import abc
 import bz2
+import dataclasses as dc
 import io
 import os.path
 import subprocess
 import time
 import typing as ta
+import xml.etree.ElementTree
 
 from omlish import check
 
@@ -256,8 +258,72 @@ def _stream_decompress(fp: str) -> None:
             # print(line.strip())
 
 
+##
+
+
 INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+
+
+@dc.dataclass(frozen=True)
+class SiteInfo:
+    sitename: str | None = None
+    base: str | None = None
+    generator: str | None = None
+    case: str | None = None
+    namespaces: ta.Sequence['Namespace'] | None = None
+
+
+@dc.dataclass(frozen=True)
+class Namespace:
+    key: str | None = None  # att
+    case: str | None = None  # att
+    text: str | None = None  # text
+
+
+@dc.dataclass(frozen=True)
+class Page:
+    title: str | None = None
+    ns: str | None = None
+    id: str | None = None
+    redirect: ta.Optional['Redirect'] = None
+    restrictions: str | None = None
+    revisions: ta.Optional['Revision'] = None
+
+
+@dc.dataclass(frozen=True)
+class Redirect:
+    title: str | None = None  # att
+
+
+@dc.dataclass(frozen=True)
+class Revision:
+    id: str | None = None
+    parentid: str | None = None
+    timestamp: str | None = None
+    contributors: ta.Sequence['Contributor'] | None = None
+    minor: bool = False
+    comment: str | None = None
+    origin: str | None = None
+    model: str | None = None
+    format: str | None = None
+    text: ta.Optional['RevisionText'] = None
+    sha1: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class Contributor:
+    username: str | None = None
+    ip: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class RevisionText:
+    bytes: str | None = None  # att
+    sha1: str | None = None  # att
+    text: str | None = None  # text
+
+#
 
 
 def _main() -> None:
@@ -268,8 +334,35 @@ def _main() -> None:
     fp = XML_FILE_PATH
 
     proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-    for c in iter(lambda: proc.stdout.read(1024 * 1024), b""):
-        print(c)
+
+    # for c in iter(lambda: proc.stdout.read(1024 * 1024), b''):
+    #     print(c)
+
+    tag_stack = []
+    kw_stack = []
+
+    # "start", "end", "comment", "pi", "start-ns", "end-ns"
+    for ev, el in xml.etree.ElementTree.iterparse(proc.stdout, ('start', 'end')):
+        if ev == 'start':
+            tag = el.tag
+            # It really do just be like this:
+            # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
+            if tag[:1] == '{':
+                _, tag = tag[1:].rsplit('}', 1)
+
+            if not tag_stack:
+                if tag != 'mediawiki':
+                    raise RuntimeError('unexpected root tag')
+
+            else:
+                kw_stack.append({})
+
+            tag_stack.append(tag)
+
+        elif ev == 'end':
+            tag_stack.pop()
+
+        print((ev, el, tag_stack))
 
 
 if __name__ == '__main__':
