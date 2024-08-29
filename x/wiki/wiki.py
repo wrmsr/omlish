@@ -74,6 +74,7 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
   <!ELEMENT size (#PCDATA)>
 """
 
+import abc
 import bz2
 import io
 import os.path
@@ -113,17 +114,10 @@ def cut_chunks(
         yield buf.getvalue()
 
 
-class ChunkMappingBytesReader(ta.IO[bytes]):
-    def __init__(
-            self,
-            f: ta.IO[bytes],
-            map_fn: ta.Callable[[bytes], bytes],
-            end_fn: ta.Callable[[], None] | None = None,
-    ) -> None:
+class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
+    def __init__(self, f: ta.IO[bytes]) -> None:
         super().__init__()
         self._f = f
-        self._map_fn = map_fn
-        self._end_fn = end_fn
 
     def close(self):
         raise TypeError
@@ -137,14 +131,9 @@ class ChunkMappingBytesReader(ta.IO[bytes]):
     def isatty(self):
         return self._f.isatty()
 
+    @abc.abstractmethod
     def read(self, n=-1):
-        while True:
-            if not (buf := self._f.read(n)):
-                if self._end_fn is not None:
-                    self._end_fn()
-                return buf
-            if (buf := self._map_fn(buf)):
-                return buf
+        raise NotImplementedError
 
     def readable(self):
         return self._f.readable()
@@ -189,6 +178,34 @@ class ChunkMappingBytesReader(ta.IO[bytes]):
         raise TypeError
 
 
+class Bz2ReaderWrapper(BytesReaderWrapper):
+    def __init__(self, f: ta.IO[bytes]) -> None:
+        super().__init__(f)
+        self._b = bz2.BZ2Decompressor()
+        self._x: bytes | None = None
+
+    def read(self, n=-1):
+        while True:
+            if not (r := self._f.read(n)):
+                if not self._b.eof:
+                    raise Exception('not at eof')
+                return b''
+
+            if self._x:
+                r = self._x + r
+                self._x = None
+            ret = self._b.decompress(r)
+
+            if self._b.eof:
+                u = self._b.unused_data
+                self._b = bz2.BZ2Decompressor()
+                if u:
+                    self._x = self._b.decompress(u)
+
+            if ret:
+                return ret
+
+
 INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
@@ -197,9 +214,12 @@ def _main() -> None:
     # print(os.getpid())
     # input()
 
-    with open(INDEX_FILE_PATH, 'rb') as f:
+    # fp = INDEX_FILE_PATH
+    fp = XML_FILE_PATH
+
+    with open(fp, 'rb') as f:
         br = io.BufferedReader(f, 1024 * 1024)
-        bs = ChunkMappingBytesReader(br, (bd := bz2.BZ2Decompressor()).decompress, lambda: check.state(bd.eof))
+        bs = Bz2ReaderWrapper(br)
         cs = io.TextIOWrapper(bs, 'utf-8')
 
         # while (chunk := cs.read(1024)):
@@ -207,7 +227,7 @@ def _main() -> None:
         #     pass
 
         while (line := cs.readline()):
-            pass
+            print(line.strip())
 
 
 if __name__ == '__main__':
