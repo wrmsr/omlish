@@ -76,6 +76,7 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 
 import abc
 import bz2
+import contextlib
 import dataclasses as dc
 import io
 import os.path
@@ -340,7 +341,8 @@ def _main() -> None:
     # fp = INDEX_FILE_PATH
     fp = XML_FILE_PATH
 
-    proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+    # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+    proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
 
     # for c in iter(lambda: proc.stdout.read(1024 * 1024), b''):
     #     print(c)
@@ -349,31 +351,58 @@ def _main() -> None:
     # kw_stack = []
 
     # xml.etree.ElementTree.ParseError: no element found: line 32794611, column 0
+    # xml.etree.ElementTree.ParseError: no element found: line 42182045, column 0
 
-    # "start", "end", "comment", "pi", "start-ns", "end-ns"
-    for ev, el in xml.etree.ElementTree.iterparse(proc.stdout, ('start', 'end')):
-        if ev == 'start':
-            tag = el.tag
-            # It really do just be like this:
-            # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
-            if tag[:1] == '{':
-                _, tag = tag[1:].rsplit('}', 1)
+    with contextlib.ExitStack() as es:
+        # f = es.enter_context(open(fp, 'rb'))
+        # br = io.BufferedReader(f, 1024 * 1024)
+        # bs = Bz2ReaderWrapper(br)
+        # cs = io.TextIOWrapper(bs, 'utf-8')
+        #
+        # fst = os.stat(fp)
+        # lp = 0
+        # st = time.time()
+        # pi = 10_000_000
 
-            if not tag_stack:
-                if tag != 'mediawiki':
-                    raise RuntimeError('unexpected root tag')
+        cs = proc.stdout
 
-            # else:
-            #     kw_stack.append({})
+        # "start", "end", "comment", "pi", "start-ns", "end-ns"
+        for ev, el in xml.etree.ElementTree.iterparse(cs, ('start', 'end')):
+            # cp = f.tell()
+            # if cp - lp >= pi:
+            #     ct = time.time()
+            #     nr = cp - lp
+            #     et = ct - st
+            #     print(
+            #         f'{cp:_} b / {fst.st_size:_} b - '
+            #         f'{cp / fst.st_size * 100.:.2f} % - '
+            #         f'{int(nr / et):_} b/s'
+            #     )
+            #     lp = cp
+            #     st = ct
 
-            tag_stack.append(tag)
+            if ev == 'start':
+                tag = el.tag
+                # It really do just be like this:
+                # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
+                if tag[:1] == '{':
+                    _, tag = tag[1:].rsplit('}', 1)
 
-        elif ev == 'end':
-            # kw_stack.pop()
+                if not tag_stack:
+                    if tag != 'mediawiki':
+                        raise RuntimeError('unexpected root tag')
 
-            tag_stack.pop()
+                # else:
+                #     kw_stack.append({})
 
-        # print((ev, el, tag_stack))
+                tag_stack.append(tag)
+
+            elif ev == 'end':
+                # kw_stack.pop()
+
+                tag_stack.pop()
+
+            # print((ev, el, tag_stack))
 
 
 if __name__ == '__main__':
