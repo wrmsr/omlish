@@ -9,7 +9,7 @@ import typing as ta
 T = ta.TypeVar('T')
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-Message = str | ta.Callable[..., str | None] | None
+Message: ta.TypeAlias = str | ta.Callable[..., str | None] | None
 
 _NONE_TYPE = type(None)
 
