@@ -35,7 +35,6 @@ def _add_revision_to_archive(f: str, revision: str) -> None:
 
         zis: dict = {}
         dct: dict = {}
-
         with wheel.wheelfile.WheelFile(f) as wf:
             for zi in wf.filelist:
                 if zi.filename == wf.record_path:
@@ -50,9 +49,21 @@ def _add_revision_to_archive(f: str, revision: str) -> None:
                     wf.writestr(zis[n], d)
 
     elif f.endswith('.tar.gz'):
+        log.info('Scanning tgz %s', f)
+
+        tis: dict = {}
+        dct: dict = {}
         with tarfile.open(f, 'r:gz') as tf:
             for ti in tf:
-                print(ti)
+                tis[ti.name] = ti
+                if ti.type == tarfile.REGTYPE:
+                    with tf.extractfile(ti.name) as tif:
+                        dct[ti.name] = tif.read()
+
+        if _add_revision_to_contents(dct, revision):
+            log.info('Repacking tgz %s', f)
+
+            breakpoint()
 
 
 EXTS = ('.tar.gz', '.whl')
