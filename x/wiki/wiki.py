@@ -214,8 +214,8 @@ def _main() -> None:
     # print(os.getpid())
     # input()
 
-    # fp = INDEX_FILE_PATH
-    fp = XML_FILE_PATH
+    fp = INDEX_FILE_PATH
+    # fp = XML_FILE_PATH
 
     with open(fp, 'rb') as f:
         br = io.BufferedReader(f, 1024 * 1024)
