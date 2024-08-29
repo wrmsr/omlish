@@ -382,11 +382,18 @@ VERSION:=$$(egrep '^__version__ = ' omlish/__about__.py | cut -d ' ' -f 3 | tr -
 PYPI_VERSION:=$$(curl -s https://pypi.org/rss/project/omlish/releases.xml | grep '<title>' | grep -v 'PyPI' | head -n1 | sed -E 's/[ ]*<title>([A-Za-z0-9\.]+)<\/title>/\1/')
 
 .PHONY: publish
-publish: package
+publish: gen package
 	ls -al dist/*
+
+	if $$(git diff-index --quiet --cached HEAD --) ; then \
+		echo 'Uncommitted changes' ; \
+		exit 1 ; \
+	fi
+
 	echo "Local version: ${VERSION}"
 	echo "PyPI version: ${PYPI_VERSION}"
 	read -p "Press enter to publish"
+
 	.venv/bin/twine upload dist/*
 
 
