@@ -135,10 +135,11 @@ def _main() -> None:
                 bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
 
             else:
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
                 # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-                proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
+                proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
                 bs = proc.stdout
-                fpr = None
 
         elif fp.endswith('.lz4'):
             if not use_subproc:
@@ -148,9 +149,10 @@ def _main() -> None:
                 bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
 
             else:
-                proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE)
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
+                proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
                 bs = proc.stdout
-                fpr = None
 
         else:
             raise RuntimeError(fp)
