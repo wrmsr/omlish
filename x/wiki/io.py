@@ -1,5 +1,6 @@
 import abc
 import os
+import sys
 import time
 import typing as ta
 
@@ -138,7 +139,7 @@ class FileProgressReporter:
             *,
             out: ta.Any = sys.stderr,
             time_interval: float | None = 1.,
-            bytes_interval: int | None,
+            bytes_interval: int | None = None,
     ) -> None:
         super().__init__()
         self._f = f

@@ -77,14 +77,13 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 import contextlib
 import dataclasses as dc
 import os.path
-import subprocess
-import sys
-import time
+import io  # noqa
+import subprocess  # noqa
 import typing as ta
-import xml.etree.ElementTree
 
-from .io import Bz2ReaderWrapper
-from .xml import strip_ns
+from .io import Bz2ReaderWrapper  # noqa
+from .io import FileProgressReporter  # noqa
+from .xml import strip_ns  # noqa
 from .xml import yield_root_children
 
 
@@ -156,14 +155,13 @@ class RevisionText:
     text: str | None = None  # text
 
 
-#
-
-
-
 ##
 
 
 INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+
+#  23_851_879_117 compressed
+# 103_090_295_026 uncompressed
 XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
 
@@ -174,64 +172,28 @@ def _main() -> None:
     # fp = INDEX_FILE_PATH
     fp = XML_FILE_PATH
 
-    # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-    proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
-
-    # for c in iter(lambda: proc.stdout.read(1024 * 1024), b''):
-    #     print(c)
-
-    tag_stack = []
-    el_stack = []
-    # kw_stack = []
-
-    # xml.etree.ElementTree.ParseError: no element found: line 32794611, column 0
-    # xml.etree.ElementTree.ParseError: no element found: line 42182045, column 0
-
     with contextlib.ExitStack() as es:
-        # f = es.enter_context(open(fp, 'rb'))
-        # fpr = FileProgressReporter(f)
-        # br = io.BufferedReader(f, 1024 * 1024)
-        # bs = Bz2ReaderWrapper(br)
-        # cs = io.TextIOWrapper(bs, 'utf-8')
-        cs = proc.stdout
+        f = es.enter_context(open(fp, 'rb'))
+        fpr = FileProgressReporter(f, time_interval=5)
+        br = io.BufferedReader(f, 1024 * 1024)
+        bs = Bz2ReaderWrapper(br)
+        cs = io.TextIOWrapper(bs, 'utf-8')
+
+        # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+        # proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
+        # cs = proc.stdout
+        # fpr = None
 
         it = yield_root_children(cs)
-        root = next(it)
+        root = next(it)  # noqa
         for el in it:
-            print(el)
-            print(list(root))
-            print()
-            input()
+            if fpr is not None:
+                fpr.report()
 
-        # "start", "end", "comment", "pi", "start-ns", "end-ns"
-        for ev, el in xml.etree.ElementTree.iterparse(cs, ('start', 'pi', 'end')):
-            if ev == 'start':
-                tag = el.tag
-                if not tag_stack:
-                    if tag != 'mediawiki':
-                        raise RuntimeError('unexpected root tag')
-
-                # else:
-                #     kw_stack.append({})
-
-                el_stack.append(el)
-                tag_stack.append(tag)
-
-            elif ev == 'end':
-                # kw_stack.pop()
-
-                tag_stack.pop()
-                el_stack.pop()
-
-                # # https://stackoverflow.com/a/12161078
-                # el.clear()
-                #
-                # # Also eliminate now-empty references from the root node to elem
-                # for ancestor in el.xpath('ancestor-or-self::*'):
-                #     while ancestor.getprevious() is not None:
-                #         del ancestor.getparent()[0]
-
-            # print((ev, el, tag_stack))
+            # print(el)
+            # print(list(root))
+            # print()
+            # input()
 
 
 if __name__ == '__main__':
