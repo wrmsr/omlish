@@ -1,6 +1,8 @@
 """
 TODO:
  - lxml? faster?
+  - https://lxml.de/1.3/compatibility.html
+  - https://lxml.de/performance.html
  - https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.XMLPullParser - sans-io
 """
 import typing as ta

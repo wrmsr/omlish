@@ -6,6 +6,13 @@ TODO:
   - cbor
   - alt json backends
  - wrapped (wait for usecase)
+
+Compression choice:
+ - lzma if-available minimal-space
+ - lz4 if-available write-once
+ - zstd if-available
+ - bz2 write-once (but no parallel decompress)
+ - gz
 """
 import abc
 import codecs

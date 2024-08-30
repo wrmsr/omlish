@@ -2,6 +2,9 @@
 TODO:
  - BZ2File / _compression.DecompressionReader does this, but point is parallel decomp
   - chop stream
+   - possible at all? pbzip2 explodes
+   - https://github.com/ruanhuabin/pbzip2
+   - https://en.wikipedia.org/wiki/Bzip2
 """
 import abc
 import os
@@ -198,7 +201,7 @@ class FileProgressReporter:
 
         print(
             f'{bytes_cur:_} b / {self._bytes_tot:_} b - '
-            f'{bytes_cur / self._bytes_tot:.2f} % - '
+            f'{bytes_cur / self._bytes_tot * 100.:.2f} % - '
             f'{int(bytes_ela / time_ela):_} b/s',
             file=self._out,
         )
