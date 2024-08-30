@@ -8,6 +8,13 @@ Lookit:
   - https://github.com/saymedia/journald-cloudwatch-logs
   - https://discourse.nixos.org/t/nginx-logging-to-journald/2005/5
 
+
+lazy:
+ log.debug(lambda: ('foo %s', bar())
+ log.debug(lambda: f'foo {bar()}')
+ log.debug('foo %s', log.lazy(bar)) ?
+
+
 --
 
 echo -e  "MESSAGE=Hello\nFOO=BAR\nMY_ID=12345\n" |socat  - UNIX-SENDTO:/run/systemd/journal/socket

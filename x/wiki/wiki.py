@@ -74,8 +74,6 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
   <!ELEMENT size (#PCDATA)>
 """
 
-import abc
-import bz2
 import contextlib
 import dataclasses as dc
 import io
@@ -85,7 +83,7 @@ import time
 import typing as ta
 import xml.etree.ElementTree
 
-from omlish import check
+from .io import Bz2ReaderWrapper
 
 
 def cut_chunks(
@@ -119,144 +117,29 @@ def cut_chunks(
         yield buf.getvalue()
 
 
-class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
-    def __init__(self, f: ta.IO[bytes]) -> None:
+class FileProgressReporter:
+    def __init__(self, f, ib: int = 10 * 1024 * 1024) -> None:
         super().__init__()
         self._f = f
+        self._ib = ib
 
-    def close(self):
-        raise TypeError
+        self._nb = os.fstat(f.fileno()).st_size
+        self._lb = 0
+        self._lt = time.time()
 
-    def fileno(self):
-        return self._f.fileno()
-
-    def flush(self):
-        raise TypeError
-
-    def isatty(self):
-        return self._f.isatty()
-
-    @abc.abstractmethod
-    def read(self, n=-1):
-        raise NotImplementedError
-
-    def readable(self):
-        return self._f.readable()
-
-    def readline(self, limit=-1):
-        raise TypeError
-
-    def readlines(self, hint=-1):
-        raise TypeError
-
-    def seek(self, offset, whence=0):
-        raise TypeError
-
-    def seekable(self):
-        return False
-
-    def tell(self):
-        return self._f.tell()
-
-    def truncate(self, size=None):
-        raise TypeError
-
-    def writable(self):
-        return self._f.writable()
-
-    def write(self, s):
-        raise TypeError
-
-    def writelines(self, lines):
-        raise TypeError
-
-    def __next__(self):
-        raise TypeError
-
-    def __iter__(self):
-        raise TypeError
-
-    def __enter__(self):
-        raise TypeError
-
-    def __exit__(self, et, e, tb):
-        raise TypeError
-
-
-class Bz2ReaderWrapper(BytesReaderWrapper):
-    """
-    TODO:
-     - parallel decompress
-    """
-
-    def __init__(self, f: ta.IO[bytes]) -> None:
-        super().__init__(f)
-        self._b = bz2.BZ2Decompressor()
-        self._c = 0
-        self._e = False
-        self._x: bytes | None = None
-
-    def read(self, n=-1):
-        while True:
-            if self._e or not (r := self._f.read(n)):
-                self._e = True
-
-                if self._x:
-                    r = self._x
-                    self._x = None
-                    return r
-
-                if self._c and not self._b.eof:
-                    raise Exception('not at eof')
-
-                return b''
-
-            self._c += len(r)
-            ret = self._b.decompress(r)
-            if self._x:
-                ret = self._x + ret
-                self._x = None
-
-            if self._b.eof:
-                u = self._b.unused_data
-                self._b = bz2.BZ2Decompressor()
-                self._c = 0
-                if u:
-                    self._x = self._b.decompress(u)
-
-            if ret:
-                return ret
-
-
-def _stream_decompress(fp: str) -> None:
-    fst = os.stat(fp)
-    with open(fp, 'rb') as f:
-        br = io.BufferedReader(f, 1024 * 1024)
-        bs = Bz2ReaderWrapper(br)
-        cs = io.TextIOWrapper(bs, 'utf-8')
-
-        # while (chunk := cs.read(1024)):
-        #     # print(chunk)
-        #     pass
-
-        lp = 0
-        st = time.time()
-        pi = 10_000_000
-        while (line := cs.readline()):
-            cp = f.tell()
-            if cp - lp >= pi:
-                ct = time.time()
-                nr = cp - lp
-                et = ct - st
-                print(
-                    f'{cp:_} b / {fst.st_size:_} b - '
-                    f'{cp / fst.st_size * 100.:.2f} % - '
-                    f'{int(nr / et):_} b/s'
-                )
-                lp = cp
-                st = ct
-
-            # print(line.strip())
+    def report(self) -> None:
+        cb = self._f.tell()
+        eb = cb - self._lb
+        if eb >= self._ib:
+            ct = time.time()
+            et = ct - self._lt
+            print(
+                f'{cb:_} b / {self._nb:_} b - '
+                f'{cb / self._nb:.2f} % - '
+                f'{int(eb / et):_} b/s'
+            )
+            self._lb = cb
+            self._lt = ct
 
 
 ##
@@ -330,6 +213,38 @@ class RevisionText:
 #
 
 
+def strip_ns(tag: str) -> str:
+    # It really do just be like this:
+    # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
+    if tag[:1] == '{':
+        _, tag = tag[1:].rsplit('}', 1)
+    return tag
+
+
+ITER_PARSE_EVENTS = ('start', 'end', 'comment', 'pi', 'start-ns', 'end-ns')
+
+
+def yield_root_children(source, *, retain_on_root: bool = False) -> ta.Iterator[xml.etree.ElementTree.Element]:
+    it = iter(xml.etree.ElementTree.iterparse(source, ('start', 'end')))
+    ev, root = next(it)
+    if ev != 'start':
+        raise RuntimeError(ev)
+    yield root
+    depth = 0
+    for ev, el in it:
+        if ev == 'start':
+            depth += 1
+        elif ev == 'end':
+            depth -= 1
+            if not depth:
+                if not retain_on_root:
+                    root.remove(el)
+                yield el
+
+
+##
+
+
 INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
@@ -348,6 +263,7 @@ def _main() -> None:
     #     print(c)
 
     tag_stack = []
+    el_stack = []
     # kw_stack = []
 
     # xml.etree.ElementTree.ParseError: no element found: line 32794611, column 0
@@ -355,39 +271,21 @@ def _main() -> None:
 
     with contextlib.ExitStack() as es:
         # f = es.enter_context(open(fp, 'rb'))
+        # fpr = FileProgressReporter(f)
         # br = io.BufferedReader(f, 1024 * 1024)
         # bs = Bz2ReaderWrapper(br)
         # cs = io.TextIOWrapper(bs, 'utf-8')
-        #
-        # fst = os.stat(fp)
-        # lp = 0
-        # st = time.time()
-        # pi = 10_000_000
-
         cs = proc.stdout
 
-        # "start", "end", "comment", "pi", "start-ns", "end-ns"
-        for ev, el in xml.etree.ElementTree.iterparse(cs, ('start', 'end')):
-            # cp = f.tell()
-            # if cp - lp >= pi:
-            #     ct = time.time()
-            #     nr = cp - lp
-            #     et = ct - st
-            #     print(
-            #         f'{cp:_} b / {fst.st_size:_} b - '
-            #         f'{cp / fst.st_size * 100.:.2f} % - '
-            #         f'{int(nr / et):_} b/s'
-            #     )
-            #     lp = cp
-            #     st = ct
+        it = yield_root_children(cs)
+        root = next(it)
+        for el in it:
+            print(el)
 
+        # "start", "end", "comment", "pi", "start-ns", "end-ns"
+        for ev, el in xml.etree.ElementTree.iterparse(cs, ('start', 'pi', 'end')):
             if ev == 'start':
                 tag = el.tag
-                # It really do just be like this:
-                # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
-                if tag[:1] == '{':
-                    _, tag = tag[1:].rsplit('}', 1)
-
                 if not tag_stack:
                     if tag != 'mediawiki':
                         raise RuntimeError('unexpected root tag')
@@ -395,12 +293,22 @@ def _main() -> None:
                 # else:
                 #     kw_stack.append({})
 
+                el_stack.append(el)
                 tag_stack.append(tag)
 
             elif ev == 'end':
                 # kw_stack.pop()
 
                 tag_stack.pop()
+                el_stack.pop()
+
+                # # https://stackoverflow.com/a/12161078
+                # el.clear()
+                #
+                # # Also eliminate now-empty references from the root node to elem
+                # for ancestor in el.xpath('ancestor-or-self::*'):
+                #     while ancestor.getprevious() is not None:
+                #         del ancestor.getparent()[0]
 
             # print((ev, el, tag_stack))
 
