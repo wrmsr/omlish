@@ -98,11 +98,11 @@ class Upload:
 ##
 
 
-INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+BZ2_INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 
 #  23_851_879_117 compressed
 # 103_090_295_026 uncompressed
-XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+BZ2_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
 
 def _main() -> None:
@@ -110,21 +110,34 @@ def _main() -> None:
     # input()
 
     # fp = INDEX_FILE_PATH
-    fp = XML_FILE_PATH
+    fp = BZ2_XML_FILE_PATH
+
+    use_subproc = False
+    # use_subproc = True
+
+    # use_lxml = False
+    use_lxml = True
 
     with contextlib.ExitStack() as es:
-        f = es.enter_context(open(fp, 'rb'))
-        fpr = FileProgressReporter(f, time_interval=5)
-        br = io.BufferedReader(f, 1024 * 1024)
-        bs = Bz2ReaderWrapper(br)
-        cs = io.TextIOWrapper(bs, 'utf-8')
+        if not use_subproc:
+            f = es.enter_context(open(fp, 'rb'))
+            fpr = FileProgressReporter(f, time_interval=5)
+            br = io.BufferedReader(f, 1024 * 1024)
+            bs = Bz2ReaderWrapper(br)
 
-        # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-        # proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
-        # cs = proc.stdout
-        # fpr = None
+        else:
+            # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+            proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
+            bs = proc.stdout
+            fpr = None
 
-        it = yield_root_children(cs)
+        if not use_lxml:
+            cs = io.TextIOWrapper(bs, 'utf-8')
+            it = yield_root_children(cs)
+
+        else:
+            it = yield_root_children(bs, use_lxml=True)
+
         root = next(it)  # noqa
         for el in it:  # noqa
             if fpr is not None:
