@@ -17,7 +17,6 @@ from omlish import lang
 
 if ta.TYPE_CHECKING:
     import bz2
-
 else:
     bz2 = lang.proxy_import('bz2')
 

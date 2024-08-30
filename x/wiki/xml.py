@@ -8,6 +8,14 @@ TODO:
 import typing as ta
 import xml.etree.ElementTree
 
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import lxml.etree as lxml_etree
+else:
+    lxml_etree = lang.proxy_import('lxml.etree')
+
 
 def strip_ns(tag: str) -> str:
     # It really do just be like this:
@@ -20,16 +28,29 @@ def strip_ns(tag: str) -> str:
 ITER_PARSE_EVENTS = ('start', 'end', 'comment', 'pi', 'start-ns', 'end-ns')
 
 
-def yield_root_children(source, *, retain_on_root: bool = False) -> ta.Iterator[xml.etree.ElementTree.Element]:
-    it = iter(xml.etree.ElementTree.iterparse(source, ('start', 'end')))
+def yield_root_children(
+        source: ta.Any,
+        *,
+        retain_on_root: bool = False,
+        use_lxml: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Iterator[xml.etree.ElementTree.Element]:
+    if use_lxml:
+        parser = lxml_etree.iterparse
+    else:
+        parser = xml.etree.ElementTree.iterparse
+    it = iter(parser(source, ('start', 'end'), **kwargs))
+
     ev, root = next(it)
     if ev != 'start':
         raise RuntimeError(ev)
     yield root
+
     depth = 0
     for ev, el in it:
         if ev == 'start':
             depth += 1
+
         elif ev == 'end':
             depth -= 1
             if not depth:
