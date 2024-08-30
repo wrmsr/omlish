@@ -12,14 +12,16 @@ sniffio==1.3.1
 
 jinja2==3.1.4
 
-cryptography==43.0.0
+cryptography==43.0.0  # ; python_version < "3.13"  # no-disable-gil
 
 
 ### compress:
 
 lz4==4.3.3
+# git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
+
 python-snappy==0.7.3; python_version < "3.13"
-# zstd==1.5.5.1
+# zstd==1.5.5.1  # sloq
 
 
 ### db:
