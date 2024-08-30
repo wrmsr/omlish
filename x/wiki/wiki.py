@@ -1,79 +1,8 @@
 """
 https://www.mediawiki.org/wiki/Help:Export#Export_format
-"""
 
+bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-20240801-pages-articles-multistream.xml.lz4
 """
-<mediawiki xml:lang="en">
-  <page>
-    <title>Page title</title>
-    <restrictions>edit=sysop:move=sysop</restrictions>
-    <revision>
-      <timestamp>2001-01-15T13:15:00Z</timestamp>
-      <contributor><username>Foobar</username></contributor>
-      <comment>I have just one thing to say!</comment>
-      <text>A bunch of [[Special:MyLanguage/text|text]] here.</text>
-      <minor />
-    </revision>
-    <revision>
-      <timestamp>2001-01-15T13:10:27Z</timestamp>
-      <contributor><ip>10.0.0.2</ip></contributor>
-      <comment>new!</comment>
-      <text>An earlier [[Special:MyLanguage/revision|revision]].</text>
-    </revision>
-  </page>
-  
-  <page>
-    <title>Talk:Page title</title>
-    <revision>
-      <timestamp>2001-01-15T14:03:00Z</timestamp>
-      <contributor><ip>10.0.0.2</ip></contributor>
-      <comment>hey</comment>
-      <text>WHYD YOU LOCK PAGE??!!! i was editing that jerk</text>
-    </revision>
-  </page>
-</mediawiki>
-"""
-
-"""
-<!ELEMENT mediawiki (siteinfo,page*)>
-<!-- version contains the version number of the format (currently 0.3) -->
-<!ATTLIST mediawiki
-  version  CDATA  #REQUIRED 
-  xmlns CDATA #FIXED "https://www.mediawiki.org/xml/export-0.3/"
-  xmlns:xsi CDATA #FIXED "http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation CDATA #FIXED
-    "https://www.mediawiki.org/xml/export-0.3/ https://www.mediawiki.org/xml/export-0.3.xsd"
-  xml:lang  CDATA #IMPLIED
->
-<!ELEMENT siteinfo (sitename,base,generator,case,namespaces)>
-<!ELEMENT sitename (#PCDATA)>      <!-- Name of the wiki -->
-<!ELEMENT base (#PCDATA)>          <!-- URL of the main page -->
-<!ELEMENT generator (#PCDATA)>     <!-- MediaWiki version string -->
-<!ELEMENT case (#PCDATA)>          <!-- How cases in page names are handled -->
-   <!-- possible values: 'first-letter' | 'case-sensitive'
-        'Case-insensitive' option is reserved for future -->
-<!ELEMENT namespaces (namespace+)> <!-- List of namespaces and prefixes -->
-  <!ELEMENT namespace (#PCDATA)>     <!-- Contains namespace prefix -->
-  <!ATTLIST namespace key CDATA #REQUIRED> <!-- Internal namespace number -->
-<!ELEMENT page (title,id?,restrictions?,(revision|upload)*)>
-  <!ELEMENT title (#PCDATA)>         <!-- Title with namespace prefix -->
-  <!ELEMENT id (#PCDATA)> 
-  <!ELEMENT restrictions (#PCDATA)>  <!-- Optional page restrictions -->
-<!ELEMENT revision (id?,timestamp,contributor,minor?,comment?,text)>
-  <!ELEMENT timestamp (#PCDATA)>     <!-- According to ISO8601 -->
-  <!ELEMENT minor EMPTY>             <!-- Minor flag -->
-  <!ELEMENT comment (#PCDATA)> 
-  <!ELEMENT text (#PCDATA)>          <!-- Wikisyntax -->
-  <!ATTLIST text xml:space CDATA  #FIXED "preserve">
-<!ELEMENT contributor ((username,id) | ip)>
-  <!ELEMENT username (#PCDATA)>
-  <!ELEMENT ip (#PCDATA)>
-<!ELEMENT upload (timestamp,contributor,comment?,filename,src,size)>
-  <!ELEMENT filename (#PCDATA)>
-  <!ELEMENT src (#PCDATA)>
-  <!ELEMENT size (#PCDATA)>
-"""
-
 import contextlib
 import dataclasses as dc
 import os.path
@@ -101,7 +30,7 @@ class SiteInfo:
     sitename: str | None = None
     base: str | None = None
     generator: str | None = None
-    case: str | None = None
+    case: str | None = None  # 'first-letter' | 'case-sensitive'
     namespaces: ta.Sequence['Namespace'] | None = None
 
 
@@ -119,7 +48,8 @@ class Page:
     id: str | None = None
     redirect: ta.Optional['Redirect'] = None
     restrictions: str | None = None
-    revisions: ta.Optional['Revision'] = None
+    revisions: ta.Optional[ta.Sequence['Revision']] = None
+    uploads: ta.Optional[ta.Sequence['Upload']] = None
 
 
 @dc.dataclass(frozen=True)
@@ -131,7 +61,7 @@ class Redirect:
 class Revision:
     id: str | None = None
     parentid: str | None = None
-    timestamp: str | None = None
+    timestamp: str | None = None  # ISO8601
     contributors: ta.Sequence['Contributor'] | None = None
     minor: bool = False
     comment: str | None = None
@@ -153,6 +83,16 @@ class RevisionText:
     bytes: str | None = None  # att
     sha1: str | None = None  # att
     text: str | None = None  # text
+
+
+@dc.dataclass(frozen=True)
+class Upload:
+    timestamp: str | None = None
+    contributor: str | None = None
+    comment: str | None = None
+    filename: str | None = None
+    src: str | None = None
+    size: str | None = None
 
 
 ##
@@ -186,7 +126,7 @@ def _main() -> None:
 
         it = yield_root_children(cs)
         root = next(it)  # noqa
-        for el in it:
+        for el in it:  # noqa
             if fpr is not None:
                 fpr.report()
 

@@ -1,3 +1,8 @@
+"""
+TODO:
+ - lxml? faster?
+ - https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.XMLPullParser - sans-io
+"""
 import typing as ta
 import xml.etree.ElementTree
 

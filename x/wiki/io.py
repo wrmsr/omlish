@@ -1,3 +1,8 @@
+"""
+TODO:
+ - BZ2File / _compression.DecompressionReader does this, but point is parallel decomp
+  - chop stream
+"""
 import abc
 import os
 import sys
@@ -111,6 +116,13 @@ class Bz2ReaderWrapper(BytesReaderWrapper):
                     raise Exception('not at eof')
 
                 return b''
+
+            if self._b.eof:
+                u = self._b.unused_data
+                self._b = bz2.BZ2Decompressor()
+                self._c = 0
+                if u:
+                    self._x = self._b.decompress(u)
 
             self._c += len(r)
             ret = self._b.decompress(r)
