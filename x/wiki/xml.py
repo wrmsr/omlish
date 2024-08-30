@@ -1,8 +1,11 @@
 """
 TODO:
  - lxml? faster?
+  - xml.etree ~60 MiB/s INITIALLY, slows to ~30 MiB/s
+  - lxml ~110 MiB/s INITIALLY, slows to ~50 MiB/s
   - https://lxml.de/1.3/compatibility.html
   - https://lxml.de/performance.html
+  - https://lxml.de/apidoc/lxml.etree.html#lxml.etree.iterparse
  - https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.XMLPullParser - sans-io
 """
 import typing as ta
@@ -34,7 +37,7 @@ def yield_root_children(
         retain_on_root: bool = False,
         use_lxml: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator[xml.etree.ElementTree.Element]:
+) -> ta.Iterator[xml.etree.ElementTree.Element]:  # ... ~or~ lxml.etree.Element (... ~really~ lxml.etree._Element)
     if use_lxml:
         parser = lxml_etree.iterparse
     else:

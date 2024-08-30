@@ -5,9 +5,10 @@ bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-
 """
 import contextlib
 import dataclasses as dc
-import os.path
 import io  # noqa
+import os.path
 import subprocess  # noqa
+import sys
 import typing as ta
 
 from .io import FileProgressReporter  # noqa
@@ -116,14 +117,14 @@ def _main() -> None:
 
     # fp = BZ2_INDEX_FILE_PATH
 
-    fp = BZ2_XML_FILE_PATH
-    # fp = LZ4_XML_FILE_PATH
+    # fp = BZ2_XML_FILE_PATH
+    fp = LZ4_XML_FILE_PATH
 
     use_subproc = False
     # use_subproc = True
 
-    use_lxml = False
-    # use_lxml = True
+    # use_lxml = False
+    use_lxml = True
 
     with contextlib.ExitStack() as es:
         if fp.endswith('.bz2'):
@@ -162,9 +163,10 @@ def _main() -> None:
             it = yield_root_children(bs, use_lxml=True)
 
         root = next(it)  # noqa
-        for el in it:  # noqa
+        for i, el in enumerate(it):  # noqa
             if fpr is not None:
-                fpr.report()
+                if fpr.report():
+                    print(f'{i} elements', file=sys.stderr)
 
             # print(el)
             # print(list(root))

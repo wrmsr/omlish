@@ -112,7 +112,7 @@ class FileProgressReporter:
         bytes_ela = bytes_cur - self._bytes_last
         return bytes_cur, bytes_ela
 
-    def report(self) -> None:
+    def report(self) -> bool:
         should_report = False
 
         if self._time_interval is not None:
@@ -128,7 +128,7 @@ class FileProgressReporter:
             bytes_cur, bytes_ela = None, None
 
         if not should_report:
-            return
+            return False
 
         if time_cur is None:
             time_cur, time_ela = self._time_pos()
@@ -136,11 +136,13 @@ class FileProgressReporter:
             bytes_cur, bytes_ela = self._bytes_pos()
 
         print(
-            f'{bytes_cur:_} b / {self._bytes_tot:_} b - '
+            f'{bytes_cur:_} B / {self._bytes_tot:_} B - '
             f'{bytes_cur / self._bytes_tot * 100.:.2f} % - '
-            f'{int(bytes_ela / time_ela):_} b/s',
+            f'{int(bytes_ela / time_ela):_} B/s',
             file=self._out,
         )
 
         self._bytes_last = bytes_cur
         self._time_last = time_cur
+
+        return True
