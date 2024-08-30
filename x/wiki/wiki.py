@@ -76,70 +76,16 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 
 import contextlib
 import dataclasses as dc
-import io
 import os.path
 import subprocess
+import sys
 import time
 import typing as ta
 import xml.etree.ElementTree
 
 from .io import Bz2ReaderWrapper
-
-
-def cut_chunks(
-        chunks: ta.Iterable[str],
-        sep: str = os.linesep,
-        *,
-        max_buf_size=10 * 1024 * 1024,
-        buf_cls=io.StringIO,
-):
-    buf = buf_cls()
-
-    for chunk in chunks:
-        if sep not in chunk:
-            buf.write(chunk)
-        else:
-            line_chunks = chunk.split(sep)
-            buf.write(line_chunks[0])
-            yield buf.getvalue()
-            if buf.tell() > max_buf_size:
-                buf.close()
-                buf = buf_cls()
-            else:
-                buf.seek(0, 0)
-                buf.truncate()
-            if len(line_chunks) > 1:
-                for i in range(1, len(line_chunks) - 1):
-                    yield line_chunks[i]
-                buf.write(line_chunks[-1])
-
-    if buf.tell() > 0:
-        yield buf.getvalue()
-
-
-class FileProgressReporter:
-    def __init__(self, f, ib: int = 10 * 1024 * 1024) -> None:
-        super().__init__()
-        self._f = f
-        self._ib = ib
-
-        self._nb = os.fstat(f.fileno()).st_size
-        self._lb = 0
-        self._lt = time.time()
-
-    def report(self) -> None:
-        cb = self._f.tell()
-        eb = cb - self._lb
-        if eb >= self._ib:
-            ct = time.time()
-            et = ct - self._lt
-            print(
-                f'{cb:_} b / {self._nb:_} b - '
-                f'{cb / self._nb:.2f} % - '
-                f'{int(eb / et):_} b/s'
-            )
-            self._lb = cb
-            self._lt = ct
+from .xml import strip_ns
+from .xml import yield_root_children
 
 
 ##
@@ -212,34 +158,6 @@ class RevisionText:
 
 #
 
-
-def strip_ns(tag: str) -> str:
-    # It really do just be like this:
-    # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
-    if tag[:1] == '{':
-        _, tag = tag[1:].rsplit('}', 1)
-    return tag
-
-
-ITER_PARSE_EVENTS = ('start', 'end', 'comment', 'pi', 'start-ns', 'end-ns')
-
-
-def yield_root_children(source, *, retain_on_root: bool = False) -> ta.Iterator[xml.etree.ElementTree.Element]:
-    it = iter(xml.etree.ElementTree.iterparse(source, ('start', 'end')))
-    ev, root = next(it)
-    if ev != 'start':
-        raise RuntimeError(ev)
-    yield root
-    depth = 0
-    for ev, el in it:
-        if ev == 'start':
-            depth += 1
-        elif ev == 'end':
-            depth -= 1
-            if not depth:
-                if not retain_on_root:
-                    root.remove(el)
-                yield el
 
 
 ##
