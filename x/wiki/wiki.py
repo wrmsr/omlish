@@ -281,6 +281,9 @@ def _main() -> None:
         root = next(it)
         for el in it:
             print(el)
+            print(list(root))
+            print()
+            input()
 
         # "start", "end", "comment", "pi", "start-ns", "end-ns"
         for ev, el in xml.etree.ElementTree.iterparse(cs, ('start', 'pi', 'end')):
