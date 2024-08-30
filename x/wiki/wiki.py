@@ -2,6 +2,8 @@
 https://www.mediawiki.org/wiki/Help:Export#Export_format
 
 bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-20240801-pages-articles-multistream.xml.lz4
+
+0 B / 42_781_970_578 B - 0.00 % - 0 B/s, 84404 elements, lang.is_gil_enabled()=False
 """
 import contextlib
 import dataclasses as dc
@@ -120,8 +122,8 @@ def _main() -> None:
     # fp = BZ2_XML_FILE_PATH
     fp = LZ4_XML_FILE_PATH
 
-    # use_subproc = False
-    use_subproc = True
+    use_subproc = False
+    # use_subproc = True
 
     use_lxml = False
     # use_lxml = True
@@ -131,12 +133,17 @@ def _main() -> None:
             if not use_subproc:
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
+
                 import bz2
                 bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
 
             else:
                 f = es.enter_context(open(fp, 'rb'))
-                fpr = FileProgressReporter(f, time_interval=5)
+
+                # FIXME: os.dup?
+                # fpr = FileProgressReporter(f, time_interval=5)
+                fpr = None
+
                 # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
                 proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
                 bs = proc.stdout
@@ -145,12 +152,17 @@ def _main() -> None:
             if not use_subproc:
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
+
                 import lz4.frame
                 bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
 
             else:
                 f = es.enter_context(open(fp, 'rb'))
-                fpr = FileProgressReporter(f, time_interval=5)
+
+                # FIXME: os.dup?
+                # fpr = FileProgressReporter(f, time_interval=5)
+                fpr = None
+
                 proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
                 bs = proc.stdout
 
