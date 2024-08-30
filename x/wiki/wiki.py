@@ -120,11 +120,11 @@ def _main() -> None:
     # fp = BZ2_XML_FILE_PATH
     fp = LZ4_XML_FILE_PATH
 
-    use_subproc = False
-    # use_subproc = True
+    # use_subproc = False
+    use_subproc = True
 
-    # use_lxml = False
-    use_lxml = True
+    use_lxml = False
+    # use_lxml = True
 
     with contextlib.ExitStack() as es:
         if fp.endswith('.bz2'):
@@ -166,7 +166,9 @@ def _main() -> None:
         for i, el in enumerate(it):  # noqa
             if fpr is not None:
                 if fpr.report():
-                    print(f'{i} elements', file=sys.stderr)
+                    print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
+            elif i and (i % 100_000) == 0:
+                print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
 
             # print(el)
             # print(list(root))
