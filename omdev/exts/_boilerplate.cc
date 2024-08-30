@@ -50,6 +50,9 @@ static PyMethodDef _boilerplate_methods[] = {
 
 static struct PyModuleDef_Slot _boilerplate_slots[] = {
     {Py_mod_exec, (void *) _boilerplate_exec},
+// #if PY_VERSION_HEX >= 0x030D0000
+//     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+// #endif
     {0, NULL}
 };
 
