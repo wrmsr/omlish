@@ -104,13 +104,18 @@ BZ2_INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-arti
 # 103_090_295_026 uncompressed
 BZ2_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
+#  42_781_970_578 compressed
+# 103_090_295_026 uncompressed
+LZ4_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.lz4')
+
 
 def _main() -> None:
     # print(os.getpid())
     # input()
 
     # fp = INDEX_FILE_PATH
-    fp = BZ2_XML_FILE_PATH
+    # fp = BZ2_XML_FILE_PATH
+    fp = LZ4_XML_FILE_PATH
 
     use_subproc = False
     # use_subproc = True
@@ -119,17 +124,33 @@ def _main() -> None:
     use_lxml = True
 
     with contextlib.ExitStack() as es:
-        if not use_subproc:
-            f = es.enter_context(open(fp, 'rb'))
-            fpr = FileProgressReporter(f, time_interval=5)
-            br = io.BufferedReader(f, 1024 * 1024)
-            bs = Bz2ReaderWrapper(br)
+        if fp.endswith('.bz2'):
+            if not use_subproc:
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
+                br = io.BufferedReader(f, 1024 * 1024)
+                bs = Bz2ReaderWrapper(br)
+
+            else:
+                # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
+                proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
+                bs = proc.stdout
+                fpr = None
+
+        elif fp.endswith('.lz4'):
+            if not use_subproc:
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
+                import lz4.frame
+                bs = lz4.frame.open(f, 'rb')
+
+            else:
+                proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE)
+                bs = proc.stdout
+                fpr = None
 
         else:
-            # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-            proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE)
-            bs = proc.stdout
-            fpr = None
+            raise RuntimeError(fp)
 
         if not use_lxml:
             cs = io.TextIOWrapper(bs, 'utf-8')
