@@ -10,10 +10,11 @@ import io  # noqa
 import subprocess  # noqa
 import typing as ta
 
-from .io import Bz2ReaderWrapper  # noqa
 from .io import FileProgressReporter  # noqa
 from .xml import strip_ns  # noqa
 from .xml import yield_root_children
+
+from omlish import lang  # noqa
 
 
 ##
@@ -113,23 +114,24 @@ def _main() -> None:
     # print(os.getpid())
     # input()
 
-    # fp = INDEX_FILE_PATH
-    # fp = BZ2_XML_FILE_PATH
-    fp = LZ4_XML_FILE_PATH
+    # fp = BZ2_INDEX_FILE_PATH
+
+    fp = BZ2_XML_FILE_PATH
+    # fp = LZ4_XML_FILE_PATH
 
     use_subproc = False
     # use_subproc = True
 
-    # use_lxml = False
-    use_lxml = True
+    use_lxml = False
+    # use_lxml = True
 
     with contextlib.ExitStack() as es:
         if fp.endswith('.bz2'):
             if not use_subproc:
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
-                br = io.BufferedReader(f, 1024 * 1024)
-                bs = Bz2ReaderWrapper(br)
+                import bz2
+                bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
 
             else:
                 # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
@@ -142,7 +144,7 @@ def _main() -> None:
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
                 import lz4.frame
-                bs = lz4.frame.open(f, 'rb')
+                bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
 
             else:
                 proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE)
