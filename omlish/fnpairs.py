@@ -6,6 +6,8 @@ TODO:
   - cbor
   - alt json backends
  - wrapped (wait for usecase)
+ - streams
+  - fileobj -> fileobj?
 
 Compression choice:
  - lzma if-available minimal-space
