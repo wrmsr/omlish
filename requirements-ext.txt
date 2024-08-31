@@ -149,14 +149,14 @@ onnx2torch; python_version >= "3.12"
 
 einops==0.8.0
 
-blobfile==2.1.1
+# blobfile==2.1.1
 
 # git+git://github.com/flier/pyfasthash
 
 
 ### infra
 
-boto3>=1.35.9
+boto3>=1.35.10
 
 google-cloud-compute==1.19.2
 
