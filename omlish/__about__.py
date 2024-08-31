@@ -45,9 +45,14 @@ class Project(ProjectBase):
             'zstd >= 1.5',
         ],
 
+        'diag': [
+            'psutil >= 6',
+        ],
+
         'formats': [
-            'orjson > 3.10',
             'cloudpickle >= 3',
+            'json5 >= 0.9',
+            'orjson > 3.10',
             'pyyaml >= 5',
         ],
 
@@ -57,7 +62,6 @@ class Project(ProjectBase):
 
         'misc': [
             'jinja2 >= 3.1',
-            'psutil >= 6',
             'wrapt >= 1.14',
         ],
 
