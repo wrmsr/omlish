@@ -17,6 +17,8 @@ from . import xml
 from .io import FileProgressReporter  # noqa
 
 from omlish import lang  # noqa
+from omlish import marshal as msh  # noqa
+from omlish.formats import json  # noqa
 
 
 ##
@@ -197,6 +199,19 @@ def parse_page(el: xml.Element) -> Page:
 ##
 
 
+def xml_to_dataclass(
+        el: xml.Element,
+        attrs: ta.Sequence[str],
+        scalars: ta.Sequence[str],
+        single_children: ta.Sequence[str],
+        list_children: ta.Sequence[tuple[str, str, ta.Callable[[xml.Element], ta.Any]]],
+) -> ta.Any:
+    raise NotImplementedError
+
+
+##
+
+
 BZ2_INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 
 #  23_851_879_117 compressed
@@ -280,7 +295,9 @@ def _main() -> None:
                 print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
 
             if xml.strip_ns(el.tag) == 'page':
-                parse_page(el)
+                page = parse_page(el)
+
+                print(json.dumps_pretty(msh.marshal(page)))
 
             # print(el)
             # print(list(root))
