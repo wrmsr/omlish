@@ -13,9 +13,8 @@ import subprocess  # noqa
 import sys
 import typing as ta
 
+from . import xml
 from .io import FileProgressReporter  # noqa
-from .xml import strip_ns  # noqa
-from .xml import yield_root_children
 
 from omlish import lang  # noqa
 
@@ -79,7 +78,9 @@ class Revision:
 @dc.dataclass(frozen=True)
 class Contributor:
     username: str | None = None
+    id: str | None = None
     ip: str | None = None
+    deleted: str | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -97,6 +98,100 @@ class Upload:
     filename: str | None = None
     src: str | None = None
     size: str | None = None
+
+
+##
+
+
+def parse_contributor(el: xml.Element) -> Contributor:
+    kw = {}
+    if el.attrib:
+        for k, v in el.attrib.items():
+            if k in ('deleted',):
+                if k in kw:
+                    raise KeyError(k)
+                kw[k] = v
+            else:
+                raise KeyError(k)
+    for cel in el:
+        if (ctag := xml.strip_ns(cel.tag)) in ('username', 'id', 'ip'):
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw[ctag] = cel.text
+        else:
+            raise KeyError(ctag)
+    return Contributor(**kw)
+
+
+def parse_revision_text(el: xml.Element) -> RevisionText:
+    kw = {}
+    if el.attrib:
+        for k, v in el.attrib.items():
+            if k in ('bytes', 'sha1'):
+                if k in kw:
+                    raise KeyError(k)
+                kw[k] = v
+            elif xml.strip_ns(k) in ('space',):
+                continue
+            else:
+                raise KeyError(k)
+    kw['text'] = el.text
+    for cel in el:
+        raise KeyError(xml.strip_ns(cel.tag))
+    return RevisionText(**kw)
+
+
+def parse_revision(el: xml.Element) -> Revision:
+    if el.attrib:
+        raise KeyError
+    kw = {}
+    for cel in el:
+        if (ctag := xml.strip_ns(cel.tag)) in ('id', 'parentid', 'timestamp', 'minor', 'comment', 'origin', 'model', 'format', 'sha1'):
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw[ctag] = cel.text
+        elif ctag == 'contributor':
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw.setdefault('contributors', []).append(parse_contributor(cel))
+        elif ctag == 'text':
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw[ctag] = parse_revision_text(cel)
+        else:
+            raise KeyError(ctag)
+    return Revision(**kw)
+
+
+def parse_redirect(el: xml.Element) -> Redirect:
+    kw = {}
+    if 'title' in el.attrib:
+        kw['title'] = el.attrib['title']
+    for cel in el:
+        raise KeyError(xml.strip_ns(cel.tag))
+    return Redirect(**kw)
+
+
+def parse_page(el: xml.Element) -> Page:
+    if el.attrib:
+        raise KeyError
+    kw = {}
+    for cel in el:
+        if (ctag := xml.strip_ns(cel.tag)) in ('title', 'ns', 'id', 'restrictions'):
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw[ctag] = cel.text
+        elif ctag == 'redirect':
+            if ctag in kw:
+                raise KeyError(ctag)
+            kw[ctag] = parse_redirect(cel)
+        elif ctag == 'revision':
+            kw.setdefault('revisions', []).append(parse_revision(cel))
+        elif ctag == 'upload':
+            raise NotImplementedError
+        else:
+            raise KeyError(ctag)
+    return Page(**kw)
 
 
 ##
@@ -171,10 +266,10 @@ def _main() -> None:
 
         if not use_lxml:
             cs = io.TextIOWrapper(bs, 'utf-8')
-            it = yield_root_children(cs)
+            it = xml.yield_root_children(cs)
 
         else:
-            it = yield_root_children(bs, use_lxml=True)
+            it = xml.yield_root_children(bs, use_lxml=True)
 
         root = next(it)  # noqa
         for i, el in enumerate(it):  # noqa
@@ -183,6 +278,9 @@ def _main() -> None:
                     print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
             elif i and (i % 100_000) == 0:
                 print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
+
+            if xml.strip_ns(el.tag) == 'page':
+                parse_page(el)
 
             # print(el)
             # print(list(root))

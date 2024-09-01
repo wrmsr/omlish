@@ -20,6 +20,9 @@ else:
     lxml_etree = lang.proxy_import('lxml.etree')
 
 
+Element: ta.TypeAlias = ta.Union[xml.etree.ElementTree.Element, 'lxml_etree.Element']
+
+
 def strip_ns(tag: str) -> str:
     # It really do just be like this:
     # https://github.com/python/cpython/blob/ff3bc82f7c9882c27aad597aac79355da7257186/Lib/xml/etree/ElementTree.py#L803-L804
@@ -37,7 +40,7 @@ def yield_root_children(
         retain_on_root: bool = False,
         use_lxml: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator[xml.etree.ElementTree.Element]:  # ... ~or~ lxml.etree.Element (... ~really~ lxml.etree._Element)
+) -> ta.Iterator[Element]:
     if use_lxml:
         parser = lxml_etree.iterparse
     else:
