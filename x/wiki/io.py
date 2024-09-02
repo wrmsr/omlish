@@ -154,7 +154,7 @@ class FileProgressReporter:
 
 
 @contextlib.contextmanager
-def open_compressed(
+def open_compressed_reader(
         fp: str,
         *,
         use_subprocess: bool = False,
