@@ -36,18 +36,18 @@ def symm_dct(*ks: T) -> ta.Mapping[T, T]:
 
 @dc.dataclass(frozen=True)
 class Namespace:
-    key: str | None = None  # int
-    case: str | None = None  # 'first-letter' | 'case-sensitive'
-    text: str | None = None
+    key: int
+    case: str  # 'first-letter' | 'case-sensitive'
+    text: str
 
 
 parse_namespace = xml.ElementToObj(
     Namespace,
     xml.ElementToKwargs(
-        attrs=symm_dct(
-            'key',
-            'case',
-        ),
+        attrs={
+            'key': ('key', int),
+            'case': 'case',
+        },
         text='text',
     ),
 )
@@ -76,12 +76,12 @@ parse_namespaces = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class SiteInfo:
-    sitename: str | None = None
-    dbname: str | None = None
-    base: str | None = None
-    generator: str | None = None
-    case: str | None = None  # 'first-letter' | 'case-sensitive'
-    namespaces: Namespaces | None = None
+    sitename: str
+    dbname: str
+    base: str
+    generator: str
+    case: str  # 'first-letter' | 'case-sensitive'
+    namespaces: Namespaces
 
 
 parse_site_info = xml.ElementToObj(
@@ -106,7 +106,7 @@ parse_site_info = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class Redirect:
-    title: str | None = None
+    title: str
 
 
 parse_redirect = xml.ElementToObj(
@@ -125,22 +125,30 @@ parse_redirect = xml.ElementToObj(
 @dc.dataclass(frozen=True)
 class Contributor:
     username: str | None = None
-    id: str | None = None  # int
+    id: int | None = None
     ip: str | None = None
-    deleted: str | None = None  # 'deleted'
+    deleted: bool | None = None
+
+
+def _parse_deleted(s: str) -> bool:
+    if s != 'deleted':
+        raise ValueError(s)
+    return True
 
 
 parse_contributor = xml.ElementToObj(
     Contributor,
     xml.ElementToKwargs(
-        attrs=symm_dct(
-            'deleted',
-        ),
-        scalars=symm_dct(
-            'username',
-            'id',
-            'ip',
-        ),
+        attrs={
+            'deleted': ('deleted', _parse_deleted),
+        },
+        scalars={
+            **symm_dct(
+                'username',
+                'ip',
+            ),
+            'id': ('id', int),
+        },
     ),
 )
 
@@ -150,19 +158,17 @@ parse_contributor = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class RevisionText:
-    bytes: str | None = None
-    sha1: str | None = None
-    text: str | None = None
+    bytes: int
+    sha1: str
+    text: str
 
 
 parse_revision_text = xml.ElementToObj(
     RevisionText,
     xml.ElementToKwargs(
         attrs={
-            **symm_dct(
-                'bytes',
-                'sha1',
-            ),
+            'bytes': ('bytes', int),
+            'sha1': 'sha1',
             'space': None,
         },
         text='text',
