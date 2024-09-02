@@ -13,7 +13,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'torch': [
-            'torch >= 2.4',
+            'torch ~= 2.4',
         ],
     }
 
