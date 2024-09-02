@@ -10,7 +10,7 @@ class ProjectBase:
     authors = [{'name': 'wrmsr'}]
     urls = {'source': 'https://github.com/wrmsr/omlish'}
     license = {'text': 'BSD-3-Clause'}
-    requires_python = '>=3.12'
+    requires_python = '~=3.12'
 
     version = __version__
 
@@ -30,65 +30,65 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'async': [
-            'anyio >= 4.4',
-            'sniffio >= 1.3',
+            'anyio ~= 4.4',
+            'sniffio ~= 1.3',
 
-            'greenlet >= 3; python_version < "3.13"',
+            'greenlet ~= 3.0; python_version < "3.13"',
 
-            'trio >= 0.26',
-            'trio-asyncio >= 0.15; python_version < "3.13"',
+            'trio ~= 0.26',
+            'trio-asyncio ~= 0.15; python_version < "3.13"',
         ],
 
         'compression': [
-            'lz4 >= 4',
-            'python-snappy >= 0.7; python_version < "3.13"',
-            'zstd >= 1.5',
+            'lz4 ~= 4.0',
+            'python-snappy ~= 0.7; python_version < "3.13"',
+            'zstd ~= 1.5',
         ],
 
         'diag': [
-            'psutil >= 6',
+            'psutil ~= 6.0',
         ],
 
         'formats': [
-            'cloudpickle >= 3',
-            'json5 >= 0.9',
+            'cloudpickle ~= 3.0',
+            'json5 ~= 0.9',
             'orjson > 3.10',
-            'pyyaml >= 5',
+            'pyyaml ~= 5.0',
         ],
 
         'http': [
-            'httpx[http2] >= 0.27',
+            'httpx[http2] ~= 0.27',
         ],
 
         'misc': [
-            'jinja2 >= 3.1',
-            'wrapt >= 1.14',
+            'jinja2 ~= 3.1',
+            'wrapt ~= 1.14',
         ],
 
         'secrets': [
-            'cryptography >= 43',
+            'cryptography ~= 43.0',
         ],
 
         'sql': [
-            'sqlalchemy >= 2; python_version >= "3.13"',
-            'sqlalchemy[asyncio] >= 2; python_version < "3.13"',
+            'sqlalchemy ~= 2.0; python_version ~= "3.13"',
+            'sqlalchemy[asyncio] ~= 2.0; python_version < "3.13"',
 
-            'pg8000 >= 1.31',
-            'pymysql >= 1.1',
+            'pg8000 ~= 1.31',
+            'pymysql ~= 1.1',
 
-            'aiomysql >= 0.2',
-            'aiosqlite >= 0.20',
-            'asyncpg >= 0.29; python_version < "3.13"',
+            'aiomysql ~= 0.2',
+            'aiosqlite ~= 0.20',
+            'asyncpg ~= 0.29; python_version < "3.13"',
         ],
 
         'sqlx': [
-            'sqlean.py >= 3.45; python_version < "3.13"',
+            'sqlean.py ~= 3.45; python_version < "3.13"',
 
-            'duckdb >= 1',
+            'duckdb ~= 1.0',
         ],
 
         'testing': [
-            'pytest >= 8',
+            'pytest ~= 8.0',
         ],
     }
 

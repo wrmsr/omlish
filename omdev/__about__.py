@@ -13,21 +13,21 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'c': [
-            'pycparser >= 2.22',
-            'cffi >= 1.17',
-            'pcpp >= 1.30',
+            'pycparser ~= 2.22',
+            'cffi ~= 1.17',
+            'pcpp ~= 1.30',
         ],
 
         'mypy': [
-            'mypy >= 1.11',
+            'mypy ~= 1.11',
         ],
 
         'tokens': [
-            'tokenize_rt >= 6',
+            'tokenize_rt ~= 6.0',
         ],
 
         'wheel': [
-            'wheel >= 0.44',
+            'wheel ~= 0.44',
         ],
     }
 
