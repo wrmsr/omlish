@@ -14,6 +14,19 @@ import sys
 import time
 import typing as ta
 
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import bz2
+
+    import lz4.frame as lz4_frame
+
+else:
+    bz2 = lang.proxy_import('bz2')
+
+    lz4_frame = lang.proxy_import('lz4.frame')
+
 
 ##
 
@@ -165,7 +178,6 @@ def open_compressed_reader(
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
 
-                import bz2
                 bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
 
             else:
@@ -183,8 +195,7 @@ def open_compressed_reader(
                 f = es.enter_context(open(fp, 'rb'))
                 fpr = FileProgressReporter(f, time_interval=5)
 
-                import lz4.frame
-                bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
+                bs = es.enter_context(contextlib.closing(lz4_frame.open(f, 'rb')))
 
             else:
                 f = es.enter_context(open(fp, 'rb'))
@@ -200,3 +211,76 @@ def open_compressed_reader(
             raise RuntimeError(fp)
 
         yield bs, fpr
+
+
+##
+
+
+class MultiFileWriter:
+    class File(ta.Protocol):
+        def close(self) -> None:
+            ...
+
+        def tell(self) -> int:
+            ...
+
+        def write(self, buf: bytes) -> None:
+            ...
+
+    def __init__(
+            self,
+            file_opener: ta.Callable[[str], File],
+            file_pat: str,
+            file_size: int = 2 * 1024 * 1024 * 1024,
+            *,
+            use_input_size: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._file_opener = file_opener
+        self._file_pat = file_pat
+        self._file_size = file_size
+        self._use_input_size = use_input_size
+
+        self._cur_n = 0
+        self._total_b = 0
+        self._cur_b = 0
+        self._cur_f: MultiFileWriter.File | None = None
+
+    def close(self) -> None:
+        if self._cur_f is not None:
+            self._cur_f.close()
+            self._cur_f = None
+
+        self._cur_b = 0
+
+    def write(self, *bufs: bytes) -> None:
+        if self._cur_f is None:
+            self._cur_f = self._file_opener(self._file_pat % (self._cur_n,))
+
+        for buf in bufs:
+            self._cur_b += len(buf)
+            self._total_b += len(buf)
+            self._cur_f.write(buf)
+
+        if (self._cur_f.tell() if self._use_input_size else self._cur_b) >= self._file_size:
+            self.close()
+            self._cur_n += 1
+
+
+@lang.protocol_check(MultiFileWriter.File)
+class Lz4MfwFile:
+    def __init__(self, fp: str) -> None:
+        super().__init__()
+        self._raw_f = open(fp, 'wb')
+        self._z_f = lz4_frame.open(self._raw_f, 'wb')
+
+    def close(self) -> None:
+        self._z_f.close()
+        self._raw_f.close()
+
+    def tell(self) -> int:
+        return self._raw_f.tell()
+
+    def write(self, buf: bytes) -> None:
+        self._z_f.write(buf)

@@ -34,11 +34,10 @@ import typing as ta
 from omlish import lang  # noqa
 from omlish import marshal as msh  # noqa
 from omlish.formats import json  # noqa
-import lz4.frame
 
+from . import io as iou
 from . import models as mdl
 from . import xml
-from .io import open_compressed_reader
 
 
 ##
@@ -53,48 +52,6 @@ BZ2_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articl
 #  42_781_970_578 compressed
 # 103_090_295_026 uncompressed
 LZ4_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.lz4')
-
-
-class MultiFileWriter:
-    def __init__(
-            self,
-            file_pat: str,
-            file_size: int = 2 * 1024 * 1024 * 1024,
-            *,
-            use_compressed_size: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._file_pat = file_pat
-        self._file_size = file_size
-        self._use_compressed_size = use_compressed_size
-
-        self._n = 0
-        self._b = 0
-        self._raw_f: ta.IO | None = None
-        self._z_f: ta.IO | None = None
-
-    def close(self) -> None:
-        if self._z_f is not None:
-            self._z_f.close()
-            self._z_f = None
-
-        if self._raw_f is not None:
-            self._raw_f.close()
-            self._raw_f = None
-
-    def write(self, *bufs: bytes) -> None:
-        if self._raw_f is None:
-            self._raw_f = open(self._file_pat % (self._n,), 'wb')
-            self._z_f = lz4.frame.open(self._raw_f, 'wb')
-
-        for buf in bufs:
-            self._b += len(buf)
-            self._z_f.write(buf)
-
-        if (self._raw_f.tell() if self._use_compressed_size else self._b)  >= self._file_size:
-            self.close()
-            self._n += 1
 
 
 def _main() -> None:
@@ -114,13 +71,14 @@ def _main() -> None:
         os.mkdir(output_dir)
 
     with contextlib.ExitStack() as es:
-        bs, fpr = es.enter_context(open_compressed_reader(  # noqa
+        bs, fpr = es.enter_context(iou.open_compressed_reader(  # noqa
             fp,
             use_subprocess=use_subproc,
         ))
 
-        mfw: MultiFileWriter = es.enter_context(contextlib.closing(MultiFileWriter(
-            os.path.join(output_dir, 'enwiki-20240801-pages-articles-%d.jsonl.lz4'),
+        mfw: iou.MultiFileWriter = es.enter_context(contextlib.closing(iou.MultiFileWriter(
+            iou.Lz4MfwFile,
+            os.path.join(output_dir, 'enwiki-20240801-pages-articles-%02d.jsonl.lz4'),
         )))
 
         if not use_lxml:
