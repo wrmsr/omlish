@@ -217,6 +217,7 @@ def open_compressed_reader(
 
 
 class MultiFileWriter:
+    @ta.runtime_checkable
     class File(ta.Protocol):
         def close(self) -> None:
             ...
