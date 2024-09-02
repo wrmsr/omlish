@@ -21,7 +21,12 @@ else:
     lxml_etree = lang.proxy_import('lxml.etree')
 
 
+T = ta.TypeVar('T')
+
 Element: ta.TypeAlias = ta.Union[xml.etree.ElementTree.Element, 'lxml_etree.Element']
+
+
+##
 
 
 def strip_ns(tag: str) -> str:
@@ -30,6 +35,9 @@ def strip_ns(tag: str) -> str:
     if tag[:1] == '{':
         _, tag = tag[1:].rsplit('}', 1)
     return tag
+
+
+##
 
 
 ITER_PARSE_EVENTS = ('start', 'end', 'comment', 'pi', 'start-ns', 'end-ns')

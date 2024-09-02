@@ -36,9 +36,39 @@ def symm_dct(*ks: T) -> ta.Mapping[T, T]:
 
 @dc.dataclass(frozen=True)
 class Namespace:
-    key: str | None = None  # att
-    case: str | None = None  # att
-    text: str | None = None  # text
+    key: str | None = None
+    case: str | None = None
+    text: str | None = None
+
+
+parse_namespace = xml.ElementToObj(
+    Namespace,
+    xml.ElementToKwargs(
+        attrs=symm_dct(
+            'key',
+            'case',
+        ),
+        text='text',
+    ),
+)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class Namespaces:
+    namespaces: ta.Sequence[Namespace] | None = None
+
+
+parse_namespaces = xml.ElementToObj(
+    Namespaces,
+    xml.ElementToKwargs(
+        list_children={
+            'namespace': ('namespaces', parse_namespace),
+        },
+    ),
+)
 
 
 #
@@ -47,10 +77,28 @@ class Namespace:
 @dc.dataclass(frozen=True)
 class SiteInfo:
     sitename: str | None = None
+    dbname: str | None = None
     base: str | None = None
     generator: str | None = None
     case: str | None = None  # 'first-letter' | 'case-sensitive'
-    namespaces: ta.Sequence[Namespace] | None = None
+    namespaces: Namespaces | None = None
+
+
+parse_site_info = xml.ElementToObj(
+    SiteInfo,
+    xml.ElementToKwargs(
+        scalars=symm_dct(
+            'sitename',
+            'dbname',
+            'base',
+            'generator',
+            'case',
+        ),
+        single_children={
+            'namespaces': ('namespaces', parse_namespaces),
+        }
+    ),
+)
 
 
 #
@@ -304,10 +352,23 @@ def _main() -> None:
             elif i and (i % 100_000) == 0:
                 print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
 
-            if xml.strip_ns(el.tag) == 'page':
+            if xml.strip_ns(el.tag) == 'siteinfo':
+                site_info = parse_site_info(el)
+
+                print(site_info)
+                oj = json.dumps_pretty(msh.marshal(site_info))
+                print(oj)
+                o2 = msh.unmarshal(json.loads(oj), SiteInfo)
+                print(o2)
+
+            elif xml.strip_ns(el.tag) == 'page':
                 page = parse_page(el)
 
-                # print(json.dumps_pretty(msh.marshal(page)))
+                print(page)
+                oj = json.dumps_pretty(msh.marshal(page))
+                print(oj)
+                o2 = msh.unmarshal(json.loads(oj), Page)
+                print(o2)
 
             # print(el)
             # print(list(root))
