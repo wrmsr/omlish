@@ -27,19 +27,11 @@ T = ta.TypeVar('T')
 ##
 
 
-@dc.dataclass(frozen=True)
-class MediaWiki:
-    siteinfo: ta.Optional['SiteInfo'] = None
-    pages: ta.Sequence['Page'] = None
+def symm_dct(*ks: T) -> ta.Mapping[T, T]:
+    return {k: k for k in ks}
 
 
-@dc.dataclass(frozen=True)
-class SiteInfo:
-    sitename: str | None = None
-    base: str | None = None
-    generator: str | None = None
-    case: str | None = None  # 'first-letter' | 'case-sensitive'
-    namespaces: ta.Sequence['Namespace'] | None = None
+##
 
 
 @dc.dataclass(frozen=True)
@@ -49,15 +41,19 @@ class Namespace:
     text: str | None = None  # text
 
 
+#
+
+
 @dc.dataclass(frozen=True)
-class Page:
-    title: str | None = None
-    ns: str | None = None
-    id: str | None = None
-    redirect: ta.Optional['Redirect'] = None
-    restrictions: str | None = None
-    revisions: ta.Optional[ta.Sequence['Revision']] = None
-    uploads: ta.Optional[ta.Sequence['Upload']] = None
+class SiteInfo:
+    sitename: str | None = None
+    base: str | None = None
+    generator: str | None = None
+    case: str | None = None  # 'first-letter' | 'case-sensitive'
+    namespaces: ta.Sequence[Namespace] | None = None
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -65,19 +61,17 @@ class Redirect:
     title: str | None = None  # att
 
 
-@dc.dataclass(frozen=True)
-class Revision:
-    id: str | None = None
-    parentid: str | None = None
-    timestamp: str | None = None  # ISO8601
-    contributors: ta.Sequence['Contributor'] | None = None
-    minor: bool = False
-    comment: str | None = None
-    origin: str | None = None
-    model: str | None = None
-    format: str | None = None
-    text: ta.Optional['RevisionText'] = None
-    sha1: str | None = None
+parse_redirect = xml.ElementToObj(
+    Redirect,
+    xml.ElementToKwargs(
+        attrs=symm_dct(
+            'title',
+        ),
+    ),
+)
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -86,30 +80,6 @@ class Contributor:
     id: str | None = None
     ip: str | None = None
     deleted: str | None = None
-
-
-@dc.dataclass(frozen=True)
-class RevisionText:
-    bytes: str | None = None  # att
-    sha1: str | None = None  # att
-    text: str | None = None  # text
-
-
-@dc.dataclass(frozen=True)
-class Upload:
-    timestamp: str | None = None
-    contributor: str | None = None
-    comment: str | None = None
-    filename: str | None = None
-    src: str | None = None
-    size: str | None = None
-
-
-##
-
-
-def symm_dct(*ks: T) -> ta.Mapping[T, T]:
-    return {k: k for k in ks}
 
 
 parse_contributor = xml.ElementToObj(
@@ -127,6 +97,16 @@ parse_contributor = xml.ElementToObj(
 )
 
 
+#
+
+
+@dc.dataclass(frozen=True)
+class RevisionText:
+    bytes: str | None = None  # att
+    sha1: str | None = None  # att
+    text: str | None = None  # text
+
+
 parse_revision_text = xml.ElementToObj(
     RevisionText,
     xml.ElementToKwargs(
@@ -140,6 +120,24 @@ parse_revision_text = xml.ElementToObj(
         text='text',
     ),
 )
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class Revision:
+    id: str | None = None
+    parentid: str | None = None
+    timestamp: str | None = None  # ISO8601
+    contributors: ta.Sequence[Contributor] | None = None
+    minor: bool = False
+    comment: str | None = None
+    origin: str | None = None
+    model: str | None = None
+    format: str | None = None
+    text: ta.Optional[RevisionText] = None
+    sha1: str | None = None
 
 
 parse_revision = xml.ElementToObj(
@@ -166,14 +164,31 @@ parse_revision = xml.ElementToObj(
 )
 
 
-parse_redirect = xml.ElementToObj(
-    Redirect,
-    xml.ElementToKwargs(
-        attrs=symm_dct(
-            'title',
-        ),
-    ),
-)
+#
+
+
+@dc.dataclass(frozen=True)
+class Upload:
+    timestamp: str | None = None
+    contributor: str | None = None
+    comment: str | None = None
+    filename: str | None = None
+    src: str | None = None
+    size: str | None = None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class Page:
+    title: str | None = None
+    ns: str | None = None
+    id: str | None = None
+    redirect: ta.Optional[Redirect] = None
+    restrictions: str | None = None
+    revisions: ta.Optional[ta.Sequence[Revision]] = None
+    uploads: ta.Optional[ta.Sequence[Upload]] = None
 
 
 parse_page = xml.ElementToObj(
@@ -193,6 +208,15 @@ parse_page = xml.ElementToObj(
         },
     ),
 )
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class MediaWiki:
+    siteinfo: ta.Optional[SiteInfo] = None
+    pages: ta.Sequence[Page] = None
 
 
 ##
