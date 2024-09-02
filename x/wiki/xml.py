@@ -79,8 +79,8 @@ def yield_root_children(
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ElementToKwargs:
-    attrs: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
-    scalars: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
+    attrs: ta.Mapping[str, tuple[str, ta.Callable[[str], ta.Any]] | str | None] = dc.field(default_factory=dict)
+    scalars: ta.Mapping[str, tuple[str, ta.Callable[[str], ta.Any]] | str | None] = dc.field(default_factory=dict)
     single_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
     list_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
     text: str | None = None
@@ -98,9 +98,13 @@ class ElementToKwargs:
                 k = strip_ns(k)
 
                 if k in self.attrs:
-                    ak = self.attrs[k]
-                    if ak is not None:
-                        set_kw(ak, v)
+                    t = self.attrs[k]
+                    if t is not None:
+                        if isinstance(t, str):
+                            set_kw(t, v)
+                        else:
+                            ak, fn = t
+                            set_kw(ak, fn(v))
 
                 else:
                     raise KeyError(k)
@@ -109,9 +113,13 @@ class ElementToKwargs:
             k = strip_ns(cel.tag)
 
             if k in self.scalars:
-                sk = self.scalars[k]
-                if sk is not None:
-                    set_kw(sk, cel.text)
+                t = self.scalars[k]
+                if t is not None:
+                    if isinstance(t, str):
+                        set_kw(t, cel.text)
+                    else:
+                        sk, fn = t
+                        set_kw(sk, fn(cel.text))
 
             elif k in self.single_children:
                 ck, fn = self.single_children[k]
