@@ -3,6 +3,10 @@ https://www.mediawiki.org/wiki/Help:Export#Export_format
 
 https://github.com/5j9/wikitextparser
 https://github.com/tatuylonen/wikitextprocessor
+https://github.com/earwig/mwparserfromhell
+
+https://github.com/WillKoehrsen/wikipedia-data-science/blob/master/notebooks/Downloading%20and%20Parsing%20Wikipedia%20Articles.ipynb
+
 https://en.wikipedia.org/wiki/Help:Wikitext
 https://en.wikipedia.org/wiki/Wikipedia:Lua
 
