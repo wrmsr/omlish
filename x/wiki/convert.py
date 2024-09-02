@@ -1,32 +1,7 @@
 """
-https://www.mediawiki.org/wiki/Help:Export#Export_format
-
-https://github.com/5j9/wikitextparser
-https://github.com/tatuylonen/wikitextprocessor
-https://github.com/earwig/mwparserfromhell
-
-https://github.com/WillKoehrsen/wikipedia-data-science/blob/master/notebooks/Downloading%20and%20Parsing%20Wikipedia%20Articles.ipynb
-
-https://en.wikipedia.org/wiki/Help:Wikitext
-https://en.wikipedia.org/wiki/Wikipedia:Lua
-
 bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-20240801-pages-articles-multistream.xml.lz4
 
 0 B / 42_781_970_578 B - 0.00 % - 0 B/s, 84404 elements, lang.is_gil_enabled()=False
-
-==
-
-if rev.text and '#invoke' in rev.text.text:
-    import wikitextparser as wtp
-    parsed = wtp.parse(rev.text.text)
-    print(parsed)
-
-    from wikitextprocessor import Wtp
-    ctx = Wtp()
-    ctx.start_page(page.title)
-    tree = ctx.parse(rev.text.text)
-    print(tree)
-
 """
 import contextlib
 import io  # noqa
@@ -47,15 +22,15 @@ from . import xml
 ##
 
 
-BZ2_INDEX_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
+BZ2_INDEX_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream-index.txt.bz2')
 
 #  23_851_879_117 compressed
 # 103_090_295_026 uncompressed
-BZ2_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.bz2')
+BZ2_XML_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream.xml.bz2')
 
 #  42_781_970_578 compressed
 # 103_090_295_026 uncompressed
-LZ4_XML_FILE_PATH = os.path.expanduser('~/Downloads/enwiki-20240801-pages-articles-multistream.xml.lz4')
+LZ4_XML_FILE_PATH = os.path.expanduser('~/data/enwiki/enwiki-20240801-pages-articles-multistream.xml.lz4')
 
 
 def _main() -> None:
