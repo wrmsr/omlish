@@ -7,13 +7,15 @@ TODO:
    - https://en.wikipedia.org/wiki/Bzip2
 """
 import abc
+import contextlib
 import os
+import subprocess
 import sys
 import time
 import typing as ta
 
 
-#
+##
 
 
 class BytesReaderWrapper(ta.IO[bytes], abc.ABC):
@@ -146,3 +148,55 @@ class FileProgressReporter:
         self._time_last = time_cur
 
         return True
+
+
+##
+
+
+@contextlib.contextmanager
+def open_compressed(
+        fp: str,
+        *,
+        use_subprocess: bool = False,
+) -> tuple[ta.IO, FileProgressReporter | None]:
+    with contextlib.ExitStack() as es:
+        if fp.endswith('.bz2'):
+            if not use_subprocess:
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
+
+                import bz2
+                bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
+
+            else:
+                f = es.enter_context(open(fp, 'rb'))
+
+                # FIXME: os.dup?
+                # fpr = FileProgressReporter(f, time_interval=5)
+                fpr = None
+
+                proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
+                bs = proc.stdout
+
+        elif fp.endswith('.lz4'):
+            if not use_subprocess:
+                f = es.enter_context(open(fp, 'rb'))
+                fpr = FileProgressReporter(f, time_interval=5)
+
+                import lz4.frame
+                bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
+
+            else:
+                f = es.enter_context(open(fp, 'rb'))
+
+                # FIXME: os.dup?
+                # fpr = FileProgressReporter(f, time_interval=5)
+                fpr = None
+
+                proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
+                bs = proc.stdout
+
+        else:
+            raise RuntimeError(fp)
+
+        yield bs, fpr

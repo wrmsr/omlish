@@ -5,8 +5,6 @@ bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-
 
 0 B / 42_781_970_578 B - 0.00 % - 0 B/s, 84404 elements, lang.is_gil_enabled()=False
 """
-import contextlib
-import dataclasses as dc
 import io  # noqa
 import os.path
 import subprocess  # noqa
@@ -14,7 +12,7 @@ import sys
 import typing as ta
 
 from . import xml
-from .io import FileProgressReporter  # noqa
+from .io import open_compressed
 from .models import Page
 from .models import SiteInfo
 from .models import parse_page
@@ -54,47 +52,10 @@ def _main() -> None:
     # use_lxml = False
     use_lxml = True
 
-    with contextlib.ExitStack() as es:
-        if fp.endswith('.bz2'):
-            if not use_subproc:
-                f = es.enter_context(open(fp, 'rb'))
-                fpr = FileProgressReporter(f, time_interval=5)
-
-                import bz2
-                bs = es.enter_context(contextlib.closing(bz2.open(f, 'rb')))
-
-            else:
-                f = es.enter_context(open(fp, 'rb'))
-
-                # FIXME: os.dup?
-                # fpr = FileProgressReporter(f, time_interval=5)
-                fpr = None
-
-                # proc = subprocess.Popen(['pbzip2', '-cdk', fp], stdout=subprocess.PIPE)
-                proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
-                bs = proc.stdout
-
-        elif fp.endswith('.lz4'):
-            if not use_subproc:
-                f = es.enter_context(open(fp, 'rb'))
-                fpr = FileProgressReporter(f, time_interval=5)
-
-                import lz4.frame
-                bs = es.enter_context(contextlib.closing(lz4.frame.open(f, 'rb')))
-
-            else:
-                f = es.enter_context(open(fp, 'rb'))
-
-                # FIXME: os.dup?
-                # fpr = FileProgressReporter(f, time_interval=5)
-                fpr = None
-
-                proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
-                bs = proc.stdout
-
-        else:
-            raise RuntimeError(fp)
-
+    with open_compressed(
+            fp,
+            use_subprocess=use_subproc,
+    ) as (bs, fpr):
         if not use_lxml:
             cs = io.TextIOWrapper(bs, 'utf-8')
             it = xml.yield_root_children(cs)
