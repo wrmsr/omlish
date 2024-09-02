@@ -363,13 +363,25 @@ def gen_amalg(
 
     ##
 
+    tyd: dict[str, list[Typing]] = {}
     tys = set()
     for sf in sfs:
         f = src_files[sf]
         for ty in f.typings:
             if ty.src not in tys:
-                out.write(ty.src)
+                tyd.setdefault(f.path, []).append(ty)
                 tys.add(ty.src)
+    for i, (sf, ftys) in enumerate(tyd.items()):
+        f = src_files[sf]
+        if i:
+            out.write('\n')
+        if f is not mf:
+            rp = os.path.relpath(f.path, mf.path)
+        else:
+            rp = os.path.basename(f.path)
+        out.write(f'# {rp}\n')
+        for ty in ftys:
+            out.write(ty.src)
     if tys:
         out.write('\n\n')
 
