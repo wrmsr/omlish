@@ -13,10 +13,10 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'server': [
-            'h11 >= 0.14',
-            'h2 >= 4.1',
-            'priority >= 2',
-            'wsproto >= 1.2',
+            'h11 ~= 0.14',
+            'h2 ~= 4.1',
+            'priority ~= 2.0',
+            'wsproto ~= 1.2',
         ],
     }
 

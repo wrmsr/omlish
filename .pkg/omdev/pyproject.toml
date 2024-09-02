@@ -11,8 +11,8 @@ authors = [
 ]
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
-requires-python = '>=3.12'
-version = '0.0.0.dev12'
+requires-python = '~=3.12'
+version = '0.0.0.dev13'
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
@@ -22,31 +22,31 @@ classifiers = [
 ]
 description = 'omdev'
 dependencies = [
-    'omlish == 0.0.0.dev12',
+    'omlish == 0.0.0.dev13',
 ]
 
 [project.optional-dependencies]
 all = [
-    'pycparser >= 2.22',
-    'cffi >= 1.17',
-    'pcpp >= 1.30',
-    'mypy >= 1.11',
-    'tokenize_rt >= 6',
-    'wheel >= 0.44',
+    'pycparser ~= 2.22',
+    'cffi ~= 1.17',
+    'pcpp ~= 1.30',
+    'mypy ~= 1.11',
+    'tokenize_rt ~= 6.0',
+    'wheel ~= 0.44',
 ]
 c = [
-    'pycparser >= 2.22',
-    'cffi >= 1.17',
-    'pcpp >= 1.30',
+    'pycparser ~= 2.22',
+    'cffi ~= 1.17',
+    'pcpp ~= 1.30',
 ]
 mypy = [
-    'mypy >= 1.11',
+    'mypy ~= 1.11',
 ]
 tokens = [
-    'tokenize_rt >= 6',
+    'tokenize_rt ~= 6.0',
 ]
 wheel = [
-    'wheel >= 0.44',
+    'wheel ~= 0.44',
 ]
 
 [tool.setuptools]

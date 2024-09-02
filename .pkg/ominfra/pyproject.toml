@@ -11,8 +11,8 @@ authors = [
 ]
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
-requires-python = '>=3.12'
-version = '0.0.0.dev12'
+requires-python = '~=3.12'
+version = '0.0.0.dev13'
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
@@ -22,17 +22,17 @@ classifiers = [
 ]
 description = 'ominfra'
 dependencies = [
-    'omlish == 0.0.0.dev12',
+    'omlish == 0.0.0.dev13',
 ]
 
 [project.optional-dependencies]
 all = [
-    'paramiko >= 3.4',
-    'asyncssh >= 2.16; python_version < "3.13"',
+    'paramiko ~= 3.4',
+    'asyncssh ~= 2.17; python_version < "3.13"',
 ]
 ssh = [
-    'paramiko >= 3.4',
-    'asyncssh >= 2.16; python_version < "3.13"',
+    'paramiko ~= 3.4',
+    'asyncssh ~= 2.17; python_version < "3.13"',
 ]
 
 [tool.setuptools]

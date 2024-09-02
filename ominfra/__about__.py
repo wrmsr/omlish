@@ -13,9 +13,9 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'ssh': [
-            'paramiko >= 3.4',  # !! LGPL
+            'paramiko ~= 3.4',  # !! LGPL
 
-            'asyncssh >= 2.16; python_version < "3.13"',  # cffi
+            'asyncssh ~= 2.17; python_version < "3.13"',  # cffi
         ],
     }
 

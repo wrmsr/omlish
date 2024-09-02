@@ -11,8 +11,8 @@ authors = [
 ]
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
-requires-python = '>=3.12'
-version = '0.0.0.dev12'
+requires-python = '~=3.12'
+version = '0.0.0.dev13'
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 2 - Pre-Alpha',
@@ -22,21 +22,21 @@ classifiers = [
 ]
 description = 'omserv'
 dependencies = [
-    'omlish == 0.0.0.dev12',
+    'omlish == 0.0.0.dev13',
 ]
 
 [project.optional-dependencies]
 all = [
-    'h11 >= 0.14',
-    'h2 >= 4.1',
-    'priority >= 2',
-    'wsproto >= 1.2',
+    'h11 ~= 0.14',
+    'h2 ~= 4.1',
+    'priority ~= 2.0',
+    'wsproto ~= 1.2',
 ]
 server = [
-    'h11 >= 0.14',
-    'h2 >= 4.1',
-    'priority >= 2',
-    'wsproto >= 1.2',
+    'h11 ~= 0.14',
+    'h2 ~= 4.1',
+    'priority ~= 2.0',
+    'wsproto ~= 1.2',
 ]
 
 [tool.setuptools]
