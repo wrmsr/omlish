@@ -27,6 +27,7 @@ import weakref  # noqa
 import zlib
 
 
+# ../../../omlish/lite/check.py
 T = ta.TypeVar('T')
 
 

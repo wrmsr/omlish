@@ -29,13 +29,18 @@ import threading
 import typing as ta
 
 
+# ../../versioning/versions.py
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
 VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+
+# ../../../omlish/lite/check.py
 T = ta.TypeVar('T')
+
+# ../../versioning/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]

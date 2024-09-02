@@ -68,6 +68,7 @@ import uuid
 import weakref  # noqa
 
 
+# ../../../../omlish/lite/check.py
 T = ta.TypeVar('T')
 
 
