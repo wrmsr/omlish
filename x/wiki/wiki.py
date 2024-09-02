@@ -36,8 +36,8 @@ def symm_dct(*ks: T) -> ta.Mapping[T, T]:
 
 @dc.dataclass(frozen=True)
 class Namespace:
-    key: str | None = None
-    case: str | None = None
+    key: str | None = None  # int
+    case: str | None = None  # 'first-letter' | 'case-sensitive'
     text: str | None = None
 
 
@@ -106,7 +106,7 @@ parse_site_info = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class Redirect:
-    title: str | None = None  # att
+    title: str | None = None
 
 
 parse_redirect = xml.ElementToObj(
@@ -125,9 +125,9 @@ parse_redirect = xml.ElementToObj(
 @dc.dataclass(frozen=True)
 class Contributor:
     username: str | None = None
-    id: str | None = None
+    id: str | None = None  # int
     ip: str | None = None
-    deleted: str | None = None
+    deleted: str | None = None  # 'deleted'
 
 
 parse_contributor = xml.ElementToObj(
@@ -150,9 +150,9 @@ parse_contributor = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class RevisionText:
-    bytes: str | None = None  # att
-    sha1: str | None = None  # att
-    text: str | None = None  # text
+    bytes: str | None = None
+    sha1: str | None = None
+    text: str | None = None
 
 
 parse_revision_text = xml.ElementToObj(
@@ -175,13 +175,13 @@ parse_revision_text = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class Revision:
-    id: str | None = None
-    parentid: str | None = None
+    id: str | None = None  # int
+    parentid: str | None = None  # int
     timestamp: str | None = None  # ISO8601
     contributors: ta.Sequence[Contributor] | None = None
-    minor: bool = False
+    minor: bool = False  # presence
     comment: str | None = None
-    origin: str | None = None
+    origin: str | None = None  # int
     model: str | None = None
     format: str | None = None
     text: ta.Optional[RevisionText] = None
@@ -231,8 +231,8 @@ class Upload:
 @dc.dataclass(frozen=True)
 class Page:
     title: str | None = None
-    ns: str | None = None
-    id: str | None = None
+    ns: str | None = None  # int
+    id: str | None = None  # int
     redirect: ta.Optional[Redirect] = None
     restrictions: str | None = None
     revisions: ta.Optional[ta.Sequence[Revision]] = None
