@@ -6,7 +6,7 @@ def _main():
     pipeline = transformers.pipeline(
         "text-generation",
         model=model_name,
-        device='mps',
+        device='cuda',
     )
     print(pipeline('hi there'))
 
