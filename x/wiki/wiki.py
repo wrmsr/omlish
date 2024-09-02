@@ -21,6 +21,9 @@ from omlish import marshal as msh  # noqa
 from omlish.formats import json  # noqa
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -105,108 +108,156 @@ class Upload:
 ##
 
 
-def parse_contributor(el: xml.Element) -> Contributor:
-    kw = {}
-    if el.attrib:
-        for k, v in el.attrib.items():
-            if k in ('deleted',):
-                if k in kw:
+@dc.dataclass(frozen=True, kw_only=True)
+class XmlToKwargs:
+    attrs: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
+    scalars: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
+    single_children: ta.Mapping[str, tuple[str, ta.Callable[[xml.Element], ta.Any]]] = dc.field(default_factory=dict)
+    list_children: ta.Mapping[str, tuple[str, ta.Callable[[xml.Element], ta.Any]]] = dc.field(default_factory=dict)
+    text: str | None = None
+
+    def __call__(self, el: xml.Element) -> ta.Mapping[str, ta.Any]:
+        kw: dict[str, ta.Any] = {}
+
+        def set_kw(k: str, v: ta.Any) -> None:
+            if k in kw:
+                raise KeyError(k)
+            kw[k] = v
+
+        if el.attrib:
+            for k, v in el.attrib.items():
+                k = xml.strip_ns(k)
+
+                if k in self.attrs:
+                    ak = self.attrs[k]
+                    if ak is not None:
+                        set_kw(ak, v)
+
+                else:
                     raise KeyError(k)
-                kw[k] = v
+
+        for cel in el:
+            k = xml.strip_ns(cel.tag)
+
+            if k in self.scalars:
+                sk = self.scalars[k]
+                if sk is not None:
+                    set_kw(sk, cel.text)
+
+            elif k in self.single_children:
+                ck, fn = self.single_children[k]
+                set_kw(ck, fn(cel))
+
+            elif k in self.list_children:
+                lk, fn = self.list_children[k]
+                kw.setdefault(lk, []).append(fn(cel))
+
             else:
                 raise KeyError(k)
-    for cel in el:
-        if (ctag := xml.strip_ns(cel.tag)) in ('username', 'id', 'ip'):
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw[ctag] = cel.text
-        else:
-            raise KeyError(ctag)
-    return Contributor(**kw)
+
+        if self.text is not None:
+            set_kw(self.text, el.text)
+
+        return kw
 
 
-def parse_revision_text(el: xml.Element) -> RevisionText:
-    kw = {}
-    if el.attrib:
-        for k, v in el.attrib.items():
-            if k in ('bytes', 'sha1'):
-                if k in kw:
-                    raise KeyError(k)
-                kw[k] = v
-            elif xml.strip_ns(k) in ('space',):
-                continue
-            else:
-                raise KeyError(k)
-    kw['text'] = el.text
-    for cel in el:
-        raise KeyError(xml.strip_ns(cel.tag))
-    return RevisionText(**kw)
+@dc.dataclass(frozen=True)
+class XmlToDc(ta.Generic[T]):
+    cls: type[T]
+    kw: XmlToKwargs
 
-
-def parse_revision(el: xml.Element) -> Revision:
-    if el.attrib:
-        raise KeyError
-    kw = {}
-    for cel in el:
-        if (ctag := xml.strip_ns(cel.tag)) in ('id', 'parentid', 'timestamp', 'minor', 'comment', 'origin', 'model', 'format', 'sha1'):
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw[ctag] = cel.text
-        elif ctag == 'contributor':
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw.setdefault('contributors', []).append(parse_contributor(cel))
-        elif ctag == 'text':
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw[ctag] = parse_revision_text(cel)
-        else:
-            raise KeyError(ctag)
-    return Revision(**kw)
-
-
-def parse_redirect(el: xml.Element) -> Redirect:
-    kw = {}
-    if 'title' in el.attrib:
-        kw['title'] = el.attrib['title']
-    for cel in el:
-        raise KeyError(xml.strip_ns(cel.tag))
-    return Redirect(**kw)
-
-
-def parse_page(el: xml.Element) -> Page:
-    if el.attrib:
-        raise KeyError
-    kw = {}
-    for cel in el:
-        if (ctag := xml.strip_ns(cel.tag)) in ('title', 'ns', 'id', 'restrictions'):
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw[ctag] = cel.text
-        elif ctag == 'redirect':
-            if ctag in kw:
-                raise KeyError(ctag)
-            kw[ctag] = parse_redirect(cel)
-        elif ctag == 'revision':
-            kw.setdefault('revisions', []).append(parse_revision(cel))
-        elif ctag == 'upload':
-            raise NotImplementedError
-        else:
-            raise KeyError(ctag)
-    return Page(**kw)
+    def __call__(self, el: xml.Element) -> T:
+        return self.cls(**self.kw(el))
 
 
 ##
 
 
-def xml_to_dataclass(
-        el: xml.Element,
-        attrs: ta.Sequence[str],
-        scalars: ta.Sequence[str],
-        single_children: ta.Sequence[str],
-        list_children: ta.Sequence[tuple[str, str, ta.Callable[[xml.Element], ta.Any]]],
-) -> ta.Any:
-    raise NotImplementedError
+def symm_dct(*ks: T) -> ta.Mapping[T, T]:
+    return {k: k for k in ks}
+
+
+parse_contributor = XmlToDc(
+    Contributor,
+    XmlToKwargs(
+        attrs=symm_dct(
+            'deleted',
+        ),
+        scalars=symm_dct(
+            'username',
+            'id',
+            'ip',
+        ),
+    ),
+)
+
+
+parse_revision_text = XmlToDc(
+    RevisionText,
+    XmlToKwargs(
+        attrs={
+            **symm_dct(
+                'bytes',
+                'sha1',
+            ),
+            'space': None,
+        },
+        text='text',
+    ),
+)
+
+
+parse_revision = XmlToDc(
+    Revision,
+    XmlToKwargs(
+        scalars=symm_dct(
+            'id',
+            'parentid',
+            'timestamp',
+            'minor',
+            'comment',
+            'origin',
+            'model',
+            'format',
+            'sha1',
+        ),
+        single_children={
+            'text': ('text', parse_revision_text),
+        },
+        list_children={
+            'contributor': ('contributors', parse_contributor),
+        },
+    ),
+)
+
+
+parse_redirect = XmlToDc(
+    Redirect,
+    XmlToKwargs(
+        attrs=symm_dct(
+            'title',
+        ),
+    ),
+)
+
+
+parse_page = XmlToDc(
+    Page,
+    XmlToKwargs(
+        scalars=symm_dct(
+            'title',
+            'ns',
+            'id',
+            'restrictions',
+        ),
+        single_children={
+            'redirect': ('redirect', parse_redirect),
+        },
+        list_children={
+            'revision': ('revisions', parse_revision),
+        },
+    ),
+)
 
 
 ##
@@ -235,8 +286,8 @@ def _main() -> None:
     use_subproc = False
     # use_subproc = True
 
-    use_lxml = False
-    # use_lxml = True
+    # use_lxml = False
+    use_lxml = True
 
     with contextlib.ExitStack() as es:
         if fp.endswith('.bz2'):
@@ -297,7 +348,7 @@ def _main() -> None:
             if xml.strip_ns(el.tag) == 'page':
                 page = parse_page(el)
 
-                print(json.dumps_pretty(msh.marshal(page)))
+                # print(json.dumps_pretty(msh.marshal(page)))
 
             # print(el)
             # print(list(root))
