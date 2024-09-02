@@ -181,13 +181,13 @@ parse_revision_text = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class Revision:
-    id: str | None = None  # int
-    parentid: str | None = None  # int
+    id: int
+    parentid: int | None = None
     timestamp: str | None = None  # ISO8601
     contributors: ta.Sequence[Contributor] | None = None
-    minor: bool = False  # presence
+    minor: bool = False
     comment: str | None = None
-    origin: str | None = None  # int
+    origin: int | None = None
     model: str | None = None
     format: str | None = None
     text: ta.Optional[RevisionText] = None
@@ -197,17 +197,19 @@ class Revision:
 parse_revision = xml.ElementToObj(
     Revision,
     xml.ElementToKwargs(
-        scalars=symm_dct(
-            'id',
-            'parentid',
-            'timestamp',
-            'minor',
-            'comment',
-            'origin',
-            'model',
-            'format',
-            'sha1',
-        ),
+        scalars={
+            'id': ('id', int),
+            'parentid': ('parentid', int),
+            'origin': ('origin', int),
+            'minor': ('minor', lambda _: True),
+            **symm_dct(
+                'timestamp',
+                'comment',
+                'model',
+                'format',
+                'sha1',
+            ),
+        },
         single_children={
             'text': ('text', parse_revision_text),
         },
@@ -236,9 +238,9 @@ class Upload:
 
 @dc.dataclass(frozen=True)
 class Page:
-    title: str | None = None
-    ns: str | None = None  # int
-    id: str | None = None  # int
+    title: str
+    ns: int
+    id: int
     redirect: ta.Optional[Redirect] = None
     restrictions: str | None = None
     revisions: ta.Optional[ta.Sequence[Revision]] = None
@@ -248,12 +250,14 @@ class Page:
 parse_page = xml.ElementToObj(
     Page,
     xml.ElementToKwargs(
-        scalars=symm_dct(
-            'title',
-            'ns',
-            'id',
-            'restrictions',
-        ),
+        scalars={
+            'ns': ('ns', int),
+            'id': ('id', int),
+            **symm_dct(
+                'title',
+                'restrictions',
+            ),
+        },
         single_children={
             'redirect': ('redirect', parse_redirect),
         },
