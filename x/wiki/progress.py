@@ -92,7 +92,7 @@ class ProgressReporter(ta.Generic[T]):
         if self._total_v is not None:
             ps.extend([
                 f'{fmt_v(prg.cur_v)} / {fmt_v(self._total_v)}' + sfx,
-                f'{prg.cur_v / self._total_v * 100.:05.02f} %',
+                f'{prg.cur_v / self._total_v * 100.:.02f} %',
                 ])
         else:
             ps.append(f'{fmt_v(self._cur_v)}' + sfx)
