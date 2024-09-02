@@ -108,78 +108,13 @@ class Upload:
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class XmlToKwargs:
-    attrs: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
-    scalars: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
-    single_children: ta.Mapping[str, tuple[str, ta.Callable[[xml.Element], ta.Any]]] = dc.field(default_factory=dict)
-    list_children: ta.Mapping[str, tuple[str, ta.Callable[[xml.Element], ta.Any]]] = dc.field(default_factory=dict)
-    text: str | None = None
-
-    def __call__(self, el: xml.Element) -> ta.Mapping[str, ta.Any]:
-        kw: dict[str, ta.Any] = {}
-
-        def set_kw(k: str, v: ta.Any) -> None:
-            if k in kw:
-                raise KeyError(k)
-            kw[k] = v
-
-        if el.attrib:
-            for k, v in el.attrib.items():
-                k = xml.strip_ns(k)
-
-                if k in self.attrs:
-                    ak = self.attrs[k]
-                    if ak is not None:
-                        set_kw(ak, v)
-
-                else:
-                    raise KeyError(k)
-
-        for cel in el:
-            k = xml.strip_ns(cel.tag)
-
-            if k in self.scalars:
-                sk = self.scalars[k]
-                if sk is not None:
-                    set_kw(sk, cel.text)
-
-            elif k in self.single_children:
-                ck, fn = self.single_children[k]
-                set_kw(ck, fn(cel))
-
-            elif k in self.list_children:
-                lk, fn = self.list_children[k]
-                kw.setdefault(lk, []).append(fn(cel))
-
-            else:
-                raise KeyError(k)
-
-        if self.text is not None:
-            set_kw(self.text, el.text)
-
-        return kw
-
-
-@dc.dataclass(frozen=True)
-class XmlToDc(ta.Generic[T]):
-    cls: type[T]
-    kw: XmlToKwargs
-
-    def __call__(self, el: xml.Element) -> T:
-        return self.cls(**self.kw(el))
-
-
-##
-
-
 def symm_dct(*ks: T) -> ta.Mapping[T, T]:
     return {k: k for k in ks}
 
 
-parse_contributor = XmlToDc(
+parse_contributor = xml.ElementToObj(
     Contributor,
-    XmlToKwargs(
+    xml.ElementToKwargs(
         attrs=symm_dct(
             'deleted',
         ),
@@ -192,9 +127,9 @@ parse_contributor = XmlToDc(
 )
 
 
-parse_revision_text = XmlToDc(
+parse_revision_text = xml.ElementToObj(
     RevisionText,
-    XmlToKwargs(
+    xml.ElementToKwargs(
         attrs={
             **symm_dct(
                 'bytes',
@@ -207,9 +142,9 @@ parse_revision_text = XmlToDc(
 )
 
 
-parse_revision = XmlToDc(
+parse_revision = xml.ElementToObj(
     Revision,
-    XmlToKwargs(
+    xml.ElementToKwargs(
         scalars=symm_dct(
             'id',
             'parentid',
@@ -231,9 +166,9 @@ parse_revision = XmlToDc(
 )
 
 
-parse_redirect = XmlToDc(
+parse_redirect = xml.ElementToObj(
     Redirect,
-    XmlToKwargs(
+    xml.ElementToKwargs(
         attrs=symm_dct(
             'title',
         ),
@@ -241,9 +176,9 @@ parse_redirect = XmlToDc(
 )
 
 
-parse_page = XmlToDc(
+parse_page = xml.ElementToObj(
     Page,
-    XmlToKwargs(
+    xml.ElementToKwargs(
         scalars=symm_dct(
             'title',
             'ns',

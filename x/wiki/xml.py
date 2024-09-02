@@ -8,6 +8,7 @@ TODO:
   - https://lxml.de/apidoc/lxml.etree.html#lxml.etree.iterparse
  - https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.XMLPullParser - sans-io
 """
+import dataclasses as dc
 import typing as ta
 import xml.etree.ElementTree
 
@@ -63,3 +64,68 @@ def yield_root_children(
                 if not retain_on_root:
                     root.remove(el)
                 yield el
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ElementToKwargs:
+    attrs: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
+    scalars: ta.Mapping[str, str | None] = dc.field(default_factory=dict)
+    single_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
+    list_children: ta.Mapping[str, tuple[str, ta.Callable[[Element], ta.Any]]] = dc.field(default_factory=dict)
+    text: str | None = None
+
+    def __call__(self, el: Element) -> ta.Mapping[str, ta.Any]:
+        kw: dict[str, ta.Any] = {}
+
+        def set_kw(k: str, v: ta.Any) -> None:
+            if k in kw:
+                raise KeyError(k)
+            kw[k] = v
+
+        if el.attrib:
+            for k, v in el.attrib.items():
+                k = strip_ns(k)
+
+                if k in self.attrs:
+                    ak = self.attrs[k]
+                    if ak is not None:
+                        set_kw(ak, v)
+
+                else:
+                    raise KeyError(k)
+
+        for cel in el:
+            k = strip_ns(cel.tag)
+
+            if k in self.scalars:
+                sk = self.scalars[k]
+                if sk is not None:
+                    set_kw(sk, cel.text)
+
+            elif k in self.single_children:
+                ck, fn = self.single_children[k]
+                set_kw(ck, fn(cel))
+
+            elif k in self.list_children:
+                lk, fn = self.list_children[k]
+                kw.setdefault(lk, []).append(fn(cel))
+
+            else:
+                raise KeyError(k)
+
+        if self.text is not None:
+            set_kw(self.text, el.text)
+
+        return kw
+
+
+@dc.dataclass(frozen=True)
+class ElementToObj(ta.Generic[T]):
+    cls: type[T]
+    kw: ElementToKwargs
+
+    def __call__(self, el: Element) -> T:
+        return self.cls(**self.kw(el))
