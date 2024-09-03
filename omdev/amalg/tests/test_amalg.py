@@ -30,7 +30,11 @@ def test_amalg() -> None:
         )
 
         assert '_foo_main' not in src
-        assert '@omlish-script' not in src
+        lit = iter(src.splitlines()[1:])
+        while (l := next(lit)) and l.startswith('#'):
+            pass
+        for l in lit:
+            assert not l.startswith('# @omlish-lite')
 
         out_path = os.path.join(src_base_dir, 'out', os.path.basename(main_file))
         mod = compile(src, out_path, 'exec')

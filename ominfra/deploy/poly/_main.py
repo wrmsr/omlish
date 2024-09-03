@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
+# @omlish-lite
 # @omdev-amalg-output main.py
 import abc
 import dataclasses as dc
