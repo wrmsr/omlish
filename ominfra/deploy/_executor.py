@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omlish-lite
+# @omlish-script
 # @omdev-amalg-output executor/main.py
 r"""
 TODO:
