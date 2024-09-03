@@ -6,6 +6,8 @@ hf.hf_hub_download(repo_id='QuantFactory/Meta-Llama-3-8B-GGUF', filename='Meta-L
 
 CMAKE_ARGS="-DGGML_METAL=on" ./python -mpip install llama-cpp-python
 PATH="/usr/local/cuda-12.2/bin:$PATH" CMAKE_ARGS="-DGGML_CUDA=on" ./python -mpip install llama-cpp-python
+
+holy god that's slow make a local cuda wheel
 """
 import os.path
 
