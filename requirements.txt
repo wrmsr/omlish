@@ -26,8 +26,8 @@ python-snappy==0.7.3; python_version < "3.13"
 
 ### db:
 
-sqlalchemy[asyncio]==2.0.32; python_version < "3.13"
-sqlalchemy==2.0.32; python_version >= "3.13"  # greenlet
+sqlalchemy[asyncio]==2.0.33; python_version < "3.13"
+sqlalchemy==2.0.33; python_version >= "3.13"  # greenlet
 
 ## sql
 

@@ -31,8 +31,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.10
-botocore==1.35.10
+boto3==1.35.11
+botocore==1.35.11
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -157,7 +157,7 @@ keras==3.5.0
 keyring==25.3.0
 kiwisolver==1.4.6
 langchain==0.2.16
-langchain-community==0.2.15
+langchain-community==0.2.16
 langchain-core==0.2.38
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
@@ -349,7 +349,7 @@ spacy==3.7.6
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
-SQLAlchemy==2.0.32
+SQLAlchemy==2.0.33
 sqlean.py==3.45.1
 sqlglot==25.18.0
 sqlparse==0.4.4

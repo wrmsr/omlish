@@ -156,7 +156,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.10
+boto3>=1.35.11
 
 google-cloud-compute==1.19.2
 
@@ -215,7 +215,7 @@ customtkinter==5.2.2
 ##
 
 langchain==0.2.16
-langchain-community==0.2.15
+langchain-community==0.2.16
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
 langchain-text-splitters==0.2.4
