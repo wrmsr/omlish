@@ -78,7 +78,7 @@ def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
     for l in (it := iter(cls)):
         if IF_MAIN_PAT.fullmatch(tks.join_toks(l).strip()):
             for l in it:
-                if l[0].name != 'INDENT' and tks.join_toks(l).strip():
+                if l[0].name not in ('INDENT', 'UNIMPORTANT_WS') and tks.join_toks(l).strip():
                     break
         else:
             out.append(l)
@@ -91,13 +91,14 @@ def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
 
 STRIPPED_HEADER_MAGICS = [
     '# @omlish-lite',
-    '# @omlish-script',
 ]
 
 STRIPPED_HEADER_PATS = [findmagic.compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
 
 
-def strip_header_magics(hls: ta.Sequence[Tokens]) -> list[Tokens]:
+def strip_header_lines(hls: ta.Sequence[Tokens]) -> list[Tokens]:
+    if hls and tks.join_toks(hls[0]).startswith('#!'):
+        hls = hls[1:]
     out = []
     for l in hls:
         ls = tks.join_toks(l)
@@ -281,7 +282,7 @@ def make_src_file(
 
     hls, cls = split_header_lines(lines)
 
-    hls = strip_header_magics(hls)
+    hls = strip_header_lines(hls)
 
     imps: list[Import] = []
     tys: list[Typing] = []
@@ -373,10 +374,10 @@ def gen_amalg(
         else:
             ogf = os.path.basename(main_path)
         nhls = []
-        if hls[0].startswith('#!'):
-            nhls.append(hls.pop(0))
         nhls.extend([
+            '#!/usr/bin/env python3\n',
             '# noinspection DuplicatedCode\n',
+            '# @omlish-lite\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
         ])
         hls = [*nhls, *hls]

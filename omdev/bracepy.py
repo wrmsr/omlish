@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @omlish-lite
 """
 https://github.com/umlet/pwk/blob/dc23b3400108a71947a695f1fa1df0f514b42528/pwk
 """

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
+# @omlish-lite
 # @omdev-amalg-output ../interp/cli.py
 # ruff: noqa: UP007
 """

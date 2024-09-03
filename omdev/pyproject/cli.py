@@ -308,6 +308,7 @@ def _pkg_cmd(args) -> None:
 
         build_output_dir = 'dist'
         run_build = bool(args.build)
+        add_revision = bool(args.revision)
 
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
@@ -322,6 +323,7 @@ def _pkg_cmd(args) -> None:
                     ).gen,
                     run_build=run_build,
                     build_output_dir=build_output_dir,
+                    add_revision=add_revision,
                 ))
                 for dir_name in run.cfg().pkgs
             ]
@@ -350,6 +352,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('pkg')
     parser_resolve.add_argument('-b', '--build', action='store_true')
+    parser_resolve.add_argument('-r', '--revision', action='store_true')
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_pkg_cmd)

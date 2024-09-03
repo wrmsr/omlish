@@ -30,6 +30,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
 from ..toml.writer import TomlWriter
+from ..tools.revisions import GitRevisionAdder
 
 
 class PyprojectPackageGenerator:
@@ -179,6 +180,8 @@ class PyprojectPackageGenerator:
     def _run_build(
             self,
             build_output_dir: ta.Optional[str] = None,
+            *,
+            add_revision: bool = False,
     ) -> None:
         subprocess.check_call(
             [
@@ -189,8 +192,12 @@ class PyprojectPackageGenerator:
             cwd=self._build_dir(),
         )
 
+        dist_dir = os.path.join(self._build_dir(), 'dist')
+
+        if add_revision:
+            GitRevisionAdder().add_to(dist_dir)
+
         if build_output_dir is not None:
-            dist_dir = os.path.join(self._build_dir(), 'dist')
             for fn in os.listdir(dist_dir):
                 shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
 
@@ -201,6 +208,7 @@ class PyprojectPackageGenerator:
             *,
             run_build: bool = False,
             build_output_dir: ta.Optional[str] = None,
+            add_revision: bool = False,
     ) -> str:
         log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
 
@@ -211,6 +219,9 @@ class PyprojectPackageGenerator:
         self._symlink_standard_files()
 
         if run_build:
-            self._run_build(build_output_dir)
+            self._run_build(
+                build_output_dir,
+                add_revision=add_revision,
+            )
 
         return self._build_dir()

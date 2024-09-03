@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
+# @omlish-lite
 # @omdev-amalg-output ../pyproject/cli.py
 # ruff: noqa: UP006 UP007
 """
@@ -27,6 +28,7 @@ import base64
 import collections
 import collections.abc
 import concurrent.futures as cf
+import csv
 import dataclasses as dc
 import datetime
 import decimal
@@ -34,8 +36,10 @@ import enum
 import fractions
 import functools
 import glob
+import hashlib
 import importlib
 import inspect
+import io
 import itertools
 import json
 import logging
@@ -45,14 +49,18 @@ import os.path
 import re
 import shlex
 import shutil
+import stat
 import string
 import subprocess
 import sys
+import tarfile
 import threading
+import time
 import types
 import typing as ta
 import uuid
 import weakref  # noqa
+import zipfile
 
 
 # ../../toml/parser.py
@@ -1408,6 +1416,245 @@ def canonicalize_version(
 
 
 ########################################
+# ../../wheelfile.py
+# ruff: noqa: UP006 UP007
+# https://github.com/pypa/wheel/blob/7bb46d7727e6e89fe56b3c78297b3af2672bbbe2/src/wheel/wheelfile.py
+# MIT License
+#
+# Copyright (c) 2012 Daniel Holth <dholth@fastmail.fm> and contributors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+class WheelError(Exception):
+    pass
+
+
+# Non-greedy matching of an optional build number may be too clever (more invalid wheel filenames will match). Separate
+# regex for .dist-info?
+WHEEL_INFO_RE = re.compile(
+    r'^'
+    r'(?P<namever>(?P<name>[^\s-]+?)-(?P<ver>[^\s-]+?))'
+    r'(-(?P<build>\d[^\s-]*))?-'
+    r'(?P<pyver>[^\s-]+?)-'
+    r'(?P<abi>[^\s-]+?)-'
+    r'(?P<plat>\S+)'
+    r'\.whl$',
+    re.VERBOSE,
+)
+
+
+class WheelFile(zipfile.ZipFile):
+    """
+    A ZipFile derivative class that also reads SHA-256 hashes from .dist-info/RECORD and checks any read files against
+    those.
+    """
+
+    _default_algorithm = hashlib.sha256
+
+    def __init__(
+            self,
+            file: str,
+            mode: str = 'r',  # ta.Literal["r", "w", "x", "a"]
+            compression: int = zipfile.ZIP_DEFLATED,
+    ) -> None:
+        basename = os.path.basename(file)
+        self.parsed_filename = WHEEL_INFO_RE.match(basename)
+        if not basename.endswith('.whl') or self.parsed_filename is None:
+            raise WheelError(f'Bad wheel filename {basename!r}')
+
+        super().__init__(  # type: ignore
+            file,
+            mode,
+            compression=compression,
+            allowZip64=True,
+        )
+
+        self.dist_info_path = '{}.dist-info'.format(self.parsed_filename.group('namever'))
+        self.record_path = self.dist_info_path + '/RECORD'
+        self._file_hashes: ta.Dict[str, ta.Union[ta.Tuple[None, None], ta.Tuple[int, bytes]]] = {}
+        self._file_sizes: ta.Dict[str, int] = {}
+
+        if mode == 'r':
+            # Ignore RECORD and any embedded wheel signatures
+            self._file_hashes[self.record_path] = None, None
+            self._file_hashes[self.record_path + '.jws'] = None, None
+            self._file_hashes[self.record_path + '.p7s'] = None, None
+
+            # Fill in the expected hashes by reading them from RECORD
+            try:
+                record = self.open(self.record_path)
+            except KeyError:
+                raise WheelError(f'Missing {self.record_path} file') from None
+
+            with record:
+                for line in csv.reader(io.TextIOWrapper(record, newline='', encoding='utf-8')):
+                    path, hash_sum, size = line
+                    if not hash_sum:
+                        continue
+
+                    algorithm, hash_sum = hash_sum.split('=')
+                    try:
+                        hashlib.new(algorithm)
+                    except ValueError:
+                        raise WheelError(f'Unsupported hash algorithm: {algorithm}') from None
+
+                    if algorithm.lower() in {'md5', 'sha1'}:
+                        raise WheelError(f'Weak hash algorithm ({algorithm}) is not permitted by PEP 427')
+
+                    self._file_hashes[path] = (  # type: ignore
+                        algorithm,
+                        self._urlsafe_b64decode(hash_sum.encode('ascii')),
+                    )
+
+    @staticmethod
+    def _urlsafe_b64encode(data: bytes) -> bytes:
+        """urlsafe_b64encode without padding"""
+        return base64.urlsafe_b64encode(data).rstrip(b'=')
+
+    @staticmethod
+    def _urlsafe_b64decode(data: bytes) -> bytes:
+        """urlsafe_b64decode without padding"""
+        pad = b'=' * (4 - (len(data) & 3))
+        return base64.urlsafe_b64decode(data + pad)
+
+    def open(  # type: ignore  # noqa
+            self,
+            name_or_info: ta.Union[str, zipfile.ZipInfo],
+            mode: str = 'r',  # ta.Literal["r", "w"]
+            pwd: ta.Optional[bytes] = None,
+    ) -> ta.IO[bytes]:
+        def _update_crc(newdata: bytes) -> None:
+            eof = ef._eof  # type: ignore  # noqa
+            update_crc_orig(newdata)
+            running_hash.update(newdata)
+            if eof and running_hash.digest() != expected_hash:
+                raise WheelError(f"Hash mismatch for file '{ef_name}'")
+
+        ef_name = name_or_info.filename if isinstance(name_or_info, zipfile.ZipInfo) else name_or_info
+        if (
+                mode == 'r'
+                and not ef_name.endswith('/')
+                and ef_name not in self._file_hashes
+        ):
+            raise WheelError(f"No hash found for file '{ef_name}'")
+
+        ef = super().open(name_or_info, mode, pwd)  # noqa
+        if mode == 'r' and not ef_name.endswith('/'):
+            algorithm, expected_hash = self._file_hashes[ef_name]
+            if expected_hash is not None:
+                # Monkey patch the _update_crc method to also check for the hash from RECORD
+                running_hash = hashlib.new(algorithm)  # type: ignore
+                update_crc_orig, ef._update_crc = ef._update_crc, _update_crc  # type: ignore  # noqa
+
+        return ef
+
+    def write_files(self, base_dir: str) -> None:
+        deferred: list[tuple[str, str]] = []
+        for root, dirnames, filenames in os.walk(base_dir):
+            # Sort the directory names so that `os.walk` will walk them in a defined order on the next iteration.
+            dirnames.sort()
+            for name in sorted(filenames):
+                path = os.path.normpath(os.path.join(root, name))
+                if os.path.isfile(path):
+                    arcname = os.path.relpath(path, base_dir).replace(os.path.sep, '/')
+                    if arcname == self.record_path:
+                        pass
+                    elif root.endswith('.dist-info'):
+                        deferred.append((path, arcname))
+                    else:
+                        self.write(path, arcname)
+
+        deferred.sort()
+        for path, arcname in deferred:
+            self.write(path, arcname)
+
+    def write(  # type: ignore  # noqa
+            self,
+            filename: str,
+            arcname: ta.Optional[str] = None,
+            compress_type: ta.Optional[int] = None,
+    ) -> None:
+        with open(filename, 'rb') as f:
+            st = os.fstat(f.fileno())
+            data = f.read()
+
+        zinfo = zipfile.ZipInfo(
+            arcname or filename,
+            date_time=self._get_zipinfo_datetime(st.st_mtime),
+        )
+        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
+        zinfo.compress_type = compress_type or self.compression
+        self.writestr(zinfo, data, compress_type)
+
+    _MINIMUM_TIMESTAMP = 315532800  # 1980-01-01 00:00:00 UTC
+
+    @classmethod
+    def _get_zipinfo_datetime(cls, timestamp: ta.Optional[float] = None) -> ta.Any:
+        # Some applications need reproducible .whl files, but they can't do this without forcing the timestamp of the
+        # individual ZipInfo objects. See issue #143.
+        timestamp = int(os.environ.get('SOURCE_DATE_EPOCH', timestamp or time.time()))
+        timestamp = max(timestamp, cls._MINIMUM_TIMESTAMP)
+        return time.gmtime(timestamp)[0:6]
+
+    def writestr(  # type: ignore  # noqa
+            self,
+            zinfo_or_arcname: ta.Union[str, zipfile.ZipInfo],
+            data: ta.Any,  # SizedBuffer | str,
+            compress_type: ta.Optional[int] = None,
+    ) -> None:
+        if isinstance(zinfo_or_arcname, str):
+            zinfo_or_arcname = zipfile.ZipInfo(
+                zinfo_or_arcname,
+                date_time=self._get_zipinfo_datetime(),
+            )
+            zinfo_or_arcname.compress_type = self.compression
+            zinfo_or_arcname.external_attr = (0o664 | stat.S_IFREG) << 16
+
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
+        super().writestr(zinfo_or_arcname, data, compress_type)
+        fname = (
+            zinfo_or_arcname.filename
+            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
+            else zinfo_or_arcname
+        )
+        if fname != self.record_path:
+            hash_ = self._default_algorithm(data)  # type: ignore
+            self._file_hashes[fname] = (  # type: ignore
+                hash_.name,
+                self._urlsafe_b64encode(hash_.digest()).decode('ascii'),
+            )
+            self._file_sizes[fname] = len(data)
+
+    def close(self) -> None:
+        # Write RECORD
+        if self.fp is not None and self.mode == 'w' and self._file_hashes:
+            data = io.StringIO()
+            writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
+            writer.writerows((
+                (fname, algorithm + '=' + hash_, self._file_sizes[fname])  # type: ignore
+                for fname, (algorithm, hash_) in self._file_hashes.items()
+            ))
+            writer.writerow((format(self.record_path), '', ''))
+            self.writestr(self.record_path, data.getvalue())
+
+        super().close()
+
+
+########################################
 # ../../../omlish/lite/cached.py
 
 
@@ -2716,210 +2963,148 @@ class PyprojectConfigPreparer:
 
 
 ########################################
-# ../pkg.py
+# ../../tools/revisions.py
 """
 TODO:
- - ext scanning
- - __revision__
- - entry_points
-
-https://setuptools.pypa.io/en/latest/references/keywords.html
-https://packaging.python.org/en/latest/specifications/pyproject-toml
-
-How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
-https://stackoverflow.com/a/66479252
-
-https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
-
-https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
-vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
-'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+ - omlish-lite, move to pyproject/
+  - vendor-lite wheel.wheelfile
 """
-# ruff: noqa: UP006 UP007
+# ruff: noqa: TCH003 UP006 UP007
 
 
-class PyprojectPackageGenerator:
+##
+
+
+def get_git_revision() -> str:
+    has_untracked = bool(subprocess.check_output([
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+    ]).decode().strip())
+
+    dirty_rev = subprocess.check_output([
+        'git',
+        'describe',
+        '--match=NeVeRmAtCh',
+        '--always',
+        '--abbrev=40',
+        '--dirty',
+    ]).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')
+
+
+##
+
+
+class GitRevisionAdder:
     def __init__(
             self,
-            dir_name: str,
-            build_root: str,
+            revision: ta.Optional[str] = None,
+            output_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
-        self._dir_name = dir_name
-        self._build_root = build_root
-
-    #
+        self._given_revision = revision
+        self._output_suffix = output_suffix
 
     @cached_nullary
-    def about(self) -> types.ModuleType:
-        return importlib.import_module(f'{self._dir_name}.__about__')
+    def revision(self) -> str:
+        if self._given_revision is not None:
+            return self._given_revision
+        return get_git_revision()
 
-    @cached_nullary
-    def project_cls(self) -> type:
-        return self.about().Project
+    REVISION_ATTR = '__revision__'
 
-    @cached_nullary
-    def setuptools_cls(self) -> type:
-        return self.about().Setuptools
-
-    #
-
-    @cached_nullary
-    def _build_dir(self) -> str:
-        build_dir: str = os.path.join(self._build_root, self._dir_name)
-        if os.path.isdir(build_dir):
-            shutil.rmtree(build_dir)
-        os.makedirs(build_dir)
-        return build_dir
-
-    #
-
-    def _write_git_ignore(self) -> None:
-        git_ignore = [
-            '/*.egg-info/',
-            '/dist',
-        ]
-        with open(os.path.join(self._build_dir(), '.gitignore'), 'w') as f:
-            f.write('\n'.join(git_ignore))
-
-    #
-
-    def _symlink_source_dir(self) -> None:
-        os.symlink(
-            os.path.relpath(self._dir_name, self._build_dir()),
-            os.path.join(self._build_dir(), self._dir_name),
-        )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        manifest_in: ta.Optional[ta.Sequence[str]]
-
-    @staticmethod
-    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
-        dct = {}
-        for b in reversed(cls.__mro__):
-            for k, v in b.__dict__.items():
-                if k.startswith('_'):
+    def add_to_contents(self, dct: ta.Dict[str, bytes]) -> bool:
+        changed = False
+        for n in dct:
+            if not n.endswith('__about__.py'):
+                continue
+            src = dct[n].decode('utf-8')
+            lines = src.splitlines(keepends=True)
+            for i, l in enumerate(lines):
+                if l != f'{self.REVISION_ATTR} = None\n':
                     continue
-                dct[k] = v
-        return dct
+                lines[i] = f"{self.REVISION_ATTR} = '{self.revision()}'\n"
+                changed = True
+            dct[n] = ''.join(lines).encode('utf-8')
+        return changed
 
-    @staticmethod
-    def _move_dict_key(
-            sd: ta.Dict[str, ta.Any],
-            sk: str,
-            dd: ta.Dict[str, ta.Any],
-            dk: str,
-    ) -> None:
-        if sk in sd:
-            dd[dk] = sd.pop(sk)
+    def add_to_wheel(self, f: str) -> None:
+        if not f.endswith('.whl'):
+            raise Exception(f)
+        log.info('Scanning wheel %s', f)
 
-    @cached_nullary
-    def file_contents(self) -> FileContents:
-        pyp_dct = {}
+        zis: ta.Dict[str, zipfile.ZipInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
+        with WheelFile(f) as wf:
+            for zi in wf.filelist:
+                if zi.filename == wf.record_path:
+                    continue
+                zis[zi.filename] = zi
+                dct[zi.filename] = wf.read(zi.filename)
 
-        #
+        if self.add_to_contents(dct):
+            of = f[:-4] + (self._output_suffix or '') + '.whl'
+            log.info('Repacking wheel %s', of)
+            with WheelFile(of, 'w') as wf:
+                for n, d in dct.items():
+                    log.info('Adding zipinfo %s', n)
+                    wf.writestr(zis[n], d)
 
-        pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
-            'build-backend': 'setuptools.build_meta',
-        }
+    def add_to_tgz(self, f: str) -> None:
+        if not f.endswith('.tar.gz'):
+            raise Exception(f)
+        log.info('Scanning tgz %s', f)
 
-        prj = self._build_cls_dct(self.project_cls())
-        pyp_dct['project'] = prj
+        tis: ta.Dict[str, tarfile.TarInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
+        with tarfile.open(f, 'r:gz') as tf:
+            for ti in tf:
+                tis[ti.name] = ti
+                if ti.type == tarfile.REGTYPE:
+                    with tf.extractfile(ti.name) as tif:  # type: ignore
+                        dct[ti.name] = tif.read()
 
-        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
-        if (extras := pyp_dct.get(extrask)):
-            pyp_dct[extrask] = {
-                'all': [
-                    e
-                    for lst in extras.values()
-                    for e in lst
-                ],
-                **extras,
-            }
+        if self.add_to_contents(dct):
+            of = f[:-7] + (self._output_suffix or '') + '.tar.gz'
+            log.info('Repacking tgz %s', of)
+            with tarfile.open(of, 'w:gz') as tf:
+                for n, ti in tis.items():
+                    log.info('Adding tarinfo %s', n)
+                    if n in dct:
+                        data = dct[n]
+                        ti.size = len(data)
+                        fo = io.BytesIO(data)
+                    else:
+                        fo = None
+                    tf.addfile(ti, fileobj=fo)
 
-        #
+    EXTS = ('.tar.gz', '.whl')
 
-        st = self._build_cls_dct(self.setuptools_cls())
-        pyp_dct['tool.setuptools'] = st
+    def add_to_file(self, f: str) -> None:
+        if f.endswith('.whl'):
+            self.add_to_wheel(f)
 
-        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+        elif f.endswith('.tar.gz'):
+            self.add_to_tgz(f)
 
-        mani_in = st.pop('manifest_in', None)
+    def add_to(self, tgt: str) -> None:
+        log.info('Using revision %s', self.revision())
 
-        #
+        if os.path.isfile(tgt):
+            self.add_to_file(tgt)
 
-        return self.FileContents(
-            pyp_dct,
-            mani_in,
-        )
+        elif os.path.isdir(tgt):
+            for dp, dns, fns in os.walk(tgt):  # noqa
+                for f in fns:
+                    if any(f.endswith(ext) for ext in self.EXTS):
+                        self.add_to_file(os.path.join(dp, f))
 
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
 
-        with open(os.path.join(self._build_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
-
-        if fc.manifest_in:
-            with open(os.path.join(self._build_dir(), 'MANIFEST.in'), 'w') as f:
-                f.write('\n'.join(fc.manifest_in))  # noqa
-
-    #
-
-    _STANDARD_FILES: ta.Sequence[str] = [
-        'LICENSE',
-        'README.rst',
-    ]
-
-    def _symlink_standard_files(self) -> None:
-        for fn in self._STANDARD_FILES:
-            if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._build_dir()), os.path.join(self._build_dir(), fn))
-
-    #
-
-    def _run_build(
-            self,
-            build_output_dir: ta.Optional[str] = None,
-    ) -> None:
-        subprocess.check_call(
-            [
-                sys.executable,
-                '-m',
-                'build',
-            ],
-            cwd=self._build_dir(),
-        )
-
-        if build_output_dir is not None:
-            dist_dir = os.path.join(self._build_dir(), 'dist')
-            for fn in os.listdir(dist_dir):
-                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
-
-    #
-
-    def gen(
-            self,
-            *,
-            run_build: bool = False,
-            build_output_dir: ta.Optional[str] = None,
-    ) -> str:
-        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
-
-        self._build_dir()
-        self._write_git_ignore()
-        self._symlink_source_dir()
-        self._write_file_contents()
-        self._symlink_standard_files()
-
-        if run_build:
-            self._run_build(build_output_dir)
-
-        return self._build_dir()
+#
 
 
 ########################################
@@ -3124,6 +3309,223 @@ class InterpInspector:
 
 
 INTERP_INSPECTOR = InterpInspector()
+
+
+########################################
+# ../pkg.py
+"""
+TODO:
+ - ext scanning
+ - __revision__
+ - entry_points
+
+https://setuptools.pypa.io/en/latest/references/keywords.html
+https://packaging.python.org/en/latest/specifications/pyproject-toml
+
+How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
+https://stackoverflow.com/a/66479252
+
+https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
+
+https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
+vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+"""
+# ruff: noqa: UP006 UP007
+
+
+class PyprojectPackageGenerator:
+    def __init__(
+            self,
+            dir_name: str,
+            build_root: str,
+    ) -> None:
+        super().__init__()
+        self._dir_name = dir_name
+        self._build_root = build_root
+
+    #
+
+    @cached_nullary
+    def about(self) -> types.ModuleType:
+        return importlib.import_module(f'{self._dir_name}.__about__')
+
+    @cached_nullary
+    def project_cls(self) -> type:
+        return self.about().Project
+
+    @cached_nullary
+    def setuptools_cls(self) -> type:
+        return self.about().Setuptools
+
+    #
+
+    @cached_nullary
+    def _build_dir(self) -> str:
+        build_dir: str = os.path.join(self._build_root, self._dir_name)
+        if os.path.isdir(build_dir):
+            shutil.rmtree(build_dir)
+        os.makedirs(build_dir)
+        return build_dir
+
+    #
+
+    def _write_git_ignore(self) -> None:
+        git_ignore = [
+            '/*.egg-info/',
+            '/dist',
+        ]
+        with open(os.path.join(self._build_dir(), '.gitignore'), 'w') as f:
+            f.write('\n'.join(git_ignore))
+
+    #
+
+    def _symlink_source_dir(self) -> None:
+        os.symlink(
+            os.path.relpath(self._dir_name, self._build_dir()),
+            os.path.join(self._build_dir(), self._dir_name),
+        )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
+    @staticmethod
+    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
+        dct = {}
+        for b in reversed(cls.__mro__):
+            for k, v in b.__dict__.items():
+                if k.startswith('_'):
+                    continue
+                dct[k] = v
+        return dct
+
+    @staticmethod
+    def _move_dict_key(
+            sd: ta.Dict[str, ta.Any],
+            sk: str,
+            dd: ta.Dict[str, ta.Any],
+            dk: str,
+    ) -> None:
+        if sk in sd:
+            dd[dk] = sd.pop(sk)
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        pyp_dct = {}
+
+        #
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = self._build_cls_dct(self.project_cls())
+        pyp_dct['project'] = prj
+
+        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
+        if (extras := pyp_dct.get(extrask)):
+            pyp_dct[extrask] = {
+                'all': [
+                    e
+                    for lst in extras.values()
+                    for e in lst
+                ],
+                **extras,
+            }
+
+        #
+
+        st = self._build_cls_dct(self.setuptools_cls())
+        pyp_dct['tool.setuptools'] = st
+
+        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+
+        mani_in = st.pop('manifest_in', None)
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            mani_in,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._build_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        if fc.manifest_in:
+            with open(os.path.join(self._build_dir(), 'MANIFEST.in'), 'w') as f:
+                f.write('\n'.join(fc.manifest_in))  # noqa
+
+    #
+
+    _STANDARD_FILES: ta.Sequence[str] = [
+        'LICENSE',
+        'README.rst',
+    ]
+
+    def _symlink_standard_files(self) -> None:
+        for fn in self._STANDARD_FILES:
+            if os.path.exists(fn):
+                os.symlink(os.path.relpath(fn, self._build_dir()), os.path.join(self._build_dir(), fn))
+
+    #
+
+    def _run_build(
+            self,
+            build_output_dir: ta.Optional[str] = None,
+            *,
+            add_revision: bool = False,
+    ) -> None:
+        subprocess.check_call(
+            [
+                sys.executable,
+                '-m',
+                'build',
+            ],
+            cwd=self._build_dir(),
+        )
+
+        dist_dir = os.path.join(self._build_dir(), 'dist')
+
+        if add_revision:
+            GitRevisionAdder().add_to(dist_dir)
+
+        if build_output_dir is not None:
+            for fn in os.listdir(dist_dir):
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
+
+    #
+
+    def gen(
+            self,
+            *,
+            run_build: bool = False,
+            build_output_dir: ta.Optional[str] = None,
+            add_revision: bool = False,
+    ) -> str:
+        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
+
+        self._build_dir()
+        self._write_git_ignore()
+        self._symlink_source_dir()
+        self._write_file_contents()
+        self._symlink_standard_files()
+
+        if run_build:
+            self._run_build(
+                build_output_dir,
+                add_revision=add_revision,
+            )
+
+        return self._build_dir()
 
 
 ########################################
@@ -3967,6 +4369,7 @@ def _pkg_cmd(args) -> None:
 
         build_output_dir = 'dist'
         run_build = bool(args.build)
+        add_revision = bool(args.revision)
 
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
@@ -3981,6 +4384,7 @@ def _pkg_cmd(args) -> None:
                     ).gen,
                     run_build=run_build,
                     build_output_dir=build_output_dir,
+                    add_revision=add_revision,
                 ))
                 for dir_name in run.cfg().pkgs
             ]
@@ -4009,6 +4413,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('pkg')
     parser_resolve.add_argument('-b', '--build', action='store_true')
+    parser_resolve.add_argument('-r', '--revision', action='store_true')
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_pkg_cmd)

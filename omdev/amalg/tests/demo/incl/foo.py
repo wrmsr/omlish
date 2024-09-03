@@ -1,4 +1,4 @@
-# @omlish-script
+# @omlish-lite
 """
 foo includes
 """
