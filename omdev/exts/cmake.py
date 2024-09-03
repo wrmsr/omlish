@@ -33,7 +33,7 @@ from omlish import lang
 from omlish import logs
 
 from .. import cmake
-from ..scripts import findmagic
+from .. import findmagic
 
 
 log = logging.getLogger(__name__)
