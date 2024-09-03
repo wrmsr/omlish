@@ -7,6 +7,10 @@
 
 //
 
+#define _MODULE_NAME "_boilerplate"
+#define _PACKAGE_NAME "omdev.exts"
+#define _MODULE_FULL_NAME (_PACKAGE_NAME "." _MODULE_NAME)
+
 typedef struct _boilerplate_state {
 } _boilerplate_state;
 
@@ -58,7 +62,7 @@ static struct PyModuleDef_Slot _boilerplate_slots[] = {
 
 static struct PyModuleDef _boilerplate_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "_boilerplate",
+    .m_name = _MODULE_NAME,
     .m_doc = _boilerplate_doc,
     .m_size = sizeof(_boilerplate_state),
     .m_methods = _boilerplate_methods,

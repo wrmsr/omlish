@@ -223,25 +223,26 @@ static PyMethodDef function_wrapper_methods[] = {
 };
 
 static PyType_Slot function_wrapper_type_slots[] = {
-        {Py_tp_traverse, (void *) function_wrapper_traverse},
-        {Py_tp_clear, (void *) function_wrapper_clear},
-        {Py_tp_methods, function_wrapper_methods},
-        {Py_tp_members, function_wrapper_members},
-        {Py_tp_getset, function_wrapper_getsetters},
-        {Py_tp_new, (void *) function_wrapper_new},
-        {Py_tp_dealloc, (void *) function_wrapper_dealloc},
-        {Py_tp_call, (void *) function_wrapper_call},
-        {0, 0}
+    {Py_tp_traverse, (void *) function_wrapper_traverse},
+    {Py_tp_clear, (void *) function_wrapper_clear},
+    {Py_tp_methods, function_wrapper_methods},
+    {Py_tp_members, function_wrapper_members},
+    {Py_tp_getset, function_wrapper_getsetters},
+    {Py_tp_new, (void *) function_wrapper_new},
+    {Py_tp_dealloc, (void *) function_wrapper_dealloc},
+    {Py_tp_call, (void *) function_wrapper_call},
+    {0, 0}
 };
 
 static PyType_Spec function_wrapper_type_spec = {
-        .name = _MODULE_NAME ".function_wrapper",
-        .basicsize = sizeof(function_wrapper_object),
-        .itemsize = 0,
-        .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
-                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VECTORCALL |
-                 Py_TPFLAGS_IMMUTABLETYPE,
-        .slots = function_wrapper_type_slots
+    .name = _MODULE_NAME ".function_wrapper",
+    .basicsize = sizeof(function_wrapper_object),
+    .itemsize = 0,
+    .flags =
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
+        Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VECTORCALL |
+        Py_TPFLAGS_IMMUTABLETYPE,
+    .slots = function_wrapper_type_slots
 };
 
 //
