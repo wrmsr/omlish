@@ -123,7 +123,7 @@ gen-pkg:
 ### Check
 
 .PHONY: check
-check: flake8 ruff mypy check-scripts
+check: flake8 ruff mypy precheck
 
 .PHONY: flake8
 flake8: venv
@@ -149,16 +149,14 @@ ruff-fix: venv
 mypy: venv
 	${PYTHON} -mmypy --check-untyped-defs ${SRCS}
 
-.PHONY: check-scripts
-check-scripts: venv
-	SCRIPT_IMPORTS=$$(find omdev/scripts -maxdepth 1 -name '*.py' -print0 | xargs -0 ${PYTHON} -m omdev.findimports) ; \
-	if [ ! -z "$$SCRIPT_IMPORTS" ] ; then \
-		echo "script imports found: $$SCRIPT_IMPORTS" ; \
-		exit 1 ; \
-	fi
+.PHONY: precheck
+precheck: venv
+	${PYTHON} -m omdev.precheck check ${SRCS}
 
 
 ## pre-commit
+
+# FIXME: update .git/hooks/pre-commit to use *just* git-ish omdev.precheck's
 
 GIT_BLACKLIST_FILES=\
 	.env \
