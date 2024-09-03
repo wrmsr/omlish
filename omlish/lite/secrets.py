@@ -1,10 +1,11 @@
+# ruff: noqa: UP007
 import typing as ta
 
 
 class Secret:
     _VALUE_ATTR = '__secret_value__'
 
-    def __init__(self, *, key: str | None, value: str) -> None:
+    def __init__(self, *, key: ta.Optional[str], value: str) -> None:
         super().__init__()
         self._key = key
         setattr(self, self._VALUE_ATTR, lambda: value)
