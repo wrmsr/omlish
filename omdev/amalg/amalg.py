@@ -8,6 +8,7 @@ TODO:
  - more sanity checks lol
  - flake8 / ruff mgmt
  - typealias - support # noqa, other comments, and lamely support multiline by just stealing lines till it parses
+ - remove `if __name__ == '__main__':` blocks - thus, convention: no def _main() for these
 
 See:
  - https://github.com/xonsh/amalgamate - mine is for portability not speed, and doesn't try to work on unmodified code
@@ -27,6 +28,7 @@ import dataclasses as dc
 import io
 import logging
 import os.path
+import re
 import typing as ta
 
 import tokenize_rt as trt
@@ -273,6 +275,23 @@ def make_src_file(
     )
 
 
+IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
+
+
+def strip_main_lines(cls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
+    out = []
+
+    for l in (it := iter(cls)):
+        if IF_MAIN_PAT.fullmatch(tks.join_toks(l).strip()):
+            for l in it:
+                if l[0].name != 'INDENT' and tks.join_toks(l).strip():
+                    break
+        else:
+            out.append(l)
+
+    return out
+
+
 ##
 
 
@@ -398,7 +417,10 @@ def gen_amalg(
         if f is not mf and f.header_lines:
             out.write(tks.join_lines(f.header_lines))
         out.write(f'\n\n')
-        sf_src = tks.join_lines(f.content_lines)
+        cls = f.content_lines
+        if f is not mf:
+            cls = strip_main_lines(cls)
+        sf_src = tks.join_lines(cls)
         out.write(sf_src.strip())
         if i < len(sfs) - 1:
             out.write('\n\n\n')
