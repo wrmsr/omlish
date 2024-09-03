@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # @omlish-script
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - hoist first stacktrace file to a full field
@@ -124,7 +125,7 @@ class StatsFactory:
 
     @classmethod
     def get_proc_status(cls) -> ta.Mapping[str, ta.Any]:
-        with open('/proc/self/status', 'r') as status_file:
+        with open('/proc/self/status') as status_file:
             status_block = status_file.read()
 
         status_fields = {

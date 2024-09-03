@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # @omlish-lite
+# @omlish-script
 import os.path
 import re
 import typing as ta

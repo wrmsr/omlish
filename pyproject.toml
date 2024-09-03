@@ -241,9 +241,6 @@ ignore = [
     'B011',  # assert-false
     'S101',  # assert
 ]
-'**/scripts/*' = [
-    'UP',
-]
 'omlish/testing/*' = [
     'S101',  # assert
 ]
