@@ -58,7 +58,7 @@ class Precheck(abc.ABC, ta.Generic[PrecheckConfigT]):
         msg: str
 
     @abc.abstractmethod
-    def run(self) -> ta.Iterable[Violation]:
+    async def run(self) -> ta.Iterable[Violation]:
         raise NotImplementedError
 
 
@@ -82,7 +82,7 @@ class GitBlacklistPrecheck(Precheck['GitBlacklistPrecheck.Config']):
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
 
-    def run(self) -> ta.Iterable[Precheck.Violation]:
+    async def run(self) -> ta.Iterable[Precheck.Violation]:
         for f in self._config.files:
             if subprocess.check_output(['git',  'status', '-s', f]):
                 yield Precheck.Violation(self, f)
@@ -110,7 +110,7 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
 
-    def run(self) -> ta.Iterable[Precheck.Violation]:
+    async def run(self) -> ta.Iterable[Precheck.Violation]:
         for fp in findmagic.find_magic(
                 self._config.roots,
                 ['# @omlish-script'],
@@ -182,7 +182,48 @@ class LitePython8Precheck(Precheck['LitePy8Precheck.Config']):
 
     #
 
-    def run(self) -> ta.Iterable[Precheck.Violation]:
+    async def _run_script(self, fp: str) -> ta.Iterable[Precheck.Violation]:
+        log.info('%s: loading script %s', self.__class__.__name__, fp)
+
+        proc = subprocess.Popen(
+            [
+                '.venvs/8/bin/python',
+                '-c',
+                self._load_file_module_payload(),
+                fp,
+            ],
+            stderr=subprocess.PIPE,
+        )
+
+        _, stderr = proc.communicate()
+        if proc.returncode != 0:
+            yield Precheck.Violation(self, f'lite script {fp} failed to load in python8: {stderr.decode()}')
+
+    async def _run_module(self, fp: str) -> ta.Iterable[Precheck.Violation]:
+        if fp.endswith('__init__.py'):
+            pfps = glob.glob(os.path.join(os.path.dirname(fp), '**/*.py'), recursive=True)
+        else:
+            pfps = [fp]
+
+        for pfp in pfps:
+            mod = pfp.rpartition('.')[0].replace(os.sep, '.')
+
+            log.info('%s: loading module %s', self.__class__.__name__, mod)
+
+            proc = subprocess.Popen(
+                [
+                    '.venvs/8/bin/python',
+                    '-c',
+                    f'import {mod}',
+                ],
+                stderr=subprocess.PIPE,
+            )
+
+            _, stderr = proc.communicate()
+            if proc.returncode != 0:
+                yield Precheck.Violation(self, f'lite module {pfp} failed to import in python8: {stderr.decode()}')  # noqa
+
+    async def run(self) -> ta.Iterable[Precheck.Violation]:
         for fp in findmagic.find_magic(
                 self._config.roots,
                 ['# @omlish-lite'],
@@ -194,45 +235,12 @@ class LitePython8Precheck(Precheck['LitePy8Precheck.Config']):
             is_script = '# @omlish-script' in src.splitlines()
 
             if is_script:
-                log.info('%s: loading script %s', self.__class__.__name__, fp)
-
-                proc = subprocess.Popen(
-                    [
-                        '.venvs/8/bin/python',
-                        '-c',
-                        self._load_file_module_payload(),
-                        fp,
-                    ],
-                    stderr=subprocess.PIPE,
-                )
-
-                _, stderr = proc.communicate()
-                if proc.returncode != 0:
-                    yield Precheck.Violation(self, f'lite script {fp} failed to load in python8: {stderr.decode()}')
+                async for v in self._run_script(fp):
+                    yield v
 
             else:
-                if fp.endswith('__init__.py'):
-                    pfps = glob.glob(os.path.join(os.path.dirname(fp), '**/*.py'), recursive=True)
-                else:
-                    pfps = [fp]
-
-                for pfp in pfps:
-                    mod = pfp.rpartition('.')[0].replace(os.sep, '.')
-
-                    log.info('%s: loading module %s', self.__class__.__name__, mod)
-
-                    proc = subprocess.Popen(
-                        [
-                            '.venvs/8/bin/python',
-                            '-c',
-                            f'import {mod}',
-                        ],
-                        stderr=subprocess.PIPE,
-                    )
-
-                    _, stderr = proc.communicate()
-                    if proc.returncode != 0:
-                        yield Precheck.Violation(self, f'lite module {pfp} failed to import in python8: {stderr.decode()}')  # noqa
+                async for v in self._run_module(fp):
+                    yield v
 
 
 ##
