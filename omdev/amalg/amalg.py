@@ -37,8 +37,8 @@ from omlish import check
 from omlish import collections as col
 from omlish import logs
 
+from .. import findmagic
 from .. import tokens as tks
-from ..scripts.findmagic import compile_magic_pat
 
 
 Tokens: ta.TypeAlias = tks.Tokens
@@ -72,7 +72,7 @@ def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[T
 IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
 
 
-def strip_main_lines(cls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
+def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
     out = []
 
     for l in (it := iter(cls)):
@@ -94,9 +94,10 @@ STRIPPED_HEADER_MAGICS = [
     '# @omlish-script',
 ]
 
-STRIPPED_HEADER_PATS = [compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
+STRIPPED_HEADER_PATS = [findmagic.compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
 
-def strip_header_magics(hls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
+
+def strip_header_magics(hls: ta.Sequence[Tokens]) -> list[Tokens]:
     out = []
     for l in hls:
         ls = tks.join_toks(l)

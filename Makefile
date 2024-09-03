@@ -243,7 +243,7 @@ venv-lite:
 
 .PHONY: test-lite
 test-lite:
-	LITE_PATHS=$$(${PYTHON} -m omdev.scripts.findmagic --py -x py -m '# @omlish-lite' ${SRCS}) ; \
+	LITE_PATHS=$$(${PYTHON} -m omdev.findmagic --py -x py -m '# @omlish-lite' ${SRCS}) ; \
 	for V in ${LITE_VENVS} ; do \
   		for T in $$LITE_PATHS ; do \
 			if [ -d $$(echo "$$T" | tr '.' '/') ] ; then \

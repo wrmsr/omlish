@@ -1,4 +1,5 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
+# @omlish-script
 """
 https://github.com/umlet/pwk/blob/dc23b3400108a71947a695f1fa1df0f514b42528/pwk
 """
