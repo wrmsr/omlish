@@ -177,19 +177,51 @@ def _main():
     #     input_variables=['question', 'document'],
     # )
 
-    # https://github.com/meta-llama/llama3/issues/185
+    # Agent memory refers to the long-term memory module that records a comprehensive list of agents' experience in
+    # natural language. This allows the agent to behave conditioned on past experience and interact with other agents.
     prompt = PromptTemplate(
-        template="""
-        <|begin_of_text|>
-        <|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
+        template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
         Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
         Use three sentences maximum and keep the answer concise <|eot_id|><|start_header_id|>user<|end_header_id|>
         Question: {question}
         Context: {context}
-        Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>
-        """,
+        Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>""",
         input_variables=['question', 'document'],
     )
+
+    # https://github.com/meta-llama/llama3/issues/185
+
+    # Agent memory refers to the long-term memory module that records a comprehensive list of agents' experience in
+    # natural language. This allows the agent to retain and recall information over extended periods, leveraging an
+    # external vector store and fast retrieval.
+    # prompt = PromptTemplate(
+    #     template="""
+    #     <|begin_of_text|>
+    #     <|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
+    #     Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
+    #     Use three sentences maximum and keep the answer concise <|eot_id|><|start_header_id|>user<|end_header_id|>
+    #     Question: {question}
+    #     Context: {context}
+    #     Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>
+    #     """,
+    #     input_variables=['question', 'document'],
+    # )
+
+    # Agent memory refers to the long-term memory module that records a comprehensive list of agents' experience in
+    # natural language. This allows the agent to retain and recall information over extended periods, leveraging an
+    # external vector store and fast retrieval.
+    # prompt = PromptTemplate(
+    #     template="""
+    #     <|begin_of_text|>
+    #     <|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks. Use the following
+    #     pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
+    #     Use three sentences maximum and keep the answer concise <|eot_id|><|start_header_id|>user<|end_header_id|>
+    #     Question: {question}
+    #     Context: {context}
+    #     Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>
+    #     """,
+    #     input_variables=['question', 'document'],
+    # )
 
     llm = ChatOllama(model=local_llm, temperature=0)
 
@@ -201,11 +233,10 @@ def _main():
     rag_chain = prompt | llm | StrOutputParser()
 
     # Run
-    for _ in range(10):
-        question = 'agent memory'
-        docs = retriever.invoke(question)
-        generation = rag_chain.invoke({'context': docs, 'question': question})
-        print(generation)
+    question = 'agent memory'
+    docs = retriever.invoke(question)
+    generation = rag_chain.invoke({'context': docs, 'question': question})
+    print(generation)
 
     ##
     # 4. Hallucination Grader and Answer Grader
