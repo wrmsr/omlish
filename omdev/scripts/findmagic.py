@@ -1,7 +1,10 @@
-import argparse
 import os.path
 import re
 import typing as ta
+
+
+def compile_magic_pat(m: str) -> re.Pattern:
+    return re.compile('^' + re.escape(m) + r'($|(\s.*))')
 
 
 def find_magic(
@@ -16,10 +19,7 @@ def find_magic(
     if not exts:
         raise Exception('Must specify extensions')
 
-    pats = [
-        re.compile('^' + re.escape(m) + r'($|(\s.*))')
-        for m in magics
-    ]
+    pats = [compile_magic_pat(m) for m in magics]
 
     for root in roots:
         for dp, dns, fns in os.walk(root):  # noqa
@@ -52,22 +52,23 @@ def find_magic(
                 yield out
 
 
-def _main(argv=None) -> None:
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--ext', '-x', dest='exts', action='append')
-    arg_parser.add_argument('--magic', '-m', dest='magics', action='append')
-    arg_parser.add_argument('--py', action='store_true')
-    arg_parser.add_argument('roots', nargs='*')
-    args = arg_parser.parse_args(argv)
-
-    for out in find_magic(
-        roots=args.roots,
-        magics=args.magics,
-        exts=args.exts,
-        py=args.py,
-    ):
-        print(out)
-
-
 if __name__ == '__main__':
+    def _main(argv=None) -> None:
+        import argparse
+
+        arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument('--ext', '-x', dest='exts', action='append')
+        arg_parser.add_argument('--magic', '-m', dest='magics', action='append')
+        arg_parser.add_argument('--py', action='store_true')
+        arg_parser.add_argument('roots', nargs='*')
+        args = arg_parser.parse_args(argv)
+
+        for out in find_magic(
+            roots=args.roots,
+            magics=args.magics,
+            exts=args.exts,
+            py=args.py,
+        ):
+            print(out)
+
     _main()
