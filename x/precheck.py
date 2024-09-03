@@ -18,6 +18,7 @@ TODO:
 """
 import abc
 import argparse
+import asyncio
 import dataclasses as dc
 import glob
 import inspect
@@ -256,12 +257,17 @@ def _check_cmd(args) -> None:
         LitePython8Precheck(),
     ]
 
-    vs: list[Precheck.Violation] = []
+    async def run() -> list[Precheck.Violation]:
+        vs: list[Precheck.Violation] = []
 
-    for pc in pcs:
-        for v in pc.run():
-            vs.append(v)
-            print(v)
+        for pc in pcs:
+            async for v in pc.run():
+                vs.append(v)
+                print(v)
+
+        return vs
+
+    vs = asyncio.run(run())
 
     if vs:
         print(f'{len(vs)} violations found')
