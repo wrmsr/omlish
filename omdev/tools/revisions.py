@@ -120,7 +120,15 @@ class RevisionAdder:
 
 
 def get_revision() -> str:
-    return subprocess.check_output([
+    has_untracked = bool(subprocess.check_output([
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+    ]).decode().strip())
+
+    dirty_rev = subprocess.check_output([
         'git',
         'describe',
         '--match=NeVeRmAtCh',
@@ -128,6 +136,8 @@ def get_revision() -> str:
         '--abbrev=40',
         '--dirty',
     ]).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')
 
 
 #
