@@ -61,6 +61,7 @@ cycler==0.12.1
 cymem==2.0.8
 Cython==3.0.11
 darkdetect==0.8.0
+dataclasses-json==0.6.7
 datasets==2.21.0
 debugpy==1.8.5
 decorator==5.1.1
@@ -73,6 +74,8 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 duckdb==1.0.0
 einops==0.8.0
+elastic-transport==8.15.0
+elasticsearch==8.15.0
 evaluate==0.4.2
 execnet==2.1.1
 executing==2.1.0
@@ -99,6 +102,7 @@ google-cloud-compute==1.19.2
 google-pasta==0.2.0
 googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
+gpt4all==2.8.2
 greenlet==3.0.3
 grpcio==1.66.1
 grpcio-status==1.62.3
@@ -133,6 +137,8 @@ jiter==0.5.0
 jmespath==1.0.1
 joblib==1.4.2
 json5==0.9.25
+jsonlines==4.0.0
+jsonpatch==1.33
 jsonpointer==3.0.0
 jsonschema==4.23.0
 jsonschema-specifications==2023.12.1
@@ -150,7 +156,17 @@ jupyterlab_widgets==3.0.13
 keras==3.5.0
 keyring==25.3.0
 kiwisolver==1.4.6
+langchain==0.2.16
+langchain-community==0.2.15
+langchain-core==0.2.38
+langchain-elasticsearch==0.2.2
+langchain-nomic==0.1.2
+langchain-text-splitters==0.2.4
+langchainhub==0.1.21
 langcodes==3.4.0
+langgraph==0.2.16
+langgraph-checkpoint==1.0.8
+langsmith==0.1.110
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -159,6 +175,7 @@ lightning-utilities==0.11.7
 litecli==1.11.1
 llvmlite==0.43.0
 Logbook==1.7.0.post0
+loguru==0.7.2
 loralib==0.1.2
 lxml==5.3.0
 lz4==4.3.3
@@ -167,6 +184,7 @@ marisa-trie==1.2.0
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
+marshmallow==3.22.0
 matplotlib==3.9.2
 matplotlib-inline==0.1.7
 mccabe==0.7.0
@@ -195,6 +213,7 @@ networkx==3.3
 nevergrad==1.0.4
 nh3==0.2.18
 nltk==3.9.1
+nomic==3.1.2
 notebook==7.2.2
 notebook_shim==0.2.4
 numba==0.60.0
@@ -253,6 +272,7 @@ pydantic==2.8.2
 pydantic_core==2.20.1
 pyflakes==3.2.0
 Pygments==2.18.0
+PyJWT==2.9.0
 PyMySQL==1.1.1
 PyNaCl==1.5.0
 pyobjc-core==10.3.1
@@ -337,7 +357,8 @@ srsly==2.4.8
 stack-data==0.6.3
 sympy==1.13.2
 tabulate==0.9.0
-tenacity==9.0.0
+tavily-python==0.4.0
+tenacity==8.5.0
 tensorboard==2.17.1
 tensorboard-data-server==0.7.2
 tensorflow==2.17.0
@@ -368,7 +389,9 @@ typer==0.12.5
 types-paramiko==3.4.0.20240423
 types-python-dateutil==2.9.0.20240821
 types-PyYAML==6.0.12.20240808
+types-requests==2.32.0.20240712
 types-ujson==5.10.0.20240515
+typing-inspect==0.9.0
 typing_extensions==4.12.2
 tyro==0.8.10
 tzdata==2024.1

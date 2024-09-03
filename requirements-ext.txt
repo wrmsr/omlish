@@ -187,7 +187,7 @@ discord.py==2.4.0
 
 logbook==1.7.0.post0
 
-tenacity==9.0.0
+# tenacity==9.0.0
 
 psutil==6.0.0
 
@@ -211,3 +211,17 @@ safetensors==0.4.4
 paramiko==3.4.1
 
 customtkinter==5.2.2
+
+##
+
+langchain==0.2.16
+langchain-community==0.2.15
+langchain-elasticsearch==0.2.2
+langchain-nomic==0.1.2
+langchain-text-splitters==0.2.4
+langchainhub==0.1.21
+langgraph==0.2.16
+
+tavily-python==0.4.0
+
+gpt4all==2.8.2

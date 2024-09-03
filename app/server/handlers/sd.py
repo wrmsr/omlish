@@ -37,19 +37,29 @@ from omserv.apps.routes import handles
 
 
 # fmt: off
+
 if ta.TYPE_CHECKING:
     import numpy as np  # noqa
+
     import tinygrad as tg
-    import tinygrad.tensor  # noqa
-    from tinygrad import nn
+    import tinygrad.helpers as tg_helpers
+    import tinygrad.nn as tg_nn
+    import tinygrad.tensor as tg_tensor
+
     from examples import stable_diffusion as sd
     from PIL import Image as pi  # noqa
+
 else:
     np = lang.proxy_import('numpy')
+
     tg = lang.proxy_import('tinygrad')
-    nn = lang.proxy_import('tinygrad.nn')
+    tg_helpers = lang.proxy_import('tinygrad.helpers')
+    tg_nn = lang.proxy_import('tinygrad.nn')
+    tg_tensor = lang.proxy_import('tinygrad.tensor')
+
     sd = lang.proxy_import('examples.stable_diffusion')
     pi = lang.proxy_import('PIL.Image')
+
 # fmt: on
 
 
@@ -68,22 +78,22 @@ class SdArgs:
 
 
 def run_sd(args: SdArgs) -> bytes:
-    tg.tensor.Tensor.no_grad = True
+    tg_tensor.Tensor.no_grad = True
     model = sd.StableDiffusion()
 
     # load in weights
     weights_url = 'https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt'
-    fetched_weights = tg.helpers.fetch(weights_url, 'sd-v1-4.ckpt')
-    fw: dict[str, ta.Any] = nn.state.torch_load(str(fetched_weights))
-    nn.state.load_state_dict(model, fw['state_dict'], strict=False)
+    fetched_weights = tg_helpers.fetch(weights_url, 'sd-v1-4.ckpt')
+    fw: dict[str, ta.Any] = tg_nn.state.torch_load(str(fetched_weights))
+    tg_nn.state.load_state_dict(model, fw['state_dict'], strict=False)
 
     # run through CLIP to get context
     tokenizer = sd.Tokenizer.ClipTokenizer()
-    prompt = tg.tensor.Tensor([tokenizer.encode(args.prompt)])
+    prompt = tg_tensor.Tensor([tokenizer.encode(args.prompt)])
     context = model.cond_stage_model.transformer.text_model(prompt).realize()
     log.info('Got CLIP context: %r', context.shape)
 
-    prompt = tg.tensor.Tensor([tokenizer.encode('')])
+    prompt = tg_tensor.Tensor([tokenizer.encode('')])
     unconditional_context = model.cond_stage_model.transformer.text_model(prompt).realize()
     log.info('Got unconditional CLIP context: %r', unconditional_context.shape)
 
@@ -92,13 +102,13 @@ def run_sd(args: SdArgs) -> bytes:
 
     timesteps = list(range(1, 1000, 1000 // args.steps))
     log.info('Running for timesteps %r', timesteps)
-    alphas = model.alphas_cumprod[tg.tensor.Tensor(timesteps)]
-    alphas_prev = tg.tensor.Tensor([1.0]).cat(alphas[:-1])
+    alphas = model.alphas_cumprod[tg_tensor.Tensor(timesteps)]
+    alphas_prev = tg_tensor.Tensor([1.0]).cat(alphas[:-1])
 
     # start with random noise
     if args.seed is not None:
-        tg.tensor.Tensor.manual_seed(args.seed)
-    latent = tg.tensor.Tensor.randn(1, 4, 64, 64)
+        tg_tensor.Tensor.manual_seed(args.seed)
+    latent = tg_tensor.Tensor.randn(1, 4, 64, 64)
 
     @tg.TinyJit
     def run(model, *x):
@@ -106,16 +116,16 @@ def run_sd(args: SdArgs) -> bytes:
 
     # this is diffusion
     for index, timestep in list(enumerate(timesteps))[::-1]:
-        tid = tg.tensor.Tensor([index])
+        tid = tg_tensor.Tensor([index])
         latent = run(
             model,
             unconditional_context,
             context,
             latent,
-            tg.tensor.Tensor([timestep]),
+            tg_tensor.Tensor([timestep]),
             alphas[tid],
             alphas_prev[tid],
-            tg.tensor.Tensor([args.guidance]),
+            tg_tensor.Tensor([args.guidance]),
         )
 
     # upsample latent space to image with autoencoder

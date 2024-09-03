@@ -378,6 +378,7 @@ def gen_amalg(
             '#!/usr/bin/env python3\n',
             '# noinspection DuplicatedCode\n',
             '# @omlish-lite\n',
+            '# @omlish-script\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
         ])
         hls = [*nhls, *hls]
