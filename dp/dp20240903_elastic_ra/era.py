@@ -109,26 +109,84 @@ def _main():
     # 3. Generator
 
     # Prompt
+
+    # The context discusses agent memory, specifically mentioning the design of generative agents that combines LLM with
+    # memory, planning, and reflection mechanisms. It also mentions short-term and long-term memory modules, including a
+    # retrieval model that surfaces context to inform the agent's behavior. The external vector store is used for fast
+    # retrieval and maximum inner-product search (MIPS) algorithms are employed to optimize retrieval speed.
+    # prompt = PromptTemplate(
+    #     template="""
+    #     <|begin_of_text|>
+    #
+    #     <|start_header_id|>system<|end_header_id|>
+    #     You are an assistant for question-answering tasks.
+    #
+    #     Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say
+    #     that you don't know. Use three sentences maximum and keep the answer concise
+    #     <|eot_id|>
+    #
+    #     <|start_header_id|>user<|end_header_id|>
+    #     Question: {question}
+    #
+    #     Context: {context}
+    #
+    #     Answer:
+    #     <|eot_id|>
+    #
+    #     <|start_header_id|>assistant<|end_header_id|>
+    #     """,
+    #     input_variables=['question', 'document'],
+    # )
+
+    # The context discusses agent memory, specifically mentioning the design of generative agents that combines LLM with
+    # memory, planning, and reflection mechanisms. It also mentions short-term and long-term memory modules, including a
+    # retrieval model that surfaces context to inform the agent's behavior. The external vector store is used for fast
+    # retrieval and maximum inner-product search (MIPS) algorithms are employed to optimize retrieval speed.
+    # prompt = PromptTemplate(
+    #     template="""
+    #     <|begin_of_text|>
+    #
+    #     <|start_header_id|>system<|end_header_id|>
+    #     You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the
+    #     question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the
+    #     answer concise
+    #     <|eot_id|>
+    #
+    #     <|start_header_id|>user<|end_header_id|>
+    #     Question: {question}
+    #     Context: {context}
+    #     Answer:
+    #     <|eot_id|>
+    #
+    #     <|start_header_id|>assistant<|end_header_id|>
+    #     """,
+    #     input_variables=['question', 'document'],
+    # )
+
+    # Agent memory in LLM-powered autonomous agents is composed of three components: short-term memory, long-term
+    # memory, and sensory memory. Short-term memory refers to the model's ability to learn in-context through prompt
+    # engineering. Long-term memory is an external database that stores information and allows for fast retrieval via
+    # maximum inner-product search (MIPS) or approximate nearest neighbors (ANN) algorithms.
+    # prompt = PromptTemplate(
+    #     template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
+    #     Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
+    #     Use three sentences maximum and keep the answer concise <|eot_id|><|start_header_id|>user<|end_header_id|>
+    #     Question: {question}
+    #     Context: {context}
+    #     Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>""",
+    #     input_variables=['question', 'document'],
+    # )
+
     prompt = PromptTemplate(
-        template="""
-        <|begin_of_text|>
-
-        <|start_header_id|>system<|end_header_id|>
-        You are an assistant for question-answering tasks. 
-
-        Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say
-        that you don't know. Use three sentences maximum and keep the answer concise
+        template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+        You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the
+        question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the
+        answer concise
         <|eot_id|>
-        
         <|start_header_id|>user<|end_header_id|>
-        Question: {question} 
-        
-        Context: {context} 
-        
-        Answer:
-        <|eot_id|>
-
-        <|start_header_id|>assistant<|end_header_id|>
+        Question: {question}
+        Context: {context}
+        Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>
         """,
         input_variables=['question', 'document'],
     )
@@ -143,10 +201,11 @@ def _main():
     rag_chain = prompt | llm | StrOutputParser()
 
     # Run
-    question = 'agent memory'
-    docs = retriever.invoke(question)
-    generation = rag_chain.invoke({'context': docs, 'question': question})
-    print(generation)
+    for _ in range(10):
+        question = 'agent memory'
+        docs = retriever.invoke(question)
+        generation = rag_chain.invoke({'context': docs, 'question': question})
+        print(generation)
 
     ##
     # 4. Hallucination Grader and Answer Grader
