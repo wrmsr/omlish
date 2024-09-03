@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 TODO:
  - omlish-lite, move to pyproject/
@@ -13,21 +14,55 @@ import tarfile
 import typing as ta
 import zipfile
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
 from ..wheelfile import WheelFile
 
 
-class RevisionAdder:
+##
+
+
+def get_git_revision() -> str:
+    has_untracked = bool(subprocess.check_output([
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+    ]).decode().strip())
+
+    dirty_rev = subprocess.check_output([
+        'git',
+        'describe',
+        '--match=NeVeRmAtCh',
+        '--always',
+        '--abbrev=40',
+        '--dirty',
+    ]).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')
+
+
+##
+
+
+class GitRevisionAdder:
     def __init__(
             self,
-            revision: str,
+            revision: ta.Optional[str] = None,
             output_suffix: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
-        self._revision = revision
+        self._given_revision = revision
         self._output_suffix = output_suffix
+
+    @cached_nullary
+    def revision(self) -> str:
+        if self._given_revision is not None:
+            return self._given_revision
+        return get_git_revision()
 
     REVISION_ATTR = '__revision__'
 
@@ -41,7 +76,7 @@ class RevisionAdder:
             for i, l in enumerate(lines):
                 if l != f'{self.REVISION_ATTR} = None\n':
                     continue
-                lines[i] = f"{self.REVISION_ATTR} = '{self._revision}'\n"
+                lines[i] = f"{self.REVISION_ATTR} = '{self.revision()}'\n"
                 changed = True
             dct[n] = ''.join(lines).encode('utf-8')
         return changed
@@ -106,6 +141,8 @@ class RevisionAdder:
             self.add_to_tgz(f)
 
     def add_to(self, tgt: str) -> None:
+        log.info('Using revision %s', self.revision())
+
         if os.path.isfile(tgt):
             self.add_to_file(tgt)
 
@@ -119,65 +156,35 @@ class RevisionAdder:
 #
 
 
-def get_revision() -> str:
-    has_untracked = bool(subprocess.check_output([
-        'git',
-        'ls-files',
-        '.',
-        '--exclude-standard',
-        '--others',
-    ]).decode().strip())
-
-    dirty_rev = subprocess.check_output([
-        'git',
-        'describe',
-        '--match=NeVeRmAtCh',
-        '--always',
-        '--abbrev=40',
-        '--dirty',
-    ]).decode().strip()
-
-    return dirty_rev + ('-untracked' if has_untracked else '')
-
-
-#
-
-
-def _add_cmd(args) -> None:
-    if (revision := args.revision) is None:
-        revision = get_revision()
-        log.info('Using revision %s', revision)
-
-    if not args.targets:
-        raise Exception('must specify targets')
-
-    ra = RevisionAdder(
-        revision,
-        output_suffix=args.suffix,
-    )
-    for tgt in args.targets:
-        ra.add_to(tgt)
-
-
-def _main(argv=None) -> None:
-    configure_standard_logging('INFO')
-
-    parser = argparse.ArgumentParser()
-
-    subparsers = parser.add_subparsers()
-
-    parser_add = subparsers.add_parser('add')
-    parser_add.add_argument('-r', '--revision')
-    parser_add.add_argument('-s', '--suffix')
-    parser_add.add_argument('targets', nargs='*')
-    parser_add.set_defaults(func=_add_cmd)
-
-    args = parser.parse_args(argv)
-    if not getattr(args, 'func', None):
-        parser.print_help()
-    else:
-        args.func(args)
-
-
 if __name__ == '__main__':
+    def _add_cmd(args) -> None:
+        if not args.targets:
+            raise Exception('must specify targets')
+
+        ra = GitRevisionAdder(
+            args.revision,
+            output_suffix=args.suffix,
+        )
+        for tgt in args.targets:
+            ra.add_to(tgt)
+
+    def _main(argv=None) -> None:
+        configure_standard_logging('INFO')
+
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers()
+
+        parser_add = subparsers.add_parser('add')
+        parser_add.add_argument('-r', '--revision')
+        parser_add.add_argument('-s', '--suffix')
+        parser_add.add_argument('targets', nargs='*')
+        parser_add.set_defaults(func=_add_cmd)
+
+        args = parser.parse_args(argv)
+        if not getattr(args, 'func', None):
+            parser.print_help()
+        else:
+            args.func(args)
+
     _main()

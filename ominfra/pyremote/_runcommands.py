@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
+# @omlish-lite
 # @omdev-amalg-output runcommands.py
 # ruff: noqa: UP006 UP007
 import abc
