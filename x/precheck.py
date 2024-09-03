@@ -2,6 +2,8 @@
 Tiny pre-commit
 
 TODO:
+ - omlish-lite - no non-lite deps, etc etc
+ - omlish-script - no deps, shebang, executable, can be 3.12
  - big git files https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-added-large-files
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-case-conflict
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-symlinks
@@ -10,71 +12,90 @@ TODO:
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#forbid-new-submodules
  - don't check in .o's (omdev.ext import hook is dumb w build dir)
 """
+import abc
 import argparse
+import dataclasses as dc
 import functools
 import logging
+import os.path
 import subprocess
 import sys
 import typing as ta
 
 
 T = ta.TypeVar('T')
+PrecheckConfigT = ta.TypeVar('PrecheckConfigT', bound='Precheck.Config')
 
 
 log = logging.getLogger(__name__)
 
 
-REQUIRED_PYTHON_VERSION = (3, 8)
+##
+
+
+class Precheck(abc.ABC, ta.Generic[PrecheckConfigT]):
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    def __init__(self, config: PrecheckConfigT) -> None:
+        super().__init__()
+        self._config = config
+
+    @dc.dataclass(frozen=True)
+    class Violation:
+        pc: 'Precheck'
+        msg: str
+
+    @abc.abstractmethod
+    def run(self) -> ta.Iterable[Violation]:
+        raise NotImplementedError
 
 
 ##
 
 
-def _check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
+class GitBlacklistPrecheck(Precheck['GitBlacklistPrecheck.Config']):
+    """
+    TODO:
+     - globs
+     - regex
+    """
+
+    @dc.dataclass(frozen=True)
+    class Config(Precheck.Config):
+        files: ta.Sequence[str] = (
+            '.env',
+            'secrets.yml',
+        )
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+    def run(self) -> ta.Iterable[Precheck.Violation]:
+        for f in self._config.files:
+            if subprocess.check_output(['git',  'status', '-s', f]):
+                yield Precheck.Violation(self, f)
 
 
-def _check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
+##
 
 
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
+class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):[
 
-
-def _mask_env_kwarg(kwargs):
-    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
-
-
-def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
-
-
-def _subprocess_check_output(*args, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_output(*args, **kwargs)
-
-
+]
 ##
 
 
 def _check_cmd(args) -> None:
-    pass
+    if not os.path.isfile('pyproject.toml'):
+        raise RuntimeError('must run in project root')
+
+    for pc in [
+        GitBlacklistPrecheck(),
+    ]:
+        for v in pc.run():
+            print(v)
 
 
 ##
@@ -92,9 +113,6 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
 

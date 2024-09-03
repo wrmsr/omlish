@@ -1,5 +1,7 @@
 """
 TODO:
+ - throttles
+ - circuitbreakers
  - coordination (redis? coord iface?)
  - dogpile
  - mv faults?

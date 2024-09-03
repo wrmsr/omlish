@@ -33,10 +33,11 @@ import sys
 import time
 import typing as ta
 
-import lz4.frame
 from omlish import lang  # noqa
 from omlish import marshal as msh  # noqa
 from omlish.formats import json  # noqa
+import lz4.frame
+import mwparserfromhell as mfh
 
 from . import io as iou
 from . import models as mdl
@@ -87,6 +88,11 @@ def _main() -> None:
 
                 page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
                 # print(page)
+
+                for rev in page.revisions:
+                    if rev.text:
+                        wikicode = mfh.parse(rev.text.text)
+                        print(wikicode)
 
 
 if __name__ == '__main__':
