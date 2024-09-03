@@ -95,7 +95,7 @@ point_repr(point_object *self)
     }
 
     PyObject *result = PyUnicode_FromFormat(
-        "%s(x=%R, y=%R)",
+        "%s(x=%d, y=%d)",
         _PyType_Name(Py_TYPE(self)),
         self->x,
         self->y);
@@ -174,8 +174,7 @@ static PyType_Spec point_type_spec = {
     .itemsize = 0,
     .flags =
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
-        Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VECTORCALL |
-        Py_TPFLAGS_IMMUTABLETYPE,
+        Py_TPFLAGS_BASETYPE,  // | Py_TPFLAGS_IMMUTABLETYPE,
     .slots = point_type_slots
 };
 
