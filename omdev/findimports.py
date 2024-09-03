@@ -38,7 +38,7 @@ def yield_imports(fp: str) -> set[str]:
     # if not os.path.isfile(os.path.join(os.path.dirname(fp), '__init__.py')):
     #     return
 
-    with open(fp, 'r') as f:
+    with open(fp) as f:
         buf = f.read()
 
     nodes: list[ast.AST] = []

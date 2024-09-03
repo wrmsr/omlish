@@ -8,19 +8,20 @@ TODO:
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-case-conflict
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-symlinks
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#detect-aws-credentials
- - secrets.yml - checkin blacklist
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#forbid-new-submodules
  - don't check in .o's (omdev.ext import hook is dumb w build dir)
 """
 import abc
 import argparse
 import dataclasses as dc
-import functools
 import logging
 import os.path
+import stat
 import subprocess
-import sys
 import typing as ta
+
+from omdev import findimports
+from omdev import findmagic
 
 
 T = ta.TypeVar('T')
@@ -81,9 +82,46 @@ class GitBlacklistPrecheck(Precheck['GitBlacklistPrecheck.Config']):
 ##
 
 
-class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):[
+class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
+    """
+    TODO:
+     - global/run config, ${SRCS}
+    """
 
-]
+    @dc.dataclass(frozen=True)
+    class Config(Precheck.Config):
+        roots: ta.Sequence[str] = (
+            'omdev',
+            'ominfra',
+            'omlish',
+            'ommlx',
+            'omserv',
+        )
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__(config)
+
+    def run(self) -> ta.Iterable[Precheck.Violation]:
+        for fp in findmagic.find_magic(
+                self._config.roots,
+                ['# @omlish-script'],
+                ['py'],
+        ):
+            if not (stat.S_IXUSR & os.stat(fp).st_mode):
+                yield Precheck.Violation(self, f'script {fp} is not executable')
+
+            with open(fp) as f:
+                src = f.read()
+
+            if not src.startswith('#!/usr/bin/env python3\n'):
+                yield Precheck.Violation(self, f'script {fp} lacks correct shebang')
+
+            imps = findimports.find_imports(fp)
+            deps = findimports.get_import_deps(imps)
+            if deps:
+                yield Precheck.Violation(self, f'script {fp} has deps: {deps}')
+
+
 ##
 
 
@@ -91,11 +129,19 @@ def _check_cmd(args) -> None:
     if not os.path.isfile('pyproject.toml'):
         raise RuntimeError('must run in project root')
 
+    vs: list[Precheck.Violation] = []
+
     for pc in [
         GitBlacklistPrecheck(),
+        ScriptDepsPrecheck(),
     ]:
         for v in pc.run():
+            vs.append(v)
             print(v)
+
+    if vs:
+        print(f'{len(vs)} violations found')
+        exit(1)
 
 
 ##

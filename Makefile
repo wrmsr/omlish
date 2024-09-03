@@ -151,7 +151,7 @@ mypy: venv
 
 .PHONY: check-scripts
 check-scripts: venv
-	SCRIPT_IMPORTS=$$(find omdev/scripts -maxdepth 1 -name '*.py' -print0 | xargs -0 ${PYTHON} -m omdev.scripts.findimports) ; \
+	SCRIPT_IMPORTS=$$(find omdev/scripts -maxdepth 1 -name '*.py' -print0 | xargs -0 ${PYTHON} -m omdev.findimports) ; \
 	if [ ! -z "$$SCRIPT_IMPORTS" ] ; then \
 		echo "script imports found: $$SCRIPT_IMPORTS" ; \
 		exit 1 ; \

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 TODO:
  - https://stackoverflow.com/questions/19308847/graphviz-vertical-ordering
