@@ -38,6 +38,7 @@ from omlish import collections as col
 from omlish import logs
 
 from .. import tokens as tks
+from ..scripts.findmagic import compile_magic_pat
 
 
 Tokens: ta.TypeAlias = tks.Tokens
@@ -63,6 +64,45 @@ def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[T
             nws.extend(it)
             break
     return ws, nws
+
+
+#
+
+
+IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
+
+
+def strip_main_lines(cls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
+    out = []
+
+    for l in (it := iter(cls)):
+        if IF_MAIN_PAT.fullmatch(tks.join_toks(l).strip()):
+            for l in it:
+                if l[0].name != 'INDENT' and tks.join_toks(l).strip():
+                    break
+        else:
+            out.append(l)
+
+    return out
+
+
+#
+
+
+STRIPPED_HEADER_MAGICS = [
+    '# @omlish-lite',
+    '# @omlish-script',
+]
+
+STRIPPED_HEADER_PATS = [compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
+
+def strip_header_magics(hls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
+    out = []
+    for l in hls:
+        ls = tks.join_toks(l)
+        if not any(p.fullmatch(ls) for p in STRIPPED_HEADER_PATS):
+            out.append(l)
+    return out
 
 
 ##
@@ -240,6 +280,8 @@ def make_src_file(
 
     hls, cls = split_header_lines(lines)
 
+    hls = strip_header_magics(hls)
+
     imps: list[Import] = []
     tys: list[Typing] = []
     ctls: list[Tokens] = []
@@ -273,23 +315,6 @@ def make_src_file(
         typings=tys,
         content_lines=ctls,
     )
-
-
-IF_MAIN_PAT = re.compile(r'if\s+__name__\s+==\s+[\'"]__main__[\'"]\s*:')
-
-
-def strip_main_lines(cls: ta.Sequence[Tokens]) -> ta.Sequence[Tokens]:
-    out = []
-
-    for l in (it := iter(cls)):
-        if IF_MAIN_PAT.fullmatch(tks.join_toks(l).strip()):
-            for l in it:
-                if l[0].name != 'INDENT' and tks.join_toks(l).strip():
-                    break
-        else:
-            out.append(l)
-
-    return out
 
 
 ##

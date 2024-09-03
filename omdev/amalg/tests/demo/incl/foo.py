@@ -1,3 +1,4 @@
+# @omlish-script
 """
 foo includes
 """
@@ -10,7 +11,7 @@ def foo() -> str:
 
 
 if __name__ == '__main__':
-    def _main() -> None:
+    def _foo_main() -> None:
         print('hi')
 
-    _main()
+    _foo_main()

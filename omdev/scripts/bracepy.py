@@ -84,22 +84,21 @@ def translate_brace_python(
     return ret.getvalue()
 
 
-def _main(argv=None) -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-x', '--exec', action='store_true')
-    parser.add_argument('cmd')
-
-    args = parser.parse_args(argv)
-
-    src = translate_brace_python(args.cmd)
-
-    if args.exec:
-        exec(src)
-    else:
-        print(src)
-
-
 if __name__ == '__main__':
+    def _main(argv=None) -> None:
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-x', '--exec', action='store_true')
+        parser.add_argument('cmd')
+
+        args = parser.parse_args(argv)
+
+        src = translate_brace_python(args.cmd)
+
+        if args.exec:
+            exec(src)
+        else:
+            print(src)
+
     _main()

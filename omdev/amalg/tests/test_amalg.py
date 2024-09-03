@@ -29,6 +29,9 @@ def test_amalg() -> None:
             mounts=mounts,
         )
 
+        assert '_foo_main' not in src
+        assert '@omlish-script' not in src
+
         out_path = os.path.join(src_base_dir, 'out', os.path.basename(main_file))
         mod = compile(src, out_path, 'exec')
         print(mod)
