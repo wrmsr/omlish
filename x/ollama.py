@@ -2,7 +2,10 @@
 lol:
 https://github.com/ollama/ollama/tree/50c05d57e0100625ee5bdd4ba9accec7f4536005/llm/ext_server
 
+hf.hf_hub_download(repo_id='QuantFactory/Meta-Llama-3-8B-GGUF', filename='Meta-Llama-3-8B.Q8_0.gguf')
+
 CMAKE_ARGS="-DGGML_METAL=on" ./python -mpip install llama-cpp-python
+PATH="/usr/local/cuda-12.2/bin:$PATH" CMAKE_ARGS="-DGGML_CUDA=on" ./python -mpip install llama-cpp-python
 """
 import os.path
 
