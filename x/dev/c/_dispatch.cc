@@ -14,7 +14,9 @@ TODO:
 
 //
 
-#define _MODULE_NAME "x.c._dispatch"
+#define _MODULE_NAME "_dispatch"
+#define _PACKAGE_NAME "x.dev.c"
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 //static struct PyModuleDef _dispatch_module;
 
@@ -235,7 +237,7 @@ static PyType_Slot function_wrapper_type_slots[] = {
 };
 
 static PyType_Spec function_wrapper_type_spec = {
-    .name = _MODULE_NAME ".function_wrapper",
+    .name = _MODULE_FULL_NAME ".function_wrapper",
     .basicsize = sizeof(function_wrapper_object),
     .itemsize = 0,
     .flags =

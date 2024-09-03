@@ -2,6 +2,17 @@ import pickle
 
 
 def _main():
+    import glob
+    import os.path
+    import shutil
+    from omdev.exts import importhook
+    here = os.path.join(os.path.dirname(__file__))
+    if os.path.exists(bdir := os.path.join(here, 'build')):
+        shutil.rmtree(bdir)
+    for f in glob.glob(os.path.join(here, '*.so')):
+        os.remove(f)
+    importhook.install()
+
     from ._dc import point  # noqa
     p = point(1, 2)
     print(p)

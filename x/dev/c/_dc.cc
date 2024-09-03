@@ -84,6 +84,27 @@ static PyObject * point_new(PyTypeObject *type, PyObject *args, PyObject *kwargs
 }
 
 static PyObject *
+point_repr(point_object *self)
+{
+    int i = Py_ReprEnter((PyObject *) self);
+    if (i != 0) {
+        if (i < 0) {
+            return NULL;
+        }
+        return PyUnicode_FromString("...");
+    }
+
+    PyObject *result = PyUnicode_FromFormat(
+        "%s(x=%R, y=%R)",
+        _PyType_Name(Py_TYPE(self)),
+        self->x,
+        self->y);
+
+    Py_ReprLeave((PyObject *) self);
+    return result;
+}
+
+static PyObject *
 point_reduce(point_object *self, PyObject *unused)
 {
     return Py_BuildValue(
@@ -142,6 +163,7 @@ static PyType_Slot point_type_slots[] = {
     {Py_tp_members, point_members},
     {Py_tp_getset, point_getsetters},
     {Py_tp_new, (void *) point_new},
+    {Py_tp_repr, (void *) point_repr},
     {Py_tp_dealloc, (void *) point_dealloc},
     {0, 0}
 };
