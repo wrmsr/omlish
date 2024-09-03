@@ -376,7 +376,7 @@ package: venv clean-package
 
 ### Publish
 
-VERSION:=$$(egrep '^__version__ = ' omlish/__about__.py | cut -d ' ' -f 3 | tr -d "'")
+LOCAL_VERSION:=$$(egrep '^__version__ = ' omlish/__about__.py | cut -d ' ' -f 3 | tr -d "'")
 PYPI_VERSION:=$$(curl -s https://pypi.org/rss/project/omlish/releases.xml | grep '<title>' | grep -v 'PyPI' | head -n1 | sed -E 's/[ ]*<title>([A-Za-z0-9\.]+)<\/title>/\1/')
 
 .PHONY: publish
@@ -388,8 +388,8 @@ publish: gen package
 		exit 1 ; \
 	fi
 
-	echo "Local version: ${VERSION}"
 	echo "PyPI version: ${PYPI_VERSION}"
+	echo "Local version: ${LOCAL_VERSION}"
 	read -p "Press enter to publish"
 
 	.venv/bin/twine upload dist/*
