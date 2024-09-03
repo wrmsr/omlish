@@ -18,10 +18,10 @@ class Func(abc.ABC, ta.Generic[T]):
     def __or__(self, fn: ta.Callable[..., U]) -> 'Func[U]':
         return self.pipe(fn)
 
-    def apply(self, fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> 'Func[T]':
+    def apply(self, fn: ta.Callable[[T], ...], *args: ta.Any, **kwargs: ta.Any) -> 'Func[T]':
         return Pipe([self], Apply(Bind(fn, *args, **kwargs)))
 
-    def __and__(self, fn: ta.Callable[..., U]) -> 'Func[U]':
+    def __and__(self, fn: ta.Callable[[T], ...]) -> 'Func[T]':
         return self.apply(fn)
 
 
