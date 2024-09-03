@@ -1,18 +1,21 @@
 """
 TODO:
- - remove imp
  - whitelist packages
 """
-import dataclasses as dc
-import importlib
 import importlib.abc
 import importlib.machinery
+import importlib.util
 import os.path
 import sys
 import types
 import typing as ta
 
+from omlish import check
+
 from . import build
+
+
+##
 
 
 def load_dynamic(name: str, path: str) -> types.ModuleType:
@@ -26,63 +29,106 @@ def load_dynamic(name: str, path: str) -> types.ModuleType:
     return importlib._bootstrap._load(spec)  # noqa
 
 
-class CExtensionLoader(importlib.abc.Loader):
-
-    def __init__(self, fullname: str, path: str) -> None:
-        super().__init__()
-
-        self._fullname = fullname
-        self._path = path
-
-    def load_module(self, fullname: str) -> types.ModuleType:
-        so_path = build.build_ext(fullname, self._path)
-        return load_dynamic(self._fullname, so_path)
-
-
-LoaderDetails: ta.TypeAlias = tuple[type[importlib.abc.Loader], list[str]]
-loader_details = (CExtensionLoader, ['.c', '.cc', '.cpp', '.cxx'])
-
-
 ##
 
 
-@dc.dataclass(frozen=True)
-class FileFinderPathHook:
-    lds: ta.Sequence[LoaderDetails]
+class CextImportLoader(importlib.machinery.ExtensionFileLoader):
 
-    def __call__(self, path: str) -> importlib.machinery.FileFinder:
+    def __init__(
+            self,
+            filename: str,
+    ) -> None:
+        module_name = os.path.splitext(os.path.basename(filename))[0]
+        super().__init__(module_name, filename)
+
+    def create_module(self, spec: importlib.machinery.ModuleSpec) -> types.ModuleType:
+        so_path = build.build_ext(spec.name, check.non_empty_str(spec.origin))
+        self.path = so_path  # noqa
+        spec.origin = so_path
+        return super().create_module(spec)
+
+    def exec_module(self, module):
+        return super().exec_module(module)
+
+
+CEXT_EXTENSIONS = ['.c', '.cc', '.cpp', '.cxx']
+
+
+class CextImportMetaFinder(importlib.abc.MetaPathFinder):
+
+    def __init__(
+            self,
+            extensions: ta.AbstractSet[str] = frozenset(CEXT_EXTENSIONS),
+    ) -> None:
+        super().__init__()
+        self._extensions = extensions
+
+    def find_spec(
+            self,
+            fullname: str,
+            path: ta.Sequence[str] | None,
+            target: types.ModuleType | None = None,
+    ) -> importlib.machinery.ModuleSpec | None:
         if not path:
-            path = os.getcwd()
-        if not os.path.isdir(path):
-            raise ImportError('only directories are supported', path=path)
-        return importlib.machinery.FileFinder(path, *self.lds)
+            path = [os.getcwd(), *sys.path]  # top level import --
+        if '.' in fullname:
+            *parents, name = fullname.split('.')
+        else:
+            name = fullname
+
+        for entry in path:
+            for ext in self._extensions:
+                if os.path.isdir(os.path.join(entry, name)):
+                    # this module has child modules
+                    filename = os.path.join(entry, name, '__init__' + ext)
+                    submodule_locations = [os.path.join(entry, name)]
+                else:
+                    filename = os.path.join(entry, name + ext)
+                    submodule_locations = None
+                if not os.path.exists(filename):
+                    continue
+
+                return importlib.util.spec_from_file_location(
+                    fullname,
+                    filename,
+                    loader=CextImportLoader(filename),
+                    submodule_search_locations=submodule_locations,
+                )
+
+        return None  # we don't know how to import this
 
 
-def _is_c_loader(h: ta.Any) -> bool:
-    return (
-        isinstance(h, FileFinderPathHook) and
-        h.lds == [loader_details]
-    )
+#
+
+
+def _get_installed_importers() -> list[CextImportMetaFinder]:
+    return [i for i in sys.meta_path if isinstance(i, CextImportMetaFinder)]
 
 
 def is_installed() -> bool:
-    return any(h for h in sys.path_hooks if _is_c_loader(h))
+    return bool(_get_installed_importers())
 
 
-def _install(*, flush: bool = False) -> None:
-    sys.path_hooks.insert(0, FileFinderPathHook([loader_details]))
-    sys.path_importer_cache.clear()
+def install(*, flush: bool = True) -> bool:
+    if _get_installed_importers():
+        return False
+
+    sys.meta_path.append(CextImportMetaFinder())
+
     if flush:
         importlib.invalidate_caches()
 
-
-def install(*, flush: bool = False) -> None:
-    if not is_installed():
-        _install(flush=flush)
+    return True
 
 
-def uninstall(*, flush: bool = False) -> None:
-    sys.path_hooks = [h for h in sys.path_hooks if not _is_c_loader(h)]
-    sys.path_importer_cache.clear()
-    if flush:
+def uninstall(*, flush: bool = False) -> bool:
+    ret = False
+
+    for i in _get_installed_importers():
+        sys.meta_path.remove(i)
+        ret = True
+
+    if ret and flush:
         importlib.invalidate_caches()
+
+    return ret
