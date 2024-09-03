@@ -1,4 +1,7 @@
 """
+FIXME:
+ - debug tables don't handle symlinks
+
 TODO:
  - symlink headers, included src files (hamt_impl, ...)
  - point / copy output to dst dirs
@@ -64,10 +67,13 @@ class CmakeProjectGen:
             self,
             exts: ta.Sequence[str],
             prj_root: str | None = None,
+            *,
+            use_exe_realpath: bool = False,
     ) -> None:
         super().__init__()
         self._exts = check.not_isinstance(exts, str)
         self._prj_root = os.path.abspath(prj_root) if prj_root is not None else os.getcwd()
+        self._use_exe_realpath = use_exe_realpath
 
     #
 
@@ -238,11 +244,14 @@ class CmakeProjectGen:
                 f'{self.var_prefix}_INCLUDE_DIRECTORIES',
                 _sep_str_grps(
                     [f'{self.py.venv_root}/include'],
-                    [f'{self.py.root}/include/python{self.py.suffix}'],
-                    [
-                        # $ENV{HOME}/src/python/cpython
-                        # $ENV{HOME}/src/python/cpython/include
-                    ],
+                    (
+                        [
+                            (red := os.path.dirname(self.p.py_info().real_exe)),
+                            os.path.join(red, 'include'),
+                        ]
+                        if self.p._use_exe_realpath else  # noqa
+                        [f'{self.py.root}/include/python{self.py.suffix}']
+                    ),
                 ),
             ))
 
@@ -269,8 +278,11 @@ class CmakeProjectGen:
             self.g.write_var(cmake.Var(
                 f'{self.var_prefix}_LINK_DIRECTORIES',
                 _sep_str_grps(
-                    [f'{self.py.root}/lib'],
-                    # ['$ENV{HOME}/src/python/cpython'],
+                    (
+                        [os.path.dirname(self.p.py_info().real_exe)]
+                        if self.p._use_exe_realpath else  # noqa
+                        [f'{self.py.root}/lib']
+                    ),
                 ),
             ))
 
@@ -316,7 +328,10 @@ def _gen_cmd(args) -> None:
     if not args.exts:
         raise Exception('must specify exts')
 
-    cpg = CmakeProjectGen(args.exts)
+    cpg = CmakeProjectGen(
+        args.exts,
+        use_exe_realpath=bool(args.realpath),
+    )
     cpg.run()
 
 
@@ -328,6 +343,7 @@ def _main(argv=None) -> None:
     subparsers = parser.add_subparsers()
 
     parser_gen = subparsers.add_parser('gen')
+    parser_gen.add_argument('--realpath', action='store_true')
     parser_gen.add_argument('exts', nargs='*')
     parser_gen.set_defaults(func=_gen_cmd)
 
