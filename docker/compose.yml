@@ -13,11 +13,13 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - '..:/omlish'
     depends_on:
+      - 'omlish-elasticsearch'
       - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-redis'
       - 'omlish-s3'
     links:
+      - 'omlish-elasticsearch'
       - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-redis'
@@ -50,6 +52,18 @@ services:
     links:
       - 'omlish-mysql'
       - 'omlish-postgres'
+
+  omlish-elasticsearch:
+    image: 'elasticsearch:8.15.0'
+    restart: 'unless-stopped'
+    environment:
+      ES_JAVA_OPTS: '-Xms750m -Xmx750m'
+      discovery.type: 'single-node'
+      xpack.security.enabled: 'false'
+    expose:
+      - '9200'
+    ports:
+      - '35229:9200'
 
   omlish-mysql:
     image: 'mysql:9.0.1'

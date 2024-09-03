@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omlish-script
 """
 TODO:
  - hoist first stacktrace file to a full field
