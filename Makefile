@@ -61,8 +61,7 @@ venv:
 
 .PHONY: tg
 tg:
-	ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
-	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
+	${PYTHON} -mpip install -e tinygrad --use-pep517
 
 .PHONY: tg-update
 tg-update:
