@@ -2,6 +2,10 @@ import pickle
 
 
 def _main():
+    import os
+    print(os.getpid())
+    input()
+
     import glob
     import os.path
     import shutil
