@@ -85,37 +85,45 @@ class Ref(lang.Final, ta.Generic[T]):
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class Effect:
-    fn: ta.Callable[[], None]
-    refs: ta.MutableSet[Ref] = dc.field(default_factory=set)
-
-
 class Effects:
+    @dc.dataclass(eq=False)
+    class _Effect(ta.Generic[T]):
+        fn: ta.Callable[[], T]
+        inputs: ta.MutableSet[Ref] = dc.field(default_factory=set)
+        output: Ref[T] | None = None
+
     def __init__(self) -> None:
         super().__init__()
 
-        self._effects_by_fn: dict[ta.Callable[[], None], Effect] = {}
-        self._effects_by_ref: dict[Ref, set[Effect]] = {}
-        self._refs: set[Ref] = set()
+        self._effects_by_fn: dict[ta.Callable[[], None], Effects._Effect] = {}
+        self._effects_by_output: dict[Ref, Effects._Effect] = {}
+        self._effect_sets_by_input: dict[Ref, set[Effects._Effect]] = {}
+        self._inputs: set[Ref] = set()
 
-    def create_effect(self, fn: ta.Callable[[], None]) -> None:
+    def create_effect(self, fn: ta.Callable[[], None]) -> Ref[T]:
         if fn in self._effects_by_fn:
             raise KeyError(fn)
-        e = Effect(fn)
+        e = Effects._Effect(fn)
         self._effects_by_fn[fn] = e
         self._run_effect(e)
+        return check.not_none(e.output)
 
-    def _run_effect(self, e: Effect) -> None:
-        with Ref.push_access_listener(e.refs.add):
-            e.fn()
-        for r in e.refs:
-            self._effects_by_ref.setdefault(r, set()).add(e)
-            if r not in self._refs:
+    def _run_effect(self, e: _Effect) -> None:
+        with Ref.push_access_listener(e.inputs.add):
+            v = e.fn()
+        for r in e.inputs:
+            self._effect_sets_by_input.setdefault(r, set()).add(e)
+            if r not in self._inputs:
                 r.add_listener(self._on_ref_update)
+                self._inputs.add(r)
+        if (out := e.output) is None:
+            out = e.output = Ref(v)
+            self._effects_by_output[out] = e
+        else:
+            out.set(v)
 
     def _on_ref_update(self, ref: Ref) -> None:
-        for e in self._effects_by_ref[ref]:
+        for e in self._effect_sets_by_input[ref]:
             self._run_effect(e)
 
 
@@ -132,8 +140,12 @@ def _main() -> None:
     y = Ref[int](0)
 
     @create_effect
+    def x_plus_y() -> str:
+        return f'{x()=} + {y()=} = {(x() + y())=}'
+
+    @create_effect
     def print_x_plus_y() -> None:
-        print(f'{x()=} + {y()=} = {(x() + y())=}')
+        print(f'{x_plus_y()=}')
 
     x.set(1)
     y.set(2)
