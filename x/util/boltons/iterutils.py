@@ -42,20 +42,14 @@ following are based on examples in itertools docs.
 import os
 import math
 import time
-import codecs
 import random
 import itertools
 from itertools import zip_longest
 from collections.abc import Mapping, Sequence, Set, ItemsView, Iterable
 
 
-try:
-    from .typeutils import make_sentinel
-    _UNSET = make_sentinel('_UNSET')
-    _REMAP_EXIT = make_sentinel('_REMAP_EXIT')
-except ImportError:
-    _REMAP_EXIT = object()
-    _UNSET = object()
+_REMAP_EXIT = object()
+_UNSET = object()
 
 
 def is_iterable(obj):

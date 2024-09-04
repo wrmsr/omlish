@@ -38,11 +38,7 @@ import sys
 import time
 from reprlib import Repr
 
-try:
-    from .typeutils import make_sentinel
-    _UNSET = make_sentinel(var_name='_UNSET')
-except ImportError:
-    _UNSET = object()
+_UNSET = object()
 
 __all__ = ['pdb_on_signal', 'pdb_on_exception', 'wrap_trace']
 

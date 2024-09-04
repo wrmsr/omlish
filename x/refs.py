@@ -1,6 +1,7 @@
 """
 https://thenewstack.io/did-signals-just-land-in-react/
 https://pomb.us/build-your-own-react/
+https://plainvanillaweb.com/blog/articles/2024-08-30-poor-mans-signals/
 """
 from __future__ import annotations
 
@@ -103,19 +104,23 @@ class Effects:
     def create_effect(self, fn: ta.Callable[[], None]) -> Ref[T]:
         if fn in self._effects_by_fn:
             raise KeyError(fn)
+
         e = Effects._Effect(fn)
         self._effects_by_fn[fn] = e
+
         self._run_effect(e)
         return check.not_none(e.output)
 
     def _run_effect(self, e: _Effect) -> None:
         with Ref.push_access_listener(e.inputs.add):
             v = e.fn()
+
         for r in e.inputs:
             self._effect_sets_by_input.setdefault(r, set()).add(e)
             if r not in self._inputs:
                 r.add_listener(self._on_ref_update)
                 self._inputs.add(r)
+
         if (out := e.output) is None:
             out = e.output = Ref(v)
             self._effects_by_output[out] = e
