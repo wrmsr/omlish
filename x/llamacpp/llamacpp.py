@@ -8,12 +8,6 @@ CMAKE_ARGS="-DGGML_METAL=on" ./python -mpip install llama-cpp-python
 PATH="/usr/local/cuda-12.2/bin:$PATH" CMAKE_ARGS="-DGGML_CUDA=on" ./python -mpip install llama-cpp-python
 
 holy god that's slow make a local cuda wheel
-
-git clone https://github.com/abetlen/llama-cpp-python
-cd llama-cpp-python
-~/.pyenv/versions/3.12.5/bin/python -mvenv .venv
-.venv/bin/pip install -e '.[dev]' build wheel
-PATH="/usr/local/cuda-12.2/bin:$PATH" CMAKE_ARGS="-DGGML_CUDA=on" .venv/bin/python -m build --wheel
 """
 import os.path
 
