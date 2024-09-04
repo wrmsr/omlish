@@ -47,7 +47,7 @@ class ProgressReporter(ta.Generic[T]):
             if cur is not None:
                 raise Exception('Must not specify cur when fn given')
             cur = self._fn()
-        else:
+        else:  # noqa
             if cur is None:
                 raise Exception('Must specify cur when fn not given')
         self._cur_v = cur
@@ -93,12 +93,12 @@ class ProgressReporter(ta.Generic[T]):
             ps.extend([
                 f'{fmt_v(prg.cur_v)} / {fmt_v(self._total_v)}' + sfx,
                 f'{prg.cur_v / self._total_v * 100.:.02f} %',
-                ])
+            ])
         else:
             ps.append(f'{fmt_v(self._cur_v)}' + sfx)
         ps.append(
             f'{fmt_v(type(prg.cur_v)(prg.report_elapsed_v / prg.report_elapsed_t))} '
-            f'{self._suffix if self._suffix is not None else ""}/s'
+            f'{self._suffix if self._suffix is not None else ""}/s',
         )
 
         self._reported_v = prg.cur_v

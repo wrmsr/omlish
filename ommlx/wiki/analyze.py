@@ -28,18 +28,14 @@ import contextlib
 import glob
 import io
 import os.path
-import subprocess
 import sys
-import time
-import typing as ta
 
-from omlish import lang  # noqa
-from omlish import marshal as msh  # noqa
-from omlish.formats import json  # noqa
 import lz4.frame
 import mwparserfromhell as mfh
 
-from . import io as iou
+from omlish import marshal as msh
+from omlish.formats import json
+
 from . import models as mdl
 from .progress import ProgressReporter
 
@@ -89,7 +85,7 @@ def _main() -> None:
                 page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
                 # print(page)
 
-                for rev in page.revisions:
+                for rev in page.revisions or ():
                     if rev.text:
                         wikicode = mfh.parse(rev.text.text)
                         print(wikicode)

@@ -2,17 +2,16 @@
 bzip2 -cdk enwiki-20240801-pages-articles-multistream.xml.bz2 | lz4 -c > enwiki-20240801-pages-articles-multistream.xml.lz4
 
 0 B / 42_781_970_578 B - 0.00 % - 0 B/s, 84404 elements, lang.is_gil_enabled()=False
-"""
+"""  # noqa
 import contextlib
-import io  # noqa
+import io
 import os.path
-import subprocess  # noqa
 import sys
 import typing as ta
 
-from omlish import lang  # noqa
-from omlish import marshal as msh  # noqa
-from omlish.formats import json  # noqa
+from omlish import lang
+from omlish import marshal as msh
+from omlish.formats import json
 
 from . import io as iou
 from . import models as mdl
@@ -45,12 +44,13 @@ def _main() -> None:
     # use_lxml = False
     use_lxml = True
 
-    output_dir = os.path.join(os.path.dirname(__file__), 'out')
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
+    output_dir = '.data/wiki/json'
+    os.makedirs(output_dir, exist_ok=True)
 
+    bs: ta.Any
+    fpr: iou.FileProgressReporter | None
     with contextlib.ExitStack() as es:
-        bs, fpr = es.enter_context(iou.open_compressed_reader(  # noqa
+        bs, fpr = es.enter_context(iou.open_compressed_reader(  # type: ignore
             fp,
             use_subprocess=use_subproc,
         ))

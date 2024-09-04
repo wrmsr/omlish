@@ -10,7 +10,7 @@ TODO:
 """
 import dataclasses as dc
 import typing as ta
-import xml.etree.ElementTree
+import xml.etree.ElementTree as ET
 
 from omlish import lang
 
@@ -23,7 +23,7 @@ else:
 
 T = ta.TypeVar('T')
 
-Element: ta.TypeAlias = ta.Union[xml.etree.ElementTree.Element, 'lxml_etree.Element']
+Element: ta.TypeAlias = ta.Union[ET.Element, 'lxml_etree.Element']
 
 
 ##
@@ -53,7 +53,7 @@ def yield_root_children(
     if use_lxml:
         parser = lxml_etree.iterparse
     else:
-        parser = xml.etree.ElementTree.iterparse
+        parser = ET.iterparse
     it = iter(parser(source, ('start', 'end'), **kwargs))
 
     ev, root = next(it)

@@ -11,12 +11,12 @@ def test_torch():
         root=root,
         train=True,
         download=True,
-        transform=ToTensor()
+        transform=ToTensor(),
     )
 
     test_data = datasets.FashionMNIST(  # noqa
         root=root,
         train=False,
         download=True,
-        transform=ToTensor()
+        transform=ToTensor(),
     )

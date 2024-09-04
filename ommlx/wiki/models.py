@@ -79,7 +79,7 @@ parse_site_info = xml.ElementToObj(
         ),
         single_children={
             'namespaces': ('namespaces', parse_namespaces),
-        }
+        },
     ),
 )
 
@@ -173,7 +173,7 @@ class Revision:
     origin: int | None = None
     model: str | None = None
     format: str | None = None
-    text: ta.Optional[RevisionText] = None
+    text: RevisionText | None = None
     sha1: str | None = None
 
 
@@ -224,10 +224,10 @@ class Page:
     title: str
     ns: int
     id: int
-    redirect: ta.Optional[Redirect] = None
+    redirect: Redirect | None = None
     restrictions: str | None = None
-    revisions: ta.Optional[ta.Sequence[Revision]] = None
-    uploads: ta.Optional[ta.Sequence[Upload]] = None
+    revisions: ta.Sequence[Revision] | None = None
+    uploads: ta.Sequence[Upload] | None = None
 
 
 parse_page = xml.ElementToObj(
@@ -256,5 +256,5 @@ parse_page = xml.ElementToObj(
 
 @dc.dataclass(frozen=True)
 class MediaWiki:
-    siteinfo: ta.Optional[SiteInfo] = None
-    pages: ta.Sequence[Page] = None
+    siteinfo: SiteInfo | None = None
+    pages: ta.Sequence[Page] | None = None

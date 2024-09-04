@@ -14,6 +14,7 @@ import sys
 import time
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 
@@ -172,6 +173,8 @@ def open_compressed_reader(
         *,
         use_subprocess: bool = False,
 ) -> tuple[ta.IO, FileProgressReporter | None]:
+    bs: ta.IO
+    fpr: FileProgressReporter | None
     with contextlib.ExitStack() as es:
         if fp.endswith('.bz2'):
             if not use_subprocess:
@@ -188,7 +191,7 @@ def open_compressed_reader(
                 fpr = None
 
                 proc = subprocess.Popen(['bzip2', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
-                bs = proc.stdout
+                bs = check.not_none(proc.stdout)
 
         elif fp.endswith('.lz4'):
             if not use_subprocess:
@@ -205,7 +208,7 @@ def open_compressed_reader(
                 fpr = None
 
                 proc = subprocess.Popen(['lz4', '-cdk', fp], stdout=subprocess.PIPE, stdin=f)
-                bs = proc.stdout
+                bs = check.not_none(proc.stdout)
 
         else:
             raise RuntimeError(fp)
@@ -273,7 +276,7 @@ class MultiFileWriter:
 class Lz4MfwFile:
     def __init__(self, fp: str) -> None:
         super().__init__()
-        self._raw_f = open(fp, 'wb')
+        self._raw_f = open(fp, 'wb')  # noqa
         self._z_f = lz4_frame.open(self._raw_f, 'wb')
 
     def close(self) -> None:
