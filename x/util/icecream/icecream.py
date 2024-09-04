@@ -82,10 +82,8 @@ DEFAULT_ARG_TO_STRING_FUNCTION = pprint.pformat
 #
 #   - The underlying source code changed during execution. See https://stackoverflow.com/a/33175832.
 NO_SOURCE_AVAILABLE_WARNING_MESSAGE = (
-    'Failed to access the underlying source code for analysis. Was ic() '
-    'invoked in a REPL (e.g. from the command line), a frozen application '
-    '(e.g. packaged with PyInstaller), or did the underlying source code '
-    'change during execution?'
+    'Failed to access the underlying source code for analysis. Was ic() invoked in a REPL (e.g. from the command line),'
+    ' a frozen application (e.g. packaged with PyInstaller), or did the underlying source code change during execution?'
 )
 
 
