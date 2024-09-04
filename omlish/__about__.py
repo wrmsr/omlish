@@ -51,8 +51,8 @@ class Project(ProjectBase):
 
         'formats': [
             'orjson ~= 3.10',
-            'python-rapidjson ~= 1.18',
-            'ujson ~= 5.10',
+            # 'python-rapidjson ~= 1.18',
+            # 'ujson ~= 5.10',
 
             'json5 ~= 0.9',
 
