@@ -3531,11 +3531,11 @@ def difference(iterable, func=operator.sub, *, initial=None):
 
 
 class SequenceView(collections.abc.Sequence):
-    """Return a read-only view of the sequence object *target*.
+    """
+    Return a read-only view of the sequence object *target*.
 
-    :class:`SequenceView` objects are analogous to Python's built-in
-    "dictionary view" types. They provide a dynamic view of a sequence's items,
-    meaning that when the sequence updates, so does the view.
+    :class:`SequenceView` objects are analogous to Python's built-in "dictionary view" types. They provide a dynamic
+    view of a sequence's items, meaning that when the sequence updates, so does the view.
 
         >>> seq = ['0', '1', '2']
         >>> view = SequenceView(seq)
@@ -3545,8 +3545,8 @@ class SequenceView(collections.abc.Sequence):
         >>> view
         SequenceView(['0', '1', '2', '3'])
 
-    Sequence views support indexing, slicing, and length queries. They act
-    like the underlying sequence, except they don't allow assignment:
+    Sequence views support indexing, slicing, and length queries. They act like the underlying sequence, except they
+    don't allow assignment:
 
         >>> view[1]
         '1'
@@ -3555,9 +3555,7 @@ class SequenceView(collections.abc.Sequence):
         >>> len(view)
         4
 
-    Sequence views are useful as an alternative to copying, as they don't
-    require (much) extra storage.
-
+    Sequence views are useful as an alternative to copying, as they don't require (much) extra storage.
     """
 
     def __init__(self, target):
@@ -3576,12 +3574,11 @@ class SequenceView(collections.abc.Sequence):
 
 
 class seekable:
-    """Wrap an iterator to allow for seeking backward and forward. This
-    progressively caches the items in the source iterable so they can be
-    re-visited.
+    """
+    Wrap an iterator to allow for seeking backward and forward. This progressively caches the items in the source
+    iterable so they can be re-visited.
 
-    Call :meth:`seek` with an index to seek to that position in the source
-    iterable.
+    Call :meth:`seek` with an index to seek to that position in the source iterable.
 
     To "reset" an iterator, seek to ``0``:
 
@@ -3606,8 +3603,7 @@ class seekable:
         >>> next(it)
         '0'
 
-    Call :meth:`relative_seek` to seek relative to the source iterator's
-    current position.
+    Call :meth:`relative_seek` to seek relative to the source iterator's current position.
 
         >>> it = seekable((str(n) for n in range(20)))
         >>> next(it), next(it), next(it)
@@ -3622,7 +3618,6 @@ class seekable:
         >>> next(it)
         '1'
 
-
     Call :meth:`peek` to look ahead one item without advancing the iterator:
 
         >>> it = seekable('1234')
@@ -3633,8 +3628,7 @@ class seekable:
         >>> it.peek(default='empty')
         'empty'
 
-    Before the iterator is at its end, calling :func:`bool` on it will return
-    ``True``. After it will return ``False``:
+    Before the iterator is at its end, calling :func:`bool` on it will return ``True``. After it will return ``False``:
 
         >>> it = seekable('5678')
         >>> bool(it)
@@ -3644,8 +3638,8 @@ class seekable:
         >>> bool(it)
         False
 
-    You may view the contents of the cache with the :meth:`elements` method.
-    That returns a :class:`SequenceView`, a view that updates automatically:
+    You may view the contents of the cache with the :meth:`elements` method. That returns a :class:`SequenceView`, a
+    view that updates automatically:
 
         >>> it = seekable((str(n) for n in range(10)))
         >>> next(it), next(it), next(it)
@@ -3658,9 +3652,8 @@ class seekable:
         >>> elements
         SequenceView(['0', '1', '2', '3'])
 
-    By default, the cache grows as the source iterable progresses, so beware of
-    wrapping very large or infinite iterables. Supply *maxlen* to limit the
-    size of the cache (this of course limits how far back you can seek).
+    By default, the cache grows as the source iterable progresses, so beware of wrapping very large or infinite
+    iterables. Supply *maxlen* to limit the size of the cache (this of course limits how far back you can seek).
 
         >>> from itertools import count
         >>> it = seekable((str(n) for n in count()), maxlen=2)
@@ -3673,7 +3666,6 @@ class seekable:
         ('2', '3', '4', '5')
         >>> next(it)
         '6'
-
     """
 
     def __init__(self, iterable, maxlen=None):
@@ -3738,22 +3730,19 @@ class seekable:
 
 class run_length:
     """
-    :func:`run_length.encode` compresses an iterable with run-length encoding.
-    It yields groups of repeated items with the count of how many times they
-    were repeated:
+    :func:`run_length.encode` compresses an iterable with run-length encoding. It yields groups of repeated items with
+    the count of how many times they were repeated:
 
         >>> uncompressed = 'abbcccdddd'
         >>> list(run_length.encode(uncompressed))
         [('a', 1), ('b', 2), ('c', 3), ('d', 4)]
 
-    :func:`run_length.decode` decompresses an iterable that was previously
-    compressed with run-length encoding. It yields the items of the
-    decompressed iterable:
+    :func:`run_length.decode` decompresses an iterable that was previously compressed with run-length encoding. It
+    yields the items of the decompressed iterable:
 
         >>> compressed = [('a', 1), ('b', 2), ('c', 3), ('d', 4)]
         >>> list(run_length.decode(compressed))
         ['a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'd', 'd']
-
     """
 
     @staticmethod
@@ -3766,8 +3755,8 @@ class run_length:
 
 
 def exactly_n(iterable, n, predicate=bool):
-    """Return ``True`` if exactly ``n`` items in the iterable are ``True``
-    according to the *predicate* function.
+    """
+    Return ``True`` if exactly ``n`` items in the iterable are ``True`` according to the *predicate* function.
 
         >>> exactly_n([True, True, False], 2)
         True
@@ -3776,15 +3765,16 @@ def exactly_n(iterable, n, predicate=bool):
         >>> exactly_n([0, 1, 2, 3, 4, 5], 3, lambda x: x < 3)
         True
 
-    The iterable will be advanced until ``n + 1`` truthy items are encountered,
-    so avoid calling it on infinite iterables.
-
+    The iterable will be advanced until ``n + 1`` truthy items are encountered, so avoid calling it on infinite
+    iterables.
     """
+
     return len(take(n + 1, filter(predicate, iterable))) == n
 
 
 def circular_shifts(iterable, steps=1):
-    """Yield the circular shifts of *iterable*.
+    """
+    Yield the circular shifts of *iterable*.
 
     >>> list(circular_shifts(range(4)))
     [(0, 1, 2, 3), (1, 2, 3, 0), (2, 3, 0, 1), (3, 0, 1, 2)]
@@ -3797,8 +3787,8 @@ def circular_shifts(iterable, steps=1):
 
     >>> list(circular_shifts(range(4), -1))
     [(0, 1, 2, 3), (3, 0, 1, 2), (2, 3, 0, 1), (1, 2, 3, 0)]
-
     """
+
     buffer = collections.deque(iterable)
     if steps == 0:
         raise ValueError('Steps should be a non-zero integer')
@@ -3814,13 +3804,12 @@ def circular_shifts(iterable, steps=1):
 
 
 def make_decorator(wrapping_func, result_index=0):
-    """Return a decorator version of *wrapping_func*, which is a function that
-    modifies an iterable. *result_index* is the position in that function's
-    signature where the iterable goes.
+    """
+    Return a decorator version of *wrapping_func*, which is a function that modifies an iterable. *result_index* is the
+    position in that function's signature where the iterable goes.
 
-    This lets you use itertools on the "production end," i.e. at function
-    definition. This can augment what the function returns without changing the
-    function's code.
+    This lets you use itertools on the "production end," i.e. at function definition. This can augment what the function
+    returns without changing the function's code.
 
     For example, to produce a decorator version of :func:`chunked`:
 
@@ -3843,8 +3832,7 @@ def make_decorator(wrapping_func, result_index=0):
         >>> list(boolean_test())
         [1, ' ', True]
 
-    The :func:`peekable` and :func:`seekable` wrappers make for practical
-    decorators:
+    The :func:`peekable` and :func:`seekable` wrappers make for practical decorators:
 
         >>> from more_itertools import peekable
         >>> peekable_function = make_decorator(peekable)
@@ -3859,7 +3847,6 @@ def make_decorator(wrapping_func, result_index=0):
         '7'
         >>> next(it)
         '7'
-
     """
 
     # See https://sites.google.com/site/bbayles/index/decorator_factory for notes on how this works.
@@ -3879,12 +3866,12 @@ def make_decorator(wrapping_func, result_index=0):
 
 
 def map_reduce(iterable, keyfunc, valuefunc=None, reducefunc=None):
-    """Return a dictionary that maps the items in *iterable* to categories
-    defined by *keyfunc*, transforms them with *valuefunc*, and
-    then summarizes them by category with *reducefunc*.
+    """
+    Return a dictionary that maps the items in *iterable* to categories defined by *keyfunc*, transforms them with
+    *valuefunc*, and then summarizes them by category with *reducefunc*.
 
-    *valuefunc* defaults to the identity function if it is unspecified.
-    If *reducefunc* is unspecified, no summarization takes place:
+    *valuefunc* defaults to the identity function if it is unspecified. If *reducefunc* is unspecified, no summarization
+    takes place:
 
         >>> keyfunc = lambda x: x.upper()
         >>> result = map_reduce('abbccc', keyfunc)
@@ -3908,8 +3895,7 @@ def map_reduce(iterable, keyfunc, valuefunc=None, reducefunc=None):
         >>> sorted(result.items())
         [('A', 1), ('B', 2), ('C', 3)]
 
-    You may want to filter the input iterable before applying the map/reduce
-    procedure:
+    You may want to filter the input iterable before applying the map/reduce procedure:
 
         >>> all_items = range(30)
         >>> items = [x for x in all_items if 10 <= x <= 20]  # Filter
@@ -3921,14 +3907,13 @@ def map_reduce(iterable, keyfunc, valuefunc=None, reducefunc=None):
         >>> sorted(summaries.items())
         [(0, 90), (1, 75)]
 
-    Note that all items in the iterable are gathered into a list before the
-    summarization step, which may require significant storage.
+    Note that all items in the iterable are gathered into a list before the summarization step, which may require
+    significant storage.
 
-    The returned object is a :obj:`collections.defaultdict` with the
-    ``default_factory`` set to ``None``, such that it behaves like a normal
-    dictionary.
-
+    The returned object is a :obj:`collections.defaultdict` with the ``default_factory`` set to ``None``, such that it
+    behaves like a normal dictionary.
     """
+
     valuefunc = (lambda x: x) if (valuefunc is None) else valuefunc
 
     ret = collections.defaultdict(list)
@@ -3946,38 +3931,37 @@ def map_reduce(iterable, keyfunc, valuefunc=None, reducefunc=None):
 
 
 def rlocate(iterable, pred=bool, window_size=None):
-    """Yield the index of each item in *iterable* for which *pred* returns
-    ``True``, starting from the right and moving left.
+    """
+    Yield the index of each item in *iterable* for which *pred* returns ``True``, starting from the right and moving
+    left.
 
     *pred* defaults to :func:`bool`, which will select truthy items:
 
         >>> list(rlocate([0, 1, 1, 0, 1, 0, 0]))  # Truthy at 1, 2, and 4
         [4, 2, 1]
 
-    Set *pred* to a custom function to, e.g., find the indexes for a particular
-    item:
+    Set *pred* to a custom function to, e.g., find the indexes for a particular item:
 
         >>> iterable = iter('abcb')
         >>> pred = lambda x: x == 'b'
         >>> list(rlocate(iterable, pred))
         [3, 1]
 
-    If *window_size* is given, then the *pred* function will be called with
-    that many items. This enables searching for sub-sequences:
+    If *window_size* is given, then the *pred* function will be called with that many items. This enables searching for
+    sub-sequences:
 
         >>> iterable = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]
         >>> pred = lambda *args: args == (1, 2, 3)
         >>> list(rlocate(iterable, pred=pred, window_size=3))
         [9, 5, 1]
 
-    Beware, this function won't return anything for infinite iterables.
-    If *iterable* is reversible, ``rlocate`` will reverse it and search from
-    the right. Otherwise, it will search from the left and return the results
-    in reverse order.
+    Beware, this function won't return anything for infinite iterables. If *iterable* is reversible, ``rlocate`` will
+    reverse it and search from the right. Otherwise, it will search from the left and return the results in reverse
+    order.
 
     See :func:`locate` to for other example applications.
-
     """
+
     if window_size is None:
         try:
             len_iter = len(iterable)
@@ -3989,8 +3973,9 @@ def rlocate(iterable, pred=bool, window_size=None):
 
 
 def replace(iterable, pred, substitutes, count=None, window_size=1):
-    """Yield the items from *iterable*, replacing the items for which *pred*
-    returns ``True`` with the items from the iterable *substitutes*.
+    """
+    Yield the items from *iterable*, replacing the items for which *pred* returns ``True`` with the items from the
+    iterable *substitutes*.
 
         >>> iterable = [1, 1, 0, 1, 1, 0, 1, 1]
         >>> pred = lambda x: x == 0
@@ -4006,8 +3991,8 @@ def replace(iterable, pred, substitutes, count=None, window_size=1):
         >>> list(replace(iterable, pred, substitutes, count=2))
         [1, 1, None, 1, 1, None, 1, 1, 0]
 
-    Use *window_size* to control the number of items passed as arguments to
-    *pred*. This allows for locating and replacing subsequences.
+    Use *window_size* to control the number of items passed as arguments to *pred*. This allows for locating and
+    replacing subsequences.
 
         >>> iterable = [0, 1, 2, 5, 0, 1, 2, 5]
         >>> window_size = 3
@@ -4015,8 +4000,8 @@ def replace(iterable, pred, substitutes, count=None, window_size=1):
         >>> substitutes = [3, 4] # Splice in these items
         >>> list(replace(iterable, pred, substitutes, window_size=window_size))
         [3, 4, 5, 3, 4, 5]
-
     """
+
     if window_size < 1:
         raise ValueError('window_size must be at least 1')
 
@@ -4046,7 +4031,8 @@ def replace(iterable, pred, substitutes, count=None, window_size=1):
 
 
 def partitions(iterable):
-    """Yield all possible order-preserving partitions of *iterable*.
+    """
+    Yield all possible order-preserving partitions of *iterable*.
 
     >>> iterable = 'abc'
     >>> for part in partitions(iterable):
@@ -4057,8 +4043,8 @@ def partitions(iterable):
     ['a', 'b', 'c']
 
     This is unrelated to :func:`partition`.
-
     """
+
     sequence = list(iterable)
     n = len(sequence)
     for i in powerset(range(1, n)):
@@ -4067,8 +4053,7 @@ def partitions(iterable):
 
 def set_partitions(iterable, k=None, min_size=None, max_size=None):
     """
-    Yield the set partitions of *iterable* into *k* parts. Set partitions are
-    not order-preserving.
+    Yield the set partitions of *iterable* into *k* parts. Set partitions are not order-preserving.
 
     >>> iterable = 'abc'
     >>> for part in set_partitions(iterable, 2):
@@ -4089,8 +4074,7 @@ def set_partitions(iterable, k=None, min_size=None, max_size=None):
     ['b', 'ac']
     ['a', 'b', 'c']
 
-    if *min_size* and/or *max_size* are given, the minimum and/or maximum size
-    per block in partition is set.
+    if *min_size* and/or *max_size* are given, the minimum and/or maximum size per block in partition is set.
 
     >>> iterable = 'abc'
     >>> for part in set_partitions(iterable, min_size=2):
@@ -4102,15 +4086,13 @@ def set_partitions(iterable, k=None, min_size=None, max_size=None):
     ['ab', 'c']
     ['b', 'ac']
     ['a', 'b', 'c']
-
     """
+
     L = list(iterable)
     n = len(L)
     if k is not None:
         if k < 1:
-            raise ValueError(
-                "Can't partition in a negative or zero number of groups",
-            )
+            raise ValueError("Can't partition in a negative or zero number of groups")
         elif k > n:
             return
 
@@ -4148,9 +4130,8 @@ def set_partitions(iterable, k=None, min_size=None, max_size=None):
 
 class time_limited:
     """
-    Yield items from *iterable* until *limit_seconds* have passed.
-    If the time limit expires before all items have been yielded, the
-    ``timed_out`` parameter will be set to ``True``.
+    Yield items from *iterable* until *limit_seconds* have passed. If the time limit expires before all items have been
+    yielded, the ``timed_out`` parameter will be set to ``True``.
 
     >>> from time import sleep
     >>> def generator():
@@ -4164,13 +4145,10 @@ class time_limited:
     >>> iterable.timed_out
     True
 
-    Note that the time is checked before each item is yielded, and iteration
-    stops if  the time elapsed is greater than *limit_seconds*. If your time
-    limit is 1 second, but it takes 2 seconds to generate the first item from
-    the iterable, the function will run for 2 seconds and not yield anything.
-    As a special case, when *limit_seconds* is zero, the iterator never
-    returns anything.
-
+    Note that the time is checked before each item is yielded, and iteration stops if  the time elapsed is greater than
+    *limit_seconds*. If your time limit is 1 second, but it takes 2 seconds to generate the first item from the
+    iterable, the function will run for 2 seconds and not yield anything. As a special case, when *limit_seconds* is
+    zero, the iterator never returns anything.
     """
 
     def __init__(self, limit_seconds, iterable):
@@ -4197,10 +4175,9 @@ class time_limited:
 
 
 def only(iterable, default=None, too_long=None):
-    """If *iterable* has only one item, return it.
-    If it has zero items, return *default*.
-    If it has more than one item, raise the exception given by *too_long*,
-    which is ``ValueError`` by default.
+    """
+    If *iterable* has only one item, return it. If it has zero items, return *default*. If it has more than one item,
+    raise the exception given by *too_long*, which is ``ValueError`` by default.
 
     >>> only([], default='missing')
     'missing'
@@ -4209,17 +4186,16 @@ def only(iterable, default=None, too_long=None):
     >>> only([1, 2])  # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
-    ValueError: Expected exactly one item in iterable, but got 1, 2,
-     and perhaps more.'
+    ValueError: Expected exactly one item in iterable, but got 1, 2, and perhaps more.'
     >>> only([1, 2], too_long=TypeError)  # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
     TypeError
 
-    Note that :func:`only` attempts to advance *iterable* twice to ensure there
-    is only one item.  See :func:`spy` or :func:`peekable` to check
-    iterable contents less destructively.
+    Note that :func:`only` attempts to advance *iterable* twice to ensure there is only one item.  See :func:`spy` or
+    :func:`peekable` to check iterable contents less destructively.
     """
+
     it = iter(iterable)
     first_value = next(it, default)
 
@@ -4272,14 +4248,12 @@ def _ichunk(iterable, n):
 
 
 def ichunked(iterable, n):
-    """Break *iterable* into sub-iterables with *n* elements each.
-    :func:`ichunked` is like :func:`chunked`, but it yields iterables
-    instead of lists.
+    """
+    Break *iterable* into sub-iterables with *n* elements each. :func:`ichunked` is like :func:`chunked`, but it yields
+    iterables instead of lists.
 
-    If the sub-iterables are read in order, the elements of *iterable*
-    won't be stored in memory.
-    If they are read out of order, :func:`itertools.tee` is used to cache
-    elements as necessary.
+    If the sub-iterables are read in order, the elements of *iterable* won't be stored in memory. If they are read out
+    of order, :func:`itertools.tee` is used to cache elements as necessary.
 
     >>> from itertools import count
     >>> all_chunks = ichunked(count(), 4)
@@ -4290,8 +4264,8 @@ def ichunked(iterable, n):
     [0, 1, 2, 3]
     >>> list(c_3)
     [8, 9, 10, 11]
-
     """
+
     iterable = iter(iterable)
     while True:
         # Create new chunk
@@ -4308,11 +4282,12 @@ def ichunked(iterable, n):
 
 
 def iequals(*iterables):
-    """Return ``True`` if all given *iterables* are equal to each other,
-    which means that they contain the same elements in the same order.
+    """
+    Return ``True`` if all given *iterables* are equal to each other, which means that they contain the same elements in
+    the same order.
 
-    The function is useful for comparing iterables of different data types
-    or iterables that do not support equality checks.
+    The function is useful for comparing iterables of different data types or iterables that do not support equality
+    checks.
 
     >>> iequals("abc", ['a', 'b', 'c'], ('a', 'b', 'c'), iter("abc"))
     True
@@ -4320,24 +4295,23 @@ def iequals(*iterables):
     >>> iequals("abc", "acb")
     False
 
-    Not to be confused with :func:`all_equal`, which checks whether all
-    elements of iterable are equal to each other.
-
+    Not to be confused with :func:`all_equal`, which checks whether all elements of iterable are equal to each other.
     """
+
     return all(map(all_equal, itertools.zip_longest(*iterables, fillvalue=object())))
 
 
 def distinct_combinations(iterable, r):
-    """Yield the distinct combinations of *r* items taken from *iterable*.
+    """
+    Yield the distinct combinations of *r* items taken from *iterable*.
 
         >>> list(distinct_combinations([0, 0, 1], 2))
         [(0, 0), (0, 1)]
 
-    Equivalent to ``set(combinations(iterable))``, except duplicates are not
-    generated and thrown away. For larger input sequences this is much more
-    efficient.
-
+    Equivalent to ``set(combinations(iterable))``, except duplicates are not generated and thrown away. For larger input
+    sequences this is much more efficient.
     """
+
     if r < 0:
         raise ValueError('r must be non-negative')
     elif r == 0:
@@ -4368,20 +4342,19 @@ def distinct_combinations(iterable, r):
 
 
 def filter_except(validator, iterable, *exceptions):
-    """Yield the items from *iterable* for which the *validator* function does
-    not raise one of the specified *exceptions*.
+    """
+    Yield the items from *iterable* for which the *validator* function does not raise one of the specified *exceptions*.
 
-    *validator* is called for each item in *iterable*.
-    It should be a function that accepts one argument and raises an exception
-    if that item is not valid.
+    *validator* is called for each item in *iterable*. It should be a function that accepts one argument and raises an
+    exception if that item is not valid.
 
     >>> iterable = ['1', '2', 'three', '4', None]
     >>> list(filter_except(int, iterable, ValueError, TypeError))
     ['1', '2', '4']
 
-    If an exception other than one given by *exceptions* is raised by
-    *validator*, it is raised like normal.
+    If an exception other than one given by *exceptions* is raised by *validator*, it is raised like normal.
     """
+
     for item in iterable:
         try:
             validator(item)
@@ -4392,19 +4365,19 @@ def filter_except(validator, iterable, *exceptions):
 
 
 def map_except(function, iterable, *exceptions):
-    """Transform each item from *iterable* with *function* and yield the
-    result, unless *function* raises one of the specified *exceptions*.
+    """
+    Transform each item from *iterable* with *function* and yield the result, unless *function* raises one of the
+    specified *exceptions*.
 
-    *function* is called to transform each item in *iterable*.
-    It should accept one argument.
+    *function* is called to transform each item in *iterable*. It should accept one argument.
 
     >>> iterable = ['1', '2', 'three', '4', None]
     >>> list(map_except(int, iterable, ValueError, TypeError))
     [1, 2, 4]
 
-    If an exception other than one given by *exceptions* is raised by
-    *function*, it is raised like normal.
+    If an exception other than one given by *exceptions* is raised by *function*, it is raised like normal.
     """
+
     for item in iterable:
         try:
             yield function(item)
@@ -4413,12 +4386,12 @@ def map_except(function, iterable, *exceptions):
 
 
 def map_if(iterable, pred, func, func_else=lambda x: x):
-    """Evaluate each item from *iterable* using *pred*. If the result is
-    equivalent to ``True``, transform the item with *func* and yield it.
-    Otherwise, transform the item with *func_else* and yield it.
+    """
+    Evaluate each item from *iterable* using *pred*. If the result is equivalent to ``True``, transform the item with
+    *func* and yield it. Otherwise, transform the item with *func_else* and yield it.
 
-    *pred*, *func*, and *func_else* should each be functions that accept
-    one argument. By default, *func_else* is the identity function.
+    *pred*, *func*, and *func_else* should each be functions that accept one argument. By default, *func_else* is the
+    identity function.
 
     >>> from math import sqrt
     >>> iterable = list(range(-5, 5))
@@ -4430,6 +4403,7 @@ def map_if(iterable, pred, func, func_else=lambda x: x):
     ... lambda x: f'{sqrt(x):.2f}', lambda x: None))
     [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
     """
+
     for item in iterable:
         yield func(item) if pred(item) else func_else(item)
 
@@ -4525,16 +4499,15 @@ def _sample_counted(population, k, counts, strict):
 
 
 def sample(iterable, k, weights=None, *, counts=None, strict=False):
-    """Return a *k*-length list of elements chosen (without replacement)
-    from the *iterable*. Similar to :func:`random.sample`, but works on
-    iterables of unknown length.
+    """
+    Return a *k*-length list of elements chosen (without replacement) from the *iterable*. Similar to
+    :func:`random.sample`, but works on iterables of unknown length.
 
     >>> iterable = range(100)
     >>> sample(iterable, 5)  # doctest: +SKIP
     [81, 60, 96, 16, 4]
 
-    For iterables with repeated elements, you may supply *counts* to
-    indicate the repeats.
+    For iterables with repeated elements, you may supply *counts* to indicate the repeats.
 
     >>> iterable = ['a', 'b']
     >>> counts = [3, 4]  # Equivalent to 'a', 'a', 'a', 'b', 'b', 'b', 'b'
@@ -4548,20 +4521,17 @@ def sample(iterable, k, weights=None, *, counts=None, strict=False):
     >>> sampled = sample(iterable, 5, weights=weights)  # doctest: +SKIP
     [79, 67, 74, 66, 78]
 
-    Weighted selections are made without replacement.
-    After an element is selected, it is removed from the pool and the
-    relative weights of the other elements increase (this
-    does not match the behavior of :func:`random.sample`'s *counts*
-    parameter). Note that *weights* may not be used with *counts*.
+    Weighted selections are made without replacement. After an element is selected, it is removed from the pool and the
+    relative weights of the other elements increase (this does not match the behavior of :func:`random.sample`'s
+    *counts* parameter). Note that *weights* may not be used with *counts*.
 
-    If the length of *iterable* is less than *k*,
-    ``ValueError`` is raised if *strict* is ``True`` and
-    all elements are returned (in shuffled order) if *strict* is ``False``.
+    If the length of *iterable* is less than *k*, ``ValueError`` is raised if *strict* is ``True`` and all elements are
+    returned (in shuffled order) if *strict* is ``False``.
 
-    By default, the `Algorithm L <https://w.wiki/ANrM>`__ reservoir sampling
-    technique is used. When *weights* are provided,
-    `Algorithm A-ExpJ <https://w.wiki/ANrS>`__ is used.
+    By default, the `Algorithm L <https://w.wiki/ANrM>`__ reservoir sampling technique is used. When *weights* are
+    provided, `Algorithm A-ExpJ <https://w.wiki/ANrS>`__ is used.
     """
+
     iterator = iter(iterable)
 
     if k < 0:
@@ -4586,28 +4556,27 @@ def sample(iterable, k, weights=None, *, counts=None, strict=False):
 
 
 def is_sorted(iterable, key=None, reverse=False, strict=False):
-    """Returns ``True`` if the items of iterable are in sorted order, and
-    ``False`` otherwise. *key* and *reverse* have the same meaning that they do
-    in the built-in :func:`sorted` function.
+    """
+    Returns ``True`` if the items of iterable are in sorted order, and ``False`` otherwise. *key* and *reverse* have the
+    same meaning that they do in the built-in :func:`sorted` function.
 
     >>> is_sorted(['1', '2', '3', '4', '5'], key=int)
     True
     >>> is_sorted([5, 4, 3, 1, 2], reverse=True)
     False
 
-    If *strict*, tests for strict sorting, that is, returns ``False`` if equal
-    elements are found:
+    If *strict*, tests for strict sorting, that is, returns ``False`` if equal elements are found:
 
     >>> is_sorted([1, 2, 2])
     True
     >>> is_sorted([1, 2, 2], strict=True)
     False
 
-    The function returns ``False`` after encountering the first out-of-order
-    item, which means it may produce results that differ from the built-in
-    :func:`sorted` function for objects with unusual comparison dynamics.
-    If there are no out-of-order items, the iterable is exhausted.
+    The function returns ``False`` after encountering the first out-of-order item, which means it may produce results
+    that differ from the built-in :func:`sorted` function for objects with unusual comparison dynamics. If there are no
+    out-of-order items, the iterable is exhausted.
     """
+
     compare = operator.le if strict else operator.lt
     it = iterable if (key is None) else map(key, iterable)
     it_1, it_2 = itertools.tee(it)
@@ -4621,10 +4590,10 @@ class AbortThread(BaseException):
 
 
 class callback_iter:
-    """Convert a function that uses callbacks to an iterator.
+    """
+    Convert a function that uses callbacks to an iterator.
 
-    Let *func* be a function that takes a `callback` keyword argument.
-    For example:
+    Let *func* be a function that takes a `callback` keyword argument. For example:
 
     >>> def func(callback=None):
     ...     for i, c in [(1, 'a'), (2, 'b'), (3, 'c')]:
@@ -4632,9 +4601,7 @@ class callback_iter:
     ...             callback(i, c)
     ...     return 4
 
-
-    Use ``with callback_iter(func)`` to get an iterator over the parameters
-    that are delivered to the callback.
+    Use ``with callback_iter(func)`` to get an iterator over the parameters that are delivered to the callback.
 
     >>> with callback_iter(func) as it:
     ...     for args, kwargs in it:
@@ -4643,32 +4610,27 @@ class callback_iter:
     (2, 'b')
     (3, 'c')
 
-    The function will be called in a background thread. The ``done`` property
-    indicates whether it has completed execution.
+    The function will be called in a background thread. The ``done`` property indicates whether it has completed
+    execution.
 
     >>> it.done
     True
 
-    If it completes successfully, its return value will be available
-    in the ``result`` property.
+    If it completes successfully, its return value will be available in the ``result`` property.
 
     >>> it.result
     4
 
     Notes:
 
-    * If the function uses some keyword argument besides ``callback``, supply
-      *callback_kwd*.
-    * If it finished executing, but raised an exception, accessing the
-      ``result`` property will raise the same exception.
-    * If it hasn't finished executing, accessing the ``result``
-      property from within the ``with`` block will raise ``RuntimeError``.
-    * If it hasn't finished executing, accessing the ``result`` property from
-      outside the ``with`` block will raise a
+    * If the function uses some keyword argument besides ``callback``, supply *callback_kwd*.
+    * If it finished executing, but raised an exception, accessing the ``result`` property will raise the same
+      exception.
+    * If it hasn't finished executing, accessing the ``result`` property from within the ``with`` block will raise
+      ``RuntimeError``.
+    * If it hasn't finished executing, accessing the ``result`` property from outside the ``with`` block will raise a
       ``more_itertools.AbortThread`` exception.
-    * Provide *wait_seconds* to adjust how frequently the it is polled for
-      output.
-
+    * Provide *wait_seconds* to adjust how frequently the it is polled for output.
     """
 
     def __init__(self, func, callback_kwd='callback', wait_seconds=0.1):
@@ -4765,12 +4727,11 @@ def windowed_complete(iterable, n):
     (0, 1, 2) (3, 4, 5) (6,)
     (0, 1, 2, 3) (4, 5, 6) ()
 
-    Note that *n* must be at least 0 and most equal to the length of
-    *iterable*.
+    Note that *n* must be at least 0 and most equal to the length of *iterable*.
 
-    This function will exhaust the iterable and may require significant
-    storage.
+    This function will exhaust the iterable and may require significant storage.
     """
+
     if n < 0:
         raise ValueError('n must be >= 0')
 
@@ -4789,8 +4750,7 @@ def windowed_complete(iterable, n):
 
 def all_unique(iterable, key=None):
     """
-    Returns ``True`` if all the elements of *iterable* are unique (no two
-    elements are equal).
+    Returns ``True`` if all the elements of *iterable* are unique (no two elements are equal).
 
         >>> all_unique('ABCB')
         False
@@ -4802,10 +4762,10 @@ def all_unique(iterable, key=None):
         >>> all_unique('ABCb', str.lower)
         False
 
-    The function returns as soon as the first non-unique element is
-    encountered. Iterables with a mix of hashable and unhashable items can
-    be used, but the function will be slower for unhashable items.
+    The function returns as soon as the first non-unique element is encountered. Iterables with a mix of hashable and
+    unhashable items can be used, but the function will be slower for unhashable items.
     """
+
     seenset = set()
     seenset_add = seenset.add
     seenlist = []
@@ -4823,17 +4783,18 @@ def all_unique(iterable, key=None):
 
 
 def nth_product(index, *args):
-    """Equivalent to ``list(product(*args))[index]``.
+    """
+    Equivalent to ``list(product(*args))[index]``.
 
-    The products of *args* can be ordered lexicographically.
-    :func:`nth_product` computes the product at sort position *index* without
-    computing the previous products.
+    The products of *args* can be ordered lexicographically. :func:`nth_product` computes the product at sort position
+    *index* without computing the previous products.
 
         >>> nth_product(8, range(2), range(2), range(2), range(2))
         (1, 0, 0, 0)
 
     ``IndexError`` will be raised if the given *index* is invalid.
     """
+
     pools = list(map(tuple, reversed(args)))
     ns = list(map(len, pools))
 
@@ -4854,20 +4815,20 @@ def nth_product(index, *args):
 
 
 def nth_permutation(iterable, r, index):
-    """Equivalent to ``list(permutations(iterable, r))[index]```
+    """
+    Equivalent to ``list(permutations(iterable, r))[index]```
 
-    The subsequences of *iterable* that are of length *r* where order is
-    important can be ordered lexicographically. :func:`nth_permutation`
-    computes the subsequence at sort position *index* directly, without
-    computing the previous subsequences.
+    The subsequences of *iterable* that are of length *r* where order is important can be ordered lexicographically.
+    :func:`nth_permutation` computes the subsequence at sort position *index* directly, without computing the previous
+    subsequences.
 
         >>> nth_permutation('ghijk', 2, 5)
         ('h', 'i')
 
-    ``ValueError`` will be raised If *r* is negative or greater than the length
-    of *iterable*.
+    ``ValueError`` will be raised If *r* is negative or greater than the length of *iterable*.
     ``IndexError`` will be raised if the given *index* is invalid.
     """
+
     pool = list(iterable)
     n = len(pool)
 
@@ -4899,22 +4860,21 @@ def nth_permutation(iterable, r, index):
 
 
 def nth_combination_with_replacement(iterable, r, index):
-    """Equivalent to
-    ``list(combinations_with_replacement(iterable, r))[index]``.
+    """
+    Equivalent to ``list(combinations_with_replacement(iterable, r))[index]``.
 
 
-    The subsequences with repetition of *iterable* that are of length *r* can
-    be ordered lexicographically. :func:`nth_combination_with_replacement`
-    computes the subsequence at sort position *index* directly, without
+    The subsequences with repetition of *iterable* that are of length *r* can be ordered lexicographically.
+    :func:`nth_combination_with_replacement` computes the subsequence at sort position *index* directly, without
     computing the previous subsequences with replacement.
 
         >>> nth_combination_with_replacement(range(5), 3, 5)
         (0, 1, 1)
 
-    ``ValueError`` will be raised If *r* is negative or greater than the length
-    of *iterable*.
+    ``ValueError`` will be raised If *r* is negative or greater than the length of *iterable*.
     ``IndexError`` will be raised if the given *index* is invalid.
     """
+
     pool = tuple(iterable)
     n = len(pool)
     if (r < 0) or (r > n):
@@ -4945,15 +4905,14 @@ def nth_combination_with_replacement(iterable, r, index):
 
 
 def value_chain(*args):
-    """Yield all arguments passed to the function in the same order in which
-    they were passed. If an argument itself is iterable then iterate over its
-    values.
+    """
+    Yield all arguments passed to the function in the same order in which they were passed. If an argument itself is
+    iterable then iterate over its values.
 
         >>> list(value_chain(1, 2, 3, [4, 5, 6]))
         [1, 2, 3, 4, 5, 6]
 
-    Binary and text strings are not considered iterable and are emitted
-    as-is:
+    Binary and text strings are not considered iterable and are emitted as-is:
 
         >>> list(value_chain('12', '34', ['56', '78']))
         ['12', '34', '56', '78']
@@ -4966,8 +4925,8 @@ def value_chain(*args):
         [1, 2, 3, 4, 5, 6]
 
     Multiple levels of nesting are not flattened.
-
     """
+
     for value in args:
         if isinstance(value, (str, bytes)):
             yield value
@@ -4979,18 +4938,18 @@ def value_chain(*args):
 
 
 def product_index(element, *args):
-    """Equivalent to ``list(product(*args)).index(element)``
+    """
+    Equivalent to ``list(product(*args)).index(element)``
 
-    The products of *args* can be ordered lexicographically.
-    :func:`product_index` computes the first index of *element* without
-    computing the previous products.
+    The products of *args* can be ordered lexicographically. :func:`product_index` computes the first index of
+    *element* without computing the previous products.
 
         >>> product_index([8, 2], range(10), range(5))
         42
 
-    ``ValueError`` will be raised if the given *element* isn't in the product
-    of *args*.
+    ``ValueError`` will be raised if the given *element* isn't in the product of *args*.
     """
+
     index = 0
 
     for x, pool in itertools.zip_longest(element, args, fillvalue=_marker):
@@ -5004,18 +4963,18 @@ def product_index(element, *args):
 
 
 def combination_index(element, iterable):
-    """Equivalent to ``list(combinations(iterable, r)).index(element)``
+    """
+    Equivalent to ``list(combinations(iterable, r)).index(element)``
 
-    The subsequences of *iterable* that are of length *r* can be ordered
-    lexicographically. :func:`combination_index` computes the index of the
-    first *element*, without computing the previous combinations.
+    The subsequences of *iterable* that are of length *r* can be ordered lexicographically. :func:`combination_index`
+    computes the index of the first *element*, without computing the previous combinations.
 
         >>> combination_index('adf', 'abcdefg')
         10
 
-    ``ValueError`` will be raised if the given *element* isn't one of the
-    combinations of *iterable*.
+    ``ValueError`` will be raised if the given *element* isn't one of the combinations of *iterable*.
     """
+
     element = enumerate(element)
     k, y = next(element, (None, None))
     if k is None:
@@ -5047,20 +5006,19 @@ def combination_index(element, iterable):
 
 
 def combination_with_replacement_index(element, iterable):
-    """Equivalent to
-    ``list(combinations_with_replacement(iterable, r)).index(element)``
+    """
+    Equivalent to ``list(combinations_with_replacement(iterable, r)).index(element)``
 
-    The subsequences with repetition of *iterable* that are of length *r* can
-    be ordered lexicographically. :func:`combination_with_replacement_index`
-    computes the index of the first *element*, without computing the previous
+    The subsequences with repetition of *iterable* that are of length *r* can be ordered lexicographically.
+    :func:`combination_with_replacement_index` computes the index of the first *element*, without computing the previous
     combinations with replacement.
 
         >>> combination_with_replacement_index('adf', 'abcdefg')
         20
 
-    ``ValueError`` will be raised if the given *element* isn't one of the
-    combinations with replacement of *iterable*.
+    ``ValueError`` will be raised if the given *element* isn't one of the combinations with replacement of *iterable*.
     """
+
     element = tuple(element)
     l = len(element)
     element = enumerate(element)
@@ -5082,9 +5040,7 @@ def combination_with_replacement_index(element, iterable):
         if y is None:
             break
     else:
-        raise ValueError(
-            'element is not a combination with replacement of iterable',
-        )
+        raise ValueError('element is not a combination with replacement of iterable')
 
     n = len(pool)
     occupations = [0] * n
@@ -5104,19 +5060,19 @@ def combination_with_replacement_index(element, iterable):
 
 
 def permutation_index(element, iterable):
-    """Equivalent to ``list(permutations(iterable, r)).index(element)```
+    """
+    Equivalent to ``list(permutations(iterable, r)).index(element)```
 
-    The subsequences of *iterable* that are of length *r* where order is
-    important can be ordered lexicographically. :func:`permutation_index`
-    computes the index of the first *element* directly, without computing
-    the previous permutations.
+    The subsequences of *iterable* that are of length *r* where order is important can be ordered lexicographically.
+    :func:`permutation_index` computes the index of the first *element* directly, without computing the previous
+    permutations.
 
         >>> permutation_index([1, 3, 2], range(5))
         19
 
-    ``ValueError`` will be raised if the given *element* isn't one of the
-    permutations of *iterable*.
+    ``ValueError`` will be raised if the given *element* isn't one of the permutations of *iterable*.
     """
+
     index = 0
     pool = list(iterable)
     for i, x in zip(range(len(pool), -1, -1), element):
@@ -5128,10 +5084,10 @@ def permutation_index(element, iterable):
 
 
 class countable:
-    """Wrap *iterable* and keep a count of how many items have been consumed.
+    """
+    Wrap *iterable* and keep a count of how many items have been consumed.
 
-    The ``items_seen`` attribute starts at ``0`` and increments as the iterable
-    is consumed:
+    The ``items_seen`` attribute starts at ``0`` and increments as the iterable is consumed:
 
         >>> iterable = map(str, range(10))
         >>> it = countable(iterable)
@@ -5160,9 +5116,9 @@ class countable:
 
 
 def chunked_even(iterable, n):
-    """Break *iterable* into lists of approximately length *n*.
-    Items are distributed such the lengths of the lists differ by at most
-    1 item.
+    """
+    Break *iterable* into lists of approximately length *n*. Items are distributed such the lengths of the lists differ
+    by at most 1 item.
 
     >>> iterable = [1, 2, 3, 4, 5, 6, 7]
     >>> n = 3
@@ -5170,12 +5126,11 @@ def chunked_even(iterable, n):
     [[1, 2, 3], [4, 5], [6, 7]]
     >>> list(chunked(iterable, n))  # List lengths: 3, 3, 1
     [[1, 2, 3], [4, 5, 6], [7]]
-
     """
+
     iterable = iter(iterable)
 
-    # Initialize a buffer to process the chunks while keeping
-    # some back to fill any underfilled chunks
+    # Initialize a buffer to process the chunks while keeping some back to fill any underfilled chunks
     min_buffer = (n - 1) * (n - 2)
     buffer = list(itertools.islice(iterable, min_buffer))
 
@@ -5210,8 +5165,8 @@ def chunked_even(iterable, n):
 
 
 def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
-    """A version of :func:`zip` that "broadcasts" any scalar
-    (i.e., non-iterable) items into output tuples.
+    """
+    A version of :func:`zip` that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
 
     >>> iterable_1 = [1, 2, 3]
     >>> iterable_2 = ['a', 'b', 'c']
@@ -5219,16 +5174,14 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
     >>> list(zip_broadcast(iterable_1, iterable_2, scalar))
     [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
 
-    The *scalar_types* keyword argument determines what types are considered
-    scalar. It is set to ``(str, bytes)`` by default. Set it to ``None`` to
-    treat strings and byte strings as iterable:
+    The *scalar_types* keyword argument determines what types are considered scalar. It is set to ``(str, bytes)`` by
+    default. Set it to ``None`` to treat strings and byte strings as iterable:
 
     >>> list(zip_broadcast('abc', 0, 'xyz', scalar_types=None))
     [('a', 0, 'x'), ('b', 0, 'y'), ('c', 0, 'z')]
 
-    If the *strict* keyword argument is ``True``, then
-    ``UnequalIterablesError`` will be raised if any of the iterables have
-    different lengths.
+    If the *strict* keyword argument is ``True``, then ``UnequalIterablesError`` will be raised if any of the iterables
+    have different lengths.
     """
 
     def is_scalar(obj):
@@ -5266,8 +5219,8 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
 
 
 def unique_in_window(iterable, n, key=None):
-    """Yield the items from *iterable* that haven't been seen recently.
-    *n* is the size of the lookback window.
+    """
+    Yield the items from *iterable* that haven't been seen recently. *n* is the size of the lookback window.
 
         >>> iterable = [0, 1, 0, 2, 3, 0]
         >>> n = 3
@@ -5280,8 +5233,8 @@ def unique_in_window(iterable, n, key=None):
         ['a', 'b', 'c', 'd', 'a']
 
     The items in *iterable* must be hashable.
-
     """
+
     if n <= 0:
         raise ValueError('n must be greater than 0')
 
@@ -5305,17 +5258,17 @@ def unique_in_window(iterable, n, key=None):
 
 
 def duplicates_everseen(iterable, key=None):
-    """Yield duplicate elements after their first appearance.
+    """
+    Yield duplicate elements after their first appearance.
 
     >>> list(duplicates_everseen('mississippi'))
     ['s', 'i', 's', 's', 'i', 'p', 'i']
     >>> list(duplicates_everseen('AaaBbbCccAaa', str.lower))
     ['a', 'a', 'b', 'b', 'c', 'c', 'A', 'a', 'a']
 
-    This function is analogous to :func:`unique_everseen` and is subject to
-    the same performance considerations.
-
+    This function is analogous to :func:`unique_everseen` and is subject to the same performance considerations.
     """
+
     seen_set = set()
     seen_list = []
     use_key = key is not None
@@ -5335,7 +5288,8 @@ def duplicates_everseen(iterable, key=None):
 
 
 def duplicates_justseen(iterable, key=None):
-    """Yields serially-duplicate elements after their first appearance.
+    """
+    Yields serially-duplicate elements after their first appearance.
 
     >>> list(duplicates_justseen('mississippi'))
     ['s', 's', 'p']
@@ -5343,21 +5297,22 @@ def duplicates_justseen(iterable, key=None):
     ['a', 'a', 'b', 'b', 'c', 'c', 'a', 'a']
 
     This function is analogous to :func:`unique_justseen`.
-
     """
+
     return flatten(g for _, g in itertools.groupby(iterable, key) for _ in g)
 
 
 def classify_unique(iterable, key=None):
-    """Classify each element in terms of its uniqueness.
+    """
+    Classify each element in terms of its uniqueness.
 
     For each element in the input iterable, return a 3-tuple consisting of:
 
     1. The element itself
-    2. ``False`` if the element is equal to the one preceding it in the input,
-       ``True`` otherwise (i.e. the equivalent of :func:`unique_justseen`)
-    3. ``False`` if this element has been seen anywhere in the input before,
-       ``True`` otherwise (i.e. the equivalent of :func:`unique_everseen`)
+    2. ``False`` if the element is equal to the one preceding it in the input, ``True`` otherwise (i.e. the equivalent
+       of :func:`unique_justseen`)
+    3. ``False`` if this element has been seen anywhere in the input before, ``True`` otherwise (i.e. the equivalent of
+       :func:`unique_everseen`)
 
     >>> list(classify_unique('otto'))    # doctest: +NORMALIZE_WHITESPACE
     [('o', True,  True),
@@ -5365,10 +5320,9 @@ def classify_unique(iterable, key=None):
      ('t', False, False),
      ('o', True,  False)]
 
-    This function is analogous to :func:`unique_everseen` and is subject to
-    the same performance considerations.
-
+    This function is analogous to :func:`unique_everseen` and is subject to the same performance considerations.
     """
+
     seen_set = set()
     seen_list = []
     use_key = key is not None
@@ -5391,8 +5345,8 @@ def classify_unique(iterable, key=None):
 
 
 def minmax(iterable_or_value, *others, key=None, default=_marker):
-    """Returns both the smallest and largest items in an iterable
-    or the largest of two or more arguments.
+    """
+    Returns both the smallest and largest items in an iterable or the largest of two or more arguments.
 
         >>> minmax([3, 1, 5])
         (1, 5)
@@ -5400,25 +5354,22 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
         >>> minmax(4, 2, 6)
         (2, 6)
 
-    If a *key* function is provided, it will be used to transform the input
-    items for comparison.
+    If a *key* function is provided, it will be used to transform the input items for comparison.
 
         >>> minmax([5, 30], key=str)  # '30' sorts before '5'
         (30, 5)
 
-    If a *default* value is provided, it will be returned if there are no
-    input items.
+    If a *default* value is provided, it will be returned if there are no input items.
 
         >>> minmax([], default=(0, 0))
         (0, 0)
 
     Otherwise ``ValueError`` is raised.
 
-    This function is based on the
-    `recipe <http://code.activestate.com/recipes/577916/>`__ by
-    Raymond Hettinger and takes care to minimize the number of comparisons
-    performed.
+    This function is based on the `recipe <http://code.activestate.com/recipes/577916/>`__ by Raymond Hettinger and
+    takes care to minimize the number of comparisons performed.
     """
+
     iterable = (iterable_or_value, *others) if others else iterable_or_value
 
     it = iter(iterable)
@@ -5461,26 +5412,25 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
 def constrained_batches(
     iterable, max_size, max_count=None, get_len=len, strict=True,
 ):
-    """Yield batches of items from *iterable* with a combined size limited by
-    *max_size*.
+    """
+    Yield batches of items from *iterable* with a combined size limited by *max_size*.
 
     >>> iterable = [b'12345', b'123', b'12345678', b'1', b'1', b'12', b'1']
     >>> list(constrained_batches(iterable, 10))
     [(b'12345', b'123'), (b'12345678', b'1', b'1'), (b'12', b'1')]
 
-    If a *max_count* is supplied, the number of items per batch is also
-    limited:
+    If a *max_count* is supplied, the number of items per batch is also limited:
 
     >>> iterable = [b'12345', b'123', b'12345678', b'1', b'1', b'12', b'1']
     >>> list(constrained_batches(iterable, 10, max_count = 2))
     [(b'12345', b'123'), (b'12345678', b'1'), (b'1', b'12'), (b'1',)]
 
-    If a *get_len* function is supplied, use that instead of :func:`len` to
-    determine item size.
+    If a *get_len* function is supplied, use that instead of :func:`len` to determine item size.
 
-    If *strict* is ``True``, raise ``ValueError`` if any single item is bigger
-    than *max_size*. Otherwise, allow single items to exceed *max_size*.
+    If *strict* is ``True``, raise ``ValueError`` if any single item is bigger than *max_size*. Otherwise, allow single
+    items to exceed *max_size*.
     """
+
     if max_size <= 0:
         raise ValueError('maximum size must be greater than zero')
 
@@ -5509,21 +5459,20 @@ def constrained_batches(
 
 
 def gray_product(*iterables):
-    """Like :func:`itertools.product`, but return tuples in an order such
-    that only one element in the generated tuple changes from one iteration
-    to the next.
+    """
+    Like :func:`itertools.product`, but return tuples in an order such that only one element in the generated tuple
+    changes from one iteration to the next.
 
         >>> list(gray_product('AB','CD'))
         [('A', 'C'), ('B', 'C'), ('B', 'D'), ('A', 'D')]
 
-    This function consumes all of the input iterables before producing output.
-    If any of the input iterables have fewer than two items, ``ValueError``
-    is raised.
+    This function consumes all of the input iterables before producing output. If any of the input iterables have fewer
+    than two items, ``ValueError`` is raised.
 
-    For information on the algorithm, see
-    `this section <https://www-cs-faculty.stanford.edu/~knuth/fasc2a.ps.gz>`__
-    of Donald Knuth's *The Art of Computer Programming*.
+    For information on the algorithm, see `this section <https://www-cs-faculty.stanford.edu/~knuth/fasc2a.ps.gz>`__ of
+    Donald Knuth's *The Art of Computer Programming*.
     """
+
     all_iterables = tuple(tuple(x) for x in iterables)
     iterable_count = len(all_iterables)
     for iterable in all_iterables:
@@ -5551,10 +5500,10 @@ def gray_product(*iterables):
 
 
 def partial_product(*iterables):
-    """Yields tuples containing one item from each iterator, with subsequent
-    tuples changing a single item at a time by advancing each iterator until it
-    is exhausted. This sequence guarantees every value in each iterable is
-    output at least once without generating all possible combinations.
+    """
+    Yields tuples containing one item from each iterator, with subsequent tuples changing a single item at a time by
+    advancing each iterator until it is exhausted. This sequence guarantees every value in each iterable is output at
+    least once without generating all possible combinations.
 
     This may be useful, for example, when testing an expensive function.
 
@@ -5576,13 +5525,15 @@ def partial_product(*iterables):
 
 
 def takewhile_inclusive(predicate, iterable):
-    """A variant of :func:`takewhile` that yields one additional element.
+    """
+    A variant of :func:`takewhile` that yields one additional element.
 
         >>> list(takewhile_inclusive(lambda x: x < 5, [1, 4, 6, 4, 1]))
         [1, 4, 6]
 
     :func:`takewhile` would return ``[1, 4]``.
     """
+
     for x in iterable:
         yield x
         if not predicate(x):
@@ -5590,10 +5541,9 @@ def takewhile_inclusive(predicate, iterable):
 
 
 def outer_product(func, xs, ys, *args, **kwargs):
-    """A generalized outer product that applies a binary function to all
-    pairs of items. Returns a 2D matrix with ``len(xs)`` rows and ``len(ys)``
-    columns.
-    Also accepts ``*args`` and ``**kwargs`` that are passed to ``func``.
+    """
+    A generalized outer product that applies a binary function to all pairs of items. Returns a 2D matrix with
+    ``len(xs)`` rows and ``len(ys)`` columns. Also accepts ``*args`` and ``**kwargs`` that are passed to ``func``.
 
     Multiplication table:
 
@@ -5615,6 +5565,7 @@ def outer_product(func, xs, ys, *args, **kwargs):
     >>> list(outer_product(min, animals, animals, key=len))
     [('cat', 'cat', 'cat'), ('cat', 'wolf', 'wolf'), ('cat', 'wolf', 'mouse')]
     """
+
     ys = tuple(ys)
     return batched(
         itertools.starmap(lambda x, y: func(x, y, *args, **kwargs), itertools.product(xs, ys)),
@@ -5623,9 +5574,9 @@ def outer_product(func, xs, ys, *args, **kwargs):
 
 
 def iter_suppress(iterable, *exceptions):
-    """Yield each of the items from *iterable*. If the iteration raises one of
-    the specified *exceptions*, that exception will be suppressed and iteration
-    will stop.
+    """
+    Yield each of the items from *iterable*. If the iteration raises one of the specified *exceptions*, that exception
+    will be suppressed and iteration will stop.
 
     >>> from itertools import chain
     >>> def breaks_at_five(x):
@@ -5639,6 +5590,7 @@ def iter_suppress(iterable, *exceptions):
     >>> list(chain(it_1, it_2))
     [1, 2, 3, 4, 2, 3, 4]
     """
+
     try:
         yield from iterable
     except exceptions:
@@ -5646,13 +5598,14 @@ def iter_suppress(iterable, *exceptions):
 
 
 def filter_map(func, iterable):
-    """Apply *func* to every element of *iterable*, yielding only those which
-    are not ``None``.
+    """
+    Apply *func* to every element of *iterable*, yielding only those which are not ``None``.
 
     >>> elems = ['1', 'a', '2', 'b', '3']
     >>> list(filter_map(lambda s: int(s) if s.isnumeric() else None, elems))
     [1, 2, 3]
     """
+
     for x in iterable:
         y = func(x)
         if y is not None:
@@ -5660,16 +5613,17 @@ def filter_map(func, iterable):
 
 
 def powerset_of_sets(iterable):
-    """Yields all possible subsets of the iterable.
+    """
+    Yields all possible subsets of the iterable.
 
         >>> list(powerset_of_sets([1, 2, 3]))  # doctest: +SKIP
         [set(), {1}, {2}, {3}, {1, 2}, {1, 3}, {2, 3}, {1, 2, 3}]
         >>> list(powerset_of_sets([1, 1, 0]))  # doctest: +SKIP
         [set(), {1}, {0}, {0, 1}]
 
-    :func:`powerset_of_sets` takes care to minimize the number
-    of hash operations performed.
+    :func:`powerset_of_sets` takes care to minimize the number of hash operations performed.
     """
+
     sets = tuple(map(set, dict.fromkeys(map(frozenset, zip(iterable)))))
     for r in range(len(sets) + 1):
         yield from itertools.starmap(set().union, itertools.combinations(sets, r))
@@ -5684,6 +5638,7 @@ def join_mappings(**field_to_map):
     >>> join_mappings(score=user_scores, time=user_times)
     {'elliot': {'score': 50, 'time': 30}, 'claris': {'score': 60, 'time': 40}}
     """
+
     ret = collections.defaultdict(dict)
 
     for field_name, mapping in field_to_map.items():
@@ -5694,8 +5649,8 @@ def join_mappings(**field_to_map):
 
 
 def _complex_sumprod(v1, v2):
-    """High precision sumprod() for complex numbers.
-    Used by :func:`dft` and :func:`idft`.
+    """
+    High precision sumprod() for complex numbers. Used by :func:`dft` and :func:`idft`.
     """
 
     r1 = itertools.chain((p.real for p in v1), (-p.imag for p in v1))
@@ -5706,8 +5661,9 @@ def _complex_sumprod(v1, v2):
 
 
 def dft(xarr):
-    """Discrete Fourier Tranform. *xarr* is a sequence of complex numbers.
-    Yields the components of the corresponding transformed output vector.
+    """
+    Discrete Fourier Tranform. *xarr* is a sequence of complex numbers. Yields the components of the corresponding
+    transformed output vector.
 
     >>> import cmath
     >>> xarr = [1, 2-1j, -1j, -1+2j]
@@ -5717,6 +5673,7 @@ def dft(xarr):
 
     See :func:`idft` for the inverse Discrete Fourier Transform.
     """
+
     N = len(xarr)
     roots_of_unity = [math.e ** (n / N * math.tau * -1j) for n in range(N)]
     for k in range(N):
@@ -5725,9 +5682,9 @@ def dft(xarr):
 
 
 def idft(Xarr):
-    """Inverse Discrete Fourier Tranform. *Xarr* is a sequence of
-    complex numbers. Yields the components of the corresponding
-    inverse-transformed output vector.
+    """
+    Inverse Discrete Fourier Tranform. *Xarr* is a sequence of complex numbers. Yields the components of the
+    corresponding inverse-transformed output vector.
 
     >>> import cmath
     >>> xarr = [1, 2-1j, -1j, -1+2j]
@@ -5737,6 +5694,7 @@ def idft(Xarr):
 
     See :func:`dft` for the Discrete Fourier Transform.
     """
+
     N = len(Xarr)
     roots_of_unity = [math.e ** (n / N * math.tau * 1j) for n in range(N)]
     for k in range(N):
@@ -5745,18 +5703,19 @@ def idft(Xarr):
 
 
 def doublestarmap(func, iterable):
-    """Apply *func* to every item of *iterable* by dictionary unpacking
-    the item into *func*.
+    """
+    Apply *func* to every item of *iterable* by dictionary unpacking the item into *func*.
 
-    The difference between :func:`itertools.starmap` and :func:`doublestarmap`
-    parallels the distinction between ``func(*a)`` and ``func(**a)``.
+    The difference between :func:`itertools.starmap` and :func:`doublestarmap` parallels the distinction between
+    ``func(*a)`` and ``func(**a)``.
 
     >>> iterable = [{'a': 1, 'b': 2}, {'a': 40, 'b': 60}]
     >>> list(doublestarmap(lambda a, b: a + b, iterable))
     [3, 100]
 
-    ``TypeError`` will be raised if *func*'s signature doesn't match the
-    mapping contained in *iterable* or if *iterable* does not contain mappings.
+    ``TypeError`` will be raised if *func*'s signature doesn't match the mapping contained in *iterable* or if
+    *iterable* does not contain mappings.
     """
+
     for item in iterable:
         yield func(**item)
