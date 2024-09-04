@@ -55,7 +55,7 @@ configobj==5.0.8
 contourpy==1.3.0
 cramjam==2.8.3
 crccheck==1.3.0
-cryptography==43.0.0
+cryptography==43.0.1
 customtkinter==5.2.2
 cycler==0.12.1
 cymem==2.0.8
