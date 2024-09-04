@@ -50,7 +50,7 @@ def _main() -> None:
     bs: ta.Any
     fpr: iou.FileProgressReporter | None
     with contextlib.ExitStack() as es:
-        bs, fpr = es.enter_context(iou.open_compressed_reader(  # type: ignore
+        bs, fpr = es.enter_context(iou.open_compressed_reader(  # noqa
             fp,
             use_subprocess=use_subproc,
         ))

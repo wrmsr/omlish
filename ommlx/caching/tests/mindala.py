@@ -15,7 +15,7 @@ CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 
 def track(f: CallableT) -> CallableT:
-    f = make_tracked_copy(f)
+    f = make_tracked_copy(f)  # type: ignore
 
     @functools.wraps(f)  # to make the wrapped function look like `f`
     def wrapper(*args, **kwargs):
@@ -28,7 +28,7 @@ def track(f: CallableT) -> CallableT:
         else:
             return f(*args, **kwargs)
 
-    return wrapper
+    return wrapper  # type: ignore
 
 
 class Tracer:
