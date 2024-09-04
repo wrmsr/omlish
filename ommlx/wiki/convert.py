@@ -13,9 +13,10 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
-from . import io as iou
 from . import models as mdl
-from . import xml
+from .utils import io as iou
+from .utils import xml as xu
+from .xml import parse_page
 
 
 ##
@@ -62,10 +63,10 @@ def _main() -> None:
 
         if not use_lxml:
             cs = io.TextIOWrapper(bs, 'utf-8')
-            it = xml.yield_root_children(cs)
+            it = xu.yield_root_children(cs)
 
         else:
-            it = xml.yield_root_children(bs, use_lxml=True)
+            it = xu.yield_root_children(bs, use_lxml=True)
 
         root = next(it)  # noqa
         for i, el in enumerate(it):  # noqa
@@ -75,8 +76,8 @@ def _main() -> None:
             elif i and (i % 100_000) == 0:
                 print(f'{i} elements, {lang.is_gil_enabled()=}', file=sys.stderr)
 
-            if xml.strip_ns(el.tag) == 'page':
-                page: mdl.Page = mdl.parse_page(el)
+            if xu.strip_ns(el.tag) == 'page':
+                page: mdl.Page = parse_page(el)
 
                 oj = json.dumps_compact(msh.marshal(page))
                 mfw.write(oj.encode('utf-8'), b'\n')
