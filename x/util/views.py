@@ -113,6 +113,7 @@ class StarMapIterableView(collections.abc.Iterable):
         self._func, self._iterable = func, iterable
 
     def __iter__(self):
+        it = iter(self._iterable)
         while True:
             values = next(it)
             yield self._func(*values)
@@ -233,6 +234,10 @@ def zip(*iterables):
         return ZipIterableView(*iterables)
 
 
+class ZipExhausted(Exception):
+    pass
+
+
 class ZipLongestIterableView(collections.abc.Iterable):
     def __init__(self, *iterables, fillvalue):
         self._iterables, self._fillvalue = iterables, fillvalue
@@ -247,7 +252,7 @@ class ZipLongestIterableView(collections.abc.Iterable):
             counter -= 1
             yield self._fillvalue
 
-        fillers = repeat(fillvalue)
+        fillers = itertools.repeat(self._fillvalue)
         iterators = [itertools.chain(it, sentinel(), fillers) for it in self._iterables]
         try:
             while iterators:
@@ -263,7 +268,7 @@ class ZipLongestIterableView(collections.abc.Iterable):
         )
 
 
-class ZipLongestReversibleView(Reversible, ZipIterableView):
+class ZipLongestReversibleView(Reversible, ZipLongestIterableView):
     def __reversed__(self):
         yield from ((value,) for value in reversed(self._iterables[0]))
 
@@ -362,9 +367,9 @@ class SliceIterableView(collections.abc.Iterable):
         return '{}({}, {}, {}, {})'.format(
             type(self).__name__,
             self._iterable,
-            self._start,
-            self._stop,
-            self._step,
+            self.start,
+            self.stop,
+            self.step,
         )
 
 
