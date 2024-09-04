@@ -19,6 +19,7 @@ else:
 @ptu.skip_if_cant_import('torchvision')
 def test_torch():
     root = '.cache/torch_data'
+
     training_data = tv_ds.FashionMNIST(  # noqa
         root=root,
         train=True,
