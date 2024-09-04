@@ -41,7 +41,6 @@ import wikitextparser as wtp0  # noqa
 
 from omlish import concurrent as cfu
 from omlish import lang
-from omlish import libc
 from omlish import marshal as msh
 from omlish.formats import json
 
@@ -198,11 +197,6 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
         maybe_flush_rows()
 
 
-def _init_worker_proc():
-    if sys.platform == 'linux':
-        libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
-
-
 def _main() -> None:
     default_workers = 1
 
@@ -225,12 +219,14 @@ def _main() -> None:
 
     print(f'{pr=} {pw=}', file=sys.stderr)
 
-    mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(fds={pr}))
+    mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
+        fds={pr},
+        deathsig=signal.SIGTERM,
+    ))
 
     with cfu.new_executor(
             args.num_workers,
             cf.ProcessPoolExecutor,
-            initializer=_init_worker_proc,
             mp_context=mp_context,
     ) as ex:
         futs: list[cf.Future] = [
