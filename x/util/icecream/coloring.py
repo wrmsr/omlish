@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-#
 # IceCream - Never use print() to debug again
 #
 # Ansgar Grunseid
@@ -8,16 +5,12 @@
 # grunseid@gmail.com
 #
 # License: MIT
-#
-
-from pygments.style import Style
-from pygments.token import (
-    Text, Name, Error, Other, String, Number, Keyword, Generic, Literal,
-    Comment, Operator, Whitespace, Punctuation)
+import pygments.style
+import pygments.token as pt
 
 
 # Solarized: https://ethanschoonover.com/solarized/
-class SolarizedDark(Style):
+class SolarizedDark(pygments.style.Style):
 
     BASE03  = '#002b36' # noqa
     BASE02  = '#073642' # noqa
@@ -37,82 +30,82 @@ class SolarizedDark(Style):
     GREEN   = '#859900' # noqa
 
     styles = {
-        Text:                   BASE0,
-        Whitespace:             BASE03,
-        Error:                  RED,
-        Other:                  BASE0,
+        pt.Text:                   BASE0,
+        pt.Whitespace:             BASE03,
+        pt.Error:                  RED,
+        pt.Other:                  BASE0,
 
-        Name:                   BASE1,
-        Name.Attribute:         BASE0,
-        Name.Builtin:           BLUE,
-        Name.Builtin.Pseudo:    BLUE,
-        Name.Class:             BLUE,
-        Name.Constant:          YELLOW,
-        Name.Decorator:         ORANGE,
-        Name.Entity:            ORANGE,
-        Name.Exception:         ORANGE,
-        Name.Function:          BLUE,
-        Name.Property:          BLUE,
-        Name.Label:             BASE0,
-        Name.Namespace:         YELLOW,
-        Name.Other:             BASE0,
-        Name.Tag:               GREEN,
-        Name.Variable:          ORANGE,
-        Name.Variable.Class:    BLUE,
-        Name.Variable.Global:   BLUE,
-        Name.Variable.Instance: BLUE,
+        pt.Name:                   BASE1,
+        pt.Name.Attribute:         BASE0,
+        pt.Name.Builtin:           BLUE,
+        pt.Name.Builtin.Pseudo:    BLUE,
+        pt.Name.Class:             BLUE,
+        pt.Name.Constant:          YELLOW,
+        pt.Name.Decorator:         ORANGE,
+        pt.Name.Entity:            ORANGE,
+        pt.Name.Exception:         ORANGE,
+        pt.Name.Function:          BLUE,
+        pt.Name.Property:          BLUE,
+        pt.Name.Label:             BASE0,
+        pt.Name.Namespace:         YELLOW,
+        pt.Name.Other:             BASE0,
+        pt.Name.Tag:               GREEN,
+        pt.Name.Variable:          ORANGE,
+        pt.Name.Variable.Class:    BLUE,
+        pt.Name.Variable.Global:   BLUE,
+        pt.Name.Variable.Instance: BLUE,
 
-        String:                 CYAN,
-        String.Backtick:        CYAN,
-        String.Char:            CYAN,
-        String.Doc:             CYAN,
-        String.Double:          CYAN,
-        String.Escape:          ORANGE,
-        String.Heredoc:         CYAN,
-        String.Interpol:        ORANGE,
-        String.Other:           CYAN,
-        String.Regex:           CYAN,
-        String.Single:          CYAN,
-        String.Symbol:          CYAN,
+        pt.String:                 CYAN,
+        pt.String.Backtick:        CYAN,
+        pt.String.Char:            CYAN,
+        pt.String.Doc:             CYAN,
+        pt.String.Double:          CYAN,
+        pt.String.Escape:          ORANGE,
+        pt.String.Heredoc:         CYAN,
+        pt.String.Interpol:        ORANGE,
+        pt.String.Other:           CYAN,
+        pt.String.Regex:           CYAN,
+        pt.String.Single:          CYAN,
+        pt.String.Symbol:          CYAN,
 
-        Number:                 CYAN,
-        Number.Float:           CYAN,
-        Number.Hex:             CYAN,
-        Number.Integer:         CYAN,
-        Number.Integer.Long:    CYAN,
-        Number.Oct:             CYAN,
+        pt.Number:                 CYAN,
+        pt.Number.Float:           CYAN,
+        pt.Number.Hex:             CYAN,
+        pt.Number.Integer:         CYAN,
+        pt.Number.Integer.Long:    CYAN,
+        pt.Number.Oct:             CYAN,
 
-        Keyword:                GREEN,
-        Keyword.Constant:       GREEN,
-        Keyword.Declaration:    GREEN,
-        Keyword.Namespace:      ORANGE,
-        Keyword.Pseudo:         ORANGE,
-        Keyword.Reserved:       GREEN,
-        Keyword.Type:           GREEN,
+        pt.Keyword:                GREEN,
+        pt.Keyword.Constant:       GREEN,
+        pt.Keyword.Declaration:    GREEN,
+        pt.Keyword.Namespace:      ORANGE,
+        pt.Keyword.Pseudo:         ORANGE,
+        pt.Keyword.Reserved:       GREEN,
+        pt.Keyword.Type:           GREEN,
 
-        Generic:                BASE0,
-        Generic.Deleted:        BASE0,
-        Generic.Emph:           BASE0,
-        Generic.Error:          BASE0,
-        Generic.Heading:        BASE0,
-        Generic.Inserted:       BASE0,
-        Generic.Output:         BASE0,
-        Generic.Prompt:         BASE0,
-        Generic.Strong:         BASE0,
-        Generic.Subheading:     BASE0,
-        Generic.Traceback:      BASE0,
+        pt.Generic:                BASE0,
+        pt.Generic.Deleted:        BASE0,
+        pt.Generic.Emph:           BASE0,
+        pt.Generic.Error:          BASE0,
+        pt.Generic.Heading:        BASE0,
+        pt.Generic.Inserted:       BASE0,
+        pt.Generic.Output:         BASE0,
+        pt.Generic.Prompt:         BASE0,
+        pt.Generic.Strong:         BASE0,
+        pt.Generic.Subheading:     BASE0,
+        pt.Generic.Traceback:      BASE0,
 
-        Literal:                BASE0,
-        Literal.Date:           BASE0,
+        pt.Literal:                BASE0,
+        pt.Literal.Date:           BASE0,
 
-        Comment:                BASE01,
-        Comment.Multiline:      BASE01,
-        Comment.Preproc:        BASE01,
-        Comment.Single:         BASE01,
-        Comment.Special:        BASE01,
+        pt.Comment:                BASE01,
+        pt.Comment.Multiline:      BASE01,
+        pt.Comment.Preproc:        BASE01,
+        pt.Comment.Single:         BASE01,
+        pt.Comment.Special:        BASE01,
 
-        Operator:               BASE0,
-        Operator.Word:          GREEN,
+        pt.Operator:               BASE0,
+        pt.Operator.Word:          GREEN,
 
-        Punctuation:            BASE0,
+        pt.Punctuation:            BASE0,
     }

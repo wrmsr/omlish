@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-#
 # IceCream - Never use print() to debug again
 #
 # Ansgar Grunseid
@@ -9,34 +5,24 @@
 # grunseid@gmail.com
 #
 # License: MIT
-#
-
-from __future__ import print_function
-
 import ast
 import inspect
 import pprint
 import sys
 import warnings
-from datetime import datetime
+import datetime
 import functools
-from contextlib import contextmanager
-from os.path import basename, realpath
-from textwrap import dedent
+import contextlib
+import os.path
+import textwrap
 
 import colorama
 import executing
-from pygments import highlight
-# See https://gist.github.com/XVilka/8346728 for color support in various
-# terminals and thus whether to use Terminal256Formatter or
-# TerminalTrueColorFormatter.
-from pygments.formatters import Terminal256Formatter
-from pygments.lexers import PythonLexer as PyLexer, Python3Lexer as Py3Lexer
+import pygments.formatters
+import pygments.lexers
 
 from .coloring import SolarizedDark
 
-
-PYTHON2 = (sys.version_info[0] == 2)
 
 _absent = object()
 
@@ -48,15 +34,14 @@ def bindStaticVariable(name, value):
     return decorator
 
 
-@bindStaticVariable('formatter', Terminal256Formatter(style=SolarizedDark))
-@bindStaticVariable(
-    'lexer', PyLexer(ensurenl=False) if PYTHON2 else Py3Lexer(ensurenl=False))
+@bindStaticVariable('formatter', pygments.formatters.Terminal256Formatter(style=SolarizedDark))
+@bindStaticVariable(pygments.lexers.Python3Lexer(ensurenl=False))
 def colorize(s):
     self = colorize
-    return highlight(s, self.lexer, self.formatter)
+    return pygments.highlight(s, self.lexer, self.formatter)
 
 
-@contextmanager
+@contextlib.contextmanager
 def supportTerminalColorsInWindows():
     # Filter and replace ANSI escape sequences on Windows with equivalent Win32
     # API calls. This code does nothing on non-Windows systems.
@@ -120,7 +105,7 @@ class Source(executing.Source):
         result = self.asttokens().get_text(node)
         if '\n' in result:
             result = ' ' * node.first_token.start[1] + result
-            result = dedent(result)
+            result = textwrap.dedent(result)
         result = result.strip()
         return result
 
@@ -328,7 +313,7 @@ class IceCreamDebugger:
         return context
 
     def _formatTime(self):
-        now = datetime.now()
+        now = datetime.datetime.now()
         formatted = now.strftime('%H:%M:%S.%f')[:-3]
         return ' at %s' % formatted
 
@@ -337,7 +322,7 @@ class IceCreamDebugger:
         lineNumber = frameInfo.lineno
         parentFunction = frameInfo.function
 
-        filepath = (realpath if self.contextAbsPath else basename)(frameInfo.filename)
+        filepath = (os.path.realpath if self.contextAbsPath else os.path.basename)(frameInfo.filename)
         return filepath, lineNumber, parentFunction
 
     def enable(self):

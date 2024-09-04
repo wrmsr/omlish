@@ -2,6 +2,15 @@
 TODO:
  - more logging options
  - a more powerful interface would be run_fn_with_bootstrap..
+ - ./python -m gprof2dot -f pstats prof.pstats | dot -Tpdf -o prof.pstats.pdf && open prof.pstats.pdf
+
+TODO diag:
+ - yappi
+ - stackscope
+ - https://github.com/pythonspeed/filprofiler
+ - https://pypi.org/project/guppy3/
+ - https://pypi.org/project/memory-profiler/
+ - https://pypi.org/project/Pympler/
 
 TODO new items:
  - pydevd connect-back

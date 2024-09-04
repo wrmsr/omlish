@@ -33,8 +33,9 @@ import signal
 import sys
 
 import lz4.frame
-import mwparserfromhell as mfh
+import mwparserfromhell as mfh  # noqa
 import mwparserfromhell.nodes  # noqa
+import wikitextparser as wtp0  # noqa
 
 from omlish import concurrent as cfu
 from omlish import libc
@@ -92,24 +93,42 @@ def analyze_file(fn: str) -> None:
 
             page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
 
-            # print(page.title)
+            print(page.title)
 
             for rev in page.revisions or ():
                 if rev.text:
-                    wiki = mfh.parse(rev.text.text)
-                    # print(wiki)
+                    # backend = mfh
+                    backend = wtp0
 
-                    wikilink: mfh.nodes.Wikilink
-                    for wikilink in wiki.filter_wikilinks():  # noqa
-                        # print((wikilink.title, wikilink.text))
-                        pass
+                    if backend is mfh:
+                        wiki = mfh.parse(rev.text.text)
+                        # print(wiki)
 
-                    external_link: mfh.nodes.ExternalLink
-                    for external_link in wiki.filter_external_links():  # noqa
-                        # print((external_link.title, external_link.url))
-                        pass
+                        wikilink: mfh.nodes.Wikilink
+                        for wikilink in wiki.filter_wikilinks():  # noqa
+                            # print((wikilink.title, wikilink.text))
+                            pass
 
-            # print()
+                        external_link: mfh.nodes.ExternalLink
+                        for external_link in wiki.filter_external_links():  # noqa
+                            # print((external_link.title, external_link.url))
+                            pass
+
+                    elif backend is wtp0:
+                        parsed = wtp0.parse(rev.text.text)
+
+                        for wikilink0 in parsed.wikilinks:
+                            print((wikilink0.title, wikilink0.target))
+                            pass
+
+                        for external_link0 in parsed.external_links:  # noqa
+                            print((external_link0.text, external_link0.url))
+                            pass
+
+                    else:
+                        raise TypeError(backend)
+
+            print()
 
 
 def _main() -> None:
@@ -121,7 +140,7 @@ def _main() -> None:
                 analyze_file,
                 fn,
             )
-            for fn in glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4'))
+            for fn in sorted(glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')))
         ]
         for fut in futs:
             fut.result()
