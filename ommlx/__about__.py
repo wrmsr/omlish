@@ -15,6 +15,10 @@ class Project(ProjectBase):
         'torch': [
             'torch ~= 2.4',
         ],
+
+        'xml': [
+            'lxml ~= 5.3; python_version < "3.13"',
+        ],
     }
 
 

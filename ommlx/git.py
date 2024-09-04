@@ -79,12 +79,12 @@ def get_local_git_subtree_path(
         )
         local_path = os.path.join(tmp_path, 'repo', repo_subtree)
         if not os.path.exists(local_path):
-            raise RuntimeError(local_path)
+            raise RuntimeError(local_path)  # noqa
         os.rename(local_path, target_dir)
     except Exception:
         try:
             shutil.rmtree(tmp_path)
-        except Exception as e2:
+        except Exception as e2:  # noqa
             print(str(e2), file=sys.stderr)
         raise
     else:
