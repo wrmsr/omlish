@@ -102,6 +102,8 @@ def create_ollama_chat(**kwargs: ta.Any) -> ChatOllama:
 
 @lang.cached_function
 def retrieval_grader() -> Runnable:
+    """Evaluates the relevance of our retrieved document to a given user question."""
+
     prompt = PromptTemplate(
         template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing relevance 
             of a retrieved document to a user question. If the document contains keywords related to the user question, 
@@ -124,6 +126,8 @@ def format_docs(docs: ta.Sequence[Document]) -> str:
 
 @lang.cached_function
 def rag_chain() -> Runnable:
+    """Generate a concise answer to user's question using context from retrieved documents."""
+
     prompt = PromptTemplate(
         template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are an assistant for question-answering tasks.
         Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know.
@@ -139,6 +143,8 @@ def rag_chain() -> Runnable:
 
 @lang.cached_function
 def hallucination_grader() -> Runnable:
+    """Assesses hallucination in a generated answer."""
+
     prompt = PromptTemplate(
         template=""" <|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing whether 
         an answer is grounded in / supported by a set of facts. Give a binary 'yes' or 'no' score to indicate 
@@ -157,6 +163,8 @@ def hallucination_grader() -> Runnable:
 
 @lang.cached_function
 def answer_grader() -> Runnable:
+    """Evaluates the usefulness of the answer in resolving a question."""
+
     prompt = PromptTemplate(
         template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing whether an 
         answer is useful to resolve a question. Give a binary score 'yes' or 'no' to indicate whether the answer is 
@@ -174,6 +182,11 @@ def answer_grader() -> Runnable:
 
 @lang.cached_function
 def question_router() -> Runnable:
+    """
+    Determines whether a user’s question should be directed to a vectorstore or a web search for further information
+    retrieval.
+    """
+
     prompt = PromptTemplate(
         template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are an expert at routing a 
         user question to a vectorstore or web search. Use the vectorstore for questions on LLM  agents, 
