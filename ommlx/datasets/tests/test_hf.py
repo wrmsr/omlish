@@ -4,11 +4,24 @@ https://huggingface.co/docs/datasets/en/how_to
 https://huggingface.co/docs/datasets/en/about_arrow
 https://huggingface.co/docs/datasets/en/package_reference/main_classes
 """
-import datasets as hfds
+import typing as ta
+
 import pytest
-import transformers
+
+from omlish import lang
+from omlish.testing import pytest as ptu
 
 
+if ta.TYPE_CHECKING:
+    import datasets as hfds
+    import transformers
+
+else:
+    hfds = lang.proxy_import('datasets')
+    transformers = lang.proxy_import('transformers')
+
+
+@ptu.skip_if_cant_import('datasets')
 @pytest.mark.slow
 def test_hfds():
     ds_builder = hfds.load_dataset_builder('rotten_tomatoes')
@@ -27,6 +40,8 @@ def test_hfds():
         break
 
 
+@ptu.skip_if_cant_import('datasets')
+@ptu.skip_if_cant_import('transformers')
 @pytest.mark.slow
 def test_tokenize():
     dataset = hfds.load_dataset('rotten_tomatoes', split='train')
@@ -44,6 +59,8 @@ def test_tokenize():
     print(dataset[0]['text'])
 
 
+@ptu.skip_if_cant_import('datasets')
+@ptu.skip_if_cant_import('transformers')
 @pytest.mark.slow
 def test_audio():
     feature_extractor = transformers.AutoFeatureExtractor.from_pretrained('facebook/wav2vec2-base-960h')
@@ -66,6 +83,7 @@ def test_audio():
     print(dataset[0]['audio'])
 
 
+@ptu.skip_if_cant_import('datasets')
 @pytest.mark.slow
 def test_aug():
     # feature_extractor = transformers.AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
