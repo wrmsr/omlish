@@ -26,12 +26,9 @@ if rev.text and '#invoke' in rev.text.text:
 """
 import concurrent.futures as cf
 import contextlib
-import errno
-
 import fcntl
 import glob
 import io
-import multiprocessing as mp
 import os.path
 import signal
 import sys
@@ -49,6 +46,7 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from . import models as mdl
+from .utils import multiprocessing as mpu
 from .utils.progress import ProgressReporter
 
 
@@ -205,40 +203,6 @@ def _init_worker_proc():
         libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
 
 
-from multiprocessing.popen_spawn_posix import Popen as SpawnPosixPopen
-
-
-class MySpawnPosixPopen(SpawnPosixPopen):
-    def __init__(self, process_obj, *, extra_fds=None):
-        self._extra_fds = extra_fds
-        super().__init__(process_obj)
-
-    def _launch(self, process_obj):
-        if self._extra_fds:
-            for fd in self._extra_fds:
-                self.duplicate_for_child(fd)
-            self._extra_fds = None
-        super()._launch(process_obj)  # noqa
-
-
-class MySpawnProcess(mp.context.SpawnProcess):
-    def __init__(self, *args, extra_fds=None, **kwargs):
-        self._extra_fds = extra_fds
-        super().__init__(*args, **kwargs)
-
-    def _Popen(self, process_obj):
-        return MySpawnPosixPopen(process_obj, extra_fds=self._extra_fds)
-
-
-class MySpawnContext(mp.context.SpawnContext):
-    def __init__(self, extra_fds=None):
-        super().__init__()
-        self._extra_fds = extra_fds
-
-    def Process(self, *args, **kwargs):  # noqa
-        return MySpawnProcess(*args, extra_fds=self._extra_fds, **kwargs)
-
-
 def _main() -> None:
     default_workers = 1
 
@@ -261,7 +225,7 @@ def _main() -> None:
 
     print(f'{pr=} {pw=}', file=sys.stderr)
 
-    mp_context = MySpawnContext(extra_fds=[pr])
+    mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(fds={pr}))
 
     with cfu.new_executor(
             args.num_workers,
