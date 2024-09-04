@@ -3,7 +3,7 @@ TODO:
  - throttles
  - circuitbreakers
  - coordination (redis? coord iface?)
- - dogpile
+ - dogpile.cache
  - mv faults?
 
 https://engineering.shopify.com/blogs/engineering/circuit-breaker-misconfigured
