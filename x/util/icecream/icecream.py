@@ -8,7 +8,6 @@ grunseid@gmail.com
 License: MIT
 """
 import ast
-import contextlib
 import datetime
 import functools
 import inspect
@@ -20,7 +19,6 @@ import types
 import typing as ta
 import warnings
 
-import colorama
 import executing
 import pygments.formatters
 import pygments.lexers
@@ -39,15 +37,6 @@ def colorize(s: str) -> str:
     return pygments.highlight(s, _COLORIZE_LEXER, _COLORIZE_FORMATTER)
 
 
-@contextlib.contextmanager
-def support_terminal_colors_in_windows() -> ta.Iterator[None]:
-    # Filter and replace ANSI escape sequences on Windows with equivalent Win32 API calls. This code does nothing on
-    # non-Windows systems.
-    colorama.init()
-    yield
-    colorama.deinit()
-
-
 def stderr_print(*args: ta.Any) -> None:
     print(*args, file=sys.stderr)
 
@@ -62,8 +51,7 @@ def is_literal(s: str) -> bool:
 
 def colorized_stderr_print(s: str) -> None:
     colored = colorize(s)
-    with support_terminal_colors_in_windows():
-        stderr_print(colored)
+    stderr_print(colored)
 
 
 DEFAULT_PREFIX = 'ic| '
@@ -92,7 +80,7 @@ def call_or_value(obj: ta.Any) -> ta.Any:
 
 
 class Source(executing.Source):
-    def get_text_with_indentation(self, node: ast.AST) -> bool:
+    def get_text_with_indentation(self, node: ast.AST) -> str:
         result = self.asttokens().get_text(node)
         if '\n' in result:
             result = ' ' * node.first_token.start[1] + result
@@ -143,7 +131,7 @@ def argument_to_string(obj: ta.Any) -> str:
 
 
 class IceCreamDebugger:
-    _pair_delimiter = ', '  # Used by the tests in tests/.
+    pair_delimiter = ', '
     line_wrap_width = DEFAULT_LINE_WRAP_WIDTH
     context_delimiter = DEFAULT_CONTEXT_DELIMITER
 
@@ -224,6 +212,7 @@ class IceCreamDebugger:
             return f'{arg}: '
 
         pairs = [(arg, self._arg_to_string_function(val)) for arg, val in pairs]
+
         # For cleaner output, if <arg> is a literal, eg 3, "a string", b'bytes', etc, only output the value, not the
         # argument and the value, because the argument and the value will be identical or nigh identical. Ex: with
         # ic("hello"), just output
@@ -237,11 +226,11 @@ class IceCreamDebugger:
         # When the source for an arg is missing we also only print the value, since we can't know anything about the
         # argument itself.
         pair_strs = [
-            val if (is_literal(arg) or arg is _absent)
-            else (arg_prefix(arg) + val)
-            for arg, val in pairs]
+            val if (is_literal(arg) or arg is _absent) else (arg_prefix(arg) + val)
+            for arg, val in pairs
+        ]
 
-        all_args_on_one_line = self._pair_delimiter.join(pair_strs)
+        all_args_on_one_line = self.pair_delimiter.join(pair_strs)
         multiline_args = len(all_args_on_one_line.splitlines()) > 1
 
         context_delimiter = self.context_delimiter if context else ''

@@ -15,7 +15,6 @@ import pygments.token as pt
 
 # Solarized: https://ethanschoonover.com/solarized/
 class SolarizedDark(pygments.style.Style):
-
     BASE03  = '#002b36' # noqa
     BASE02  = '#073642' # noqa
     BASE01  = '#586e75' # noqa
