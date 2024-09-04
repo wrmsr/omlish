@@ -59,7 +59,7 @@ def stderr_print(*args):
 def is_literal(s):
     try:
         ast.literal_eval(s)
-    except Exception:
+    except Exception:  # noqa
         return False
     return True
 
@@ -242,8 +242,8 @@ class IceCreamDebugger:
         return out
 
     def _construct_argument_output(self, prefix, context, pairs):
-        def argPrefix(arg):
-            return '%s: ' % arg
+        def arg_prefix(arg):
+            return f'{arg}: '
 
         pairs = [(arg, self.arg_to_string_function(val)) for arg, val in pairs]
         # For cleaner output, if <arg> is a literal, eg 3, "a string", b'bytes', etc, only output the value, not the
@@ -260,7 +260,7 @@ class IceCreamDebugger:
         # argument itself.
         pair_strs = [
             val if (is_literal(arg) or arg is _absent)
-            else (argPrefix(arg) + val)
+            else (arg_prefix(arg) + val)
             for arg, val in pairs]
 
         all_args_on_one_line = self._pair_delimiter.join(pair_strs)
@@ -307,15 +307,15 @@ class IceCreamDebugger:
         filename, line_number, parent_function = self._get_context(call_frame)
 
         if parent_function != '<module>':
-            parent_function = '%s()' % parent_function
+            parent_function = f'{parent_function}()'
 
-        context = '%s:%s in %s' % (filename, line_number, parent_function)
+        context = f'{filename}:{line_number} in {parent_function}'
         return context
 
     def _format_time(self):
-        now = datetime.datetime.now()
+        now = datetime.datetime.now()  # noqa
         formatted = now.strftime('%H:%M:%S.%f')[:-3]
-        return ' at %s' % formatted
+        return f' at {formatted}'
 
     def _get_context(self, call_frame):
         frame_info = inspect.getframeinfo(call_frame)
@@ -339,8 +339,7 @@ class IceCreamDebugger:
             include_context=_absent,
             context_abs_path=_absent,
     ):
-        no_parameter_provided = all(v is _absent for k, v in locals().items() if k != 'self')
-        if no_parameter_provided:
+        if all(k is _absent for k in (prefix, output_function, arg_to_string_function, include_context, context_abs_path)):  # noqa
             raise TypeError('configure_output() missing at least one argument')
 
         if prefix is not _absent:

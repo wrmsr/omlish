@@ -7,6 +7,8 @@ grunseid@gmail.com
 
 License: MIT
 """
+import typing as ta
+
 import pygments.style
 import pygments.token as pt
 
@@ -31,7 +33,7 @@ class SolarizedDark(pygments.style.Style):
     CYAN    = '#2aa198' # noqa
     GREEN   = '#859900' # noqa
 
-    styles = {
+    styles: ta.ClassVar = {
         pt.Text:                   BASE0,
         pt.Whitespace:             BASE03,
         pt.Error:                  RED,
