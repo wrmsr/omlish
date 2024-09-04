@@ -26,8 +26,10 @@ if rev.text and '#invoke' in rev.text.text:
 """
 import concurrent.futures as cf
 import contextlib
+import fcntl
 import glob
 import io
+import multiprocessing as mp
 import os.path
 import signal
 import sys
@@ -61,11 +63,8 @@ pages_table = sa.Table(
 )
 
 
-def analyze_file(db_url: str, fn: str) -> None:
-    print(f'pid={os.getpid()} {fn}')
-
-    if sys.platform == 'linux':
-        libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
+def analyze_file(db_url: str, fn: str, pr: int) -> None:
+    print(f'pid={os.getpid()} {pr=} {fn}', file=sys.stderr)
 
     rows: list[dict] = []
     row_batch_size = 1_000
@@ -90,6 +89,21 @@ def analyze_file(db_url: str, fn: str) -> None:
         f = es.enter_context(open(fn, 'rb'))
         # fpr = iou.FileProgressReporter(f, time_interval=5)
 
+        def check_pr():
+            flags = fcntl.fcntl(pr, fcntl.F_GETFL)
+            fcntl.fcntl(pr, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+            try:
+                os.read(pr, 1)
+            except BlockingIOError:
+                return
+            except Exception as e:
+                print(f'!!! {e=}', file=sys.stderr)
+                raise
+            print(f'!!! {buf=}', file=sys.stderr)
+            raise NotImplementedError
+
+        maybe_check_pr = lang.periodically(check_pr, 3.)
+
         # proc = subprocess.Popen(['lz4', '-cdk', fn], stdout=subprocess.PIPE)
         # f = proc.stdout
         # fpr = None
@@ -113,6 +127,8 @@ def analyze_file(db_url: str, fn: str) -> None:
         i = 0
         while (l := tw.readline()):
             i += 1
+
+            maybe_check_pr()
 
             fpr0.update()
             fpr1.update(i)
@@ -178,20 +194,73 @@ def analyze_file(db_url: str, fn: str) -> None:
         maybe_flush_rows()
 
 
+def _init_worker_proc():
+    if sys.platform == 'linux':
+        libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
+
+
+from multiprocessing.popen_spawn_posix import Popen as SpawnPosixPopen
+
+
+class MySpawnPosixPopen(SpawnPosixPopen):
+    def __init__(self, process_obj, *, extra_fds=None):
+        self._extra_fds = extra_fds
+        super().__init__(process_obj)
+
+    def _launch(self, process_obj):
+        if self._extra_fds:
+            for fd in self._extra_fds:
+                self.duplicate_for_child(fd)
+            self._extra_fds = None
+        super()._launch(process_obj)  # noqa
+
+
+class MySpawnProcess(mp.context.SpawnProcess):
+    @staticmethod
+    def _Popen(process_obj):
+        return MySpawnPosixPopen(process_obj)
+
+
+class MySpawnContext(mp.context.SpawnContext):
+    Process = MySpawnProcess
+
+
 def _main() -> None:
-    np = 8
+    default_workers = 1
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-j', '--num-workers', type=int, default=default_workers)
+
+    args = parser.parse_args()
 
     db_file = os.path.join('.data/wiki.db')
     if os.path.isfile(db_file):
         os.unlink(db_file)
     db_url = f'sqlite:///{db_file}'
 
-    with cfu.new_executor(np, cf.ProcessPoolExecutor) as ex:
+    print(f'pid={os.getpid()}', file=sys.stderr)
+
+    pr, pw = os.pipe()
+    os.set_inheritable(pr, True)
+
+    print(f'{pr=} {pw=}', file=sys.stderr)
+
+    mp_context = MySpawnContext()
+
+    with cfu.new_executor(
+            args.num_workers,
+            cf.ProcessPoolExecutor,
+            initializer=_init_worker_proc,
+            mp_context=mp_context,
+    ) as ex:
         futs: list[cf.Future] = [
             ex.submit(
                 analyze_file,
                 db_url,
                 fn,
+                pr,
             )
             for fn in sorted(glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')))
         ]
