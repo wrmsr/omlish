@@ -26,7 +26,6 @@ if rev.text and '#invoke' in rev.text.text:
 """
 import concurrent.futures as cf
 import contextlib
-import fcntl
 import glob
 import io
 import os.path
@@ -47,6 +46,9 @@ from omlish.formats import json
 from . import models as mdl
 from .utils import multiprocessing as mpu
 from .utils.progress import ProgressReporter
+
+
+##
 
 
 LZ4_JSONL_DIR = os.path.expanduser('~/data/enwiki/json/')
@@ -89,8 +91,6 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
         # fpr = iou.FileProgressReporter(f, time_interval=5)
 
         def check_pr():
-            flags = fcntl.fcntl(pr, fcntl.F_GETFL)
-            fcntl.fcntl(pr, fcntl.F_SETFL, flags | os.O_NONBLOCK)
             try:
                 pbuf = os.read(pr, 1)
             except BlockingIOError:
@@ -105,7 +105,7 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
             os.kill(os.getpid(), signal.SIGTERM)
             sys.exit(1)
 
-        maybe_check_pr = lang.periodically(check_pr, 3.)
+        maybe_check_pr = lang.periodically(check_pr, .1)
 
         # proc = subprocess.Popen(['lz4', '-cdk', fn], stdout=subprocess.PIPE)
         # f = proc.stdout
@@ -197,6 +197,9 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
         maybe_flush_rows()
 
 
+##
+
+
 def _main() -> None:
     default_workers = 1
 
@@ -216,6 +219,7 @@ def _main() -> None:
 
     pr, pw = os.pipe()
     os.set_inheritable(pr, True)
+    os.set_blocking(pr, False)
 
     print(f'{pr=} {pw=}', file=sys.stderr)
 
