@@ -57,7 +57,7 @@ pages_table = sa.Table(
     meta,
     sa.Column('id', sa.Integer(), primary_key=True),
     sa.Column('title', sa.String()),
-    sa.Column('text', sa.String()),
+    sa.Column('text', sa.BLOB),
 )
 
 
@@ -67,12 +67,25 @@ def analyze_file(db_url: str, fn: str) -> None:
     if sys.platform == 'linux':
         libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
 
+    rows: list[dict] = []
+    row_batch_size = 1_000
+
+    rb = 0
+    cb = 0
+
     with contextlib.ExitStack() as es:
         engine = sa.create_engine(db_url, echo=True)
         es.enter_context(lang.defer(engine.dispose))
 
         with engine.begin() as conn:
             meta.create_all(bind=conn)
+
+        def maybe_flush_rows():
+            if len(rows) >= row_batch_size:
+                with engine.begin() as conn:
+                    conn.execute(pages_table.insert(), rows)
+
+                rows.clear()
 
         f = es.enter_context(open(fn, 'rb'))
         # fpr = iou.FileProgressReporter(f, time_interval=5)
@@ -105,6 +118,8 @@ def analyze_file(db_url: str, fn: str) -> None:
             fpr1.update(i)
             if fpr0.should_report or fpr1.should_report:
                 print(', '.join([*fpr0.report(), *fpr1.report()]), file=sys.stderr)
+                print(f'{rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %', file=sys.stderr)
+                rb = cb = 0
 
             # if fpr is not None and fpr.report():  # noqa
             #     print(f'{i} pages', file=sys.stderr)
@@ -115,7 +130,8 @@ def analyze_file(db_url: str, fn: str) -> None:
 
             verbose and print(page.title)
 
-            for rev in page.revisions or ():
+            if page.revisions:
+                rev = page.revisions[0]
                 if rev.text:
                     # backend = mfh
                     backend = wtp0
@@ -144,13 +160,31 @@ def analyze_file(db_url: str, fn: str) -> None:
                     else:
                         raise TypeError(backend)
 
+                    buf = rev.text.text.encode('utf-8')
+                    rb += len(buf)
+                    cbuf = lz4.frame.compress(buf)
+                    # cbuf = buf
+                    cb += len(cbuf)
+
+                    rows.append({
+                        'id': page.id,
+                        'title': page.title,
+                        'text': cbuf,
+                    })
+                    maybe_flush_rows()
+
             verbose and print()
+
+        maybe_flush_rows()
 
 
 def _main() -> None:
-    np = 0
+    np = 8
 
-    db_url = f'sqlite://'
+    db_file = os.path.join('.data/wiki.db')
+    if os.path.isfile(db_file):
+        os.unlink(db_file)
+    db_url = f'sqlite:///{db_file}'
 
     with cfu.new_executor(np, cf.ProcessPoolExecutor) as ex:
         futs: list[cf.Future] = [
