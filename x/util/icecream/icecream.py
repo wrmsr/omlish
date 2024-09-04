@@ -35,7 +35,7 @@ def bindStaticVariable(name, value):
 
 
 @bindStaticVariable('formatter', pygments.formatters.Terminal256Formatter(style=SolarizedDark))
-@bindStaticVariable(pygments.lexers.Python3Lexer(ensurenl=False))
+@bindStaticVariable('lexer', pygments.lexers.Python3Lexer(ensurenl=False))
 def colorize(s):
     self = colorize
     return pygments.highlight(s, self.lexer, self.formatter)
