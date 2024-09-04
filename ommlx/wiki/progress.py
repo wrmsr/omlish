@@ -7,6 +7,7 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 class ProgressReporter(ta.Generic[T]):
@@ -53,10 +54,10 @@ class ProgressReporter(ta.Generic[T]):
         self._cur_v = cur
         return cur
 
-    class Progress(ta.NamedTuple, ta.Generic[T]):
-        cur_v: T
-        report_base_v: T
-        report_elapsed_v: T
+    class Progress(ta.NamedTuple, ta.Generic[U]):
+        cur_v: U
+        report_base_v: U
+        report_elapsed_v: U
 
         cur_t: float
         report_base_t: float
@@ -66,7 +67,7 @@ class ProgressReporter(ta.Generic[T]):
         return ProgressReporter.Progress(
             cur_v=(cur_v := self._cur_v),
             report_base_v=(base_v := self._reported_v if self._reported_v is not None else self._start_v),
-            report_elapsed_v=cur_v - base_v,
+            report_elapsed_v=cur_v - base_v,  # type: ignore
 
             cur_t=(cur_t := time.time()),
             report_base_t=(base_t := self._reported_t if self._reported_t is not None else self._start_t),
@@ -77,7 +78,7 @@ class ProgressReporter(ta.Generic[T]):
     def should_report(self) -> bool:
         if self._report_interval_v is None:
             return False
-        return self.progress().report_elapsed_v >= self._report_interval_v
+        return self.progress().report_elapsed_v >= self._report_interval_v  # type: ignore
 
     def report(self) -> list[str]:
         prg = self.progress()
@@ -92,12 +93,12 @@ class ProgressReporter(ta.Generic[T]):
         if self._total_v is not None:
             ps.extend([
                 f'{fmt_v(prg.cur_v)} / {fmt_v(self._total_v)}' + sfx,
-                f'{prg.cur_v / self._total_v * 100.:.02f} %',
+                f'{prg.cur_v / self._total_v * 100.:.02f} %',  # type: ignore
             ])
         else:
             ps.append(f'{fmt_v(self._cur_v)}' + sfx)
         ps.append(
-            f'{fmt_v(type(prg.cur_v)(prg.report_elapsed_v / prg.report_elapsed_t))} '
+            f'{fmt_v(type(prg.cur_v)(prg.report_elapsed_v / prg.report_elapsed_t))} '  # type: ignore
             f'{self._suffix if self._suffix is not None else ""}/s',
         )
 

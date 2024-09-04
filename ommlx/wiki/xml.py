@@ -12,6 +12,7 @@ import dataclasses as dc
 import typing as ta
 import xml.etree.ElementTree as ET
 
+from omlish import check
 from omlish import lang
 
 
@@ -119,7 +120,7 @@ class ElementToKwargs:
                         set_kw(t, cel.text)
                     else:
                         sk, fn = t
-                        set_kw(sk, fn(cel.text))
+                        set_kw(sk, fn(check.not_none(cel.text)))
 
             elif k in self.single_children:
                 ck, fn = self.single_children[k]

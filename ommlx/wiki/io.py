@@ -154,7 +154,7 @@ class FileProgressReporter:
         print(
             f'{bytes_cur:_} B / {self._bytes_tot:_} B - '
             f'{bytes_cur / self._bytes_tot * 100.:.2f} % - '
-            f'{int(bytes_ela / time_ela):_} B/s',
+            f'{int(bytes_ela / time_ela):_} B/s',  # type: ignore
             file=self._out,
         )
 
@@ -172,7 +172,7 @@ def open_compressed_reader(
         fp: str,
         *,
         use_subprocess: bool = False,
-) -> tuple[ta.IO, FileProgressReporter | None]:
+) -> ta.Iterator[tuple[ta.IO, FileProgressReporter | None]]:
     bs: ta.IO
     fpr: FileProgressReporter | None
     with contextlib.ExitStack() as es:
