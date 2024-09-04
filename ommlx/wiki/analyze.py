@@ -29,9 +29,11 @@ import contextlib
 import glob
 import io
 import multiprocessing as mp
+import multiprocessing.managers
 import os.path
 import signal
 import sys
+import threading
 
 import lz4.frame
 import mwparserfromhell as mfh  # noqa
@@ -69,8 +71,8 @@ def analyze_file(
         db_url: str,
         fn: str,
         dp: mpu.Deathpact,
-        lck: lang.Lockable,
-        nr: mp.Value,
+        lck: threading.Lock,
+        nr: mp.managers.ValueProxy,
 ) -> None:
     print(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)
 
