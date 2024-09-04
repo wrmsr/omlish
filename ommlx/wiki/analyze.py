@@ -216,13 +216,21 @@ class MySpawnPosixPopen(SpawnPosixPopen):
 
 
 class MySpawnProcess(mp.context.SpawnProcess):
-    @staticmethod
-    def _Popen(process_obj):
-        return MySpawnPosixPopen(process_obj)
+    def __init__(self, *args, extra_fds=None, **kwargs):
+        self._extra_fds = extra_fds
+        super().__init__(*args, **kwargs)
+
+    def _Popen(self, process_obj):
+        return MySpawnPosixPopen(process_obj, extra_fds=self._extra_fds)
 
 
 class MySpawnContext(mp.context.SpawnContext):
-    Process = MySpawnProcess
+    def __init__(self, extra_fds=None):
+        super().__init__()
+        self._extra_fds = extra_fds
+
+    def Process(self, *args, **kwargs):  # noqa
+        return MySpawnProcess(*args, extra_fds=self._extra_fds, **kwargs)
 
 
 def _main() -> None:
@@ -247,7 +255,7 @@ def _main() -> None:
 
     print(f'{pr=} {pw=}', file=sys.stderr)
 
-    mp_context = MySpawnContext()
+    mp_context = MySpawnContext(extra_fds=[pr])
 
     with cfu.new_executor(
             args.num_workers,
