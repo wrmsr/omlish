@@ -1,10 +1,12 @@
-# IceCream - Never use print() to debug again
-#
-# Ansgar Grunseid
-# grunseid.com
-# grunseid@gmail.com
-#
-# License: MIT
+"""
+IceCream - Never use print() to debug again
+
+Ansgar Grunseid
+grunseid.com
+grunseid@gmail.com
+
+License: MIT
+"""
 import pygments.style
 import pygments.token as pt
 
