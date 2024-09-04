@@ -205,6 +205,8 @@ def _main() -> None:
         """Retrieve documents from vectorstore"""
 
         print("---RETRIEVE---")
+        pprint.pprint(state)
+
         question = state["question"]
 
         # Retrieval
@@ -215,6 +217,8 @@ def _main() -> None:
         """Generate answer using RAG on retrieved documents"""
 
         print("---GENERATE---")
+        pprint.pprint(state)
+
         question = state["question"]
         documents = state["documents"]
 
@@ -229,6 +233,8 @@ def _main() -> None:
         """
 
         print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
+        pprint.pprint(state)
+
         question = state["question"]
         documents = state["documents"]
 
@@ -250,9 +256,11 @@ def _main() -> None:
         return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
     def web_search(state):
-        """Web search based based on the question"""
+        """Web search based on the question"""
 
         print("---WEB SEARCH---")
+        pprint.pprint(state)
+
         question = state["question"]
         documents = state.get("documents")
 
@@ -272,6 +280,8 @@ def _main() -> None:
         """Route question to web search or RAG."""
 
         print("---ROUTE QUESTION---")
+        pprint.pprint(state)
+
         question = state["question"]
         print(question)
         source = question_router().invoke({"question": question})
@@ -288,6 +298,8 @@ def _main() -> None:
         """Determines whether to generate an answer, or add web search"""
 
         print("---ASSESS GRADED DOCUMENTS---")
+        pprint.pprint(state)
+
         print(state["question"])
         web_search = state["web_search"]
         print(state["documents"])
@@ -307,6 +319,8 @@ def _main() -> None:
         """Determines whether the generation is grounded in the document and answers question."""
 
         print("---CHECK HALLUCINATIONS---")
+        pprint.pprint(state)
+
         question = state["question"]
         documents = state["documents"]
         generation = state["generation"]
@@ -354,7 +368,7 @@ def _main() -> None:
     workflow.add_node("websearch", web_search)  # web search
     workflow.add_node("retrieve", retrieve)  # retrieve
     workflow.add_node("grade_documents", grade_documents)  # grade documents
-    workflow.add_node("generate", generate)  # generatae
+    workflow.add_node("generate", generate)  # generate
 
     ##
 
@@ -394,14 +408,16 @@ def _main() -> None:
     inputs = {"question": "What is agent memory?"}
     for output in app.stream(inputs):
         for key, value in output.items():
-            pprint.pprint(f"Finished running: {key}:")
-    pprint.pprint(value["generation"])
+            pprint.pprint(f"Finished running: {key}")
+            pprint.pprint(value)
+            print()
 
     inputs = {"question": "Who are the LA Lakers expected to draft first in the NBA draft?"}
     for output in app.stream(inputs):
         for key, value in output.items():
-            pprint.pprint(f"Finished running: {key}:")
-    pprint.pprint(value["generation"])
+            pprint.pprint(f"Finished running: {key}")
+            pprint.pprint(value)
+            print()
 
 
 if __name__ == '__main__':
