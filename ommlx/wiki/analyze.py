@@ -41,10 +41,10 @@ import wikitextparser as wtp0  # noqa
 from omlish import concurrent as cfu
 from omlish import lang
 from omlish import marshal as msh
+from omlish import multiprocessing as mpu
 from omlish.formats import json
 
 from . import models as mdl
-from .utils import multiprocessing as mpu
 from .utils.progress import ProgressReporter
 
 
