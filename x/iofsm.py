@@ -285,6 +285,13 @@ class Machine(ta.Generic[I, O]):
         super().__init__()
         self._advance(initial)
 
+    @property
+    def state(self) -> str:
+        return self._gen.gi_code.co_qualname
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{hex(id(self))[2:]}<{self.state}>'
+
     _gen: MachineGen
 
     def _advance(self, gen: MachineGen) -> None:
