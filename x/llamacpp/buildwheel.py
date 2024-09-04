@@ -35,7 +35,7 @@ def _main() -> None:
     if MINIMAL_SUBMODULE:
         sub_rev = subprocess.check_output([
             'git', 'submodule', 'status',
-        ], cwd=repo_dir).decode().strip()[1:]
+        ], cwd=repo_dir).decode().strip()[1:].split()[0]
         print(sub_rev)
 
         sub_url = subprocess.check_output([
@@ -43,14 +43,10 @@ def _main() -> None:
         ], cwd=repo_dir).decode().strip()
         print(sub_url)
 
-        sub_dir = os.path.join(repo_dir, 'vendor', 'llama.cpp')
+        vendor_dir = os.path.join(repo_dir, 'vendor')
+        sub_dir = os.path.join(vendor_dir, 'llama.cpp')
         shutil.rmtree(sub_dir)
 
-        """
-        cd llama.cpp
-        git sparse-checkout set --no-cone '/*' '!/models/*'
-        git checkout 8f1d81a0b6f50b9bad72db0b6fcd299ad9ecd48c
-        """
         subprocess.check_call([
             'git',
             'clone',
@@ -61,9 +57,23 @@ def _main() -> None:
             '--depth=1',
             sub_url,
             'llama.cpp',
-        ])
+        ], cwd=vendor_dir)
 
-        raise NotImplementedError
+        subprocess.check_call([
+            'git',
+            'sparse-checkout',
+            'set',
+            '--no-cone',
+            '/*',
+            # '!/examples/*',
+            '!/models/*',
+        ], cwd=sub_dir)
+
+        subprocess.check_call([
+            'git', 'checkout', sub_rev,
+        ], cwd=sub_dir)
+
+        os.unlink(os.path.join(repo_dir, '.gitmodules'))
 
     else:
         subprocess.check_call([
@@ -79,15 +89,23 @@ def _main() -> None:
         venv_exe_file, '-m', 'pip', 'install', '-e', '.[dev]', 'build', 'wheel',
     ], cwd=repo_dir)
 
-    cuda_dir = '/usr/local/cuda-12.2/bin'
-    cmake_args = [
-        '-DGGML_CUDA=on',
-    ]
+    path_items = []
+    cmake_args = []
+
+    if sys.platform == 'linux':
+        cuda_dir = '/usr/local/cuda-12.2/bin'
+        path_items.append(cuda_dir)
+        cmake_args.append('-DGGML_CUDA=on')
+
+    elif sys.platform == 'darwin':
+        cmake_args.append('-DGGML_METAL=on')
+
     build_env = {
         **os.environ,
-        'PATH': os.pathsep.join([cuda_dir, os.environ['PATH']]),
+        'PATH': os.pathsep.join([*path_items, os.environ['PATH']]),
         'CMAKE_ARGS': ' '.join(cmake_args),
     }
+
     subprocess.check_call(
         [venv_exe_file, '-m', 'build', '--wheel'],
         env=build_env,
