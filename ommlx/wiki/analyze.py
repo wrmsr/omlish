@@ -86,8 +86,9 @@ def analyze_file(
         engine = sa.create_engine(db_url, echo=True)
         es.enter_context(lang.defer(engine.dispose))
 
-        with engine.begin() as conn:
-            meta.create_all(bind=conn)
+        with lck:
+            with engine.begin() as conn:
+                meta.create_all(bind=conn)
 
         def maybe_flush_rows():
             if len(rows) >= row_batch_size:
@@ -147,6 +148,8 @@ def analyze_file(
 
             if page.revisions:
                 rev = page.revisions[0]
+                if len(page.revisions) > 1:
+                    breakpoint()
                 if rev.text:
                     # backend = mfh
                     backend = wtp0
