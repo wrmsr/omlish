@@ -16,7 +16,6 @@ https://github.com/more-itertools/more-itertools/tree/35f8e41dc6cad3310d8fbe9a61
 #     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 #     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #     IN THE SOFTWARE.
-import collections
 import collections.abc
 import contextlib
 import functools
