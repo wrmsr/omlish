@@ -32,6 +32,7 @@ import sys
 
 import lz4.frame
 import mwparserfromhell as mfh
+import mwparserfromhell.nodes  # noqa
 
 from omlish import marshal as msh
 from omlish.formats import json
@@ -62,7 +63,7 @@ def _main() -> None:
                 total=os.fstat(f.fileno()).st_size,
                 fmt='_',
                 suffix='B',
-                report_interval=10_000_000,
+                report_interval=1_000_000,
             )
             fpr1 = ProgressReporter[int](
                 start=0,
@@ -83,12 +84,25 @@ def _main() -> None:
                 #     print(f'{i} pages', file=sys.stderr)
 
                 page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
-                # print(page)
+
+                # print(page.title)
 
                 for rev in page.revisions or ():
                     if rev.text:
-                        wikicode = mfh.parse(rev.text.text)
-                        print(wikicode)
+                        wiki = mfh.parse(rev.text.text)
+                        # print(wiki)
+
+                        wikilink: mfh.nodes.Wikilink
+                        for wikilink in wiki.filter_wikilinks():
+                            # print((wikilink.title, wikilink.text))
+                            pass
+
+                        external_link: mfh.nodes.ExternalLink
+                        for external_link in wiki.filter_external_links():
+                            # print((external_link.title, external_link.url))
+                            pass
+
+                # print()
 
 
 if __name__ == '__main__':
