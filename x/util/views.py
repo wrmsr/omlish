@@ -1,5 +1,10 @@
 """
 https://github.com/abarnert/views
+
+class Reversible(Iterable):
+class Collection(Sized, Iterable, Container):
+class Sequence(Reversible, Collection):
+
 """
 # The MIT License (MIT)
 #
@@ -23,6 +28,15 @@ import collections.abc
 import itertools
 
 
+_enumerate = enumerate  # noqa
+_filter = filter  # noqa
+_map = map  # noqa
+_zip = zip  # noqa
+
+
+##
+
+
 class Reversible(collections.abc.Iterable):
     __slots__ = ()
 
@@ -32,17 +46,20 @@ class Reversible(collections.abc.Iterable):
         yield  # noqa
 
     @classmethod
-    def __subclasshook__(cls, C):
+    def __subclasshook__(cls, c):
         if cls is Reversible:
             if (
-                    any("__iter__" in B.__dict__ for B in C.__mro__) and
-                    any("__reversed__" in B.__dict__ for B in C.__mro__)
+                    any('__iter__' in B.__dict__ for B in c.__mro__) and
+                    any('__reversed__' in B.__dict__ for B in c.__mro__)
             ):
                 return True
         return NotImplemented
 
 
 Reversible.register(collections.abc.Sequence)
+
+
+##
 
 
 # Accepts any iterables
@@ -70,7 +87,7 @@ class MapReversibleView(Reversible, MapIterableView):
 
 
 # Accepts any number of sized, reversible iterables
-class MapSizedView(collections.abc.Sized, MapReversibleView):
+class MapSizedView(MapReversibleView, collections.abc.Sized):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = min(len(it) for it in self._iterables)
@@ -86,7 +103,7 @@ class MapSizedView(collections.abc.Sized, MapReversibleView):
 
 
 # Accepts any number of sequences
-class MapSequenceView(collections.abc.Sequence, MapSizedView):
+class MapSequenceView(MapSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return islice(self, index.start, index.stop, index.step)
@@ -94,7 +111,7 @@ class MapSequenceView(collections.abc.Sequence, MapSizedView):
         return self._func(*values)
 
 
-def map(func, *iterables):
+def map(func, *iterables):  # noqa
     if all(isinstance(it, collections.abc.Sequence) for it in iterables):
         return MapSequenceView(func, *iterables)
     elif all(isinstance(it, collections.abc.Sized) and isinstance(it, Reversible) for it in iterables):
@@ -104,8 +121,11 @@ def map(func, *iterables):
     else:
         for it in iterables:
             if not isinstance(it, collections.abc.Iterable):
-                raise TypeError("'{}' object is not iterable".format(type(it).__name))
+                raise TypeError(f"'{type(it).__name}' object is not iterable")
         return MapIterableView(func, *iterables)
+
+
+##
 
 
 class StarMapIterableView(collections.abc.Iterable):
@@ -119,7 +139,7 @@ class StarMapIterableView(collections.abc.Iterable):
             yield self._func(*values)
 
     def __repr__(self):
-        return '{}({}, {})'.format(type(self).__name__, self._func.__qualname__, self._iterable)
+        return f'{type(self).__name__}({self._func.__qualname__}, {self._iterable})'
 
 
 class StarMapReversibleView(Reversible, StarMapIterableView):
@@ -127,12 +147,12 @@ class StarMapReversibleView(Reversible, StarMapIterableView):
         yield from (self._func(*value) for value in reversed(self._iterable))
 
 
-class StarMapSizedView(collections.abc.Sized, StarMapReversibleView):
+class StarMapSizedView(StarMapReversibleView, collections.abc.Sized):
     def __len__(self):
         return len(self._iterable)
 
 
-class StarMapSequenceView(collections.abc.Sequence, StarMapSizedView):
+class StarMapSequenceView(StarMapSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return islice(self, index.start, index.stop, index.step)
@@ -148,8 +168,10 @@ def starmap(func, iterable):
         return StarMapReversibleView(func, iterable)
     elif isinstance(iterable, collections.abc.Iterable):
         return StarMapIterableView(func, iterable)
-    raise TypeError("'{}' object is not iterable".format(
-        type(iterable).__name__))
+    raise TypeError(f"'{type(iterable).__name__}' object is not iterable")
+
+
+##
 
 
 class FilterIterableView(collections.abc.Iterable):
@@ -164,7 +186,7 @@ class FilterIterableView(collections.abc.Iterable):
                 yield value
 
     def __repr__(self):
-        return '{}({}, {})'.format(type(self).__name__, self._func.__qualname__, self._iterable)
+        return f'{type(self).__name__}({self._func.__qualname__}, {self._iterable})'
 
 
 class FilterReversibleView(FilterIterableView, Reversible):
@@ -179,7 +201,10 @@ def filter(func, iterable):
         return FilterReversibleView(func, iterable)
     elif isinstance(iterable, collections.abc.Iterable):
         return FilterIterableView(func, iterable)
-    raise TypeError("'{}' object is not iterable".format(type(iterable).__name__))
+    raise TypeError(f"'{type(iterable).__name__}' object is not iterable")
+
+
+##
 
 
 class ZipIterableView(collections.abc.Iterable):
@@ -199,7 +224,7 @@ class ZipReversibleView(Reversible, ZipIterableView):
         yield from ((value,) for value in reversed(self._iterables[0]))
 
 
-class ZipSizedView(collections.abc.Sized, ZipReversibleView):
+class ZipSizedView(ZipReversibleView, collections.abc.Sized):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = min(len(it) for it in self._iterables)
@@ -213,14 +238,14 @@ class ZipSizedView(collections.abc.Sized, ZipReversibleView):
             yield tuple(next(it) for it in revs)
 
 
-class ZipSequenceView(collections.abc.Sequence, ZipSizedView):
+class ZipSequenceView(ZipSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return islice(self, index.start, index.stop, index.step)
         return tuple(it[index] for it in self._iterables)
 
 
-def zip(*iterables):
+def zip(*iterables):  # noqa
     if all(isinstance(it, collections.abc.Sequence) for it in iterables):
         return ZipSequenceView(*iterables)
     elif all(isinstance(it, collections.abc.Sized) and isinstance(it, Reversible) for it in iterables):
@@ -230,8 +255,11 @@ def zip(*iterables):
     else:
         for it in iterables:
             if not isinstance(it, collections.abc.Iterable):
-                raise TypeError("'{}' object is not iterable".format(type(it).__name))
+                raise TypeError(f"'{type(it).__name}' object is not iterable")
         return ZipIterableView(*iterables)
+
+
+##
 
 
 class ZipExhausted(Exception):
@@ -273,7 +301,7 @@ class ZipLongestReversibleView(Reversible, ZipLongestIterableView):
         yield from ((value,) for value in reversed(self._iterables[0]))
 
 
-class ZipLongestSizedView(collections.abc.Sized, ZipLongestReversibleView):
+class ZipLongestSizedView(ZipLongestReversibleView, collections.abc.Sized):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = max(len(it) for it in self._iterables)
@@ -290,7 +318,7 @@ class ZipLongestSizedView(collections.abc.Sized, ZipLongestReversibleView):
             yield tuple(next(it) for it in revs)
 
 
-class ZipLongestSequenceView(collections.abc.Sequence, ZipLongestSizedView):
+class ZipLongestSequenceView(ZipLongestSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return islice(self, index.start, index.stop, index.step)
@@ -311,8 +339,11 @@ def zip_longest(func, *iterables, fillvalue=None):
     else:
         for it in iterables:
             if not isinstance(it, collections.abc.Iterable):
-                raise TypeError("'{}' object is not iterable".format(type(it).__name))
+                raise TypeError(f"'{type(it).__name}' object is not iterable")
         return ZipLongestIterableView(func, *iterables)
+
+
+##
 
 
 class EnumerateIterableView(collections.abc.Iterable):
@@ -323,10 +354,10 @@ class EnumerateIterableView(collections.abc.Iterable):
         yield from builtins.enumerate(self._iterable, self._start)
 
     def __repr__(self):
-        return '{}({}, {})'.format(type(self).__name__, self._iterable, self._start)
+        return f'{type(self).__name__}({self._iterable}, {self._start})'
 
 
-class EnumerateSizedView(collections.abc.Sized, Reversible, EnumerateIterableView):
+class EnumerateSizedView(Reversible, EnumerateIterableView, collections.abc.Sized):
     def __len__(self):
         return len(self._iterable)
 
@@ -336,7 +367,7 @@ class EnumerateSizedView(collections.abc.Sized, Reversible, EnumerateIterableVie
             yield l - i - 1 + self._start, value
 
 
-class EnumerateSequenceView(collections.abc.Sequence, EnumerateSizedView):
+class EnumerateSequenceView(EnumerateSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         if isinstance(index, slice):
             return islice(self, *slice)
@@ -352,8 +383,10 @@ def enumerate(iterable, start=0):
         return EnumerateSizedView(iterable, start)
     elif isinstance(iterable, collections.abc.Iterable):
         return EnumerateIterableView(iterable, start)
-    raise TypeError("'{}' object is not iterable".format(type(iterable).__name__))
+    raise TypeError(f"'{type(iterable).__name__}' object is not iterable")
 
+
+##
 
 class SliceIterableView(collections.abc.Iterable):
     def __init__(self, iterable, start, stop, step):
@@ -364,16 +397,10 @@ class SliceIterableView(collections.abc.Iterable):
         yield from itertools.islice(self._iterable, self.start, self.stop, self.step)
 
     def __repr__(self):
-        return '{}({}, {}, {}, {})'.format(
-            type(self).__name__,
-            self._iterable,
-            self.start,
-            self.stop,
-            self.step,
-        )
+        return f'{type(self).__name__}({self._iterable}, {self.start}, {self.stop}, {self.step})'
 
 
-class SliceSizedView(collections.abc.Sized, Reversible, SliceIterableView):
+class SliceSizedView(Reversible, SliceIterableView, collections.abc.Sized):
     def _range(self):
         s = slice(self.start, self.stop, self.step)
         return range(*s.indices(len(self._iterable)))
@@ -388,7 +415,7 @@ class SliceSizedView(collections.abc.Sized, Reversible, SliceIterableView):
                 yield e
 
 
-class SliceSequenceView(collections.abc.Sequence, SliceSizedView):
+class SliceSequenceView(SliceSizedView, collections.abc.Sequence):
     def __getitem__(self, index):
         r = self._range()
         if isinstance(index, slice):
@@ -414,9 +441,12 @@ def islice(iterable, start_or_stop, stop=_sentinel, step=None):
         return SliceSizedView(iterable, start, stop, step)
     elif isinstance(iterable, collections.abc.Iterable):
         if start and start < 0 or stop and stop < 0 or step and step < 0:
-            raise TypeError("'{}' object is not sized".format(type(iterable).__name__))
+            raise TypeError(f"'{type(iterable).__name__}' object is not sized")
         return SliceIterableView(iterable, start, stop, step)
-    raise TypeError("'{}' object is not iterable".format(type(iterable).__name__))
+    raise TypeError(f"'{type(iterable).__name__}' object is not iterable")
+
+
+##
 
 
 def _main():
