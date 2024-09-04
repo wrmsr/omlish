@@ -5,6 +5,17 @@ class Reversible(Iterable):
 class Collection(Sized, Iterable, Container):
 class Sequence(Reversible, Collection):
 
+Sequence.__mro__ == (
+  collections.abc.Sequence,
+  collections.abc.Reversible,
+  collections.abc.Collection,
+  collections.abc.Sized,
+  collections.abc.Iterable,
+  collections.abc.Container,
+  object,
+)
+
+
 """
 # The MIT License (MIT)
 #
@@ -68,8 +79,15 @@ class MapIterableView(collections.abc.Iterable):
         self._func, self._iterables = func, iterables
 
     def __iter__(self):
+        its = [iter(i) for i in self._iterables]
         while True:
-            values = (next(it) for it in self._iterables)
+            values = []
+            for it in its:
+                try:
+                    v = next(it)
+                except StopIteration:
+                    return
+                values.append(v)
             yield self._func(*values)
 
     def __repr__(self):
@@ -87,7 +105,7 @@ class MapReversibleView(Reversible, MapIterableView):
 
 
 # Accepts any number of sized, reversible iterables
-class MapSizedView(MapReversibleView, collections.abc.Sized):
+class MapSizedView(MapReversibleView, collections.abc.Sized, collections.abc.Iterable):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = min(len(it) for it in self._iterables)
@@ -147,7 +165,7 @@ class StarMapReversibleView(Reversible, StarMapIterableView):
         yield from (self._func(*value) for value in reversed(self._iterable))
 
 
-class StarMapSizedView(StarMapReversibleView, collections.abc.Sized):
+class StarMapSizedView(StarMapReversibleView, collections.abc.Sized, collections.abc.Iterable):
     def __len__(self):
         return len(self._iterable)
 
@@ -224,7 +242,7 @@ class ZipReversibleView(Reversible, ZipIterableView):
         yield from ((value,) for value in reversed(self._iterables[0]))
 
 
-class ZipSizedView(ZipReversibleView, collections.abc.Sized):
+class ZipSizedView(ZipReversibleView, collections.abc.Sized, collections.abc.Iterable):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = min(len(it) for it in self._iterables)
@@ -301,7 +319,7 @@ class ZipLongestReversibleView(Reversible, ZipLongestIterableView):
         yield from ((value,) for value in reversed(self._iterables[0]))
 
 
-class ZipLongestSizedView(ZipLongestReversibleView, collections.abc.Sized):
+class ZipLongestSizedView(ZipLongestReversibleView, collections.abc.Sized, collections.abc.Iterable):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._len = max(len(it) for it in self._iterables)
@@ -357,7 +375,7 @@ class EnumerateIterableView(collections.abc.Iterable):
         return f'{type(self).__name__}({self._iterable}, {self._start})'
 
 
-class EnumerateSizedView(Reversible, EnumerateIterableView, collections.abc.Sized):
+class EnumerateSizedView(Reversible, EnumerateIterableView, collections.abc.Sized, collections.abc.Iterable):
     def __len__(self):
         return len(self._iterable)
 
@@ -400,7 +418,7 @@ class SliceIterableView(collections.abc.Iterable):
         return f'{type(self).__name__}({self._iterable}, {self.start}, {self.stop}, {self.step})'
 
 
-class SliceSizedView(Reversible, SliceIterableView, collections.abc.Sized):
+class SliceSizedView(Reversible, SliceIterableView, collections.abc.Sized, collections.abc.Iterable):
     def _range(self):
         s = slice(self.start, self.stop, self.step)
         return range(*s.indices(len(self._iterable)))
