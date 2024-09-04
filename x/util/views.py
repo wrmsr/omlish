@@ -412,7 +412,8 @@ class SliceIterableView(collections.abc.Iterable):
         self.start, self.stop, self.step = start, stop, step
 
     def __iter__(self):
-        yield from itertools.islice(self._iterable, self.start, self.stop, self.step)
+        import more_itertools
+        yield from more_itertools.islice_extended(self._iterable, self.start, self.stop, self.step)
 
     def __repr__(self):
         return f'{type(self).__name__}({self._iterable}, {self.start}, {self.stop}, {self.step})'

@@ -1,181 +1,1032 @@
+"""
+https://github.com/more-itertools/more-itertools/tree/35f8e41dc6cad3310d8fbe9a618c121a2b8d379c
+"""
 # Copyright (c) 2012 Erik Rose
 # 
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-# of the Software, and to permit persons to whom the Software is furnished to do
-# so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
 # 
-#     The above copyright notice and this permission notice shall be included in all
-#     copies or substantial portions of the Software.
+#     The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+#     the Software.
 # 
-#     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#     SOFTWARE.
+#     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+#     THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+#     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+#     IN THE SOFTWARE.
+import collections
+import collections.abc
+import contextlib
+import functools
+import heapq
+import itertools
 import math
+import operator
+import queue
+import random
+import sys
+import time
 import warnings
 
-from collections import Counter, defaultdict, deque, abc
-from collections.abc import Sequence
-from contextlib import suppress
-from functools import cached_property, partial, reduce, wraps
-from heapq import heapify, heapreplace
-from itertools import (
-    chain,
-    combinations,
-    compress,
-    count,
-    cycle,
-    dropwhile,
-    groupby,
-    islice,
-    repeat,
-    starmap,
-    takewhile,
-    tee,
-    zip_longest,
-    product,
-)
-from math import comb, e, exp, factorial, floor, fsum, log, log1p, perm, tau
-from queue import Empty, Queue
-from random import random, randrange, shuffle, uniform
-from operator import itemgetter, mul, sub, gt, lt, le
-from sys import hexversion, maxsize
-from time import monotonic
 
-from .recipes import (
-    _marker,
-    _zip_equal,
-    UnequalIterablesError,
-    consume,
-    flatten,
-    powerset,
-    take,
-    unique_everseen,
-    all_equal,
-    batched,
-)
+_marker = object()
 
-__all__ = [
-    'AbortThread',
-    'SequenceView',
-    'UnequalIterablesError',
-    'adjacent',
-    'all_unique',
-    'always_iterable',
-    'always_reversible',
-    'bucket',
-    'callback_iter',
-    'chunked',
-    'chunked_even',
-    'circular_shifts',
-    'collapse',
-    'combination_index',
-    'combination_with_replacement_index',
-    'consecutive_groups',
-    'constrained_batches',
-    'consumer',
-    'count_cycle',
-    'countable',
-    'dft',
-    'difference',
-    'distinct_combinations',
-    'distinct_permutations',
-    'distribute',
-    'divide',
-    'doublestarmap',
-    'duplicates_everseen',
-    'duplicates_justseen',
-    'classify_unique',
-    'exactly_n',
-    'filter_except',
-    'filter_map',
-    'first',
-    'gray_product',
-    'groupby_transform',
-    'ichunked',
-    'iequals',
-    'idft',
-    'ilen',
-    'interleave',
-    'interleave_evenly',
-    'interleave_longest',
-    'intersperse',
-    'is_sorted',
-    'islice_extended',
-    'iterate',
-    'iter_suppress',
-    'join_mappings',
-    'last',
-    'locate',
-    'longest_common_prefix',
-    'lstrip',
-    'make_decorator',
-    'map_except',
-    'map_if',
-    'map_reduce',
-    'mark_ends',
-    'minmax',
-    'nth_or_last',
-    'nth_permutation',
-    'nth_product',
-    'nth_combination_with_replacement',
-    'numeric_range',
-    'one',
-    'only',
-    'outer_product',
-    'padded',
-    'partial_product',
-    'partitions',
-    'peekable',
-    'permutation_index',
-    'powerset_of_sets',
-    'product_index',
-    'raise_',
-    'repeat_each',
-    'repeat_last',
-    'replace',
-    'rlocate',
-    'rstrip',
-    'run_length',
-    'sample',
-    'seekable',
-    'set_partitions',
-    'side_effect',
-    'sliced',
-    'sort_together',
-    'split_after',
-    'split_at',
-    'split_before',
-    'split_into',
-    'split_when',
-    'spy',
-    'stagger',
-    'strip',
-    'strictly_n',
-    'substrings',
-    'substrings_indexes',
-    'takewhile_inclusive',
-    'time_limited',
-    'unique_in_window',
-    'unique_to_each',
-    'unzip',
-    'value_chain',
-    'windowed',
-    'windowed_complete',
-    'with_iter',
-    'zip_broadcast',
-    'zip_equal',
-    'zip_offset',
-]
+
+# zip with strict is available for Python 3.10+
+try:
+    zip(strict=True)
+except TypeError:
+    _zip_strict = zip
+else:
+    _zip_strict = functools.partial(zip, strict=True)
 
 # math.sumprod is available for Python 3.12+
-_fsumprod = getattr(math, 'sumprod', lambda x, y: fsum(map(mul, x, y)))
+_sumprod = getattr(math, 'sumprod', lambda x, y: dotproduct(x, y))
+
+
+def take(n, iterable):
+    """Return first *n* items of the iterable as a list.
+
+        >>> take(3, range(10))
+        [0, 1, 2]
+
+    If there are fewer than *n* items in the iterable, all of them are
+    returned.
+
+        >>> take(10, range(3))
+        [0, 1, 2]
+
+    """
+    return list(itertools.islice(iterable, n))
+
+
+def tabulate(function, start=0):
+    """Return an iterator over the results of ``func(start)``,
+    ``func(start + 1)``, ``func(start + 2)``...
+
+    *func* should be a function that accepts one integer argument.
+
+    If *start* is not specified it defaults to 0. It will be incremented each
+    time the iterator is advanced.
+
+        >>> square = lambda x: x ** 2
+        >>> iterator = tabulate(square, -3)
+        >>> take(4, iterator)
+        [9, 4, 1, 0]
+
+    """
+    return map(function, itertools.count(start))
+
+
+def tail(n, iterable):
+    """Return an iterator over the last *n* items of *iterable*.
+
+    >>> t = tail(3, 'ABCDEFG')
+    >>> list(t)
+    ['E', 'F', 'G']
+
+    """
+    # If the given iterable has a length, then we can use islice to get its
+    # final elements. Note that if the iterable is not actually Iterable,
+    # either islice or deque will throw a TypeError. This is why we don't
+    # check if it is Iterable.
+    if isinstance(iterable, collections.abc.Sized):
+        yield from itertools.islice(iterable, max(0, len(iterable) - n), None)
+    else:
+        yield from iter(collections.deque(iterable, maxlen=n))
+
+
+def consume(iterator, n=None):
+    """Advance *iterable* by *n* steps. If *n* is ``None``, consume it
+    entirely.
+
+    Efficiently exhausts an iterator without returning values. Defaults to
+    consuming the whole iterator, but an optional second argument may be
+    provided to limit consumption.
+
+        >>> i = (x for x in range(10))
+        >>> next(i)
+        0
+        >>> consume(i, 3)
+        >>> next(i)
+        4
+        >>> consume(i)
+        >>> next(i)
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        StopIteration
+
+    If the iterator has fewer items remaining than the provided limit, the
+    whole iterator will be consumed.
+
+        >>> i = (x for x in range(3))
+        >>> consume(i, 5)
+        >>> next(i)
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        StopIteration
+
+    """
+    # Use functions that consume iterators at C speed.
+    if n is None:
+        # feed the entire iterator into a zero-length deque
+        collections.deque(iterator, maxlen=0)
+    else:
+        # advance to the empty slice starting at position n
+        next(itertools.islice(iterator, n, n), None)
+
+
+def nth(iterable, n, default=None):
+    """Returns the nth item or a default value.
+
+    >>> l = range(10)
+    >>> nth(l, 3)
+    3
+    >>> nth(l, 20, "zebra")
+    'zebra'
+
+    """
+    return next(itertools.islice(iterable, n, None), default)
+
+
+def all_equal(iterable, key=None):
+    """
+    Returns ``True`` if all the elements are equal to each other.
+
+        >>> all_equal('aaaa')
+        True
+        >>> all_equal('aaab')
+        False
+
+    A function that accepts a single argument and returns a transformed version
+    of each input item can be specified with *key*:
+
+        >>> all_equal('AaaA', key=str.casefold)
+        True
+        >>> all_equal([1, 2, 3], key=lambda x: x < 10)
+        True
+
+    """
+    iterator = itertools.groupby(iterable, key)
+    for first in iterator:
+        for second in iterator:
+            return False
+        return True
+    return True
+
+
+def quantify(iterable, pred=bool):
+    """Return the how many times the predicate is true.
+
+    >>> quantify([True, False, True])
+    2
+
+    """
+    return sum(map(pred, iterable))
+
+
+def pad_none(iterable):
+    """Returns the sequence of elements and then returns ``None`` indefinitely.
+
+        >>> take(5, pad_none(range(3)))
+        [0, 1, 2, None, None]
+
+    Useful for emulating the behavior of the built-in :func:`map` function.
+
+    See also :func:`padded`.
+
+    """
+    return itertools.chain(iterable, itertools.repeat(None))
+
+
+padnone = pad_none
+
+
+def ncycles(iterable, n):
+    """Returns the sequence elements *n* times
+
+    >>> list(ncycles(["a", "b"], 3))
+    ['a', 'b', 'a', 'b', 'a', 'b']
+
+    """
+    return itertools.chain.from_iterable(itertools.repeat(tuple(iterable), n))
+
+
+def dotproduct(vec1, vec2):
+    """Returns the dot product of the two iterables.
+
+    >>> dotproduct([10, 10], [20, 20])
+    400
+
+    """
+    return sum(map(operator.mul, vec1, vec2))
+
+
+def flatten(listOfLists):
+    """Return an iterator flattening one level of nesting in a list of lists.
+
+        >>> list(flatten([[0, 1], [2, 3]]))
+        [0, 1, 2, 3]
+
+    See also :func:`collapse`, which can flatten multiple levels of nesting.
+
+    """
+    return itertools.chain.from_iterable(listOfLists)
+
+
+def repeatfunc(func, times=None, *args):
+    """Call *func* with *args* repeatedly, returning an iterable over the
+    results.
+
+    If *times* is specified, the iterable will terminate after that many
+    repetitions:
+
+        >>> from operator import add
+        >>> times = 4
+        >>> args = 3, 5
+        >>> list(repeatfunc(add, times, *args))
+        [8, 8, 8, 8]
+
+    If *times* is ``None`` the iterable will not terminate:
+
+        >>> from random import randrange
+        >>> times = None
+        >>> args = 1, 11
+        >>> take(6, repeatfunc(randrange, times, *args))  # doctest:+SKIP
+        [2, 4, 8, 1, 8, 4]
+
+    """
+    if times is None:
+        return itertools.starmap(func, itertools.repeat(args))
+    return itertools.starmap(func, itertools.repeat(args, times))
+
+
+def _pairwise(iterable):
+    """Returns an iterator of paired items, overlapping, from the original
+
+    >>> take(4, pairwise(itertools.count()))
+    [(0, 1), (1, 2), (2, 3), (3, 4)]
+
+    On Python 3.10 and above, this is an alias for :func:`itertools.pairwise`.
+
+    """
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+try:
+    from itertools import pairwise as itertools_pairwise
+except ImportError:
+    pairwise = _pairwise
+else:
+
+    def pairwise(iterable):
+        return itertools_pairwise(iterable)
+
+    pairwise.__doc__ = _pairwise.__doc__
+
+
+class UnequalIterablesError(ValueError):
+    def __init__(self, details=None):
+        msg = 'Iterables have different lengths'
+        if details is not None:
+            msg += (': index 0 has length {}; index {} has length {}').format(
+                *details
+            )
+
+        super().__init__(msg)
+
+
+def _zip_equal_generator(iterables):
+    for combo in itertools.zip_longest(*iterables, fillvalue=_marker):
+        for val in combo:
+            if val is _marker:
+                raise UnequalIterablesError()
+        yield combo
+
+
+def _zip_equal(*iterables):
+    # Check whether the iterables are all the same size.
+    try:
+        first_size = len(iterables[0])
+        for i, it in enumerate(iterables[1:], 1):
+            size = len(it)
+            if size != first_size:
+                raise UnequalIterablesError(details=(first_size, i, size))
+        # All sizes are equal, we can use the built-in zip.
+        return zip(*iterables)
+    # If any one of the iterables didn't have a length, start reading
+    # them until one runs out.
+    except TypeError:
+        return _zip_equal_generator(iterables)
+
+
+def grouper(iterable, n, incomplete='fill', fillvalue=None):
+    """Group elements from *iterable* into fixed-length groups of length *n*.
+
+    >>> list(grouper('ABCDEF', 3))
+    [('A', 'B', 'C'), ('D', 'E', 'F')]
+
+    The keyword arguments *incomplete* and *fillvalue* control what happens for
+    iterables whose length is not a multiple of *n*.
+
+    When *incomplete* is `'fill'`, the last group will contain instances of
+    *fillvalue*.
+
+    >>> list(grouper('ABCDEFG', 3, incomplete='fill', fillvalue='x'))
+    [('A', 'B', 'C'), ('D', 'E', 'F'), ('G', 'x', 'x')]
+
+    When *incomplete* is `'ignore'`, the last group will not be emitted.
+
+    >>> list(grouper('ABCDEFG', 3, incomplete='ignore', fillvalue='x'))
+    [('A', 'B', 'C'), ('D', 'E', 'F')]
+
+    When *incomplete* is `'strict'`, a subclass of `ValueError` will be raised.
+
+    >>> it = grouper('ABCDEFG', 3, incomplete='strict')
+    >>> list(it)  # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    UnequalIterablesError
+
+    """
+    args = [iter(iterable)] * n
+    if incomplete == 'fill':
+        return itertools.zip_longest(*args, fillvalue=fillvalue)
+    if incomplete == 'strict':
+        return _zip_equal(*args)
+    if incomplete == 'ignore':
+        return zip(*args)
+    else:
+        raise ValueError('Expected fill, strict, or ignore')
+
+
+def roundrobin(*iterables):
+    """Yields an item from each iterable, alternating between them.
+
+        >>> list(roundrobin('ABC', 'D', 'EF'))
+        ['A', 'D', 'E', 'B', 'F', 'C']
+
+    This function produces the same output as :func:`interleave_longest`, but
+    may perform better for some inputs (in particular when the number of
+    iterables is small).
+
+    """
+    # Algorithm credited to George Sakkis
+    iterators = map(iter, iterables)
+    for num_active in range(len(iterables), 0, -1):
+        iterators = itertools.cycle(itertools.islice(iterators, num_active))
+        yield from map(next, iterators)
+
+
+def partition(pred, iterable):
+    """
+    Returns a 2-tuple of iterables derived from the input iterable.
+    The first yields the items that have ``pred(item) == False``.
+    The second yields the items that have ``pred(item) == True``.
+
+        >>> is_odd = lambda x: x % 2 != 0
+        >>> iterable = range(10)
+        >>> even_items, odd_items = partition(is_odd, iterable)
+        >>> list(even_items), list(odd_items)
+        ([0, 2, 4, 6, 8], [1, 3, 5, 7, 9])
+
+    If *pred* is None, :func:`bool` is used.
+
+        >>> iterable = [0, 1, False, True, '', ' ']
+        >>> false_items, true_items = partition(None, iterable)
+        >>> list(false_items), list(true_items)
+        ([0, False, ''], [1, True, ' '])
+
+    """
+    if pred is None:
+        pred = bool
+
+    t1, t2, p = itertools.tee(iterable, 3)
+    p1, p2 = itertools.tee(map(pred, p))
+    return (itertools.compress(t1, map(operator.not_, p1)), itertools.compress(t2, p2))
+
+
+def powerset(iterable):
+    """Yields all possible subsets of the iterable.
+
+        >>> list(powerset([1, 2, 3]))
+        [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]
+
+    :func:`powerset` will operate on iterables that aren't :class:`set`
+    instances, so repeated elements in the input will produce repeated elements
+    in the output.
+
+        >>> seq = [1, 1, 0]
+        >>> list(powerset(seq))
+        [(), (1,), (1,), (0,), (1, 1), (1, 0), (1, 0), (1, 1, 0)]
+
+    For a variant that efficiently yields actual :class:`set` instances, see
+    :func:`powerset_of_sets`.
+    """
+    s = list(iterable)
+    return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(len(s) + 1))
+
+
+def unique_everseen(iterable, key=None):
+    """
+    Yield unique elements, preserving order.
+
+        >>> list(unique_everseen('AAAABBBCCDAABBB'))
+        ['A', 'B', 'C', 'D']
+        >>> list(unique_everseen('ABBCcAD', str.lower))
+        ['A', 'B', 'C', 'D']
+
+    Sequences with a mix of hashable and unhashable items can be used.
+    The function will be slower (i.e., `O(n^2)`) for unhashable items.
+
+    Remember that ``list`` objects are unhashable - you can use the *key*
+    parameter to transform the list to a tuple (which is hashable) to
+    avoid a slowdown.
+
+        >>> iterable = ([1, 2], [2, 3], [1, 2])
+        >>> list(unique_everseen(iterable))  # Slow
+        [[1, 2], [2, 3]]
+        >>> list(unique_everseen(iterable, key=tuple))  # Faster
+        [[1, 2], [2, 3]]
+
+    Similarly, you may want to convert unhashable ``set`` objects with
+    ``key=frozenset``. For ``dict`` objects,
+    ``key=lambda x: frozenset(x.items())`` can be used.
+
+    """
+    seenset = set()
+    seenset_add = seenset.add
+    seenlist = []
+    seenlist_add = seenlist.append
+    use_key = key is not None
+
+    for element in iterable:
+        k = key(element) if use_key else element
+        try:
+            if k not in seenset:
+                seenset_add(k)
+                yield element
+        except TypeError:
+            if k not in seenlist:
+                seenlist_add(k)
+                yield element
+
+
+def unique_justseen(iterable, key=None):
+    """Yields elements in order, ignoring serial duplicates
+
+    >>> list(unique_justseen('AAAABBBCCDAABBB'))
+    ['A', 'B', 'C', 'D', 'A', 'B']
+    >>> list(unique_justseen('ABBCcAD', str.lower))
+    ['A', 'B', 'C', 'A', 'D']
+
+    """
+    if key is None:
+        return map(operator.itemgetter(0), itertools.groupby(iterable))
+
+    return map(next, map(operator.itemgetter(1), itertools.groupby(iterable, key)))
+
+
+def unique(iterable, key=None, reverse=False):
+    """Yields unique elements in sorted order.
+
+    >>> list(unique([[1, 2], [3, 4], [1, 2]]))
+    [[1, 2], [3, 4]]
+
+    *key* and *reverse* are passed to :func:`sorted`.
+
+    >>> list(unique('ABBcCAD', str.casefold))
+    ['A', 'B', 'c', 'D']
+    >>> list(unique('ABBcCAD', str.casefold, reverse=True))
+    ['D', 'c', 'B', 'A']
+
+    The elements in *iterable* need not be hashable, but they must be
+    comparable for sorting to work.
+    """
+    return unique_justseen(sorted(iterable, key=key, reverse=reverse), key=key)
+
+
+def iter_except(func, exception, first=None):
+    """Yields results from a function repeatedly until an exception is raised.
+
+    Converts a call-until-exception interface to an iterator interface.
+    Like ``iter(func, sentinel)``, but uses an exception instead of a sentinel
+    to end the loop.
+
+        >>> l = [0, 1, 2]
+        >>> list(iter_except(l.pop, IndexError))
+        [2, 1, 0]
+
+    Multiple exceptions can be specified as a stopping condition:
+
+        >>> l = [1, 2, 3, '...', 4, 5, 6]
+        >>> list(iter_except(lambda: 1 + l.pop(), (IndexError, TypeError)))
+        [7, 6, 5]
+        >>> list(iter_except(lambda: 1 + l.pop(), (IndexError, TypeError)))
+        [4, 3, 2]
+        >>> list(iter_except(lambda: 1 + l.pop(), (IndexError, TypeError)))
+        []
+
+    """
+    try:
+        if first is not None:
+            yield first()
+        while 1:
+            yield func()
+    except exception:
+        pass
+
+
+def first_true(iterable, default=None, pred=None):
+    """
+    Returns the first true value in the iterable.
+
+    If no true value is found, returns *default*
+
+    If *pred* is not None, returns the first item for which
+    ``pred(item) == True`` .
+
+        >>> first_true(range(10))
+        1
+        >>> first_true(range(10), pred=lambda x: x > 5)
+        6
+        >>> first_true(range(10), default='missing', pred=lambda x: x > 9)
+        'missing'
+
+    """
+    return next(filter(pred, iterable), default)
+
+
+def random_product(*args, repeat=1):
+    """Draw an item at random from each of the input iterables.
+
+        >>> random_product('abc', range(4), 'XYZ')  # doctest:+SKIP
+        ('c', 3, 'Z')
+
+    If *repeat* is provided as a keyword argument, that many items will be
+    drawn from each iterable.
+
+        >>> random_product('abcd', range(4), repeat=2)  # doctest:+SKIP
+        ('a', 2, 'd', 3)
+
+    This equivalent to taking a random selection from
+    ``itertools.product(*args, **kwarg)``.
+
+    """
+    pools = [tuple(pool) for pool in args] * repeat
+    return tuple(random.choice(pool) for pool in pools)
+
+
+def random_permutation(iterable, r=None):
+    """Return a random *r* length permutation of the elements in *iterable*.
+
+    If *r* is not specified or is ``None``, then *r* defaults to the length of
+    *iterable*.
+
+        >>> random_permutation(range(5))  # doctest:+SKIP
+        (3, 4, 0, 1, 2)
+
+    This equivalent to taking a random selection from
+    ``itertools.permutations(iterable, r)``.
+
+    """
+    pool = tuple(iterable)
+    r = len(pool) if r is None else r
+    return tuple(random.sample(pool, r))
+
+
+def random_combination(iterable, r):
+    """Return a random *r* length subsequence of the elements in *iterable*.
+
+        >>> random_combination(range(5), 3)  # doctest:+SKIP
+        (2, 3, 4)
+
+    This equivalent to taking a random selection from
+    ``itertools.combinations(iterable, r)``.
+
+    """
+    pool = tuple(iterable)
+    n = len(pool)
+    indices = sorted(random.sample(range(n), r))
+    return tuple(pool[i] for i in indices)
+
+
+def random_combination_with_replacement(iterable, r):
+    """Return a random *r* length subsequence of elements in *iterable*,
+    allowing individual elements to be repeated.
+
+        >>> random_combination_with_replacement(range(3), 5) # doctest:+SKIP
+        (0, 0, 1, 2, 2)
+
+    This equivalent to taking a random selection from
+    ``itertools.combinations_with_replacement(iterable, r)``.
+
+    """
+    pool = tuple(iterable)
+    n = len(pool)
+    indices = sorted(random.randrange(n) for i in range(r))
+    return tuple(pool[i] for i in indices)
+
+
+def nth_combination(iterable, r, index):
+    """Equivalent to ``list(combinations(iterable, r))[index]``.
+
+    The subsequences of *iterable* that are of length *r* can be ordered
+    lexicographically. :func:`nth_combination` computes the subsequence at
+    sort position *index* directly, without computing the previous
+    subsequences.
+
+        >>> nth_combination(range(5), 3, 5)
+        (0, 3, 4)
+
+    ``ValueError`` will be raised If *r* is negative or greater than the length
+    of *iterable*.
+    ``IndexError`` will be raised if the given *index* is invalid.
+    """
+    pool = tuple(iterable)
+    n = len(pool)
+    if (r < 0) or (r > n):
+        raise ValueError
+
+    c = 1
+    k = min(r, n - r)
+    for i in range(1, k + 1):
+        c = c * (n - k + i) // i
+
+    if index < 0:
+        index += c
+
+    if (index < 0) or (index >= c):
+        raise IndexError
+
+    result = []
+    while r:
+        c, n, r = c * r // n, n - 1, r - 1
+        while index >= c:
+            index -= c
+            c, n = c * (n - r) // n, n - 1
+        result.append(pool[-1 - n])
+
+    return tuple(result)
+
+
+def prepend(value, iterator):
+    """Yield *value*, followed by the elements in *iterator*.
+
+        >>> value = '0'
+        >>> iterator = ['1', '2', '3']
+        >>> list(prepend(value, iterator))
+        ['0', '1', '2', '3']
+
+    To prepend multiple values, see :func:`itertools.chain`
+    or :func:`value_chain`.
+
+    """
+    return itertools.chain([value], iterator)
+
+
+def convolve(signal, kernel):
+    """Convolve the iterable *signal* with the iterable *kernel*.
+
+        >>> signal = (1, 2, 3, 4, 5)
+        >>> kernel = [3, 2, 1]
+        >>> list(convolve(signal, kernel))
+        [3, 8, 14, 20, 26, 14, 5]
+
+    Note: the input arguments are not interchangeable, as the *kernel*
+    is immediately consumed and stored.
+
+    """
+    # This implementation intentionally doesn't match the one in the itertools
+    # documentation.
+    kernel = tuple(kernel)[::-1]
+    n = len(kernel)
+    window = collections.deque([0], maxlen=n) * n
+    for x in itertools.chain(signal, itertools.repeat(0, n - 1)):
+        window.append(x)
+        yield _sumprod(kernel, window)
+
+
+def before_and_after(predicate, it):
+    """A variant of :func:`takewhile` that allows complete access to the
+    remainder of the iterator.
+
+         >>> it = iter('ABCdEfGhI')
+         >>> all_upper, remainder = before_and_after(str.isupper, it)
+         >>> ''.join(all_upper)
+         'ABC'
+         >>> ''.join(remainder) # takewhile() would lose the 'd'
+         'dEfGhI'
+
+    Note that the first iterator must be fully consumed before the second
+    iterator can generate valid results.
+    """
+    it = iter(it)
+    transition = []
+
+    def true_iterator():
+        for elem in it:
+            if predicate(elem):
+                yield elem
+            else:
+                transition.append(elem)
+                return
+
+    # Note: this is different from itertools recipes to allow nesting
+    # before_and_after remainders into before_and_after again. See tests
+    # for an example.
+    remainder_iterator = itertools.chain(transition, it)
+
+    return true_iterator(), remainder_iterator
+
+
+def triplewise(iterable):
+    """Return overlapping triplets from *iterable*.
+
+    >>> list(triplewise('ABCDE'))
+    [('A', 'B', 'C'), ('B', 'C', 'D'), ('C', 'D', 'E')]
+
+    """
+    # This deviates from the itertools documentation reciple - see
+    # https://github.com/more-itertools/more-itertools/issues/889
+    t1, t2, t3 = itertools.tee(iterable, 3)
+    next(t3, None)
+    next(t3, None)
+    next(t2, None)
+    return zip(t1, t2, t3)
+
+
+def _sliding_window_islice(iterable, n):
+    # Fast path for small, non-zero values of n.
+    iterators = itertools.tee(iterable, n)
+    for i, iterator in enumerate(iterators):
+        next(itertools.islice(iterator, i, i), None)
+    return zip(*iterators)
+
+
+def _sliding_window_deque(iterable, n):
+    # Normal path for other values of n.
+    it = iter(iterable)
+    window = collections.deque(itertools.islice(it, n - 1), maxlen=n)
+    for x in it:
+        window.append(x)
+        yield tuple(window)
+
+
+def sliding_window(iterable, n):
+    """Return a sliding window of width *n* over *iterable*.
+
+        >>> list(sliding_window(range(6), 4))
+        [(0, 1, 2, 3), (1, 2, 3, 4), (2, 3, 4, 5)]
+
+    If *iterable* has fewer than *n* items, then nothing is yielded:
+
+        >>> list(sliding_window(range(3), 4))
+        []
+
+    For a variant with more features, see :func:`windowed`.
+    """
+    if n > 20:
+        return _sliding_window_deque(iterable, n)
+    elif n > 2:
+        return _sliding_window_islice(iterable, n)
+    elif n == 2:
+        return pairwise(iterable)
+    elif n == 1:
+        return zip(iterable)
+    else:
+        raise ValueError(f'n should be at least one, not {n}')
+
+
+def subslices(iterable):
+    """Return all contiguous non-empty subslices of *iterable*.
+
+        >>> list(subslices('ABC'))
+        [['A'], ['A', 'B'], ['A', 'B', 'C'], ['B'], ['B', 'C'], ['C']]
+
+    This is similar to :func:`substrings`, but emits items in a different
+    order.
+    """
+    seq = list(iterable)
+    slices = itertools.starmap(slice, itertools.combinations(range(len(seq) + 1), 2))
+    return map(operator.getitem, itertools.repeat(seq), slices)
+
+
+def polynomial_from_roots(roots):
+    """Compute a polynomial's coefficients from its roots.
+
+    >>> roots = [5, -4, 3]  # (x - 5) * (x + 4) * (x - 3)
+    >>> polynomial_from_roots(roots)  # x^3 - 4 * x^2 - 17 * x + 60
+    [1, -4, -17, 60]
+    """
+    factors = zip(itertools.repeat(1), map(operator.neg, roots))
+    return list(functools.reduce(convolve, factors, [1]))
+
+
+def iter_index(iterable, value, start=0, stop=None):
+    """Yield the index of each place in *iterable* that *value* occurs,
+    beginning with index *start* and ending before index *stop*.
+
+
+    >>> list(iter_index('AABCADEAF', 'A'))
+    [0, 1, 4, 7]
+    >>> list(iter_index('AABCADEAF', 'A', 1))  # start index is inclusive
+    [1, 4, 7]
+    >>> list(iter_index('AABCADEAF', 'A', 1, 7))  # stop index is not inclusive
+    [1, 4]
+
+    The behavior for non-scalar *values* matches the built-in Python types.
+
+    >>> list(iter_index('ABCDABCD', 'AB'))
+    [0, 4]
+    >>> list(iter_index([0, 1, 2, 3, 0, 1, 2, 3], [0, 1]))
+    []
+    >>> list(iter_index([[0, 1], [2, 3], [0, 1], [2, 3]], [0, 1]))
+    [0, 2]
+
+    See :func:`locate` for a more general means of finding the indexes
+    associated with particular values.
+
+    """
+    seq_index = getattr(iterable, 'index', None)
+    if seq_index is None:
+        # Slow path for general iterables
+        it = itertools.islice(iterable, start, stop)
+        for i, element in enumerate(it, start):
+            if element is value or element == value:
+                yield i
+    else:
+        # Fast path for sequences
+        stop = len(iterable) if stop is None else stop
+        i = start - 1
+        try:
+            while True:
+                yield (i := seq_index(value, i + 1, stop))
+        except ValueError:
+            pass
+
+
+def sieve(n):
+    """Yield the primes less than n.
+
+    >>> list(sieve(30))
+    [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+    """
+    if n > 2:
+        yield 2
+    start = 3
+    data = bytearray((0, 1)) * (n // 2)
+    limit = math.isqrt(n) + 1
+    for p in iter_index(data, 1, start, limit):
+        yield from iter_index(data, 1, start, p * p)
+        data[p * p : n : p + p] = bytes(len(range(p * p, n, p + p)))
+        start = p * p
+    yield from iter_index(data, 1, start)
+
+
+def _batched(iterable, n, *, strict=False):
+    """Batch data into tuples of length *n*. If the number of items in
+    *iterable* is not divisible by *n*:
+    * The last batch will be shorter if *strict* is ``False``.
+    * :exc:`ValueError` will be raised if *strict* is ``True``.
+
+    >>> list(batched('ABCDEFG', 3))
+    [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
+
+    On Python 3.13 and above, this is an alias for :func:`itertools.batched`.
+    """
+    if n < 1:
+        raise ValueError('n must be at least one')
+    it = iter(iterable)
+    while batch := tuple(itertools.islice(it, n)):
+        if strict and len(batch) != n:
+            raise ValueError('batched(): incomplete batch')
+        yield batch
+
+
+if sys.hexversion >= 0x30D00A2:
+    from itertools import batched as itertools_batched
+
+    def batched(iterable, n, *, strict=False):
+        return itertools_batched(iterable, n, strict=strict)
+
+else:
+    batched = _batched
+
+    batched.__doc__ = _batched.__doc__
+
+
+def transpose(it):
+    """Swap the rows and columns of the input matrix.
+
+    >>> list(transpose([(1, 2, 3), (11, 22, 33)]))
+    [(1, 11), (2, 22), (3, 33)]
+
+    The caller should ensure that the dimensions of the input are compatible.
+    If the input is empty, no output will be produced.
+    """
+    return _zip_strict(*it)
+
+
+def reshape(matrix, cols):
+    """Reshape the 2-D input *matrix* to have a column count given by *cols*.
+
+    >>> matrix = [(0, 1), (2, 3), (4, 5)]
+    >>> cols = 3
+    >>> list(reshape(matrix, cols))
+    [(0, 1, 2), (3, 4, 5)]
+    """
+    return batched(itertools.chain.from_iterable(matrix), cols)
+
+
+def matmul(m1, m2):
+    """Multiply two matrices.
+
+    >>> list(matmul([(7, 5), (3, 5)], [(2, 5), (7, 9)]))
+    [(49, 80), (41, 60)]
+
+    The caller should ensure that the dimensions of the input matrices are
+    compatible with each other.
+    """
+    n = len(m2[0])
+    return batched(itertools.starmap(_sumprod, itertools.product(m1, transpose(m2))), n)
+
+
+def factor(n):
+    """Yield the prime factors of n.
+
+    >>> list(factor(360))
+    [2, 2, 2, 3, 3, 5]
+    """
+    for prime in sieve(math.isqrt(n) + 1):
+        while not n % prime:
+            yield prime
+            n //= prime
+            if n == 1:
+                return
+    if n > 1:
+        yield n
+
+
+def polynomial_eval(coefficients, x):
+    """Evaluate a polynomial at a specific value.
+
+    Example: evaluating x^3 - 4 * x^2 - 17 * x + 60 at x = 2.5:
+
+    >>> coefficients = [1, -4, -17, 60]
+    >>> x = 2.5
+    >>> polynomial_eval(coefficients, x)
+    8.125
+    """
+    n = len(coefficients)
+    if n == 0:
+        return x * 0  # coerce zero to the type of x
+    powers = map(pow, itertools.repeat(x), reversed(range(n)))
+    return _sumprod(coefficients, powers)
+
+
+def sum_of_squares(it):
+    """Return the sum of the squares of the input values.
+
+    >>> sum_of_squares([10, 20, 30])
+    1400
+    """
+    return _sumprod(*itertools.tee(it))
+
+
+def polynomial_derivative(coefficients):
+    """Compute the first derivative of a polynomial.
+
+    Example: evaluating the derivative of x^3 - 4 * x^2 - 17 * x + 60
+
+    >>> coefficients = [1, -4, -17, 60]
+    >>> derivative_coefficients = polynomial_derivative(coefficients)
+    >>> derivative_coefficients
+    [3, -8, -17]
+    """
+    n = len(coefficients)
+    powers = reversed(range(1, n))
+    return list(map(operator.mul, coefficients, powers))
+
+
+def totient(n):
+    """Return the count of natural numbers up to *n* that are coprime with *n*.
+
+    >>> totient(9)
+    6
+    >>> totient(12)
+    4
+    """
+    for prime in set(factor(n)):
+        n -= n // prime
+    return n# math.sumprod is available for Python 3.12+
+
+
+_fsumprod = getattr(math, 'sumprod', lambda x, y: math.fsum(map(operator.mul, x, y)))
 
 
 def chunked(iterable, n, strict=False):
@@ -197,7 +1048,7 @@ def chunked(iterable, n, strict=False):
     list is yielded.
 
     """
-    iterator = iter(partial(take, n, iter(iterable)), [])
+    iterator = iter(functools.partial(take, n, iter(iterable)), [])
     if strict:
         if n is None:
             raise ValueError('n must not be None when using strict mode.')
@@ -253,13 +1104,13 @@ def last(iterable, default=_marker):
     raise ``ValueError``.
     """
     try:
-        if isinstance(iterable, Sequence):
+        if isinstance(iterable, collections.abc.Sequence):
             return iterable[-1]
         # Work around https://bugs.python.org/issue38525
-        elif hasattr(iterable, '__reversed__') and (hexversion != 0x030800F0):
+        elif hasattr(iterable, '__reversed__') and (sys.hexversion != 0x030800F0):
             return next(reversed(iterable))
         else:
-            return deque(iterable, maxlen=1)[-1]
+            return collections.deque(iterable, maxlen=1)[-1]
     except (IndexError, TypeError, StopIteration):
         if default is _marker:
             raise ValueError(
@@ -283,7 +1134,7 @@ def nth_or_last(iterable, n, default=_marker):
     If *default* is not provided and there are no items in the iterable,
     raise ``ValueError``.
     """
-    return last(islice(iterable, n + 1), default=default)
+    return last(itertools.islice(iterable, n + 1), default=default)
 
 
 class peekable:
@@ -347,7 +1198,7 @@ class peekable:
 
     def __init__(self, iterable):
         self._it = iter(iterable)
-        self._cache = deque()
+        self._cache = collections.deque()
 
     def __iter__(self):
         return self
@@ -417,10 +1268,10 @@ class peekable:
         step = 1 if (index.step is None) else index.step
         if step > 0:
             start = 0 if (index.start is None) else index.start
-            stop = maxsize if (index.stop is None) else index.stop
+            stop = sys.maxsize if (index.stop is None) else index.stop
         elif step < 0:
             start = -1 if (index.start is None) else index.start
-            stop = (-maxsize - 1) if (index.stop is None) else index.stop
+            stop = (-sys.maxsize - 1) if (index.stop is None) else index.stop
         else:
             raise ValueError('slice step cannot be zero')
 
@@ -431,10 +1282,10 @@ class peekable:
         # Otherwise we'll need to find the rightmost index and cache to that
         # point.
         else:
-            n = min(max(start, stop) + 1, maxsize)
+            n = min(max(start, stop) + 1, sys.maxsize)
             cache_len = len(self._cache)
             if n >= cache_len:
-                self._cache.extend(islice(self._it, n - cache_len))
+                self._cache.extend(itertools.islice(self._it, n - cache_len))
 
         return list(self._cache)[index]
 
@@ -446,7 +1297,7 @@ class peekable:
         if index < 0:
             self._cache.extend(self._it)
         elif index >= cache_len:
-            self._cache.extend(islice(self._it, index + 1 - cache_len))
+            self._cache.extend(itertools.islice(self._it, index + 1 - cache_len))
 
         return self._cache[index]
 
@@ -474,7 +1325,7 @@ def consumer(func):
 
     """
 
-    @wraps(func)
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         gen = func(*args, **kwargs)
         next(gen)
@@ -492,12 +1343,10 @@ def ilen(iterable):
     This consumes the iterable, so handle with care.
 
     """
-    # This approach was selected because benchmarks showed it's likely the
-    # fastest of the known implementations at the time of writing.
-    # See GitHub tracker: #236, #230.
-    counter = count()
-    deque(zip(iterable, counter), maxlen=0)
-    return next(counter)
+    # This is the "most beautiful of the fast variants" of this function.
+    # If you think you can improve on it, please ensure that your version
+    # is both 10x faster and 10x more beautiful.
+    return sum(itertools.compress(itertools.repeat(1), zip(iterable)))
 
 
 def iterate(func, start):
@@ -795,7 +1644,7 @@ def distinct_permutations(iterable, r=None):
     except TypeError:
         sortable = False
 
-        indices_dict = defaultdict(list)
+        indices_dict = collections.defaultdict(list)
 
         for item in items:
             indices_dict[items.index(item)].append(item)
@@ -803,7 +1652,7 @@ def distinct_permutations(iterable, r=None):
         indices = [items.index(item) for item in items]
         indices.sort()
 
-        equivalent_items = {k: cycle(v) for k, v in indices_dict.items()}
+        equivalent_items = {k: itertools.cycle(v) for k, v in indices_dict.items()}
 
         def permuted_items(permuted_indices):
             return tuple(
@@ -815,7 +1664,7 @@ def distinct_permutations(iterable, r=None):
         r = size
 
     # functools.partial(_partial, ... )
-    algorithm = _full if (r == size) else partial(_partial, r=r)
+    algorithm = _full if (r == size) else functools.partial(_partial, r=r)
 
     if 0 < r <= size:
         if sortable:
@@ -845,14 +1694,14 @@ def intersperse(e, iterable, n=1):
     elif n == 1:
         # interleave(repeat(e), iterable) -> e, x_0, e, x_1, e, x_2...
         # islice(..., 1, None) -> x_0, e, x_1, e, x_2...
-        return islice(interleave(repeat(e), iterable), 1, None)
+        return itertools.islice(interleave(itertools.repeat(e), iterable), 1, None)
     else:
         # interleave(filler, chunks) -> [e], [x_0, x_1], [e], [x_2, x_3]...
         # islice(..., 1, None) -> [x_0, x_1], [e], [x_2, x_3]...
         # flatten(...) -> x_0, x_1, e, x_2, x_3...
-        filler = repeat([e])
+        filler = itertools.repeat([e])
         chunks = chunked(iterable, n)
-        return flatten(islice(interleave(filler, chunks), 1, None))
+        return flatten(itertools.islice(interleave(filler, chunks), 1, None))
 
 
 def unique_to_each(*iterables):
@@ -883,7 +1732,7 @@ def unique_to_each(*iterables):
 
     """
     pool = [list(it) for it in iterables]
-    counts = Counter(chain.from_iterable(map(set, pool)))
+    counts = collections.Counter(itertools.chain.from_iterable(map(set, pool)))
     uniques = {element for element in counts if counts[element] == 1}
     return [list(filter(uniques.__contains__, it)) for it in pool]
 
@@ -912,7 +1761,7 @@ def windowed(seq, n, fillvalue=None, step=1):
         >>> iterable = [1, 2, 3, 4]
         >>> n = 3
         >>> padding = [None] * (n - 1)
-        >>> list(windowed(chain(padding, iterable), 3))
+        >>> list(windowed(itertools.chain(padding, iterable), 3))
         [(None, None, 1), (None, 1, 2), (1, 2, 3), (2, 3, 4)]
     """
     if n < 0:
@@ -926,7 +1775,7 @@ def windowed(seq, n, fillvalue=None, step=1):
     iterable = iter(seq)
 
     # Generate first window
-    window = deque(islice(iterable, n), maxlen=n)
+    window = collections.deque(itertools.islice(iterable, n), maxlen=n)
 
     # Deal with the first window not being full
     if not window:
@@ -939,10 +1788,10 @@ def windowed(seq, n, fillvalue=None, step=1):
     # Create the filler for the next windows. The padding ensures
     # we have just enough elements to fill the last window.
     padding = (fillvalue,) * (n - 1 if step >= n else step - 1)
-    filler = map(window.append, chain(iterable, padding))
+    filler = map(window.append, itertools.chain(iterable, padding))
 
     # Generate the rest of the windows
-    for _ in islice(filler, step - 1, None, step):
+    for _ in itertools.islice(filler, step - 1, None, step):
         yield tuple(window)
 
 
@@ -1045,7 +1894,7 @@ class bucket:
     def __init__(self, iterable, key, validator=None):
         self._it = iter(iterable)
         self._key = key
-        self._cache = defaultdict(deque)
+        self._cache = collections.defaultdict(collections.deque)
         self._validator = validator or (lambda x: True)
 
     def __contains__(self, value):
@@ -1142,7 +1991,7 @@ def spy(iterable, n=1):
     it = iter(iterable)
     head = take(n, it)
 
-    return head.copy(), chain(head, it)
+    return head.copy(), itertools.chain(head, it)
 
 
 def interleave(*iterables):
@@ -1156,7 +2005,7 @@ def interleave(*iterables):
     exhausted, see :func:`interleave_longest`.
 
     """
-    return chain.from_iterable(zip(*iterables))
+    return itertools.chain.from_iterable(zip(*iterables))
 
 
 def interleave_longest(*iterables):
@@ -1171,7 +2020,7 @@ def interleave_longest(*iterables):
     is large).
 
     """
-    i = chain.from_iterable(zip_longest(*iterables, fillvalue=_marker))
+    i = itertools.chain.from_iterable(itertools.zip_longest(*iterables, fillvalue=_marker))
     return (x for x in i if x is not _marker)
 
 
@@ -1267,9 +2116,9 @@ def collapse(iterable, base_type=None, levels=None):
     ['a', ['b'], 'c', ['d']]
 
     """
-    stack = deque()
+    stack = collections.deque()
     # Add our first node group, treat the iterable as a single node
-    stack.appendleft((0, repeat(iterable, 1)))
+    stack.appendleft((0, itertools.repeat(iterable, 1)))
 
     while stack:
         node_group = stack.popleft()
@@ -1382,7 +2231,7 @@ def sliced(seq, n, strict=False):
     For non-sliceable iterables, see :func:`chunked`.
 
     """
-    iterator = takewhile(len, (seq[i : i + n] for i in count(0, n)))
+    iterator = itertools.takewhile(len, (seq[i : i + n] for i in itertools.count(0, n)))
     if strict:
 
         def ret():
@@ -1600,7 +2449,7 @@ def split_into(iterable, sizes):
             yield list(it)
             return
         else:
-            yield list(islice(it, size))
+            yield list(itertools.islice(it, size))
 
 
 def padded(iterable, fillvalue=None, n=None, next_multiple=False):
@@ -1628,7 +2477,7 @@ def padded(iterable, fillvalue=None, n=None, next_multiple=False):
 
     """
     iterable = iter(iterable)
-    iterable_with_repeat = chain(iterable, repeat(fillvalue))
+    iterable_with_repeat = itertools.chain(iterable, itertools.repeat(fillvalue))
 
     if n is None:
         return iterable_with_repeat
@@ -1639,13 +2488,13 @@ def padded(iterable, fillvalue=None, n=None, next_multiple=False):
         def slice_generator():
             for first in iterable:
                 yield (first,)
-                yield islice(iterable_with_repeat, n - 1)
+                yield itertools.islice(iterable_with_repeat, n - 1)
 
         # While elements exist produce slices of size n
-        return chain.from_iterable(slice_generator())
+        return itertools.chain.from_iterable(slice_generator())
     else:
         # Ensure the first batch is at least size n then iterate
-        return chain(islice(iterable_with_repeat, n), iterable)
+        return itertools.chain(itertools.islice(iterable_with_repeat, n), iterable)
 
 
 def repeat_each(iterable, n=2):
@@ -1654,7 +2503,7 @@ def repeat_each(iterable, n=2):
     >>> list(repeat_each('ABC', 3))
     ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C']
     """
-    return chain.from_iterable(map(repeat, iterable, repeat(n)))
+    return itertools.chain.from_iterable(map(itertools.repeat, iterable, itertools.repeat(n)))
 
 
 def repeat_last(iterable, default=None):
@@ -1673,7 +2522,7 @@ def repeat_last(iterable, default=None):
     for item in iterable:
         yield item
     final = default if item is _marker else item
-    yield from repeat(final)
+    yield from itertools.repeat(final)
 
 
 def distribute(n, iterable):
@@ -1709,8 +2558,8 @@ def distribute(n, iterable):
     if n < 1:
         raise ValueError('n must be at least 1')
 
-    children = tee(iterable, n)
-    return [islice(it, index, None, n) for index, it in enumerate(children)]
+    children = itertools.tee(iterable, n)
+    return [itertools.islice(it, index, None, n) for index, it in enumerate(children)]
 
 
 def stagger(iterable, offsets=(-1, 0, 1), longest=False, fillvalue=None):
@@ -1734,7 +2583,7 @@ def stagger(iterable, offsets=(-1, 0, 1), longest=False, fillvalue=None):
     sequence. Specify *fillvalue* to use some other value.
 
     """
-    children = tee(iterable, len(offsets))
+    children = itertools.tee(iterable, len(offsets))
 
     return zip_offset(
         *children, offsets=offsets, longest=longest, fillvalue=fillvalue
@@ -1759,7 +2608,7 @@ def zip_equal(*iterables):
         lengths
 
     """
-    if hexversion >= 0x30A00A6:
+    if sys.hexversion >= 0x30A00A6:
         warnings.warn(
             (
                 'zip_equal will be removed in a future version of '
@@ -1799,19 +2648,21 @@ def zip_offset(*iterables, offsets, longest=False, fillvalue=None):
     staggered = []
     for it, n in zip(iterables, offsets):
         if n < 0:
-            staggered.append(chain(repeat(fillvalue, -n), it))
+            staggered.append(itertools.chain(itertools.repeat(fillvalue, -n), it))
         elif n > 0:
-            staggered.append(islice(it, n, None))
+            staggered.append(itertools.islice(it, n, None))
         else:
             staggered.append(it)
 
     if longest:
-        return zip_longest(*staggered, fillvalue=fillvalue)
+        return itertools.zip_longest(*staggered, fillvalue=fillvalue)
 
     return zip(*staggered)
 
 
-def sort_together(iterables, key_list=(0,), key=None, reverse=False):
+def sort_together(
+    iterables, key_list=(0,), key=None, reverse=False, strict=False
+):
     """Return the input iterables sorted together, with *key_list* as the
     priority for sorting. All iterables are trimmed to the length of the
     shortest one.
@@ -1850,11 +2701,15 @@ def sort_together(iterables, key_list=(0,), key=None, reverse=False):
         >>> sort_together([(1, 2, 3), ('c', 'b', 'a')], reverse=True)
         [(3, 2, 1), ('a', 'b', 'c')]
 
+    If the *strict* keyword argument is ``True``, then
+    ``UnequalIterablesError`` will be raised if any of the iterables have
+    different lengths.
+
     """
     if key is None:
         # if there is no key function, the key argument to sorted is an
         # itemgetter
-        key_argument = itemgetter(*key_list)
+        key_argument = operator.itemgetter(*key_list)
     else:
         # if there is a key function, call it with the items at the offsets
         # specified by the key function as arguments
@@ -1867,13 +2722,14 @@ def sort_together(iterables, key_list=(0,), key=None, reverse=False):
         else:
             # if key_list contains multiple items, use itemgetter to return a
             # tuple of items, which we pass as *args to the key function
-            get_key_items = itemgetter(*key_list)
+            get_key_items = operator.itemgetter(*key_list)
             key_argument = lambda zipped_items: key(
                 *get_key_items(zipped_items)
             )
 
+    zipper = zip_equal if strict else zip
     return list(
-        zip(*sorted(zip(*iterables), key=key_argument, reverse=reverse))
+        zipper(*sorted(zipper(*iterables), key=key_argument, reverse=reverse))
     )
 
 
@@ -1903,7 +2759,7 @@ def unzip(iterable):
         return ()
     # spy returns a one-length iterable as head
     head = head[0]
-    iterables = tee(iterable, len(head))
+    iterables = itertools.tee(iterable, len(head))
 
     def itemgetter(i):
         def getter(obj):
@@ -2062,9 +2918,9 @@ def adjacent(predicate, iterable, distance=1):
     if distance < 0:
         raise ValueError('distance must be at least 0')
 
-    i1, i2 = tee(iterable)
+    i1, i2 = itertools.tee(iterable)
     padding = [False] * distance
-    selected = chain(padding, map(predicate, i1), padding)
+    selected = itertools.chain(padding, map(predicate, i1), padding)
     adjacent_to_selected = map(any, windowed(selected, 2 * distance + 1))
     return zip(adjacent_to_selected, i2)
 
@@ -2105,7 +2961,7 @@ def groupby_transform(iterable, keyfunc=None, valuefunc=None, reducefunc=None):
     duplicate groups, you should sort the iterable by the key function.
 
     """
-    ret = groupby(iterable, keyfunc)
+    ret = itertools.groupby(iterable, keyfunc)
     if valuefunc:
         ret = ((k, map(valuefunc, g)) for k, g in ret)
     if reducefunc:
@@ -2114,7 +2970,7 @@ def groupby_transform(iterable, keyfunc=None, valuefunc=None, reducefunc=None):
     return ret
 
 
-class numeric_range(abc.Sequence, abc.Hashable):
+class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
     """An extension of the built-in ``range()`` function whose arguments can
     be any orderable numeric type.
 
@@ -2260,16 +3116,16 @@ class numeric_range(abc.Sequence, abc.Hashable):
             return self._EMPTY_HASH
 
     def __iter__(self):
-        values = (self._start + (n * self._step) for n in count())
+        values = (self._start + (n * self._step) for n in itertools.count())
         if self._growing:
-            return takewhile(partial(gt, self._stop), values)
+            return itertools.takewhile(functools.partial(operator.gt, self._stop), values)
         else:
-            return takewhile(partial(lt, self._stop), values)
+            return itertools.takewhile(functools.partial(operator.lt, self._stop), values)
 
     def __len__(self):
         return self._len
 
-    @cached_property
+    @functools.cached_property
     def _len(self):
         if self._growing:
             start = self._start
@@ -2343,7 +3199,7 @@ def count_cycle(iterable, n=None):
     iterable = tuple(iterable)
     if not iterable:
         return iter(())
-    counter = count() if n is None else range(n)
+    counter = itertools.count() if n is None else range(n)
     return ((i, item) for i in counter for item in iterable)
 
 
@@ -2375,7 +3231,7 @@ def mark_ends(iterable):
         return
 
     try:
-        for i in count():
+        for i in itertools.count():
             a = b
             b = next(it)
             yield i == 0, False, a
@@ -2423,13 +3279,13 @@ def locate(iterable, pred=bool, window_size=None):
 
     """
     if window_size is None:
-        return compress(count(), map(pred, iterable))
+        return itertools.compress(itertools.count(), map(pred, iterable))
 
     if window_size < 1:
         raise ValueError('window size must be at least 1')
 
     it = windowed(iterable, window_size, fillvalue=_marker)
-    return compress(count(), starmap(pred, it))
+    return itertools.compress(itertools.count(), itertools.starmap(pred, it))
 
 
 def longest_common_prefix(iterables):
@@ -2439,7 +3295,7 @@ def longest_common_prefix(iterables):
     'ab'
 
     """
-    return (c[0] for c in takewhile(all_equal, zip(*iterables)))
+    return (c[0] for c in itertools.takewhile(all_equal, zip(*iterables)))
 
 
 def lstrip(iterable, pred):
@@ -2457,7 +3313,7 @@ def lstrip(iterable, pred):
     an wrapper for :func:`itertools.dropwhile`.
 
     """
-    return dropwhile(pred, iterable)
+    return itertools.dropwhile(pred, iterable)
 
 
 def rstrip(iterable, pred):
@@ -2561,7 +3417,7 @@ def _islice_helper(it, s):
 
         if start < 0:
             # Consume all but the last -start items
-            cache = deque(enumerate(it, 1), maxlen=-start)
+            cache = collections.deque(enumerate(it, 1), maxlen=-start)
             len_iter = cache[-1][0] if cache else 0
 
             # Adjust start to be positive
@@ -2580,15 +3436,15 @@ def _islice_helper(it, s):
             if n <= 0:
                 return
 
-            for index, item in islice(cache, 0, n, step):
+            for index, item in itertools.islice(cache, 0, n, step):
                 yield item
         elif (stop is not None) and (stop < 0):
             # Advance to the start position
-            next(islice(it, start, start), None)
+            next(itertools.islice(it, start, start), None)
 
             # When stop is negative, we have to carry -stop items while
             # iterating
-            cache = deque(islice(it, -stop), maxlen=-stop)
+            cache = collections.deque(itertools.islice(it, -stop), maxlen=-stop)
 
             for index, item in enumerate(it):
                 cached_item = cache.popleft()
@@ -2597,14 +3453,14 @@ def _islice_helper(it, s):
                 cache.append(item)
         else:
             # When both start and stop are positive we have the normal case
-            yield from islice(it, start, stop, step)
+            yield from itertools.islice(it, start, stop, step)
     else:
         start = -1 if (start is None) else start
 
         if (stop is not None) and (stop < 0):
             # Consume all but the last items
             n = -stop - 1
-            cache = deque(enumerate(it, 1), maxlen=n)
+            cache = collections.deque(enumerate(it, 1), maxlen=n)
             len_iter = cache[-1][0] if cache else 0
 
             # If start and stop are both negative they are comparable and
@@ -2621,7 +3477,7 @@ def _islice_helper(it, s):
             # Advance to the stop position
             if stop is not None:
                 m = stop + 1
-                next(islice(it, m, m), None)
+                next(itertools.islice(it, m, m), None)
 
             # stop is positive, so if start is negative they are not comparable
             # and we need the rest of the items.
@@ -2640,7 +3496,7 @@ def _islice_helper(it, s):
                 if n <= 0:
                     return
 
-            cache = list(islice(it, n))
+            cache = list(itertools.islice(it, n))
 
             yield from cache[i::step]
 
@@ -2705,13 +3561,13 @@ def consecutive_groups(iterable, ordering=lambda x: x):
         [[1, 2], [11, 12], [21, 22]]
 
     """
-    for k, g in groupby(
+    for k, g in itertools.groupby(
         enumerate(iterable), key=lambda x: x[0] - ordering(x[1])
     ):
-        yield map(itemgetter(1), g)
+        yield map(operator.itemgetter(1), g)
 
 
-def difference(iterable, func=sub, *, initial=None):
+def difference(iterable, func=operator.sub, *, initial=None):
     """This function is the inverse of :func:`itertools.accumulate`. By default
     it will compute the first difference of *iterable* using
     :func:`operator.sub`:
@@ -2741,7 +3597,7 @@ def difference(iterable, func=sub, *, initial=None):
         [1, 2, 3]
 
     """
-    a, b = tee(iterable)
+    a, b = itertools.tee(iterable)
     try:
         first = [next(b)]
     except StopIteration:
@@ -2750,10 +3606,10 @@ def difference(iterable, func=sub, *, initial=None):
     if initial is not None:
         first = []
 
-    return chain(first, map(func, b, a))
+    return itertools.chain(first, map(func, b, a))
 
 
-class SequenceView(Sequence):
+class SequenceView(collections.abc.Sequence):
     """Return a read-only view of the sequence object *target*.
 
     :class:`SequenceView` objects are analogous to Python's built-in
@@ -2784,7 +3640,7 @@ class SequenceView(Sequence):
     """
 
     def __init__(self, target):
-        if not isinstance(target, Sequence):
+        if not isinstance(target, collections.abc.Sequence):
             raise TypeError
         self._target = target
 
@@ -2904,7 +3760,7 @@ class seekable:
         if maxlen is None:
             self._cache = []
         else:
-            self._cache = deque([], maxlen)
+            self._cache = collections.deque([], maxlen)
         self._index = None
 
     def __iter__(self):
@@ -2981,11 +3837,11 @@ class run_length:
 
     @staticmethod
     def encode(iterable):
-        return ((k, ilen(g)) for k, g in groupby(iterable))
+        return ((k, ilen(g)) for k, g in itertools.groupby(iterable))
 
     @staticmethod
     def decode(iterable):
-        return chain.from_iterable(starmap(repeat, iterable))
+        return itertools.chain.from_iterable(itertools.starmap(itertools.repeat, iterable))
 
 
 def exactly_n(iterable, n, predicate=bool):
@@ -3022,7 +3878,7 @@ def circular_shifts(iterable, steps=1):
     [(0, 1, 2, 3), (3, 0, 1, 2), (2, 3, 0, 1), (1, 2, 3, 0)]
 
     """
-    buffer = deque(iterable)
+    buffer = collections.deque(iterable)
     if steps == 0:
         raise ValueError('Steps should be a non-zero integer')
 
@@ -3031,7 +3887,7 @@ def circular_shifts(iterable, steps=1):
     n = len(buffer)
     n //= math.gcd(n, steps)
 
-    for __ in repeat(None, n):
+    for _ in itertools.repeat(None, n):
         buffer.rotate(steps)
         yield tuple(buffer)
 
@@ -3155,7 +4011,7 @@ def map_reduce(iterable, keyfunc, valuefunc=None, reducefunc=None):
     """
     valuefunc = (lambda x: x) if (valuefunc is None) else valuefunc
 
-    ret = defaultdict(list)
+    ret = collections.defaultdict(list)
     for item in iterable:
         key = keyfunc(item)
         value = valuefunc(item)
@@ -3249,7 +4105,7 @@ def replace(iterable, pred, substitutes, count=None, window_size=1):
 
     # Add padding such that the number of windows matches the length of the
     # iterable
-    it = chain(iterable, [_marker] * (window_size - 1))
+    it = itertools.chain(iterable, [_marker] * (window_size - 1))
     windows = windowed(it, window_size)
 
     n = 0
@@ -3406,7 +4262,7 @@ class time_limited:
             raise ValueError('limit_seconds must be positive')
         self.limit_seconds = limit_seconds
         self._iterable = iter(iterable)
-        self._start_time = monotonic()
+        self._start_time = time.monotonic()
         self.timed_out = False
 
     def __iter__(self):
@@ -3417,7 +4273,7 @@ class time_limited:
             self.timed_out = True
             raise StopIteration
         item = next(self._iterable)
-        if monotonic() - self._start_time > self.limit_seconds:
+        if time.monotonic() - self._start_time > self.limit_seconds:
             self.timed_out = True
             raise StopIteration
 
@@ -3466,8 +4322,8 @@ def only(iterable, default=None, too_long=None):
 
 
 def _ichunk(iterable, n):
-    cache = deque()
-    chunk = islice(iterable, n)
+    cache = collections.deque()
+    chunk = itertools.islice(iterable, n)
 
     def generator():
         while True:
@@ -3491,7 +4347,7 @@ def _ichunk(iterable, n):
 
         # materialize up to n
         if to_cache > 0:
-            cache.extend(islice(chunk, to_cache))
+            cache.extend(itertools.islice(chunk, to_cache))
 
         # return number materialized up to n
         return min(n, len(cache))
@@ -3552,7 +4408,7 @@ def iequals(*iterables):
     elements of iterable are equal to each other.
 
     """
-    return all(map(all_equal, zip_longest(*iterables, fillvalue=object())))
+    return all(map(all_equal, itertools.zip_longest(*iterables, fillvalue=object())))
 
 
 def distinct_combinations(iterable, r):
@@ -3572,7 +4428,7 @@ def distinct_combinations(iterable, r):
         yield ()
         return
     pool = tuple(iterable)
-    generators = [unique_everseen(enumerate(pool), key=itemgetter(1))]
+    generators = [unique_everseen(enumerate(pool), key=operator.itemgetter(1))]
     current_combo = [None] * r
     level = 0
     while generators:
@@ -3589,7 +4445,7 @@ def distinct_combinations(iterable, r):
             generators.append(
                 unique_everseen(
                     enumerate(pool[cur_idx + 1 :], cur_idx + 1),
-                    key=itemgetter(1),
+                    key=operator.itemgetter(1),
                 )
             )
             level += 1
@@ -3666,19 +4522,19 @@ def _sample_unweighted(iterator, k, strict):
     # Algorithm L in the 1994 paper by Kim-Hung Li:
     # "Reservoir-Sampling Algorithms of Time Complexity O(n(1+log(N/n)))".
 
-    reservoir = list(islice(iterator, k))
+    reservoir = list(itertools.islice(iterator, k))
     if strict and len(reservoir) < k:
         raise ValueError('Sample larger than population')
     W = 1.0
 
-    with suppress(StopIteration):
+    with contextlib.suppress(StopIteration):
         while True:
-            W *= exp(log(random()) / k)
-            skip = floor(log(random()) / log1p(-W))
-            element = next(islice(iterator, skip, None))
-            reservoir[randrange(k)] = element
+            W *= math.exp(math.log(random.random()) / k)
+            skip = math.floor(math.log(random.random()) / math.log1p(-W))
+            element = next(itertools.islice(iterator, skip, None))
+            reservoir[random.randrange(k)] = element
 
-    shuffle(reservoir)
+    random.shuffle(reservoir)  # noqa
     return reservoir
 
 
@@ -3687,7 +4543,7 @@ def _sample_weighted(iterator, k, weights, strict):
     # "Weighted random sampling with a reservoir".
 
     # Log-transform for numerical stability for weights that are small/large
-    weight_keys = (log(random()) / weight for weight in weights)
+    weight_keys = (math.log(random.random()) / weight for weight in weights)
 
     # Fill up the reservoir (collection of samples) with the first `k`
     # weight-keys and elements, then heapify the list.
@@ -3695,29 +4551,29 @@ def _sample_weighted(iterator, k, weights, strict):
     if strict and len(reservoir) < k:
         raise ValueError('Sample larger than population')
 
-    heapify(reservoir)
+    heapq.heapify(reservoir)
 
     # The number of jumps before changing the reservoir is a random variable
     # with an exponential distribution. Sample it using random() and logs.
     smallest_weight_key, _ = reservoir[0]
-    weights_to_skip = log(random()) / smallest_weight_key
+    weights_to_skip = math.log(random.random()) / smallest_weight_key
 
     for weight, element in zip(weights, iterator):
         if weight >= weights_to_skip:
             # The notation here is consistent with the paper, but we store
             # the weight-keys in log-space for better numerical stability.
             smallest_weight_key, _ = reservoir[0]
-            t_w = exp(weight * smallest_weight_key)
-            r_2 = uniform(t_w, 1)  # generate U(t_w, 1)
-            weight_key = log(r_2) / weight
-            heapreplace(reservoir, (weight_key, element))
+            t_w = math.exp(weight * smallest_weight_key)
+            r_2 = random.uniform(t_w, 1)  # generate U(t_w, 1)
+            weight_key = math.log(r_2) / weight
+            heapq.heapreplace(reservoir, (weight_key, element))
             smallest_weight_key, _ = reservoir[0]
-            weights_to_skip = log(random()) / smallest_weight_key
+            weights_to_skip = math.log(random.random()) / smallest_weight_key
         else:
             weights_to_skip -= weight
 
     ret = [element for weight_key, element in reservoir]
-    shuffle(ret)
+    random.shuffle(ret)
     return ret
 
 
@@ -3736,7 +4592,7 @@ def _sample_counted(population, k, counts, strict):
         remaining -= i + 1
         return element
 
-    with suppress(StopIteration):
+    with contextlib.suppress(StopIteration):
         reservoir = []
         for _ in range(k):
             reservoir.append(feed(0))
@@ -3745,12 +4601,12 @@ def _sample_counted(population, k, counts, strict):
 
         W = 1.0
         while True:
-            W *= exp(log(random()) / k)
-            skip = floor(log(random()) / log1p(-W))
+            W *= math.exp(math.log(random.random()) / k)
+            skip = math.floor(math.log(random.random()) / math.log1p(-W))
             element = feed(skip)
-            reservoir[randrange(k)] = element
+            reservoir[random.randrange(k)] = element
 
-    shuffle(reservoir)
+    random.shuffle(reservoir)
     return reservoir
 
 
@@ -3838,9 +4694,9 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
     :func:`sorted` function for objects with unusual comparison dynamics.
     If there are no out-of-order items, the iterable is exhausted.
     """
-    compare = le if strict else lt
+    compare = operator.le if strict else operator.lt
     it = iterable if (key is None) else map(key, iterable)
-    it_1, it_2 = tee(it)
+    it_1, it_2 = itertools.tee(it)
     next(it_2 if reverse else it_1, None)
 
     return not any(map(compare, it_1, it_2))
@@ -3940,7 +4796,7 @@ class callback_iter:
         return self._future.result()
 
     def _reader(self):
-        q = Queue()
+        q = queue.Queue()
 
         def callback(*args, **kwargs):
             if self._aborted:
@@ -3955,7 +4811,7 @@ class callback_iter:
         while True:
             try:
                 item = q.get(timeout=self._wait_seconds)
-            except Empty:
+            except queue.Empty:
                 pass
             else:
                 q.task_done()
@@ -3968,7 +4824,7 @@ class callback_iter:
         while True:
             try:
                 item = q.get_nowait()
-            except Empty:
+            except queue.Empty:
                 break
             else:
                 q.task_done()
@@ -4067,7 +4923,7 @@ def nth_product(index, *args):
     pools = list(map(tuple, reversed(args)))
     ns = list(map(len, pools))
 
-    c = reduce(mul, ns)
+    c = functools.reduce(operator.mul, ns)
 
     if index < 0:
         index += c
@@ -4102,11 +4958,11 @@ def nth_permutation(iterable, r, index):
     n = len(pool)
 
     if r is None or r == n:
-        r, c = n, factorial(n)
+        r, c = n, math.factorial(n)
     elif not 0 <= r < n:
         raise ValueError
     else:
-        c = perm(n, r)
+        c = math.perm(n, r)
     assert c > 0  # factortial(n)>0, and r<n so perm(n,r) is never zero
 
     if index < 0:
@@ -4116,7 +4972,7 @@ def nth_permutation(iterable, r, index):
         raise IndexError
 
     result = [0] * r
-    q = index * factorial(n) // c if r < n else index
+    q = index * math.factorial(n) // c if r < n else index
     for d in range(1, n + 1):
         q, i = divmod(q, d)
         if 0 <= n - d < r:
@@ -4149,7 +5005,7 @@ def nth_combination_with_replacement(iterable, r, index):
     if (r < 0) or (r > n):
         raise ValueError
 
-    c = comb(n + r - 1, r)
+    c = math.comb(n + r - 1, r)
 
     if index < 0:
         index += c
@@ -4162,7 +5018,7 @@ def nth_combination_with_replacement(iterable, r, index):
     while r:
         r -= 1
         while n >= 0:
-            num_combs = comb(n + r - 1, r)
+            num_combs = math.comb(n + r - 1, r)
             if index < num_combs:
                 break
             n -= 1
@@ -4222,7 +5078,7 @@ def product_index(element, *args):
     """
     index = 0
 
-    for x, pool in zip_longest(element, args, fillvalue=_marker):
+    for x, pool in itertools.zip_longest(element, args, fillvalue=_marker):
         if x is _marker or pool is _marker:
             raise ValueError('element is not a product of args')
 
@@ -4270,9 +5126,9 @@ def combination_index(element, iterable):
     for i, j in enumerate(reversed(indexes), start=1):
         j = n - j
         if i <= j:
-            index += comb(j, i)
+            index += math.comb(j, i)
 
-    return comb(n + 1, k + 1) - index
+    return math.comb(n + 1, k + 1) - index
 
 
 def combination_with_replacement_index(element, iterable):
@@ -4327,7 +5183,7 @@ def combination_with_replacement_index(element, iterable):
         j = l + n - 1 - k - cumulative_sum
         i = n - k
         if i <= j:
-            index += comb(j, i)
+            index += math.comb(j, i)
 
     return index
 
@@ -4406,10 +5262,10 @@ def chunked_even(iterable, n):
     # Initialize a buffer to process the chunks while keeping
     # some back to fill any underfilled chunks
     min_buffer = (n - 1) * (n - 2)
-    buffer = list(islice(iterable, min_buffer))
+    buffer = list(itertools.islice(iterable, min_buffer))
 
     # Append items until we have a completed chunk
-    for _ in islice(map(buffer.append, iterable), n, None, n):
+    for _ in itertools.islice(map(buffer.append, iterable), n, None, n):
         yield buffer[:n]
         del buffer[:n]
 
@@ -4514,8 +5370,8 @@ def unique_in_window(iterable, n, key=None):
     if n <= 0:
         raise ValueError('n must be greater than 0')
 
-    window = deque(maxlen=n)
-    counts = defaultdict(int)
+    window = collections.deque(maxlen=n)
+    counts = collections.defaultdict(int)
     use_key = key is not None
 
     for item in iterable:
@@ -4574,7 +5430,7 @@ def duplicates_justseen(iterable, key=None):
     This function is analogous to :func:`unique_justseen`.
 
     """
-    return flatten(g for _, g in groupby(iterable, key) for _ in g)
+    return flatten(g for _, g in itertools.groupby(iterable, key) for _ in g)
 
 
 def classify_unique(iterable, key=None):
@@ -4666,7 +5522,7 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
     # of unimportant copies which would slow the "key=None" branch
     # significantly down.
     if key is None:
-        for x, y in zip_longest(it, it, fillvalue=lo):
+        for x, y in itertools.zip_longest(it, it, fillvalue=lo):
             if y < x:
                 x, y = y, x
             if x < lo:
@@ -4677,7 +5533,7 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
     else:
         lo_key = hi_key = key(lo)
 
-        for x, y in zip_longest(it, it, fillvalue=lo):
+        for x, y in itertools.zip_longest(it, it, fillvalue=lo):
             x_key, y_key = key(x), key(y)
 
             if y_key < x_key:
@@ -4829,7 +5685,7 @@ def outer_product(func, xs, ys, *args, **kwargs):
 
     Multiplication table:
 
-    >>> list(outer_product(mul, range(1, 4), range(1, 6)))
+    >>> list(outer_product(operator.mul, range(1, 4), range(1, 6)))
     [(1, 2, 3, 4, 5), (2, 4, 6, 8, 10), (3, 6, 9, 12, 15)]
 
     Cross tabulation:
@@ -4849,7 +5705,7 @@ def outer_product(func, xs, ys, *args, **kwargs):
     """
     ys = tuple(ys)
     return batched(
-        starmap(lambda x, y: func(x, y, *args, **kwargs), product(xs, ys)),
+        itertools.starmap(lambda x, y: func(x, y, *args, **kwargs), itertools.product(xs, ys)),
         n=len(ys),
     )
 
@@ -4904,7 +5760,7 @@ def powerset_of_sets(iterable):
     """
     sets = tuple(map(set, dict.fromkeys(map(frozenset, zip(iterable)))))
     for r in range(len(sets) + 1):
-        yield from starmap(set().union, combinations(sets, r))
+        yield from itertools.starmap(set().union, itertools.combinations(sets, r))
 
 
 def join_mappings(**field_to_map):
@@ -4916,7 +5772,7 @@ def join_mappings(**field_to_map):
     >>> join_mappings(score=user_scores, time=user_times)
     {'elliot': {'score': 50, 'time': 30}, 'claris': {'score': 60, 'time': 40}}
     """
-    ret = defaultdict(dict)
+    ret = collections.defaultdict(dict)
 
     for field_name, mapping in field_to_map.items():
         for key, value in mapping.items():
@@ -4930,10 +5786,10 @@ def _complex_sumprod(v1, v2):
     Used by :func:`dft` and :func:`idft`.
     """
 
-    r1 = chain((p.real for p in v1), (-p.imag for p in v1))
-    r2 = chain((q.real for q in v2), (q.imag for q in v2))
-    i1 = chain((p.real for p in v1), (p.imag for p in v1))
-    i2 = chain((q.imag for q in v2), (q.real for q in v2))
+    r1 = itertools.chain((p.real for p in v1), (-p.imag for p in v1))
+    r2 = itertools.chain((q.real for q in v2), (q.imag for q in v2))
+    i1 = itertools.chain((p.real for p in v1), (p.imag for p in v1))
+    i2 = itertools.chain((q.imag for q in v2), (q.real for q in v2))
     return complex(_fsumprod(r1, r2), _fsumprod(i1, i2))
 
 
@@ -4950,7 +5806,7 @@ def dft(xarr):
     See :func:`idft` for the inverse Discrete Fourier Transform.
     """
     N = len(xarr)
-    roots_of_unity = [e ** (n / N * tau * -1j) for n in range(N)]
+    roots_of_unity = [math.e ** (n / N * math.tau * -1j) for n in range(N)]
     for k in range(N):
         coeffs = [roots_of_unity[k * n % N] for n in range(N)]
         yield _complex_sumprod(xarr, coeffs)
@@ -4970,7 +5826,7 @@ def idft(Xarr):
     See :func:`dft` for the Discrete Fourier Transform.
     """
     N = len(Xarr)
-    roots_of_unity = [e ** (n / N * tau * 1j) for n in range(N)]
+    roots_of_unity = [math.e ** (n / N * math.tau * 1j) for n in range(N)]
     for k in range(N):
         coeffs = [roots_of_unity[k * n % N] for n in range(N)]
         yield _complex_sumprod(Xarr, coeffs) / N
