@@ -8,8 +8,8 @@ import sys
 import time
 import typing as ta
 
-from omlish import check
-from omlish import libc
+from . import check
+from . import libc
 
 
 ##
