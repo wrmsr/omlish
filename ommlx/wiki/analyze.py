@@ -29,12 +29,14 @@ import contextlib
 import glob
 import io
 import os.path
+import signal
 import sys
 
 import lz4.frame
 import mwparserfromhell as mfh
 import mwparserfromhell.nodes  # noqa
 
+from omlish import libc
 from omlish import marshal as msh
 from omlish.formats import json
 
@@ -47,6 +49,9 @@ LZ4_JSONL_DIR = os.path.expanduser('~/data/enwiki/json/')
 
 def analyze_file(fn: str) -> None:
     print(f'pid={os.getpid()} {fn}')
+
+    if sys.platform == 'linux':
+        libc.prctl(libc.PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0, 0)
 
     with contextlib.ExitStack() as es:
         f = es.enter_context(open(fn, 'rb'))
