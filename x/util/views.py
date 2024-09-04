@@ -38,6 +38,8 @@ import builtins
 import collections.abc
 import itertools
 
+import more_itertools
+
 
 _enumerate = enumerate  # noqa
 _filter = filter  # noqa
@@ -114,7 +116,10 @@ class MapSizedView(MapReversibleView, collections.abc.Sized, collections.abc.Ite
         return self._len
 
     def __reversed__(self):
-        revs = [itertools.islice(reversed(it), len(it) - self._len, None) for it in self._iterables]
+        revs = [
+            more_itertools.islice_extended(reversed(it), len(it) - self._len, None)
+            for it in self._iterables
+        ]
         while True:
             values = (next(it) for it in revs)
             yield self._func(*values)
@@ -251,7 +256,10 @@ class ZipSizedView(ZipReversibleView, collections.abc.Sized, collections.abc.Ite
         return self._len
 
     def __reversed__(self):
-        revs = [itertools.islice(reversed(it), len(it) - self._len, None) for it in self._iterables]
+        revs = [
+            more_itertools.islice_extended(reversed(it), len(it) - self._len, None)
+            for it in self._iterables
+        ]
         while True:
             yield tuple(next(it) for it in revs)
 
@@ -412,7 +420,6 @@ class SliceIterableView(collections.abc.Iterable):
         self.start, self.stop, self.step = start, stop, step
 
     def __iter__(self):
-        import more_itertools
         yield from more_itertools.islice_extended(self._iterable, self.start, self.stop, self.step)
 
     def __repr__(self):
