@@ -28,6 +28,7 @@ import concurrent.futures as cf
 import contextlib
 import glob
 import io
+import multiprocessing as mp
 import os.path
 import signal
 import sys
@@ -64,7 +65,13 @@ pages_table = sa.Table(
 )
 
 
-def analyze_file(db_url: str, fn: str, dp: mpu.Deathpact) -> None:
+def analyze_file(
+        db_url: str,
+        fn: str,
+        dp: mpu.Deathpact,
+        lck: lang.Lockable,
+        nr: mp.Value,
+) -> None:
     print(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)
 
     rows: list[dict] = []
@@ -82,8 +89,12 @@ def analyze_file(db_url: str, fn: str, dp: mpu.Deathpact) -> None:
 
         def maybe_flush_rows():
             if len(rows) >= row_batch_size:
-                with engine.begin() as conn:
-                    conn.execute(pages_table.insert(), rows)
+                with lck:
+                    with engine.begin() as conn:
+                        conn.execute(pages_table.insert(), rows)
+
+                    nr.value += len(rows)
+                    print(f'{len(rows)} rows batched, {i} rows file, {nr.value} rows total', file=sys.stderr)
 
                 rows.clear()
 
@@ -208,11 +219,15 @@ def _main() -> None:
             deathsig=signal.SIGTERM,
         ))
 
+        mgr = mp_context.Manager()
+
         ex = es.enter_context(cfu.new_executor(  # noqa
             args.num_workers,
             cf.ProcessPoolExecutor,
             mp_context=mp_context,
         ))
+
+        nr = mgr.Value('i', 0)
 
         futs: list[cf.Future] = [
             ex.submit(
@@ -220,11 +235,15 @@ def _main() -> None:
                 db_url,
                 fn,
                 pdp,
+                mgr.Lock(),
+                nr,
             )
             for fn in sorted(glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')))
         ]
         for fut in futs:
             fut.result()
+
+        print(f'{nr.value} rows total', file=sys.stderr)
 
 
 if __name__ == '__main__':
