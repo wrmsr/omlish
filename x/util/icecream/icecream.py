@@ -16,6 +16,8 @@ import os.path
 import pprint
 import sys
 import textwrap
+import types
+import typing as ta
 import warnings
 
 import colorama
@@ -29,22 +31,16 @@ from .coloring import SolarizedDark
 _absent = object()
 
 
-def bind_static_variable(name, value):
-    def decorator(fn):
-        setattr(fn, name, value)
-        return fn
-    return decorator
+_COLORIZE_FORMATTER = pygments.formatters.Terminal256Formatter(style=SolarizedDark)
+_COLORIZE_LEXER = pygments.lexers.Python3Lexer(ensurenl=False)
 
 
-@bind_static_variable('formatter', pygments.formatters.Terminal256Formatter(style=SolarizedDark))
-@bind_static_variable('lexer', pygments.lexers.Python3Lexer(ensurenl=False))
-def colorize(s):
-    self = colorize
-    return pygments.highlight(s, self.lexer, self.formatter)
+def colorize(s: str) -> str:
+    return pygments.highlight(s, _COLORIZE_LEXER, _COLORIZE_FORMATTER)
 
 
 @contextlib.contextmanager
-def support_terminal_colors_in_windows():
+def support_terminal_colors_in_windows() -> ta.Iterator[None]:
     # Filter and replace ANSI escape sequences on Windows with equivalent Win32 API calls. This code does nothing on
     # non-Windows systems.
     colorama.init()
@@ -52,11 +48,11 @@ def support_terminal_colors_in_windows():
     colorama.deinit()
 
 
-def stderr_print(*args):
+def stderr_print(*args: ta.Any) -> None:
     print(*args, file=sys.stderr)
 
 
-def is_literal(s):
+def is_literal(s: str) -> bool:
     try:
         ast.literal_eval(s)
     except Exception:  # noqa
@@ -64,7 +60,7 @@ def is_literal(s):
     return True
 
 
-def colorized_stderr_print(s):
+def colorized_stderr_print(s: str) -> None:
     colored = colorize(s)
     with support_terminal_colors_in_windows():
         stderr_print(colored)
@@ -93,12 +89,12 @@ NO_SOURCE_AVAILABLE_WARNING_MESSAGE = (
 )
 
 
-def call_or_value(obj):
+def call_or_value(obj: ta.Any) -> ta.Any:
     return obj() if callable(obj) else obj
 
 
 class Source(executing.Source):
-    def get_text_with_indentation(self, node):
+    def get_text_with_indentation(self, node: ast.AST) -> bool:
         result = self.asttokens().get_text(node)
         if '\n' in result:
             result = ' ' * node.first_token.start[1] + result
@@ -107,7 +103,7 @@ class Source(executing.Source):
         return result
 
 
-def prefix_lines(prefix, s, start_at_line=0):
+def prefix_lines(prefix: str, s: str, start_at_line: int = 0) -> list[str]:
     lines = s.splitlines()
 
     for i in range(start_at_line, len(lines)):
@@ -116,14 +112,14 @@ def prefix_lines(prefix, s, start_at_line=0):
     return lines
 
 
-def prefix_first_line_indent_remaining(prefix, s):
+def prefix_first_line_indent_remaining(prefix: str, s: str) -> list[str]:
     indent = ' ' * len(prefix)
     lines = prefix_lines(indent, s, start_at_line=1)
     lines[0] = prefix + lines[0]
     return lines
 
 
-def format_pair(prefix, arg, value):
+def format_pair(prefix: str, arg: ta.Any, value: ta.Any) -> str:
     if arg is _absent:
         arg_lines = []
         value_prefix = prefix
@@ -141,25 +137,8 @@ def format_pair(prefix, arg, value):
     return '\n'.join(lines)
 
 
-def singledispatch(func):
-    func = functools.singledispatch(func)
-
-    # add unregister based on https://stackoverflow.com/a/25951784
-    closure = dict(zip(func.register.__code__.co_freevars, func.register.__closure__))
-
-    registry = closure['registry'].cell_contents
-    dispatch_cache = closure['dispatch_cache'].cell_contents
-
-    def unregister(cls):
-        del registry[cls]
-        dispatch_cache.clear()
-
-    func.unregister = unregister
-    return func
-
-
-@singledispatch
-def argument_to_string(obj):
+@functools.singledispatch
+def argument_to_string(obj: ta.Any) -> str:
     s = DEFAULT_ARG_TO_STRING_FUNCTION(obj)
     s = s.replace('\\n', '\n')  # Preserve string newlines in output.
     return s
@@ -172,24 +151,26 @@ class IceCreamDebugger:
 
     def __init__(
             self,
-            prefix=DEFAULT_PREFIX,
-            output_function=DEFAULT_OUTPUT_FUNCTION,
-            arg_to_string_function=argument_to_string,
-            include_context=False,
-            context_abs_path=False,
-    ):
+            *,
+            prefix: str = DEFAULT_PREFIX,
+            output_function: ta.Callable[[str], None] = DEFAULT_OUTPUT_FUNCTION,
+            arg_to_string_function: ta.Callable[[ta.Any], str] = argument_to_string,
+            include_context: bool = False,
+            context_abs_path: bool = False,
+    ) -> None:
         super().__init__()
-        self.enabled = True
-        self.prefix = prefix
-        self.include_context = include_context
-        self.output_function = output_function
-        self.arg_to_string_function = arg_to_string_function
-        self.context_abs_path = context_abs_path
+
+        self._enabled = True
+        self._prefix = prefix
+        self._include_context = include_context
+        self._output_function = output_function
+        self._arg_to_string_function = arg_to_string_function
+        self._context_abs_path = context_abs_path
 
     def __call__(self, *args):
-        if self.enabled:
+        if self._enabled:
             call_frame = inspect.currentframe().f_back
-            self.output_function(self._format(call_frame, *args))
+            self._output_function(self._format(call_frame, *args))
 
         if not args:  # E.g. ic().
             passthrough = None
@@ -205,22 +186,21 @@ class IceCreamDebugger:
         out = self._format(call_frame, *args)
         return out
 
-    def _format(self, call_frame, *args):
-        prefix = call_or_value(self.prefix)
+    def _format(self, call_frame: types.FrameType, *args: ta.Any) -> str:
+        prefix = call_or_value(self._prefix)
 
         context = self._format_context(call_frame)
         if not args:
             time = self._format_time()
             out = prefix + context + time
         else:
-            if not self.include_context:
+            if not self._include_context:
                 context = ''
-            out = self._format_args(
-                call_frame, prefix, context, args)
+            out = self._format_args(call_frame, prefix, context, args)
 
         return out
 
-    def _format_args(self, call_frame, prefix, context, args):
+    def _format_args(self, call_frame: types.FrameType, prefix: str, context: str, args: tuple) -> str:
         call_node = Source.executing(call_frame).node
         if call_node is not None:
             source = Source.for_frame(call_frame)
@@ -241,11 +221,11 @@ class IceCreamDebugger:
         out = self._construct_argument_output(prefix, context, pairs)
         return out
 
-    def _construct_argument_output(self, prefix, context, pairs):
+    def _construct_argument_output(self, prefix: str, context: str, pairs: ta.Sequence[tuple[str, ta.Any]]) -> str:
         def arg_prefix(arg):
             return f'{arg}: '
 
-        pairs = [(arg, self.arg_to_string_function(val)) for arg, val in pairs]
+        pairs = [(arg, self._arg_to_string_function(val)) for arg, val in pairs]
         # For cleaner output, if <arg> is a literal, eg 3, "a string", b'bytes', etc, only output the value, not the
         # argument and the value, because the argument and the value will be identical or nigh identical. Ex: with
         # ic("hello"), just output
@@ -303,7 +283,7 @@ class IceCreamDebugger:
 
         return '\n'.join(lines)
 
-    def _format_context(self, call_frame):
+    def _format_context(self, call_frame: types.FrameType) -> str:
         filename, line_number, parent_function = self._get_context(call_frame)
 
         if parent_function != '<module>':
@@ -312,50 +292,24 @@ class IceCreamDebugger:
         context = f'{filename}:{line_number} in {parent_function}'
         return context
 
-    def _format_time(self):
+    def _format_time(self) -> str:
         now = datetime.datetime.now()  # noqa
         formatted = now.strftime('%H:%M:%S.%f')[:-3]
         return f' at {formatted}'
 
-    def _get_context(self, call_frame):
+    def _get_context(self, call_frame: types.FrameType) -> tuple[str, int, str]:
         frame_info = inspect.getframeinfo(call_frame)
         line_number = frame_info.lineno
         parent_function = frame_info.function
 
-        filepath = (os.path.realpath if self.context_abs_path else os.path.basename)(frame_info.filename)
+        filepath = (os.path.realpath if self._context_abs_path else os.path.basename)(frame_info.filename)
         return filepath, line_number, parent_function
 
-    def enable(self):
-        self.enabled = True
+    def enable(self) -> None:
+        self._enabled = True
 
-    def disable(self):
-        self.enabled = False
-
-    def configure_output(
-            self,
-            prefix=_absent,
-            output_function=_absent,
-            arg_to_string_function=_absent,
-            include_context=_absent,
-            context_abs_path=_absent,
-    ):
-        if all(k is _absent for k in (prefix, output_function, arg_to_string_function, include_context, context_abs_path)):  # noqa
-            raise TypeError('configure_output() missing at least one argument')
-
-        if prefix is not _absent:
-            self.prefix = prefix
-
-        if output_function is not _absent:
-            self.output_function = output_function
-
-        if arg_to_string_function is not _absent:
-            self.arg_to_string_function = arg_to_string_function
-
-        if include_context is not _absent:
-            self.include_context = include_context
-
-        if context_abs_path is not _absent:
-            self.context_abs_path = context_abs_path
+    def disable(self) -> None:
+        self._enabled = False
 
 
 ic = IceCreamDebugger()
