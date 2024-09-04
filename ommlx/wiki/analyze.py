@@ -64,8 +64,8 @@ pages_table = sa.Table(
 )
 
 
-def analyze_file(db_url: str, fn: str, pr: int) -> None:
-    print(f'pid={os.getpid()} {pr=} {fn}', file=sys.stderr)
+def analyze_file(db_url: str, fn: str, dp: mpu.Deathpact) -> None:
+    print(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)
 
     rows: list[dict] = []
     row_batch_size = 1_000
@@ -89,23 +89,6 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
 
         f = es.enter_context(open(fn, 'rb'))
         # fpr = iou.FileProgressReporter(f, time_interval=5)
-
-        def check_pr():
-            try:
-                pbuf = os.read(pr, 1)
-            except BlockingIOError:
-                return
-            except Exception as e:
-                print(f'!!! {e=}', file=sys.stderr)
-                raise
-            if pbuf:
-                print(f'!!! READ, SHOULD NOT HAPPEN {pbuf=}', file=sys.stderr)
-            else:
-                print(f'!!! PIPE CLOSED', file=sys.stderr)
-            os.kill(os.getpid(), signal.SIGTERM)
-            sys.exit(1)
-
-        maybe_check_pr = lang.periodically(check_pr, .1)
 
         # proc = subprocess.Popen(['lz4', '-cdk', fn], stdout=subprocess.PIPE)
         # f = proc.stdout
@@ -131,7 +114,7 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
         while (l := tw.readline()):
             i += 1
 
-            maybe_check_pr()
+            dp.poll()
 
             fpr0.update()
             fpr1.update(i)
@@ -217,28 +200,26 @@ def _main() -> None:
 
     print(f'pid={os.getpid()}', file=sys.stderr)
 
-    pr, pw = os.pipe()
-    os.set_inheritable(pr, True)
-    os.set_blocking(pr, False)
+    with contextlib.ExitStack() as es:
+        pdp: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
 
-    print(f'{pr=} {pw=}', file=sys.stderr)
+        mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
+            fds={pdp.fd},
+            deathsig=signal.SIGTERM,
+        ))
 
-    mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
-        fds={pr},
-        deathsig=signal.SIGTERM,
-    ))
-
-    with cfu.new_executor(
+        ex = es.enter_context(cfu.new_executor(  # noqa
             args.num_workers,
             cf.ProcessPoolExecutor,
             mp_context=mp_context,
-    ) as ex:
+        ))
+
         futs: list[cf.Future] = [
             ex.submit(
                 analyze_file,
                 db_url,
                 fn,
-                pr,
+                pdp,
             )
             for fn in sorted(glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')))
         ]
