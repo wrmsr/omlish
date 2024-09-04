@@ -1,16 +1,17 @@
 """
 https://github.com/more-itertools/more-itertools/tree/35f8e41dc6cad3310d8fbe9a618c121a2b8d379c
 """
+# ruff: noqa: N801 N803 N806
 # Copyright (c) 2012 Erik Rose
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 # rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 # persons to whom the Software is furnished to do so, subject to the following conditions:
-# 
+#
 #     The above copyright notice and this permission notice shall be included in all copies or substantial portions of
 #     the Software.
-# 
+#
 #     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 #     THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 #     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
@@ -169,8 +170,8 @@ def all_equal(iterable, key=None):
 
     """
     iterator = itertools.groupby(iterable, key)
-    for first in iterator:
-        for second in iterator:
+    for first in iterator:  # noqa
+        for second in iterator:  # noqa
             return False
         return True
     return True
@@ -293,7 +294,7 @@ class UnequalIterablesError(ValueError):
         msg = 'Iterables have different lengths'
         if details is not None:
             msg += (': index 0 has length {}; index {} has length {}').format(
-                *details
+                *details,
             )
 
         super().__init__(msg)
@@ -303,7 +304,7 @@ def _zip_equal_generator(iterables):
     for combo in itertools.zip_longest(*iterables, fillvalue=_marker):
         for val in combo:
             if val is _marker:
-                raise UnequalIterablesError()
+                raise UnequalIterablesError
         yield combo
 
 
@@ -1085,7 +1086,7 @@ def first(iterable, default=_marker):
     if default is _marker:
         raise ValueError(
             'first() was called on an empty iterable, and no '
-            'default value was provided.'
+            'default value was provided.',
         )
     return default
 
@@ -1112,9 +1113,8 @@ def last(iterable, default=_marker):
             return collections.deque(iterable, maxlen=1)[-1]
     except (IndexError, TypeError, StopIteration):
         if default is _marker:
-            raise ValueError(
-                'last() was called on an empty iterable, and no default was '
-                'provided.'
+            raise ValueError(  # noqa
+                'last() was called on an empty iterable, and no default was provided.',
             )
         return default
 
@@ -1438,8 +1438,8 @@ def one(iterable, too_short=None, too_long=None):
         pass
     else:
         msg = (
-            'Expected exactly one item in iterable, but got {!r}, {!r}, '
-            'and perhaps more.'.format(first_value, second_value)
+            f'Expected exactly one item in iterable, but got {first_value!r}, {second_value!r}, '
+            'and perhaps more.'
         )
         raise too_long or ValueError(msg)
 
@@ -1500,13 +1500,13 @@ def strictly_n(iterable, n, too_short=None, too_long=None):
     if too_short is None:
         too_short = lambda item_count: raise_(
             ValueError,
-            'Too few items in iterable (got {})'.format(item_count),
+            f'Too few items in iterable (got {item_count})',
         )
 
     if too_long is None:
         too_long = lambda item_count: raise_(
             ValueError,
-            'Too many items in iterable (got at least {})'.format(item_count),
+            f'Too many items in iterable (got at least {item_count})',
         )
 
     it = iter(iterable)
@@ -2051,9 +2051,8 @@ def interleave_evenly(iterables, lengths=None):
         try:
             lengths = [len(it) for it in iterables]
         except TypeError:
-            raise ValueError(
-                'Iterable lengths could not be determined automatically. '
-                'Specify them with the lengths keyword.'
+            raise ValueError(  # noqa
+                'Iterable lengths could not be determined automatically. Specify them with the lengths keyword.',
             )
     elif len(iterables) != len(lengths):
         raise ValueError('Mismatching number of iterables and lengths.')
@@ -2062,7 +2061,7 @@ def interleave_evenly(iterables, lengths=None):
 
     # sort iterables by length, descending
     lengths_permute = sorted(
-        range(dims), key=lambda i: lengths[i], reverse=True
+        range(dims), key=lambda i: lengths[i], reverse=True,
     )
     lengths_desc = [lengths[i] for i in lengths_permute]
     iters_desc = [iter(iterables[i]) for i in lengths_permute]
@@ -2236,7 +2235,7 @@ def sliced(seq, n, strict=False):
         def ret():
             for _slice in iterator:
                 if len(_slice) != n:
-                    raise ValueError("seq is not divisible by n.")
+                    raise ValueError('seq is not divisible by n.')
                 yield _slice
 
         return iter(ret())
@@ -2314,7 +2313,7 @@ def split_before(iterable, pred, maxsplit=-1):
         if pred(item) and buf:
             yield buf
             if maxsplit == 1:
-                yield [item] + list(it)
+                yield [item, *it]
                 return
             buf = []
             maxsplit -= 1
@@ -2395,7 +2394,7 @@ def split_when(iterable, pred, maxsplit=-1):
         if pred(cur_item, next_item):
             yield buf
             if maxsplit == 1:
-                yield [next_item] + list(it)
+                yield [next_item, *it]
                 return
             buf = []
             maxsplit -= 1
@@ -2585,7 +2584,7 @@ def stagger(iterable, offsets=(-1, 0, 1), longest=False, fillvalue=None):
     children = itertools.tee(iterable, len(offsets))
 
     return zip_offset(
-        *children, offsets=offsets, longest=longest, fillvalue=fillvalue
+        *children, offsets=offsets, longest=longest, fillvalue=fillvalue,
     )
 
 
@@ -2660,7 +2659,7 @@ def zip_offset(*iterables, offsets, longest=False, fillvalue=None):
 
 
 def sort_together(
-    iterables, key_list=(0,), key=None, reverse=False, strict=False
+    iterables, key_list=(0,), key=None, reverse=False, strict=False,
 ):
     """Return the input iterables sorted together, with *key_list* as the
     priority for sorting. All iterables are trimmed to the length of the
@@ -2723,12 +2722,12 @@ def sort_together(
             # tuple of items, which we pass as *args to the key function
             get_key_items = operator.itemgetter(*key_list)
             key_argument = lambda zipped_items: key(
-                *get_key_items(zipped_items)
+                *get_key_items(zipped_items),
             )
 
     zipper = zip_equal if strict else zip
     return list(
-        zipper(*sorted(zipper(*iterables), key=key_argument, reverse=reverse))
+        zipper(*sorted(zipper(*iterables), key=key_argument, reverse=reverse)),
     )
 
 
@@ -2765,16 +2764,11 @@ def unzip(iterable):
             try:
                 return obj[i]
             except IndexError:
-                # basically if we have an iterable like
-                # iter([(1, 2, 3), (4, 5), (6,)])
-                # the second unzipped iterable would fail at the third tuple
-                # since it would try to access tup[1]
-                # same with the third unzipped iterable and the second tuple
-                # to support these "improperly zipped" iterables,
-                # we create a custom itemgetter
-                # which just stops the unzipped iterables
-                # at first length mismatch
-                raise StopIteration
+                # basically if we have an iterable like iter([(1, 2, 3), (4, 5), (6,)]) the second unzipped iterable
+                # would fail at the third tuple since it would try to access tup[1] same with the third unzipped
+                # iterable and the second tuple to support these "improperly zipped" iterables, we create a custom
+                # itemgetter which just stops the unzipped iterables at first length mismatch
+                raise StopIteration  # noqa
 
         return getter
 
@@ -3021,7 +3015,7 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
 
     """
 
-    _EMPTY_HASH = hash(range(0, 0))
+    _EMPTY_HASH = hash(range(0))
 
     def __init__(self, *args):
         argc = len(args)
@@ -3037,12 +3031,12 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
         elif argc == 0:
             raise TypeError(
                 'numeric_range expected at least '
-                '1 argument, got {}'.format(argc)
+                f'1 argument, got {argc}',
             )
         else:
             raise TypeError(
                 'numeric_range expected at most '
-                '3 arguments, got {}'.format(argc)
+                f'3 arguments, got {argc}',
             )
 
         self._zero = type(self._step)(0)
@@ -3060,9 +3054,8 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
         if self._growing:
             if self._start <= elem < self._stop:
                 return (elem - self._start) % self._step == self._zero
-        else:
-            if self._start >= elem > self._stop:
-                return (self._start - elem) % (-self._step) == self._zero
+        elif self._start >= elem > self._stop:
+            return (self._start - elem) % (-self._step) == self._zero
 
         return False
 
@@ -3105,7 +3098,7 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
         else:
             raise TypeError(
                 'numeric range indices must be '
-                'integers or slices, not {}'.format(type(key).__name__)
+                f'integers or slices, not {type(key).__name__}',
             )
 
     def __hash__(self):
@@ -3146,19 +3139,15 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
 
     def __repr__(self):
         if self._step == 1:
-            return "numeric_range({}, {})".format(
-                repr(self._start), repr(self._stop)
-            )
+            return f'numeric_range({self._start!r}, {self._stop!r})'
         else:
-            return "numeric_range({}, {}, {})".format(
-                repr(self._start), repr(self._stop), repr(self._step)
-            )
+            return f'numeric_range({self._start!r}, {self._stop!r}, {self._step!r})'
 
     def __reversed__(self):
         return iter(
             numeric_range(
-                self._get_by_index(-1), self._start - self._step, -self._step
-            )
+                self._get_by_index(-1), self._start - self._step, -self._step,
+            ),
         )
 
     def count(self, value):
@@ -3170,19 +3159,18 @@ class numeric_range(collections.abc.Sequence, collections.abc.Hashable):
                 q, r = divmod(value - self._start, self._step)
                 if r == self._zero:
                     return int(q)
-        else:
-            if self._start >= value > self._stop:
-                q, r = divmod(self._start - value, -self._step)
-                if r == self._zero:
-                    return int(q)
+        elif self._start >= value > self._stop:
+            q, r = divmod(self._start - value, -self._step)
+            if r == self._zero:
+                return int(q)
 
-        raise ValueError("{} is not in numeric range".format(value))
+        raise ValueError(f'{value} is not in numeric range')
 
     def _get_by_index(self, i):
         if i < 0:
             i += self._len
         if i < 0 or i >= self._len:
-            raise IndexError("numeric range object index out of range")
+            raise IndexError('numeric range object index out of range')
         return self._start + i * self._step
 
 
@@ -3435,7 +3423,7 @@ def _islice_helper(it, s):
             if n <= 0:
                 return
 
-            for index, item in itertools.islice(cache, 0, n, step):
+            for index, item in itertools.islice(cache, 0, n, step):  # noqa
                 yield item
         elif (stop is not None) and (stop < 0):
             # Advance to the start position
@@ -3470,7 +3458,7 @@ def _islice_helper(it, s):
             else:
                 i, j = min(start - len_iter, -1), None
 
-            for index, item in list(cache)[i:j:step]:
+            for index, item in list(cache)[i:j:step]:  # noqa
                 yield item
         else:
             # Advance to the stop position
@@ -3560,8 +3548,8 @@ def consecutive_groups(iterable, ordering=lambda x: x):
         [[1, 2], [11, 12], [21, 22]]
 
     """
-    for k, g in itertools.groupby(
-        enumerate(iterable), key=lambda x: x[0] - ordering(x[1])
+    for k, g in itertools.groupby(  # noqa
+        enumerate(iterable), key=lambda x: x[0] - ordering(x[1]),
     ):
         yield map(operator.itemgetter(1), g)
 
@@ -3650,7 +3638,7 @@ class SequenceView(collections.abc.Sequence):
         return len(self._target)
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, repr(self._target))
+        return f'{self.__class__.__name__}({self._target!r})'
 
 
 class seekable:
@@ -4145,7 +4133,7 @@ def partitions(iterable):
     sequence = list(iterable)
     n = len(sequence)
     for i in powerset(range(1, n)):
-        yield [sequence[i:j] for i, j in zip((0,) + i, i + (n,))]
+        yield [sequence[i:j] for i, j in zip((0,) + i, i + (n,))]  # noqa
 
 
 def set_partitions(iterable, k=None, min_size=None, max_size=None):
@@ -4192,7 +4180,7 @@ def set_partitions(iterable, k=None, min_size=None, max_size=None):
     if k is not None:
         if k < 1:
             raise ValueError(
-                "Can't partition in a negative or zero number of groups"
+                "Can't partition in a negative or zero number of groups",
             )
         elif k > n:
             return
@@ -4217,7 +4205,7 @@ def set_partitions(iterable, k=None, min_size=None, max_size=None):
                     yield p[:i] + [[e] + p[i]] + p[i + 1 :]
 
     if k is None:
-        for k in range(1, n + 1):
+        for k in range(1, n + 1):  # noqa
             yield from filter(
                 lambda z: all(min_size <= len(bk) <= max_size for bk in z),
                 set_partitions_helper(L, k),
@@ -4312,8 +4300,8 @@ def only(iterable, default=None, too_long=None):
         pass
     else:
         msg = (
-            'Expected exactly one item in iterable, but got {!r}, {!r}, '
-            'and perhaps more.'.format(first_value, second_value)
+            f'Expected exactly one item in iterable, but got {first_value!r}, {second_value!r}, '
+            'and perhaps more.'
         )
         raise too_long or ValueError(msg)
 
@@ -4445,7 +4433,7 @@ def distinct_combinations(iterable, r):
                 unique_everseen(
                     enumerate(pool[cur_idx + 1 :], cur_idx + 1),
                     key=operator.itemgetter(1),
-                )
+                ),
             )
             level += 1
 
@@ -4764,7 +4752,7 @@ class callback_iter:
         self._wait_seconds = wait_seconds
         # Lazily import concurrent.future
         self._executor = __import__(
-            'concurrent.futures'
+            'concurrent.futures',
         ).futures.ThreadPoolExecutor(max_workers=1)
         self._iterator = self._reader()
 
@@ -4804,7 +4792,7 @@ class callback_iter:
             q.put((args, kwargs))
 
         self._future = self._executor.submit(
-            self._func, **{self._callback_kwd: callback}
+            self._func, **{self._callback_kwd: callback},
         )
 
         while True:
@@ -4962,7 +4950,8 @@ def nth_permutation(iterable, r, index):
         raise ValueError
     else:
         c = math.perm(n, r)
-    assert c > 0  # factortial(n)>0, and r<n so perm(n,r) is never zero
+    if not (c > 0):  # factortial(n)>0, and r<n so perm(n,r) is never zero
+        raise ValueError(c)
 
     if index < 0:
         index += c
@@ -5167,7 +5156,7 @@ def combination_with_replacement_index(element, iterable):
             break
     else:
         raise ValueError(
-            'element is not a combination with replacement of iterable'
+            'element is not a combination with replacement of iterable',
         )
 
     n = len(pool)
@@ -5344,7 +5333,7 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
 
     zipper = _zip_equal if strict else zip
     for item in zipper(*iterables):
-        for i, new_item[i] in zip(iterable_positions, item):
+        for i, new_item[i] in zip(iterable_positions, item):  # noqa
             pass
         yield tuple(new_item)
 
@@ -5513,7 +5502,7 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
         if default is _marker:
             raise ValueError(
                 '`minmax()` argument is an empty iterable. '
-                'Provide a `default` value to suppress this error.'
+                'Provide a `default` value to suppress this error.',
             ) from exc
         return default
 
@@ -5524,10 +5513,8 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
         for x, y in itertools.zip_longest(it, it, fillvalue=lo):
             if y < x:
                 x, y = y, x
-            if x < lo:
-                lo = x
-            if hi < y:
-                hi = y
+            lo = min(x, lo)
+            hi = max(hi, y)
 
     else:
         lo_key = hi_key = key(lo)
@@ -5546,7 +5533,7 @@ def minmax(iterable_or_value, *others, key=None, default=_marker):
 
 
 def constrained_batches(
-    iterable, max_size, max_count=None, get_len=len, strict=True
+    iterable, max_size, max_count=None, get_len=len, strict=True,
 ):
     """Yield batches of items from *iterable* with a combined size limited by
     *max_size*.
@@ -5615,7 +5602,7 @@ def gray_product(*iterables):
     iterable_count = len(all_iterables)
     for iterable in all_iterables:
         if len(iterable) < 2:
-            raise ValueError("each iterable must have two or more items")
+            raise ValueError('each iterable must have two or more items')
 
     # This is based on "Algorithm H" from section 7.2.1.1, page 20.
     # a holds the indexes of the source iterables for the n-tuple to be yielded
