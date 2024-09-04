@@ -26,7 +26,7 @@ def test_torch():
         transform=tv_tfm.ToTensor(),
     )
 
-    test_data = datasets.FashionMNIST(  # noqa
+    test_data = tv_ds.FashionMNIST(  # noqa
         root=root,
         train=False,
         download=True,
