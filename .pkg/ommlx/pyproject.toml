@@ -28,9 +28,13 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'torch ~= 2.4',
+    'lxml ~= 5.3; python_version < "3.13"',
 ]
 torch = [
     'torch ~= 2.4',
+]
+xml = [
+    'lxml ~= 5.3; python_version < "3.13"',
 ]
 
 [tool.setuptools]

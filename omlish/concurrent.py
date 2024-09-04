@@ -161,20 +161,21 @@ class ImmediateExecutor(cf.Executor):
 
 
 @contextlib.contextmanager
-def new_thread_or_immediate_executor(
+def new_executor(
         max_workers: int | None = None,
+        cls: type[cf.Executor] = cf.ThreadPoolExecutor,
         *,
         immediate_exceptions: bool = False,
-        thread_name_prefix: str = '',
         **kwargs: ta.Any,
 ) -> ta.Generator[cf.Executor, None, None]:
     if max_workers == 0:
         yield ImmediateExecutor(
             immediate_exceptions=immediate_exceptions,
         )
+
     else:
-        with cf.ThreadPoolExecutor(
-                thread_name_prefix=thread_name_prefix,
+        with cls(  # type: ignore
+                max_workers,
                 **kwargs,
         ) as exe:
             yield exe

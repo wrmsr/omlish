@@ -33,10 +33,10 @@ all = [
     'python-snappy ~= 0.7; python_version < "3.13"',
     'zstd ~= 1.5',
     'psutil ~= 6.0',
-    'cloudpickle ~= 3.0',
+    'orjson ~= 3.10',
     'json5 ~= 0.9',
-    'orjson > 3.10',
     'pyyaml ~= 5.0',
+    'cloudpickle ~= 3.0',
     'httpx[http2] ~= 0.27',
     'jinja2 ~= 3.1',
     'wrapt ~= 1.14',
@@ -68,10 +68,10 @@ diag = [
     'psutil ~= 6.0',
 ]
 formats = [
-    'cloudpickle ~= 3.0',
+    'orjson ~= 3.10',
     'json5 ~= 0.9',
-    'orjson > 3.10',
     'pyyaml ~= 5.0',
+    'cloudpickle ~= 3.0',
 ]
 http = [
     'httpx[http2] ~= 0.27',
