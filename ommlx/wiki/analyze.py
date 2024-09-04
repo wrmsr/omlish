@@ -26,6 +26,8 @@ if rev.text and '#invoke' in rev.text.text:
 """
 import concurrent.futures as cf
 import contextlib
+import errno
+
 import fcntl
 import glob
 import io
@@ -93,14 +95,18 @@ def analyze_file(db_url: str, fn: str, pr: int) -> None:
             flags = fcntl.fcntl(pr, fcntl.F_GETFL)
             fcntl.fcntl(pr, fcntl.F_SETFL, flags | os.O_NONBLOCK)
             try:
-                os.read(pr, 1)
+                pbuf = os.read(pr, 1)
             except BlockingIOError:
                 return
             except Exception as e:
                 print(f'!!! {e=}', file=sys.stderr)
                 raise
-            print(f'!!! {buf=}', file=sys.stderr)
-            raise NotImplementedError
+            if pbuf:
+                print(f'!!! READ, SHOULD NOT HAPPEN {pbuf=}', file=sys.stderr)
+            else:
+                print(f'!!! PIPE CLOSED', file=sys.stderr)
+            os.kill(os.getpid(), signal.SIGTERM)
+            sys.exit(1)
 
         maybe_check_pr = lang.periodically(check_pr, 3.)
 
