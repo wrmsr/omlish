@@ -36,6 +36,7 @@ import lz4.frame
 import mwparserfromhell as mfh
 import mwparserfromhell.nodes  # noqa
 
+from omlish import concurrent as cfu
 from omlish import libc
 from omlish import marshal as msh
 from omlish.formats import json
@@ -112,7 +113,9 @@ def analyze_file(fn: str) -> None:
 
 
 def _main() -> None:
-    with cf.ProcessPoolExecutor(8) as ex:
+    np = 0
+
+    with cfu.new_executor(np, cf.ProcessPoolExecutor) as ex:
         futs: list[cf.Future] = [
             ex.submit(
                 analyze_file,
