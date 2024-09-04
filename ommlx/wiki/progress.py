@@ -24,12 +24,12 @@ class ProgressReporter(ta.Generic[T]):
         super().__init__()
 
         if fn is not None and start is None:
-            self._fn = fn
             start = fn()
         elif start is not None and fn is None:
-            self._fn = None
+            pass
         else:
             raise Exception('Must specify either fn or start')
+        self._fn = fn
 
         self._fmt = fmt
         self._suffix = suffix
