@@ -12,6 +12,9 @@ from . import check
 from . import libc
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
