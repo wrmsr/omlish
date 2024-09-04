@@ -9,6 +9,7 @@ git checkout 8f1d81a0b6f50b9bad72db0b6fcd299ad9ecd48c
 git submodule status
 -8f1d81a0b6f50b9bad72db0b6fcd299ad9ecd48c vendor/llama.cpp
 """
+import glob
 import os.path
 import shutil
 import subprocess
@@ -111,6 +112,10 @@ def _main() -> None:
         env=build_env,
         cwd=repo_dir,
     )
+
+    dist_dir = os.path.join(repo_dir, 'dist')
+    whl_files = glob.glob(os.path.join(dist_dir, '*.whl'))
+    print('\n'.join(whl_files))
 
 
 if __name__ == '__main__':
