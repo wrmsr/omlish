@@ -105,22 +105,21 @@ def test_dom():
     stk: list[wtp.WikiText] = []
     o: wtp.WikiText
     for o in flat_it:
-        pfx_print(repr([o.span for o in stk]))
 
-        while stk and o.span[0] > stk[-1].span[1]:
+        p = None
+        while stk and o.span[0] >= stk[-1].span[1]:
             p = stk.pop()
-
-            pfx_print(repr((p.span, o.span)))
-
+        if p is not None:
             l, r = p.span[1], o.span[0]
             if l > r:
                 breakpoint()
-
             if (r - l) > 1:
                 pfx_print(repr(src[l:r]))
 
-        pfx_print(repr((o.span, o)))
-
         stk.append(o)
+        pfx_print(repr((o.span, o)))
+        pfx_print(repr([o.span for o in stk]))
 
         print()
+
+    print('!! DONE')
