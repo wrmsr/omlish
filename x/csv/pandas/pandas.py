@@ -29,13 +29,14 @@ https://github.com/pandas-dev/pandas/blob/bc9b1c3c4b979978dcdef42b900aa633cfeee2
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import collections
+import collections.abc
 import copy
 import csv
 import datetime
 import enum
 import io
 import itertools
+import os
 import re
 import sys
 import types
@@ -50,33 +51,75 @@ HashableT = ta.TypeVar('HashableT', bound=ta.Hashable)
 SequenceT = ta.TypeVar('SequenceT', bound=ta.Sequence)
 
 
-##
-
-
-class _NoDefault(enum.Enum):
-    # We make this an Enum
-    # 1) because it round-trips through pickle correctly (see GH#40397)
-    # 2) because mypy does not understand singletons
-    no_default = "NO_DEFAULT"
-
-    def __repr__(self) -> str:
-        return "<no_default>"
-
-
-no_default = _NoDefault.no_default  # Sentinel indicating the default value.
-NoDefault = ta.Literal[_NoDefault.no_default]
-
-
 # region _typing.py
 
 
+class ExtensionDtype:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
+
+
+class ExtensionArray:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
+
+
 PythonScalar = ta.Union[str, float, bool]
-DatetimeLikeScalar = ta.Union["Period", "Timestamp", "Timedelta"]
-PandasScalar = ta.Union["Period", "Timestamp", "Timedelta", "Interval"]
-Scalar = ta.Union[PythonScalar, PandasScalar, np.datetime64, np.timedelta64, datetime.date]
+Scalar = ta.Union[PythonScalar, np.datetime64, np.timedelta64, datetime.date]
 
 AnyStr_co = ta.TypeVar("AnyStr_co", str, bytes, covariant=True)
 AnyStr_contra = ta.TypeVar("AnyStr_contra", str, bytes, contravariant=True)
+
+IndexLabel = ta.Union[ta.Hashable, ta.Sequence[ta.Hashable]]
+
+ArrayLike = ta.Union["ExtensionArray", np.ndarray]
+ArrayLikeT = ta.TypeVar("ArrayLikeT", "ExtensionArray", np.ndarray)
+AnyArrayLike = ta.Union[ArrayLike, "Index", "Series"]
+
+NpDtype = ta.Union[str, np.dtype, ta.Type[ta.Union[str, complex, bool, object]]]
+Dtype = ta.Union["ExtensionDtype", NpDtype]
+AstypeArg = ta.Union["ExtensionDtype", "npt.DTypeLike"]
+
+DtypeArg = ta.Union[Dtype, ta.Mapping[ta.Hashable, Dtype]]
+
+DtypeBackend = ta.Literal["pyarrow", "numpy_nullable"]
+
+FilePath = ta.Union[str, os.PathLike[str]]
+
+
+_T_co = ta.TypeVar("_T_co", covariant=True)
+
+
+class SequenceNotStr(ta.Protocol[_T_co]):
+    @ta.overload
+    def __getitem__(self, index: ta.SupportsIndex, /) -> _T_co: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice, /) -> ta.Sequence[_T_co]: ...  # noqa
+
+    def __contains__(self, value: object, /) -> bool: ...
+
+    def __len__(self) -> int: ...
+
+    def __iter__(self) -> ta.Iterator[_T_co]: ...
+
+    def index(self, value: ta.Any, start: int = ..., stop: int = ..., /) -> int: ...
+
+    def count(self, value: ta.Any, /) -> int: ...
+
+    def __reversed__(self) -> ta.Iterator[_T_co]: ...
+
+
+ListLike = ta.Union[AnyArrayLike, SequenceNotStr, range]
+
+
+UsecolsArgType = ta.Union[
+    SequenceNotStr[ta.Hashable],
+    range,
+    AnyArrayLike,
+    ta.Callable[[HashableT], bool],
+    None,
+]
 
 
 class BaseBuffer(ta.Protocol):
@@ -134,21 +177,63 @@ CompressionOptions = ta.Optional[
 StorageOptions = ta.Optional[dict[str, ta.Any]]
 
 
-#
+# endregion
 
 
-class ExtensionDtype:
-    def __new__(cls, *args, **kwargs):
-        raise TypeError
+# region lib
 
 
-NpDtype = ta.Union[str, np.dtype, ta.Type[ta.Union[str, complex, bool, object]]]
-Dtype = ta.Union["ExtensionDtype", NpDtype]
-AstypeArg = ta.Union["ExtensionDtype", "npt.DTypeLike"]
+class _NoDefault(enum.Enum):
+    # We make this an Enum
+    # 1) because it round-trips through pickle correctly (see GH#40397)
+    # 2) because mypy does not understand singletons
+    no_default = "NO_DEFAULT"
 
-DtypeArg = ta.Union[Dtype, ta.Mapping[ta.Hashable, Dtype]]
+    def __repr__(self) -> str:
+        return "<no_default>"
 
-DtypeBackend = ta.Literal["pyarrow", "numpy_nullable"]
+
+no_default = _NoDefault.no_default  # Sentinel indicating the default value.
+NoDefault = ta.Literal[_NoDefault.no_default]
+
+
+def is_array(obj: object) -> bool:
+    return isinstance(obj, np.ndarray)
+
+
+def is_list_like(obj: object, allow_sets: bool) -> bool:
+    # first, performance short-cuts for the most common cases
+    if is_array(obj):
+        # exclude zero-dimensional numpy arrays, effectively scalars
+        return bool(obj.shape)  # noqa
+    elif isinstance(obj, list):
+        return True
+    # then the generic implementation
+    return (
+        # equiv: `isinstance(obj, abc.Iterable)`
+            getattr(obj, "__iter__", None) is not None and not isinstance(obj, type)
+            # we do not count strings/unicode/bytes as list-like
+            # exclude Generic types that have __iter__
+            and not isinstance(obj, (str, bytes, ta._GenericAlias))  # noqa
+            # exclude zero-dimensional duck-arrays, effectively scalars
+            and not (hasattr(obj, "ndim") and obj.ndim == 0)
+            # exclude sets if allow_sets is False
+            and not (allow_sets is False and isinstance(obj, collections.abc.Set))
+    )
+
+
+# endregion
+
+
+# region errors.py
+
+
+class ParserError(ValueError):
+    pass
+
+
+class ParserWarning(Warning):
+    pass
 
 
 # endregion
@@ -688,7 +773,7 @@ class ParserBase:
             except (ValueError, TypeError):
                 # e.g. encountering datetime string gets ValueError
                 #  TypeError can be raised in floatify
-                na_count = parsers.sanitize_objects(values, na_values)
+                na_count = sanitize_objects(values, na_values)
                 result = values
             else:
                 if non_default_dtype_backend:
@@ -712,7 +797,7 @@ class ParserBase:
         else:
             result = values
             if values.dtype == np.object_:
-                na_count = parsers.sanitize_objects(values, na_values)
+                na_count = sanitize_objects(values, na_values)
 
         if result.dtype == np.object_ and try_num_bool:
             result, bool_mask = libops.maybe_convert_bool(
@@ -2840,7 +2925,7 @@ class TextFileReader(ta.Iterator):
 
 class CParserWrapper(ParserBase):
     low_memory: bool
-    _reader: parsers.TextReader
+    _reader: TextReader
 
     def __init__(self, src: ReadCsvBuffer[str], **kwds) -> None:
         super().__init__(kwds)
@@ -2875,7 +2960,7 @@ class CParserWrapper(ParserBase):
         if kwds["dtype_backend"] == "pyarrow":
             # Fail here loudly instead of in cython after reading
             import_optional_dependency("pyarrow")
-        self._reader = parsers.TextReader(src, **kwds)
+        self._reader = TextReader(src, **kwds)
 
         self.unnamed_cols = self._reader.unnamed_cols
 
