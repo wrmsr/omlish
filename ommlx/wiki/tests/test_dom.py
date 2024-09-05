@@ -1,3 +1,40 @@
+"""
+https://en.wikipedia.org/wiki/Help:Wikitext
+https://www.mediawiki.org/wiki/Alternative_parsers
+
+mfh:
+https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes
+  mfh.nodes.text.Text
+  mfh.nodes.argument.Argument
+  mfh.nodes.comment.Comment
+  mfh.nodes.external_link.ExternalLink
+  mfh.nodes.heading.Heading
+  mfh.nodes.html_entity.HTMLEntity
+  mfh.nodes.tag.Tag
+  mfh.nodes.template.Template
+  mfh.nodes.wikilink.Wikilink
+
+wtp:
+https://github.com/5j9/wikitextparser ??
+https://github.com/TrueBrain/TrueWiki
+https://github.com/TrueBrain/wikitexthtml
+  Argument
+  Bold
+  Comment
+  ExternalLink
+  Italic
+  Parameter
+  ParserFunction
+  Section
+  Table
+  Tag
+  Template
+  WikiLink
+  WikiList
+  WikiText
+
+
+"""
 import abc
 import dataclasses as dc
 import importlib.resources
