@@ -202,7 +202,7 @@ def analyze_file(
 
 
 def _main() -> None:
-    default_workers = 1
+    default_workers = 0
 
     import argparse
 
