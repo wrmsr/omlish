@@ -15,8 +15,8 @@ def test_import_hook():
     try:
         importhook.install()
 
-        from ._cext import junk  # type: ignore
-        assert junk.junk() == 424
+        from . import _junk  # type: ignore
+        assert _junk.junk() == 424
 
     finally:
         if not was_installed:
