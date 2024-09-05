@@ -102,7 +102,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==0.34.0
+accelerate==0.34.2
 
 pytorch-lightning==2.4.0
 
@@ -206,7 +206,7 @@ polars==1.6.0
 
 pyzmq==26.2.0
 
-safetensors==0.4.4
+safetensors==0.4.5
 
 paramiko==3.4.1
 
@@ -219,7 +219,7 @@ langchain==0.2.16
 langchain-community==0.2.16
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
-langchain-openai-0.1.23
+langchain-openai==0.1.23
 langchain-text-splitters==0.2.4
 
 langchainhub==0.1.21
