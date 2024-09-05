@@ -387,7 +387,7 @@ class ParserBase:
         self.col_names: ta.Sequence[ta.Hashable] | None = None
 
         parse_dates = kwds.pop("parse_dates", False)
-        if parse_dates is None or lib.is_bool(parse_dates):
+        if parse_dates is None or is_bool(parse_dates):
             parse_dates = bool(parse_dates)
         elif not isinstance(parse_dates, list):
             raise TypeError(
@@ -747,7 +747,7 @@ class ParserBase:
         if issubclass(values.dtype.type, (np.number, np.bool_)):
             # If our array has numeric dtype, we don't have to check for strings in isin
             na_values = np.array([val for val in na_values if not isinstance(val, str)])
-            mask = algorithms.isin(values, na_values)
+            mask = isin(values, na_values)
             na_count = mask.astype("uint8", copy=False).sum()
             if na_count > 0:
                 if is_integer_dtype(values):
@@ -764,7 +764,7 @@ class ParserBase:
         if try_num_bool and is_object_dtype(values.dtype):
             # exclude e.g DatetimeIndex here
             try:
-                result, result_mask = lib.maybe_convert_numeric(
+                result, result_mask = maybe_convert_numeric(
                     values,
                     na_values,
                     False,
@@ -812,7 +812,7 @@ class ParserBase:
                 result = BooleanArray(result, bool_mask)
             elif result.dtype == np.object_ and non_default_dtype_backend:
                 # read_excel sends array of datetime objects
-                if not lib.is_datetime_array(result, skipna=True):
+                if not is_datetime_array(result, skipna=True):
                     dtype = StringDtype()
                     cls = dtype.construct_array_type()
                     result = cls._from_sequence(values, dtype=dtype)
@@ -1372,7 +1372,7 @@ class PythonParser(ParserBase):
             if c in parse_date_cols:
                 # GH#26203 Do not convert columns which get converted to dates
                 # but replace nans to ensure to_datetime works
-                mask = algorithms.isin(values, set(col_na_values) | col_na_fvalues)  # pyright: ignore[reportArgumentType]
+                mask = isin(values, set(col_na_values) | col_na_fvalues)  # pyright: ignore[reportArgumentType]
                 np.putmask(values, mask, np.nan)
                 result[c] = values
                 continue
@@ -1390,10 +1390,10 @@ class PythonParser(ParserBase):
                     )
 
                 try:
-                    values = lib.map_infer(values, conv_f)
+                    values = map_infer(values, conv_f)
                 except ValueError:
-                    mask = algorithms.isin(values, list(na_values)).view(np.uint8)
-                    values = lib.map_infer_mask(values, conv_f, mask)
+                    mask = isin(values, list(na_values)).view(np.uint8)
+                    values = map_infer_mask(values, conv_f, mask)
 
                 cvals, na_count = self._infer_types(
                     values,
@@ -1452,7 +1452,7 @@ class PythonParser(ParserBase):
                 # TODO: this is for consistency with
                 # c-parser which parses all categories
                 # as strings
-                values = lib.ensure_string_array(
+                values = ensure_string_array(
                     values, skipna=False, convert_na_value=False
                 )
 
@@ -1490,7 +1490,7 @@ class PythonParser(ParserBase):
             # TODO: why skipna=True here and False above? some tests depend
             #  on it here, but nothing fails if we change it above
             #  (as no tests get there as of 2022-12-06)
-            values = lib.ensure_string_array(
+            values = ensure_string_array(
                 values, skipna=True, convert_na_value=False
             )
         else:
@@ -2190,7 +2190,7 @@ class PythonParser(ParserBase):
                 self._alert_malformed(msg, row_num + 1)
 
         # see gh-13320
-        zipped_content = list(lib.to_object_array(content, min_width=col_len).T)
+        zipped_content = list(to_object_array(content, min_width=col_len).T)
 
         if self.usecols:
             assert self._col_indices is not None
@@ -2480,6 +2480,31 @@ class FixedWidthFieldParser(PythonParser):
 
 
 # region io/parsers/readers.py
+
+
+class _C_Parser_Defaults(ta.TypedDict):
+    na_filter: ta.Literal[True]
+    low_memory: ta.Literal[True]
+    memory_map: ta.Literal[False]
+    float_precision: None
+
+
+_c_parser_defaults: _C_Parser_Defaults = {
+    "na_filter": True,
+    "low_memory": True,
+    "memory_map": False,
+    "float_precision": None,
+}
+
+
+class _Fwf_Defaults(ta.TypedDict):
+    colspecs: ta.Literal["infer"]
+    infer_nrows: ta.Literal[100]
+    widths: None
+
+
+_fwf_defaults: _Fwf_Defaults = {"colspecs": "infer", "infer_nrows": 100, "widths": None}
+_c_unsupported = {"skipfooter"}
 
 
 class TextFileReader(ta.Iterator):
