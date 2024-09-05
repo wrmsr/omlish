@@ -41,6 +41,7 @@ import importlib.resources
 import itertools
 import typing as ta  # noqa
 
+from omlish import cached
 import wikitextparser as wtp
 
 
@@ -68,6 +69,10 @@ class ExternalLink(Dom):
 class WtpNode:
     wiki: wtp.WikiText
     children: list[ta.Union['WtpNode', str]] = dc.field(default_factory=list)
+
+    @cached.property
+    def span(self) -> tuple[int, int]:
+        return self.wiki.span  # type: ignore
 
 
 def test_dom():
@@ -103,12 +108,14 @@ def test_dom():
         )
     )
 
-    stk: list[WtpNode] = []
+    root = WtpNode(wiki)
+    stk: list[WtpNode] = [root]
     o: wtp.WikiText
     for o in flat_it:
         p = None
-        while stk and o.span[0] >= stk[-1].wiki.span[1]:
+        while o.span[0] >= stk[-1].wiki.span[1]:
             p = stk.pop()
+            stk[-1].children.append(p)
         if p is not None:
             l, r = p.wiki.span[1], o.span[0]
             if l > r:
@@ -116,5 +123,10 @@ def test_dom():
             if (r - l) > 1:
                 stk[-1].children.append(src[l:r])
         stk.append(WtpNode(o))
+    while len(stk) > 1:
+        p = stk.pop()
+        stk[-1].children.append(p)
+    if stk.pop() is not root:
+        raise RuntimeError
 
     print('!! DONE')
