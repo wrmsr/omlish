@@ -1034,6 +1034,46 @@ class ParserBase:
         return index, columns, col_dict
 
 
+parser_defaults = {
+    "delimiter": None,
+    "escapechar": None,
+    "quotechar": '"',
+    "quoting": csv.QUOTE_MINIMAL,
+    "doublequote": True,
+    "skipinitialspace": False,
+    "lineterminator": None,
+    "header": "infer",
+    "index_col": None,
+    "names": None,
+    "skiprows": None,
+    "skipfooter": 0,
+    "nrows": None,
+    "na_values": None,
+    "keep_default_na": True,
+    "true_values": None,
+    "false_values": None,
+    "converters": None,
+    "dtype": None,
+    "cache_dates": True,
+    "thousands": None,
+    "comment": None,
+    "decimal": ".",
+    # 'engine': 'c',
+    "parse_dates": False,
+    "dayfirst": False,
+    "date_format": None,
+    "usecols": None,
+    # 'iterator': False,
+    "chunksize": None,
+    "encoding": None,
+    "compression": None,
+    "skip_blank_lines": True,
+    "encoding_errors": "strict",
+    "on_bad_lines": ParserBase.BadLineHandleMethod.ERROR,
+    "dtype_backend": no_default,
+}
+
+
 # endregion
 
 
