@@ -3,7 +3,7 @@ import dataclasses as dc
 import orjson as oj
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class Options:
     append_newline: bool = False  # append \n to the output
 
