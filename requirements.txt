@@ -62,7 +62,6 @@ psutil==6.0.0
 
 #> ujson==5.10.0
 orjson==3.10.7
-#> python-rapidjson==1.18
 
 ## pickle
 
