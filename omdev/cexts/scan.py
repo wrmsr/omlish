@@ -9,7 +9,7 @@ from omlish import logs
 log = logging.getLogger(__name__)
 
 
-SCAN_COMMENT = '// @omdev-ext'
+SCAN_COMMENT = '// @omdev-cext'
 
 
 def scan_one(

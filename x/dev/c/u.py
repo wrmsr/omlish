@@ -2,7 +2,7 @@ import glob
 import os.path
 import shutil
 
-from omdev.exts import importhook
+from omdev.cexts import importhook
 
 
 DEBUG = True

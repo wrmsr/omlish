@@ -9,7 +9,7 @@ def _main():
     import glob
     import os.path
     import shutil
-    from omdev.exts import importhook
+    from omdev.cexts import importhook
     here = os.path.join(os.path.dirname(__file__))
     if os.path.exists(bdir := os.path.join(here, 'build')):
         shutil.rmtree(bdir)
