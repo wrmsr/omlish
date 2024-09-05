@@ -25,8 +25,11 @@ import yaml
 from omlish import lang
 
 
-with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
-    os.environ['TAVILY_API_KEY'] = yaml.safe_load(f)['tavily_api_key']
+def _load_secrets():
+    with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
+        os.environ['TAVILY_API_KEY'] = yaml.safe_load(f)['tavily_api_key']
+
+_load_secrets()
 
 
 @lang.cached_function

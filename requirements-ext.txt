@@ -215,11 +215,15 @@ customtkinter==5.2.2
 ##
 
 langchain==0.2.16
+
 langchain-community==0.2.16
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
+langchain-openai-0.1.23
 langchain-text-splitters==0.2.4
+
 langchainhub==0.1.21
+
 langgraph==0.2.16
 
 tavily-python==0.4.0
