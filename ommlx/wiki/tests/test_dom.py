@@ -64,6 +64,12 @@ class ExternalLink(Dom):
     pass
 
 
+@dc.dataclass(frozen=True)
+class WtpNode:
+    wiki: wtp.WikiText
+    children: list[ta.Union['WtpNode', str]] = dc.field(default_factory=list)
+
+
 def test_dom():
     src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
 
@@ -97,29 +103,18 @@ def test_dom():
         )
     )
 
-    print()
-
-    def pfx_print(s):
-        print(('  ' * len(stk)) + s)
-
-    stk: list[wtp.WikiText] = []
+    stk: list[WtpNode] = []
     o: wtp.WikiText
     for o in flat_it:
-
         p = None
-        while stk and o.span[0] >= stk[-1].span[1]:
+        while stk and o.span[0] >= stk[-1].wiki.span[1]:
             p = stk.pop()
         if p is not None:
-            l, r = p.span[1], o.span[0]
+            l, r = p.wiki.span[1], o.span[0]
             if l > r:
-                breakpoint()
+                raise Exception(f'{p.wiki.span=} {o.span=}')
             if (r - l) > 1:
-                pfx_print(repr(src[l:r]))
-
-        stk.append(o)
-        pfx_print(repr((o.span, o)))
-        pfx_print(repr([o.span for o in stk]))
-
-        print()
+                stk[-1].children.append(src[l:r])
+        stk.append(WtpNode(o))
 
     print('!! DONE')
