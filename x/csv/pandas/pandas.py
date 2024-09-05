@@ -34,6 +34,7 @@ import copy
 import csv
 import datetime
 import enum
+import functools
 import inspect
 import io
 import itertools
@@ -902,7 +903,7 @@ class ParserBase:
                 na_count = sanitize_objects(values, na_values)
 
         if result.dtype == np.object_ and try_num_bool:
-            result, bool_mask = libops.maybe_convert_bool(
+            result, bool_mask = maybe_convert_bool(
                 np.asarray(values),
                 true_values=self.true_values,
                 false_values=self.false_values,
@@ -1209,6 +1210,85 @@ parser_defaults = {
 }
 
 
+@ta.overload
+def evaluate_callable_usecols(
+        usecols: ta.Callable[[ta.Hashable], object],
+        names: ta.Iterable[ta.Hashable],
+) -> set[int]: ...
+
+
+@ta.overload
+def evaluate_callable_usecols(
+        usecols: SequenceT, names: ta.Iterable[ta.Hashable]
+) -> SequenceT: ...
+
+
+def evaluate_callable_usecols(
+        usecols: ta.Callable[[ta.Hashable], object] | SequenceT,
+        names: ta.Iterable[ta.Hashable],
+) -> SequenceT | set[int]:
+    """
+    Check whether or not the 'usecols' parameter
+    is a callable.  If so, enumerates the 'names'
+    parameter and returns a set of indices for
+    each entry in 'names' that evaluates to True.
+    If not a callable, returns 'usecols'.
+    """
+    if callable(usecols):
+        return {i for i, name in enumerate(names) if usecols(name)}
+    return usecols
+
+
+def _validate_usecols_arg(usecols):
+    """
+    Validate the 'usecols' parameter.
+
+    Checks whether or not the 'usecols' parameter contains all integers
+    (column selection by index), strings (column by name) or is a callable.
+    Raises a ValueError if that is not the case.
+
+    Parameters
+    ----------
+    usecols : list-like, callable, or None
+        List of columns to use when parsing or a callable that can be used
+        to filter a list of table columns.
+
+    Returns
+    -------
+    usecols_tuple : tuple
+        A tuple of (verified_usecols, usecols_dtype).
+
+        'verified_usecols' is either a set if an array-like is passed in or
+        'usecols' if a callable or None is passed in.
+
+        'usecols_dtype` is the inferred dtype of 'usecols' if an array-like
+        is passed in or None if a callable or None is passed in.
+    """
+    msg = (
+        "'usecols' must either be list-like of all strings, all unicode, "
+        "all integers or a callable."
+    )
+    if usecols is not None:
+        if callable(usecols):
+            return usecols, None
+
+        if not is_list_like(usecols):
+            # see gh-20529
+            #
+            # Ensure it is iterable container but not string.
+            raise ValueError(msg)
+
+        usecols_dtype = infer_dtype(usecols, skipna=False)
+
+        if usecols_dtype not in ("empty", "integer", "string"):
+            raise ValueError(msg)
+
+        usecols = set(usecols)
+
+        return usecols, usecols_dtype
+    return usecols, None
+
+
 # endregion
 
 
@@ -1312,7 +1392,7 @@ class PythonParser(ParserBase):
         if len(self.decimal) != 1:
             raise ValueError("Only length-1 decimal markers supported")
 
-    @cache_readonly
+    @functools.cached_property
     def num(self) -> re.Pattern:
         decimal = re.escape(self.decimal)
         if self.thousands is None:
@@ -1677,7 +1757,7 @@ class PythonParser(ParserBase):
                 ) from err
         return values
 
-    @cache_readonly
+    @functools.cached_property
     def _have_mi_columns(self) -> bool:
         if self.header is None:
             return False
@@ -1873,7 +1953,7 @@ class PythonParser(ParserBase):
 
         return columns, num_original_columns, unnamed_cols
 
-    @cache_readonly
+    @functools.cached_property
     def _header_line(self):
         # Store line for reuse in _get_index_name
         if self.header is not None:
@@ -3416,35 +3496,6 @@ class CParserWrapper(ParserBase):
             index, column_names = self._make_index(alldata, names)
 
         return index, column_names, date_data
-
-
-@ta.overload
-def evaluate_callable_usecols(
-        usecols: ta.Callable[[ta.Hashable], object],
-        names: ta.Iterable[ta.Hashable],
-) -> set[int]: ...
-
-
-@ta.overload
-def evaluate_callable_usecols(
-        usecols: SequenceT, names: ta.Iterable[ta.Hashable]
-) -> SequenceT: ...
-
-
-def evaluate_callable_usecols(
-        usecols: ta.Callable[[ta.Hashable], object] | SequenceT,
-        names: ta.Iterable[ta.Hashable],
-) -> SequenceT | set[int]:
-    """
-    Check whether or not the 'usecols' parameter
-    is a callable.  If so, enumerates the 'names'
-    parameter and returns a set of indices for
-    each entry in 'names' that evaluates to True.
-    If not a callable, returns 'usecols'.
-    """
-    if callable(usecols):
-        return {i for i, name in enumerate(names) if usecols(name)}
-    return usecols
 
 
 # endregion
