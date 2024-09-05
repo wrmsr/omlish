@@ -143,6 +143,9 @@ class BaseBuffer(ta.Protocol):
         ...
 
 
+BaseBufferT = ta.TypeVar("BaseBufferT", bound=BaseBuffer)
+
+
 class ReadBuffer(BaseBuffer, ta.Protocol[AnyStr_co]):
     def read(self, __n: int = ...) -> AnyStr_co:
         # for BytesIOWrapper, gzip.GzipFile, bz2.BZ2File
@@ -196,6 +199,9 @@ class _NoDefault(enum.Enum):
 
 no_default = _NoDefault.no_default  # Sentinel indicating the default value.
 NoDefault = ta.Literal[_NoDefault.no_default]
+
+
+#
 
 
 def is_bool(obj: object) -> bool:
@@ -264,9 +270,6 @@ def is_dict_like(obj: object) -> bool:
     )
 
 
-# endregion
-
-
 def is_file_like(obj: object) -> bool:
     """
     Check if the object is a file-like object.
@@ -303,6 +306,9 @@ def is_file_like(obj: object) -> bool:
     return bool(hasattr(obj, "__iter__"))
 
 
+#
+
+
 def find_stack_level() -> int:
     """
     Find the first place in the stack that is not inside pandas
@@ -330,6 +336,65 @@ def find_stack_level() -> int:
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback
         del frame
     return n
+
+
+#
+
+
+def _expand_user(filepath_or_buffer: str | BaseBufferT) -> str | BaseBufferT:
+    """
+    Return the argument with an initial component of ~ or ~user
+    replaced by that user's home directory.
+
+    Parameters
+    ----------
+    filepath_or_buffer : object to be converted if possible
+
+    Returns
+    -------
+    expanded_filepath_or_buffer : an expanded filepath or the
+                                  input if not expandable
+    """
+    if isinstance(filepath_or_buffer, str):
+        return os.path.expanduser(filepath_or_buffer)
+    return filepath_or_buffer
+
+
+def stringify_path(
+        filepath_or_buffer: FilePath | BaseBufferT,
+        convert_file_like: bool = False,
+) -> str | BaseBufferT:
+    """
+    Attempt to convert a path-like object to a string.
+
+    Parameters
+    ----------
+    filepath_or_buffer : object to be converted
+
+    Returns
+    -------
+    str_filepath_or_buffer : maybe a string version of the object
+
+    Notes
+    -----
+    Objects supporting the fspath protocol are coerced
+    according to its __fspath__ method.
+
+    Any other object is passed through unchanged, which includes bytes,
+    strings, buffers, or anything else that's not even path-like.
+    """
+    if not convert_file_like and is_file_like(filepath_or_buffer):
+        # GH 38125: some fsspec objects implement os.PathLike but have already opened a
+        # file. This prevents opening the file a second time. infer_compression calls
+        # this function with convert_file_like=True to infer the compression.
+        return ta.cast(BaseBufferT, filepath_or_buffer)
+
+    if isinstance(filepath_or_buffer, os.PathLike):
+        filepath_or_buffer = filepath_or_buffer.__fspath__()
+    return _expand_user(filepath_or_buffer)
+
+
+# endregion
 
 
 # region errors.py
