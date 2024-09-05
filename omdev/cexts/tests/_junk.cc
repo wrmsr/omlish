@@ -6,14 +6,14 @@
 
 //
 
-typedef struct _junk_state {
-} _junk_state;
+typedef struct junk_state {
+} junk_state;
 
-// static inline _junk_state * get_junk_state(PyObject *module)
+// static inline junk_state * get_junk_state(PyObject *module)
 // {
 //     void *state = PyModule_GetState(module);
 //     assert(state != NULL);
-//     return (_junk_state *)state;
+//     return (junk_state *)state;
 // }
 
 //
@@ -25,58 +25,58 @@ static PyObject * junk(PyObject *self, PyObject *args)
 
 //
 
-PyDoc_STRVAR(_junk_doc, "junk");
+PyDoc_STRVAR(junk_doc, "junk");
 
-static int _junk_exec(PyObject *module)
+static int junk_exec(PyObject *module)
 {
-    // _junk_state *state = get_junk_state(module);
+    // junk_state *state = get_junk_state(module);
     return 0;
 }
 
-static int _junk_traverse(PyObject *module, visitproc visit, void *arg)
+static int junk_traverse(PyObject *module, visitproc visit, void *arg)
 {
-    // _junk_state *state = get_junk_state(module);
+    // junk_state *state = get_junk_state(module);
     return 0;
 }
 
-static int _junk_clear(PyObject *module)
+static int junk_clear(PyObject *module)
 {
-    // _junk_state *state = get_junk_state(module);
+    // junk_state *state = get_junk_state(module);
     return 0;
 }
 
-static void _junk_free(void *module)
+static void junk_free(void *module)
 {
-    _junk_clear((PyObject *)module);
+    junk_clear((PyObject *)module);
 }
 
-static PyMethodDef _junk_methods[] = {
+static PyMethodDef junk_methods[] = {
     {"junk", junk, METH_NOARGS, "junk"},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef_Slot _junk_slots[] = {
-    {Py_mod_exec, (void *) _junk_exec},
+static struct PyModuleDef_Slot junk_slots[] = {
+    {Py_mod_exec, (void *) junk_exec},
     {0, NULL}
 };
 
-static struct PyModuleDef _junk_module = {
+static struct PyModuleDef junk_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = "_junk",
-    .m_doc = _junk_doc,
-    .m_size = sizeof(_junk_state),
-    .m_methods = _junk_methods,
-    .m_slots = _junk_slots,
-    .m_traverse = _junk_traverse,
-    .m_clear = _junk_clear,
-    .m_free = _junk_free,
+    .m_doc = junk_doc,
+    .m_size = sizeof(junk_state),
+    .m_methods = junk_methods,
+    .m_slots = junk_slots,
+    .m_traverse = junk_traverse,
+    .m_clear = junk_clear,
+    .m_free = junk_free,
 };
 
 extern "C" {
 
 PyMODINIT_FUNC PyInit__junk(void)
 {
-    return PyModuleDef_Init(&_junk_module);
+    return PyModuleDef_Init(&junk_module);
 }
 
 }

@@ -277,70 +277,74 @@ csvloader_loads(PyObject *self, PyObject *args)
 
 ///
 
-typedef struct _csvloader_state {
-} _csvloader_state;
+#define _MODULE_NAME "_csvloader"
+#define _PACKAGE_NAME "x.formats.csv"
+#define _MODULE_FULL_NAME (_PACKAGE_NAME "." _MODULE_NAME)
 
-static inline _csvloader_state * get_csvloader_state(PyObject *module)
+typedef struct csvloader_state {
+} csvloader_state;
+
+static inline csvloader_state * get_csvloader_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);
-    return (_csvloader_state *)state;
+    return (csvloader_state *)state;
 }
 
 //
 
-PyDoc_STRVAR(_csvloader_doc, "csvloader");
+PyDoc_STRVAR(csvloader_doc, "csvloader");
 
-static int _csvloader_exec(PyObject *module)
+static int csvloader_exec(PyObject *module)
 {
     get_csvloader_state(module);
     return 0;
 }
 
-static int _csvloader_traverse(PyObject *module, visitproc visit, void *arg)
+static int csvloader_traverse(PyObject *module, visitproc visit, void *arg)
 {
     get_csvloader_state(module);
     return 0;
 }
 
-static int _csvloader_clear(PyObject *module)
+static int csvloader_clear(PyObject *module)
 {
     get_csvloader_state(module);
     return 0;
 }
 
-static void _csvloader_free(void *module)
+static void csvloader_free(void *module)
 {
-    _csvloader_clear((PyObject *)module);
+    csvloader_clear((PyObject *)module);
 }
 
-static PyMethodDef _csvloader_methods[] = {
+static PyMethodDef csvloader_methods[] = {
     {"loads", (PyCFunction)csvloader_loads, METH_VARARGS, loads_docstring},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef_Slot _csvloader_slots[] = {
-    {Py_mod_exec, (void *) _csvloader_exec},
+static struct PyModuleDef_Slot csvloader_slots[] = {
+    {Py_mod_exec, (void *) csvloader_exec},
     {0, NULL}
 };
 
-static struct PyModuleDef _csvloader_module = {
+static struct PyModuleDef csvloader_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "_csvloader",
-    .m_doc = _csvloader_doc,
-    .m_size = sizeof(_csvloader_state),
-    .m_methods = _csvloader_methods,
-    .m_slots = _csvloader_slots,
-    .m_traverse = _csvloader_traverse,
-    .m_clear = _csvloader_clear,
-    .m_free = _csvloader_free,
+    .m_name = _MODULE_NAME,
+    .m_doc = csvloader_doc,
+    .m_size = sizeof(csvloader_state),
+    .m_methods = csvloader_methods,
+    .m_slots = csvloader_slots,
+    .m_traverse = csvloader_traverse,
+    .m_clear = csvloader_clear,
+    .m_free = csvloader_free,
 };
 
 extern "C" {
 
 PyMODINIT_FUNC PyInit__csvloader(void)
 {
-    return PyModuleDef_Init(&_csvloader_module);
+    return PyModuleDef_Init(&csvloader_module);
 }
 
 }
