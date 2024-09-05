@@ -33,11 +33,11 @@ https://github.com/TrueBrain/wikitexthtml
   WikiList
   WikiText
 
-
 """
 import abc
 import dataclasses as dc
 import importlib.resources
+import heapq
 import typing as ta  # noqa
 
 import wikitextparser as wtp
@@ -65,5 +65,23 @@ class ExternalLink(Dom):
 
 def test_dom():
     src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
+
     wiki = wtp.parse(src)
-    print(wiki)
+
+    for _, o in heapq.merge(*[
+        ((o.span, o) for o in it)
+        for it in [
+            wiki.parameters,
+            wiki.parser_functions,
+            wiki.templates,
+            wiki.wikilinks,
+            wiki.comments,
+            wiki.get_bolds_and_italics(),
+            wiki.external_links,
+            wiki.sections,
+            wiki.get_tables(recursive=True),
+            wiki.get_lists(),
+            wiki.get_tags(),
+        ]
+    ]):
+        print((o.span, o))
