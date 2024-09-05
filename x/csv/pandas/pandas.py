@@ -34,6 +34,7 @@ import copy
 import csv
 import datetime
 import enum
+import inspect
 import io
 import itertools
 import os
@@ -264,6 +265,71 @@ def is_dict_like(obj: object) -> bool:
 
 
 # endregion
+
+
+def is_file_like(obj: object) -> bool:
+    """
+    Check if the object is a file-like object.
+
+    For objects to be considered file-like, they must
+    be an iterator AND have either a `read` and/or `write`
+    method as an attribute.
+
+    Note: file-like objects must be iterable, but
+    iterable objects need not be file-like.
+
+    Parameters
+    ----------
+    obj : The object to check
+
+    Returns
+    -------
+    bool
+        Whether `obj` has file-like properties.
+
+    Examples
+    --------
+    >>> import io
+    >>> from pandas.api.types import is_file_like
+    >>> buffer = io.StringIO("data")
+    >>> is_file_like(buffer)
+    True
+    >>> is_file_like([1, 2, 3])
+    False
+    """
+    if not (hasattr(obj, "read") or hasattr(obj, "write")):
+        return False
+
+    return bool(hasattr(obj, "__iter__"))
+
+
+def find_stack_level() -> int:
+    """
+    Find the first place in the stack that is not inside pandas
+    (tests notwithstanding).
+    """
+
+    import pandas as pd
+
+    pkg_dir = os.path.dirname(pd.__file__)
+    test_dir = os.path.join(pkg_dir, "tests")
+
+    # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
+    frame: types.FrameType | None = inspect.currentframe()
+    try:
+        n = 0
+        while frame:
+            filename = inspect.getfile(frame)
+            if filename.startswith(pkg_dir) and not filename.startswith(test_dir):
+                frame = frame.f_back
+                n += 1
+            else:
+                break
+    finally:
+        # See note in
+        # https://docs.python.org/3/library/inspect.html#inspect.Traceback
+        del frame
+    return n
 
 
 # region errors.py
@@ -3285,6 +3351,35 @@ class CParserWrapper(ParserBase):
             index, column_names = self._make_index(alldata, names)
 
         return index, column_names, date_data
+
+
+@ta.overload
+def evaluate_callable_usecols(
+        usecols: ta.Callable[[ta.Hashable], object],
+        names: ta.Iterable[ta.Hashable],
+) -> set[int]: ...
+
+
+@ta.overload
+def evaluate_callable_usecols(
+        usecols: SequenceT, names: ta.Iterable[ta.Hashable]
+) -> SequenceT: ...
+
+
+def evaluate_callable_usecols(
+        usecols: ta.Callable[[ta.Hashable], object] | SequenceT,
+        names: ta.Iterable[ta.Hashable],
+) -> SequenceT | set[int]:
+    """
+    Check whether or not the 'usecols' parameter
+    is a callable.  If so, enumerates the 'names'
+    parameter and returns a set of indices for
+    each entry in 'names' that evaluates to True.
+    If not a callable, returns 'usecols'.
+    """
+    if callable(usecols):
+        return {i for i, name in enumerate(names) if usecols(name)}
+    return usecols
 
 
 # endregion
