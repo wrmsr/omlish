@@ -83,7 +83,7 @@ def test_dom():
         wiki.get_tags(),
     ]
 
-    groups_it = (
+    flat_it = itertools.chain.from_iterable(
         sorted(
             [o for _, o in g],
             key=lambda o: -o.span[1],
@@ -98,7 +98,10 @@ def test_dom():
     )
 
     print()
-    for g in groups_it:
-        for o in g:
-            print((o.span, o))
-        print()
+    stk: list[wtp.WikiText] = []
+    o: wtp.WikiText
+    for o in flat_it:
+        while stk and o.span[0] > stk[-1].span[1]:
+            stk.pop()
+        print(('  ' * len(stk)) + repr((o.span, o)))
+        stk.append(o)
