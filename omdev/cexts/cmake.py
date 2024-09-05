@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-MAGIC = '@omdev-ext'
+MAGIC = '@omdev-cext'
 MAGIC_COMMENT = f'// {MAGIC}'
 
 FILE_EXTENSIONS = ('c', 'cc', 'cpp')
