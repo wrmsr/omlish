@@ -6,7 +6,12 @@ TODO:
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
  - streaming? Start/EndObject, etc..
 
-https://github.com/python-attrs/cattrs:
+See:
+ - https://github.com/python-attrs/cattrs
+ - https://github.com/jcrist/msgspec
+ - https://github.com/Fatal1ty/mashumaro
+
+cattrs:
  *
 
 Jackson:
