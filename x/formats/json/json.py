@@ -1,3 +1,103 @@
+"""
+dump
+  std
+    skipkeys=False
+    ensure_ascii=True
+    check_circular=True
+    allow_nan=True
+    cls=None
+    indent=None
+    separators=None
+    default=None
+    sort_keys=False
+  ujson
+    ensure_ascii
+    encode_html_chars
+    escape_forward_slashes
+    sort_keys
+    indent
+    allow_nan
+    reject_bytes
+    default
+    separators
+  orjson
+    OPT_INDENT_2
+    OPT_NAIVE_UTC
+    OPT_NON_STR_KEYS
+    OPT_OMIT_MICROSECONDS
+    OPT_PASSTHROUGH_DATACLASS
+    OPT_PASSTHROUGH_DATETIME
+    OPT_PASSTHROUGH_SUBCLASS
+    OPT_SERIALIZE_DATACLASS
+    OPT_SERIALIZE_NUMPY
+    OPT_SERIALIZE_UUID
+    OPT_SORT_KEYS
+    OPT_STRICT_INTEGER
+    OPT_UTC_Z
+  rapidjson
+    skipkeys=False,
+    ensure_ascii=True,
+    write_mode=WM_COMPACT,
+    write_mode|WM_COMPACT
+    write_mode|WM_PRETTY
+    write_mode|WM_SINGLE_LINE_ARRAY
+    indent=4,
+    default=None,
+    sort_keys=False,
+    number_mode=None,
+    number_mode|NM_NONE
+    number_mode|NM_DECIMAL
+    number_mode|NM_NAN
+    number_mode|NM_NATIVE
+    datetime_mode=None,
+    datetime_mode|DM_NONE
+    datetime_mode|DM_ISO8601
+    datetime_mode|DM_UNIX_TIME
+    datetime_mode|DM_ONLY_SECONDS
+    datetime_mode|DM_IGNORE_TZ
+    datetime_mode|DM_NAIVE_IS_UTC
+    datetime_mode|DM_SHIFT_TO_UTC
+    uuid_mode=None,
+    uuid_mode|UM_NONE
+    uuid_mode|UM_CANONICAL
+    uuid_mode|UM_HEX
+    bytes_mode=BM_UTF8,
+    bytes_mode|BM_NONE
+    bytes_mode|BM_UTF8
+    iterable_mode=IM_ANY_ITERABLE,
+    iterable_mode|IM_ANY_ITERABLE
+    iterable_mode|IM_ONLY_LISTS
+    mapping_mode=MM_ANY_MAPPING,
+    mapping_mode|MM_ANY_MAPPING
+    mapping_mode|MM_ONLY_DICTS
+    mapping_mode|MM_COERCE_KEYS_TO_STRINGS
+    mapping_mode|MM_SKIP_NON_STRING_KEYS
+    mapping_mode|MM_SORT_KEYS
+    chunk_size
+    allow_nan=True
+
+load
+  std
+    cls=None
+    object_hook=None
+    parse_float=None
+    parse_int=None
+    parse_constant=None
+    object_pairs_hook=None
+  rapidjson
+    object_hook=None,
+    number_mode=None,
+    datetime_mode=None,
+    uuid_mode=None,
+    parse_mode=None,
+    parse_mode|PM_NONE
+    parse_mode|PM_COMMENTS
+    parse_mode|PM_TRAILING_COMMAS
+    chunk_size=65536,
+    allow_nan=True
+"""
+
+
 class Backend:
     pass
 
@@ -50,7 +150,7 @@ class UjsonBackend(Backend):
 class OrjsonBackend(Backend):
     """
     dumps
-      default
+      default: Optional[Callable[[Any], Any]]
       option
         OPT_INDENT_2
         OPT_NAIVE_UTC
