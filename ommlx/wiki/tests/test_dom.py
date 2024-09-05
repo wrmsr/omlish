@@ -98,10 +98,29 @@ def test_dom():
     )
 
     print()
+
+    def pfx_print(s):
+        print(('  ' * len(stk)) + s)
+
     stk: list[wtp.WikiText] = []
     o: wtp.WikiText
     for o in flat_it:
+        pfx_print(repr([o.span for o in stk]))
+
         while stk and o.span[0] > stk[-1].span[1]:
-            stk.pop()
-        print(('  ' * len(stk)) + repr((o.span, o)))
+            p = stk.pop()
+
+            pfx_print(repr((p.span, o.span)))
+
+            l, r = p.span[1], o.span[0]
+            if l > r:
+                breakpoint()
+
+            if (r - l) > 1:
+                pfx_print(repr(src[l:r]))
+
+        pfx_print(repr((o.span, o)))
+
         stk.append(o)
+
+        print()
