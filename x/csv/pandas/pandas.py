@@ -197,6 +197,10 @@ no_default = _NoDefault.no_default  # Sentinel indicating the default value.
 NoDefault = ta.Literal[_NoDefault.no_default]
 
 
+def is_bool(obj: object) -> bool:
+    return isinstance(obj, (bool, np.bool_))
+
+
 def is_array(obj: object) -> bool:
     return isinstance(obj, np.ndarray)
 
@@ -222,6 +226,43 @@ def is_list_like(obj: object, allow_sets: bool) -> bool:
     )
 
 
+def is_integer(obj: object) -> bool:
+    return isinstance(obj, (int, np.integer)) and not isinstance(obj, (bool, np.timedelta64))
+
+
+def is_dict_like(obj: object) -> bool:
+    """
+    Check if the object is dict-like.
+
+    Parameters
+    ----------
+    obj : The object to check
+
+    Returns
+    -------
+    bool
+        Whether `obj` has dict-like properties.
+
+    Examples
+    --------
+    >>> from pandas.api.types import is_dict_like
+    >>> is_dict_like({1: 2})
+    True
+    >>> is_dict_like([1, 2, 3])
+    False
+    >>> is_dict_like(dict)
+    False
+    >>> is_dict_like(dict())
+    True
+    """
+    dict_like_attrs = ("__getitem__", "keys", "__contains__")
+    return (
+        all(hasattr(obj, attr) for attr in dict_like_attrs)
+        # [GH 25196] exclude classes
+        and not isinstance(obj, type)
+    )
+
+
 # endregion
 
 
@@ -232,6 +273,13 @@ class ParserError(ValueError):
     pass
 
 
+class EmptyDataError(ValueError):
+    pass
+
+
+#
+
+
 class ParserWarning(Warning):
     pass
 
@@ -239,121 +287,44 @@ class ParserWarning(Warning):
 # endregion
 
 
-# region io/parsers/readers.py
+# region io/common.py
 
 
-class _read_shared(ta.TypedDict, ta.Generic[HashableT], total=False):
-    # annotations shared between read_csv/fwf/table's overloads
-    # NOTE: Keep in sync with the annotations of the implementation
-    sep: str | None | NoDefault
-    delimiter: str | None | NoDefault
-    header: int | ta.Sequence[int] | None | ta.Literal['infer']
-    names: ta.Sequence[ta.Hashable] | None | NoDefault
-    index_col: IndexLabel | ta.Literal[False] | None
-    usecols: UsecolsArgType
-    dtype: DtypeArg | None
-    engine: CSVEngine | None
-    converters: ta.Mapping[HashableT, ta.Callable] | None
-    true_values: list | None
-    false_values: list | None
-    skipinitialspace: bool
-    skiprows: list[int] | int | ta.Callable[[ta.Hashable], bool] | None
-    skipfooter: int
-    nrows: int | None
-    na_values: ta.Union[
-        ta.Hashable,
-        ta.Iterable[ta.Hashable],
-        ta.Mapping[ta.Hashable, ta.Iterable[ta.Hashable]],
-        None,
-    ]
-    keep_default_na: bool
-    na_filter: bool
-    skip_blank_lines: bool
-    parse_dates: bool | ta.Sequence[ta.Hashable] | None
-    date_format: str | dict[ta.Hashable, str] | None
-    dayfirst: bool
-    cache_dates: bool
-    compression: CompressionOptions
-    thousands: str | None
-    decimal: str
-    lineterminator: str | None
-    quotechar: str
-    quoting: int
-    doublequote: bool
-    escapechar: str | None
-    comment: str | None
-    encoding: str | None
-    encoding_errors: str | None
-    dialect: str | csv.Dialect | None
-    on_bad_lines: str
-    low_memory: bool
-    memory_map: bool
-    float_precision: ta.Literal['high', 'legacy', 'round_trip'] | None
-    storage_options: StorageOptions | None
-    dtype_backend: DtypeBackend | NoDefault
+def dedup_names(
+        names: ta.Sequence[ta.Hashable], is_potential_multiindex: bool
+) -> ta.Sequence[ta.Hashable]:
+    """
+    Rename column names if duplicates exist.
 
+    Currently the renaming is done by appending a period and an autonumeric,
+    but a custom pattern may be supported in the future.
 
-def read_csv(
-        filepath_or_buffer: FilePath | ReadCsvBuffer[bytes] | ReadCsvBuffer[str],
-        *,
-        sep: str | None | NoDefault = no_default,
-        delimiter: str | None | NoDefault = None,
-        # Column and Index Locations and Names
-        header: int | ta.Sequence[int] | None | ta.Literal['infer'] = 'infer',
-        names: ta.Sequence[ta.Hashable] | None | NoDefault = no_default,
-        index_col: IndexLabel | ta.Literal[False] | None = None,
-        usecols: UsecolsArgType = None,
-        # General Parsing Configuration
-        dtype: DtypeArg | None = None,
-        engine: CSVEngine | None = None,
-        converters: ta.Mapping[HashableT, ta.Callable] | None = None,
-        true_values: list | None = None,
-        false_values: list | None = None,
-        skipinitialspace: bool = False,
-        skiprows: list[int] | int | ta.Callable[[ta.Hashable], bool] | None = None,
-        skipfooter: int = 0,
-        nrows: int | None = None,
-        # NA and Missing Data Handling
-        na_values: ta.Union[
-            ta.Hashable,
-            ta.Iterable[ta.Hashable],
-            ta.Mapping[ta.Hashable, ta.Iterable[ta.Hashable]],
-            None,
-        ] = None,
-        keep_default_na: bool = True,
-        na_filter: bool = True,
-        skip_blank_lines: bool = True,
-        # Datetime Handling
-        parse_dates: bool | ta.Sequence[ta.Hashable] | None = None,
-        date_format: str | dict[ta.Hashable, str] | None = None,
-        dayfirst: bool = False,
-        cache_dates: bool = True,
-        # Iteration
-        iterator: bool = False,
-        chunksize: int | None = None,
-        # Quoting, Compression, and File Format
-        compression: CompressionOptions = 'infer',
-        thousands: str | None = None,
-        decimal: str = '.',
-        lineterminator: str | None = None,
-        quotechar: str = "'",
-        quoting: int = csv.QUOTE_MINIMAL,
-        doublequote: bool = True,
-        escapechar: str | None = None,
-        comment: str | None = None,
-        encoding: str | None = None,
-        encoding_errors: str | None = 'strict',
-        dialect: str | csv.Dialect | None = None,
-        # Error Handling
-        on_bad_lines: str = 'error',
-        # Internal
-        low_memory: bool = _c_parser_defaults['low_memory'],
-        memory_map: bool = False,
-        float_precision: ta.Literal['high', 'legacy', 'round_trip'] | None = None,
-        storage_options: StorageOptions | None = None,
-        dtype_backend: DtypeBackend | NoDefault = no_default,
-) -> DataFrame | 'TextFileReader':
-    raise NotImplementedError
+    Examples
+    --------
+    >>> dedup_names(["x", "y", "x", "x"], is_potential_multiindex=False)
+    ['x', 'y', 'x.1', 'x.2']
+    """
+    names = list(names)  # so we can index
+    counts: collections.defaultdict[ta.Hashable, int] = collections.defaultdict(int)
+
+    for i, col in enumerate(names):
+        cur_count = counts[col]
+
+        while cur_count > 0:
+            counts[col] = cur_count + 1
+
+            if is_potential_multiindex:
+                # for mypy
+                assert isinstance(col, tuple)
+                col = col[:-1] + (f"{col[-1]}.{cur_count}",)
+            else:
+                col = f"{col}.{cur_count}"
+            cur_count = counts[col]
+
+        names[i] = col
+        counts[col] = cur_count + 1
+
+    return names
 
 
 # endregion
@@ -607,7 +578,7 @@ class ParserBase:
         clean_dtypes = self._clean_mapping(self.dtype)
 
         if self.index_names is not None:
-            names: Iterable = self.index_names
+            names: ta.Iterable = self.index_names
         else:
             names = itertools.cycle([None])
         for i, (arr, name) in enumerate(zip(index, names)):
@@ -1032,6 +1003,39 @@ class ParserBase:
         }
 
         return index, columns, col_dict
+
+
+def date_converter(
+        date_col,
+        col: ta.Hashable,
+        dayfirst: bool = False,
+        cache_dates: bool = True,
+        date_format: dict[ta.Hashable, str] | str | None = None,
+):
+    if date_col.dtype.kind in "Mm":
+        return date_col
+
+    date_fmt = date_format.get(col) if isinstance(date_format, dict) else date_format
+
+    str_objs = ensure_string_array(np.asarray(date_col))
+    try:
+        result = to_datetime(
+            str_objs,
+            format=date_fmt,
+            utc=False,
+            dayfirst=dayfirst,
+            cache=cache_dates,
+        )
+    except (ValueError, TypeError):
+        # test_usecols_with_parse_dates4
+        # test_multi_index_parse_dates
+        return str_objs
+
+    if isinstance(result, DatetimeIndex):
+        arr = result.to_numpy()
+        arr.flags.writeable = True
+        return arr
+    return result._values
 
 
 parser_defaults = {
@@ -2988,6 +2992,16 @@ class TextFileReader(ta.Iterator):
 # region io/parsers/c_parser_wrapper.py
 
 
+class TextReader:
+    """
+    _libs/parsers.pyx
+    _libs/src/parser/*.c
+    """
+
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
+
+
 class CParserWrapper(ParserBase):
     low_memory: bool
     _reader: TextReader
@@ -3271,6 +3285,126 @@ class CParserWrapper(ParserBase):
             index, column_names = self._make_index(alldata, names)
 
         return index, column_names, date_data
+
+
+# endregion
+
+
+# region io/parsers/readers.py
+
+
+class _read_shared(ta.TypedDict, ta.Generic[HashableT], total=False):
+    # annotations shared between read_csv/fwf/table's overloads
+    # NOTE: Keep in sync with the annotations of the implementation
+    sep: str | None | NoDefault
+    delimiter: str | None | NoDefault
+    header: int | ta.Sequence[int] | None | ta.Literal['infer']
+    names: ta.Sequence[ta.Hashable] | None | NoDefault
+    index_col: IndexLabel | ta.Literal[False] | None
+    usecols: UsecolsArgType
+    dtype: DtypeArg | None
+    engine: CSVEngine | None
+    converters: ta.Mapping[HashableT, ta.Callable] | None
+    true_values: list | None
+    false_values: list | None
+    skipinitialspace: bool
+    skiprows: list[int] | int | ta.Callable[[ta.Hashable], bool] | None
+    skipfooter: int
+    nrows: int | None
+    na_values: ta.Union[
+        ta.Hashable,
+        ta.Iterable[ta.Hashable],
+        ta.Mapping[ta.Hashable, ta.Iterable[ta.Hashable]],
+        None,
+    ]
+    keep_default_na: bool
+    na_filter: bool
+    skip_blank_lines: bool
+    parse_dates: bool | ta.Sequence[ta.Hashable] | None
+    date_format: str | dict[ta.Hashable, str] | None
+    dayfirst: bool
+    cache_dates: bool
+    compression: CompressionOptions
+    thousands: str | None
+    decimal: str
+    lineterminator: str | None
+    quotechar: str
+    quoting: int
+    doublequote: bool
+    escapechar: str | None
+    comment: str | None
+    encoding: str | None
+    encoding_errors: str | None
+    dialect: str | csv.Dialect | None
+    on_bad_lines: str
+    low_memory: bool
+    memory_map: bool
+    float_precision: ta.Literal['high', 'legacy', 'round_trip'] | None
+    storage_options: StorageOptions | None
+    dtype_backend: DtypeBackend | NoDefault
+
+
+def read_csv(
+        filepath_or_buffer: FilePath | ReadCsvBuffer[bytes] | ReadCsvBuffer[str],
+        *,
+        sep: str | None | NoDefault = no_default,
+        delimiter: str | None | NoDefault = None,
+        # Column and Index Locations and Names
+        header: int | ta.Sequence[int] | None | ta.Literal['infer'] = 'infer',
+        names: ta.Sequence[ta.Hashable] | None | NoDefault = no_default,
+        index_col: IndexLabel | ta.Literal[False] | None = None,
+        usecols: UsecolsArgType = None,
+        # General Parsing Configuration
+        dtype: DtypeArg | None = None,
+        engine: CSVEngine | None = None,
+        converters: ta.Mapping[HashableT, ta.Callable] | None = None,
+        true_values: list | None = None,
+        false_values: list | None = None,
+        skipinitialspace: bool = False,
+        skiprows: list[int] | int | ta.Callable[[ta.Hashable], bool] | None = None,
+        skipfooter: int = 0,
+        nrows: int | None = None,
+        # NA and Missing Data Handling
+        na_values: ta.Union[
+            ta.Hashable,
+            ta.Iterable[ta.Hashable],
+            ta.Mapping[ta.Hashable, ta.Iterable[ta.Hashable]],
+            None,
+        ] = None,
+        keep_default_na: bool = True,
+        na_filter: bool = True,
+        skip_blank_lines: bool = True,
+        # Datetime Handling
+        parse_dates: bool | ta.Sequence[ta.Hashable] | None = None,
+        date_format: str | dict[ta.Hashable, str] | None = None,
+        dayfirst: bool = False,
+        cache_dates: bool = True,
+        # Iteration
+        iterator: bool = False,
+        chunksize: int | None = None,
+        # Quoting, Compression, and File Format
+        compression: CompressionOptions = 'infer',
+        thousands: str | None = None,
+        decimal: str = '.',
+        lineterminator: str | None = None,
+        quotechar: str = "'",
+        quoting: int = csv.QUOTE_MINIMAL,
+        doublequote: bool = True,
+        escapechar: str | None = None,
+        comment: str | None = None,
+        encoding: str | None = None,
+        encoding_errors: str | None = 'strict',
+        dialect: str | csv.Dialect | None = None,
+        # Error Handling
+        on_bad_lines: str = 'error',
+        # Internal
+        low_memory: bool = _c_parser_defaults['low_memory'],
+        memory_map: bool = False,
+        float_precision: ta.Literal['high', 'legacy', 'round_trip'] | None = None,
+        storage_options: StorageOptions | None = None,
+        dtype_backend: DtypeBackend | NoDefault = no_default,
+) -> DataFrame | 'TextFileReader':
+    raise NotImplementedError
 
 
 # endregion
