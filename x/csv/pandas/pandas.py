@@ -32,6 +32,7 @@ https://github.com/pandas-dev/pandas/blob/bc9b1c3c4b979978dcdef42b900aa633cfeee2
 import collections
 import copy
 import csv
+import datetime
 import enum
 import io
 import itertools
@@ -64,6 +65,93 @@ class _NoDefault(enum.Enum):
 
 no_default = _NoDefault.no_default  # Sentinel indicating the default value.
 NoDefault = ta.Literal[_NoDefault.no_default]
+
+
+# region _typing.py
+
+
+PythonScalar = ta.Union[str, float, bool]
+DatetimeLikeScalar = ta.Union["Period", "Timestamp", "Timedelta"]
+PandasScalar = ta.Union["Period", "Timestamp", "Timedelta", "Interval"]
+Scalar = ta.Union[PythonScalar, PandasScalar, np.datetime64, np.timedelta64, datetime.date]
+
+AnyStr_co = ta.TypeVar("AnyStr_co", str, bytes, covariant=True)
+AnyStr_contra = ta.TypeVar("AnyStr_contra", str, bytes, contravariant=True)
+
+
+class BaseBuffer(ta.Protocol):
+    @property
+    def mode(self) -> str:
+        # for _get_filepath_or_buffer
+        ...
+
+    def seek(self, __offset: int, __whence: int = ...) -> int:
+        # with one argument: gzip.GzipFile, bz2.BZ2File
+        # with two arguments: zip.ZipFile, read_sas
+        ...
+
+    def seekable(self) -> bool:
+        # for bz2.BZ2File
+        ...
+
+    def tell(self) -> int:
+        # for zip.ZipFile, read_stata, to_stata
+        ...
+
+
+class ReadBuffer(BaseBuffer, ta.Protocol[AnyStr_co]):
+    def read(self, __n: int = ...) -> AnyStr_co:
+        # for BytesIOWrapper, gzip.GzipFile, bz2.BZ2File
+        ...
+
+
+class ReadCsvBuffer(ReadBuffer[AnyStr_co], ta.Protocol):
+    def __iter__(self) -> ta.Iterator[AnyStr_co]:
+        # for engine=python
+        ...
+
+    def fileno(self) -> int:
+        # for _MMapWrapper
+        ...
+
+    def readline(self) -> AnyStr_co:
+        # for engine=python
+        ...
+
+    @property
+    def closed(self) -> bool:
+        # for engine=pyarrow
+        ...
+
+
+CSVEngine = ta.Literal["c", "python", "pyarrow", "python-fwf"]
+
+CompressionDict = dict[str, ta.Any]
+CompressionOptions = ta.Optional[
+    ta.Union[ta.Literal["infer", "gzip", "bz2", "zip", "xz", "zstd", "tar"], CompressionDict]
+]
+
+StorageOptions = ta.Optional[dict[str, ta.Any]]
+
+
+#
+
+
+class ExtensionDtype:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
+
+
+NpDtype = ta.Union[str, np.dtype, ta.Type[ta.Union[str, complex, bool, object]]]
+Dtype = ta.Union["ExtensionDtype", NpDtype]
+AstypeArg = ta.Union["ExtensionDtype", "npt.DTypeLike"]
+
+DtypeArg = ta.Union[Dtype, ta.Mapping[ta.Hashable, Dtype]]
+
+DtypeBackend = ta.Literal["pyarrow", "numpy_nullable"]
+
+
+# endregion
 
 
 # region io/parsers/readers.py
@@ -736,7 +824,7 @@ class ParserBase:
             )
 
     @ta.final
-    def _validate_usecols_names(self, usecols: SequenceT, names: Sequence) -> SequenceT:
+    def _validate_usecols_names(self, usecols: SequenceT, names: ta.Sequence) -> SequenceT:
         """
         Validates that all usecols are present in a given
         list of names. If not, raise a ValueError that
