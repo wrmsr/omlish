@@ -1,4 +1,9 @@
+"""
+def loads(obj: str | bytes | bytearray | memoryview) -> ta.Any | oj.JSONDEcodeError
+def dumps(obj: ta.Any, **DumpOpts) -> bytes
+"""
 import dataclasses as dc
+import typing as ta
 
 import orjson as oj
 
@@ -53,3 +58,9 @@ class Options:
 
             (oj.OPT_UTC_Z if self.utc_z else 0)
         )
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class DumpOpts:
+    default: ta.Callable[[ta.Any], ta.Any] | None = None
+    option: Options = Options()

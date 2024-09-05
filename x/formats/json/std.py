@@ -1,6 +1,6 @@
 """
-load(fp: File, **LoadOpts) -> ta.Any
-loads(s: str | bytes | bytearray, **LoadOpts) -> ta.Any
+load(fp: File, **LoadOpts) -> ta.Any | json.JSONDecodeError
+loads(s: str | bytes | bytearray, **LoadOpts) -> ta.Any | json.JSONDecodeError
 dump(obj: ta.Any, fp: File, **DumpOpts) -> None
 dumps(obj: ta.Any, **DumpOpts) -> str
 """

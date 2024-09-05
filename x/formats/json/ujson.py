@@ -1,6 +1,6 @@
 """
-load(fp: File) -> ta.Any
-loads(s: str | bytes | bytearray) -> ta.Any
+load(fp: File) -> ta.Any | uj.JSONDecodeError
+loads(s: str | bytes | bytearray) -> ta.Any | uj.JSONDecodeError
 dump(obj: ta.Any, fp: File, **DumpOpts) -> None
 dumps(obj: ta.Any, **DumpOpts) -> None
 """
