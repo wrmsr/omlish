@@ -36,8 +36,9 @@ https://github.com/TrueBrain/wikitexthtml
 """
 import abc
 import dataclasses as dc
-import importlib.resources
 import heapq
+import importlib.resources
+import itertools
 import typing as ta  # noqa
 
 import wikitextparser as wtp
@@ -68,20 +69,36 @@ def test_dom():
 
     wiki = wtp.parse(src)
 
-    for _, o in heapq.merge(*[
-        ((o.span, o) for o in it)
-        for it in [
-            wiki.parameters,
-            wiki.parser_functions,
-            wiki.templates,
-            wiki.wikilinks,
-            wiki.comments,
-            wiki.get_bolds_and_italics(),
-            wiki.external_links,
-            wiki.sections,
-            wiki.get_tables(recursive=True),
-            wiki.get_lists(),
-            wiki.get_tags(),
-        ]
-    ]):
-        print((o.span, o))
+    part_its = [
+        wiki.parameters,
+        wiki.parser_functions,
+        wiki.templates,
+        wiki.wikilinks,
+        wiki.comments,
+        wiki.get_bolds_and_italics(),
+        wiki.external_links,
+        wiki.sections,
+        wiki.get_tables(recursive=True),
+        wiki.get_lists(),
+        wiki.get_tags(),
+    ]
+
+    groups_it = (
+        sorted(
+            [o for _, o in g],
+            key=lambda o: -o.span[1],
+        )
+        for _, g in itertools.groupby(
+            heapq.merge(*[
+                ((o.span, o) for o in it)
+                for it in part_its
+            ]),
+            key=lambda t: t[0][0],
+        )
+    )
+
+    print()
+    for g in groups_it:
+        for o in g:
+            print((o.span, o))
+        print()
