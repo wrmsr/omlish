@@ -1,4 +1,4 @@
-// @omdev-ext
+// @omdev-cext
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"
@@ -8,7 +8,7 @@
 //
 
 #define _MODULE_NAME "_boilerplate"
-#define _PACKAGE_NAME "omdev.exts"
+#define _PACKAGE_NAME "omdev.cexts"
 #define _MODULE_FULL_NAME (_PACKAGE_NAME "." _MODULE_NAME)
 
 typedef struct _boilerplate_state {
