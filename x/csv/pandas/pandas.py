@@ -30,9 +30,13 @@ https://github.com/pandas-dev/pandas/blob/bc9b1c3c4b979978dcdef42b900aa633cfeee2
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import collections
+import copy
 import csv
 import enum
+import io
 import itertools
+import re
+import sys
 import types
 import typing as ta
 import warnings
@@ -40,7 +44,12 @@ import warnings
 import numpy as np
 
 
+T = ta.TypeVar('T')
 HashableT = ta.TypeVar('HashableT', bound=ta.Hashable)
+SequenceT = ta.TypeVar('SequenceT', bound=ta.Sequence)
+
+
+##
 
 
 class _NoDefault(enum.Enum):
@@ -55,6 +64,9 @@ class _NoDefault(enum.Enum):
 
 no_default = _NoDefault.no_default  # Sentinel indicating the default value.
 NoDefault = ta.Literal[_NoDefault.no_default]
+
+
+# region io/parsers/readers.py
 
 
 class _read_shared(ta.TypedDict, ta.Generic[HashableT], total=False):
@@ -171,7 +183,10 @@ def read_csv(
     raise NotImplementedError
 
 
-##
+# endregion
+
+
+# region io/parsers/base_parser.py
 
 
 class ParserBase:
@@ -216,7 +231,7 @@ class ParserBase:
         self.na_filter = kwds.get("na_filter", False)
         self.keep_default_na = kwds.get("keep_default_na", True)
 
-        self.dtype = copy(kwds.get("dtype", None))
+        self.dtype = copy.copy(kwds.get("dtype", None))
         self.converters = kwds.get("converters")
         self.dtype_backend = kwds.get("dtype_backend")
 
@@ -357,7 +372,7 @@ class ParserBase:
     ) -> SequenceT | MultiIndex:
         # possibly create a column mi here
         if is_potential_multi_index(columns):
-            columns_mi = cast("ta.Sequence[tuple[Hashable, ...]]", columns)
+            columns_mi = ta.cast("ta.Sequence[tuple[Hashable, ...]]", columns)
             return MultiIndex.from_tuples(columns_mi, names=col_names)
         return columns
 
@@ -648,14 +663,14 @@ class ParserBase:
 
         return result, na_count
 
-    @overload
+    @ta.overload
     def _do_date_conversions(
             self,
             names: Index,
             data: DataFrame,
     ) -> DataFrame: ...
 
-    @overload
+    @ta.overload
     def _do_date_conversions(
             self,
             names: ta.Sequence[ta.Hashable],
@@ -807,7 +822,7 @@ class ParserBase:
             # if dtype == None, default will be object.
             dtype_dict = collections.defaultdict(lambda: dtype)
         else:
-            dtype = cast(dict, dtype)
+            dtype = ta.cast(dict, dtype)
             dtype_dict = collections.defaultdict(
                 lambda: None,
                 {columns[k] if is_integer(k) else k: v for k, v in dtype.items()},
@@ -844,6 +859,12 @@ class ParserBase:
         }
 
         return index, columns, col_dict
+
+
+# endregion
+
+
+# region io/parsers/python_parser.py
 
 
 # BOM character (byte order mark)
@@ -987,7 +1008,7 @@ class PythonParser(ParserBase):
                     self.pos += 1
                     line = f.readline()
                     lines = self._check_comments([[line]])[0]
-                lines_str = cast(list[str], lines)
+                lines_str = ta.cast(list[str], lines)
 
                 # since `line` was a string, lines will be a list containing
                 # only a single string
@@ -999,7 +1020,7 @@ class PythonParser(ParserBase):
                 dia.delimiter = sniffed.delimiter
 
                 # Note: encoding is irrelevant here
-                line_rdr = csv.reader(StringIO(line), dialect=dia)
+                line_rdr = csv.reader(io.StringIO(line), dialect=dia)
                 self.buf.extend(list(line_rdr))
 
             # Note: encoding is irrelevant here
@@ -2258,7 +2279,7 @@ class FixedWidthFieldParser(PythonParser):
         self.infer_nrows = kwds.pop("infer_nrows")
         PythonParser.__init__(self, f, **kwds)
 
-    def _make_reader(self, f: IO[str] | ReadCsvBuffer[str]) -> FixedWidthReader:
+    def _make_reader(self, f: ta.IO[str] | ReadCsvBuffer[str]) -> FixedWidthReader:
         return FixedWidthReader(
             f,
             self.colspecs,
@@ -2280,6 +2301,12 @@ class FixedWidthFieldParser(PythonParser):
             for line in lines
             if any(not isinstance(e, str) or e.strip() for e in line)
         ]
+
+
+# endregion
+
+
+# region io/parsers/readers.py
 
 
 class TextFileReader(ta.Iterator):
@@ -2705,7 +2732,7 @@ class TextFileReader(ta.Iterator):
                 size = min(size, self.nrows - self._currow)
         return self.read(nrows=size)
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> ta.Self:
         return self
 
     def __exit__(
@@ -2715,6 +2742,12 @@ class TextFileReader(ta.Iterator):
             traceback: types.TracebackType | None,
     ) -> None:
         self.close()
+
+
+# endregion
+
+
+# region io/parsers/c_parser_wrapper.py
 
 
 class CParserWrapper(ParserBase):
@@ -2886,11 +2919,11 @@ class CParserWrapper(ParserBase):
             nrows: int | None = None,
     ) -> tuple[
         Index | MultiIndex | None,
-        Sequence[Hashable] | MultiIndex,
-        ta.Mapping[Hashable, AnyArrayLike],
+        ta.Sequence[ta.Hashable] | MultiIndex,
+        ta.Mapping[ta.Hashable, AnyArrayLike],
     ]:
         index: Index | MultiIndex | None
-        column_names: Sequence[Hashable] | MultiIndex
+        column_names: ta.Sequence[ta.Hashable] | MultiIndex
         try:
             if self.low_memory:
                 chunks = self._reader.read_low_memory(nrows)
@@ -3002,3 +3035,4 @@ class CParserWrapper(ParserBase):
         return index, column_names, date_data
 
 
+# endregion
