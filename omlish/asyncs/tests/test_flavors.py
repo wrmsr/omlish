@@ -34,8 +34,10 @@ async def _anyio_func(call_asyncio, call_trio):
     await anyio.sleep(0)
     if call_asyncio:
         await flavors.from_asyncio(asyncio.sleep)(0)
+        await flavors.adapt(asyncio.sleep)(0)
     if call_trio:
         await flavors.from_trio(trio.sleep)(0)
+        await flavors.adapt(trio.sleep)(0)
 
 
 @flavors.mark_asyncio

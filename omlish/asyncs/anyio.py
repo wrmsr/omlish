@@ -37,6 +37,12 @@ from .. import lang
 
 T = ta.TypeVar('T')
 
+MemoryObjectReceiveStream: ta.TypeAlias = anyio.streams.memory.MemoryObjectReceiveStream
+MemoryObjectSendStream: ta.TypeAlias = anyio.streams.memory.MemoryObjectSendStream
+
+StapledByteStream: ta.TypeAlias = anyio.streams.stapled.StapledByteStream
+StapledObjectStream: ta.TypeAlias = anyio.streams.stapled.StapledObjectStream
+
 
 ##
 
@@ -130,39 +136,43 @@ def get_current_backend_task() -> BackendTask | None:
 def split_memory_object_streams(
         *args: anyio.create_memory_object_stream[T],
 ) -> tuple[
-    anyio.streams.memory.MemoryObjectSendStream[T],
-    anyio.streams.memory.MemoryObjectReceiveStream[T],
+    MemoryObjectSendStream[T],
+    MemoryObjectReceiveStream[T],
 ]:
     [tup] = args
     return tup
 
 
+def create_stapled_memory_object_stream(max_buffer_size: float = 0) -> StapledObjectStream:
+    return StapledObjectStream(*anyio.create_memory_object_stream(max_buffer_size))
+
+
 # FIXME: https://github.com/python/mypy/issues/15238
 # FIXME: https://youtrack.jetbrains.com/issues?q=tag:%20%7BPEP%20695%7D
 def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
-    anyio.streams.memory.MemoryObjectSendStream[T],
-    anyio.streams.memory.MemoryObjectReceiveStream[T],
+    MemoryObjectSendStream[T],
+    MemoryObjectReceiveStream[T],
 ]:
     return anyio.create_memory_object_stream[T](max_buffer_size)  # noqa
 
 
 def staple_memory_object_stream(
         *args: anyio.create_memory_object_stream[T],
-) -> anyio.streams.stapled.StapledObjectStream[T]:
+) -> StapledObjectStream[T]:
     send, receive = args
-    return anyio.streams.stapled.StapledObjectStream(
-        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
-        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
+    return StapledObjectStream(
+        check.isinstance(send, MemoryObjectSendStream),  # type: ignore
+        check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
     )
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
 # FIXME: https://youtrack.jetbrains.com/issues?q=tag:%20%7BPEP%20695%7D
-def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams.stapled.StapledObjectStream[T]:
+def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> StapledObjectStream[T]:
     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
-    return anyio.streams.stapled.StapledObjectStream(
-        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
-        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
+    return StapledObjectStream(
+        check.isinstance(send, MemoryObjectSendStream),  # type: ignore
+        check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
     )
 
 
