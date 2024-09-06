@@ -24,13 +24,14 @@ import os.path
 import shutil
 import subprocess
 import sys
-import textwrap
 import types
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
+from ..cexts.magic import CextMagic
+from ..findmagic import find_magic
 from ..toml.writer import TomlWriter
 from ..tools.revisions import GitRevisionAdder
 
@@ -286,6 +287,18 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
 class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
+    #
+
+    @cached_nullary
+    def find_cext_srcs(self) -> ta.Sequence[str]:
+        return sorted(find_magic(
+            [self._dir_name],
+            [CextMagic.MAGIC_COMMENT],
+            CextMagic.FILE_EXTENSIONS,
+        ))
+
+    #
+
     @dc.dataclass(frozen=True)
     class FileContents:
         pyproject_dct: ta.Mapping[str, ta.Any]
@@ -326,20 +339,29 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
         #
 
-        src = textwrap.dedent("""
-            import setuptools as st
+        ext_lines = []
 
+        # for ext_src in self.find_cext_srcs():
 
-            st.setup(
-                ext_modules=[
-                    st.Extension(
-                        name='omdev.cexts._boilerplate',
-                        sources=['omdev/cexts/_boilerplate.cc'],
-                        extra_compile_args=['-std=c++20'],
-                    ),
-                ]
-            )
-        """).lstrip()
+        ext_lines.extend([
+            "st.Extension(",
+            "    name='omdev.cexts._boilerplate',",
+            "    sources=['omdev/cexts/_boilerplate.cc'],",
+            "    extra_compile_args=['-std=c++20'],",
+            "),",
+        ])
+
+        src = '\n'.join([
+            'import setuptools as st',
+            '',
+            '',
+            'st.setup(',
+            '    ext_modules=[',
+            *['        ' + l for l in ext_lines],
+            '    ]',
+            ')',
+            '',
+        ])
 
         #
 

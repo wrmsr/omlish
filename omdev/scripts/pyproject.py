@@ -55,7 +55,6 @@ import string
 import subprocess
 import sys
 import tarfile
-import textwrap
 import threading
 import time
 import types
@@ -85,6 +84,71 @@ T = ta.TypeVar('T')
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
+
+
+########################################
+# ../../cexts/magic.py
+
+
+class CextMagic:
+    MAGIC = '@omdev-cext'
+    MAGIC_COMMENT = f'// {MAGIC}'
+
+    FILE_EXTENSIONS = ('c', 'cc', 'cpp')
+
+
+########################################
+# ../../findmagic.py
+# @omlish-script
+
+
+def compile_magic_pat(m: str) -> re.Pattern:
+    return re.compile('^' + re.escape(m) + r'($|(\s.*))')
+
+
+def find_magic(
+        roots: ta.Sequence[str],
+        magics: ta.Sequence[str],
+        exts: ta.Sequence[str],
+        *,
+        py: bool = False,
+) -> ta.Iterator[str]:
+    if not magics:
+        raise Exception('Must specify magics')
+    if not exts:
+        raise Exception('Must specify extensions')
+
+    pats = [compile_magic_pat(m) for m in magics]
+
+    for root in roots:
+        for dp, dns, fns in os.walk(root):  # noqa
+            for fn in fns:
+                if not any(fn.endswith(f'.{x}') for x in exts):
+                    continue
+
+                fp = os.path.join(dp, fn)
+                try:
+                    with open(fp) as f:
+                        src = f.read()
+                except UnicodeDecodeError:
+                    continue
+
+                if not any(
+                        any(pat.fullmatch(l) for pat in pats)
+                        for l in src.splitlines()
+                ):
+                    continue
+
+                if py:
+                    if fn == '__init__.py':
+                        out = dp.replace(os.sep, '.')
+                    elif fn.endswith('.py'):
+                        out = fp[:-3].replace(os.sep, '.')
+                    else:
+                        out = fp
+                else:
+                    out = fp
+                yield out
 
 
 ########################################
@@ -3590,6 +3654,18 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
 class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
+    #
+
+    @cached_nullary
+    def find_cext_srcs(self) -> ta.Sequence[str]:
+        return sorted(find_magic(
+            [self._dir_name],
+            [CextMagic.MAGIC_COMMENT],
+            CextMagic.FILE_EXTENSIONS,
+        ))
+
+    #
+
     @dc.dataclass(frozen=True)
     class FileContents:
         pyproject_dct: ta.Mapping[str, ta.Any]
@@ -3630,20 +3706,29 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
         #
 
-        src = textwrap.dedent("""
-            import setuptools as st
+        ext_lines = []
 
+        # for ext_src in self.find_cext_srcs():
 
-            st.setup(
-                ext_modules=[
-                    st.Extension(
-                        name='omdev.cexts._boilerplate',
-                        sources=['omdev/cexts/_boilerplate.cc'],
-                        extra_compile_args=['-std=c++20'],
-                    ),
-                ]
-            )
-        """).lstrip()
+        ext_lines.extend([
+            "st.Extension(",
+            "    name='omdev.cexts._boilerplate',",
+            "    sources=['omdev/cexts/_boilerplate.cc'],",
+            "    extra_compile_args=['-std=c++20'],",
+            "),",
+        ])
+
+        src = '\n'.join([
+            'import setuptools as st',
+            '',
+            '',
+            'st.setup(',
+            '    ext_modules=[',
+            *['        ' + l for l in ext_lines],
+            '    ]',
+            ')',
+            '',
+        ])
 
         #
 

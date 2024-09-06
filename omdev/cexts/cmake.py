@@ -38,18 +38,13 @@ from omlish import logs
 
 from .. import cmake
 from .. import findmagic
+from .magic import CextMagic
 
 
 log = logging.getLogger(__name__)
 
 
 ##
-
-
-MAGIC = '@omdev-cext'
-MAGIC_COMMENT = f'// {MAGIC}'
-
-FILE_EXTENSIONS = ('c', 'cc', 'cpp')
 
 
 def _sep_str_grps(*ls: ta.Sequence[str]) -> list[str]:
@@ -143,8 +138,8 @@ class CmakeProjectGen:
                 out.extend(
                     findmagic.find_magic(
                         [e],
-                        [MAGIC_COMMENT],
-                        FILE_EXTENSIONS,
+                        [CextMagic.MAGIC_COMMENT],
+                        CextMagic.FILE_EXTENSIONS,
                     ),
                 )
             else:
