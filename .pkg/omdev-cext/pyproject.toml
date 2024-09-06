@@ -5,7 +5,7 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'ommlx-cext'
+name = 'omdev-cext'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -20,18 +20,13 @@ classifiers = [
     'Operating System :: OS Independent',
     'Operating System :: POSIX',
 ]
-description = 'ommlx'
+description = 'omdev'
 dependencies = [
-    'omlish == 0.0.0.dev18',
+    'omdev == 0.0.0.dev18',
 ]
-optional-dependencies = {torch = [
-    'torch ~= 2.4',
-], wiki = [
-    'mwparserfromhell ~= 0.6',
-    'wikitextparser ~= 0.56',
-], xml = [
-    'lxml ~= 5.3; python_version < "3.13"',
-]}
 
 [tool.setuptools]
 include-package-data = false
+
+[tool.setuptools.packages.find]
+include = []

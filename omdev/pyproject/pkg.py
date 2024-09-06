@@ -281,6 +281,9 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         return ret
 
 
+#
+
+
 class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
     @dc.dataclass(frozen=True)
@@ -302,10 +305,11 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         }
 
         prj = specs.pyproject
+        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
         prj['name'] += self._pkg_suffix
+        prj.pop('optional_dependencies', None)
 
         pyp_dct['project'] = prj
-        pyp_dct.pop('optional_dependencies', None)
 
         #
 
@@ -315,6 +319,10 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         st.pop('cexts', None)
         st.pop('find_packages', None)
         st.pop('manifest_in', None)
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [],
+        }
 
         #
 
@@ -331,7 +339,7 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
                     ),
                 ]
             )
-        """)
+        """).lstrip()
 
         #
 

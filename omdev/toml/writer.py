@@ -99,6 +99,9 @@ class TomlWriter:
         elif isinstance(obj, ta.Mapping):
             self.write_inline_table(obj)
         elif isinstance(obj, ta.Sequence):
-            self.write_array(obj)
+            if not obj:
+                self.write_inline_array(obj)
+            else:
+                self.write_array(obj)
         else:
             raise TypeError(obj)
