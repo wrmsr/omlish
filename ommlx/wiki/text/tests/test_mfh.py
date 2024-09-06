@@ -19,9 +19,9 @@ def test_dom():
     for n, src in WIKI_FILES.items():
         print(n)
 
-        nodes = mfh.parse_nodes(src)
+        content = mfh.parse_content(src)
 
-        es_json = json.dumps_pretty(msh.marshal(nodes, mfh.Nodes))
+        es_json = json.dumps_pretty(msh.marshal(content, mfh.Content))
         # print(es_json)
         nodes2 = msh.unmarshal(json.loads(es_json), mfh.Nodes)  # type: ignore
-        assert len(nodes) == len(nodes2)
+        assert len(content) == len(nodes2)
