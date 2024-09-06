@@ -32,6 +32,11 @@ Content: ta.TypeAlias = ta.Sequence[ContentNode]
 
 
 @dc.dataclass(frozen=True)
+class Doc(Node):
+    body: Content
+
+
+@dc.dataclass(frozen=True)
 class Text(ContentNode):
     s: str
 
@@ -99,7 +104,38 @@ class Argument(ContentNode):
 ##
 
 
-# def traverse(n: Node)
+_TRAVERSAL_ATTRS_BY_TYPE: ta.Mapping[type[Node], ta.Sequence[str]] = {
+    Doc: ['body'],
+    Text: [],
+    WikiLink: ['title', 'text'],
+    ExternalLink: ['title', 'url'],
+    Html: [],
+    Comment: [],
+    Parameter: ['name', 'value'],
+    Template: ['name', 'params'],
+    Attribute: ['name', 'value'],
+    Tag: ['l', 'atts', 'body', 'r'],
+    Heading: ['title'],
+    Argument: ['name', 'default'],
+}
+
+
+def traverse_node(root: Node) -> ta.Iterator[tuple[ta.Sequence[tuple[Node, str]], Node]]:
+    path: list[tuple[Node, str]] = []
+
+    def rec(n: Node) -> ta.Iterator[tuple[ta.Sequence[tuple[Node, str]], Node]]:
+        yield (path, n)
+
+        for a in _TRAVERSAL_ATTRS_BY_TYPE[n.__class__]:
+            if not (v := getattr(n, a)):
+                continue
+
+            path.append((n, a))
+            for c in v:
+                yield from rec(c)
+            path.pop()
+
+    yield from rec(root)
 
 
 ##
@@ -195,6 +231,7 @@ class NodeBuilder:
 parse = mfh.parse
 
 
-def parse_content(s: str) -> Content:
+def parse_doc(s: str) -> Doc:
     wiki = parse(s)
-    return NodeBuilder().build_content(wiki)
+    content = NodeBuilder().build_content(wiki)
+    return Doc(content)
