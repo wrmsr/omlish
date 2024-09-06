@@ -20,6 +20,8 @@ import mwparserfromhell as mfh
 import mwparserfromhell.nodes as mfn
 
 from omlish import check
+from omlish import marshal as msh
+from omlish.formats import json
 
 from . import dom
 
@@ -144,4 +146,16 @@ def test_dom():
 
     es = build_dom_nodes(wiki)  # noqa
 
-    print(es)
+    def install_msh_poly(cls: type) -> None:
+        p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
+        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
+        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+
+    install_msh_poly(dom.Node)
+
+    print(es_json := json.dumps_pretty(msh.marshal(es, dom.Nodes)))
+
+    es2 = msh.unmarshal(json.loads(es_json), dom.Nodes)
+    # assert users2 == users
+
+    assert len(es2) == len(es)
