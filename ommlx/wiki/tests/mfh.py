@@ -1,6 +1,8 @@
 """
 TODO:
  - Argument
+
+https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes
 """
 import abc
 import dataclasses as dc
@@ -68,6 +70,7 @@ class Attribute:
     name: Nodes
     value: Nodes
 
+
 @dc.dataclass(frozen=True)
 class Tag(Node):
     l: Nodes
@@ -85,7 +88,7 @@ class Heading(Node):
 ##
 
 
-class Builder:
+class NodeBuilder:
     def build_parameter(self, n: mfn.extras.Parameter) -> Parameter:
         if not isinstance(n, mfn.extras.Parameter):
             raise TypeError(n)
@@ -105,56 +108,55 @@ class Builder:
         )
 
     def build_node(self, n: mfn.Node | mfn.extras.Parameter) -> Node:
-        match n:
-            case mfn.Comment(contents=s):
-                return Comment(s)
+        if isinstance(n, mfn.Comment):
+            return Comment(n.contents)
 
-            case mfn.Text(value=s):
-                return Text(s)
+        elif isinstance(n, mfn.Text):
+            return Text(n.value)
 
-            case mfn.Template(name=na, params=ps):
-                return Template(
-                    self.build_nodes(na),
-                    list(map(self.build_parameter, ps)),
-                )
+        elif isinstance(n, mfn.Template):
+            return Template(
+                self.build_nodes(n.name),
+                list(map(self.build_parameter, n.params)),
+            )
 
-            case mfn.Wikilink(title=ti, text=tx):
-                return WikiLink(
-                    self.build_nodes(ti),
-                    self.build_nodes(tx),
-                )
+        elif isinstance(n, mfn.Wikilink):
+            return WikiLink(
+                self.build_nodes(n.title),
+                self.build_nodes(n.tx),
+            )
 
-            case mfn.ExternalLink(title=ti, url=u):
-                return ExternalLink(
-                    self.build_nodes(ti),
-                    self.build_nodes(u),
-                )
+        elif isinstance(n, mfn.ExternalLink):
+            return ExternalLink(
+                self.build_nodes(n.title),
+                self.build_nodes(n.url),
+            )
 
-            case mfn.HTMLEntity(value=s):
-                return Html(s)
+        elif isinstance(n, mfn.HTMLEntity):
+            return Html(n.value)
 
-            case mfn.Tag(tag=l, contents=c, closing_tag=r, attributes=ats):
-                return Tag(
-                    self.build_nodes(l),
-                    list(map(self.build_attribute, ats)),
-                    self.build_nodes(c),
-                    self.build_nodes(r),
-                )
+        elif isinstance(n, mfn.Tag):
+            return Tag(
+                self.build_nodes(n.tag),
+                list(map(self.build_attribute, n.attributes)),
+                self.build_nodes(n.contents),
+                self.build_nodes(n.closing_tag),
+            )
 
-            case mfn.Heading(title=ti, level=l):
-                return Heading(
-                    self.build_nodes(ti),
-                    l,
-                )
+        elif isinstance(n, mfn.Heading):
+            return Heading(
+                self.build_nodes(n.title),
+                n.level,
+            )
 
-            case _:
-                raise TypeError(n)
+        else:
+            raise TypeError(n)
 
     def build_nodes(self, w: Wikicode | ta.Iterable[mfn.Node] | None) -> Nodes:
         if w is None:
             return ()
 
-        elif isinstance(w, Wikicode):
+        elif isinstance(w, Wikicode):  # type: ignore
             return [self.build_node(c) for c in w.nodes]
 
         elif isinstance(w, ta.Iterable):
@@ -162,3 +164,14 @@ class Builder:
 
         else:
             raise TypeError(w)
+
+
+##
+
+
+parse = mfh.parse
+
+
+def parse_nodes(s: str) -> Nodes:
+    wiki = parse(s)
+    return NodeBuilder().build_nodes(wiki)
