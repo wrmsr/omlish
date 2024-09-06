@@ -65,6 +65,24 @@ def test_dom():
     r = find_template(wiki, 'Infobox periodic table group/header')
     print(r)
 
+    def build_dom_parameter(n: mfn.extras.Parameter) -> dom.Parameter:
+        if not isinstance(n, mfn.extras.Parameter):
+            raise TypeError(n)
+
+        return dom.Parameter(
+            build_dom_nodes(n.name),
+            build_dom_nodes(n.value),
+        )
+
+    def build_dom_attribute(n: mfn.extras.Attribute) -> dom.Attribute:
+        if not isinstance(n, mfn.extras.Attribute):
+            raise TypeError(n)
+
+        return dom.Attribute(
+            build_dom_nodes(n.name),
+            build_dom_nodes(n.value),
+        )
+
     def build_dom_node(n: mfn.Node | mfn.extras.Parameter) -> dom.Node:
         match n:
             case mfn.Comment(contents=s):
@@ -76,13 +94,7 @@ def test_dom():
             case mfn.Template(name=na, params=ps):
                 return dom.Template(
                     build_dom_nodes(na),
-                    [check.isinstance(p, dom.Parameter) for p in build_dom_nodes(ps)],
-                )
-
-            case mfn.extras.Parameter(name=n, value=v):
-                return dom.Parameter(
-                    build_dom_nodes(n),
-                    build_dom_nodes(v),
+                    list(map(build_dom_parameter, ps)),
                 )
 
             case mfn.Wikilink(title=ti, text=tx):
@@ -101,10 +113,9 @@ def test_dom():
                 return dom.Html(s)
 
             case mfn.Tag(tag=l, contents=c, closing_tag=r, attributes=ats):
-                if ats:
-                    raise NotImplementedError
                 return dom.Tag(
                     build_dom_nodes(l),
+                    list(map(build_dom_attribute, ats)),
                     build_dom_nodes(c),
                     build_dom_nodes(r),
                 )
@@ -112,7 +123,7 @@ def test_dom():
             case _:
                 raise TypeError(n)
 
-    def build_dom_nodes(w: Wikicode | ta.Iterable[mfn.Node | mfn.extras.Parameter] | None) -> dom.Nodes:
+    def build_dom_nodes(w: Wikicode | ta.Iterable[mfn.Node] | None) -> dom.Nodes:
         if w is None:
             return ()
 

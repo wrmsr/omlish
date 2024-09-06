@@ -51,7 +51,7 @@ class Comment(Node):
 
 
 @dc.dataclass(frozen=True)
-class Parameter(Node):
+class Parameter:
     name: Nodes
     value: Nodes
 
@@ -63,7 +63,13 @@ class Template(Node):
 
 
 @dc.dataclass(frozen=True)
+class Attribute:
+    name: Nodes
+    value: Nodes
+
+@dc.dataclass(frozen=True)
 class Tag(Node):
-    opening: Nodes
-    content: Nodes
-    closing: Nodes
+    l: Nodes
+    atts: ta.Sequence[Attribute]
+    body: Nodes
+    r: Nodes
