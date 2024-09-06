@@ -47,7 +47,7 @@ https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution
 |-
 | style="border:{{element color|from decay}};  background:{{Element color|table mark}};padding:0 2px;" | [[radioactive decay|element by radioactive decay]]
 |-
-| Atomic number color:<br/><span style="color:{{element color|Solid}};">black=solid</span> 😊
+| Atomic number color:<br/><span style="color:{{element color|Solid}};">black=solid</span>
 |}
 |}
 
