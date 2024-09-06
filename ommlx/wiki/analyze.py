@@ -156,7 +156,7 @@ def analyze_file(
                 # if len(page.revisions) > 1:
                 #     breakpoint()
 
-                if rev.text:
+                if rev.text and rev.text.text:
                     # backend = mfh
                     backend = wtp
 
