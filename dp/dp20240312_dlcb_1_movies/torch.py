@@ -1,8 +1,10 @@
 import torch
 import torch.nn.functional as F
 
+from ommlx import torch as toru
+from ommlx.datasets.library.movies import MoviesData
+
 from .batches import batchify
-from .movies import MoviesData
 
 
 class EmbeddingModel(torch.nn.Module):
@@ -46,13 +48,6 @@ def make_embedding_model(
     )
 
 
-def _to_device(t, device):
-    if device is not None:
-        return t.to(device)
-    else:
-        return t
-
-
 def train_embedding_model(
         model: EmbeddingModel,
         data: MoviesData,
@@ -65,6 +60,9 @@ def train_embedding_model(
         report_freq: int = 5,
         device: str | None = None,
 ) -> EmbeddingModel:
+    if device is None:
+        device = toru.get_best_device()
+
     batches = batchify(
         data,
         positive_samples=positive_samples_per_batch,
@@ -88,9 +86,9 @@ def train_embedding_model(
         count = 0
 
         for batch_dct, labels in batches:
-            link = _to_device(torch.tensor(batch_dct['link'], dtype=torch.int32), device)
-            movie = _to_device(torch.tensor(batch_dct['movie'], dtype=torch.int32), device)
-            labels = _to_device(torch.tensor(labels, dtype=torch.float32), device)
+            link = toru.to(torch.tensor(batch_dct['link'], dtype=torch.int32), device)
+            movie = toru.to(torch.tensor(batch_dct['movie'], dtype=torch.int32), device)
+            labels = toru.to(torch.tensor(labels, dtype=torch.float32), device)
 
             optimizer.zero_grad()
 

@@ -1,7 +1,8 @@
 import keras
 
+from ommlx.datasets.library.movies import MoviesData
+
 from .batches import batchify
-from .movies import MoviesData
 
 
 def make_embedding_model(

@@ -1,14 +1,16 @@
+import os.path
 import pprint as pp
 import random
 
 import numpy as np
 import sklearn.svm
 
+from ommlx.datasets.library.movies import Movie
+from ommlx.datasets.library.movies import MoviesData
+from ommlx.datasets.library.movies import load_movies
+
 from . import keras as mk  # noqa
 from . import torch as mt  # noqa
-from .movies import Movie
-from .movies import MoviesData
-from .movies import load_movies
 
 
 def _main() -> None:
@@ -16,7 +18,8 @@ def _main() -> None:
 
     ##
 
-    data = MoviesData(load_movies())
+    cache_dir = os.path.join(os.path.dirname(__file__), 'data')
+    data = MoviesData(load_movies(cache_dir))
 
     # be = mk
     be = mt
