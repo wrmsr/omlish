@@ -5,7 +5,6 @@ remain @property's for type annotation, tool assistance, debugging, and otherwis
 certain circumstances (the real-world alternative usually being simply not adding them).
 """
 # ruff: noqa: ANN201
-
 import abc
 import functools
 import operator
@@ -22,6 +21,7 @@ BASICS = {}
 def _basic(fn):
     if fn.__name__ in BASICS:
         raise NameError(fn.__name__)
+
     BASICS[fn.__name__] = fn
     return fn
 
@@ -30,6 +30,7 @@ def _basic(fn):
 def basic(cls_dct, *attrs, basics=None):
     if basics is None:
         basics = BASICS.keys()
+
     for k in basics:
         fn = BASICS[k]
         fn(*attrs, cls_dct=cls_dct)
@@ -43,6 +44,7 @@ def _repr_guard(fn):
     def inner(obj, *args, **kwargs):
         try:
             ids = _REPR_SEEN.ids
+
         except AttributeError:
             ids = _REPR_SEEN.ids = set()
             try:
@@ -50,6 +52,7 @@ def _repr_guard(fn):
                 return fn(obj, *args, **kwargs)
             finally:
                 del _REPR_SEEN.ids
+
         else:
             if id(obj) in ids:
                 return f'<seen:{type(obj).__name__}@{hex(id(obj))[2:]}>'
@@ -64,17 +67,27 @@ def build_attr_repr(obj, *, mro=False):
     if mro:
         attrs = [
             attr
-            for ty in sorted(reversed(type(obj).__mro__), key=lambda _ty: _ty.__dict__.get('__repr_priority__', 0))  # noqa
-            for attr in ty.__dict__.get('__repr_attrs__', [])]
+            for ty in sorted(  # noqa
+                reversed(type(obj).__mro__),
+                key=lambda _ty: _ty.__dict__.get('__repr_priority__', 0),
+            )
+            for attr in ty.__dict__.get('__repr_attrs__', [])
+        ]
+
     else:
         attrs = obj.__repr_attrs__
+
     s = ', '.join(f'{a}={"<self>" if v is obj else _repr(v)}' for a in attrs for v in [getattr(obj, a)])
     return f'{type(obj).__name__}@{hex(id(obj))[2:]}({s})'
 
 
 @_repr_guard
 def build_repr(obj, *attrs):
-    return f'{type(obj).__name__}@{hex(id(obj))[2:]}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
+    return (
+        f'{type(obj).__name__}'
+        f'@{hex(id(obj))[2:]}'
+        f'({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
+    )
 
 
 @_basic
@@ -86,6 +99,7 @@ def repr(cls_dct, *attrs, mro=False, priority=None):  # noqa
     cls_dct['__repr_attrs__'] = attrs
     if priority is not None:
         cls_dct['__repr_priority__'] = priority
+
     cls_dct['__repr__'] = __repr__
 
 
@@ -141,9 +155,11 @@ def hash_eq(cls_dct, *attrs):
     def __eq__(self, other):  # noqa
         if type(other) is not type(self):
             return False
+
         for attr in attrs:  # noqa
             if getattr(self, attr) != getattr(other, attr):
                 return False
+
         return True
 
     cls_dct['__eq__'] = __eq__
@@ -162,6 +178,7 @@ def not_implemented(cls_dct, *names, **kwargs):
     wrapper = kwargs.pop('wrapper', lambda _: _)
     if kwargs:
         raise TypeError(kwargs)
+
     ret = []
     for name in names:
         @wrapper
@@ -171,6 +188,7 @@ def not_implemented(cls_dct, *names, **kwargs):
         not_implemented.__name__ = name
         cls_dct[name] = not_implemented
         ret.append(not_implemented)
+
     return tuple(ret)
 
 
@@ -186,4 +204,10 @@ def abstract_property(cls_dct, *names):
 
 @lang.cls_dct_fn()
 def abstract_hash_eq(cls_dct):
-    return not_implemented(cls_dct, '__hash__', '__eq__', '__ne__', wrapper=abc.abstractmethod)
+    return not_implemented(
+        cls_dct,
+        '__hash__',
+        '__eq__',
+        '__ne__',
+        wrapper=abc.abstractmethod,
+    )
