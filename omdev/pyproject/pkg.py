@@ -4,6 +4,14 @@ TODO:
  - __revision__
  - entry_points
 
+** NOTE **
+setuptools now (2024/09/02) has experimental support for extensions in pure pyproject.toml - but we still want a
+separate '-cext' package
+  https://setuptools.pypa.io/en/latest/userguide/ext_modules.html
+  https://github.com/pypa/setuptools/commit/1a9d87308dc0d8aabeaae0dce989b35dfb7699f0#diff-61d113525e9cc93565799a4bb8b34a68e2945b8a3f7d90c81380614a4ea39542R7-R8
+
+--
+
 https://setuptools.pypa.io/en/latest/references/keywords.html
 https://packaging.python.org/en/latest/specifications/pyproject-toml
 
@@ -15,7 +23,7 @@ https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa25
 https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
-"""
+"""  # noqa
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
