@@ -85,11 +85,29 @@ def test_dom():
                     build_dom_nodes(v),
                 )
 
+            case mfn.Wikilink(title=ti, text=tx):
+                return dom.WikiLink(
+                    build_dom_nodes(ti),
+                    build_dom_nodes(tx),
+                )
+
+            case mfn.ExternalLink(title=ti, url=u):
+                return dom.ExternalLink(
+                    build_dom_nodes(ti),
+                    build_dom_nodes(u),
+                )
+
+            case mfn.HTMLEntity(value=s):
+                return dom.Html(s)
+
             case _:
                 raise TypeError(n)
 
-    def build_dom_nodes(w: Wikicode | ta.Iterable[mfn.Node | mfn.extras.Parameter]) -> dom.Nodes:
-        if isinstance(w, Wikicode):
+    def build_dom_nodes(w: Wikicode | ta.Iterable[mfn.Node | mfn.extras.Parameter] | None) -> dom.Nodes:
+        if w is None:
+            return ()
+
+        elif isinstance(w, Wikicode):
             return [build_dom_node(c) for c in w.nodes]
 
         elif isinstance(w, ta.Iterable):
