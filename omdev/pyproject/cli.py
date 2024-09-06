@@ -301,10 +301,10 @@ def _pkg_cmd(args) -> None:
         raise Exception('must specify command')
 
     elif cmd == 'gen':
-        build_root = os.path.join('.pkg')
+        pkgs_root = os.path.join('.pkg')
 
-        if os.path.exists(build_root):
-            shutil.rmtree(build_root)
+        if os.path.exists(pkgs_root):
+            shutil.rmtree(pkgs_root)
 
         build_output_dir = 'dist'
         run_build = bool(args.build)
@@ -319,11 +319,13 @@ def _pkg_cmd(args) -> None:
                 ex.submit(functools.partial(
                     PyprojectPackageGenerator(
                         dir_name,
-                        build_root,
+                        pkgs_root,
                     ).gen,
-                    run_build=run_build,
-                    build_output_dir=build_output_dir,
-                    add_revision=add_revision,
+                    PyprojectPackageGenerator.GenOpts(
+                        run_build=run_build,
+                        build_output_dir=build_output_dir,
+                        add_revision=add_revision,
+                    ),
                 ))
                 for dir_name in run.cfg().pkgs
             ]
