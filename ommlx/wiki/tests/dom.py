@@ -7,13 +7,17 @@ Comment
 
 Argument
 Heading
-HtmlEntity
 Tag
 Template
 """
 import abc
 import dataclasses as dc
-import typing as ta  # noqa
+import typing as ta
+
+
+@dc.dataclass(frozen=True)
+class Doc:
+    es: ta.Sequence['Dom']
 
 
 @dc.dataclass(frozen=True)
@@ -44,5 +48,16 @@ class Html(Dom):
 
 
 @dc.dataclass(frozen=True)
-class Comment:
+class Comment(Dom):
     s: str
+
+
+@dc.dataclass(frozen=True)
+class Parameter(Dom):
+    name: str
+    value: Text
+
+
+@dc.dataclass(frozen=True)
+class Template(Dom):
+    params: ta.Sequence[Parameter]

@@ -17,6 +17,9 @@ import importlib.resources
 import typing as ta
 
 import mwparserfromhell as mfh
+import mwparserfromhell.nodes as mfn
+
+from . import dom
 
 
 Wikicode: ta.TypeAlias = mfh.wikicode.Wikicode
@@ -59,3 +62,14 @@ def test_dom():
 
     r = find_template(wiki, 'Infobox periodic table group/header')
     print(r)
+
+    es: list[dom.Dom] = []
+
+    for n in wiki.nodes:
+        match n:
+            case mfn.Comment(contents=s):
+                es.append(dom.Comment(s))
+            case mfn.Text(value=s):
+                es.append(dom.Text(s))
+            case _:
+                raise TypeError(n)
