@@ -11,10 +11,12 @@ import typing as ta
 
 import pytest
 
-from ._registry import register
+from .... import check
+from ._registry import register as register_plugin
+from .utils import find_plugin
 
 
-@register
+@register_plugin
 class DepSkipPlugin:
     @dc.dataclass(frozen=True)
     class Entry:
@@ -24,10 +26,19 @@ class DepSkipPlugin:
     def __init__(self) -> None:
         super().__init__()
 
-        self.entries: list[DepSkipPlugin.Entry] = []
+        self._entries: list[DepSkipPlugin.Entry] = []
+
+    def add_entry(self, e: Entry) -> None:
+        self._entries.append(e)
 
     def should_skip(self, file_name: str, imp_name: str) -> bool:
-        raise NotImplementedError
+        for e in self._entries:
+            if (
+                any(fp.fullmatch(file_name) for fp in e.file_pats) and
+                any(ip.fullmatch(imp_name) for ip in e.imp_pats)
+            ):
+                return True
+        return False
 
     @pytest.hookimpl
     def pytest_collectstart(self, collector: pytest.Collector) -> None:
@@ -39,9 +50,11 @@ class DepSkipPlugin:
                     return getattr(collector, original_attr)()
                 except pytest.Collector.CollectError as ce:
                     if (oe := ce.__cause__) and isinstance(oe, ImportError):
-                        file_name = collector.nodeid
-                        imp_name = oe.name
-                        if self.should_skip(file_name, imp_name):
+                        if (
+                                (file_name := collector.nodeid) and
+                                (imp_name := oe.name) and
+                                self.should_skip(file_name, imp_name)  # noqa
+                        ):
                             pytest.skip(
                                 f'skipping {file_name} to missing optional dependency {imp_name}',
                                 allow_module_level=True,
@@ -51,3 +64,18 @@ class DepSkipPlugin:
 
             setattr(collector, original_attr, collector._getobj)  # noqa
             collector._getobj = _patched_getobj  # type: ignore  # noqa
+
+
+def register(
+        pm: pytest.PytestPluginManager,
+        file_pats: ta.Iterable[str],
+        imp_pats: ta.Iterable[str],
+) -> None:
+    check.not_isinstance(file_pats, str)
+    check.not_isinstance(imp_pats, str)
+
+    pg = check.not_none(find_plugin(pm, DepSkipPlugin))
+    pg.add_entry(DepSkipPlugin.Entry(
+        [re.compile(fp) for fp in file_pats],
+        [re.compile(ip) for ip in imp_pats],
+    ))
