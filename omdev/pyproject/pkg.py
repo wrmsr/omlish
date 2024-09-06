@@ -144,10 +144,7 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
         add_revision: bool = False
 
     @abc.abstractmethod
-    def gen(
-            self,
-            opts: GenOpts = GenOpts()
-    ) -> str:
+    def gen(self, opts: GenOpts = GenOpts()) -> str:
         raise NotImplementedError
 
 
