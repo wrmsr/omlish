@@ -40,6 +40,7 @@ import sqlalchemy as sa
 
 from omlish import concurrent as cfu
 from omlish import lang
+from omlish import logs
 from omlish import marshal as msh
 from omlish import multiprocessing as mpu
 from omlish.formats import json
@@ -188,6 +189,8 @@ def analyze_file(
 
 
 def _main() -> None:
+    logs.configure_standard_logging('INFO')
+
     default_workers = 0
 
     import argparse
