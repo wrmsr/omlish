@@ -30,14 +30,14 @@ class Text(Node):
 
 @dc.dataclass(frozen=True)
 class WikiLink(Node):
-    title: str
-    text: str
+    title: Nodes
+    text: Nodes
 
 
 @dc.dataclass(frozen=True)
 class ExternalLink(Node):
-    title: str
-    url: str
+    title: Nodes
+    url: Nodes
 
 
 @dc.dataclass(frozen=True)
