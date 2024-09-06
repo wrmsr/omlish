@@ -3,7 +3,7 @@ from ._registry import register
 
 
 @register
-class DepSkipPlugin:
+class PydevdPlugin:
 
     def pytest_collection(self, session):
         setup = opd.get_setup()
