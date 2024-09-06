@@ -16,8 +16,8 @@ from .routes import _HandlesAppMarker
 from .sessions import SESSION
 from .sessions import _WithSessionAppMarker
 from .sessions import _WithSessionAppMarkerProcessor
-from .templates import J2Namespace
-from .templates import J2Templates
+from .templates import JinjaNamespace
+from .templates import JinjaTemplates
 
 
 def bind_handler(hc: type[Handler_]) -> inj.Elemental:
@@ -76,14 +76,14 @@ def bind() -> inj.Elemental:
     )
 
 
-def _build_j2_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], inj.Tag(J2Namespace)]) -> J2Namespace:
-    return J2Namespace(ns)
+def _build_jinja_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], inj.Tag(JinjaNamespace)]) -> JinjaNamespace:
+    return JinjaNamespace(ns)
 
 
 def bind_templates() -> inj.Elemental:
     return inj.as_elements(
-        inj.bind(J2Templates, singleton=True),
+        inj.bind(JinjaTemplates, singleton=True),
 
-        inj.map_binder[str, ta.Any](tag=J2Namespace),
-        inj.bind(_build_j2_namespaces),
+        inj.map_binder[str, ta.Any](tag=JinjaNamespace),
+        inj.bind(_build_jinja_namespaces),
     )

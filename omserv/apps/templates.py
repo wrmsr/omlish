@@ -14,30 +14,30 @@ log = logging.getLogger(__name__)
 ##
 
 
-J2_DEFAULT_NAMESPACE = {}
+JINJA_DEFAULT_NAMESPACE = {}
 
 
-def j2_helper(fn):
-    J2_DEFAULT_NAMESPACE[fn.__name__] = fn
+def jinja_helper(fn):
+    JINJA_DEFAULT_NAMESPACE[fn.__name__] = fn
     return fn
 
 
-j2_helper(url_for)
+jinja_helper(url_for)
 
 
 ##
 
 
-J2Namespace = ta.NewType('J2Namespace', ta.Mapping[str, ta.Any])
+JinjaNamespace = ta.NewType('JinjaNamespace', ta.Mapping[str, ta.Any])
 
 
-class J2Templates:
+class JinjaTemplates:
     @dc.dataclass(frozen=True)
     class Config:
         resource_root: str
         reload: bool = False
 
-    def __init__(self, config: Config, ns: J2Namespace) -> None:
+    def __init__(self, config: Config, ns: JinjaNamespace) -> None:
         super().__init__()
 
         self._config = config
@@ -51,7 +51,7 @@ class J2Templates:
         self._all: ta.Mapping[str, jinja2.Template] | None = None
 
     class _Loader(jinja2.BaseLoader):
-        def __init__(self, owner: 'J2Templates') -> None:
+        def __init__(self, owner: 'JinjaTemplates') -> None:
             super().__init__()
             self._owner = owner
 
@@ -84,7 +84,7 @@ class J2Templates:
 
     def render(self, template_name: str, **kwargs: ta.Any) -> bytes:
         return self.load(template_name).render(**{
-            **J2_DEFAULT_NAMESPACE,
+            **JINJA_DEFAULT_NAMESPACE,
             **self._ns,
             **kwargs,
         }).encode()
