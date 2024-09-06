@@ -12,6 +12,10 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        'tinygrad': [
+            'git+https://github.com/tinygrad/tinygrad',
+        ],
+
         'torch': [
             'torch ~= 2.4',
         ],
