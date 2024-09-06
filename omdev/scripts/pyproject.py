@@ -2473,7 +2473,7 @@ class JsonLogFormatter(logging.Formatter):
 STANDARD_LOG_FORMAT_PARTS = [
     ('asctime', '%(asctime)-15s'),
     ('process', 'pid=%(process)-6s'),
-    ('thread', 'tid=%(thread)-16s'),
+    ('thread', 'tid=%(thread)-10x'),
     ('levelname', '%(levelname)-8s'),
     ('name', '%(name)s'),
     ('separator', '::'),
