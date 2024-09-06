@@ -28,7 +28,7 @@ def scan_one(
 
     sls = [l for l in src.splitlines() if l.startswith(CextMagic.MAGIC_COMMENT)]
     for sl in sls:
-        sas = sl[len(SCAN_COMMENT):].split()  # noqa
+        sas = sl[len(CextMagic.MAGIC_COMMENT):].split()  # noqa
 
         log.info('Found ext: %s', input_path)
 

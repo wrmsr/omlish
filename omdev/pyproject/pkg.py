@@ -341,15 +341,15 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
         ext_lines = []
 
-        # for ext_src in self.find_cext_srcs():
-
-        ext_lines.extend([
-            "st.Extension(",
-            "    name='omdev.cexts._boilerplate',",
-            "    sources=['omdev/cexts/_boilerplate.cc'],",
-            "    extra_compile_args=['-std=c++20'],",
-            "),",
-        ])
+        for ext_src in self.find_cext_srcs():
+            ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
+            ext_lines.extend([
+                'st.Extension(',
+                f"    name='{ext_name}',",
+                f"    sources=['{ext_src}'],",
+                "    extra_compile_args=['-std=c++20'],",
+                '),',
+            ])
 
         src = '\n'.join([
             'import setuptools as st',
