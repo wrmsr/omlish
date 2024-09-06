@@ -19,6 +19,10 @@ import tempfile
 
 REPO_URL = 'https://github.com/abetlen/llama-cpp-python'
 
+REV: str | None = None
+# REV = 'v0.2.90'
+# REV = '077ecb6771fbd373d5507444f6e0b6e9bb7cf4e8'
+
 MINIMAL_SUBMODULE = True
 
 
@@ -30,10 +34,19 @@ def _main() -> None:
     #
 
     dir_name = 'llama-cpp-python'
+
     subprocess.check_call([
         'git', 'clone', '--depth=1', REPO_URL, dir_name,
     ], cwd=tmp_dir)
     repo_dir = os.path.join(tmp_dir, dir_name)
+
+    if REV is not None:
+        subprocess.check_call([
+            'git', 'fetch', '--tags', 'origin', REV,
+        ], cwd=repo_dir)
+        subprocess.check_call([
+            'git', 'checkout', REV,
+        ], cwd=repo_dir)
 
     #
 
