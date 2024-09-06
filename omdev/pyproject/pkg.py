@@ -17,6 +17,7 @@ vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """
 # ruff: noqa: UP006 UP007
+import abc
 import dataclasses as dc
 import importlib
 import os.path
@@ -33,7 +34,10 @@ from ..toml.writer import TomlWriter
 from ..tools.revisions import GitRevisionAdder
 
 
-class PyprojectPackageGenerator:
+#
+
+
+class BasePyprojectPackageGenerator(abc.ABC):  # noqa
     def __init__(
             self,
             dir_name: str,
@@ -49,14 +53,6 @@ class PyprojectPackageGenerator:
     def about(self) -> types.ModuleType:
         return importlib.import_module(f'{self._dir_name}.__about__')
 
-    @cached_nullary
-    def project_cls(self) -> type:
-        return self.about().Project
-
-    @cached_nullary
-    def setuptools_cls(self) -> type:
-        return self.about().Setuptools
-
     #
 
     @cached_nullary
@@ -69,13 +65,14 @@ class PyprojectPackageGenerator:
 
     #
 
+    _GIT_IGNORE: ta.Sequence[str] = [
+        '/*.egg-info/',
+        '/dist',
+    ]
+
     def _write_git_ignore(self) -> None:
-        git_ignore = [
-            '/*.egg-info/',
-            '/dist',
-        ]
         with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
-            f.write('\n'.join(git_ignore))
+            f.write('\n'.join(self._GIT_IGNORE))
 
     #
 
@@ -87,10 +84,13 @@ class PyprojectPackageGenerator:
 
     #
 
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        manifest_in: ta.Optional[ta.Sequence[str]]
+    @cached_nullary
+    def project_cls(self) -> type:
+        return self.about().Project
+
+    @cached_nullary
+    def setuptools_cls(self) -> type:
+        return self.about().Setuptools
 
     @staticmethod
     def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
@@ -112,9 +112,47 @@ class PyprojectPackageGenerator:
         if sk in sd:
             dd[dk] = sd.pop(sk)
 
+    @dc.dataclass(frozen=True)
+    class Specs:
+        pyproject: ta.Dict[str, ta.Any]
+        setuptools: ta.Dict[str, ta.Any]
+
+    def build_specs(self) -> Specs:
+        return self.Specs(
+            self._build_cls_dct(self.project_cls()),
+            self._build_cls_dct(self.setuptools_cls()),
+        )
+
+    #
+
+    _STANDARD_FILES: ta.Sequence[str] = [
+        'LICENSE',
+        'README.rst',
+    ]
+
+    def _symlink_standard_files(self) -> None:
+        for fn in self._STANDARD_FILES:
+            if os.path.exists(fn):
+                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
+
+
+#
+
+
+class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
     @cached_nullary
     def file_contents(self) -> FileContents:
-        pyp_dct = {}
+        specs = self.build_specs()
+        pyp_dct = specs.pyproject
+        st_dct = specs.setuptools
 
         #
 
@@ -139,13 +177,12 @@ class PyprojectPackageGenerator:
 
         #
 
-        st = self._build_cls_dct(self.setuptools_cls())
-        st.pop('cexts', None)
-        pyp_dct['tool.setuptools'] = st
+        st_dct.pop('cexts', None)
+        pyp_dct['tool.setuptools'] = st_dct
 
-        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+        self._move_dict_key(st_dct, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
 
-        mani_in = st.pop('manifest_in', None)
+        mani_in = st_dct.pop('manifest_in', None)
 
         #
 
@@ -163,18 +200,6 @@ class PyprojectPackageGenerator:
         if fc.manifest_in:
             with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
                 f.write('\n'.join(fc.manifest_in))  # noqa
-
-    #
-
-    _STANDARD_FILES: ta.Sequence[str] = [
-        'LICENSE',
-        'README.rst',
-    ]
-
-    def _symlink_standard_files(self) -> None:
-        for fn in self._STANDARD_FILES:
-            if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
 
     #
 

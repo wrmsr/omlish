@@ -76,7 +76,7 @@ class WtpNode:
 
     @cached.property
     def span(self) -> tuple[int, int]:
-        return self.wiki.span  # type: ignore
+        return self.wiki.span  # noqa
 
 
 def build_wtp_tree(src: str) -> WtpNode:
