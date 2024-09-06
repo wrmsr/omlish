@@ -41,8 +41,9 @@ import importlib.resources
 import itertools
 import typing as ta  # noqa
 
-from omlish import cached
 import wikitextparser as wtp
+
+from omlish import cached
 
 
 @dc.dataclass(frozen=True)
