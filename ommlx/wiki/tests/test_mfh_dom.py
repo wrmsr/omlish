@@ -120,6 +120,12 @@ def test_dom():
                     build_dom_nodes(r),
                 )
 
+            case mfn.Heading(title=ti, level=l):
+                return dom.Heading(
+                    build_dom_nodes(ti),
+                    l,
+                )
+
             case _:
                 raise TypeError(n)
 
