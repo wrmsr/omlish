@@ -9,22 +9,22 @@ from .noisy import silence_noisy_loggers
 ##
 
 
+FilterConfig = dict[str, ta.Any]
+FormatterConfig = dict[str, ta.Any]
+HandlerConfig = dict[str, ta.Any]
+LoggerConfig = dict[str, ta.Any]
+
+
 @dc.dataclass()
 class DictConfig:
     version: int = 1
     incremental: bool = False
     disable_existing_loggers: bool = False
-    filters: dict[str, 'FilterConfig'] = dc.field(default_factory=dict)
-    formatters: dict[str, 'FormatterConfig'] = dc.field(default_factory=dict)
-    handlers: dict[str, 'HandlerConfig'] = dc.field(default_factory=dict)
-    loggers: dict[str, 'LoggerConfig'] = dc.field(default_factory=dict)
-    root: ta.Optional['LoggerConfig'] = None
-
-
-FilterConfig = dict[str, ta.Any]
-FormatterConfig = dict[str, ta.Any]
-HandlerConfig = dict[str, ta.Any]
-LoggerConfig = dict[str, ta.Any]
+    filters: dict[str, FilterConfig] = dc.field(default_factory=dict)
+    formatters: dict[str, FormatterConfig] = dc.field(default_factory=dict)
+    handlers: dict[str, HandlerConfig] = dc.field(default_factory=dict)
+    loggers: dict[str, LoggerConfig] = dc.field(default_factory=dict)
+    root: LoggerConfig | None = None
 
 
 ##
