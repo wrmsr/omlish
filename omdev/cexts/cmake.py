@@ -1,6 +1,7 @@
 """
 FIXME:
  - debug tables don't handle symlinks
+ - use relapths in cml.txt
 
 TODO:
  - symlink headers, included src files (hamt_impl, ...)
@@ -87,7 +88,7 @@ class CmakeProjectGen:
 
     @lang.cached_function
     def cmake_dir(self) -> str:
-        cmake_dir = os.path.join(self.prj_root, 'cmake')
+        cmake_dir = os.path.join(self.prj_root, 'cmake', self.prj_name())
         if os.path.exists(cmake_dir):
             for e in os.listdir(cmake_dir):
                 if e == '.idea':
@@ -98,7 +99,7 @@ class CmakeProjectGen:
                 else:
                     shutil.rmtree(ep)
         else:
-            os.mkdir(cmake_dir)
+            os.makedirs(cmake_dir)
         return cmake_dir
 
     #
@@ -106,17 +107,6 @@ class CmakeProjectGen:
     def write_git_ignore(self) -> None:
         with open(os.path.join(self.cmake_dir(), '.gitignore'), 'w') as f:
             f.write('\n'.join(sorted(['/cmake-*', '/build'])))
-
-    #
-
-    def write_idea_name(self) -> None:
-        idea_dir = os.path.join(self.cmake_dir(), '.idea')
-        if not os.path.isdir(idea_dir):
-            os.mkdir(idea_dir)
-        idea_name_file = os.path.join(idea_dir, '.name')
-        if not os.path.isfile(idea_name_file):
-            with open(idea_name_file, 'w') as f:
-                f.write(self.prj_name())
 
     #
 
@@ -224,7 +214,7 @@ class CmakeProjectGen:
                         [
                             ' '.join([
                                 'COMMAND ${CMAKE_COMMAND} -E ',
-                                f'copy $<TARGET_FILE_NAME:{ext_name}> ../../{os.path.dirname(ext_src)}/{so_name}',
+                                f'copy $<TARGET_FILE_NAME:{ext_name}> ../../../{os.path.dirname(ext_src)}/{so_name}',
                             ]),
                             'COMMAND_EXPAND_LISTS',
                         ],
@@ -311,7 +301,6 @@ class CmakeProjectGen:
 
         self.cmake_dir()
         self.write_git_ignore()
-        self.write_idea_name()
 
         out = io.StringIO()
         clg = self._CmakeListsGen(self, out)

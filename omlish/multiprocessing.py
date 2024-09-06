@@ -145,7 +145,7 @@ class PipeDeathpact(BaseDeathpact):
         return f'{self.__class__.__name__}(rfd={self._rfd}, wfd={self._wfd})'
 
     @property
-    def fd(self) -> int:
+    def pass_fd(self) -> int:
         return check.not_none(self._rfd)
 
     def __enter__(self) -> ta.Self:
