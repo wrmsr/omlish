@@ -123,7 +123,7 @@ class NodeBuilder:
         elif isinstance(n, mfn.Wikilink):
             return WikiLink(
                 self.build_nodes(n.title),
-                self.build_nodes(n.tx),
+                self.build_nodes(n.text),
             )
 
         elif isinstance(n, mfn.ExternalLink):
