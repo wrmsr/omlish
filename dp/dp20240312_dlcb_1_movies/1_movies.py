@@ -114,14 +114,14 @@ def _main() -> None:
     rotten_y = np.asarray([float(movie.rat_pct[:-1]) / 100 for movie in data.movies if movie.rat_pct])
     rotten_X = np.asarray([normalized_movies[data.movie_to_idx[movie.name]] for movie in data.movies if movie.rat_pct])
 
-    TRAINING_CUT_OFF = int(len(rotten_X) * 0.8)
+    training_cut_off = int(len(rotten_X) * 0.8)
     regr = sklearn.linear_model.LinearRegression()
-    regr.fit(rotten_X[:TRAINING_CUT_OFF], rotten_y[:TRAINING_CUT_OFF])
+    regr.fit(rotten_X[:training_cut_off], rotten_y[:training_cut_off])
 
-    error = (regr.predict(rotten_X[TRAINING_CUT_OFF:]) - rotten_y[TRAINING_CUT_OFF:])
+    error = (regr.predict(rotten_X[training_cut_off:]) - rotten_y[training_cut_off:])
     print('mean square error %2.2f' % np.mean(error ** 2))
 
-    error = (np.mean(rotten_y[:TRAINING_CUT_OFF]) - rotten_y[TRAINING_CUT_OFF:])
+    error = (np.mean(rotten_y[:training_cut_off]) - rotten_y[training_cut_off:])
     print('mean square error %2.2f' % np.mean(error ** 2))
 
     print()
@@ -158,16 +158,16 @@ def _main() -> None:
     gross_y = np.asarray([gr for gr in movie_gross if gr])
     gross_X = np.asarray([normalized_movies[data.movie_to_idx[movie.name]] for movie, gr in zip(data.movies, movie_gross) if gr])
 
-    TRAINING_CUT_OFF = int(len(gross_X) * 0.8)
+    training_cut_off = int(len(gross_X) * 0.8)
     regr = sklearn.linear_model.LinearRegression()
-    regr.fit(gross_X[:TRAINING_CUT_OFF], gross_y[:TRAINING_CUT_OFF])
+    regr.fit(gross_X[:training_cut_off], gross_y[:training_cut_off])
 
     ##
 
-    error = (regr.predict(gross_X[TRAINING_CUT_OFF:]) - gross_y[TRAINING_CUT_OFF:])
+    error = (regr.predict(gross_X[training_cut_off:]) - gross_y[training_cut_off:])
     print('mean square error %2.2f' % np.mean(error ** 2))
 
-    error = (np.mean(gross_y[:TRAINING_CUT_OFF]) - gross_y[TRAINING_CUT_OFF:])
+    error = (np.mean(gross_y[:training_cut_off]) - gross_y[training_cut_off:])
     print('mean square error %2.2f' % np.mean(error ** 2))
 
 
