@@ -12,7 +12,7 @@ from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
-from omserv.apps.templates import J2Templates
+from omserv.apps.templates import JinjaTemplates
 
 from ..apps.users import with_user
 
@@ -20,7 +20,7 @@ from ..apps.users import with_user
 @dc.dataclass(frozen=True)
 class IndexHandler(Handler_):
     _current_session: ta.Callable[[], Session]
-    _templates: J2Templates
+    _templates: JinjaTemplates
 
     @handles(Route.get('/'))
     @with_session
