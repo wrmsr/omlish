@@ -85,6 +85,12 @@ class Heading(Node):
     level: int
 
 
+@dc.dataclass(frozen=True)
+class Argument(Node):
+    name: Nodes
+    default: Nodes
+
+
 ##
 
 
@@ -147,6 +153,12 @@ class NodeBuilder:
             return Heading(
                 self.build_nodes(n.title),
                 n.level,
+            )
+
+        elif isinstance(n, mfn.Argument):
+            return Argument(
+                self.build_nodes(n.name),
+                self.build_nodes(n.default),
             )
 
         else:
