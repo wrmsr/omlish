@@ -33,7 +33,6 @@ import multiprocessing as mp
 import multiprocessing.managers
 import os.path
 import signal
-import sys
 import threading
 
 import lz4.frame
@@ -79,7 +78,7 @@ def analyze_file(
         lck: threading.Lock,
         nr: mp.managers.ValueProxy,
 ) -> None:
-    log.info(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)  # noqa
+    log.info(f'pid={os.getpid()} {dp=} {fn}')  # noqa
 
     rows: list[dict] = []
     row_batch_size = 1_000
