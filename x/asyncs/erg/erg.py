@@ -21,7 +21,7 @@ class Pid:
 
 @dc.dataclass(frozen=True)
 class ProcessMailbox:
-    stream: anyio.streams.stapled.StapledObjectStream[ta.Any] = dc.field(default_factory=lambda: aiu)
+    main: aiu.StapledObjectStream = dc.field(default_factory=lambda: aiu.create_stapled_memory_object_stream())
 
 
 class ProcessBehavior(abc.ABC):
