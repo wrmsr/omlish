@@ -338,7 +338,7 @@ setuptools==74.1.2
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.0.1
+simsimd==5.1.0
 six==1.16.0
 smart-open==7.0.4
 sniffio==1.3.1

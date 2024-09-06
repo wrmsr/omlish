@@ -36,10 +36,7 @@ import sys
 import threading
 
 import lz4.frame
-import mwparserfromhell as mfh  # noqa
-import mwparserfromhell.nodes  # noqa
 import sqlalchemy as sa
-import wikitextparser as wtp0  # noqa
 
 from omlish import concurrent as cfu
 from omlish import lang
@@ -48,6 +45,8 @@ from omlish import multiprocessing as mpu
 from omlish.formats import json
 
 from . import models as mdl
+from .text import mfh
+from .text import wtp
 from .utils.progress import ProgressReporter
 
 
@@ -153,29 +152,16 @@ def analyze_file(
                 #     breakpoint()
 
                 if rev.text:
-                    # backend = mfh
-                    backend = wtp0
+                    backend = mfh
+                    # backend = wtp
 
                     if backend is mfh:
-                        wiki = mfh.parse(rev.text.text)
-                        # print(wiki)
+                        dom = mfh.parse_nodes(rev.text.text)  # noqa
+                        # print(dom)
 
-                        wikilink: mfh.nodes.Wikilink
-                        for wikilink in wiki.filter_wikilinks():  # noqa
-                            verbose and print((wikilink.title, wikilink.text))
-
-                        external_link: mfh.nodes.ExternalLink
-                        for external_link in wiki.filter_external_links():  # noqa
-                            verbose and print((external_link.title, external_link.url))
-
-                    elif backend is wtp0:
-                        parsed = wtp0.parse(rev.text.text)
-
-                        for wikilink0 in parsed.wikilinks:
-                            verbose and print((wikilink0.title, wikilink0.target))
-
-                        for external_link0 in parsed.external_links:  # noqa
-                            verbose and print((external_link0.text, external_link0.url))
+                    elif backend is wtp:
+                        tree = wtp.parse_tree(rev.text.text)  # noqa
+                        # print(tree)
 
                     else:
                         raise TypeError(backend)

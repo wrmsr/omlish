@@ -64,13 +64,13 @@ def parse_tree(src: str) -> WtpNode:
 
     flat_it = itertools.chain.from_iterable(
         sorted(
-            [o for _, o in g],
+            [o for _, _, o in g],
             key=lambda o: -o.span[1],
         )
         for _, g in itertools.groupby(
             heapq.merge(*[
-                ((o.span, o) for o in it)
-                for it in part_its
+                (lambda i, it: ((o.span, i, o) for o in it))(i, it)  # noqa
+                for i, it in enumerate(part_its)
             ]),
             key=lambda t: t[0][0],
         )
