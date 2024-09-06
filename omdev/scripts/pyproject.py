@@ -55,6 +55,7 @@ import string
 import subprocess
 import sys
 import tarfile
+import textwrap
 import threading
 import time
 import types
@@ -3338,15 +3339,18 @@ vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 #
 
 
-class BasePyprojectPackageGenerator(abc.ABC):  # noqa
+class BasePyprojectPackageGenerator(abc.ABC):
     def __init__(
             self,
             dir_name: str,
             pkgs_root: str,
+            *,
+            pkg_suffix: str = '',
     ) -> None:
         super().__init__()
         self._dir_name = dir_name
         self._pkgs_root = pkgs_root
+        self._pkg_suffix = pkg_suffix
 
     #
 
@@ -3358,7 +3362,7 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
 
     @cached_nullary
     def _pkg_dir(self) -> str:
-        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name)
+        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name + self._pkg_suffix)
         if os.path.isdir(pkg_dir):
             shutil.rmtree(pkg_dir)
         os.makedirs(pkg_dir)
@@ -3426,6 +3430,12 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
 
     #
 
+    @abc.abstractmethod
+    def _write_file_contents(self) -> None:
+        raise NotImplementedError
+
+    #
+
     _STANDARD_FILES: ta.Sequence[str] = [
         'LICENSE',
         'README.rst',
@@ -3435,75 +3445,6 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
         for fn in self._STANDARD_FILES:
             if os.path.exists(fn):
                 os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
-
-
-#
-
-
-class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        manifest_in: ta.Optional[ta.Sequence[str]]
-
-    @cached_nullary
-    def file_contents(self) -> FileContents:
-        specs = self.build_specs()
-
-        #
-
-        pyp_dct = {}
-
-        pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
-            'build-backend': 'setuptools.build_meta',
-        }
-
-        prj = specs.pyproject
-        pyp_dct['project'] = prj
-
-        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
-        if (extras := pyp_dct.get(extrask)):
-            pyp_dct[extrask] = {
-                'all': [
-                    e
-                    for lst in extras.values()
-                    for e in lst
-                ],
-                **extras,
-            }
-
-        #
-
-        st = specs.setuptools
-
-        pyp_dct['tool.setuptools'] = st
-
-        st.pop('cexts', None)
-
-        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
-
-        mani_in = st.pop('manifest_in', None)
-
-        #
-
-        return self.FileContents(
-            pyp_dct,
-            mani_in,
-        )
-
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
-
-        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
-
-        if fc.manifest_in:
-            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
-                f.write('\n'.join(fc.manifest_in))  # noqa
 
     #
 
@@ -3533,14 +3474,14 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
     #
 
-    def gen(
-            self,
-            *,
-            run_build: bool = False,
-            build_output_dir: ta.Optional[str] = None,
-            add_revision: bool = False,
-    ) -> str:
-        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._pkgs_root)
+    @dc.dataclass(frozen=True)
+    class GenOpts:
+        run_build: bool = False
+        build_output_dir: ta.Optional[str] = None
+        add_revision: bool = False
+
+    def gen(self, opts: GenOpts = GenOpts()) -> str:
+        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
 
         self._pkg_dir()
         self._write_git_ignore()
@@ -3548,13 +3489,166 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         self._write_file_contents()
         self._symlink_standard_files()
 
-        if run_build:
+        if opts.run_build:
             self._run_build(
-                build_output_dir,
-                add_revision=add_revision,
+                opts.build_output_dir,
+                add_revision=opts.add_revision,
             )
 
         return self._pkg_dir()
+
+
+#
+
+
+class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['name'] += self._pkg_suffix
+
+        pyp_dct['project'] = prj
+
+        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
+        if (extras := pyp_dct.get(extrask)):
+            pyp_dct[extrask] = {
+                'all': [
+                    e
+                    for lst in extras.values()
+                    for e in lst
+                ],
+                **extras,
+            }
+
+        #
+
+        st = specs.setuptools
+        pyp_dct['tool.setuptools'] = st
+
+        st.pop('cexts', None)
+
+        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+
+        mani_in = st.pop('manifest_in', None)
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            mani_in,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        if fc.manifest_in:
+            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
+                f.write('\n'.join(fc.manifest_in))  # noqa
+
+    #
+
+    def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
+        ret = super().gen(opts)
+
+        if self.build_specs().setuptools.get('cexts'):
+            _PyprojectCextPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-cext',
+            ).gen(opts)
+
+        return ret
+
+
+class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        setup_py: str
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['name'] += self._pkg_suffix
+
+        pyp_dct['project'] = prj
+        pyp_dct.pop('optional_dependencies', None)
+
+        #
+
+        st = specs.setuptools
+        pyp_dct['tool.setuptools'] = st
+
+        st.pop('cexts', None)
+        st.pop('find_packages', None)
+        st.pop('manifest_in', None)
+
+        #
+
+        src = textwrap.dedent("""
+            import setuptools as st
+
+
+            st.setup(
+                ext_modules=[
+                    st.Extension(
+                        name='omdev.cexts._boilerplate',
+                        sources=['omdev/cexts/_boilerplate.cc'],
+                        extra_compile_args=['-std=c++20'],
+                    ),
+                ]
+            )
+        """)
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            src,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
+            f.write(fc.setup_py)
 
 
 ########################################
@@ -4391,10 +4485,10 @@ def _pkg_cmd(args) -> None:
         raise Exception('must specify command')
 
     elif cmd == 'gen':
-        build_root = os.path.join('.pkg')
+        pkgs_root = os.path.join('.pkg')
 
-        if os.path.exists(build_root):
-            shutil.rmtree(build_root)
+        if os.path.exists(pkgs_root):
+            shutil.rmtree(pkgs_root)
 
         build_output_dir = 'dist'
         run_build = bool(args.build)
@@ -4409,11 +4503,13 @@ def _pkg_cmd(args) -> None:
                 ex.submit(functools.partial(
                     PyprojectPackageGenerator(
                         dir_name,
-                        build_root,
+                        pkgs_root,
                     ).gen,
-                    run_build=run_build,
-                    build_output_dir=build_output_dir,
-                    add_revision=add_revision,
+                    PyprojectPackageGenerator.GenOpts(
+                        run_build=run_build,
+                        build_output_dir=build_output_dir,
+                        add_revision=add_revision,
+                    ),
                 ))
                 for dir_name in run.cfg().pkgs
             ]
