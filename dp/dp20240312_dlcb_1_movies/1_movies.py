@@ -46,26 +46,24 @@ def _main() -> None:
     movie_lengths = np.linalg.norm(movie_weights, axis=1)
     normalized_movies = (movie_weights.T / movie_lengths).T
 
-    def similar_movies(movie):
+    def similar_movies(movie, n=10):
         dists = np.dot(normalized_movies, normalized_movies[data.movie_to_idx[movie]])
-        closest = np.argsort(dists)[-10:]
-        for c in reversed(closest):
-            print(c, data.movies[c].name, dists[c])
+        return reversed(np.argsort(dists)[-n:])
 
     pp.pprint(similar_movies('Rogue One'))
+    print()
 
     ##
 
     link_lengths = np.linalg.norm(link_weights, axis=1)
     normalized_links = (link_weights.T / link_lengths).T
 
-    def similar_links(link):
+    def similar_links(link, n=10):
         dists = np.dot(normalized_links, normalized_links[data.link_to_idx[link]])
-        closest = np.argsort(dists)[-10:]
-        for c in reversed(closest):
-            print(c, data.top_links[c], dists[c])
+        return reversed(np.argsort(dists)[-n:])
 
     pp.pprint(similar_links('George Lucas'))
+    print()
 
     ##
 
@@ -92,6 +90,7 @@ def _main() -> None:
     y = np.asarray([1 for _ in best] + [0 for _ in worst])
     X = np.asarray([normalized_movies[data.movie_to_idx[movie]] for movie in best + worst])
     pp.pprint(X.shape)
+    print()
 
     clf = sklearn.svm.SVC(kernel='linear')
     clf.fit(X, y)
@@ -102,11 +101,13 @@ def _main() -> None:
     best = np.argsort(estimated_movie_ratings)
     print('best:')
     for c in reversed(best[-5:]):
-        print(c, data.movies[c].name, estimated_movie_ratings[c])
+        print((c, data.movies[c].name, estimated_movie_ratings[c]))
+    print()
 
     print('worst:')
     for c in best[:5]:
-        print(c, data.movies[c].name, estimated_movie_ratings[c])
+        print((c, data.movies[c].name, estimated_movie_ratings[c]))
+    print()
 
     ##
 
@@ -122,6 +123,8 @@ def _main() -> None:
 
     error = (np.mean(rotten_y[:TRAINING_CUT_OFF]) - rotten_y[TRAINING_CUT_OFF:])
     print('mean square error %2.2f' % np.mean(error ** 2))
+
+    print()
 
     ##
 
@@ -147,7 +150,8 @@ def _main() -> None:
     movie_gross = np.asarray([gr for gr in movie_gross if gr is not None])
     highest = np.argsort(movie_gross)[-10:]
     for c in reversed(highest):
-        print(c, data.movies[c].name, movie_gross[c])
+        print((c, data.movies[c].name, movie_gross[c]))
+    print()
 
     ##
 
