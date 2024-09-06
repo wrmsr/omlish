@@ -83,3 +83,5 @@ pcpp==1.30
 paramiko==3.4.1; python_version < "3.13"  # !! LGPL
 
 docutils==0.21.2
+
+wikitextparser==0.56.2  # !! GPL
