@@ -12,6 +12,10 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        # 'llamacpp': [
+        #     'llama-cpp-python ~= 0.2',
+        # ],
+
         'tinygrad': [
             'git+https://github.com/tinygrad/tinygrad',
         ],
