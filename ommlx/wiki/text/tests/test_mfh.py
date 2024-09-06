@@ -19,9 +19,14 @@ def test_dom():
     for n, src in WIKI_FILES.items():
         print(n)
 
-        content = mfh.parse_content(src)
+        doc = mfh.parse_doc(src)
 
-        es_json = json.dumps_pretty(msh.marshal(content, mfh.Content))
+        for path, child in mfh.traverse_node(doc):  # Noqa
+            # print(([(f'{p.__class__.__name__}@{hex(id(p))[2:]}', a) for p, a in path], child))
+            pass
+
+        es_json = json.dumps_pretty(msh.marshal(doc, mfh.Doc))
         # print(es_json)
-        nodes2 = msh.unmarshal(json.loads(es_json), mfh.Nodes)  # type: ignore
-        assert len(content) == len(nodes2)
+
+        doc2 = msh.unmarshal(json.loads(es_json), mfh.Doc)
+        assert len(doc.body) == len(doc2.body)
