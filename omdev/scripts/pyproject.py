@@ -3335,21 +3335,55 @@ vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 # ruff: noqa: UP006 UP007
 
 
-class PyprojectPackageGenerator:
+#
+
+
+class BasePyprojectPackageGenerator(abc.ABC):  # noqa
     def __init__(
             self,
             dir_name: str,
-            build_root: str,
+            pkgs_root: str,
     ) -> None:
         super().__init__()
         self._dir_name = dir_name
-        self._build_root = build_root
+        self._pkgs_root = pkgs_root
 
     #
 
     @cached_nullary
     def about(self) -> types.ModuleType:
         return importlib.import_module(f'{self._dir_name}.__about__')
+
+    #
+
+    @cached_nullary
+    def _pkg_dir(self) -> str:
+        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name)
+        if os.path.isdir(pkg_dir):
+            shutil.rmtree(pkg_dir)
+        os.makedirs(pkg_dir)
+        return pkg_dir
+
+    #
+
+    _GIT_IGNORE: ta.Sequence[str] = [
+        '/*.egg-info/',
+        '/dist',
+    ]
+
+    def _write_git_ignore(self) -> None:
+        with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
+            f.write('\n'.join(self._GIT_IGNORE))
+
+    #
+
+    def _symlink_source_dir(self) -> None:
+        os.symlink(
+            os.path.relpath(self._dir_name, self._pkg_dir()),
+            os.path.join(self._pkg_dir(), self._dir_name),
+        )
+
+    #
 
     @cached_nullary
     def project_cls(self) -> type:
@@ -3358,41 +3392,6 @@ class PyprojectPackageGenerator:
     @cached_nullary
     def setuptools_cls(self) -> type:
         return self.about().Setuptools
-
-    #
-
-    @cached_nullary
-    def _build_dir(self) -> str:
-        build_dir: str = os.path.join(self._build_root, self._dir_name)
-        if os.path.isdir(build_dir):
-            shutil.rmtree(build_dir)
-        os.makedirs(build_dir)
-        return build_dir
-
-    #
-
-    def _write_git_ignore(self) -> None:
-        git_ignore = [
-            '/*.egg-info/',
-            '/dist',
-        ]
-        with open(os.path.join(self._build_dir(), '.gitignore'), 'w') as f:
-            f.write('\n'.join(git_ignore))
-
-    #
-
-    def _symlink_source_dir(self) -> None:
-        os.symlink(
-            os.path.relpath(self._dir_name, self._build_dir()),
-            os.path.join(self._build_dir(), self._dir_name),
-        )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        manifest_in: ta.Optional[ta.Sequence[str]]
 
     @staticmethod
     def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
@@ -3414,18 +3413,56 @@ class PyprojectPackageGenerator:
         if sk in sd:
             dd[dk] = sd.pop(sk)
 
+    @dc.dataclass(frozen=True)
+    class Specs:
+        pyproject: ta.Dict[str, ta.Any]
+        setuptools: ta.Dict[str, ta.Any]
+
+    def build_specs(self) -> Specs:
+        return self.Specs(
+            self._build_cls_dct(self.project_cls()),
+            self._build_cls_dct(self.setuptools_cls()),
+        )
+
+    #
+
+    _STANDARD_FILES: ta.Sequence[str] = [
+        'LICENSE',
+        'README.rst',
+    ]
+
+    def _symlink_standard_files(self) -> None:
+        for fn in self._STANDARD_FILES:
+            if os.path.exists(fn):
+                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
+
+
+#
+
+
+class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
     @cached_nullary
     def file_contents(self) -> FileContents:
-        pyp_dct = {}
+        specs = self.build_specs()
 
         #
+
+        pyp_dct = {}
 
         pyp_dct['build-system'] = {
             'requires': ['setuptools'],
             'build-backend': 'setuptools.build_meta',
         }
 
-        prj = self._build_cls_dct(self.project_cls())
+        prj = specs.pyproject
         pyp_dct['project'] = prj
 
         self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
@@ -3441,8 +3478,11 @@ class PyprojectPackageGenerator:
 
         #
 
-        st = self._build_cls_dct(self.setuptools_cls())
+        st = specs.setuptools
+
         pyp_dct['tool.setuptools'] = st
+
+        st.pop('cexts', None)
 
         self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
 
@@ -3458,24 +3498,12 @@ class PyprojectPackageGenerator:
     def _write_file_contents(self) -> None:
         fc = self.file_contents()
 
-        with open(os.path.join(self._build_dir(), 'pyproject.toml'), 'w') as f:
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
             TomlWriter(f).write_root(fc.pyproject_dct)
 
         if fc.manifest_in:
-            with open(os.path.join(self._build_dir(), 'MANIFEST.in'), 'w') as f:
+            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
                 f.write('\n'.join(fc.manifest_in))  # noqa
-
-    #
-
-    _STANDARD_FILES: ta.Sequence[str] = [
-        'LICENSE',
-        'README.rst',
-    ]
-
-    def _symlink_standard_files(self) -> None:
-        for fn in self._STANDARD_FILES:
-            if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._build_dir()), os.path.join(self._build_dir(), fn))
 
     #
 
@@ -3491,10 +3519,10 @@ class PyprojectPackageGenerator:
                 '-m',
                 'build',
             ],
-            cwd=self._build_dir(),
+            cwd=self._pkg_dir(),
         )
 
-        dist_dir = os.path.join(self._build_dir(), 'dist')
+        dist_dir = os.path.join(self._pkg_dir(), 'dist')
 
         if add_revision:
             GitRevisionAdder().add_to(dist_dir)
@@ -3512,9 +3540,9 @@ class PyprojectPackageGenerator:
             build_output_dir: ta.Optional[str] = None,
             add_revision: bool = False,
     ) -> str:
-        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
+        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._pkgs_root)
 
-        self._build_dir()
+        self._pkg_dir()
         self._write_git_ignore()
         self._symlink_source_dir()
         self._write_file_contents()
@@ -3526,7 +3554,7 @@ class PyprojectPackageGenerator:
                 add_revision=add_revision,
             )
 
-        return self._build_dir()
+        return self._pkg_dir()
 
 
 ########################################

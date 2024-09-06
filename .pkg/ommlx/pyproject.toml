@@ -28,10 +28,16 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'torch ~= 2.4',
+    'mwparserfromhell ~= 0.6',
+    'wikitextparser ~= 0.56',
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 torch = [
     'torch ~= 2.4',
+]
+wiki = [
+    'mwparserfromhell ~= 0.6',
+    'wikitextparser ~= 0.56',
 ]
 xml = [
     'lxml ~= 5.3; python_version < "3.13"',
