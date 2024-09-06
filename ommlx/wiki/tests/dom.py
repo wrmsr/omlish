@@ -73,3 +73,9 @@ class Tag(Node):
     atts: ta.Sequence[Attribute]
     body: Nodes
     r: Nodes
+
+
+@dc.dataclass(frozen=True)
+class Heading(Node):
+    title: Nodes
+    level: int
