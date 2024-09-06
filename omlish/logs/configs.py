@@ -3,18 +3,7 @@ import logging
 import typing as ta
 
 from ..lite.logs import configure_standard_logging as configure_lite_standard_logging
-
-
-##
-
-
-NOISY_LOGGERS: set[str] = {
-    'boto3.resources.action',
-    'datadog.dogstatsd',
-    'elasticsearch',
-    'kazoo.client',
-    'requests.packages.urllib3.connectionpool',
-}
+from .noisy import silence_noisy_loggers
 
 
 ##
@@ -51,7 +40,6 @@ def configure_standard_logging(
         json=json,
     )
 
-    for noisy_logger in NOISY_LOGGERS:
-        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+    silence_noisy_loggers()
 
     return handler
