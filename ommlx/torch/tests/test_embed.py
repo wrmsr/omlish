@@ -5,7 +5,7 @@
 # import torch.nn.functional as F
 #
 #
-# class GraphEmbeddingModel(torch.nn.Module):
+# class SimpleGraphEmbeddingModel(torch.nn.Module):
 #     def __init__(
 #             self,
 #             *,
