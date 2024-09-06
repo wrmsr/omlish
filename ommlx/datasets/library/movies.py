@@ -5,8 +5,7 @@ import urllib.request
 
 from omlish import cached
 from omlish import dataclasses as dc
-from omlish import lang
-import ujson as json
+from omlish.formats import json
 
 
 @dc.dataclass(frozen=True)
@@ -21,23 +20,21 @@ class Movie:
 MOVIES_DATA_URL = 'https://raw.githubusercontent.com/DOsinga/deep_learning_cookbook/04f56a7fe11e16c19ec6269bc5a138efdcb522a7/data/wp_movies_10k.ndjson'  # noqa
 
 
-@lang.cached_function
-def load_movies() -> ta.Sequence[Movie]:
+def load_movies(cache_dir: str) -> ta.Sequence[Movie]:
     movies = []
 
-    data_dir = os.path.join(os.path.dirname(__file__), 'data')
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
+    if not os.path.exists(cache_dir):
+        os.mkdir(cache_dir)
 
-    data_file = os.path.join(data_dir, 'wp_movies_10k.ndjson')
+    data_file = os.path.join(cache_dir, 'wp_movies_10k.ndjson')
     if not os.path.isfile(data_file):
-        with urllib.request.urlopen(MOVIES_DATA_URL) as resp:
+        with urllib.request.urlopen(MOVIES_DATA_URL) as resp:  # noqa
             data = resp.read()
         with open(data_file, 'wb') as f:
             f.write(data)
 
     with open(data_file) as f:
-        for l in f.readlines():
+        for l in f:
             movies.append(Movie(*json.loads(l)))
 
     return movies
@@ -49,7 +46,7 @@ class MoviesData:
 
     @cached.property
     def top_links(self) -> ta.Sequence[str]:
-        link_counts = collections.Counter()
+        link_counts = collections.Counter[str]()
         for movie in self.movies:
             link_counts.update(movie.links)
         return [link for link, c in link_counts.items() if c >= 3]
@@ -64,7 +61,7 @@ class MoviesData:
 
     @cached.property
     def pairs(self) -> ta.Sequence[tuple[int, int]]:
-        pairs = []
+        pairs: list[tuple[int, int]] = []
         for movie in self.movies:
             pairs.extend(
                 (self.link_to_idx[link], self.movie_to_idx[movie.name])

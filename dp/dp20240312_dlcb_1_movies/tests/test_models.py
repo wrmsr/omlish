@@ -1,6 +1,7 @@
+from ommlx.datasets.library.movies import Movie
+from ommlx.datasets.library.movies import MoviesData
+
 from .. import torch as mt
-from ..movies import Movie
-from ..movies import MoviesData
 
 
 TEST_MOVIES = [

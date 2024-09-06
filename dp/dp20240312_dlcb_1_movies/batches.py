@@ -3,7 +3,7 @@ import typing as ta
 
 import numpy as np
 
-from .movies import MoviesData
+from ommlx.datasets.library.movies import MoviesData
 
 
 def batchify(
