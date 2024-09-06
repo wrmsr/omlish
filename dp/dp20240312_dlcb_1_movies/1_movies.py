@@ -18,13 +18,28 @@ def _main() -> None:
 
     data = MoviesData(load_movies())
 
-    model = mk.make_embedding_model(data)
-    mk.train_embedding_model(model, data)
+    # be = mk
+    be = mt
+
+    if be is mk:
+        model = mk.make_embedding_model(data)
+        mk.train_embedding_model(model, data)
+
+        movie_weights = model.get_layer('movie_embedding').get_weights()[0]
+        link_weights = model.get_layer('link_embedding').get_weights()[0]
+
+    elif be is mt:
+        model = mt.make_embedding_model(data)
+        mt.train_embedding_model(model, data, lr=.01)
+
+        movie_weights = model.movie_embedding.weight.detach().cpu().numpy()
+        link_weights = model.link_embedding.weight.detach().cpu().numpy()
+
+    else:
+        raise TypeError(be)
 
     ##
 
-    movie = model.get_layer('movie_embedding')
-    movie_weights = movie.get_weights()[0]
     movie_lengths = np.linalg.norm(movie_weights, axis=1)
     normalized_movies = (movie_weights.T / movie_lengths).T
 
@@ -38,8 +53,6 @@ def _main() -> None:
 
     ##
 
-    link = model.get_layer('link_embedding')
-    link_weights = link.get_weights()[0]
     link_lengths = np.linalg.norm(link_weights, axis=1)
     normalized_links = (link_weights.T / link_lengths).T
 

@@ -46,40 +46,51 @@ def make_embedding_model(
     )
 
 
+def _to_device(t, device):
+    if device is not None:
+        return t.to(device)
+    else:
+        return t
+
+
 def train_embedding_model(
         model: EmbeddingModel,
         data: MoviesData,
         *,
-        num_epochs: int = 15,
+        num_epochs: int = 1_500,
+        positive_samples_per_batch: int = 512,
+        negative_ratio: int = 10,
+        epoch_size: int = 25000,
+        lr: float = .001,
+        report_freq: int = 5,
+        device: str | None = None,
 ) -> EmbeddingModel:
-    positive_samples_per_batch = 512
     batches = batchify(
         data,
         positive_samples=positive_samples_per_batch,
-        negative_ratio=10,
+        negative_ratio=negative_ratio,
     )
-
-    lr = .001
-    report_freq = 5
-    epoch_size = 25000
 
     optimizer = torch.optim.NAdam(model.parameters(), lr=lr, eps=1e-7)
     loss_fn = torch.nn.MSELoss()
 
     model.train()
+    if device:
+        model.to(device)
 
     total_loss = torch.tensor(0.)
-    acc = torch.tensor(0)
-    count = 0
+    # acc = torch.tensor(0)
     i = 0
 
     for e in range(num_epochs):
         print(f'epoch {e} / {num_epochs}')
 
+        count = 0
+
         for batch_dct, labels in batches:
-            link = torch.tensor(batch_dct['link'], dtype=torch.int32)
-            movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
-            labels = torch.tensor(labels, dtype=torch.float32)
+            link = _to_device(torch.tensor(batch_dct['link'], dtype=torch.int32), device)
+            movie = _to_device(torch.tensor(batch_dct['movie'], dtype=torch.int32), device)
+            labels = _to_device(torch.tensor(labels, dtype=torch.float32), device)
 
             optimizer.zero_grad()
 
@@ -90,12 +101,12 @@ def train_embedding_model(
 
             optimizer.step()
 
-            total_loss += loss
+            total_loss += loss.cpu()
             count += len(labels)
 
             i += 1
             if i % report_freq == 0:
-                print(f"{count}: loss={loss}")
+                print(f'{count}: loss={loss}')
 
             if epoch_size and count > epoch_size:
                 break
