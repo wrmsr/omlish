@@ -28,7 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'llama-cpp-python ~= 0.2',
-    'git+https://github.com/tinygrad/tinygrad',
+    'tinygrad ~= 0.9',
     'torch ~= 2.4',
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
@@ -38,7 +38,7 @@ llamacpp = [
     'llama-cpp-python ~= 0.2',
 ]
 tinygrad = [
-    'git+https://github.com/tinygrad/tinygrad',
+    'tinygrad ~= 0.9',
 ]
 torch = [
     'torch ~= 2.4',

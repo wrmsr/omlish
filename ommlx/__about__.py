@@ -17,7 +17,8 @@ class Project(ProjectBase):
         ],
 
         'tinygrad': [
-            'git+https://github.com/tinygrad/tinygrad',
+            # 'git+https://github.com/tinygrad/tinygrad',
+            'tinygrad ~= 0.9',
         ],
 
         'torch': [
