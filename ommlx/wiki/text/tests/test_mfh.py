@@ -21,6 +21,7 @@ def test_dom():
 
         nodes = mfh.parse_nodes(src)
 
-        print(es_json := json.dumps_pretty(msh.marshal(nodes, mfh.Nodes)))
+        es_json = json.dumps_pretty(msh.marshal(nodes, mfh.Nodes))
+        # print(es_json)
         nodes2 = msh.unmarshal(json.loads(es_json), mfh.Nodes)  # type: ignore
         assert len(nodes) == len(nodes2)
