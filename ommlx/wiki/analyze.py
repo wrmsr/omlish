@@ -163,7 +163,7 @@ def analyze_file(
                     backend = wtp
 
                     if backend is mfh:
-                        dom = mfh.parse_content(rev.text.text)  # noqa
+                        dom = mfh.parse_doc(rev.text.text)  # noqa
                         # print(dom)
 
                     elif backend is wtp:
