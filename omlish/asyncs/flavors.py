@@ -1,8 +1,8 @@
 """
+Tools for working with the different async loop implementations - currently anyio, asyncio, trio.
+
 TODO:
- - 'get current'? -> sniffio..
  - mark whole class / module?
- - sync/greenlet bridge
 """
 import abc
 import dataclasses as dc
@@ -73,11 +73,13 @@ def _get_module_flavor(p: str) -> Flavor | None:
         return _MODULE_FLAVOR_CACHE[p]
     except KeyError:
         pass
+
     pf: Flavor | None = None
     for cp, cf in PACKAGE_FLAVORS.items():
         if p.startswith(cp) and (len(cp) == len(p) or p[len(cp)] == '.'):
             pf = cf
             break
+
     _MODULE_FLAVOR_CACHE[p] = pf
     return pf
 
