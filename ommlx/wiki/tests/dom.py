@@ -60,3 +60,10 @@ class Parameter(Node):
 class Template(Node):
     name: Nodes
     params: ta.Sequence[Parameter]
+
+
+@dc.dataclass(frozen=True)
+class Tag(Node):
+    opening: Nodes
+    content: Nodes
+    closing: Nodes

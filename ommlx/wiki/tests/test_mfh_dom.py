@@ -100,6 +100,15 @@ def test_dom():
             case mfn.HTMLEntity(value=s):
                 return dom.Html(s)
 
+            case mfn.Tag(tag=l, contents=c, closing_tag=r, attributes=ats):
+                if ats:
+                    raise NotImplementedError
+                return dom.Tag(
+                    build_dom_nodes(l),
+                    build_dom_nodes(c),
+                    build_dom_nodes(r),
+                )
+
             case _:
                 raise TypeError(n)
 
