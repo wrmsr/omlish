@@ -28,6 +28,7 @@ import concurrent.futures as cf
 import contextlib
 import glob
 import io
+import logging
 import multiprocessing as mp
 import multiprocessing.managers
 import os.path
@@ -51,6 +52,9 @@ from .text import wtp
 from .utils.progress import ProgressReporter
 
 
+log = logging.getLogger(__name__)
+
+
 ##
 
 
@@ -67,6 +71,7 @@ pages_table = sa.Table(
 )
 
 
+@logs.error_logging(log)
 def analyze_file(
         db_url: str,
         fn: str,
@@ -74,7 +79,7 @@ def analyze_file(
         lck: threading.Lock,
         nr: mp.managers.ValueProxy,
 ) -> None:
-    print(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)
+    log.info(f'pid={os.getpid()} {dp=} {fn}', file=sys.stderr)  # noqa
 
     rows: list[dict] = []
     row_batch_size = 1_000
@@ -83,8 +88,8 @@ def analyze_file(
     cb = 0
 
     with contextlib.ExitStack() as es:
-        engine = sa.create_engine(db_url, echo=True)
-        es.enter_context(lang.defer(engine.dispose))
+        engine = sa.create_engine(db_url)
+        es.enter_context(lang.defer(engine.dispose))  # noqa
 
         with lck:
             with engine.begin() as conn:
@@ -97,7 +102,7 @@ def analyze_file(
                         conn.execute(pages_table.insert(), rows)
 
                     nr.value += len(rows)
-                    print(f'{len(rows)} rows batched, {i} rows file, {nr.value} rows total', file=sys.stderr)
+                    log.info(f'{len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
 
                 rows.clear()
 
@@ -133,8 +138,8 @@ def analyze_file(
             fpr0.update()
             fpr1.update(i)
             if fpr0.should_report or fpr1.should_report:
-                print(', '.join([*fpr0.report(), *fpr1.report()]), file=sys.stderr)
-                print(f'{rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %', file=sys.stderr)
+                log.info(', '.join([*fpr0.report(), *fpr1.report()]))  # noqa
+                log.info(f'{rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %')  # noqa
                 rb = cb = 0
 
             # if fpr is not None and fpr.report():  # noqa
@@ -153,8 +158,8 @@ def analyze_file(
                 #     breakpoint()
 
                 if rev.text:
-                    backend = mfh
-                    # backend = wtp
+                    # backend = mfh
+                    backend = wtp
 
                     if backend is mfh:
                         dom = mfh.parse_nodes(rev.text.text)  # noqa
@@ -205,7 +210,7 @@ def _main() -> None:
         os.unlink(db_file)
     db_url = f'sqlite:///{db_file}'
 
-    print(f'pid={os.getpid()}', file=sys.stderr)
+    log.info(f'pid={os.getpid()}')  # noqa
 
     with contextlib.ExitStack() as es:
         pdp: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
@@ -239,7 +244,7 @@ def _main() -> None:
         for fut in futs:
             fut.result()
 
-        print(f'{nr.value} rows total', file=sys.stderr)
+        log.info(f'{nr.value} rows total')  # noqa
 
 
 if __name__ == '__main__':
