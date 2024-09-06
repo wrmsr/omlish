@@ -23,72 +23,83 @@ class Node(abc.ABC):  # noqa
     pass
 
 
-Nodes: ta.TypeAlias = ta.Sequence[Node]
+@dc.dataclass(frozen=True)
+class ContentNode(Node, abc.ABC):  # noqa
+    pass
+
+
+Content: ta.TypeAlias = ta.Sequence[ContentNode]
 
 
 @dc.dataclass(frozen=True)
-class Text(Node):
+class Text(ContentNode):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class WikiLink(Node):
-    title: Nodes
-    text: Nodes
+class WikiLink(ContentNode):
+    title: Content
+    text: Content
 
 
 @dc.dataclass(frozen=True)
-class ExternalLink(Node):
-    title: Nodes
-    url: Nodes
+class ExternalLink(ContentNode):
+    title: Content
+    url: Content
 
 
 @dc.dataclass(frozen=True)
-class Html(Node):
+class Html(ContentNode):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class Comment(Node):
+class Comment(ContentNode):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class Parameter:
-    name: Nodes
-    value: Nodes
+class Parameter(Node):
+    name: Content
+    value: Content
 
 
 @dc.dataclass(frozen=True)
-class Template(Node):
-    name: Nodes
+class Template(ContentNode):
+    name: Content
     params: ta.Sequence[Parameter]
 
 
 @dc.dataclass(frozen=True)
-class Attribute:
-    name: Nodes
-    value: Nodes
+class Attribute(Node):
+    name: Content
+    value: Content
 
 
 @dc.dataclass(frozen=True)
-class Tag(Node):
-    l: Nodes
+class Tag(ContentNode):
+    l: Content
     atts: ta.Sequence[Attribute]
-    body: Nodes
-    r: Nodes
+    body: Content
+    r: Content
 
 
 @dc.dataclass(frozen=True)
-class Heading(Node):
-    title: Nodes
+class Heading(ContentNode):
+    title: Content
     level: int
 
 
 @dc.dataclass(frozen=True)
-class Argument(Node):
-    name: Nodes
-    default: Nodes
+class Argument(ContentNode):
+    name: Content
+    default: Content
+
+
+##
+
+
+# def traverse(n: Node)
 
 
 ##
@@ -100,8 +111,8 @@ class NodeBuilder:
             raise TypeError(n)
 
         return Parameter(
-            self.build_nodes(n.name),
-            self.build_nodes(n.value),
+            self.build_content(n.name),
+            self.build_content(n.value),
         )
 
     def build_attribute(self, n: mfn.extras.Attribute) -> Attribute:
@@ -109,11 +120,11 @@ class NodeBuilder:
             raise TypeError(n)
 
         return Attribute(
-            self.build_nodes(n.name),
-            self.build_nodes(n.value),
+            self.build_content(n.name),
+            self.build_content(n.value),
         )
 
-    def build_node(self, n: mfn.Node | mfn.extras.Parameter) -> Node:
+    def build_content_node(self, n: mfn.Node) -> ContentNode:
         if isinstance(n, mfn.Comment):
             return Comment(n.contents)
 
@@ -122,20 +133,20 @@ class NodeBuilder:
 
         elif isinstance(n, mfn.Template):
             return Template(
-                self.build_nodes(n.name),
+                self.build_content(n.name),
                 list(map(self.build_parameter, n.params)),
             )
 
         elif isinstance(n, mfn.Wikilink):
             return WikiLink(
-                self.build_nodes(n.title),
-                self.build_nodes(n.text),
+                self.build_content(n.title),
+                self.build_content(n.text),
             )
 
         elif isinstance(n, mfn.ExternalLink):
             return ExternalLink(
-                self.build_nodes(n.title),
-                self.build_nodes(n.url),
+                self.build_content(n.title),
+                self.build_content(n.url),
             )
 
         elif isinstance(n, mfn.HTMLEntity):
@@ -143,36 +154,36 @@ class NodeBuilder:
 
         elif isinstance(n, mfn.Tag):
             return Tag(
-                self.build_nodes(n.tag),
+                self.build_content(n.tag),
                 list(map(self.build_attribute, n.attributes)),
-                self.build_nodes(n.contents),
-                self.build_nodes(n.closing_tag),
+                self.build_content(n.contents),
+                self.build_content(n.closing_tag),
             )
 
         elif isinstance(n, mfn.Heading):
             return Heading(
-                self.build_nodes(n.title),
+                self.build_content(n.title),
                 n.level,
             )
 
         elif isinstance(n, mfn.Argument):
             return Argument(
-                self.build_nodes(n.name),
-                self.build_nodes(n.default),
+                self.build_content(n.name),
+                self.build_content(n.default),
             )
 
         else:
             raise TypeError(n)
 
-    def build_nodes(self, w: Wikicode | ta.Iterable[mfn.Node] | None) -> Nodes:
+    def build_content(self, w: Wikicode | ta.Iterable[mfn.Node] | None) -> Content:
         if w is None:
             return ()
 
         elif isinstance(w, Wikicode):  # type: ignore
-            return [self.build_node(c) for c in w.nodes]
+            return [self.build_content_node(c) for c in w.nodes]
 
         elif isinstance(w, ta.Iterable):
-            return [self.build_node(c) for c in w]
+            return [self.build_content_node(c) for c in w]
 
         else:
             raise TypeError(w)
@@ -184,6 +195,6 @@ class NodeBuilder:
 parse = mfh.parse
 
 
-def parse_nodes(s: str) -> Nodes:
+def parse_content(s: str) -> Content:
     wiki = parse(s)
-    return NodeBuilder().build_nodes(wiki)
+    return NodeBuilder().build_content(wiki)
