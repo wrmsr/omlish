@@ -16,48 +16,47 @@ import typing as ta
 
 
 @dc.dataclass(frozen=True)
-class Doc:
-    es: ta.Sequence['Dom']
-
-
-@dc.dataclass(frozen=True)
-class Dom(abc.ABC):  # noqa
+class Node(abc.ABC):  # noqa
     pass
 
 
+Nodes: ta.TypeAlias = ta.Sequence[Node]
+
+
 @dc.dataclass(frozen=True)
-class Text(Dom):
+class Text(Node):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class WikiLink(Dom):
+class WikiLink(Node):
     title: str
     text: str
 
 
 @dc.dataclass(frozen=True)
-class ExternalLink(Dom):
+class ExternalLink(Node):
     title: str
     url: str
 
 
 @dc.dataclass(frozen=True)
-class Html(Dom):
+class Html(Node):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class Comment(Dom):
+class Comment(Node):
     s: str
 
 
 @dc.dataclass(frozen=True)
-class Parameter(Dom):
-    name: str
-    value: Text
+class Parameter(Node):
+    name: Nodes
+    value: Nodes
 
 
 @dc.dataclass(frozen=True)
-class Template(Dom):
+class Template(Node):
+    name: Nodes
     params: ta.Sequence[Parameter]

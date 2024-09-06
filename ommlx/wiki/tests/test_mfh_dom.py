@@ -19,6 +19,8 @@ import typing as ta
 import mwparserfromhell as mfh
 import mwparserfromhell.nodes as mfn
 
+from omlish import check
+
 from . import dom
 
 
@@ -63,13 +65,39 @@ def test_dom():
     r = find_template(wiki, 'Infobox periodic table group/header')
     print(r)
 
-    es: list[dom.Dom] = []
-
-    for n in wiki.nodes:
+    def build_dom_node(n: mfn.Node | mfn.extras.Parameter) -> dom.Node:
         match n:
             case mfn.Comment(contents=s):
-                es.append(dom.Comment(s))
+                return dom.Comment(s)
+
             case mfn.Text(value=s):
-                es.append(dom.Text(s))
+                return dom.Text(s)
+
+            case mfn.Template(name=na, params=ps):
+                return dom.Template(
+                    build_dom_nodes(na),
+                    [check.isinstance(p, dom.Parameter) for p in build_dom_nodes(ps)],
+                )
+
+            case mfn.extras.Parameter(name=n, value=v):
+                return dom.Parameter(
+                    build_dom_nodes(n),
+                    build_dom_nodes(v),
+                )
+
             case _:
                 raise TypeError(n)
+
+    def build_dom_nodes(w: Wikicode | ta.Iterable[mfn.Node | mfn.extras.Parameter]) -> dom.Nodes:
+        if isinstance(w, Wikicode):
+            return [build_dom_node(c) for c in w.nodes]
+
+        elif isinstance(w, ta.Iterable):
+            return [build_dom_node(c) for c in w]
+
+        else:
+            raise TypeError(w)
+
+    es = build_dom_nodes(wiki)  # noqa
+
+    print(es)
