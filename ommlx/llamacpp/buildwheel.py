@@ -27,11 +27,15 @@ def _main() -> None:
 
     print(tmp_dir)
 
+    #
+
     dir_name = 'llama-cpp-python'
     subprocess.check_call([
         'git', 'clone', '--depth=1', REPO_URL, dir_name,
     ], cwd=tmp_dir)
     repo_dir = os.path.join(tmp_dir, dir_name)
+
+    #
 
     if MINIMAL_SUBMODULE:
         sub_rev = subprocess.check_output([
@@ -81,6 +85,8 @@ def _main() -> None:
             'git', 'submodule', 'update', '--init',
         ], cwd=repo_dir)
 
+    #
+
     subprocess.check_call([
         sys.executable, '-m', 'venv', '.venv',
     ], cwd=repo_dir)
@@ -93,6 +99,8 @@ def _main() -> None:
     subprocess.check_call([
         venv_exe_file, '-m', 'pip', 'install', '-e', '.[dev]',
     ], cwd=repo_dir)
+
+    #
 
     path_items: list[str] = []
     cmake_args: list[str] = []
@@ -116,6 +124,8 @@ def _main() -> None:
         env=build_env,
         cwd=repo_dir,
     )
+
+    #
 
     dist_dir = os.path.join(repo_dir, 'dist')
     whl_files = glob.glob(os.path.join(dist_dir, '*.whl'))

@@ -48,7 +48,7 @@ def _main() -> None:
 
     def similar_movies(movie, n=10):
         dists = np.dot(normalized_movies, normalized_movies[data.movie_to_idx[movie]])
-        return reversed(np.argsort(dists)[-n:])
+        return np.argsort(dists)[-n:][::-1]
 
     pp.pprint(similar_movies('Rogue One'))
     print()
@@ -60,7 +60,7 @@ def _main() -> None:
 
     def similar_links(link, n=10):
         dists = np.dot(normalized_links, normalized_links[data.link_to_idx[link]])
-        return reversed(np.argsort(dists)[-n:])
+        return np.argsort(dists)[-n:][::-1]
 
     pp.pprint(similar_links('George Lucas'))
     print()
