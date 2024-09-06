@@ -6,7 +6,6 @@ import sys
 import typing as ta
 
 from .. import lang
-
 from .base import Bootstrap
 from .base import ContextBootstrap
 

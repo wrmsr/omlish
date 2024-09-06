@@ -24,9 +24,9 @@ TODO new items:
 import contextlib
 import typing as ta
 
+from .. import lang
 from . import diag  # noqa
 from . import sys  # noqa
-from .. import lang
 from .base import Bootstrap
 from .base import ContextBootstrap
 from .base import SimpleBootstrap

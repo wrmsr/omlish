@@ -6,9 +6,17 @@ import itertools
 import sys
 import typing as ta
 
+from .. import lang
 from .base import Bootstrap
 from .harness import BOOTSTRAP_TYPES_BY_NAME
 from .harness import bootstrap
+
+
+if ta.TYPE_CHECKING:
+    import runpy
+
+else:
+    runpy = lang.proxy_import('runpy')
 
 
 ##
