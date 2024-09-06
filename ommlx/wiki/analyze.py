@@ -192,6 +192,10 @@ def analyze_file(
 ##
 
 
+def _init_process() -> None:
+    logs.configure_standard_logging('INFO')
+
+
 def _main() -> None:
     logs.configure_standard_logging('INFO')
 
@@ -225,6 +229,7 @@ def _main() -> None:
             args.num_workers,
             cf.ProcessPoolExecutor,
             mp_context=mp_context,
+            initializer=_init_process,
         ))
 
         nr = mgr.Value('i', 0)
