@@ -86,6 +86,8 @@ def analyze_file(
     rb = 0
     cb = 0
 
+    efn = os.path.basename(fn)
+
     with contextlib.ExitStack() as es:
         engine = sa.create_engine(db_url)
         es.enter_context(lang.defer(engine.dispose))  # noqa
@@ -101,7 +103,7 @@ def analyze_file(
                         conn.execute(pages_table.insert(), rows)
 
                     nr.value += len(rows)
-                    log.info(f'{len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
+                    log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
 
                 rows.clear()
 
@@ -137,8 +139,8 @@ def analyze_file(
             fpr0.update()
             fpr1.update(i)
             if fpr0.should_report or fpr1.should_report:
-                log.info(', '.join([*fpr0.report(), *fpr1.report()]))  # noqa
-                log.info(f'{rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %')  # noqa
+                log.info(f'{efn}: ' + ', '.join([*fpr0.report(), *fpr1.report()]))  # noqa
+                log.info(f'{efn}: {rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %')  # noqa
                 rb = cb = 0
 
             # if fpr is not None and fpr.report():  # noqa
@@ -243,7 +245,10 @@ def _main() -> None:
                 mgr.Lock(),
                 nr,
             )
-            for fn in sorted(glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')))
+            for fn in sorted(
+                glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')),
+                key=lambda fn: -os.stat(fn).st_size,
+            )
         ]
         for fut in futs:
             fut.result()
