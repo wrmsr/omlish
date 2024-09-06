@@ -65,6 +65,9 @@ class ExternalLink(Dom):
     pass
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class WtpNode:
     wiki: wtp.WikiText
@@ -75,9 +78,7 @@ class WtpNode:
         return self.wiki.span  # type: ignore
 
 
-def test_dom():
-    src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
-
+def build_wtp_tree(src: str) -> WtpNode:
     wiki = wtp.parse(src)
 
     part_its = [
@@ -94,6 +95,8 @@ def test_dom():
         wiki.get_tags(),
     ]
 
+    #
+
     flat_it = itertools.chain.from_iterable(
         sorted(
             [o for _, o in g],
@@ -108,25 +111,43 @@ def test_dom():
         )
     )
 
+    #
+
     root = WtpNode(wiki)
     stk: list[WtpNode] = [root]
+
     o: wtp.WikiText
     for o in flat_it:
         p = None
         while o.span[0] >= stk[-1].wiki.span[1]:
             p = stk.pop()
             stk[-1].children.append(p)
+
         if p is not None:
             l, r = p.wiki.span[1], o.span[0]
             if l > r:
                 raise Exception(f'{p.wiki.span=} {o.span=}')
             if (r - l) > 1:
                 stk[-1].children.append(src[l:r])
+
         stk.append(WtpNode(o))
+
     while len(stk) > 1:
         p = stk.pop()
         stk[-1].children.append(p)
+
     if stk.pop() is not root:
         raise RuntimeError
+
+    return root
+
+
+##
+
+
+def test_dom():
+    src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
+
+    root = build_wtp_tree(src)  # noqa
 
     print('!! DONE')
