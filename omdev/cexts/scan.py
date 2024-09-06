@@ -5,18 +5,17 @@ import typing as ta
 
 from omlish import logs
 
+from .magic import CextMagic
+
 
 log = logging.getLogger(__name__)
-
-
-SCAN_COMMENT = '// @omdev-cext'
 
 
 def scan_one(
         input_path: str,
         **kwargs: ta.Any,
 ) -> None:
-    if not any(input_path.endswith(fx) for fx in ('.c', '.cc', '.cpp')):
+    if not any(input_path.endswith('.' + fx) for fx in CextMagic.FILE_EXTENSIONS):
         return
 
     with open(input_path, 'rb') as f:
@@ -27,7 +26,7 @@ def scan_one(
     except UnicodeDecodeError:
         return
 
-    sls = [l for l in src.splitlines() if l.startswith(SCAN_COMMENT)]
+    sls = [l for l in src.splitlines() if l.startswith(CextMagic.MAGIC_COMMENT)]
     for sl in sls:
         sas = sl[len(SCAN_COMMENT):].split()  # noqa
 
