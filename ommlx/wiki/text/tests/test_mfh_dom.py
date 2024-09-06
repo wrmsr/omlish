@@ -6,11 +6,11 @@ import importlib.resources
 from omlish import marshal as msh
 from omlish.formats import json
 
-from . import mfh
+from .. import mfh
 
 
 def test_dom():
-    src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
+    src = importlib.resources.files(__package__).joinpath('data', 'test.wiki').read_text()
 
     nodes = mfh.parse_nodes(src)
 

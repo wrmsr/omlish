@@ -1,11 +1,7 @@
 """
-https://en.wikipedia.org/wiki/Help:Wikitext
-https://www.mediawiki.org/wiki/Alternative_parsers
-
-wtp:
-https://github.com/5j9/wikitextparser ??
 https://github.com/TrueBrain/TrueWiki
 https://github.com/TrueBrain/wikitexthtml
+
   Argument
   Bold
   Comment
@@ -20,18 +16,18 @@ https://github.com/TrueBrain/wikitexthtml
   WikiLink
   WikiList
   WikiText
-
-
 """
 import dataclasses as dc
 import heapq
-import importlib.resources
 import itertools
-import typing as ta  # noqa
+import typing as ta
 
 import wikitextparser as wtp
 
 from omlish import cached
+
+
+WikiText: ta.TypeAlias = wtp.WikiText
 
 
 ##
@@ -47,7 +43,7 @@ class WtpNode:
         return self.wiki.span  # noqa
 
 
-def build_wtp_tree(src: str) -> WtpNode:
+def parse_tree(src: str) -> WtpNode:
     wiki = wtp.parse(src)
 
     part_its = [
@@ -109,14 +105,3 @@ def build_wtp_tree(src: str) -> WtpNode:
         raise RuntimeError
 
     return root
-
-
-##
-
-
-def test_dom():
-    src = importlib.resources.files(__package__).joinpath('test.wiki').read_text()
-
-    root = build_wtp_tree(src)  # noqa
-
-    print('!! DONE')
