@@ -31,8 +31,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.13
-botocore==1.35.13
+boto3==1.35.14
+botocore==1.35.14
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -69,6 +69,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 discord.py==2.4.0
+diskcache==5.6.3
 distro==1.9.0
 docstring_parser==0.16
 docutils==0.21.2
@@ -166,7 +167,7 @@ langchain-openai==0.1.23
 langchain-text-splitters==0.2.4
 langchainhub==0.1.21
 langcodes==3.4.0
-langgraph==0.2.18
+langgraph==0.2.19
 langgraph-checkpoint==1.0.9
 langsmith==0.1.115
 language_data==1.2.0
@@ -175,6 +176,7 @@ libclang==18.1.1
 librosa==0.10.2.post1
 lightning-utilities==0.11.7
 litecli==1.11.1
+llama_cpp_python==0.2.90
 llvmlite==0.43.0
 Logbook==1.7.0.post0
 loguru==0.7.2
@@ -225,7 +227,7 @@ numpy==1.26.4
 objgraph==3.6.1
 onnx==1.16.2
 onnx2torch==1.5.15
-openai==1.43.1
+openai==1.44.0
 opencv-python==4.10.0.84
 opt-einsum==3.3.0
 optree==0.12.1
