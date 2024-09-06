@@ -15,7 +15,7 @@ from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
-from omserv.apps.templates import J2Templates
+from omserv.apps.templates import JinjaTemplates
 
 from ...users import User
 from ...users import UserStore
@@ -26,7 +26,7 @@ from ..apps.users import with_user
 @dc.dataclass(frozen=True)
 class ProfileHandler(Handler_):
     _current_user: ta.Callable[[], User | None]
-    _templates: J2Templates
+    _templates: JinjaTemplates
     _users: UserStore
 
     @handles(Route.get('/profile'))

@@ -16,7 +16,7 @@ from omlish import secrets as sec
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
 from omserv.apps.routes import RouteHandlerApp
-from omserv.apps.templates import J2Templates
+from omserv.apps.templates import JinjaTemplates
 
 from ..users import InMemoryUserStore
 from ..users import UserStore
@@ -63,7 +63,7 @@ def _bind_cookie_session_store() -> inj.Elemental:
 
 def bind_app() -> inj.Elemental:
     return inj.private(
-        inj.bind(J2Templates.Config(
+        inj.bind(JinjaTemplates.Config(
             resource_root=__package__ + '.templates',
             reload=True,
         )),
