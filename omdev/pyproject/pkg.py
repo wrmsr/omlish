@@ -135,6 +135,21 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
             if os.path.exists(fn):
                 os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
 
+    #
+
+    @dc.dataclass(frozen=True)
+    class GenOpts:
+        run_build: bool = False
+        build_output_dir: ta.Optional[str] = None
+        add_revision: bool = False
+
+    @abc.abstractmethod
+    def gen(
+            self,
+            opts: GenOpts = GenOpts()
+    ) -> str:
+        raise NotImplementedError
+
 
 #
 
@@ -151,17 +166,17 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
     @cached_nullary
     def file_contents(self) -> FileContents:
         specs = self.build_specs()
-        pyp_dct = specs.pyproject
-        st_dct = specs.setuptools
 
         #
+
+        pyp_dct = {}
 
         pyp_dct['build-system'] = {
             'requires': ['setuptools'],
             'build-backend': 'setuptools.build_meta',
         }
 
-        prj = self._build_cls_dct(self.project_cls())
+        prj = specs.pyproject
         pyp_dct['project'] = prj
 
         self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
@@ -177,12 +192,14 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
         #
 
-        st_dct.pop('cexts', None)
-        pyp_dct['tool.setuptools'] = st_dct
+        st = specs.setuptools
+        pyp_dct['tool.setuptools'] = st
 
-        self._move_dict_key(st_dct, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+        st.pop('cexts', None)
 
-        mani_in = st_dct.pop('manifest_in', None)
+        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+
+        mani_in = st.pop('manifest_in', None)
 
         #
 
@@ -229,13 +246,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
     #
 
-    def gen(
-            self,
-            *,
-            run_build: bool = False,
-            build_output_dir: ta.Optional[str] = None,
-            add_revision: bool = False,
-    ) -> str:
+    def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
         log.info('Generating pyproject package: %s -> %s', self._dir_name, self._pkgs_root)
 
         self._pkg_dir()
@@ -244,10 +255,18 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         self._write_file_contents()
         self._symlink_standard_files()
 
-        if run_build:
+        if opts.run_build:
             self._run_build(
-                build_output_dir,
-                add_revision=add_revision,
+                opts.build_output_dir,
+                add_revision=opts.add_revision,
             )
 
         return self._pkg_dir()
+
+
+class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
+
+    def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
+        log.info('Generating pyproject cext package: %s -> %s', self._dir_name, self._pkgs_root)
+
+        raise NotImplementedError
