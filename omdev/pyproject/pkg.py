@@ -24,6 +24,7 @@ import os.path
 import shutil
 import subprocess
 import sys
+import textwrap
 import types
 import typing as ta
 
@@ -37,15 +38,18 @@ from ..tools.revisions import GitRevisionAdder
 #
 
 
-class BasePyprojectPackageGenerator(abc.ABC):  # noqa
+class BasePyprojectPackageGenerator(abc.ABC):
     def __init__(
             self,
             dir_name: str,
             pkgs_root: str,
+            *,
+            pkg_suffix: str = '',
     ) -> None:
         super().__init__()
         self._dir_name = dir_name
         self._pkgs_root = pkgs_root
+        self._pkg_suffix = pkg_suffix
 
     #
 
@@ -57,7 +61,7 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
 
     @cached_nullary
     def _pkg_dir(self) -> str:
-        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name)
+        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name + self._pkg_suffix)
         if os.path.isdir(pkg_dir):
             shutil.rmtree(pkg_dir)
         os.makedirs(pkg_dir)
@@ -125,6 +129,12 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
 
     #
 
+    @abc.abstractmethod
+    def _write_file_contents(self) -> None:
+        raise NotImplementedError
+
+    #
+
     _STANDARD_FILES: ta.Sequence[str] = [
         'LICENSE',
         'README.rst',
@@ -137,15 +147,54 @@ class BasePyprojectPackageGenerator(abc.ABC):  # noqa
 
     #
 
+    def _run_build(
+            self,
+            build_output_dir: ta.Optional[str] = None,
+            *,
+            add_revision: bool = False,
+    ) -> None:
+        subprocess.check_call(
+            [
+                sys.executable,
+                '-m',
+                'build',
+            ],
+            cwd=self._pkg_dir(),
+        )
+
+        dist_dir = os.path.join(self._pkg_dir(), 'dist')
+
+        if add_revision:
+            GitRevisionAdder().add_to(dist_dir)
+
+        if build_output_dir is not None:
+            for fn in os.listdir(dist_dir):
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
+
+    #
+
     @dc.dataclass(frozen=True)
     class GenOpts:
         run_build: bool = False
         build_output_dir: ta.Optional[str] = None
         add_revision: bool = False
 
-    @abc.abstractmethod
     def gen(self, opts: GenOpts = GenOpts()) -> str:
-        raise NotImplementedError
+        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
+
+        self._pkg_dir()
+        self._write_git_ignore()
+        self._symlink_source_dir()
+        self._write_file_contents()
+        self._symlink_standard_files()
+
+        if opts.run_build:
+            self._run_build(
+                opts.build_output_dir,
+                add_revision=opts.add_revision,
+            )
+
+        return self._pkg_dir()
 
 
 #
@@ -174,6 +223,8 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         }
 
         prj = specs.pyproject
+        prj['name'] += self._pkg_suffix
+
         pyp_dct['project'] = prj
 
         self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
@@ -217,53 +268,83 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
     #
 
-    def _run_build(
-            self,
-            build_output_dir: ta.Optional[str] = None,
-            *,
-            add_revision: bool = False,
-    ) -> None:
-        subprocess.check_call(
-            [
-                sys.executable,
-                '-m',
-                'build',
-            ],
-            cwd=self._pkg_dir(),
-        )
-
-        dist_dir = os.path.join(self._pkg_dir(), 'dist')
-
-        if add_revision:
-            GitRevisionAdder().add_to(dist_dir)
-
-        if build_output_dir is not None:
-            for fn in os.listdir(dist_dir):
-                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
-
-    #
-
     def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
-        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._pkgs_root)
+        ret = super().gen(opts)
 
-        self._pkg_dir()
-        self._write_git_ignore()
-        self._symlink_source_dir()
-        self._write_file_contents()
-        self._symlink_standard_files()
+        if self.build_specs().setuptools.get('cexts'):
+            _PyprojectCextPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-cext',
+            ).gen(opts)
 
-        if opts.run_build:
-            self._run_build(
-                opts.build_output_dir,
-                add_revision=opts.add_revision,
-            )
-
-        return self._pkg_dir()
+        return ret
 
 
 class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
-    def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
-        log.info('Generating pyproject cext package: %s -> %s', self._dir_name, self._pkgs_root)
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        setup_py: str
 
-        raise NotImplementedError
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['name'] += self._pkg_suffix
+
+        pyp_dct['project'] = prj
+        pyp_dct.pop('optional_dependencies', None)
+
+        #
+
+        st = specs.setuptools
+        pyp_dct['tool.setuptools'] = st
+
+        st.pop('cexts', None)
+        st.pop('find_packages', None)
+        st.pop('manifest_in', None)
+
+        #
+
+        src = textwrap.dedent("""
+            import setuptools as st
+
+
+            st.setup(
+                ext_modules=[
+                    st.Extension(
+                        name='omdev.cexts._boilerplate',
+                        sources=['omdev/cexts/_boilerplate.cc'],
+                        extra_compile_args=['-std=c++20'],
+                    ),
+                ]
+            )
+        """)
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            src,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
+            f.write(fc.setup_py)
