@@ -37,11 +37,11 @@ class PyprojectPackageGenerator:
     def __init__(
             self,
             dir_name: str,
-            build_root: str,
+            pkgs_root: str,
     ) -> None:
         super().__init__()
         self._dir_name = dir_name
-        self._build_root = build_root
+        self._pkgs_root = pkgs_root
 
     #
 
@@ -60,12 +60,12 @@ class PyprojectPackageGenerator:
     #
 
     @cached_nullary
-    def _build_dir(self) -> str:
-        build_dir: str = os.path.join(self._build_root, self._dir_name)
-        if os.path.isdir(build_dir):
-            shutil.rmtree(build_dir)
-        os.makedirs(build_dir)
-        return build_dir
+    def _pkg_dir(self) -> str:
+        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name)
+        if os.path.isdir(pkg_dir):
+            shutil.rmtree(pkg_dir)
+        os.makedirs(pkg_dir)
+        return pkg_dir
 
     #
 
@@ -74,15 +74,15 @@ class PyprojectPackageGenerator:
             '/*.egg-info/',
             '/dist',
         ]
-        with open(os.path.join(self._build_dir(), '.gitignore'), 'w') as f:
+        with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
             f.write('\n'.join(git_ignore))
 
     #
 
     def _symlink_source_dir(self) -> None:
         os.symlink(
-            os.path.relpath(self._dir_name, self._build_dir()),
-            os.path.join(self._build_dir(), self._dir_name),
+            os.path.relpath(self._dir_name, self._pkg_dir()),
+            os.path.join(self._pkg_dir(), self._dir_name),
         )
 
     #
@@ -140,6 +140,7 @@ class PyprojectPackageGenerator:
         #
 
         st = self._build_cls_dct(self.setuptools_cls())
+        st.pop('cexts', None)
         pyp_dct['tool.setuptools'] = st
 
         self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
@@ -156,11 +157,11 @@ class PyprojectPackageGenerator:
     def _write_file_contents(self) -> None:
         fc = self.file_contents()
 
-        with open(os.path.join(self._build_dir(), 'pyproject.toml'), 'w') as f:
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
             TomlWriter(f).write_root(fc.pyproject_dct)
 
         if fc.manifest_in:
-            with open(os.path.join(self._build_dir(), 'MANIFEST.in'), 'w') as f:
+            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
                 f.write('\n'.join(fc.manifest_in))  # noqa
 
     #
@@ -173,7 +174,7 @@ class PyprojectPackageGenerator:
     def _symlink_standard_files(self) -> None:
         for fn in self._STANDARD_FILES:
             if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._build_dir()), os.path.join(self._build_dir(), fn))
+                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
 
     #
 
@@ -189,10 +190,10 @@ class PyprojectPackageGenerator:
                 '-m',
                 'build',
             ],
-            cwd=self._build_dir(),
+            cwd=self._pkg_dir(),
         )
 
-        dist_dir = os.path.join(self._build_dir(), 'dist')
+        dist_dir = os.path.join(self._pkg_dir(), 'dist')
 
         if add_revision:
             GitRevisionAdder().add_to(dist_dir)
@@ -210,9 +211,9 @@ class PyprojectPackageGenerator:
             build_output_dir: ta.Optional[str] = None,
             add_revision: bool = False,
     ) -> str:
-        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._build_root)
+        log.info('Generating pyproject package: %s -> %s', self._dir_name, self._pkgs_root)
 
-        self._build_dir()
+        self._pkg_dir()
         self._write_git_ignore()
         self._symlink_source_dir()
         self._write_file_contents()
@@ -224,4 +225,4 @@ class PyprojectPackageGenerator:
                 add_revision=add_revision,
             )
 
-        return self._build_dir()
+        return self._pkg_dir()

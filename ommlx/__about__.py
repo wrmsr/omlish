@@ -16,6 +16,11 @@ class Project(ProjectBase):
             'torch ~= 2.4',
         ],
 
+        'wiki': [
+            'mwparserfromhell ~= 0.6',
+            'wikitextparser ~= 0.56',  # !! GPL
+        ],
+
         'xml': [
             'lxml ~= 5.3; python_version < "3.13"',
         ],
@@ -23,6 +28,8 @@ class Project(ProjectBase):
 
 
 class Setuptools(SetuptoolsBase):
+    cexts = True
+
     find_packages = {
         'include': [Project.name, f'{Project.name}.*'],
         'exclude': [*SetuptoolsBase.find_packages['exclude']],
