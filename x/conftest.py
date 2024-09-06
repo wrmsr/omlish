@@ -1,5 +1,5 @@
-from omlish.testing import pytest as ptu
+from omlish.testing.pytest import plugins as ptp
 
 
 def pytest_addhooks(pluginmanager):
-    ptu.plugins.addhooks(pluginmanager)
+    ptp.add_hooks(pluginmanager)

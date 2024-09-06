@@ -3,4 +3,4 @@ from .devices import (  # noqa
     to,
 )
 
-# import barf
+import barf  # noqa
