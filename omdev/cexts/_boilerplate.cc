@@ -45,7 +45,7 @@ static int boilerplate_clear(PyObject *module)
 
 static void boilerplate_free(void *module)
 {
-    _boilerplate_clear((PyObject *)module);
+    boilerplate_clear((PyObject *)module);
 }
 
 static PyMethodDef boilerplate_methods[] = {
