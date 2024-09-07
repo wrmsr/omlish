@@ -13,6 +13,7 @@ from .. import lang
 if ta.TYPE_CHECKING:
     import orjson as _orjson
     import ujson as _ujson
+
 else:
     _orjson = lang.proxy_import('orjson')
     _ujson = lang.proxy_import('ujson')
