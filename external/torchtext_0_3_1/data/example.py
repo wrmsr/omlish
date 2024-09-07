@@ -3,7 +3,7 @@ import json
 import six
 
 
-class Example(object):
+class Example:
     """Defines a single training or test example.
 
     Stores each column of the example as an attribute.
@@ -18,8 +18,7 @@ class Example(object):
         ex = cls()
         for key, vals in fields.items():
             if key not in data:
-                raise ValueError("Specified key {} was not found in "
-                                 "the input data".format(key))
+                raise ValueError("Specified key {} was not found in the input data".format(key))
             if vals is not None:
                 if not isinstance(vals, list):
                     vals = [vals]
@@ -62,6 +61,5 @@ class Example(object):
             raise
         tree = Tree.fromstring(data)
         if subtrees:
-            return [cls.fromlist(
-                [' '.join(t.leaves()), t.label()], fields) for t in tree.subtrees()]
+            return [cls.fromlist([' '.join(t.leaves()), t.label()], fields) for t in tree.subtrees()]
         return cls.fromlist([' '.join(tree.leaves()), tree.label()], fields)

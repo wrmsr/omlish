@@ -1,5 +1,3 @@
-from __future__ import division
-
 import math
 import random
 
@@ -12,7 +10,7 @@ from .dataset import Dataset
 logger = logging.getLogger(__name__)
 
 
-class Iterator(object):
+class Iterator:
     """Defines an iterator that loads batches of data from a Dataset.
 
     Attributes:
@@ -43,10 +41,19 @@ class Iterator(object):
             If left as default, the tensors will be created on cpu. Default: None.
     """
 
-    def __init__(self, dataset, batch_size, sort_key=None, device=None,
-                 batch_size_fn=None, train=True,
-                 repeat=False, shuffle=None, sort=None,
-                 sort_within_batch=None):
+    def __init__(
+            self,
+            dataset,
+            batch_size,
+            sort_key=None,
+            device=None,
+            batch_size_fn=None,
+            train=True,
+            repeat=False,
+            shuffle=None,
+            sort=None,
+            sort_within_batch=None,
+    ):
         self.batch_size, self.train, self.dataset = batch_size, train, dataset
         self.batch_size_fn = batch_size_fn
         self.iterations = 0
@@ -211,13 +218,11 @@ class BPTTIterator(Iterator):
         text = self.dataset[0].text
         TEXT = self.dataset.fields['text']
         TEXT.eos_token = None
-        text = text + ([TEXT.pad_token] * int(math.ceil(len(text) / self.batch_size) *
-                                              self.batch_size - len(text)))
+        text = text + ([TEXT.pad_token] * int(math.ceil(len(text) / self.batch_size) * self.batch_size - len(text)))
         data = TEXT.numericalize(
             [text], device=self.device)
         data = data.view(self.batch_size, -1).t().contiguous()
-        dataset = Dataset(examples=self.dataset.examples, fields=[
-            ('text', TEXT), ('target', TEXT)])
+        dataset = Dataset(examples=self.dataset.examples, fields=[('text', TEXT), ('target', TEXT)])
         while True:
             for i in range(0, len(self) * self.bptt_len, self.bptt_len):
                 self.iterations += 1
@@ -239,14 +244,21 @@ class BucketIterator(Iterator):
 
     def create_batches(self):
         if self.sort:
-            self.batches = batch(self.data(), self.batch_size,
-                                 self.batch_size_fn)
+            self.batches = batch(
+                self.data(),
+                self.batch_size,
+                self.batch_size_fn,
+            )
         else:
-            self.batches = pool(self.data(), self.batch_size,
-                                self.sort_key, self.batch_size_fn,
-                                random_shuffler=self.random_shuffler,
-                                shuffle=self.shuffle,
-                                sort_within_batch=self.sort_within_batch)
+            self.batches = pool(
+                self.data(),
+                self.batch_size,
+                self.sort_key,
+                self.batch_size_fn,
+                random_shuffler=self.random_shuffler,
+                shuffle=self.shuffle,
+                sort_within_batch=self.sort_within_batch,
+            )
 
 
 def batch(data, batch_size, batch_size_fn=None):
@@ -268,8 +280,15 @@ def batch(data, batch_size, batch_size_fn=None):
         yield minibatch
 
 
-def pool(data, batch_size, key, batch_size_fn=lambda new, count, sofar: count,
-         random_shuffler=None, shuffle=False, sort_within_batch=False):
+def pool(
+        data,
+        batch_size,
+        key,
+        batch_size_fn=lambda new, count, sofar: count,
+        random_shuffler=None,
+        shuffle=False,
+        sort_within_batch=False,
+):
     """Sort within buckets, then batch, then shuffle batches.
 
     Partitions data into chunks of size 100*batch_size, sorts examples within
@@ -280,8 +299,7 @@ def pool(data, batch_size, key, batch_size_fn=lambda new, count, sofar: count,
         random_shuffler = random.shuffle
     for p in batch(data, batch_size * 100, batch_size_fn):
         p_batch = batch(sorted(p, key=key), batch_size, batch_size_fn) \
-            if sort_within_batch \
-            else batch(p, batch_size, batch_size_fn)
+            if sort_within_batch else batch(p, batch_size, batch_size_fn)
         if shuffle:
             for b in random_shuffler(list(p_batch)):
                 yield b
