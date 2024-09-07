@@ -96,4 +96,6 @@ from .utils import (  # noqa
     opt_repr,
     update_field_extras,
     update_field_metadata,
+    update_fields,
+    update_fields_metadata,
 )

@@ -395,6 +395,7 @@ publish: gen package
 	${PYTHON} -m twine upload dist/*
 
 	${PYTHON} -m omdev.scripts.bumpversion -w omlish/__about__.py
+	${MAKE} gen
 
 
 ### Utils
