@@ -1,9 +1,12 @@
 import os
-from io import open
+import io
 
 import torch
 
-from ..data import Dataset, Field, Example, Iterator
+from ..data import Dataset
+from ..data import Field
+from ..data import Example
+from ..data import Iterator
 
 
 class BABI20Field(Field):
@@ -58,7 +61,7 @@ class BABI20(Dataset):
         fields = [('story', text_field), ('query', text_field), ('answer', text_field)]
         self.sort_key = lambda x: len(x.query)
 
-        with open(path, 'r', encoding="utf-8") as f:
+        with io.open(path, 'r', encoding="utf-8") as f:
             triplets = self._parse(f, only_supporting)
             examples = [Example.fromlist(triplet, fields) for triplet in triplets]
 
@@ -87,8 +90,20 @@ class BABI20(Dataset):
         return data
 
     @classmethod
-    def splits(cls, text_field, path=None, root='.data', task=1, joint=False, tenK=False,
-               only_supporting=False, train=None, validation=None, test=None, **kwargs):
+    def splits(
+            cls,
+            text_field,
+            path=None,
+            root='.data',
+            task=1,
+            joint=False,
+            tenK=False,
+            only_supporting=False,
+            train=None,
+            validation=None,
+            test=None,
+            **kwargs,
+    ):
         assert isinstance(task, int) and 1 <= task <= 20
         if tenK:
             cls.dirname = os.path.join('tasks_1-20_v1-2', 'en-valid-10k')
@@ -100,11 +115,9 @@ class BABI20(Dataset):
             if joint:    # put all tasks together for joint learning
                 train = 'all_train.txt'
                 if not os.path.isfile(os.path.join(path, train)):
-                    with open(os.path.join(path, train), 'w') as tf:
+                    with io.open(os.path.join(path, train), 'w') as tf:
                         for task in range(1, 21):
-                            with open(
-                                    os.path.join(path,
-                                                 'qa' + str(task) + '_train.txt')) as f:
+                            with io.open(os.path.join(path, 'qa' + str(task) + '_train.txt')) as f:
                                 tf.write(f.read())
             else:
                 train = 'qa' + str(task) + '_train.txt'
@@ -112,28 +125,54 @@ class BABI20(Dataset):
             if joint:    # put all tasks together for joint learning
                 validation = 'all_valid.txt'
                 if not os.path.isfile(os.path.join(path, validation)):
-                    with open(os.path.join(path, validation), 'w') as tf:
+                    with io.open(os.path.join(path, validation), 'w') as tf:
                         for task in range(1, 21):
-                            with open(
-                                    os.path.join(path,
-                                                 'qa' + str(task) + '_valid.txt')) as f:
+                            with io.open(os.path.join(path, 'qa' + str(task) + '_valid.txt')) as f:
                                 tf.write(f.read())
             else:
                 validation = 'qa' + str(task) + '_valid.txt'
         if test is None:
             test = 'qa' + str(task) + '_test.txt'
-        return super(BABI20,
-                     cls).splits(path=path, root=root, text_field=text_field, train=train,
-                                 validation=validation, test=test, **kwargs)
+        return super(BABI20, cls).splits(
+            path=path,
+            root=root,
+            text_field=text_field,
+            train=train,
+            validation=validation,
+            test=test,
+            **kwargs,
+        )
 
     @classmethod
-    def iters(cls, batch_size=32, root='.data', memory_size=50, task=1, joint=False,
-              tenK=False, only_supporting=False, sort=False, shuffle=False, device=None,
-              **kwargs):
+    def iters(
+            cls,
+            batch_size=32,
+            root='.data',
+            memory_size=50,
+            task=1,
+            joint=False,
+            tenK=False,
+            only_supporting=False,
+            sort=False,
+            shuffle=False,
+            device=None,
+            **kwargs,
+    ):
         text = BABI20Field(memory_size)
-        train, val, test = BABI20.splits(text, root=root, task=task, joint=joint,
-                                         tenK=tenK, only_supporting=only_supporting,
-                                         **kwargs)
+        train, val, test = BABI20.splits(
+            text,
+            root=root,
+            task=task,
+            joint=joint,
+            tenK=tenK,
+            only_supporting=only_supporting,
+            **kwargs,
+        )
         text.build_vocab(train)
-        return Iterator.splits((train, val, test), batch_size=batch_size, sort=sort,
-                               shuffle=shuffle, device=device)
+        return Iterator.splits(
+            (train, val, test),
+            batch_size=batch_size,
+            sort=sort,
+            shuffle=shuffle,
+            device=device,
+        )

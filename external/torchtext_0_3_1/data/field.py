@@ -1,17 +1,17 @@
-# coding: utf8
-from collections import Counter, OrderedDict
-from itertools import chain
+import collections
+import itertools
 import six
 import torch
-from tqdm import tqdm
+import tqdm
 
+from ..vocab import SubwordVocab
+from ..vocab import Vocab
 from .dataset import Dataset
 from .pipeline import Pipeline
 from .utils import get_tokenizer
-from ..vocab import Vocab, SubwordVocab
 
 
-class RawField(object):
+class RawField:
     """ Defines a general datatype.
 
     Every dataset consists of one or more types of data. For instance, a text
@@ -132,13 +132,27 @@ class Field(RawField):
         torch.long: int,
     }
 
-    def __init__(self, sequential=True, use_vocab=True, init_token=None,
-                 eos_token=None, fix_length=None, dtype=torch.long,
-                 preprocessing=None, postprocessing=None, lower=False,
-                 tokenize=(lambda s: s.split()), include_lengths=False,
-                 batch_first=False, pad_token="<pad>", unk_token="<unk>",
-                 pad_first=False, truncate_first=False, stop_words=None,
-                 is_target=False):
+    def __init__(
+            self,
+            sequential=True,
+            use_vocab=True,
+            init_token=None,
+            eos_token=None,
+            fix_length=None,
+            dtype=torch.long,
+            preprocessing=None,
+            postprocessing=None,
+            lower=False,
+            tokenize=(lambda s: s.split()),
+            include_lengths=False,
+            batch_first=False,
+            pad_token="<pad>",
+            unk_token="<unk>",
+            pad_first=False,
+            truncate_first=False,
+            stop_words=None,
+            is_target=False,
+    ):
         self.sequential = sequential
         self.use_vocab = use_vocab
         self.init_token = init_token
@@ -172,8 +186,7 @@ class Field(RawField):
         first. If `sequential=True`, it will be tokenized. Then the input
         will be optionally lowercased and passed to the user-provided
         `preprocessing` Pipeline."""
-        if (six.PY2 and isinstance(x, six.string_types) and
-                not isinstance(x, six.text_type)):
+        if (six.PY2 and isinstance(x, six.string_types) and not isinstance(x, six.text_type)):
             x = Pipeline(lambda s: six.text_type(s, encoding='utf-8'))(x)
         if self.sequential and isinstance(x, six.text_type):
             x = self.tokenize(x.rstrip('\n'))
@@ -250,7 +263,7 @@ class Field(RawField):
                 provided directly.
             Remaining keyword arguments: Passed to the constructor of Vocab.
         """
-        counter = Counter()
+        counter = collections.Counter()
         sources = []
         for arg in args:
             if isinstance(arg, Dataset):
@@ -265,8 +278,8 @@ class Field(RawField):
                 try:
                     counter.update(x)
                 except TypeError:
-                    counter.update(chain.from_iterable(x))
-        specials = list(OrderedDict.fromkeys(
+                    counter.update(itertools.chain.from_iterable(x))
+        specials = list(collections.OrderedDict.fromkeys(
             tok for tok in [self.unk_token, self.pad_token, self.init_token,
                             self.eos_token]
             if tok is not None))
@@ -402,7 +415,7 @@ class SubwordField(ReversibleField):
             else:
                 sources.append(arg)
         for data in sources:
-            for x in tqdm(data, 'segmenting'):
+            for x in tqdm.tqdm(data, 'segmenting'):
                 x[:] = self.vocab.segment(x)
 
 
@@ -452,11 +465,22 @@ class NestedField(Field):
             ``False``.
     """
 
-    def __init__(self, nesting_field, use_vocab=True, init_token=None, eos_token=None,
-                 fix_length=None, dtype=torch.long, preprocessing=None,
-                 postprocessing=None, tokenize=lambda s: s.split(),
-                 include_lengths=False, pad_token='<pad>',
-                 pad_first=False, truncate_first=False):
+    def __init__(
+            self,
+            nesting_field,
+            use_vocab=True,
+            init_token=None,
+            eos_token=None,
+            fix_length=None,
+            dtype=torch.long,
+            preprocessing=None,
+            postprocessing=None,
+            tokenize=lambda s: s.split(),
+            include_lengths=False,
+            pad_token='<pad>',
+            pad_first=False,
+            truncate_first=False,
+    ):
         if isinstance(nesting_field, NestedField):
             raise ValueError('nesting field must not be another NestedField')
         if nesting_field.include_lengths:
@@ -464,7 +488,7 @@ class NestedField(Field):
 
         if nesting_field.sequential:
             pad_token = nesting_field.pad_token
-        super(NestedField, self).__init__(
+        super().__init__(
             use_vocab=use_vocab,
             init_token=init_token,
             eos_token=eos_token,
