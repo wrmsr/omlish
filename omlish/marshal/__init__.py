@@ -48,6 +48,10 @@ from .global_ import (  # noqa
     unmarshal,
 )
 
+from .helpers import (  # noqa
+    update_fields_metadata,
+)
+
 from .objects import (  # noqa
     FieldMetadata,
     ObjectMetadata,

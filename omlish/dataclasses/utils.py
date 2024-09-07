@@ -12,6 +12,9 @@ from .impl.params import get_field_extras
 T = ta.TypeVar('T')
 
 
+#
+
+
 def maybe_post_init(sup: ta.Any) -> bool:
     try:
         fn = sup.__post_init__
@@ -21,8 +24,14 @@ def maybe_post_init(sup: ta.Any) -> bool:
     return True
 
 
+#
+
+
 def opt_repr(o: ta.Any) -> str | None:
     return repr(o) if o is not None else None
+
+
+#
 
 
 class field_modifier:  # noqa
@@ -56,6 +65,42 @@ def update_field_extras(f: dc.Field, *, unless_non_default: bool = False, **kwar
             if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
         }),
     })
+
+
+def update_fields(
+        fn: ta.Callable[[str, dc.Field], dc.Field],
+        fields: ta.Iterable[str] | None = None,
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        if fields is None:
+            for a, v in list(cls.__dict__.items()):
+                if isinstance(v, dc.Field):
+                    setattr(cls, a, fn(a, v))
+
+        else:
+            for a in fields:
+                v = cls.__dict__[a]
+                if not isinstance(v, dc.Field):
+                    v = dc.field(default=v)
+                setattr(cls, a, fn(a, v))
+
+        return cls
+
+    check.not_isinstance(fields, str)
+    return inner
+
+
+def update_fields_metadata(
+        nmd: ta.Mapping,
+        fields: ta.Iterable[str] | None = None,
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(a: str, f: dc.Field) -> dc.Field:
+        return update_field_metadata(f, nmd)
+
+    return update_fields(inner, fields)
+
+
+#
 
 
 def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]) -> T:
