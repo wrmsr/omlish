@@ -100,25 +100,26 @@ def analyze_file(
 
         def maybe_flush_rows():
             if len(rows) >= row_batch_size:
-                while True:
-                    try:
-                        with lck:
+                with lck:
+                    while True:
+                        try:
                             with engine.begin() as conn:
                                 conn.execute(pages_table.insert(), rows)
 
-                    except sa.exc.OperationalError as oe:
-                        if 'database is locked' in repr(oe):  # FIXME: lol
-                            time.sleep(1.)
-                            continue
-                        raise
+                        except sa.exc.OperationalError as oe:
+                            if 'database is locked' in repr(oe):  # FIXME: lol
+                                log.warning(f'{efn}: database is locked!!')  # noqa
+                                time.sleep(1.)
+                                continue
+                            raise
 
-                    else:
-                        break
+                        else:
+                            break
 
-                nr.value += len(rows)
-                log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
+                    nr.value += len(rows)
+                    log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
 
-                rows.clear()
+                    rows.clear()
 
         f = es.enter_context(open(fn, 'rb'))
         # fpr = iou.FileProgressReporter(f, time_interval=5)
