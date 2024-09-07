@@ -28,7 +28,7 @@ def _main() -> None:
         tp, np = rp[:ni], rp[ni:]
         n = int(np)
         nv = '.'.join([*parts[:-1], tp + str(n + 1)])
-        lines[i] = f"__about__ = '{nv}'\n"
+        lines[i] = f"__version__ = '{nv}'\n"
     new_src = ''.join(lines)
 
     if args.write:
