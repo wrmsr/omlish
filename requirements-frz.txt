@@ -35,7 +35,7 @@ boto3==1.35.14
 botocore==1.35.14
 bs4==0.0.2
 bsddb3==6.2.9
-build==1.2.1
+build==1.2.2
 cachetools==5.5.0
 catalogue==2.0.10
 certifi==2024.8.30
@@ -69,7 +69,6 @@ decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 discord.py==2.4.0
-diskcache==5.6.3
 distro==1.9.0
 docstring_parser==0.16
 docutils==0.21.2
@@ -83,7 +82,7 @@ execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
 fastjsonschema==2.20.0
-filelock==3.15.4
+filelock==3.16.0
 fire==0.6.0
 flake8==7.1.1
 Flake8-pyproject==1.2.3
@@ -169,14 +168,13 @@ langchainhub==0.1.21
 langcodes==3.4.0
 langgraph==0.2.19
 langgraph-checkpoint==1.0.9
-langsmith==0.1.115
+langsmith==0.1.116
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
 lightning-utilities==0.11.7
 litecli==1.11.1
-llama_cpp_python==0.2.90
 llvmlite==0.43.0
 Logbook==1.7.0.post0
 loguru==0.7.2
@@ -249,7 +247,7 @@ pgspecial==2.1.2
 pillow==10.4.0
 pipdeptree==2.23.1
 pkginfo==1.10.0
-platformdirs==4.2.2
+platformdirs==4.3.1
 pluggy==1.5.0
 polars==1.6.0
 pooch==1.8.2
@@ -356,7 +354,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.34
 sqlean.py==3.45.1
-sqlglot==25.19.0
+sqlglot==25.20.1
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -394,7 +392,7 @@ typer==0.12.5
 types-paramiko==3.4.0.20240423
 types-python-dateutil==2.9.0.20240906
 types-PyYAML==6.0.12.20240808
-types-requests==2.32.0.20240905
+types-requests==2.32.0.20240907
 types-ujson==5.10.0.20240515
 typing-inspect==0.9.0
 typing_extensions==4.12.2
@@ -421,7 +419,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
-yarl==1.9.11
+yarl==1.10.0
 zigpy==0.66.0
 zipp==3.20.1
 zwave-js-server-python==0.57.0
