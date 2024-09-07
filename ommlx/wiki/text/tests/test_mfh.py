@@ -26,7 +26,8 @@ def test_dom():
             # print(([(f'{p.__class__.__name__}@{hex(id(p))[2:]}', a) for p, a in path], child))
             pass
 
-        es_json = json.dumps_pretty(msh.marshal(doc, mfh.Doc))
+        es_msh = msh.marshal(doc, mfh.Doc)
+        es_json = json.dumps_pretty(es_msh)
         # print(es_json)
 
         doc2 = msh.unmarshal(json.loads(es_json), mfh.Doc)
