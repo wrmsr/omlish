@@ -31,9 +31,18 @@ def get_dataclass_metadata(ty: type) -> ObjectMetadata:
     ) or ObjectMetadata()
 
 
-def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
+def get_field_infos(
+        ty: type,
+        opts: col.TypeMap[Option] = col.TypeMap(),
+) -> ta.Sequence[FieldInfo]:
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
+
+    fi_defaults = {
+        k: v
+        for k, v in dc.asdict(dc_md.field_defaults).items()
+        if v is not None
+    }
 
     type_hints = ta.get_type_hints(ty)
 
@@ -44,7 +53,8 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
         else:
             um_name = field.name
 
-        kw = dict(
+        kw = dict(fi_defaults)
+        kw.update(
             name=field.name,
             type=type_hints[field.name],
             metadata=FieldMetadata(),
@@ -54,7 +64,10 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
         )
 
         if (fmd := field.metadata.get(FieldMetadata)) is not None:
-            kw.update(metadata=fmd)
+            kw.update(
+                metadata=fmd,
+                omit_if=fmd.omit_if,
+            )
 
             if fmd.name is not None:
                 kw.update(

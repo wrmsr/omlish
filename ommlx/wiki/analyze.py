@@ -34,9 +34,11 @@ import multiprocessing.managers
 import os.path
 import signal
 import threading
+import time
 
 import lz4.frame
 import sqlalchemy as sa
+import sqlalchemy.exc
 
 from omlish import concurrent as cfu
 from omlish import lang
@@ -98,12 +100,23 @@ def analyze_file(
 
         def maybe_flush_rows():
             if len(rows) >= row_batch_size:
-                with lck:
-                    with engine.begin() as conn:
-                        conn.execute(pages_table.insert(), rows)
+                while True:
+                    try:
+                        with lck:
+                            with engine.begin() as conn:
+                                conn.execute(pages_table.insert(), rows)
 
-                    nr.value += len(rows)
-                    log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
+                    except sa.exc.OperationalError as oe:
+                        if 'database is locked' in repr(oe):  # FIXME: lol
+                            time.sleep(1.)
+                            continue
+                        raise
+
+                    else:
+                        break
+
+                nr.value += len(rows)
+                log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
 
                 rows.clear()
 
