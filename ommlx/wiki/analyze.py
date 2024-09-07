@@ -117,7 +117,7 @@ def analyze_file(
                             break
 
                     nr.value += len(rows)
-                    log.info(f'{efn}: {len(rows)} rows batched, {i} rows file, {nr.value} rows total')  # noqa
+                    log.info(f'{efn}: {len(rows):_} rows batched, {i:_} rows file, {nr.value:_} rows total')  # noqa
 
                     rows.clear()
 
