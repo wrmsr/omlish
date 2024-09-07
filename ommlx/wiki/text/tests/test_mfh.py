@@ -15,6 +15,7 @@ def test_dom():
         msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
 
     install_msh_poly(mfh.Node)
+    install_msh_poly(mfh.ContentNode)
 
     for n, src in WIKI_FILES.items():
         print(n)

@@ -5,14 +5,32 @@ TODO:
 https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes
 """
 import abc
-import dataclasses as dc
+import operator
 import typing as ta
 
 import mwparserfromhell as mfh
 import mwparserfromhell.nodes as mfn
 
+from omlish import dataclasses as dc
+from omlish import marshal as msh
+
 
 Wikicode: ta.TypeAlias = mfh.wikicode.Wikicode
+
+
+##
+
+
+@dc.field_modifier
+def _omit_field_if_empty(f: dc.Field) -> dc.Field:
+    return dc.update_field_metadata(
+        f,
+        {
+            msh.FieldMetadata: msh.FieldMetadata(
+                omit_if=operator.not_,
+            ),
+        },
+    )
 
 
 ##
@@ -33,7 +51,7 @@ Content: ta.TypeAlias = ta.Sequence[ContentNode]
 
 @dc.dataclass(frozen=True)
 class Doc(Node):
-    body: Content
+    body: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
@@ -43,14 +61,14 @@ class Text(ContentNode):
 
 @dc.dataclass(frozen=True)
 class WikiLink(ContentNode):
-    title: Content
-    text: Content
+    title: Content = dc.field(default=()) | _omit_field_if_empty
+    text: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
 class ExternalLink(ContentNode):
-    title: Content
-    url: Content
+    title: Content = dc.field(default=()) | _omit_field_if_empty
+    url: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
@@ -65,40 +83,40 @@ class Comment(ContentNode):
 
 @dc.dataclass(frozen=True)
 class Parameter(Node):
-    name: Content
-    value: Content
+    name: Content = dc.field(default=()) | _omit_field_if_empty
+    value: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
 class Template(ContentNode):
-    name: Content
-    params: ta.Sequence[Parameter]
+    name: Content = dc.field(default=()) | _omit_field_if_empty
+    params: ta.Sequence[Parameter] = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
 class Attribute(Node):
-    name: Content
-    value: Content
+    name: Content = dc.field(default=()) | _omit_field_if_empty
+    value: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
 class Tag(ContentNode):
-    l: Content
-    atts: ta.Sequence[Attribute]
-    body: Content
-    r: Content
+    l: Content = dc.field(default=()) | _omit_field_if_empty
+    atts: ta.Sequence[Attribute] = dc.field(default=()) | _omit_field_if_empty
+    body: Content = dc.field(default=()) | _omit_field_if_empty
+    r: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 @dc.dataclass(frozen=True)
 class Heading(ContentNode):
-    title: Content
-    level: int
+    title: Content = dc.field(default=()) | _omit_field_if_empty
+    level: int = 0
 
 
 @dc.dataclass(frozen=True)
 class Argument(ContentNode):
-    name: Content
-    default: Content
+    name: Content = dc.field(default=()) | _omit_field_if_empty
+    default: Content = dc.field(default=()) | _omit_field_if_empty
 
 
 ##

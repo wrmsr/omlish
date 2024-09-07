@@ -4,7 +4,6 @@ from ... import dataclasses as dc
 from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..objects import FieldInfo
-from ..objects import FieldMetadata
 from ..objects import ObjectMarshaler
 from ..objects import ObjectUnmarshaler
 from ..primitives import PRIMITIVE_MARSHALER_UNMARSHALER
@@ -21,18 +20,16 @@ class C:
 def test_unknown_fields():
     fis = [
         FieldInfo(
-            'i',
-            int,
-            FieldMetadata(),
-            'i',
-            ['i'],
+            name='i',
+            type=int,
+            marshal_name='i',
+            unmarshal_names=['i'],
         ),
         FieldInfo(
-            's',
-            str,
-            FieldMetadata(),
-            's',
-            ['s'],
+            name='s',
+            type=str,
+            marshal_name='s',
+            unmarshal_names=['s'],
         ),
     ]
 
