@@ -1,6 +1,6 @@
 import random
-from contextlib import contextmanager
-from copy import deepcopy
+import contextlib
+import copy
 
 
 def get_tokenizer(tokenizer):
@@ -90,7 +90,7 @@ class RandomShuffler(object):
         if self._random_state is None:
             self._random_state = random.getstate()
 
-    @contextmanager
+    @contextlib.contextmanager
     def use_internal_state(self):
         """Use a specific RNG state."""
         old_state = random.getstate()
@@ -101,7 +101,7 @@ class RandomShuffler(object):
 
     @property
     def random_state(self):
-        return deepcopy(self._random_state)
+        return copy.deepcopy(self._random_state)
 
     @random_state.setter
     def random_state(self, s):

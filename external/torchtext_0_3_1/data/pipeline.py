@@ -1,4 +1,4 @@
-class Pipeline(object):
+class Pipeline:
     """Defines a pipeline for transforming sequence data.
 
     The input is assumed to be utf-8 encoded `str` (Python 3) or
