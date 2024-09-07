@@ -1,7 +1,7 @@
-import six
-import requests
 import csv
-from tqdm import tqdm
+
+import requests
+import tqdm
 
 
 def reporthook(t):
@@ -30,7 +30,7 @@ def download_from_url(url, path):
         chunk_size = 16 * 1024
         total_size = int(r.headers.get('Content-length', 0))
         with open(path, "wb") as file:
-            with tqdm(total=total_size, unit='B',
+            with tqdm.tqdm(total=total_size, unit='B',
                       unit_scale=1, desc=path.split('/')[-1]) as t:
                 for chunk in r.iter_content(chunk_size):
                     if chunk:
@@ -61,15 +61,8 @@ def unicode_csv_reader(unicode_csv_data, **kwargs):
     """Since the standard csv library does not handle unicode in Python 2, we need a wrapper.
     Borrowed and slightly modified from the Python docs:
     https://docs.python.org/2/library/csv.html#csv-examples"""
-    if six.PY2:
-        # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-        csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
-        for row in csv_reader:
-            # decode UTF-8 back to Unicode, cell by cell:
-            yield [cell.decode('utf-8') for cell in row]
-    else:
-        for line in csv.reader(unicode_csv_data, **kwargs):
-            yield line
+    for line in csv.reader(unicode_csv_data, **kwargs):
+        yield line
 
 
 def utf_8_encoder(unicode_csv_data):

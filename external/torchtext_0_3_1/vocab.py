@@ -1,23 +1,22 @@
-from __future__ import unicode_literals
-from collections import defaultdict
-from functools import partial
+import collections
+import functools
+import gzip
 import logging
 import os
 import zipfile
-import gzip
+import urllib.request
 
-import six
-from six.moves.urllib.request import urlretrieve  # noqa
-import torch
-from tqdm import tqdm
 import tarfile
+import torch
+import tqdm
 
 from .utils import reporthook
+
 
 logger = logging.getLogger(__name__)
 
 
-class Vocab(object):
+class Vocab:
     """Defines a vocabulary object that will be used to numericalize a field.
 
     Attributes:
@@ -27,8 +26,18 @@ class Vocab(object):
             numerical identifiers.
         itos: A list of token strings indexed by their numerical identifiers.
     """
-    def __init__(self, counter, max_size=None, min_freq=1, specials=['<pad>'],
-                 vectors=None, unk_init=None, vectors_cache=None, specials_first=True):
+
+    def __init__(
+            self,
+            counter,
+            max_size=None,
+            min_freq=1,
+            specials=['<pad>'],
+            vectors=None,
+            unk_init=None,
+            vectors_cache=None,
+            specials_first=True,
+    ):
         """Create a Vocab object from a collections.Counter.
 
         Arguments:
@@ -79,7 +88,7 @@ class Vocab(object):
         if not specials_first:
             self.itos.extend(list(specials))
 
-        self.stoi = defaultdict(_default_unk_index)
+        self.stoi = collections.defaultdict(_default_unk_index)
         # stoi is simply a reverse dict for itos
         self.stoi.update({tok: i for i, tok in enumerate(self.itos)})
 
@@ -134,9 +143,7 @@ class Vocab(object):
         if not isinstance(vectors, list):
             vectors = [vectors]
         for idx, vector in enumerate(vectors):
-            if six.PY2 and isinstance(vector, str):
-                vector = six.text_type(vector)
-            if isinstance(vector, six.string_types):
+            if isinstance(vector, str):
                 # Convert the string pretrained vector identifier
                 # to a Vectors object
                 if vector not in pretrained_aliases:
@@ -187,8 +194,14 @@ class Vocab(object):
 
 class SubwordVocab(Vocab):
 
-    def __init__(self, counter, max_size=None, specials=['<pad>'],
-                 vectors=None, unk_init=torch.Tensor.zero_):
+    def __init__(
+            self,
+            counter,
+            max_size=None,
+            specials=['<pad>'],
+            vectors=None,
+            unk_init=torch.Tensor.zero_,
+    ):
         """Create a revtok subword vocabulary from a collections.Counter.
 
         Arguments:
@@ -212,7 +225,7 @@ class SubwordVocab(Vocab):
             print("Please install revtok.")
             raise
 
-        self.stoi = defaultdict(_default_unk_index)
+        self.stoi = collections.defaultdict(_default_unk_index)
         self.stoi.update({tok: i for i, tok in enumerate(specials)})
         self.itos = specials.copy()
 
@@ -251,10 +264,16 @@ def _infer_shape(f):
     return num_lines, vector_dim
 
 
-class Vectors(object):
+class Vectors:
 
-    def __init__(self, name, cache=None,
-                 url=None, unk_init=None, max_vectors=None):
+    def __init__(
+            self,
+            name,
+            cache=None,
+            url=None,
+            unk_init=None,
+            max_vectors=None,
+    ):
         """
         Arguments:
            name: name of the file that contains the vectors
@@ -308,9 +327,9 @@ class Vectors(object):
                     os.makedirs(cache)
                 dest = os.path.join(cache, os.path.basename(url))
                 if not os.path.isfile(dest):
-                    with tqdm(unit='B', unit_scale=True, miniters=1, desc=dest) as t:
+                    with tqdm.tqdm(unit='B', unit_scale=True, miniters=1, desc=dest) as t:
                         try:
-                            urlretrieve(url, dest, reporthook=reporthook(t))
+                            urllib.request.urlretrieve(url, dest, reporthook=reporthook(t))
                         except KeyboardInterrupt as e:  # remove the partial zip file
                             os.remove(dest)
                             raise e
@@ -341,7 +360,7 @@ class Vectors(object):
 
                 itos, vectors, dim = [], torch.zeros((max_vectors, dim)), None
 
-                for line in tqdm(f, total=num_lines):
+                for line in tqdm.tqdm(f, total=num_lines):
                     # Explicitly splitting on " " is important, so we don't
                     # get rid of Unicode non-breaking spaces in the vectors.
                     entries = line.rstrip().split(b" ")
@@ -361,7 +380,7 @@ class Vectors(object):
                                                                     dim))
 
                     try:
-                        if isinstance(word, six.binary_type):
+                        if isinstance(word, (bytes, bytearray)):
                             word = word.decode('utf-8')
                     except UnicodeDecodeError:
                         logger.info("Skipping non-UTF8 token {}".format(repr(word)))
@@ -448,18 +467,18 @@ def _default_unk_index():
 
 
 pretrained_aliases = {
-    "charngram.100d": partial(CharNGram),
-    "fasttext.en.300d": partial(FastText, language="en"),
-    "fasttext.simple.300d": partial(FastText, language="simple"),
-    "glove.42B.300d": partial(GloVe, name="42B", dim="300"),
-    "glove.840B.300d": partial(GloVe, name="840B", dim="300"),
-    "glove.twitter.27B.25d": partial(GloVe, name="twitter.27B", dim="25"),
-    "glove.twitter.27B.50d": partial(GloVe, name="twitter.27B", dim="50"),
-    "glove.twitter.27B.100d": partial(GloVe, name="twitter.27B", dim="100"),
-    "glove.twitter.27B.200d": partial(GloVe, name="twitter.27B", dim="200"),
-    "glove.6B.50d": partial(GloVe, name="6B", dim="50"),
-    "glove.6B.100d": partial(GloVe, name="6B", dim="100"),
-    "glove.6B.200d": partial(GloVe, name="6B", dim="200"),
-    "glove.6B.300d": partial(GloVe, name="6B", dim="300")
+    "charngram.100d": functools.partial(CharNGram),
+    "fasttext.en.300d": functools.partial(FastText, language="en"),
+    "fasttext.simple.300d": functools.partial(FastText, language="simple"),
+    "glove.42B.300d": functools.partial(GloVe, name="42B", dim="300"),
+    "glove.840B.300d": functools.partial(GloVe, name="840B", dim="300"),
+    "glove.twitter.27B.25d": functools.partial(GloVe, name="twitter.27B", dim="25"),
+    "glove.twitter.27B.50d": functools.partial(GloVe, name="twitter.27B", dim="50"),
+    "glove.twitter.27B.100d": functools.partial(GloVe, name="twitter.27B", dim="100"),
+    "glove.twitter.27B.200d": functools.partial(GloVe, name="twitter.27B", dim="200"),
+    "glove.6B.50d": functools.partial(GloVe, name="6B", dim="50"),
+    "glove.6B.100d": functools.partial(GloVe, name="6B", dim="100"),
+    "glove.6B.200d": functools.partial(GloVe, name="6B", dim="200"),
+    "glove.6B.300d": functools.partial(GloVe, name="6B", dim="300")
 }
 """Mapping from string name to factory function"""

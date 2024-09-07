@@ -1,7 +1,7 @@
 import torch
 
 
-class Batch(object):
+class Batch:
     """Defines a batch of examples along with its Fields.
 
     Attributes:
@@ -23,10 +23,8 @@ class Batch(object):
             self.batch_size = len(data)
             self.dataset = dataset
             self.fields = dataset.fields.keys()  # copy field names
-            self.input_fields = [k for k, v in dataset.fields.items() if
-                                 v is not None and not v.is_target]
-            self.target_fields = [k for k, v in dataset.fields.items() if
-                                  v is not None and v.is_target]
+            self.input_fields = [k for k, v in dataset.fields.items() if v is not None and not v.is_target]
+            self.target_fields = [k for k, v in dataset.fields.items() if v is not None and v.is_target]
 
             for (name, field) in dataset.fields.items():
                 if field is not None:
@@ -55,12 +53,17 @@ class Batch(object):
         var_strs = '\n'.join(['\t[.' + name + ']' + ":" + _short_str(getattr(self, name))
                               for name in fields_to_index if hasattr(self, name)])
 
-        data_str = (' from {}'.format(self.dataset.name.upper())
-                    if hasattr(self.dataset, 'name') and
-                    isinstance(self.dataset.name, str) else '')
+        data_str = (
+            ' from {}'.format(self.dataset.name.upper())
+            if hasattr(self.dataset, 'name') and isinstance(self.dataset.name, str) else ''
+        )
 
-        strt = '[{} of size {}{}]\n{}'.format(torch.typename(self),
-                                              self.batch_size, data_str, var_strs)
+        strt = '[{} of size {}{}]\n{}'.format(
+            torch.typename(self),
+            self.batch_size,
+            data_str,
+            var_strs,
+        )
         return '\n' + strt
 
     def __len__(self):
@@ -94,8 +97,6 @@ def _short_str(tensor):
 
     # copied from torch _tensor_str
     size_str = 'x'.join(str(size) for size in tensor.size())
-    device_str = '' if not tensor.is_cuda else \
-        ' (GPU {})'.format(tensor.get_device())
-    strt = '[{} of size {}{}]'.format(torch.typename(tensor),
-                                      size_str, device_str)
+    device_str = '' if not tensor.is_cuda else ' (GPU {})'.format(tensor.get_device())
+    strt = '[{} of size {}{}]'.format(torch.typename(tensor), size_str, device_str)
     return strt

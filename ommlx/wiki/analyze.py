@@ -69,6 +69,7 @@ pages_table = sa.Table(
     sa.Column('id', sa.Integer(), primary_key=True),
     sa.Column('title', sa.String()),
     sa.Column('text', sa.BLOB),
+    sa.Index('pages_by_title', 'title'),
 )
 
 
