@@ -215,7 +215,7 @@ def _init_process() -> None:
 def _main() -> None:
     logs.configure_standard_logging('INFO')
 
-    default_workers = 0
+    default_workers = 2
 
     import argparse
 
@@ -250,13 +250,14 @@ def _main() -> None:
 
         nr = mgr.Value('i', 0)
 
+        lck = mgr.Lock()
         futs: list[cf.Future] = [
             ex.submit(
                 analyze_file,
                 db_url,
                 fn,
                 pdp,
-                mgr.Lock(),
+                lck,
                 nr,
             )
             for fn in sorted(
