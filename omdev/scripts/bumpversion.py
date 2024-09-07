@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omlish-lite
 # @omlish-script
 import argparse
 import re
