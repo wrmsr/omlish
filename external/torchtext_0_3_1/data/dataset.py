@@ -3,14 +3,15 @@ import os
 import zipfile
 import tarfile
 import gzip
+import functools
 import shutil
-from functools import partial
 
 import torch.utils.data
 
-from .utils import RandomShuffler
+from ..utils import download_from_url
+from ..utils import unicode_csv_reader
 from .example import Example
-from ..utils import download_from_url, unicode_csv_reader
+from .utils import RandomShuffler
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -51,8 +52,15 @@ class Dataset(torch.utils.data.Dataset):
                 del self.fields[n]
 
     @classmethod
-    def splits(cls, path=None, root='.data', train=None, validation=None,
-               test=None, **kwargs):
+    def splits(
+            cls,
+            path=None,
+            root='.data',
+            train=None,
+            validation=None,
+            test=None,
+            **kwargs,
+    ):
         """Create Dataset objects for multiple splits of a dataset.
 
         Arguments:
@@ -74,17 +82,18 @@ class Dataset(torch.utils.data.Dataset):
         """
         if path is None:
             path = cls.download(root)
-        train_data = None if train is None else cls(
-            os.path.join(path, train), **kwargs)
-        val_data = None if validation is None else cls(
-            os.path.join(path, validation), **kwargs)
-        test_data = None if test is None else cls(
-            os.path.join(path, test), **kwargs)
-        return tuple(d for d in (train_data, val_data, test_data)
-                     if d is not None)
+        train_data = None if train is None else cls(os.path.join(path, train), **kwargs)
+        val_data = None if validation is None else cls(os.path.join(path, validation), **kwargs)
+        test_data = None if test is None else cls(os.path.join(path, test), **kwargs)
+        return tuple(d for d in (train_data, val_data, test_data) if d is not None)
 
-    def split(self, split_ratio=0.7, stratified=False, strata_field='label',
-              random_state=None):
+    def split(
+            self,
+            split_ratio=0.7,
+            stratified=False,
+            strata_field='label',
+            random_state=None,
+    ):
         """Create train-test(-valid?) splits from the instance's examples.
 
         Arguments:
@@ -109,25 +118,20 @@ class Dataset(torch.utils.data.Dataset):
         # For the permutations
         rnd = RandomShuffler(random_state)
         if not stratified:
-            train_data, test_data, val_data = rationed_split(self.examples, train_ratio,
-                                                             test_ratio, val_ratio, rnd)
+            train_data, test_data, val_data = rationed_split(self.examples, train_ratio, test_ratio, val_ratio, rnd)
         else:
             if strata_field not in self.fields:
-                raise ValueError("Invalid field name for strata_field {}"
-                                 .format(strata_field))
+                raise ValueError("Invalid field name for strata_field {}" .format(strata_field))
             strata = stratify(self.examples, strata_field)
             train_data, test_data, val_data = [], [], []
             for group in strata:
                 # Stratify each group and add together the indices.
-                group_train, group_test, group_val = rationed_split(group, train_ratio,
-                                                                    test_ratio, val_ratio,
-                                                                    rnd)
+                group_train, group_test, group_val = rationed_split(group, train_ratio, test_ratio, val_ratio, rnd)
                 train_data += group_train
                 test_data += group_test
                 val_data += group_val
 
-        splits = tuple(Dataset(d, self.fields)
-                       for d in (train_data, val_data, test_data) if d)
+        splits = tuple(Dataset(d, self.fields) for d in (train_data, val_data, test_data) if d)
 
         # In case the parent sort key isn't none
         if self.sort_key:
@@ -217,8 +221,15 @@ class Dataset(torch.utils.data.Dataset):
 class TabularDataset(Dataset):
     """Defines a Dataset of columns stored in CSV, TSV, or JSON format."""
 
-    def __init__(self, path, format, fields, skip_header=False,
-                 csv_reader_params={}, **kwargs):
+    def __init__(
+            self,
+            path,
+            format,
+            fields,
+            skip_header=False,
+            csv_reader_params={},
+            **kwargs,
+    ):
         """Create a TabularDataset given a path, file format, and field list.
 
         Arguments:
@@ -245,8 +256,11 @@ class TabularDataset(Dataset):
         """
         format = format.lower()
         make_example = {
-            'json': Example.fromJSON, 'dict': Example.fromdict,
-            'tsv': Example.fromCSV, 'csv': Example.fromCSV}[format]
+            'json': Example.fromJSON,
+            'dict': Example.fromdict,
+            'tsv': Example.fromCSV,
+            'csv': Example.fromCSV,
+        }[format]
 
         with io.open(os.path.expanduser(path), encoding="utf8") as f:
             if format == 'csv':
@@ -258,12 +272,14 @@ class TabularDataset(Dataset):
 
             if format in ['csv', 'tsv'] and isinstance(fields, dict):
                 if skip_header:
-                    raise ValueError('When using a dict to specify fields with a {} file,'
-                                     'skip_header must be False and'
-                                     'the file must have a header.'.format(format))
+                    raise ValueError(
+                        'When using a dict to specify fields with a {} file,'
+                        'skip_header must be False and'
+                        'the file must have a header.'.format(format),
+                    )
                 header = next(reader)
                 field_to_index = {f: header.index(f) for f in fields.keys()}
-                make_example = partial(make_example, field_to_index=field_to_index)
+                make_example = functools.partial(make_example, field_to_index=field_to_index)
 
             if skip_header:
                 next(reader)
@@ -287,16 +303,14 @@ def check_split_ratio(split_ratio):
     if isinstance(split_ratio, float):
         # Only the train set relative ratio is provided
         # Assert in bounds, validation size is zero
-        assert 0. < split_ratio < 1., (
-            "Split ratio {} not between 0 and 1".format(split_ratio))
+        assert 0. < split_ratio < 1., "Split ratio {} not between 0 and 1".format(split_ratio)
 
         test_ratio = 1. - split_ratio
         return (split_ratio, test_ratio, valid_ratio)
     elif isinstance(split_ratio, list):
         # A list of relative ratios is provided
         length = len(split_ratio)
-        assert length == 2 or length == 3, (
-            "Length of split ratio list should be 2 or 3, got {}".format(split_ratio))
+        assert length == 2 or length == 3, "Length of split ratio list should be 2 or 3, got {}".format(split_ratio)
 
         # Normalize if necessary
         ratio_sum = sum(split_ratio)
@@ -307,8 +321,7 @@ def check_split_ratio(split_ratio):
             return tuple(split_ratio + [valid_ratio])
         return tuple(split_ratio)
     else:
-        raise ValueError('Split ratio must be float or a list, got {}'
-                         .format(type(split_ratio)))
+        raise ValueError('Split ratio must be float or a list, got {}'.format(type(split_ratio)))
 
 
 def stratify(examples, strata_field):

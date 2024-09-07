@@ -5,7 +5,9 @@ from . import vocab
 
 __version__ = '0.3.1'
 
-__all__ = ['data',
-           'datasets',
-           'utils',
-           'vocab']
+__all__ = [
+    'data',
+    'datasets',
+    'utils',
+    'vocab',
+]
