@@ -37,43 +37,52 @@ def _omit_field_if_empty(f: dc.Field) -> dc.Field:
 T = ta.TypeVar('T')
 
 
+def update_fields(
+        fn: ta.Callable[[str, dc.Field], dc.Field],
+        fields: ta.Iterable[str] | None = None,
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        if fields is None:
+            for a, v in list(cls.__dict__.items()):
+                if isinstance(v, dc.Field):
+                    setattr(cls, a, fn(a, v))
+
+        else:
+            for a in fields:
+                v = cls.__dict__[a]
+                if not isinstance(v, dc.Field):
+                    v = dc.field(default=v)
+                setattr(cls, a, fn(a, v))
+
+        return cls
+
+    check.not_isinstance(fields, str)
+    return inner
+
+
 def update_fields_metadata(
         nmd: ta.Mapping,
         fields: ta.Iterable[str] | None = None,
 ) -> ta.Callable[[type[T]], type[T]]:
-    def inner(cls):
-        dct = cls.__dict__
-        for a, v in list(dct.items()):
-            if (
-                    (fields is None and isinstance(a, dc.Field)) or
-                    (fields is not None and a in fields)
-            ):
-                dct[a] = dc.update_field_metadata(v, nmd)
-        return cls
-    check.not_isinstance(fields, str)
-    return inner
+    def inner(a: str, f: dc.Field) -> dc.Field:
+        return dc.update_field_metadata(f, nmd)
+
+    return update_fields(inner, fields)
 
 
 def update_fields_marshaling(
         fields: ta.Iterable[str] | None = None,
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[T]], type[T]]:
-    def inner(cls):
-        dct = cls.__dict__
-        for a, v in list(dct.items()):
-            if (
-                    (fields is None and isinstance(a, dc.Field)) or
-                    (fields is not None and a in fields)
-            ):
-                dct[a] = dc.update_field_metadata(v, {
-                    msh.FieldMetadata: dc.replace(
-                        v.metadata.get(msh.FieldMetadata, msh.FieldMetadata()),
-                        **kwargs,
-                    ),
-                })
-        return cls
-    check.not_isinstance(fields, str)
-    return inner
+    def inner(a: str, f: dc.Field) -> dc.Field:
+        return dc.update_field_metadata(f, {
+            msh.FieldMetadata: dc.replace(
+                f.metadata.get(msh.FieldMetadata, msh.FieldMetadata()),
+                **kwargs,
+            ),
+        })
+
+    return update_fields(inner, fields)
 
 
 ##
@@ -103,15 +112,17 @@ class Text(ContentNode):
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['title', 'text'], omit_if=operator.not_)
 class WikiLink(ContentNode):
-    title: Content = dc.field(default=()) | _omit_field_if_empty
-    text: Content = dc.field(default=()) | _omit_field_if_empty
+    title: Content = ()
+    text: Content = ()
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['title', 'url'], omit_if=operator.not_)
 class ExternalLink(ContentNode):
-    title: Content = dc.field(default=()) | _omit_field_if_empty
-    url: Content = dc.field(default=()) | _omit_field_if_empty
+    title: Content = ()
+    url: Content = ()
 
 
 @dc.dataclass(frozen=True)
@@ -125,41 +136,47 @@ class Comment(ContentNode):
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['name', 'value'], omit_if=operator.not_)
 class Parameter(Node):
-    name: Content = dc.field(default=()) | _omit_field_if_empty
-    value: Content = dc.field(default=()) | _omit_field_if_empty
+    name: Content = ()
+    value: Content = ()
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['name', 'params'], omit_if=operator.not_)
 class Template(ContentNode):
-    name: Content = dc.field(default=()) | _omit_field_if_empty
-    params: ta.Sequence[Parameter] = dc.field(default=()) | _omit_field_if_empty
+    name: Content = ()
+    params: ta.Sequence[Parameter] = ()
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['name', 'value'], omit_if=operator.not_)
 class Attribute(Node):
-    name: Content = dc.field(default=()) | _omit_field_if_empty
-    value: Content = dc.field(default=()) | _omit_field_if_empty
+    name: Content = ()
+    value: Content = ()
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['l', 'atts', 'body', 'r'], omit_if=operator.not_)
 class Tag(ContentNode):
-    l: Content = dc.field(default=()) | _omit_field_if_empty
-    atts: ta.Sequence[Attribute] = dc.field(default=()) | _omit_field_if_empty
-    body: Content = dc.field(default=()) | _omit_field_if_empty
-    r: Content = dc.field(default=()) | _omit_field_if_empty
+    l: Content = ()
+    atts: ta.Sequence[Attribute] = ()
+    body: Content = ()
+    r: Content = ()
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['title'], omit_if=operator.not_)
 class Heading(ContentNode):
     title: Content = dc.field(default=()) | _omit_field_if_empty
     level: int = 0
 
 
 @dc.dataclass(frozen=True)
+@update_fields_marshaling(['name', 'default'], omit_if=operator.not_)
 class Argument(ContentNode):
-    name: Content = dc.field(default=()) | _omit_field_if_empty
-    default: Content = dc.field(default=()) | _omit_field_if_empty
+    name: Content = ()
+    default: Content = ()
 
 
 ##
