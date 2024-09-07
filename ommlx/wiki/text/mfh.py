@@ -11,6 +11,7 @@ import typing as ta
 import mwparserfromhell as mfh
 import mwparserfromhell.nodes as mfn
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import marshal as msh
 
@@ -31,6 +32,48 @@ def _omit_field_if_empty(f: dc.Field) -> dc.Field:
             ),
         },
     )
+
+
+T = ta.TypeVar('T')
+
+
+def update_fields_metadata(
+        nmd: ta.Mapping,
+        fields: ta.Iterable[str] | None = None,
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        dct = cls.__dict__
+        for a, v in list(dct.items()):
+            if (
+                    (fields is None and isinstance(a, dc.Field)) or
+                    (fields is not None and a in fields)
+            ):
+                dct[a] = dc.update_field_metadata(v, nmd)
+        return cls
+    check.not_isinstance(fields, str)
+    return inner
+
+
+def update_fields_marshaling(
+        fields: ta.Iterable[str] | None = None,
+        **kwargs: ta.Any,
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        dct = cls.__dict__
+        for a, v in list(dct.items()):
+            if (
+                    (fields is None and isinstance(a, dc.Field)) or
+                    (fields is not None and a in fields)
+            ):
+                dct[a] = dc.update_field_metadata(v, {
+                    msh.FieldMetadata: dc.replace(
+                        v.metadata.get(msh.FieldMetadata, msh.FieldMetadata()),
+                        **kwargs,
+                    ),
+                })
+        return cls
+    check.not_isinstance(fields, str)
+    return inner
 
 
 ##
