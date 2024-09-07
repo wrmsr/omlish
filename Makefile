@@ -61,9 +61,9 @@ venv:
 
 .PHONY: tg
 tg:
-	# FIXME: ${PYTHON} -mpip install -e tinygrad --use-pep517
+	# FIXME: ${PYTHON} -m pip install -e tinygrad --use-pep517
 	ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
-	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
+	(cd tinygrad && "$$ABS_PYTHON" -m pip install -e .)
 
 .PHONY: tg-update
 tg-update:
@@ -74,29 +74,29 @@ tg-update:
 
 .PHONY: dep-list
 dep-list:
-	@${PYTHON} -mpip freeze
+	@${PYTHON} -m pip freeze
 
 .PHONY: dep-freeze
 dep-freeze: venv
-	${PYTHON} -mpip freeze > requirements-frz.txt
+	${PYTHON} -m pip freeze > requirements-frz.txt
 	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
-	${PYTHON} -mpip install -r requirements-frz.txt
+	${PYTHON} -m pip install -r requirements-frz.txt
 
 .PHONY: dep-tree
 dep-tree:
-	@${PYTHON} -mpipdeptree
+	@${PYTHON} -m pipdeptree
 
 .PHONY: dep-updates
 dep-updates: venv
-	${PYTHON} -mpip list -o --format=columns
+	${PYTHON} -m pip list -o --format=columns
 
 .PHONY: dep-refresh
 dep-refresh: venv
-	${PYTHON} -mpip install --upgrade pip setuptools wheel
-	${PYTHON} -mpip install -r requirements-ext.txt
+	${PYTHON} -m pip install --upgrade pip setuptools wheel
+	${PYTHON} -m pip install -r requirements-ext.txt
 
 
 ### Gen
@@ -127,15 +127,15 @@ check: flake8 ruff mypy precheck
 
 .PHONY: flake8
 flake8: venv
-	${PYTHON} -mflake8 ${SRCS}
+	${PYTHON} -m flake8 ${SRCS}
 
 .PHONY: ruff
 ruff: venv
-	${PYTHON} -mruff check ${SRCS}
+	${PYTHON} -m ruff check ${SRCS}
 
 .PHONY: ruff-stats
 ruff-stats: venv
-	${PYTHON} -mruff check --statistics ${SRCS}
+	${PYTHON} -m ruff check --statistics ${SRCS}
 
 .PHONY: ruff-fix
 ruff-fix: venv
@@ -143,11 +143,11 @@ ruff-fix: venv
 		echo 'there are unstaged changes - refusing to run' ; \
 		exit 1 ; \
 	fi
-	${PYTHON} -mruff check --fix ${SRCS}
+	${PYTHON} -m ruff check --fix ${SRCS}
 
 .PHONY: mypy
 mypy: venv
-	${PYTHON} -mmypy --check-untyped-defs ${SRCS}
+	${PYTHON} -m mypy --check-untyped-defs ${SRCS}
 
 .PHONY: precheck
 precheck: venv
@@ -246,9 +246,9 @@ test-lite:
 	for V in ${LITE_VENVS} ; do \
   		for T in $$LITE_PATHS ; do \
 			if [ -d $$(echo "$$T" | tr '.' '/') ] ; then \
-				$$(${PYPROJECT} venv $$V exe) -munittest discover -vb $$T ; \
+				$$(${PYPROJECT} venv $$V exe) -m unittest discover -vb $$T ; \
 			else \
-				$$(${PYPROJECT} venv $$V exe) -munittest -vb $$T ; \
+				$$(${PYPROJECT} venv $$V exe) -m unittest -vb $$T ; \
 			fi ; \
 		done ; \
 	done
@@ -392,7 +392,9 @@ publish: gen package
 	echo "Local version: ${LOCAL_VERSION}"
 	read -p "Press enter to publish"
 
-	.venv/bin/twine upload dist/*
+	${PYTHON} -m twine upload dist/*
+
+	${PYTHON} -m omdev.scripts.bumpversion -w omlish/__about__.py
 
 
 ### Utils
