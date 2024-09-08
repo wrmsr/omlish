@@ -1,0 +1,17 @@
+GNUmakefile
+tmp
+Software
+*.retry
+*.png
+initialAdminPassword
+tmp.*
+.coverage
+.coverage.*
+*,cover
+*.pyc
+*.e
+*.bak
+.mypy_cache
+src
+dist
+*.egg-info
