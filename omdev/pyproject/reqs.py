@@ -1,3 +1,8 @@
+"""
+TODO:
+ - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
+"""
+# ruff: noqa: UP007
 import os.path
 import tempfile
 import typing as ta
@@ -29,6 +34,7 @@ class RequirementsRewriter:
         for l in in_lines:
             if self.VENV_MAGIC in l:
                 lp, _, rp = l.partition(self.VENV_MAGIC)
+                rp = rp.partition('#')[0]
                 omit = False
                 for v in rp.split():
                     if v[0] == '!':
@@ -37,11 +43,12 @@ class RequirementsRewriter:
                             break
                     else:
                         raise NotImplementedError
+
                 if omit:
                     out_lines.append('# OMITTED:  ' + l)
                     continue
 
-            out_req = self.rewrite(l.rstrip('\n'))
+            out_req = self.rewrite(l.rstrip('\n'), for_file=True)
             out_lines.append(out_req + '\n')
 
         out_file = os.path.join(self._tmp_dir(), os.path.basename(in_file))
@@ -52,7 +59,7 @@ class RequirementsRewriter:
             f.write(''.join(out_lines))
         return out_file
 
-    def rewrite(self, in_req: str) -> str:
+    def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
         if in_req.strip().startswith('-r'):
             l = in_req.strip()
             lp, _, rp = l.partition(' ')
@@ -62,33 +69,10 @@ class RequirementsRewriter:
                 inc_in_file, rest = lp[2:], rp
 
             inc_out_file = self.rewrite_file(inc_in_file)
-            return ' '.join(['-r', inc_out_file, rest])
+            if for_file:
+                return ' '.join(['-r ', inc_out_file, rest])
+            else:
+                return '-r' + inc_out_file
 
         else:
             return in_req
-
-
-def _main() -> None:
-    venv = '13'
-    # venv = '13t'
-
-    in_file = '-rrequirements-dev.txt'
-
-    out_file = RequirementsRewriter(venv).rewrite(in_file)
-
-    from pip._internal.network.session import PipSession  # noqa
-    from pip._internal.req import parse_requirements  # noqa
-
-    parsed_reqs = list(parse_requirements(
-            out_file,
-            finder=None,
-            options=None,
-            session=PipSession()
-    ))
-
-    print()
-    print('\n'.join(f'{r.requirement} ({r.comes_from})' for r in parsed_reqs))
-
-
-if __name__ == '__main__':
-    _main()
