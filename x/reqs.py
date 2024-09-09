@@ -4,10 +4,6 @@ import tempfile
 
 
 def rewrite_file(in_file: str, tmp_dir: str) -> str:
-    out_file = os.path.join(tmp_dir, os.path.basename(in_file))
-    if os.path.exists(out_file):
-        raise Exception(f'file exists: {out_file}')
-
     with open(in_file) as f:
         src = f.read()
 
@@ -19,15 +15,23 @@ def rewrite_file(in_file: str, tmp_dir: str) -> str:
             l = l.strip()
             lp, _, rp = l.partition(' ')
             if lp == '-r':
-                inc_file, _, rest = rp.partition(' ')
+                inc_in_file, _, rest = rp.partition(' ')
             else:
-                inc_file, rest = lp[2:], rp
-            # raise NotImplementedError
-            print((inc_file, rest))
+                inc_in_file, rest = lp[2:], rp
+
+            inc_out_file = rewrite_file(inc_in_file, tmp_dir)
+            out_lines.append(' '.join(['-r', inc_out_file, rest]) + '\n')
+
         else:
             out_lines.append(l)
 
-    raise NotImplementedError
+    out_file = os.path.join(tmp_dir, os.path.basename(in_file))
+    if os.path.exists(out_file):
+        raise Exception(f'file exists: {out_file}')
+
+    with open(out_file, 'w') as f:
+        f.write(''.join(out_lines))
+    return out_file
 
 
 def _main() -> None:
@@ -45,7 +49,8 @@ def _main() -> None:
             session=PipSession()
     ))
 
-    print(parsed_reqs)
+    print()
+    print('\n'.join(f'{r.requirement} ({r.comes_from})' for r in parsed_reqs))
 
 
 if __name__ == '__main__':
