@@ -49,6 +49,7 @@ from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
 from .configs import VenvConfig
 from .pkg import PyprojectPackageGenerator
+from .reqs import RequirementsRewriter
 
 
 ##
@@ -153,11 +154,13 @@ class Venv:
         )
 
         if (sr := self._cfg.requires):
+            rr = RequirementsRewriter(self._name)
+            reqs = [rr.rewrite(req) for req in sr]
             subprocess_check_call(
                 ve,
                 '-m', 'pip',
                 'install', '-v',
-                *sr,
+                *reqs,
             )
 
         return True
