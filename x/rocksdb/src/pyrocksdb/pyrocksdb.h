@@ -1,21 +1,24 @@
 #pragma once
 
+#include <optional>
+#include <variant>
+
 #include <pybind11/pybind11.h>
 
-#include <rocksdb/db.h>
-#include <rocksdb/status.h>
-#include <rocksdb/options.h>
-#include <rocksdb/iterator.h>
-#include <rocksdb/slice.h>
-#include <rocksdb/write_batch.h>
-#include <rocksdb/table.h>
-#include <rocksdb/filter_policy.h>
 #include <rocksdb/cache.h>
+#include <rocksdb/db.h>
+#include <rocksdb/filter_policy.h>
+#include <rocksdb/iterator.h>
+#include <rocksdb/options.h>
+#include <rocksdb/slice.h>
 #include <rocksdb/snapshot.h>
-#include <rocksdb/utilities/merge_operators.h>
-#include <rocksdb/utilities/transaction_db.h>
+#include <rocksdb/status.h>
+#include <rocksdb/table.h>
 #include <rocksdb/utilities/transaction.h>
+#include <rocksdb/utilities/transaction_db.h>
 #include <rocksdb/utilities/write_batch_with_index.h>
+#include <rocksdb/write_batch.h>
+#include <utilities/merge_operators.h>
 
 // #include <db/dbformat.h>
 // #include <db/snapshot_impl.h>
@@ -76,7 +79,7 @@ public:
     }
 
 private:
-    std::unique_ptr <Iterator> iterator;
+    std::unique_ptr<Iterator> iterator;
 };
 
 class Blob {
@@ -135,14 +138,14 @@ public:
     py::tuple OpenForReadOnly(
             const DBOptions &db_options,
             const std::string &name,
-            const std::vector <ColumnFamilyDescriptor> &column_families,
+            const std::vector<ColumnFamilyDescriptor> &column_families,
             bool error_if_log_file_exist = false
     );
 
     py::tuple Open(
             const DBOptions &db_options,
             const std::string &name,
-            const std::vector <ColumnFamilyDescriptor> &column_families
+            const std::vector<ColumnFamilyDescriptor> &column_families
     );
 
     Status Put(
@@ -159,9 +162,9 @@ public:
             const std::string &value
     );
 
-    std::unique_ptr <Blob> Get(const ReadOptions &options, const std::string &key);
+    std::unique_ptr<Blob> Get(const ReadOptions &options, const std::string &key);
 
-    std::unique_ptr <Blob> Get(
+    std::unique_ptr<Blob> Get(
             const ReadOptions &options,
             ColumnFamilyHandle *column_family,
             const std::string &key
@@ -190,9 +193,9 @@ public:
 
     py::tuple CreateColumnFamily(const ColumnFamilyOptions &options, const std::string &column_family_name);
 
-    std::unique_ptr <IteratorWrapper> NewIterator(const ReadOptions &options);
+    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions &options);
 
-    std::unique_ptr <IteratorWrapper> NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family);
+    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family);
 
     //FIXME: python gc
     ~py_DB();

@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 3.4...3.18)
 project(python_rocksdb)
 
+##
+
 add_subdirectory(pybind11)
+
+##
+
 
 set(USE_RTTI ON)
 add_subdirectory(rocksdb)
+
+##
+
+include_directories(rocksdb)
+include_directories(rocksdb/include)
 
 pybind11_add_module(
     pyrocksdb
@@ -22,3 +32,5 @@ pybind11_add_module(
 )
 
 target_link_libraries(pyrocksdb PRIVATE rocksdb)
+
+target_compile_options(pyrocksdb PRIVATE -std=gnu++17)

@@ -12,8 +12,8 @@ public:
 
     ~TransactionWrapper() { delete txn; }
 
-    std::unique_ptr <Blob> Get(const ReadOptions &options, const Slice &key) {
-        std::unique_ptr <Blob> blob(new Blob());
+    std::unique_ptr<Blob> Get(const ReadOptions &options, const Slice &key) {
+        std::unique_ptr<Blob> blob(new Blob());
         blob->status = txn->Get(options, key, &blob->data);
         return blob;
     }
@@ -54,13 +54,13 @@ public:
         txn->SetSnapshot();
     }
 
-    std::unique_ptr <Blob> GetForUpdate(
+    std::unique_ptr<Blob> GetForUpdate(
             const ReadOptions &options,
             const std::string &key,
             bool exclusive = true,
             const bool do_validate = true
     ) {
-        std::unique_ptr <Blob> b(new Blob);
+        std::unique_ptr<Blob> b(new Blob);
         b->status = txn->GetForUpdate(options, key, &b->data, exclusive, do_validate);
         return b;
     }
@@ -102,11 +102,11 @@ public:
         return TransactionDB::Open(options, txn_db_options, dbname, &db_ptr);
     }
 
-    std::unique_ptr <Blob> Get(const ReadOptions &options, const std::string &key) {
+    std::unique_ptr<Blob> Get(const ReadOptions &options, const std::string &key) {
         if (db_ptr == nullptr) {
             throw std::invalid_argument("db has been closed");
         }
-        std::unique_ptr <Blob> blob(new Blob());
+        std::unique_ptr<Blob> blob(new Blob());
         blob->status = db_ptr->Get(options, key, &blob->data);
         return blob;
     }
@@ -133,7 +133,7 @@ public:
         return db_ptr->ReleaseSnapshot(snapshot);
     }
 
-    std::unique_ptr <TransactionWrapper>
+    std::unique_ptr<TransactionWrapper>
     BeginTransaction(const WriteOptions &write_options, const TransactionOptions &txn_options = TransactionOptions()) {
         return std::unique_ptr<TransactionWrapper>(new TransactionWrapper(db_ptr->BeginTransaction(write_options, txn_options)));
     }

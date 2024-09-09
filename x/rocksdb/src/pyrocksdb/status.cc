@@ -6,7 +6,7 @@ namespace py = pybind11;
 
 
 void init_status(py::module &m) {
-    py::class_ <rocksdb::Status> status(m, "Status");
+    py::class_<rocksdb::Status> status(m, "Status");
 
     status.def(py::init<>())
         .def("ok", &Status::ok)

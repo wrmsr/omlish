@@ -11,7 +11,7 @@ void init_db(py::module &m) {
         .def("open", (Status(py_DB::*)(const Options &options, const std::string &name)) &py_DB::Open)
         .def(
             "open",
-            (py::tuple(py_DB::*)(const DBOptions &db_options, const std::string &name, const std::vector <ColumnFamilyDescriptor> &column_families)) &py_DB::Open
+            (py::tuple(py_DB::*)(const DBOptions &db_options, const std::string &name, const std::vector<ColumnFamilyDescriptor> &column_families)) &py_DB::Open
         )
         .def(
             "open_for_readonly",
@@ -22,7 +22,7 @@ void init_db(py::module &m) {
         )
         .def(
         "open_for_readonly",
-            (py::tuple(py_DB::*)(const DBOptions &db_options, const std::string &name, const std::vector <ColumnFamilyDescriptor> &column_families, bool error_if_log_file_exist)) &py_DB::OpenForReadOnly,
+            (py::tuple(py_DB::*)(const DBOptions &db_options, const std::string &name, const std::vector<ColumnFamilyDescriptor> &column_families, bool error_if_log_file_exist)) &py_DB::OpenForReadOnly,
                 py::arg("options"),
                 py::arg("name"),
                 py::arg("column_families"),

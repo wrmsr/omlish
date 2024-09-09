@@ -40,7 +40,7 @@ class PyMergeOperator : public MergeOperator {
 
 
 void init_merge_operator(py::module &m) {
-    py::class_ <MergeOperator, PyMergeOperator /* <--- trampoline*/> mergeOperator(m, "MergeOperator");
+    py::class_<MergeOperator, PyMergeOperator /* <--- trampoline*/> mergeOperator(m, "MergeOperator");
     mergeOperator.def(py::init<>());
 
     // py::class_<Child>(m, "Child");

@@ -8,7 +8,7 @@
 
 
 PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyHandle *>);
-PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator < ColumnFamilyDescriptor>>
+PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator<ColumnFamilyDescriptor>>
 );
 
 
@@ -52,12 +52,12 @@ Status py_DB::Open(const Options &options, const std::string &name) {
 py::tuple py_DB::Open(
         const DBOptions &db_options,
         const std::string &name,
-        const std::vector <ColumnFamilyDescriptor> &column_families
+        const std::vector<ColumnFamilyDescriptor> &column_families
 ) {
     if (db_ptr != nullptr) {
         throw std::invalid_argument("db has been opened");
     }
-    std::vector < ColumnFamilyHandle * > handles;
+    std::vector<ColumnFamilyHandle *> handles;
     Status st = DB::Open(
             db_options,
             name,
@@ -88,13 +88,13 @@ Status py_DB::OpenForReadOnly(
 py::tuple py_DB::OpenForReadOnly(
         const DBOptions &db_options,
         const std::string &name,
-        const std::vector <ColumnFamilyDescriptor> &column_families,
+        const std::vector<ColumnFamilyDescriptor> &column_families,
         bool error_if_log_file_exist
 ) {
     if (db_ptr != nullptr) {
         throw std::invalid_argument("db has been opened");
     }
-    std::vector < ColumnFamilyHandle * > handles;
+    std::vector<ColumnFamilyHandle *> handles;
     Status st = DB::OpenForReadOnly(
             db_options,
             name,
@@ -136,16 +136,16 @@ Status py_DB::Write(const WriteOptions &options, WriteBatch &updates) {
     return db_ptr->Write(options, &updates);
 }
 
-std::unique_ptr <Blob> py_DB::Get(const ReadOptions &options, const std::string &key) {
+std::unique_ptr<Blob> py_DB::Get(const ReadOptions &options, const std::string &key) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
-    std::unique_ptr <Blob> blob(new Blob());
+    std::unique_ptr<Blob> blob(new Blob());
     blob->status = db_ptr->Get(options, key, &blob->data);
     return blob;
 }
 
-std::unique_ptr <Blob> py_DB::Get(
+std::unique_ptr<Blob> py_DB::Get(
         const ReadOptions &options,
         ColumnFamilyHandle *column_family,
         const std::string &key
@@ -153,7 +153,7 @@ std::unique_ptr <Blob> py_DB::Get(
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
-    std::unique_ptr <Blob> blob(new Blob());
+    std::unique_ptr<Blob> blob(new Blob());
     blob->status = db_ptr->Get(options, column_family, key, &blob->data);
     return blob;
 }
@@ -199,14 +199,14 @@ py::tuple py_DB::CreateColumnFamily(const ColumnFamilyOptions &options, const st
     return py::make_tuple(s, cfh);
 }
 
-std::unique_ptr <IteratorWrapper> py_DB::NewIterator(const ReadOptions &options) {
+std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions &options) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
     return std::unique_ptr<IteratorWrapper>(new IteratorWrapper(db_ptr->NewIterator(options)));
 }
 
-std::unique_ptr <IteratorWrapper> py_DB::NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family) {
+std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
@@ -289,16 +289,16 @@ PYBIND11_MODULE(pyrocksdb, m) {
         // .def_readwrite("data", &Blob::data);
         .def_property_readonly("data", &Blob::get_data);
 
-    py::class_<ColumnFamilyHandle, py_ColumnFamilyHandle, std::unique_ptr < ColumnFamilyHandle>>(m, "ColumnFamilyHandle")
+    py::class_<ColumnFamilyHandle, py_ColumnFamilyHandle, std::unique_ptr<ColumnFamilyHandle>>(m, "ColumnFamilyHandle")
         .def (py::init<>())
         .def("get_name", &ColumnFamilyHandle::GetName);
 
-    py::class_<ColumnFamilyDescriptor, std::unique_ptr < ColumnFamilyDescriptor>>(m, "ColumnFamilyDescriptor")
+    py::class_<ColumnFamilyDescriptor, std::unique_ptr<ColumnFamilyDescriptor>>(m, "ColumnFamilyDescriptor")
         .def(py::init<const std::string &, const ColumnFamilyOptions &>());
 
-    py::bind_vector<std::vector < ColumnFamilyDescriptor>>(m, "VectorColumnFamilyDescriptor");
+    py::bind_vector<std::vector<ColumnFamilyDescriptor>>(m, "VectorColumnFamilyDescriptor");
 
-    py::bind_vector<std::vector < ColumnFamilyHandle * >>(m, "VectorColumnFamilyHandle");
+    py::bind_vector<std::vector<ColumnFamilyHandle *>>(m, "VectorColumnFamilyHandle");
 
     py::class_<IteratorWrapper /* <--- trampoline*/> iterator(m, "IteratorWrapper");
     iterator
