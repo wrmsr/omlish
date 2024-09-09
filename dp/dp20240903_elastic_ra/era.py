@@ -1,7 +1,6 @@
 """
 https://www.elastic.co/search-labs/blog/local-rag-agent-elasticsearch-langgraph-llama3
 """
-import os.path
 import pprint
 import urllib.request
 import typing as ta
@@ -20,14 +19,18 @@ from langchain_nomic.embeddings import NomicEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import END
 from langgraph.graph import StateGraph
-import yaml
 
 from omlish import lang
 
 
 def _load_secrets():
+    import os.path
+    import yaml
+
     with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
-        os.environ['TAVILY_API_KEY'] = yaml.safe_load(f)['tavily_api_key']
+        dct = yaml.safe_load(f)
+    os.environ['OPENAI_API_KEY'] = dct['openai_api_key']
+    os.environ['TAVILY_API_KEY'] = dct['tavily_api_key']
 
 _load_secrets()
 

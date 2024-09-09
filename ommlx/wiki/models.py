@@ -1,5 +1,8 @@
 import dataclasses as dc
+import operator
 import typing as ta
+
+from omlish import marshal as msh
 
 
 T = ta.TypeVar('T')
@@ -48,6 +51,12 @@ class Redirect:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata([
+    'username',
+    'id',
+    'ip',
+    'deleted',
+], omit_if=operator.not_)
 class Contributor:
     username: str | None = None
     id: int | None = None
@@ -69,6 +78,18 @@ class RevisionText:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata([
+    'parentid',
+    'timestamp',
+    'contributors',
+    'minor',
+    'comment',
+    'origin',
+    'model',
+    'format',
+    'text',
+    'sha1',
+], omit_if=operator.not_)
 class Revision:
     id: int
     parentid: int | None = None
@@ -87,6 +108,14 @@ class Revision:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata([
+    'timestamp',
+    'contributor',
+    'comment',
+    'filename',
+    'src',
+    'size',
+], omit_if=operator.not_)
 class Upload:
     timestamp: str | None = None
     contributor: str | None = None
@@ -100,6 +129,12 @@ class Upload:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata([
+    'redirect',
+    'restrictions',
+    'revisions',
+    'uploads',
+], omit_if=operator.not_)
 class Page:
     title: str
     ns: int
