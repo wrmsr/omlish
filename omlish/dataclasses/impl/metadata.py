@@ -70,5 +70,6 @@ class Init(lang.Marker):
     pass
 
 
-def init(fn: ta.Callable[..., None]) -> None:
+def init(fn: ta.Callable):
     _append_cls_md(Init, fn)
+    return fn
