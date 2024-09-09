@@ -11,6 +11,7 @@ TODO:
  - build / package / publish / version roll
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
  - env vars - PYTHONPATH
+ - optional uv backend
 
 lookit:
  - https://pdm-project.org/en/latest/
@@ -3765,6 +3766,7 @@ TODO:
  - backends
   - local builds
   - deadsnakes?
+  - uv
  - loose versions
 """
 
