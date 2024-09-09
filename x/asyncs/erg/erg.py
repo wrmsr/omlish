@@ -84,7 +84,7 @@ class Process(abc.ABC):
 class ProcessImpl(Process):
     def __init__(
             self,
-            node: 'Node',
+            node: 'NodeImpl',
             pid: Pid,
             behavior: ProcessBehavior,
             mailbox: ProcessMailbox,
@@ -188,7 +188,21 @@ class ProcessOptions:
     mailbox_size: int | None = None
 
 
-class Node:
+class Node(abc.ABC):
+    @abc.abstractmethod
+    async def spawn(
+            self,
+            behavior_fac: ta.Callable[[], ProcessBehavior],
+            opts: ProcessOptions = ProcessOptions(),
+    ) -> Pid:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def send(self, dst: Pid, msg: ta.Any) -> None:
+        raise NotImplementedError
+
+
+class NodeImpl(Node):
     def __init__(
             self,
             tg: anyio.abc.TaskGroup,
@@ -232,6 +246,9 @@ class Node:
 
         return proc.pid
 
+    def send(self, dst: Pid, msg: ta.Any) -> None:
+        raise NotImplementedError
+
 
 #
 
@@ -243,7 +260,7 @@ class FooActor(Actor, ActorBehavior):
 
 async def _main() -> None:
     async with anyio.create_task_group() as tg:
-        node = Node(tg)
+        node = NodeImpl(tg)
         pid = await node.spawn(FooActor)
         print(pid)
 
