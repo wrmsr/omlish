@@ -125,11 +125,13 @@ class _decorator_descriptor:  # noqa
 
         def __get__(self, instance, owner=None):
             fn = self._fn.__get__(instance, owner)
+
             if self._md or instance is not None:
                 @functools.wraps(fn)
                 def inner(*args, **kwargs):
                     return self._wrapper(fn, *args, **kwargs)
                 return inner
+
             else:
                 @functools.wraps(fn)
                 def outer(this, *args, **kwargs):

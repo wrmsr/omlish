@@ -3,6 +3,7 @@ TODO:
  - backends
   - local builds
   - deadsnakes?
+  - uv
  - loose versions
 """
 import abc

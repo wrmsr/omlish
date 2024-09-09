@@ -116,6 +116,7 @@ class PyenvInstallOpts:
 
 DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-s', '-v'])
 DEBUG_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-g'])
+THREADED_PYENV_INSTALL_OPTS = PyenvInstallOpts(conf_opts=['--disable-gil'])
 
 
 #
@@ -176,19 +177,19 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
             f"--with-tcltk-libs='-L{tcl_tk_prefix}/lib -ltcl{tcl_tk_ver} -ltk{tcl_tk_ver}'",
         ])
 
-    @cached_nullary
-    def brew_ssl_opts(self) -> PyenvInstallOpts:
-        pkg_config_path = subprocess_check_output_str('brew', '--prefix', 'openssl')
-        if 'PKG_CONFIG_PATH' in os.environ:
-            pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
-        return PyenvInstallOpts(env={'PKG_CONFIG_PATH': pkg_config_path})
+    # @cached_nullary
+    # def brew_ssl_opts(self) -> PyenvInstallOpts:
+    #     pkg_config_path = subprocess_check_output_str('brew', '--prefix', 'openssl')
+    #     if 'PKG_CONFIG_PATH' in os.environ:
+    #         pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
+    #     return PyenvInstallOpts(env={'PKG_CONFIG_PATH': pkg_config_path})
 
     def opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts().merge(
             self.framework_opts(),
             self.brew_deps_opts(),
             self.brew_tcl_opts(),
-            self.brew_ssl_opts(),
+            # self.brew_ssl_opts(),
         )
 
 
@@ -202,27 +203,39 @@ PLATFORM_PYENV_INSTALL_OPTS: ta.Dict[str, PyenvInstallOptsProvider] = {
 
 
 class PyenvVersionInstaller:
+    """
+    Messy: can install freethreaded build with a 't' suffixed version str _or_ by THREADED_PYENV_INSTALL_OPTS - need
+    latter to build custom interp with ft, need former to use canned / blessed interps. Muh.
+    """
 
     def __init__(
             self,
             version: str,
             opts: ta.Optional[PyenvInstallOpts] = None,
+            interp_opts: InterpOpts = InterpOpts(),
             *,
-            debug: bool = False,
+            no_default_opts: bool = False,
             pyenv: Pyenv = Pyenv(),
     ) -> None:
         super().__init__()
 
-        if opts is None:
-            lst = [DEFAULT_PYENV_INSTALL_OPTS]
-            if debug:
+        if no_default_opts:
+            if opts is None:
+                opts = PyenvInstallOpts()
+        else:
+            lst = [opts if opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
+            if interp_opts.debug:
                 lst.append(DEBUG_PYENV_INSTALL_OPTS)
+            if interp_opts.threaded:
+                lst.append(THREADED_PYENV_INSTALL_OPTS)
             lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
             opts = PyenvInstallOpts().merge(*lst)
 
         self._version = version
         self._opts = opts
-        self._debug = debug
+        self._interp_opts = interp_opts
+
+        self._no_default_opts = no_default_opts
         self._pyenv = pyenv
 
     @property
@@ -235,7 +248,7 @@ class PyenvVersionInstaller:
 
     @cached_nullary
     def install_name(self) -> str:
-        return self._version + ('-debug' if self._debug else '')
+        return self._version + ('-debug' if self._interp_opts.debug else '')
 
     @cached_nullary
     def install_dir(self) -> str:
@@ -243,7 +256,7 @@ class PyenvVersionInstaller:
 
     @cached_nullary
     def install(self) -> str:
-        env = dict(self._opts.env)
+        env = {**os.environ, **self._opts.env}
         for k, l in [
             ('CFLAGS', self._opts.cflags),
             ('LDFLAGS', self._opts.ldflags),
@@ -254,7 +267,13 @@ class PyenvVersionInstaller:
                 v += ' ' + os.environ[k]
             env[k] = v
 
-        subprocess_check_call(self._pyenv.exe(), 'install', *self._opts.opts, self._version, env=env)
+        subprocess_check_call(
+            self._pyenv.exe(),
+            'install',
+            *self._opts.opts,
+            self._version,
+            env=env,
+        )
 
         exe = os.path.join(self.install_dir(), 'bin', 'python')
         if not os.path.isfile(exe):
@@ -355,3 +374,18 @@ class PyenvInterpProvider(InterpProvider):
             for d in [False, True]:
                 lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
         return lst
+
+    def install_version(self, version: InterpVersion) -> Interp:
+        inst_version = str(version.version)
+        inst_opts = version.opts
+        if inst_opts.threaded:
+            inst_version += 't'
+            inst_opts = dc.replace(inst_opts, threaded=False)
+
+        installer = PyenvVersionInstaller(
+            inst_version,
+            interp_opts=inst_opts,
+        )
+
+        exe = installer.install()
+        return Interp(exe, version)

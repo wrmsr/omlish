@@ -204,8 +204,6 @@ RUN \
 
 ## config
 
-RUN ~/.cargo/bin/cargo install toml2json
-
 RUN ( \
     sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config && \
