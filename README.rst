@@ -1,4 +1,4 @@
-It's like my previous mono-repo-ey thing `omnibus
+It's like my previous python monorepo-ey thing `omnibus
 <https://github.com/wrmsr/omnibus/tree/wrmsr_exp_split>`_... ish.
 
 Core packages begin with ``om``, scratch app is in ``app``, temp / dump code is in ``x``.
