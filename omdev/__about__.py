@@ -18,6 +18,10 @@ class Project(ProjectBase):
             'pcpp ~= 1.30',
         ],
 
+        'docutils': [
+            'docutils ~= 0.21',
+        ],
+
         'mypy': [
             'mypy ~= 1.11',
         ],
