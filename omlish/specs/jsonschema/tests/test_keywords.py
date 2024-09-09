@@ -2,21 +2,20 @@
 TODO:
  - jsonpointer
 
-
 ===
 
 https://json-schema.org/specification
 https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
-
 """
-from . import keywords
+from ....formats import json
+from .. import keywords
 
 
-def _main() -> None:
+def test_keywords():
     # https://json-schema.org/learn/getting-started-step-by-step
 
-    product = {
+    product = {  # noqa
         'productId': 1,
         'productName': 'A green door',
         'price': 12.50,
@@ -102,8 +101,11 @@ def _main() -> None:
         ],
     }
 
-    print(keywords.parse_keywords(product_schema))
+    for schema in [
+        warehouse_location_schema,
+        product_schema,
+    ]:
+        kws = keywords.parse_keywords(schema)
+        print(kws)
 
-
-if __name__ == '__main__':
-    _main()
+        print(json.dumps_pretty(keywords.render_keywords(kws)))

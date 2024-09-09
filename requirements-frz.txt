@@ -227,7 +227,7 @@ numpy==1.26.4
 objgraph==3.6.1
 onnx==1.16.2
 onnx2torch==1.5.15
-openai==1.44.0
+openai==1.44.1
 opencv-python==4.10.0.84
 opt-einsum==3.3.0
 optree==0.12.1
