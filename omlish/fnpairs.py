@@ -449,7 +449,7 @@ class Toml(ObjectStr_):
 #
 
 
-@_register_extension('cpkl')
+@_register_extension('clpkl')
 @dc.dataclass(frozen=True)
 class Cloudpickle(ObjectBytes_):
     protocol: int | None = None
