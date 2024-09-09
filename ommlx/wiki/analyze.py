@@ -24,14 +24,13 @@ if rev.text and '#invoke' in rev.text.text:
     print(tree)
 
 """
+import argparse
 import concurrent.futures as cf
 import contextlib
 import dataclasses as dc
 import glob
 import io
 import logging
-import multiprocessing as mp
-import multiprocessing.managers
 import os.path
 import signal
 import threading
@@ -82,7 +81,7 @@ class FileAnalyzer:
     class Context:
         deathpact: mpu.Deathpact
         lock: threading.Lock
-        num_rows: mp.managers.ValueProxy
+        num_rows: mpu.ValueProxy[int]
 
     def __init__(
         self,
@@ -139,11 +138,11 @@ class FileAnalyzer:
                 else:
                     break
 
-            self._ctx.num_rows.value += len(self._rows)
+            self._ctx.num_rows.set(self._ctx.num_rows.get() + len(self._rows))
             log.info(
                 f'{len(self._rows):_} rows batched, '  # noqa
                 f'{self._num_rows:_} rows file, '  # noqa
-                f'{self._ctx.num_rows.value:_} rows total'  # noqa
+                f'{self._ctx.num_rows.get():_} rows total'  # noqa
             )
 
             self._rows.clear()
@@ -289,12 +288,13 @@ def _main() -> None:
 
     default_workers = 2
 
-    import argparse
+    #
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-j', '--num-workers', type=int, default=default_workers)
-
     args = parser.parse_args()
+
+    #
 
     db_file = os.path.join('.data/wiki.db')
     if os.path.isfile(db_file):
@@ -303,28 +303,40 @@ def _main() -> None:
 
     log.info('Launching')  # noqa
 
+    #
+
     with contextlib.ExitStack() as es:
-        deathpact: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
+        if default_workers:
+            deathpact: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
 
-        mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
-            fds={deathpact.pass_fd},
-            deathsig=signal.SIGTERM,
-        ))
+            mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
+                fds={deathpact.pass_fd},
+                deathsig=signal.SIGTERM,
+            ))
 
-        mp_manager = mp_context.Manager()
+            mp_manager = mp_context.Manager()
 
-        ctx = FileAnalyzer.Context(
-            deathpact=deathpact,
-            lock=mp_manager.Lock(),
-            num_rows=mp_manager.Value('i', 0),
-        )
+            ctx = FileAnalyzer.Context(
+                deathpact=deathpact,
+                lock=mp_manager.Lock(),
+                num_rows=mp_manager.Value('i', 0),
+            )
 
-        ex = es.enter_context(cfu.new_executor(  # noqa
-            args.num_workers,
-            cf.ProcessPoolExecutor,
-            mp_context=mp_context,
-            initializer=_init_process,
-        ))
+            ex = es.enter_context(cfu.new_executor(  # noqa
+                args.num_workers,
+                cf.ProcessPoolExecutor,
+                mp_context=mp_context,
+                initializer=_init_process,
+            ))
+
+        else:
+            ctx = FileAnalyzer.Context(
+                deathpact=mpu.NopDeathpact(),
+                lock=threading.RLock(),  # type: ignore
+                num_rows=mpu.DummyValueProxy(0),
+            )
+
+            ex = es.enter_context(cfu.ImmediateExecutor())
 
         futs: list[cf.Future] = [
             ex.submit(
@@ -347,7 +359,7 @@ def _main() -> None:
                 ex.shutdown(wait=False, cancel_futures=True)
                 raise
 
-        log.info(f'Complete! {ctx.num_rows.value} rows total')  # noqa
+        log.info(f'Complete! {ctx.num_rows.get()} rows total')  # noqa
 
 
 if __name__ == '__main__':

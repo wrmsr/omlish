@@ -9,10 +9,37 @@ import time
 import typing as ta
 
 from . import check
+from . import lang
 from . import libc
 
 
 T = ta.TypeVar('T')
+
+
+##
+
+
+@ta.runtime_checkable
+class ValueProxy(ta.Protocol[T]):
+    # value = property(get, set)
+
+    def get(self) -> T:
+        ...
+
+    def set(self, value: T) -> None:
+        ...
+
+
+@dc.dataclass()
+@lang.protocol_check(ValueProxy)
+class DummyValueProxy(ValueProxy[T]):
+    value: T
+
+    def get(self) -> T:
+        return self.value
+
+    def set(self, value: T) -> None:
+        self.value = value
 
 
 ##
@@ -73,6 +100,11 @@ class Deathpact(abc.ABC):
     @abc.abstractmethod
     def poll(self) -> None:
         raise NotImplementedError
+
+
+class NopDeathpact(Deathpact):
+    def poll(self) -> None:
+        pass
 
 
 #
