@@ -24,7 +24,7 @@ class Pid:
 
 @dc.dataclass(frozen=True)
 class ProcessMailbox:
-    main: aiu.StapledObjectStream = dc.field(default_factory=lambda: aiu.create_stapled_memory_object_stream())
+    main: aiu.StapledObjectStream
 
 
 class ProcessBehavior(abc.ABC):
@@ -50,6 +50,11 @@ class Process(abc.ABC):
     def behavior(self) -> ProcessBehavior:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def mailbox(self) -> ProcessMailbox:
+        raise NotImplementedError
+
 
 class ProcessImpl(Process):
     def __init__(
@@ -57,11 +62,13 @@ class ProcessImpl(Process):
             node: 'Node',
             pid: Pid,
             behavior: ProcessBehavior,
+            mailbox: ProcessMailbox,
     ) -> None:
         super().__init__()
         self._node = node
         self._pid = pid
         self._behavior = behavior
+        self._mailbox = mailbox
 
     @property
     def pid(self) -> Pid:
@@ -70,6 +77,10 @@ class ProcessImpl(Process):
     @property
     def behavior(self) -> ProcessBehavior:
         return self._behavior
+
+    @property
+    def mailbox(self) -> ProcessMailbox:
+        return self._mailbox
 
 
 ##
@@ -111,6 +122,11 @@ class Actor(ProcessBehavior):
 ##
 
 
+@dc.dataclass(frozen=True, kw_only=True)
+class ProcessOptions:
+    mailbox_size: int | None = None
+
+
 class Node:
     def __init__(self) -> None:
         super().__init__()
@@ -118,7 +134,11 @@ class Node:
         self._processes: dict[Pid, Process] = {}
         self._id_seq = itertools.count()
 
-    async def spawn(self, behavior_fac: ta.Callable[[], ProcessBehavior]) -> Process:
+    async def spawn(
+            self,
+            behavior_fac: ta.Callable[[], ProcessBehavior],
+            opts: ProcessOptions = ProcessOptions(),
+    ) -> Process:
         pid = Pid(
             next(self._id_seq),
             int(time.monotonic()),
@@ -126,10 +146,15 @@ class Node:
 
         behavior = behavior_fac()
 
+        mailbox = ProcessMailbox(
+            aiu.create_stapled_memory_object_stream(opts.mailbox_size or 0),
+        )
+
         proc = ProcessImpl(
             self,
             pid,
             behavior,
+            mailbox,
         )
 
         await behavior.process_init(proc)
