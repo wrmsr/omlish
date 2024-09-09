@@ -9,7 +9,7 @@
 
 #define _MODULE_NAME "_boilerplate"
 #define _PACKAGE_NAME "omdev.cexts"
-#define _MODULE_FULL_NAME (_PACKAGE_NAME "." _MODULE_NAME)
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 typedef struct boilerplate_state {
 } boilerplate_state;

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 import abc
 import collections
 import typing as ta
@@ -11,6 +11,7 @@ from .pyenv import PyenvInterpProvider
 from .system import SystemInterpProvider
 from .types import Interp
 from .types import InterpSpecifier
+from .types import InterpVersion
 
 
 INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
@@ -26,17 +27,47 @@ class InterpResolver:
         super().__init__()
         self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
 
-    def resolve(self, spec: InterpSpecifier) -> Interp:
+    def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
         lst = [
             (i, si)
             for i, p in enumerate(self._providers.values())
             for si in p.get_installed_versions(spec)
             if spec.contains(si)
         ]
-        best = sorted(lst, key=lambda t: (-t[0], t[1]))[-1]
-        bi, bv = best
+
+        slst = sorted(lst, key=lambda t: (-t[0], t[1]))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
         bp = list(self._providers.values())[bi]
-        return bp.get_installed_version(bv)
+        return (bp, bv)
+
+    def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
+        )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return tp.install_version(bv)
 
     def list(self, spec: InterpSpecifier) -> None:
         print('installed:')

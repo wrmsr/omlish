@@ -10,6 +10,7 @@ TODO:
 import argparse
 import typing as ta
 
+from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 
@@ -26,7 +27,7 @@ def _list_cmd(args) -> None:
 def _resolve_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    print(r.resolve(s).exe)
+    print(check_not_none(r.resolve(s)).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
