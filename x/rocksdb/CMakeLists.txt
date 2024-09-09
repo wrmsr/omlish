@@ -13,6 +13,8 @@ add_subdirectory(rocksdb)
 
 ##
 
+include_directories(pybind11)
+
 include_directories(rocksdb)
 include_directories(rocksdb/include)
 
