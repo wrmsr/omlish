@@ -15,18 +15,18 @@ void init_db(py::module &m) {
         )
         .def(
             "open_for_readonly",
-            (Status(py_DB::*)( const Options &options, const std::string &name, bool error_if_log_file_exist)) &py_DB::OpenForReadOnly,
+            (Status(py_DB::*)(const Options &options, const std::string &name, bool error_if_log_file_exist)) &py_DB::OpenForReadOnly,
             py::arg("options"),
             py::arg("name"),
             py::arg("error_if_log_file_exist") = false
         )
         .def(
-        "open_for_readonly",
+            "open_for_readonly",
             (py::tuple(py_DB::*)(const DBOptions &db_options, const std::string &name, const std::vector<ColumnFamilyDescriptor> &column_families, bool error_if_log_file_exist)) &py_DB::OpenForReadOnly,
-                py::arg("options"),
-                py::arg("name"),
-                py::arg("column_families"),
-                py::arg("error_if_log_file_exist") = false
+            py::arg("options"),
+            py::arg("name"),
+            py::arg("column_families"),
+            py::arg("error_if_log_file_exist") = false
         )
         .def("put", (Status(py_DB::*)(const WriteOptions&, ColumnFamilyHandle * , const std::string&, const std::string&)) &py_DB::Put)
         .def("put", (Status(py_DB::*)(const WriteOptions&, const std::string&, const std::string&)) &py_DB::Put)
@@ -43,4 +43,4 @@ void init_db(py::module &m) {
         .def("iterator", (std::unique_ptr<IteratorWrapper>(py_DB::*)(const ReadOptions &options, ColumnFamilyHandle*)) &py_DB::NewIterator);
         // .def_readonly("DefaultColumnFamilyName", &rocksdb::kDefaultColumnFamilyName);
         m.attr("DefaultColumnFamilyName") = rocksdb::kDefaultColumnFamilyName;
-    }
+}

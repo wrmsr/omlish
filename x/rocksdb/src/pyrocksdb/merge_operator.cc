@@ -12,9 +12,9 @@ class PyMergeOperator : public MergeOperator {
 
     const char *Name() const override {
         PYBIND11_OVERLOAD_PURE(
-        const char*,
-        rocksdb::MergeOperator,
-                Name
+            const char*,
+            rocksdb::MergeOperator,
+            Name
         );
     }
 };

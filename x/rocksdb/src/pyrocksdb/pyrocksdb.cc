@@ -8,9 +8,7 @@
 
 
 PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyHandle *>);
-PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator<ColumnFamilyDescriptor>>
-);
-
+PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator<ColumnFamilyDescriptor>>);
 
 // class ColumnFamilyHandleWrapper {
 // public:
@@ -22,7 +20,6 @@ PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator<ColumnFa
 // }
 // ColumnFamilyHandle* handle;
 // };
-
 
 py_DB::py_DB() : db_ptr(nullptr) {
 }
@@ -316,4 +313,3 @@ PYBIND11_MODULE(pyrocksdb, m) {
 
     // m.def("append_1", &append_1);
 }
-

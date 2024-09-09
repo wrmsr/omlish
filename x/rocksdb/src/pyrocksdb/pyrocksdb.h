@@ -31,11 +31,9 @@ namespace py = pybind11;
 class IteratorWrapper {
 public:
     IteratorWrapper(Iterator *iterator) : iterator(iterator) {
-
     }
 
     ~IteratorWrapper() {
-
     }
 
     bool Valid() {
@@ -126,7 +124,6 @@ class py_ColumnFamilyHandle : public ColumnFamilyHandle {
     }
 };
 
-
 class py_DB {
 public:
     py_DB();
@@ -200,7 +197,8 @@ public:
     //FIXME: python gc
     ~py_DB();
 
-    const std::string default_column_familiy_name(); // maybe a typo? take a look pls
+    const std::string default_column_family_name(); // maybe a typo? take a look pls
+
 private:
     DB *db_ptr;
 };
