@@ -26,17 +26,17 @@ public:
         return txn->Commit();
     }
 
-    // std::unique_ptr<const Snapshot> GetSnapshot() {
-    const Snapshot *GetSnapshot() {
-        // return std::unique_ptr<const Snapshot>(txn->GetSnapshot());
-        // std::unique_ptr<const Snapshot> b;
-        // return b;
-        return txn->GetSnapshot();
-    }
+    // // std::unique_ptr<const Snapshot> GetSnapshot() {
+    // const Snapshot *GetSnapshot() {
+    //     // return std::unique_ptr<const Snapshot>(txn->GetSnapshot());
+    //     // std::unique_ptr<const Snapshot> b;
+    //     // return b;
+    //     return txn->GetSnapshot();
+    // }
 
-    void ClearSnapshot() {
-        txn->ClearSnapshot();
-    }
+    // void ClearSnapshot() {
+    //     txn->ClearSnapshot();
+    // }
 
     void Rollback() {
         txn->Rollback();
@@ -50,9 +50,9 @@ public:
         txn->SetSavePoint();
     }
 
-    void SetSnapshot() {
-        txn->SetSnapshot();
-    }
+    // void SetSnapshot() {
+    //     txn->SetSnapshot();
+    // }
 
     std::unique_ptr<Blob> GetForUpdate(
             const ReadOptions &options,
@@ -122,16 +122,16 @@ public:
         return db_ptr->Put(options, key, value);
     }
 
-    const Snapshot *GetSnapshot() {
-        if (db_ptr == nullptr) {
-            throw std::invalid_argument("db has been closed");
-        }
-        return db_ptr->GetSnapshot();
-    }
+    // const Snapshot *GetSnapshot() {
+    //     if (db_ptr == nullptr) {
+    //         throw std::invalid_argument("db has been closed");
+    //     }
+    //     return db_ptr->GetSnapshot();
+    // }
 
-    void ReleaseSnapshot(const Snapshot *snapshot) {
-        return db_ptr->ReleaseSnapshot(snapshot);
-    }
+    // void ReleaseSnapshot(const Snapshot *snapshot) {
+    //     return db_ptr->ReleaseSnapshot(snapshot);
+    // }
 
     std::unique_ptr<TransactionWrapper>
     BeginTransaction(const WriteOptions &write_options, const TransactionOptions &txn_options = TransactionOptions()) {
@@ -140,7 +140,6 @@ public:
 
 private:
     TransactionDB *db_ptr;
-
 };
 
 
@@ -150,9 +149,9 @@ void init_transaction_db(py::module &m) {
         .def("put", (Status(TransactionWrapper::*)(const std::string&, const std::string &)) &TransactionWrapper::Put)
         .def("commit", &TransactionWrapper::Commit)
         .def("get_for_update", &TransactionWrapper::GetForUpdate, py::arg("options"), py::arg("key"), py::arg("exclusive") = true, py::arg("do_validate") = true)
-        .def("get_snapshot", &TransactionWrapper::GetSnapshot)
-        .def("clear_snapshot", &TransactionWrapper::ClearSnapshot)
-        .def("set_snapshot", &TransactionWrapper::SetSnapshot)
+        // .def("get_snapshot", &TransactionWrapper::GetSnapshot)
+        // .def("clear_snapshot", &TransactionWrapper::ClearSnapshot)
+        // .def("set_snapshot", &TransactionWrapper::SetSnapshot)
         .def("set_savepoint", &TransactionWrapper::SetSavePoint)
         .def("rollback", &TransactionWrapper::Rollback)
         .def("rollback_to_savepoint", &TransactionWrapper::RollbackToSavePoint);
@@ -163,8 +162,8 @@ void init_transaction_db(py::module &m) {
         .def("close", &PyTransactionDB::Close)
         .def("get", &PyTransactionDB::Get)
         .def("put", &PyTransactionDB::Put)
-        .def("get_snapshot", &PyTransactionDB::GetSnapshot)
-        .def("release_snapshot", &PyTransactionDB::ReleaseSnapshot)
+        // .def("get_snapshot", &PyTransactionDB::GetSnapshot)
+        // .def("release_snapshot", &PyTransactionDB::ReleaseSnapshot)
         .def("begin_transaction", &PyTransactionDB::BeginTransaction, py::arg("write_options"), py::arg("txn_options") = TransactionOptions());
 }
 
