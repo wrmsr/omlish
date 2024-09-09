@@ -30,6 +30,7 @@ all = [
     'pycparser ~= 2.22',
     'cffi ~= 1.17',
     'pcpp ~= 1.30',
+    'docutils ~= 0.21',
     'mypy ~= 1.11',
     'tokenize_rt ~= 6.0',
     'wheel ~= 0.44',
@@ -38,6 +39,9 @@ c = [
     'pycparser ~= 2.22',
     'cffi ~= 1.17',
     'pcpp ~= 1.30',
+]
+docutils = [
+    'docutils ~= 0.21',
 ]
 mypy = [
     'mypy ~= 1.11',
