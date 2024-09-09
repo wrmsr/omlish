@@ -26,15 +26,15 @@ def transaction_db():
     tmp = tempfile.TemporaryDirectory()
     db = pyrocksdb.transaction_db()
     s = db.open(opts, txn_db_opts, tmp.name)
-    assert (s.ok())
+    assert s.ok()
     yield db
     db.close()
 
 
 def test_options():
     opts = pyrocksdb.Options()
-    assert (opts.target_file_size_base == 64 * 1048576)
-    assert (opts.target_file_size_multiplier == 1)
+    assert opts.target_file_size_base == 64 * 1048576
+    assert opts.target_file_size_multiplier == 1
 
 
 def test_put_get(db):
@@ -124,36 +124,36 @@ def test_transaction_db():
     tmp = tempfile.TemporaryDirectory()
     db = pyrocksdb.transaction_db()
     s = db.open(opts, txn_db_opts, tmp.name)
-    assert (s.ok())
+    assert s.ok()
     wopts = pyrocksdb.WriteOptions()
     txn = db.begin_transaction(wopts)
-    assert (txn)
+    assert txn
     ropts = pyrocksdb.ReadOptions()
     blob = txn.get(ropts, b'key1')
-    assert (blob.status.is_not_found())
+    assert blob.status.is_not_found()
     del txn
 
     txn = db.begin_transaction(wopts)
     s = txn.put(b'key1', b'value1')
-    assert (s.ok())
+    assert s.ok()
     s = txn.put(b'key2', b'value2')
-    assert (s.ok())
+    assert s.ok()
     blob = txn.get(ropts, b'key1')
-    assert (blob.status.ok())
-    assert (blob.data == b'value1')
+    assert blob.status.ok()
+    assert blob.data == b'value1'
 
     # the data won't be written unitl the commit
     blob = db.get(ropts, b'key1')
-    assert (blob.status.is_not_found())
+    assert blob.status.is_not_found()
 
     s = db.put(wopts, b'key3', b'value3')
-    assert (s.ok())
+    assert s.ok()
 
     s = db.put(wopts, b'key1', b'value1')
-    assert (not s.ok())
+    assert not s.ok()
 
     s = txn.commit()
-    assert (s.ok())
+    assert s.ok()
     del txn
 
     txn_opts = pyrocksdb.TransactionOptions()
@@ -175,14 +175,14 @@ def test_transaction_snapshot(transaction_db):
 
     # Write a key OUTSIDE of transaction
     s = db.put(wopts, b'abc', b'xyz')
-    assert (s.ok())
+    assert s.ok()
 
     #  Attempt to read a key using the snapshot.  This will fail since
     #  the previous write outside this txn conflicts with this read.
     ropts = pyrocksdb.ReadOptions()
     ropts.snapshot = snapshot
     blob = txn.get_for_update(ropts, b"abc")
-    assert (blob.status.is_busy());
+    assert blob.status.is_busy()
 
     # Discard all batched writes in this transaction.
 
@@ -221,33 +221,33 @@ def test_transaction_read_commited(transaction_db):
     #  Do some reads and writes to key "x"
     ropts = pyrocksdb.ReadOptions()
     ropts.snapshot = snapshot
-    blob = txn.get(ropts, b"x");
-    assert (blob.status.is_not_found())
+    blob = txn.get(ropts, b"x")
+    assert blob.status.is_not_found()
     txn.put(b"x", b"x")
     # Do a write outside of the transaction to key "y"
-    s = db.put(wopts, b"y", b"y");
-    assert (s.ok())
+    s = db.put(wopts, b"y", b"y")
+    assert s.ok()
 
     #  Set a new snapshot in the transaction
-    txn.set_snapshot();
-    txn.set_savepoint();
-    ropts.snapshot = db.get_snapshot();
+    txn.set_snapshot()
+    txn.set_savepoint()
+    ropts.snapshot = db.get_snapshot()
 
     # Do some reads and writes to key "y"
     #  Since the snapshot was advanced, the write done outside of the
     #  transaction does not conflict.
     blob = txn.get_for_update(ropts, b"y")
-    assert (blob.status.ok())
-    assert (blob.data == b'y')
-    txn.put("y", "y");
+    assert blob.status.ok()
+    assert blob.data == b'y'
+    txn.put("y", "y")
 
     # Decide we want to revert the last write from this transaction.
     txn.rollback_to_savepoint()
 
     # Commit.
     s = txn.commit()
-    assert (s.ok())
-    del txn;
+    assert s.ok()
+    del txn
     # Clear snapshot from read options since it is no longer valid
     db.release_snapshot(ropts.snapshot)
 
@@ -273,39 +273,39 @@ def test_column_family():
     db_opts = pyrocksdb.DBOptions()
     #  a = [1,2]
     s, cfhs = db.open(db_opts, tmp.name, cfds)
-    assert (s.ok())
-    assert (len(cfhs) == 2)
-    assert (cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName)
-    assert (cfhs[1].get_name() == 'new_cf')
+    assert s.ok()
+    assert len(cfhs) == 2
+    assert cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName
+    assert cfhs[1].get_name() == 'new_cf'
     wopts = pyrocksdb.WriteOptions()
     ropts = pyrocksdb.ReadOptions()
     s = db.put(wopts, cfhs[0], b'key', b'value')
-    assert (s.ok())
+    assert s.ok()
     b = db.get(ropts, cfhs[0], b'key')
-    assert (b.status.ok())
-    assert (b.data == b'value')
+    assert b.status.ok()
+    assert b.data == b'value'
     b = db.get(ropts, cfhs[1], b'key')
-    assert (b.status.is_not_found())
+    assert b.status.is_not_found()
 
     s = db.put(wopts, cfhs[1], b'key', b'value2')
-    assert (s.ok())
+    assert s.ok()
     b = db.get(ropts, cfhs[1], b'key')
-    assert (b.status.ok())
-    assert (b.data == b'value2')
+    assert b.status.ok()
+    assert b.data == b'value2'
 
     b = db.get(ropts, cfhs[0], b'key')
-    assert (b.status.ok())
-    assert (b.data == b'value')
+    assert b.status.ok()
+    assert b.data == b'value'
 
     s = db.delete(wopts, cfhs[0], b'key')
-    assert (s.ok())
+    assert s.ok()
     b = db.get(ropts, cfhs[0], b'key')
-    assert (b.status.is_not_found())
+    assert b.status.is_not_found()
 
     s = db.delete(wopts, cfhs[1], b'key')
-    assert (s.ok())
+    assert s.ok()
     b = db.get(ropts, cfhs[1], b'key')
-    assert (b.status.is_not_found())
+    assert b.status.is_not_found()
 
     # write batch
     update = pyrocksdb.WriteBatch()
@@ -313,12 +313,12 @@ def test_column_family():
     update.put(cfhs[0], b'key2', b'value2')
     update.delete(cfhs[0], 'key1')
     s = db.write(wopts, update)
-    assert (s.ok())
+    assert s.ok()
     b = db.get(ropts, cfhs[0], b'key1')
-    assert (b.status.is_not_found())
+    assert b.status.is_not_found()
     b = db.get(ropts, cfhs[0], b'key2')
-    assert (b.status.ok())
-    assert (b.data == b'value2')
+    assert b.status.ok()
+    assert b.data == b'value2'
 
     for cfh in cfhs:
         del cfh
@@ -345,10 +345,10 @@ def test_iterator_column_family(db):
     db_opts = pyrocksdb.DBOptions()
     #  a = [1,2]
     s, cfhs = db.open(db_opts, tmp.name, cfds)
-    assert (s.ok())
-    assert (len(cfhs) == 2)
-    assert (cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName)
-    assert (cfhs[1].get_name() == 'new_cf')
+    assert s.ok()
+    assert len(cfhs) == 2
+    assert cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName
+    assert cfhs[1].get_name() == 'new_cf'
     wopts = pyrocksdb.WriteOptions()
     ropts = pyrocksdb.ReadOptions()
 
@@ -399,11 +399,11 @@ def test_readonly():
     db.close()
 
     s = db.open_for_readonly(opts, tmp.name)
-    assert (s.ok())
+    assert s.ok()
 
     wopts = pyrocksdb.WriteOptions()
     s = db.put(wopts, b'key1', b'value1')
-    assert (not s.ok())
+    assert not s.ok()
 
 
 def test_readonly_column_family():
@@ -427,14 +427,14 @@ def test_readonly_column_family():
     db_opts = pyrocksdb.DBOptions()
     #  a = [1,2]
     s, cfhs = db.open_for_readonly(db_opts, tmp.name, cfds)
-    assert (s.ok())
-    assert (len(cfhs) == 2)
-    assert (cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName)
-    assert (cfhs[1].get_name() == 'new_cf')
+    assert s.ok()
+    assert len(cfhs) == 2
+    assert cfhs[0].get_name() == pyrocksdb.DefaultColumnFamilyName
+    assert cfhs[1].get_name() == 'new_cf'
 
     wopts = pyrocksdb.WriteOptions()
     s = db.put(wopts, cfhs[1], b'key1', b'value1')
-    assert (not s.ok())
+    assert not s.ok()
 
 
 def test_compaction(db):
