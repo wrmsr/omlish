@@ -79,6 +79,10 @@ class ActorBehavior(ProcessBehavior, abc.ABC):
     async def init(self) -> None:
         pass
 
+    @abc.abstractmethod
+    async def handle_message(self, src: Pid, msg: ta.Any) -> None:
+        raise NotImplementedError
+
 
 class Actor(ProcessBehavior):
     def __init__(self) -> None:
@@ -97,6 +101,8 @@ class Actor(ProcessBehavior):
 
         self._proc = proc
         self._behavior = behavior
+
+        await behavior.init()
 
     async def process_run(self) -> None:
         raise NotImplementedError
@@ -134,8 +140,15 @@ class Node:
 #
 
 
+class FooActor(Actor, ActorBehavior):
+    async def handle_message(self, src: Pid, msg: ta.Any) -> None:
+        raise TypeError()
+
+
 async def _main() -> None:
     node = Node()
+    proc = await node.spawn(FooActor)
+    print(proc)
 
 
 if __name__ == '__main__':
