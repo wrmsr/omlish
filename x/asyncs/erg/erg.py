@@ -2,6 +2,7 @@ import abc
 import dataclasses as dc
 import enum
 import itertools
+import sys
 import time
 import typing as ta
 
@@ -57,6 +58,10 @@ class ProcessState(enum.Enum):
     WAIT_RESPONSE = enum.auto()
     TERMINATED = enum.auto()
     ZOMBIE = enum.auto()
+
+    @property
+    def alive(self) -> bool:
+        return self in (ProcessState.INIT, ProcessState.SLEEP, ProcessState.RUN, ProcessState.WAIT_RESPONSE)
 
 
 class Process(abc.ABC):
@@ -176,8 +181,8 @@ class Actor(ProcessBehavior):
             except anyio.WouldBlock:
                 return
 
-            print(msg)
-            raise NotImplementedError
+            mbm = check.isinstance(msg, MailboxMessage)
+            await self._behavior.handle_message(mbm.src, mbm.msg)
 
 
 ##
@@ -198,7 +203,7 @@ class Node(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def send(self, dst: Pid, msg: ta.Any) -> None:
+    async def send(self, dst: Pid, msg: ta.Any) -> None:
         raise NotImplementedError
 
 
@@ -214,20 +219,25 @@ class NodeImpl(Node):
         self._processes: dict[Pid, ProcessImpl] = {}
         self._id_seq = itertools.count()
 
+        self._core_pid = self._next_pid()
+
+    def _next_pid(self) -> Pid:
+        return Pid(
+            next(self._id_seq),
+            int(time.monotonic()),
+        )
+
     async def spawn(
             self,
             behavior_fac: ta.Callable[[], ProcessBehavior],
             opts: ProcessOptions = ProcessOptions(),
     ) -> Pid:
-        pid = Pid(
-            next(self._id_seq),
-            int(time.monotonic()),
-        )
+        pid = self._next_pid()
 
         behavior = behavior_fac()
 
         mailbox = ProcessMailbox(
-            aiu.create_stapled_memory_object_stream(opts.mailbox_size or 0),
+            aiu.create_stapled_memory_object_stream(opts.mailbox_size or sys.maxsize),
         )
 
         proc = ProcessImpl(
@@ -246,8 +256,21 @@ class NodeImpl(Node):
 
         return proc.pid
 
-    def send(self, dst: Pid, msg: ta.Any) -> None:
-        raise NotImplementedError
+    async def send(self, dst: Pid, msg: ta.Any) -> None:
+        proc = self._processes[dst]
+        if not proc.state.alive:
+            raise Exception(f'terminated: {dst}')
+
+        mbm = MailboxMessage(
+            self._core_pid,
+            msg,
+        )
+        try:
+            proc.mailbox.main.send_stream.send_nowait(mbm)
+        except anyio.WouldBlock:
+            raise Exception('mailbox full')
+
+        await proc._run()  # noqa
 
 
 #
@@ -255,7 +278,7 @@ class NodeImpl(Node):
 
 class FooActor(Actor, ActorBehavior):
     async def handle_message(self, src: Pid, msg: ta.Any) -> None:
-        raise TypeError()
+        print(f'{self} <- {msg}')
 
 
 async def _main() -> None:
@@ -263,6 +286,7 @@ async def _main() -> None:
         node = NodeImpl(tg)
         pid = await node.spawn(FooActor)
         print(pid)
+        await node.send(pid, 'foo')
 
 
 if __name__ == '__main__':
