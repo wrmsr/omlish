@@ -26,6 +26,7 @@ if rev.text and '#invoke' in rev.text.text:
 """
 import concurrent.futures as cf
 import contextlib
+import dataclasses as dc
 import glob
 import io
 import logging
@@ -35,11 +36,13 @@ import os.path
 import signal
 import threading
 import time
+import typing as ta
 
 import lz4.frame
 import sqlalchemy as sa
 import sqlalchemy.exc
 
+from omlish import cached
 from omlish import concurrent as cfu
 from omlish import lang
 from omlish import logs
@@ -48,8 +51,8 @@ from omlish import multiprocessing as mpu
 from omlish.formats import json
 
 from . import models as mdl
-from .text import mfh
-from .text import wtp
+from .text import mfh  # noqa
+from .text import wtp  # noqa
 from .utils.progress import ProgressReporter
 
 
@@ -68,142 +71,210 @@ pages_table = sa.Table(
     meta,
     sa.Column('id', sa.Integer(), primary_key=True),
     sa.Column('title', sa.String()),
-    sa.Column('text', sa.BLOB),
+    sa.Column('page', sa.BLOB),
+    sa.Column('doc', sa.BLOB),
     sa.Index('pages_by_title', 'title'),
 )
 
 
-@logs.error_logging(log)
-def analyze_file(
+class FileAnalyzer:
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Context:
+        deathpact: mpu.Deathpact
+        lock: threading.Lock
+        num_rows: mp.managers.ValueProxy
+
+    def __init__(
+        self,
         db_url: str,
-        fn: str,
-        dp: mpu.Deathpact,
-        lck: threading.Lock,
-        nr: mp.managers.ValueProxy,
-) -> None:
-    log.info(f'pid={os.getpid()} {dp=} {fn}')  # noqa
+        ctx: Context,
+    ) -> None:
+        super().__init__()
+        self._db_url = db_url
+        self._ctx = ctx
 
-    rows: list[dict] = []
-    row_batch_size = 1_000
+        self._es = contextlib.ExitStack()
 
-    rb = 0
-    cb = 0
+        self._num_rows = 0
+        self._rows: list[dict] = []
 
-    efn = os.path.basename(fn)
+    #
 
-    with contextlib.ExitStack() as es:
-        engine = sa.create_engine(db_url)
-        es.enter_context(lang.defer(engine.dispose))  # noqa
+    def __enter__(self) -> ta.Self:
+        self._es.__enter__()
+        return self
 
-        with lck:
-            with engine.begin() as conn:
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self._es.__exit__(exc_type, exc_val, exc_tb)
+
+    #
+
+    @cached.function
+    def _db(self) -> sa.Engine:
+        db = sa.create_engine(self._db_url)
+        self._es.enter_context(lang.defer(db.dispose))  # noqa
+        return db
+
+    def _setup_db(self) -> None:
+        with self._ctx.lock:
+            with self._db().begin() as conn:
                 meta.create_all(bind=conn)
 
-        def maybe_flush_rows():
-            if len(rows) >= row_batch_size:
-                with lck:
-                    while True:
-                        try:
-                            with engine.begin() as conn:
-                                conn.execute(pages_table.insert(), rows)
+    #
 
-                        except sa.exc.OperationalError as oe:
-                            if 'database is locked' in repr(oe):  # FIXME: lol
-                                log.warning(f'{efn}: database is locked!!')  # noqa
-                                time.sleep(1.)
-                                continue
-                            raise
+    def _flush_rows(self) -> None:
+        with self._ctx.lock:
+            while True:
+                try:
+                    with self._db().begin() as conn:
+                        conn.execute(pages_table.insert(), self._rows)
 
-                        else:
-                            break
+                except sa.exc.OperationalError as oe:
+                    if 'database is locked' in repr(oe):  # FIXME: lol
+                        log.warning(f'database is locked!!')  # noqa
+                        time.sleep(1.)
+                        continue
+                    raise
 
-                    nr.value += len(rows)
-                    log.info(f'{efn}: {len(rows):_} rows batched, {i:_} rows file, {nr.value:_} rows total')  # noqa
+                else:
+                    break
 
-                    rows.clear()
+            self._ctx.num_rows.value += len(self._rows)
+            log.info(
+                f'{len(self._rows):_} rows batched, '  # noqa
+                f'{self._num_rows:_} rows file, '  # noqa
+                f'{self._ctx.num_rows.value:_} rows total'  # noqa
+            )
 
-        f = es.enter_context(open(fn, 'rb'))
-        # fpr = iou.FileProgressReporter(f, time_interval=5)
+            self._rows.clear()
 
-        # proc = subprocess.Popen(['lz4', '-cdk', fn], stdout=subprocess.PIPE)
-        # f = proc.stdout
-        # fpr = None
+    row_batch_size = 1_000
 
-        zf = es.enter_context(lz4.frame.open(f))
-        tw = io.TextIOWrapper(zf, 'utf-8')
+    def _maybe_flush_rows(self):
+        if len(self._rows) >= self.row_batch_size:
+            self._flush_rows()
 
-        fpr0 = ProgressReporter[int](
-            fn=f.tell,
-            total=os.fstat(f.fileno()).st_size,
-            fmt='_',
-            suffix='B',
-            report_interval=1_000_000,
+    #
+
+    verbose = False
+
+    parse_backend: ta.Any = (
+        mfh
+        # wtp
+    )
+
+    def _handle_line(self, l: str) -> bool:
+        page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
+
+        self.verbose and print(page.title)
+
+        if not page.revisions:
+            self.verbose and print()
+            return False
+
+        rev = page.revisions[0]
+
+        if len(page.revisions) > 1:
+            raise Exception(f'Multiple revisions: {page.id=} {page.title=}')
+
+        if not (rev.text and rev.text.text):
+            self.verbose and print()
+            return False
+
+        page_buf = json.dumps_compact(msh.marshal(page)).encode('utf-8')
+        page_compressed_buf = lz4.frame.compress(page_buf)
+
+        row = dict(
+            id=page.id,
+            title=page.title,
+            page=page_compressed_buf,
         )
-        fpr1 = ProgressReporter[int](
-            start=0,
-            fmt='_',
-            suffix='pages',
-        )
 
-        i = 0
-        while (l := tw.readline()):
-            i += 1
+        if self.parse_backend is mfh:
+            doc = mfh.parse_doc(rev.text.text)  # noqa
+            # print(doc)
 
-            dp.poll()
+            doc_buf = json.dumps_compact(msh.marshal(doc, mfh.Doc)).encode('utf-8')
+            doc_compressed_buf = lz4.frame.compress(doc_buf)
 
-            fpr0.update()
-            fpr1.update(i)
-            if fpr0.should_report or fpr1.should_report:
-                log.info(f'{efn}: ' + ', '.join([*fpr0.report(), *fpr1.report()]))  # noqa
-                log.info(f'{efn}: {rb:_} B raw, {cb:_} B cpr, {cb / rb * 100.:.02f} %')  # noqa
-                rb = cb = 0
+            row.update(
+                doc=doc_compressed_buf,
+            )
 
-            # if fpr is not None and fpr.report():  # noqa
-            #     print(f'{i} pages', file=sys.stderr)
+        elif self.parse_backend is wtp:
+            tree = wtp.parse_tree(rev.text.text)  # noqa
+            # print(tree)
 
-            page = msh.unmarshal(json.loads(l), mdl.Page)  # noqa
+        else:
+            raise TypeError(self.parse_backend)
 
-            verbose = False
+        self._rows.append(row)
 
-            verbose and print(page.title)
+        self.verbose and print()
+        return True
 
-            if page.revisions:
-                rev = page.revisions[0]
+    @logs.error_logging(log)
+    def run(self, file_name: str) -> None:
+        log.info(f'{self._ctx.deathpact=} {file_name}')  # noqa
 
-                # if len(page.revisions) > 1:
-                #     breakpoint()
+        self._setup_db()
 
-                if rev.text and rev.text.text:
-                    # backend = mfh
-                    backend = wtp
+        with contextlib.ExitStack() as es:
+            f = es.enter_context(open(file_name, 'rb'))
+            # fpr = iou.FileProgressReporter(f, time_interval=5)
 
-                    if backend is mfh:
-                        dom = mfh.parse_doc(rev.text.text)  # noqa
-                        # print(dom)
+            # proc = subprocess.Popen(['lz4', '-cdk', fn], stdout=subprocess.PIPE)
+            # f = proc.stdout
+            # fpr = None
 
-                    elif backend is wtp:
-                        tree = wtp.parse_tree(rev.text.text)  # noqa
-                        # print(tree)
+            zf = es.enter_context(lz4.frame.open(f))
+            tw = io.TextIOWrapper(zf, 'utf-8')
 
-                    else:
-                        raise TypeError(backend)
+            file_pr = ProgressReporter[int](
+                fn=f.tell,
+                total=os.fstat(f.fileno()).st_size,
+                fmt='_',
+                suffix='B',
+                report_interval=1_000_000,
+            )
+            rows_pr = ProgressReporter[int](
+                start=self._num_rows,
+                fmt='_',
+                suffix='pages',
+            )
 
-                    buf = rev.text.text.encode('utf-8')
-                    rb += len(buf)
-                    cbuf = lz4.frame.compress(buf)
-                    # cbuf = buf
-                    cb += len(cbuf)
+            while (l := tw.readline()):
+                self._num_rows += 1
 
-                    rows.append({
-                        'id': page.id,
-                        'title': page.title,
-                        'text': cbuf,
-                    })
-                    maybe_flush_rows()
+                self._ctx.deathpact.poll()
 
-            verbose and print()
+                file_pr.update()
+                rows_pr.update(self._num_rows)
+                if file_pr.should_report or rows_pr.should_report:
+                    log.info(
+                        f'{os.path.basename(file_name)}: ' +  # noqa
+                        ', '.join([
+                            *file_pr.report(),
+                            *rows_pr.report(),
+                        ]),
+                    )
 
-        maybe_flush_rows()
+                # if fpr is not None and fpr.report():  # noqa
+                #     print(f'{i} pages', file=sys.stderr)
+
+                if self._handle_line(l):
+                    self._maybe_flush_rows()
+
+            self._flush_rows()
+
+
+@logs.error_logging(log)
+def analyze_file(
+        file_name: str,
+        db_url: str,
+        ctx: FileAnalyzer.Context,
+) -> None:
+    FileAnalyzer(db_url, ctx).run(file_name)
 
 
 ##
@@ -230,17 +301,23 @@ def _main() -> None:
         os.unlink(db_file)
     db_url = f'sqlite:///{db_file}'
 
-    log.info(f'pid={os.getpid()}')  # noqa
+    log.info('Launching')  # noqa
 
     with contextlib.ExitStack() as es:
-        pdp: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
+        deathpact: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
 
         mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
-            fds={pdp.pass_fd},
+            fds={deathpact.pass_fd},
             deathsig=signal.SIGTERM,
         ))
 
-        mgr = mp_context.Manager()
+        mp_manager = mp_context.Manager()
+
+        ctx = FileAnalyzer.Context(
+            deathpact=deathpact,
+            lock=mp_manager.Lock(),
+            num_rows=mp_manager.Value('i', 0),
+        )
 
         ex = es.enter_context(cfu.new_executor(  # noqa
             args.num_workers,
@@ -249,27 +326,28 @@ def _main() -> None:
             initializer=_init_process,
         ))
 
-        nr = mgr.Value('i', 0)
-
-        lck = mgr.Lock()
         futs: list[cf.Future] = [
             ex.submit(
                 analyze_file,
+                file_name,
                 db_url,
-                fn,
-                pdp,
-                lck,
-                nr,
+                ctx,
             )
-            for fn in sorted(
+            for file_name in sorted(
                 glob.glob(os.path.join(LZ4_JSONL_DIR, '*.jsonl.lz4')),
                 key=lambda fn: -os.stat(fn).st_size,
             )
         ]
-        for fut in futs:
-            fut.result()
 
-        log.info(f'{nr.value} rows total')  # noqa
+        for fut in cf.as_completed(futs):
+            try:
+                fut.result()
+            except Exception as e:  # noqa
+                log.exception('Master caught exception')
+                ex.shutdown(wait=False, cancel_futures=True)
+                raise
+
+        log.info(f'Complete! {ctx.num_rows.value} rows total')  # noqa
 
 
 if __name__ == '__main__':
