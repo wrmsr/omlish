@@ -23,6 +23,7 @@ async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
     shutdown.set()
 
 """  # noqa
+import dataclasses as dc
 import signal
 import typing as ta
 
@@ -42,6 +43,12 @@ MemoryObjectSendStream: ta.TypeAlias = anyio.streams.memory.MemoryObjectSendStre
 
 StapledByteStream: ta.TypeAlias = anyio.streams.stapled.StapledByteStream
 StapledObjectStream: ta.TypeAlias = anyio.streams.stapled.StapledObjectStream
+
+
+@dc.dataclass(eq=False)
+class MemoryStapledObjectStream(StapledObjectStream[T]):
+    send_stream: MemoryObjectSendStream[T]
+    receive_stream: MemoryObjectReceiveStream[T]
 
 
 ##
@@ -143,8 +150,8 @@ def split_memory_object_streams(
     return tup
 
 
-def create_stapled_memory_object_stream(max_buffer_size: float = 0) -> StapledObjectStream:
-    return StapledObjectStream(*anyio.create_memory_object_stream(max_buffer_size))
+def create_stapled_memory_object_stream(max_buffer_size: float = 0) -> MemoryStapledObjectStream:
+    return MemoryStapledObjectStream(*anyio.create_memory_object_stream(max_buffer_size))
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
@@ -158,9 +165,9 @@ def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
 
 def staple_memory_object_stream(
         *args: anyio.create_memory_object_stream[T],
-) -> StapledObjectStream[T]:
+) -> MemoryStapledObjectStream[T]:
     send, receive = args
-    return StapledObjectStream(
+    return MemoryStapledObjectStream(
         check.isinstance(send, MemoryObjectSendStream),  # type: ignore
         check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
     )
@@ -168,9 +175,9 @@ def staple_memory_object_stream(
 
 # FIXME: https://github.com/python/mypy/issues/15238
 # FIXME: https://youtrack.jetbrains.com/issues?q=tag:%20%7BPEP%20695%7D
-def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> StapledObjectStream[T]:
+def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> MemoryStapledObjectStream[T]:
     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
-    return StapledObjectStream(
+    return MemoryStapledObjectStream(
         check.isinstance(send, MemoryObjectSendStream),  # type: ignore
         check.isinstance(receive, MemoryObjectReceiveStream),  # type: ignore
     )
