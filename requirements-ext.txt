@@ -225,6 +225,8 @@ langchainhub==0.1.21
 
 langgraph==0.2.19
 
+langsmith==0.1.117
+
 tavily-python==0.4.0
 
 gpt4all==2.8.2
