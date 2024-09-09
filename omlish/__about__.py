@@ -88,7 +88,7 @@ class Project(ProjectBase):
         'sqlx': [
             'sqlean.py ~= 3.45; python_version < "3.13"',
 
-            'duckdb ~= 1.0',
+            'duckdb ~= 1.1',
         ],
 
         'testing': [

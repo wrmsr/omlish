@@ -8,6 +8,7 @@ TODO:
  - build / package / publish / version roll
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
  - env vars - PYTHONPATH
+ - optional uv backeny
 
 lookit:
  - https://pdm-project.org/en/latest/
@@ -121,7 +122,7 @@ class Venv:
     @cached_nullary
     def interp_exe(self) -> str:
         i = InterpSpecifier.parse(check_not_none(self._cfg.interp))
-        return DEFAULT_INTERP_RESOLVER.resolve(i).exe
+        return check_not_none(DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
 
     @cached_nullary
     def exe(self) -> str:
