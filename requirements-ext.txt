@@ -232,3 +232,5 @@ gpt4all==2.8.2
 ##
 
 wikitextprocessor==0.4.96
+
+gym==0.26.2
