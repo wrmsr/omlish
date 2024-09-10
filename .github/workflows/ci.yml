@@ -83,7 +83,7 @@ jobs:
               echo wrmsr/omlish-ci ;
               egrep '^\s*image:' docker/compose.yml | cut -d"'" -f2
             ) ; do
-              if ( docker history "$IMG" 2> /dev/null ) ; then
+              if ( docker history "$IMG" >/dev/null 2>/dev/null ) ; then
                 echo "$IMG" ;
                 docker history "$IMG" | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' ;
               fi ;
