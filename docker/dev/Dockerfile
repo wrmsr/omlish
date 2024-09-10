@@ -1,5 +1,5 @@
 FROM ubuntu:22.04
-COPY docker/.dockertimestamp /
+COPY docker/.timestamp /
 
 
 ## deps
