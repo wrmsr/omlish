@@ -148,45 +148,49 @@ class RealThreadlet(Threadlet, abc.ABC):
     def _switch(cls, src: 'RealThreadlet', dst: 'RealThreadlet') -> ta.Any:
         log.debug('switch: begin: %d -> %d', id(src), id(dst))
 
-        with self._lock:
-            if not self._started:
-                log.debug('switch: thread not started, starting')
+        t0, t1 = sorted((src, dst), key=lambda t: t._seq)  # noqa
+        with t0._lock:  # noqa
+            with t1._lock:  # noqa
+                # if not self._started:
+                #     log.debug('switch: thread not started, starting')
+                #
+                #     if self._t.is_alive():
+                #         raise Exception
+                #
+                #     self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
+                #     self._switch_in_event.set()
+                #
+                #     self._t.start()
+                #     self._started = True
+                #
+                # else:
+                #     log.debug('switch: thread already started')
+                #
+                #     if not self._paused:
+                #         raise Exception
+                #
+                #     self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
+                #     self._switch_in_event.set()
+                raise NotImplementedError
 
-                if self._t.is_alive():
-                    raise Exception
+        # log.debug('switch: _switch_out_event.wait: begin')
+        # self._switch_out_event.wait()
+        # log.debug('switch: _switch_out_event.wait: end')
+        #
+        # with self._lock:
+        #     self._switch_out_event.clear()
+        #
+        #     out_value = self._switch_out_value.must()
+        #     self._switch_out_value = lang.empty()
+        #
+        # log.debug('switch: end: %r', out_value)
+        #
+        # return _squash_args(out_value)
 
-                self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
-                self._switch_in_event.set()
-
-                self._t.start()
-                self._started = True
-
-            else:
-                log.debug('switch: thread already started')
-
-                if not self._paused:
-                    raise Exception
-
-                self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
-                self._switch_in_event.set()
-
-        log.debug('switch: _switch_out_event.wait: begin')
-        self._switch_out_event.wait()
-        log.debug('switch: _switch_out_event.wait: end')
-
-        with self._lock:
-            self._switch_out_event.clear()
-
-            out_value = self._switch_out_value.must()
-            self._switch_out_value = lang.empty()
-
-        log.debug('switch: end: %r', out_value)
-
-        return _squash_args(out_value)
+        raise NotImplementedError
 
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        src = self._s.get_current()
-        return self._switch(src, self)
+        return self._switch(self._s.get_current(), self)
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
