@@ -54,14 +54,6 @@ class AiMessage(Message, lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
-class Generation(lang.Final):
-    text: str
-
-
-##
-
-
 class Invokable(lang.Abstract, ta.Generic[T, U]):
     @abc.abstractmethod
     def invoke(self, arg: T) -> U:
@@ -106,7 +98,7 @@ class ChatOpenAi(Invokable, lang.Final):
             content=msg.content,
         )
 
-    def invoke(self, msgs: Messages) -> Generation:  # type: ignore
+    def invoke(self, msgs: Messages) -> AiMessage:  # type: ignore
         payload = {
             'messages': [self._build_message_payload(msg) for msg in msgs],
             'model': self._model,
@@ -117,15 +109,15 @@ class ChatOpenAi(Invokable, lang.Final):
 
         response = self._client.chat.completions.create(**payload)
         choice = check.single(response.choices)
-        return Generation(choice.message.content)
+        return AiMessage(choice.message.content)
 
 
 ##
 
 
 class StrOutputParser(Invokable, lang.Final):
-    def invoke(self, gen: Generation) -> str:  # type: ignore
-        return gen.text
+    def invoke(self, msg: Message) -> str:  # type: ignore
+        return msg.content
 
 
 ##
@@ -156,6 +148,9 @@ class ChatSessionStore:
 
     def get(self, session_id: str) -> ChatSession | None:
         return self.store.get(session_id)
+
+    def put(self, session_id: str, session: ChatSession) -> None:
+        self.store[session_id] = session
 
 
 @dc.dataclass(frozen=True)
@@ -190,9 +185,17 @@ class UpdatingMessageHistoryChat(Invokable):
     def invoke(self, new: ChatSessionAddition) -> Messages:
         in_messages = MessageHistoryChat(self.store).invoke(new)
 
-        out_messages = self.child(in_messages)
+        out_message = self.child(in_messages)
 
-        raise NotImplementedError
+        out_messages = [
+            *in_messages,
+            out_message,
+        ]
+
+        if new.session_id is not None:
+            self.store.put(new.session_id, ChatSession(out_messages))
+
+        return out_messages
 
 
 ##
@@ -222,11 +225,21 @@ def _run_2_chatbot(client: openai.OpenAI) -> None:
 
     chat_sessions = ChatSessionStore()
 
-    response = UpdatingMessageHistoryChat(
+    with_message_history = UpdatingMessageHistoryChat(
         model,
         chat_sessions,
-    ).invoke(ChatSessionAddition(
+    )
+
+    response = with_message_history.invoke(ChatSessionAddition(
         [HumanMessage(content="Hi! I'm Bob")],
+        session_id='abc2',
+    ))
+    print(response)
+
+    #
+
+    response = with_message_history.invoke(ChatSessionAddition(
+        [HumanMessage(content="What's my name?")],
         session_id='abc2',
     ))
     print(response)
