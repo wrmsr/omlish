@@ -327,18 +327,28 @@ docker-invalidate:
 
 ### CI
 
+CI_BASE_FILES=\
+	.versions \
+	docker \
+	requirements-dev.txt \
+	requirements.txt \
+
 .PHONY: ci-image
 ci-image:
+	tar cvh ${CI_BASE_FILES} | \
+		docker build \
+			--platform linux/x86_64 \
+			--tag "${DOCKER_USER}/omlish-ci-base" \
+			-f "docker/ci/Dockerfile" \
+			-
+
 	tar cvh \
 		--exclude "__pycache__" \
+		${CI_BASE_FILES} \
 		${SRCS} \
-		.versions \
 		LICENSE \
 		Makefile \
-		docker \
 		pyproject.toml \
-		requirements-dev.txt \
-		requirements.txt \
 	| \
 		docker build \
 			--platform linux/x86_64 \

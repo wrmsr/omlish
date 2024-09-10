@@ -35,9 +35,12 @@ jobs:
           path: '~/.cache'
           key:
             ci-${{ github.ref }}-${{ hashFiles(
+              '.versions',
               'docker/.timestamp',
               'docker/ci/Dockerfile',
-              'docker/compose.yml'
+              'docker/compose.yml',
+              'requirements.txt',
+              'requirements-dev.txt'
             ) }}
           restore-keys: |
             ci-${{ github.ref }}-
@@ -47,6 +50,7 @@ jobs:
         run: >
           tar -tvf ~/.cache/docker/ci.tar ||: ;
           docker load -i ~/.cache/docker/ci.tar ||: ;
+          docker image history wrmsr/omlish-ci-base ||: ;
 
       ##
 
@@ -76,6 +80,7 @@ jobs:
           docker image history wrmsr/omlish-ci &&
           (
             for IMG in $(
+              echo wrmsr/omlish-ci-base ;
               egrep '^\s*image:' docker/compose.yml | cut -d"'" -f2 | egrep -v 'wrmsr/omlish-ci'
             ) ; do
               if ( docker history "$IMG" >/dev/null 2>/dev/null ) ; then
