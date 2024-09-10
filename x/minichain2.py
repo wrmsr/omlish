@@ -159,6 +159,30 @@ class MessageTemplater:
 ##
 
 
+def _run_2_chatbot(client: openai.OpenAI) -> None:
+    chat_completer = OpenaiChatCompleter(client, 'gpt-3.5-turbo')
+
+    result = chat_completer.complete_chat([HumanMessage(content="Hi! I'm Bob")])
+    print(result)
+
+    #
+
+    result = chat_completer.complete_chat([HumanMessage(content="What's my name?")])
+    print(result)
+
+    #
+
+    result = chat_completer.complete_chat([
+        HumanMessage(content="Hi! I'm Bob"),
+        AiMessage(content='Hello Bob! How can I assist you today?'),
+        HumanMessage(content="What's my name?"),
+    ])
+    print(result)
+
+
+#
+
+
 def _run_1_chain(client: openai.OpenAI) -> None:
     chat_completer = OpenaiChatCompleter(client, 'gpt-4')
     message_parser = StrMessageParser()
@@ -206,7 +230,7 @@ def _run(es: contextlib.ExitStack) -> None:
     #
 
     _run_1_chain(client)
-    # _run_2_chatbot(client)
+    _run_2_chatbot(client)
 
 
 #
