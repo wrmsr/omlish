@@ -1,7 +1,7 @@
 #### optional
 
 # git+https://github.com/vstinner/greenlet@py313
-greenlet==3.0.3; python_version < "3.13"
+greenlet==3.1.0
 
 wrapt>=1.14.1
 
@@ -26,8 +26,7 @@ python-snappy==0.7.3; python_version < "3.13"
 
 ### db:
 
-sqlalchemy[asyncio]==2.0.34; python_version < "3.13"
-sqlalchemy==2.0.33; python_version >= "3.13"  # greenlet
+sqlalchemy[asyncio]==2.0.34
 
 ## sql
 
@@ -93,7 +92,7 @@ httpx[http2]==0.27.2  # FIXME: ,zstd,cli (dev only)
 ### async
 
 trio==0.26.2
-trio-asyncio==0.15.0; python_version < "3.13"  # greenlet
+trio-asyncio==0.15.0
 
 aiomysql==0.2.0
 aiosqlite==0.20.0

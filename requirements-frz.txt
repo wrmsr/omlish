@@ -111,7 +111,7 @@ google-pasta==0.2.0
 googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
 gpt4all==2.8.2
-greenlet==3.0.3
+greenlet==3.1.0
 grpcio==1.66.1
 grpcio-status==1.62.3
 guppy3==3.1.4.post1
@@ -267,7 +267,7 @@ paramiko==3.4.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@b180ae46f8cf9663f3bf786b41b2eb41c2512031
+peft @ git+https://github.com/huggingface/peft.git@54be5a3db61748d698ca2e6b55bcfef229a9b475
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
