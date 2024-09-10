@@ -1,8 +1,9 @@
 """
 TODO:
  - this has to be named brownlet doesnt it
- - weird switching crap: https://greenlet.readthedocs.io/en/latest/switching.html
- - SpawnedRealThreadlet vs GraftedRealThreadlet prob
+ - reap threads from RealThreadlets._dct
+ - reentrancy? what does this mean?
+ - thread pooling
 """
 # ruff: noqa: SLF001
 import abc

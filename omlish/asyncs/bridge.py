@@ -15,21 +15,20 @@ import types
 import typing as ta
 import weakref
 
+from .. import check
 from .. import lang
+from .. import sync
+from ..concurrent import threadlets
 from .asyncs import sync_await
 
 
 if ta.TYPE_CHECKING:
     import asyncio
 
-    import greenlet
-
     from . import anyio as aiu
 
 else:
     asyncio = lang.proxy_import('asyncio')
-
-    greenlet = lang.proxy_import('greenlet')
 
     aiu = lang.proxy_import('.anyio', __package__)
 
@@ -54,6 +53,16 @@ def trivial_a_to_s(fn):
 
 ##
 # https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef
+
+
+_THREADLETS = sync.LazyFn(lambda: threadlets.GreenletThreadlets())
+
+
+def _threadlets() -> threadlets.Threadlets:
+    return _THREADLETS.get()
+
+
+#
 
 
 class BridgeAwaitRequiredError(Exception):
@@ -101,7 +110,7 @@ def _make_transition(seq: int, a_to_s: bool, obj: ta.Any) -> _BridgeTransition:
 
 _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
 
-_BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
+_BRIDGE_THREADLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_threadlet__'
 
 
 def _push_transition(a_to_s: bool, l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
@@ -129,9 +138,9 @@ def _get_transitions() -> list[_BridgeTransition]:
         else:
             l.extend(tl)
 
-    g = greenlet.getcurrent()
+    g = _threadlets().get_current()
     try:
-        gl = getattr(g, _BRIDGE_GREENLET_ATTR)
+        gl = getattr(g.underlying, _BRIDGE_THREADLET_ATTR)
     except AttributeError:
         pass
     else:
@@ -158,9 +167,9 @@ def is_in_bridge() -> bool:
     else:
         last_t = None
 
-    g = greenlet.getcurrent()
+    g = _threadlets().get_current()
     try:
-        gl = getattr(g, _BRIDGE_GREENLET_ATTR)
+        gl = getattr(g.underlying, _BRIDGE_THREADLET_ATTR)
     except AttributeError:
         last_g = None
     else:
@@ -194,13 +203,13 @@ def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
 
 
 def s_to_a_await(awaitable: ta.Awaitable[T]) -> T:
-    g = greenlet.getcurrent()
+    g = _threadlets().get_current()
 
-    if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
+    if not getattr(g.underlying, _BRIDGE_THREADLET_ATTR, False):
         _safe_cancel_awaitable(awaitable)
         raise MissingBridgeGreenletError
 
-    return g.parent.switch(awaitable)
+    return check.not_none(g.parent).switch(awaitable)
 
 
 def s_to_a(fn, *, require_await=False):
@@ -210,7 +219,7 @@ def s_to_a(fn, *, require_await=False):
             try:
                 return fn(*args, **kwargs)
             finally:
-                if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
+                if (gl2 := getattr(g.underlying, _BRIDGE_THREADLET_ATTR)) is not gl:  # noqa
                     raise UnexpectedBridgeNestingError
                 if (cur_g := _pop_transition(False, gl)) is not added_g:  # noqa
                     raise UnexpectedBridgeNestingError
@@ -219,8 +228,8 @@ def s_to_a(fn, *, require_await=False):
 
         seq = next(_BRIDGE_TRANSITIONS_SEQ)
 
-        g = greenlet.greenlet(inner)
-        setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])  # type: ignore
+        g = _threadlets().spawn(inner)
+        setattr(g.underlying, _BRIDGE_THREADLET_ATTR, gl := [])  # type: ignore
         added_g = _push_transition(False, gl, _make_transition(seq, False, g))
 
         if (t := aiu.get_current_backend_task()) is not None:
@@ -270,11 +279,11 @@ def a_to_s(fn):
         else:
             added_t = None
 
-        g = greenlet.getcurrent()
+        g = _threadlets().get_current()
         try:
-            gl = getattr(g, _BRIDGE_GREENLET_ATTR)
+            gl = getattr(g.underlying, _BRIDGE_THREADLET_ATTR)
         except AttributeError:
-            setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
+            setattr(g.underlying, _BRIDGE_THREADLET_ATTR, gl := [])
         added_g = _push_transition(True, gl, _make_transition(seq, True, g))
 
         try:
@@ -306,7 +315,7 @@ def a_to_s(fn):
                 if (cur_t := _pop_transition(True, tl)) is not added_t:  # noqa
                     raise UnexpectedBridgeNestingError
 
-            if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
+            if (gl2 := getattr(g.underlying, _BRIDGE_THREADLET_ATTR)) is not gl:  # noqa
                 raise UnexpectedBridgeNestingError
             if (cur_g := _pop_transition(True, gl)) is not added_g:  # noqa
                 raise UnexpectedBridgeNestingError
