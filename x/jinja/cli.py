@@ -34,11 +34,10 @@ class Cli(oap.Cli):
             StrictUndefined,
         )
 
-        # Starting with jinja2 3.1, `with_` and `autoescape` are no longer
-        # able to be imported, but since they were default, let's stub them back
-        # in implicitly for older versions.
-        # We also don't track any lower bounds on jinja2 as a dependency, so
-        # it's not easily safe to know it's included by default either.
+        # Starting with jinja2 3.1, `with_` and `autoescape` are no longer able to be imported, but since they were
+        # default, let's stub them back in implicitly for older versions.
+        # We also don't track any lower bounds on jinja2 as a dependency, so it's not easily safe to know it's included
+        # by default either.
         if tuple(jinja_version.split(".", 2)) < ("3", "1"):
             for ext in "with_", "autoescape":
                 ext = "jinja2.ext." + ext

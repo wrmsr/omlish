@@ -55,8 +55,10 @@ class ClassDctFn:
         except KeyError:
             f = sys._getframe(self._offset)  # noqa
             cls_dct = _skip_cls_dct_frames(f).f_locals
+
         if not is_possibly_cls_dct(cls_dct):
             raise TypeError(cls_dct)
+
         return self._fn(cls_dct, *args, **kwargs)
 
 

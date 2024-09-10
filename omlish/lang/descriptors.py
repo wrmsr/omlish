@@ -37,8 +37,10 @@ def _has_method_descriptor(obj: ta.Any) -> bool:
     while True:
         if is_method_descriptor(obj):
             return True
+
         elif isinstance(obj, functools.partial):
             obj = obj.func
+
         else:
             try:
                 obj = getattr(obj, '__wrapped__')
@@ -65,6 +67,7 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
     while True:
         if is_method_descriptor(fn) or isinstance(fn, types.MethodType):
             fn = fn.__func__  # type: ignore
+
         elif hasattr(fn, '__wrapped__'):
             nxt = fn.__wrapped__
             if not callable(nxt):
@@ -72,13 +75,16 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
             if nxt is fn:
                 raise TypeError(fn)
             fn = nxt
+
         # NOTE: __wrapped__ takes precedence - a partial might point to a bound Method when the important information is
         # still the unbound func. see _decorator_descriptor for an example of this.
         elif isinstance(fn, functools.partial):
             ps.append(fn)
             fn = fn.func
+
         else:
             break
+
     return fn, ps
 
 
