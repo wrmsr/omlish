@@ -1,8 +1,12 @@
 """
-https://greenlet.readthedocs.io/en/latest/switching.html
+TODO:
+ - weird switching crap: https://greenlet.readthedocs.io/en/latest/switching.html
+ - SpawnedRealThreadlet vs GraftedRealThreadlet prob
+
 """
 import abc
 import dataclasses as dc
+import threading
 import typing as ta
 
 import greenlet
@@ -87,6 +91,52 @@ class GreenletThreadlets(Threadlets):
 ##
 
 
+class RealThreadlet(Threadlet, abc.ABC):
+    def __init__(self, t: threading.Thread) -> None:
+        super().__init__()
+        self._t = t
+
+    @property
+    def underlying(self) -> threading.Thread:
+        return self._t
+
+    @property
+    def dead(self) -> bool:
+        return self._t.is_alive()
+
+
+class SpawnedRealThreadlet(RealThreadlet):
+    def __init__(self, fn: ta.Callable[[], None]) -> None:
+        super().__init__(threading.Thread(target=self._main))
+        self._fn = fn
+
+    @property
+    def parent(self) -> ta.Optional['Threadlet']:
+        raise NotImplementedError
+
+    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+    def throw(self, ex: Exception) -> ta.Any:
+        raise NotImplementedError
+
+    #
+
+    def _main(self) -> None:
+        self._fn()
+
+
+class RealThreadlets(Threadlets):
+    def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
+        return SpawnedRealThreadlet(fn)
+
+    def get_current(self) -> Threadlet:
+        raise NotImplementedError
+
+
+##
+
+
 def _test_threadlets(api: Threadlets):
     done = 0
 
@@ -112,3 +162,7 @@ def _test_threadlets(api: Threadlets):
 
 def test_greenlet():
     _test_threadlets(GreenletThreadlets())
+
+
+def test_real():
+    _test_threadlets(RealThreadlets())
