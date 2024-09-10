@@ -108,6 +108,9 @@ def issubclass_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
     return lambda o: issubclass(o, class_or_tuple)
 
 
+##
+
+
 class VoidError(Exception):
     pass
 
