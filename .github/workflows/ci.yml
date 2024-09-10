@@ -38,7 +38,7 @@ jobs:
               '.versions',
               'docker/.dockertimestamp',
               'docker/ci/Dockerfile',
-              'docker/docker-compose.yml',
+              'docker/compose.yml',
               'requirements.txt',
               'requirements-dev.txt'
             ) }}
@@ -81,7 +81,7 @@ jobs:
           (
             for IMG in $(
               echo wrmsr/omlish-ci ;
-              egrep '^\s*image:' docker/docker-compose.yml | cut -d"'" -f2
+              egrep '^\s*image:' docker/compose.yml | cut -d"'" -f2
             ) ; do
               echo "$IMG" ;
               docker history "$IMG" | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' ;
