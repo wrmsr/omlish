@@ -126,7 +126,6 @@ class RealThreadlet(Threadlet, abc.ABC):
 
         self._lock = threading.Lock()
 
-        self._started = False
         self._paused = False
 
         self._in_value: lang.Maybe[lang.Args] = lang.empty()
@@ -145,52 +144,35 @@ class RealThreadlet(Threadlet, abc.ABC):
         return self._t.is_alive()
 
     @classmethod
-    def _switch(cls, src: 'RealThreadlet', dst: 'RealThreadlet') -> ta.Any:
-        log.debug('switch: begin: %d -> %d', id(src), id(dst))
-
+    def _switch(cls, src: 'RealThreadlet', dst: 'RealThreadlet', args: lang.Args) -> ta.Any:
         t0, t1 = sorted((src, dst), key=lambda t: t._seq)  # noqa
         with t0._lock:  # noqa
             with t1._lock:  # noqa
-                # if not self._started:
-                #     log.debug('switch: thread not started, starting')
-                #
-                #     if self._t.is_alive():
-                #         raise Exception
-                #
-                #     self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
-                #     self._switch_in_event.set()
-                #
-                #     self._t.start()
-                #     self._started = True
-                #
-                # else:
-                #     log.debug('switch: thread already started')
-                #
-                #     if not self._paused:
-                #         raise Exception
-                #
-                #     self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
-                #     self._switch_in_event.set()
-                raise NotImplementedError
+                if isinstance(dst, SpawnedRealThreadlet) and not dst._started:
+                    dst._t.start()
+                    dst._started = True
+                else:
+                    if not dst._paused:
+                        raise Exception
 
-        # log.debug('switch: _switch_out_event.wait: begin')
-        # self._switch_out_event.wait()
-        # log.debug('switch: _switch_out_event.wait: end')
-        #
-        # with self._lock:
-        #     self._switch_out_event.clear()
-        #
-        #     out_value = self._switch_out_value.must()
-        #     self._switch_out_value = lang.empty()
-        #
-        # log.debug('switch: end: %r', out_value)
-        #
-        # return _squash_args(out_value)
+                dst._in_value = lang.just(args)
+                dst._in_event.set()
 
-        raise NotImplementedError
+                src._paused = True
+
+        src._in_event.wait()
+        with src._lock:
+            src._in_event.clear()
+
+            in_value = src._in_value.must()
+            src._in_value = lang.empty()
+
+            src._paused = False
+
+        return _squash_args(in_value)
 
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        return self._switch(self._s.get_current(), self)
+        return self._switch(self._s.get_current(), self, lang.Args(*args, **kwargs))
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
@@ -215,46 +197,25 @@ class SpawnedRealThreadlet(RealThreadlet):
 
         self._fn = fn
 
-    #
+        self._started = False
 
-    def _inner_switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        log.debug('_inner_switch: begin')
-
-        with self._lock:
-            self._switch_out_value = lang.Args(*args, **kwargs)
-            self._switch_out_event.set()
-
-            self._paused = True
-
-        log.debug('_inner_switch: _switch_in_event.wait: begin')
-        self._switch_in_event.wait()
-        log.debug('_inner_switch: _switch_in_event.wait: end')
+    def _main(self) -> None:
+        self._in_event.wait()
 
         with self._lock:
-            self._switch_in_event.clear()
+            self._in_event.clear()
+
+            in_value = self._in_value.must()
+            self._in_value = lang.empty()
 
             self._paused = False
 
-    def _main(self) -> None:
-        log.debug('_main: begin')
-
-        log.debug('_main: _switch_in_event.wait: begin')
-        self._switch_in_event.wait()
-        log.debug('_main: _switch_in_event.wait: end')
-
-        with self._lock:
-            self._switch_in_event.clear()
-
-            in_value = self._switch_in_value.must()
-            self._switch_in_value = lang.empty()
-
         out_value = self._fn(*in_value.args, **in_value.kwargs)
 
-        with self._lock:
-            self._switch_out_value = lang.just(out_value)
-            self._switch_out_event.set()
-
-        log.debug('_main: end')
+        # FIXME: lol
+        # with self._lock:
+        #     self._out_value = lang.just(out_value)
+        #     self._out_event.set()
 
 
 class GraftedRealThreadlet(RealThreadlet):
