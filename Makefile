@@ -322,7 +322,7 @@ docker-reup: docker-rebuild
 
 .PHONY: docker-invalidate
 docker-invalidate:
-	date +%s > docker/.dockertimestamp
+	date +%s > docker/.timestamp
 
 
 ### CI
