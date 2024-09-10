@@ -459,4 +459,4 @@ xxhash==3.5.0
 yarl==1.11.0
 zigpy==0.66.0
 zipp==3.20.1
-zwave-js-server-python==0.57.0
+zwave-js-server-python==0.58.0
