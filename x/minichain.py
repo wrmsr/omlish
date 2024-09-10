@@ -142,13 +142,14 @@ class ChatPromptTemplate(Invokable, lang.Final):
 ##
 
 
-def _run(es: contextlib.ExitStack) -> None:
-    client = es.enter_context(openai.OpenAI(
-        api_key=os.environ['OPENAI_API_KEY'],
-    ))
+def _run_2_chatbot(client: openai.OpenAI) -> None:
+    pass
 
-    #
 
+#
+
+
+def _run_1_chain(client: openai.OpenAI) -> None:
     model = ChatOpenAi(client, 'gpt-4')
     parser = StrOutputParser()
 
@@ -181,6 +182,20 @@ def _run(es: contextlib.ExitStack) -> None:
 
     result = chain.invoke({'language': 'Italian', 'text': 'hi!'})
     print(result)
+
+
+#
+
+
+def _run(es: contextlib.ExitStack) -> None:
+    client = es.enter_context(openai.OpenAI(
+        api_key=os.environ['OPENAI_API_KEY'],
+    ))
+
+    #
+
+    _run_1_chain(client)
+    _run_2_chatbot(client)
 
 
 #
