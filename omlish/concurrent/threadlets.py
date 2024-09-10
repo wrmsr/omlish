@@ -17,6 +17,12 @@ else:
 class Threadlet(abc.ABC):
     """Not safe to identity-key - use `underlying`."""
 
+    def __hash__(self):
+        raise TypeError('use `underlying`')
+
+    def __eq__(self, other):
+        raise TypeError('use `underlying`')
+
     @property
     @abc.abstractmethod
     def underlying(self) -> ta.Any:
