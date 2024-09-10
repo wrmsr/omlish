@@ -8,6 +8,10 @@ from .formatters import (  # noqa
     StandardLogFormatter,
 )
 
+from .handlers import (  # noqa
+    ListHandler,
+)
+
 from .utils import (  # noqa
     error_logging,
 )
