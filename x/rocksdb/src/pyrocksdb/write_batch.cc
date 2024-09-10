@@ -8,28 +8,28 @@ namespace py = pybind11;
 class PyWriteBatch : public WriteBatch {
 
 public:
-    Status Put(const std::string &key, const std::string &value) {
+    Status Put(const std::string& key, const std::string& value) {
         return WriteBatch::Put(nullptr, key, value);
     }
 
-    Status Put(ColumnFamilyHandle *column_family, const std::string &key, const std::string &value) {
+    Status Put(ColumnFamilyHandle* column_family, const std::string& key, const std::string& value) {
         return WriteBatch::Put(column_family, key, value);
     }
 
-    Status Delete(const std::string &key) {
+    Status Delete(const std::string& key) {
         return WriteBatch::Delete(nullptr, key);
     }
 
-    Status Delete(ColumnFamilyHandle *column_family, const std::string &key) {
+    Status Delete(ColumnFamilyHandle* column_family, const std::string& key) {
         return WriteBatch::Delete(column_family, key);
     }
 
-    Status Merge(const std::string &key, const std::string &value) {
+    Status Merge(const std::string& key, const std::string& value) {
         return WriteBatch::Merge(nullptr, key, value);
     }
 };
 
-void init_write_batch(py::module &m) {
+void init_write_batch(py::module& m) {
     py::class_<WriteBatch>(m, "_WriteBatch");
     py::class_<PyWriteBatch, WriteBatch>(m, "WriteBatch")
         .def(py::init<>())

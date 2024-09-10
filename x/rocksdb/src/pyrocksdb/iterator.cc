@@ -35,7 +35,7 @@ namespace py = pybind11;
 // );
 // }
 
-// void Seek(const Slice & target) override {
+// void Seek(const Slice& target) override {
 // PYBIND11_OVERLOAD_PURE(
 // void,
 // rocksdb::Iterator,
@@ -44,7 +44,7 @@ namespace py = pybind11;
 // );
 // }
 
-// void SeekForPrev(const Slice & target) override {
+// void SeekForPrev(const Slice& target) override {
 // PYBIND11_OVERLOAD_PURE(
 // void,
 // rocksdb::Iterator,
@@ -111,5 +111,5 @@ namespace py = pybind11;
 // };
 
 
-void init_iterator(py::module &m) {
+void init_iterator(py::module& m) {
 }

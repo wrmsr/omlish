@@ -7,7 +7,7 @@
 #include "pyrocksdb.h"
 
 
-PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyHandle *>);
+PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyHandle*>);
 PYBIND11_MAKE_OPAQUE(std::vector<ColumnFamilyDescriptor, std::allocator<ColumnFamilyDescriptor>>);
 
 // class ColumnFamilyHandleWrapper {
@@ -38,7 +38,7 @@ void py_DB::Close() {
     db_ptr = nullptr;
 }
 
-Status py_DB::Open(const Options &options, const std::string &name) {
+Status py_DB::Open(const Options& options, const std::string& name) {
     if (db_ptr != nullptr) {
         throw std::invalid_argument("db has been opened");
     }
@@ -47,14 +47,14 @@ Status py_DB::Open(const Options &options, const std::string &name) {
 }
 
 py::tuple py_DB::Open(
-        const DBOptions &db_options,
-        const std::string &name,
-        const std::vector<ColumnFamilyDescriptor> &column_families
+        const DBOptions& db_options,
+        const std::string& name,
+        const std::vector<ColumnFamilyDescriptor>& column_families
 ) {
     if (db_ptr != nullptr) {
         throw std::invalid_argument("db has been opened");
     }
-    std::vector<ColumnFamilyHandle *> handles;
+    std::vector<ColumnFamilyHandle*> handles;
     Status st = DB::Open(
             db_options,
             name,
@@ -66,8 +66,8 @@ py::tuple py_DB::Open(
 }
 
 Status py_DB::OpenForReadOnly(
-        const Options &options,
-        const std::string &name,
+        const Options& options,
+        const std::string& name,
         bool error_if_log_file_exist
 ) {
     if (db_ptr != nullptr) {
@@ -83,15 +83,15 @@ Status py_DB::OpenForReadOnly(
 }
 
 py::tuple py_DB::OpenForReadOnly(
-        const DBOptions &db_options,
-        const std::string &name,
-        const std::vector<ColumnFamilyDescriptor> &column_families,
+        const DBOptions& db_options,
+        const std::string& name,
+        const std::vector<ColumnFamilyDescriptor>& column_families,
         bool error_if_log_file_exist
 ) {
     if (db_ptr != nullptr) {
         throw std::invalid_argument("db has been opened");
     }
-    std::vector<ColumnFamilyHandle *> handles;
+    std::vector<ColumnFamilyHandle*> handles;
     Status st = DB::OpenForReadOnly(
             db_options,
             name,
@@ -104,9 +104,9 @@ py::tuple py_DB::OpenForReadOnly(
 }
 
 Status py_DB::Put(
-        const WriteOptions &options,
-        const std::string &key,
-        const std::string &value
+        const WriteOptions& options,
+        const std::string& key,
+        const std::string& value
 ) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
@@ -115,10 +115,10 @@ Status py_DB::Put(
 }
 
 Status py_DB::Put(
-        const WriteOptions &options,
-        ColumnFamilyHandle *column_family,
-        const std::string &key,
-        const std::string &value
+        const WriteOptions& options,
+        ColumnFamilyHandle* column_family,
+        const std::string& key,
+        const std::string& value
 ) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
@@ -126,14 +126,14 @@ Status py_DB::Put(
     return db_ptr->Put(options, column_family, key, value);
 }
 
-Status py_DB::Write(const WriteOptions &options, WriteBatch &updates) {
+Status py_DB::Write(const WriteOptions& options, WriteBatch& updates) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
     return db_ptr->Write(options, &updates);
 }
 
-std::unique_ptr<Blob> py_DB::Get(const ReadOptions &options, const std::string &key) {
+std::unique_ptr<Blob> py_DB::Get(const ReadOptions& options, const std::string& key) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
@@ -143,9 +143,9 @@ std::unique_ptr<Blob> py_DB::Get(const ReadOptions &options, const std::string &
 }
 
 std::unique_ptr<Blob> py_DB::Get(
-        const ReadOptions &options,
-        ColumnFamilyHandle *column_family,
-        const std::string &key
+        const ReadOptions& options,
+        ColumnFamilyHandle* column_family,
+        const std::string& key
 ) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
@@ -155,7 +155,7 @@ std::unique_ptr<Blob> py_DB::Get(
     return blob;
 }
 
-Status py_DB::Delete(const WriteOptions &options, const std::string &key) {
+Status py_DB::Delete(const WriteOptions& options, const std::string& key) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
@@ -163,9 +163,9 @@ Status py_DB::Delete(const WriteOptions &options, const std::string &key) {
 }
 
 Status py_DB::Delete(
-        const WriteOptions &options,
-        ColumnFamilyHandle *column_family,
-        const std::string &key
+        const WriteOptions& options,
+        ColumnFamilyHandle* column_family,
+        const std::string& key
 ) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
@@ -175,35 +175,35 @@ Status py_DB::Delete(
 }
 
 Status py_DB::CompactRange(
-        const CompactRangeOptions &options,
-        ColumnFamilyHandle *column_family,
-        const Slice *begin,
-        const Slice *end
+        const CompactRangeOptions& options,
+        ColumnFamilyHandle* column_family,
+        const Slice* begin,
+        const Slice* end
 ) {
     return db_ptr->CompactRange(options, column_family, begin, end);
 }
 
-Status py_DB::CompactRange(const CompactRangeOptions &options, const Slice *begin, const Slice *end) {
+Status py_DB::CompactRange(const CompactRangeOptions& options, const Slice* begin, const Slice* end) {
     return db_ptr->CompactRange(options, db_ptr->DefaultColumnFamily(), begin, end);
 }
 
 
-py::tuple py_DB::CreateColumnFamily(const ColumnFamilyOptions &options, const std::string &column_family_name) {
+py::tuple py_DB::CreateColumnFamily(const ColumnFamilyOptions& options, const std::string& column_family_name) {
     // std::unique_ptr<ColumnFamilyHandleWrapper> cf_handle(new ColumnFamilyHandleWrapper());
-    // ColumnFamilyHandleWrapper *cf_handle = new ColumnFamilyHandleWrapper();
-    ColumnFamilyHandle *cfh;
+    // ColumnFamilyHandleWrapper* cf_handle = new ColumnFamilyHandleWrapper();
+    ColumnFamilyHandle* cfh;
     Status s = db_ptr->CreateColumnFamily(options, column_family_name, &cfh);
     return py::make_tuple(s, cfh);
 }
 
-std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions &options) {
+std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions& options) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
     return std::unique_ptr<IteratorWrapper>(new IteratorWrapper(db_ptr->NewIterator(options)));
 }
 
-std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family) {
+std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions& options, ColumnFamilyHandle* column_family) {
     if (db_ptr == nullptr) {
         throw std::invalid_argument("db has been closed");
     }
@@ -211,63 +211,27 @@ std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions &options, 
 }
 
 
-void init_db(py::module &);
+void init_db(py::module&);
 
-void init_option(py::module &);
+void init_option(py::module&);
 
-void init_slice(py::module &);
+void init_slice(py::module&);
 
-void init_status(py::module &);
+void init_status(py::module&);
 
-void init_write_batch(py::module &);
+void init_write_batch(py::module&);
 
-void init_iterator(py::module &);
+void init_iterator(py::module&);
 
-void init_filter_policy(py::module &);
+void init_filter_policy(py::module&);
 
-void init_merge_operator(py::module &);
+void init_merge_operator(py::module&);
 
-void init_transaction_db(py::module &);
+void init_transaction_db(py::module&);
 
-void init_snapshot(py::module &);
+void init_snapshot(py::module&);
 
 PYBIND11_MODULE(pyrocksdb, m) {
-    // optional module docstring
-    m.doc() = R"pbdoc(
-        python rocksdb API
-        -----------------------
-
-        Most of names of APIs are identical to the official rocksdb c++ APIs, thus you can find the usage in the headers of rocksdb easily
-
-        .. currentmodule:: pyrocksdb
-
-        .. autosummary::
-         :toctree: _generate
-
-         Blob
-         ColumnFamilyHandle
-         ColumnFamilyDescriptor
-         VectorColumnFamilyDescriptor
-         VectorColumnFamilyHandle
-         IteratorWrapper
-         DB
-         DBOptions
-         Options
-         AdvancedColumnFamilyOptions
-         ColumnFamilyOptions
-         Options
-         WriteOptions
-         ReadOptions
-         TransactionDBOptions
-         TransactionOptions
-         LRUCacheOptions
-         Status
-         WriteBatch
-         transaction_db
-         transaction_wrapper
-         Snapshot
-    )pbdoc";
-
     init_db(m);
     init_option(m);
     init_slice(m);
@@ -291,11 +255,11 @@ PYBIND11_MODULE(pyrocksdb, m) {
         .def("get_name", &ColumnFamilyHandle::GetName);
 
     py::class_<ColumnFamilyDescriptor, std::unique_ptr<ColumnFamilyDescriptor>>(m, "ColumnFamilyDescriptor")
-        .def(py::init<const std::string &, const ColumnFamilyOptions &>());
+        .def(py::init<const std::string&, const ColumnFamilyOptions&>());
 
     py::bind_vector<std::vector<ColumnFamilyDescriptor>>(m, "VectorColumnFamilyDescriptor");
 
-    py::bind_vector<std::vector<ColumnFamilyHandle *>>(m, "VectorColumnFamilyHandle");
+    py::bind_vector<std::vector<ColumnFamilyHandle*>>(m, "VectorColumnFamilyHandle");
 
     py::class_<IteratorWrapper /* <--- trampoline*/> iterator(m, "IteratorWrapper");
     iterator

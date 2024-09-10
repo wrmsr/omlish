@@ -10,7 +10,7 @@ namespace py = pybind11;
 class PyMergeOperator : public MergeOperator {
     using MergeOperator::MergeOperator;
 
-    const char *Name() const override {
+    const char* Name() const override {
         PYBIND11_OVERLOAD_PURE(
             const char*,
             rocksdb::MergeOperator,
@@ -30,7 +30,7 @@ class PyMergeOperator : public MergeOperator {
 // // Parent() : child(std::make_shared<Child>()) { std::cout << "const parent" << std::endl;}
 // Parent() { std::cout << "const parent" << std::endl;}
 // Child* get_child() {
-// Child * child = new Child();
+// Child* child = new Child();
 // return child;
 // }  [> Hint: ** DON'T DO THIS ** <]
 // ~Parent() {std::cout << "dest parent" << std::endl;}
@@ -39,7 +39,7 @@ class PyMergeOperator : public MergeOperator {
 // };
 
 
-void init_merge_operator(py::module &m) {
+void init_merge_operator(py::module& m) {
     py::class_<MergeOperator, PyMergeOperator /* <--- trampoline*/> mergeOperator(m, "MergeOperator");
     mergeOperator.def(py::init<>());
 

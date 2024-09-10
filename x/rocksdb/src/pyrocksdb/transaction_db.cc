@@ -12,13 +12,13 @@ public:
 
     ~TransactionWrapper() { delete txn; }
 
-    std::unique_ptr<Blob> Get(const ReadOptions &options, const Slice &key) {
+    std::unique_ptr<Blob> Get(const ReadOptions& options, const Slice& key) {
         std::unique_ptr<Blob> blob(new Blob());
         blob->status = txn->Get(options, key, &blob->data);
         return blob;
     }
 
-    Status Put(const Slice &key, const Slice &value) {
+    Status Put(const Slice& key, const Slice& value) {
         return txn->Put(key, value);
     }
 
@@ -55,8 +55,8 @@ public:
     // }
 
     std::unique_ptr<Blob> GetForUpdate(
-            const ReadOptions &options,
-            const std::string &key,
+            const ReadOptions& options,
+            const std::string& key,
             bool exclusive = true,
             const bool do_validate = true
     ) {
@@ -92,9 +92,9 @@ public:
     }
 
     Status Open(
-            const Options &options,
-            const TransactionDBOptions &txn_db_options,
-            const std::string &dbname
+            const Options& options,
+            const TransactionDBOptions& txn_db_options,
+            const std::string& dbname
     ) {
         if (db_ptr != nullptr) {
             throw std::invalid_argument("db has been opened");
@@ -102,7 +102,7 @@ public:
         return TransactionDB::Open(options, txn_db_options, dbname, &db_ptr);
     }
 
-    std::unique_ptr<Blob> Get(const ReadOptions &options, const std::string &key) {
+    std::unique_ptr<Blob> Get(const ReadOptions& options, const std::string& key) {
         if (db_ptr == nullptr) {
             throw std::invalid_argument("db has been closed");
         }
@@ -112,9 +112,9 @@ public:
     }
 
     Status Put(
-            const WriteOptions &options,
-            const std::string &key,
-            const std::string &value
+            const WriteOptions& options,
+            const std::string& key,
+            const std::string& value
     ) {
         if (db_ptr == nullptr) {
             throw std::invalid_argument("db has been closed");
@@ -134,7 +134,7 @@ public:
     // }
 
     std::unique_ptr<TransactionWrapper>
-    BeginTransaction(const WriteOptions &write_options, const TransactionOptions &txn_options = TransactionOptions()) {
+    BeginTransaction(const WriteOptions& write_options, const TransactionOptions& txn_options = TransactionOptions()) {
         return std::unique_ptr<TransactionWrapper>(new TransactionWrapper(db_ptr->BeginTransaction(write_options, txn_options)));
     }
 
@@ -143,12 +143,19 @@ private:
 };
 
 
-void init_transaction_db(py::module &m) {
+void init_transaction_db(py::module& m) {
     py::class_<TransactionWrapper>(m, "transaction_wrapper")
-        .def("get", (std::unique_ptr<Blob>(TransactionWrapper::*)(const ReadOptions &options, const std::string &key)) &TransactionWrapper::Get)
-        .def("put", (Status(TransactionWrapper::*)(const std::string&, const std::string &)) &TransactionWrapper::Put)
+        .def("get", (std::unique_ptr<Blob>(TransactionWrapper::*)(const ReadOptions&, const std::string&)) &TransactionWrapper::Get)
+        .def("put", (Status(TransactionWrapper::*)(const std::string&, const std::string&)) &TransactionWrapper::Put)
         .def("commit", &TransactionWrapper::Commit)
-        .def("get_for_update", &TransactionWrapper::GetForUpdate, py::arg("options"), py::arg("key"), py::arg("exclusive") = true, py::arg("do_validate") = true)
+        .def(
+            "get_for_update",
+            &TransactionWrapper::GetForUpdate,
+            py::arg("options"),
+            py::arg("key"),
+            py::arg("exclusive") = true,
+            py::arg("do_validate") = true
+        )
         // .def("get_snapshot", &TransactionWrapper::GetSnapshot)
         // .def("clear_snapshot", &TransactionWrapper::ClearSnapshot)
         // .def("set_snapshot", &TransactionWrapper::SetSnapshot)
@@ -164,6 +171,11 @@ void init_transaction_db(py::module &m) {
         .def("put", &PyTransactionDB::Put)
         // .def("get_snapshot", &PyTransactionDB::GetSnapshot)
         // .def("release_snapshot", &PyTransactionDB::ReleaseSnapshot)
-        .def("begin_transaction", &PyTransactionDB::BeginTransaction, py::arg("write_options"), py::arg("txn_options") = TransactionOptions());
+        .def(
+            "begin_transaction",
+            &PyTransactionDB::BeginTransaction,
+            py::arg("write_options"),
+            py::arg("txn_options") = TransactionOptions()
+        );
 }
 

@@ -30,7 +30,7 @@ namespace py = pybind11;
 
 class IteratorWrapper {
 public:
-    IteratorWrapper(Iterator *iterator) : iterator(iterator) {
+    IteratorWrapper(Iterator* iterator) : iterator(iterator) {
     }
 
     ~IteratorWrapper() {
@@ -48,11 +48,11 @@ public:
         iterator->SeekToLast();
     }
 
-    void Seek(const std::string &target) {
+    void Seek(const std::string& target) {
         iterator->Seek(target);
     }
 
-    void SeekForPrev(const std::string &target) {
+    void SeekForPrev(const std::string& target) {
         iterator->SeekForPrev(target);
     }
 
@@ -91,9 +91,9 @@ public:
 };
 
 class py_ColumnFamilyHandle : public ColumnFamilyHandle {
-    const std::string &GetName() const override {
+    const std::string& GetName() const override {
         PYBIND11_OVERLOAD_PURE(
-        const std::string &,
+        const std::string&,
         rocksdb::ColumnFamilyHandle,
                 GetName
         );
@@ -107,7 +107,7 @@ class py_ColumnFamilyHandle : public ColumnFamilyHandle {
         );
     }
 
-    Status GetDescriptor(ColumnFamilyDescriptor *desc) override {
+    Status GetDescriptor(ColumnFamilyDescriptor* desc) override {
         PYBIND11_OVERLOAD_PURE(
                 Status,
                 rocksdb::ColumnFamilyHandle,
@@ -115,9 +115,9 @@ class py_ColumnFamilyHandle : public ColumnFamilyHandle {
         );
     }
 
-    const Comparator *GetComparator() const override {
+    const Comparator* GetComparator() const override {
         PYBIND11_OVERLOAD_PURE(
-                Comparator * ,
+                Comparator*,
                 rocksdb::ColumnFamilyHandle,
                 GetComparator
         );
@@ -128,71 +128,71 @@ class py_DB {
 public:
     py_DB();
 
-    Status Open(const Options &options, const std::string &name);
+    Status Open(const Options& options, const std::string& name);
 
-    Status OpenForReadOnly(const Options &options, const std::string &name, bool error_if_log_file_exist = false);
+    Status OpenForReadOnly(const Options& options, const std::string& name, bool error_if_log_file_exist = false);
 
     py::tuple OpenForReadOnly(
-            const DBOptions &db_options,
-            const std::string &name,
-            const std::vector<ColumnFamilyDescriptor> &column_families,
+            const DBOptions& db_options,
+            const std::string& name,
+            const std::vector<ColumnFamilyDescriptor>& column_families,
             bool error_if_log_file_exist = false
     );
 
     py::tuple Open(
-            const DBOptions &db_options,
-            const std::string &name,
-            const std::vector<ColumnFamilyDescriptor> &column_families
+            const DBOptions& db_options,
+            const std::string& name,
+            const std::vector<ColumnFamilyDescriptor>& column_families
     );
 
     Status Put(
-            const WriteOptions &options,
-            ColumnFamilyHandle *column_family,
-            const std::string &key,
-            const std::string &value
+            const WriteOptions& options,
+            ColumnFamilyHandle* column_family,
+            const std::string& key,
+            const std::string& value
     );
 
 
     Status Put(
-            const WriteOptions &options,
-            const std::string &key,
-            const std::string &value
+            const WriteOptions& options,
+            const std::string& key,
+            const std::string& value
     );
 
-    std::unique_ptr<Blob> Get(const ReadOptions &options, const std::string &key);
+    std::unique_ptr<Blob> Get(const ReadOptions& options, const std::string& key);
 
     std::unique_ptr<Blob> Get(
-            const ReadOptions &options,
-            ColumnFamilyHandle *column_family,
-            const std::string &key
+            const ReadOptions& options,
+            ColumnFamilyHandle* column_family,
+            const std::string& key
     );
 
-    Status Write(const WriteOptions &options, WriteBatch &updates);
+    Status Write(const WriteOptions& options, WriteBatch& updates);
 
-    Status Delete(const WriteOptions &options, const std::string &key);
+    Status Delete(const WriteOptions& options, const std::string& key);
 
     Status Delete(
-            const WriteOptions &options,
-            ColumnFamilyHandle *column_family,
-            const std::string &key
+            const WriteOptions& options,
+            ColumnFamilyHandle* column_family,
+            const std::string& key
     );
 
     Status CompactRange(
-            const CompactRangeOptions &options,
-            ColumnFamilyHandle *column_family,
-            const Slice *begin,
-            const Slice *end
+            const CompactRangeOptions& options,
+            ColumnFamilyHandle* column_family,
+            const Slice* begin,
+            const Slice* end
     );
 
-    Status CompactRange(const CompactRangeOptions &options, const Slice *begin, const Slice *end);
+    Status CompactRange(const CompactRangeOptions& options, const Slice* begin, const Slice* end);
 
     void Close();
 
-    py::tuple CreateColumnFamily(const ColumnFamilyOptions &options, const std::string &column_family_name);
+    py::tuple CreateColumnFamily(const ColumnFamilyOptions& options, const std::string& column_family_name);
 
-    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions &options);
+    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions& options);
 
-    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions &options, ColumnFamilyHandle *column_family);
+    std::unique_ptr<IteratorWrapper> NewIterator(const ReadOptions& options, ColumnFamilyHandle* column_family);
 
     //FIXME: python gc
     ~py_DB();
@@ -200,5 +200,5 @@ public:
     const std::string default_column_family_name(); // maybe a typo? take a look pls
 
 private:
-    DB *db_ptr;
+    DB* db_ptr;
 };
