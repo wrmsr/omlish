@@ -1,8 +1,10 @@
 import pytest
 
+from ...testing import pytest as ptu
 from .. import crypto
 
 
+@ptu.skip_if_cant_import('cryptography')
 @pytest.mark.parametrize('sec', [
     crypto.FernetCrypto(),
     crypto.AesgsmCrypto(),

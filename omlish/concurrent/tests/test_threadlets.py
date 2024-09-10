@@ -3,6 +3,7 @@ import logging  # noqa
 import pytest  # noqa
 
 from ... import logs  # noqa
+from ...testing import pytest as ptu
 from ..threadlets import GreenletThreadlets
 from ..threadlets import Threadlets
 from .real import RealThreadlets
@@ -32,6 +33,7 @@ def _test_threadlets(api: Threadlets):
 
 
 # @pytest.mark.skip
+@ptu.skip_if_cant_import('greenlet')
 def test_greenlet():
     _test_threadlets(GreenletThreadlets())
 

@@ -42,7 +42,7 @@ def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
 ##
 
 
-class OpensslAes265CbcCrypto(Crypto):
+class OpensslAescbcCrypto(Crypto):
     """
     !!! https://docs.openssl.org/3.0/man7/passphrase-encoding/
     https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/#cryptography.hazmat.primitives.ciphers.Cipher
@@ -122,7 +122,7 @@ class OpensslAes265CbcCrypto(Crypto):
 ##
 
 
-class OpensslSubprocessAes256CbcCrypto(Crypto):
+class OpensslSubprocessAescbcCrypto(Crypto):
     def __init__(
             self,
             *,

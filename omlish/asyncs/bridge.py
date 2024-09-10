@@ -55,7 +55,11 @@ def trivial_a_to_s(fn):
 # https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef
 
 
-_THREADLETS = sync.LazyFn(lambda: threadlets.GreenletThreadlets())
+_THREADLETS_IMPL = threadlets.GreenletThreadlets
+# from ..concurrent.tests.real import RealThreadlets
+# _THREADLETS_IMPL = RealThreadlets
+
+_THREADLETS = sync.LazyFn(lambda: _THREADLETS_IMPL())
 
 
 def _threadlets() -> threadlets.Threadlets:
