@@ -17,6 +17,8 @@ U = ta.TypeVar('U')
 
 StrMap: ta.TypeAlias = ta.Mapping[str, ta.Any]
 
+Messages: ta.TypeAlias = ta.Sequence['Message']
+
 
 ##
 
@@ -101,7 +103,7 @@ class ChatOpenAi(Invokable, lang.Final):
             content=msg.content,
         )
 
-    def invoke(self, msgs: ta.Sequence[Message]) -> Generation:  # type: ignore
+    def invoke(self, msgs: Messages) -> Generation:  # type: ignore
         payload = {
             'messages': [self._build_message_payload(msg) for msg in msgs],
             'model': self._model,
@@ -126,15 +128,30 @@ class StrOutputParser(Invokable, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
+class ChatPromptTemplate(Invokable, lang.Final):
+    msgs: Messages
+
+    def invoke(self, env: StrMap) -> Messages:
+        out: list[Message] = []
+        for m in self.msgs:
+            out.append(dc.replace(m, content=m.content.format(**env)))
+        return out
+
+
+##
+
+
 def _run(es: contextlib.ExitStack) -> None:
     client = es.enter_context(openai.OpenAI(
-        api_key=os.environ["OPENAI_API_KEY"],
+        api_key=os.environ['OPENAI_API_KEY'],
     ))
 
     #
 
     model = ChatOpenAi(client, 'gpt-4')
     parser = StrOutputParser()
+
     chain = ChainedInvokable([
         model,
         parser,
@@ -148,6 +165,21 @@ def _run(es: contextlib.ExitStack) -> None:
     ]
 
     result = chain.invoke(messages)
+    print(result)
+
+    #
+
+    prompt_template = ChatPromptTemplate([
+        SystemMessage('Translate the following from English into {language}'),
+        HumanMessage('{text}'),
+    ])
+
+    chain = ChainedInvokable([
+        prompt_template,
+        chain,
+    ])
+
+    result = chain.invoke({'language': 'Italian', 'text': 'hi!'})
     print(result)
 
 
