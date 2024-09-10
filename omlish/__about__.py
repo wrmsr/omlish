@@ -33,10 +33,10 @@ class Project(ProjectBase):
             'anyio ~= 4.4',
             'sniffio ~= 1.3',
 
-            'greenlet ~= 3.0; python_version < "3.13"',
+            'greenlet ~= 3.1',
 
             'trio ~= 0.26',
-            'trio-asyncio ~= 0.15; python_version < "3.13"',
+            'trio-asyncio ~= 0.15',
         ],
 
         'compression': [
@@ -54,7 +54,7 @@ class Project(ProjectBase):
 
         'formats': [
             'orjson ~= 3.10',
-            # 'ujson ~= 5.10',
+            'ujson ~= 5.10',
 
             'json5 ~= 0.9',
 
@@ -77,8 +77,7 @@ class Project(ProjectBase):
         ],
 
         'sql': [
-            'sqlalchemy ~= 2.0; python_version ~= "3.13"',
-            'sqlalchemy[asyncio] ~= 2.0; python_version < "3.13"',
+            'sqlalchemy[asyncio] ~= 2.0',
 
             'pg8000 ~= 1.31',
             'pymysql ~= 1.1',
