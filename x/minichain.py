@@ -142,8 +142,52 @@ class ChatPromptTemplate(Invokable, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
+class ChatMessageHistory:
+
+
+##
+
+
 def _run_2_chatbot(client: openai.OpenAI) -> None:
-    pass
+    model = ChatOpenAi(client, 'gpt-3.5-turbo')
+
+    result = model.invoke([HumanMessage(content="Hi! I'm Bob")])
+    print(result)
+
+    #
+
+    result = model.invoke([HumanMessage(content="What's my name?")])
+    print(result)
+
+    #
+
+    result = model.invoke([
+        HumanMessage(content="Hi! I'm Bob"),
+        AiMessage(content='Hello Bob! How can I assist you today?'),
+        HumanMessage(content="What's my name?"),
+    ])
+    print(result)
+
+    #
+
+    # store: dict[str, ChatMessageHistory] = {}
+    #
+    # def get_session_history(session_id: str) -> ChatMessageHistory:
+    #     if session_id not in store:
+    #         store[session_id] = ChatMessageHistory()
+    #     return store[session_id]
+    #
+    # with_message_history = WithMessageHistory(model, get_session_history)
+    #
+    # #
+    #
+    # config = {'configurable': {'session_id': 'abc2'}}
+    # response = with_message_history.invoke(
+    #     [HumanMessage(content="Hi! I'm Bob")],
+    #     config=config,
+    # )
+    # print(response)
 
 
 #
@@ -194,7 +238,7 @@ def _run(es: contextlib.ExitStack) -> None:
 
     #
 
-    _run_1_chain(client)
+    # _run_1_chain(client)
     _run_2_chatbot(client)
 
 
