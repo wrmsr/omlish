@@ -17,14 +17,25 @@ def test_dom():
     install_msh_poly(mfh.Node)
     install_msh_poly(mfh.ContentNode)
 
-    for n, src in WIKI_FILES.items():
+    print()
+
+    for n, src in sorted(WIKI_FILES.items(), key=lambda t: t[0]):
         print(n)
 
         doc = mfh.parse_doc(src)
 
         for path, child in mfh.traverse_node(doc):  # Noqa
             # print(([(f'{p.__class__.__name__}@{hex(id(p))[2:]}', a) for p, a in path], child))
-            pass
+
+            if isinstance(child, mfh.Template):
+                if (tn := mfh.one_text(child.name)) and tn.split()[0] == 'Infobox':
+                    dct = {}
+                    for p in child.params:
+                        if (k := mfh.one_text(p.name)) and (v := mfh.one_text(p.value)):
+                            dct[k.strip()] = v.strip()
+
+                    print(tn.partition(' ')[2].strip())
+                    print(dct)
 
         es_msh = msh.marshal(doc, mfh.Doc)
         es_json = json.dumps_pretty(es_msh)
@@ -32,3 +43,5 @@ def test_dom():
 
         doc2 = msh.unmarshal(json.loads(es_json), mfh.Doc)
         assert len(doc.body) == len(doc2.body)
+
+        print()
