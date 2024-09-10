@@ -38,7 +38,7 @@ jobs:
               'docker/.timestamp',
               'docker/ci/Dockerfile',
               'docker/compose.yml'
-            ) }}
+            ) }}-0
           restore-keys: |
             ci-${{ github.ref }}-
             ci-
