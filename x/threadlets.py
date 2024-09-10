@@ -1,5 +1,6 @@
 """
 TODO:
+ - this has to be named brownlet doesnt it
  - weird switching crap: https://greenlet.readthedocs.io/en/latest/switching.html
  - SpawnedRealThreadlet vs GraftedRealThreadlet prob
 
@@ -95,6 +96,8 @@ class RealThreadlet(Threadlet, abc.ABC):
     def __init__(self, t: threading.Thread) -> None:
         super().__init__()
         self._t = t
+
+        # self._paused = False
 
     @property
     def underlying(self) -> threading.Thread:
