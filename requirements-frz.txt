@@ -33,8 +33,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.15
-botocore==1.35.15
+boto3==1.35.16
+botocore==1.35.16
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -173,7 +173,7 @@ kubernetes==30.1.0
 langchain==0.2.16
 langchain-chroma==0.1.3
 langchain-community==0.2.16
-langchain-core==0.2.38
+langchain-core==0.2.39
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
 langchain-openai==0.1.23
