@@ -276,6 +276,33 @@ def _run_2_chatbot(client: openai.OpenAI) -> None:
     })
     print(response)
 
+    #
+
+    with_message_history = UpdatingMessageHistoryChat(
+        model,
+        chat_sessions,
+    )
+
+    # with_message_history = RunnableWithMessageHistory(
+    #     chain,
+    #     get_session_history,
+    #     input_messages_key="messages",
+    # )
+
+    config = {"configurable": {"session_id": "abc11"}}
+
+    response = with_message_history.invoke({
+        "messages": [HumanMessage(content="hi! I'm todd")],
+        "language": "Spanish",
+    }, config=config)
+    print(response)
+
+    response = with_message_history.invoke({
+        "messages": [HumanMessage(content="whats my name?")],
+        "language": "Spanish",
+    }, config=config)
+    print(response)
+
 
 #
 
