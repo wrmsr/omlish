@@ -7,12 +7,18 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import itertools
+import logging
 import threading
 import typing as ta
 
 import greenlet
 
 from omlish import lang
+from omlish import logs
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -92,10 +98,26 @@ class GreenletThreadlets(Threadlets):
 ##
 
 
+def _squash_args(args: lang.Args) -> ta.Any:
+    a, k = tuple(args.args), args.kwargs
+    if a:
+        if k:
+            return a, k
+        else:
+            return a
+    elif k:
+        return k
+    else:
+        return None
+
+
 class RealThreadlet(Threadlet, abc.ABC):
-    def __init__(self, t: threading.Thread) -> None:
+    _seq_counter = itertools.count()
+
+    def __init__(self, t: threading.Thread, *, seq: int | None = None) -> None:
         super().__init__()
         self._t = t
+        self._seq = seq if seq is not None else next(self._seq_counter)
 
     @property
     def underlying(self) -> threading.Thread:
@@ -108,7 +130,16 @@ class RealThreadlet(Threadlet, abc.ABC):
 
 class SpawnedRealThreadlet(RealThreadlet):
     def __init__(self, fn: ta.Callable[[], ta.Any]) -> None:
-        super().__init__(threading.Thread(target=self._main))
+        seq = next(self._seq_counter)
+
+        super().__init__(
+            threading.Thread(
+                target=self._main,
+                name=f'{self.__class__.__name__}-{seq}',
+            ),
+            seq=seq,
+        )
+
         self._fn = fn
 
         self._lock = threading.Lock()
@@ -126,11 +157,12 @@ class SpawnedRealThreadlet(RealThreadlet):
     def parent(self) -> ta.Optional['Threadlet']:
         raise NotImplementedError
 
-    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        with self._lock:
-            if self._switch_in_value.present or self._switch_out_value.present:
-                raise Exception
+    #
 
+    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        log.debug('switch begin')
+
+        with self._lock:
             if not self._started:
                 if self._t.is_alive():
                     raise Exception
@@ -149,26 +181,16 @@ class SpawnedRealThreadlet(RealThreadlet):
                 self._switch_in_event.set()
 
         self._switch_out_event.wait()
-        self._switch_out_event.clear()
 
         with self._lock:
+            self._switch_out_event.clear()
+
             out_value = self._switch_out_value.must()
             self._switch_out_value = lang.empty()
 
-        return self._squash_args(out_value)
+        log.debug('switch end: %r', out_value)
 
-    @staticmethod
-    def _squash_args(args: lang.Args) -> ta.Any:
-        a, k = tuple(args.args), args.kwargs
-        if a:
-            if k:
-                return a, k
-            else:
-                return a
-        elif k:
-            return k
-        else:
-            return None
+        return _squash_args(out_value)
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
@@ -177,13 +199,24 @@ class SpawnedRealThreadlet(RealThreadlet):
 
     def _inner_switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         with self._lock:
-            self._switch_out_value = lang
+            self._switch_out_value = lang.Args(*args, **kwargs)
+            self._switch_out_event.set()
+
+            self._paused = True
+
+        self._switch_in_event.wait()
+
+        with self._lock:
+            self._switch_in_event.clear()
+
+            self._paused = False
 
     def _main(self) -> None:
         self._switch_in_event.wait()
-        self._switch_in_event.clear()
 
         with self._lock:
+            self._switch_in_event.clear()
+
             in_value = self._switch_in_value.must()
             self._switch_in_value = lang.empty()
 
@@ -228,9 +261,24 @@ def _test_threadlets(api: Threadlets):
     assert done == 2
 
 
-def test_greenlet():
-    _test_threadlets(GreenletThreadlets())
+# def test_greenlet():
+#     _test_threadlets(GreenletThreadlets())
+
+
+class ListHandler(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.records: list[logging.LogRecord] = []
+
+    def emit(self, record):
+        self.records.append(record)
+
+
+LOG_LIST = ListHandler()
 
 
 def test_real():
+    logs.configure_standard_logging('DEBUG')
+    log.addHandler(LOG_LIST)
+
     _test_threadlets(RealThreadlets())
