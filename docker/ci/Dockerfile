@@ -51,7 +51,7 @@ COPY requirements-dev.txt /build/requirements-dev.txt
 
 RUN ( \
     pip install --progress-bar=off uv && \
-    uv pip install --root-user-action --system -r requirements-dev.txt \
+    uv pip install --system -r requirements-dev.txt \
 )
 
 RUN mkdir /omlish
