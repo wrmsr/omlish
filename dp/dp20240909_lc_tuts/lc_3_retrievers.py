@@ -3,10 +3,9 @@ https://python.langchain.com/v0.2/docs/tutorials/retrievers/
 """
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage
-from langchain_core.messages import SystemMessage
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda
+from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
@@ -64,6 +63,47 @@ def _main() -> None:
 
     result = vectorstore.similarity_search_by_vector(embedding)
     print(result)
+
+    #
+
+    retriever = RunnableLambda(vectorstore.similarity_search).bind(k=1)  # select top result
+
+    result = retriever.batch(["cat", "shark"])
+    print(result)
+
+    #
+
+    retriever = vectorstore.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 1},
+    )
+
+    result = retriever.batch(["cat", "shark"])
+    print(result)
+
+    #
+
+    llm = ChatOpenAI(model="gpt-4o-mini")
+
+    #
+
+    message = """
+    Answer this question using the provided context only.
+
+    {question}
+
+    Context:
+    {context}
+    """
+
+    prompt = ChatPromptTemplate.from_messages([("human", message)])
+
+    rag_chain = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm
+
+    #
+
+    response = rag_chain.invoke("tell me about cats")
+    print(response.content)
 
 
 if __name__ == '__main__':
