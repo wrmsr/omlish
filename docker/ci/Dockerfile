@@ -1,4 +1,4 @@
-FROM python:3.12.6-bookworm
+FROM python:3.12.6-bookworm AS omlish-ci-base
 COPY docker/.timestamp /
 
 
@@ -28,6 +28,10 @@ RUN \
 )
 
 
+###
+FROM omlish-ci-base AS omlish-ci
+
+
 ## config
 
 COPY \
@@ -37,7 +41,6 @@ COPY \
     docker/dev/.vimrc \
 \
     /root/
-
 
 ## entrypoint
 
