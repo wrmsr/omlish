@@ -47,19 +47,19 @@ class DummyValueProxy(ValueProxy[T]):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SpawnExtras:
-    fds: ta.AbstractSet[int] | None = None
+    pass_fds: ta.AbstractSet[int] | None = None
     deathsig: int | None = None
 
 
 class ExtrasSpawnPosixPopen(mp.popen_spawn_posix.Popen):
     def __init__(self, process_obj: 'ExtrasSpawnProcess', *, extras: SpawnExtras) -> None:
         self.__extras = extras
-        self.__extra_fds = extras.fds
+        self.__pass_fds = extras.pass_fds
         super().__init__(process_obj)
 
     def _launch(self, process_obj: 'ExtrasSpawnProcess') -> None:
-        if self.__extra_fds:
-            for fd in self.__extra_fds:
+        if self.__pass_fds:
+            for fd in self.__pass_fds:
                 self.duplicate_for_child(fd)
             self._extra_fds = None
 
