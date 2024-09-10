@@ -12,6 +12,7 @@ class VenvConfig:
     requires: ta.Optional[ta.List[str]] = None
     docker: ta.Optional[str] = None
     srcs: ta.Optional[ta.List[str]] = None
+    use_uv: ta.Optional[bool] = None
 
 
 @dc.dataclass(frozen=True)
