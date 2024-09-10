@@ -1,20 +1,24 @@
 import abc
-import enum
+import contextlib
 import dataclasses as dc
-import typing as ta
+import enum
 import os.path
+import typing as ta
 
+import openai
 import yaml
 
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
+StrMap: ta.TypeAlias = ta.Mapping[str, ta.Any]
+
 
 ##
 
 
-class MessageSource(enum.Enum):
+class MessageRole(enum.Enum):
     SYSTEM = enum.auto()
     HUMAN = enum.auto()
     AI = enum.auto()
@@ -24,22 +28,22 @@ class MessageSource(enum.Enum):
 class Message(abc.ABC):  # noqa
     content: str
 
-    source: ta.ClassVar[MessageSource]
+    role: ta.ClassVar[MessageRole]
 
 
 @dc.dataclass(frozen=True)
 class SystemMessage(Message):
-    source = MessageSource.SYSTEM
+    role = MessageRole.SYSTEM
 
 
 @dc.dataclass(frozen=True)
 class HumanMessage(Message):
-    source = MessageSource.HUMAN
+    role = MessageRole.HUMAN
 
 
 @dc.dataclass(frozen=True)
 class AiMessage(Message):
-    source = MessageSource.AI
+    role = MessageRole.AI
 
 
 ##
@@ -65,12 +69,39 @@ class ChainedInvokable(Invokable):
 
 
 class ChatOpenAi(Invokable):
-    def __init__(self, model: str) -> None:
+    def __init__(
+            self,
+            client: openai.OpenAI,
+            model: str,
+    ) -> None:
         super().__init__()
-        self._mode = model
+        self._client = client
+        self._model = model
 
-    def invoke(self, arg: ta.Any) -> ta.Any:
-        raise NotImplementedError
+    _ROLE_MAP: ta.ClassVar[ta.Mapping[MessageRole, str]] = {
+        MessageRole.SYSTEM: 'system',
+        MessageRole.HUMAN: 'user',
+        MessageRole.AI: 'assistant',
+    }
+
+    def _build_message_payload(self, msg: Message) -> StrMap:
+        return dict(
+            role=self._ROLE_MAP[msg.role],
+            content=msg.content,
+        )
+
+    def invoke(self, msgs: ta.Sequence[Message]) -> ta.Any:  # type: ignore
+        payload = {
+            'messages': [self._build_message_payload(msg) for msg in msgs],
+            'model': self._model,
+            'n': 1,
+            'stream': False,
+            'temperature': 0.7,
+        }
+
+        response = self._client.chat.completions.create(**payload)
+
+        return response
 
 
 ##
@@ -84,19 +115,14 @@ class StrOutputParser(Invokable):
 ##
 
 
-def load_secrets() -> None:
-    with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
-        dct = yaml.safe_load(f)
-    os.environ['OPENAI_API_KEY'] = dct['openai_api_key']
-    os.environ['TAVILY_API_KEY'] = dct['tavily_api_key']
-
-
-def _main() -> None:
-    load_secrets()
+def _run(es: contextlib.ExitStack) -> None:
+    client = es.enter_context(openai.OpenAI(
+        api_key=os.environ["OPENAI_API_KEY"],
+    ))
 
     #
 
-    model = ChatOpenAi(model='gpt-4')
+    model = ChatOpenAi(client, 'gpt-4')
     parser = StrOutputParser()
     chain = ChainedInvokable([
         model,
@@ -112,6 +138,23 @@ def _main() -> None:
 
     result = chain.invoke(messages)
     print(result)
+
+
+#
+
+
+def _load_secrets() -> None:
+    with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
+        dct = yaml.safe_load(f)
+    os.environ['OPENAI_API_KEY'] = dct['openai_api_key']
+    os.environ['TAVILY_API_KEY'] = dct['tavily_api_key']
+
+
+def _main() -> None:
+    _load_secrets()
+
+    with contextlib.ExitStack() as es:
+        _run(es)
 
 
 if __name__ == '__main__':
