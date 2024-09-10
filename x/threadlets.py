@@ -143,6 +143,18 @@ class RealThreadlet(Threadlet, abc.ABC):
     def dead(self) -> bool:
         return self._t.is_alive()
 
+    def _unswitch(self) -> ta.Any:
+        self._in_event.wait()
+        with self._lock:
+            self._in_event.clear()
+
+            in_value = self._in_value.must()
+            self._in_value = lang.empty()
+
+            self._paused = False
+
+        return _squash_args(in_value)
+
     @classmethod
     def _switch(cls, src: 'RealThreadlet', dst: 'RealThreadlet', args: lang.Args) -> ta.Any:
         t0, t1 = sorted((src, dst), key=lambda t: t._seq)  # noqa
@@ -160,16 +172,7 @@ class RealThreadlet(Threadlet, abc.ABC):
 
                 src._paused = True
 
-        src._in_event.wait()
-        with src._lock:
-            src._in_event.clear()
-
-            in_value = src._in_value.must()
-            src._in_value = lang.empty()
-
-            src._paused = False
-
-        return _squash_args(in_value)
+        return src._unswitch()
 
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         return self._switch(self._s.get_current(), self, lang.Args(*args, **kwargs))
@@ -200,15 +203,7 @@ class SpawnedRealThreadlet(RealThreadlet):
         self._started = False
 
     def _main(self) -> None:
-        self._in_event.wait()
-
-        with self._lock:
-            self._in_event.clear()
-
-            in_value = self._in_value.must()
-            self._in_value = lang.empty()
-
-            self._paused = False
+        in_value = self._unswitch()
 
         out_value = self._fn(*in_value.args, **in_value.kwargs)
 
