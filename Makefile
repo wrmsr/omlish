@@ -394,6 +394,7 @@ publish: gen package
 
 	${PYTHON} -m twine upload dist/*
 
+	# FIXME: enable *after* nuking big files from history
 	# git tag -a "v${LOCAL_VERSION}" -m "v${LOCAL_VERSION}"
 
 	${PYTHON} -m omdev.scripts.bumpversion -w omlish/__about__.py
