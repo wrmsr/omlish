@@ -47,7 +47,6 @@ jobs:
         run: >
           tar -tvf ~/.cache/docker/ci.tar ||: ;
           docker load -i ~/.cache/docker/ci.tar ||: ;
-          docker image history wrmsr/omlish-ci ||: ;
 
       ##
 
