@@ -35,12 +35,9 @@ jobs:
           path: '~/.cache'
           key:
             ci-${{ github.ref }}-${{ hashFiles(
-              '.versions',
               'docker/.timestamp',
               'docker/ci/Dockerfile',
               'docker/compose.yml',
-              'requirements.txt',
-              'requirements-dev.txt'
             ) }}
           restore-keys: |
             ci-${{ github.ref }}-
