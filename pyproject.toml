@@ -26,10 +26,13 @@ all = [
     'x',
 ]
 
+#
+
 [tool.omlish.pyproject.venvs._default]
 interp = '@12'
 requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
+use_uv = true
 
 [tool.omlish.pyproject.venvs.default]
 inherits = ['_default']
@@ -43,25 +46,29 @@ interp = '@13'
 inherits = ['_default']
 interp = '@13t'
 
-[tool.omlish.pyproject.venvs._old]
+#
+
+[tool.omlish.pyproject.venvs._lite]
 requires = []
 srcs = []
 
 [tool.omlish.pyproject.venvs.'11']
-inherits = ['_old']
+inherits = ['_lite']
 interp = '@11'
 
 [tool.omlish.pyproject.venvs.'10']
-inherits = ['_old']
+inherits = ['_lite']
 interp = '@10'
 
 [tool.omlish.pyproject.venvs.'9']
-inherits = ['_old']
+inherits = ['_lite']
 interp = '@9'
 
 [tool.omlish.pyproject.venvs.'8']
-inherits = ['_old']
+inherits = ['_lite']
 interp = '@8'
+
+#
 
 [tool.omlish.pyproject.venvs.docker]
 inherits = ['_default']
@@ -70,6 +77,8 @@ docker = 'omlish-dev'
 [tool.omlish.pyproject.venvs.docker-amd64]
 inherits = ['_default']
 docker = 'omlish-dev-amd64'
+
+#
 
 [tool.omlish.pyproject.venvs.deploy]
 interp = '3.12'

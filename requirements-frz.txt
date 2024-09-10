@@ -33,8 +33,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.14
-botocore==1.35.14
+boto3==1.35.15
+botocore==1.35.15
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -82,7 +82,7 @@ docutils-stubs==0.0.22
 duckdb==1.1.0
 einops==0.8.0
 elastic-transport==8.15.0
-elasticsearch==8.15.0
+elasticsearch==8.15.1
 evaluate==0.4.2
 execnet==2.1.1
 executing==2.1.0
@@ -214,8 +214,8 @@ mmh3==4.1.0
 monotonic==1.6
 more-itertools==10.5.0
 mpmath==1.3.0
-msgpack==1.0.8
-multidict==6.0.5
+msgpack==1.1.0
+multidict==6.1.0
 multiprocess==0.70.16
 murmurhash==1.0.10
 mwparserfromhell==0.6.6
@@ -280,7 +280,7 @@ pluggy==1.5.0
 polars==1.6.0
 pooch==1.8.2
 portalocker==2.8.2
-posthog==3.6.4
+posthog==3.6.5
 pprintpp==0.4.0
 preshed==3.0.9
 priority==2.0.0
@@ -320,7 +320,7 @@ pyproj==3.6.1
 pyproject_hooks==1.1.0
 pyserial==3.5
 pyserial-asyncio==0.6
-pytest==8.3.2
+pytest==8.3.3
 pytest-asyncio==0.24.0
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
@@ -351,7 +351,7 @@ requests-toolbelt==1.0.0
 rfc3339-validator==0.1.4
 rfc3986==2.0.0
 rfc3986-validator==0.1.1
-rich==13.8.0
+rich==13.8.1
 rpds-py==0.20.0
 rsa==4.9
 rubicon-objc==0.4.9
@@ -435,6 +435,7 @@ tzlocal==5.2
 ujson==5.10.0
 uri-template==1.3.0
 urllib3==2.2.2
+uv==0.4.8
 uvicorn==0.30.6
 uvloop==0.20.0
 voluptuous==0.15.2
@@ -456,7 +457,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
-yarl==1.11.0
+yarl==1.11.1
 zigpy==0.66.0
 zipp==3.20.1
 zwave-js-server-python==0.58.0

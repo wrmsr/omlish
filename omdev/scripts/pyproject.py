@@ -3029,6 +3029,7 @@ class VenvConfig:
     requires: ta.Optional[ta.List[str]] = None
     docker: ta.Optional[str] = None
     srcs: ta.Optional[ta.List[str]] = None
+    use_uv: ta.Optional[bool] = None
 
 
 @dc.dataclass(frozen=True)
@@ -4567,8 +4568,6 @@ class Venv:
             raise Exception(f'venv exe {ve} does not exist or is not a file!')
         return ve
 
-    USE_UV = True
-
     @cached_nullary
     def create(self) -> bool:
         if os.path.exists(dn := self.dir_name):
@@ -4580,6 +4579,7 @@ class Venv:
         subprocess_check_call(ie, '-m', 'venv', dn)
 
         ve = self.exe()
+        uv = self._cfg.use_uv
 
         subprocess_check_call(
             ve,
@@ -4588,7 +4588,7 @@ class Venv:
             'pip',
             'setuptools',
             'wheel',
-            *(['uv'] if self.USE_UV else []),
+            *(['uv'] if uv else []),
         )
 
         if (sr := self._cfg.requires):
@@ -4597,10 +4597,10 @@ class Venv:
             subprocess_check_call(
                 ve,
                 '-m',
-                *(['uv'] if self.USE_UV else []),
+                *(['uv'] if uv else []),
                 'pip',
                 'install',
-                *([] if self.USE_UV else ['-v']),
+                *([] if uv else ['-v']),
                 *reqs,
             )
 
