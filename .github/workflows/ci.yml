@@ -84,6 +84,6 @@ jobs:
               egrep '^\s*image:' docker/compose.yml | cut -d"'" -f2
             ) ; do
               echo "$IMG" ;
-              (docker history "$IMG" | tail -n+2 | awk '{print $1}' | egrep -v '<missing>') ||: ;
+              ( docker history "$IMG" ||: ) | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' ;
             done
           ) | xargs docker save -o ~/.cache/docker/ci.tar
