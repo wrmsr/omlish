@@ -38,3 +38,17 @@ class AiMessage(Message):
 ##
 
 
+class Invokable(abc.ABC):
+    def invoke(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+
+##
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()
