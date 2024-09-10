@@ -2,6 +2,7 @@ import typing as ta
 
 from ... import lang
 
+
 if ta.TYPE_CHECKING:
     from .reflect import ClassInfo
 

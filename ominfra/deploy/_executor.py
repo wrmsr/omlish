@@ -559,8 +559,10 @@ _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
 
 _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (list, tuple, set, frozenset)},
-    **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
-    **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
+    collections.abc.Set: frozenset,
+    collections.abc.MutableSet: set,
+    collections.abc.Sequence: tuple,
+    collections.abc.MutableSequence: list,
 }
 
 

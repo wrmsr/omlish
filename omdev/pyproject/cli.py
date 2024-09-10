@@ -132,6 +132,8 @@ class Venv:
             raise Exception(f'venv exe {ve} does not exist or is not a file!')
         return ve
 
+    USE_UV = True
+
     @cached_nullary
     def create(self) -> bool:
         if os.path.exists(dn := self.dir_name):
@@ -151,6 +153,7 @@ class Venv:
             'pip',
             'setuptools',
             'wheel',
+            *(['uv'] if self.USE_UV else []),
         )
 
         if (sr := self._cfg.requires):
@@ -158,8 +161,11 @@ class Venv:
             reqs = [rr.rewrite(req) for req in sr]
             subprocess_check_call(
                 ve,
-                '-m', 'pip',
-                'install', '-v',
+                '-m',
+                *(['uv'] if self.USE_UV else []),
+                'pip',
+                'install',
+                *([] if self.USE_UV else ['-v']),
                 *reqs,
             )
 

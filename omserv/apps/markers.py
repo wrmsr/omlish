@@ -33,7 +33,7 @@ def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
 class AppMarkerProcessor(lang.Abstract):
     @abc.abstractmethod
     def __call__(self, app: AsgiApp) -> AsgiApp:
-        return app
+        raise NotImplementedError
 
 
 class NopAppMarkerProcessor(AppMarkerProcessor, lang.Final):
