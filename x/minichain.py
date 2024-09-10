@@ -67,6 +67,9 @@ class Invokable(lang.Abstract, ta.Generic[T, U]):
     def invoke(self, arg: T) -> U:
         raise NotImplementedError
 
+    def __call__(self, arg: T) -> U:
+        return self.invoke(arg)
+
 
 @dc.dataclass(frozen=True)
 class ChainedInvokable(Invokable, lang.Final):
@@ -143,8 +146,27 @@ class ChatPromptTemplate(Invokable, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class ChatMessageHistory:
+class ChatSession:
+    messages: Messages
 
+
+@dc.dataclass(frozen=True)
+class ChatSessionStore:
+    store: dict[str, ChatSession] = dc.field(default_factory=dict)
+
+
+@dc.dataclass(frozen=True)
+class ChatSessionAddition:
+    message: Messages
+    session_id: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class MessageHistoryChat(Invokable):
+    store: ChatSessionStore
+
+    def invoke(self, new: ChatSessionAddition) -> Messages:
+        raise NotImplementedError
 
 ##
 
@@ -152,17 +174,17 @@ class ChatMessageHistory:
 def _run_2_chatbot(client: openai.OpenAI) -> None:
     model = ChatOpenAi(client, 'gpt-3.5-turbo')
 
-    result = model.invoke([HumanMessage(content="Hi! I'm Bob")])
+    result = model([HumanMessage(content="Hi! I'm Bob")])
     print(result)
 
     #
 
-    result = model.invoke([HumanMessage(content="What's my name?")])
+    result = model([HumanMessage(content="What's my name?")])
     print(result)
 
     #
 
-    result = model.invoke([
+    result = model([
         HumanMessage(content="Hi! I'm Bob"),
         AiMessage(content='Hello Bob! How can I assist you today?'),
         HumanMessage(content="What's my name?"),
@@ -171,23 +193,13 @@ def _run_2_chatbot(client: openai.OpenAI) -> None:
 
     #
 
-    # store: dict[str, ChatMessageHistory] = {}
-    #
-    # def get_session_history(session_id: str) -> ChatMessageHistory:
-    #     if session_id not in store:
-    #         store[session_id] = ChatMessageHistory()
-    #     return store[session_id]
-    #
-    # with_message_history = WithMessageHistory(model, get_session_history)
-    #
-    # #
-    #
-    # config = {'configurable': {'session_id': 'abc2'}}
-    # response = with_message_history.invoke(
-    #     [HumanMessage(content="Hi! I'm Bob")],
-    #     config=config,
-    # )
-    # print(response)
+    chat_sessions = ChatSessionStore()
+
+    response = MessageHistoryChat(chat_sessions).invoke(ChatSessionAddition(
+        [HumanMessage(content="Hi! I'm Bob")],
+        session_id='abc2',
+    ))
+    print(response)
 
 
 #
