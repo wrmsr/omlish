@@ -224,6 +224,7 @@ class RealThreadlets(Threadlets):
 
         self._lock = threading.Lock()
         self._dct: dict[threading.Thread, RealThreadlet] = {}
+        self._main: GraftedRealThreadlet | None = None
 
     def spawn(self, fn: ta.Callable[[], None]) -> RealThreadlet:
         new = SpawnedRealThreadlet(self, fn)
