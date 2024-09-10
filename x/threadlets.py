@@ -143,7 +143,7 @@ class RealThreadlet(Threadlet, abc.ABC):
 
     @property
     def dead(self) -> bool:
-        return self._t.is_alive()
+        return not self._t.is_alive()
 
     def _unswitch(self) -> lang.Args:
         self._in_event.wait()
@@ -234,11 +234,20 @@ class SpawnedRealThreadlet(RealThreadlet):
         return self._parent
 
     def _main(self) -> None:
-        in_value = self._unswitch()
+        try:
+            log.info('ENTERING: %r', self)
 
-        out_value = self._fn(*in_value.args, **in_value.kwargs)
+            in_value = self._unswitch()
 
-        RealThreadlet._switch(self, self._parent, lang.Args(out_value))
+            out_value = self._fn(*in_value.args, **in_value.kwargs)
+
+            RealThreadlet._switch(self, self._parent, lang.Args(out_value))
+
+        except ShutdownException:
+            log.info('SHUTDOWN: %r', self)
+
+        finally:
+            log.info('EXITING: %r', self)
 
 
 class GraftedRealThreadlet(RealThreadlet):
@@ -316,16 +325,7 @@ class ShutdownException(Exception):
 #     _test_threadlets(GreenletThreadlets())
 
 
-class ListHandler(logging.Handler):
-    def __init__(self) -> None:
-        super().__init__()
-        self.records: list[logging.LogRecord] = []
-
-    def emit(self, record):
-        self.records.append(record)
-
-
-LOG_LIST = ListHandler()
+LOG_LIST = logs.ListHandler()
 
 
 def test_real():
@@ -337,6 +337,8 @@ def test_real():
     for t in s._dct.values():
         if isinstance(t, SpawnedRealThreadlet):
             log.info('MAYBE SHUTDOWN: %r', t)
+            # if t.dead:
+            #     breakpoint()
             if not t.dead:
                 log.info('SHUTDOWN: %r', t)
                 t._switch(s.get_current(), t, ShutdownException())
