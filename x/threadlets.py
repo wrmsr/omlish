@@ -97,8 +97,6 @@ class RealThreadlet(Threadlet, abc.ABC):
         super().__init__()
         self._t = t
 
-        # self._paused = False
-
     @property
     def underlying(self) -> threading.Thread:
         return self._t
@@ -109,24 +107,91 @@ class RealThreadlet(Threadlet, abc.ABC):
 
 
 class SpawnedRealThreadlet(RealThreadlet):
-    def __init__(self, fn: ta.Callable[[], None]) -> None:
+    def __init__(self, fn: ta.Callable[[], ta.Any]) -> None:
         super().__init__(threading.Thread(target=self._main))
         self._fn = fn
+
+        self._lock = threading.Lock()
+
+        self._started = False
+        self._paused = False
+
+        self._switch_in_value: lang.Maybe[lang.Args] = lang.empty()
+        self._switch_in_event = threading.Event()
+
+        self._switch_out_value: lang.Maybe[lang.Args] = lang.empty()
+        self._switch_out_event = threading.Event()
 
     @property
     def parent(self) -> ta.Optional['Threadlet']:
         raise NotImplementedError
 
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        raise NotImplementedError
+        with self._lock:
+            if self._switch_in_value.present or self._switch_out_value.present:
+                raise Exception
+
+            if not self._started:
+                if self._t.is_alive():
+                    raise Exception
+
+                self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
+                self._switch_in_event.set()
+
+                self._t.start()
+                self._started = True
+
+            else:
+                if not self._paused:
+                    raise Exception
+
+                self._switch_in_value = lang.just(lang.Args(*args, **kwargs))
+                self._switch_in_event.set()
+
+        self._switch_out_event.wait()
+        self._switch_out_event.clear()
+
+        with self._lock:
+            out_value = self._switch_out_value.must()
+            self._switch_out_value = lang.empty()
+
+        return self._squash_args(out_value)
+
+    @staticmethod
+    def _squash_args(args: lang.Args) -> ta.Any:
+        a, k = tuple(args.args), args.kwargs
+        if a:
+            if k:
+                return a, k
+            else:
+                return a
+        elif k:
+            return k
+        else:
+            return None
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
 
     #
 
+    def _inner_switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        with self._lock:
+            self._switch_out_value = lang
+
     def _main(self) -> None:
-        self._fn()
+        self._switch_in_event.wait()
+        self._switch_in_event.clear()
+
+        with self._lock:
+            in_value = self._switch_in_value.must()
+            self._switch_in_value = lang.empty()
+
+        out_value = self._fn(*in_value.args, **in_value.kwargs)
+
+        with self._lock:
+            self._switch_out_value = lang.just(out_value)
+            self._switch_out_event.set()
 
 
 class RealThreadlets(Threadlets):
