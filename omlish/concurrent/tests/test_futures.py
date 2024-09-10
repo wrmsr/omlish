@@ -1,8 +1,8 @@
 import concurrent.futures
 import time
 
-from .. import concurrent as conc
-from .. import iterators
+from ... import iterators
+from .. import futures as futs
 
 
 def test_wait_futures():
@@ -13,8 +13,8 @@ def test_wait_futures():
     tp: concurrent.futures.Executor
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as tp:
         futures = [tp.submit(fn) for _ in range(10)]
-        assert not conc.wait_futures(futures, tick_fn=iter([True, False]).__next__)
-        assert conc.wait_futures(futures)
+        assert not futs.wait_futures(futures, tick_fn=iter([True, False]).__next__)
+        assert futs.wait_futures(futures)
 
     def pairs(l):
         return [set(p) for p in iterators.chunk(2, l)]

@@ -1,0 +1,85 @@
+import abc
+import dataclasses as dc
+import typing as ta
+
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import greenlet
+else:
+    greenlet = lang.proxy_import('greenlet')
+
+
+##
+
+
+class Threadlet(abc.ABC):
+    """Not safe to identity-key - use `underlying`."""
+
+    @property
+    @abc.abstractmethod
+    def underlying(self) -> ta.Any:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def parent(self) -> ta.Optional['Threadlet']:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def dead(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def throw(self, ex: Exception) -> ta.Any:
+        raise NotImplementedError
+
+
+class Threadlets(abc.ABC):
+    @abc.abstractmethod
+    def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_current(self) -> Threadlet:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class GreenletThreadlet(Threadlet):
+    g: 'greenlet.greenlet'
+
+    @property
+    def underlying(self) -> 'greenlet.greenlet':
+        return self.g
+
+    @property
+    def parent(self) -> ta.Optional['GreenletThreadlet']:
+        return GreenletThreadlet(self.g.parent)
+
+    @property
+    def dead(self) -> bool:
+        return self.g.dead
+
+    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        return self.g.switch(*args, **kwargs)
+
+    def throw(self, ex: Exception) -> ta.Any:
+        return self.g.throw(ex)
+
+
+class GreenletThreadlets(Threadlets):
+    def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
+        return GreenletThreadlet(greenlet.greenlet(fn))
+
+    def get_current(self) -> Threadlet:
+        return GreenletThreadlet(greenlet.getcurrent())
