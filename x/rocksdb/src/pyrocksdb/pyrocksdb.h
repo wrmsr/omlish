@@ -93,33 +93,33 @@ public:
 class py_ColumnFamilyHandle : public ColumnFamilyHandle {
     const std::string& GetName() const override {
         PYBIND11_OVERLOAD_PURE(
-        const std::string&,
-        rocksdb::ColumnFamilyHandle,
-                GetName
+            const std::string&,
+            rocksdb::ColumnFamilyHandle,
+            GetName
         );
     }
 
     uint32_t GetID() const override {
         PYBIND11_OVERLOAD_PURE(
-                uint32_t,
-                rocksdb::ColumnFamilyHandle,
-                GetID
+            uint32_t,
+            rocksdb::ColumnFamilyHandle,
+            GetID
         );
     }
 
     Status GetDescriptor(ColumnFamilyDescriptor* desc) override {
         PYBIND11_OVERLOAD_PURE(
-                Status,
-                rocksdb::ColumnFamilyHandle,
-                GetDescriptor
+            Status,
+            rocksdb::ColumnFamilyHandle,
+            GetDescriptor
         );
     }
 
     const Comparator* GetComparator() const override {
         PYBIND11_OVERLOAD_PURE(
-                Comparator*,
-                rocksdb::ColumnFamilyHandle,
-                GetComparator
+            Comparator*,
+            rocksdb::ColumnFamilyHandle,
+            GetComparator
         );
     }
 };

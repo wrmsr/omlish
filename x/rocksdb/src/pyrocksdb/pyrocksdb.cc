@@ -212,24 +212,16 @@ std::unique_ptr<IteratorWrapper> py_DB::NewIterator(const ReadOptions& options, 
 
 
 void init_db(py::module&);
-
 void init_option(py::module&);
-
 void init_slice(py::module&);
-
 void init_status(py::module&);
-
 void init_write_batch(py::module&);
-
 void init_iterator(py::module&);
-
 void init_filter_policy(py::module&);
-
 void init_merge_operator(py::module&);
-
 void init_transaction_db(py::module&);
-
 void init_snapshot(py::module&);
+
 
 PYBIND11_MODULE(pyrocksdb, m) {
     init_db(m);

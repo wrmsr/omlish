@@ -22,6 +22,7 @@ using namespace std;
 //     }
 // };
 
+
 void init_snapshot(py::module& m) {
     // py::class_<Snapshot, PySnapshot, std::unique_ptr<Snapshot, py::nodelete>> snapshot(m, "Snapshot");
     // snapshot

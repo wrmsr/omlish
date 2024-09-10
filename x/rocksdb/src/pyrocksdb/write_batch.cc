@@ -29,6 +29,7 @@ public:
     }
 };
 
+
 void init_write_batch(py::module& m) {
     py::class_<WriteBatch>(m, "_WriteBatch");
     py::class_<PyWriteBatch, WriteBatch>(m, "WriteBatch")
