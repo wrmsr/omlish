@@ -117,7 +117,10 @@ class RealThreadlet(Threadlet, abc.ABC):
     def __init__(
             self,
             s: 'RealThreadlets',
-            t: threading.Thread, *, seq: int | None = None,
+            t: threading.Thread,
+            *,
+            paused: bool,
+            seq: int | None = None,
     ) -> None:
         super().__init__()
         self._s = s
@@ -126,24 +129,23 @@ class RealThreadlet(Threadlet, abc.ABC):
 
         self._lock = threading.Lock()
 
-        self._paused = False
+        self._paused = paused
 
-        self._in_value: lang.Maybe[lang.Args] = lang.empty()
+        self._in_value: lang.Maybe[lang.Args | Exception] = lang.empty()
         self._in_event = threading.Event()
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._t!r})'
 
     @property
     def underlying(self) -> threading.Thread:
         return self._t
 
     @property
-    def parent(self) -> ta.Optional['Threadlet']:
-        raise NotImplementedError
-
-    @property
     def dead(self) -> bool:
         return self._t.is_alive()
 
-    def _unswitch(self) -> ta.Any:
+    def _unswitch(self) -> lang.Args:
         self._in_event.wait()
 
         with self._lock:
@@ -154,13 +156,30 @@ class RealThreadlet(Threadlet, abc.ABC):
 
             self._paused = False
 
-        return _squash_args(in_value)
+        log.info('UNSWITCHED: %r :: %r', self, in_value)
+
+        if isinstance(in_value, Exception):
+            raise in_value
+
+        return in_value
 
     @classmethod
-    def _switch(cls, src: 'RealThreadlet', dst: 'RealThreadlet', args: lang.Args) -> ta.Any:
+    def _switch(
+            cls,
+            src: 'RealThreadlet',
+            dst: 'RealThreadlet',
+            in_value: lang.Args | Exception,
+    ) -> None:
+        log.info('SWITCHING: %r -> %r :: %r', src, dst, in_value)
+
         t0, t1 = sorted((src, dst), key=lambda t: t._seq)  # noqa
         with t0._lock:  # noqa
             with t1._lock:  # noqa
+                if src._paused:
+                    raise Exception
+                if not dst._paused:
+                    raise Exception
+
                 if isinstance(dst, SpawnedRealThreadlet) and not dst._started:
                     dst._t.start()
                     dst._started = True
@@ -168,15 +187,19 @@ class RealThreadlet(Threadlet, abc.ABC):
                     if not dst._paused:
                         raise Exception
 
-                dst._in_value = lang.just(args)
+                dst._in_value = lang.just(in_value)
                 dst._in_event.set()
 
                 src._paused = True
 
-        return src._unswitch()
-
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        return self._switch(self._s.get_current(), self, lang.Args(*args, **kwargs))
+        src = self._s.get_current()
+
+        self._switch(src, self, lang.Args(*args, **kwargs))
+
+        in_value = src._unswitch()
+
+        return _squash_args(in_value)
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
@@ -187,6 +210,7 @@ class SpawnedRealThreadlet(RealThreadlet):
             self,
             s: 'RealThreadlets',
             fn: ta.Callable[[], ta.Any],
+            parent: RealThreadlet,
     ) -> None:
         seq = next(self._seq_counter)
 
@@ -196,26 +220,38 @@ class SpawnedRealThreadlet(RealThreadlet):
                 target=self._main,
                 name=f'{self.__class__.__name__}-{seq}',
             ),
+            paused=True,
             seq=seq,
         )
 
         self._fn = fn
+        self._parent = parent
 
         self._started = False
+
+    @property
+    def parent(self) -> RealThreadlet:
+        return self._parent
 
     def _main(self) -> None:
         in_value = self._unswitch()
 
         out_value = self._fn(*in_value.args, **in_value.kwargs)
 
-        # FIXME: lol
-        # with self._lock:
-        #     self._out_value = lang.just(out_value)
-        #     self._out_event.set()
+        RealThreadlet._switch(self, self._parent, lang.Args(out_value))
 
 
 class GraftedRealThreadlet(RealThreadlet):
-    pass
+    def __init__(
+            self,
+            s: 'RealThreadlets',
+            t: threading.Thread,
+    ) -> None:
+        super().__init__(s, t, paused=False)
+
+    @property
+    def parent(self) -> Threadlet | None:
+        return None
 
 
 class RealThreadlets(Threadlets):
@@ -227,7 +263,7 @@ class RealThreadlets(Threadlets):
         self._main: GraftedRealThreadlet | None = None
 
     def spawn(self, fn: ta.Callable[[], None]) -> RealThreadlet:
-        new = SpawnedRealThreadlet(self, fn)
+        new = SpawnedRealThreadlet(self, fn, self.get_current())
 
         with self._lock:
             self._dct[new.underlying] = new
@@ -272,6 +308,10 @@ def _test_threadlets(api: Threadlets):
     assert done == 2
 
 
+class ShutdownException(Exception):
+    pass
+
+
 # def test_greenlet():
 #     _test_threadlets(GreenletThreadlets())
 
@@ -292,4 +332,11 @@ def test_real():
     logs.configure_standard_logging('DEBUG')
     log.addHandler(LOG_LIST)
 
-    _test_threadlets(RealThreadlets())
+    s = RealThreadlets()
+    _test_threadlets(s)
+    for t in s._dct.values():
+        if isinstance(t, SpawnedRealThreadlet):
+            log.info('MAYBE SHUTDOWN: %r', t)
+            if not t.dead:
+                log.info('SHUTDOWN: %r', t)
+                t._switch(s.get_current(), t, ShutdownException())

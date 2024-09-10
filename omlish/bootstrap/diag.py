@@ -70,6 +70,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         interval_s: ta.Optional[float] = None
+        nodaemon: bool = False
 
         on_sigquit: bool = False
 
@@ -79,6 +80,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
             tdt = diagt.create_thread_dump_thread(
                 interval_s=self._config.interval_s,
                 start=True,
+                nodaemon=self._config.nodaemon,
             )
         else:
             tdt = None
@@ -97,7 +99,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
             yield
 
         finally:
-            if tdt is not None:
+            if tdt is not None and not self._config.nodaemon:
                 tdt.stop_nowait()
 
             if prev_sq.present:
