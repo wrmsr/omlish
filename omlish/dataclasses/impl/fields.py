@@ -4,10 +4,13 @@ import typing as ta
 
 from ... import check as check_
 from ... import lang
+from .internals import FIELDS_ATTR
 from .internals import FieldType
 from .internals import is_classvar
 from .internals import is_initvar
+from .internals import is_kw_only
 from .params import get_field_extras
+from .processing import Processor
 
 
 if ta.TYPE_CHECKING:
@@ -19,6 +22,9 @@ else:
 MISSING = dc.MISSING
 
 
+##
+
+
 def field_type(f: dc.Field) -> FieldType:
     if (ft := getattr(f, '_field_type')) is not None:
         return FieldType(ft)
@@ -28,6 +34,51 @@ def field_type(f: dc.Field) -> FieldType:
 
 def has_default(f: dc.Field) -> bool:
     return not (f.default is MISSING and f.default_factory is MISSING)
+
+
+##
+
+
+class FieldsProcessor(Processor):
+    def _process(self) -> None:
+        cls = self._info.cls
+        fields: dict[str, dc.Field] = {}
+
+        for b in cls.__mro__[-1:0:-1]:
+            base_fields = getattr(b, FIELDS_ATTR, None)
+            if base_fields is not None:
+                for f in base_fields.values():
+                    fields[f.name] = f
+
+        cls_fields: list[dc.Field] = []
+
+        kw_only = self._info.params.kw_only
+        kw_only_seen = False
+        for name, ann in self._info.cls_annotations.items():
+            if is_kw_only(cls, ann):
+                if kw_only_seen:
+                    raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
+                kw_only_seen = True
+                kw_only = True
+            else:
+                cls_fields.append(preprocess_field(cls, name, ann, kw_only))
+
+        for f in cls_fields:
+            fields[f.name] = f
+            if isinstance(getattr(cls, f.name, None), dc.Field):
+                if f.default is MISSING:
+                    delattr(cls, f.name)
+                else:
+                    setattr(cls, f.name, f.default)
+
+        for name, value in cls.__dict__.items():
+            if isinstance(value, dc.Field) and name not in self._info.cls_annotations:
+                raise TypeError(f'{name!r} is a field but has no type annotation')
+
+        setattr(cls, FIELDS_ATTR, fields)
+
+
+##
 
 
 def preprocess_field(
