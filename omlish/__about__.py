@@ -46,6 +46,9 @@ class Project(ProjectBase):
         ],
 
         'diag': [
+            'asttokens ~= 2.4',
+            'executing ~= 2.1',
+
             'psutil ~= 6.0',
         ],
 
