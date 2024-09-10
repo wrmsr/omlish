@@ -73,8 +73,8 @@ jobs:
       - name: 'Docker cache save'
         if: "steps.cache.outputs.cache-hit != 'true'"
         run: >
+          docker images -a &&
           mkdir -p ~/.cache/docker/ &&
-          docker image history wrmsr/omlish-ci &&
           (
             for IMG in $(
               echo wrmsr/omlish-ci-base ;
