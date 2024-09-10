@@ -28,27 +28,29 @@ jobs:
 
       ##
 
-      # - name: 'Cache'
-      #   uses: 'actions/cache@v4.0.2'
-      #   id: 'cache'
-      #   with:
-      #     path: '~/.cache'
-      #     key: >
-      #       omlish-ci-${{ github.ref }}-${{ hashFiles(
-      #         'docker/.dockertimestamp',
-      #         'docker/ci/Dockerfile',
-      #         'requirements.txt',
-      #         'requirements-dev.txt'
-      #       ) }}
-      #     restore-keys: |
-      #       omlish-ci-${{ github.ref }}-
-      #       omlish-ci-
+      - name: 'Cache'
+        uses: 'actions/cache@v2'
+        id: 'cache'
+        with:
+          path: '~/.cache'
+          key:
+            ci-${{ github.ref }}-${{ hashFiles(
+              '.versions',
+              'docker/.dockertimestamp',
+              'docker/ci/Dockerfile',
+              'docker/docker-compose.yml',
+              'requirements.txt',
+              'requirements-dev.txt'
+            ) }}
+          restore-keys: |
+            ci-${{ github.ref }}-
+            ci-
 
-      # - name: 'Docker cache load'
-      #   run: >
-      #     tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
-      #     docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
-      #     docker image history wrmsr/omlish-ci ||: ;
+      - name: 'Docker cache load'
+        run: >
+          tar -tvf ~/.cache/docker/ci.tar ||: ;
+          docker load -i ~/.cache/docker/ci.tar ||: ;
+          docker image history wrmsr/omlish-ci ||: ;
 
       ##
 
@@ -71,28 +73,17 @@ jobs:
 
       ##
 
-      # - name: 'Docker cache save'
-      #   # if: "steps.cache.outputs.cache-hit != 'true'"
-      #   if: 'always()'
-      #   run: >
-      #     mkdir -p ~/.cache/docker/ &&
-      #     docker image history wrmsr/omlish-ci &&
-      #     docker history wrmsr/omlish-ci |
-      #       tail -n+2 |
-      #       awk '{print $1}' |
-      #       egrep -v '<missing>' |
-      #       xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
-
-      # - name: 'Cache save'
-      #   uses: 'actions/cache/save@v4.0.2'
-      #   # if: "steps.cache.outputs.cache-hit != 'true'"
-      #   if: 'always()'
-      #   with:
-      #     path: '~/.cache'
-      #     key: >
-      #       omlish-ci-${{ github.ref }}-${{ hashFiles(
-      #         'docker/.dockertimestamp',
-      #         'docker/ci/Dockerfile',
-      #         'requirements.txt',
-      #         'requirements-dev.txt'
-      #       ) }}
+      - name: 'Docker cache save'
+        if: "steps.cache.outputs.cache-hit != 'true'"
+        run: >
+          mkdir -p ~/.cache/docker/ &&
+          docker image history wrmsr/omlish-ci &&
+          (
+            for IMG in $(
+              echo wrmsr/omlish-ci ;
+              egrep '^\s*image:' docker/docker-compose.yml | cut -d"'" -f2
+            ) ; do
+              echo "$IMG" ;
+              docker history "$IMG" | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' ;
+            done
+          ) | xargs docker save -o ~/.cache/docker/ci.tar
