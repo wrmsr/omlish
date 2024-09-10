@@ -145,6 +145,7 @@ class RealThreadlet(Threadlet, abc.ABC):
 
     def _unswitch(self) -> ta.Any:
         self._in_event.wait()
+
         with self._lock:
             self._in_event.clear()
 
