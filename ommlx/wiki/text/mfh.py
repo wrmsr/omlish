@@ -116,6 +116,12 @@ class Argument(ContentNode):
 ##
 
 
+def one_text(nodes: Content) -> str | None:
+    if len(nodes) == 1 and isinstance(n := nodes[0], Text):
+        return n.s
+    return None
+
+
 _TRAVERSAL_ATTRS_BY_TYPE: ta.Mapping[type[Node], ta.Sequence[str]] = {
     Doc: ['body'],
     Text: [],
