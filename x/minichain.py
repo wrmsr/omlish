@@ -154,10 +154,13 @@ class ChatSession:
 class ChatSessionStore:
     store: dict[str, ChatSession] = dc.field(default_factory=dict)
 
+    def get(self, session_id: str) -> ChatSession | None:
+        return self.store.get(session_id)
+
 
 @dc.dataclass(frozen=True)
 class ChatSessionAddition:
-    message: Messages
+    messages: Messages
     session_id: str | None = None
 
 
@@ -166,7 +169,31 @@ class MessageHistoryChat(Invokable):
     store: ChatSessionStore
 
     def invoke(self, new: ChatSessionAddition) -> Messages:
+        if new.session_id is None:
+            return new.messages
+
+        session = self.store.get(new.session_id)
+        if session is None:
+            return new.messages
+
+        return [
+            *session.messages,
+            *new.messages,
+        ]
+
+
+@dc.dataclass(frozen=True)
+class UpdatingMessageHistoryChat(Invokable):
+    child: Invokable
+    store: ChatSessionStore
+
+    def invoke(self, new: ChatSessionAddition) -> Messages:
+        in_messages = MessageHistoryChat(self.store).invoke(new)
+
+        out_messages = self.child(in_messages)
+
         raise NotImplementedError
+
 
 ##
 
@@ -195,7 +222,10 @@ def _run_2_chatbot(client: openai.OpenAI) -> None:
 
     chat_sessions = ChatSessionStore()
 
-    response = MessageHistoryChat(chat_sessions).invoke(ChatSessionAddition(
+    response = UpdatingMessageHistoryChat(
+        model,
+        chat_sessions,
+    ).invoke(ChatSessionAddition(
         [HumanMessage(content="Hi! I'm Bob")],
         session_id='abc2',
     ))
