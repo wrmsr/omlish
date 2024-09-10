@@ -8,6 +8,9 @@ import typing as ta
 import openai
 import yaml
 
+from omlish import check
+from omlish import lang
+
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
@@ -25,38 +28,46 @@ class MessageRole(enum.Enum):
 
 
 @dc.dataclass(frozen=True)
-class Message(abc.ABC):  # noqa
+class Message(lang.Abstract):
     content: str
 
     role: ta.ClassVar[MessageRole]
 
 
 @dc.dataclass(frozen=True)
-class SystemMessage(Message):
+class SystemMessage(Message, lang.Final):
     role = MessageRole.SYSTEM
 
 
 @dc.dataclass(frozen=True)
-class HumanMessage(Message):
+class HumanMessage(Message, lang.Final):
     role = MessageRole.HUMAN
 
 
 @dc.dataclass(frozen=True)
-class AiMessage(Message):
+class AiMessage(Message, lang.Final):
     role = MessageRole.AI
 
 
 ##
 
 
-class Invokable(abc.ABC, ta.Generic[T, U]):
+@dc.dataclass(frozen=True)
+class Generation(lang.Final):
+    text: str
+
+
+##
+
+
+class Invokable(lang.Abstract, ta.Generic[T, U]):
     @abc.abstractmethod
     def invoke(self, arg: T) -> U:
         raise NotImplementedError
 
 
 @dc.dataclass(frozen=True)
-class ChainedInvokable(Invokable):
+class ChainedInvokable(Invokable, lang.Final):
     children: ta.Sequence[Invokable]
 
     def invoke(self, arg: ta.Any) -> ta.Any:
@@ -68,7 +79,7 @@ class ChainedInvokable(Invokable):
 ##
 
 
-class ChatOpenAi(Invokable):
+class ChatOpenAi(Invokable, lang.Final):
     def __init__(
             self,
             client: openai.OpenAI,
@@ -90,7 +101,7 @@ class ChatOpenAi(Invokable):
             content=msg.content,
         )
 
-    def invoke(self, msgs: ta.Sequence[Message]) -> ta.Any:  # type: ignore
+    def invoke(self, msgs: ta.Sequence[Message]) -> Generation:  # type: ignore
         payload = {
             'messages': [self._build_message_payload(msg) for msg in msgs],
             'model': self._model,
@@ -100,16 +111,16 @@ class ChatOpenAi(Invokable):
         }
 
         response = self._client.chat.completions.create(**payload)
-
-        return response
+        choice = check.single(response.choices)
+        return Generation(choice.message.content)
 
 
 ##
 
 
-class StrOutputParser(Invokable):
-    def invoke(self, arg: ta.Any) -> ta.Any:
-        raise NotImplementedError
+class StrOutputParser(Invokable, lang.Final):
+    def invoke(self, gen: Generation) -> str:  # type: ignore
+        return gen.text
 
 
 ##
