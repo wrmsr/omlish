@@ -14,7 +14,6 @@ from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
-from omlish.tests.ci import Ci
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s
@@ -134,7 +133,7 @@ async def test_auth(harness):
                 dct = json.loads(r.read().decode())
                 assert dct['user_name'] == name
 
-            if not harness[Ci].is_ci:
+            if lang.can_import('tiktoken'):
                 async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
                     r = await client.post(
                         base_url + 'tik',
