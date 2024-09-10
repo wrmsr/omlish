@@ -77,6 +77,7 @@ jobs:
         if: "steps.cache.outputs.cache-hit != 'true'"
         run: >
           mkdir -p ~/.cache/docker/ &&
+          docker images -a &&
           docker image history wrmsr/omlish-ci &&
           (
             for IMG in $(
