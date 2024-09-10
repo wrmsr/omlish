@@ -310,7 +310,7 @@ def _main() -> None:
             deathpact: mpu.PipeDeathpact = es.enter_context(mpu.PipeDeathpact())
 
             mp_context = mpu.ExtrasSpawnContext(mpu.SpawnExtras(
-                fds={deathpact.pass_fd},
+                pass_fds={deathpact.pass_fd},
                 deathsig=signal.SIGTERM,
             ))
 

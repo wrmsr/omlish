@@ -18,7 +18,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
-from ..wheelfile import WheelFile
+from .wheelfile import WheelFile
 
 
 ##

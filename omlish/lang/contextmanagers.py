@@ -227,6 +227,47 @@ class ExitStacked:
             return superfn(exc_type, exc_val, exc_tb)
 
 
+class AsyncExitStacked:
+
+    @property
+    def _exit_stack(self) -> contextlib.AsyncExitStack:
+        try:
+            return self.__exit_stack  # type: ignore
+        except AttributeError:
+            es = self.__exit_stack = contextlib.AsyncExitStack()
+            return es
+
+    async def _enter_async_context(self, context_manager: ta.AsyncContextManager[T]) -> T:
+        return await self._exit_stack.enter_async_context(ta.cast(ta.AsyncContextManager, context_manager))
+
+    def _enter_context(self, context_manager: ta.ContextManager[T]) -> T:
+        return self._exit_stack.enter_context(ta.cast(ta.ContextManager, context_manager))
+
+    async def __aenter__(self) -> ta.Self:
+        try:
+            superfn = super().__aenter__  # type: ignore
+        except AttributeError:
+            ret = self
+        else:
+            ret = await superfn()
+        await self._exit_stack.__aenter__()
+        return ret
+
+    async def __aexit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
+        await self._exit_stack.__aexit__(exc_type, exc_val, exc_tb)
+        try:
+            superfn = super().__aexit__  # type: ignore
+        except AttributeError:
+            return None
+        else:
+            return await superfn(exc_type, exc_val, exc_tb)
+
+
 ##
 
 

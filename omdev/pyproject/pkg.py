@@ -40,8 +40,8 @@ from omlish.lite.logs import log
 
 from ..cexts.magic import CextMagic
 from ..findmagic import find_magic
+from ..revisions import GitRevisionAdder
 from ..toml.writer import TomlWriter
-from ..tools.revisions import GitRevisionAdder
 
 
 #

@@ -3114,7 +3114,7 @@ class PyprojectConfigPreparer:
 
 
 ########################################
-# ../../tools/revisions.py
+# ../../revisions.py
 """
 TODO:
  - omlish-lite, move to pyproject/
