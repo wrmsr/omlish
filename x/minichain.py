@@ -124,13 +124,25 @@ class StrOutputParser(Invokable, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class MessagesPlaceholder:
+    var: str
+
+
+@dc.dataclass(frozen=True)
 class ChatPromptTemplate(Invokable, lang.Final):
-    msgs: Messages
+    body: ta.Sequence[Message | MessagesPlaceholder]
 
     def invoke(self, env: StrMap) -> Messages:
+        stk: list[Message | MessagesPlaceholder] = list(reversed(self.body))
         out: list[Message] = []
-        for m in self.msgs:
-            out.append(dc.replace(m, content=m.content.format(**env)))
+        while stk:
+            b = stk.pop()
+            if isinstance(b, Message):
+                out.append(dc.replace(b, content=b.content.format(**env)))
+            elif isinstance(b, MessagesPlaceholder):
+                stk.extend(reversed(env[b.var]))
+            else:
+                raise TypeError(b)
         return out
 
 
@@ -242,6 +254,26 @@ def _run_2_chatbot(client: openai.OpenAI) -> None:
         [HumanMessage(content="What's my name?")],
         session_id='abc2',
     ))
+    print(response)
+
+    #
+
+    prompt = ChatPromptTemplate([
+        SystemMessage("You are a helpful assistant. Answer all questions to the best of your ability in {language}."),
+        MessagesPlaceholder("messages"),
+    ])
+
+    chain = ChainedInvokable([
+        prompt,
+        model,
+    ])
+
+    #
+
+    response = chain.invoke({
+        "messages": [HumanMessage(content="hi! I'm bob")],
+        "language": "Spanish"
+    })
     print(response)
 
 
