@@ -4,97 +4,19 @@ TODO:
  - weird switching crap: https://greenlet.readthedocs.io/en/latest/switching.html
  - SpawnedRealThreadlet vs GraftedRealThreadlet prob
 """
+# ruff: noqa: SLF001
 import abc
-import dataclasses as dc
 import itertools
 import logging
 import threading
 import typing as ta
 
-import greenlet
-
-from omlish import lang
-from omlish import logs
+from ... import lang
+from ..threadlets import Threadlet
+from ..threadlets import Threadlets
 
 
 log = logging.getLogger(__name__)
-
-
-##
-
-
-class Threadlet(abc.ABC):
-    """Not safe to identity-key - use `underlying`."""
-
-    @property
-    @abc.abstractmethod
-    def underlying(self) -> ta.Any:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def parent(self) -> ta.Optional['Threadlet']:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def dead(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def throw(self, ex: Exception) -> ta.Any:
-        raise NotImplementedError
-
-
-class Threadlets(abc.ABC):
-    @abc.abstractmethod
-    def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_current(self) -> Threadlet:
-        raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class GreenletThreadlet(Threadlet):
-    g: greenlet.greenlet
-
-    @property
-    def underlying(self) -> greenlet.greenlet:
-        return self.g
-
-    @property
-    def parent(self) -> ta.Optional['GreenletThread']:
-        return GreenletThreadlet(self.g.parent)
-
-    @property
-    def dead(self) -> bool:
-        return self.g.dead
-
-    def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        return self.g.switch(*args, **kwargs)
-
-    def throw(self, ex: Exception) -> ta.Any:
-        return self.g.throw(ex)
-
-
-class GreenletThreadlets(Threadlets):
-    def spawn(self, fn: ta.Callable[[], None]) -> Threadlet:
-        return GreenletThreadlet(greenlet.greenlet(fn))
-
-    def get_current(self) -> Threadlet:
-        return GreenletThreadlet(greenlet.getcurrent())
-
-
-##
 
 
 def _squash_args(args: lang.Args) -> ta.Any:
@@ -171,9 +93,9 @@ class RealThreadlet(Threadlet, abc.ABC):
     ) -> None:
         log.info('SWITCHING: %r -> %r :: %r', src, dst, in_value)
 
-        t0, t1 = sorted((src, dst), key=lambda t: t._seq)  # noqa
-        with t0._lock:  # noqa
-            with t1._lock:  # noqa
+        t0, t1 = sorted((src, dst), key=lambda t: t._seq)
+        with t0._lock:
+            with t1._lock:
                 if src._paused:
                     raise Exception
                 if not dst._paused:
@@ -182,7 +104,7 @@ class RealThreadlet(Threadlet, abc.ABC):
                 if isinstance(dst, SpawnedRealThreadlet) and not dst._started:
                     dst._t.start()
                     dst._started = True
-                else:
+                else:  # noqa
                     if not dst._paused:
                         raise Exception
 
@@ -202,6 +124,10 @@ class RealThreadlet(Threadlet, abc.ABC):
 
     def throw(self, ex: Exception) -> ta.Any:
         raise NotImplementedError
+
+
+class ShutdownSignal(Exception):  # noqa
+    pass
 
 
 class SpawnedRealThreadlet(RealThreadlet):
@@ -242,7 +168,7 @@ class SpawnedRealThreadlet(RealThreadlet):
 
             RealThreadlet._switch(self, self._parent, lang.Args(out_value))
 
-        except ShutdownException:
+        except ShutdownSignal:
             log.info('SHUTDOWN: %r', self)
 
         finally:
@@ -289,55 +215,10 @@ class RealThreadlets(Threadlets):
             self._dct[new.underlying] = new
             return new
 
-
-##
-
-
-def _test_threadlets(api: Threadlets):
-    done = 0
-
-    def test1():
-        gr2.switch()
-        gr2.switch()
-        nonlocal done
-        done += 1
-
-    def test2():
-        def f():
-            gr1.switch()
-        f()
-        nonlocal done
-        done += 1
-        gr1.switch()
-
-    gr1 = api.spawn(test1)
-    gr2 = api.spawn(test2)
-    gr1.switch()
-    assert done == 2
-
-
-class ShutdownException(Exception):
-    pass
-
-
-# def test_greenlet():
-#     _test_threadlets(GreenletThreadlets())
-
-
-LOG_LIST = logs.ListHandler()
-
-
-def test_real():
-    logs.configure_standard_logging('DEBUG')
-    log.addHandler(LOG_LIST)
-
-    s = RealThreadlets()
-    _test_threadlets(s)
-    for t in s._dct.values():
-        if isinstance(t, SpawnedRealThreadlet):
-            log.info('MAYBE SHUTDOWN: %r', t)
-            # if t.dead:
-            #     breakpoint()
-            if not t.dead:
-                log.info('SHUTDOWN: %r', t)
-                t._switch(s.get_current(), t, ShutdownException())
+    def shutdown(self) -> None:
+        with self._lock:
+            for t in self._dct.values():
+                if isinstance(t, SpawnedRealThreadlet):
+                    if not t.dead:
+                        log.info('SHUTDOWN: %r', t)
+                        t._switch(self.get_current(), t, ShutdownSignal())
