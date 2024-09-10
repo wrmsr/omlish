@@ -155,7 +155,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.14
+boto3>=1.35.15
 
 google-cloud-compute==1.19.2
 

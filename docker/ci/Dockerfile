@@ -46,7 +46,13 @@ WORKDIR /build
 
 COPY requirements.txt /build/requirements.txt
 COPY requirements-dev.txt /build/requirements-dev.txt
-RUN pip install --progress-bar=off -r requirements-dev.txt
+
+# RUN pip install --progress-bar=off -r requirements-dev.txt
+
+RUN ( \
+    pip install --progress-bar=off uv && \
+    uv pip install --root-user-action --system -r requirements-dev.txt \
+)
 
 RUN mkdir /omlish
 COPY . /omlish/

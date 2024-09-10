@@ -2819,8 +2819,10 @@ _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
 
 _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (list, tuple, set, frozenset)},
-    **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
-    **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
+    collections.abc.Set: frozenset,
+    collections.abc.MutableSet: set,
+    collections.abc.Sequence: tuple,
+    collections.abc.MutableSequence: list,
 }
 
 
@@ -4565,6 +4567,8 @@ class Venv:
             raise Exception(f'venv exe {ve} does not exist or is not a file!')
         return ve
 
+    USE_UV = True
+
     @cached_nullary
     def create(self) -> bool:
         if os.path.exists(dn := self.dir_name):
@@ -4584,6 +4588,7 @@ class Venv:
             'pip',
             'setuptools',
             'wheel',
+            *(['uv'] if self.USE_UV else []),
         )
 
         if (sr := self._cfg.requires):
@@ -4591,8 +4596,11 @@ class Venv:
             reqs = [rr.rewrite(req) for req in sr]
             subprocess_check_call(
                 ve,
-                '-m', 'pip',
-                'install', '-v',
+                '-m',
+                *(['uv'] if self.USE_UV else []),
+                'pip',
+                'install',
+                *([] if self.USE_UV else ['-v']),
                 *reqs,
             )
 
