@@ -530,7 +530,7 @@ _install_standard_marshalling()
 
 
 def _main():
-    with open(os.path.join(os.path.dirname(__file__), '..', 'llm', 'openai.yaml')) as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'llm', 'openai', 'api.yaml')) as f:
         doc = yaml.safe_load(f)
 
     api = msh.unmarshal(doc, Openapi)
