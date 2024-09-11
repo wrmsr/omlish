@@ -24,7 +24,7 @@ class SystemMessage(ta.TypedDict, total=False):
 
 
 class UserMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | ta.Iterable[ContentPart]]
+    content: ta.Required[str | ta.Iterable[ContentPartText | ContentPartImage]]
     role: ta.Required[ta.Literal['user']]
     name: str
 
