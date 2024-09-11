@@ -33,8 +33,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.16
-botocore==1.35.16
+boto3==1.35.17
+botocore==1.35.17
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -344,7 +344,7 @@ rdflib-sqlalchemy==0.5.3
 readme_renderer==44.0
 redis==5.0.8
 referencing==0.35.1
-regex==2024.7.24
+regex==2024.9.11
 requests==2.32.3
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
@@ -370,7 +370,7 @@ setuptools==74.1.2
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.1.3
+simsimd==5.1.4
 six==1.16.0
 smart-open==7.0.4
 sniffio==1.3.1
@@ -380,7 +380,7 @@ sounddevice==0.5.0
 soundfile==0.12.1
 soupsieve==2.6
 soxr==0.5.0.post1
-spacy==3.7.6
+spacy==3.8.0
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
