@@ -15,36 +15,39 @@ from .utils import RandomShuffler
 
 
 class Dataset(torch.utils.data.Dataset):
-    """Defines a dataset composed of Examples along with its Fields.
+    """
+    Defines a dataset composed of Examples along with its Fields.
 
     Attributes:
-        sort_key (callable): A key to use for sorting dataset examples for batching
-            together examples with similar lengths to minimize padding.
+        sort_key (callable): A key to use for sorting dataset examples for batching together examples with similar
+            lengths to minimize padding.
         examples (list(Example)): The examples in this dataset.
-        fields (dict[str, Field]): Contains the name of each column or field, together
-            with the corresponding Field object. Two fields with the same Field object
-            will have a shared vocabulary.
+        fields (dict[str, Field]): Contains the name of each column or field, together with the corresponding Field
+            object. Two fields with the same Field object will have a shared vocabulary.
     """
+
     sort_key = None
 
     def __init__(self, examples, fields, filter_pred=None):
-        """Create a dataset from a list of Examples and Fields.
+        """
+        Create a dataset from a list of Examples and Fields.
 
         Arguments:
             examples: List of Examples.
-            fields (List(tuple(str, Field))): The Fields to use in this tuple. The
-                string is a field name, and the Field is the associated field.
-            filter_pred (callable or None): Use only examples for which
-                filter_pred(example) is True, or use all examples if None.
-                Default is None.
+            fields (List(tuple(str, Field))): The Fields to use in this tuple. The string is a field name, and the
+                Field is the associated field.
+            filter_pred (callable or None): Use only examples for which filter_pred(example) is True, or use all
+                examples if None. Default is None.
         """
         if filter_pred is not None:
             make_list = isinstance(examples, list)
             examples = filter(filter_pred, examples)
             if make_list:
                 examples = list(examples)
+
         self.examples = examples
         self.fields = dict(fields)
+
         # Unpack field tuples
         for n, f in list(self.fields.items()):
             if isinstance(n, tuple):
@@ -61,25 +64,23 @@ class Dataset(torch.utils.data.Dataset):
             test=None,
             **kwargs,
     ):
-        """Create Dataset objects for multiple splits of a dataset.
+        """
+        Create Dataset objects for multiple splits of a dataset.
 
         Arguments:
-            path (str): Common prefix of the splits' file paths, or None to use
-                the result of cls.download(root).
+            path (str): Common prefix of the splits' file paths, or None to use the result of cls.download(root).
             root (str): Root dataset storage directory. Default is '.data'.
-            train (str): Suffix to add to path for the train set, or None for no
-                train set. Default is None.
-            validation (str): Suffix to add to path for the validation set, or None
-                for no validation set. Default is None.
-            test (str): Suffix to add to path for the test set, or None for no test
-                set. Default is None.
-            Remaining keyword arguments: Passed to the constructor of the
-                Dataset (sub)class being used.
+            train (str): Suffix to add to path for the train set, or None for no train set. Default is None.
+            validation (str): Suffix to add to path for the validation set, or None for no validation set. Default is
+                None.
+            test (str): Suffix to add to path for the test set, or None for no test set. Default is None.
+            Remaining keyword arguments: Passed to the constructor of the Dataset (sub)class being used.
 
         Returns:
             Tuple[Dataset]: Datasets for train, validation, and
             test splits in that order, if provided.
         """
+
         if path is None:
             path = cls.download(root)
         train_data = None if train is None else cls(os.path.join(path, train), **kwargs)
@@ -94,25 +95,23 @@ class Dataset(torch.utils.data.Dataset):
             strata_field='label',
             random_state=None,
     ):
-        """Create train-test(-valid?) splits from the instance's examples.
+        """
+        Create train-test(-valid?) splits from the instance's examples.
 
         Arguments:
-            split_ratio (float or List of floats): a number [0, 1] denoting the amount
-                of data to be used for the training split (rest is used for validation),
-                or a list of numbers denoting the relative sizes of train, test and valid
-                splits respectively. If the relative size for valid is missing, only the
-                train-test split is returned. Default is 0.7 (for the train set).
-            stratified (bool): whether the sampling should be stratified.
-                Default is False.
-            strata_field (str): name of the examples Field stratified over.
-                Default is 'label' for the conventional label field.
-            random_state (tuple): the random seed used for shuffling.
-                A return value of `random.getstate()`.
+            split_ratio (float or List of floats): a number [0, 1] denoting the amount of data to be used for the
+                training split (rest is used for validation), or a list of numbers denoting the relative sizes of train,
+                test and valid splits respectively. If the relative size for valid is missing, only the train-test
+                split is returned. Default is 0.7 (for the train set).
+            stratified (bool): whether the sampling should be stratified. Default is False.
+            strata_field (str): name of the examples Field stratified over. Default is 'label' for the conventional
+                label field.
+            random_state (tuple): the random seed used for shuffling. A return value of `random.getstate()`.
 
         Returns:
-            Tuple[Dataset]: Datasets for train, validation, and
-            test splits in that order, if the splits are provided.
+            Tuple[Dataset]: Datasets for train, validation, and test splits in that order, if the splits are provided.
         """
+
         train_ratio, test_ratio, val_ratio = check_split_ratio(split_ratio)
 
         # For the permutations
@@ -159,17 +158,18 @@ class Dataset(torch.utils.data.Dataset):
 
     @classmethod
     def download(cls, root, check=None):
-        """Download and unzip an online archive (.zip, .gz, or .tgz).
+        """
+        Download and unzip an online archive (.zip, .gz, or .tgz).
 
         Arguments:
             root (str): Folder to download data to.
-            check (str or None): Folder whose existence indicates
-                that the dataset has already been downloaded, or
-                None to check the existence of root/{cls.name}.
+            check (str or None): Folder whose existence indicates that the dataset has already been downloaded, or None
+                to check the existence of root/{cls.name}.
 
         Returns:
             str: Path to extracted dataset.
         """
+
         path = os.path.join(root, cls.name)
         check = path if check is None else check
         if not os.path.isdir(check):
@@ -203,12 +203,14 @@ class Dataset(torch.utils.data.Dataset):
         return os.path.join(path, cls.dirname)
 
     def filter_examples(self, field_names):
-        """Remove unknown words from dataset examples with respect to given field.
+        """
+        Remove unknown words from dataset examples with respect to given field.
 
         Arguments:
-            field_names (list(str)): Within example only the parts with field names in
-                field_names will have their unknown words deleted.
+            field_names (list(str)): Within example only the parts with field names in field_names will have their
+                unknown words deleted.
         """
+
         for i, example in enumerate(self.examples):
             for field_name in field_names:
                 vocab = set(self.fields[field_name].vocab.stoi)
@@ -230,30 +232,26 @@ class TabularDataset(Dataset):
             csv_reader_params={},
             **kwargs,
     ):
-        """Create a TabularDataset given a path, file format, and field list.
+        """
+        Create a TabularDataset given a path, file format, and field list.
 
         Arguments:
             path (str): Path to the data file.
-            format (str): The format of the data file. One of "CSV", "TSV", or
-                "JSON" (case-insensitive).
-            fields (list(tuple(str, Field)) or dict[str: tuple(str, Field)]:
-                If using a list, the format must be CSV or TSV, and the values of the list
-                should be tuples of (name, field).
-                The fields should be in the same order as the columns in the CSV or TSV
-                file, while tuples of (name, None) represent columns that will be ignored.
+            format (str): The format of the data file. One of "CSV", "TSV", or "JSON" (case-insensitive).
+            fields (list(tuple(str, Field)) or dict[str: tuple(str, Field)]: If using a list, the format must be CSV or
+                TSV, and the values of the list should be tuples of (name, field). The fields should be in the same
+                order as the columns in the CSV or TSV file, while tuples of (name, None) represent columns that will be
+                ignored.
 
-                If using a dict, the keys should be a subset of the JSON keys or CSV/TSV
-                columns, and the values should be tuples of (name, field).
-                Keys not present in the input dictionary are ignored.
-                This allows the user to rename columns from their JSON/CSV/TSV key names
-                and also enables selecting a subset of columns to load.
+                If using a dict, the keys should be a subset of the JSON keys or CSV/TSV columns, and the values should
+                be tuples of (name, field). Keys not present in the input dictionary are ignored. This allows the user
+                to rename columns from their JSON/CSV/TSV key names and also enables selecting a subset of columns to
+                load.
             skip_header (bool): Whether to skip the first line of the input file.
-            csv_reader_params(dict): Parameters to pass to the csv reader.
-                Only relevant when format is csv or tsv.
-                See
-                https://docs.python.org/3/library/csv.html#csv.reader
-                for more details.
+            csv_reader_params(dict): Parameters to pass to the csv reader. Only relevant when format is csv or tsv. See
+                https://docs.python.org/3/library/csv.html#csv.reader for more details.
         """
+
         format = format.lower()
         make_example = {
             'json': Example.fromJSON,
@@ -294,11 +292,12 @@ class TabularDataset(Dataset):
                 else:
                     fields.append(field)
 
-        super(TabularDataset, self).__init__(examples, fields, **kwargs)
+        super().__init__(examples, fields, **kwargs)
 
 
 def check_split_ratio(split_ratio):
     """Check that the split ratio argument is not malformed"""
+
     valid_ratio = 0.
     if isinstance(split_ratio, float):
         # Only the train set relative ratio is provided
@@ -307,6 +306,7 @@ def check_split_ratio(split_ratio):
 
         test_ratio = 1. - split_ratio
         return (split_ratio, test_ratio, valid_ratio)
+
     elif isinstance(split_ratio, list):
         # A list of relative ratios is provided
         length = len(split_ratio)
@@ -320,6 +320,7 @@ def check_split_ratio(split_ratio):
         if length == 2:
             return tuple(split_ratio + [valid_ratio])
         return tuple(split_ratio)
+
     else:
         raise ValueError('Split ratio must be float or a list, got {}'.format(type(split_ratio)))
 
@@ -336,8 +337,8 @@ def stratify(examples, strata_field):
 
 
 def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
-    # Create a random permutation of examples, then split them
-    # by ratio x length slices for each of the train/test/dev? splits
+    # Create a random permutation of examples, then split them by ratio x length slices for each of the train/test/dev?
+    # splits
     N = len(examples)
     randperm = rnd(range(N))
     train_len = int(round(train_ratio * N))
@@ -348,9 +349,11 @@ def rationed_split(examples, train_ratio, test_ratio, val_ratio, rnd):
     else:
         test_len = int(round(test_ratio * N))
 
-    indices = (randperm[:train_len],  # Train
-               randperm[train_len:train_len + test_len],  # Test
-               randperm[train_len + test_len:])  # Validation
+    indices = (
+        randperm[:train_len],  # Train
+        randperm[train_len:train_len + test_len],  # Test
+        randperm[train_len + test_len:],  # Validation
+    )
 
     # There's a possibly empty list for the validation set
     data = tuple([examples[i] for i in index] for index in indices)
