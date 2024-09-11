@@ -124,6 +124,18 @@ class NamedToolChoiceParam(ta.TypedDict, total=False):
     type: ta.Required[ta.Literal['function']]
 
 
+class ToolParamFunctionDefinition(ta.TypedDict, total=False):
+    name: ta.Required[str]
+    description: str
+    parameters: ta.Mapping[str, ta.Any]
+    strict: bool | None
+
+
+class ToolParam(ta.TypedDict, total=False):
+    function: ta.Required[ToolParamFunctionDefinition]
+    type: ta.Required[ta.Literal['function']]
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
@@ -164,7 +176,7 @@ class ChatCompletionRequest:
         NamedToolChoiceParam,
         NotGiven,
     ] = NOT_GIVEN,
-    tools: ta.Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN
+    tools: ta.Iterable[ToolParam] | NotGiven = NOT_GIVEN
     top_logprobs: int | None | NotGiven = NOT_GIVEN
     top_p: float | None | NotGiven = NOT_GIVEN
     user: str | NotGiven = NOT_GIVEN
