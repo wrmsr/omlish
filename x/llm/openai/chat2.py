@@ -122,7 +122,11 @@ class ChatCompletionRequest:
     ]]
     model: str
     frequency_penalty: float | None | NotGiven = NOT_GIVEN
-    function_call: ta.Literal['none', 'auto'] | FunctionCallOptionParam | NotGiven = NOT_GIVEN
+    function_call: ta.Union[
+        ta.Literal['none', 'auto'],
+        FunctionCallOptionParam,
+        NotGiven,
+    ] = NOT_GIVEN
     functions: ta.Iterable[FunctionParam] | NotGiven = NOT_GIVEN
     logit_bias: ta.Mapping[str, int] | None | NotGiven = NOT_GIVEN
     logprobs: bool | None | NotGiven = NOT_GIVEN
@@ -130,7 +134,12 @@ class ChatCompletionRequest:
     n: int | None | NotGiven = NOT_GIVEN
     parallel_tool_calls: bool | NotGiven = NOT_GIVEN
     presence_penalty: float | None | NotGiven = NOT_GIVEN
-    response_format: ResponseFormatText | ResponseFormatJsonObject | ResponseFormatJsonSchema | NotGiven = NOT_GIVEN
+    response_format: ta.Union[
+        ResponseFormatText,
+        ResponseFormatJsonObject,
+        ResponseFormatJsonSchema,
+        NotGiven,
+    ] = NOT_GIVEN
     seed: int | None | NotGiven = NOT_GIVEN
     service_tier: ta.Literal['auto', 'default'] | None | NotGiven = NOT_GIVEN
     stop: str | None | ta.Sequence[str] | NotGiven = NOT_GIVEN
