@@ -51,13 +51,13 @@ class SecurityScheme:
     """https://swagger.io/specification/#security-scheme-object"""
 
     type: str
-    name: str
-    in_: str
     scheme: str
-    flows: OauthFlows
-    open_id_connect_url: str
+    name: str | None = None
+    in_: str | None = None
     description: str | None = None
     bearer_format: str | None = None
+    flows: OauthFlows | None = None
+    open_id_connect_url: str | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -82,7 +82,7 @@ class Discriminator:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class Schema:
     """https://swagger.io/specification/#schema-object"""
 
@@ -91,9 +91,26 @@ class Schema:
     external_docs: ta.Optional['ExternalDocumentation'] = None
     example: ta.Any | None = None
 
-    # FIXME: this is a jsonschema lol - these are just hacked on
+    # FIXME: HACK: this is a jsonschema lol - these are just hacked on
 
     type: str | None = None
+    format: str | None = None
+    one_of: ta.Any = None
+    default: ta.Any = None
+    enum: ta.Any = None
+    items: ta.Any = None
+    required: ta.Any = None
+    properties: ta.Any = None
+    description: str | None = None
+
+    #
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+    @dc.init
+    def _check_x(self) -> None:
+        for k in (self.x or {}).keys():
+            check.arg(k.startswith('x-'))
 
 
 @dc.dataclass(frozen=True)
@@ -285,6 +302,8 @@ class Operation:
     deprecated: bool | None = None
     security: ta.Sequence[SecurityRequirement] | None = None
     servers: ta.Sequence['Server'] | None = None
+
+    #
 
     x: ta.Mapping[str, ta.Any] | None = None
 
