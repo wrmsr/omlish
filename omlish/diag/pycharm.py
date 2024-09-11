@@ -17,6 +17,16 @@ else:
 ##
 
 
+PYCHARM_HOSTED_ENV_VAR = 'PYCHARM_HOSTED'
+
+
+def is_pycharm_hosted() -> bool:
+    return PYCHARM_HOSTED_ENV_VAR in os.environ
+
+
+##
+
+
 PYCHARM_HOME = '/Applications/PyCharm.app'
 
 

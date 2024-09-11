@@ -16,6 +16,8 @@ else
     PYTHON=python
 fi
 
+export PYTHONPATH="$PYTHONPATH:."
+
 if [ $# -eq 0 ] && "$PYTHON" -c "import IPython" 2> /dev/null ; then
     "$PYTHON" -m IPython
 else
