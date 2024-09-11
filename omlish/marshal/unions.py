@@ -1,7 +1,6 @@
 import dataclasses as dc
 import typing as ta
 
-from . import Value
 from .. import check
 from .. import matchfns as mfs
 from .. import reflect as rfl
@@ -11,7 +10,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .primitives import PRIMITIVE_MARSHALER_UNMARSHALER
+from .values import Value
 
 
 ##
@@ -24,7 +23,7 @@ class MatchUnionMarshaler(Marshaler):
         try:
             m = self.mmf.match(ctx, o)
         except mfs.AmbiguousMatchesError:
-            raise ValueError(o)
+            raise ValueError(o)  # noqa
         return m.fn(ctx, o)
 
 
@@ -35,7 +34,7 @@ class MatchUnionUnmarshaler(Unmarshaler):
         try:
             m = self.mmf.match(ctx, v)
         except mfs.AmbiguousMatchesError:
-            raise ValueError(v)
+            raise ValueError(v)  # noqa
         return m.fn(ctx, v)
 
 
@@ -45,6 +44,7 @@ class MatchUnionUnmarshaler(Unmarshaler):
 PRIMITIVE_UNION_TYPES: tuple[type, ...] = (
     float,
     int,
+    str,
 )
 
 
