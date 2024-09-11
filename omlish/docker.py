@@ -42,10 +42,11 @@ else:
     field_naming=msh.Naming.CAMEL,
     unknown_field='x',
 )
+@msh.update_fields_metadata(['id'], name='ID')
 class PsItem(lang.Final):
     command: str
     created_at: datetime.datetime
-    id: str = dc.field(metadata={msh.FieldMetadata: msh.FieldMetadata(name='ID')})
+    id: str
     image: str
     labels: str
     local_volumes: str
