@@ -145,7 +145,14 @@ def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
 
 def isinstance(v: ta.Any, spec: type[T] | tuple, msg: Message = None) -> T:  # noqa
     if not _isinstance(v, _unpack_isinstance_spec(spec)):
-        _raise(TypeError, 'Must be instance', msg, _Args(v, spec))
+        _raise(
+            TypeError,
+            'Must be instance',
+            msg,
+            _Args(v, spec),
+            render_fmt='not isinstance(%s, %s)',
+        )
+
     return v
 
 
@@ -158,7 +165,13 @@ def of_isinstance(spec: type[T] | tuple, msg: Message = None) -> ta.Callable[[ta
 
 def cast(v: ta.Any, cls: type[T], msg: Message = None) -> T:  # noqa
     if not _isinstance(v, cls):
-        _raise(TypeError, 'Must be instance', msg, _Args(v, cls))
+        _raise(
+            TypeError,
+            'Must be instance',
+            msg,
+            _Args(v, cls),
+        )
+
     return v
 
 
@@ -171,7 +184,14 @@ def of_cast(cls: type[T], msg: Message = None) -> ta.Callable[[T], T]:
 
 def not_isinstance(v: T, spec: ta.Any, msg: Message = None) -> T:  # noqa
     if _isinstance(v, _unpack_isinstance_spec(spec)):
-        _raise(TypeError, 'Must not be instance', msg, _Args(v, spec))
+        _raise(
+            TypeError,
+            'Must not be instance',
+            msg,
+            _Args(v, spec),
+            render_fmt='isinstance(%s, %s)',
+        )
+
     return v
 
 
@@ -187,13 +207,27 @@ def of_not_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
 
 def issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
     if not _issubclass(v, spec):
-        _raise(TypeError, 'Must be subclass', msg, _Args(v, spec))
+        _raise(
+            TypeError,
+            'Must be subclass',
+            msg,
+            _Args(v, spec),
+            render_fmt='not issubclass(%s, %s)',
+        )
+
     return v
 
 
 def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
     if _issubclass(v, spec):
-        _raise(TypeError, 'Must not be subclass', msg, _Args(v, spec))
+        _raise(
+            TypeError,
+            'Must not be subclass',
+            msg,
+            _Args(v, spec),
+            render_fmt='issubclass(%s, %s)',
+        )
+
     return v
 
 
@@ -202,19 +236,40 @@ def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  #
 
 def in_(v: T, c: ta.Container[T], msg: Message = None) -> T:
     if v not in c:
-        _raise(ValueError, 'Must be in', msg, _Args(v, c))
+        _raise(
+            ValueError,
+            'Must be in',
+            msg,
+            _Args(v, c),
+            render_fmt='%s not in %s',
+        )
+
     return v
 
 
 def not_in(v: T, c: ta.Container[T], msg: Message = None) -> T:
     if v in c:
-        _raise(ValueError, 'Must not be in', msg, _Args(v, c))
+        _raise(
+            ValueError,
+            'Must not be in',
+            msg,
+            _Args(v, c),
+            render_fmt='%s in %s',
+        )
+
     return v
 
 
 def empty(v: SizedT, msg: Message = None) -> SizedT:
     if len(v) != 0:
-        _raise(ValueError, 'Must be empty', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must be empty',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v
 
 
@@ -225,20 +280,40 @@ def iterempty(v: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
     except StopIteration:
         pass
     else:
-        _raise(ValueError, 'Must be empty', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must be empty',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v
 
 
 def not_empty(v: SizedT, msg: Message = None) -> SizedT:
     if len(v) == 0:
-        _raise(ValueError, 'Must not be empty', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must not be empty',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v
 
 
 def unique(it: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
     dupes = [e for e, c in collections.Counter(it).items() if c > 1]
     if dupes:
-        _raise(ValueError, 'Must be unique', msg, _Args(it, dupes))
+        _raise(
+            ValueError,
+            'Must be unique',
+            msg,
+            _Args(it, dupes),
+        )
+
     return it
 
 
@@ -246,9 +321,15 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
     try:
         [value] = obj
     except ValueError:
-        _raise(ValueError, 'Must be single', message, _Args(obj))
-    else:
-        return value
+        _raise(
+            ValueError,
+            'Must be single',
+            message,
+            _Args(obj),
+            render_fmt='%s',
+        )
+
+    return value
 
 
 def optional_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
@@ -257,11 +338,19 @@ def optional_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
         value = next(it)
     except StopIteration:
         return None
+
     try:
         next(it)
     except StopIteration:
         return value  # noqa
-    _raise(ValueError, 'Must be empty or single', message, _Args(obj))
+
+    _raise(
+        ValueError,
+        'Must be empty or single',
+        message,
+        _Args(obj),
+        render_fmt='%s',
+    )
 
 
 ##
@@ -269,12 +358,25 @@ def optional_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
 
 def none(v: ta.Any, msg: Message = None) -> None:
     if v is not None:
-        _raise(ValueError, 'Must be None', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must be None',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
 
 
 def not_none(v: T | None, msg: Message = None) -> T:
     if v is None:
-        _raise(ValueError, 'Must not be None', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must not be None',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v
 
 
@@ -283,31 +385,66 @@ def not_none(v: T | None, msg: Message = None) -> T:
 
 def equal(v: T, o: ta.Any, msg: Message = None) -> T:
     if o != v:
-        _raise(ValueError, 'Must be equal', msg, _Args(v, o), render_fmt='%s != %s')
+        _raise(
+            ValueError,
+            'Must be equal',
+            msg,
+            _Args(v, o),
+            render_fmt='%s != %s',
+        )
+
     return v
 
 
 def is_(v: T, o: ta.Any, msg: Message = None) -> T:
     if o is not v:
-        _raise(ValueError, 'Must be the same', msg, _Args(v, o), render_fmt='%s is not %s')
+        _raise(
+            ValueError,
+            'Must be the same',
+            msg,
+            _Args(v, o),
+            render_fmt='%s is not %s',
+        )
+
     return v
 
 
 def is_not(v: T, o: ta.Any, msg: Message = None) -> T:
     if o is v:
-        _raise(ValueError, 'Must not be the same', msg, _Args(v, o), render_fmt='%s is %s')
+        _raise(
+            ValueError,
+            'Must not be the same',
+            msg,
+            _Args(v, o),
+            render_fmt='%s is %s',
+        )
+
     return v
 
 
 def callable(v: T, msg: Message = None) -> T:  # noqa
     if not _callable(v):
-        _raise(TypeError, 'Must be callable', msg, _Args(v))
+        _raise(
+            TypeError,
+            'Must be callable',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v  # type: ignore
 
 
 def non_empty_str(v: str | None, msg: Message = None) -> str:
     if not _isinstance(v, str) or not v:
-        _raise(ValueError, 'Must be non-empty str', msg, _Args(v))
+        _raise(
+            ValueError,
+            'Must be non-empty str',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
+
     return v
 
 
@@ -316,9 +453,21 @@ def non_empty_str(v: str | None, msg: Message = None) -> str:
 
 def arg(v: bool, msg: Message = None) -> None:
     if not v:
-        _raise(RuntimeError, 'Argument condition not met', msg, _Args(v))
+        _raise(
+            RuntimeError,
+            'Argument condition not met',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
 
 
 def state(v: bool, msg: Message = None) -> None:
     if not v:
-        _raise(RuntimeError, 'State condition not met', msg, _Args(v))
+        _raise(
+            RuntimeError,
+            'State condition not met',
+            msg,
+            _Args(v),
+            render_fmt='%s',
+        )
