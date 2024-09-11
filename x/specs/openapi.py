@@ -131,7 +131,7 @@ class Header:
 
     content: ta.Mapping[str, 'MediaType'] | None = None
 
-    style: ta.Any = None
+    # style: ta.Any = None
     matrix: ta.Any = None
     label: ta.Any = None
     form: ta.Any = None
@@ -201,7 +201,7 @@ class Encoding:
 class MediaType:
     """https://swagger.io/specification/#media-type-object"""
 
-    schema: Schema | None = None
+    schema: Schema | Reference | None = None
     example: ta.Any = None
     examples: ta.Mapping[str, Example | Reference] | None = None
     encoding: ta.Mapping[str, Encoding] | None = None
@@ -241,7 +241,7 @@ class Parameter:
 
     content: ta.Mapping[str, MediaType] | None = None
 
-    style: ta.Any = None
+    # style: ta.Any = None
     matrix: ta.Any = None
     label: ta.Any = None
     form: ta.Any = None
