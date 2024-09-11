@@ -29,6 +29,7 @@ def check_equal(l, r):
         call_frame = inspect.currentframe().f_back  # type: ignore
         call_node = executing.Source.executing(call_frame).node  # type: ignore
         source = executing.Source.for_frame(call_frame)  # type: ignore
+        # breakpoint()
         sanitized_arg_strs = [
             get_text_with_indentation(source, arg)
             for arg in call_node.args  # type: ignore
