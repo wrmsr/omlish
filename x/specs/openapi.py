@@ -268,10 +268,10 @@ class Operation:
     tags: ta.Sequence[str] | None = None
     summary: str | None = None
     description: str | None = None
-    externalDocs: ExternalDocumentation | None = None
-    operationId: str | None = None
+    external_docs: ExternalDocumentation | None = None
+    operation_id: str | None = None
     parameters: ta.Sequence[Parameter | Reference] | None = None
-    requestBody: RequestBody | Reference | None = None
+    request_body: RequestBody | Reference | None = None
     responses: Responses | None = None
     callbacks: ta.Mapping[str, Callback | Reference] | None = None
     deprecated: bool | None = None
