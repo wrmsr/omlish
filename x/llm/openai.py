@@ -101,52 +101,61 @@ class CompletionRequest:
 
 
 @dc.dataclass(frozen=True)
-class TopLogprob:
+class ChatCompletionTokenLogprob:
     token: str
+
     bytes: ta.Sequence[int] | None = None
+
     logprob: float
+
+    @dc.dataclass(frozen=True)
+    class TopLogprob:
+        token: str
+        bytes: ta.Sequence[int] | None = None
+        logprob: float
+
+    top_logprobs: ta.Sequence[TopLogprob]
 
 
 @dc.dataclass(frozen=True)
-class ChatCompletionTokenLogprob:
-    token: str
-    bytes: ta.Sequence[int] | None = None
-    logprob: float
-    top_logprobs: ta.Sequence[TopLogprob]
+class ChatCompletionMessageToolCall:
+    id: str
+
+    @dc.dataclass(frozen=True)
+    class Function:
+        arguments: str
+        name: str
+
+    function: Function
+
+    type: ta.Literal['function']
+
+
+@dc.dataclass(frozen=True)
+class ChatCompletionMessage:
+    content: str | None = None
+
+    refusal: str | None = None
+
+    role: ta.Literal['assistant']
+
+    @dc.dataclass(frozen=True)
+    class FunctionCall:
+        arguments: str
+        name: str
+
+    function_call: FunctionCall | None = None
+
+    tool_calls: ta.Sequence[ChatCompletionMessageToolCall] | None = None
+
+
+#
 
 
 @dc.dataclass(frozen=True)
 class ChoiceLogprobs:
     content: ta.Sequence[ChatCompletionTokenLogprob] | None = None
     refusal: ta.Sequence[ChatCompletionTokenLogprob] | None = None
-
-
-@dc.dataclass(frozen=True)
-class ChatCompletionMessageToolCallFunction:
-    arguments: str
-    name: str
-
-
-@dc.dataclass(frozen=True)
-class ChatCompletionMessageToolCall:
-    id: str
-    function: ChatCompletionMessageToolCallFunction
-    type: ta.Literal['function']
-
-
-@dc.dataclass(frozen=True)
-class ChatCompletionMessageFunctionCall:
-    arguments: str
-    name: str
-
-
-@dc.dataclass(frozen=True)
-class ChatCompletionMessage:
-    content: str | None = None
-    refusal: str | None = None
-    role: ta.Literal['assistant']
-    function_call: ChatCompletionMessageFunctionCall | None = None
-    tool_calls: ta.Sequence[ChatCompletionMessageToolCall] | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -160,12 +169,19 @@ class Choice:
 @dc.dataclass(frozen=True)
 class ChatCompletion:
     id: str
+
     choices: ta.Sequence[Choice]
+
     created: int
+
     model: str
+
     object: ta.Literal['chat.completion']
+
     service_tier: ta.Literal['scale', 'default'] | None = None
+
     system_fingerprint: str | None = None
+
     usage: CompletionUsage | None = None
 
 
