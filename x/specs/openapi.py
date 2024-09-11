@@ -15,6 +15,23 @@ from omlish import marshal as msh
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Component:
+    """https://swagger.io/specification/#components-object"""
+
+    schemas: ta.Mapping[str, Schema] | None = None
+    responses: ta.Mapping[str, Response | Reference] | None = None
+    parameters: ta.Mapping[str, Parameter | Reference] | None = None
+    examples: ta.Mapping[str, Example | Reference] | None = None
+    requestbodies: ta.Mapping[str, RequestBody | Reference] | None = None
+    headers: ta.Mapping[str, Header | Reference] | None = None
+    security_schemes: ta.Mapping[str, SecurityScheme | Reference] | None = None
+    links: ta.Mapping[str, Link | Reference] | None = None
+    callbacks: ta.Mapping[str, Callback | Reference] | None = None
+    path_items: ta.Mapping[str, PathItem | Reference] | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class ServerVariable:
     """https://swagger.io/specification/#server-variable-object"""
 
@@ -74,6 +91,14 @@ class Openapi:
 
     openapi: str
     info: Info
+    json_schema_dialect: str | None = None
+    servers: ta.Sequence[Server] | None = None
+    paths: Paths | None = None
+    webhooks: ta.Mapping[string, PathItem | Reference] | None = None
+    components: Components | None = None
+    security: ta.Sequence[SecurityRequirement] | None = None
+    tags: ta.Sequence[Tag] | None = None
+    external_docs: ExternalDocumentation | None = None
 
 
 ##
