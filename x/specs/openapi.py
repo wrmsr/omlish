@@ -15,33 +15,80 @@ from omlish import marshal as msh
 ##
 
 
-"""https://swagger.io/specification/#security-requirement-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class SecurityRequirement:
+    """https://swagger.io/specification/#security-requirement-object"""
 
-"""https://swagger.io/specification/#oauth-flow-object"""
 
-"""https://swagger.io/specification/#oauth-flows-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class OauthFlow:
+    """https://swagger.io/specification/#oauth-flow-object"""
 
-"""https://swagger.io/specification/#security-scheme-object"""
 
-"""https://swagger.io/specification/#xml-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class OauthFlows:
+    """https://swagger.io/specification/#oauth-flows-object"""
 
-"""https://swagger.io/specification/#discriminator-object"""
 
-"""https://swagger.io/specification/#reference-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class SecurityScheme:
+    """https://swagger.io/specification/#security-scheme-object"""
 
-"""https://swagger.io/specification/#reference-object"""
 
-"""https://swagger.io/specification/#tag-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Xml:
+    """https://swagger.io/specification/#xml-object"""
 
-"""https://swagger.io/specification/#header-object"""
 
-"""https://swagger.io/specification/#link-object"""
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Discriminator:
+    """https://swagger.io/specification/#discriminator-object"""
 
-"""https://swagger.io/specification/#example-object"""
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Schema:
+    """https://swagger.io/specification/#schema-object"""
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Reference:
+    """https://swagger.io/specification/#reference-object"""
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Tag:
+    """https://swagger.io/specification/#tag-object"""
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Header:
+    """https://swagger.io/specification/#header-object"""
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Link:
+    """https://swagger.io/specification/#link-object"""
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Example:
+    """https://swagger.io/specification/#example-object"""
 
 
 # https://swagger.io/specification/#callback-object
-Callback: ta.TypeAlias = ta.Mapping[str, PathItem | Reference]
+Callback: ta.TypeAlias = ta.Mapping[str, ta.Union['PathItem', Reference]
 
 
 @dc.dataclass(frozen=True)
@@ -51,7 +98,7 @@ class Response:
 
     description: str
     headers: ta.Mapping[str, Header | Reference] | None = None
-    content: ta.Mapping[str, MediaType] | None = None
+    content: ta.Mapping[str, 'MediaType'] | None = None
     links: ta.Mapping[str, Link | Reference] | None = None
 
 
@@ -161,7 +208,7 @@ Paths: ta.TypeAlias = ta.Mapping[str, PathItem]
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-class Component:
+class Components:
     """https://swagger.io/specification/#components-object"""
 
     schemas: ta.Mapping[str, Schema] | None = None
@@ -240,7 +287,7 @@ class Openapi:
     json_schema_dialect: str | None = None
     servers: ta.Sequence[Server] | None = None
     paths: Paths | None = None
-    webhooks: ta.Mapping[string, PathItem | Reference] | None = None
+    webhooks: ta.Mapping[str, PathItem | Reference] | None = None
     components: Components | None = None
     security: ta.Sequence[SecurityRequirement] | None = None
     tags: ta.Sequence[Tag] | None = None
