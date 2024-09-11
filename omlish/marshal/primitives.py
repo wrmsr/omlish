@@ -9,12 +9,17 @@ from .base import Unmarshaler
 from .values import Value
 
 
-PRIMITIVE_TYPES: tuple[type, ...] = (
+NOT_NONE_PRIMITIVE_TYPES: tuple[type, ...] = (
     bool,
     int,
     float,
     str,
     bytes,
+)
+
+
+PRIMITIVE_TYPES: tuple[type, ...] = (
+    *NOT_NONE_PRIMITIVE_TYPES,
     type(None),
 )
 
