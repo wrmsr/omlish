@@ -189,27 +189,73 @@ class ChatCompletionRequest:
 ##
 
 
+@dc.dataclass(frozen=True)
+class TopLogprob:
+    token: str
+    bytes: ta.Sequence[int] | None = None
+    logprob: float
+
+
+@dc.dataclass(frozen=True)
+class TokenLogprob:
+    token: str
+    bytes: ta.Sequence[int] | None= None
+    logprob: float
+    top_logprobs: ta.Sequence[TopLogprob]
+
+
+@dc.dataclass(frozen=True)
 class ChoiceLogprobs:
-    content: Optional[List[ChatCompletionTokenLogprob]] = None
-    refusal: Optional[List[ChatCompletionTokenLogprob]] = None
+    content: ta.Sequence[TokenLogprob] | None = None
+    refusal: ta.Sequence[TokenLogprob] | None = None
 
 
+@dc.dataclass(frozen=True)
+class MessageFunctionCall:
+    arguments: str
+    name: str
+
+
+@dc.dataclass(frozen=True)
+class MessageToolCallFunction:
+    arguments: str
+    name: str
+
+
+@dc.dataclass(frozen=True)
+class MessageToolCall:
+    id: str
+    function: MessageToolCallFunction
+    type: ta.Literal['function']
+
+
+@dc.dataclass(frozen=True)
+class Message:
+    content: str | None = None
+    refusal: str | None = None
+    role: ta.Literal['assistant']
+    function_call: MessageFunctionCall | None = None
+    tool_calls: ta.Sequence[MessageToolCall] | None = None
+
+
+@dc.dataclass(frozen=True)
 class Choice:
-    finish_reason: Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
+    finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call']
     index: int
-    logprobs: Optional[ChoiceLogprobs] = None
-    message: ChatCompletionMessage
+    logprobs: ChoiceLogprobs | None = None
+    message: Message
 
 
+@dc.dataclass(frozen=True)
 class ChatCompletion:
     id: str
-    choices: List[Choice]
+    choices: ta.Sequence[Choice]
     created: int
     model: str
-    object: Literal["chat.completion"]
-    service_tier: Optional[Literal["scale", "default"]] = None
-    system_fingerprint: Optional[str] = None
-    usage: Optional[CompletionUsage] = None
+    object: ta.Literal['chat.completion']
+    service_tier: ta.Literal['scale', 'default'] | None = None
+    system_fingerprint: str | None = None
+    usage: Usage | None = None
 
 
 ##
