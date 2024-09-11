@@ -34,7 +34,7 @@ ipython==8.27.0
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.12.2  # @omdev-venv !13t
+litecli==1.12.3  # @omdev-venv !13t
 mycli==1.27.2  # @omdev-venv !13t
 pgcli==4.1.0  # @omdev-venv !13t
 

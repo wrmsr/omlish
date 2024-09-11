@@ -80,7 +80,11 @@ class Project(ProjectBase):
             'sqlalchemy[asyncio] ~= 2.0',
 
             'pg8000 ~= 1.31',
+            # 'psycopg2 ~= 2.9',
+
             'pymysql ~= 1.1',
+            # 'mysql-connector-python ~= 9.0',
+            # 'mysqlclient ~= 2.2',
 
             'aiomysql ~= 0.2',
             'aiosqlite ~= 0.20',
@@ -110,7 +114,10 @@ class SetuptoolsBase:
     include_package_data = False
 
     find_packages = {
-        'exclude': ['*.tests', '*.tests.*'],
+        'exclude': [
+            '*.tests',
+            '*.tests.*',
+        ],
     }
 
 
