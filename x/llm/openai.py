@@ -149,26 +149,21 @@ class ChatCompletionMessage:
     tool_calls: ta.Sequence[ChatCompletionMessageToolCall] | None = None
 
 
-#
-
-
-@dc.dataclass(frozen=True)
-class ChoiceLogprobs:
-    content: ta.Sequence[ChatCompletionTokenLogprob] | None = None
-    refusal: ta.Sequence[ChatCompletionTokenLogprob] | None = None
-
-
-@dc.dataclass(frozen=True)
-class Choice:
-    finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call']
-    index: int
-    message: ChatCompletionMessage
-    logprobs: ChoiceLogprobs | None = None
-
-
 @dc.dataclass(frozen=True)
 class ChatCompletion:
     id: str
+
+    @dc.dataclass(frozen=True)
+    class ChoiceLogprobs:
+        content: ta.Sequence[ChatCompletionTokenLogprob] | None = None
+        refusal: ta.Sequence[ChatCompletionTokenLogprob] | None = None
+
+    @dc.dataclass(frozen=True)
+    class Choice:
+        finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call']
+        index: int
+        message: ChatCompletionMessage
+        logprobs: ta.Optional['ChatCompletion.ChoiceLogprobs'] = None
 
     choices: ta.Sequence[Choice]
 
@@ -185,6 +180,9 @@ class ChatCompletion:
     usage: CompletionUsage | None = None
 
 
+#
+
+
 class ChatCompletionContentPartTextParam(ta.TypedDict, total=False):
     text: ta.Required[str]
     type: ta.Required[ta.Literal['text']]
@@ -196,13 +194,13 @@ class ChatCompletionSystemMessageParam(ta.TypedDict, total=False):
     name: str
 
 
-class ImageURL(ta.TypedDict, total=False):
+class ChatCompletionContentPartImageParamImageURL(ta.TypedDict, total=False):
     url: ta.Required[str]
     detail: ta.Literal['auto', 'low', 'high']
 
 
 class ChatCompletionContentPartImageParam(ta.TypedDict, total=False):
-    image_url: ta.Required[ImageURL]
+    image_url: ta.Required[ChatCompletionContentPartImageParamImageURL]
     type: ta.Required[ta.Literal['image_url']]
 
 
