@@ -302,7 +302,7 @@ class CmakeProjectGen:
         clg.run()
 
         with open(os.path.join(self.cmake_dir(), 'CMakeLists.txt'), 'w') as f:
-            f.write(out.getvalue())
+            f.write(out.getvalue().strip() + '\n')
 
 
 ##

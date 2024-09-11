@@ -4,10 +4,12 @@
 ### nn
 
 numpy==1.26.4, <2.0
-# numpy==2.1.0
+# numpy==2.1.1
 # FIXME:
-# numba 0.60.0 depends on numpy<2.1 and >=1.22
-# librosa==0.10.2.post1 depends on numba>=0.51.0
+# langchain garbage
+# librosa
+# numba
+# thinc
 ##
 
 matplotlib==3.9.2
@@ -85,11 +87,11 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.1.3
+simsimd==5.1.4
 
-spacy==3.7.6
+spacy==3.8.0
 
-regex==2024.7.24
+regex==2024.9.11
 
 ##
 
@@ -155,7 +157,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.16
+boto3>=1.35.17
 
 google-cloud-compute==1.19.2
 
