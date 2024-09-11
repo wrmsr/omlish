@@ -12,9 +12,26 @@ from .types import Query
 ##
 
 
+class ContentPartText(ta.TypedDict, total=False):
+    text: ta.Required[str]
+    type: ta.Required[ta.Literal['text']]
+
+
+class SystemMessage(ta.TypedDict, total=False):
+    content: ta.Required[str | ta.Iterable[ContentPartText]]
+    role: ta.Required[ta.Literal['system']]
+    name: str
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
-    messages: ta.Iterable[ChatCompletionMessageParam]
+    messages: ta.Iterable[ta.Union[
+        SystemMessage,
+        UserMessage,
+        AssistantMessage,
+        ToolMessage,
+        FunctionMessage,
+    ]]
     model: str
     frequency_penalty: float | None | NotGiven = NOT_GIVEN
     function_call: CompletionCreateParamsFunctionCall | NotGiven = NOT_GIVEN
