@@ -46,11 +46,11 @@ class FunctionCallParam(ta.TypedDict, total=False):
 
 class AssistantMessageParam(ta.TypedDict, total=False):
     role: ta.Required[ta.Literal['assistant']]
-    content: str | ta.Iterable[ContentArrayOfContentPart] | None
+    content: str | ta.Iterable[ContentPartTextParam | ContentPartRefusalParam] | None
     function_call: FunctionCallParam | None
     name: str
     refusal: str | None
-    tool_calls: ta.Iterable[ChatCompletionMessageToolCallParam]
+    tool_calls: ta.Iterable[MessageToolCallParam]
 
 
 @dc.dataclass(frozen=True)
