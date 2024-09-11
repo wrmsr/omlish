@@ -41,3 +41,8 @@ class ChatCompletionRequest:
     extra_query: Query | None = None
     extra_body: Body | None = None
     timeout: float | None | NotGiven = NOT_GIVEN
+
+
+def _main() -> None:
+    import openai
+    openai.chat.completions.create  # noqa
