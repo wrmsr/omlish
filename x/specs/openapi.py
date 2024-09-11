@@ -2,13 +2,13 @@
 https://swagger.io/specification/
 
 """
-import dataclasses as dc
 import os.path
 import typing as ta
 
 import yaml
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import matchfns as mfs
@@ -261,7 +261,7 @@ class ExternalDocumentation:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class Operation:
     """https://swagger.io/specification/#operation-object"""
 
@@ -277,6 +277,13 @@ class Operation:
     deprecated: bool | None = None
     security: ta.Sequence[SecurityRequirement] | None = None
     servers: ta.Sequence['Server'] | None = None
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+    @dc.init
+    def _check_x(self) -> None:
+        for k in (self.x or {}).keys():
+            check.arg(k.startswith('x-'))
 
 
 @dc.dataclass(frozen=True)
