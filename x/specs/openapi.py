@@ -13,6 +13,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import matchfns as mfs
 from omlish import reflect as rfl
+from omlish.formats import json
 
 
 ##
@@ -96,12 +97,17 @@ class Schema:
     type: str | None = None
     format: str | None = None
     one_of: ta.Any = None
+    all_of: ta.Any = None
     default: ta.Any = None
     enum: ta.Any = None
     items: ta.Any = None
     required: ta.Any = None
     properties: ta.Any = None
     description: str | None = None
+    title: str | None = None
+    deprecated: bool | None = None
+    nullable: bool | None = None
+    additional_properties: ta.Any = None
 
     #
 
@@ -410,7 +416,7 @@ class Info:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class Openapi:
     """https://swagger.io/specification/#openapi-object"""
 
@@ -424,6 +430,15 @@ class Openapi:
     security: ta.Sequence[SecurityRequirement] | None = None
     tags: ta.Sequence[Tag] | None = None
     external_docs: ExternalDocumentation | None = None
+
+    #
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+    @dc.init
+    def _check_x(self) -> None:
+        for k in (self.x or {}).keys():
+            check.arg(k.startswith('x-'))
 
 
 #
@@ -491,7 +506,8 @@ def _main():
         doc = yaml.safe_load(f)
 
     api = msh.unmarshal(doc, Openapi)
-    print(api)
+
+    print(json.dumps_pretty(msh.marshal(api)))
 
 
 if __name__ == '__main__':
