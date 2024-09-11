@@ -1,0 +1,43 @@
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from .types import Body
+from .types import Headers
+from .types import NOT_GIVEN
+from .types import NotGiven
+from .types import Query
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ChatCompletionRequest:
+    messages: ta.Iterable[ChatCompletionMessageParam]
+    model: str
+    frequency_penalty: float | None | NotGiven = NOT_GIVEN
+    function_call: CompletionCreateParamsFunctionCall | NotGiven = NOT_GIVEN
+    functions: ta.Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN
+    logit_bias: ta.Mapping[str, int] | None | NotGiven = NOT_GIVEN
+    logprobs: bool | None | NotGiven = NOT_GIVEN
+    max_tokens: int | None | NotGiven = NOT_GIVEN
+    n: int | None | NotGiven = NOT_GIVEN
+    parallel_tool_calls: bool | NotGiven = NOT_GIVEN
+    presence_penalty: float | None | NotGiven = NOT_GIVEN
+    response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN
+    seed: int | None | NotGiven = NOT_GIVEN
+    service_tier: ta.Literal['auto', 'default'] | None | NotGiven = NOT_GIVEN
+    stop: str | None | ta.Sequence[str] | NotGiven = NOT_GIVEN
+    stream: ta.Literal[False] | None | NotGiven = NOT_GIVEN
+    stream_options: ChatCompletionStreamOptionsParam | None | NotGiven = NOT_GIVEN
+    temperature: float | None | NotGiven = NOT_GIVEN
+    tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN
+    tools: ta.Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN
+    top_logprobs: int | None | NotGiven = NOT_GIVEN
+    top_p: float | None | NotGiven = NOT_GIVEN
+    user: str | NotGiven = NOT_GIVEN
+    extra_headers: Headers | None = None
+    extra_query: Query | None = None
+    extra_body: Body | None = None
+    timeout: float | None | NotGiven = NOT_GIVEN

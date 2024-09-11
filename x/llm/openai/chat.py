@@ -230,14 +230,3 @@ class ChatCompletionRequest:
     extra_query: Query | None = None
     extra_body: Body | None = None
     timeout: float | None | NotGiven = NOT_GIVEN
-
-
-##
-
-
-def _main() -> None:
-    pass
-
-
-if __name__ == '__main__':
-    _main()

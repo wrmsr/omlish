@@ -18,7 +18,7 @@ class Logprobs:
 
 
 @dc.dataclass(frozen=True)
-class CompletionChoice:
+class Choice:
     finish_reason: ta.Literal['stop', 'length', 'content_filter']
     index: int
     text: str
@@ -26,7 +26,7 @@ class CompletionChoice:
 
 
 @dc.dataclass(frozen=True)
-class CompletionUsage:
+class Usage:
     completion_tokens: int
     prompt_tokens: int
     total_tokens: int
@@ -35,12 +35,12 @@ class CompletionUsage:
 @dc.dataclass(frozen=True)
 class Completion:
     id: str
-    choices: ta.Sequence[CompletionChoice]
+    choices: ta.Sequence[Choice]
     created: int
     model: str
     object: ta.Literal['text_completion']
     system_fingerprint: str | None = None
-    usage: CompletionUsage | None = None
+    usage: Usage | None = None
 
 
 class StreamOptionsParam(ta.TypedDict, total=False):
