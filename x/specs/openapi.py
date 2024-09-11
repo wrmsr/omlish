@@ -411,7 +411,7 @@ class _ReferenceUnionMarshaler(msh.Marshaler):
 
 
 class _ReferenceUnionMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda ctx, rty: _reference_union_arg(rty) is not None)
+    @mfs.simple(lambda _, ctx, rty: _reference_union_arg(rty) is not None)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return _ReferenceUnionMarshaler(ctx.make(check.not_none(_reference_union_arg(rty))))
 
@@ -425,7 +425,7 @@ class _ReferenceUnionUnmarshaler(msh.Unmarshaler):
 
 
 class _ReferenceUnionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda ctx, rty: _reference_union_arg(rty) is not None)
+    @mfs.simple(lambda _, ctx, rty: _reference_union_arg(rty) is not None)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return _ReferenceUnionUnmarshaler(ctx.make(check.not_none(_reference_union_arg(rty))))
 
