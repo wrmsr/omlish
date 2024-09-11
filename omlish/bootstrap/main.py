@@ -156,8 +156,9 @@ def _main() -> int:
     with bootstrap(*cfgs):
         tgt = args.target
 
+        sys.argv = [tgt, *(args.args or ())]
+
         if args.module:
-            sys.argv = [tgt, *(args.args or ())]
             runpy._run_module_as_main(tgt)  # type: ignore  # noqa
 
         else:

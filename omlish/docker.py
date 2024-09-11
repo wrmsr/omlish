@@ -174,6 +174,9 @@ def timebomb_payload(delay_s: float, name: str = 'omlish-docker-timebomb') -> st
 ##
 
 
+DOCKER_FOR_MAC_HOSTNAME = 'docker.for.mac.localhost'
+
+
 _LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/docker/')
 
 
