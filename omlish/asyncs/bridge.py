@@ -8,6 +8,9 @@ KEEP THE SPACE SHUTTLE FLYING.
 
 TODO:
  - reuse greenlet if nested somehow?
+
+See:
+ - https://greenback.readthedocs.io/en/latest/
 """
 import itertools
 import sys

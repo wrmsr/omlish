@@ -3,6 +3,7 @@ TODO:
  - def maybe(v: lang.Maybe[T])
 """
 import collections
+import threading
 import typing as ta
 
 
@@ -19,6 +20,27 @@ _callable = callable
 
 
 ##
+
+
+OnRaiseFn: ta.TypeAlias = ta.Callable[[Exception], None]
+
+_ON_RAISE: ta.Sequence[OnRaiseFn] = []
+_ON_RAISE_LOCK = threading.Lock()
+
+
+def register_on_raise(fn: OnRaiseFn) -> None:
+    global _ON_RAISE
+    with _ON_RAISE_LOCK:
+        _ON_RAISE = [*_ON_RAISE, fn]
+
+
+def unregister_on_raise(fn: OnRaiseFn) -> None:
+    global _ON_RAISE
+    with _ON_RAISE_LOCK:
+        _ON_RAISE = [e for e in _ON_RAISE if e != fn]
+
+
+#
 
 
 def _default_exception_factory(exc_cls: type[Exception], *args, **kwargs) -> Exception:
@@ -42,6 +64,8 @@ def _raise(
     if message is None:
         message = default_message
     exc = _EXCEPTION_FACTORY(exception_type, message, *args, **kwargs)
+    for fn in _ON_RAISE:
+        fn(exc)
     raise exc
 
 
