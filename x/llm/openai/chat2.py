@@ -23,6 +23,16 @@ class SystemMessage(ta.TypedDict, total=False):
     name: str
 
 
+class ImageUrl(ta.TypedDict, total=False):
+    url: ta.Required[str]
+    detail: ta.Literal['auto', 'low', 'high']
+
+
+class ContentPartImage(ta.TypedDict, total=False):
+    image_url: ta.Required[ImageUrl]
+    type: ta.Required[ta.Literal["image_url"]]
+
+
 class UserMessage(ta.TypedDict, total=False):
     content: ta.Required[str | ta.Iterable[ContentPartText | ContentPartImage]]
     role: ta.Required[ta.Literal['user']]
