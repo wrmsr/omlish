@@ -44,9 +44,35 @@ def unregister_on_raise(fn: OnRaiseFn) -> None:
 #
 
 
-# def enable_args_rendering() -> bool:
-#     with _CONFIG_LOCK:
-#         raise NotImplementedError
+_render_args: ta.Callable[..., str | None] | None = None
+
+
+def enable_args_rendering() -> bool:
+    global _render_args
+    if _render_args is not None:
+        return True
+
+    with _CONFIG_LOCK:
+        if _render_args is not None:
+            return True  # type: ignore
+
+        try:
+            from .diag.asts import ArgsRenderer
+
+            ArgsRenderer.smoketest()
+
+        except Exception:  # noqa
+            return False
+
+        def _real_render_args(fmt: str, *args: ta.Any) -> str | None:
+            ra = ArgsRenderer(back=3).render_args(*args)
+            if ra is None:
+                return None
+
+            return fmt % tuple(str(a) for a in ra)
+
+        _render_args = _real_render_args
+        return True
 
 
 #
@@ -81,6 +107,11 @@ def _raise(
 
     if message is None:
         message = default_message
+
+    if render_fmt is not None and _render_args is not None:
+        rendered_args = _render_args(render_fmt, *ak.args)
+        if rendered_args is not None:
+            message = f'{message} : {rendered_args}'
 
     exc = _EXCEPTION_FACTORY(
         exception_type,
@@ -236,24 +267,21 @@ def not_none(v: T | None, msg: Message = None) -> T:
 ##
 
 
-def equal(v: T, *os: ta.Any, msg: Message = None) -> T:
-    for o in os:
-        if o != v:
-            _raise(ValueError, 'Must be equal', msg, _Args(v, os))
+def equal(v: T, o: ta.Any, msg: Message = None) -> T:
+    if o != v:
+        _raise(ValueError, 'Must be equal', msg, _Args(v, o), render_fmt='%s != %s')
     return v
 
 
-def is_(v: T, *os: ta.Any, msg: Message = None) -> T:
-    for o in os:
-        if o is not v:
-            _raise(ValueError, 'Must be the same', msg, _Args(v, os))
+def is_(v: T, o: ta.Any, msg: Message = None) -> T:
+    if o is not v:
+        _raise(ValueError, 'Must be the same', msg, _Args(v, o), render_fmt='%s is not %s')
     return v
 
 
-def is_not(v: T, *os: ta.Any, msg: Message = None) -> T:
-    for o in os:
-        if o is v:
-            _raise(ValueError, 'Must not be the same', msg, _Args(v, os))
+def is_not(v: T, o: ta.Any, msg: Message = None) -> T:
+    if o is v:
+        _raise(ValueError, 'Must not be the same', msg, _Args(v, o), render_fmt='%s is %s')
     return v
 
 

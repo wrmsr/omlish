@@ -65,6 +65,11 @@ from .polymorphism import (  # noqa
     polymorphism_from_subclasses,
 )
 
+from .primitives import (  # noqa
+    NOT_NONE_PRIMITIVE_TYPES,
+    PRIMITIVE_TYPES,
+)
+
 from .registries import (  # noqa
     Registry,
 )
