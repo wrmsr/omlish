@@ -23,6 +23,12 @@ class SystemMessage(ta.TypedDict, total=False):
     name: str
 
 
+class UserMessage(ta.TypedDict, total=False):
+    content: ta.Required[str | ta.Iterable[ContentPart]]
+    role: ta.Required[ta.Literal['user']]
+    name: str
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
