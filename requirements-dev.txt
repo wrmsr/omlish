@@ -38,7 +38,7 @@ litecli==1.12.3  # @omdev-venv !13t
 mycli==1.27.2  # @omdev-venv !13t
 pgcli==4.1.0  # @omdev-venv !13t
 
-pydevd_pycharm==241.18034.82
+# pydevd_pycharm==241.18034.82
 
 
 ##
