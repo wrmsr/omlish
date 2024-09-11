@@ -2,23 +2,24 @@ import torch
 
 
 class Batch:
-    """Defines a batch of examples along with its Fields.
+    """
+    Defines a batch of examples along with its Fields.
 
     Attributes:
         batch_size: Number of examples in the batch.
-        dataset: A reference to the dataset object the examples come from
-            (which itself contains the dataset's Field objects).
-        train: Deprecated: this attribute is left for backwards compatibility,
-            however it is UNUSED as of the merger with pytorch 0.4.
+        dataset: A reference to the dataset object the examples come from (which itself contains the dataset's Field
+            objects).
+        train: Deprecated: this attribute is left for backwards compatibility, however it is UNUSED as of the merger
+            with pytorch 0.4.
         input_fields: The names of the fields that are used as input for the model
-        target_fields: The names of the fields that are used as targets during
-                       model training
+        target_fields: The names of the fields that are used as targets during model training
 
     Also stores the Variable for each column in the batch as an attribute.
     """
 
     def __init__(self, data=None, dataset=None, device=None):
         """Create a Batch from a list of examples."""
+
         if data is not None:
             self.batch_size = len(data)
             self.dataset = dataset
@@ -34,6 +35,7 @@ class Batch:
     @classmethod
     def fromvars(cls, dataset, batch_size, train=None, **kwargs):
         """Create a Batch directly from a number of Variables."""
+
         batch = cls()
         batch.batch_size = batch_size
         batch.dataset = dataset
@@ -50,8 +52,11 @@ class Batch:
             return 'Empty {} instance'.format(torch.typename(self))
 
         fields_to_index = filter(lambda field: field is not None, self.fields)
-        var_strs = '\n'.join(['\t[.' + name + ']' + ":" + _short_str(getattr(self, name))
-                              for name in fields_to_index if hasattr(self, name)])
+        var_strs = '\n'.join([
+            '\t[.' + name + ']' + ":" + _short_str(getattr(self, name))
+            for name in fields_to_index
+            if hasattr(self, name)
+        ])
 
         data_str = (
             ' from {}'.format(self.dataset.name.upper())
