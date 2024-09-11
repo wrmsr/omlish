@@ -268,6 +268,9 @@ class ChatCompletion:
 ##
 
 
+##
+
+
 def _main() -> None:
     import openai
     openai.chat.completions.create  # noqa

@@ -9,9 +9,6 @@ from .types import NotGiven
 from .types import Query
 
 
-T = ta.TypeVar('T')
-
-
 ##
 
 
@@ -80,24 +77,6 @@ class Completion:
     object: ta.Literal['text_completion']
     system_fingerprint: str | None = None
     usage: Usage | None = None
-
-
-##
-
-
-@ta.runtime_checkable
-class Stream(ta.Protocol[T]):
-    def __next__(self) -> T:
-        ...
-
-    def __iter__(self) -> ta.Iterator[T]:
-        ...
-
-    def __enter__(self) -> ta.Self:
-        ...
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        ...
 
 
 ##
