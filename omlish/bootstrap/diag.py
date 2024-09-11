@@ -5,6 +5,7 @@ import signal
 import sys
 import typing as ta
 
+from .. import check
 from .. import lang
 from .base import Bootstrap
 from .base import ContextBootstrap
@@ -26,7 +27,31 @@ else:
 ##
 
 
-class ProfilingBootstrap(ContextBootstrap['ProfilingBootstrap.Config']):
+class CheckBootstrap(ContextBootstrap['CheckBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        breakpoint: bool = False
+
+    @staticmethod
+    def _breakpoint(exc: Exception) -> None:  # noqa
+        breakpoint()  # noqa
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.breakpoint:
+            return
+
+        check.register_on_raise(CheckBootstrap._breakpoint)
+        try:
+            yield
+        finally:
+            check.unregister_on_raise(CheckBootstrap._breakpoint)
+
+
+##
+
+
+class CprofileBootstrap(ContextBootstrap['CprofileBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
         enable: bool = False

@@ -2,6 +2,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish import lang
+
 
 BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
 
@@ -9,7 +11,7 @@ BootstrapConfigT = ta.TypeVar('BootstrapConfigT', bound='Bootstrap.Config')
 ##
 
 
-class Bootstrap(abc.ABC, ta.Generic[BootstrapConfigT]):
+class Bootstrap(abc.ABC, lang.PackageSealed, ta.Generic[BootstrapConfigT]):
     @dc.dataclass(frozen=True)
     class Config(abc.ABC):  # noqa
         pass
