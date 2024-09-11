@@ -12,38 +12,52 @@ from .types import Query
 ##
 
 
-class ContentPartText(ta.TypedDict, total=False):
+class ContentPartTextParam(ta.TypedDict, total=False):
     text: ta.Required[str]
     type: ta.Required[ta.Literal['text']]
 
 
-class SystemMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | ta.Iterable[ContentPartText]]
+class SystemMessageParam(ta.TypedDict, total=False):
+    content: ta.Required[str | ta.Iterable[ContentPartTextParam]]
     role: ta.Required[ta.Literal['system']]
     name: str
 
 
-class ImageUrl(ta.TypedDict, total=False):
+class ImageUrlParam(ta.TypedDict, total=False):
     url: ta.Required[str]
     detail: ta.Literal['auto', 'low', 'high']
 
 
-class ContentPartImage(ta.TypedDict, total=False):
-    image_url: ta.Required[ImageUrl]
+class ContentPartImageParam(ta.TypedDict, total=False):
+    image_url: ta.Required[ImageUrlParam]
     type: ta.Required[ta.Literal["image_url"]]
 
 
-class UserMessage(ta.TypedDict, total=False):
-    content: ta.Required[str | ta.Iterable[ContentPartText | ContentPartImage]]
+class UserMessageParam(ta.TypedDict, total=False):
+    content: ta.Required[str | ta.Iterable[ContentPartTextParam | ContentPartImageParam]]
     role: ta.Required[ta.Literal['user']]
     name: str
+
+
+class FunctionCallParam(ta.TypedDict, total=False):
+    arguments: ta.Required[str]
+    name: ta.Required[str]
+
+
+class AssistantMessageParam(ta.TypedDict, total=False):
+    role: ta.Required[ta.Literal['assistant']]
+    content: str | ta.Iterable[ContentArrayOfContentPart] | None
+    function_call: FunctionCallParam | None
+    name: str
+    refusal: str | None
+    tool_calls: ta.Iterable[ChatCompletionMessageToolCallParam]
 
 
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
-        SystemMessage,
-        UserMessage,
+        SystemMessageParam,
+        UserMessageParam,
         AssistantMessage,
         ToolMessage,
         FunctionMessage,
