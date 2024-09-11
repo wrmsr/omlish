@@ -3,6 +3,7 @@ https://swagger.io/specification/
 """
 import dataclasses as dc
 import os.path
+import typing as ta
 
 import yaml
 
@@ -14,10 +15,30 @@ from omlish import marshal as msh
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class ServerVariable:
+    """https://swagger.io/specification/#server-variable-object"""
+
+    default: str
+    enum: ta.Sequence[str] | None = None
+    description: str | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Server:
+    """https://swagger.io/specification/#server-object"""
+
+    url: str
+    description: str | None = None
+    variables: ta.Mapping[str, ServerVariable] | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class License:
     """https://swagger.io/specification/#license-object"""
 
-    name: str | None = None
+    name: str
     identifier: str | None = None
     url: str | None = None
 
