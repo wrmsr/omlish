@@ -1,5 +1,6 @@
 """
 https://swagger.io/specification/
+
 """
 import dataclasses as dc
 import os.path
@@ -11,6 +12,31 @@ from omlish import marshal as msh
 
 
 ##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['ref'], name='$ref')
+class PathItem:
+    """https://swagger.io/specification/#path-item-object"""
+
+    ref: str | None = None
+    summary: str | None = None
+    description: str | None = None
+    get: Operation | None = None
+    put: Operation | None = None
+    post: Operation | None = None
+    delete: Operation | None = None
+    options: Operation | None = None
+    head: Operation | None = None
+    patch: Operation | None = None
+    trace: Operation | None = None
+    servers: ta.Sequence[Server] | None = None
+    parameters: ta.Sequence[Parameter | Reference] | None = None
+
+
+# https://swagger.io/specification/#paths-object
+Paths: ta.TypeAlias = ta.Mapping[str, PathItem]
 
 
 @dc.dataclass(frozen=True)
