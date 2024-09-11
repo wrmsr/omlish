@@ -1,6 +1,7 @@
 """
 https://swagger.io/specification/
 
+
 """
 import dataclasses as dc
 import os.path
@@ -12,6 +13,25 @@ from omlish import marshal as msh
 
 
 ##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Operation:
+    """https://swagger.io/specification/#operation-object"""
+
+    tags: ta.Sequence[str] | None = None
+    summary: str | None = None
+    description: str | None = None
+    externalDocs: ExternalDocumentation | None = None
+    operationId: str | None = None
+    parameters: ta.Sequence[Parameter | Reference] | None = None
+    requestBody: RequestBody | Reference | None = None
+    responses: Responses | None = None
+    callbacks: ta.Mapping[str, Callback | Reference] | None = None
+    deprecated: bool | None = None
+    security: ta.Sequence[SecurityRequirement] | None = None
+    servers: ta.Sequence['Server'] | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -31,7 +51,7 @@ class PathItem:
     head: Operation | None = None
     patch: Operation | None = None
     trace: Operation | None = None
-    servers: ta.Sequence[Server] | None = None
+    servers: ta.Sequence['Server'] | None = None
     parameters: ta.Sequence[Parameter | Reference] | None = None
 
 
