@@ -21,6 +21,7 @@ class ArgsRenderer:
      - kwargs
      - recursion
      - whatever pytest looks like
+     - make sure not leaking sensitive data
     """
 
     def __init__(
