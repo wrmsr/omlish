@@ -14,10 +14,8 @@ from omlish import marshal as msh
 ##
 
 
-@dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-class SecurityRequirement:
-    """https://swagger.io/specification/#security-requirement-object"""
+# https://swagger.io/specification/#security-requirement-object
+SecurityRequirement: ta.TypeAlias = ta.Mapping[str, ta.Sequence[str]]
 
 
 @dc.dataclass(frozen=True)
@@ -25,17 +23,37 @@ class SecurityRequirement:
 class OauthFlow:
     """https://swagger.io/specification/#oauth-flow-object"""
 
+    authorization_url: str
+    token_url: str
+    scopes: ta.Mapping[str, str]
+    refresh_ur: str | None = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class OauthFlows:
     """https://swagger.io/specification/#oauth-flows-object"""
 
+    implicit: OauthFlow | None = None
+    password: OauthFlow | None = None
+    client_credentials: OauthFlow | None = None
+    authorization_code: OauthFlow | None = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['in_'], name='in')
 class SecurityScheme:
     """https://swagger.io/specification/#security-scheme-object"""
+
+    type: str
+    name: str
+    in_: str
+    scheme: str
+    flows: OauthFlows
+    open_id_connect_url: str
+    description: str | None = None
+    bearer_format: str | None = None
 
 
 @dc.dataclass(frozen=True)
