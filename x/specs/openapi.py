@@ -43,11 +43,20 @@ class SecurityScheme:
 class Xml:
     """https://swagger.io/specification/#xml-object"""
 
+    name: str | None = None
+    namespace: str | None = None
+    prefix: str | None = None
+    attribute: bool | None = None
+    wrapped: bool | None = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Discriminator:
     """https://swagger.io/specification/#discriminator-object"""
+
+    property_name: str
+    mapping: ta.Mapping[str, str] | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -55,11 +64,21 @@ class Discriminator:
 class Schema:
     """https://swagger.io/specification/#schema-object"""
 
+    discriminator: Discriminator | None = None
+    xml: Xml | None = None
+    external_docs: ta.Optional['ExternalDocumentation'] = None
+    example: ta.Any | None = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['ref'], name='$ref')
 class Reference:
     """https://swagger.io/specification/#reference-object"""
+
+    ref: str
+    summary: str | None = None
+    description: str | None = None
 
 
 @dc.dataclass(frozen=True)
