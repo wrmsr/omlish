@@ -49,14 +49,14 @@ class ContentPartRefusalParam(ta.TypedDict, total=False):
     type: ta.Required[ta.Literal['refusal']]
 
 
-class FunctionParam(ta.TypedDict, total=False):
+class MessageToolCallParamFunction(ta.TypedDict, total=False):
     arguments: ta.Required[str]
     name: ta.Required[str]
 
 
 class MessageToolCallParam(ta.TypedDict, total=False):
     id: ta.Required[str]
-    function: ta.Required[FunctionParam]
+    function: ta.Required[MessageToolCallParamFunction]
     type: ta.Required[ta.Literal['function']]
 
 
@@ -81,6 +81,36 @@ class FunctionMessageParam(ta.TypedDict, total=False):
     role: ta.Required[ta.Literal['function']]
 
 
+class FunctionCallOptionParam(ta.TypedDict, total=False):
+    name: ta.Required[str]
+
+
+class FunctionParam(ta.TypedDict, total=False):
+    name: ta.Required[str]
+    description: str
+    parameters: ta.Mapping[str, object]
+
+
+class ResponseFormatText(ta.TypedDict, total=False):
+    type: ta.Required[ta.Literal['text']]
+
+
+class ResponseFormatJsonObject(ta.TypedDict, total=False):
+    type: ta.Required[ta.Literal['json_object']]
+
+
+class JsonSchema(ta.TypedDict, total=False):
+    name: ta.Required[str]
+    description: str
+    schema: ta.Mapping[str, object]
+    strict: bool | None
+
+
+class ResponseFormatJsonSchema(ta.TypedDict, total=False):
+    json_schema: ta.Required[JsonSchema]
+    type: ta.Required[ta.Literal['json_schema']]
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
@@ -92,15 +122,15 @@ class ChatCompletionRequest:
     ]]
     model: str
     frequency_penalty: float | None | NotGiven = NOT_GIVEN
-    function_call: CompletionCreateParamsFunctionCall | NotGiven = NOT_GIVEN
-    functions: ta.Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN
+    function_call: ta.Literal['none', 'auto'] | FunctionCallOptionParam | NotGiven = NOT_GIVEN
+    functions: ta.Iterable[FunctionParam] | NotGiven = NOT_GIVEN
     logit_bias: ta.Mapping[str, int] | None | NotGiven = NOT_GIVEN
     logprobs: bool | None | NotGiven = NOT_GIVEN
     max_tokens: int | None | NotGiven = NOT_GIVEN
     n: int | None | NotGiven = NOT_GIVEN
     parallel_tool_calls: bool | NotGiven = NOT_GIVEN
     presence_penalty: float | None | NotGiven = NOT_GIVEN
-    response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN
+    response_format: ResponseFormatText | ResponseFormatJsonObject | ResponseFormatJsonSchema | NotGiven = NOT_GIVEN
     seed: int | None | NotGiven = NOT_GIVEN
     service_tier: ta.Literal['auto', 'default'] | None | NotGiven = NOT_GIVEN
     stop: str | None | ta.Sequence[str] | NotGiven = NOT_GIVEN
