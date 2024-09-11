@@ -215,6 +215,17 @@ def empty(v: SizedT, msg: Message = None) -> SizedT:
     return v
 
 
+def iterempty(v: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
+    it = iter(v)
+    try:
+        next(it)
+    except StopIteration:
+        pass
+    else:
+        _raise(ValueError, 'Must be empty', msg, _Args(v))
+    return v
+
+
 def not_empty(v: SizedT, msg: Message = None) -> SizedT:
     if len(v) == 0:
         _raise(ValueError, 'Must not be empty', msg, _Args(v))

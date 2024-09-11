@@ -10,16 +10,14 @@ import typing as ta
 
 from omlish import cached
 from omlish import lang
+from omlish.genmachine import GenMachine
+from omlish.genmachine import IllegalStateError
 
 
 ##
 
 
 class Event(abc.ABC):
-    pass
-
-
-class IllegalStateException(Exception):
     pass
 
 
@@ -49,7 +47,7 @@ class LineReader:
                 out.append(RecvdLine(self._buf[:i+1].decode()))
                 self._buf = self._buf[i+1:]
             return out
-        raise IllegalStateException
+        raise IllegalStateError
 
 
 ##
@@ -99,7 +97,7 @@ class AckedEchoProtocol0(AckedEchoProtocol):
         if self._state == 2:
             if isinstance(e, RecvdLine):
                 return [SendLine('echo ' + e.line)]
-        raise IllegalStateException
+        raise IllegalStateError
 
 
 #
@@ -118,19 +116,19 @@ class AckedEchoProtocol1(AckedEchoProtocol):
             if e.line == self.ACK0:
                 self._accept = self._accept_1
                 return []
-        raise IllegalStateException
+        raise IllegalStateError
 
     def _accept_1(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdLine):
             if e.line == self.ACK1:
                 self._accept = self._accept_2
                 return []
-        raise IllegalStateException
+        raise IllegalStateError
 
     def _accept_2(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdLine):
             return [SendLine('echo ' + e.line)]
-        raise IllegalStateException
+        raise IllegalStateError
 
 
 #
@@ -153,18 +151,18 @@ class AckedEchoProtocol2(AckedEchoProtocol):
         if isinstance(e, RecvdLine):
             if e.line == self.ACK0:
                 return (self._accept_1, [])
-        raise IllegalStateException
+        raise IllegalStateError
 
     def _accept_1(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
         if isinstance(e, RecvdLine):
             if e.line == self.ACK1:
                 return (self._accept_2, [])
-        raise IllegalStateException
+        raise IllegalStateError
 
     def _accept_2(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
         if isinstance(e, RecvdLine):
             return (self._accept_2, [SendLine('echo ' + e.line)])
-        raise IllegalStateException
+        raise IllegalStateError
 
 
 #
@@ -175,7 +173,7 @@ class AckedEchoProtocol3(AckedEchoProtocol):
         super().__init__()
         self._gen = self._accept()
         if (e := next(self._gen)):  # noqa
-            raise IllegalStateException
+            raise IllegalStateError
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._gen.send(e)
@@ -186,14 +184,14 @@ class AckedEchoProtocol3(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield out
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
 
         while True:
             e = yield out
             if isinstance(e, RecvdLine):
                 out = [SendLine('echo ' + e.line)]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 #
@@ -206,7 +204,7 @@ class AckedEchoProtocol4(AckedEchoProtocol):
         super().__init__()
         self._gen = self._accept()
         if (e := next(self._gen)):  # noqa
-            raise IllegalStateException
+            raise IllegalStateError
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         while (o := self._gen.send(e)) is not None:
@@ -216,14 +214,14 @@ class AckedEchoProtocol4(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
 
         while True:
             e = yield
             if isinstance(e, RecvdLine):
                 yield [SendLine('echo ' + e.line)]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 #
@@ -239,26 +237,26 @@ class AckedEchoProtocol5(AckedEchoProtocol):
         super().__init__()
         self._gen: EventGenerator | None = self._accept_0()
         if (n := next(self._gen)) is not None:  # noqa
-            raise IllegalStateException
+            raise IllegalStateError
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         if self._gen is None:
-            raise IllegalStateException
+            raise IllegalStateError
         try:
             while (o := self._gen.send(e)) is not None:
                 yield from o
         except StopIteration as s:
             if s.value is None:
-                raise IllegalStateException
+                raise IllegalStateError
             self._gen = s.value
             if (n := next(self._gen)) is not None:  # noqa
-                raise IllegalStateException
+                raise IllegalStateError
 
     def _accept_0(self) -> EventGenerator:
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
         return self._accept_1()
 
     def _accept_1(self) -> EventGenerator:
@@ -267,57 +265,16 @@ class AckedEchoProtocol5(AckedEchoProtocol):
             if isinstance(e, RecvdLine):
                 yield [SendLine('echo ' + e.line)]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 ##
 
 
-I = ta.TypeVar('I')
-O = ta.TypeVar('O')
-
-# MachineGen: ta.TypeAlias = ta.Generator[ta.Iterable[O] | None, I, ta.Optional[MachineGen[I, O]]]
-MachineGen = ta.Generator  # ta.TypeAlias
-
-
-class Machine(ta.Generic[I, O]):
-    def __init__(self, initial: MachineGen) -> None:
-        super().__init__()
-        self._advance(initial)
-
-    @property
-    def state(self) -> str:
-        return self._gen.gi_code.co_qualname
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{hex(id(self))[2:]}<{self.state}>'
-
-    _gen: MachineGen
-
-    def _advance(self, gen: MachineGen) -> None:
-        self._gen = gen
-        if (n := next(self._gen)) is not None:  # noqa
-            raise IllegalStateException
-
-    def __call__(self, i: I) -> ta.Iterable[O]:
-        if self._gen is None:
-            raise IllegalStateException
-        try:
-            while (o := self._gen.send(i)) is not None:
-                yield from o
-        except StopIteration as s:
-            if s.value is None:
-                raise IllegalStateException
-            self._advance(s.value)
-
-
-#
-
-
 class AckedEchoProtocol6(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
-        self._m = Machine[Event, Event](self._accept_0())
+        self._m = GenMachine[Event, Event](self._accept_0())
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
@@ -326,7 +283,7 @@ class AckedEchoProtocol6(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
         return self._accept_1()
 
     def _accept_1(self) -> EventGenerator:
@@ -335,7 +292,7 @@ class AckedEchoProtocol6(AckedEchoProtocol):
             if isinstance(e, RecvdLine):
                 yield [SendLine('echo ' + e.line)]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 ##
@@ -348,8 +305,8 @@ class AckedEchoProtocol7(AckedEchoProtocol):
     prefix: str = 'echo'
 
     @cached.property
-    def _m(self) -> Machine[Event, Event]:
-        return Machine(self._accept_0())
+    def _m(self) -> GenMachine[Event, Event]:
+        return GenMachine(self._accept_0())
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
@@ -358,7 +315,7 @@ class AckedEchoProtocol7(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
         return self._accept_1()
 
     def _accept_1(self) -> EventGenerator:
@@ -367,7 +324,7 @@ class AckedEchoProtocol7(AckedEchoProtocol):
             if isinstance(e, RecvdLine):
                 yield [SendLine(f'{self.prefix} ' + e.line)]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 ##
@@ -389,7 +346,7 @@ class AckedEchoProtocol8(AckedEchoProtocol):
         self._rev = False
         self._dup = 1
 
-        self._m = Machine[Event, Event](self._accept_ack())
+        self._m = GenMachine[Event, Event](self._accept_ack())
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
@@ -398,7 +355,7 @@ class AckedEchoProtocol8(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
         return self._accept_echo_unsealed()
 
     def _process_control(self, l: str) -> bool:
@@ -430,7 +387,7 @@ class AckedEchoProtocol8(AckedEchoProtocol):
                     for _ in range(self._dup):
                         yield [SendLine(f'{self._prefix} {l}')]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
     def _accept_sealed(self) -> EventGenerator:
         while True:
@@ -442,7 +399,7 @@ class AckedEchoProtocol8(AckedEchoProtocol):
                 for _ in range(self._dup):
                     yield [SendLine(f'{self._prefix} {l}')]
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 ##
@@ -464,7 +421,7 @@ class AckedEchoProtocol9(AckedEchoProtocol):
         self._rev = False
         self._dup = 1
 
-        self._m = Machine[Event, Event](self._accept_ack())
+        self._m = GenMachine[Event, Event](self._accept_ack())
 
     def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
@@ -473,7 +430,7 @@ class AckedEchoProtocol9(AckedEchoProtocol):
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
-                raise IllegalStateException
+                raise IllegalStateError
         return self._accept_echo_unsealed()
 
     class _Control(abc.ABC):  # noqa
@@ -531,17 +488,17 @@ class AckedEchoProtocol9(AckedEchoProtocol):
                 else:
                     yield from self._yield_echo(e.line)
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
     def _accept_sealed(self) -> EventGenerator:
         while True:
             e = yield
             if isinstance(e, RecvdLine):
                 if (c := self._parse_control(e.line)) is not None:  # noqa
-                    raise IllegalStateException
+                    raise IllegalStateError
                 yield from self._yield_echo(e.line)
             else:
-                raise IllegalStateException
+                raise IllegalStateError
 
 
 ##
@@ -552,7 +509,7 @@ def _main() -> None:
         if isinstance(e, SendLine):
             print(repr(e))
             return
-        raise IllegalStateException
+        raise IllegalStateError
 
     ##
 
