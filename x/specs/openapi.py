@@ -1,7 +1,6 @@
 """
 https://swagger.io/specification/
 
-
 """
 import dataclasses as dc
 import os.path
@@ -74,17 +73,33 @@ class Tag:
 class Header:
     """https://swagger.io/specification/#header-object"""
 
+    name: str
+    description: str | None = None
+    external_docs: ta.Optional['ExternalDocumentation'] = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Link:
     """https://swagger.io/specification/#link-object"""
 
+    operation_ref: str | None = None
+    operation_id: str | None = None
+    parameters: ta.Mapping[str, ta.Any] | None = None
+    request_body: ta.Any = None
+    description: str | None = None
+    server: ta.Optional['Server'] = None
+
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Example:
     """https://swagger.io/specification/#example-object"""
+
+    summary: str | None = None
+    description: str | None = None
+    value: ta.Any | None = None
+    external_value: str | None = None
 
 
 # https://swagger.io/specification/#callback-object
