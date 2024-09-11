@@ -15,6 +15,35 @@ from omlish import marshal as msh
 ##
 
 
+"""https://swagger.io/specification/#security-requirement-object"""
+
+"""https://swagger.io/specification/#oauth-flow-object"""
+
+"""https://swagger.io/specification/#oauth-flows-object"""
+
+"""https://swagger.io/specification/#security-scheme-object"""
+
+"""https://swagger.io/specification/#xml-object"""
+
+"""https://swagger.io/specification/#discriminator-object"""
+
+"""https://swagger.io/specification/#reference-object"""
+
+"""https://swagger.io/specification/#reference-object"""
+
+"""https://swagger.io/specification/#tag-object"""
+
+"""https://swagger.io/specification/#header-object"""
+
+"""https://swagger.io/specification/#link-object"""
+
+"""https://swagger.io/specification/#example-object"""
+
+
+# https://swagger.io/specification/#callback-object
+Callback: ta.TypeAlias = ta.Mapping[str, PathItem | Reference]
+
+
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Response:
