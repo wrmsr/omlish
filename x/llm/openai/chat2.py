@@ -44,6 +44,22 @@ class FunctionCallParam(ta.TypedDict, total=False):
     name: ta.Required[str]
 
 
+class ContentPartRefusalParam(ta.TypedDict, total=False):
+    refusal: ta.Required[str]
+    type: ta.Required[ta.Literal['refusal']]
+
+
+class FunctionParam(ta.TypedDict, total=False):
+    arguments: ta.Required[str]
+    name: ta.Required[str]
+
+
+class MessageToolCallParam(ta.TypedDict, total=False):
+    id: ta.Required[str]
+    function: ta.Required[FunctionParam]
+    type: ta.Required[ta.Literal['function']]
+
+
 class AssistantMessageParam(ta.TypedDict, total=False):
     role: ta.Required[ta.Literal['assistant']]
     content: str | ta.Iterable[ContentPartTextParam | ContentPartRefusalParam] | None
