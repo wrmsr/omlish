@@ -115,6 +115,15 @@ class StreamOptionsParam(ta.TypedDict, total=False):
     include_usage: bool
 
 
+class NamedToolChoiceParamFunction(ta.TypedDict, total=False):
+    name: ta.Required[str]
+
+
+class NamedToolChoiceParam(ta.TypedDict, total=False):
+    function: ta.Required[NamedToolChoiceParamFunction]
+    type: ta.Required[ta.Literal['function']]
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
