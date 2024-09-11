@@ -94,6 +94,7 @@ from .utils import (  # noqa
     field_modifier,
     maybe_post_init,
     opt_repr,
+    update_class_metadata,
     update_field_extras,
     update_field_metadata,
     update_fields,

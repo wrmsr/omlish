@@ -50,6 +50,7 @@ from .global_ import (  # noqa
 
 from .helpers import (  # noqa
     update_fields_metadata,
+    update_object_metadata,
 )
 
 from .objects import (  # noqa

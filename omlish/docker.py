@@ -38,12 +38,11 @@ else:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(
+    field_naming=msh.Naming.CAMEL,
+    unknown_field='x',
+)
 class PsItem(lang.Final):
-    dc.metadata(msh.ObjectMetadata(
-        field_naming=msh.Naming.CAMEL,
-        unknown_field='x',
-    ))
-
     command: str
     created_at: datetime.datetime
     id: str = dc.field(metadata={msh.FieldMetadata: msh.FieldMetadata(name='ID')})
@@ -101,12 +100,11 @@ def cli_ps() -> list[PsItem]:
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(
+    field_naming=msh.Naming.CAMEL,
+    unknown_field='x',
+)
 class Inspect(lang.Final):
-    dc.metadata(msh.ObjectMetadata(
-        field_naming=msh.Naming.CAMEL,
-        unknown_field='x',
-    ))
-
     id: str
     created: datetime.datetime
 
