@@ -13,8 +13,8 @@ from .types import Query
 
 
 class ContentPartTextParam(ta.TypedDict, total=False):
-    text: ta.Required[str]
     type: ta.Required[ta.Literal['text']]
+    text: ta.Required[str]
 
 
 class SystemMessageParam(ta.TypedDict, total=False):
@@ -29,8 +29,8 @@ class ImageUrlParam(ta.TypedDict, total=False):
 
 
 class ContentPartImageParam(ta.TypedDict, total=False):
-    image_url: ta.Required[ImageUrlParam]
     type: ta.Required[ta.Literal["image_url"]]
+    image_url: ta.Required[ImageUrlParam]
 
 
 class UserMessageParam(ta.TypedDict, total=False):
@@ -45,8 +45,8 @@ class FunctionCallParam(ta.TypedDict, total=False):
 
 
 class ContentPartRefusalParam(ta.TypedDict, total=False):
-    refusal: ta.Required[str]
     type: ta.Required[ta.Literal['refusal']]
+    refusal: ta.Required[str]
 
 
 class MessageToolCallParamFunction(ta.TypedDict, total=False):
@@ -55,9 +55,9 @@ class MessageToolCallParamFunction(ta.TypedDict, total=False):
 
 
 class MessageToolCallParam(ta.TypedDict, total=False):
+    type: ta.Required[ta.Literal['function']]
     id: ta.Required[str]
     function: ta.Required[MessageToolCallParamFunction]
-    type: ta.Required[ta.Literal['function']]
 
 
 class AssistantMessageParam(ta.TypedDict, total=False):
@@ -107,8 +107,8 @@ class JsonSchema(ta.TypedDict, total=False):
 
 
 class ResponseFormatJsonSchema(ta.TypedDict, total=False):
-    json_schema: ta.Required[JsonSchema]
     type: ta.Required[ta.Literal['json_schema']]
+    json_schema: ta.Required[JsonSchema]
 
 
 class StreamOptionsParam(ta.TypedDict, total=False):
@@ -120,8 +120,8 @@ class NamedToolChoiceParamFunction(ta.TypedDict, total=False):
 
 
 class NamedToolChoiceParam(ta.TypedDict, total=False):
-    function: ta.Required[NamedToolChoiceParamFunction]
     type: ta.Required[ta.Literal['function']]
+    function: ta.Required[NamedToolChoiceParamFunction]
 
 
 class ToolParamFunctionDefinition(ta.TypedDict, total=False):
@@ -132,8 +132,8 @@ class ToolParamFunctionDefinition(ta.TypedDict, total=False):
 
 
 class ToolParam(ta.TypedDict, total=False):
-    function: ta.Required[ToolParamFunctionDefinition]
     type: ta.Required[ta.Literal['function']]
+    function: ta.Required[ToolParamFunctionDefinition]
 
 
 @dc.dataclass(frozen=True)
@@ -184,6 +184,35 @@ class ChatCompletionRequest:
     extra_query: Query | None = None
     extra_body: Body | None = None
     timeout: float | None | NotGiven = NOT_GIVEN
+
+
+##
+
+
+class ChoiceLogprobs:
+    content: Optional[List[ChatCompletionTokenLogprob]] = None
+    refusal: Optional[List[ChatCompletionTokenLogprob]] = None
+
+
+class Choice:
+    finish_reason: Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
+    index: int
+    logprobs: Optional[ChoiceLogprobs] = None
+    message: ChatCompletionMessage
+
+
+class ChatCompletion:
+    id: str
+    choices: List[Choice]
+    created: int
+    model: str
+    object: Literal["chat.completion"]
+    service_tier: Optional[Literal["scale", "default"]] = None
+    system_fingerprint: Optional[str] = None
+    usage: Optional[CompletionUsage] = None
+
+
+##
 
 
 def _main() -> None:

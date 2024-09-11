@@ -9,6 +9,42 @@ from .types import NotGiven
 from .types import Query
 
 
+##
+
+
+class StreamOptionsParam(ta.TypedDict, total=False):
+    include_usage: bool
+
+
+@dc.dataclass(frozen=True)
+class CompletionRequest:
+    model: str
+    prompt: str | ta.Sequence[str] | ta.Iterable[int] | ta.Iterable[ta.Iterable[int]] | None
+    best_of: int | None | NotGiven = NOT_GIVEN
+    echo: bool | None | NotGiven = NOT_GIVEN
+    frequency_penalty: float | None | NotGiven = NOT_GIVEN
+    logit_bias: ta.Mapping[str, int] | None | NotGiven = NOT_GIVEN
+    logprobs: int | None | NotGiven = NOT_GIVEN
+    max_tokens: int | None | NotGiven = NOT_GIVEN
+    n: int | None | NotGiven = NOT_GIVEN
+    presence_penalty: float | None | NotGiven = NOT_GIVEN
+    seed: int | None | NotGiven = NOT_GIVEN
+    stop: str | ta.Sequence[str] | None | NotGiven = NOT_GIVEN
+    stream: bool | None | NotGiven = NOT_GIVEN
+    stream_options: StreamOptionsParam | None | NotGiven = NOT_GIVEN
+    suffix: str | None | NotGiven = NOT_GIVEN
+    temperature: float | None | NotGiven = NOT_GIVEN
+    top_p: float | None | NotGiven = NOT_GIVEN
+    user: str | NotGiven = NOT_GIVEN
+    extra_headers: Headers | None = None
+    extra_query: Query | None = None
+    extra_body: Body | None = None
+    timeout: float | None | NotGiven = NOT_GIVEN
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class Logprobs:
     text_offset: ta.Sequence[int] | None = None
@@ -41,33 +77,3 @@ class Completion:
     object: ta.Literal['text_completion']
     system_fingerprint: str | None = None
     usage: Usage | None = None
-
-
-class StreamOptionsParam(ta.TypedDict, total=False):
-    include_usage: bool
-
-
-@dc.dataclass(frozen=True)
-class CompletionRequest:
-    model: str
-    prompt: str | ta.Sequence[str] | ta.Iterable[int] | ta.Iterable[ta.Iterable[int]] | None
-    best_of: int | None | NotGiven = NOT_GIVEN
-    echo: bool | None | NotGiven = NOT_GIVEN
-    frequency_penalty: float | None | NotGiven = NOT_GIVEN
-    logit_bias: ta.Mapping[str, int] | None | NotGiven = NOT_GIVEN
-    logprobs: int | None | NotGiven = NOT_GIVEN
-    max_tokens: int | None | NotGiven = NOT_GIVEN
-    n: int | None | NotGiven = NOT_GIVEN
-    presence_penalty: float | None | NotGiven = NOT_GIVEN
-    seed: int | None | NotGiven = NOT_GIVEN
-    stop: str | ta.Sequence[str] | None | NotGiven = NOT_GIVEN
-    stream: bool | None | NotGiven = NOT_GIVEN
-    stream_options: StreamOptionsParam | None | NotGiven = NOT_GIVEN
-    suffix: str | None | NotGiven = NOT_GIVEN
-    temperature: float | None | NotGiven = NOT_GIVEN
-    top_p: float | None | NotGiven = NOT_GIVEN
-    user: str | NotGiven = NOT_GIVEN
-    extra_headers: Headers | None = None
-    extra_query: Query | None = None
-    extra_body: Body | None = None
-    timeout: float | None | NotGiven = NOT_GIVEN
