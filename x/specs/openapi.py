@@ -86,12 +86,14 @@ class Discriminator:
 class Schema:
     """https://swagger.io/specification/#schema-object"""
 
-    # FIXME: this is a jsonschema lol
-
     discriminator: Discriminator | None = None
     xml: Xml | None = None
     external_docs: ta.Optional['ExternalDocumentation'] = None
     example: ta.Any | None = None
+
+    # FIXME: this is a jsonschema lol - these are just hacked on
+
+    type: str | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -121,6 +123,11 @@ class Header:
     """https://swagger.io/specification/#header-object"""
 
     # TODO: marshal embedding, shared with Parameter
+
+    description: str | None = None
+    required: bool | None = None
+    deprecated: bool | None = None
+    allow_empty_value: bool | None = None
 
     style: str | None = None
     explode: bool | None = None
@@ -225,12 +232,13 @@ class Parameter:
 
     name: str
     in_: str
+
+    # TODO: marshal embedding, shared with Header
+
     description: str | None = None
     required: bool | None = None
     deprecated: bool | None = None
     allow_empty_value: bool | None = None
-
-    # TODO: marshal embedding, shared with Header
 
     style: str | None = None
     explode: bool | None = None
