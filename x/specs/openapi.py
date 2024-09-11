@@ -9,6 +9,29 @@ import yaml
 from omlish import marshal as msh
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class License:
+    """https://swagger.io/specification/#license-object"""
+
+    name: str | None = None
+    identifier: str | None = None
+    url: str | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Contact:
+    """https://swagger.io/specification/#contact-object"""
+
+    name: str | None = None
+    url: str | None = None
+    email: str | None = None
+
+
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Info:
@@ -25,17 +48,22 @@ class Info:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-class Spec:
+class Openapi:
     """https://swagger.io/specification/#openapi-object"""
 
     openapi: str
     info: Info
 
 
+##
+
+
 def _main():
     with open(os.path.join(os.path.dirname(__file__), '..', 'llm', 'openai.yaml')) as f:
-        spec = yaml.safe_load(f)
+        doc = yaml.safe_load(f)
 
+    api = msh.unmarshal(doc, Openapi)
+    print(api)
 
 
 if __name__ == '__main__':
