@@ -54,7 +54,7 @@ venv:
 		if [ ! -d .venv ] ; then \
 			ln -s .venvs/default .venv ; \
 		fi ; \
-		if ! $$(${PYTHON} -c 'import tinygrad.tensor') ; then \
+		if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
 			${MAKE} tg ; \
 		fi ; \
 	fi
