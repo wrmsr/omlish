@@ -247,6 +247,34 @@ class RequestBody:
     required: bool | None = None
 
 
+# FIXME: embed
+# @dc.dataclass(frozen=True)
+# @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+# class ParameterCommon:
+#     description: str | None = None
+#     required: bool | None = None
+#     deprecated: bool | None = None
+#     allow_empty_value: bool | None = None
+#
+#     style: str | None = None
+#     explode: bool | None = None
+#     allow_reserved: bool | None = None
+#     schema: Schema | None = None
+#     example: ta.Any = None
+#     examples: ta.Mapping[str, Example | Reference] | None = None
+#
+#     content: ta.Mapping[str, MediaType] | None = None
+#
+#     # style: ta.Any = None
+#     matrix: ta.Any = None
+#     label: ta.Any = None
+#     form: ta.Any = None
+#     simple: ta.Any = None
+#     space_delimited: ta.Any = None
+#     pipe_delimited: ta.Any = None
+#     deep_object: ta.Any = None
+
+
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 @msh.update_fields_metadata(['in_'], name='in')
