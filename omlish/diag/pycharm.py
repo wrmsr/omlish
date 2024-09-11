@@ -51,22 +51,25 @@ def pycharm_remote_debugger_attach(
         *,
         version: str | None = None,
 ) -> None:
-    if version is None:
-        version = get_pycharm_version()
-    check.non_empty_str(version)
+    # if version is None:
+    #     version = get_pycharm_version()
+    # check.non_empty_str(version)
 
     if host is None:
-        if sys.platform == 'darwin' and docker.is_likely_in_docker():
+        if sys.platform == 'linux' and docker.is_likely_in_docker():
             host = docker.DOCKER_FOR_MAC_HOSTNAME
         else:
-            host = '127.0.0.1'
+            host = 'localhost'
 
-    subprocess.check_call([
-        sys.executable,
-        '-mpip',
-        'install',
-        f'pydevd-pycharm~={version}',
-    ])
+    try:
+        import pydevd_pycharm  # noqa
+    except ImportError:
+        subprocess.check_call([
+            sys.executable,
+            '-mpip',
+            'install',
+            'pydevd-pycharm' + (f'~={version}' if version is not None else ''),
+        ])
 
     import pydevd_pycharm  # noqa
     pydevd_pycharm.settrace(

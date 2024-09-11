@@ -22,21 +22,22 @@ _callable = callable
 ##
 
 
-OnRaiseFn: ta.TypeAlias = ta.Callable[[Exception], None]
+_CONFIG_LOCK = threading.RLock()
 
+
+OnRaiseFn: ta.TypeAlias = ta.Callable[[Exception], None]
 _ON_RAISE: ta.Sequence[OnRaiseFn] = []
-_ON_RAISE_LOCK = threading.Lock()
 
 
 def register_on_raise(fn: OnRaiseFn) -> None:
     global _ON_RAISE
-    with _ON_RAISE_LOCK:
+    with _CONFIG_LOCK:
         _ON_RAISE = [*_ON_RAISE, fn]
 
 
 def unregister_on_raise(fn: OnRaiseFn) -> None:
     global _ON_RAISE
-    with _ON_RAISE_LOCK:
+    with _CONFIG_LOCK:
         _ON_RAISE = [e for e in _ON_RAISE if e != fn]
 
 
@@ -61,11 +62,15 @@ def _raise(
         message = ta.cast(ta.Callable, message)(*args, **kwargs)
         if _isinstance(message, tuple):
             message, *args = message  # type: ignore
+
     if message is None:
         message = default_message
+
     exc = _EXCEPTION_FACTORY(exception_type, message, *args, **kwargs)
+
     for fn in _ON_RAISE:
         fn(exc)
+
     raise exc
 
 

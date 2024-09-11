@@ -9,18 +9,21 @@ from .. import check
 from .. import lang
 from .base import Bootstrap
 from .base import ContextBootstrap
+from .base import SimpleBootstrap
 
 
 if ta.TYPE_CHECKING:
     import cProfile  # noqa
     import pstats
 
+    from ..diag import pycharm as diagpc
     from ..diag import threads as diagt
 
 else:
     cProfile = lang.proxy_import('cProfile')  # noqa
     pstats = lang.proxy_import('pstats')
 
+    diagpc = lang.proxy_import('..diag.pycharm', __package__)
     diagt = lang.proxy_import('..diag.threads', __package__)
 
 
@@ -153,3 +156,22 @@ class TimebombBootstrap(ContextBootstrap['TimebombBootstrap.Config']):
             yield
         finally:
             tbt.stop_nowait()
+
+
+##
+
+
+class PycharmBootstrap(SimpleBootstrap['PycharmBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        debug_host: ta.Optional[str] = None
+        debug_port: ta.Optional[int] = None
+        debug_version: ta.Optional[str] = None
+
+    def run(self) -> None:
+        if self._config.debug_port is not None:
+            diagpc.pycharm_remote_debugger_attach(
+                self._config.debug_host,
+                self._config.debug_port,
+                version=self._config.debug_version,
+            )
