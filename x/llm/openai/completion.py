@@ -77,3 +77,11 @@ class Completion:
     object: ta.Literal['text_completion']
     system_fingerprint: str | None = None
     usage: Usage | None = None
+
+
+##
+
+
+def _main() -> None:
+    import openai
+    openai.completions.create  # noqa
