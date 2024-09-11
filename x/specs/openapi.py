@@ -1,7 +1,6 @@
 """
 https://swagger.io/specification/
 
-
 """
 import dataclasses as dc
 import os.path
@@ -13,6 +12,29 @@ from omlish import marshal as msh
 
 
 ##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['in_'], name='in')
+class ExternalDocumentation:
+    """https://swagger.io/specification/#parameter-object"""
+
+    name: str
+    in_: str
+    description: str | None = None
+    required: bool | None = None
+    deprecated: bool | None = None
+    allow_empty_value: bool | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class ExternalDocumentation:
+    """https://swagger.io/specification/#external-documentation-object"""
+
+    url: str
+    description: str | None = None
 
 
 @dc.dataclass(frozen=True)
