@@ -75,6 +75,9 @@ def enable_args_rendering() -> bool:
         return True
 
 
+enable_args_rendering()
+
+
 #
 
 
@@ -313,9 +316,9 @@ def non_empty_str(v: str | None, msg: Message = None) -> str:
 
 def arg(v: bool, msg: Message = None) -> None:
     if not v:
-        _raise(RuntimeError, 'Argument condition not met', msg)
+        _raise(RuntimeError, 'Argument condition not met', msg, _Args(v))
 
 
 def state(v: bool, msg: Message = None) -> None:
     if not v:
-        _raise(RuntimeError, 'State condition not met', msg)
+        _raise(RuntimeError, 'State condition not met', msg, _Args(v))
