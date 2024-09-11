@@ -111,6 +111,10 @@ class ResponseFormatJsonSchema(ta.TypedDict, total=False):
     type: ta.Required[ta.Literal['json_schema']]
 
 
+class StreamOptionsParam(ta.TypedDict, total=False):
+    include_usage: bool
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
@@ -144,9 +148,13 @@ class ChatCompletionRequest:
     service_tier: ta.Literal['auto', 'default'] | None | NotGiven = NOT_GIVEN
     stop: str | None | ta.Sequence[str] | NotGiven = NOT_GIVEN
     stream: ta.Literal[False] | None | NotGiven = NOT_GIVEN
-    stream_options: ChatCompletionStreamOptionsParam | None | NotGiven = NOT_GIVEN
+    stream_options: StreamOptionsParam | None | NotGiven = NOT_GIVEN
     temperature: float | None | NotGiven = NOT_GIVEN
-    tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN
+    tool_choice: ta.Union[
+        ta.Literal['none', 'auto', 'required'],
+        NamedToolChoiceParam,
+        NotGiven,
+    ] = NOT_GIVEN,
     tools: ta.Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN
     top_logprobs: int | None | NotGiven = NOT_GIVEN
     top_p: float | None | NotGiven = NOT_GIVEN
