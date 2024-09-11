@@ -16,8 +16,29 @@ from omlish import marshal as msh
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class MediaType:
+    """https://swagger.io/specification/#media-type-object"""
+
+    schema: Schema | None = None
+    example: ta.Any = None
+    examples: ta.Mapping[str, Example | Reference] | None = None
+    encoding: ta.Mapping[str, Encoding] | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class RequestBody:
+    """https://swagger.io/specification/#request-body-object"""
+
+    content: ta.Mapping[str, MediaType]
+    description: str | None = None
+    required: bool | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 @msh.update_fields_metadata(['in_'], name='in')
-class ExternalDocumentation:
+class Parameter:
     """https://swagger.io/specification/#parameter-object"""
 
     name: str
