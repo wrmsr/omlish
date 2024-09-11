@@ -39,6 +39,7 @@ from .uuids import UUID_UNMARSHALER_FACTORY
 STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     PRIMITIVE_MARSHALER_FACTORY,
     OptionalMarshalerFactory(),
+    PrimitiveUnionMarshalerFactory(),
     DataclassMarshalerFactory(),
     EnumMarshalerFactory(),
     NUMBERS_MARSHALER_FACTORY,
@@ -68,6 +69,7 @@ def new_standard_marshaler_factory() -> MarshalerFactory:
 STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     PRIMITIVE_UNMARSHALER_FACTORY,
     OptionalUnmarshalerFactory(),
+    PrimitiveUnionUnmarshalerFactory(),
     DataclassUnmarshalerFactory(),
     EnumUnmarshalerFactory(),
     NUMBERS_UNMARSHALER_FACTORY,
