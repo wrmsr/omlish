@@ -1,11 +1,14 @@
 from .. import docker
 from .. import marshal as msh
+from ..diag.pydevd import silence_subprocess_check
 from ..formats import json
 from ..testing import pytest as ptu
 
 
 @ptu.skip_if_not_on_path('docker')
 def test_docker():
+    silence_subprocess_check()
+
     pis = docker.cli_ps()
     print(json.dumps_pretty(msh.marshal(pis, list[docker.PsItem])))
     print(json.dumps_pretty(msh.marshal(pis)))
