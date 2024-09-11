@@ -1,6 +1,7 @@
 """
 https://swagger.io/specification/
 
+
 """
 import dataclasses as dc
 import os.path
@@ -12,6 +13,33 @@ from omlish import marshal as msh
 
 
 ##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Response:
+    """https://swagger.io/specification/#response-object"""
+
+    description: str
+    headers: ta.Mapping[str, Header | Reference] | None = None
+    content: ta.Mapping[str, MediaType] | None = None
+    links: ta.Mapping[str, Link | Reference] | None = None
+
+
+# https://swagger.io/specification/#responses-object
+Responses: ta.TypeAlias = ta.Mapping[str, Response | Reference]
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class Encoding:
+    """https://swagger.io/specification/#encoding-object"""
+
+    content_type: str | None = None
+    headers: ta.Mapping[str, Header | Reference] | None = None
+    style: str | None = None
+    explode: bool | None = None
+    allow_reserved: bool | None = None
 
 
 @dc.dataclass(frozen=True)
