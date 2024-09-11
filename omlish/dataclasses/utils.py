@@ -88,9 +88,13 @@ def update_fields(
 
         else:
             for a in fields:
-                v = cls.__dict__[a]
-                if not isinstance(v, dc.Field):
-                    v = dc.field(default=v)
+                try:
+                    v = cls.__dict__[a]
+                except KeyError:
+                    v = dc.field()
+                else:
+                    if not isinstance(v, dc.Field):
+                        v = dc.field(default=v)
                 setattr(cls, a, fn(a, v))
 
         return cls
