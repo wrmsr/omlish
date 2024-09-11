@@ -10,11 +10,21 @@ from omlish import marshal as msh
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Info:
-    pass
+    """https://swagger.io/specification/#info-object"""
+
+    title: str
+    version: str
+    summary: str | None = None
+    description: str | None = None
+    terms_of_service: str | None = None
+    contact: Contact | None = None
+    license: License | None = None
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Spec:
     """https://swagger.io/specification/#openapi-object"""
 
