@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - don't base64 by default, only for json-esque targets
+"""
 import base64
 import typing as ta
 
