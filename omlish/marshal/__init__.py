@@ -66,7 +66,6 @@ from .polymorphism import (  # noqa
 )
 
 from .primitives import (  # noqa
-    NOT_NONE_PRIMITIVE_TYPES,
     PRIMITIVE_TYPES,
 )
 

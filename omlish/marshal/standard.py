@@ -27,6 +27,8 @@ from .optionals import OptionalMarshalerFactory
 from .optionals import OptionalUnmarshalerFactory
 from .primitives import PRIMITIVE_MARSHALER_FACTORY
 from .primitives import PRIMITIVE_UNMARSHALER_FACTORY
+from .unions import PrimitiveUnionMarshalerFactory
+from .unions import PrimitiveUnionUnmarshalerFactory
 from .uuids import UUID_MARSHALER_FACTORY
 from .uuids import UUID_UNMARSHALER_FACTORY
 

@@ -93,7 +93,7 @@ class MultiMatchFn(MatchFn[P, T]):
     children: ta.Sequence[MatchFn[P, T]]
     strict: bool = False
 
-    def _match(self, *args: P.args, **kwargs: P.kwargs) -> MatchFn[P, T] | None:
+    def match(self, *args: P.args, **kwargs: P.kwargs) -> MatchFn[P, T] | None:
         matches = []
         for cur in self.children:
             if cur.guard(*args, **kwargs):
@@ -109,10 +109,10 @@ class MultiMatchFn(MatchFn[P, T]):
             return matches[0]
 
     def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
-        return self._match(*args, **kwargs) is not None
+        return self.match(*args, **kwargs) is not None
 
     def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        if (m := self._match(*args, **kwargs)) is None:
+        if (m := self.match(*args, **kwargs)) is None:
             raise MatchGuardError(*args, **kwargs)
         return m.fn(*args, **kwargs)
 
