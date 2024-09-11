@@ -83,11 +83,11 @@ duckdb==1.1.0
 einops==0.8.0
 elastic-transport==8.15.0
 elasticsearch==8.15.1
-evaluate==0.4.2
+evaluate==0.4.3
 execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
-fastapi==0.114.0
+fastapi==0.114.1
 fastjsonschema==2.20.0
 filelock==3.16.0
 fire==0.6.0
@@ -188,7 +188,7 @@ lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
 lightning-utilities==0.11.7
-litecli==1.12.2
+litecli==1.12.3
 llvmlite==0.43.0
 Logbook==1.7.0.post0
 loguru==0.7.2
@@ -267,7 +267,7 @@ paramiko==3.4.1
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@54be5a3db61748d698ca2e6b55bcfef229a9b475
+peft @ git+https://github.com/huggingface/peft.git@7868d0372b86a6b9ac5f365b8f0eef2f2f5dedce
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -297,12 +297,13 @@ pure_eval==0.2.3
 py-cpuinfo==9.0.0
 pyaes==1.6.1
 pyarrow==17.0.0
-pyasn1==0.6.0
-pyasn1_modules==0.4.0
+pyasn1==0.6.1
+pyasn1_modules==0.4.1
 pycodestyle==2.12.1
 pycparser==2.22
 pydantic==2.9.1
 pydantic_core==2.23.3
+pydevd-pycharm==241.18034.82
 pyflakes==3.2.0
 Pygments==2.18.0
 PyJWT==2.9.0
@@ -334,7 +335,7 @@ python-json-logger==2.0.7
 python-snappy==0.7.3
 python-telegram-bot==21.5
 pytorch-lightning==2.4.0
-pytz==2024.1
+pytz==2024.2
 PyYAML==6.0.2
 pyzmq==26.2.0
 qtconsole==5.5.1
@@ -370,7 +371,7 @@ setuptools==74.1.2
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.1.2
+simsimd==5.1.3
 six==1.16.0
 smart-open==7.0.4
 sniffio==1.3.1
@@ -435,7 +436,7 @@ tzlocal==5.2
 ujson==5.10.0
 uri-template==1.3.0
 urllib3==2.2.2
-uv==0.4.8
+uv==0.4.9
 uvicorn==0.30.6
 uvloop==0.20.0
 voluptuous==0.15.2
