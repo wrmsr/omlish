@@ -69,14 +69,26 @@ class AssistantMessageParam(ta.TypedDict, total=False):
     tool_calls: ta.Iterable[MessageToolCallParam]
 
 
+class ToolMessageParam(ta.TypedDict, total=False):
+    content: ta.Required[str | ta.Iterable[ContentPartTextParam]]
+    role: ta.Required[ta.Literal['tool']]
+    tool_call_id: ta.Required[str]
+
+
+class FunctionMessageParam(ta.TypedDict, total=False):
+    content: ta.Required[str | None]
+    name: ta.Required[str]
+    role: ta.Required[ta.Literal['function']]
+
+
 @dc.dataclass(frozen=True)
 class ChatCompletionRequest:
     messages: ta.Iterable[ta.Union[
         SystemMessageParam,
         UserMessageParam,
-        AssistantMessage,
-        ToolMessage,
-        FunctionMessage,
+        AssistantMessageParam,
+        ToolMessageParam,
+        FunctionMessageParam,
     ]]
     model: str
     frequency_penalty: float | None | NotGiven = NOT_GIVEN
