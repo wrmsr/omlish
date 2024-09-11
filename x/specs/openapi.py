@@ -82,6 +82,8 @@ class Discriminator:
 class Schema:
     """https://swagger.io/specification/#schema-object"""
 
+    # FIXME: this is a jsonschema lol
+
     discriminator: Discriminator | None = None
     xml: Xml | None = None
     external_docs: ta.Optional['ExternalDocumentation'] = None
@@ -160,7 +162,7 @@ class Example:
 
 
 # https://swagger.io/specification/#callback-object
-Callback: ta.TypeAlias = ta.Mapping[str, ta.Union['PathItem', Reference]
+Callback: ta.TypeAlias = ta.Mapping[str, ta.Union['PathItem', Reference]]
 
 
 @dc.dataclass(frozen=True)
