@@ -2,6 +2,7 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .objects import FieldMetadata
+from .objects import ObjectMetadata
 
 
 T = ta.TypeVar('T')
@@ -20,3 +21,17 @@ def update_fields_metadata(
         })
 
     return dc.update_fields(inner, fields)
+
+
+def update_object_metadata(
+        cls: type | None = None,
+        **kwargs: ta.Any,
+):
+    def inner(cls):
+        return dc.update_class_metadata(cls, ObjectMetadata(**kwargs))
+
+    if cls is not None:
+        inner(cls)
+        return cls
+    else:
+        return inner

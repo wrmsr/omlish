@@ -4,6 +4,8 @@ import types
 import typing as ta
 
 from .. import check
+from .impl.metadata import METADATA_ATTR
+from .impl.metadata import UserMetadata
 from .impl.params import DEFAULT_FIELD_EXTRAS
 from .impl.params import FieldExtras
 from .impl.params import get_field_extras
@@ -48,6 +50,13 @@ class field_modifier:  # noqa
 
 def chain_metadata(*mds: ta.Mapping) -> types.MappingProxyType:
     return types.MappingProxyType(collections.ChainMap(*mds))  # type: ignore  # noqa
+
+
+def update_class_metadata(cls: type[T], *args: ta.Any) -> type[T]:
+    check.isinstance(cls, type)
+    setattr(cls, METADATA_ATTR, md := getattr(cls, METADATA_ATTR, {}))
+    md.setdefault(UserMetadata, []).extend(args)
+    return cls
 
 
 def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
