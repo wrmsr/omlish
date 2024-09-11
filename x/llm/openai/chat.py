@@ -247,6 +247,13 @@ class Choice:
 
 
 @dc.dataclass(frozen=True)
+class Usage:
+    completion_tokens: int
+    prompt_tokens: int
+    total_tokens: int
+
+
+@dc.dataclass(frozen=True)
 class ChatCompletion:
     id: str
     choices: ta.Sequence[Choice]
