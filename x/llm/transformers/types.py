@@ -2,6 +2,8 @@ import dataclasses as dc
 import os
 import typing as ta
 
+from omlish import collections as col
+
 import torch
 import transformers.feature_extraction_utils
 
@@ -15,7 +17,6 @@ NOT_SET = NotSet()
 
 @dc.dataclass(frozen=True)
 class PretrainedConfig:
-    """
     # class
 
     model_type: str
@@ -41,7 +42,7 @@ class PretrainedConfig:
     cross_attention_hidden_size: bool | None = None
     add_cross_attention: bool | None = False
     tie_encoder_decoder: bool | None = False
-    prune_heads: ta.Mapping[int, ta.Sequence[int]] | None = {}
+    prune_heads: ta.Mapping[int, ta.Sequence[int]] | None = col.frozendict()
     chunk_size_feed_forward: int | None = 0
 
     # sequence generation
@@ -71,35 +72,34 @@ class PretrainedConfig:
 
     # fine-tuning
 
-    architectures (`List[str]`, *optional*): Model architectures that can be used with the model pretrained weights.
-    finetuning_task (`str`, *optional*): Name of the task used to fine-tune the model. This can be used when converting from an original (TensorFlow or PyTorch) checkpoint.
-    id2label (`Dict[int, str]`, *optional*): A map from index (for instance prediction index, or target index) to label.
-    label2id (`Dict[str, int]`, *optional*): A map from label to index for the model.
-    num_labels (`int`, *optional*): Number of labels to use in the last layer added to the model, typically for a classification task.
-    task_specific_params (`Dict[str, Any]`, *optional*): Additional keyword arguments to store for the current task.
-    problem_type (`str`, *optional*): Problem type for `XxxForSequenceClassification` models. Can be one of `"regression"`, `"single_label_classification"` or `"multi_label_classification"`.
+    architectures: ta.Sequence[str] | None = None
+    finetuning_task: str | None = None
+    id2label: ta.Mapping[int, str] | None = None
+    label2id: ta.Mapping[str, int] | None = None
+    num_labels: int | None = None
+    task_specific_params: ta.Mapping[str, ta.Any] | None = None
+    problem_type: str | None = None
 
-    > Parameters linked to the tokenizer
+    # tokenizer
 
-    tokenizer_class (`str`, *optional*): The name of the associated tokenizer class to use (if none is set, will use the tokenizer associated to the model by default).
-    prefix (`str`, *optional*): A specific prompt that should be added at the beginning of each text before calling the model.
-    bos_token_id (`int`, *optional*): The id of the _beginning-of-stream_ token.
-    pad_token_id (`int`, *optional*): The id of the _padding_ token.
-    eos_token_id (`int`, *optional*): The id of the _end-of-stream_ token.
-    decoder_start_token_id (`int`, *optional*): If an encoder-decoder model starts decoding with a different token than _bos_, the id of that token.
-    sep_token_id (`int`, *optional*): The id of the _separation_ token.
+    tokenizer_clas: str | None = None
+    prefix: str | None = None
+    bos_token_id: int | None = None
+    pad_token_id: int | None = None
+    eos_token_id: int | None = None
+    decoder_start_token_id: int | None = None
+    sep_token_id: int | None = None
 
-    > PyTorch specific parameters
+    # pytorch
 
-    torchscript (`bool`, *optional*, defaults to `False`): Whether or not the model should be used with Torchscript.
-    tie_word_embeddings (`bool`, *optional*, defaults to `True`): Whether the model's input and output word embeddings should be tied. Note that this is only relevant if the model has a output word embedding layer.
-    torch_dtype (`str`, *optional*): The `dtype` of the weights. This attribute can be used to initialize the model to a non-default `dtype` (which is normally `float32`) and thus allow for optimal storage allocation. For example, if the saved model is `float16`, ideally we want to load it back using the minimal amount of memory needed to load `float16` weights. Since the config object is stored in plain text, this attribute contains just the floating type string without the `torch.` prefix. For example, for `torch.float16` ``torch_dtype` is the `"float16"` string.
+    torchscript: bool | None = False
+    tie_word_embeddings: bool | None = True
+    torch_dtype: str | None = None
 
-    > TensorFlow specific parameters
+    # tensorflow
 
-    use_bfloat16 (`bool`, *optional*, defaults to `False`): Whether or not the model should use BFloat16 scalars (only used by some TensorFlow models).
-    tf_legacy_loss (`bool`, *optional*, defaults to `False`): Whether the model should use legacy TensorFlow losses. Legacy losses have variable output shapes and may not be XLA-compatible. This option is here for backward compatibility and will be removed in Transformers v5.
-    """
+    use_bfloat16: bool | None = False
+    tf_legacy_loss: bool | None = False
 
 
 @dc.dataclass(frozen=True)
