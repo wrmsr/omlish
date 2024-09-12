@@ -87,7 +87,7 @@ def _import_pydevd_pycharm(*, version: str | None = None) -> ta.Any:
         subprocess.check_call([
             sys.executable,
             '-m', 'pip',
-            'uninstall',
+            'uninstall', '-y',
             'pydevd_pycharm',
         ])
 
@@ -129,3 +129,7 @@ def pycharm_remote_debugger_attach(
         stdoutToServer=True,
         stderrToServer=True,
     )
+
+
+if __name__ == '__main__':
+    print(get_pycharm_version())
