@@ -120,11 +120,35 @@ class Cost(enum.Enum):
 
 
 @dc.dataclass(frozen=True)
-class Derivation(Resolvable):
-    name: str
+class Resolver:
     cost: Cost
     inputs: ta.Sequence[Resolvable]
+    output: Resolvable
     fn: ta.Callable
+
+
+##
+
+
+class _DummyResolvable(Resolvable):
+    @property
+    def full_name(self) -> str:
+        raise TypeError
+
+
+_DUMMY_RESOLVABLE = _DummyResolvable()
+
+
+@dc.dataclass(frozen=True)
+class Derivation(Resolvable):
+    name: str
+    src_resolver: Resolver = dc.field(repr=False)
+    fn: ta.Callable
+
+    @cached.property
+    @dc.init
+    def resolver(self) -> Resolver:
+        return dc.replace(self.src_resolver, output=check.replacing(self.src_resolver.output, _DUMMY_RESOLVABLE, self))
 
     def __post_init__(self) -> None:
         dc.maybe_post_init(super())
@@ -140,24 +164,24 @@ class Derivation(Resolvable):
 
 def derivation(
         *inputs: Resolvable,
-        cost: Cost = Cost.PURE,
-        **kwargs: ta.Any,
+        name: str | None = None,
+        cost: Cost = Cost.TRIVIAL,
 ) -> ta.Callable[[ta.Callable], Derivation]:
     def inner(fn):
-        if 'name' in kwargs:
-            name = kwargs.pop('name')
-        else:
-            name = fn.__name__
-
-        return Derivation(
-            name=name,
+        resolver = Resolver(
             cost=cost,
             inputs=inputs,
+            output=_DUMMY_RESOLVABLE,
             fn=fn,
-            **kwargs,
         )
 
-    return inner
+        return Derivation(
+            name=name if name is not None else fn.__name__,
+            src_resolver=resolver,
+            fn=fn,
+        )
+
+    return inner  # noqa
 
 
 ##
@@ -174,13 +198,13 @@ def make_dataclass_entity(cls: type) -> Entity:
     )
 
 
-def make_entity_attribute_derivations(ent: Entity) -> ta.Sequence[Derivation]:
-    out: list[Derivation] = []
+def make_entity_attribute_resolvers(ent: Entity) -> ta.Sequence[Resolver]:
+    out: list[Resolver] = []
     for att in ent.attrs:
-        out.append(Derivation(
-            name='_'.join([ent.name, att.name]),
+        out.append(Resolver(
             cost=Cost.TRIVIAL,
             inputs=[ent],
+            output=att,
             fn=operator.attrgetter(att.name),
         ))
 
@@ -263,9 +287,17 @@ def _main() -> None:
         return ' '.join([first_name, last_name])
 
     derivations = [
-        *lang.flatten(make_entity_attribute_derivations(ent) for ent in entities),
         user_full_name,
     ]
+
+    #
+
+    resolvers = [
+        *lang.flatten(make_entity_attribute_resolvers(ent) for ent in entities),
+        *derivations,
+    ]
+
+    pprint.pprint(resolvers)
 
     #
 
