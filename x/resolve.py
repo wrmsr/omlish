@@ -4,6 +4,7 @@ FIXME:
 """
 import abc
 import enum
+import functools
 import operator
 import pprint
 import typing as ta
@@ -48,8 +49,13 @@ class Attributes(ta.Sequence[Attribute]):
     def by_name(self) -> ta.Mapping[str, Attribute]:
         return col.make_map_by(operator.attrgetter('name'), self.lst, strict=True)
 
-    def __getitem__(self, item: int) -> Attribute:  # type: ignore
-        return self.lst[item]
+    def __getitem__(self, item: int | str) -> Attribute:  # type: ignore
+        if isinstance(item, int):
+            return self.lst[item]
+        elif isinstance(item, str):
+            return self.by_name[item]
+        else:
+            raise TypeError(item)
 
     def __iter__(self) -> ta.Iterator[Attribute]:
         return iter(self.lst)
@@ -108,8 +114,36 @@ class Resolvables:
 
 
 @dc.dataclass(frozen=True)
-class Derivation:
-    pass
+class Derivation(Resolvable):
+    name: str
+    inputs: ta.Sequence[Resolvable]
+    fn: ta.Callable
+
+    def __post_init__(self) -> None:
+        dc.maybe_post_init(super())
+        functools.update_wrapper(self, self.fn)
+
+    @property
+    def full_name(self) -> str:
+        return self.name
+
+    def __call__(self, *args, **kwargs):
+        return self.fn(*args, **kwargs)
+
+
+def derivation(*inputs: Resolvable, **kwargs: ta.Any) -> ta.Callable[[ta.Callable], Derivation]:
+    def inner(fn):
+        if 'name' in kwargs:
+            name = kwargs.pop('name')
+        else:
+            name = fn.__name__
+        return Derivation(
+            name=name,
+            inputs=inputs,
+            fn=fn,
+            **kwargs,
+        )
+    return inner
 
 
 ##
@@ -125,12 +159,56 @@ class Cost(enum.Enum):
 
 
 def _main() -> None:
-    user = Entity('user', [Attribute('id'), Attribute('name')])
-    business = Entity('business', [Attribute('id'), Attribute('name')])
-    review = Entity('review', [Attribute('id'), Attribute('business_id'), Attribute('user_id')])
+    user = Entity(
+        'user',
+        [
+            Attribute('id'),
+            Attribute('name'),
+            Attribute('first_name'),
+            Attribute('last_name'),
+        ],
+    )
 
-    entities = [user, business, review]
-    resolvables = Resolvables(entities)
+    business = Entity(
+        'business',
+        [
+            Attribute('id'),
+            Attribute('name'),
+        ],
+    )
+
+    review = Entity(
+        'review',
+        [
+            Attribute('id'),
+            Attribute('business_id'),
+            Attribute('user_id'),
+        ],
+    )
+
+    entities = [
+        user,
+        business,
+        review,
+    ]
+
+    #
+
+    @derivation(user.attrs['first_name'], user.attrs['last_name'])
+    def user_full_name(first_name: str, last_name: str) -> str:
+        return ' '.join([first_name, last_name])
+
+    derivations = [
+        user_full_name,
+    ]
+
+    #
+
+    resolvables = Resolvables([
+        *entities,
+        *derivations,
+    ])
+
     pprint.pprint(resolvables.by_full_name)
 
 
