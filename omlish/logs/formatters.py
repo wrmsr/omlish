@@ -3,7 +3,6 @@ import logging
 import typing as ta
 
 from .. import term
-from ..lite.logs import JsonLogFormatter  # noqa
 from ..lite.logs import StandardLogFormatter
 
 
