@@ -1,3 +1,8 @@
+"""
+TODO:
+ - dump agg stats
+ - graphviz
+"""
 import argparse
 import dataclasses as dc
 import inspect
