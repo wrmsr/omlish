@@ -4,7 +4,6 @@ FIXME:
 """
 import abc
 import enum
-import functools
 import operator
 import pprint
 import typing as ta
@@ -13,6 +12,7 @@ from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
+from omlish import lang
 
 
 ##
@@ -121,7 +121,7 @@ class Derivation(Resolvable):
 
     def __post_init__(self) -> None:
         dc.maybe_post_init(super())
-        functools.update_wrapper(self, self.fn)
+        lang.update_wrapper(self, self.fn, setattr=object.__setattr__)
 
     @property
     def full_name(self) -> str:

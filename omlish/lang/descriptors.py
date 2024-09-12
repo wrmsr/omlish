@@ -91,21 +91,38 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
 ##
 
 
-WRAPPER_UPDATES_EXCEPT_DICT = tuple(a for a in functools.WRAPPER_UPDATES if a != '__dict__')
+def update_wrapper(
+        wrapper: T,
+        wrapped: ta.Any,
+        assigned: ta.Iterable[str] = functools.WRAPPER_ASSIGNMENTS,
+        updated: ta.Iterable[str] = functools.WRAPPER_UPDATES,
+        *,
+        filter: ta.Iterable[str] | None = None,  # noqa
+        getattr: ta.Callable = getattr,  # noqa
+        setattr: ta.Callable = setattr,  # noqa
+) -> T:
+    if filter:
+        if isinstance(filter, str):
+            filter = [filter]  # noqa
+        assigned = tuple(a for a in assigned if a not in filter)
+        updated = tuple(a for a in updated if a not in filter)
 
+    for attr in assigned:
+        try:
+            value = getattr(wrapped, attr)
+        except AttributeError:
+            pass
+        else:
+            setattr(wrapper, attr, value)
 
-def update_wrapper_except_dict(
-        wrapper,
-        wrapped,
-        assigned=functools.WRAPPER_ASSIGNMENTS,
-        updated=WRAPPER_UPDATES_EXCEPT_DICT,
-):
-    return functools.update_wrapper(
-        wrapper,
-        wrapped,
-        assigned=assigned,
-        updated=updated,
-    )
+    for attr in updated:
+        getattr(wrapper, attr).update(getattr(wrapped, attr, {}))
+
+    # Issue #17482: set __wrapped__ last so we don't inadvertently copy it from the wrapped function when updating
+    # __dict__
+    setattr(wrapper, '__wrapped__', wrapped)
+
+    return wrapper
 
 
 ##
@@ -118,7 +135,7 @@ class _decorator_descriptor:  # noqa
     if not _DECORATOR_HANDLES_UNBOUND_METHODS:
         def __init__(self, wrapper, fn):
             self._wrapper, self._fn = wrapper, fn
-            update_wrapper_except_dict(self, fn)
+            update_wrapper(self, fn, filter='__dict__')
 
         def __get__(self, instance, owner=None):
             return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
@@ -127,7 +144,7 @@ class _decorator_descriptor:  # noqa
         def __init__(self, wrapper, fn):
             self._wrapper, self._fn = wrapper, fn
             self._md = _has_method_descriptor(fn)
-            update_wrapper_except_dict(self, fn)
+            update_wrapper(self, fn, filter='__dict__')
 
         def __get__(self, instance, owner=None):
             fn = self._fn.__get__(instance, owner)
@@ -157,7 +174,7 @@ class _decorator_descriptor:  # noqa
 class _decorator:  # noqa
     def __init__(self, wrapper):
         self._wrapper = wrapper
-        update_wrapper_except_dict(self, wrapper)
+        update_wrapper(self, wrapper, filter='__dict__')
 
     def __repr__(self):
         return f'{self.__class__.__name__}<{self._wrapper}>'
