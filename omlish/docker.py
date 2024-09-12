@@ -15,6 +15,7 @@ apil="application/vnd.docker.distribution.manifest.list.v2+json"
 curl -H "Accept: ${api}" -H "Accept: ${apil}" -H "Authorization: Bearer $token" -s "https://registry-1.docker.io/v2/${repo}/manifests/latest" | jq .
 """  # noqa
 import datetime
+import os
 import re
 import shlex
 import subprocess
@@ -179,3 +180,14 @@ def is_likely_in_docker() -> bool:
     with open('/proc/mounts') as f:  # type: ignore
         ls = f.readlines()
     return any(_LIKELY_IN_DOCKER_PATTERN.match(l) for l in ls)
+
+
+##
+
+
+# Set by pyproject, docker-dev script
+DOCKER_HOST_PLATFORM_KEY = 'DOCKER_HOST_PLATFORM'
+
+
+def get_docker_host_platform() -> str | None:
+    return os.environ.get(DOCKER_HOST_PLATFORM_KEY)

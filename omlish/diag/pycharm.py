@@ -113,7 +113,11 @@ def pycharm_remote_debugger_attach(
     # check.non_empty_str(version)
 
     if host is None:
-        if sys.platform == 'linux' and docker.is_likely_in_docker():
+        if (
+                sys.platform == 'linux' and
+                docker.is_likely_in_docker() and
+                docker.get_docker_host_platform() == 'darwin'
+        ):
             host = docker.DOCKER_FOR_MAC_HOSTNAME
         else:
             host = 'localhost'
