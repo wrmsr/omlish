@@ -29,7 +29,7 @@ class Resolvable(abc.ABC):
         return ()
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Attribute(Resolvable):
     name: str
 
@@ -64,7 +64,7 @@ class Attributes(ta.Sequence[Attribute]):
         return len(self.lst)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Entity(Resolvable):
     name: str
     src_attrs: ta.Sequence[Attribute] = dc.field(repr=False)
@@ -119,12 +119,15 @@ class Cost(enum.Enum):
     IO = enum.auto()
 
 
+ResolverImpl: ta.TypeAlias = ta.Callable[[ta.Mapping[Resolvable, ta.Any]], ta.Any]
+
+
 @dc.dataclass(frozen=True)
 class Resolver:
     cost: Cost
-    inputs: ta.Sequence[Resolvable]
+    inputs: frozenset[Resolvable]
     output: Resolvable
-    fn: ta.Callable
+    impl: ResolverImpl
 
 
 @dc.dataclass(frozen=True)
@@ -144,11 +147,12 @@ class _DummyResolvable(Resolvable):
 _DUMMY_RESOLVABLE = _DummyResolvable()
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Derivation(Resolvable):
     name: str
     src_resolver: Resolver = dc.field(repr=False)
     fn: ta.Callable
+    params: ta.Sequence[Resolvable]
 
     @cached.property
     @dc.init
@@ -168,22 +172,26 @@ class Derivation(Resolvable):
 
 
 def derivation(
-        *inputs: Resolvable,
+        *params: Resolvable,
         name: str | None = None,
         cost: Cost = Cost.TRIVIAL,
 ) -> ta.Callable[[ta.Callable], Derivation]:
     def inner(fn):
+        def impl(dct: ta.Mapping[Resolvable, ta.Any]) -> ta.Any:
+            return fn(*[dct[p] for p in params])
+
         resolver = Resolver(
             cost=cost,
-            inputs=inputs,
+            inputs=frozenset(params),
             output=_DUMMY_RESOLVABLE,
-            fn=fn,
+            impl=impl,
         )
 
         return Derivation(
             name=name if name is not None else fn.__name__,
             src_resolver=resolver,
             fn=fn,
+            params=params,
         )
 
     return inner  # noqa
@@ -272,6 +280,22 @@ REVIEWS = [
     for u in range(len(USERS))
     for b in range(len(BUSINESSES))
 ]
+
+
+#
+
+
+def make_entity_list_resolver(
+        ent: Entity,
+        lst: ta.Sequence,
+) -> Resolver:
+    return Resolver(
+        cost=Cost.TRIVIAL,
+        inputs=[]
+
+
+
+    )
 
 
 def _main() -> None:
