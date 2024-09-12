@@ -72,7 +72,7 @@ def unique(
     return ret
 
 
-def unique_map(
+def make_map(
         kvs: ta.Iterable[tuple[K, V]],
         *,
         identity: bool = False,
@@ -88,14 +88,14 @@ def unique_map(
     return d
 
 
-def unique_map_by(
+def make_map_by(
         fn: ta.Callable[[V], K],
         vs: ta.Iterable[V],
         *,
         identity: bool = False,
         strict: bool = False,
 ) -> ta.MutableMapping[K, V]:
-    return unique_map(
+    return make_map(
         ((fn(v), v) for v in vs),
         identity=identity,
         strict=strict,
