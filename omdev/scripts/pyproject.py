@@ -4259,12 +4259,7 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def _get_installable_versions(
-            self,
-            spec: InterpSpecifier,
-            *,
-            update: bool = False,
-    ) -> ta.Sequence[InterpVersion]:
+    def _get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         lst = []
 
         for vs in self._pyenv.installable_versions():
@@ -4275,13 +4270,16 @@ class PyenvInterpProvider(InterpProvider):
             for d in [False, True]:
                 lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
 
-        if update and not any(v in spec for v in lst):
-            return self._get_installable_versions(spec, update=False)
-
         return lst
 
     def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return self._get_installable_versions(spec, update=self._try_update)
+        lst = self._get_installable_versions(spec, update=self._try_update)
+
+        if self._try_update and not any(v in spec for v in lst):
+            if self._pyenv.update():
+                lst = self._get_installable_versions(spec)
+
+        return lst
 
     def install_version(self, version: InterpVersion) -> Interp:
         inst_version = str(version.version)
