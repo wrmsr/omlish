@@ -357,7 +357,6 @@ def _main() -> None:
         ]],
     ])
 
-    pprint.pprint(resolvers.all)
     pprint.pprint(resolvers.by_output)
     pprint.pprint(resolvers.by_input)
 
