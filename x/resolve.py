@@ -2,9 +2,6 @@
 TODO:
  - arrays
   - context 'nesting"
-
-FIXME:
- - @cached.property @dc.init doesn't cache lol, need idiom + dont break pycharm
 """
 import abc
 import enum
@@ -51,8 +48,8 @@ class Attribute(Resolvable):
 class Attributes(ta.Sequence[Attribute]):
     lst: ta.Sequence[Attribute]
 
+    @dc.init  # type: ignore
     @cached.property
-    @dc.init
     def by_name(self) -> ta.Mapping[str, Attribute]:
         return col.make_map_by(operator.attrgetter('name'), self.lst, strict=True)
 

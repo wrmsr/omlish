@@ -265,7 +265,7 @@ class _CachedProperty(property):
             return
         raise TypeError(self._name)
 
-    def __del__(self):
+    def __delete__(self, instance):
         raise TypeError
 
 
