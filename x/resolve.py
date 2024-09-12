@@ -134,6 +134,20 @@ class Resolver:
 class Resolvers:
     all: ta.Sequence[Resolver]
 
+    @cached.property
+    @dc.init
+    def by_output(self) -> ta.Mapping[Resolvable, ta.Sequence[Resolver]]:
+        return col.multi_map_by(operator.attrgetter('output'), self.all)
+
+    @cached.property
+    @dc.init
+    def by_input(self) -> ta.Mapping[Resolvable, ta.Sequence[Resolver]]:
+        dct: dict[Resolvable, list[Resolver]] = {}
+        for r in self.all:
+            for i in r.inputs:
+                dct.setdefault(i, []).append(r)
+        return dct
+
 
 ##
 
@@ -344,6 +358,8 @@ def _main() -> None:
     ])
 
     pprint.pprint(resolvers.all)
+    pprint.pprint(resolvers.by_output)
+    pprint.pprint(resolvers.by_input)
 
     #
 
@@ -353,6 +369,12 @@ def _main() -> None:
     ])
 
     pprint.pprint(resolvables.by_full_name)
+
+    #
+
+    ctx: dict[Resolvable, ta.Any] = {
+        user.attrs['id']: 1,
+    }
 
 
 if __name__ == '__main__':
