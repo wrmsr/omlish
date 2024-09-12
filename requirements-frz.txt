@@ -88,6 +88,7 @@ evaluate==0.4.3
 execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
+faiss-cpu==1.8.0.post1
 fastapi==0.114.1
 fastjsonschema==2.20.0
 filelock==3.16.0
