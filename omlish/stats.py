@@ -2,6 +2,7 @@
 TODO:
  - reservoir
  - dep tdigest?
+ - struct-of-arrays backed SamplingHistogram
 """
 import bisect
 import collections
