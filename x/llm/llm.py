@@ -13,6 +13,9 @@ tinygrad/examples/llama.py
 """
 import abc
 import argparse
+import dataclasses as dc
+import datetime
+import enum
 import os.path
 import sys
 import typing as ta
@@ -20,7 +23,9 @@ import typing as ta
 import yaml
 
 from omlish import lang
+from omlish import marshal as msh
 from omlish.diag import pycharm
+from omlish.formats import json
 
 
 if ta.TYPE_CHECKING:
@@ -32,6 +37,36 @@ else:
     llama_cpp = lang.proxy_import('llama_cpp')
     openai = lang.proxy_import('openai')
     transformers = lang.proxy_import('transformers')
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+class ChatRole(enum.Enum):
+    SYSTEM = enum.auto()
+    USER = enum.auto()
+    ASSISTANT = enum.auto()
+
+
+@dc.dataclass(frozen=True)
+class ChatMessage:
+    role: ChatRole
+    text: str
+
+    created_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+
+
+@dc.dataclass(frozen=True)
+class Chat:
+    name: str | None = None
+
+    created_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+    updated_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+
+    messages: ta.Sequence[ChatMessage] = ()
 
 
 ##
@@ -100,6 +135,56 @@ class TransformersSimpleLlm(SimpleLlm):
 ##
 
 
+STATE_VERSION = 0
+
+
+@dc.dataclass(frozen=True)
+class MarshaledState:
+    version: int
+    payload: ta.Any
+
+
+#
+
+
+def marshal_state(obj: ta.Any, ty: type | None = None, *, version: int = STATE_VERSION) -> ta.Any:
+    ms = MarshaledState(
+        version=version,
+        payload=msh.marshal(obj, ty)
+    )
+    return msh.marshal(ms)
+
+
+def save_state(file: str, obj: ta.Any, ty: type[T] | None, *, version: int = STATE_VERSION) -> bool:
+    dct = marshal_state(obj, ty, version=version)
+    data = json.dumps(dct)
+    with open(file, 'w') as f:
+        f.write(data)
+    return True
+
+
+#
+
+
+def unmarshal_state(obj: ta.Any, ty: type[T] | None = None, *, version: int = STATE_VERSION) -> T | None:
+    ms = msh.unmarshal(obj, MarshaledState)
+    if ms.version < version:
+        return None
+    return msh.unmarshal(ms.payload, ty)
+
+
+def load_state(file: str, ty: type[T] | None, *, version: int = STATE_VERSION) -> T | None:
+    if not os.path.isfile(file):
+        return None
+    with open(file) as f:
+        data = f.read()
+    dct = json.loads(data)
+    return unmarshal_state(dct, ty, version=version)
+
+
+##
+
+
 def _load_secrets():
     with open(os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')) as f:
         dct = yaml.safe_load(f)
@@ -110,25 +195,69 @@ def _load_secrets():
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
+    parser.add_argument('-c', '--chat', action='store_true')
+    parser.add_argument('-n', '--new', action='store_true')
     args = parser.parse_args()
+
+    #
 
     prompt = args.prompt
 
     if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
         stdin_data = sys.stdin.read()
-
         prompt = '\n'.join([prompt, stdin_data])
+
+    #
+
+    state_dir = os.path.expanduser('~/.omlish-llm')
+    if not os.path.exists(state_dir):
+        os.mkdir(state_dir)
+        os.chmod(state_dir, 0o770)
+
+    chat_file = os.path.join(state_dir, 'chat.json')
+    if args.new:
+        chat = Chat()
+    else:
+        chat = load_state(chat_file, Chat)
+        if chat is None:
+            chat = Chat()
+
+    #
 
     _load_secrets()
 
     llm: SimpleLlm
-    # llm = OpenaiSimpleLlm()
+    llm = OpenaiSimpleLlm()
     # llm = LlamacppSimpleLlm()
-    llm = TransformersSimpleLlm()
+    # llm = TransformersSimpleLlm()
 
-    response = llm.get_completion(prompt)
+    DELIM = '\n\n====\n\n'
 
-    print(response.strip())
+    full_prompt = DELIM.join([
+        *[m.text for m in chat.messages],
+        prompt,
+    ])
+
+    sys.stdout.write(full_prompt)
+    sys.stdout.write(DELIM)
+
+    response = llm.get_completion(full_prompt).strip()
+
+    print(response)
+
+    #
+
+    chat = dc.replace(
+        chat,
+        messages=[
+            *chat.messages,
+            ChatMessage(ChatRole.USER, prompt),
+            ChatMessage(ChatRole.ASSISTANT, response),
+        ],
+        updated_at=datetime.datetime.now(),
+    )
+
+    save_state(chat_file, chat, Chat)
 
 
 if __name__ == '__main__':
