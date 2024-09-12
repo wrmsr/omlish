@@ -127,6 +127,11 @@ class Resolver:
     fn: ta.Callable
 
 
+@dc.dataclass(frozen=True)
+class Resolvers:
+    all: ta.Sequence[Resolver]
+
+
 ##
 
 
@@ -292,12 +297,12 @@ def _main() -> None:
 
     #
 
-    resolvers = [
+    resolvers = Resolvers([
         *lang.flatten(make_entity_attribute_resolvers(ent) for ent in entities),
-        *derivations,
-    ]
+        *[d.resolver for d in derivations],
+    ])
 
-    pprint.pprint(resolvers)
+    pprint.pprint(resolvers.all)
 
     #
 
