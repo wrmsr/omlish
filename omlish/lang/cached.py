@@ -220,7 +220,7 @@ def cached_function(fn=None, **kwargs):  # noqa
 ##
 
 
-class _CachedProperty:
+class _CachedProperty(property):
     def __init__(
             self,
             fn,
@@ -229,9 +229,9 @@ class _CachedProperty:
             ignore_if=lambda _: False,
             clear_on_init=False,
     ):
-        super().__init__()
         if isinstance(fn, property):
             fn = fn.fget
+        super().__init__(fn)
         self._fn = fn
         self._ignore_if = ignore_if
         self._name = name
@@ -264,6 +264,9 @@ class _CachedProperty:
         if instance.__dict__[self._name] == value:
             return
         raise TypeError(self._name)
+
+    def __del__(self):
+        raise TypeError
 
 
 def cached_property(fn=None, **kwargs):  # noqa

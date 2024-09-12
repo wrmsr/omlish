@@ -130,9 +130,11 @@ class InitBuilder:
             cas = ', '.join(p.name for p in csig.parameters.values())
             body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckError__')
 
-        for i, fn in enumerate(self._info.merged_metadata.get(Init, [])):
+        for i, obj in enumerate(self._info.merged_metadata.get(Init, [])):
             cn = f'__dataclass_init_{i}__'
-            locals[cn] = fn
+            if isinstance(obj, property):
+                obj = obj.__get__
+            locals[cn] = obj
             body_lines.append(f'{cn}({self._self_name})')
 
         if not body_lines:
