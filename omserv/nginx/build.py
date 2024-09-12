@@ -1,4 +1,3 @@
-import importlib.resources
 import multiprocessing
 import os.path
 import shutil
@@ -8,6 +7,7 @@ import tempfile
 import urllib.request
 
 from omlish import check
+from omlish import lang
 
 
 NGINX_VERSION = '1.27.0'
@@ -38,11 +38,11 @@ def build_nginx() -> None:
     #
 
     patch_prefix = f'nginx-{NGINX_VERSION}_'
-    for p in importlib.resources.files(__package__).joinpath('patches').iterdir():
-        if p.is_file() and p.name.startswith(patch_prefix) and p.name.endswith('.patch'):
-            print(p.name)
+    for r in lang.get_relative_resources('patches', globals=globals()).values():
+        if r.is_file and r.name.startswith(patch_prefix) and r.name.endswith('.patch'):
+            print(r.name)
 
-            patch_src = p.read_bytes()
+            patch_src = r.read_bytes()
             subprocess.run(
                 ['git', 'apply'],
                 cwd=nginx_dir,
