@@ -4,7 +4,6 @@ FIXME:
 """
 import abc
 import enum
-import functools
 import operator
 import pprint
 import typing as ta
@@ -114,9 +113,16 @@ class Resolvables:
 ##
 
 
+class Cost(enum.Enum):
+    TRIVIAL = enum.auto()
+    PURE = enum.auto()
+    IO = enum.auto()
+
+
 @dc.dataclass(frozen=True)
 class Derivation(Resolvable):
     name: str
+    cost: Cost
     inputs: ta.Sequence[Resolvable]
     fn: ta.Callable
 
@@ -132,18 +138,25 @@ class Derivation(Resolvable):
         return self.fn(*args, **kwargs)
 
 
-def derivation(*inputs: Resolvable, **kwargs: ta.Any) -> ta.Callable[[ta.Callable], Derivation]:
+def derivation(
+        *inputs: Resolvable,
+        cost: Cost = Cost.PURE,
+        **kwargs: ta.Any,
+) -> ta.Callable[[ta.Callable], Derivation]:
     def inner(fn):
         if 'name' in kwargs:
             name = kwargs.pop('name')
         else:
             name = fn.__name__
+
         return Derivation(
             name=name,
+            cost=cost,
             inputs=inputs,
             fn=fn,
             **kwargs,
         )
+
     return inner
 
 
@@ -154,6 +167,7 @@ def make_dataclass_entity(cls: type) -> Entity:
     atts: list[Attribute] = []
     for fld in dc.fields(cls):  # noqa
         atts.append(Attribute(fld.name))
+
     return Entity(
         lang.snake_case(cls.__name__),
         atts,
@@ -165,19 +179,12 @@ def make_entity_attribute_derivations(ent: Entity) -> ta.Sequence[Derivation]:
     for att in ent.attrs:
         out.append(Derivation(
             name='_'.join([ent.name, att.name]),
+            cost=Cost.TRIVIAL,
             inputs=[ent],
             fn=operator.attrgetter(att.name),
         ))
+
     return out
-
-
-##
-
-
-class Cost(enum.Enum):
-    TRIVIAL = enum.auto()
-    PURE = enum.auto()
-    IO = enum.auto()
 
 
 ##
@@ -239,9 +246,6 @@ REVIEWS = [
 
 
 def _main() -> None:
-
-    #
-
     user = make_dataclass_entity(User)
     business = make_dataclass_entity(Business)
     review = make_dataclass_entity(Review)
