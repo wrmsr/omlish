@@ -60,7 +60,7 @@ class LlamacppSimpleLlm(SimpleLlm):
             model_path=self.model_path,
         )
 
-        output = llm(
+        output = llm.create_completion(
             prompt,
             max_tokens=1024,
             stop=["\n"],
