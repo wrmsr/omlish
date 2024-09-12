@@ -79,7 +79,7 @@ from .descriptors import (  # noqa
     unwrap_func,
     unwrap_func_with_partials,
     unwrap_method_descriptors,
-    update_wrapper_except_dict,
+    update_wrapper,
 )
 
 from .exceptions import (  # noqa
