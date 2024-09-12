@@ -448,6 +448,32 @@ def non_empty_str(v: str | None, msg: Message = None) -> str:
     return v
 
 
+def replacing(expected: ta.Any, old: ta.Any, new: T, msg: Message = None) -> T:
+    if old != expected:
+        _raise(
+            ValueError,
+            'Must be replacing',
+            msg,
+            _Args(expected, old, new),
+            render_fmt='%s -> %s -> %s',
+        )
+
+    return new
+
+
+def replacing_none(old: ta.Any, new: T, msg: Message = None) -> T:
+    if old is not None:
+        _raise(
+            ValueError,
+            'Must be replacing None',
+            msg,
+            _Args(old, new),
+            render_fmt='%s -> %s',
+        )
+
+    return new
+
+
 ##
 
 
