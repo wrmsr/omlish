@@ -222,6 +222,7 @@ def _main() -> None:
         return ' '.join([first_name, last_name])
 
     derivations = [
+        *lang.flatten(make_entity_attribute_derivations(ent) for ent in entities),
         user_full_name,
     ]
 
