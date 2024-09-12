@@ -118,17 +118,11 @@ def pycharm_remote_debugger_attach(
         else:
             host = 'localhost'
 
-    try:
+    if ta.TYPE_CHECKING:
         import pydevd_pycharm  # noqa
-    except ImportError:
-        subprocess.check_call([
-            sys.executable,
-            '-m', 'pip',
-            'install',
-            'pydevd-pycharm' + (f'~={version}' if version is not None else ''),
-        ])
+    else:
+        pydevd_pycharm = _import_pydevd_pycharm(version=version)
 
-    import pydevd_pycharm  # noqa
     pydevd_pycharm.settrace(
         host,
         port=port,
