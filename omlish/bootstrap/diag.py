@@ -166,12 +166,12 @@ class PycharmBootstrap(SimpleBootstrap['PycharmBootstrap.Config']):
     class Config(Bootstrap.Config):
         debug_host: ta.Optional[str] = None
         debug_port: ta.Optional[int] = None
-        debug_version: ta.Optional[str] = None
+        version: ta.Optional[str] = None
 
     def run(self) -> None:
         if self._config.debug_port is not None:
             diagpc.pycharm_remote_debugger_attach(
                 self._config.debug_host,
                 self._config.debug_port,
-                version=self._config.debug_version,
+                version=self._config.version,
             )

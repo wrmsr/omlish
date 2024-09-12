@@ -127,6 +127,7 @@ class TransformersSimpleLlm(SimpleLlm):
             "text-generation",
             model=self.model,
             device='mps' if sys.platform == 'darwin' else 'cuda',
+            token=os.environ.get('HUGGINGFACE_HUB_TOKEN'),
         )
         output = pipeline(prompt)
         return output
@@ -190,6 +191,7 @@ def _load_secrets():
         dct = yaml.safe_load(f)
     os.environ['OPENAI_API_KEY'] = dct['openai_api_key']
     os.environ['TAVILY_API_KEY'] = dct['tavily_api_key']
+    os.environ['HUGGINGFACE_HUB_TOKEN'] = dct['huggingface_token']
 
 
 def _main() -> None:
