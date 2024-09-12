@@ -4,6 +4,9 @@ import typing as ta
 import llama_cpp
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class LlamaOpts:
     model_path: str
@@ -69,6 +72,9 @@ class LlamaOpts:
     verbose: bool = True
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class CompletionRequest:
     prompt: str | ta.Sequence[int]
@@ -96,6 +102,41 @@ class CompletionRequest:
     logits_processor: LogitsProcessorList | None = None
     grammar: LlamaGrammar | None = None
     logit_bias: ta.Mapping[str, float] | None = None
+
+
+#
+
+
+class CompletionLogprobs(ta.TypedDict):
+    text_offset: ta.Sequence[int]
+    token_logprobs: ta.Sequence[float | None]
+    tokens: ta.Sequence[str]
+    top_logprobs: ta.Sequence[ta.Mapping[str, float] | None]
+
+
+class CompletionChoice(ta.TypedDict):
+    text: str
+    index: int
+    logprobs: CompletionLogprobs | None
+    finish_reason: ta.Literal['stop', 'length'] | None
+
+
+class CompletionUsage(ta.TypedDict):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+class CompletionResponse(ta.TypedDict):
+    id: str
+    object: ta.Literal['text_completion']
+    created: int
+    model: str
+    choices: ta.Sequence[CompletionChoice]
+    usage: ta.NotRequired[CompletionUsage]
+
+
+##
 
 
 @dc.dataclass(frozen=True)
