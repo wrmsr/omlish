@@ -185,7 +185,7 @@ class LlamacppSimpleChatLlm(SimpleChatLlm):
         os.path.expanduser('~/.cache/huggingface/hub'),
         'models--TheBloke--Llama-2-7B-Chat-GGUF',
         'snapshots',
-        'ballsballsballs',
+        '191239b3e26b2882fb562ffccdd1cf0f65402adb',
         'llama-2-7b-chat.Q5_0.gguf',
     )
 
@@ -209,7 +209,7 @@ class LlamacppSimpleChatLlm(SimpleChatLlm):
                 for m in messages
             ],
             max_tokens=1024,
-            stop=["\n"],
+            # stop=["\n"],
         )
 
         return output['choices'][0]['message']['content']
@@ -287,6 +287,8 @@ def _main() -> None:
     parser.add_argument('-n', '--new', action='store_true')
     args = parser.parse_args()
 
+    args.new = True
+
     #
 
     prompt = args.prompt
@@ -330,7 +332,8 @@ def _main() -> None:
     use_chat = True
 
     if use_chat:
-        llm = OpenaiSimpleChatLlm()
+        # llm = OpenaiSimpleChatLlm()
+        llm = LlamacppSimpleChatLlm()
 
         response = llm.get_chat_completion(chat.messages)
 
