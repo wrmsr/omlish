@@ -199,7 +199,7 @@ class TopLogprob:
 @dc.dataclass(frozen=True)
 class TokenLogprob:
     token: str
-    bytes: ta.Sequence[int] | None= None
+    bytes: ta.Sequence[int] | None = None
     logprob: float
     top_logprobs: ta.Sequence[TopLogprob]
 
@@ -269,32 +269,32 @@ class ChatCompletion:
 
 
 @dc.dataclass(frozen=True)
-class ChunkChoiceDeltaFunctionCall:
+class ChoiceDeltaFunctionCall:
     arguments: str | None = None
     name: str | None = None
 
 
 @dc.dataclass(frozen=True)
-class ChunkChoiceDeltaToolCallFunction:
+class ChoiceDeltaToolCallFunction:
     arguments: str | None = None
     name: str | None = None
 
 
 @dc.dataclass(frozen=True)
-class ChunkChoiceDeltaToolCall:
+class ChoiceDeltaToolCall:
     index: int
     id: str | None = None
-    function: ChunkChoiceDeltaToolCallFunction | None = None
+    function: ChoiceDeltaToolCallFunction | None = None
     type: ta.Literal['function'] | None = None
 
 
 @dc.dataclass(frozen=True)
-class ChunkChoiceDelta:
+class ChoiceDelta:
     content: str | None = None
-    function_call: ChunkChoiceDeltaFunctionCall | None = None
+    function_call: ChoiceDeltaFunctionCall | None = None
     refusal: str | None = None
     role: ta.Literal['system', 'user', 'assistant', 'tool'] | None = None
-    tool_calls: ta.Sequence[ChunkChoiceDeltaToolCall] | None = None
+    tool_calls: ta.Sequence[ChoiceDeltaToolCall] | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -305,7 +305,7 @@ class ChunkChoiceLogprobs:
 
 @dc.dataclass(frozen=True)
 class ChunkChoice:
-    delta: ChunkChoiceDelta
+    delta: ChoiceDelta
     finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call'] | None = None
     index: int
     logprobs: ChunkChoiceLogprobs | None = None
