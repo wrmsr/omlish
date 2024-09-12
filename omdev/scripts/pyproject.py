@@ -4833,18 +4833,30 @@ def _venv_cmd(args) -> None:
             f'--_docker_container={shlex.quote(sd)}',
             *map(shlex.quote, sys.argv[1:]),
         ])
+
+        docker_env = {
+            'DOCKER_HOST_PLATFORM': os.environ.get('DOCKER_HOST_PLATFORM', sys.platform),
+        }
+        for e in args.docker_env or []:
+            if '=' in e:
+                k, _, v = e.split('=')
+                docker_env[k] = v
+            else:
+                docker_env[e] = os.environ.get(e, '')
+
         subprocess_check_call(
             'docker',
             'compose',
             '-f', 'docker/compose.yml',
             'exec',
             *itertools.chain.from_iterable(
-                ('-e', f'{e}={os.environ.get(e, "")}' if '=' not in e else e)
-                for e in (args.docker_env or [])
+                ('-e', f'{k}={v}')
+                for k, v in docker_env.items()
             ),
             '-it', sd,
             'bash', '--login', '-c', script,
         )
+
         return
 
     cmd = args.cmd

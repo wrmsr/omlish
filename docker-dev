@@ -21,8 +21,17 @@ if [ -z "$CONTAINER_ID" ] ; then
     exit 1
 fi
 
+if [ -z "$DOCKER_HOST_PLATFORM" ] ; then
+    if [ $(uname) == "Linux" ] ; then
+        DOCKER_HOST_PLATFORM=linux
+    elif [ $(uname) == "Darwin" ] ; then
+        DOCKER_HOST_PLATFORM=darwin
+    fi
+fi
+
 docker exec \
     $TTY_ENV_ARGS \
+    -e DOCKER_HOST_PLATFORM="$DOCKER_HOST_PLATFORM" \
     --privileged \
     --detach-keys 'ctrl-o,ctrl-d' \
     -it "$CONTAINER_ID" \
