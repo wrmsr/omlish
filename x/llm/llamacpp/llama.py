@@ -7,7 +7,7 @@ import llama_cpp
 ##
 
 @dc.dataclass(frozen=True)
-class LlamaChatCompletionHandlerArgs:
+class ChatCompletionHandlerArgs:
     # llama.cpp instance
     llama: llama_cpp.Llama
 
@@ -38,10 +38,17 @@ class LlamaChatCompletionHandlerArgs:
     mirostat_mode: int = 0
     mirostat_tau: float = 5.0
     mirostat_eta: float = 0.1
-    logits_processor: LogitsProcessorta.Sequence | None = None
-    grammar: LlamaGrammar | None = None
+    logits_processor: LogitsProcessorSequence | None = None
+    grammar: Grammar | None = None
     logprobs: bool | None = None
     top_logprobs: int | None = None
+
+
+# NOTE: not actually lol, **dc.asdict(args)
+ChatCompletionHandler: ta.TypeAlias = ta.Callable[
+    [ChatCompletionHandlerArgs],
+    ChatCompletionResponse | ta.Iterator[ChatCompletionStreamResponse],
+]
 
 
 @dc.dataclass(frozen=True)
@@ -92,13 +99,13 @@ class LlamaOpts:
 
     # Chat Format Params
     chat_format: str | None = None
-    chat_handler: LlamaChatCompletionHandler | None = None
+    chat_handler: ChatCompletionHandler | None = None
 
     # Speculative Decoding
-    draft_model: LlamaDraftModel | None = None
+    draft_model: DraftModel | None = None
 
     # Tokenizer Override
-    tokenizer: BaseLlamaTokenizer | None = None
+    tokenizer: BaseTokenizer | None = None
 
     # KV cache quantization
     type_k: int | None = None
@@ -137,7 +144,7 @@ class CompletionRequest:
     model: str | None = None
     stopping_criteria: StoppingCriteriaList | None = None
     logits_processor: LogitsProcessorList | None = None
-    grammar: LlamaGrammar | None = None
+    grammar: Grammar | None = None
     logit_bias: ta.Mapping[str, float] | None = None
 
 
@@ -202,7 +209,7 @@ class ChatCompletionRequest:
     mirostat_eta: float = 0.1
     model: str | None = None
     logits_processor: LogitsProcessorList | None = None
-    grammar: LlamaGrammar | None = None
+    grammar: Grammar | None = None
     logit_bias: ta.Mapping[str, float] | None = None
     logprobs: bool | None = None
     top_logprobs: int | None = None
