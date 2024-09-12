@@ -1,7 +1,15 @@
 """
 TODO (immed):
  - -c / chat mode
- - transformers backend
+
+PATH="/usr/local/cuda-12.2/bin:$PATH"
+JIT=1
+GPU=1
+PYTHONPATH=tinygrad
+./python
+tinygrad/examples/llama.py
+--model /raid/huggingface/hub/models--huggyllama--llama-7b/snapshots/8416d3fefb0cb3ff5775a7b13c1692d10ff1aa16/model.safetensors.index.json
+--prompt 'hi'
 """
 import abc
 import argparse
@@ -83,6 +91,7 @@ class TransformersSimpleLlm(SimpleLlm):
         pipeline = transformers.pipeline(
             "text-generation",
             model=self.model,
+            device='mps' if sys.platform == 'darwin' else 'cuda',
         )
         output = pipeline(prompt)
         return output
