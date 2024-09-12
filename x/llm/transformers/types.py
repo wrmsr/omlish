@@ -16,14 +16,14 @@ NOT_SET = NotSet()
 @dc.dataclass(frozen=True)
 class PretrainedConfig:
     """
-    # class attributes
+    # class
 
     model_type: str
     is_composition: bool
     keys_to_ignore_at_inference: ta.Sequence[str]
     attribute_map: ta.Mapping[str, str]
 
-    # common attributes
+    # common
 
     vocab_size: int | NotSet = NOT_SET
     hidden_size: int | NotSet = NOT_SET
@@ -46,30 +46,30 @@ class PretrainedConfig:
 
     # sequence generation
 
-    max_length (`int`, *optional*, defaults to 20): Maximum length that will be used by default in the `generate` method of the model.
-    min_length (`int`, *optional*, defaults to 0): Minimum length that will be used by default in the `generate` method of the model.
-    do_sample (`bool`, *optional*, defaults to `False`): Flag that will be used by default in the `generate` method of the model. Whether or not to use sampling ; use greedy decoding otherwise.
-    early_stopping (`bool`, *optional*, defaults to `False`): Flag that will be used by default in the `generate` method of the model. Whether to stop the beam search when at least `num_beams` sentences are finished per batch or not.
-    num_beams (`int`, *optional*, defaults to 1): Number of beams for beam search that will be used by default in the `generate` method of the model. 1 means no beam search.
-    num_beam_groups (`int`, *optional*, defaults to 1): Number of groups to divide `num_beams` into in order to ensure diversity among different groups of beams that will be used by default in the `generate` method of the model. 1 means no group beam search.
-    diversity_penalty (`float`, *optional*, defaults to 0.0): Value to control diversity for group beam search. that will be used by default in the `generate` method of the model. 0 means no diversity penalty. The higher the penalty, the more diverse are the outputs.
-    temperature (`float`, *optional*, defaults to 1.0): The value used to module the next token probabilities that will be used by default in the `generate` method of the model. Must be strictly positive.
-    top_k (`int`, *optional*, defaults to 50): Number of highest probability vocabulary tokens to keep for top-k-filtering that will be used by default in the `generate` method of the model.
-    top_p (`float`, *optional*, defaults to 1): Value that will be used by default in the `generate` method of the model for `top_p`. If set to float < 1, only the most probable tokens with probabilities that add up to `top_p` or higher are kept for generation.
-    typical_p (`float`, *optional*, defaults to 1): Local typicality measures how similar the conditional probability of predicting a target token next is to the expected conditional probability of predicting a random token next, given the partial text already generated. If set to float < 1, the smallest set of the most locally typical tokens with probabilities that add up to `typical_p` or higher are kept for generation. See [this paper](https://arxiv.org/pdf/2202.00666.pdf) for more details.
-    repetition_penalty (`float`, *optional*, defaults to 1): Parameter for repetition penalty that will be used by default in the `generate` method of the model. 1.0 means no penalty.
-    length_penalty (`float`, *optional*, defaults to 1): Exponential penalty to the length that is used with beam-based generation. It is applied as an exponent to the sequence length, which in turn is used to divide the score of the sequence. Since the score is the log likelihood of the sequence (i.e. negative), `length_penalty` > 0.0 promotes longer sequences, while `length_penalty` < 0.0 encourages shorter sequences.
-    no_repeat_ngram_size (`int`, *optional*, defaults to 0) -- Value that will be used by default in the `generate` method of the model for `no_repeat_ngram_size`. If set to int > 0, all ngrams of that size can only occur once.
-    encoder_no_repeat_ngram_size (`int`, *optional*, defaults to 0) -- Value that will be used by default in the `generate` method of the model for `encoder_no_repeat_ngram_size`. If set to int > 0, all ngrams of that size that occur in the `encoder_input_ids` cannot occur in the `decoder_input_ids`.
-    bad_words_ids (`List[int]`, *optional*): List of token ids that are not allowed to be generated that will be used by default in the `generate` method of the model. In order to get the tokens of the words that should not appear in the generated text, use `tokenizer.encode(bad_word, add_prefix_space=True)`.
-    num_return_sequences (`int`, *optional*, defaults to 1): Number of independently computed returned sequences for each element in the batch that will be used by default in the `generate` method of the model.
-    output_scores (`bool`, *optional*, defaults to `False`): Whether the model should return the logits when used for generation.
-    return_dict_in_generate (`bool`, *optional*, defaults to `False`): Whether the model should return a [`~transformers.utils.ModelOutput`] instead of a `torch.LongTensor`.
-    forced_bos_token_id (`int`, *optional*): The id of the token to force as the first generated token after the `decoder_start_token_id`. Useful for multilingual models like [mBART](../model_doc/mbart) where the first generated token needs to be the target language token.
-    forced_eos_token_id (`int`, *optional*): The id of the token to force as the last generated token when `max_length` is reached.
-    remove_invalid_values (`bool`, *optional*): Whether to remove possible _nan_ and _inf_ outputs of the model to prevent the generation method to crash. Note that using `remove_invalid_values` can slow down generation.
+    max_length: int | None = 20
+    min_length: int | None = 0
+    do_sample: bool | None = False
+    early_stopping: bool | None = False
+    num_beams: int | None = 1
+    num_beam_groups: int | None = 1
+    diversity_penalty: float | None = 0.
+    temperature: float | None = 1.
+    top_k: int | None = 50
+    top_p: int | None = 1
+    typical_p: float | None = 1.
+    repetition_penalty: float | None = 1.
+    length_penalty: float | None = 1.
+    no_repeat_ngram_size: int | None = 0
+    encoder_no_repeat_ngram_size: int | None = 0
+    bad_words_ids: ta.Sequence[int] | None = None
+    num_return_sequences: int | None = 1
+    output_scores: bool | None = False
+    return_dict_in_generate: bool | None = False
+    forced_bos_token_id: int | None = None
+    forced_eos_token_id: int | None = None
+    remove_invalid_values: bool | None = None
 
-    > Parameters for fine-tuning tasks
+    # fine-tuning
 
     architectures (`List[str]`, *optional*): Model architectures that can be used with the model pretrained weights.
     finetuning_task (`str`, *optional*): Name of the task used to fine-tune the model. This can be used when converting from an original (TensorFlow or PyTorch) checkpoint.
