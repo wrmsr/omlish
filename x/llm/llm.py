@@ -62,8 +62,8 @@ class LlamacppSimpleLlm(SimpleLlm):
 
         output = llm(
             prompt,
-            max_tokens=32,
-            # stop=["Q:", "\n"],  # Stop generating just before the model would generate a new question
+            max_tokens=1024,
+            stop=["\n"],
         )
 
         return output['choices'][0]['text']
