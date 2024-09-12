@@ -4,6 +4,7 @@ FIXME:
 """
 import abc
 import enum
+import functools
 import operator
 import pprint
 import typing as ta
@@ -37,7 +38,7 @@ class Attribute(Resolvable):
 
     @cached.property
     def full_name(self) -> str:
-        return '.'.join([self.name, check.not_none(self.entity).name])
+        return '.'.join([check.not_none(self.entity).name, self.name])
 
 
 @dc.dataclass(frozen=True)
@@ -149,6 +150,30 @@ def derivation(*inputs: Resolvable, **kwargs: ta.Any) -> ta.Callable[[ta.Callabl
 ##
 
 
+def make_dataclass_entity(cls: type) -> Entity:
+    atts: list[Attribute] = []
+    for fld in dc.fields(cls):  # noqa
+        atts.append(Attribute(fld.name))
+    return Entity(
+        lang.snake_case(cls.__name__),
+        atts,
+    )
+
+
+def make_entity_attribute_derivations(ent: Entity) -> ta.Sequence[Derivation]:
+    out: list[Derivation] = []
+    for att in ent.attrs:
+        out.append(Derivation(
+            name='_'.join([ent.name, att.name]),
+            inputs=[ent],
+            fn=operator.attrgetter(att.name),
+        ))
+    return out
+
+
+##
+
+
 class Cost(enum.Enum):
     TRIVIAL = enum.auto()
     PURE = enum.auto()
@@ -159,32 +184,30 @@ class Cost(enum.Enum):
 
 
 def _main() -> None:
-    user = Entity(
-        'user',
-        [
-            Attribute('id'),
-            Attribute('name'),
-            Attribute('first_name'),
-            Attribute('last_name'),
-        ],
-    )
+    @dc.dataclass(frozen=True)
+    class User:
+        id: int
+        name: str
+        first_name: str
+        last_name: str
 
-    business = Entity(
-        'business',
-        [
-            Attribute('id'),
-            Attribute('name'),
-        ],
-    )
+    @dc.dataclass(frozen=True)
+    class Business:
+        id: int
+        name: str
 
-    review = Entity(
-        'review',
-        [
-            Attribute('id'),
-            Attribute('business_id'),
-            Attribute('user_id'),
-        ],
-    )
+    @dc.dataclass(frozen=True)
+    class Review:
+        id: int
+        business_id: int
+        user_id: int
+        text: str
+
+    #
+
+    user = make_dataclass_entity(User)
+    business = make_dataclass_entity(Business)
+    review = make_dataclass_entity(Review)
 
     entities = [
         user,
