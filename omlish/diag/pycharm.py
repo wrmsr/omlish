@@ -64,7 +64,7 @@ def _import_pydevd_pycharm(*, version: str | None = None) -> ta.Any:
         import pydevd_pycharm  # noqa
         return pydevd_pycharm
 
-    proc = subprocess.run([
+    proc = subprocess.run([  # noqa
         sys.executable,
         '-m', 'pip',
         'show',
