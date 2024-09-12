@@ -92,6 +92,14 @@ class Pyenv:
             ret.append(l)
         return ret
 
+    def update(self) -> bool:
+        if (root := self.root()) is None:
+            return False
+        if not os.path.isdir(os.path.join(root, '.git')):
+            return False
+        subprocess_check_call('git', 'pull', cwd=root)
+        return True
+
 
 ##
 
@@ -292,6 +300,10 @@ class PyenvInterpProvider(InterpProvider):
 
             inspect: bool = False,
             inspector: InterpInspector = INTERP_INSPECTOR,
+
+            *,
+
+            try_update: bool = False,
     ) -> None:
         super().__init__()
 
@@ -299,6 +311,8 @@ class PyenvInterpProvider(InterpProvider):
 
         self._inspect = inspect
         self._inspector = inspector
+
+        self._try_update = try_update
 
     #
 
@@ -364,8 +378,14 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def _get_installable_versions(
+            self,
+            spec: InterpSpecifier,
+            *,
+            update: bool = False,
+    ) -> ta.Sequence[InterpVersion]:
         lst = []
+
         for vs in self._pyenv.installable_versions():
             if (iv := self.guess_version(vs)) is None:
                 continue
@@ -373,7 +393,14 @@ class PyenvInterpProvider(InterpProvider):
                 raise Exception('Pyenv installable versions not expected to have debug suffix')
             for d in [False, True]:
                 lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
+
+        if update and not any(v in spec for v in lst):
+            return self._get_installable_versions(spec, update=False)
+
         return lst
+
+    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return self._get_installable_versions(spec, update=self._try_update)
 
     def install_version(self, version: InterpVersion) -> Interp:
         inst_version = str(version.version)
