@@ -67,6 +67,7 @@ class DPLLSolver:
         """
         `level`: the current decision level. Used for backtracking.
         """
+
         if level == self.instance.var_count:
             self.save_assignment()
             # print(f"Successful assignment:\n {self.assignment}")
@@ -134,6 +135,7 @@ class DPLLSolver:
 
     def get_assignments(self):
         """Return the list of satisfying assignments."""
+
         return self.satisfy_assignment
 
 
