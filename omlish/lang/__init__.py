@@ -154,6 +154,18 @@ from .objects import (  # noqa
     super_meta,
 )
 
+from .resolving import (  # noqa
+    Resolvable,
+    ResolvableClassNameError,
+    get_cls_fqcn,
+    get_fqcn_cls,
+)
+
+from .resources import (  # noqa
+    RelativeResource,
+    get_relative_resources,
+)
+
 from .strings import (  # noqa
     BOOL_FALSE_STRINGS,
     BOOL_STRINGS,
