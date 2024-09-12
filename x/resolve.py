@@ -24,6 +24,9 @@ class Resolvable(abc.ABC):
     def full_name(self) -> str:
         raise NotImplementedError
 
+    def __str__(self) -> str:
+        return f'{lang.snake_case(self.__class__.__name__)}:{self.full_name}'
+
     @property
     def children(self) -> ta.Iterable['Resolvable']:
         return ()
