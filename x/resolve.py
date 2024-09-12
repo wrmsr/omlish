@@ -1,6 +1,8 @@
-import dataclasses as dc
 import enum
 import typing as ta
+
+from omlish import cached
+from omlish import dataclasses as dc
 
 
 ##
@@ -10,11 +12,26 @@ import typing as ta
 class Attribute:
     name: str
 
+    entity: ta.Optional['Entity'] = None
+
 
 @dc.dataclass(frozen=True)
 class Entity:
     name: str
-    attrs: ta.Sequence[Attribute]
+    src_attrs: ta.Sequence[Attribute]
+
+    @cached.property
+    @dc.init
+    def attrs(self) -> ta.Sequence[Attribute]:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Derivation:
+    pass
 
 
 ##
