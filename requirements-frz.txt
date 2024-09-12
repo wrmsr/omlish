@@ -182,7 +182,7 @@ langchainhub==0.1.21
 langcodes==3.4.0
 langgraph==0.2.19
 langgraph-checkpoint==1.0.9
-langsmith==0.1.117
+langsmith==0.1.118
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
