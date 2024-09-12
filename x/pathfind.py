@@ -24,7 +24,8 @@ import typing as ta
 import pytest
 
 
-Graph: ta.TypeAlias = dict
+T = ta.TypeVar('T')
+Graph: ta.TypeAlias = dict[T, dict[T, float]]
 
 
 PathInfo = collections.namedtuple("PathInfo", ("nodes", "edges", "costs", "total_cost"))
@@ -300,8 +301,8 @@ class TestPathfind:
             }
         )
 
-        graph.add_edge("f", "c", 1)
-        graph.add_edge("g", "b", 1)
+        graph.setdefault("f", {})["c"] = 1
+        graph.setdefault("g", {})["b"] = 1
 
         nodes = sorted(graph)
         assert nodes == ["a", "b", "c", "d", "e", "f", "g"]
