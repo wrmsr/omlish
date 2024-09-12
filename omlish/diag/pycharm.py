@@ -55,6 +55,53 @@ def get_pycharm_version() -> str | None:
 ##
 
 
+def _import_pydevd_pycharm(*, version: str | None = None) -> ta.Any:
+    if (
+            'pydevd_pycharm' in sys.modules or
+            (version is None and lang.can_import('pydevd_pycharm'))
+    ):
+        # Can't unload, nothing we can do
+        import pydevd_pycharm  # noqa
+        return pydevd_pycharm
+
+    proc = subprocess.run([
+        sys.executable,
+        '-m', 'pip',
+        'show',
+        'pydevd_pycharm',
+    ], stdout=subprocess.PIPE)
+
+    if not proc.returncode:
+        info = {
+            k: v.strip()
+            for l in proc.stdout.decode().splitlines()
+            if (s := l.strip())
+            for k, _, v in [s.partition(':')]
+        }
+
+        installed_version = info['Version']
+        if installed_version == version:
+            import pydevd_pycharm  # noqa
+            return pydevd_pycharm
+
+        subprocess.check_call([
+            sys.executable,
+            '-m', 'pip',
+            'uninstall',
+            'pydevd_pycharm',
+        ])
+
+    subprocess.check_call([
+        sys.executable,
+        '-m', 'pip',
+        'install',
+        'pydevd_pycharm' + (f'=={version}' if version is not None else ''),
+    ])
+
+    import pydevd_pycharm  # noqa
+    return pydevd_pycharm
+
+
 def pycharm_remote_debugger_attach(
         host: str | None,
         port: int,
@@ -76,7 +123,7 @@ def pycharm_remote_debugger_attach(
     except ImportError:
         subprocess.check_call([
             sys.executable,
-            '-mpip',
+            '-m', 'pip',
             'install',
             'pydevd-pycharm' + (f'~={version}' if version is not None else ''),
         ])
