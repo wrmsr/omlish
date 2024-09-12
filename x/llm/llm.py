@@ -1,3 +1,8 @@
+"""
+TODO (immed):
+ - -c / chat mode
+ - transformers backend
+"""
 import abc
 import argparse
 import os.path
@@ -13,10 +18,12 @@ from omlish.diag import pycharm
 if ta.TYPE_CHECKING:
     import llama_cpp
     import openai
+    import transformers
 
 else:
     llama_cpp = lang.proxy_import('llama_cpp')
     openai = lang.proxy_import('openai')
+    transformers = lang.proxy_import('transformers')
 
 
 ##
@@ -69,6 +76,18 @@ class LlamacppSimpleLlm(SimpleLlm):
         return output['choices'][0]['text']
 
 
+class TransformersSimpleLlm(SimpleLlm):
+    model = "meta-llama/Meta-Llama-3-8B"
+
+    def get_completion(self, prompt: str) -> str:
+        pipeline = transformers.pipeline(
+            "text-generation",
+            model=self.model,
+        )
+        output = pipeline(prompt)
+        return output
+
+
 ##
 
 
@@ -95,7 +114,8 @@ def _main() -> None:
 
     llm: SimpleLlm
     # llm = OpenaiSimpleLlm()
-    llm = LlamacppSimpleLlm()
+    # llm = LlamacppSimpleLlm()
+    llm = TransformersSimpleLlm()
 
     response = llm.get_completion(prompt)
 
