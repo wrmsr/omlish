@@ -4273,7 +4273,7 @@ class PyenvInterpProvider(InterpProvider):
         return lst
 
     def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        lst = self._get_installable_versions(spec, update=self._try_update)
+        lst = self._get_installable_versions(spec)
 
         if self._try_update and not any(v in spec for v in lst):
             if self._pyenv.update():
