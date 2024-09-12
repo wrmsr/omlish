@@ -6,6 +6,43 @@ import llama_cpp
 
 ##
 
+@dc.dataclass(frozen=True)
+class LlamaChatCompletionHandlerArgs:
+    # llama.cpp instance
+    llama: llama_cpp.Llama
+
+    # openai api parameters
+    messages: ta.Sequence[ChatCompletionRequestMessage]
+    functions: ta.Sequence[ChatCompletionFunction] | None = None
+    function_call: ChatCompletionRequestFunctionCall | None = None
+    tools: ta.Sequence[ChatCompletionTool] | None = None
+    tool_choice: ChatCompletionToolChoiceOption | None = None
+    temperature: float = 0.2
+    top_p: float = 0.95
+    top_k: int = 40
+    stream: bool = False
+    stop: str | ta.Sequence[str] | None = []
+    seed: int | None = None
+    response_format: ChatCompletionRequestResponseFormat | None = None
+    max_tokens: int | None = None
+    presence_penalty: float = 0.0
+    frequency_penalty: float = 0.0
+    repeat_penalty: float = 1.1
+    model: str | None = None
+    logit_bias: ta.Mapping[str, float] | None = None
+
+    # llama.cpp parameters
+    min_p: float = 0.05
+    typical_p: float = 1.0
+    tfs_z: float = 1.0
+    mirostat_mode: int = 0
+    mirostat_tau: float = 5.0
+    mirostat_eta: float = 0.1
+    logits_processor: LogitsProcessorta.Sequence | None = None
+    grammar: LlamaGrammar | None = None
+    logprobs: bool | None = None
+    top_logprobs: int | None = None
+
 
 @dc.dataclass(frozen=True)
 class LlamaOpts:
@@ -55,7 +92,7 @@ class LlamaOpts:
 
     # Chat Format Params
     chat_format: str | None = None
-    chat_handler: llama_chat_format.LlamaChatCompletionHandler | None = None
+    chat_handler: LlamaChatCompletionHandler | None = None
 
     # Speculative Decoding
     draft_model: LlamaDraftModel | None = None
