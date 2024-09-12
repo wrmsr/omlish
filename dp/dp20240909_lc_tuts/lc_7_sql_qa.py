@@ -2,6 +2,7 @@
 https://python.langchain.com/v0.2/docs/tutorials/sql_qa/
 """
 import os.path
+import subprocess
 import urllib.parse
 import urllib.request
 
@@ -22,6 +23,7 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_community.utilities import SQLDatabase
 from langgraph.prebuilt import create_react_agent
 import bs4
 
@@ -42,8 +44,22 @@ def _main() -> None:
     if not os.path.isfile(sql_file):
         urllib.request.urlretrieve(SQL_FILE_URL, sql_file)
 
+    db_file = os.path.join(data_dir, 'Chinook.db')
+    if os.path.isfile(db_file):
+        os.unlink(db_file)
+    with open(sql_file, 'rb') as f:
+        sql_src = f.read()
+    subprocess.run([
+        'sqlite3',
+        db_file,
+    ], input=sql_src, check=True)
 
     #
+
+    db = SQLDatabase.from_uri(f"sqlite:///{db_file}")
+    print(db.dialect)
+    print(db.get_usable_table_names())
+    print(db.run("SELECT * FROM Artist LIMIT 10;"))
 
 
 if __name__ == '__main__':
