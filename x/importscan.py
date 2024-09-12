@@ -7,6 +7,7 @@
 import dataclasses as dc
 import inspect
 import json
+import shlex
 import subprocess
 import sys
 import typing as ta
@@ -54,6 +55,7 @@ def _payload(specs) -> None:
 
 def _main() -> None:
     payload_src = inspect.getsource(_payload)
+    shell_wrap = True
 
     for spec in [
         'omlish.lang',
@@ -62,16 +64,23 @@ def _main() -> None:
             payload_src,
             f'_payload([{spec!r}])',
         ])
-        output = subprocess.check_output([
+
+        args = [
             sys.executable,
             '-c',
             spec_payload_src,
-        ])
+        ]
+        if shell_wrap:
+            args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
+
+        output = subprocess.check_output(args)
+
         output_lines = output.decode().strip().splitlines()
         if not output_lines:
             raise Exception(f'no output: {spec}')
         if len(output_lines) > 1:
             print(f'warning: unexpected output: {spec}')
+
         dct = json.loads(output_lines[-1])
         print((spec, dct))
 
