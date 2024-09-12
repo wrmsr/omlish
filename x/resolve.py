@@ -2,6 +2,11 @@
 TODO:
  - arrays
   - context 'nesting"
+   - but no overriding!!
+    - PersistentMap!
+  - size is part of the type - (a[20] + b[20]) < (a[50] + b)
+   - cache plans.. symbolic math like tg?
+ - 'modified' pathfinding - need all targets reached
 """
 import abc
 import enum
