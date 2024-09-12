@@ -2,6 +2,7 @@ import dataclasses as dc
 import logging
 import typing as ta
 
+from ..lite.logs import StandardLogHandler
 from ..lite.logs import configure_standard_logging as configure_lite_standard_logging
 from .noisy import silence_noisy_loggers
 
@@ -34,12 +35,23 @@ def configure_standard_logging(
         level: ta.Any = None,
         *,
         json: bool = False,
-) -> logging.Handler:
+        target: logging.Logger | None = None,
+        no_check: bool = False,
+) -> StandardLogHandler | None:
     handler = configure_lite_standard_logging(
         level,
         json=json,
+        target=target,
+        no_check=no_check,
     )
 
+    if handler is None:
+        return None
+
+    #
+
     silence_noisy_loggers()
+
+    #
 
     return handler

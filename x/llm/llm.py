@@ -23,6 +23,7 @@ import typing as ta
 import yaml
 
 from omlish import lang
+from omlish import logs
 from omlish import marshal as msh
 from omlish.diag import pycharm
 from omlish.formats import json
@@ -195,6 +196,10 @@ def _load_secrets():
 
 
 def _main() -> None:
+    logs.configure_standard_logging('INFO')
+
+    #
+
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
     parser.add_argument('-c', '--chat', action='store_true')
