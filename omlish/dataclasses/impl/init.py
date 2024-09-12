@@ -130,10 +130,16 @@ class InitBuilder:
             cas = ', '.join(p.name for p in csig.parameters.values())
             body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckError__')
 
-        for i, obj in enumerate(self._info.merged_metadata.get(Init, [])):
-            cn = f'__dataclass_init_{i}__'
-            if isinstance(obj, property):
+        inits = self._info.merged_metadata.get(Init, [])
+        mro_dct = lang.build_mro_dict(self._info.cls)
+        mro_v_ids = set(map(id, mro_dct.values()))
+        props_by_fget_id = {id(v.fget): v for v in mro_dct.values() if isinstance(v, property) and v.fget is not None}
+        for i, obj in enumerate(inits):
+            if (obj_id := id(obj)) not in mro_v_ids and obj_id in props_by_fget_id:
+                obj = props_by_fget_id[obj_id].__get__
+            elif isinstance(obj, property):
                 obj = obj.__get__
+            cn = f'__dataclass_init_{i}__'
             locals[cn] = obj
             body_lines.append(f'{cn}({self._self_name})')
 

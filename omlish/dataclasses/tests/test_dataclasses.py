@@ -380,15 +380,40 @@ def test_cached_property():
         f.x = 5  # type: ignore  # noqa
 
 
-def test_cached_init_property():
+def test_cached_init_property_outer_deco():
     c = 0
 
     @dc.dataclass(frozen=True)
     class Foo:
         x: int
 
+        # NOTE: BREAKS TYPECHECKING - mypy considers this Any afterward. don't do this.
         @dc.init  # type: ignore
         @cached.property
+        def y(self) -> int:
+            nonlocal c
+            c += 1
+            return self.x + 1
+
+    f = Foo(3)
+    assert c == 1
+    assert f.x == 3
+    for _ in range(2):
+        assert f.y == 4
+        assert c == 1
+    with pytest.raises(dc.FrozenInstanceError):
+        f.x = 5  # type: ignore  # noqa
+
+
+def test_cached_init_property_inner_deco():
+    c = 0
+
+    @dc.dataclass(frozen=True)
+    class Foo:
+        x: int
+
+        @cached.property
+        @dc.init
         def y(self) -> int:
             nonlocal c
             c += 1
