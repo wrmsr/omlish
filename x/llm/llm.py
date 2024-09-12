@@ -2,6 +2,13 @@
 TODO (immed):
  - -c / chat mode
 
+==
+
+https://platform.openai.com/usage
+https://platform.openai.com/settings/organization/billing/overview
+
+==
+
 PATH="/usr/local/cuda-12.2/bin:$PATH"
 JIT=1
 GPU=1
@@ -173,6 +180,41 @@ class OpenaiSimpleChatLlm(SimpleChatLlm):
         return response.choices[0].message.content
 
 
+class LlamacppSimpleChatLlm(SimpleChatLlm):
+    model_path = os.path.join(
+        os.path.expanduser('~/.cache/huggingface/hub'),
+        'models--TheBloke--Llama-2-7B-Chat-GGUF',
+        'snapshots',
+        'ballsballsballs',
+        'llama-2-7b-chat.Q5_0.gguf',
+    )
+
+    ROLES_MAP: ta.ClassVar[ta.Mapping[ChatRole, str]] = {
+        ChatRole.SYSTEM: 'system',
+        ChatRole.USER: 'user',
+        ChatRole.ASSISTANT: 'assistant',
+    }
+
+    def get_chat_completion(self, messages: ta.Sequence[ChatMessage]) -> str:
+        llm = llama_cpp.Llama(
+            model_path=self.model_path,
+        )
+
+        output = llm.create_chat_completion(
+            messages=[  # noqa
+                dict(
+                    role=self.ROLES_MAP[m.role],
+                    content=m.text,
+                )
+                for m in messages
+            ],
+            max_tokens=1024,
+            stop=["\n"],
+        )
+
+        return output['choices'][0]['message']['content']
+
+
 ##
 
 
@@ -198,7 +240,7 @@ def marshal_state(obj: ta.Any, ty: type | None = None, *, version: int = STATE_V
 
 def save_state(file: str, obj: ta.Any, ty: type[T] | None, *, version: int = STATE_VERSION) -> bool:
     dct = marshal_state(obj, ty, version=version)
-    data = json.dumps(dct)
+    data = json.dumps_pretty(dct)
     with open(file, 'w') as f:
         f.write(data)
     return True
