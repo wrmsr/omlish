@@ -268,6 +268,61 @@ class ChatCompletion:
 ##
 
 
+@dc.dataclass(frozen=True)
+class ChunkChoiceDeltaFunctionCall:
+    arguments: str | None = None
+    name: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChunkChoiceDeltaToolCallFunction:
+    arguments: str | None = None
+    name: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChunkChoiceDeltaToolCall:
+    index: int
+    id: str | None = None
+    function: ChunkChoiceDeltaToolCallFunction | None = None
+    type: ta.Literal['function'] | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChunkChoiceDelta:
+    content: str | None = None
+    function_call: ChunkChoiceDeltaFunctionCall | None = None
+    refusal: str | None = None
+    role: ta.Literal['system', 'user', 'assistant', 'tool'] | None = None
+    tool_calls: ta.Sequence[ChunkChoiceDeltaToolCall] | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChunkChoiceLogprobs:
+    content: ta.Sequence[TokenLogprob] | None = None
+    refusal: ta.Sequence[TokenLogprob] | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChunkChoice:
+    delta: ChunkChoiceDelta
+    finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call'] | None = None
+    index: int
+    logprobs: ChunkChoiceLogprobs | None = None
+
+
+@dc.dataclass(frozen=True)
+class ChatCompletionChunk:
+    id: str
+    choices: ta.Sequence[ChunkChoice]
+    created: int
+    model: str
+    object: ta.Literal['chat.completion.chunk']
+    service_tier: ta.Literal['scale', 'default'] | None = None
+    system_fingerprint: str | None = None
+    usage: Usage | None = None
+
+
 ##
 
 
