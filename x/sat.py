@@ -160,7 +160,7 @@ def parse_program(program):
 
     # TODO: Check number of vars and clauses to see if they match
 
-    lines = program.split("\n")
+    lines = program.strip().split("\n")
 
     # Ignore comments at the beginning of the file:
     start_i = 0
@@ -335,12 +335,17 @@ p cnf 5 13
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("There are not enough arguments!")
-        print("Expected: python tinysat.py <input file>")
-        sys.exit()
+        # print("There are not enough arguments!")
+        # print("Expected: python tinysat.py <input file>")
+        # sys.exit()
 
-    with open(sys.argv[1], "r") as f:
-        program = f.read()
+        program = SIMPLE
+        # program = SIMPLE2
+        # program = SIMPLE_UNSAT
+
+    else:
+        with open(sys.argv[1]) as f:
+            program = f.read()
 
     start_time = time.time()
     result, assignments = run_solver(program)
@@ -351,6 +356,7 @@ if __name__ == "__main__":
         print("UNSAT")
     else:
         print("SAT")
-        [print(a) for a in assignments]
+        for a in assignments:
+            print(a)
 
-    print(f"Time elapse: {elapsed_time * 1000 :.2f}ms")
+    print(f"Time elapse: {elapsed_time * 1000:.2f}ms")
