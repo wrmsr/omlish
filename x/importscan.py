@@ -7,6 +7,8 @@
 import dataclasses as dc
 import inspect
 import json
+import os
+import re
 import shlex
 import subprocess
 import sys
@@ -57,9 +59,24 @@ def _main() -> None:
     payload_src = inspect.getsource(_payload)
     shell_wrap = True
 
-    for spec in [
-        'omlish.lang',
+    filters = [
+        r'.*/conftest\.py',
+        r'.*/tests/.*',
+    ]
+
+    filter_pats = [re.compile(f) for f in filters]
+
+    for fp in [
+        'omlish/lang/__init__.py',
+        'omlish/lang/conftest.py',
     ]:
+        if not fp.endswith('.py'):
+            raise Exception(fp)
+        if any(p.fullmatch(fp) for p in filter_pats):
+            continue
+
+        spec = fp.rpartition('.')[0].replace(os.sep, '.')
+
         spec_payload_src = '\n\n'.join([
             payload_src,
             f'_payload([{spec!r}])',
