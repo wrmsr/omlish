@@ -16,50 +16,35 @@ NOT_SET = NotSet()
 @dc.dataclass(frozen=True)
 class PretrainedConfig:
     """
+    # class attributes
+
     model_type: str
     is_composition: bool
     keys_to_ignore_at_inference: ta.Sequence[str]
     attribute_map: ta.Mapping[str, str]
+
+    # common attributes
 
     vocab_size: int | NotSet = NOT_SET
     hidden_size: int | NotSet = NOT_SET
     num_attention_heads: int | NotSet = NOT_SET
     num_hidden_layers: int | NotSet = NOT_SET
 
+    # args
+
     name_or_path: str | None = ''
+    output_hidden_states: bool | None = False
+    output_attentions: bool | None = False
+    return_dict: bool | None = True
+    is_encoder_decoder: bool | None = False
+    is_decoder: bool | None = False
+    cross_attention_hidden_size: bool | None = None
+    add_cross_attention: bool | None = False
+    tie_encoder_decoder: bool | None = False
+    prune_heads: ta.Mapping[int, ta.Sequence[int]] | None = {}
+    chunk_size_feed_forward: int | None = 0
 
-    output_hidden_states (`bool`, *optional*, defaults to `False`):
-        Whether or not the model should return all hidden-states.
-    output_attentions (`bool`, *optional*, defaults to `False`):
-        Whether or not the model should returns all attentions.
-    return_dict (`bool`, *optional*, defaults to `True`):
-        Whether or not the model should return a [`~transformers.utils.ModelOutput`] instead of a plain tuple.
-    is_encoder_decoder (`bool`, *optional*, defaults to `False`):
-        Whether the model is used as an encoder/decoder or not.
-    is_decoder (`bool`, *optional*, defaults to `False`):
-        Whether the model is used as decoder or not (in which case it's used as an encoder).
-    cross_attention_hidden_size** (`bool`, *optional*):
-        The hidden size of the cross-attention layer in case the model is used as a decoder in an encoder-decoder
-        setting and the cross-attention hidden dimension differs from `self.config.hidden_size`.
-    add_cross_attention (`bool`, *optional*, defaults to `False`):
-        Whether cross-attention layers should be added to the model. Note, this option is only relevant for models
-        that can be used as decoder models within the [`EncoderDecoderModel`] class, which consists of all models
-        in `AUTO_MODELS_FOR_CAUSAL_LM`.
-    tie_encoder_decoder (`bool`, *optional*, defaults to `False`):
-        Whether all encoder weights should be tied to their equivalent decoder weights. This requires the encoder
-        and decoder model to have the exact same parameter names.
-    prune_heads (`Dict[int, List[int]]`, *optional*, defaults to `{}`):
-        Pruned heads of the model. The keys are the selected layer indices and the associated values, the list of
-        heads to prune in said layer.
-
-        For instance `{1: [0, 2], 2: [2, 3]}` will prune heads 0 and 2 on layer 1 and heads 2 and 3 on layer 2.
-    chunk_size_feed_forward (`int`, *optional*, defaults to `0`):
-        The chunk size of all feed forward layers in the residual attention blocks. A chunk size of `0` means that
-        the feed forward layer is not chunked. A chunk size of n means that the feed forward layer processes `n` <
-        sequence_length embeddings at a time. For more information on feed forward chunking, see [How does Feed
-        Forward Chunking work?](../glossary.html#feed-forward-chunking).
-
-    > Parameters for sequence generation
+    # sequence generation
 
     max_length (`int`, *optional*, defaults to 20):
         Maximum length that will be used by default in the `generate` method of the model.
