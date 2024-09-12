@@ -25,6 +25,7 @@ import pytest
 
 
 T = ta.TypeVar('T')
+
 Graph: ta.TypeAlias = dict[T, dict[T, float]]
 
 
