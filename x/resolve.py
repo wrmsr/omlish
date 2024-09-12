@@ -212,13 +212,19 @@ def make_dataclass_entity(cls: type) -> Entity:
 
 
 def make_entity_attribute_resolvers(ent: Entity) -> ta.Sequence[Resolver]:
+    def make_impl(att: Attribute) -> ResolverImpl:
+        def impl(dct: ta.Mapping[Resolvable, ta.Any]) -> ta.Any:
+            obj = dct[ent]
+            return getattr(obj, att.name)
+        return impl
+
     out: list[Resolver] = []
     for att in ent.attrs:
         out.append(Resolver(
             cost=Cost.TRIVIAL,
             inputs=[ent],
             output=att,
-            fn=operator.attrgetter(att.name),
+            impl=make_impl(att),
         ))
 
     return out
