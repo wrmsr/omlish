@@ -70,6 +70,6 @@ class Init(lang.Marker):
     pass
 
 
-def init(fn: ta.Callable):
-    _append_cls_md(Init, fn)
-    return fn
+def init(obj):
+    _append_cls_md(Init, obj)
+    return obj
