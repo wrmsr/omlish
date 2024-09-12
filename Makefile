@@ -332,7 +332,9 @@ CI_BASE_FILES=\
 
 .PHONY: ci-image
 ci-image:
-	tar cvh ${CI_BASE_FILES} | \
+	tar cvh \
+		${CI_BASE_FILES} \
+	2>/dev/null | \
 		docker build \
 			--platform linux/x86_64 \
 			--tag "${DOCKER_USER}/omlish-ci-base" \
@@ -350,7 +352,7 @@ ci-image:
 		pyproject.toml \
 		requirements-dev.txt \
 		requirements.txt \
-	| \
+	2>/dev/null | \
 		docker build \
 			--platform linux/x86_64 \
 			--tag "${DOCKER_USER}/omlish-ci" \
