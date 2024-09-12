@@ -137,6 +137,45 @@ class TransformersSimpleLlm(SimpleLlm):
 ##
 
 
+class SimpleChatLlm(abc.ABC):
+    @abc.abstractmethod
+    def get_chat_completion(self, messages: ta.Sequence[ChatMessage]) -> str:
+        raise NotImplementedError
+
+
+class OpenaiSimpleChatLlm(SimpleChatLlm):
+    model = 'gpt-4o'
+
+    ROLES_MAP: ta.ClassVar[ta.Mapping[ChatRole, str]] = {
+        ChatRole.SYSTEM: 'system',
+        ChatRole.USER: 'user',
+        ChatRole.ASSISTANT: 'assistant',
+    }
+
+    def get_chat_completion(self, messages: ta.Sequence[ChatMessage]) -> str:
+        response = openai.chat.completions.create(  # noqa
+            model=self.model,
+            messages=[
+                dict(
+                    role=self.ROLES_MAP[m.role],
+                    content=m.text,
+                )
+                for m in messages
+            ],
+            temperature=0,
+            max_tokens=1024,
+            top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stream=False,
+        )
+
+        return response.choices[0].message.content
+
+
+##
+
+
 STATE_VERSION = 0
 
 
@@ -231,36 +270,58 @@ def _main() -> None:
 
     #
 
-    _load_secrets()
-
-    llm: SimpleLlm
-    # llm = OpenaiSimpleLlm()
-    # llm = LlamacppSimpleLlm()
-    llm = TransformersSimpleLlm()
-
-    DELIM = '\n\n====\n\n'
-
-    full_prompt = DELIM.join([
-        *[m.text for m in chat.messages],
-        prompt,
-    ])
-
-    sys.stdout.write(full_prompt)
-    sys.stdout.write(DELIM)
-
-    response = llm.get_completion(full_prompt).strip()
-
-    print(response)
-
-    #
-
     chat = dc.replace(
         chat,
         messages=[
             *chat.messages,
             ChatMessage(ChatRole.USER, prompt),
+        ],
+    )
+
+
+    #
+
+    _load_secrets()
+
+    #
+
+    use_chat = True
+
+    if use_chat:
+        llm = OpenaiSimpleChatLlm()
+
+        response = llm.get_chat_completion(chat.messages)
+
+    else:
+        DELIM = '\n\n====\n\n'
+
+        full_prompt = DELIM.join(m.text for m in chat.messages)
+
+        # sys.stdout.write(full_prompt)
+        # sys.stdout.write(DELIM)
+
+        #
+
+        # llm = OpenaiSimpleLlm()
+        # llm = LlamacppSimpleLlm()
+        llm = TransformersSimpleLlm()
+
+        response = llm.get_completion(full_prompt).strip()
+
+    print(response)
+
+    chat = dc.replace(
+        chat,
+        messages=[
+            *chat.messages,
             ChatMessage(ChatRole.ASSISTANT, response),
         ],
+    )
+
+    #
+
+    chat = dc.replace(
+        chat,
         updated_at=datetime.datetime.now(),
     )
 
