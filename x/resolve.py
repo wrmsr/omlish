@@ -44,11 +44,11 @@ class Entity:
 
     @cached.property
     @dc.init  # FIXME: doesn't cache lol
-    def attrs(self) -> ta.Sequence[Attribute]:
-        return [
+    def attrs(self) -> Attributes:
+        return Attributes([
             dc.replace(a, entity=check.replacing_none(a.entity, self))
             for a in self.src_attrs
-        ]
+        ])
 
 
 ##
