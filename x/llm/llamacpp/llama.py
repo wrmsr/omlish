@@ -38,8 +38,8 @@ class ChatCompletionHandlerArgs:
     mirostat_mode: int = 0
     mirostat_tau: float = 5.0
     mirostat_eta: float = 0.1
-    logits_processor: LogitsProcessorSequence | None = None
-    grammar: Grammar | None = None
+    logits_processor: llama_cpp.LogitsProcessorList | None = None
+    grammar: llama_cpp.LlamaGrammar | None = None
     logprobs: bool | None = None
     top_logprobs: int | None = None
 
@@ -102,10 +102,10 @@ class LlamaOpts:
     chat_handler: ChatCompletionHandler | None = None
 
     # Speculative Decoding
-    draft_model: DraftModel | None = None
+    draft_model: llama_cpp.LlamaDraftModel | None = None
 
     # Tokenizer Override
-    tokenizer: BaseTokenizer | None = None
+    tokenizer: llama_cpp.BaseLlamaTokenizer | None = None
 
     # KV cache quantization
     type_k: int | None = None
@@ -142,9 +142,9 @@ class CompletionRequest:
     mirostat_tau: float = 5.0
     mirostat_eta: float = 0.1
     model: str | None = None
-    stopping_criteria: StoppingCriteriaList | None = None
-    logits_processor: LogitsProcessorList | None = None
-    grammar: Grammar | None = None
+    stopping_criteria: llama_cpp.StoppingCriteriaList | None = None
+    logits_processor: llama_cpp.LogitsProcessorList | None = None
+    grammar: llama_cpp.LlamaGrammar | None = None
     logit_bias: ta.Mapping[str, float] | None = None
 
 
@@ -208,8 +208,8 @@ class ChatCompletionRequest:
     mirostat_tau: float = 5.0
     mirostat_eta: float = 0.1
     model: str | None = None
-    logits_processor: LogitsProcessorList | None = None
-    grammar: Grammar | None = None
+    logits_processor: llama_cpp.LogitsProcessorList | None = None
+    grammar: llama_cpp.LlamaGrammar | None = None
     logit_bias: ta.Mapping[str, float] | None = None
     logprobs: bool | None = None
     top_logprobs: int | None = None
