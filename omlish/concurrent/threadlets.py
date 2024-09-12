@@ -1,3 +1,8 @@
+"""
+An abstraction over greenlet's api. Greenlet doesn't currently support nogil but its functionality is needed for async
+bridge code (both here and in sqlalchemy). This can be implemented with real threads at the expense of overhead, but
+this code is only intended to be used in already fairly heavy situations (bootstrap, db calls).
+"""
 import abc
 import dataclasses as dc
 import typing as ta
