@@ -183,25 +183,62 @@ class Cost(enum.Enum):
 ##
 
 
+@dc.dataclass(frozen=True)
+class User:
+    id: int
+    name: str
+    first_name: str
+    last_name: str
+
+
+@dc.dataclass(frozen=True)
+class Business:
+    id: int
+    name: str
+
+
+@dc.dataclass(frozen=True)
+class Review:
+    id: int
+    user_id: int
+    business_id: int
+    text: str
+
+
+#
+
+
+USERS = [
+    User(
+        id=i,
+        name=f'user {i}',
+        first_name=f'first_name {i}',
+        last_name=f'last_name {i}',
+    )
+    for i in range(3)
+]
+
+BUSINESSES = [
+    Business(
+        id=i,
+        name=f'business {i}',
+    )
+    for i in range(3)
+]
+
+REVIEWS = [
+    Review(
+        id=(i := u * len(USERS) + b),
+        user_id=u,
+        business_id=b,
+        text=f'review {i} user {u} business {b}',
+    )
+    for u in range(len(USERS))
+    for b in range(len(BUSINESSES))
+]
+
+
 def _main() -> None:
-    @dc.dataclass(frozen=True)
-    class User:
-        id: int
-        name: str
-        first_name: str
-        last_name: str
-
-    @dc.dataclass(frozen=True)
-    class Business:
-        id: int
-        name: str
-
-    @dc.dataclass(frozen=True)
-    class Review:
-        id: int
-        business_id: int
-        user_id: int
-        text: str
 
     #
 
