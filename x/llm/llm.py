@@ -229,9 +229,9 @@ def _main() -> None:
     _load_secrets()
 
     llm: SimpleLlm
-    llm = OpenaiSimpleLlm()
+    # llm = OpenaiSimpleLlm()
     # llm = LlamacppSimpleLlm()
-    # llm = TransformersSimpleLlm()
+    llm = TransformersSimpleLlm()
 
     DELIM = '\n\n====\n\n'
 
