@@ -1,8 +1,10 @@
 import enum
+import operator
 import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 
 
@@ -14,6 +16,25 @@ class Attribute:
     name: str
 
     entity: ta.Optional['Entity'] = None
+
+
+@dc.dataclass(frozen=True)
+class Attributes(ta.Sequence[Attribute]):
+    lst: ta.Sequence[Attribute]
+
+    @cached.property
+    @dc.init  # FIXME: doesn't cache lol
+    def by_name(self) -> ta.Mapping[str, Attribute]:
+        return col.make_map_by(operator.attrgetter('name'), self.lst, strict=True)
+
+    def __getitem__(self, item: int) -> Attribute:  # type: ignore
+        return self.lst[item]
+
+    def __iter__(self) -> ta.Iterator[Attribute]:
+        return iter(self.lst)
+
+    def __len__(self) -> int:
+        return len(self.lst)
 
 
 @dc.dataclass(frozen=True)
