@@ -14,7 +14,7 @@ numpy==1.26.4, <2.0
 
 matplotlib==3.9.2
 
-huggingface_hub==0.24.6
+huggingface_hub==0.24.7
 evaluate==0.4.3
 datasets==3.0.0
 
