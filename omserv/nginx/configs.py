@@ -8,10 +8,10 @@ https://nginx.org/en/docs/example.html
 
 https://github.com/yandex/gixy
 """
+import dataclasses as dc
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text.indent import IndentWriter
 
@@ -43,7 +43,7 @@ class Item(lang.Final):
             block, args = Items.of(args[-1]), args[:-1]
         else:
             block = None
-        return Item(name, list(check.isinstance(e, str) for e in args), block=block)
+        return Item(name, [check.isinstance(e, str) for e in args], block=block)
 
 
 def render(wr: IndentWriter, obj: ta.Any) -> None:
@@ -61,14 +61,14 @@ def render(wr: IndentWriter, obj: ta.Any) -> None:
             wr.write(';\n')
 
     elif isinstance(obj, Items):
-        for e in obj.lst:
-            render(wr, e)
+        for e2 in obj.lst:
+            render(wr, e2)
 
     else:
         raise TypeError(obj)
 
 
-def _main():
+def _main() -> None:
     conf = Items.of([
         ('user', 'www', 'www'),
         ('worker_processes', '2'),

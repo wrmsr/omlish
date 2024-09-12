@@ -1,3 +1,4 @@
+import abc
 import argparse
 import os.path
 import sys
@@ -6,6 +7,33 @@ import openai
 import yaml
 
 from omlish.diag import pycharm
+
+
+##
+
+
+class SimpleLlm(abc.ABC):
+    @abc.abstractmethod
+    def get_completion(self, prompt: str) -> str:
+        raise NotImplementedError
+
+
+class OpenaiSimpleLlm(SimpleLlm):
+    def get_completion(self, prompt: str) -> str:
+        response = openai.completions.create(
+            model='gpt-3.5-turbo-instruct',
+            prompt=prompt,
+            temperature=0,
+            max_tokens=1024,
+            top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stream=False,
+        )
+        return response.choices[0].text
+
+
+##
 
 
 def _load_secrets():
@@ -29,27 +57,11 @@ def _main() -> None:
 
     _load_secrets()
 
-    stream = True
+    llm = OpenaiSimpleLlm()
 
-    response = openai.completions.create(
-        model='gpt-3.5-turbo-instruct',
-        prompt=prompt,
-        temperature=0,
-        max_tokens=1024,
-        top_p=1,
-        frequency_penalty=0.0,
-        presence_penalty=0.0,
-        stream=stream,
-    )
+    response = llm.get_completion(prompt)
 
-    if stream:
-        for chunk in response:
-            sys.stdout.write(chunk.choices[0].text)
-        print()
-
-    else:
-        response_text = response.choices[0].text.strip()
-        print(response_text)
+    print(response.strip())
 
 
 if __name__ == '__main__':
