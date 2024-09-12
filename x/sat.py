@@ -22,17 +22,23 @@ https://github.com/eliben/code-for-blog/blob/main/2007/sudoku_sat/test_sat_solve
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import copy
+import enum
+import random
+import sys
+import time
 import typing as ta
 
 
 class DPLLSolver:
-    """A SAT solver using DPLL algorithm.
+    """
+    A SAT solver using DPLL algorithm.
 
-    Parameters: \\
+    Parameters:
     `var_choice`: {"input_order", "most_appearance"}, optional.
         Default is "input_order".
-    `solve_all`: boolean, optional. Default is False, which means the solver \
-        will terminate after having found the first solution.
+    `solve_all`: boolean, optional. Default is False, which means the solver will terminate after having found the first
+        solution.
     """
 
     def __init__(self, var_choice="input_order", solve_all=False):
@@ -91,22 +97,25 @@ class DPLLSolver:
 
             # Sort variables according to their decreasing number of appearances
             order = copy.copy(instance.variables)
-            order.sort(key=lambda v: all_literals.count(var_to_lit(v, True))
-                                     + all_literals.count(var_to_lit(v, False)),
-                       reverse=True
-                       )
+            order.sort(
+                key=lambda v: all_literals.count(var_to_lit(v, True))
+                + all_literals.count(var_to_lit(v, False)),
+                reverse=True,
+            )
         else:
             order = copy.copy(instance.variables)
 
         return order
 
     def pick_branching_var(self):
-        """ Choose the unassigned variable according to self.var_choice"""
+        """Choose the unassigned variable according to self.var_choice"""
+
         var = self.unassigned_vars[0]
         return var
 
     def pick_assignment_order(self):
-        """ Randomly choose the order of value to make an assignment """
+        """Randomly choose the order of value to make an assignment"""
+
         if random.random() >= 0.5:
             return (True, False)
         return (False, True)
@@ -124,8 +133,7 @@ class DPLLSolver:
         self.satisfy_assignment.append(copy.copy(self.assignment))
 
     def get_assignments(self):
-        """ Return the list of satisfying assignments.
-        """
+        """Return the list of satisfying assignments."""
         return self.satisfy_assignment
 
 
@@ -137,9 +145,8 @@ def __encode_literal(x):
 
 
 def __parse_clause(line):
-    """
-    Converting a clause to an array of literals.
-    """
+    """Converting a clause to an array of literals."""
+
     literals = [int(x) for x in line.split()]
     if literals[-1] != 0:
         raise Exception("Parsing error: All clauses must end with 0.")
@@ -149,9 +156,8 @@ def __parse_clause(line):
 
 
 def parse_program(program):
-    """
-    Parse a program (of type string) and return an Instance
-    """
+    """Parse a program (of type string) and return an Instance"""
+
     # TODO: Check number of vars and clauses to see if they match
 
     lines = program.split("\n")
@@ -180,17 +186,22 @@ def decode_assignment(assignment):
 
 ##
 
+
 def lit_to_var(literal):
     return (literal // 2, literal % 2 == 0)
+
 
 def var_to_lit(variable, value):
     """
     variable: int
     value: boolean
     """
+
     return variable * 2 + int(value)
 
+
 ##
+
 
 class Instance:
     def __init__(self, variables, clauses):
@@ -198,6 +209,7 @@ class Instance:
         self.variables: [1, 2, 3, 4]
         self.clauses: [(0, 2, 5), (3, 4, 5)]
         """
+
         self.var_count = len(variables)
         self.clause_count = len(clauses)
         self.variables = variables
@@ -226,14 +238,12 @@ class Propagator:
 
     def propagate(self, false_literal, assignment):
         """
-        At least a literal in a clause must be true to satisfy a clause.
-        When a literal is assigned false, we make all the clauses watching that
-        literal to watch another literal.
-        If all other literal are false => clause unsatisfied
+        At least a literal in a clause must be true to satisfy a clause. When a literal is assigned false, we make all
+        the clauses watching that literal to watch another literal. If all other literal are false => clause unsatisfied
 
-        Return: False if cannot update watchlist, which means the formula is
-        unsatisfiable; True otherwise.
+        Return: False if cannot update watchlist, which means the formula is unsatisfiable; True otherwise.
         """
+
         watchlist = self.watchlist
         while len(watchlist[false_literal]) > 0:
             clause_id = watchlist[false_literal][0]
@@ -243,8 +253,7 @@ class Propagator:
                     continue
                 variable, is_positive = lit_to_var(literal)
 
-                if assignment[variable] is None \
-                or assignment[variable] == is_positive:
+                if assignment[variable] is None or assignment[variable] == is_positive:
                     found_another = True
                     watchlist[literal].append(clause_id)
                     watchlist[false_literal].remove(clause_id)
@@ -255,52 +264,30 @@ class Propagator:
 
         return True
 
+
 ##
 
 
-class Satisfiability(Enum):
-    SAT = 'SATISFIABLE'
-    UNSAT = 'UNSATISFIABLE'
+class Satisfiability(enum.Enum):
+    SAT = "SATISFIABLE"
+    UNSAT = "UNSATISFIABLE"
     # UNKNOWN = 'UNKNOWN'
 
 
 def run_solver(program):
-    instance = parser.parse_program(program)
+    instance = parse_program(program)
     solver = DPLLSolver("input_order")
     is_sat = solver.solve(instance)
 
     if is_sat:
         assignments = solver.get_assignments()
-        assignments = [parser.decode_assignment(a) for a in assignments]
+        assignments = [decode_assignment(a) for a in assignments]
         return Satisfiability.SAT, assignments
     else:
         return Satisfiability.UNSAT, None
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("There are not enough arguments!")
-        print("Expected: python tinysat.py <input file>")
-        sys.exit()
-
-    with open(sys.argv[1], 'r') as f:
-        program = f.read()
-
-    start_time = time.time()
-    result, assignments = run_solver(program)
-    elapsed_time = time.time() - start_time
-
-    print()
-    if result == Satisfiability.UNSAT:
-        print("UNSAT")
-    else:
-        print("SAT")
-        [print(a) for a in assignments]
-
-    print(f"Time elapse: {elapsed_time * 1000 :.2f}ms")
-
-
-###
+##
 
 
 SIMPLE = """
@@ -344,3 +331,26 @@ p cnf 5 13
 -3 0
 -1 -2 0
 """
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("There are not enough arguments!")
+        print("Expected: python tinysat.py <input file>")
+        sys.exit()
+
+    with open(sys.argv[1], "r") as f:
+        program = f.read()
+
+    start_time = time.time()
+    result, assignments = run_solver(program)
+    elapsed_time = time.time() - start_time
+
+    print()
+    if result == Satisfiability.UNSAT:
+        print("UNSAT")
+    else:
+        print("SAT")
+        [print(a) for a in assignments]
+
+    print(f"Time elapse: {elapsed_time * 1000 :.2f}ms")
