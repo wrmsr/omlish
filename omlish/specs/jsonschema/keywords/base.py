@@ -37,12 +37,12 @@ class Keywords(lang.Final):
     @cached.property
     @dc.init
     def by_type(self) -> ta.Mapping[type[Keyword], Keyword]:
-        return col.unique_map_by(type, self.lst, strict=True)  # noqa
+        return col.make_map_by(type, self.lst, strict=True)  # noqa
 
     @cached.property
     @dc.init
     def by_tag(self) -> ta.Mapping[str, Keyword]:
-        return col.unique_map_by(operator.attrgetter('tag'), self.lst, strict=True)  # noqa
+        return col.make_map_by(operator.attrgetter('tag'), self.lst, strict=True)  # noqa
 
     def __getitem__(self, item: type[KeywordT] | str) -> KeywordT:
         if isinstance(item, type):
