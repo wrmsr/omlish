@@ -3,6 +3,7 @@ https://github.com/wrmsr/omlish/blob/f80afa5bf7f325ecf76d6bb7539818bb79e51806/x/
 
 TODO:
  - nodals aren't necessarily dataclasses - orthogonal
+ - try impl w/ disatch not visitor
 """
 import abc
 import dataclasses as dc
