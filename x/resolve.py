@@ -295,12 +295,17 @@ def make_entity_list_resolver(
         ent: Entity,
         lst: ta.Sequence,
 ) -> Resolver:
+    id_att = ent.attrs['id']
+
+    def impl(dct: ta.Mapping[Resolvable, ta.Any]) -> ta.Any:
+        id = dct[id_att]  # noqa
+        return lst[id]
+
     return Resolver(
         cost=Cost.TRIVIAL,
-        inputs=[]
-
-
-
+        inputs=[id_att],
+        output=ent,
+        impl=impl,
     )
 
 
@@ -330,6 +335,12 @@ def _main() -> None:
     resolvers = Resolvers([
         *lang.flatten(make_entity_attribute_resolvers(ent) for ent in entities),
         *[d.resolver for d in derivations],
+
+        *[make_entity_list_resolver(c, l) for c, l in [
+            (user, USERS),
+            (business, BUSINESSES),
+            (review, REVIEWS),
+        ]],
     ])
 
     pprint.pprint(resolvers.all)
