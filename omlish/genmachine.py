@@ -1,5 +1,6 @@
 """
-https://github.com/pytransitions/transitions
+See:
+ - https://github.com/pytransitions/transitions
 """
 import typing as ta
 
