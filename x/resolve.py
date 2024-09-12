@@ -1,4 +1,8 @@
 """
+TODO:
+ - arrays
+  - context 'nesting"
+
 FIXME:
  - @cached.property @dc.init doesn't cache lol, need idiom + dont break pycharm
 """
