@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-class Secret(lang.NotPicklable, lang.Final):
+class Secret(lang.NotPicklable, lang.Sensitive, lang.Final):
     _VALUE_ATTR = '__secret_value__'
 
     def __init__(self, *, key: str | None, value: str) -> None:

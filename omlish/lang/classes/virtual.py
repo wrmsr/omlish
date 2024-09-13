@@ -40,7 +40,12 @@ class _VirtualMeta(abc.ABCMeta):
             if absv is not v:
                 namespace[k] = absv
 
-        reqs = {k: v for k, v in namespace.items() if getattr(v, '__isabstractmethod__', False)}
+        reqs = {
+            k: v
+            for k, v in namespace.items()
+            if getattr(v, '__isabstractmethod__', False)
+        }
+
         user_subclasshook = namespace.pop('__subclasshook__', None)
 
         def get_missing_reqs(cls):
@@ -94,13 +99,11 @@ def virtual_check(virtual: type) -> ta.Callable[[Ty], Ty]:
 
 
 class Descriptor(Virtual):
-
     def __get__(self, instance, owner=None):
         raise NotImplementedError
 
 
 class Picklable(Virtual):
-
     def __getstate__(self):
         raise NotImplementedError
 
@@ -112,7 +115,6 @@ class Picklable(Virtual):
 
 
 class Callable(NotInstantiable, Final, ta.Generic[T]):
-
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         raise TypeError
 
