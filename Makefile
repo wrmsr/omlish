@@ -335,6 +335,12 @@ docker-reup: docker-rebuild
 docker-invalidate:
 	date +%s > docker/.timestamp
 
+BASE_DOCKER_PORT=35220
+
+.PHONY: docker-ports
+docker-ports: venv
+	${PYTHON} -m omdev.tools.dockertools reset_compose_ports -wq ${BASE_DOCKER_PORT}
+
 
 ### CI
 
