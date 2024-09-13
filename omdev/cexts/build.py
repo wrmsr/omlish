@@ -15,6 +15,13 @@ class BuildExt:
     full_name: str
     src_file: str
 
+    inplace: bool = dc.field(default=True, kw_only=True)
+    debug: bool = dc.field(default=True, kw_only=True)
+    force: bool = dc.field(default=False, kw_only=True)
+
+    dry_run: bool = dc.field(default=False, kw_only=True)
+    verbose: bool = dc.field(default=False, kw_only=True)
+
     extra_src_files: lang.SequenceNotStr[str] | None = dc.field(default=None, kw_only=True)
     include_dirs: lang.SequenceNotStr[str] | None = dc.field(default=None, kw_only=True)
     compile_args: lang.SequenceNotStr[str] | None = dc.field(default=None, kw_only=True)
@@ -55,8 +62,12 @@ def build_ext(ext: BuildExt) -> str:
     )
 
     cmd_obj = du.BuildExt(du.BuildExt.Options(
-        inplace=True,
-        debug=True,
+        inplace=ext.inplace,
+        debug=ext.debug,
+        force=ext.force,
+
+        dry_run=ext.dry_run,
+        verbose=ext.verbose,
     ))
     cmd_obj.build_extension(du_ext)
 

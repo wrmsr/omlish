@@ -14,14 +14,19 @@ def _main():
 
     #
 
-    build.build_ext(build.BuildExt(
+    pybind11_dir = os.path.join(here, '..', '..', 'rocksdb', 'pybind11')
+
+    so_file = build.build_ext(build.BuildExt(
         'x.dev.c._pybindthing',
         os.path.join(here, '_pybindthing.cc'),
+        include_dirs=[
+            os.path.join(pybind11_dir, 'include'),
+        ],
     ))
 
     #
 
-    import _pybindthing  # noqa
+    from . import _pybindthing  # noqa
     print(_pybindthing.add(1, 2))
 
 
