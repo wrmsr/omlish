@@ -73,9 +73,13 @@ def _main():
             if p_l != l_l or p_r != l_r:
                 raise Exception(f'Port mismatch: {p}')
 
-            print(p)
-            print(l)
-            print()
+            new_l = l.partition("'")[0] + f"{cur_port}:{l_r}'\n"
+            src_lines[p.l] = new_l
+
+            cur_port += 1
+
+    new_src = ''.join(src_lines)
+    print(new_src)
 
 
 if __name__ == '__main__':
