@@ -195,43 +195,43 @@ spi
       StructuredPromptFactory
 store
   embedding
-  embedding/CosineSimilarity
-  embedding/EmbeddingMatch
-  embedding/EmbeddingSearchRequest
-  embedding/EmbeddingSearchResult
-  embedding/EmbeddingStore
-  embedding/EmbeddingStoreIngestor
-  embedding/RelevanceScore
-  embedding/filter
-  embedding/filter/Filter
-  embedding/filter/FilterParser
-  embedding/filter/MetadataFilterBuilder
-  embedding/filter/comparison
-  embedding/filter/comparison/IsEqualTo
-  embedding/filter/comparison/IsGreaterThan
-  embedding/filter/comparison/IsGreaterThanOrEqualTo
-  embedding/filter/comparison/IsIn
-  embedding/filter/comparison/IsLessThan
-  embedding/filter/comparison/IsLessThanOrEqualTo
-  embedding/filter/comparison/IsNotEqualTo
-  embedding/filter/comparison/IsNotIn
-  embedding/filter/comparison/NumberComparator
-  embedding/filter/comparison/TypeChecker
-  embedding/filter/comparison/UUIDComparator
-  embedding/filter/logical
-  embedding/filter/logical/And
-  embedding/filter/logical/Not
-  embedding/filter/logical/Or
+    CosineSimilarity
+    EmbeddingMatch
+    EmbeddingSearchRequest
+    EmbeddingSearchResult
+    EmbeddingStore
+    EmbeddingStoreIngestor
+    RelevanceScore
+    filter
+      Filter
+      FilterParser
+      MetadataFilterBuilder
+      comparison
+        IsEqualTo
+        IsGreaterThan
+        IsGreaterThanOrEqualTo
+        IsIn
+        IsLessThan
+        IsLessThanOrEqualTo
+        IsNotEqualTo
+        IsNotIn
+        NumberComparator
+        TypeChecker
+        UUIDComparator
+      logical
+        And
+        Not
+        Or
   memory
-  memory/chat
-  memory/chat/ChatMemoryStore
-  memory/chat/InMemoryChatMemoryStore
+    chat
+      ChatMemoryStore
+      InMemoryChatMemoryStore
 web
-web/search
-web/search/WebSearchEngine
-web/search/WebSearchInformationResult
-web/search/WebSearchOrganicResult
-web/search/WebSearchRequest
-web/search/WebSearchResults
-web/search/WebSearchTool
+  search
+    WebSearchEngine
+    WebSearchInformationResult
+    WebSearchOrganicResult
+    WebSearchRequest
+    WebSearchResults
+    WebSearchTool
 """
