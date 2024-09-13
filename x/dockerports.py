@@ -1,5 +1,6 @@
 import os.path
 
+from omlish import check
 from omlish import lang
 from omlish.formats import yaml
 
@@ -13,9 +14,8 @@ def _main():
         yml_src = f.read()
 
     with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
-        while loader.check_data():
-            val = loader.get_data()
-            print(val)
+        val = check.not_none(loader.get_single_data())
+        print(val)
 
 
 if __name__ == '__main__':
