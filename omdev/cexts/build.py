@@ -10,6 +10,9 @@ from omlish import lang
 from . import _distutils as du
 
 
+CPP_STD = 'c++20'
+
+
 @dc.dataclass(frozen=True)
 class BuildExt:
     full_name: str
@@ -50,7 +53,7 @@ def build_ext(ext: BuildExt) -> str:
             *(ext.include_dirs or []),
         ],
         extra_compile_args=[
-            *(['-std=c++20'] if any(ext.src_file.endswith(sf) for sf in ('cc', 'cpp')) else []),
+            *([f'-std={CPP_STD}'] if any(ext.src_file.endswith(sf) for sf in ('cc', 'cpp')) else []),
             *(ext.compile_args or []),
         ],
         extra_link_args=[
