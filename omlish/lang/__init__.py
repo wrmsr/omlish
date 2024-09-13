@@ -202,6 +202,7 @@ from .typing import (  # noqa
     Func1,
     Func2,
     Func3,
+    SequenceNotStr,
     protocol_check,
     typed_lambda,
     typed_partial,
