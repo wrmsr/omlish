@@ -71,7 +71,7 @@ sympy==1.13.2
 
 wgpu==0.17.3
 
-hypothesis==6.112.0
+hypothesis==6.112.1
 
 hexdump==3.3
 
@@ -220,14 +220,14 @@ langchain==0.2.16
 langchain-community==0.2.16
 langchain-elasticsearch==0.2.2
 langchain-nomic==0.1.2
-langchain-openai==0.1.23
+langchain-openai==0.1.24
 langchain-text-splitters==0.2.4
 
 langchainhub==0.1.21
 
 langgraph==0.2.19
 
-langsmith==0.1.119
+langsmith==0.1.120
 
 tavily-python==0.4.0
 
