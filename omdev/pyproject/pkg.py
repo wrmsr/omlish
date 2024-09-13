@@ -30,13 +30,14 @@ import dataclasses as dc
 import importlib
 import os.path
 import shutil
-import subprocess
 import sys
+import tempfile
 import types
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_check_call
 
 from ..cexts.magic import CextMagic
 from ..findmagic import find_magic
@@ -161,13 +162,12 @@ class BasePyprojectPackageGenerator(abc.ABC):
             build_output_dir: ta.Optional[str] = None,
             *,
             add_revision: bool = False,
+            test: bool = False,
     ) -> None:
-        subprocess.check_call(
-            [
-                sys.executable,
-                '-m',
-                'build',
-            ],
+        subprocess_check_call(
+            sys.executable,
+            '-m',
+            'build',
             cwd=self._pkg_dir(),
         )
 
@@ -175,6 +175,25 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
         if add_revision:
             GitRevisionAdder().add_to(dist_dir)
+
+        if test:
+            for fn in os.listdir(dist_dir):
+                tmp_dir = tempfile.mkdtemp()
+
+                subprocess_check_call(
+                    sys.executable,
+                    '-m', 'venv',
+                    'test-install',
+                    cwd=tmp_dir,
+                )
+
+                subprocess_check_call(
+                    os.path.join(tmp_dir, 'test-install', 'bin', 'python3'),
+                    '-m', 'pip',
+                    'install',
+                    os.path.abspath(os.path.join(dist_dir, fn)),
+                    cwd=tmp_dir,
+                )
 
         if build_output_dir is not None:
             for fn in os.listdir(dist_dir):
