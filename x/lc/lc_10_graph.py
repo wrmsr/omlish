@@ -8,6 +8,7 @@ from langchain_community.graphs import Neo4jGraph
 from langchain_openai import ChatOpenAI
 
 from dp.utils import load_secrets
+from omlish import docker
 
 
 def _main() -> None:
@@ -15,7 +16,8 @@ def _main() -> None:
 
     #
 
-    os.environ["NEO4J_URI"] = "bolt://localhost:35226"
+    neo4j_port = 35226
+    os.environ["NEO4J_URI"] = f"bolt://localhost:{neo4j_port}"
     os.environ["NEO4J_USERNAME"] = "neo4j"
     os.environ["NEO4J_PASSWORD"] = "neo4j"  # noqa
 
