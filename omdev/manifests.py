@@ -185,31 +185,40 @@ def build_package_manifests(
 ##
 
 
-def _main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-b', '--base')
-    parser.add_argument('-w', '--write', action='store_true')
-    parser.add_argument('-q', '--quiet', action='store_true')
-    parser.add_argument('package', nargs='*')
-    args = parser.parse_args()
-
-    if args.base is not None:
-        base = args.base
-    else:
-        base = os.getcwd()
-    base = os.path.abspath(base)
-    if not os.path.isdir(base):
-        raise RuntimeError(base)
-
-    for pkg in args.packages:
-        ms = build_package_manifests(
-            pkg,
-            base,
-            write=args.write or False,
-        )
-        if not args.quiet:
-            print(json_dumps_pretty(ms))
-
-
 if __name__ == '__main__':
-    _main()
+    def _gen_cmd(args) -> None:
+        if args.base is not None:
+            base = args.base
+        else:
+            base = os.getcwd()
+        base = os.path.abspath(base)
+        if not os.path.isdir(base):
+            raise RuntimeError(base)
+
+        for pkg in args.packages:
+            ms = build_package_manifests(
+                pkg,
+                base,
+                write=args.write or False,
+            )
+            if not args.quiet:
+                print(json_dumps_pretty(ms))
+
+
+def _main(argv=None) -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    parser_gen = subparsers.add_parser('gen')
+    parser_gen.add_argument('-b', '--base')
+    parser_gen.add_argument('-w', '--write', action='store_true')
+    parser_gen.add_argument('-q', '--quiet', action='store_true')
+    parser_gen.add_argument('package', nargs='*')
+
+    parser_gen.set_defaults(func=_gen_cmd)
+
+    args = parser.parse_args(argv)
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func(args)
