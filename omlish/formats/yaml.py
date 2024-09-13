@@ -26,6 +26,9 @@ else:
 T = ta.TypeVar('T')
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class NodeWrapped(lang.Final, ta.Generic[T]):
     value: T
@@ -124,6 +127,9 @@ class NodeWrappingConstructorMixin:
         return self.__construct_yaml_pairs(node, super().construct_yaml_pairs)  # type: ignore  # noqa
 
 
+##
+
+
 class _cached_class_property:  # noqa
     def __init__(self, fn):
         super().__init__()
@@ -202,6 +208,9 @@ class WrappedLoaders(lang.Namespace):
     @classmethod
     def cunsafe(cls, *args, **kwargs) -> 'yaml.CUnsafeLoader':
         return cls.CUnsafe(*args, **kwargs)
+
+
+##
 
 
 def load(stream, Loader):  # noqa
