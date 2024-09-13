@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:

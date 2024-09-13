@@ -21,7 +21,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 import bs4
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:

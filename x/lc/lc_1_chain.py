@@ -7,7 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:

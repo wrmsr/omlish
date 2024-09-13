@@ -24,7 +24,7 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langgraph.prebuilt import create_react_agent
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 SQL_FILE_URL = 'https://raw.githubusercontent.com/lerocha/chinook-database/master/ChinookDatabase/DataSources/Chinook_Sqlite.sql'  # noqa

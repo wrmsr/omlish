@@ -9,7 +9,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:

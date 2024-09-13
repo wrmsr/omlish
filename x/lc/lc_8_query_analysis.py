@@ -15,7 +15,7 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:

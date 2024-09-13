@@ -2,7 +2,7 @@
 https://python.langchain.com/v0.2/docs/tutorials/local_rag/
 """
 
-from ..utils import load_secrets
+from dp.utils import load_secrets
 
 
 def _main() -> None:
