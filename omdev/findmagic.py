@@ -17,6 +17,13 @@ def find_magic(
         *,
         py: bool = False,
 ) -> ta.Iterator[str]:
+    if isinstance(roots, str):
+        raise TypeError(roots)
+    if isinstance(magics, str):
+        raise TypeError(magics)
+    if isinstance(exts, str):
+        raise TypeError(exts)
+
     if not magics:
         raise Exception('Must specify magics')
     if not exts:
