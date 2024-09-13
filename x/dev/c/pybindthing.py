@@ -14,6 +14,16 @@ def _main():
 
     #
 
+    build.build_ext(build.BuildExt(
+        'x.dev.c._pybindthing',
+        os.path.join(here, '_pybindthing.cc'),
+    ))
+
+    #
+
+    import _pybindthing  # noqa
+    print(_pybindthing.add(1, 2))
+
 
 if __name__ == '__main__':
     _main()
