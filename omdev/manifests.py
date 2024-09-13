@@ -26,6 +26,8 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_pretty
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.logs import log
 
 from . import findmagic
 
@@ -85,12 +87,15 @@ def build_module_manifests(
         *,
         shell_wrap: bool = True,
 ) -> ta.Sequence[Manifest]:
-    print((file, base))
+    log.info(f'Extracting manifests from file %s', file)
 
     if not file.endswith('.py'):
         raise Exception(file)
 
     mod_name = file.rpartition('.')[0].replace(os.sep, '.')
+    mod_base = mod_name.split('.')[0]
+    if mod_base != os.path.split(file)[0]:
+        raise Exception('Unexpected module base')
 
     with open(os.path.join(base, file)) as f:
         src = f.read()
@@ -103,10 +108,10 @@ def build_module_manifests(
                 raise Exception(nl)
 
             origins.append(ManifestOrigin(
-                module=mod_name,
+                module='.'.join(['', *mod_name.split('.')[1:]]),
                 attr=m.groupdict()['name'],
 
-                file=file,
+                file=os.path.join(*os.path.split(file)[1:]),
                 line=i + 1,
             ))
 
@@ -205,6 +210,8 @@ if __name__ == '__main__':
                 print(json_dumps_pretty(ms))
 
     def _main(argv=None) -> None:
+        configure_standard_logging('INFO')
+
         parser = argparse.ArgumentParser()
         subparsers = parser.add_subparsers()
 

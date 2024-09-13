@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "module": ".foo",
+    "attr": "_FOO_MANIFEST",
+    "file": "foo.py",
+    "line": 4,
+    "value": {
+      "some_const": 420
+    }
+  }
+]
