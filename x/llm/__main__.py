@@ -1,4 +1,4 @@
 if __name__ == '__main__':
-    from .llm import _main
+    from .main import _main
 
     _main()

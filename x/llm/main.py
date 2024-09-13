@@ -31,11 +31,86 @@ from omlish.diag import pycharm
 from .chat import Chat
 from .chat import ChatMessage
 from .chat import ChatRole
+from .chat import LlamacppChatLlm
+from .prompt import TransformersPromptLlm
 from .state import load_state
 from .state import save_state
 
 
 ##
+
+
+def _run_chat(
+        prompt: str,
+        *,
+        new: bool = False,
+) -> None:
+    state_dir = os.path.expanduser('~/.omlish-llm')
+    if not os.path.exists(state_dir):
+        os.mkdir(state_dir)
+        os.chmod(state_dir, 0o770)
+
+    chat_file = os.path.join(state_dir, 'chat.json')
+    if new:
+        chat = Chat()
+    else:
+        chat = load_state(chat_file, Chat)
+        if chat is None:
+            chat = Chat()
+
+    #
+
+    chat = dc.replace(
+        chat,
+        messages=[
+            *chat.messages,
+            ChatMessage(ChatRole.USER, prompt),
+        ],
+    )
+
+    #
+
+    # llm = OpenaiChatLlm()
+    llm = LlamacppChatLlm()
+
+    response = llm.get_completion(chat.messages)
+
+    #
+
+    print(response)
+
+    #
+
+    chat = dc.replace(
+        chat,
+        messages=[
+            *chat.messages,
+            ChatMessage(ChatRole.ASSISTANT, response),
+        ],
+    )
+
+    #
+
+    chat = dc.replace(
+        chat,
+        updated_at=datetime.datetime.now(),
+    )
+
+    save_state(chat_file, chat, Chat)
+
+
+def _run_prompt(
+        prompt: str,
+) -> None:
+    # llm = OpenaiPromptLlm()
+    # llm = LlamacppPromptLlm()
+    llm = TransformersPromptLlm()
+
+    response = llm.get_completion(prompt).strip()
+
+    #
+
+    print(response)
 
 
 def _main() -> None:
@@ -61,78 +136,20 @@ def _main() -> None:
 
     #
 
-    state_dir = os.path.expanduser('~/.omlish-llm')
-    if not os.path.exists(state_dir):
-        os.mkdir(state_dir)
-        os.chmod(state_dir, 0o770)
-
-    chat_file = os.path.join(state_dir, 'chat.json')
-    if args.new:
-        chat = Chat()
-    else:
-        chat = load_state(chat_file, Chat)
-        if chat is None:
-            chat = Chat()
-
-    #
-
-    chat = dc.replace(
-        chat,
-        messages=[
-            *chat.messages,
-            ChatMessage(ChatRole.USER, prompt),
-        ],
-    )
-
-
-    #
-
     load_secrets()
 
     #
 
-    use_chat = True
-
-    if use_chat:
-        # llm = OpenaiChatLlm()
-        llm = LlamacppChatLlm()
-
-        response = llm.get_completion(chat.messages)
+    if args.chat:
+        _run_chat(
+            prompt,
+            new=bool(args.new),
+        )
 
     else:
-        DELIM = '\n\n====\n\n'
-
-        full_prompt = DELIM.join(m.text for m in chat.messages)
-
-        # sys.stdout.write(full_prompt)
-        # sys.stdout.write(DELIM)
-
-        #
-
-        # llm = OpenaiPromptLlm()
-        # llm = LlamacppPromptLlm()
-        llm = TransformersPromptLlm()
-
-        response = llm.get_completion(full_prompt).strip()
-
-    print(response)
-
-    chat = dc.replace(
-        chat,
-        messages=[
-            *chat.messages,
-            ChatMessage(ChatRole.ASSISTANT, response),
-        ],
-    )
-
-    #
-
-    chat = dc.replace(
-        chat,
-        updated_at=datetime.datetime.now(),
-    )
-
-    save_state(chat_file, chat, Chat)
+        _run_prompt(
+            prompt,
+        )
 
 
 if __name__ == '__main__':
