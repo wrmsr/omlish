@@ -66,6 +66,8 @@ fresh-venv:
 
 .PHONY: tg
 tg:
+	git submodule update tinygrad
+
 	# FIXME: ${PYTHON} -m pip install -e tinygrad --use-pep517
 	ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
 	(cd tinygrad && "$$ABS_PYTHON" -m pip install -e .)
