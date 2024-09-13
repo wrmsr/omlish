@@ -255,6 +255,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         st.pop('cexts', None)
 
         self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
+        self._move_dict_key(st, 'package_data', pyp_dct, 'tool.setuptools.package-data')
 
         mani_in = st.pop('manifest_in', None)
 
@@ -337,9 +338,14 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         st = specs.setuptools
         pyp_dct['tool.setuptools'] = st
 
-        st.pop('cexts', None)
-        st.pop('find_packages', None)
-        st.pop('manifest_in', None)
+        for k in [
+            'cexts',
+
+            'find_packages',
+            'package_data',
+            'manifest_in',
+        ]:
+            st.pop(k, None)
 
         pyp_dct['tool.setuptools.packages.find'] = {
             'include': [],

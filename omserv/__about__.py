@@ -26,3 +26,16 @@ class Setuptools(SetuptoolsBase):
         'include': [Project.name, f'{Project.name}.*'],
         'exclude': [*SetuptoolsBase.find_packages['exclude']],
     }
+
+    package_data = {
+        **SetuptoolsBase.package_data,
+
+        '*': [
+            *SetuptoolsBase.package_data['*'],
+
+            '*.ico',
+            '*.j2',
+
+            '*.patch',
+        ],
+    }
