@@ -36,13 +36,13 @@ def configure_standard_logging(
         *,
         json: bool = False,
         target: logging.Logger | None = None,
-        no_check: bool = False,
+        force: bool = False,
 ) -> StandardLogHandler | None:
     handler = configure_lite_standard_logging(
         level,
         json=json,
         target=target,
-        no_check=no_check,
+        force=force,
     )
 
     if handler is None:

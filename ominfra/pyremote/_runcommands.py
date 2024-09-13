@@ -514,46 +514,51 @@ def configure_standard_logging(
         *,
         json: bool = False,
         target: ta.Optional[logging.Logger] = None,
-        no_check: bool = False,
+        force: bool = False,
 ) -> ta.Optional[StandardLogHandler]:
-    if target is None:
-        target = logging.root
+    logging._acquireLock()  # type: ignore  # noqa
+    try:
+        if target is None:
+            target = logging.root
 
-    #
+        #
 
-    if not no_check:
-        if any(isinstance(h, StandardLogHandler) for h in list(target.handlers)):
-            return None
+        if not force:
+            if any(isinstance(h, StandardLogHandler) for h in list(target.handlers)):
+                return None
 
-    #
+        #
 
-    handler = logging.StreamHandler()
+        handler = logging.StreamHandler()
 
-    #
+        #
 
-    formatter: logging.Formatter
-    if json:
-        formatter = JsonLogFormatter()
-    else:
-        formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
-    handler.setFormatter(formatter)
+        formatter: logging.Formatter
+        if json:
+            formatter = JsonLogFormatter()
+        else:
+            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+        handler.setFormatter(formatter)
 
-    #
+        #
 
-    handler.addFilter(TidLogFilter())
+        handler.addFilter(TidLogFilter())
 
-    #
+        #
 
-    target.addHandler(handler)
+        target.addHandler(handler)
 
-    #
+        #
 
-    if level is not None:
-        target.setLevel(level)
+        if level is not None:
+            target.setLevel(level)
 
-    #
+        #
 
-    return StandardLogHandler(handler)
+        return StandardLogHandler(handler)
+
+    finally:
+        logging._releaseLock()  # type: ignore  # noqa
 
 
 ########################################
