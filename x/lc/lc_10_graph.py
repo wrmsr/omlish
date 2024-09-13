@@ -11,7 +11,6 @@ from langchain_community.graphs import Neo4jGraph
 from langchain_openai import ChatOpenAI
 
 from dp.utils import load_secrets
-from omlish import docker
 
 
 def _main() -> None:
