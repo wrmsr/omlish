@@ -9,11 +9,10 @@
   - dumped in _manifest.py
  - # @omlish-manifest \n _CACHE_MANIFEST = {'cache': {'name': 'llm', …
  - also can do prechecks!
-
-TODO:
- - subprocess interpreter
 """
+# ruff: noqa: UP006
 # @omlish-lite
+import argparse
 import collections
 import dataclasses as dc
 import inspect
@@ -26,14 +25,16 @@ import sys
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
-from omdev import findmagic
+from omlish.lite.json import json_dumps_pretty
+
+from . import findmagic
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class Origin:
+class ManifestOrigin:
     module: str
     attr: str
 
@@ -42,7 +43,7 @@ class Origin:
 
 
 @dc.dataclass(frozen=True)
-class Manifest(Origin):
+class Manifest(ManifestOrigin):
     value: ta.Any
 
 
@@ -94,14 +95,14 @@ def build_module_manifests(
     with open(os.path.join(base, file)) as f:
         src = f.read()
 
-    origins: list[Origin] = []
+    origins: ta.List[ManifestOrigin] = []
     lines = src.splitlines(keepends=True)
     for i, l in enumerate(lines):
         if l.startswith(MANIFEST_MAGIC):
             if (m := _MANIFEST_GLOBAL_PAT.match(nl := lines[i + 1])) is None:
                 raise Exception(nl)
 
-            origins.append(Origin(
+            origins.append(ManifestOrigin(
                 module=mod_name,
                 attr=m.groupdict()['name'],
 
@@ -141,7 +142,7 @@ def build_module_manifests(
     if set(dct) != set(attrs):
         raise Exception('Unexpected subprocess output keys')
 
-    out: list[Manifest] = []
+    out: ta.List[Manifest] = []
 
     for o in origins:
         manifest = dct[o.attr]
@@ -159,21 +160,24 @@ def build_package_manifests(
         base: str,
         *,
         write: bool = False,
-) -> list[Manifest]:
+) -> ta.List[Manifest]:
     pkg_dir = os.path.join(base, name)
     if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
         raise Exception(pkg_dir)
 
-    manifests: list[Manifest] = []
+    manifests: ta.List[Manifest] = []
 
-    for f in findmagic.find_magic(
+    for file in findmagic.find_magic(
             [pkg_dir],
             [MANIFEST_MAGIC],
             ['py'],
     ):
-        manifests.extend(build_module_manifests(os.path.relpath(f, base), base))
+        manifests.extend(build_module_manifests(os.path.relpath(file, base), base))
 
-    breakpoint()
+    if write:
+        with open(os.path.join(pkg_dir, '_manifests.json'), 'w') as f:
+            f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
+            f.write('\n')
 
     return manifests
 
@@ -181,17 +185,30 @@ def build_package_manifests(
 ##
 
 
-# @omlish-manifest
-_FOO_CACHE_MANIFEST = {'cache': {
-    'name': 'foo',
-}}
-
-
 def _main() -> None:
-    here = os.path.abspath(os.path.dirname(__file__))
-    base = os.path.abspath(os.path.join(here, '..'))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', '--base')
+    parser.add_argument('-w', '--write', action='store_true')
+    parser.add_argument('-q', '--quiet', action='store_true')
+    parser.add_argument('package', nargs='*')
+    args = parser.parse_args()
 
-    build_package_manifests('x', base)
+    if args.base is not None:
+        base = args.base
+    else:
+        base = os.getcwd()
+    base = os.path.abspath(base)
+    if not os.path.isdir(base):
+        raise RuntimeError(base)
+
+    for pkg in args.packages:
+        ms = build_package_manifests(
+            pkg,
+            base,
+            write=args.write or False,
+        )
+        if not args.quiet:
+            print(json_dumps_pretty(ms))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,13 @@
+[
+    {
+        "module": "x.manifests", 
+        "attr": "_FOO_CACHE_MANIFEST", 
+        "file": "x/manifests.py", 
+        "line": 187, 
+        "value": {
+            "cache": {
+                "name": "foo"
+            }
+        }
+    }
+]
