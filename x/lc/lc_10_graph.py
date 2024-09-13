@@ -3,8 +3,8 @@ https://python.langchain.com/v0.2/docs/tutorials/graph/
 """
 import os
 
-from langchain_community.graphs import Neo4jGraph
 from langchain.chains import GraphCypherQAChain
+from langchain_community.graphs import Neo4jGraph
 from langchain_openai import ChatOpenAI
 
 from dp.utils import load_secrets
