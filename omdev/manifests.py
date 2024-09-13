@@ -204,21 +204,22 @@ if __name__ == '__main__':
             if not args.quiet:
                 print(json_dumps_pretty(ms))
 
+    def _main(argv=None) -> None:
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
 
-def _main(argv=None) -> None:
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
+        parser_gen = subparsers.add_parser('gen')
+        parser_gen.add_argument('-b', '--base')
+        parser_gen.add_argument('-w', '--write', action='store_true')
+        parser_gen.add_argument('-q', '--quiet', action='store_true')
+        parser_gen.add_argument('package', nargs='*')
 
-    parser_gen = subparsers.add_parser('gen')
-    parser_gen.add_argument('-b', '--base')
-    parser_gen.add_argument('-w', '--write', action='store_true')
-    parser_gen.add_argument('-q', '--quiet', action='store_true')
-    parser_gen.add_argument('package', nargs='*')
+        parser_gen.set_defaults(func=_gen_cmd)
 
-    parser_gen.set_defaults(func=_gen_cmd)
+        args = parser.parse_args(argv)
+        if not getattr(args, 'func', None):
+            parser.print_help()
+        else:
+            args.func(args)
 
-    args = parser.parse_args(argv)
-    if not getattr(args, 'func', None):
-        parser.print_help()
-    else:
-        args.func(args)
+    _main()
