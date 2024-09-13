@@ -102,7 +102,7 @@ dep-refresh: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-cmake gen-pkg
+gen: gen-amalg gen-cmake gen-manifest gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -114,6 +114,10 @@ gen-amalg: venv
 .PHONY: gen-cmake
 gen-cmake:
 	${PYTHON} -m omdev.cexts.cmake gen ${SRCS} x/dev/c
+
+.PHONY: gen-manifest
+gen-manifest:
+	${PYTHON} -m omdev.manifests gen ${SRCS} x/dev/c
 
 .PHONY: gen-pkg
 gen-pkg:
