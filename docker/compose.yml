@@ -15,19 +15,21 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - '..:/omlish'
     depends_on:
-      - 'omlish-elasticsearch'
       - 'omlish-mysql'
-      - 'omlish-neo4j'
       - 'omlish-postgres'
-      - 'omlish-redis'
       - 'omlish-s3'
+      # ext
+      - 'omlish-elasticsearch'
+      # - 'omlish-neo4j'
+      - 'omlish-redis'
     links:
-      - 'omlish-elasticsearch'
       - 'omlish-mysql'
-      - 'omlish-neo4j'
       - 'omlish-postgres'
-      - 'omlish-redis'
       - 'omlish-s3'
+      # ext
+      - 'omlish-elasticsearch'
+      # - 'omlish-neo4j'
+      - 'omlish-redis'
     expose:
       - '22'
       - '8000'
@@ -70,7 +72,7 @@ services:
     expose:
       - '5432'
     ports:
-      - '35228:5432'
+      - '35224:5432'
 
   omlish-mysql:
     image: 'mysql:9.0.1'
@@ -91,8 +93,8 @@ services:
       - '9090'
       - '9191'
     ports:
-      - '35230:9090'
-      - '35231:9191'
+      - '35226:9090'
+      - '35227:9191'
 
   # ext
 
@@ -106,17 +108,19 @@ services:
     expose:
       - '9200'
     ports:
-      - '35224:9200'
+      - '35228:9200'
 
   omlish-neo4j:
     image: 'neo4j:5.23.0-community'
     restart: 'unless-stopped'
+    environment:
+      NEO4J_AUTH: 'none'
     expose:
       - '7474'
       - '7687'
     ports:
-      - '35226:7474'
-      - '35227:7687'
+      - '35229:7474'
+      - '35230:7687'
 
   omlish-redis:
     image: 'redis:7.4.0'
@@ -124,4 +128,4 @@ services:
     expose:
       - '6379'
     ports:
-      - '35229:6379'
+      - '35231:6379'
