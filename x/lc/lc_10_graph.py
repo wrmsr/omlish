@@ -1,5 +1,8 @@
 """
 https://python.langchain.com/v0.2/docs/tutorials/graph/
+
+FIXME:
+ - https://github.com/langchain-ai/langchain/issues/12901 lol
 """
 import os
 
@@ -16,7 +19,7 @@ def _main() -> None:
 
     #
 
-    neo4j_port = 35226
+    neo4j_port = 35230
     os.environ["NEO4J_URI"] = f"bolt://localhost:{neo4j_port}"
     os.environ["NEO4J_USERNAME"] = "neo4j"
     os.environ["NEO4J_PASSWORD"] = "neo4j"  # noqa
