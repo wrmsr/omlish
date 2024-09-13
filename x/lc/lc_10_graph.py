@@ -15,9 +15,9 @@ def _main() -> None:
 
     #
 
-    os.environ["NEO4J_URI"] = "bolt://localhost:7687"
+    os.environ["NEO4J_URI"] = "bolt://localhost:35226"
     os.environ["NEO4J_USERNAME"] = "neo4j"
-    os.environ["NEO4J_PASSWORD"] = "password"  # noqa
+    os.environ["NEO4J_PASSWORD"] = "neo4j"  # noqa
 
     #
 
