@@ -141,91 +141,91 @@ model
   scoring
     ScoringModel
 rag
-rag/AugmentationRequest
-rag/AugmentationResult
-rag/DefaultRetrievalAugmentor
-rag/RetrievalAugmentor
-rag/content
-rag/content/Content
-rag/content/aggregator
-rag/content/aggregator/ContentAggregator
-rag/content/aggregator/DefaultContentAggregator
-rag/content/aggregator/ReRankingContentAggregator
-rag/content/aggregator/ReciprocalRankFuser
-rag/content/injector
-rag/content/injector/ContentInjector
-rag/content/injector/DefaultContentInjector
-rag/content/retriever
-rag/content/retriever/ContentRetriever
-rag/content/retriever/EmbeddingStoreContentRetriever
-rag/content/retriever/WebSearchContentRetriever
-rag/query
-rag/query/Metadata
-rag/query/Query
-rag/query/router
-rag/query/router/DefaultQueryRouter
-rag/query/router/LanguageModelQueryRouter
-rag/query/router/QueryRouter
-rag/query/transformer
-rag/query/transformer/CompressingQueryTransformer
-rag/query/transformer/DefaultQueryTransformer
-rag/query/transformer/ExpandingQueryTransformer
-rag/query/transformer/QueryTransformer
+  AugmentationRequest
+  AugmentationResult
+  DefaultRetrievalAugmentor
+  RetrievalAugmentor
+  content
+    Content
+    aggregator
+      ContentAggregator
+      DefaultContentAggregator
+      ReRankingContentAggregator
+      ReciprocalRankFuser
+    injector
+      ContentInjector
+      DefaultContentInjector
+    retriever
+      ContentRetriever
+      EmbeddingStoreContentRetriever
+      WebSearchContentRetriever
+  query
+    Metadata
+    Query
+    router
+      DefaultQueryRouter
+      LanguageModelQueryRouter
+      QueryRouter
+    transformer
+      CompressingQueryTransformer
+      DefaultQueryTransformer
+      ExpandingQueryTransformer
+      QueryTransformer
 retriever
-retriever/EmbeddingStoreRetriever
-retriever/Retriever
+  EmbeddingStoreRetriever
+  Retriever
 spi
-spi/ServiceHelper
-spi/data
-spi/data/document
-spi/data/document/parser
-spi/data/document/parser/DocumentParserFactory
-spi/data/document/splitter
-spi/data/document/splitter/DocumentSplitterFactory
-spi/data/message
-spi/data/message/ChatMessageJsonCodecFactory
-spi/json
-spi/json/JsonCodecFactory
-spi/model
-spi/model/embedding
-spi/model/embedding/EmbeddingModelFactory
-spi/prompt
-spi/prompt/PromptTemplateFactory
-spi/prompt/structured
-spi/prompt/structured/StructuredPromptFactory
+  ServiceHelper
+  data
+    document
+      parser
+        DocumentParserFactory
+      splitter
+        DocumentSplitterFactory
+    message
+      ChatMessageJsonCodecFactory
+  json
+    JsonCodecFactory
+  model
+    embedding
+      EmbeddingModelFactory
+  prompt
+    PromptTemplateFactory
+    structured
+      StructuredPromptFactory
 store
-store/embedding
-store/embedding/CosineSimilarity
-store/embedding/EmbeddingMatch
-store/embedding/EmbeddingSearchRequest
-store/embedding/EmbeddingSearchResult
-store/embedding/EmbeddingStore
-store/embedding/EmbeddingStoreIngestor
-store/embedding/RelevanceScore
-store/embedding/filter
-store/embedding/filter/Filter
-store/embedding/filter/FilterParser
-store/embedding/filter/MetadataFilterBuilder
-store/embedding/filter/comparison
-store/embedding/filter/comparison/IsEqualTo
-store/embedding/filter/comparison/IsGreaterThan
-store/embedding/filter/comparison/IsGreaterThanOrEqualTo
-store/embedding/filter/comparison/IsIn
-store/embedding/filter/comparison/IsLessThan
-store/embedding/filter/comparison/IsLessThanOrEqualTo
-store/embedding/filter/comparison/IsNotEqualTo
-store/embedding/filter/comparison/IsNotIn
-store/embedding/filter/comparison/NumberComparator
-store/embedding/filter/comparison/TypeChecker
-store/embedding/filter/comparison/UUIDComparator
-store/embedding/filter/logical
-store/embedding/filter/logical/And
-store/embedding/filter/logical/Not
-store/embedding/filter/logical/Or
-store/memory
-store/memory/chat
-store/memory/chat/ChatMemoryStore
-store/memory/chat/InMemoryChatMemoryStore
+  embedding
+  embedding/CosineSimilarity
+  embedding/EmbeddingMatch
+  embedding/EmbeddingSearchRequest
+  embedding/EmbeddingSearchResult
+  embedding/EmbeddingStore
+  embedding/EmbeddingStoreIngestor
+  embedding/RelevanceScore
+  embedding/filter
+  embedding/filter/Filter
+  embedding/filter/FilterParser
+  embedding/filter/MetadataFilterBuilder
+  embedding/filter/comparison
+  embedding/filter/comparison/IsEqualTo
+  embedding/filter/comparison/IsGreaterThan
+  embedding/filter/comparison/IsGreaterThanOrEqualTo
+  embedding/filter/comparison/IsIn
+  embedding/filter/comparison/IsLessThan
+  embedding/filter/comparison/IsLessThanOrEqualTo
+  embedding/filter/comparison/IsNotEqualTo
+  embedding/filter/comparison/IsNotIn
+  embedding/filter/comparison/NumberComparator
+  embedding/filter/comparison/TypeChecker
+  embedding/filter/comparison/UUIDComparator
+  embedding/filter/logical
+  embedding/filter/logical/And
+  embedding/filter/logical/Not
+  embedding/filter/logical/Or
+  memory
+  memory/chat
+  memory/chat/ChatMemoryStore
+  memory/chat/InMemoryChatMemoryStore
 web
 web/search
 web/search/WebSearchEngine
