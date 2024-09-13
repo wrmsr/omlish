@@ -117,7 +117,7 @@ gen-cmake:
 
 .PHONY: gen-manifest
 gen-manifest:
-	${PYTHON} -m omdev.manifests gen ${SRCS}
+	${PYTHON} -m omdev.manifests gen ${SRCS} x
 
 .PHONY: gen-pkg
 gen-pkg:
