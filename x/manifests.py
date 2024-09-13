@@ -78,7 +78,7 @@ def _payload_src() -> str:
     return inspect.getsource(_dump_module_manifests)
 
 
-def handle_one(
+def build_module_manifests(
         file: str,
         base: str,
         *,
@@ -154,6 +154,30 @@ def handle_one(
     return out
 
 
+def build_package_manifests(
+        name: str,
+        base: str,
+        *,
+        write: bool = False,
+) -> list[Manifest]:
+    pkg_dir = os.path.join(base, name)
+    if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
+        raise Exception(pkg_dir)
+
+    manifests: list[Manifest] = []
+
+    for f in findmagic.find_magic(
+            [pkg_dir],
+            [MANIFEST_MAGIC],
+            ['py'],
+    ):
+        manifests.extend(build_module_manifests(os.path.relpath(f, base), base))
+
+    breakpoint()
+
+    return manifests
+
+
 ##
 
 
@@ -166,12 +190,8 @@ _FOO_CACHE_MANIFEST = {'cache': {
 def _main() -> None:
     here = os.path.abspath(os.path.dirname(__file__))
     base = os.path.abspath(os.path.join(here, '..'))
-    for f in findmagic.find_magic(
-        [here],
-        [MANIFEST_MAGIC],
-        ['py'],
-    ):
-        handle_one(os.path.relpath(f, base), base)
+
+    build_package_manifests('x', base)
 
 
 if __name__ == '__main__':
