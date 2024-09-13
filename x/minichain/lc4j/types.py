@@ -2,144 +2,144 @@
 https://github.com/langchain4j/langchain4j/tree/d069798d52430203084dcb2114cbbd3afc3ff6cb/langchain4j-core/src/main/java/dev/langchain4j
 
 agent
-agent/tool
-agent/tool/JsonSchemaProperty
-agent/tool/P
-agent/tool/Tool
-agent/tool/ToolExecutionRequest
-agent/tool/ToolMemoryId
-agent/tool/ToolParameters
-agent/tool/ToolSpecification
-agent/tool/ToolSpecifications
+  tool
+    JsonSchemaProperty
+    P
+    Tool
+    ToolExecutionRequest
+    ToolMemoryId
+    ToolParameters
+    ToolSpecification
+    ToolSpecifications
 code
-code/CodeExecutionEngine
+  CodeExecutionEngine
 data
-data/audio
-data/audio/Audio
-data/document
-data/document/BlankDocumentException
-data/document/Document
-data/document/DocumentLoader
-data/document/DocumentParser
-data/document/DocumentSource
-data/document/DocumentSplitter
-data/document/DocumentTransformer
-data/document/Metadata
-data/embedding
-data/embedding/Embedding
-data/image
-data/image/Image
-data/message
-data/message/AiMessage
-data/message/AudioContent
-data/message/ChatMessage
-data/message/ChatMessageDeserializer
-data/message/ChatMessageJsonCodec
-data/message/ChatMessageSerializer
-data/message/ChatMessageType
-data/message/Content
-data/message/ContentType
-data/message/GsonChatMessageAdapter
-data/message/GsonChatMessageJsonCodec
-data/message/GsonContentAdapter
-data/message/ImageContent
-data/message/PdfFileContent
-data/message/SystemMessage
-data/message/TextContent
-data/message/TextFileContent
-data/message/ToolExecutionResultMessage
-data/message/UserMessage
-data/message/VideoContent
-data/pdf
-data/pdf/PdfFile
-data/segment
-data/segment/TextSegment
-data/segment/TextSegmentTransformer
-data/text
-data/text/TextFile
-data/video
-data/video/Video
+  audio
+    Audio
+  document
+    BlankDocumentException
+    Document
+    DocumentLoader
+    DocumentParser
+    DocumentSource
+    DocumentSplitter
+    DocumentTransformer
+    Metadata
+  embedding
+    Embedding
+  image
+    Image
+  message
+    AiMessage
+    AudioContent
+    ChatMessage
+    ChatMessageDeserializer
+    ChatMessageJsonCodec
+    ChatMessageSerializer
+    ChatMessageType
+    Content
+    ContentType
+    GsonChatMessageAdapter
+    GsonChatMessageJsonCodec
+    GsonContentAdapter
+    ImageContent
+    PdfFileContent
+    SystemMessage
+    TextContent
+    TextFileContent
+    ToolExecutionResultMessage
+    UserMessage
+    VideoContent
+  pdf
+    PdfFile
+  segment
+    TextSegment
+    TextSegmentTransformer
+  text
+    TextFile
+  video
+    Video
 internal
-internal/CustomMimeTypesFileTypeDetector
-internal/Exceptions
-internal/GsonJsonCodec
-internal/JacocoIgnoreCoverageGenerated
-internal/Json
-internal/RetryUtils
-internal/TypeUtils
-internal/Utils
-internal/ValidationUtils
+  CustomMimeTypesFileTypeDetector
+  Exceptions
+  GsonJsonCodec
+  JacocoIgnoreCoverageGenerated
+  Json
+  RetryUtils
+  TypeUtils
+  Utils
+  ValidationUtils
 memory
-memory/ChatMemory
+  ChatMemory
 model
-model/LambdaStreamingResponseHandler
-model/ModelDisabledException
-model/StreamingResponseHandler
-model/Tokenizer
-model/chat
-model/chat/Capability
-model/chat/ChatLanguageModel
-model/chat/DisabledChatLanguageModel
-model/chat/DisabledStreamingChatLanguageModel
-model/chat/StreamingChatLanguageModel
-model/chat/TokenCountEstimator
-model/chat/listener
-model/chat/listener/ChatModelErrorContext
-model/chat/listener/ChatModelListener
-model/chat/listener/ChatModelRequest
-model/chat/listener/ChatModelRequestContext
-model/chat/listener/ChatModelResponse
-model/chat/listener/ChatModelResponseContext
-model/chat/request
-model/chat/request/ChatRequest
-model/chat/request/ResponseFormat
-model/chat/request/ResponseFormatType
-model/chat/request/json
-model/chat/request/json/JsonArraySchema
-model/chat/request/json/JsonBooleanSchema
-model/chat/request/json/JsonEnumSchema
-model/chat/request/json/JsonIntegerSchema
-model/chat/request/json/JsonNumberSchema
-model/chat/request/json/JsonObjectSchema
-model/chat/request/json/JsonSchema
-model/chat/request/json/JsonSchemaElement
-model/chat/request/json/JsonStringSchema
-model/chat/response
-model/chat/response/ChatResponse
-model/embedding
-model/embedding/DimensionAwareEmbeddingModel
-model/embedding/DisabledEmbeddingModel
-model/embedding/EmbeddingModel
-model/embedding/TokenCountEstimator
-model/image
-model/image/DisabledImageModel
-model/image/ImageModel
-model/input
-model/input/DefaultPromptTemplateFactory
-model/input/Prompt
-model/input/PromptTemplate
-model/input/structured
-model/input/structured/DefaultStructuredPromptFactory
-model/input/structured/StructuredPrompt
-model/input/structured/StructuredPromptProcessor
-model/language
-model/language/DisabledLanguageModel
-model/language/DisabledStreamingLanguageModel
-model/language/LanguageModel
-model/language/StreamingLanguageModel
-model/language/TokenCountEstimator
-model/moderation
-model/moderation/DisabledModerationModel
-model/moderation/Moderation
-model/moderation/ModerationModel
-model/output
-model/output/FinishReason
-model/output/Response
-model/output/TokenUsage
-model/output/structured
-model/output/structured/Description
-model/scoring
-model/scoring/ScoringModel
+  LambdaStreamingResponseHandler
+  ModelDisabledException
+  StreamingResponseHandler
+  Tokenizer
+  chat
+    Capability
+    ChatLanguageModel
+    DisabledChatLanguageModel
+    DisabledStreamingChatLanguageModel
+    StreamingChatLanguageModel
+    TokenCountEstimator
+    listener
+      ChatModelErrorContext
+      ChatModelListener
+      ChatModelRequest
+      ChatModelRequestContext
+      ChatModelResponse
+      ChatModelResponseContext
+    request
+      ChatRequest
+      ResponseFormat
+      ResponseFormatType
+      json
+        JsonArraySchema
+        JsonBooleanSchema
+        JsonEnumSchema
+        JsonIntegerSchema
+        JsonNumberSchema
+        JsonObjectSchema
+        JsonSchema
+        JsonSchemaElement
+        JsonStringSchema
+    response
+      ChatResponse
+  embedding
+    DimensionAwareEmbeddingModel
+    DisabledEmbeddingModel
+    EmbeddingModel
+    TokenCountEstimator
+  image
+    DisabledImageModel
+    ImageModel
+  input
+    DefaultPromptTemplateFactory
+    Prompt
+    PromptTemplate
+    structured
+      DefaultStructuredPromptFactory
+      StructuredPrompt
+      StructuredPromptProcessor
+  language
+    DisabledLanguageModel
+    DisabledStreamingLanguageModel
+    LanguageModel
+    StreamingLanguageModel
+    TokenCountEstimator
+  moderation
+    DisabledModerationModel
+    Moderation
+    ModerationModel
+  output
+    FinishReason
+    Response
+    TokenUsage
+    structured
+      Description
+  scoring
+    ScoringModel
 rag
 rag/AugmentationRequest
 rag/AugmentationResult
