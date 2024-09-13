@@ -1,4 +1,5 @@
 import os.path
+import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -15,7 +16,9 @@ def _main():
 
     with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
         val = check.not_none(loader.get_single_data())
-        print(val)
+        root = check.isinstance(val.value, ta.Mapping)
+        services = check.isinstance(check.single(v.value for k, v in root.items() if k.value == 'services'), ta.Mapping)
+        print(services)
 
 
 if __name__ == '__main__':
