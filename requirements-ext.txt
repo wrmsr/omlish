@@ -226,7 +226,7 @@ langchain-experimental==0.0.65
 langchain-mistralai==0.1.13
 langchain-nomic==0.1.2
 langchain-ollama==0.1.3
-langchain-openai==0.1.24
+langchain-openai==0.1.25
 langchain-text-splitters==0.2.4
 
 langchainhub==0.1.21
