@@ -195,7 +195,7 @@ if __name__ == '__main__':
         if not os.path.isdir(base):
             raise RuntimeError(base)
 
-        for pkg in args.packages:
+        for pkg in args.package:
             ms = build_package_manifests(
                 pkg,
                 base,
