@@ -6,6 +6,7 @@ TODO:
  - multiprocess profiling - afterfork, suffix with pid
 
 TODO diag:
+ - tracemalloc
  - yappi
  - stackscope
  - https://github.com/pythonspeed/filprofiler
