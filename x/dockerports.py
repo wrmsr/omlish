@@ -14,11 +14,35 @@ def _main():
     with open(yml_file) as f:
         yml_src = f.read()
 
+    class PortEntry(ta.NamedTuple):
+        l: int
+        s: str
+
+    dct: dict[str, list[PortEntry]] = {}
+
     with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
         val = check.not_none(loader.get_single_data())
         root = check.isinstance(val.value, ta.Mapping)
+
         services = check.isinstance(check.single(v.value for k, v in root.items() if k.value == 'services'), ta.Mapping)
-        print(services)
+        for name_w, cfg_w in services.items():
+            name = check.isinstance(name_w.value, str)
+            cfg = check.isinstance(cfg_w.value, ta.Mapping)
+
+            ports = check.opt_single(v.value for k, v in cfg.items() if k.value == 'ports')
+            if not ports:
+                continue
+
+            lst: list[PortEntry] = []
+            for port_w in ports:
+                lst.append(PortEntry(
+                    l=port_w.node.start_mark.line,
+                    s=check.isinstance(port_w.value, str),
+                ))
+
+            dct[name] = lst
+
+    print(dct)
 
 
 if __name__ == '__main__':
