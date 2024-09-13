@@ -1,9 +1,13 @@
 """
-https://iceberg.apache.org/spec/
+https://iceberg.apache.org/spec/ <-- winner
+
 https://github.com/delta-io/delta/blob/master/PROTOCOL.md
 https://hudi.apache.org/tech-specshttps://hudi.apache.org/tech-specs/
 
 https://yousry.medium.com/delta-lake-z-ordering-from-a-to-z-315063a42031
+
+https://iorilan.medium.com/how-does-the-lsm-tree-work-7a9fa4b54c36
+https://lucene.apache.org/core/3_0_3/fileformats.html#Segments%20File
 
 ==
 
