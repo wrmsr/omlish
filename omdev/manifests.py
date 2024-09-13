@@ -9,11 +9,8 @@
   - dumped in _manifest.py
  - # @omlish-manifest \n _CACHE_MANIFEST = {'cache': {'name': 'llm', …
  - also can do prechecks!
-
-TODO:
- - warn if took a while - means fat imports
 """
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 # @omlish-lite
 import argparse
 import collections
@@ -25,6 +22,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -89,8 +87,9 @@ def build_module_manifests(
         base: str,
         *,
         shell_wrap: bool = True,
+        warn_threshold_s: ta.Optional[float] = 1.,
 ) -> ta.Sequence[Manifest]:
-    log.info(f'Extracting manifests from file %s', file)
+    log.info('Extracting manifests from file %s', file)
 
     if not file.endswith('.py'):
         raise Exception(file)
@@ -140,7 +139,14 @@ def build_module_manifests(
     if shell_wrap:
         args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
 
+    start_time = time.time()
+
     subproc_out = subprocess.check_output(args)
+
+    end_time = time.time()
+
+    if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
+        log.warning('Manifest extraction took a long time: %s, %.2f s', file, elapsed_time)
 
     sp_lines = subproc_out.decode().strip().splitlines()
     if len(sp_lines) != 1:
