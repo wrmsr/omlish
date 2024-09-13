@@ -59,6 +59,11 @@ venv:
 		fi ; \
 	fi
 
+.PHONY: fresh-venv
+fresh-venv:
+	rm -rf .venvs/default
+	${MAKE} venv
+
 .PHONY: tg
 tg:
 	# FIXME: ${PYTHON} -m pip install -e tinygrad --use-pep517
