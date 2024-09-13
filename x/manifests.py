@@ -13,12 +13,14 @@
 TODO:
  - subprocess interpreter
 """
+# @omlish-lite
 import collections
 import dataclasses as dc
+import inspect
 import json
 import os.path
-import inspect
 import re
+import shlex
 import subprocess
 import sys
 import typing as ta
@@ -49,22 +51,39 @@ MANIFEST_MAGIC = '# @omlish-manifest'
 _MANIFEST_GLOBAL_PAT = re.compile(r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*')
 
 
-def _payload(spec: str, *attrs: str) -> None:
+def _dump_module_manifests(spec: str, *attrs: str) -> None:
     import importlib
     import json
 
     mod = importlib.import_module(spec)
 
-    manifest = getattr(mod, attr)
+    out = {}
+    for attr in attrs:
+        manifest = getattr(mod, attr)
 
-    mj = json.dumps(manifest)
-    rt_manifest = json.loads(mj)
+        manifest_json = json.dumps(manifest)
+        rt_manifest = json.loads(manifest_json)
 
-    if rt_manifest != manifest:
-        raise Exception(f'Manifest failed to roundtrip: {manifest} != {rt_manifest}')
+        if rt_manifest != manifest:
+            raise Exception(f'Manifest failed to roundtrip: {manifest} != {rt_manifest}')
+
+        out[attr] = rt_manifest
+
+    out_json = json.dumps(out, indent=None, separators=(',', ':'))
+    print(out_json)
 
 
-def handle_one(file: str, base: str) -> ta.Sequence[Manifest]:
+@cached_nullary
+def _payload_src() -> str:
+    return inspect.getsource(_dump_module_manifests)
+
+
+def handle_one(
+        file: str,
+        base: str,
+        *,
+        shell_wrap: bool = True,
+) -> ta.Sequence[Manifest]:
     print((file, base))
 
     if not file.endswith('.py'):
@@ -96,18 +115,36 @@ def handle_one(file: str, base: str) -> ta.Sequence[Manifest]:
     if (dups := [k for k, v in collections.Counter(o.attr for o in origins).items() if v > 1]):
         raise Exception(f'Duplicate attrs: {dups}')
 
-    mod = importlib.import_module(mod_name)
+    attrs = [o.attr for o in origins]
+
+    subproc_src = '\n\n'.join([
+        _payload_src(),
+        f'_dump_module_manifests({mod_name!r}, {", ".join(repr(a) for a in attrs)})\n',
+    ])
+
+    args = [
+        sys.executable,
+        '-c',
+        subproc_src,
+    ]
+
+    if shell_wrap:
+        args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
+
+    subproc_out = subprocess.check_output(args)
+
+    sp_lines = subproc_out.decode().strip().splitlines()
+    if len(sp_lines) != 1:
+        raise Exception('Unexpected subprocess output')
+
+    dct = json.loads(sp_lines[0])
+    if set(dct) != set(attrs):
+        raise Exception('Unexpected subprocess output keys')
 
     out: list[Manifest] = []
 
     for o in origins:
-        manifest = getattr(mod, o.attr)
-
-        mj = json.dumps(manifest)
-        rt_manifest = json.loads(mj)
-
-        if rt_manifest != manifest:
-            raise Exception(f'Manifest failed to roundtrip: {manifest} != {rt_manifest}')
+        manifest = dct[o.attr]
 
         out.append(Manifest(
             **dc.asdict(o),
