@@ -182,7 +182,7 @@ langchain-openai==0.1.24
 langchain-text-splitters==0.2.4
 langchainhub==0.1.21
 langcodes==3.4.0
-langgraph==0.2.19
+langgraph==0.2.20
 langgraph-checkpoint==1.0.9
 langsmith==0.1.120
 language_data==1.2.0

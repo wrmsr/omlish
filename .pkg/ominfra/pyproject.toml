@@ -36,7 +36,6 @@ ssh = [
 ]
 
 [tool.setuptools]
-include-package-data = false
 
 [tool.setuptools.packages.find]
 include = [
@@ -46,4 +45,15 @@ include = [
 exclude = [
     '*.tests',
     '*.tests.*',
+]
+
+[tool.setuptools.package-data]
+'*' = [
+    '*.c',
+    '*.cc',
+    '*.h',
+    '*.json',
+    '*.sql',
+    'LICENSE',
+    'Dockerfile',
 ]
