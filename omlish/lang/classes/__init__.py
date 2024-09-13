@@ -7,14 +7,17 @@ from .abstract import (  # noqa
 )
 
 from .restrict import (  # noqa
+    AnySensitive,
     Final,
     FinalError,
     NoBool,
     NotInstantiable,
     NotPicklable,
     PackageSealed,
+    SENSITIVE_ATTR,
     Sealed,
     SealedError,
+    Sensitive,
     no_bool,
 )
 

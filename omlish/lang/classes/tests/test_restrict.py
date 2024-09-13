@@ -2,11 +2,13 @@ import typing as ta
 
 import pytest
 
+from ..restrict import AnySensitive
 from ..restrict import Final
 from ..restrict import FinalError
 from ..restrict import NoBool
 from ..restrict import Sealed
 from ..restrict import SealedError
+from ..restrict import Sensitive
 from ..restrict import no_bool
 
 
@@ -69,3 +71,63 @@ def test_no_bool():
     assert C  # type: ignore
     with pytest.raises(TypeError):
         bool(C())
+
+
+def test_sensitive():
+    with pytest.raises(TypeError):
+        AnySensitive()
+
+    assert not issubclass(str, Sensitive)
+    assert not issubclass(str, AnySensitive)
+    assert not isinstance('foo', Sensitive)
+    assert not isinstance('foo', AnySensitive)
+
+    class Foo(Sensitive):
+        pass
+
+    assert issubclass(Foo, Sensitive)
+    assert issubclass(Foo, AnySensitive)
+    assert isinstance(Foo(), Sensitive)
+    assert isinstance(Foo(), AnySensitive)
+
+    class Bar:
+        __sensitive__ = True
+
+    assert not issubclass(Bar, Sensitive)
+    assert issubclass(Bar, AnySensitive)
+    assert not isinstance(Bar(), Sensitive)
+    assert isinstance(Bar(), AnySensitive)
+
+    class Baz:
+        __sensitive__ = False
+
+    assert not issubclass(Baz, Sensitive)
+    assert issubclass(Baz, AnySensitive)
+    assert not isinstance(Baz(), Sensitive)
+    assert isinstance(Baz(), AnySensitive)
+
+
+def test_lite_secret_sensitive():
+    from ....lite.secrets import Secret
+
+    assert not issubclass(Secret, Sensitive)
+    assert issubclass(Secret, AnySensitive)
+    assert not isinstance(Secret(value='foo'), Sensitive)
+    assert isinstance(Secret(value='foo'), AnySensitive)
+
+
+def test_sensitive_register():
+    class Foo:
+        pass
+
+    assert not issubclass(Foo, Sensitive)
+    assert not issubclass(Foo, AnySensitive)
+    assert not isinstance(Foo(), Sensitive)
+    assert not isinstance(Foo(), AnySensitive)
+
+    AnySensitive.register(Foo)
+
+    assert not issubclass(Foo, Sensitive)
+    assert issubclass(Foo, AnySensitive)
+    assert not isinstance(Foo(), Sensitive)
+    assert isinstance(Foo(), AnySensitive)
