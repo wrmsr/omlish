@@ -14,6 +14,9 @@ import typing as ta
 Ty = ta.TypeVar('Ty', bound=type)
 
 T = ta.TypeVar('T')
+T_co = ta.TypeVar('T_co', covariant=True)
+T_contra = ta.TypeVar('T_contra', contravariant=True)
+
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
@@ -133,3 +136,32 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 
     def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
         return self.fn(a0, a1, a2)
+
+
+##
+
+
+class SequenceNotStr(ta.Protocol[T_co]):
+    """
+    https://github.com/python/mypy/issues/11001
+    https://github.com/python/typing/issues/256#issuecomment-1442633430
+    https://github.com/hauntsaninja/useful_types/blob/735ef9dd0b55b35b118ef630d5a0f3618ecedbff/useful_types/__init__.py#L285
+    """
+
+    @ta.overload
+    def __getitem__(self, index: ta.SupportsIndex, /) -> T_co: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice, /) -> ta.Sequence[T_co]: ...  # noqa
+
+    def __contains__(self, value: object, /) -> bool: ...
+
+    def __len__(self) -> int: ...
+
+    def __iter__(self) -> ta.Iterator[T_co]: ...
+
+    def index(self, value: ta.Any, start: int = 0, stop: int = ..., /) -> int: ...
+
+    def count(self, value: ta.Any, /) -> int: ...
+
+    def __reversed__(self) -> ta.Iterator[T_co]: ...
