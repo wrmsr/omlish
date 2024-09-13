@@ -248,3 +248,7 @@ gym==0.26.2
 llama-cpp-python; sys_platform == "darwin"
 
 faiss-cpu==1.8.0.post1
+
+##
+
+tantivy==0.22
