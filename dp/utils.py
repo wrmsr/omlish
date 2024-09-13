@@ -10,3 +10,4 @@ def load_secrets() -> None:
     os.environ['OPENAI_API_KEY'] = dct['openai_api_key']
     os.environ['TAVILY_API_KEY'] = dct['tavily_api_key']
     os.environ['ANTHROPIC_API_KEY'] = dct['anthropic_api_key']
+    os.environ['MISTRAL_API_KEY'] = dct['mistral_api_key']
