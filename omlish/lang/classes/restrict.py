@@ -1,3 +1,4 @@
+import abc
 import functools
 import typing as ta
 
@@ -9,7 +10,6 @@ from .abstract import is_abstract
 
 
 class FinalError(TypeError):
-
     def __init__(self, _type: type) -> None:
         super().__init__()
 
@@ -49,7 +49,6 @@ class Final(Abstract):
 
 
 class SealedError(TypeError):
-
     def __init__(self, _type) -> None:
         super().__init__()
 
@@ -118,13 +117,11 @@ class NotPicklable:
 
 
 class NoBool:
-
     def __bool__(self) -> bool:
         raise TypeError
 
 
 class _NoBoolDescriptor:
-
     def __init__(self, fn, instance=None, owner=None) -> None:
         super().__init__()
         self._fn = fn
@@ -146,3 +143,27 @@ class _NoBoolDescriptor:
 
 def no_bool(fn):  # noqa
     return _NoBoolDescriptor(fn)
+
+
+##
+
+
+SENSITIVE_ATTR = '__sensitive__'
+
+
+class Sensitive:
+    __sensitive__ = True
+
+
+class _AnySensitiveMeta(abc.ABCMeta):
+    @classmethod
+    def __instancecheck__(cls, instance: object) -> bool:
+        return hasattr(instance, SENSITIVE_ATTR) or super().__instancecheck__(AnySensitive, instance)
+
+    @classmethod
+    def __subclasscheck__(cls, subclass: type) -> bool:
+        return hasattr(subclass, SENSITIVE_ATTR) or super().__subclasscheck__(AnySensitive, subclass)
+
+
+class AnySensitive(NotInstantiable, Final, metaclass=_AnySensitiveMeta):
+    pass

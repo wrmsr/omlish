@@ -42,7 +42,6 @@ _MARKER_NAMESPACE_KEYS: set[str] | None = None
 
 
 class _MarkerMeta(abc.ABCMeta):
-
     def __new__(mcls, name, bases, namespace):
         global _MARKER_NAMESPACE_KEYS
 
@@ -74,7 +73,6 @@ class Marker(NotInstantiable, metaclass=_MarkerMeta):
 
 
 class SimpleMetaDict(dict):
-
     def update(self, m: ta.Mapping[K, V], **kwargs: V) -> None:  # type: ignore
         for k, v in m.items():
             self[k] = v
@@ -109,7 +107,6 @@ def _set_singleton_instance(inst):
 
 
 class Singleton:
-
     def __new__(cls):
         return cls.__dict__[_SINGLETON_INSTANCE_ATTR]
 
@@ -119,7 +116,6 @@ class Singleton:
 
 
 class LazySingleton:
-
     def __new__(cls):
         try:
             return cls.__dict__[_SINGLETON_INSTANCE_ATTR]

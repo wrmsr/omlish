@@ -5,6 +5,7 @@ from .cached import (  # noqa
 
 from .classes import (  # noqa
     Abstract,
+    AnySensitive,
     Callable,
     Descriptor,
     Final,
@@ -17,8 +18,10 @@ from .classes import (  # noqa
     NotPicklable,
     PackageSealed,
     Picklable,
+    SENSITIVE_ATTR,
     Sealed,
     SealedError,
+    Sensitive,
     SimpleMetaDict,
     Singleton,
     Virtual,
