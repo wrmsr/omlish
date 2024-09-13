@@ -111,12 +111,24 @@ class SetuptoolsBase:
         'global-exclude **/conftest.py',
     ]
 
-    include_package_data = False
-
     find_packages = {
         'exclude': [
             '*.tests',
             '*.tests.*',
+        ],
+    }
+
+    package_data = {
+        '*': [
+            '*.c',
+            '*.cc',
+            '*.h',
+
+            '*.json',
+
+            '*.sql',
+
+            'LICENSE',
         ],
     }
 
