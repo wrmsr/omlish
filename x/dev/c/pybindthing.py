@@ -22,6 +22,7 @@ def _main():
         include_dirs=[
             os.path.join(pybind11_dir, 'include'),
         ],
+        # inplace=False,
     ))
 
     #
