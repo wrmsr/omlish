@@ -1,5 +1,7 @@
 services:
 
+  # dev
+
   omlish-dev: &_dev
     build:
       context: '../'
@@ -43,6 +45,8 @@ services:
       - '35222:8000'
       - '35223:22'
 
+  # ci
+
   omlish-ci:
     build: '.'
     image: 'wrmsr/omlish-ci:latest'
@@ -55,17 +59,18 @@ services:
       - 'omlish-mysql'
       - 'omlish-postgres'
 
-  omlish-elasticsearch:
-    image: 'elasticsearch:8.15.0'
+  # main
+
+  omlish-postgres:
+    image: 'postgres:16.3'
     restart: 'unless-stopped'
     environment:
-      ES_JAVA_OPTS: '-Xms750m -Xmx750m'
-      discovery.type: 'single-node'
-      xpack.security.enabled: 'false'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'omlish'
     expose:
-      - '9200'
+      - '5432'
     ports:
-      - '35224:9200'
+      - '35228:5432'
 
   omlish-mysql:
     image: 'mysql:9.0.1'
@@ -79,6 +84,30 @@ services:
     ports:
       - '35225:3306'
 
+  omlish-s3:
+    image: 'adobe/s3mock:3.10.0'
+    restart: 'unless-stopped'
+    expose:
+      - '9090'
+      - '9191'
+    ports:
+      - '35230:9090'
+      - '35231:9191'
+
+  # ext
+
+  omlish-elasticsearch:
+    image: 'elasticsearch:8.15.0'
+    restart: 'unless-stopped'
+    environment:
+      ES_JAVA_OPTS: '-Xms750m -Xmx750m'
+      discovery.type: 'single-node'
+      xpack.security.enabled: 'false'
+    expose:
+      - '9200'
+    ports:
+      - '35224:9200'
+
   omlish-neo4j:
     image: 'neo4j:5.23.0-community'
     restart: 'unless-stopped'
@@ -89,17 +118,6 @@ services:
       - '35226:7474'
       - '35227:7687'
 
-  omlish-postgres:
-    image: 'postgres:16.3'
-    restart: 'unless-stopped'
-    environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'omlish'
-    expose:
-      - '5432'
-    ports:
-      - '35228:5432'
-
   omlish-redis:
     image: 'redis:7.4.0'
     restart: 'unless-stopped'
@@ -107,13 +125,3 @@ services:
       - '6379'
     ports:
       - '35229:6379'
-
-  omlish-s3:
-    image: 'adobe/s3mock:3.10.0'
-    restart: 'unless-stopped'
-    expose:
-      - '9090'
-      - '9191'
-    ports:
-      - '35230:9090'
-      - '35231:9191'
