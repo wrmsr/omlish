@@ -1,9 +1,9 @@
 """
 https://python.langchain.com/v0.2/docs/tutorials/summarization/
 """
+import asyncio
 import typing as ta
 import operator
-
 
 from langchain.chains.combine_documents.reduce import (
     acollapse_docs,
@@ -189,12 +189,16 @@ def _main() -> None:
 
     #
 
-    for step in app.stream(
-            {"contents": [doc.page_content for doc in split_docs]},
-            {"recursion_limit": 10},
-    ):
-        print(list(step.keys()))
+    async def do():
+        async for step in app.astream(
+                {"contents": [doc.page_content for doc in split_docs]},
+                {"recursion_limit": 10},
+        ):
+            print(list(step.keys()))
 
+        return step
+
+    step = asyncio.run(do())
     print(step)
 
 
