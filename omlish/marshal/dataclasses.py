@@ -24,7 +24,7 @@ from .objects import ObjectUnmarshaler
 
 
 def get_dataclass_metadata(ty: type) -> ObjectMetadata:
-    return check.optional_single(
+    return check.opt_single(
         e
         for e in dc.get_merged_metadata(ty).get(dc.UserMetadata, [])
         if isinstance(e, ObjectMetadata)

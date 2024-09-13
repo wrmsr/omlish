@@ -332,7 +332,7 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
     return value
 
 
-def optional_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
+def opt_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
     it = iter(obj)
     try:
         value = next(it)

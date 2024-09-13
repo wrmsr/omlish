@@ -5,6 +5,7 @@ TODO:
  - goal: perfect rewrites (comments, whitespace)
   - or at least comments
  - rename 'objects'? codecs/serde interplay still unresolved
+ - look ma, a monad
 """
 import datetime
 import types
