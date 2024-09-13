@@ -1,0 +1,7 @@
+prompt
+.env
+.idea/
+__pycache__/
+build
+dist
+repogather.egg-info

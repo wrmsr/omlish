@@ -1,12 +1,8 @@
-"""
-See:
- - https://peps.python.org/pep-0603/
-"""
 import glob
 import os.path
 import shutil
 
-from omdev.cexts import importhook
+from omdev.cexts import build
 
 
 def _main():
@@ -16,16 +12,7 @@ def _main():
     for f in glob.glob(os.path.join(here, '*.so')):
         os.remove(f)
 
-    importhook.install()
-
-    ##
-
-    from . import _hamt  # noqa
-    print(_hamt)
-
-    ##
-
-    importhook.uninstall()
+    #
 
 
 if __name__ == '__main__':

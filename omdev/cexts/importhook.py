@@ -42,7 +42,7 @@ class CextImportLoader(importlib.machinery.ExtensionFileLoader):
         super().__init__(module_name, filename)
 
     def create_module(self, spec: importlib.machinery.ModuleSpec) -> types.ModuleType:
-        so_path = build.build_ext(spec.name, check.non_empty_str(spec.origin))
+        so_path = build.build_ext(build.BuildExt(spec.name, check.non_empty_str(spec.origin)))
         self.path = so_path  # noqa
         spec.origin = so_path
         return super().create_module(spec)
