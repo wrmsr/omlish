@@ -32,9 +32,30 @@ from .chat import Chat
 from .chat import ChatMessage
 from .chat import ChatRole
 from .chat import LlamacppChatLlm
+from .chat import OpenaiChatLlm
+from .prompt import LlamacppPromptLlm
+from .prompt import OpenaiPromptLlm
 from .prompt import TransformersPromptLlm
 from .state import load_state
 from .state import save_state
+
+
+##
+
+
+CHAT_LLM_IMPLS = {
+    'openai': OpenaiChatLlm,
+    'llamacpp': LlamacppChatLlm,
+}
+
+
+PROMPT_LLM_IMPLS = {
+    'openai': OpenaiPromptLlm,
+    'llamacpp': LlamacppPromptLlm,
+    'transformers': TransformersPromptLlm,
+}
+
+DEFAULT_BACKEND = 'openai'
 
 
 ##
@@ -44,6 +65,7 @@ def _run_chat(
         prompt: str,
         *,
         new: bool = False,
+        backend: str | None = None,
 ) -> None:
     state_dir = os.path.expanduser('~/.omlish-llm')
     if not os.path.exists(state_dir):
@@ -70,8 +92,9 @@ def _run_chat(
 
     #
 
-    # llm = OpenaiChatLlm()
-    llm = LlamacppChatLlm()
+    llm = CHAT_LLM_IMPLS[backend or DEFAULT_BACKEND]()
+
+    #
 
     response = llm.get_completion(chat.messages)
 
@@ -99,18 +122,26 @@ def _run_chat(
     save_state(chat_file, chat, Chat)
 
 
+#
+
+
 def _run_prompt(
         prompt: str,
+        *,
+        backend: str | None = None,
 ) -> None:
-    # llm = OpenaiPromptLlm()
-    # llm = LlamacppPromptLlm()
-    llm = TransformersPromptLlm()
+    llm = PROMPT_LLM_IMPLS[backend or DEFAULT_BACKEND]()
+
+    #
 
     response = llm.get_completion(prompt).strip()
 
     #
 
     print(response)
+
+
+#
 
 
 def _main() -> None:
@@ -122,6 +153,7 @@ def _main() -> None:
     parser.add_argument('prompt')
     parser.add_argument('-c', '--chat', action='store_true')
     parser.add_argument('-n', '--new', action='store_true')
+    parser.add_argument('-b', '--backend')
     args = parser.parse_args()
 
     args.new = True
@@ -143,12 +175,14 @@ def _main() -> None:
     if args.chat:
         _run_chat(
             prompt,
+            backend=args.backend,
             new=bool(args.new),
         )
 
     else:
         _run_prompt(
             prompt,
+            backend=args.backend,
         )
 
 

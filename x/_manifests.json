@@ -7,5 +7,17 @@
     "value": {
       "some_const": 420
     }
+  },
+  {
+    "module": ".llm.state",
+    "attr": "_STATE_CACHE_MANIFEST",
+    "file": "state.py",
+    "line": 65,
+    "value": {
+      "cache": {
+        "name": "llm",
+        "version": 0
+      }
+    }
   }
 ]

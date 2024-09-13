@@ -9,6 +9,9 @@
   - dumped in _manifest.py
  - # @omlish-manifest \n _CACHE_MANIFEST = {'cache': {'name': 'llm', …
  - also can do prechecks!
+
+TODO:
+ - warn if took a while - means fat imports
 """
 # ruff: noqa: UP006
 # @omlish-lite
@@ -94,8 +97,8 @@ def build_module_manifests(
 
     mod_name = file.rpartition('.')[0].replace(os.sep, '.')
     mod_base = mod_name.split('.')[0]
-    if mod_base != os.path.split(file)[0]:
-        raise Exception('Unexpected module base')
+    if mod_base != (first_dir := file.split(os.path.sep)[0]):
+        raise Exception(f'Unexpected module base: {mod_base=} != {first_dir=}')
 
     with open(os.path.join(base, file)) as f:
         src = f.read()
@@ -111,7 +114,7 @@ def build_module_manifests(
                 module='.'.join(['', *mod_name.split('.')[1:]]),
                 attr=m.groupdict()['name'],
 
-                file=os.path.join(*os.path.split(file)[1:]),
+                file=os.path.join(*os.path.split(file)[1:]),  # noqa
                 line=i + 1,
             ))
 
@@ -207,7 +210,7 @@ if __name__ == '__main__':
                 write=args.write or False,
             )
             if not args.quiet:
-                print(json_dumps_pretty(ms))
+                print(json_dumps_pretty([dc.asdict(m) for m in ms]))
 
     def _main(argv=None) -> None:
         configure_standard_logging('INFO')
