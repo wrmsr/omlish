@@ -15,12 +15,14 @@ services:
     depends_on:
       - 'omlish-elasticsearch'
       - 'omlish-mysql'
+      - 'omlish-neo4j'
       - 'omlish-postgres'
       - 'omlish-redis'
       - 'omlish-s3'
     links:
       - 'omlish-elasticsearch'
       - 'omlish-mysql'
+      - 'omlish-neo4j'
       - 'omlish-postgres'
       - 'omlish-redis'
       - 'omlish-s3'
@@ -63,7 +65,7 @@ services:
     expose:
       - '9200'
     ports:
-      - '35229:9200'
+      - '35224:9200'
 
   omlish-mysql:
     image: 'mysql:9.0.1'
@@ -75,7 +77,17 @@ services:
     expose:
       - '3306'
     ports:
-      - '35224:3306'
+      - '35225:3306'
+
+  omlish-neo4j:
+    image: 'neo4j:5.23.0-community'
+    restart: 'unless-stopped'
+    expose:
+      - '7474'
+      - '7687'
+    ports:
+      - '35226:7474'
+      - '35227:7687'
 
   omlish-postgres:
     image: 'postgres:16.3'
@@ -86,7 +98,7 @@ services:
     expose:
       - '5432'
     ports:
-      - '35225:5432'
+      - '35228:5432'
 
   omlish-redis:
     image: 'redis:7.4.0'
@@ -94,7 +106,7 @@ services:
     expose:
       - '6379'
     ports:
-      - '35226:6379'
+      - '35229:6379'
 
   omlish-s3:
     image: 'adobe/s3mock:3.10.0'
@@ -103,5 +115,5 @@ services:
       - '9090'
       - '9191'
     ports:
-      - '35227:9090'
-      - '35228:9191'
+      - '35230:9090'
+      - '35231:9191'
