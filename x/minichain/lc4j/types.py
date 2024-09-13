@@ -1,6 +1,8 @@
 """
 https://github.com/langchain4j/langchain4j/tree/d069798d52430203084dcb2114cbbd3afc3ff6cb/langchain4j-core/src/main/java/dev/langchain4j
 
+==
+
 agent
   tool
     JsonSchemaProperty
@@ -11,11 +13,14 @@ agent
     ToolParameters
     ToolSpecification
     ToolSpecifications
+
 code
   CodeExecutionEngine
+
 data
   audio
     Audio
+
   document
     BlankDocumentException
     Document
@@ -25,10 +30,13 @@ data
     DocumentSplitter
     DocumentTransformer
     Metadata
+
   embedding
     Embedding
+
   image
     Image
+
   message
     AiMessage
     AudioContent
@@ -50,15 +58,20 @@ data
     ToolExecutionResultMessage
     UserMessage
     VideoContent
+
   pdf
     PdfFile
+
   segment
     TextSegment
     TextSegmentTransformer
+
   text
     TextFile
+
   video
     Video
+
 internal
   CustomMimeTypesFileTypeDetector
   Exceptions
@@ -69,20 +82,12 @@ internal
   TypeUtils
   Utils
   ValidationUtils
+
 memory
   ChatMemory
+
 model
-  LambdaStreamingResponseHandler
-  ModelDisabledException
-  StreamingResponseHandler
-  Tokenizer
   chat
-    Capability
-    ChatLanguageModel
-    DisabledChatLanguageModel
-    DisabledStreamingChatLanguageModel
-    StreamingChatLanguageModel
-    TokenCountEstimator
     listener
       ChatModelErrorContext
       ChatModelListener
@@ -90,10 +95,8 @@ model
       ChatModelRequestContext
       ChatModelResponse
       ChatModelResponseContext
+
     request
-      ChatRequest
-      ResponseFormat
-      ResponseFormatType
       json
         JsonArraySchema
         JsonBooleanSchema
@@ -104,76 +107,112 @@ model
         JsonSchema
         JsonSchemaElement
         JsonStringSchema
+
+      ChatRequest
+      ResponseFormat
+      ResponseFormatType
+
     response
       ChatResponse
+
+    Capability
+    ChatLanguageModel
+    DisabledChatLanguageModel
+    DisabledStreamingChatLanguageModel
+    StreamingChatLanguageModel
+    TokenCountEstimator
+
   embedding
     DimensionAwareEmbeddingModel
     DisabledEmbeddingModel
     EmbeddingModel
     TokenCountEstimator
+
   image
     DisabledImageModel
     ImageModel
+
   input
-    DefaultPromptTemplateFactory
-    Prompt
-    PromptTemplate
     structured
       DefaultStructuredPromptFactory
       StructuredPrompt
       StructuredPromptProcessor
+
+    DefaultPromptTemplateFactory
+    Prompt
+    PromptTemplate
+
   language
     DisabledLanguageModel
     DisabledStreamingLanguageModel
     LanguageModel
     StreamingLanguageModel
     TokenCountEstimator
+
   moderation
     DisabledModerationModel
     Moderation
     ModerationModel
+
   output
+    structured
+      Description
+
     FinishReason
     Response
     TokenUsage
-    structured
-      Description
+
   scoring
     ScoringModel
+
+  LambdaStreamingResponseHandler
+  ModelDisabledException
+  StreamingResponseHandler
+  Tokenizer
+
 rag
-  AugmentationRequest
-  AugmentationResult
-  DefaultRetrievalAugmentor
-  RetrievalAugmentor
   content
-    Content
     aggregator
       ContentAggregator
       DefaultContentAggregator
       ReRankingContentAggregator
       ReciprocalRankFuser
+
     injector
       ContentInjector
       DefaultContentInjector
+
     retriever
       ContentRetriever
       EmbeddingStoreContentRetriever
       WebSearchContentRetriever
+
+    Content
+
   query
-    Metadata
-    Query
     router
       DefaultQueryRouter
       LanguageModelQueryRouter
       QueryRouter
+
     transformer
       CompressingQueryTransformer
       DefaultQueryTransformer
       ExpandingQueryTransformer
       QueryTransformer
+
+    Metadata
+    Query
+
+  AugmentationRequest
+  AugmentationResult
+  DefaultRetrievalAugmentor
+  RetrievalAugmentor
+
 retriever
   EmbeddingStoreRetriever
   Retriever
+
 spi
   ServiceHelper
   data
@@ -193,19 +232,10 @@ spi
     PromptTemplateFactory
     structured
       StructuredPromptFactory
+
 store
   embedding
-    CosineSimilarity
-    EmbeddingMatch
-    EmbeddingSearchRequest
-    EmbeddingSearchResult
-    EmbeddingStore
-    EmbeddingStoreIngestor
-    RelevanceScore
     filter
-      Filter
-      FilterParser
-      MetadataFilterBuilder
       comparison
         IsEqualTo
         IsGreaterThan
@@ -218,14 +248,29 @@ store
         NumberComparator
         TypeChecker
         UUIDComparator
+
       logical
         And
         Not
         Or
+
+      Filter
+      FilterParser
+      MetadataFilterBuilder
+
+    CosineSimilarity
+    EmbeddingMatch
+    EmbeddingSearchRequest
+    EmbeddingSearchResult
+    EmbeddingStore
+    EmbeddingStoreIngestor
+    RelevanceScore
+
   memory
     chat
       ChatMemoryStore
       InMemoryChatMemoryStore
+
 web
   search
     WebSearchEngine
