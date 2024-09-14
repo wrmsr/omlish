@@ -63,7 +63,7 @@ def load_state(file: str, ty: type[T] | None, *, version: int = STATE_VERSION) -
 
 
 # @omlish-manifest
-_STATE_CACHE_MANIFEST = {'cache': {
+_STATE_CACHE_MANIFEST = {'$cache': {
     'name': 'llm',
     'version': STATE_VERSION,
 }}

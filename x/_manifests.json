@@ -5,7 +5,9 @@
     "file": "foo.py",
     "line": 4,
     "value": {
-      "some_const": 420
+      "$some_manifest_thing": {
+        "some_const": 420
+      }
     }
   },
   {
@@ -14,7 +16,7 @@
     "file": "state.py",
     "line": 65,
     "value": {
-      "cache": {
+      "$cache": {
         "name": "llm",
         "version": 0
       }
