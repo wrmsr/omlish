@@ -1,3 +1,7 @@
+"""
+TODO:
+ - check for updates
+"""
 import os
 import re
 import shutil
@@ -109,15 +113,22 @@ class Cli(ap.Cli):
         dct: dict[str, list[PortEntry]] = {}
 
         with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
-            val = check.not_none(loader.get_single_data())
+            val = check.not_none(loader.get_single_data())  # type: ignore
             root = check.isinstance(val.value, ta.Mapping)
 
-            services = check.isinstance(check.single(v.value for k, v in root.items() if k.value == 'services'), ta.Mapping)
+            services = check.isinstance(
+                check.single(
+                    v.value  # type: ignore
+                    for k, v in root.items()
+                    if k.value == 'services'  # type: ignore
+                ),
+                ta.Mapping,
+            )
             for name_w, cfg_w in services.items():
-                name = check.isinstance(name_w.value, str)
-                cfg = check.isinstance(cfg_w.value, ta.Mapping)
+                name = check.isinstance(name_w.value, str)  # type: ignore
+                cfg = check.isinstance(cfg_w.value, ta.Mapping)  # type: ignore
 
-                ports = check.opt_single(v.value for k, v in cfg.items() if k.value == 'ports')
+                ports = check.opt_single(v.value for k, v in cfg.items() if k.value == 'ports')  # type: ignore
                 if not ports:
                     continue
 

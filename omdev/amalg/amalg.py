@@ -29,13 +29,16 @@ import io
 import logging
 import os.path
 import re
+import textwrap
 import typing as ta
 
 import tokenize_rt as trt
 
 from omlish import check
 from omlish import collections as col
+from omlish import lang
 from omlish import logs
+from omlish.lite.runtime import REQUIRED_PYTHON_VERSION
 
 from .. import findmagic
 from .. import tokens as tks
@@ -91,6 +94,7 @@ def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
 
 STRIPPED_HEADER_MAGICS = [
     '# @omlish-lite',
+    '# @omlish-script',
 ]
 
 STRIPPED_HEADER_PATS = [findmagic.compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
@@ -268,6 +272,8 @@ class SrcFile:
     typings: ta.Sequence[Typing] = dc.field(repr=False)
     content_lines: ta.Sequence[Tokens] = dc.field(repr=False)
 
+    ruff_noqa: ta.AbstractSet[str] = dc.field(repr=False)
+
 
 def make_src_file(
         path: str,
@@ -283,6 +289,7 @@ def make_src_file(
     hls, cls = split_header_lines(lines)
 
     hls = strip_header_lines(hls)
+    rnls, hls = col.partition(hls, lambda l: tks.join_toks(l).startswith('# ruff: noqa: '))
 
     imps: list[Import] = []
     tys: list[Typing] = []
@@ -316,6 +323,8 @@ def make_src_file(
         imports=imps,
         typings=tys,
         content_lines=ctls,
+
+        ruff_noqa=set(lang.flatten(tks.join_toks(l).strip().split()[3:] for l in rnls)),  # noqa
     )
 
 
@@ -324,10 +333,11 @@ def make_src_file(
 
 SECTION_SEP = '#' * 40 + '\n'
 
-RUFF_DISABLES: ta.Sequence[str] = [
-    # 'UP006',  # non-pep585-annotation
-    # 'UP007',  # non-pep604-annotation
-]
+RUFF_DISABLES: ta.AbstractSet[str] = {
+    'UP006',  # non-pep585-annotation
+    'UP007',  # non-pep604-annotation
+    'UP036',  # outdated-version-block
+}
 
 OUTPUT_COMMENT = '# @omdev-amalg-output '
 SCAN_COMMENT = '# @omdev-amalg '
@@ -362,43 +372,64 @@ def gen_amalg(
 
     ##
 
+    hls = []
+
     mf = src_files[main_path]
     if mf.header_lines:
-        hls = [
+        hls.extend([
             hl
             for hlts in mf.header_lines
             if not (hl := tks.join_toks(hlts)).startswith(SCAN_COMMENT)
-        ]
-        if output_dir is not None:
-            ogf = os.path.relpath(main_path, output_dir)
-        else:
-            ogf = os.path.basename(main_path)
-        nhls = []
-        nhls.extend([
-            '#!/usr/bin/env python3\n',
-            '# noinspection DuplicatedCode\n',
-            '# @omlish-lite\n',
-            '# @omlish-script\n',
-            f'{OUTPUT_COMMENT.strip()} {ogf}\n',
         ])
-        hls = [*nhls, *hls]
-        out.write(''.join(hls))
 
-    if RUFF_DISABLES:
-        out.write(f'# ruff: noqa: {" ".join(RUFF_DISABLES)}\n')
+    if output_dir is not None:
+        ogf = os.path.relpath(main_path, output_dir)
+    else:
+        ogf = os.path.basename(main_path)
+
+    nhls = []
+    nhls.extend([
+        '#!/usr/bin/env python3\n',
+        '# noinspection DuplicatedCode\n',
+        '# @omlish-lite\n',
+        '# @omlish-script\n',
+        f'{OUTPUT_COMMENT.strip()} {ogf}\n',
+    ])
+
+    ruff_disables = sorted({
+        *lang.flatten(f.ruff_noqa for f in src_files.values()),
+        *RUFF_DISABLES,
+    })
+    if ruff_disables:
+        nhls.append(f'# ruff: noqa: {" ".join(sorted(ruff_disables))}\n')
+
+    hls = [*nhls, *hls]
+    out.write(''.join(hls))
 
     ##
 
     all_imps = [i for f in src_files.values() for i in f.imports]
     gl_imps = [i for i in all_imps if i.mod_path is None]
 
-    dct: dict = {}
+    dct: dict = {
+        ('sys', None, None): ['import sys\n'],
+    }
     for imp in gl_imps:
         dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
     for _, l in sorted(dct.items()):
-        out.write(tks.join_toks(l[0].toks))
+        il = l[0]
+        out.write(il if isinstance(il, str) else tks.join_toks(il.toks))
     if dct:
         out.write('\n\n')
+
+    ##
+
+    out.write(textwrap.dedent(f"""
+    if sys.version_info < {REQUIRED_PYTHON_VERSION!r}:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION!r}, got {{sys.version_info}} from {{sys.executable}}')  # noqa
+    """).lstrip())
+    out.write('\n\n')
 
     ##
 
