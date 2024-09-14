@@ -3,6 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omdev-amalg-output executor/main.py
+# ruff: noqa: N802 UP006 UP007 UP036
 r"""
 TODO:
  - flock
@@ -43,7 +44,6 @@ spec = <name>--<rev>--<when>
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
 """  # noqa
-# ruff: noqa: UP007
 import abc
 import argparse
 import base64
@@ -68,6 +68,11 @@ import threading
 import typing as ta
 import uuid
 import weakref  # noqa
+
+
+if sys.version_info < (3, 8):
+    raise OSError(
+        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
 # ../../../../omlish/lite/check.py
@@ -119,7 +124,6 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../../omlish/lite/check.py
-# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -179,7 +183,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../../omlish/lite/reflect.py
-# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -232,7 +235,6 @@ TODO:
  - translate json keys
  - debug
 """
-# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -485,7 +487,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - nonstrict toggle
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -801,7 +802,6 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -908,7 +908,6 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../base.py
-# ruff: noqa: UP006
 
 
 ##

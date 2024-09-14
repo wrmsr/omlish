@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omdev-amalg-output ../pyproject/cli.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: N802 TCH003 UP006 UP007 UP036
 """
 TODO:
  - check / tests, src dir sets
@@ -66,6 +66,11 @@ import weakref  # noqa
 import zipfile
 
 
+if sys.version_info < (3, 8):
+    raise OSError(
+        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
+
+
 # ../../toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
@@ -101,7 +106,6 @@ class CextMagic:
 
 ########################################
 # ../../findmagic.py
-# @omlish-script
 
 
 def compile_magic_pat(m: str) -> re.Pattern:
@@ -203,7 +207,6 @@ def find_magic(
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1109,7 +1112,6 @@ class TomlWriter:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1495,7 +1497,6 @@ def canonicalize_version(
 
 ########################################
 # ../../wheelfile.py
-# ruff: noqa: UP006 UP007
 # https://github.com/pypa/wheel/blob/7bb46d7727e6e89fe56b3c78297b3af2672bbbe2/src/wheel/wheelfile.py
 # MIT License
 #
@@ -1755,7 +1756,6 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -1815,7 +1815,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -1898,7 +1897,6 @@ def is_sunder(name: str) -> bool:
 TODO:
  - embed pip._internal.req.parse_requirements, add additional env stuff? breaks compat with raw pip
 """
-# ruff: noqa: UP007
 
 
 class RequirementsRewriter:
@@ -1993,7 +1991,6 @@ class RequirementsRewriter:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2499,7 +2496,6 @@ TODO:
  - translate json keys
  - debug
 """
-# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -2752,7 +2748,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - nonstrict toggle
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -3068,7 +3063,6 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../interp/types.py
-# ruff: noqa: UP006
 
 
 # See https://peps.python.org/pep-3149/
@@ -3160,7 +3154,6 @@ class Interp:
 
 ########################################
 # ../configs.py
-# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -3264,7 +3257,6 @@ TODO:
  - omlish-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
-# ruff: noqa: TCH003 UP006 UP007
 
 
 ##
@@ -3404,7 +3396,6 @@ class GitRevisionAdder:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -3511,7 +3502,6 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../../interp/inspect.py
-# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -3634,7 +3624,6 @@ https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """  # noqa
-# ruff: noqa: UP006 UP007
 
 
 #
@@ -4074,7 +4063,6 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -4469,7 +4457,6 @@ TODO:
  - python, python3, python3.12, ...
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -4578,7 +4565,6 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../../interp/resolvers.py
-# ruff: noqa: UP006 UP007
 
 
 INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
