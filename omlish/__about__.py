@@ -41,7 +41,9 @@ class Project(ProjectBase):
 
         'compression': [
             'lz4 ~= 4.0',
+
             'python-snappy ~= 0.7; python_version < "3.13"',
+
             'zstd ~= 1.5',
         ],
 
@@ -69,6 +71,7 @@ class Project(ProjectBase):
 
         'misc': [
             'jinja2 ~= 3.1',
+
             'wrapt ~= 1.14',
         ],
 

@@ -91,6 +91,7 @@ from .unmodifiable import (  # noqa
 )
 
 from .utils import (  # noqa
+    PartitionResult,
     all_equal,
     all_not_equal,
     indexes,

@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omdev-amalg-output ../interp/cli.py
-# ruff: noqa: UP007
+# ruff: noqa: N802 UP006 UP007 UP036
 """
 TODO:
  - partial best-matches - '3.12'
@@ -29,6 +29,11 @@ import subprocess
 import sys
 import threading
 import typing as ta
+
+
+if sys.version_info < (3, 8):
+    raise OSError(
+        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
 # ../../versioning/versions.py
@@ -72,7 +77,6 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -479,7 +483,6 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -539,7 +542,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -640,7 +642,6 @@ def is_sunder(name: str) -> bool:
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1146,7 +1147,6 @@ TODO:
  - translate json keys
  - debug
 """
-# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -1412,7 +1412,6 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../types.py
-# ruff: noqa: UP006
 
 
 # See https://peps.python.org/pep-3149/
@@ -1504,7 +1503,6 @@ class Interp:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -1611,7 +1609,6 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../inspect.py
-# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -1775,7 +1772,6 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2170,7 +2166,6 @@ TODO:
  - python, python3, python3.12, ...
  - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -2279,7 +2274,6 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../resolvers.py
-# ruff: noqa: UP006 UP007
 
 
 INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {

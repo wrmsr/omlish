@@ -39,7 +39,12 @@ def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[set[T]]:
 ##
 
 
-def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> tuple[list[T], list[T]]:
+class PartitionResult(ta.NamedTuple, ta.Generic[T]):
+    t: list[T]
+    f: list[T]
+
+
+def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> PartitionResult[T]:
     t: list[T] = []
     f: list[T] = []
     for e in items:
@@ -47,7 +52,7 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> tuple[list
             t.append(e)
         else:
             f.append(e)
-    return t, f
+    return PartitionResult(t, f)
 
 
 def unique(

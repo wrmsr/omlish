@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omdev-amalg-output runcommands.py
-# ruff: noqa: UP006 UP007
+# ruff: noqa: N802 UP006 UP007 UP036
 import abc
 import base64
 import collections.abc
@@ -27,6 +27,11 @@ import typing as ta
 import uuid
 import weakref  # noqa
 import zlib
+
+
+if sys.version_info < (3, 8):
+    raise OSError(
+        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
 # ../../../omlish/lite/check.py
@@ -202,7 +207,6 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../omlish/lite/check.py
-# ruff: noqa: UP006 UP007
 
 
 def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -262,7 +266,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../../../omlish/lite/reflect.py
-# ruff: noqa: UP006
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -315,7 +318,6 @@ TODO:
  - translate json keys
  - debug
 """
-# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -568,7 +570,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - nonstrict toggle
 """
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -884,7 +885,6 @@ def check_runtime_version() -> None:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
 
 
 ##

@@ -3,6 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omdev-amalg-output main.py
+# ruff: noqa: N802 UP006 UP007 UP036
 import abc
 import dataclasses as dc
 import datetime
@@ -21,6 +22,11 @@ import threading
 import typing as ta
 
 
+if sys.version_info < (3, 8):
+    raise OSError(
+        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
+
+
 # ../base.py
 T = ta.TypeVar('T')
 ConcernT = ta.TypeVar('ConcernT')
@@ -31,7 +37,6 @@ DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcernCo
 
 ########################################
 # ../configs.py
-# ruff: noqa: UP006
 
 
 ##
@@ -122,7 +127,6 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 ########################################
 # ../base.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -295,7 +299,6 @@ TODO:
  - translate json keys
  - debug
 """
-# ruff: noqa: UP006 UP007 N802
 
 
 log = logging.getLogger(__name__)
@@ -681,7 +684,6 @@ class SiteImpl(Site):
 
 ########################################
 # ../../../../omlish/lite/subprocesses.py
-# ruff: noqa: UP006 UP007
 
 
 ##
@@ -788,7 +790,6 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 ########################################
 # ../runtime.py
-# ruff: noqa: UP007
 
 
 class RuntimeImpl(Runtime):
