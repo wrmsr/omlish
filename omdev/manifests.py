@@ -159,11 +159,17 @@ def build_module_manifests(
     out: ta.List[Manifest] = []
 
     for o in origins:
-        manifest = dct[o.attr]
+        value = dct[o.attr]
+
+        if not (
+                isinstance(value, ta.Mapping) and
+                all(isinstance(k, str) and k.startswith('$') and len(k) > 1 for k in value)
+        ):
+            raise TypeError(f'Manifests must be mapping of strings starting with $: {value!r}')
 
         out.append(Manifest(
             **dc.asdict(o),
-            value=manifest,
+            value=value,
         ))
 
     return out
