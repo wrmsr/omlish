@@ -185,7 +185,7 @@ class Lexer:
 
     def ignore(self) -> None:
         # ignore skips over the pending input before this point. It tracks newlines in the ignored text, so use it only
-        # for text that is skipped without calling self._next.
+        # for text that is skipped without calling self.next.
         self._line += self._input[self._start:self._pos].count('\n')
         self._start = self._pos
         self._start_line = self._line
@@ -332,7 +332,7 @@ def left_trim_length(s: str) -> int:
 
 
 def is_space(r: str) -> bool:
-    # isSpace reports whether r is a space character.
+    # is_space reports whether r is a space character.
     return r == ' ' or r == '\t' or r == '\r' or r == '\n'
 
 
@@ -352,70 +352,62 @@ def has_right_trim_marker(s: str) -> bool:
 """
 
 
-
-
-def lexInsideAction(self) -> StateFn:
+def _lex_inside_action(self) -> StateFn:
     # lexInsideAction scans the elements inside action delimiters.
     # Either number, quoted string, or identifier. Spaces separate arguments; runs of spaces turn into itemSpace. Pipe
     # symbols separate and are emitted.
     delim, _ = self.at_right_delim()
     if delim:
         if self._paren_depth == 0:
-            return lexRightDelim
+            return self._lex_right_delim
         return self.errorf('unclosed left paren')
-    switch r := self._next(); {
-    case r == eof:
+    r = self.next()
+    if r == EOF:
         return self.errorf("unclosed action")
-    case isSpace(r):
-        self._backup() // Put space back in case we have " -}}".
+    elif is_space(r):
+        self._backup()  # Put space back in case we have " -}}".
         return lexSpace
-    case r == '=':
+    elif r == '=':
         return self._emit(itemAssign)
-    case r == ':':
-        if self._next() != '=' {
+    elif r == ':':
+        if self._next() != '=':
             return self.errorf("expected :=")
-        }
         return self._emit(itemDeclare)
-    case r == '|':
+    elif r == '|':
         return self._emit(itemPipe)
-    case r == '"':
+    elif r == '"':
         return lexQuote
-    case r == '`':
+    elif r == '`':
         return lexRawQuote
-    case r == '$':
+    elif r == '$':
         return lexVariable
-    case r == '\'':
+    elif r == '\'':
         return lexChar
-    case r == '.':
-        // special look-ahead for ".field" so we don't break self._backup().
-        if self._pos < Pos(len(self._input)) {
+    elif r == '.':
+        # special look-ahead for ".field" so we don't break self._backup().
+        if self._pos < Pos(len(self._input)):
             r := self._input[self._pos]
-            if r < '0' || '9' < r {
+            if r < '0' || '9' < r:
                 return lexField
-            }
-        }
-        fallthrough // '.' can start a number.
-    case r == '+' || r == '-' || ('0' <= r && r <= '9'):
+        fallthrough  # '.' can start a number.
+    elif r == '+' || r == '-' || ('0' <= r && r <= '9'):
         self._backup()
         return lexNumber
-    case isAlphaNumeric(r):
+    elif isAlphaNumeric(r):
         self._backup()
         return lexIdentifier
-    case r == '(':
+    elif r == '(':
         self._paren_depth++
         return self._emit(itemLeftParen)
-    case r == ')':
+    elif r == ')':
         self._paren_depth--
-        if self._paren_depth < 0 {
+        if self._paren_depth < 0:
             return self.errorf("unexpected right paren")
-        }
         return self._emit(itemRightParen)
-    case r <= unicode.MaxASCII && unicode.IsPrint(r):
+    elif r <= unicode.MaxASCII && unicode.IsPrint(r):
         return self._emit(itemChar)
-    default:
+    else:
         return self.errorf("unrecognized character in action: %#U", r)
-    }
-}
 
 def lexSpace(self) -> StateFn:
     # lexSpace scans a run of space characters. We have not consumed the first space, which is known to be present. Take care if there is a trim-marked right delimiter, which starts with a space.
@@ -423,18 +415,18 @@ def lexSpace(self) -> StateFn:
     var numSpaces int
     for {
         r = self._peek()
-        if !isSpace(r) {
+        if !is_space(r) {
             break
         }
         self._next()
         numSpaces++
     }
-    // Be careful about a trim-marked closing delimiter, which has a minus
-    // after a space. We know there is a space, so check for the '-' that might follow.
+    # Be careful about a trim-marked closing delimiter, which has a minus
+    # after a space. We know there is a space, so check for the '-' that might follow.
     if has_right_trim_marker(self._input[self._pos-1:]) && strings.HasPrefix(self._input[self._pos-1+TRIM_MARKER_LEN:], self._right_delim) {
-        self._backup() // Before the space.
+        self._backup() # Before the space.
         if numSpaces == 1 {
-            return lexRightDelim // On the delim, so go right to that.
+            return lexRightDelim # On the delim, so go right to that.
         }
     }
     return self._emit(itemSpace)
@@ -445,7 +437,7 @@ def lexIdentifier(self) -> StateFn:
     for {
         switch r := self._next(); {
         case isAlphaNumeric(r):
-            // absorb.
+            # absorb.
         default:
             self._backup()
             word := self._input[self._start:self._pos]
@@ -477,7 +469,7 @@ def lexField(self) -> StateFn:
 
 def lexVariable(self) -> StateFn:
     # lexVariable scans a Variable: $Alphanumeric. The $ has been scanned.
-    if self._atTerminator() { // Nothing interesting follows -> "$".
+    if self._atTerminator() { # Nothing interesting follows -> "$".
         return self._emit(itemVariable)
     }
     return lexFieldOrVariable(l, itemVariable)
@@ -485,7 +477,7 @@ def lexVariable(self) -> StateFn:
 
 def lexFieldOrVariable(self, typ itemType) -> StateFn:
     # lexFieldOrVariable scans a field or variable: [.$]Alphanumeric. The . or $ has been scanned.
-    if self._atTerminator() { // Nothing interesting follows -> "." or "$".
+    if self._atTerminator() { # Nothing interesting follows -> "." or "$".
         if typ == itemVariable {
             return self._emit(itemVariable)
         }
@@ -508,7 +500,7 @@ def lexFieldOrVariable(self, typ itemType) -> StateFn:
 def (self) atTerminator() bool {
     # atTerminator reports whether the input is at valid termination character to appear after an identifier. Breaks .X.Y into two pieces. Also catches cases like "$x+2" not being acceptable without a space, in case we decide one day to implement arithmetic.
     r := self._peek()
-    if isSpace(r) {
+    if is_space(r) {
         return True
     }
     switch r {
@@ -543,7 +535,7 @@ def lexNumber(self) -> StateFn:
         return self.errorf("bad number syntax: %q", self._input[self._start:self._pos])
     }
     if sign := self._peek(); sign == '+' || sign == '-' {
-        // Complex: 1+2i. No spaces, must end in 'i'.
+        # Complex: 1+2i. No spaces, must end in 'i'.
         if !self._scanNumber() || self._input[self._pos-1] != 'i' {
             return self.errorf("bad number syntax: %q", self._input[self._start:self._pos])
         }
@@ -553,12 +545,12 @@ def lexNumber(self) -> StateFn:
 }
 
 def (self) scanNumber() bool {
-    // Optional leading sign.
+    # Optional leading sign.
     self._accept("+-")
-    // Is it hex?
+    # Is it hex?
     digits := "0123456789_"
     if self._accept("0") {
-        // Note: Leading 0 does not mean octal in floats.
+        # Note: Leading 0 does not mean octal in floats.
         if self._accept("xX") {
             digits = "0123456789abcdefABCDEF_"
         } else if self._accept("oO") {
@@ -579,9 +571,9 @@ def (self) scanNumber() bool {
         self._accept("+-")
         self._acceptRun("0123456789_")
     }
-    // Is it imaginary?
+    # Is it imaginary?
     self._accept("i")
-    // Next thing mustn't be alphanumeric.
+    # Next thing mustn't be alphanumeric.
     if isAlphaNumeric(self._peek()) {
         self._next()
         return False
