@@ -253,15 +253,37 @@ class Lexer:
 
         return self.emit(TokenType.EOF)
 
-    def at_right_delim(self) -> tuple[bool, bool]:  # (delim, trimSpaces)
+    def at_right_delim(self) -> tuple[bool, bool]:  # (delim, trim_space)
         # at_right_delim reports whether the lexer is at a right delimiter, possibly preceded by a trim marker.
-        if has_right_trim_marker(self._input[self._pos:]) and strings.HasPrefix(self._input[self._pos+trimMarkerLen:], self._right_delim):
+        if (
+                has_right_trim_marker(self._input[self._pos:]) and
+                self._input[self._pos + TRIM_MARKER_LEN:].startswith(self._right_delim)
+        ):
             # With trim marker.
             return True, True
-        if strings.HasPrefix(self._input[self._pos:], self._right_delim):
+        if self._input[self._pos:].startswith(self._right_delim):
             # Without trim marker.
             return True, False
         return False, False
+
+    def _lex_left_delim(self) -> StateFn:
+        # lexLeftDelim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text
+        # to be trimmed has already been emitted.)
+        self._pos += len(self._left_delim)
+        trim_space = has_left_trim_marker(self._input[self._pos:])
+        after_marker = 0
+        if trim_space:
+            after_marker = TRIM_MARKER_LEN
+        if self._input[self._pos+after_marker:].startswith(LEFT_COMMENT):
+            self._pos += after_marker
+            self.ignore()
+            return self._lex_comment
+        i = self.this_token(TokenType.LEFT_DELIM)
+        self._inside_action = True
+        self._pos += after_marker
+        self.ignore()
+        self._paren_depth = 0
+        return self.emit_token(i)
 
 
 
@@ -295,71 +317,48 @@ def has_right_trim_marker(s: str) -> bool:
 
 """
 
-
-
-def lexLeftDelim(self) -> StateFn:
-    # lexLeftDelim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text to be trimmed has already been emitted.)
-    self._pos += Pos(len(self._left_delim))
-    trimSpace := hasLeftTrimMarker(self._input[self._pos:])
-    afterMarker := Pos(0)
-    if trimSpace {
-        afterMarker = trimMarkerLen
-    }
-    if strings.HasPrefix(self._input[self._pos+afterMarker:], leftComment) {
-        self._pos += afterMarker
-        self._ignore()
-        return lexComment
-    }
-    i := self._thisItem(itemLeftDelim)
-    self._insideAction = true
-    self._pos += afterMarker
-    self._ignore()
-    self._parenDepth = 0
-    return self._emitItem(i)
-}
-
 def lexComment(self) -> StateFn:
     # lexComment scans a comment. The left comment marker is known to be present.
-    self._pos += Pos(len(leftComment))
-    x := strings.Index(self._input[self._pos:], rightComment)
+    self._pos += Pos(len(LEFT_COMMENT))
+    x := strings.Index(self._input[self._pos:], RIGHT_COMMENT)
     if x < 0 {
         return self._errorf("unclosed comment")
     }
-    self._pos += Pos(x + len(rightComment))
-    delim, trimSpace := self._atRightDelim()
+    self._pos += Pos(x + len(RIGHT_COMMENT))
+    delim, trim_space := self._atRightDelim()
     if !delim {
         return self._errorf("comment ends before closing delimiter")
     }
-    i := self._thisItem(itemComment)
-    if trimSpace {
-        self._pos += trimMarkerLen
+    i := self.this_token(itemComment)
+    if trim_space {
+        self._pos += TRIM_MARKER_LEN
     }
     self._pos += Pos(len(self._right_delim))
-    if trimSpace {
+    if trim_space {
         self._pos += leftTrimLength(self._input[self._pos:])
     }
-    self._ignore()
+    self.ignore()
     if self._options.emitComment {
-        return self._emitItem(i)
+        return self.emit_token(i)
     }
     return lexText
 }
 
 def lexRightDelim(self) -> StateFn:
     # lexRightDelim scans the right delimiter, which is known to be present, possibly with a trim marker.
-    _, trimSpace := self._atRightDelim()
-    if trimSpace {
-        self._pos += trimMarkerLen
-        self._ignore()
+    _, trim_space := self._atRightDelim()
+    if trim_space {
+        self._pos += TRIM_MARKER_LEN
+        self.ignore()
     }
     self._pos += Pos(len(self._right_delim))
-    i := self._thisItem(itemRightDelim)
-    if trimSpace {
+    i := self.this_token(itemRightDelim)
+    if trim_space {
         self._pos += leftTrimLength(self._input[self._pos:])
-        self._ignore()
+        self.ignore()
     }
-    self._insideAction = false
-    return self._emitItem(i)
+    self._inside_action = false
+    return self.emit_token(i)
 }
 
 def lexInsideAction(self) -> StateFn:
@@ -369,7 +368,7 @@ def lexInsideAction(self) -> StateFn:
     // Pipe symbols separate and are emitted.
     delim, _ := self._atRightDelim()
     if delim {
-        if self._parenDepth == 0 {
+        if self._paren_depth == 0 {
             return lexRightDelim
         }
         return self._errorf("unclosed left paren")
@@ -413,11 +412,11 @@ def lexInsideAction(self) -> StateFn:
         self._backup()
         return lexIdentifier
     case r == '(':
-        self._parenDepth++
+        self._paren_depth++
         return self._emit(itemLeftParen)
     case r == ')':
-        self._parenDepth--
-        if self._parenDepth < 0 {
+        self._paren_depth--
+        if self._paren_depth < 0 {
             return self._errorf("unexpected right paren")
         }
         return self._emit(itemRightParen)
@@ -442,7 +441,7 @@ def lexSpace(self) -> StateFn:
     }
     // Be careful about a trim-marked closing delimiter, which has a minus
     // after a space. We know there is a space, so check for the '-' that might follow.
-    if has_right_trim_marker(self._input[self._pos-1:]) && strings.HasPrefix(self._input[self._pos-1+trimMarkerLen:], self._right_delim) {
+    if has_right_trim_marker(self._input[self._pos-1:]) && strings.HasPrefix(self._input[self._pos-1+TRIM_MARKER_LEN:], self._right_delim) {
         self._backup() // Before the space.
         if numSpaces == 1 {
             return lexRightDelim // On the delim, so go right to that.
