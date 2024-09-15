@@ -29,9 +29,15 @@ import weakref  # noqa
 import zlib
 
 
+########################################
+
+
 if sys.version_info < (3, 8):
     raise OSError(
         f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
 
 
 # ../../../omlish/lite/check.py

@@ -424,6 +424,9 @@ def gen_amalg(
 
     ##
 
+    out.write(SECTION_SEP)
+    out.write('\n\n')
+
     out.write(textwrap.dedent(f"""
     if sys.version_info < {REQUIRED_PYTHON_VERSION!r}:
         raise OSError(
@@ -449,6 +452,9 @@ def gen_amalg(
             if ty.src not in tys:
                 tyd.setdefault(f.path, []).append(ty)
                 tys.add(ty.src)
+    if tys:
+        out.write(SECTION_SEP)
+        out.write('\n\n')
     for i, (sf, ftys) in enumerate(tyd.items()):
         f = src_files[sf]
         if i:
