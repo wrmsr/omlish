@@ -226,7 +226,7 @@ class Lexer:
     # state functions
 
     def _lex_text(self) -> StateFn:
-        # lex_text scans until an opening action delimiter, "{{".
+        # lex_text scans until an opening action delimiter, '{{'.
         if (x := self._input[self._pos:].find(self._left_delim)) >= 0:
             if x > 0:
                 self._pos += x
@@ -285,6 +285,26 @@ class Lexer:
         self._paren_depth = 0
         return self.emit_token(i)
 
+    def _lex_comment(self) -> StateFn:
+        # lexComment scans a comment. The left comment marker is known to be present.
+        self._pos += len(LEFT_COMMENT)
+        x = self._input[self._pos:].find(RIGHT_COMMENT)
+        if x < 0:
+            return self.errorf('unclosed comment')
+        self._pos += x + len(RIGHT_COMMENT)
+        delim, trim_space = self.at_right_delim()
+        if not delim:
+            return self.errorf('comment ends before closing delimiter')
+        i = self.this_token(TokenType.COMMENT)
+        if trim_space:
+            self._pos += TRIM_MARKER_LEN
+        self._pos += len(self._right_delim)
+        if trim_space:
+            self._pos += left_trim_length(self._input[self._pos:])
+        self.ignore()
+        if self._options.emit_comment:
+            return self.emit_token(i)
+        return self._lex_text
 
 
 def right_trim_length(s: str) -> int:
@@ -317,32 +337,6 @@ def has_right_trim_marker(s: str) -> bool:
 
 """
 
-def lexComment(self) -> StateFn:
-    # lexComment scans a comment. The left comment marker is known to be present.
-    self._pos += Pos(len(LEFT_COMMENT))
-    x := strings.Index(self._input[self._pos:], RIGHT_COMMENT)
-    if x < 0 {
-        return self._errorf("unclosed comment")
-    }
-    self._pos += Pos(x + len(RIGHT_COMMENT))
-    delim, trim_space := self._atRightDelim()
-    if !delim {
-        return self._errorf("comment ends before closing delimiter")
-    }
-    i := self.this_token(itemComment)
-    if trim_space {
-        self._pos += TRIM_MARKER_LEN
-    }
-    self._pos += Pos(len(self._right_delim))
-    if trim_space {
-        self._pos += leftTrimLength(self._input[self._pos:])
-    }
-    self.ignore()
-    if self._options.emitComment {
-        return self.emit_token(i)
-    }
-    return lexText
-}
 
 def lexRightDelim(self) -> StateFn:
     # lexRightDelim scans the right delimiter, which is known to be present, possibly with a trim marker.
@@ -354,7 +348,7 @@ def lexRightDelim(self) -> StateFn:
     self._pos += Pos(len(self._right_delim))
     i := self.this_token(itemRightDelim)
     if trim_space {
-        self._pos += leftTrimLength(self._input[self._pos:])
+        self._pos += left_trim_length(self._input[self._pos:])
         self.ignore()
     }
     self._inside_action = false
@@ -371,11 +365,11 @@ def lexInsideAction(self) -> StateFn:
         if self._paren_depth == 0 {
             return lexRightDelim
         }
-        return self._errorf("unclosed left paren")
+        return self.errorf("unclosed left paren")
     }
     switch r := self._next(); {
     case r == eof:
-        return self._errorf("unclosed action")
+        return self.errorf("unclosed action")
     case isSpace(r):
         self._backup() // Put space back in case we have " -}}".
         return lexSpace
@@ -383,7 +377,7 @@ def lexInsideAction(self) -> StateFn:
         return self._emit(itemAssign)
     case r == ':':
         if self._next() != '=' {
-            return self._errorf("expected :=")
+            return self.errorf("expected :=")
         }
         return self._emit(itemDeclare)
     case r == '|':
@@ -417,13 +411,13 @@ def lexInsideAction(self) -> StateFn:
     case r == ')':
         self._paren_depth--
         if self._paren_depth < 0 {
-            return self._errorf("unexpected right paren")
+            return self.errorf("unexpected right paren")
         }
         return self._emit(itemRightParen)
     case r <= unicode.MaxASCII && unicode.IsPrint(r):
         return self._emit(itemChar)
     default:
-        return self._errorf("unrecognized character in action: %#U", r)
+        return self.errorf("unrecognized character in action: %#U", r)
     }
 }
 
@@ -460,7 +454,7 @@ def lexIdentifier(self) -> StateFn:
             self._backup()
             word := self._input[self._start:self._pos]
             if !self._atTerminator() {
-                return self._errorf("bad character %#U", r)
+                return self.errorf("bad character %#U", r)
             }
             switch {
             case key[word] > itemKeyword:
@@ -510,7 +504,7 @@ def lexFieldOrVariable(self, typ itemType) -> StateFn:
         }
     }
     if !self._atTerminator() {
-        return self._errorf("bad character %#U", r)
+        return self.errorf("bad character %#U", r)
     }
     return self._emit(typ)
 }
@@ -539,7 +533,7 @@ Loop:
             }
             fallthrough
         case eof, '\n':
-            return self._errorf("unterminated character constant")
+            return self.errorf("unterminated character constant")
         case '\'':
             break Loop
         }
@@ -550,12 +544,12 @@ Loop:
 def lexNumber(self) -> StateFn:
     # lexNumber scans a number: decimal, octal, hex, float, or imaginary. This isn't a perfect number scanner - for instance it accepts "." and "0x0.2" and "089" - but when it's wrong the input is invalid and the parser (via strconv) will notice.
     if !self._scanNumber() {
-        return self._errorf("bad number syntax: %q", self._input[self._start:self._pos])
+        return self.errorf("bad number syntax: %q", self._input[self._start:self._pos])
     }
     if sign := self._peek(); sign == '+' || sign == '-' {
         // Complex: 1+2i. No spaces, must end in 'i'.
         if !self._scanNumber() || self._input[self._pos-1] != 'i' {
-            return self._errorf("bad number syntax: %q", self._input[self._start:self._pos])
+            return self.errorf("bad number syntax: %q", self._input[self._start:self._pos])
         }
         return self._emit(itemComplex)
     }
@@ -610,7 +604,7 @@ Loop:
             }
             fallthrough
         case eof, '\n':
-            return self._errorf("unterminated quoted string")
+            return self.errorf("unterminated quoted string")
         case '"':
             break Loop
         }
@@ -624,7 +618,7 @@ Loop:
     for {
         switch self._next() {
         case eof:
-            return self._errorf("unterminated raw quoted string")
+            return self.errorf("unterminated raw quoted string")
         case '`':
             break Loop
         }
