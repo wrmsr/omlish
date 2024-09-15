@@ -306,6 +306,20 @@ class Lexer:
             return self.emit_token(i)
         return self._lex_text
 
+    def _lex_right_delim(self) -> StateFn:
+        # lex_right_delim scans the right delimiter, which is known to be present, possibly with a trim marker.
+        _, trim_space = self.at_right_delim()
+        if trim_space:
+            self._pos += TRIM_MARKER_LEN
+            self.ignore()
+        self._pos += len(self._right_delim)
+        i = self.this_token(TokenType.RIGHT_DELIM)
+        if trim_space:
+            self._pos += left_trim_length(self._input[self._pos:])
+            self.ignore()
+        self._inside_action = False
+        return self.emit_token(i)
+
 
 def right_trim_length(s: str) -> int:
     # right_trim_length returns the length of the spaces at the end of the string.
@@ -338,22 +352,7 @@ def has_right_trim_marker(s: str) -> bool:
 """
 
 
-def lexRightDelim(self) -> StateFn:
-    # lexRightDelim scans the right delimiter, which is known to be present, possibly with a trim marker.
-    _, trim_space := self._atRightDelim()
-    if trim_space {
-        self._pos += TRIM_MARKER_LEN
-        self.ignore()
-    }
-    self._pos += Pos(len(self._right_delim))
-    i := self.this_token(itemRightDelim)
-    if trim_space {
-        self._pos += left_trim_length(self._input[self._pos:])
-        self.ignore()
-    }
-    self._inside_action = false
-    return self.emit_token(i)
-}
+
 
 def lexInsideAction(self) -> StateFn:
     # lexInsideAction scans the elements inside action delimiters.
@@ -513,11 +512,11 @@ def (self) atTerminator() bool {
     # atTerminator reports whether the input is at valid termination character to appear after an identifier. Breaks .X.Y into two pieces. Also catches cases like "$x+2" not being acceptable without a space, in case we decide one day to implement arithmetic.
     r := self._peek()
     if isSpace(r) {
-        return true
+        return True
     }
     switch r {
     case eof, '.', ',', '|', ':', ')', '(':
-        return true
+        return True
     }
     return strings.HasPrefix(self._input[self._pos:], self._right_delim)
 }
@@ -588,9 +587,9 @@ def (self) scanNumber() bool {
     // Next thing mustn't be alphanumeric.
     if isAlphaNumeric(self._peek()) {
         self._next()
-        return false
+        return False
     }
-    return true
+    return True
 }
 
 def lexQuote(self) -> StateFn:
