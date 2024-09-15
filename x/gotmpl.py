@@ -136,7 +136,7 @@ class Lexer:
 
 
 """
-// next returns the next rune in the input.
+/ next returns the next rune in the input.
 func (l *lexer) next() rune {
 	if int(l.pos) >= len(l.input) {
 		l.atEOF = true
@@ -261,13 +261,6 @@ func lex(name, input, left, right string) *lexer {
 }
 
 // state functions
-
-const (
-	leftDelim    = "{{"
-	rightDelim   = "}}"
-	leftComment  = "/*"
-	rightComment = "*/"
-)
 
 // lexText scans until an opening action delimiter, "{{".
 func lexText(l *lexer) stateFn {
