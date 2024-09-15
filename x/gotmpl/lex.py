@@ -203,10 +203,10 @@ class Lexer:
             pass
         self.backup()
 
-    def error(self, format: str, *args: ta.Any) -> StateFn | None:
+    def error(self, fmt: str, *args: ta.Any) -> StateFn | None:
         # error returns an error token and terminates the scan by passing back a nil pointer that will be the next
         # state, terminating self._next_token.
-        self._token = Token(TokenType.ERROR, self._start, format % args, self._start_line)
+        self._token = Token(TokenType.ERROR, self._start, fmt % args, self._start_line)
         self._start = 0
         self._pos = 0
         self._input = self._input[:0]
