@@ -136,7 +136,7 @@ class Lexer:
 
 
 """
-/ next returns the next rune in the input.
+// next returns the next rune in the input.
 func (l *lexer) next() rune {
 	if int(l.pos) >= len(l.input) {
 		l.atEOF = true
