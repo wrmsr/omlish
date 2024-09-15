@@ -2,7 +2,7 @@ services:
 
   # dev
 
-  omlish-dev: &_dev
+  omlish-dev: &dev
     build:
       context: '../'
       dockerfile: 'docker/dev/Dockerfile'
@@ -14,7 +14,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - '..:/omlish'
-    depends_on:
+    depends_on: &dev-deps
       - 'omlish-mysql'
       - 'omlish-postgres'
       - 'omlish-s3'
@@ -22,14 +22,7 @@ services:
       - 'omlish-elasticsearch'
       # - 'omlish-neo4j'
       - 'omlish-redis'
-    links:
-      - 'omlish-mysql'
-      - 'omlish-postgres'
-      - 'omlish-s3'
-      # ext
-      - 'omlish-elasticsearch'
-      # - 'omlish-neo4j'
-      - 'omlish-redis'
+    links: *dev-deps
     expose:
       - '22'
       - '8000'
@@ -38,7 +31,7 @@ services:
       - '35221:22'
 
   omlish-dev-amd64:
-    <<: *_dev
+    <<: *dev
     platform: 'linux/x86_64'
     expose:
       - '22'
@@ -64,7 +57,7 @@ services:
   # main
 
   omlish-postgres:
-    image: 'postgres:16.3'
+    image: 'postgres:16.4'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'
@@ -99,7 +92,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.15.0'
+    image: 'elasticsearch:8.15.1'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
