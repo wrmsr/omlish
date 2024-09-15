@@ -66,9 +66,15 @@ import weakref  # noqa
 import zipfile
 
 
+########################################
+
+
 if sys.version_info < (3, 8):
     raise OSError(
         f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
 
 
 # ../../toml/parser.py
