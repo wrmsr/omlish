@@ -22,6 +22,7 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import dataclasses as dc
 import enum
+import string
 import typing as ta
 
 
@@ -101,7 +102,7 @@ class LexOptions:
     continue_ok: bool = False
 
 
-StateFn: ta.TypeAlias = ta.Callable[['Lexer'], ta.Optional['StateFn']]
+StateFn: ta.TypeAlias = ta.Callable[[], ta.Optional['StateFn']]
 
 LEFT_DELIM = '{{'
 RIGHT_DELIM = '}}'
@@ -214,9 +215,9 @@ class Lexer:
     def next_token(self) -> Token:
         # next_token returns the next token from the input. Called by the parser, not in the lexing goroutine.
         self._token = Token(TokenType.EOF, self._pos, 'EOF', self._start_line)
-        state: StateFn = Lexer._lex_text
+        state: StateFn = self._lex_text
         if self._inside_action:
-            state = Lexer.lex_inside_action
+            state = self._lex_inside_action
         while True:
             state = state(self)
             if state is None:
@@ -242,7 +243,7 @@ class Lexer:
                 if len(i.val) > 0:
                     return self.emit_token(i)
 
-            return Lexer._lex_left_delim
+            return self._lex_left_delim
 
         self._pos = len(self._input)
         # Correctly reached EOF.
@@ -261,6 +262,24 @@ def right_trim_length(s: str) -> int:
 def left_trim_length(s: str) -> int:
     # left_trim_length returns the length of the spaces at the beginning of the string.
     return len(s) - len(s.lstrip(SPACE_CHARS))
+
+
+def is_space(r: str) -> bool:
+    # isSpace reports whether r is a space character.
+    return r == ' ' or r == '\t' or r == '\r' or r == '\n'
+
+
+def is_alpha_numeric(r: str) -> bool:
+    # is_alpha_numeric reports whether r is an alphabetic, digit, or underscore.
+    return r == '_' or r in string.ascii_letters or r in string.digits
+
+
+def has_left_trim_marker(s: str) -> bool:
+    return len(s) >= 2 and s[0] == TRIM_MARKER and is_space(s[1])
+
+
+def has_right_trim_marker(s: str) -> bool:
+    return len(s) >= 2 and is_space(s[0]) and s[1] == TRIM_MARKER
 
 
 """
@@ -615,23 +634,6 @@ Loop:
     return l.emit(itemRawString)
 }
 
-def isSpace(r rune) bool {
-    # isSpace reports whether r is a space character.
-    return r == ' ' || r == '\t' || r == '\r' || r == '\n'
-}
-
-def isAlphaNumeric(r rune) bool {
-    # isAlphaNumeric reports whether r is an alphabetic, digit, or underscore.
-    return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r)
-}
-
-def hasLeftTrimMarker(s string) bool {
-    return len(s) >= 2 && s[0] == trimMarker && isSpace(rune(s[1]))
-}
-
-def hasRightTrimMarker(s string) bool {
-    return len(s) >= 2 && isSpace(rune(s[0])) && s[1] == trimMarker
-}
 """
 
 
