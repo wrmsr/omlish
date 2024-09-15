@@ -26,55 +26,7 @@ class Text(Content, lang.Final):
 #
 
 
-class Message(lang.Abstract, lang.Sealed):
-    pass
-
-
-class SystemMessage(Message, lang.Final):
-    s: str
-
-
-class UserMessage(Message, lang.Final):
-    content: ta.Sequence[Content]
-    name: str | None = None
-
-
-class AiMessage(Message, lang.Final):
-    s: str
-    tool_execution_requests: ta.Sequence['ToolExecutionRequest'] | None = None
-
-
-class ToolExecutionResultMessage(Message, lang.Final):
-    id: str
-    tool_name: str
-    s: str
-
-
-Chat: ta.TypeAlias = ta.Sequence[Message]
-
-
 ##
-
-
-@dc.dataclass(frozen=True)
-class ToolParameters(lang.Final):
-    type: str
-    props: ta.Mapping[str, ta.Mapping[str, ta.Any]]
-    req: ta.AbstractSet[str]
-
-
-@dc.dataclass(frozen=True)
-class ToolSpecification(lang.Final):
-    name: str
-    desc: str
-    params: ToolParameters
-
-
-@dc.dataclass(frozen=True)
-class ToolExecutionRequest(lang.Final):
-    id: str
-    name: str
-    args: str
 
 
 ##
@@ -121,47 +73,11 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
-class Model(lang.Abstract, ta.Generic[T, U]):
-    @abc.abstractmethod
-    def generate(self, t: T) -> U:
-        raise NotImplementedError
-
-
-@dc.dataclass(frozen=True)
-class Prompt(lang.Final):
-    s: str
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class ChatRequest(lang.Final):
     chat: Chat
     tool_specs: ta.Sequence[ToolSpecification]
     resp_fmt: ResponseFormat
-
-
-class FinishReason(enum.Enum):
-    STOP = enum.auto()
-    LENGTH = enum.auto()
-    TOOL_EXECUTION = enum.auto()
-    CONTENT_FILTER = enum.auto()
-    OTHER = enum.auto()
-
-
-@dc.dataclass(frozen=True)
-class TokenUsage(lang.Final):
-    input: int
-    output: int
-    total: int
-
-
-@dc.dataclass(frozen=True)
-class Response(lang.Final, ta.Generic[T]):
-    v: T
-    usage: TokenUsage
-    reason: FinishReason
 
 
 ChatResponse: ta.TypeAlias = Response[AiMessage]
