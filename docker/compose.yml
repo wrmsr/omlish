@@ -47,12 +47,10 @@ services:
     image: 'wrmsr/omlish-ci:latest'
     platform: 'linux/x86_64'
     restart: 'no'
-    depends_on:
+    depends_on: &ci-deps
       - 'omlish-mysql'
       - 'omlish-postgres'
-    links:
-      - 'omlish-mysql'
-      - 'omlish-postgres'
+    links: *ci-deps
 
   # main
 
