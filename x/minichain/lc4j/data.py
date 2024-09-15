@@ -8,6 +8,7 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 #
@@ -49,6 +50,9 @@ class ToolExecutionResultMessage(Message, lang.Final):
     s: str
 
 
+Chat: ta.TypeAlias = ta.Sequence[Message]
+
+
 ##
 
 
@@ -76,23 +80,13 @@ class ToolExecutionRequest(lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
-class Embedding:
-    """array.array('f' | 'd', ...) preferred"""
-
-    v: ta.Sequence[float]
-
-
-##
-
-
-class Chat(lang.Abstract):
+class ChatHistory(lang.Abstract):
     @abc.abstractmethod
     def add(self, msg: Message) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def messages(self) -> ta.Sequence[Message]:
+    def get(self) -> Chat:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -127,14 +121,10 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
-class ChatRequest(lang.Final):
-    msgs: ta.Sequence[Message]
-    tool_specs: ta.Sequence[ToolSpecification]
-    resp_fmt: ResponseFormat
-
-
-##
+class Model(lang.Abstract, ta.Generic[T, U]):
+    @abc.abstractmethod
+    def generate(self, t: T) -> U:
+        raise NotImplementedError
 
 
 @dc.dataclass(frozen=True)
@@ -143,6 +133,13 @@ class Prompt(lang.Final):
 
 
 ##
+
+
+@dc.dataclass(frozen=True)
+class ChatRequest(lang.Final):
+    chat: Chat
+    tool_specs: ta.Sequence[ToolSpecification]
+    resp_fmt: ResponseFormat
 
 
 class FinishReason(enum.Enum):
@@ -168,6 +165,21 @@ class Response(lang.Final, ta.Generic[T]):
 
 
 ChatResponse: ta.TypeAlias = Response[AiMessage]
+
+ChatModel: ta.TypeAlias = Model[ChatRequest, ChatResponse]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Embedding:
+    """array.array('f' | 'd', ...) preferred"""
+
+    v: ta.Sequence[float]
+
+
+EmbeddingModel: ta.TypeAlias = Model[str, Response[Embedding]]
 
 
 ##
