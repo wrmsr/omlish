@@ -253,6 +253,17 @@ class Lexer:
 
         return self.emit(TokenType.EOF)
 
+    def at_right_delim(self) -> tuple[bool, bool]:  # (delim, trimSpaces)
+        # at_right_delim reports whether the lexer is at a right delimiter, possibly preceded by a trim marker.
+        if has_right_trim_marker(self._input[self._pos:]) and strings.HasPrefix(self._input[self._pos+trimMarkerLen:], self._right_delim):
+            # With trim marker.
+            return True, True
+        if strings.HasPrefix(self._input[self._pos:], self._right_delim):
+            # Without trim marker.
+            return True, False
+        return False, False
+
+
 
 def right_trim_length(s: str) -> int:
     # right_trim_length returns the length of the spaces at the end of the string.
@@ -286,110 +297,98 @@ def has_right_trim_marker(s: str) -> bool:
 
 
 
-def (l: Lexer) atRightDelim() (delim, trimSpaces bool) {
-    # atRightDelim reports whether the lexer is at a right delimiter, possibly preceded by a trim marker.
-    if hasRightTrimMarker(l.input[l.pos:]) && strings.HasPrefix(l.input[l.pos+trimMarkerLen:], l.rightDelim) { // With trim marker.
-        return true, true
-    }
-    if strings.HasPrefix(l.input[l.pos:], l.rightDelim) { // Without trim marker.
-        return true, false
-    }
-    return false, false
-}
-
-
-def lexLeftDelim(l: Lexer) -> StateFn:
+def lexLeftDelim(self) -> StateFn:
     # lexLeftDelim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text to be trimmed has already been emitted.)
-    l.pos += Pos(len(l.leftDelim))
-    trimSpace := hasLeftTrimMarker(l.input[l.pos:])
+    self._pos += Pos(len(self._left_delim))
+    trimSpace := hasLeftTrimMarker(self._input[self._pos:])
     afterMarker := Pos(0)
     if trimSpace {
         afterMarker = trimMarkerLen
     }
-    if strings.HasPrefix(l.input[l.pos+afterMarker:], leftComment) {
-        l.pos += afterMarker
-        l.ignore()
+    if strings.HasPrefix(self._input[self._pos+afterMarker:], leftComment) {
+        self._pos += afterMarker
+        self._ignore()
         return lexComment
     }
-    i := l.thisItem(itemLeftDelim)
-    l.insideAction = true
-    l.pos += afterMarker
-    l.ignore()
-    l.parenDepth = 0
-    return l.emitItem(i)
+    i := self._thisItem(itemLeftDelim)
+    self._insideAction = true
+    self._pos += afterMarker
+    self._ignore()
+    self._parenDepth = 0
+    return self._emitItem(i)
 }
 
-def lexComment(l: Lexer) -> StateFn:
+def lexComment(self) -> StateFn:
     # lexComment scans a comment. The left comment marker is known to be present.
-    l.pos += Pos(len(leftComment))
-    x := strings.Index(l.input[l.pos:], rightComment)
+    self._pos += Pos(len(leftComment))
+    x := strings.Index(self._input[self._pos:], rightComment)
     if x < 0 {
-        return l.errorf("unclosed comment")
+        return self._errorf("unclosed comment")
     }
-    l.pos += Pos(x + len(rightComment))
-    delim, trimSpace := l.atRightDelim()
+    self._pos += Pos(x + len(rightComment))
+    delim, trimSpace := self._atRightDelim()
     if !delim {
-        return l.errorf("comment ends before closing delimiter")
+        return self._errorf("comment ends before closing delimiter")
     }
-    i := l.thisItem(itemComment)
+    i := self._thisItem(itemComment)
     if trimSpace {
-        l.pos += trimMarkerLen
+        self._pos += trimMarkerLen
     }
-    l.pos += Pos(len(l.rightDelim))
+    self._pos += Pos(len(self._right_delim))
     if trimSpace {
-        l.pos += leftTrimLength(l.input[l.pos:])
+        self._pos += leftTrimLength(self._input[self._pos:])
     }
-    l.ignore()
-    if l.options.emitComment {
-        return l.emitItem(i)
+    self._ignore()
+    if self._options.emitComment {
+        return self._emitItem(i)
     }
     return lexText
 }
 
-def lexRightDelim(l: Lexer) -> StateFn:
+def lexRightDelim(self) -> StateFn:
     # lexRightDelim scans the right delimiter, which is known to be present, possibly with a trim marker.
-    _, trimSpace := l.atRightDelim()
+    _, trimSpace := self._atRightDelim()
     if trimSpace {
-        l.pos += trimMarkerLen
-        l.ignore()
+        self._pos += trimMarkerLen
+        self._ignore()
     }
-    l.pos += Pos(len(l.rightDelim))
-    i := l.thisItem(itemRightDelim)
+    self._pos += Pos(len(self._right_delim))
+    i := self._thisItem(itemRightDelim)
     if trimSpace {
-        l.pos += leftTrimLength(l.input[l.pos:])
-        l.ignore()
+        self._pos += leftTrimLength(self._input[self._pos:])
+        self._ignore()
     }
-    l.insideAction = false
-    return l.emitItem(i)
+    self._insideAction = false
+    return self._emitItem(i)
 }
 
-def lexInsideAction(l: Lexer) -> StateFn:
+def lexInsideAction(self) -> StateFn:
     # lexInsideAction scans the elements inside action delimiters.
     // Either number, quoted string, or identifier.
     // Spaces separate arguments; runs of spaces turn into itemSpace.
     // Pipe symbols separate and are emitted.
-    delim, _ := l.atRightDelim()
+    delim, _ := self._atRightDelim()
     if delim {
-        if l.parenDepth == 0 {
+        if self._parenDepth == 0 {
             return lexRightDelim
         }
-        return l.errorf("unclosed left paren")
+        return self._errorf("unclosed left paren")
     }
-    switch r := l.next(); {
+    switch r := self._next(); {
     case r == eof:
-        return l.errorf("unclosed action")
+        return self._errorf("unclosed action")
     case isSpace(r):
-        l.backup() // Put space back in case we have " -}}".
+        self._backup() // Put space back in case we have " -}}".
         return lexSpace
     case r == '=':
-        return l.emit(itemAssign)
+        return self._emit(itemAssign)
     case r == ':':
-        if l.next() != '=' {
-            return l.errorf("expected :=")
+        if self._next() != '=' {
+            return self._errorf("expected :=")
         }
-        return l.emit(itemDeclare)
+        return self._emit(itemDeclare)
     case r == '|':
-        return l.emit(itemPipe)
+        return self._emit(itemPipe)
     case r == '"':
         return lexQuote
     case r == '`':
@@ -399,127 +398,127 @@ def lexInsideAction(l: Lexer) -> StateFn:
     case r == '\'':
         return lexChar
     case r == '.':
-        // special look-ahead for ".field" so we don't break l.backup().
-        if l.pos < Pos(len(l.input)) {
-            r := l.input[l.pos]
+        // special look-ahead for ".field" so we don't break self._backup().
+        if self._pos < Pos(len(self._input)) {
+            r := self._input[self._pos]
             if r < '0' || '9' < r {
                 return lexField
             }
         }
         fallthrough // '.' can start a number.
     case r == '+' || r == '-' || ('0' <= r && r <= '9'):
-        l.backup()
+        self._backup()
         return lexNumber
     case isAlphaNumeric(r):
-        l.backup()
+        self._backup()
         return lexIdentifier
     case r == '(':
-        l.parenDepth++
-        return l.emit(itemLeftParen)
+        self._parenDepth++
+        return self._emit(itemLeftParen)
     case r == ')':
-        l.parenDepth--
-        if l.parenDepth < 0 {
-            return l.errorf("unexpected right paren")
+        self._parenDepth--
+        if self._parenDepth < 0 {
+            return self._errorf("unexpected right paren")
         }
-        return l.emit(itemRightParen)
+        return self._emit(itemRightParen)
     case r <= unicode.MaxASCII && unicode.IsPrint(r):
-        return l.emit(itemChar)
+        return self._emit(itemChar)
     default:
-        return l.errorf("unrecognized character in action: %#U", r)
+        return self._errorf("unrecognized character in action: %#U", r)
     }
 }
 
-def lexSpace(l: Lexer) -> StateFn:
+def lexSpace(self) -> StateFn:
     # lexSpace scans a run of space characters. We have not consumed the first space, which is known to be present. Take care if there is a trim-marked right delimiter, which starts with a space.
     var r rune
     var numSpaces int
     for {
-        r = l.peek()
+        r = self._peek()
         if !isSpace(r) {
             break
         }
-        l.next()
+        self._next()
         numSpaces++
     }
     // Be careful about a trim-marked closing delimiter, which has a minus
     // after a space. We know there is a space, so check for the '-' that might follow.
-    if hasRightTrimMarker(l.input[l.pos-1:]) && strings.HasPrefix(l.input[l.pos-1+trimMarkerLen:], l.rightDelim) {
-        l.backup() // Before the space.
+    if has_right_trim_marker(self._input[self._pos-1:]) && strings.HasPrefix(self._input[self._pos-1+trimMarkerLen:], self._right_delim) {
+        self._backup() // Before the space.
         if numSpaces == 1 {
             return lexRightDelim // On the delim, so go right to that.
         }
     }
-    return l.emit(itemSpace)
+    return self._emit(itemSpace)
 }
 
-def lexIdentifier(l: Lexer) -> StateFn:
+def lexIdentifier(self) -> StateFn:
     # lexIdentifier scans an alphanumeric.
     for {
-        switch r := l.next(); {
+        switch r := self._next(); {
         case isAlphaNumeric(r):
             // absorb.
         default:
-            l.backup()
-            word := l.input[l.start:l.pos]
-            if !l.atTerminator() {
-                return l.errorf("bad character %#U", r)
+            self._backup()
+            word := self._input[self._start:self._pos]
+            if !self._atTerminator() {
+                return self._errorf("bad character %#U", r)
             }
             switch {
             case key[word] > itemKeyword:
                 item := key[word]
-                if item == itemBreak && !l.options.breakOK || item == itemContinue && !l.options.continueOK {
-                    return l.emit(itemIdentifier)
+                if item == itemBreak && !self._options.breakOK || item == itemContinue && !self._options.continueOK {
+                    return self._emit(itemIdentifier)
                 }
-                return l.emit(item)
+                return self._emit(item)
             case word[0] == '.':
-                return l.emit(itemField)
+                return self._emit(itemField)
             case word == "true", word == "false":
-                return l.emit(itemBool)
+                return self._emit(itemBool)
             default:
-                return l.emit(itemIdentifier)
+                return self._emit(itemIdentifier)
             }
         }
     }
 }
 
-def lexField(l: Lexer) -> StateFn:
+def lexField(self) -> StateFn:
     # lexField scans a field: .Alphanumeric. The . has been scanned.
     return lexFieldOrVariable(l, itemField)
 }
 
-def lexVariable(l: Lexer) -> StateFn:
+def lexVariable(self) -> StateFn:
     # lexVariable scans a Variable: $Alphanumeric. The $ has been scanned.
-    if l.atTerminator() { // Nothing interesting follows -> "$".
-        return l.emit(itemVariable)
+    if self._atTerminator() { // Nothing interesting follows -> "$".
+        return self._emit(itemVariable)
     }
     return lexFieldOrVariable(l, itemVariable)
 }
 
-def lexFieldOrVariable(l: Lexer, typ itemType) -> StateFn:
+def lexFieldOrVariable(self, typ itemType) -> StateFn:
     # lexFieldOrVariable scans a field or variable: [.$]Alphanumeric. The . or $ has been scanned.
-    if l.atTerminator() { // Nothing interesting follows -> "." or "$".
+    if self._atTerminator() { // Nothing interesting follows -> "." or "$".
         if typ == itemVariable {
-            return l.emit(itemVariable)
+            return self._emit(itemVariable)
         }
-        return l.emit(itemDot)
+        return self._emit(itemDot)
     }
     var r rune
     for {
-        r = l.next()
+        r = self._next()
         if !isAlphaNumeric(r) {
-            l.backup()
+            self._backup()
             break
         }
     }
-    if !l.atTerminator() {
-        return l.errorf("bad character %#U", r)
+    if !self._atTerminator() {
+        return self._errorf("bad character %#U", r)
     }
-    return l.emit(typ)
+    return self._emit(typ)
 }
 
-def (l: Lexer) atTerminator() bool {
+def (self) atTerminator() bool {
     # atTerminator reports whether the input is at valid termination character to appear after an identifier. Breaks .X.Y into two pieces. Also catches cases like "$x+2" not being acceptable without a space, in case we decide one day to implement arithmetic.
-    r := l.peek()
+    r := self._peek()
     if isSpace(r) {
         return true
     }
@@ -527,111 +526,111 @@ def (l: Lexer) atTerminator() bool {
     case eof, '.', ',', '|', ':', ')', '(':
         return true
     }
-    return strings.HasPrefix(l.input[l.pos:], l.rightDelim)
+    return strings.HasPrefix(self._input[self._pos:], self._right_delim)
 }
 
-def lexChar(l: Lexer) -> StateFn:
+def lexChar(self) -> StateFn:
     # lexChar scans a character constant. The initial quote is already scanned. Syntax checking is done by the parser.
 Loop:
     for {
-        switch l.next() {
+        switch self._next() {
         case '\\':
-            if r := l.next(); r != eof && r != '\n' {
+            if r := self._next(); r != eof && r != '\n' {
                 break
             }
             fallthrough
         case eof, '\n':
-            return l.errorf("unterminated character constant")
+            return self._errorf("unterminated character constant")
         case '\'':
             break Loop
         }
     }
-    return l.emit(itemCharConstant)
+    return self._emit(itemCharConstant)
 }
 
-def lexNumber(l: Lexer) -> StateFn:
+def lexNumber(self) -> StateFn:
     # lexNumber scans a number: decimal, octal, hex, float, or imaginary. This isn't a perfect number scanner - for instance it accepts "." and "0x0.2" and "089" - but when it's wrong the input is invalid and the parser (via strconv) will notice.
-    if !l.scanNumber() {
-        return l.errorf("bad number syntax: %q", l.input[l.start:l.pos])
+    if !self._scanNumber() {
+        return self._errorf("bad number syntax: %q", self._input[self._start:self._pos])
     }
-    if sign := l.peek(); sign == '+' || sign == '-' {
+    if sign := self._peek(); sign == '+' || sign == '-' {
         // Complex: 1+2i. No spaces, must end in 'i'.
-        if !l.scanNumber() || l.input[l.pos-1] != 'i' {
-            return l.errorf("bad number syntax: %q", l.input[l.start:l.pos])
+        if !self._scanNumber() || self._input[self._pos-1] != 'i' {
+            return self._errorf("bad number syntax: %q", self._input[self._start:self._pos])
         }
-        return l.emit(itemComplex)
+        return self._emit(itemComplex)
     }
-    return l.emit(itemNumber)
+    return self._emit(itemNumber)
 }
 
-def (l: Lexer) scanNumber() bool {
+def (self) scanNumber() bool {
     // Optional leading sign.
-    l.accept("+-")
+    self._accept("+-")
     // Is it hex?
     digits := "0123456789_"
-    if l.accept("0") {
+    if self._accept("0") {
         // Note: Leading 0 does not mean octal in floats.
-        if l.accept("xX") {
+        if self._accept("xX") {
             digits = "0123456789abcdefABCDEF_"
-        } else if l.accept("oO") {
+        } else if self._accept("oO") {
             digits = "01234567_"
-        } else if l.accept("bB") {
+        } else if self._accept("bB") {
             digits = "01_"
         }
     }
-    l.acceptRun(digits)
-    if l.accept(".") {
-        l.acceptRun(digits)
+    self._acceptRun(digits)
+    if self._accept(".") {
+        self._acceptRun(digits)
     }
-    if len(digits) == 10+1 && l.accept("eE") {
-        l.accept("+-")
-        l.acceptRun("0123456789_")
+    if len(digits) == 10+1 && self._accept("eE") {
+        self._accept("+-")
+        self._acceptRun("0123456789_")
     }
-    if len(digits) == 16+6+1 && l.accept("pP") {
-        l.accept("+-")
-        l.acceptRun("0123456789_")
+    if len(digits) == 16+6+1 && self._accept("pP") {
+        self._accept("+-")
+        self._acceptRun("0123456789_")
     }
     // Is it imaginary?
-    l.accept("i")
+    self._accept("i")
     // Next thing mustn't be alphanumeric.
-    if isAlphaNumeric(l.peek()) {
-        l.next()
+    if isAlphaNumeric(self._peek()) {
+        self._next()
         return false
     }
     return true
 }
 
-def lexQuote(l: Lexer) -> StateFn:
+def lexQuote(self) -> StateFn:
     # lexQuote scans a quoted string.
 Loop:
     for {
-        switch l.next() {
+        switch self._next() {
         case '\\':
-            if r := l.next(); r != eof && r != '\n' {
+            if r := self._next(); r != eof && r != '\n' {
                 break
             }
             fallthrough
         case eof, '\n':
-            return l.errorf("unterminated quoted string")
+            return self._errorf("unterminated quoted string")
         case '"':
             break Loop
         }
     }
-    return l.emit(itemString)
+    return self._emit(itemString)
 }
 
-def lexRawQuote(l: Lexer) -> StateFn:
+def lexRawQuote(self) -> StateFn:
     # lexRawQuote scans a raw quoted string.
 Loop:
     for {
-        switch l.next() {
+        switch self._next() {
         case eof:
-            return l.errorf("unterminated raw quoted string")
+            return self._errorf("unterminated raw quoted string")
         case '`':
             break Loop
         }
     }
-    return l.emit(itemRawString)
+    return self._emit(itemRawString)
 }
 
 """
