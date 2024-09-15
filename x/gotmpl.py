@@ -98,12 +98,14 @@ class LexOptions:
     continue_ok: bool = False
 
 
-StateFn: ta.TypeAlias = ta.Callable[[Lexer], 'StateFn']
+StateFn: ta.TypeAlias = ta.Callable[['Lexer'], ta.Optional['StateFn']]
 
 LEFT_DELIM = '{{'
 RIGHT_DELIM = '}}'
 LEFT_COMMENT = '/*'
 RIGHT_COMMENT = '*/'
+
+EOF = ''
 
 
 class Lexer:
@@ -125,145 +127,106 @@ class Lexer:
         self._options = options
 
         self._pos = 0  # current position in the input
-        self._start = 0  # start position of this item
+        self._start = 0  # start position of this token
         self._at_eof = False  # we have hit the end of input and returned eof
         self._paren_depth = 0  # nesting depth of ( ) exprs
-        self._line = 0  # 1+number of newlines seen
-        self._start_line = 0  # start line of this item
+        self._line = 1  # 1+number of newlines seen
+        self._start_line = 1  # start line of this token
         self._inside_action = False  # are we inside an action?
 
-        self._item: Token    # item to return to parser
+        self._token: Token = Token(TokenType.EOF, 0, 'EOF', 0)  # token to return to parser
+
+    def next(self) -> str:
+        # returns the next rune in the input.
+        if self._pos >= len(self._input):
+            self._at_eof = True
+            return EOF
+
+        r = self._input[self._pos]
+        self._pos += 1
+        if r == '\n':
+            self._line += 1
+        return r
+
+    def peek(self) -> str:
+        # peek returns but does not consume the next rune in the input.
+        r = self.next()
+        self.backup()
+        return r
+
+    def backup(self) -> None:
+        # backup steps back one rune.
+        if not self._at_eof and self._pos > 0:
+            r = self._input[self._pos - 1]
+            self._pos -= 1
+            # Correct newline count.
+            if r == '\n':
+                self._line -= 1
+
+    def this_token(self, t: TokenType) -> Token:
+        # this_token returns the token at the current input point with the specified type and advances the input.
+        i = Token(t, self._start, self._input[self._start:self._pos], self._start_line)
+        self._start = self._pos
+        self._start_line = self._line
+        return i
+
+    def emit(self, t: TokenType) -> StateFn | None:
+        # emit passes the trailing text as an token back to the parser.
+        return self.emit_token(self.this_token(t))
+
+    def emit_token(self, i: Token) -> StateFn | None:
+        # emit_token passes the specified token to the parser.
+        self._token = i
+        return None
+
+    def ignore(self) -> None:
+        # ignore skips over the pending input before this point. It tracks newlines in the ignored text, so use it only
+        # for text that is skipped without calling self._next.
+        self._line += self._input[self._start:self._pos].count('\n')
+        self._start = self._pos
+        self._start_line = self._line
+
+    def accept(self, valid: str) -> bool:
+        # accept consumes the next rune if it's from the valid set.
+        if self.next() in valid:
+            return True
+        self.backup()
+        return False
+
+    def accept_run(self, valid: str) -> None:
+        # accept_run consumes a run of runes from the valid set.
+        while self.next() in valid:
+            pass
+        self.backup()
+
+    def errorf(self, format: str, *args: ta.Any) -> StateFn | None:
+        # errorf returns an error token and terminates the scan by passing back a nil pointer that will be the next
+        # state, terminating self._next_token.
+        self._token = Token(TokenType.ERROR, self._start, format % args, self._start_line)
+        self._start = 0
+        self._pos = 0
+        self._input = self._input[:0]
+        return None
+
+    def next_token(self) -> Token:
+        # next_token returns the next token from the input. Called by the parser, not in the lexing goroutine.
+        self._token = Token(TokenType.EOF, self._pos, 'EOF', self._start_line)
+        state: StateFn = lex_text
+        if self._inside_action:
+            state = lex_inside_action
+        while True:
+            state = state(self)
+            if state is None:
+                return self._token
 
 
 """
-// next returns the next rune in the input.
-func (l *lexer) next() rune {
-	if int(l.pos) >= len(l.input) {
-		l.atEOF = true
-		return eof
-	}
-	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
-	l.pos += Pos(w)
-	if r == '\n' {
-		l.line++
-	}
-	return r
-}
 
-// peek returns but does not consume the next rune in the input.
-func (l *lexer) peek() rune {
-	r := l.next()
-	l.backup()
-	return r
-}
-
-// backup steps back one rune.
-func (l *lexer) backup() {
-	if !l.atEOF && l.pos > 0 {
-		r, w := utf8.DecodeLastRuneInString(l.input[:l.pos])
-		l.pos -= Pos(w)
-		// Correct newline count.
-		if r == '\n' {
-			l.line--
-		}
-	}
-}
-
-// thisItem returns the item at the current input point with the specified type
-// and advances the input.
-func (l *lexer) thisItem(t itemType) item {
-	i := item{t, l.start, l.input[l.start:l.pos], l.startLine}
-	l.start = l.pos
-	l.startLine = l.line
-	return i
-}
-
-// emit passes the trailing text as an item back to the parser.
-func (l *lexer) emit(t itemType) stateFn {
-	return l.emitItem(l.thisItem(t))
-}
-
-// emitItem passes the specified item to the parser.
-func (l *lexer) emitItem(i item) stateFn {
-	l.item = i
-	return nil
-}
-
-// ignore skips over the pending input before this point.
-// It tracks newlines in the ignored text, so use it only
-// for text that is skipped without calling l.next.
-func (l *lexer) ignore() {
-	l.line += strings.Count(l.input[l.start:l.pos], "\n")
-	l.start = l.pos
-	l.startLine = l.line
-}
-
-// accept consumes the next rune if it's from the valid set.
-func (l *lexer) accept(valid string) bool {
-	if strings.ContainsRune(valid, l.next()) {
-		return true
-	}
-	l.backup()
-	return false
-}
-
-// acceptRun consumes a run of runes from the valid set.
-func (l *lexer) acceptRun(valid string) {
-	for strings.ContainsRune(valid, l.next()) {
-	}
-	l.backup()
-}
-
-// errorf returns an error token and terminates the scan by passing
-// back a nil pointer that will be the next state, terminating l.nextItem.
-func (l *lexer) errorf(format string, args ...any) stateFn {
-	l.item = item{itemError, l.start, fmt.Sprintf(format, args...), l.startLine}
-	l.start = 0
-	l.pos = 0
-	l.input = l.input[:0]
-	return nil
-}
-
-// nextItem returns the next item from the input.
-// Called by the parser, not in the lexing goroutine.
-func (l *lexer) nextItem() item {
-	l.item = item{itemEOF, l.pos, "EOF", l.startLine}
-	state := lexText
-	if l.insideAction {
-		state = lexInsideAction
-	}
-	for {
-		state = state(l)
-		if state == nil {
-			return l.item
-		}
-	}
-}
-
-// lex creates a new scanner for the input string.
-func lex(name, input, left, right string) *lexer {
-	if left == "" {
-		left = leftDelim
-	}
-	if right == "" {
-		right = rightDelim
-	}
-	l := &lexer{
-		name:         name,
-		input:        input,
-		leftDelim:    left,
-		rightDelim:   right,
-		line:         1,
-		startLine:    1,
-		insideAction: false,
-	}
-	return l
-}
 
 // state functions
 
 // lexText scans until an opening action delimiter, "{{".
-func lexText(l *lexer) stateFn {
+func lex_text(l *lexer) stateFn {
 	if x := strings.Index(l.input[l.pos:], l.leftDelim); x >= 0 {
 		if x > 0 {
 			l.pos += Pos(x)
