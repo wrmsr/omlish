@@ -349,7 +349,7 @@ func (t *Tree) parseDefinition() {
 
 // itemList:
 //
-//	textOrAction*
+//    textOrAction*
 //
 // Terminates at {{end}} or {{else}}, returned separately.
 func (t *Tree) itemList() (list *ListNode, next Node) {
@@ -368,7 +368,7 @@ func (t *Tree) itemList() (list *ListNode, next Node) {
 
 // textOrAction:
 //
-//	text | comment | action
+//    text | comment | action
 func (t *Tree) textOrAction() Node {
     switch token := t.nextNonSpace(); token.typ {
     case itemText:
@@ -391,8 +391,8 @@ func (t *Tree) clearActionLine() {
 
 // Action:
 //
-//	control
-//	command ("|" command)*
+//    control
+//    command ("|" command)*
 //
 // Left delim is past. Now get actions.
 // First word could be a keyword such as range.
@@ -425,7 +425,7 @@ func (t *Tree) action() (n Node) {
 
 // Break:
 //
-//	{{break}}
+//    {{break}}
 //
 // Break keyword is past.
 func (t *Tree) breakControl(pos Pos, line int) Node {
@@ -440,7 +440,7 @@ func (t *Tree) breakControl(pos Pos, line int) Node {
 
 // Continue:
 //
-//	{{continue}}
+//    {{continue}}
 //
 // Continue keyword is past.
 func (t *Tree) continueControl(pos Pos, line int) Node {
@@ -455,7 +455,7 @@ func (t *Tree) continueControl(pos Pos, line int) Node {
 
 // Pipeline:
 //
-//	declarations? command ('|' command)*
+//    declarations? command ('|' command)*
 func (t *Tree) pipeline(context string, end itemType) (pipe *PipeNode) {
     token := t.peekNonSpace()
     pipe = t.newPipeline(token.pos, token.line, nil)
@@ -543,10 +543,10 @@ func (t *Tree) parseControl(context string) (pos Pos, line int, pipe *PipeNode, 
         // Special case for "else if" and "else with".
         // If the "else" is followed immediately by an "if" or "with",
         // the elseControl will have left the "if" or "with" token pending. Treat
-        //	{{if a}}_{{else if b}}_{{end}}
+        //    {{if a}}_{{else if b}}_{{end}}
         //  {{with a}}_{{else with b}}_{{end}}
         // as
-        //	{{if a}}_{{else}}{{if b}}_{{end}}{{end}}
+        //    {{if a}}_{{else}}{{if b}}_{{end}}{{end}}
         //  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
         // To do this, parse the "if" or "with" as usual and stop at it {{end}};
         // the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
@@ -570,8 +570,8 @@ func (t *Tree) parseControl(context string) (pos Pos, line int, pipe *PipeNode, 
 
 // If:
 //
-//	{{if pipeline}} itemList {{end}}
-//	{{if pipeline}} itemList {{else}} itemList {{end}}
+//    {{if pipeline}} itemList {{end}}
+//    {{if pipeline}} itemList {{else}} itemList {{end}}
 //
 // If keyword is past.
 func (t *Tree) ifControl() Node {
@@ -580,8 +580,8 @@ func (t *Tree) ifControl() Node {
 
 // Range:
 //
-//	{{range pipeline}} itemList {{end}}
-//	{{range pipeline}} itemList {{else}} itemList {{end}}
+//    {{range pipeline}} itemList {{end}}
+//    {{range pipeline}} itemList {{else}} itemList {{end}}
 //
 // Range keyword is past.
 func (t *Tree) rangeControl() Node {
@@ -591,8 +591,8 @@ func (t *Tree) rangeControl() Node {
 
 // With:
 //
-//	{{with pipeline}} itemList {{end}}
-//	{{with pipeline}} itemList {{else}} itemList {{end}}
+//    {{with pipeline}} itemList {{end}}
+//    {{with pipeline}} itemList {{else}} itemList {{end}}
 //
 // If keyword is past.
 func (t *Tree) withControl() Node {
@@ -601,7 +601,7 @@ func (t *Tree) withControl() Node {
 
 // End:
 //
-//	{{end}}
+//    {{end}}
 //
 // End keyword is past.
 func (t *Tree) endControl() Node {
@@ -610,7 +610,7 @@ func (t *Tree) endControl() Node {
 
 // Else:
 //
-//	{{else}}
+//    {{else}}
 //
 // Else keyword is past.
 func (t *Tree) elseControl() Node {
@@ -627,7 +627,7 @@ func (t *Tree) elseControl() Node {
 
 // Block:
 //
-//	{{block stringValue pipeline}}
+//    {{block stringValue pipeline}}
 //
 // Block keyword is past.
 // The name must be something that can evaluate to a string.
@@ -657,7 +657,7 @@ func (t *Tree) blockControl() Node {
 
 // Template:
 //
-//	{{template stringValue pipeline}}
+//    {{template stringValue pipeline}}
 //
 // Template keyword is past. The name must be something that can evaluate
 // to a string.
@@ -690,7 +690,7 @@ func (t *Tree) parseTemplateName(token item, context string) (name string) {
 
 // command:
 //
-//	operand (space operand)*
+//    operand (space operand)*
 //
 // space-separated arguments up to a pipeline character or right delimiter.
 // we consume the pipe character but leave the right delim to terminate the action.
@@ -722,7 +722,7 @@ func (t *Tree) command() *CommandNode {
 
 // operand:
 //
-//	term .Field*
+//    term .Field*
 //
 // An operand is a space-separated component of a command,
 // a term possibly followed by field accesses.
@@ -758,12 +758,12 @@ func (t *Tree) operand() Node {
 
 // term:
 //
-//	literal (number, string, nil, boolean)
-//	function (identifier)
-//	.
-//	.Field
-//	$
-//	'(' pipeline ')'
+//    literal (number, string, nil, boolean)
+//    function (identifier)
+//    .
+//    .Field
+//    $
+//    '(' pipeline ')'
 //
 // A term is a simple "expression".
 // A nil return means the next item is not a term.
