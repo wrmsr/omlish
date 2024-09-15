@@ -2,7 +2,7 @@
 TODO:
  - reservoir
  - dep tdigest?
- - struct-of-arrays backed SamplingHistogram
+ - struct-of-arrays - array.array('f', ...) - backed SamplingHistogram
 """
 import bisect
 import collections
