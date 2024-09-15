@@ -1,4 +1,8 @@
 """
+FIXME:
+ - lol shutdown deadlocks
+ - whole thing is just gross is this its own thread or what
+
 TODO:
  - !!! ANYIO !!!
  - optional paramiko ssh-server
@@ -38,7 +42,7 @@ class ReplServer:
     @dc.dataclass(frozen=True)
     class Config:
         path: str
-        file_mode: int | None = None
+        file_mode: int | None = 0o660
         poll_interval: float = 0.5
         exit_timeout: float = 10.0
 
@@ -80,7 +84,17 @@ class ReplServer:
 
         self._socket = sock.socket(sock.AF_UNIX, sock.SOCK_STREAM)
         self._socket.settimeout(self._config.poll_interval)
-        self._socket.bind(self._config.path)
+
+        if self._config.file_mode is not None:
+            prev_umask = os.umask(~self._config.file_mode)
+        else:
+            prev_umask = None
+        try:
+            self._socket.bind(self._config.path)
+        finally:
+            if prev_umask is not None:
+                os.umask(prev_umask)
+
         with contextlib.closing(self._socket):
             self._socket.listen(1)
 
