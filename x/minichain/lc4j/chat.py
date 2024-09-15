@@ -5,6 +5,7 @@ import typing as ta
 from omlish import lang
 
 from .content import Content
+from .json import JsonSchema
 from .models import Model
 from .tool import ToolExecutionRequest
 from .tool import ToolSpecification
@@ -42,6 +43,22 @@ class ToolExecutionResultMessage(Message, lang.Final):
 
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
+
+
+##
+
+
+class ResponseFormat(lang.Abstract, lang.Sealed):
+    pass
+
+
+class TextResponseFormat(ResponseFormat, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class JsonResponseFormat(lang.Final):
+    schema: JsonSchema | None = None
 
 
 ##
