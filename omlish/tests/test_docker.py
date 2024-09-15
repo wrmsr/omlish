@@ -1,3 +1,5 @@
+import pytest
+
 from .. import docker
 from .. import marshal as msh
 from ..diag.pydevd import silence_subprocess_check
@@ -15,3 +17,11 @@ def test_docker():
 
     iis = docker.cli_inspect([pi.id for pi in pis])
     print(json.dumps_pretty(msh.marshal(iis, list[docker.Inspect])))
+
+
+@pytest.mark.online
+def test_hub_image_version():
+    repo = 'library/nginx'
+    info = docker.get_hub_repo_info(repo)
+    assert info.tags
+    assert info.latest_manifests
