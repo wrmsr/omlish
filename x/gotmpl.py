@@ -214,54 +214,58 @@ class Lexer:
     def next_token(self) -> Token:
         # next_token returns the next token from the input. Called by the parser, not in the lexing goroutine.
         self._token = Token(TokenType.EOF, self._pos, 'EOF', self._start_line)
-        state: StateFn = lex_text
+        state: StateFn = Lexer._lex_text
         if self._inside_action:
-            state = lex_inside_action
+            state = Lexer.lex_inside_action
         while True:
             state = state(self)
             if state is None:
                 return self._token
 
+    # state functions
+
+    def _lex_text(self) -> StateFn:
+        # lex_text scans until an opening action delimiter, "{{".
+        if (x := self._input[self._pos:].find(self._left_delim)) >= 0:
+            if x > 0:
+                self._pos += x
+                # Do we trim any trailing space?
+                trim_length = 0
+                delim_end = self._pos + len(self._left_delim)
+                if has_left_trim_marker(self._input[delim_end:]):
+                    trim_length = right_trim_length(self._input[self._start:self._pos])
+                self._pos -= trim_length
+                self._line += self._input[self._start:self._pos].count('\n')
+                i = self.this_token(TokenType.TEXT)
+                self._pos += trim_length
+                self.ignore()
+                if len(i.val) > 0:
+                    return self.emit_token(i)
+
+            return Lexer._lex_left_delim
+
+        self._pos = len(self._input)
+        # Correctly reached EOF.
+        if self._pos > self._start:
+            self._line += self._input[self._start:self._pos].count('\n')
+            return self.emit(TokenType.TEXT)
+
+        return self.emit(TokenType.EOF)
+
+
+def right_trim_length(s: str) -> int:
+    # right_trim_length returns the length of the spaces at the end of the string.
+    return len(s) - len(s.rstrip(SPACE_CHARS))
+
+
+def left_trim_length(s: str) -> int:
+    # left_trim_length returns the length of the spaces at the beginning of the string.
+    return len(s) - len(s.lstrip(SPACE_CHARS))
+
 
 """
 
-# state functions
 
-def lex_text(l: Lexer) -> StateFn:
-    # lex_text scans until an opening action delimiter, "{{".
-    if x := strings.Index(l.input[l.pos:], l.leftDelim); x >= 0 {
-        if x > 0 {
-            l.pos += Pos(x)
-            // Do we trim any trailing space?
-            trimLength := Pos(0)
-            delimEnd := l.pos + Pos(len(l.leftDelim))
-            if hasLeftTrimMarker(l.input[delimEnd:]) {
-                trimLength = rightTrimLength(l.input[l.start:l.pos])
-            }
-            l.pos -= trimLength
-            l.line += strings.Count(l.input[l.start:l.pos], "\n")
-            i := l.thisItem(itemText)
-            l.pos += trimLength
-            l.ignore()
-            if len(i.val) > 0 {
-                return l.emitItem(i)
-            }
-        }
-        return lexLeftDelim
-    }
-    l.pos = Pos(len(l.input))
-    // Correctly reached EOF.
-    if l.pos > l.start {
-        l.line += strings.Count(l.input[l.start:l.pos], "\n")
-        return l.emit(itemText)
-    }
-    return l.emit(itemEOF)
-}
-
-def rightTrimLength(s string) Pos {
-    # rightTrimLength returns the length of the spaces at the end of the string.
-    return Pos(len(s) - len(strings.TrimRight(s, spaceChars)))
-}
 
 def (l: Lexer) atRightDelim() (delim, trimSpaces bool) {
     # atRightDelim reports whether the lexer is at a right delimiter, possibly preceded by a trim marker.
@@ -274,10 +278,6 @@ def (l: Lexer) atRightDelim() (delim, trimSpaces bool) {
     return false, false
 }
 
-def leftTrimLength(s string) Pos {
-    # leftTrimLength returns the length of the spaces at the beginning of the string.
-    return Pos(len(s) - len(strings.TrimLeft(s, spaceChars)))
-}
 
 def lexLeftDelim(l: Lexer) -> StateFn:
     # lexLeftDelim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text to be trimmed has already been emitted.)
