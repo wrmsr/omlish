@@ -3,6 +3,7 @@ import contextlib
 import dataclasses as dc
 import signal
 import sys
+import threading
 import typing as ta
 
 from .. import check
@@ -17,6 +18,7 @@ if ta.TYPE_CHECKING:
     import pstats
 
     from ..diag import pycharm as diagpc
+    from ..diag import replserver as diagrs
     from ..diag import threads as diagt
 
 else:
@@ -24,6 +26,7 @@ else:
     pstats = lang.proxy_import('pstats')
 
     diagpc = lang.proxy_import('..diag.pycharm', __package__)
+    diagrs = lang.proxy_import('..diag.replserver', __package__)
     diagt = lang.proxy_import('..diag.threads', __package__)
 
 
@@ -175,3 +178,25 @@ class PycharmBootstrap(SimpleBootstrap['PycharmBootstrap.Config']):
                 self._config.debug_port,
                 version=self._config.version,
             )
+
+
+##
+
+
+class ReplServerBootstrap(ContextBootstrap['ReplServerBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        path: str | None = None
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if self._config.path is None:
+            return
+
+        with diagrs.ReplServer(diagrs.ReplServer.Config(
+            path=self._config.path,
+        )) as rs:
+            thread = threading.Thread(target=rs.run, name='replserver')
+            thread.start()
+
+            yield
