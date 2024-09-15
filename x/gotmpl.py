@@ -356,16 +356,13 @@ def has_right_trim_marker(s: str) -> bool:
 
 def lexInsideAction(self) -> StateFn:
     # lexInsideAction scans the elements inside action delimiters.
-    // Either number, quoted string, or identifier.
-    // Spaces separate arguments; runs of spaces turn into itemSpace.
-    // Pipe symbols separate and are emitted.
-    delim, _ := self._atRightDelim()
-    if delim {
-        if self._paren_depth == 0 {
+    # Either number, quoted string, or identifier. Spaces separate arguments; runs of spaces turn into itemSpace. Pipe
+    # symbols separate and are emitted.
+    delim, _ = self.at_right_delim()
+    if delim:
+        if self._paren_depth == 0:
             return lexRightDelim
-        }
-        return self.errorf("unclosed left paren")
-    }
+        return self.errorf('unclosed left paren')
     switch r := self._next(); {
     case r == eof:
         return self.errorf("unclosed action")
