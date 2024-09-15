@@ -17,7 +17,9 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import dataclasses as dc
 import enum
+import typing as ta
 
 
 class TokenType(enum.Enum):
@@ -58,6 +60,35 @@ class TokenType(enum.Enum):
     RANGE = enum.auto()     # range keyword
     TEMPLATE = enum.auto()  # template keyword
     WITH = enum.auto()      # with keyword
+
+
+TOKEN_TYPE_MAP: ta.Mapping[str, TokenType] = {
+    '.': TokenType.DOT,
+    'block': TokenType.BLOCK,
+    'break': TokenType.BREAK,
+    'continue': TokenType.CONTINUE,
+    'define': TokenType.DEFINE,
+    'else': TokenType.ELSE,
+    'end': TokenType.END,
+    'if': TokenType.IF,
+    'range': TokenType.RANGE,
+    'nil': TokenType.NIL,
+    'template': TokenType.TEMPLATE,
+    'with': TokenType.WITH,
+}
+
+
+@dc.dataclass(frozen=True)
+class Token:
+    typ: TokenType
+    pos:  int
+    val:  str
+    line: int
+
+
+SPACE_CHARS = ' \t\r\n'  # These are the space characters defined by Go itself.
+TRIM_MARKER = '-'  # Attached to left/right delimiter, trims trailing spaces from preceding/following text.
+TRIM_MARKER_LEN = 1 + 1  # marker plus space before or after
 
 
 ##
