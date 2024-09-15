@@ -1,0 +1,3 @@
+[submodule "isl"]
+	path = isl
+	url = https://github.com/inducer/isl.git

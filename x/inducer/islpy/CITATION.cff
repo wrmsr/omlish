@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Kloeckner"
+  given-names: "Andreas"
+  orcid: "https://orcid.org/0000-0003-1228-519X"
+- family-names: "Fernando"
+  given-names: "Isuru"
+- family-names: "Yang"
+  given-names: "Cambridge"
+- family-names: "Kulkarni"
+  given-names: "Kaushik"
+# Disabled pending https://github.com/zenodo/zenodo/issues/2343
+# - alias: "iasakura"
+- family-names: "Almahallawi"
+  given-names: "Deyaaeldeen"
+- family-names: "Gao"
+  given-names: "Hao"
+- family-names: "Stevens"
+  given-names: "James"
+- family-names: "Fikl"
+  given-names: "Alex"
+- family-names: "Wala"
+  given-names: "Matt"
+# Disabled pending https://github.com/zenodo/zenodo/issues/2343
+# - alias: "bhuztez"
+
+title: "islpy"
+version: 2022.1.2
+doi: 10.5281/zenodo.6345184
+date-released: 2022-03-10
+url: "https://github.com/inducer/islpy"
+license: MIT

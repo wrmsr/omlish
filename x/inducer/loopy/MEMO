@@ -1,0 +1,361 @@
+Documentation Notes
+^^^^^^^^^^^^^^^^^^^
+
+- Need to clarify fundamental difference between constants baked into code
+  and things that remain variable. (ISL parameters, symbolic shapes)
+
+Things to consider
+^^^^^^^^^^^^^^^^^^
+
+- Dependencies are pointwise for shared loop dimensions
+  and global over non-shared ones (between dependent and ancestor)
+
+- multiple insns could fight over which iname gets local axis 0
+  -> complicated optimization problem
+
+- Every loop in loopy is opened at most once.
+  Too restrictive?
+
+- Why do precomputes necessarily have to duplicate the inames?
+  -> because that would be necessary for a sequential prefetch
+
+- Cannot do slab decomposition on inames that share a tag with
+  other inames
+  -> Is that reasonable?
+
+- Entering a loop means:
+  - setting up conditionals related to it (slabs/bounds)
+  - allowing loops nested inside to depend on loop state
+
+- Not using all hw loop dimensions causes an error, as
+  is the case for variant 3 in the rank_one test.
+
+- Measure efficiency of corner cases
+
+- Loopy as a data model for implementing custom rewritings
+
+- We won't generate WAW barrier-needing dependencies
+  from one instruction to itself.
+
+- Loopy is semi-interactive.
+
+- Limitation: base index for parallel axes is 0.
+
+- Dependency on order of operations is ill-formed
+
+- Dependency on non-local global writes is ill-formed
+
+- No substitution rules allowed on lhs of insns
+
+To-do
+^^^^^
+
+- Kernel fusion
+
+- when are link_inames, duplicate_inames safe?
+
+- rename IndexTag -> InameTag
+
+- Data implementation tags
+  - turn base_indices into offset
+  - vectorization
+  - write_image()
+  - change_arg_to_image (test!)
+
+- Make tests run on GPUs
+
+- Test array access with modulo
+
+- Derive all errors from central hierarchy
+
+- Provide context for more errors?
+
+- Allow mixing computed and stored strides
+
+Fixes:
+
+- applied_iname_rewrites tracking for prefetch footprints isn't bulletproof
+  old inames may still be around, so the rewrite may or may not have to be
+  applied.
+
+- Group instructions by dependency/inames for scheduling, to
+  increase sched. scalability
+
+- What if no universally valid precompute base index expression is found?
+  (test_intel_matrix_mul with n = 6*16, e.g.?)
+
+- If finding a maximum proves troublesome, move parameters into the domain
+
+Future ideas
+^^^^^^^^^^^^
+
+- subtract_domain_lower_bound
+
+- Storage sharing for temporaries?
+
+- Kernel splitting (via what variables get computed in a kernel)
+
+- Put all OpenCL functions into mangler
+
+- Fuse: store/fetch elimination?
+
+- Array language
+
+- reg rolling
+
+- When duplicating inames, use iname aliases to relieve burden on isl
+
+- (Web) UI
+
+- Check for unordered (no-dependency) writes to the same location
+
+- Vanilla C string instructions?
+
+- Barriers for data exchanged via global vars?
+
+- Float4 joining on fetch/store?
+
+- Better for loop bound generation
+  -> Try a triangular loop
+
+- Eliminate the first (pre-)barrier in a loop.
+
+- Generate automatic test against sequential code.
+
+- Reason about generated code, give user feedback on potential
+  improvements.
+
+- Convolutions, Stencils
+
+- DMA engine threads?
+
+- Try, fix indirect addressing
+
+- Nested slab decomposition (in conjunction with conditional hoisting) could
+  generate nested conditional code.
+
+- Better code for strides.
+
+Dealt with
+^^^^^^^^^^
+
+- How can one automatically generate something like microblocks?
+  -> Some sort of axis-adding transform?
+
+- RuleAwareIdentityMapper
+  extract_subst -> needs WalkMapper [actually fine as is]
+  padding [DONE]
+  replace make_unique_var_name [DONE]
+  join_inames [DONE]
+  duplicate_inames [DONE]
+  split_iname [DONE]
+  CSE [DONE]
+
+- rename iname
+
+- delete unused inames
+
+- Expose iname-duplicate-and-rename as a primitive.
+
+- make sure simple side effects work
+
+- Loop bounds currently may not depend on parallel dimensions
+  Does it make sense to relax this?
+
+- Streamline argument specification
+
+- syntax for linear array access
+
+- Test divisibility constraints
+
+- Test join_inames
+
+- Divisibility, modulo, strides?
+  -> Tested, gives correct (but suboptimal) code.
+
+- *_dimension -> *_iname
+
+- Use gists (why do disjoint sets arise?)
+
+- Automatically verify that all array access is within bounds.
+
+- : (as in, Matlab full-slice) in prefetches
+
+- Add dependencies after the fact
+
+- Scalar insn priority
+
+- ScalarArg is a bad name
+  -> renamed to ValueArg
+
+- What to do about constants in codegen? (...f suffix, complex types)
+  -> dealt with by type contexts
+
+- relating to Multi-Domain [DONE]
+  - Reenable codegen sanity check. [DONE]
+
+  - Incorporate loop-bound-mediated iname dependencies into domain
+    parenthood. [DONE]
+
+  - Make sure that variables that enter into loop bounds are only written
+    exactly once. [DONE]
+
+  - Make sure that loop bound writes are scheduled before the relevant
+    loops. [DONE]
+
+- add_prefetch tagging
+
+- nbody GPU
+  -> pending better prefetch spec
+  - Prefetch by sample access
+
+- How is intra-instruction ordering of ILP loops going to be determined?
+  (taking into account that it could vary even per-instruction?)
+
+- Sharing of checks across ILP instances
+
+- Differentiate ilp.unr from ilp.seq
+
+- Allow complex-valued arithmetic, despite CL's best efforts.
+
+- "No schedule found" debug help:
+
+  - Find longest dead-end
+  - Automatically report on what hinders progress there
+
+- CSE should be more like variable assignment
+
+- Deal with equality constraints.
+  (These arise, e.g., when partitioning a loop of length 16 into 16s.)
+
+- dim_{min,max} caching
+
+- Exhaust the search for a no-boost solution first, before looking
+  for a schedule with boosts.
+
+- Pick not just axis 0, but all axes by lowest available stride
+
+- Scheduler tries too many boostability-related options
+
+- Automatically generate testing code vs. sequential.
+
+- If isl can prove that all operands are positive, may use '/' instead of
+  'floor_div'.
+
+- For forced workgroup sizes: check that at least one iname
+  maps to them.
+
+- variable shuffle detection
+  -> will need unification
+
+- Dimension joining
+
+- user interface for dim length prescription
+
+- Restrict-to-sequential and tagging have nothing to do with each other.
+  -> Removed SequentialTag and turned it into a separate computed kernel
+  property.
+
+- Just touching a variable written to by a non-idempotent
+  instruction makes that instruction also not idempotent
+  -> Idempotent renamed to boostable.
+  -> Done.
+
+- Give the user control over which reduction inames are
+  duplicated.
+
+- assert dependencies <= parent_inames in loopy/__init__.py
+  -> Yes, this must be the case.
+  -> If you include reduction inames.
+
+- Give a good error message if a parameter assignment in get_problems()
+  is missing.
+
+- Slab decomposition for ILP
+  -> I don't think that's possible.
+
+- It is hard to understand error messages that referred to instructions that
+  are generated during preprocessing.
+
+  -> Expose preprocessing to the user so she can inspect the preprocessed
+     kernel.
+
+- Which variables need to be duplicated for ILP?
+  -> Only reduction
+
+- implemented_domain may end up being smaller than requested in cse
+  evaluations--check that!
+
+- Allow prioritization of loops in scheduling.
+
+- Make axpy better.
+
+- Screwy lower bounds in slab decomposition
+
+- reimplement add_prefetch
+
+- Flag, exploit idempotence
+
+- Some things involving CSEs might be impossible to schedule
+  a[i,j] = cse(b[i]) * cse(c[j])
+
+- Be smarter about automatic local axis choice
+  -> What if we run out of axes?
+
+- Implement condition hoisting
+  (needed, e.g., by slab decomposition)
+
+- Check for non-use of hardware axes
+
+- Slab decomposition for parallel dimensions
+  - implement at the outermost nesting level regardless
+  - bound *all* tagged inames
+  - can't slab inames that share tags with other inames (for now)
+
+- Make syntax for iname dependencies
+
+- make syntax for insn dependencies
+
+- Implement get_problems()
+
+- CSE iname duplication might be unnecessary?
+  (don't think so: It might be desired to do a full fetch before a mxm k loop
+  even if that requires going iterative.)
+
+- Reduction needs to know a neutral element
+
+- Types of reduction variables?
+
+- Generalize reduction to be over multiple variables
+
+- duplicate_dimensions can be implemented without having to muck around 
+  with individual constraints:
+  - add_dims
+  - move_dims
+  - intersect
+
+Should a dependency on an iname be forced in a CSE?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Local var:
+
+l  | n
+g  | y
+dl | Err
+d  | Err
+
+Private var:
+
+l  | y
+g  | y
+dl | Err
+d  | Err
+
+dg: Invalid-> error
+
+d: is duplicate
+l: is tagged as local idx
+g: is tagged as group idx
+
+Raise error if dl is targeting a private variable, regardless of whether it's
+a dependency or not.
