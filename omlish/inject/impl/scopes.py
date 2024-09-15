@@ -1,6 +1,8 @@
 """
 TODO:
  - ContextVar ('context')
+ - greenlet?
+ - dynamic? https://github.com/wrmsr/iceworm/blob/2f6b4d5e9d237ef9665f7d57cfa6ce328efa0757/iceworm/utils/inject.py#L44
 """
 import abc
 import contextlib
