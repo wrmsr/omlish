@@ -44,7 +44,7 @@ class DataCache:
         urllib.request.urlretrieve(url, out_file)  # noqa
 
     def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
-        log.info('Fetching spec: %r', spec)
+        log.info('Fetching spec: %s %r', spec.digest, spec)
 
         if isinstance(spec, HttpCacheDataSpec):
             if spec.file_name is not None:
