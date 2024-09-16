@@ -56,6 +56,12 @@ class HttpCacheDataSpec(CacheDataSpec):
     url: str = dc.xfield(validate=lambda u: bool(urllib.parse.urlparse(u)))
     file_name: str | None = None
 
+    @cached.property
+    def file_name_or_default(self) -> str:
+        if self.file_name is not None:
+            return self.file_name
+        return urllib.parse.urlparse(self.url).path.split('/')[-1]
+
 
 ##
 

@@ -40,8 +40,9 @@ from .metadata import METADATA_ATTR
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class FieldExtras(lang.Final):
+    derive: ta.Callable[..., ta.Any] | None = None
     coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
     validate: ta.Callable[[ta.Any], bool] | None = None
     check_type: bool | None = None
@@ -79,7 +80,7 @@ def get_params(obj: ta.Any) -> Params:
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
     cache_hash: bool = False
