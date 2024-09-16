@@ -58,14 +58,14 @@ class DictBlobStorage(BlobStorage):
             self._dct[key] = Blob(
                 key=key,
                 value=value,
-                created_at=datetime.datetime.now(tz=datetime.UTC),
-                updated_at=datetime.datetime.now(tz=datetime.UTC),
+                created_at=lang.utcnow(),
+                updated_at=lang.utcnow(),
             )
         else:
             self._dct[key] = dc.replace(
                 blob,
                 value=value,
-                updated_at=datetime.datetime.now(tz=datetime.UTC),
+                updated_at=lang.utcnow(),
             )
 
 
@@ -103,7 +103,7 @@ class ListJournal(Journal):
             id=uuid.uuid4(),
             key=key,
             value=value,
-            created_at=datetime.datetime.now(tz=datetime.UTC),
+            created_at=lang.utcnow(),
         ))
 
 
@@ -155,8 +155,8 @@ def test_db_blob_storage():
                     {
                         'key': 'some key',
                         'value': 'some value',
-                        'created_at': datetime.datetime.now(tz=datetime.UTC),
-                        'updated_at': datetime.datetime.now(tz=datetime.UTC),
+                        'created_at': lang.utcnow(),
+                        'updated_at': lang.utcnow(),
                     },
                 ],
             )

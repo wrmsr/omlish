@@ -19,12 +19,12 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import datetime
 import uuid
 
 import markupsafe
 import pytest
 
+from ... import lang
 from ..json import JsonTag
 from ..json import JsonTagger
 
@@ -41,7 +41,7 @@ from ..json import JsonTagger
         b'\xff',
         markupsafe.Markup('<html>'),
         uuid.uuid4(),
-        datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0),
+        lang.utcnow().replace(microsecond=0),
     ],
 )
 def test_dump_load_unchanged(data):

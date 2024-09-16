@@ -223,8 +223,9 @@ class DumbRag:
 
 
 def _main():
-    with open('secrets.yml', 'r') as f:
-        openai_api_key = yaml.safe_load(f)['openai_api_key']
+    from dp.utils import load_secrets
+    load_secrets()
+    openai_api_key = os.environ['OPENAI_API_KEY']
 
     oai = openai.OpenAI(api_key=openai_api_key)
     del openai_api_key
