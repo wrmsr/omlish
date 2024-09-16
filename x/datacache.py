@@ -10,6 +10,7 @@ import hashlib
 import os.path
 import tempfile
 import typing as ta
+import urllib.parse
 import urllib.request
 
 from omlish import __about__ as about
@@ -63,15 +64,16 @@ def _maybe_sorted_strs(v: ta.Iterable[str] | None) -> ta.Sequence[str] | None:
 class GitCacheDataSpec(CacheDataSpec):
     url: str
 
-    branch: str | None = None
-    rev: str | None = None
+    branch: str | None = dc.field(default=None, kw_only=True)
+    rev: str | None = dc.field(default=None, kw_only=True)
 
-    subtrees: ta.Sequence[str] = dc.field(default=None, coerce=_maybe_sorted_strs)
+    subtrees: ta.Sequence[str] = dc.field(default=None, kw_only=True, coerce=_maybe_sorted_strs)
 
 
 @dc.dataclass(frozen=True)
 class HttpCacheDataSpec(CacheDataSpec):
     url: str
+    file_name: str | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -88,13 +90,13 @@ class GithubContentCacheDataSpec(CacheDataSpec):
 class CacheDataManifest:
     spec: CacheDataSpec
 
-    at: datetime.datetime = dc.field(default_factory=lang.utcnow)
+    at: datetime.datetime = dc.field(default_factory=lang.utcnow, kw_only=True)
 
-    lib_version: str = dc.field(default_factory=lambda: about.__version__)
-    lib_revision: str = dc.field(default_factory=_lib_revision)
+    lib_version: str = dc.field(default_factory=lambda: about.__version__, kw_only=True)
+    lib_revision: str = dc.field(default_factory=_lib_revision, kw_only=True)
 
     VERSION: ta.ClassVar[int] = 0
-    version: int = VERSION
+    version: int = dc.field(default=VERSION, kw_only=True)
 
 
 ##
@@ -124,15 +126,39 @@ def _main() -> None:
 
     ##
 
-    # retrieved = urllib.request.urlretrieve(spec.url)
-    # print(retrieved)
+    if spec.file_name is not None:
+        file_name = spec.file_name
+    else:
+        file_name = urllib.parse.urlparse(spec.url).path.split('/')[-1]
+
+    retrieved_file, _ = urllib.request.urlretrieve(spec.url)
 
     ##
 
     manifest = CacheDataManifest(spec)
 
     manifest_json = json.dumps_pretty(msh.marshal(manifest))
-    print(manifest_json)
+
+    ##
+
+    tmp_dir = tempfile.mkdtemp()
+
+    data_dir = os.path.join(tmp_dir, 'data')
+    os.mkdir(data_dir)
+    os.rename(retrieved_file, os.path.join(data_dir, file_name))
+
+    manifest_file = os.path.join(tmp_dir, 'manifest.json')
+    with open(manifest_file, 'w') as f:
+        f.write(manifest_json)
+
+    ##
+
+    item_dir = os.path.join(cache_dir, spec.digest)
+    os.rename(tmp_dir, item_dir)
+
+    ##
+
+    print(f'{item_dir=}')
 
 
 if __name__ == '__main__':
