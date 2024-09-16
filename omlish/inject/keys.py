@@ -18,7 +18,7 @@ class Key(lang.Final, ta.Generic[T]):
     tag: ta.Any = dc.xfield(
         default=None,
         kw_only=True,
-        check=lambda o: not isinstance(o, Tag),
+        validate=lambda o: not isinstance(o, Tag),
         repr_fn=dc.opt_repr,
     )
 

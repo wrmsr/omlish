@@ -6,7 +6,7 @@ from ..impl.inspect import signature
 
 @dc.dataclass(frozen=True)
 class Tag:
-    tag: ta.Any = dc.xfield(check=lambda o: not isinstance(o, Tag))
+    tag: ta.Any = dc.xfield(validate=lambda o: not isinstance(o, Tag))
 
 
 def test_tags():

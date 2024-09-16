@@ -8,9 +8,9 @@ from .exceptions import ValidationError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
-from .internals import FieldType
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
+from .internals import FieldType
 from .metadata import Init
 from .metadata import Validate
 from .processing import Processor
