@@ -59,8 +59,8 @@ globals()['make_dataclass'] = xmake_dataclass
 
 
 from .impl.exceptions import (  # noqa
-    CheckError,
-    FieldCheckError,
+    FieldValidationError,
+    ValidationError,
 )
 
 from .impl.metaclass import (  # noqa
@@ -76,8 +76,8 @@ from .impl.metadata import (  # noqa
     UserMetadata,
     metadata,
 
-    Check,
-    check,
+    Validate,
+    validate,
 
     Init,
     init,

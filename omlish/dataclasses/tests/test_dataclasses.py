@@ -40,28 +40,28 @@ def test_simple():
     print(Foo(1, 2))
 
 
-def test_check_coerce():
+def test_validate_coerce():
     @dc.dataclass()
     class Bar:
-        x: int = dc.xfield(coerce=int, check=lambda x: x < 10)
+        x: int = dc.xfield(coerce=int, validate=lambda x: x < 10)
 
     print(Bar(4))
     print(Bar('4'))  # type: ignore
 
-    with pytest.raises(dc.CheckError):
+    with pytest.raises(dc.ValidationError):
         Bar(11)
 
 
-def test_check_init():
+def test_validate_init():
     @dc.dataclass()
     class C:
-        x: int = dc.xfield(check=lambda x: x > 10)
+        x: int = dc.xfield(validate=lambda x: x > 10)
 
-        dc.check(lambda x: x < 20)
+        dc.validate(lambda x: x < 20)
 
-        @dc.check  # noqa
+        @dc.validate  # noqa
         @staticmethod
-        def _check_x_not_15(x: int) -> bool:
+        def _validate_x_not_15(x: int) -> bool:
             return x != 15
 
         @dc.init
@@ -71,7 +71,7 @@ def test_check_init():
     c = C(11)
     assert c._foo == 100  # noqa
 
-    with pytest.raises(dc.CheckError):
+    with pytest.raises(dc.ValidationError):
         C(9)
 
 

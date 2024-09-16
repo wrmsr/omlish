@@ -54,12 +54,12 @@ def metadata(cls_dct, *args) -> None:
 
 
 @_class_merged
-class Check(lang.Marker):
+class Validate(lang.Marker):
     pass
 
 
-def check(fn: ta.Callable[..., bool] | staticmethod) -> None:
-    _append_cls_md(Check, fn)
+def validate(fn: ta.Callable[..., bool] | staticmethod) -> None:
+    _append_cls_md(Validate, fn)
 
 
 ##
