@@ -5,6 +5,7 @@ from omlish import __about__ as about
 from omlish import cached
 from omlish import dataclasses as dc
 
+from ..revisions import get_git_revision
 from .specs import CacheDataSpec
 
 
@@ -16,14 +17,7 @@ def _lib_revision() -> str | None:
     if (rev := about.__revision__) is not None:
         return rev  # type: ignore
 
-    try:
-        from omdev.revisions import get_git_revision
-    except ImportError:
-        pass
-    else:
-        return get_git_revision()
-
-    return None
+    return get_git_revision()
 
 
 ##
