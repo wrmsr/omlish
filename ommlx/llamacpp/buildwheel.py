@@ -57,7 +57,10 @@ def _main() -> None:
         print(sub_rev)
 
         sub_url = subprocess.check_output([
-            'git', 'config', '--file=.gitmodules', 'submodule.vendor/llama.cpp.url',
+            'git',
+            'config',
+            '--file=.gitmodules',
+            'submodule.vendor/llama.cpp.url',
         ], cwd=repo_dir).decode().strip()
         print(sub_url)
 
