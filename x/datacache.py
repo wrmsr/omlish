@@ -5,18 +5,38 @@ TODO:
   - unarchive
  - stupid little progress bars
 """
+import datetime
 import hashlib
 import os.path
 import tempfile
 import typing as ta
 import urllib.request
 
+from omlish import __about__ as about
 from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
+
+
+##
+
+
+@cached.function
+def _lib_revision() -> str | None:
+    if (rev := about.__revision__) is not None:
+        return rev
+
+    try:
+        from omdev.revisions import get_git_revision
+    except ImportError:
+        pass
+    else:
+        return get_git_revision()
+
+    return None
 
 
 ##
@@ -64,6 +84,22 @@ class GithubContentCacheDataSpec(CacheDataSpec):
 ##
 
 
+@dc.dataclass(frozen=True)
+class CacheDataManifest:
+    spec: CacheDataSpec
+
+    at: datetime.datetime = dc.field(default_factory=lang.utcnow)
+
+    lib_version: str = dc.field(default_factory=lambda: about.__version__)
+    lib_revision: str = dc.field(default_factory=_lib_revision)
+
+    VERSION: ta.ClassVar[int] = 0
+    version: int = VERSION
+
+
+##
+
+
 @lang.cached_function
 def _install_standard_marshalling() -> None:
     specs_poly = msh.polymorphism_from_subclasses(CacheDataSpec)
@@ -85,6 +121,18 @@ def _main() -> None:
 
     print(spec.json)
     print(spec.digest)
+
+    ##
+
+    # retrieved = urllib.request.urlretrieve(spec.url)
+    # print(retrieved)
+
+    ##
+
+    manifest = CacheDataManifest(spec)
+
+    manifest_json = json.dumps_pretty(msh.marshal(manifest))
+    print(manifest_json)
 
 
 if __name__ == '__main__':
