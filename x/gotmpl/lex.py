@@ -226,7 +226,7 @@ class Lexer:
     # state functions
 
     def _lex_text(self) -> StateFn:
-        # lex_text scans until an opening action delimiter, '{{'.
+        # _lex_text scans until an opening action delimiter, '{{'.
         if (x := self._input[self._pos:].find(self._left_delim)) >= 0:
             if x > 0:
                 self._pos += x
@@ -267,7 +267,7 @@ class Lexer:
         return False, False
 
     def _lex_left_delim(self) -> StateFn:
-        # lexLeftDelim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text
+        # _lex_left_delim scans the left delimiter, which is known to be present, possibly with a trim marker. (The text
         # to be trimmed has already been emitted.)
         self._pos += len(self._left_delim)
         trim_space = has_left_trim_marker(self._input[self._pos:])
@@ -286,7 +286,7 @@ class Lexer:
         return self.emit_token(i)
 
     def _lex_comment(self) -> StateFn:
-        # lexComment scans a comment. The left comment marker is known to be present.
+        # _lex_comment scans a comment. The left comment marker is known to be present.
         self._pos += len(LEFT_COMMENT)
         x = self._input[self._pos:].find(RIGHT_COMMENT)
         if x < 0:
@@ -307,7 +307,7 @@ class Lexer:
         return self._lex_text
 
     def _lex_right_delim(self) -> StateFn:
-        # lex_right_delim scans the right delimiter, which is known to be present, possibly with a trim marker.
+        # _lex_right_delim scans the right delimiter, which is known to be present, possibly with a trim marker.
         _, trim_space = self.at_right_delim()
         if trim_space:
             self._pos += TRIM_MARKER_LEN
@@ -321,9 +321,8 @@ class Lexer:
         return self.emit_token(i)
 
     def _lex_inside_action(self) -> StateFn:
-        # lexInsideAction scans the elements inside action delimiters.
-        # Either number, quoted string, or identifier. Spaces separate arguments; runs of spaces turn into itemSpace. Pipe
-        # symbols separate and are emitted.
+        # _lex_inside_action scans the elements inside action delimiters. Either number, quoted string, or identifier.
+        # Spaces separate arguments; runs of spaces turn into itemSpace. Pipe symbols separate and are emitted.
         delim, _ = self.at_right_delim()
         if delim:
             if self._paren_depth == 0:
@@ -428,17 +427,17 @@ class Lexer:
                     return self.emit(TokenType.IDENTIFIER)
 
     def _lex_field(self) -> StateFn:
-        # lexField scans a field: .Alphanumeric. The . has been scanned.
+        # _lex_field scans a field: .Alphanumeric. The . has been scanned.
         return self._lex_field_or_variable(TokenType.FIELD)
 
     def _lex_variable(self) -> StateFn:
-        # lexVariable scans a Variable: $Alphanumeric. The $ has been scanned.
+        # _lex_variable scans a Variable: $Alphanumeric. The $ has been scanned.
         if self.at_terminator():  # Nothing interesting follows -> '$'.
             return self.emit(TokenType.VARIABLE)
         return self._lex_field_or_variable(TokenType.VARIABLE)
 
     def _lex_field_or_variable(self, typ: TokenType) -> StateFn:
-        # lexFieldOrVariable scans a field or variable: [.$]Alphanumeric. The . or $ has been scanned.
+        # _lex_field_or_variable scans a field or variable: [.$]Alphanumeric. The . or $ has been scanned.
         if self.at_terminator(): # Nothing interesting follows -> '.' or '$'.
             if typ == TokenType.VARIABLE:
                 return self.emit(TokenType.VARIABLE)
