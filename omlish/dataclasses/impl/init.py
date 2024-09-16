@@ -3,16 +3,16 @@ import inspect
 import typing as ta
 
 from ... import lang
-from .exceptions import CheckError
-from .exceptions import FieldCheckError
+from .exceptions import FieldValidationError
+from .exceptions import ValidationError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
+from .internals import FieldType
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
-from .internals import FieldType
-from .metadata import Check
 from .metadata import Init
+from .metadata import Validate
 from .processing import Processor
 from .reflect import ClassInfo
 from .utils import Namespace
@@ -100,8 +100,8 @@ class InitBuilder:
             '__dataclass_builtins_object__': object,
             '__dataclass_builtins_isinstance__': isinstance,
             '__dataclass_builtins_TypeError__': TypeError,
-            '__dataclass_CheckError__': CheckError,
-            '__dataclass_FieldCheckError__': FieldCheckError,
+            '__dataclass_ValidationError__': ValidationError,
+            '__dataclass_FieldValidationError__': FieldValidationError,
         })
 
         body_lines: list[str] = []
@@ -121,14 +121,14 @@ class InitBuilder:
             params_str = ','.join(f.name for f in ifs.all if field_type(f) is FieldType.INIT)
             body_lines.append(f'{self._self_name}.{POST_INIT_NAME}({params_str})')
 
-        for i, fn in enumerate(self._info.merged_metadata.get(Check, [])):
+        for i, fn in enumerate(self._info.merged_metadata.get(Validate, [])):
             if isinstance(fn, staticmethod):
                 fn = fn.__func__
-            cn = f'__dataclass_check_{i}__'
+            cn = f'__dataclass_validate_{i}__'
             locals[cn] = fn
             csig = inspect.signature(fn)
             cas = ', '.join(p.name for p in csig.parameters.values())
-            body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckError__')
+            body_lines.append(f'if not {cn}({cas}): raise __dataclass_ValidationError__')
 
         inits = self._info.merged_metadata.get(Init, [])
         mro_dct = lang.build_mro_dict(self._info.cls)
