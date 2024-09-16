@@ -15,6 +15,8 @@ hf.hf_hub_download(repo_id='NathaNn1111/word2vec-google-news-negative-300-bin', 
 
 ~/.cache/huggingface/hub/models--NathaNn1111--word2vec-google-news-negative-300-bin/snapshots/78856d4586b3a938134c9833d92139f2e056e369/GoogleNews-vectors-negative300.bin
 
+https://raw.githubusercontent.com/medallia/Word2VecJava/eb31fbb99ac6bbab82d7f807b3e2240edca50eb7/src/test/resources/com/medallia/word2vec/tokensModel.bin
+https://raw.githubusercontent.com/medallia/Word2VecJava/eb31fbb99ac6bbab82d7f807b3e2240edca50eb7/src/test/resources/com/medallia/word2vec/tokensModel.txt
 ==
 
 # def demo_gensim():
@@ -62,6 +64,12 @@ BIN_FILE = os.path.join(
     'GoogleNews-vectors-negative300.bin',
 )
 
+TXT_FILE = os.path.join(
+    os.path.expanduser('~/src'),
+    'medallia/Word2VecJava',
+    'src/test/resources/com/medallia/word2vec/tokensModel.txt',
+)
+
 
 ##
 
@@ -81,13 +89,13 @@ def read_bin_file(
 
     vec_fmt = '<' + 'f' * layer_size
 
-    words: list[str] = []
-    vecs: list[ta.Sequence[float]] = []
-
     if max_words is not None:
         vocab_size = max(vocab_size, max_words)
     if max_vec_bytes is not None:
         vocab_size = min(vocab_size, max_vec_bytes // (layer_size * 4))
+
+    words: list[str] = []
+    vecs: list[ta.Sequence[float]] = []
 
     for i in range(vocab_size):
         buf = []
@@ -105,9 +113,44 @@ def read_bin_file(
     return words, vecs
 
 
+def read_txt_file(
+        f: ta.TextIO,
+        max_words: int | None = None,
+        max_vec_bytes: int | None = None,
+) -> tuple[list[str], list[ta.Sequence[float]]]:
+    line = f.readline()
+    vocab_size, layer_size = map(int, line.strip().split())
+
+    if max_words is not None:
+        vocab_size = max(vocab_size, max_words)
+    if max_vec_bytes is not None:
+        vocab_size = min(vocab_size, max_vec_bytes // (layer_size * 4))
+
+    words: list[str] = []
+    vecs: list[ta.Sequence[float]] = []
+
+    for i in range(vocab_size):
+        line = f.readline().strip().split()
+
+        word = line[0]
+        vec = list(map(float, line[1:]))
+
+        check.equal(len(vec), layer_size)
+
+        words.append(word)
+        vecs.append(vec)
+
+    return words, vecs
+
+
 def _main():
     with open(BIN_FILE, 'rb') as f:
         words, vecs = read_bin_file(f, max_vec_bytes=0x3fffffff)
+
+    print(len(words))
+
+    with open(TXT_FILE) as f:
+        words, vecs = read_txt_file(f, max_vec_bytes=0x3fffffff)
 
     print(len(words))
 
