@@ -1,6 +1,4 @@
 """
-https://github.com/run-llama/llama_index/blob/c3e04eeee7f3dbe1bd6789b14e5774c36298caf5/llama-index-core/llama_index/core/indices/query/embedding_utils.py#L11
-
 numpy.inner
 numpy.dot
 
@@ -92,7 +90,7 @@ Matrix: ta.TypeAlias = ta.Sequence[Vector]
 DistanceFn: ta.TypeAlias = ta.Callable[[Vector, Vector], float]
 
 
-def _main() -> None:
+def demo_usearch() -> None:
     import numpy as np
     from usearch.index import Index, Matches
 
@@ -114,6 +112,44 @@ def _main() -> None:
     assert matches[0].key == 42
     assert matches[0].distance <= 0.001
     assert np.allclose(index[42], vector)
+
+
+def demo_faiss() -> None:
+    import faiss
+
+    import numpy as np
+    data = np.random.random((100, 128)).astype('float32')
+
+    index = faiss.IndexFlatL2(128)
+    index.add(data)
+
+    D, I = index.search(data[:5], 10)  # search for the 10 nearest neighbors of the first 5 vectors
+    print(I)  # Output the indices of the nearest neighbors
+
+
+def demo_chroma():
+    import chromadb
+    chroma_client = chromadb.Client()
+
+    collection = chroma_client.create_collection(name="my_collection")
+
+    collection.add(
+        documents=[
+            "This is a document about pineapple",
+            "This is a document about oranges"
+        ],
+        ids=["id1", "id2"]
+    )
+
+    results = collection.query(
+        query_texts=["This is a query document about hawaii"],  # Chroma will embed this for you
+        n_results=2  # how many results to return
+    )
+    print(results)
+
+
+def _main() -> None:
+    demo_chroma()
 
 
 if __name__ == '__main__':

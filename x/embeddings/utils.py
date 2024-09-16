@@ -98,6 +98,7 @@ def similarity(
 def get_top_k_embeddings(
         query_embedding: list[float],
         embeddings: list[list[float]],
+        *,
         similarity_fn: ta.Callable[..., float] | None = None,
         similarity_top_k: int | None = None,
         embedding_ids: list | None = None,
@@ -131,6 +132,7 @@ def get_top_k_embeddings(
 def get_top_k_embeddings_learner(
         query_embedding: list[float],
         embeddings: list[list[float]],
+        *,
         similarity_top_k: int | None = None,
         embedding_ids: list | None = None,
         query_mode: VectorStoreQueryMode = VectorStoreQueryMode.SVM,
@@ -189,6 +191,7 @@ def get_top_k_embeddings_learner(
 def get_top_k_mmr_embeddings(
         query_embedding: list[float],
         embeddings: list[list[float]],
+        *,
         similarity_fn: ta.Callable[..., float] | None = None,
         similarity_top_k: int | None = None,
         embedding_ids: list | None = None,
