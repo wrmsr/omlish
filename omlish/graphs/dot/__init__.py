@@ -1,19 +1,31 @@
-from .items import Attrs  # noqa
-from .items import Cell  # noqa
-from .items import Edge  # noqa
-from .items import Graph  # noqa
-from .items import Id  # noqa
-from .items import Item  # noqa
-from .items import Node  # noqa
-from .items import Raw  # noqa
-from .items import RawStmt  # noqa
-from .items import Row  # noqa
-from .items import Stmt  # noqa
-from .items import Table  # noqa
-from .items import Text  # noqa
-from .rendering import Renderer  # noqa
-from .rendering import open_dot  # noqa
-from .rendering import render  # noqa
-from .utils import Color  # noqa
-from .utils import escape  # noqa
-from .utils import gen_rainbow  # noqa
+from .items import (  # noqa
+    Attrs,
+    Cell,
+    Edge,
+    Graph,
+    Id,
+    Item,
+    Node,
+    Raw,
+    RawStmt,
+    Row,
+    Stmt,
+    Table,
+    Text,
+)
+
+from .make import (  # noqa
+    make_simple,
+)
+
+from .rendering import (  # noqa
+    Renderer,
+    open_dot,
+    render,
+)
+
+from .utils import (  # noqa
+    Color,
+    escape,
+    gen_rainbow,
+)
