@@ -4,6 +4,8 @@ TODO:
  - postprocessing?
   - unarchive
  - stupid little progress bars
+ - return file path for single files
+  - thus, HttpSpec.url has derive=lambda url: ...
 """
 import logging
 import os.path
@@ -47,12 +49,7 @@ class DataCache:
         log.info('Fetching spec: %s %r', spec.digest, spec)
 
         if isinstance(spec, HttpCacheDataSpec):
-            if spec.file_name is not None:
-                file_name = spec.file_name
-            else:
-                file_name = urllib.parse.urlparse(spec.url).path.split('/')[-1]
-
-            self._fetch_url(spec.url, os.path.join(data_dir, file_name))
+            self._fetch_url(spec.url, os.path.join(data_dir, spec.file_name_or_default))
 
         elif isinstance(spec, GithubContentCacheDataSpec):
             for repo_file in spec.files:
@@ -96,6 +93,18 @@ class DataCache:
         else:
             raise TypeError(spec)
 
+    def _return_val(self, spec: CacheDataSpec, data_dir: str) -> str:
+        check.state(os.path.isdir(data_dir))
+
+        if isinstance(spec, HttpCacheDataSpec):
+            data_file = os.path.join(data_dir, spec.file_name_or_default)
+            if not os.path.isfile(data_file):
+                raise RuntimeError(data_file)  # noqa
+            return data_file
+
+        else:
+            return data_dir
+
     def get(self, spec: CacheDataSpec) -> str:
         os.makedirs(self._items_dir, exist_ok=True)
 
@@ -104,8 +113,7 @@ class DataCache:
         item_dir = os.path.join(self._items_dir, spec.digest)
         if os.path.isdir(item_dir):
             data_dir = os.path.join(item_dir, 'data')
-            check.state(os.path.isdir(data_dir))
-            return data_dir
+            return self._return_val(spec, data_dir)
 
         #
 
@@ -113,11 +121,11 @@ class DataCache:
 
         #
 
-        data_dir = os.path.join(tmp_dir, 'data')
-        os.mkdir(data_dir)
+        fetch_dir = os.path.join(tmp_dir, 'data')
+        os.mkdir(fetch_dir)
 
         start_at = lang.utcnow()
-        self._fetch_into(spec, data_dir)
+        self._fetch_into(spec, fetch_dir)
         end_at = lang.utcnow()
 
         #
@@ -136,45 +144,6 @@ class DataCache:
         ##
 
         os.rename(tmp_dir, item_dir)
-        return os.path.join(item_dir, 'data')
 
-
-##
-
-
-def _main() -> None:
-    from omlish import logs
-
-    logs.configure_standard_logging('INFO')
-
-    #
-
-    # cache_dir = tempfile.mkdtemp()
-    cache_dir = os.path.expanduser('~/.cache/omlish/data')
-
-    print(f'{cache_dir=}')
-
-    cache = DataCache(cache_dir)
-
-    #
-
-    for spec in [
-        GitCacheDataSpec(
-            'https://github.com/wrmsr/deep_learning_cookbook',
-            rev='138a99b09ffa3a728d261e461440f029e512ac93',
-            subtrees=['data/wp_movies_10k.ndjson'],
-        ),
-        GithubContentCacheDataSpec(
-            'karpathy/char-rnn',
-            'master',
-            ['data/tinyshakespeare/input.txt'],
-        ),
-        HttpCacheDataSpec('https://github.com/VanushVaswani/keras_mnistm/releases/download/1.0/keras_mnistm.pkl.gz'),
-    ]:
-        print(spec)
-        for _ in range(2):
-            print(cache.get(spec))
-
-
-if __name__ == '__main__':
-    _main()
+        data_dir = os.path.join(item_dir, 'data')
+        return self._return_val(spec, data_dir)
