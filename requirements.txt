@@ -32,6 +32,7 @@ sqlalchemy[asyncio]==2.0.34
 
 pg8000==1.31.2
 #> psycopg2==2.9.9
+#> psycopg==3.2.2
 
 #> mysql-connector-python==9.0.0
 #> mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config

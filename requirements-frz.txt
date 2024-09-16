@@ -135,7 +135,7 @@ huggingface-hub==0.24.7
 humanfriendly==10.0
 hyperframe==6.0.1
 hypothesis==6.112.1
-idna==3.9
+idna==3.10
 ifaddr==0.2.0
 imageio==2.35.1
 importlib_metadata==8.4.0
@@ -271,7 +271,7 @@ overrides==7.7.0
 packaging==24.1
 pandas==2.2.2
 pandocfilters==1.5.1
-paramiko==3.4.1
+paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
@@ -288,7 +288,7 @@ pluggy==1.5.0
 polars==1.7.1
 pooch==1.8.2
 portalocker==2.8.2
-posthog==3.6.5
+posthog==3.6.6
 pprintpp==0.4.0
 preshed==3.0.9
 priority==2.0.0
@@ -297,7 +297,7 @@ prompt_toolkit==3.0.47
 proto-plus==1.24.0
 protobuf==4.25.4
 psutil==6.0.0
-psycopg==3.2.1
+psycopg==3.2.2
 psycopg2==2.9.9
 ptyprocess==0.7.0
 pure-pcapy3==1.0.1
@@ -375,12 +375,12 @@ selectolax==0.3.21
 Send2Trash==1.8.3
 sentencepiece==0.2.0
 setproctitle==1.3.3
-setuptools==74.1.2
+setuptools==75.1.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.2.1
+simsimd==5.3.0
 six==1.16.0
 smart-open==7.0.4
 sniffio==1.3.1
@@ -396,7 +396,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.34
 sqlean.py==3.45.1
-sqlglot==25.21.2
+sqlglot==25.21.3
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
