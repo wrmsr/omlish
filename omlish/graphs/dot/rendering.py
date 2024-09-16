@@ -120,6 +120,7 @@ def open_dot(
         *,
         timeout_s: float = 1.,
         sleep_s: float = 0.,
+        delete: bool = False,
 ) -> None:
     stdout, _ = subprocess.Popen(
         ['dot', '-Tpdf'],
@@ -132,16 +133,16 @@ def open_dot(
 
     with tempfile.NamedTemporaryFile(
         suffix='.pdf',
-        delete=True,
+        delete=delete,
     ) as pdf:
         pdf.file.write(stdout)
         pdf.file.flush()
 
-        _, _ = subprocess.Popen(
-            ['open', pdf.name],
-        ).communicate(
-            timeout=timeout_s,
-        )
+    _, _ = subprocess.Popen(
+        ['open', pdf.name],
+    ).communicate(
+        timeout=timeout_s,
+    )
 
-        if sleep_s > 0.:
-            time.sleep(sleep_s)
+    if sleep_s > 0.:
+        time.sleep(sleep_s)
