@@ -15,6 +15,7 @@ import typing as ta
 import urllib.parse
 
 from omlish import check
+from omlish import lang
 
 
 ##
@@ -128,7 +129,7 @@ class V4AwsSigner:
         #
 
         if utcnow is None:
-            utcnow = datetime.datetime.utcnow()  # noqa
+            utcnow = lang.utcnow()
         req_dt = utcnow.strftime(_ISO8601)
 
         #

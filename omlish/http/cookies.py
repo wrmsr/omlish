@@ -29,6 +29,7 @@ import typing as ta
 import urllib.parse
 
 from .. import collections as col
+from .. import lang
 from .dates import http_date
 
 
@@ -140,7 +141,7 @@ def dump_cookie(
         if not isinstance(expires, str):
             expires = http_date(expires)
     elif max_age is not None and sync_expires:
-        expires = http_date(datetime.datetime.now(tz=datetime.UTC).timestamp() + max_age)
+        expires = http_date(lang.utcnow().timestamp() + max_age)
 
     if samesite is not None:
         samesite = samesite.title()
