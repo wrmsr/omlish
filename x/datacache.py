@@ -78,7 +78,7 @@ class GitCacheDataSpec(CacheDataSpec):
 
 @dc.dataclass(frozen=True)
 class HttpCacheDataSpec(CacheDataSpec):
-    url: str = dc.field(check=lambda u: bool(urllib.parse.urlparse(u)))
+    url: str = dc.field(validate=lambda u: bool(urllib.parse.urlparse(u)))
     file_name: str | None = None
 
 
@@ -94,7 +94,7 @@ def _repo_str(s: str) -> str:
 
 @dc.dataclass(frozen=True)
 class GithubContentCacheDataSpec(CacheDataSpec):
-    repo: str = dc.field(check=_repo_str)
+    repo: str = dc.field(validate=_repo_str)
     rev: str
     paths: lang.SequenceNotStr[str]
 

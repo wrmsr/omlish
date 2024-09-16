@@ -17,7 +17,7 @@ class Provider(lang.Abstract):
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class FnProvider(Provider):
-    fn: ta.Any = dc.xfield(check=callable)
+    fn: ta.Any = dc.xfield(validate=callable)
 
 
 @dc.dataclass(frozen=True)
