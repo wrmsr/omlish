@@ -180,10 +180,10 @@ def field_init(
         locals[cn] = fx.coerce
         lines.append(f'{value} = {cn}({value})')
 
-    if fx.check is not None:
-        cn = f'__dataclass_check__{f.name}__'
-        locals[cn] = fx.check
-        lines.append(f'if not {cn}({value}): raise __dataclass_FieldCheckError__({f.name})')
+    if fx.validate is not None:
+        cn = f'__dataclass_validate__{f.name}__'
+        locals[cn] = fx.validate
+        lines.append(f'if not {cn}({value}): raise __dataclass_FieldValidationError__({f.name})')
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'

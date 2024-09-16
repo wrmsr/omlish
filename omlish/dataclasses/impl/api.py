@@ -31,7 +31,7 @@ def field(  # noqa
         kw_only=MISSING,
 
         coerce: ta.Callable[[ta.Any], ta.Any] | None = None,
-        check: ta.Callable[[ta.Any], bool] | None = None,
+        validate: ta.Callable[[ta.Any], bool] | None = None,
         check_type: bool | None = None,
         override: bool = False,
         repr_fn: ta.Callable[[ta.Any], str | None] | None = None,
@@ -41,7 +41,7 @@ def field(  # noqa
 
     fx = FieldExtras(
         coerce=coerce,
-        check=check,
+        validate=validate,
         check_type=check_type,
         override=override,
         repr_fn=repr_fn,
