@@ -7,6 +7,7 @@ TODO:
 """
 import datetime
 import hashlib
+import logging
 import os.path
 import tempfile
 import typing as ta
@@ -20,6 +21,9 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -96,7 +100,7 @@ def _repo_str(s: str) -> str:
 class GithubContentCacheDataSpec(CacheDataSpec):
     repo: str = dc.field(validate=_repo_str)
     rev: str
-    paths: lang.SequenceNotStr[str]
+    files: lang.SequenceNotStr[str]
 
 
 ##
@@ -139,14 +143,31 @@ class DataCache:
 
         self._items_dir = os.path.join(base_dir, 'items')
 
+    def _fetch_url(self, url: str, out_file: str) -> None:
+        log.info('Fetching url: %s -> %s', url, out_file)
+
+        urllib.request.urlretrieve(url, out_file)
+
     def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
+        log.info('Fetching spec: %r', spec)
+
         if isinstance(spec, HttpCacheDataSpec):
             if spec.file_name is not None:
                 file_name = spec.file_name
             else:
                 file_name = urllib.parse.urlparse(spec.url).path.split('/')[-1]
 
-            urllib.request.urlretrieve(spec.url, os.path.join(data_dir, file_name))
+            self._fetch_url(spec.url, os.path.join(data_dir, file_name))
+
+        elif isinstance(spec, GithubContentCacheDataSpec):
+            for repo_file in spec.files:
+                out_file = os.path.join(data_dir, repo_file)
+                if not os.path.abspath(out_file).startswith(os.path.abspath(data_dir)):
+                    raise RuntimeError(out_file)  # noqa
+
+                url = f'https://raw.githubusercontent.com/{spec.repo}/{spec.rev}/{repo_file}'
+                os.makedirs(os.path.dirname(out_file), exist_ok=True)
+                self._fetch_url(url, os.path.join(data_dir, out_file))
 
         else:
             raise TypeError(spec)
@@ -198,7 +219,15 @@ class DataCache:
 
 
 def _main() -> None:
-    cache_dir = tempfile.mkdtemp()
+    from omlish import logs
+
+    logs.configure_standard_logging('INFO')
+
+    #
+
+    # cache_dir = tempfile.mkdtemp()
+    cache_dir = os.path.expanduser('~/.cache/omlish/data')
+
     print(f'{cache_dir=}')
 
     cache = DataCache(cache_dir)
@@ -206,11 +235,12 @@ def _main() -> None:
     #
 
     for spec in [
+        GithubContentCacheDataSpec('karpathy/char-rnn', 'master', ['data/tinyshakespeare/input.txt']),
         HttpCacheDataSpec('https://github.com/VanushVaswani/keras_mnistm/releases/download/1.0/keras_mnistm.pkl.gz'),
-        GithubContentCacheDataSpec('karpathy/char-rnn', 'master', ['data/tinyshakespeare/input.txt'])
     ]:
         print(spec)
-        print(cache.get(spec))
+        for _ in range(2):
+            print(cache.get(spec))
 
 
 if __name__ == '__main__':
