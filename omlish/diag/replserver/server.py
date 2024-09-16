@@ -7,6 +7,7 @@ TODO:
  - !!! ANYIO !!!
  - optional paramiko ssh-server
  - optional ipython embed
+ - https://github.com/python/cpython/tree/56470004e58911b146c016fc9fec4461b8f69454/Lib/_pyrepl
 
 lookit:
  - https://github.com/vxgmichel/aioconsole/blob/e55f4b0601da3b3a40a88c965526d35ab38b5841/aioconsole/server.py
