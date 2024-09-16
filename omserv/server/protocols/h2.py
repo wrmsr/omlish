@@ -138,13 +138,16 @@ class H2Protocol(Protocol):
             self.connection.initiate_upgrade_connection(settings)
         else:
             self.connection.initiate_connection()
+
         await self._flush()
+
         if headers is not None:
             event = h2.events.RequestReceived()
             event.stream_id = 1
             event.headers = headers
             await self._create_stream(event)
             await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
+
         self.task_spawner.spawn(self.send_task)
 
     async def send_task(self) -> None:
@@ -178,6 +181,7 @@ class H2Protocol(Protocol):
                 await self._flush()
                 del self.stream_buffers[stream_id]
                 self.priority.remove_stream(stream_id)
+
         except (h2.exceptions.StreamClosedError, KeyError, h2.exceptions.ProtocolError):
             # Stream or connection has closed whilst waiting to send data, not a problem - just force close it.
             await self.stream_buffers[stream_id].close()
@@ -316,6 +320,7 @@ class H2Protocol(Protocol):
                 weight=event.weight,
                 exclusive=event.exclusive,
             )
+
         except priority.MissingStreamError:
             # Received PRIORITY frame before HEADERS frame
             self.priority.insert_stream(
@@ -345,6 +350,7 @@ class H2Protocol(Protocol):
                 self.stream_send,
                 request.stream_id,
             )
+
         else:
             self.streams[request.stream_id] = HttpStream(
                 self.app,
@@ -356,7 +362,9 @@ class H2Protocol(Protocol):
                 self.stream_send,
                 request.stream_id,
             )
+
         self.stream_buffers[request.stream_id] = StreamBuffer(self.context.event_class)
+
         try:
             self.priority.insert_stream(request.stream_id)
         except priority.DuplicateStreamError:
@@ -372,16 +380,21 @@ class H2Protocol(Protocol):
             method=method,
             raw_path=raw_path,
         ))
+
         self.keep_alive_requests += 1
         await self.context.mark_request()
 
     async def _create_server_push(
-        self, stream_id: int, path: bytes, headers: list[tuple[bytes, bytes]],
+        self,
+            stream_id: int,
+            path: bytes,
+            headers: list[tuple[bytes, bytes]],
     ) -> None:
         push_stream_id = self.connection.get_next_available_stream_id()
         request_headers = [(b':method', b'GET'), (b':path', path)]
         request_headers.extend(headers)
         request_headers.extend(response_headers(self.config, 'h2'))
+
         try:
             self.connection.push_stream(
                 stream_id=stream_id,
@@ -389,9 +402,11 @@ class H2Protocol(Protocol):
                 request_headers=request_headers,
             )
             await self._flush()
+
         except h2.exceptions.ProtocolError:
             # Client does not accept push promises or we are trying to push on a push promises request.
             pass
+
         else:
             event = h2.events.RequestReceived()
             event.stream_id = push_stream_id

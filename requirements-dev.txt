@@ -63,6 +63,7 @@ json5==0.9.25
 ##
 
 psycopg2==2.9.9; python_version < "3.13"
+psycopg==3.2.2
 
 mysql-connector-python==9.0.0
 mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
@@ -82,7 +83,7 @@ pycparser==2.22
 cffi==1.17.0
 pcpp==1.30
 
-paramiko==3.4.1  # @omdev-venv !13t  # !! LGPL
+paramiko==3.5.0  # @omdev-venv !13t  # !! LGPL
 
 docutils==0.21.2
 

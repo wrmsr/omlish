@@ -84,6 +84,7 @@ class Project(ProjectBase):
 
             'pg8000 ~= 1.31',
             # 'psycopg2 ~= 2.9',
+            # 'psycopg ~= 3.2',
 
             'pymysql ~= 1.1',
             # 'mysql-connector-python ~= 9.0',

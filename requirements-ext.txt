@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.2.1
+simsimd==5.3.0
 
 spacy==3.8.0
 
@@ -208,8 +208,6 @@ polars==1.7.1
 pyzmq==26.2.0
 
 safetensors==0.4.5
-
-paramiko==3.4.1
 
 customtkinter==5.2.2
 

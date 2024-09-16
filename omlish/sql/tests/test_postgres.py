@@ -72,6 +72,13 @@ def test_postgres_psycopg2(harness) -> None:
     _test_postgres(url)
 
 
+@ptu.skip_if_cant_import('psycopg')
+def test_postgres_psycopg(harness) -> None:
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
+    url = set_url_engine(url, 'postgresql+psycopg')
+    _test_postgres(url)
+
+
 ##
 
 
