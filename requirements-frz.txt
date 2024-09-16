@@ -34,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.19
-botocore==1.35.19
+boto3==1.35.20
+botocore==1.35.20
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -188,7 +188,7 @@ langchain-openai==0.2.0
 langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.0
-langgraph==0.2.21
+langgraph==0.2.22
 langgraph-checkpoint==1.0.9
 langsmith==0.1.121
 language_data==1.2.0
@@ -396,7 +396,7 @@ spacy==3.8.0
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
-SQLAlchemy==2.0.34
+SQLAlchemy==2.0.35
 sqlean.py==3.45.1
 sqlglot==25.21.3
 sqlparse==0.4.4
