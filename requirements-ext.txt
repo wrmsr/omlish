@@ -157,7 +157,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.19
+boto3>=1.35.20
 
 google-cloud-compute==1.19.2
 
@@ -229,7 +229,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.21
+langgraph==0.2.22
 
 langsmith==0.1.121
 
