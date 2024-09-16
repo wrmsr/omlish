@@ -107,7 +107,8 @@ class H11Protocol(Protocol):
         self.client = client
         self.config = config
         self.connection: h11.Connection | H11WsConnection = h11.Connection(
-            h11.SERVER, max_incomplete_event_size=self.config.h11_max_incomplete_size,
+            h11.SERVER,
+            max_incomplete_event_size=self.config.h11_max_incomplete_size,
         )
         self.context = context
         self.keep_alive_requests = 0
@@ -176,31 +177,30 @@ class H11Protocol(Protocol):
                 await self.send(Closed())
                 break
 
-            else:
-                if isinstance(event, h11.Request):
-                    await self.send(Updated(idle=False))
-                    await self._check_protocol(event)
-                    await self._create_stream(event)
+            if isinstance(event, h11.Request):
+                await self.send(Updated(idle=False))
+                await self._check_protocol(event)
+                await self._create_stream(event)
 
-                elif event is h11.PAUSED:
-                    await self.can_read.clear()
-                    await self.can_read.wait()
+            elif event is h11.PAUSED:
+                await self.can_read.clear()
+                await self.can_read.wait()
 
-                elif isinstance(event, h11.ConnectionClosed) or event is h11.NEED_DATA:
-                    break
+            elif isinstance(event, h11.ConnectionClosed) or event is h11.NEED_DATA:
+                break
 
-                elif self.stream is None:
-                    break
+            elif self.stream is None:
+                break
 
-                elif isinstance(event, h11.Data):
-                    await self.stream.handle(Body(stream_id=STREAM_ID, data=event.data))
+            elif isinstance(event, h11.Data):
+                await self.stream.handle(Body(stream_id=STREAM_ID, data=event.data))
 
-                elif isinstance(event, h11.EndOfMessage):
-                    await self.stream.handle(EndBody(stream_id=STREAM_ID))
+            elif isinstance(event, h11.EndOfMessage):
+                await self.stream.handle(EndBody(stream_id=STREAM_ID))
 
-                elif isinstance(event, Data):
-                    # WebSocket pass through
-                    await self.stream.handle(event)
+            elif isinstance(event, Data):
+                # WebSocket pass through
+                await self.stream.handle(event)
 
     async def _create_stream(self, request: h11.Request) -> None:
         upgrade_value = ''
@@ -229,6 +229,7 @@ class H11Protocol(Protocol):
                 STREAM_ID,
             )
             self.connection = H11WsConnection(ta.cast(h11.Connection, self.connection))
+
         else:
             self.stream = HttpStream(
                 self.app,
@@ -255,6 +256,7 @@ class H11Protocol(Protocol):
                 raw_path=request.target,
             ),
         )
+
         self.keep_alive_requests += 1
         await self.context.mark_request()
 
@@ -283,6 +285,7 @@ class H11Protocol(Protocol):
 
     async def _maybe_recycle(self) -> None:
         await self._close_stream()
+
         if (
                 not self.context.terminated.is_set()
                 and self.connection.our_state is h11.DONE
@@ -297,6 +300,7 @@ class H11Protocol(Protocol):
                 self.scope = None
                 await self.can_read.set()
                 await self.send(Updated(idle=True))
+
         else:
             await self.can_read.set()
             await self.send(Closed())
@@ -316,7 +320,7 @@ class H11Protocol(Protocol):
             elif sanitised_name in {'content-length', 'transfer-encoding'}:
                 has_body = True
 
-        # h2c Upgrade requests with a body are a pain as the body must be fully recieved in HTTP/1.1 before the upgrade
+        # h2c Upgrade requests with a body are a pain as the body must be fully received in HTTP/1.1 before the upgrade
         # response and HTTP/2 takes over, so Hypercorn ignores the upgrade and responds in HTTP/1.1. Use a preflight
         # OPTIONS request to initiate the upgrade if really required (or just use h2).
         if upgrade_value.lower() == 'h2c' and not has_body:
