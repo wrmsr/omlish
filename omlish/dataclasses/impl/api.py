@@ -30,7 +30,8 @@ def field(  # noqa
         metadata=None,
         kw_only=MISSING,
 
-        coerce: ta.Callable[[ta.Any], ta.Any] | None = None,
+        derive: ta.Callable[..., ta.Any] | None = None,
+        coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None,
         validate: ta.Callable[[ta.Any], bool] | None = None,
         check_type: bool | None = None,
         override: bool = False,
@@ -40,6 +41,7 @@ def field(  # noqa
         raise ValueError('cannot specify both default and default_factory')
 
     fx = FieldExtras(
+        derive=derive,
         coerce=coerce,
         validate=validate,
         check_type=check_type,
