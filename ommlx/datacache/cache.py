@@ -5,132 +5,27 @@ TODO:
   - unarchive
  - stupid little progress bars
 """
-import datetime
-import hashlib
 import logging
 import os.path
+import shutil
 import tempfile
-import typing as ta
 import urllib.parse
 import urllib.request
 
-from omlish import __about__ as about
-from omlish import cached
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
+from .. import git
+from .manifests import CacheDataManifest
+from .specs import CacheDataSpec
+from .specs import GitCacheDataSpec
+from .specs import GithubContentCacheDataSpec
+from .specs import HttpCacheDataSpec
+
 
 log = logging.getLogger(__name__)
-
-
-##
-
-
-@cached.function
-def _lib_revision() -> str | None:
-    if (rev := about.__revision__) is not None:
-        return rev
-
-    try:
-        from omdev.revisions import get_git_revision
-    except ImportError:
-        pass
-    else:
-        return get_git_revision()
-
-    return None
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CacheDataSpec(lang.Abstract, lang.Sealed):
-    @cached.property
-    def json(self) -> str:
-        return json.dumps_compact(msh.marshal(self, CacheDataSpec))
-
-    @cached.property
-    def digest(self) -> str:
-        return hashlib.md5(self.json.encode('utf-8')).hexdigest()  # noqa
-
-
-#
-
-
-def _maybe_sorted_strs(v: ta.Iterable[str] | None) -> ta.Sequence[str] | None:
-    if v is None:
-        return None
-    return sorted(set(check.not_isinstance(v, str)))
-
-
-@dc.dataclass(frozen=True)
-class GitCacheDataSpec(CacheDataSpec):
-    url: str
-
-    branch: str | None = dc.field(default=None, kw_only=True)
-    rev: str | None = dc.field(default=None, kw_only=True)
-
-    subtrees: ta.Sequence[str] = dc.field(default=None, kw_only=True, coerce=_maybe_sorted_strs)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class HttpCacheDataSpec(CacheDataSpec):
-    url: str = dc.field(validate=lambda u: bool(urllib.parse.urlparse(u)))
-    file_name: str | None = None
-
-
-#
-
-
-def _repo_str(s: str) -> str:
-    u, r = check.non_empty_str(s).split('/')
-    check.non_empty_str(u)
-    check.non_empty_str(r)
-    return s
-
-
-@dc.dataclass(frozen=True)
-class GithubContentCacheDataSpec(CacheDataSpec):
-    repo: str = dc.field(validate=_repo_str)
-    rev: str
-    files: lang.SequenceNotStr[str]
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CacheDataManifest:
-    spec: CacheDataSpec
-
-    start_at: datetime.datetime = dc.field(kw_only=True)
-    end_at: datetime.datetime = dc.field(kw_only=True)
-
-    lib_version: str = dc.field(default_factory=lambda: about.__version__, kw_only=True)
-    lib_revision: str = dc.field(default_factory=_lib_revision, kw_only=True)
-
-    VERSION: ta.ClassVar[int] = 0
-    version: int = dc.field(default=VERSION, kw_only=True)
-
-
-##
-
-
-@lang.cached_function
-def _install_standard_marshalling() -> None:
-    specs_poly = msh.polymorphism_from_subclasses(CacheDataSpec)
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(specs_poly)]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(specs_poly)]
-
-
-_install_standard_marshalling()
 
 
 ##
@@ -146,7 +41,7 @@ class DataCache:
     def _fetch_url(self, url: str, out_file: str) -> None:
         log.info('Fetching url: %s -> %s', url, out_file)
 
-        urllib.request.urlretrieve(url, out_file)
+        urllib.request.urlretrieve(url, out_file)  # noqa
 
     def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
         log.info('Fetching spec: %r', spec)
@@ -168,6 +63,35 @@ class DataCache:
                 url = f'https://raw.githubusercontent.com/{spec.repo}/{spec.rev}/{repo_file}'
                 os.makedirs(os.path.dirname(out_file), exist_ok=True)
                 self._fetch_url(url, os.path.join(data_dir, out_file))
+
+        elif isinstance(spec, GitCacheDataSpec):
+            if not spec.subtrees:
+                raise NotImplementedError
+
+            tmp_dir = tempfile.mkdtemp()
+
+            log.info('Cloning git repo: %s -> %s', spec.url, tmp_dir)
+
+            git.clone_subtree(
+                base_dir=tmp_dir,
+                repo_url=spec.url,
+                repo_dir='data',
+                branch=spec.branch,
+                rev=spec.rev,
+                repo_subtrees=spec.subtrees,
+            )
+
+            repo_dir = os.path.join(tmp_dir, 'data')
+            if not os.path.isdir(repo_dir):
+                raise RuntimeError(repo_dir)
+
+            git_dir = os.path.join(repo_dir, '.git')
+            if not os.path.isdir(git_dir):
+                raise RuntimeError(git_dir)
+            shutil.rmtree(git_dir)
+
+            os.rmdir(data_dir)
+            os.rename(repo_dir, data_dir)
 
         else:
             raise TypeError(spec)
@@ -235,7 +159,16 @@ def _main() -> None:
     #
 
     for spec in [
-        GithubContentCacheDataSpec('karpathy/char-rnn', 'master', ['data/tinyshakespeare/input.txt']),
+        GitCacheDataSpec(
+            'https://github.com/wrmsr/deep_learning_cookbook',
+            rev='138a99b09ffa3a728d261e461440f029e512ac93',
+            subtrees=['data/wp_movies_10k.ndjson'],
+        ),
+        GithubContentCacheDataSpec(
+            'karpathy/char-rnn',
+            'master',
+            ['data/tinyshakespeare/input.txt'],
+        ),
         HttpCacheDataSpec('https://github.com/VanushVaswani/keras_mnistm/releases/download/1.0/keras_mnistm.pkl.gz'),
     ]:
         print(spec)
