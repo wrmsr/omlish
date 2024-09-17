@@ -158,7 +158,7 @@ class DataCache:
 
         #
 
-        os.rename(tmp_dir, item_dir)
+        shutil.move(tmp_dir, item_dir)
 
         data_dir = os.path.join(item_dir, 'data')
         return self._return_val(spec, data_dir)
