@@ -58,4 +58,6 @@ exclude = [
     '*.h',
     '.manifests.json',
     'LICENSE',
+    'nginx/patches/*.patch',
+    'server/resources/*.ico',
 ]
