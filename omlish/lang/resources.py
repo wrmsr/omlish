@@ -25,6 +25,8 @@ def get_relative_resources(
 
     #
 
+    if os.sep in path:
+        raise ValueError(path)  # noqa
     if not path.startswith('.'):
         path = '.' + path
     if set(path) - {'.'}:
@@ -52,22 +54,24 @@ def get_relative_resources(
             ))
 
     elif file:
-        # path = os.path.dirname(file)
-        # if prefix:
-        #     path = os.path.join(path, prefix.replace('.', os.sep))
-        #
-        # def _read_file(fp: str) -> bytes:
-        #     with open(fp, 'rb') as f:
-        #         return f.read()
-        #
-        # for ff in os.listdir(path):
-        #     ff = os.path.join(path, ff)
-        #     lst.append(RelativeResource(
-        #         name=os.path.basename(ff),
-        #         is_file=os.path.isfile(ff),
-        #         read_bytes=functools.partial(_read_file, ff),
-        #     ))
-        raise NotImplementedError
+        base_dir = os.path.dirname(file)
+        dst_dir = os.path.join(
+            base_dir,
+            *(['..'] * num_up),
+            *path_parts,
+        )
+
+        def _read_file(fp: str) -> bytes:
+            with open(fp, 'rb') as f:
+                return f.read()
+
+        for ff in os.listdir(dst_dir):
+            ff = os.path.join(dst_dir, ff)
+            lst.append(RelativeResource(
+                name=os.path.basename(ff),
+                is_file=os.path.isfile(ff),
+                read_bytes=functools.partial(_read_file, ff),
+            ))
 
     else:
         raise RuntimeError('no package or file specified')
