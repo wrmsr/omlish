@@ -1,9 +1,11 @@
 import json
+import typing as ta
 
 from ..resources import get_relative_resources
 
 
 def test_relative_resources() -> None:
+    kwargs: ta.Any
     for kwargs in [
         {'package': __package__},
         {'file': __file__},
