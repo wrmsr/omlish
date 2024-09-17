@@ -403,6 +403,13 @@ ci-bash: ci-image
 package: venv clean-package
 	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b -r gen
 
+.PHONY: test-install
+test-install: venv
+	for f in $$(find dist -name 'omlish-*') ; do \
+		echo "Test installing $$f" ; \
+		${PYTHON} -mpip install --dry-run "$$f" ; \
+	done
+
 
 ### Publish
 
@@ -410,7 +417,7 @@ LOCAL_VERSION:=$$(egrep '^__version__ = ' omlish/__about__.py | cut -d ' ' -f 3 
 PYPI_VERSION:=$$(curl -s https://pypi.org/rss/project/omlish/releases.xml | grep '<title>' | grep -v 'PyPI' | head -n1 | sed -E 's/[ ]*<title>([A-Za-z0-9\.]+)<\/title>/\1/')
 
 .PHONY: publish
-publish: gen package
+publish: gen package test-install
 	ls -al dist/*
 
 	if [[ $$(git status --porcelain=v1 2>/dev/null) ]] ; then \

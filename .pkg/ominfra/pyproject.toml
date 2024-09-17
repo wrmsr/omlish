@@ -54,5 +54,4 @@ exclude = [
     '*.h',
     '.manifests.json',
     'LICENSE',
-    'Dockerfile',
 ]
