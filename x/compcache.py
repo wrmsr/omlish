@@ -13,9 +13,10 @@ TODO:
  - ttl
  - nice to have: np mmap
  - compress?
- - decos, deescriptors, etc
+ - decos, descriptors, etc
  - overlap w/ jobs/dags/batches/whatever
  - joblib
+ - keep src anyway, but just for warn
 """
 import contextlib
 import functools
@@ -36,6 +37,7 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 @dc.dataclass(frozen=True)
 class CacheKey(lang.Final):
+    version: int
     fn: ta.Callable
     args: tuple
     kwargs: col.frozendict[str, ta.Any]
@@ -43,6 +45,7 @@ class CacheKey(lang.Final):
     @dc.validate
     def _check_types(self) -> bool:
         return (
+                isinstance(self.version, int) and self.version >= 0 and
                 callable(self.fn) and
                 isinstance(self.args, tuple) and
                 isinstance(self.kwargs, col.frozendict)
@@ -57,18 +60,16 @@ class Cache:
 
         self._dct: dict[CacheKey, ta.Any] = {}
 
-    def get(self, key: CacheKey) -> ta.Any:
-        raise NotImplementedError
-
-    def __call__(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
-        key = CacheKey(fn, args, col.frozendict(kwargs))
+    def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
         try:
-            return self._dct[key]
+            ret = self._dct[key]
         except KeyError:
-            pass
-        ret = fn(*args, **kwargs)
-        self._dct[key] = ret
-        return ret
+            return lang.empty()
+        else:
+            return lang.just(ret)
+
+    def put(self, key: CacheKey, val: ta.Any) -> None:
+        self._dct[key] = val
 
 
 ##
@@ -88,12 +89,25 @@ def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
         _CURRENT_CACHE = prev
 
 
-def cached() -> ta.Callable[[T], T]:
+def cached(version: int) -> ta.Callable[[T], T]:
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):
-            if _CURRENT_CACHE is not None:
-                return _CURRENT_CACHE(fn, *args, **kwargs)
+            if (cache := _CURRENT_CACHE) is not None:
+                key = CacheKey(
+                    version,
+                    fn,
+                    args,
+                    col.frozendict(kwargs),
+                )
+
+                if (hit := cache.get(key)).present:
+                    return hit.must()
+
+                val = fn(*args, **kwargs)
+                cache.put(key, val)
+                return val
+
             else:
                 return fn(*args, **kwargs)
         return inner
@@ -103,13 +117,13 @@ def cached() -> ta.Callable[[T], T]:
 ##
 
 
-@cached()
+@cached(0)
 def f(x: int, y: int) -> int:
     print(f'f({x}, {y})')
     return x + y
 
 
-@cached()
+@cached(0)
 def g(x: int, y: int) -> int:
     print(f'g({x}, {y})')
     return f(x, 1) + f(y, 1)
