@@ -1,3 +1,9 @@
+"""
+TODO:
+ - extract
+ - shell
+ - checksum
+"""
 import typing as ta
 
 from omlish import dataclasses as dc

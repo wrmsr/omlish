@@ -1,11 +1,10 @@
 """
 TODO:
+ - mirrors
  - huggingface_hub
- - postprocessing?
-  - unarchive
  - stupid little progress bars
- - return file path for single files
-  - thus, HttpSpec.url has derive=lambda url: ...
+ - groups of multiple files downloaded - 'spec set'? idk
+  - torchvision.datasets.FashionMNIST
 """
 import logging
 import os.path
