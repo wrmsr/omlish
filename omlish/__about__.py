@@ -126,6 +126,7 @@ class SetuptoolsBase:
         '*': [
             '*.c',
             '*.cc',
+            '*.cu',
             '*.h',
 
             '.manifests.json',
