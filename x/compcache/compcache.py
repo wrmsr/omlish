@@ -42,6 +42,7 @@ names:
  - CacheKey = unambiguous, fully qualified, unhashed map key - usually Cacheable + args
  - Cacheable = usually a fn
  - CacheableName = qualname of a cacheable
+  - dir structure: __package__/__qualname__/... ?
 """
 import contextlib
 import functools
