@@ -2,6 +2,7 @@
 TODO:
  - decorator
  - thread local cache instance - but shared
+ - arbitrary user-specified cache keys
  - filesystem OPTIONAL
  - locking
  - Keyer scheme
@@ -13,7 +14,11 @@ TODO:
  - nice to have: np mmap
  - compress?
  - decos, deescriptors, etc
+ - overlap w/ jobs/dags/batches/whatever
+ - joblib
 """
+import contextlib
+import functools
 import tempfile
 import typing as ta
 
@@ -23,6 +28,7 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
+CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 
 ##
@@ -68,11 +74,42 @@ class Cache:
 ##
 
 
+_CURRENT_CACHE: Cache | None = None
+
+
+@contextlib.contextmanager
+def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
+    global _CURRENT_CACHE
+    prev = _CURRENT_CACHE
+    try:
+        _CURRENT_CACHE = cache
+        yield
+    finally:
+        _CURRENT_CACHE = prev
+
+
+def cached() -> ta.Callable[[T], T]:
+    def outer(fn):
+        @functools.wraps(fn)
+        def inner(*args, **kwargs):
+            if _CURRENT_CACHE is not None:
+                return _CURRENT_CACHE(fn, *args, **kwargs)
+            else:
+                return fn(*args, **kwargs)
+        return inner
+    return outer
+
+
+##
+
+
+@cached()
 def f(x: int, y: int) -> int:
     print(f'f({x}, {y})')
     return x + y
 
 
+@cached()
 def g(x: int, y: int) -> int:
     print(f'g({x}, {y})')
     return f(x, 1) + f(y, 1)
@@ -90,8 +127,9 @@ def _main() -> None:
 
     #
 
-    for _ in range(2):
-        assert cache(g, 1, 2) == 5
+    with cache_context(cache):
+        for _ in range(2):
+            assert g(1, 2) == 5
 
 
 if __name__ == '__main__':
