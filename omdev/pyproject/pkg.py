@@ -273,8 +273,45 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
         st.pop('cexts', None)
 
-        self._move_dict_key(st, 'find_packages', pyp_dct, 'tool.setuptools.packages.find')
-        self._move_dict_key(st, 'package_data', pyp_dct, 'tool.setuptools.package-data')
+        #
+
+        # TODO: default
+        # find_packages = {
+        #     'include': [Project.name, f'{Project.name}.*'],
+        #     'exclude': [*SetuptoolsBase.find_packages['exclude']],
+        # }
+
+        fp = st.pop('find_packages', {})
+
+        pyp_dct['tool.setuptools.packages.find'] = fp
+
+        #
+
+        # TODO: default
+        # package_data = {
+        #     '*': [
+        #         '*.c',
+        #         '*.cc',
+        #         '*.h',
+        #         '.manifests.json',
+        #         'LICENSE',
+        #     ],
+        # }
+
+        pd = st.pop('package_data', {})
+        epd = st.pop('exclude_package_data', {})
+
+        if pd:
+            pyp_dct['tool.setuptools.package-data'] = pd
+        if epd:
+            pyp_dct['tool.setuptools.exclude-package-data'] = epd
+
+        #
+
+        # TODO: default
+        # manifest_in = [
+        #     'global-exclude **/conftest.py',
+        # ]
 
         mani_in = st.pop('manifest_in', None)
 
