@@ -128,9 +128,7 @@ class SetuptoolsBase:
             '*.cc',
             '*.h',
 
-            '*.json',
-
-            '*.sql',
+            '.manifests.json',
 
             'LICENSE',
         ],

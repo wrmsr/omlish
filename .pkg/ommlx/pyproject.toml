@@ -69,7 +69,6 @@ exclude = [
     '*.c',
     '*.cc',
     '*.h',
-    '*.json',
-    '*.sql',
+    '.manifests.json',
     'LICENSE',
 ]
