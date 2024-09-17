@@ -141,14 +141,14 @@ class DataCache:
         with open(manifest_file, 'w') as f:
             f.write(manifest_json)
 
-        ##
+        #
 
         # for p, ds, fs in os.walk(tmp_dir):
         #     for n in [*ds, *fs]:
         #         np = os.path.join(p, n)
         #         os.chmod(np, os.stat(np).st_mode & ~0o222)
 
-        ##
+        #
 
         os.rename(tmp_dir, item_dir)
 
