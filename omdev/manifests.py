@@ -1,5 +1,5 @@
 """
-!!! manifests! get-manifest, _manifest.py
+!!! manifests! get-manifest, .manifest.json
  - dumb dicts, root keys are 'types'
  - get put in _manifest.py, root level dict or smth
   - IMPORT files w comment
@@ -195,7 +195,7 @@ def build_package_manifests(
         manifests.extend(build_module_manifests(os.path.relpath(file, base), base))
 
     if write:
-        with open(os.path.join(pkg_dir, '_manifests.json'), 'w') as f:
+        with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:
             f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
             f.write('\n')
 
