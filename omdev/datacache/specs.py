@@ -22,7 +22,7 @@ class CacheDataSpec(lang.Abstract, lang.Sealed):
 
     @cached.property
     def json(self) -> str:
-        return json.dumps_compact(msh.marshal(self, CacheDataSpec))
+        return json.dumps_compact(msh.marshal(self, CacheDataSpec), sort_keys=True)
 
     @cached.property
     def digest(self) -> str:

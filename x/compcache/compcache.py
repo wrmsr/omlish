@@ -18,6 +18,25 @@ TODO:
  - joblib
  - keep src anyway, but just for warn
   - strip comments?
+ - ** INPUTS **
+  - if underlying impl changes, bust
+  - kinda reacty/reffy/signally
+
+manifest stuff
+ - serialization_version
+ - lib_version
+ - lib_revision
+
+fn manifest stuff
+ - source
+ - qualname
+ - location
+
+See:
+ - https://github.com/amakelov/mandala
+ - https://jax.readthedocs.io/en/latest/autodidax.html
+ - tinyjit
+ - https://docs.python.org/3/library/pickle.html#pickle.Pickler.dispatch_table
 """
 import contextlib
 import functools
