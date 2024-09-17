@@ -14,8 +14,8 @@ def test_default():
 
     for spec in [
         specs.GitCacheDataSpec(
-            'https://github.com/wrmsr/deep_learning_cookbook',
-            rev='138a99b09ffa3a728d261e461440f029e512ac93',
+            'https://github.com/DOsinga/deep_learning_cookbook',
+            rev='04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
             subtrees=['data/wp_movies_10k.ndjson'],
         ),
         specs.GithubContentCacheDataSpec(
