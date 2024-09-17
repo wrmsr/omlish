@@ -37,6 +37,11 @@ See:
  - https://jax.readthedocs.io/en/latest/autodidax.html
  - tinyjit
  - https://docs.python.org/3/library/pickle.html#pickle.Pickler.dispatch_table
+
+names:
+ - CacheKey = unambiguous, fully qualified, unhashed map key - usually Cacheable + args
+ - Cacheable = usually a fn
+ - CacheableName = qualname of a cacheable
 """
 import contextlib
 import functools
@@ -56,6 +61,7 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class CacheKey(lang.Final):
     version: int
     fn: ta.Callable
@@ -64,6 +70,7 @@ class CacheKey(lang.Final):
 
     @dc.validate
     def _check_types(self) -> bool:
+        hash(self)
         return (
                 isinstance(self.version, int) and self.version >= 0 and
                 callable(self.fn) and
@@ -164,6 +171,7 @@ def _main() -> None:
     with cache_context(cache):
         for _ in range(2):
             assert g(1, 2) == 5
+            assert g(3, 2) == 7
 
 
 if __name__ == '__main__':
