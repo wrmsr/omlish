@@ -1,8 +1,8 @@
 import collections
 import os.path
 import typing as ta
-import urllib.request
 
+from omdev import datacache
 from omlish import cached
 from omlish import dataclasses as dc
 from omlish.formats import json
@@ -17,7 +17,11 @@ class Movie:
     rat_10: str
 
 
-MOVIES_DATA_URL = 'https://raw.githubusercontent.com/DOsinga/deep_learning_cookbook/04f56a7fe11e16c19ec6269bc5a138efdcb522a7/data/wp_movies_10k.ndjson'  # noqa
+MOVIES_DATA = datacache.GithubContentCacheDataSpec(
+    'DOsinga/deep_learning_cookbook',
+    '04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
+    ['data/wp_movies_10k.ndjson'],
+)
 
 
 def load_movies(cache_dir: str) -> ta.Sequence[Movie]:
@@ -26,12 +30,7 @@ def load_movies(cache_dir: str) -> ta.Sequence[Movie]:
     if not os.path.exists(cache_dir):
         os.mkdir(cache_dir)
 
-    data_file = os.path.join(cache_dir, 'wp_movies_10k.ndjson')
-    if not os.path.isfile(data_file):
-        with urllib.request.urlopen(MOVIES_DATA_URL) as resp:  # noqa
-            data = resp.read()
-        with open(data_file, 'wb') as f:
-            f.write(data)
+    data_file = datacache.default().get(MOVIES_DATA)
 
     with open(data_file) as f:
         for l in f:

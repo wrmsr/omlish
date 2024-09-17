@@ -102,6 +102,14 @@ class DataCache:
                 raise RuntimeError(data_file)  # noqa
             return data_file
 
+        elif isinstance(spec, GithubContentCacheDataSpec):
+            if len(spec.files) != 1:
+                return data_dir
+            data_file = os.path.join(data_dir, check.single(spec.files))
+            if not os.path.isfile(data_file):
+                raise RuntimeError(data_file)  # noqa
+            return data_file
+
         else:
             return data_dir
 
