@@ -68,6 +68,7 @@ exclude = [
 '*' = [
     '*.c',
     '*.cc',
+    '*.cu',
     '*.h',
     '.manifests.json',
     'LICENSE',
