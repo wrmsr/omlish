@@ -2,7 +2,7 @@ from .cache import (  # noqa
     DataCache,
 )
 
-from .default import (  # noqa
+from .defaults import (  # noqa
     default,
     default_dir,
 )
