@@ -4,8 +4,8 @@ from omlish import __about__ as about
 from omlish import cached
 from omlish import dataclasses as dc
 
-from ..revisions import get_git_revision
-from .consts import MARSHAL_VERSION
+from ..git import get_git_revision
+from .consts import SERIALIZATION_VERSION
 from .specs import CacheDataSpec
 
 
@@ -33,8 +33,8 @@ class CacheDataManifest:
     lib_version: str = dc.field(default_factory=lambda: about.__version__, kw_only=True)
     lib_revision: str = dc.field(default_factory=_lib_revision, kw_only=True)
 
-    marshal_version: int = dc.field(default=MARSHAL_VERSION, kw_only=True)
+    serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
 
     @dc.validate
-    def _validate_marshal_versions(self) -> bool:
-        return self.marshal_version == self.spec.marshal_version
+    def _validate_serialization_versions(self) -> bool:
+        return self.serialization_version == self.spec.serialization_version

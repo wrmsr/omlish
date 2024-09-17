@@ -156,6 +156,12 @@ def check_not(v: ta.Any) -> None:
     return v
 
 
+def check_non_empty_str(v: ta.Optional[str]) -> str:
+    if not v:
+        raise ValueError
+    return v
+
+
 ########################################
 # ../../../../omlish/lite/json.py
 
