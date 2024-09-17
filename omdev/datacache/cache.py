@@ -143,6 +143,13 @@ class DataCache:
 
         ##
 
+        for p, ds, fs in os.walk(tmp_dir):
+            for n in [*ds, *fs]:
+                np = os.path.join(p, n)
+                os.chmod(np, os.stat(np).st_mode & ~0o222)
+
+        ##
+
         os.rename(tmp_dir, item_dir)
 
         data_dir = os.path.join(item_dir, 'data')
