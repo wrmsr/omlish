@@ -10,7 +10,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
-from .consts import MARSHAL_VERSION
+from .consts import SERIALIZATION_VERSION
 
 
 ##
@@ -18,7 +18,7 @@ from .consts import MARSHAL_VERSION
 
 @dc.dataclass(frozen=True)
 class CacheDataSpec(lang.Abstract, lang.Sealed):
-    marshal_version: int = dc.field(default=MARSHAL_VERSION, kw_only=True)
+    serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
 
     @cached.property
     def json(self) -> str:

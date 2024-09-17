@@ -9,40 +9,17 @@ TODO:
 import argparse
 import io
 import os.path
-import subprocess
 import tarfile
 import typing as ta
 import zipfile
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_non_empty_str
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
+from .git import get_git_revision
 from .wheelfile import WheelFile
-
-
-##
-
-
-def get_git_revision() -> str:
-    has_untracked = bool(subprocess.check_output([
-        'git',
-        'ls-files',
-        '.',
-        '--exclude-standard',
-        '--others',
-    ]).decode().strip())
-
-    dirty_rev = subprocess.check_output([
-        'git',
-        'describe',
-        '--match=NeVeRmAtCh',
-        '--always',
-        '--abbrev=40',
-        '--dirty',
-    ]).decode().strip()
-
-    return dirty_rev + ('-untracked' if has_untracked else '')
 
 
 ##
@@ -62,7 +39,7 @@ class GitRevisionAdder:
     def revision(self) -> str:
         if self._given_revision is not None:
             return self._given_revision
-        return get_git_revision()
+        return check_non_empty_str(get_git_revision())
 
     REVISION_ATTR = '__revision__'
 

@@ -1,15 +1,17 @@
+# ruff: noqa: UP007
+# @omlish-lite
 import os.path
 import subprocess
 import typing as ta
 
 
-def clone_subtree(
+def git_clone_subtree(
         *,
         base_dir: str,
         repo_url: str,
         repo_dir: str,
-        branch: str | None = None,
-        rev: str | None = None,
+        branch: ta.Optional[str] = None,
+        rev: ta.Optional[str] = None,
         repo_subtrees: ta.Sequence[str],
 ) -> None:
     if not bool(branch) ^ bool(rev):
@@ -60,3 +62,39 @@ def clone_subtree(
         ],
         cwd=rd,
     )
+
+
+def get_git_revision(
+        *,
+        cwd: ta.Optional[str] = None,
+) -> ta.Optional[str]:
+    subprocess.check_output(['git', '--version'])
+
+    if cwd is None:
+        cwd = os.getcwd()
+
+    if subprocess.run([  # noqa
+        'git',
+        'rev-parse',
+        '--is-inside-work-tree',
+    ], stderr=subprocess.PIPE).returncode:
+        return None
+
+    has_untracked = bool(subprocess.check_output([
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+    ], cwd=cwd).decode().strip())
+
+    dirty_rev = subprocess.check_output([
+        'git',
+        'describe',
+        '--match=NeVeRmAtCh',
+        '--always',
+        '--abbrev=40',
+        '--dirty',
+    ], cwd=cwd).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')

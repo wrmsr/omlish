@@ -27,3 +27,9 @@ def check_not(v: ta.Any) -> None:
     if v:
         raise ValueError(v)
     return v
+
+
+def check_non_empty_str(v: ta.Optional[str]) -> str:
+    if not v:
+        raise ValueError
+    return v

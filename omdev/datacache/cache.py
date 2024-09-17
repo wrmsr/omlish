@@ -46,7 +46,7 @@ class DataCache:
         urllib.request.urlretrieve(url, out_file)  # noqa
 
     def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
-        log.info('Fetching spec: %s %r', spec.digest, spec)
+        log.info('Fetching spec: %s %r -> %s', spec.digest, spec, data_dir)
 
         if isinstance(spec, HttpCacheDataSpec):
             self._fetch_url(spec.url, os.path.join(data_dir, spec.file_name_or_default))
@@ -69,7 +69,7 @@ class DataCache:
 
             log.info('Cloning git repo: %s -> %s', spec.url, tmp_dir)
 
-            git.clone_subtree(
+            git.git_clone_subtree(
                 base_dir=tmp_dir,
                 repo_url=spec.url,
                 repo_dir='data',
@@ -143,10 +143,10 @@ class DataCache:
 
         ##
 
-        for p, ds, fs in os.walk(tmp_dir):
-            for n in [*ds, *fs]:
-                np = os.path.join(p, n)
-                os.chmod(np, os.stat(np).st_mode & ~0o222)
+        # for p, ds, fs in os.walk(tmp_dir):
+        #     for n in [*ds, *fs]:
+        #         np = os.path.join(p, n)
+        #         os.chmod(np, os.stat(np).st_mode & ~0o222)
 
         ##
 
