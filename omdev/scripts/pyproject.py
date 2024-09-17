@@ -3726,6 +3726,35 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
     #
 
+    class _PkgData(ta.NamedTuple):
+        inc: ta.List[str]
+        exc: ta.List[str]
+
+    @cached_nullary
+    def _collect_pkg_data(self) -> _PkgData:
+        inc: ta.List[str] = []
+        exc: ta.List[str] = []
+
+        for p, ds, fs in os.walk(self._dir_name):  # noqa
+            for f in fs:
+                if f != '.pkgdata':
+                    continue
+                rp = os.path.relpath(p, self._dir_name)
+                log.info('Found pkgdata %s for pkg %s', rp, self._dir_name)
+                with open(os.path.join(p, f)) as fo:
+                    src = fo.read()
+                for l in src.splitlines():
+                    if not (l := l.strip()):
+                        continue
+                    if l.startswith('!'):
+                        exc.append(os.path.join(rp, l[1:]))
+                    else:
+                        inc.append(os.path.join(rp, l))
+
+        return self._PkgData(inc, exc)
+
+    #
+
     @abc.abstractmethod
     def _write_file_contents(self) -> None:
         raise NotImplementedError
@@ -3855,7 +3884,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
         #
 
-        st = specs.setuptools
+        st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
 
         st.pop('cexts', None)
@@ -3868,7 +3897,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         #     'exclude': [*SetuptoolsBase.find_packages['exclude']],
         # }
 
-        fp = st.pop('find_packages', {})
+        fp = dict(st.pop('find_packages', {}))
 
         pyp_dct['tool.setuptools.packages.find'] = fp
 
@@ -3885,8 +3914,14 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         #     ],
         # }
 
-        pd = st.pop('package_data', {})
-        epd = st.pop('exclude_package_data', {})
+        pd = dict(st.pop('package_data', {}))
+        epd = dict(st.pop('exclude_package_data', {}))
+
+        cpd = self._collect_pkg_data()
+        if cpd.inc:
+            pd['*'] = [*pd.get('*', []), *sorted(set(cpd.inc))]
+        if cpd.exc:
+            epd['*'] = [*epd.get('*', []), *sorted(set(cpd.exc))]
 
         if pd:
             pyp_dct['tool.setuptools.package-data'] = pd
@@ -3978,7 +4013,7 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
         #
 
-        st = specs.setuptools
+        st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
 
         for k in [
