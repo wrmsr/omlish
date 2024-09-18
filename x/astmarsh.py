@@ -5,20 +5,22 @@ TODO:
 
 ==
 
-missing:
-{str} 'Num'
-{str} 'Param'
-{str} 'Suite'
-{str} 'AugLoad'
-{str} 'EnhancedAST'
-{str} 'AugStore'
-{str} 'Index'
-{str} 'slice'
-{str} 'NameConstant'
-{str} 'ExtSlice'
-{str} 'Str'
-{str} 'Ellipsis'
-{str} 'Bytes'
+deprecated in 3.12:
+class AugLoad(expr_context):
+class AugStore(expr_context):
+class ExtSlice(slice):
+class Index(slice):
+class Param(expr_context):
+class Suite(mod):
+class slice(AST):
+
+still missing:
+Bytes
+Ellipsis
+EnhancedAST
+NameConstant
+Num
+Str
 """
 import ast
 import os.path
