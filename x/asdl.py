@@ -61,21 +61,15 @@ import re
 import typing as ta
 
 from omlish import cached
-from omlish import lang
+
+
+##
 
 
 # The following classes define nodes into which the ASDL description is parsed. Note: this is a "meta-AST". ASDL files
 # (such as Python.asdl) describe the AST structure used by a programming language. But ASDL files themselves need to be
 # parsed. This module parses ASDL files and uses a simple AST to represent them. See the EBNF at the top of the file to
 # understand the logical connection between the various node types.
-
-builtin_types = {
-    'identifier',
-    'string',
-    'int',
-    'constant',
-}
-
 
 class AST(abc.ABC):
     @abc.abstractmethod
@@ -168,6 +162,9 @@ class Product(AST):
             return 'Product({0.fields})'.format(self)
 
 
+##
+
+
 # A generic visitor for the meta-AST that describes ASDL. This can be used by emitters. Note that this visitor does not
 # provide a generic visit method, so a subclass needs to define visit methods from visitModule to as deep as the
 # interesting node.
@@ -193,6 +190,9 @@ class VisitorBase:
             except Exception as e:
                 print("Error visiting %r: %s" % (obj, e))
                 raise
+
+
+##
 
 
 class Check(VisitorBase):
@@ -241,6 +241,14 @@ class Check(VisitorBase):
             self.visit(f, name)
 
 
+_BUILTIN_TYPES = {
+    'identifier',
+    'string',
+    'int',
+    'constant',
+}
+
+
 def check(mod: Module) -> bool:
     """
     Check the parsed ASDL tree for correctness.
@@ -252,11 +260,14 @@ def check(mod: Module) -> bool:
     v.visit(mod)
 
     for t in v.types:
-        if t not in mod.types and not t in builtin_types:
+        if t not in mod.types and t not in _BUILTIN_TYPES:
             v.errors += 1
             uses = ", ".join(v.types[t])
             print('Undefined type {}, used in {}'.format(t, uses))
     return not v.errors
+
+
+##
 
 
 # Types for describing tokens in an ASDL specification.
@@ -277,33 +288,38 @@ class TokenKind:
         RBrace,
     ) = range(11)
 
-    operator_table = {
-        '=': Equals,
-        ',': Comma,
-        '?': Question,
-        '|': Pipe,
-        '(': LParen,
-        ')': RParen,
-        '*': Asterisk,
-        '{': LBrace,
-        '}': RBrace,
-    }
+
+OPERATOR_TABLE = {
+    '=': TokenKind.Equals,
+    ',': TokenKind.Comma,
+    '?': TokenKind.Question,
+    '|': TokenKind.Pipe,
+    '(': TokenKind.LParen,
+    ')': TokenKind.RParen,
+    '*': TokenKind.Asterisk,
+    '{': TokenKind.LBrace,
+    '}': TokenKind.RBrace,
+}
 
 
-Token = collections.namedtuple('Token', 'kind value lineno')
+@dc.dataclass(frozen=True)
+class Token:
+    kind: int
+    value: str
+    lineno: int
 
 
 class ASDLSyntaxError(Exception):
-    def __init__(self, msg, lineno=None) -> None:
+    def __init__(self, msg: str, lineno: int | None = None) -> None:
         super().__init__()
         self.msg = msg
         self.lineno = lineno or '<unknown>'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'Syntax error on line {0.lineno}: {0.msg}'.format(self)
 
 
-def tokenize_asdl(buf):
+def tokenize_asdl(buf: str) -> ta.Iterator[Token]:
     """Tokenize the given buffer. Yield Token objects."""
 
     for lineno, line in enumerate(buf.splitlines(), 1):
@@ -321,10 +337,13 @@ def tokenize_asdl(buf):
             else:
                 # Operators
                 try:
-                    op_kind = TokenKind.operator_table[c]
+                    op_kind = OPERATOR_TABLE[c]
                 except KeyError:
                     raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
                 yield Token(op_kind, c, lineno)
+
+
+##
 
 
 class ASDLParser:
@@ -401,7 +420,7 @@ class ASDLParser:
         self._match(TokenKind.RParen)
         return fields
 
-    def _parse_optional_fields(self):
+    def _parse_optional_fields(self) -> ta.Sequence[Field] | None:
         if self.cur_token.kind == TokenKind.LParen:
             return self._parse_fields()
         else:
@@ -455,5 +474,5 @@ class ASDLParser:
                 self.cur_token.lineno,
             )
 
-    def _at_keyword(self, keyword):
+    def _at_keyword(self, keyword: str) -> bool:
         return self.cur_token.kind == TokenKind.TypeId and self.cur_token.value == keyword
