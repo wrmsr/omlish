@@ -124,13 +124,25 @@ class Cache:
         versions: CacheableVersionMap
         value: ta.Any
 
+    def _build_version_map(self, names: ta.Iterable[CacheableName]) -> CacheableVersionMap:
+        dct = {}
+        for n in names:
+            c = self._resolver.resolve(n)
+            dct[n] = c.version
+        return dct
+
     def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
         try:
             entry = self._dct[key]
         except KeyError:
             return lang.empty()
-        else:
-            return lang.just(entry.value)
+
+        new_versions = self._build_version_map(entry.versions)
+        if entry.versions != new_versions:
+            del self._dct[key]
+            return lang.empty()
+
+        return lang.just(entry.value)
 
     def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
         self._dct[key] = Cache._Entry(
