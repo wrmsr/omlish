@@ -208,18 +208,18 @@ class Check(VisitorBase):
         self.errors = 0
         self.types = {}
 
-    def visitModule(self, mod):
+    def visitModule(self, mod: Module) -> None:
         for dfn in mod.dfns:
             self.visit(dfn)
 
-    def visitType(self, type):
+    def visitType(self, type: Type) -> None:
         self.visit(type.value, str(type.name))
 
-    def visitSum(self, sum, name):
+    def visitSum(self, sum: Sum, name: str) -> None:
         for t in sum.types:
             self.visit(t, name)
 
-    def visitConstructor(self, cons, name):
+    def visitConstructor(self, cons: Constructor, name: str) -> None:
         key = str(cons.name)
         conflict = self.cons.get(key)
         if conflict is None:
@@ -231,17 +231,17 @@ class Check(VisitorBase):
         for f in cons.fields:
             self.visit(f, key)
 
-    def visitField(self, field, name):
+    def visitField(self, field: Field, name: str) -> None:
         key = str(field.type)
         l = self.types.setdefault(key, [])
         l.append(name)
 
-    def visitProduct(self, prod, name):
+    def visitProduct(self, prod: Product, name: str) -> None:
         for f in prod.fields:
             self.visit(f, name)
 
 
-_BUILTIN_TYPES = {
+_BUILTIN_TYPES: ta.AbstractSet[str] = {
     'identifier',
     'string',
     'int',
@@ -287,7 +287,7 @@ class TokenKind(enum.IntEnum):
     R_BRACE = enum.auto()
 
 
-OPERATOR_TABLE = {
+OPERATOR_TABLE: ta.Mapping[str, TokenKind] = {
     '=': TokenKind.EQUALS,
     ',': TokenKind.COMMA,
     '?': TokenKind.QUESTION,
@@ -474,3 +474,87 @@ class ASDLParser:
 
     def _at_keyword(self, keyword: str) -> bool:
         return self.cur_token.kind == TokenKind.TYPE_ID and self.cur_token.value == keyword
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FlatField:
+    name: str
+    type: str
+    n: ta.Literal[1, '?', '*'] = 1
+
+
+@dc.dataclass(frozen=True)
+class FlatNode(abc.ABC):
+    name: str
+    fields: ta.Sequence[FlatField] = dc.field(default=(), kw_only=True)
+    attributes: ta.Sequence[FlatField] = dc.field(default=(), kw_only=True)
+
+
+@dc.dataclass(frozen=True)
+class FlatSum(FlatNode):
+    constructors: ta.Sequence[str] = dc.field(default=(), kw_only=True)
+
+
+@dc.dataclass(frozen=True)
+class FlatProduct(FlatNode):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class FlatConstructor(FlatNode):
+    sum: str = dc.field(kw_only=True)
+
+
+def flatten(mod: Module) -> ta.Mapping[str, FlatNode]:
+    lst: list[FlatNode] = []
+
+    def mk_field(af: Field) -> FlatField:
+        return FlatField(
+            af.name,
+            af.type,
+            n='*' if af.seq else '?' if af.opt else 1,
+        )
+
+    def mk_fields(afs: ta.Iterable[Field] | None) -> ta.Sequence[FlatField]:
+        return list(map(mk_field, afs or []))
+
+    for ty in mod.dfns:
+        v = ty.value
+
+        if isinstance(v, Sum):
+            lst.append(FlatSum(
+                ty.name,
+                attributes=mk_fields(v.attributes),
+                constructors=[c.name for c in v.types],
+            ))
+
+            for c in v.types:
+                lst.append(FlatConstructor(
+                    c.name,
+                    fields=mk_fields(c.fields),
+                    sum=ty.name,
+                ))
+
+        elif isinstance(v, Product):
+            lst.append(FlatProduct(
+                ty.name,
+                fields=mk_fields(v.fields),
+                attributes=mk_fields(v.attributes),
+            ))
+
+        else:
+            raise TypeError(v)
+
+    #
+
+    dct: dict[str, FlatNode] = {}
+
+    for n in lst:
+        if n.name in dct:
+            raise KeyError(n.name)
+        dct[n.name] = n
+
+    return dct
