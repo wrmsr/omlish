@@ -7,48 +7,13 @@ import ast
 import os.path
 import typing as ta
 
-from omlish import check
 from omlish import collections as col
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
+from omlish.formats import json
 
 from omlish.text import asdl
-
-
-@dc.dataclass(frozen=True)
-class ObjectMarshalerFactory(msh.MarshalerFactory):
-    dct: ta.Mapping[type, ta.Sequence[msh.FieldInfo]]
-
-    def guard(self, ctx: msh.MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and rty in self.dct
-
-    def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        ty = check.isinstance(rty, type)
-        flds = self.dct[ty]
-        fields = [
-            (fi, ctx.make(fi.type))
-            for fi in flds
-        ]
-        return msh.ObjectMarshaler(fields)
-
-
-@dc.dataclass(frozen=True)
-class ObjectUnmarshalerFactory(msh.UnmarshalerFactory):
-    dct: ta.Mapping[type, ta.Sequence[msh.FieldInfo]]
-
-    def guard(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and rty in self.dct
-
-    def fn(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        ty = check.isinstance(rty, type)
-        flds = self.dct[ty]
-        fields = [
-            (fi, ctx.make(fi.type))
-            for fi in flds
-        ]
-        return msh.ObjectUnmarshaler(fields)
 
 
 def _main() -> None:
@@ -85,13 +50,14 @@ def _main() -> None:
 
     def mk_fld_ty(ft: str, fa: asdl.FlatFieldArity) -> rfl.Type:
         if ft in ast_cls_dct:
-            ty = ast_cls_dct[ft]
+            # ty = ast_cls_dct[ft]
+            ty = ast.AST
         else:
             ty = {
                 'identifier': str,
                 'string': str,
                 'int': int,
-                'constant': ast.Constant,
+                'constant': ta.Any,
             }[ft]
 
         if fa == 1:
@@ -120,10 +86,11 @@ def _main() -> None:
     ast_poly = msh.Polymorphism(ast.AST, [msh.Impl(ty, tag) for tag, ty in ast_cls_dct.items()])
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismMarshalerFactory(ast_poly),
-        ObjectMarshalerFactory(msh_dct),
+        msh.SimpleObjectMarshalerFactory(msh_dct),
     ]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismUnmarshalerFactory(ast_poly),
+        msh.SimpleObjectUnmarshalerFactory(msh_dct),
     ]
 
     ##
@@ -133,11 +100,16 @@ def _main() -> None:
         src = f.read()
 
     root = ast.parse(src, src_file)
-    print(root)
 
     ##
 
-    print(msh.marshal(root, ast.AST))
+    root_j = json.dumps_pretty(msh.marshal(root, ast.AST))
+    print(root_j)
+
+    ##
+
+    u_root = msh.unmarshal(json.loads(root_j), ast.AST)
+    print(u_root)
 
 
 if __name__ == '__main__':
