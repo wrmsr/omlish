@@ -170,16 +170,16 @@ def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
         _CURRENT_CACHE = prev
 
 
-def cached(version: int) -> ta.Callable[[T], T]:
+def cached_fn(version: int) -> ta.Callable[[T], T]:
     def outer(fn):
+        cacheable = FnCacheable(
+            fn,
+            version,
+        )
+
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             if (cache := _CURRENT_CACHE) is not None:
-                cacheable = FnCacheable(
-                    fn,
-                    version,
-                )
-
                 key = FnCacheKey(
                     cacheable.name,
                     cacheable.version,
@@ -196,20 +196,22 @@ def cached(version: int) -> ta.Callable[[T], T]:
 
             else:
                 return fn(*args, **kwargs)
+
         return inner
+
     return outer
 
 
 ##
 
 
-@cached(0)
+@cached_fn(0)
 def f(x: int, y: int) -> int:
     print(f'f({x}, {y})')
     return x + y
 
 
-@cached(0)
+@cached_fn(0)
 def g(x: int, y: int) -> int:
     print(f'g({x}, {y})')
     return f(x, 1) + f(y, 1)
