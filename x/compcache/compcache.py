@@ -133,7 +133,11 @@ class Cache:
             return lang.just(entry.value)
 
     def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
-        self._dct[key] = val
+        self._dct[key] = Cache._Entry(
+            key,
+            versions,
+            val,
+        )
 
 
 ##
@@ -230,6 +234,19 @@ class _CacheableContext(lang.Final):
         for child in self.children:
             yield from child.walk()
 
+    def build_version_map(self) -> CacheableVersionMap:
+        versions: dict[CacheableName, CacheableVersion] = {}
+        for ctx in self.walk():
+            c = ctx.cacheable
+            try:
+                ex = versions[c.name]
+            except KeyError:
+                versions[c.name] = c.version
+            else:
+                if ex != c.version:
+                    raise Exception(f'Version mismatch: {ex} {c}')
+        return versions
+
 
 _CURRENT_CACHEABLE_CONTEXT: _CacheableContext | None = None
 
@@ -279,7 +296,11 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
 
                     val = fn(*args, **kwargs)
                     ctx.result = _CacheResult(False, val)
-                    cache.put(key, val)
+                    cache.put(
+                        key,
+                        ctx.build_version_map(),
+                        val,
+                    )
                     return val
 
             else:
