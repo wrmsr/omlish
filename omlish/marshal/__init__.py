@@ -55,8 +55,11 @@ from .helpers import (  # noqa
 )
 
 from .objects import (  # noqa
+    FieldInfo,
     FieldMetadata,
+    ObjectMarshaler,
     ObjectMetadata,
+    ObjectUnmarshaler,
 )
 
 from .polymorphism import (  # noqa
