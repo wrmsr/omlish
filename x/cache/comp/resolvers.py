@@ -8,13 +8,16 @@ class CachingCacheableResolver(CacheableResolver):
         super().__init__()
 
         self._child = child
-        self._cache: dict[CacheableName, Cacheable] = {}
+        self._dct: dict[CacheableName, Cacheable] = {}
+
+    def clear(self) -> None:
+        self._dct.clear()
 
     def resolve(self, name: CacheableName) -> Cacheable:
         try:
-            return self._cache[name]
+            return self._dct[name]
         except KeyError:
             pass
         ret = self._child.resolve(name)
-        self._cache[name] = ret
+        self._dct[name] = ret
         return ret

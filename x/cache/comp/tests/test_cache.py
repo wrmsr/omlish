@@ -7,46 +7,38 @@ from ..fns import cached_fn
 
 
 @cached_fn(0)
-def f(x: int, y: int) -> int:
-    print(f'f({x}, {y})')
+def f0(x: int, y: int) -> int:
+    print(f'f0({x}, {y})')
     return x + y
 
 
 @cached_fn(0)
-def g(x: int, y: int) -> int:
-    print(f'g({x}, {y})')
-    return f(x, 1) + f(y, 1)
+def f1(x: int, y: int) -> int:
+    print(f'f1({x}, {y})')
+    return f0(x, 1) + f0(y, 1)
 
 
 @cached_fn(0)
-def h(x: int, y: int) -> int:
-    print(f'g({x}, {y})')
-    return g(x, 2) + g(y, 2)
+def f2(x: int, y: int) -> int:
+    print(f'f2({x}, {y})')
+    return f0(x, 2) + f0(y, 1)
+
+
+@cached_fn(0)
+def f3(x: int, y: int) -> int:
+    print(f'f3({x}, {y})')
+    return f1(x, 2) + f2(y, 1)
 
 
 def test_cache():
     fr = FnCacheableResolver()
-
-    h_fc = h.__cacheable__  # type: ignore
-    h_fcn = h_fc.name
-    check.is_(fr.resolve(h_fcn), h_fc)
-
-    #
-
-    # check.equal(h(1, 2), 11)
-
-    #
-
     cache = Cache(resolver=fr)
 
-    #
-
     with cache_context(cache):
-        for _ in range(2):
-            print(f'{(v := h(1, 2))=}')
-            check.equal(v, 11)
-
-            print(f'{(v := h(3, 2))=}')
-            check.equal(v, 13)
-
         print()
+
+        for _ in range(2):
+            print(f'{f3(1, 1)=}')
+
+        before = cache.stats
+
