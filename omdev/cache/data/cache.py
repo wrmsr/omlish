@@ -18,7 +18,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
-from .. import git
+from ... import git
 from .manifests import CacheDataManifest
 from .specs import CacheDataSpec
 from .specs import GitCacheDataSpec
