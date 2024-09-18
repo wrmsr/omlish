@@ -15,12 +15,12 @@ class Suite(mod):
 class slice(AST):
 
 still missing:
-Bytes
-Ellipsis
-EnhancedAST
-NameConstant
-Num
-Str
+<*Constant*>
+  Bytes
+  Ellipsis
+  NameConstant
+  Num
+  Str
 """
 import ast
 import os.path
@@ -48,7 +48,28 @@ def _main() -> None:
 
     ##
 
-    ast_cls_dct = col.make_map_by(lambda c: c.__name__, lang.deep_subclasses(ast.AST), strict=True)
+    deprecated = {
+        'AugLoad',
+        'AugStore',
+        'ExtSlice',
+        'Index',
+        'Param',
+        'Suite',
+        'slice',
+    }
+    ast_cls_lst = [
+        v
+        for a in dir(ast)
+        if isinstance(v := getattr(ast, a), type)
+        and v is not ast.AST
+        and issubclass(v, ast.AST)
+        and v.__name__ not in deprecated
+    ]
+    ast_cls_dct = col.make_map_by(lambda c: c.__name__, ast_cls_lst, strict=True)
+    missing = [ast_cls_dct[n] for n in set(ast_cls_dct) - set(py_nodes)]
+    if (non_consts := [m for m in missing if not issubclass(m, ast.Constant)]):
+        raise Exception('Missing non-const subclasses', non_consts)
+
     ast_poly = msh.Polymorphism(ast.AST, [msh.Impl(ty, tag) for tag, ty in ast_cls_dct.items()])
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(ast_poly)]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(ast_poly)]
