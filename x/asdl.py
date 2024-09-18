@@ -108,7 +108,7 @@ class Type(AST):
 @dc.dataclass(frozen=True)
 class Constructor(AST):
     name: str
-    fields: ta.Sequence = dc.field(default_factory=list)
+    fields: ta.Sequence['Field'] = dc.field(default_factory=list)
 
     def __repr__(self) -> str:
         return 'Constructor({0.name}, {0.fields})'.format(self)
@@ -116,10 +116,10 @@ class Constructor(AST):
 
 @dc.dataclass(frozen=True)
 class Field(AST):
-    type: ta.Any
-    name: ta.Any = dc.field(default=None)
-    seq: ta.Any = dc.field(default=None)
-    opt: ta.Any = dc.field(default=None)
+    type: str
+    name: str | None = None
+    seq: bool = False
+    opt: bool = False
 
     def __str__(self) -> str:
         if self.seq:
@@ -146,7 +146,7 @@ class Field(AST):
 
 @dc.dataclass(frozen=True)
 class Sum(AST):
-    types: ta.Any
+    types: ta.Sequence[Constructor]
     attributes: ta.Sequence = dc.field(default_factory=list)
 
     def __repr__(self) -> str:
@@ -158,7 +158,7 @@ class Sum(AST):
 
 @dc.dataclass(frozen=True)
 class Product(AST):
-    fields: ta.Any
+    fields: ta.Sequence[Field]
     attributes: ta.Sequence = dc.field(default_factory=list)
 
     def __repr__(self) -> str:
@@ -386,7 +386,7 @@ class ASDLParser:
     def _parse_product(self) -> Product:
         return Product(self._parse_fields(), self._parse_optional_attributes())
 
-    def _parse_fields(self):
+    def _parse_fields(self) -> ta.Sequence[Field]:
         fields = []
         self._match(TokenKind.LParen)
         while self.cur_token.kind == TokenKind.TypeId:
@@ -407,14 +407,14 @@ class ASDLParser:
         else:
             return None
 
-    def _parse_optional_attributes(self):
+    def _parse_optional_attributes(self) -> ta.Sequence[Field] | None:
         if self._at_keyword('attributes'):
             self._advance()
             return self._parse_fields()
         else:
             return None
 
-    def _parse_optional_field_quantifier(self):
+    def _parse_optional_field_quantifier(self) -> tuple[bool, bool]:  # (seq, opt)
         is_seq, is_opt = False, False
         if self.cur_token.kind == TokenKind.Asterisk:
             is_seq = True
@@ -424,7 +424,7 @@ class ASDLParser:
             self._advance()
         return is_seq, is_opt
 
-    def _advance(self):
+    def _advance(self) -> str | None:
         """Return the value of the current token and read the next one into self.cur_token."""
 
         cur_val = None if self.cur_token is None else self.cur_token.value
@@ -436,7 +436,7 @@ class ASDLParser:
 
     _id_kinds = (TokenKind.ConstructorId, TokenKind.TypeId)
 
-    def _match(self, kind):
+    def _match(self, kind: int | tuple[int, ...]) -> str:
         """The 'match' primitive of RD parsers.
 
         * Verifies that the current token is of the given kind (kind can be a tuple, in which the kind must match one of
