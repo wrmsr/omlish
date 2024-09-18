@@ -164,9 +164,14 @@ def cached(version: int) -> ta.Callable[[T], T]:
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             if (cache := _CURRENT_CACHE) is not None:
-                key = CacheKey(
-                    version,
+                cacheable = FnCacheable(
                     fn,
+                    version,
+                )
+
+                key = CacheKey(
+                    cacheable.name,
+                    cacheable.version,
                     args,
                     col.frozendict(kwargs),
                 )
