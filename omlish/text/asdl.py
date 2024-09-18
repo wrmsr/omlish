@@ -478,6 +478,7 @@ def flatten(mod: Module) -> ta.Mapping[str, FlatNode]:
                 lst.append(FlatConstructor(
                     c.name,
                     fields=mk_fields(c.fields),
+                    attributes=mk_fields(v.attributes),
                     sum=ty.name,
                 ))
 

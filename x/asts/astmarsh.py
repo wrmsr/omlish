@@ -63,7 +63,7 @@ def _main() -> None:
         if fa == 1:
             return ty
         elif fa == '*':
-            return ta.Sequence[ty]
+            return ta.List[ty]
         elif fa == '?':
             return ta.Optional[ty]
         else:
@@ -110,6 +110,11 @@ def _main() -> None:
 
     u_root = msh.unmarshal(json.loads(root_j), ast.AST)
     print(u_root)
+
+    ##
+
+    out_src = ast.unparse(u_root)
+    print(out_src)
 
 
 if __name__ == '__main__':
