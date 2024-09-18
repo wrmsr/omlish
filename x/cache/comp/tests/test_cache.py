@@ -1,33 +1,9 @@
-import abc
-import contextlib
-import functools
-import importlib
-import typing as ta
-
-from omlish import cached
 from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
 
-
-T = ta.TypeVar('T')
-CacheT = ta.TypeVar('CacheT', bound='Cache')
-
-
-##
-
-
-
-
-##
-
-
-
-
-
-
-##
+from ..cache import Cache
+from ..contexts import cache_context
+from ..fns import FnCacheableResolver
+from ..fns import cached_fn
 
 
 @cached_fn(0)
@@ -48,8 +24,8 @@ def h(x: int, y: int) -> int:
     return g(x, 2) + g(y, 2)
 
 
-def _main() -> None:
-    fr = CachingCacheableResolver(FnCacheableResolver())
+def test_cache():
+    fr = FnCacheableResolver()
 
     h_fc = h.__cacheable__
     h_fcn = h_fc.name
@@ -74,7 +50,3 @@ def _main() -> None:
             check.equal(v, 13)
 
         print()
-
-
-if __name__ == '__main__':
-    _main()

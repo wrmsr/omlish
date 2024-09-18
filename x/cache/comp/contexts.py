@@ -13,7 +13,6 @@ from .types import CacheableVersion
 from .types import CacheableVersionMap
 
 
-T = ta.TypeVar('T')
 CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 

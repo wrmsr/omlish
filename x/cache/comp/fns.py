@@ -17,6 +17,12 @@ from .types import CacheableName
 from .types import CacheableResolver
 
 
+T = ta.TypeVar('T')
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class FnCacheableName(CacheableName, lang.Final):
     module: str
@@ -30,28 +36,24 @@ class FnCacheable(Cacheable, lang.Final):
 
     @cached.property
     def name(self) -> FnCacheableName:
-        return FnCacheableName(self.__module__, self.fn.__qualname__)
+        return FnCacheableName(self.fn.__module__, self.fn.__qualname__)  # noqa
 
 
 class FnCacheableResolver(CacheableResolver):
     def __init__(self) -> None:
         super().__init__()
 
-        self._cache: dict[FnCacheableName, FnCacheable] = {}
-
     def resolve(self, name: CacheableName) -> Cacheable:
         fname = check.isinstance(name, FnCacheableName)
-        try:
-            return self._cache[fname]
-        except KeyError:
-            pass
+
         mod = importlib.import_module(fname.module)
         obj = mod
         for a in fname.qualname.split('.'):
             obj = getattr(obj, a)
+
         check.callable(obj)
         fc = check.isinstance(obj.__cacheable__, FnCacheable)
-        self._cache[fname] = fc
+
         return fc
 
 
