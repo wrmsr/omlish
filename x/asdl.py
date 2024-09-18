@@ -86,7 +86,7 @@ class AST(abc.ABC):
 @dc.dataclass(frozen=True)
 class Module(AST):
     name: str
-    dfns: ta.Sequence
+    dfns: ta.Sequence['Type']
 
     @cached.property
     def types(self) -> ta.Mapping:
@@ -99,7 +99,7 @@ class Module(AST):
 @dc.dataclass(frozen=True)
 class Type(AST):
     name: str
-    value: ta.Any
+    value: ta.Union['Sum', 'Product']
 
     def __repr__(self) -> str:
         return 'Type({0.name}, {0.value})'.format(self)
@@ -176,7 +176,8 @@ class Product(AST):
 class VisitorBase:
     """Generic tree visitor for ASTs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self.cache = {}
 
     def visit(self, obj, *args):
@@ -201,8 +202,8 @@ class Check(VisitorBase):
     Errors are printed and accumulated.
     """
 
-    def __init__(self):
-        super(Check, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.cons = {}
         self.errors = 0
         self.types = {}
@@ -240,7 +241,7 @@ class Check(VisitorBase):
             self.visit(f, name)
 
 
-def check(mod):
+def check(mod: Module) -> bool:
     """
     Check the parsed ASDL tree for correctness.
 
@@ -256,16 +257,6 @@ def check(mod):
             uses = ", ".join(v.types[t])
             print('Undefined type {}, used in {}'.format(t, uses))
     return not v.errors
-
-
-# The ASDL parser itself comes next. The only interesting external interface here is the top-level parse function.
-
-def parse(filename):
-    """Parse ASDL from the given file and return a Module node describing it."""
-
-    with open(filename, encoding="utf-8") as f:
-        parser = ASDLParser()
-        return parser.parse(f.read())
 
 
 # Types for describing tokens in an ASDL specification.
@@ -303,7 +294,8 @@ Token = collections.namedtuple('Token', 'kind value lineno')
 
 
 class ASDLSyntaxError(Exception):
-    def __init__(self, msg, lineno=None):
+    def __init__(self, msg, lineno=None) -> None:
+        super().__init__()
         self.msg = msg
         self.lineno = lineno or '<unknown>'
 
@@ -343,18 +335,19 @@ class ASDLParser:
     tokenize_asdl for the lexing.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._tokenizer = None
         self.cur_token = None
 
-    def parse(self, buf):
+    def parse(self, buf: str) -> Module:
         """Parse the ASDL in the buffer and return an AST with a Module root."""
 
         self._tokenizer = tokenize_asdl(buf)
         self._advance()
         return self._parse_module()
 
-    def _parse_module(self):
+    def _parse_module(self) -> Module:
         if self._at_keyword('module'):
             self._advance()
         else:
@@ -365,7 +358,7 @@ class ASDLParser:
         self._match(TokenKind.RBrace)
         return Module(name, defs)
 
-    def _parse_definitions(self):
+    def _parse_definitions(self) -> ta.Sequence[Type]:
         defs = []
         while self.cur_token.kind == TokenKind.TypeId:
             typename = self._advance()
@@ -374,7 +367,7 @@ class ASDLParser:
             defs.append(Type(typename, type))
         return defs
 
-    def _parse_type(self):
+    def _parse_type(self) -> Sum | Product:
         if self.cur_token.kind == TokenKind.LParen:
             # If we see a (, it's a product
             return self._parse_product()
@@ -386,10 +379,11 @@ class ASDLParser:
                 self._advance()
                 sumlist.append(Constructor(
                     self._match(TokenKind.ConstructorId),
-                    self._parse_optional_fields()))
+                    self._parse_optional_fields()),
+                )
             return Sum(sumlist, self._parse_optional_attributes())
 
-    def _parse_product(self):
+    def _parse_product(self) -> Product:
         return Product(self._parse_fields(), self._parse_optional_attributes())
 
     def _parse_fields(self):
@@ -398,8 +392,7 @@ class ASDLParser:
         while self.cur_token.kind == TokenKind.TypeId:
             typename = self._advance()
             is_seq, is_opt = self._parse_optional_field_quantifier()
-            id = (self._advance() if self.cur_token.kind in self._id_kinds
-                  else None)
+            id = self._advance() if self.cur_token.kind in self._id_kinds else None
             fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
             if self.cur_token.kind == TokenKind.RParen:
                 break
@@ -446,7 +439,8 @@ class ASDLParser:
     def _match(self, kind):
         """The 'match' primitive of RD parsers.
 
-        * Verifies that the current token is of the given kind (kind can be a tuple, in which the kind must match one of its members).
+        * Verifies that the current token is of the given kind (kind can be a tuple, in which the kind must match one of
+          its members).
         * Returns the value of the current token
         * Reads in the next token
         """
@@ -458,7 +452,8 @@ class ASDLParser:
         else:
             raise ASDLSyntaxError(
                 'Unmatched {} (found {})'.format(kind, self.cur_token.kind),
-                self.cur_token.lineno)
+                self.cur_token.lineno,
+            )
 
     def _at_keyword(self, keyword):
-        return (self.cur_token.kind == TokenKind.TypeId and self.cur_token.value == keyword)
+        return self.cur_token.kind == TokenKind.TypeId and self.cur_token.value == keyword
