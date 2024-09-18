@@ -1,4 +1,4 @@
--- https://github.com/python/cpython/blob/1494d9563f72e5ac14e55d8df3b5cb9391ccef6f/Parser/Python.asdl
+-- https://github.com/python/cpython/blob/112b1704fa6165ce6386ce2d9363fb73dd799de5/Parser/Python.asdl
 
 -- PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 -- --------------------------------------------
@@ -182,8 +182,8 @@ module Python
 
     type_ignore = TypeIgnore(int lineno, string tag)
 
-    type_param = TypeVar(identifier name, expr? bound)
-               | ParamSpec(identifier name)
-               | TypeVarTuple(identifier name)
+    type_param = TypeVar(identifier name, expr? bound, expr? default_value)
+               | ParamSpec(identifier name, expr? default_value)
+               | TypeVarTuple(identifier name, expr? default_value)
                attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 }
