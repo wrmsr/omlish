@@ -9,6 +9,7 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -87,6 +88,27 @@ class ObjectMarshaler(Marshaler):
         return ret
 
 
+@dc.dataclass(frozen=True)
+class SimpleObjectMarshalerFactory(MarshalerFactory):
+    dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
+    unknown_field: str | None = None
+
+    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
+        return isinstance(rty, type) and rty in self.dct
+
+    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
+        ty = check.isinstance(rty, type)
+        flds = self.dct[ty]
+        fields = [
+            (fi, ctx.make(fi.type))
+            for fi in flds
+        ]
+        return ObjectMarshaler(
+            fields,
+            unknown_field=self.unknown_field,
+        )
+
+
 ##
 
 
@@ -123,3 +145,26 @@ class ObjectUnmarshaler(Unmarshaler):
             kw[fi.name] = u.unmarshal(ctx, mv)
 
         return self.cls(**kw)
+
+
+@dc.dataclass(frozen=True)
+class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
+    dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
+    unknown_field: str | None = None
+
+    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
+        return isinstance(rty, type) and rty in self.dct
+
+    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
+        ty = check.isinstance(rty, type)
+        flds = self.dct[ty]
+        fields_by_unmarshal_name = {
+            n: (fi, ctx.make(fi.type))
+            for fi in flds
+            for n in fi.unmarshal_names
+        }
+        return ObjectUnmarshaler(
+            ty,
+            fields_by_unmarshal_name,
+            unknown_field=self.unknown_field,
+        )
