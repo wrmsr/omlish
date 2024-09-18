@@ -67,8 +67,9 @@ def _main() -> None:
     ]
     ast_cls_dct = col.make_map_by(lambda c: c.__name__, ast_cls_lst, strict=True)
     missing = [ast_cls_dct[n] for n in set(ast_cls_dct) - set(py_nodes)]
-    if (non_consts := [m for m in missing if not issubclass(m, ast.Constant)]):
-        raise Exception('Missing non-const subclasses', non_consts)
+    consts, missing_non_consts = col.partition(missing, lambda m: issubclass(m, ast.Constant))
+    if missing_non_consts:
+        raise Exception('Missing non-const subclasses', missing_non_consts)
 
     ast_poly = msh.Polymorphism(ast.AST, [msh.Impl(ty, tag) for tag, ty in ast_cls_dct.items()])
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(ast_poly)]
