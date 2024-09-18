@@ -60,6 +60,8 @@ from .objects import (  # noqa
     ObjectMarshaler,
     ObjectMetadata,
     ObjectUnmarshaler,
+    SimpleObjectMarshalerFactory,
+    SimpleObjectUnmarshalerFactory,
 )
 
 from .polymorphism import (  # noqa
