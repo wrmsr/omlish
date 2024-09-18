@@ -5,12 +5,12 @@ from omlish import check
 from omlish import lang
 
 from .cache import Cache
-from .types import CacheKey
-from .types import CacheResult
 from .types import Cacheable
 from .types import CacheableName
 from .types import CacheableVersion
 from .types import CacheableVersionMap
+from .types import CacheKey
+from .types import CacheResult
 
 
 CacheT = ta.TypeVar('CacheT', bound='Cache')

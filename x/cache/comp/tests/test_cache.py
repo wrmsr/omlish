@@ -27,7 +27,7 @@ def h(x: int, y: int) -> int:
 def test_cache():
     fr = FnCacheableResolver()
 
-    h_fc = h.__cacheable__
+    h_fc = h.__cacheable__  # type: ignore
     h_fcn = h_fc.name
     check.is_(fr.resolve(h_fcn), h_fc)
 

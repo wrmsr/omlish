@@ -10,11 +10,11 @@ from omlish import lang
 
 from .contexts import cacheable_context
 from .contexts import get_current_cache
-from .types import CacheKey
-from .types import CacheResult
 from .types import Cacheable
 from .types import CacheableName
 from .types import CacheableResolver
+from .types import CacheKey
+from .types import CacheResult
 
 
 T = ta.TypeVar('T')

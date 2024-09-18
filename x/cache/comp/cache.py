@@ -51,10 +51,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .types import CacheKey
 from .types import CacheableName
 from .types import CacheableResolver
 from .types import CacheableVersionMap
+from .types import CacheKey
 
 
 class Cache:
