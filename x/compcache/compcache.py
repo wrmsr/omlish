@@ -49,7 +49,6 @@ import abc
 import contextlib
 import functools
 import importlib
-import tempfile
 import typing as ta
 
 from omlish import cached
@@ -111,10 +110,10 @@ class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
 
 
 class Cache:
-    def __init__(self, base_dir: str) -> None:
+    def __init__(
+            self,
+    ) -> None:
         super().__init__()
-
-        self._base_dir = base_dir
 
         self._dct: dict[CacheKey, ta.Any] = {}
 
@@ -282,7 +281,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
 
         return inner
 
-    return outer
+    return outer  # noqa
 
 
 ##
@@ -319,10 +318,7 @@ def _main() -> None:
 
     #
 
-    tmp_dir = tempfile.mkdtemp()
-    print(f'{tmp_dir=}')
-
-    cache = Cache(tmp_dir)
+    cache = Cache()
 
     #
 
