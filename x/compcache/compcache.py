@@ -107,6 +107,26 @@ class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
 ##
 
 
+class CachingCacheableResolver(CacheableResolver):
+    def __init__(self, child: CacheableResolver) -> None:
+        super().__init__()
+
+        self._child = child
+        self._cache: dict[CacheableName, Cacheable] = {}
+
+    def resolve(self, name: CacheableName) -> Cacheable:
+        try:
+            return self._cache[name]
+        except KeyError:
+            pass
+        ret = self._child.resolve(name)
+        self._cache[name] = ret
+        return ret
+
+
+##
+
+
 class Cache:
     def __init__(
             self,
@@ -345,7 +365,7 @@ def h(x: int, y: int) -> int:
 
 
 def _main() -> None:
-    fr = FnCacheableResolver()
+    fr = CachingCacheableResolver(FnCacheableResolver())
 
     h_fc = h.__cacheable__
     h_fcn = h_fc.name
