@@ -78,37 +78,6 @@ class AST(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class Module(AST):
-    name: str
-    dfns: ta.Sequence['Type']
-
-    @cached.property
-    def types(self) -> ta.Mapping:
-        return {type.name: type.value for type in self.dfns}
-
-    def __repr__(self) -> str:
-        return 'Module({0.name}, {0.dfns})'.format(self)
-
-
-@dc.dataclass(frozen=True)
-class Type(AST):
-    name: str
-    value: ta.Union['Sum', 'Product']
-
-    def __repr__(self) -> str:
-        return 'Type({0.name}, {0.value})'.format(self)
-
-
-@dc.dataclass(frozen=True)
-class Constructor(AST):
-    name: str
-    fields: ta.Sequence['Field'] = dc.field(default_factory=list)
-
-    def __repr__(self) -> str:
-        return 'Constructor({0.name}, {0.fields})'.format(self)
-
-
-@dc.dataclass(frozen=True)
 class Field(AST):
     type: str
     name: str | None = None
@@ -139,6 +108,15 @@ class Field(AST):
 
 
 @dc.dataclass(frozen=True)
+class Constructor(AST):
+    name: str
+    fields: ta.Sequence[Field] = dc.field(default_factory=list)
+
+    def __repr__(self) -> str:
+        return 'Constructor({0.name}, {0.fields})'.format(self)
+
+
+@dc.dataclass(frozen=True)
 class Sum(AST):
     types: ta.Sequence[Constructor]
     attributes: ta.Sequence = dc.field(default_factory=list)
@@ -160,6 +138,28 @@ class Product(AST):
             return 'Product({0.fields}, {0.attributes})'.format(self)
         else:
             return 'Product({0.fields})'.format(self)
+
+
+@dc.dataclass(frozen=True)
+class Type(AST):
+    name: str
+    value: ta.Union[Sum, Product]
+
+    def __repr__(self) -> str:
+        return 'Type({0.name}, {0.value})'.format(self)
+
+
+@dc.dataclass(frozen=True)
+class Module(AST):
+    name: str
+    dfns: ta.Sequence[Type]
+
+    @cached.property
+    def types(self) -> ta.Mapping[str, ta.Union[Sum, Product]]:
+        return {type.name: type.value for type in self.dfns}
+
+    def __repr__(self) -> str:
+        return 'Module({0.name}, {0.dfns})'.format(self)
 
 
 ##

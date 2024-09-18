@@ -1,3 +1,7 @@
+"""
+See:
+ - https://github.com/python/cpython/blob/1494d9563f72e5ac14e55d8df3b5cb9391ccef6f/Parser/asdl_c.py
+"""
 import pickle
 
 

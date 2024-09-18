@@ -1,9 +1,12 @@
 """
 TODO:
  - marshal 'external object... infos?'
+ - gen map from ast node name -> map from field name to field type
 """
 import ast
+import dataclasses as dc
 import os.path
+import typing as ta
 
 from omlish import collections as col
 from omlish import lang
@@ -12,10 +15,27 @@ from omlish import marshal as msh
 from . import asdl
 
 
+@dc.dataclass(frozen=True)
+class NodeFieldInfo:
+    name: str
+    type: str
+    n: ta.Literal[1, '?', '*']
+
+
+@dc.dataclass(frozen=True)
+class NodeTypeInfo:
+    name: str
+    fields: ta.Sequence[NodeFieldInfo]
+
+
 def _main() -> None:
-    asdl_src = lang.get_relative_resources(globals=globals())['python.asdl'].read_bytes().decode('utf-8')
+    asdl_src = lang.get_relative_resources(globals=globals())['python-3.12.asdl'].read_bytes().decode('utf-8')
     py_asdl = asdl.ASDLParser().parse(asdl_src)
     print(py_asdl)
+
+    for ty in py_asdl.dfns:
+        print(ty.name)
+        ty.value
 
     ##
 
