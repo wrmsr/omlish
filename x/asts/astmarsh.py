@@ -19,7 +19,7 @@ from omlish.text import asdl
 
 @dc.dataclass(frozen=True)
 class ObjectMarshalerFactory(msh.MarshalerFactory):
-    dct: ta.Mapping[type, ta.Mapping[str, rfl.Type]]
+    dct: ta.Mapping[type, ta.Sequence[msh.FieldInfo]]
 
     def guard(self, ctx: msh.MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and rty in self.dct
@@ -27,20 +27,10 @@ class ObjectMarshalerFactory(msh.MarshalerFactory):
     def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         ty = check.isinstance(rty, type)
         flds = self.dct[ty]
-
         fields = [
-            (
-                msh.FieldInfo(
-                    name=fn,
-                    type=ft,
-                    marshal_name=fn,
-                    unmarshal_names=[fn],
-                ),
-                ctx.make(ft),
-            )
-            for fn, ft in flds.items()
+            (fi, ctx.make(fi.type))
+            for fi in flds
         ]
-
         return msh.ObjectMarshaler(fields)
 
 
@@ -98,10 +88,15 @@ def _main() -> None:
 
     msh_dct = {}
     for c in ast_cls_lst:
-        msh_dct[c] = {
-            fn: mk_fld_ty(ft, fa)
+        msh_dct[c] = [
+            msh.FieldInfo(
+                name=fn,
+                type=mk_fld_ty(ft, fa),
+                marshal_name=fn,
+                unmarshal_names=[fn],
+            )
             for fn, (ft, fa) in py_node_fields.get(c.__name__, {}).items()
-        }
+        ]
 
     ##
 
