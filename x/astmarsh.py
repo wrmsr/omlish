@@ -2,6 +2,23 @@
 TODO:
  - marshal 'external object... infos?'
  - gen map from ast node name -> map from field name to field type
+
+==
+
+missing:
+{str} 'Num'
+{str} 'Param'
+{str} 'Suite'
+{str} 'AugLoad'
+{str} 'EnhancedAST'
+{str} 'AugStore'
+{str} 'Index'
+{str} 'slice'
+{str} 'NameConstant'
+{str} 'ExtSlice'
+{str} 'Str'
+{str} 'Ellipsis'
+{str} 'Bytes'
 """
 import ast
 import os.path
