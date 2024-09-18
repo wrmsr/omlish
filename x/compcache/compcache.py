@@ -64,6 +64,7 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 
 CacheableVersion: ta.TypeAlias = ta.Any
+CacheableNameT = ta.TypeVar('CacheableNameT', bound='CacheableName')
 
 
 class CacheableName(lang.Abstract):
@@ -82,16 +83,31 @@ class Cacheable(lang.Abstract):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
+class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
+    name: CacheableNameT
+    version: CacheableVersion
+
+    @dc.validate
+    def _check_types(self) -> bool:
+        hash(self)
+        return (
+                isinstance(self.name, CacheableName) and
+                self.version is not None
+        )
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
-class FnCacheableName(CacheableName):
+class FnCacheableName(CacheableName, lang.Final):
     qualname: str
 
 
 @dc.dataclass(frozen=True)
-class FnCacheable(Cacheable):
+class FnCacheable(Cacheable, lang.Final):
     fn: ta.Callable
     version: int = dc.xfield(override=True)
 
@@ -100,26 +116,21 @@ class FnCacheable(Cacheable):
         return FnCacheableName(self.fn.__qualname__)
 
 
-##
-
-
 @dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
-class CacheKey(lang.Final):
-    name: CacheableName
-    version: CacheableVersion
+class FnCacheKey(CacheKey[FnCacheableName], lang.Final):
     args: tuple
     kwargs: col.frozendict[str, ta.Any]
 
     @dc.validate
-    def _check_types(self) -> bool:
-        hash(self)
+    def _check_fn_types(self) -> bool:
         return (
-                isinstance(self.name, CacheableName) and
-                self.version is not None and
-                isinstance(self.args, tuple) and
-                isinstance(self.kwargs, col.frozendict)
+            isinstance(self.name, FnCacheableName) and
+            isinstance(self.args, tuple) and
+            isinstance(self.kwargs, col.frozendict)
         )
+
+
+##
 
 
 class Cache:
@@ -169,7 +180,7 @@ def cached(version: int) -> ta.Callable[[T], T]:
                     version,
                 )
 
-                key = CacheKey(
+                key = FnCacheKey(
                     cacheable.name,
                     cacheable.version,
                     args,
