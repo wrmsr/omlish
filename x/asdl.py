@@ -110,7 +110,7 @@ class Field(AST):
 @dc.dataclass(frozen=True)
 class Constructor(AST):
     name: str
-    fields: ta.Sequence[Field] = dc.field(default_factory=list)
+    fields: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
         return 'Constructor({0.name}, {0.fields})'.format(self)

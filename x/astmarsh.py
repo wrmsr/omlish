@@ -34,18 +34,29 @@ def _main() -> None:
     print(py_asdl)
 
     for ty in py_asdl.dfns:
-        print(ty.name)
         v = ty.value
+
         if isinstance(v, asdl.Sum):
+            print(f'sum: {ty.name}')
+            for a in v.attributes or ():
+                print(f'a: {a.name}')
+
             for c in v.types:
-                print(f'  sum: {c.name}')
-                for f in c.fields:
-                    print(f'    f: {f}')
+                print()
+                print(f'ctor: {c.name}')
+                for f in c.fields or ():
+                    print(f'f: {f.name}')
+
         elif isinstance(v, asdl.Product):
-            for f in v.fields:
-                print(f'  f: {f}')
+            print(f'prod: {ty.name}')
+            for f in v.fields or ():
+                print(f'f: {f.name}')
+            for a in v.attributes or ():
+                print(f'a: {a.name}')
+
         else:
             raise TypeError(v)
+
         print()
 
     ##
