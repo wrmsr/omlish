@@ -55,8 +55,8 @@ constructor   ::= ConstructorId [fields]
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
 import abc
-import collections
 import dataclasses as dc
+import enum
 import re
 import typing as ta
 
@@ -271,22 +271,20 @@ def check(mod: Module) -> bool:
 
 
 # Types for describing tokens in an ASDL specification.
-class TokenKind:
+class TokenKind(enum.IntEnum):
     """TokenKind is provides a scope for enumerated token kinds."""
 
-    (
-        ConstructorId,
-        TypeId,
-        Equals,
-        Comma,
-        Question,
-        Pipe,
-        Asterisk,
-        LParen,
-        RParen,
-        LBrace,
-        RBrace,
-    ) = range(11)
+    ConstructorId = enum.auto()
+    TypeId = enum.auto()
+    Equals = enum.auto()
+    Comma = enum.auto()
+    Question = enum.auto()
+    Pipe = enum.auto()
+    Asterisk = enum.auto()
+    LParen = enum.auto()
+    RParen = enum.auto()
+    LBrace = enum.auto()
+    RBrace = enum.auto()
 
 
 OPERATOR_TABLE = {
@@ -304,7 +302,7 @@ OPERATOR_TABLE = {
 
 @dc.dataclass(frozen=True)
 class Token:
-    kind: int
+    kind: TokenKind
     value: str
     lineno: int
 
@@ -455,7 +453,7 @@ class ASDLParser:
 
     _id_kinds = (TokenKind.ConstructorId, TokenKind.TypeId)
 
-    def _match(self, kind: int | tuple[int, ...]) -> str:
+    def _match(self, kind: TokenKind | tuple[TokenKind, ...]) -> str:
         """The 'match' primitive of RD parsers.
 
         * Verifies that the current token is of the given kind (kind can be a tuple, in which the kind must match one of
