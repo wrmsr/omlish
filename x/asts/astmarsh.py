@@ -34,6 +34,23 @@ class ObjectMarshalerFactory(msh.MarshalerFactory):
         return msh.ObjectMarshaler(fields)
 
 
+@dc.dataclass(frozen=True)
+class ObjectUnmarshalerFactory(msh.UnmarshalerFactory):
+    dct: ta.Mapping[type, ta.Sequence[msh.FieldInfo]]
+
+    def guard(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> bool:
+        return isinstance(rty, type) and rty in self.dct
+
+    def fn(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
+        ty = check.isinstance(rty, type)
+        flds = self.dct[ty]
+        fields = [
+            (fi, ctx.make(fi.type))
+            for fi in flds
+        ]
+        return msh.ObjectUnmarshaler(fields)
+
+
 def _main() -> None:
     asdl_src = lang.get_relative_resources(globals=globals())['python-3.12.asdl'].read_bytes().decode('utf-8')
     py_nodes = asdl.flatten(asdl.AsdlParser().parse(asdl_src))
