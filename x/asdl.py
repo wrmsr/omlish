@@ -274,29 +274,29 @@ def check(mod: Module) -> bool:
 class TokenKind(enum.IntEnum):
     """TokenKind is provides a scope for enumerated token kinds."""
 
-    ConstructorId = enum.auto()
-    TypeId = enum.auto()
-    Equals = enum.auto()
-    Comma = enum.auto()
-    Question = enum.auto()
-    Pipe = enum.auto()
-    Asterisk = enum.auto()
-    LParen = enum.auto()
-    RParen = enum.auto()
-    LBrace = enum.auto()
-    RBrace = enum.auto()
+    CONSTRUCTOR_ID = enum.auto()
+    TYPE_ID = enum.auto()
+    EQUALS = enum.auto()
+    COMMA = enum.auto()
+    QUESTION = enum.auto()
+    PIPE = enum.auto()
+    ASTERISK = enum.auto()
+    L_PAREN = enum.auto()
+    R_PAREN = enum.auto()
+    L_BRACE = enum.auto()
+    R_BRACE = enum.auto()
 
 
 OPERATOR_TABLE = {
-    '=': TokenKind.Equals,
-    ',': TokenKind.Comma,
-    '?': TokenKind.Question,
-    '|': TokenKind.Pipe,
-    '(': TokenKind.LParen,
-    ')': TokenKind.RParen,
-    '*': TokenKind.Asterisk,
-    '{': TokenKind.LBrace,
-    '}': TokenKind.RBrace,
+    '=': TokenKind.EQUALS,
+    ',': TokenKind.COMMA,
+    '?': TokenKind.QUESTION,
+    '|': TokenKind.PIPE,
+    '(': TokenKind.L_PAREN,
+    ')': TokenKind.R_PAREN,
+    '*': TokenKind.ASTERISK,
+    '{': TokenKind.L_BRACE,
+    '}': TokenKind.R_BRACE,
 }
 
 
@@ -326,9 +326,9 @@ def tokenize_asdl(buf: str) -> ta.Iterator[Token]:
             if c[0].isalpha():
                 # Some kind of identifier
                 if c[0].isupper():
-                    yield Token(TokenKind.ConstructorId, c, lineno)
+                    yield Token(TokenKind.CONSTRUCTOR_ID, c, lineno)
                 else:
-                    yield Token(TokenKind.TypeId, c, lineno)
+                    yield Token(TokenKind.TYPE_ID, c, lineno)
             elif c[:2] == '--':
                 # Comment
                 break
@@ -370,32 +370,32 @@ class ASDLParser:
         else:
             raise ASDLSyntaxError('Expected "module" (found {})'.format(self.cur_token.value), self.cur_token.lineno)
         name = self._match(self._id_kinds)
-        self._match(TokenKind.LBrace)
+        self._match(TokenKind.L_BRACE)
         defs = self._parse_definitions()
-        self._match(TokenKind.RBrace)
+        self._match(TokenKind.R_BRACE)
         return Module(name, defs)
 
     def _parse_definitions(self) -> ta.Sequence[Type]:
         defs = []
-        while self.cur_token.kind == TokenKind.TypeId:
+        while self.cur_token.kind == TokenKind.TYPE_ID:
             typename = self._advance()
-            self._match(TokenKind.Equals)
+            self._match(TokenKind.EQUALS)
             type = self._parse_type()
             defs.append(Type(typename, type))
         return defs
 
     def _parse_type(self) -> Sum | Product:
-        if self.cur_token.kind == TokenKind.LParen:
+        if self.cur_token.kind == TokenKind.L_PAREN:
             # If we see a (, it's a product
             return self._parse_product()
         else:
             # Otherwise it's a sum. Look for ConstructorId
-            sumlist = [Constructor(self._match(TokenKind.ConstructorId), self._parse_optional_fields())]
-            while self.cur_token.kind == TokenKind.Pipe:
+            sumlist = [Constructor(self._match(TokenKind.CONSTRUCTOR_ID), self._parse_optional_fields())]
+            while self.cur_token.kind == TokenKind.PIPE:
                 # More constructors
                 self._advance()
                 sumlist.append(Constructor(
-                    self._match(TokenKind.ConstructorId),
+                    self._match(TokenKind.CONSTRUCTOR_ID),
                     self._parse_optional_fields()),
                 )
             return Sum(sumlist, self._parse_optional_attributes())
@@ -405,21 +405,21 @@ class ASDLParser:
 
     def _parse_fields(self) -> ta.Sequence[Field]:
         fields = []
-        self._match(TokenKind.LParen)
-        while self.cur_token.kind == TokenKind.TypeId:
+        self._match(TokenKind.L_PAREN)
+        while self.cur_token.kind == TokenKind.TYPE_ID:
             typename = self._advance()
             is_seq, is_opt = self._parse_optional_field_quantifier()
             id = self._advance() if self.cur_token.kind in self._id_kinds else None
             fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
-            if self.cur_token.kind == TokenKind.RParen:
+            if self.cur_token.kind == TokenKind.R_PAREN:
                 break
-            elif self.cur_token.kind == TokenKind.Comma:
+            elif self.cur_token.kind == TokenKind.COMMA:
                 self._advance()
-        self._match(TokenKind.RParen)
+        self._match(TokenKind.R_PAREN)
         return fields
 
     def _parse_optional_fields(self) -> ta.Sequence[Field] | None:
-        if self.cur_token.kind == TokenKind.LParen:
+        if self.cur_token.kind == TokenKind.L_PAREN:
             return self._parse_fields()
         else:
             return None
@@ -433,10 +433,10 @@ class ASDLParser:
 
     def _parse_optional_field_quantifier(self) -> tuple[bool, bool]:  # (seq, opt)
         is_seq, is_opt = False, False
-        if self.cur_token.kind == TokenKind.Asterisk:
+        if self.cur_token.kind == TokenKind.ASTERISK:
             is_seq = True
             self._advance()
-        elif self.cur_token.kind == TokenKind.Question:
+        elif self.cur_token.kind == TokenKind.QUESTION:
             is_opt = True
             self._advance()
         return is_seq, is_opt
@@ -451,7 +451,7 @@ class ASDLParser:
             self.cur_token = None
         return cur_val
 
-    _id_kinds = (TokenKind.ConstructorId, TokenKind.TypeId)
+    _id_kinds = (TokenKind.CONSTRUCTOR_ID, TokenKind.TYPE_ID)
 
     def _match(self, kind: TokenKind | tuple[TokenKind, ...]) -> str:
         """The 'match' primitive of RD parsers.
@@ -473,4 +473,4 @@ class ASDLParser:
             )
 
     def _at_keyword(self, keyword: str) -> bool:
-        return self.cur_token.kind == TokenKind.TypeId and self.cur_token.value == keyword
+        return self.cur_token.kind == TokenKind.TYPE_ID and self.cur_token.value == keyword
