@@ -54,8 +54,14 @@ constructor   ::= ConstructorId [fields]
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import abc
 import collections
+import dataclasses as dc
 import re
+import typing as ta
+
+from omlish import cached
+from omlish import lang
 
 
 # The following classes define nodes into which the ASDL description is parsed. Note: this is a "meta-AST". ASDL files
@@ -71,47 +77,51 @@ builtin_types = {
 }
 
 
-class AST:
-    def __repr__(self):
+class AST(abc.ABC):
+    @abc.abstractmethod
+    def __repr__(self) -> str:
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
 class Module(AST):
-    def __init__(self, name, dfns):
-        self.name = name
-        self.dfns = dfns
-        self.types = {type.name: type.value for type in dfns}
+    name: str
+    dfns: ta.Sequence
 
-    def __repr__(self):
+    @cached.property
+    def types(self) -> ta.Mapping:
+        return {type.name: type.value for type in self.dfns}
+
+    def __repr__(self) -> str:
         return 'Module({0.name}, {0.dfns})'.format(self)
 
 
+@dc.dataclass(frozen=True)
 class Type(AST):
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
+    name: str
+    value: ta.Any
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Type({0.name}, {0.value})'.format(self)
 
 
+@dc.dataclass(frozen=True)
 class Constructor(AST):
-    def __init__(self, name, fields=None):
-        self.name = name
-        self.fields = fields or []
+    name: str
+    fields: ta.Sequence = dc.field(default_factory=list)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Constructor({0.name}, {0.fields})'.format(self)
 
 
+@dc.dataclass(frozen=True)
 class Field(AST):
-    def __init__(self, type, name=None, seq=False, opt=False):
-        self.type = type
-        self.name = name
-        self.seq = seq
-        self.opt = opt
+    type: ta.Any
+    name: ta.Any = dc.field(default=None)
+    seq: ta.Any = dc.field(default=None)
+    opt: ta.Any = dc.field(default=None)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.seq:
             extra = "*"
         elif self.opt:
@@ -121,7 +131,7 @@ class Field(AST):
 
         return "{}{} {}".format(self.type, extra, self.name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.seq:
             extra = ", seq=True"
         elif self.opt:
@@ -134,24 +144,24 @@ class Field(AST):
             return 'Field({0.type}, {0.name}{1})'.format(self, extra)
 
 
+@dc.dataclass(frozen=True)
 class Sum(AST):
-    def __init__(self, types, attributes=None):
-        self.types = types
-        self.attributes = attributes or []
+    types: ta.Any
+    attributes: ta.Sequence = dc.field(default_factory=list)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.attributes:
             return 'Sum({0.types}, {0.attributes})'.format(self)
         else:
             return 'Sum({0.types})'.format(self)
 
 
+@dc.dataclass(frozen=True)
 class Product(AST):
-    def __init__(self, fields, attributes=None):
-        self.fields = fields
-        self.attributes = attributes or []
+    fields: ta.Any
+    attributes: ta.Sequence = dc.field(default_factory=list)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.attributes:
             return 'Product({0.fields}, {0.attributes})'.format(self)
         else:

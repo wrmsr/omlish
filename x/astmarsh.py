@@ -15,6 +15,7 @@ from . import asdl
 def _main() -> None:
     asdl_src = lang.get_relative_resources(globals=globals())['python.asdl'].read_bytes().decode('utf-8')
     py_asdl = asdl.ASDLParser().parse(asdl_src)
+    print(py_asdl)
 
     ##
 
