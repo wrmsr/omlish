@@ -28,15 +28,20 @@ class ObjectMarshalerFactory(msh.MarshalerFactory):
         ty = check.isinstance(rty, type)
         flds = self.dct[ty]
 
-        # fields = [
-        #     (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
-        #     for fi in get_field_infos(ty, ctx.options)
-        # ]
-        # return ObjectMarshaler(
-        #     fields,
-        #     unknown_field=dc_md.unknown_field,
-        # )
-        raise NotImplementedError
+        fields = [
+            (
+                msh.FieldInfo(
+                    name=fn,
+                    type=ft,
+                    marshal_name=fn,
+                    unmarshal_names=[fn],
+                ),
+                ctx.make(ft),
+            )
+            for fn, ft in flds.items()
+        ]
+
+        return msh.ObjectMarshaler(fields)
 
 
 def _main() -> None:
@@ -101,8 +106,13 @@ def _main() -> None:
     ##
 
     ast_poly = msh.Polymorphism(ast.AST, [msh.Impl(ty, tag) for tag, ty in ast_cls_dct.items()])
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(ast_poly)]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(ast_poly)]
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
+        msh.PolymorphismMarshalerFactory(ast_poly),
+        ObjectMarshalerFactory(msh_dct),
+    ]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
+        msh.PolymorphismUnmarshalerFactory(ast_poly),
+    ]
 
     ##
 
@@ -112,6 +122,10 @@ def _main() -> None:
 
     root = ast.parse(src, src_file)
     print(root)
+
+    ##
+
+    print(msh.marshal(root, ast.AST))
 
 
 if __name__ == '__main__':
