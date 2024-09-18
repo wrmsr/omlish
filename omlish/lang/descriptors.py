@@ -57,11 +57,6 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 ##
 
 
-def unwrap_func(fn: ta.Callable) -> ta.Callable:
-    fn, _ = unwrap_func_with_partials(fn)
-    return fn
-
-
 def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
     ps = []
     while True:
@@ -86,6 +81,11 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
             break
 
     return fn, ps
+
+
+def unwrap_func(fn: ta.Callable) -> ta.Callable:
+    uw, _ = unwrap_func_with_partials(fn)
+    return uw
 
 
 ##
