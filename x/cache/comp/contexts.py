@@ -58,7 +58,7 @@ class CacheableContext(lang.Final):
         self._children: list[CacheableContext] = []
 
         if parent is not None:
-            parent._children.append(self)
+            parent._children.append(self)  # noqa
 
     @property
     def cacheable(self) -> Cacheable:

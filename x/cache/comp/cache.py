@@ -66,7 +66,7 @@ class Cache:
 
         self._resolver = resolver
 
-        self._dct: dict[CacheKey, 'Cache._Entry'] = {}
+        self._dct: dict[CacheKey, Cache.Entry] = {}
 
         self._stats = Cache.Stats()
 
@@ -82,7 +82,7 @@ class Cache:
         return copy.deepcopy(self._stats)
 
     @dc.dataclass(frozen=True)
-    class _Entry:
+    class Entry:
         key: CacheKey
         versions: CacheableVersionMap
         value: ta.Any
@@ -114,7 +114,7 @@ class Cache:
         if key in self._dct:
             raise KeyError(key)
 
-        self._dct[key] = Cache._Entry(
+        self._dct[key] = Cache.Entry(
             key,
             versions,
             val,
