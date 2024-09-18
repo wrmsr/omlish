@@ -1,5 +1,5 @@
-from .. import asdl
 from ... import lang
+from .. import asdl
 
 
 def test_asdl():
@@ -44,5 +44,6 @@ def test_asdl():
             'col_offset': ('int', 1),
             'end_col_offset': ('int', '?'),
             'end_lineno': ('int', '?'),
-            'lineno': ('int', 1)},
+            'lineno': ('int', 1),
+        },
     }
