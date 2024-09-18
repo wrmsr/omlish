@@ -113,7 +113,7 @@ class Cache:
         new_versions = self._build_version_map(entry.versions)
         if entry.versions != new_versions:
             del self._dct[key]
-            self._stats.num_invalidates = 0
+            self._stats.num_invalidates += 1
             return lang.empty()
 
         self._stats.num_hits += 1

@@ -46,9 +46,10 @@ def test_cache():
         f1.__cacheable__ = dc.replace(f1.__cacheable__, version=1)
 
         for _ in range(2):
-            print(f'{f3(1, 1)=}')
+            v = f3(1, 1)
+            print(f'f3(1, 1)={v}')
             print()
 
         after = cache.stats
 
-        print((before, after))
+        print(f'{before=}, {after=}')
