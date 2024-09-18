@@ -383,8 +383,13 @@ def _main() -> None:
 
     with cache_context(cache):
         for _ in range(2):
-            check.equal(h(1, 2), 11)
-            check.equal(h(3, 2), 13)
+            print(f'{(v := h(1, 2))=}')
+            check.equal(v, 11)
+
+            print(f'{(v := h(3, 2))=}')
+            check.equal(v, 13)
+
+        print()
 
 
 if __name__ == '__main__':
