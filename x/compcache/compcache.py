@@ -64,7 +64,7 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 ##
 
 
-CacheableVersion: ta.TypeAlias = ta.Any
+CacheableVersion: ta.TypeAlias = ta.Hashable
 CacheableNameT = ta.TypeVar('CacheableNameT', bound='CacheableName')
 
 
@@ -178,6 +178,7 @@ class _CacheableContext:
     key: CacheKey
 
     parent: ta.Optional['_CacheableContext'] | None = dc.field(default=None, kw_only=True)
+    children: list['_CacheableContext'] = dc.field(default_factory=list)
 
 
 _CURRENT_CACHEABLE_CONTEXT: _CacheableContext | None = None
@@ -191,6 +192,8 @@ def _cacheable_context(ctx: _CacheableContext) -> ta.Iterator[_CacheableContext]
     ctx = dc.replace(ctx, parent=prev)
     try:
         _CURRENT_CACHEABLE_CONTEXT = ctx
+        if prev is not None:
+            prev.children.append(ctx)
         yield ctx
     finally:
         check.is_(_CURRENT_CACHEABLE_CONTEXT, ctx)
@@ -249,8 +252,14 @@ def g(x: int, y: int) -> int:
     return f(x, 1) + f(y, 1)
 
 
+@cached_fn(0)
+def h(x: int, y: int) -> int:
+    print(f'g({x}, {y})')
+    return g(x, 2) + g(y, 2)
+
+
 def _main() -> None:
-    assert g(1, 2) == 5
+    # check.equal(h(1, 2), 11)
 
     #
 
@@ -263,8 +272,8 @@ def _main() -> None:
 
     with cache_context(cache):
         for _ in range(2):
-            assert g(1, 2) == 5
-            assert g(3, 2) == 7
+            check.equal(h(1, 2), 11)
+            check.equal(h(3, 2), 13)
 
 
 if __name__ == '__main__':
