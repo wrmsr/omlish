@@ -23,24 +23,24 @@ class AsdlField:
 
 
 @dc.dataclass(frozen=True)
-class AsdlNode(lang.Abstract):
+class AsdlNode(lang.Abstract, lang.Sealed):
     name: str
-    attrs: ta.Sequence[AsdlField] = ()
-    field: ta.Sequence[AsdlField] = ()
+    fields: ta.Sequence[AsdlField] = dc.field(default=(), kw_only=True)
+    attributes: ta.Sequence[AsdlField] = dc.field(default=(), kw_only=True)
 
 
 @dc.dataclass(frozen=True)
-class AsdlSum(AsdlNode):
-    ctors: ta.Sequence[str] = ()
+class AsdlSum(AsdlNode, lang.Final):
+    constructors: ta.Sequence[str] = dc.field(default=(), kw_only=True)
 
 
 @dc.dataclass(frozen=True)
-class AsdlProduct(AsdlNode):
+class AsdlProduct(AsdlNode, lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True)
-class AsdlConstructor(AsdlNode):
+class AsdlConstructor(AsdlNode, lang.Final):
     sum: str = dc.field(kw_only=True)
 
 
@@ -49,46 +49,44 @@ def _main() -> None:
     py_asdl = asdl.ASDLParser().parse(asdl_src)
     print(py_asdl)
 
-    dct: dict[str, AsdlNode] = {}
+    nodes: list[AsdlNode] = []
 
     def mk_field(af: asdl.Field) -> AsdlField:
         return AsdlField(
             af.name,
             af.type,
-            '*' if af.seq else '?' if af.opt else 1,
+            n='*' if af.seq else '?' if af.opt else 1,
         )
+
+    def mk_fields(afs: ta.Iterable[asdl.Field] | None) -> ta.Sequence[AsdlField]:
+        return list(map(mk_field, afs or []))
 
     for ty in py_asdl.dfns:
         v = ty.value
 
         if isinstance(v, asdl.Sum):
-            dct[ty.name] = AsdlSum(
+            nodes.append(AsdlSum(
                 ty.name,
-
-
-            )
-
-            print(f'sum: {ty.name}')
-            for a in v.attributes or ():
-                print(f'a: {a.name}')
+                attributes=mk_fields(v.attributes),
+                constructors=[c.name for c in v.types],
+            ))
 
             for c in v.types:
-                print()
-                print(f'ctor: {c.name}')
-                for f in c.fields or ():
-                    print(f'f: {f.name}')
+                nodes.append(AsdlConstructor(
+                    c.name,
+                    fields=mk_fields(c.fields),
+                    sum=ty.name,
+                ))
 
         elif isinstance(v, asdl.Product):
-            print(f'prod: {ty.name}')
-            for f in v.fields or ():
-                print(f'f: {f.name}')
-            for a in v.attributes or ():
-                print(f'a: {a.name}')
+            nodes.append(AsdlProduct(
+                ty.name,
+                fields=mk_fields(v.fields),
+                attributes=mk_fields(v.attributes),
+            ))
 
         else:
             raise TypeError(v)
-
-        print()
 
     ##
 
