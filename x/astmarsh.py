@@ -2,25 +2,6 @@
 TODO:
  - marshal 'external object... infos?'
  - gen map from ast node name -> map from field name to field type
-
-==
-
-deprecated in 3.12:
-class AugLoad(expr_context):
-class AugStore(expr_context):
-class ExtSlice(slice):
-class Index(slice):
-class Param(expr_context):
-class Suite(mod):
-class slice(AST):
-
-still missing:
-<*Constant*>
-  Bytes
-  Ellipsis
-  NameConstant
-  Num
-  Str
 """
 import ast
 import os.path
@@ -35,7 +16,8 @@ from . import asdl
 def _main() -> None:
     asdl_src = lang.get_relative_resources(globals=globals())['python-3.12.asdl'].read_bytes().decode('utf-8')
     py_nodes = asdl.flatten(asdl.ASDLParser().parse(asdl_src))
-    print(py_nodes)
+    py_node_fields = asdl.build_fields_info(py_nodes)
+    print(py_node_fields)
 
     ##
 

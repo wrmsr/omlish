@@ -241,7 +241,7 @@ class Check(VisitorBase):
             self.visit(f, name)
 
 
-_BUILTIN_TYPES: ta.AbstractSet[str] = {
+BUILTIN_TYPES: ta.AbstractSet[str] = {
     'identifier',
     'string',
     'int',
@@ -260,7 +260,7 @@ def check(mod: Module) -> bool:
     v.visit(mod)
 
     for t in v.types:
-        if t not in mod.types and t not in _BUILTIN_TYPES:
+        if t not in mod.types and t not in BUILTIN_TYPES:
             v.errors += 1
             uses = ", ".join(v.types[t])
             print('Undefined type {}, used in {}'.format(t, uses))
@@ -479,11 +479,14 @@ class ASDLParser:
 ##
 
 
+FlatFieldArity: ta.TypeAlias = ta.Literal[1, '?', '*']
+
+
 @dc.dataclass(frozen=True)
 class FlatField:
     name: str
     type: str
-    n: ta.Literal[1, '?', '*'] = 1
+    n: FlatFieldArity = 1
 
 
 @dc.dataclass(frozen=True)
@@ -557,4 +560,25 @@ def flatten(mod: Module) -> ta.Mapping[str, FlatNode]:
             raise KeyError(n.name)
         dct[n.name] = n
 
+    return dct
+
+
+#
+
+
+def build_fields_info(
+        nodes: ta.Mapping[str, FlatNode],
+) -> ta.Mapping[str, ta.Mapping[str, tuple[str, FlatFieldArity]]]:
+    dct: dict[str, dict[str, tuple[str, FlatFieldArity]]] = {}
+    for n in nodes.values():
+        cur = {}
+        f: FlatField
+        for f in [*n.fields, *n.attributes]:
+            if f.type in BUILTIN_TYPES:
+                continue
+            if f.type not in nodes:
+                raise KeyError(f.type)
+            cur[f.name] = (f.type, f.n)
+        if cur:
+            dct[n.name] = cur
     return dct
