@@ -5,28 +5,44 @@ TODO:
 """
 import ast
 import os.path
+import typing as ta
 
+from omlish import check
 from omlish import collections as col
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish import reflect as rfl
 
 from omlish.text import asdl
+
+
+@dc.dataclass(frozen=True)
+class ObjectMarshalerFactory(msh.MarshalerFactory):
+    dct: ta.Mapping[type, ta.Mapping[str, rfl.Type]]
+
+    def guard(self, ctx: msh.MarshalContext, rty: rfl.Type) -> bool:
+        return isinstance(rty, type) and rty in self.dct
+
+    def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
+        ty = check.isinstance(rty, type)
+        flds = self.dct[ty]
+
+        # fields = [
+        #     (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
+        #     for fi in get_field_infos(ty, ctx.options)
+        # ]
+        # return ObjectMarshaler(
+        #     fields,
+        #     unknown_field=dc_md.unknown_field,
+        # )
+        raise NotImplementedError
 
 
 def _main() -> None:
     asdl_src = lang.get_relative_resources(globals=globals())['python-3.12.asdl'].read_bytes().decode('utf-8')
     py_nodes = asdl.flatten(asdl.AsdlParser().parse(asdl_src))
     py_node_fields = asdl.build_fields_info(py_nodes)
-    print(py_node_fields)
-
-    ##
-
-    src_file = os.path.join(os.path.dirname(__file__), 'resolve.py')
-    with open(src_file) as f:
-        src = f.read()
-
-    root = ast.parse(src, src_file)
-    print(root)
 
     ##
 
@@ -53,12 +69,49 @@ def _main() -> None:
     if missing_non_consts:
         raise Exception('Missing non-const subclasses', missing_non_consts)
 
+    ##
+
+    def mk_fld_ty(ft: str, fa: asdl.FlatFieldArity) -> rfl.Type:
+        if ft in ast_cls_dct:
+            ty = ast_cls_dct[ft]
+        else:
+            ty = {
+                'identifier': str,
+                'string': str,
+                'int': int,
+                'constant': ast.Constant,
+            }[ft]
+
+        if fa == 1:
+            return ty
+        elif fa == '*':
+            return ta.Sequence[ty]
+        elif fa == '?':
+            return ta.Optional[ty]
+        else:
+            raise ValueError(fa)  # noqa
+
+    msh_dct = {}
+    for c in ast_cls_lst:
+        msh_dct[c] = {
+            fn: mk_fld_ty(ft, fa)
+            for fn, (ft, fa) in py_node_fields.get(c.__name__, {}).items()
+        }
+
+    ##
+
     ast_poly = msh.Polymorphism(ast.AST, [msh.Impl(ty, tag) for tag, ty in ast_cls_dct.items()])
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(ast_poly)]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(ast_poly)]
 
-    # _attributes = ()
-    # _fields = ()
+    ##
+
+    src_file = os.path.join(os.path.dirname(__file__), '..', 'resolve.py')
+    with open(src_file) as f:
+        src = f.read()
+
+    root = ast.parse(src, src_file)
+    print(root)
 
 
 if __name__ == '__main__':
