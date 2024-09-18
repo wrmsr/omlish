@@ -66,6 +66,8 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 
 
 CacheableVersion: ta.TypeAlias = ta.Hashable
+CacheableVersionMap: ta.TypeAlias = ta.Mapping['CacheableName', CacheableVersion]
+
 CacheableNameT = ta.TypeVar('CacheableNameT', bound='CacheableName')
 
 
@@ -95,15 +97,11 @@ class CacheableResolver(lang.Abstract):
 @dc.extra_params(cache_hash=True)
 class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
     name: CacheableNameT
-    version: CacheableVersion
 
     @dc.validate
     def _check_types(self) -> bool:
         hash(self)
-        return (
-                isinstance(self.name, CacheableName) and
-                self.version is not None
-        )
+        return isinstance(self.name, CacheableName)
 
 
 ##
@@ -112,20 +110,29 @@ class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
 class Cache:
     def __init__(
             self,
+            resolver: CacheableResolver,
     ) -> None:
         super().__init__()
 
-        self._dct: dict[CacheKey, ta.Any] = {}
+        self._resolver = resolver
+
+        self._dct: dict[CacheKey, 'Cache._Entry'] = {}
+
+    @dc.dataclass(frozen=True)
+    class _Entry:
+        key: CacheKey
+        versions: CacheableVersionMap
+        value: ta.Any
 
     def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
         try:
-            ret = self._dct[key]
+            entry = self._dct[key]
         except KeyError:
             return lang.empty()
         else:
-            return lang.just(ret)
+            return lang.just(entry.value)
 
-    def put(self, key: CacheKey, val: ta.Any) -> None:
+    def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
         self._dct[key] = val
 
 
@@ -257,7 +264,6 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
             if (cache := _CURRENT_CACHE) is not None:
                 key = FnCacheKey(
                     cacheable.name,
-                    cacheable.version,
                     args,
                     col.frozendict(kwargs),
                 )
@@ -318,7 +324,7 @@ def _main() -> None:
 
     #
 
-    cache = Cache()
+    cache = Cache(resolver=fr)
 
     #
 
