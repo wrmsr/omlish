@@ -54,6 +54,7 @@ constructor   ::= ConstructorId [fields]
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+# ruff: noqa: N802
 import abc
 import dataclasses as dc
 import enum
@@ -61,24 +62,25 @@ import re
 import typing as ta
 
 from .. import cached
+from .. import check
 
 
 ##
 
 
-# The following classes define nodes into which the ASDL description is parsed. Note: this is a "meta-AST". ASDL files
-# (such as Python.asdl) describe the AST structure used by a programming language. But ASDL files themselves need to be
-# parsed. This module parses ASDL files and uses a simple AST to represent them. See the EBNF at the top of the file to
+# The following classes define nodes into which the Asdl description is parsed. Note: this is a "meta-AST". Asdl files
+# (such as Python.asdl) describe the AST structure used by a programming language. But Asdl files themselves need to be
+# parsed. This module parses Asdl files and uses a simple AST to represent them. See the EBNF at the top of the file to
 # understand the logical connection between the various node types.
 
-class AST(abc.ABC):
+class Ast(abc.ABC):
     @abc.abstractmethod
     def __repr__(self) -> str:
         raise NotImplementedError
 
 
 @dc.dataclass(frozen=True)
-class Field(AST):
+class Field(Ast):
     type: str
     name: str | None = None
     seq: bool = False
@@ -86,159 +88,112 @@ class Field(AST):
 
     def __str__(self) -> str:
         if self.seq:
-            extra = "*"
+            extra = '*'
         elif self.opt:
-            extra = "?"
+            extra = '?'
         else:
-            extra = ""
+            extra = ''
 
-        return "{}{} {}".format(self.type, extra, self.name)
+        return f'{self.type}{extra} {self.name}'
 
     def __repr__(self) -> str:
         if self.seq:
-            extra = ", seq=True"
+            extra = ', seq=True'
         elif self.opt:
-            extra = ", opt=True"
+            extra = ', opt=True'
         else:
-            extra = ""
+            extra = ''
         if self.name is None:
-            return 'Field({0.type}{1})'.format(self, extra)
+            return f'Field({self.type}{extra})'
         else:
-            return 'Field({0.type}, {0.name}{1})'.format(self, extra)
+            return f'Field({self.type}, {self.name}{extra})'
 
 
 @dc.dataclass(frozen=True)
-class Constructor(AST):
+class Constructor(Ast):
     name: str
     fields: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
-        return 'Constructor({0.name}, {0.fields})'.format(self)
+        return f'Constructor({self.name}, {self.fields})'
 
 
 @dc.dataclass(frozen=True)
-class Sum(AST):
+class Sum(Ast):
     types: ta.Sequence[Constructor]
     attributes: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
         if self.attributes:
-            return 'Sum({0.types}, {0.attributes})'.format(self)
+            return f'Sum({self.types}, {self.attributes})'
         else:
-            return 'Sum({0.types})'.format(self)
+            return f'Sum({self.types})'
 
 
 @dc.dataclass(frozen=True)
-class Product(AST):
+class Product(Ast):
     fields: ta.Sequence[Field]
     attributes: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
         if self.attributes:
-            return 'Product({0.fields}, {0.attributes})'.format(self)
+            return f'Product({self.fields}, {self.attributes})'
         else:
-            return 'Product({0.fields})'.format(self)
+            return f'Product({self.fields})'
 
 
 @dc.dataclass(frozen=True)
-class Type(AST):
+class Type(Ast):
     name: str
-    value: ta.Union[Sum, Product]
+    value: Sum | Product
 
     def __repr__(self) -> str:
-        return 'Type({0.name}, {0.value})'.format(self)
+        return f'Type({self.name}, {self.value})'
 
 
 @dc.dataclass(frozen=True)
-class Module(AST):
+class Module(Ast):
     name: str
     dfns: ta.Sequence[Type]
 
     @cached.property
-    def types(self) -> ta.Mapping[str, ta.Union[Sum, Product]]:
-        return {type.name: type.value for type in self.dfns}
+    def types(self) -> ta.Mapping[str, Sum | Product]:
+        return {ty.name: ty.value for ty in self.dfns}
 
     def __repr__(self) -> str:
-        return 'Module({0.name}, {0.dfns})'.format(self)
+        return f'Module({self.name}, {self.dfns})'
 
 
 ##
 
 
-# A generic visitor for the meta-AST that describes ASDL. This can be used by emitters. Note that this visitor does not
+# A generic visitor for the meta-Ast that describes Asdl. This can be used by emitters. Note that this visitor does not
 # provide a generic visit method, so a subclass needs to define visit methods from visitModule to as deep as the
 # interesting node.
-# We also define a Check visitor that makes sure the parsed ASDL is well-formed.
+# We also define a Check visitor that makes sure the parsed Asdl is well-formed.
 
 class VisitorBase:
-    """Generic tree visitor for ASTs."""
+    """Generic tree visitor for Asts."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.cache = {}
+        self.cache: dict[type, ta.Any] = {}
 
     def visit(self, obj, *args):
         klass = obj.__class__
         meth = self.cache.get(klass)
         if meth is None:
-            methname = "visit" + klass.__name__
+            methname = 'visit' + klass.__name__
             meth = getattr(self, methname, None)
             self.cache[klass] = meth
         if meth:
             try:
                 meth(obj, *args)
             except Exception as e:
-                print("Error visiting %r: %s" % (obj, e))
-                raise
+                raise Exception(f'Error visiting {obj!r}') from e
 
 
 ##
-
-
-class Check(VisitorBase):
-    """
-    A visitor that checks a parsed ASDL tree for correctness.
-
-    Errors are printed and accumulated.
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.cons = {}
-        self.errors = 0
-        self.types = {}
-
-    def visitModule(self, mod: Module) -> None:
-        for dfn in mod.dfns:
-            self.visit(dfn)
-
-    def visitType(self, type: Type) -> None:
-        self.visit(type.value, str(type.name))
-
-    def visitSum(self, sum: Sum, name: str) -> None:
-        for t in sum.types:
-            self.visit(t, name)
-
-    def visitConstructor(self, cons: Constructor, name: str) -> None:
-        key = str(cons.name)
-        conflict = self.cons.get(key)
-        if conflict is None:
-            self.cons[key] = name
-        else:
-            print('Redefinition of constructor {}'.format(key))
-            print('Defined in {} and {}'.format(conflict, name))
-            self.errors += 1
-        for f in cons.fields:
-            self.visit(f, key)
-
-    def visitField(self, field: Field, name: str) -> None:
-        key = str(field.type)
-        l = self.types.setdefault(key, [])
-        l.append(name)
-
-    def visitProduct(self, prod: Product, name: str) -> None:
-        for f in prod.fields:
-            self.visit(f, name)
 
 
 BUILTIN_TYPES: ta.AbstractSet[str] = {
@@ -249,28 +204,10 @@ BUILTIN_TYPES: ta.AbstractSet[str] = {
 }
 
 
-def check(mod: Module) -> bool:
-    """
-    Check the parsed ASDL tree for correctness.
-
-    Return True if success. For failure, the errors are printed out and False is returned.
-    """
-
-    v = Check()
-    v.visit(mod)
-
-    for t in v.types:
-        if t not in mod.types and t not in BUILTIN_TYPES:
-            v.errors += 1
-            uses = ", ".join(v.types[t])
-            print('Undefined type {}, used in {}'.format(t, uses))
-    return not v.errors
-
-
 ##
 
 
-# Types for describing tokens in an ASDL specification.
+# Types for describing tokens in an Asdl specification.
 class TokenKind(enum.IntEnum):
     """TokenKind is provides a scope for enumerated token kinds."""
 
@@ -280,7 +217,7 @@ class TokenKind(enum.IntEnum):
     COMMA = enum.auto()
     QUESTION = enum.auto()
     PIPE = enum.auto()
-    ASTERISK = enum.auto()
+    AstERISK = enum.auto()
     L_PAREN = enum.auto()
     R_PAREN = enum.auto()
     L_BRACE = enum.auto()
@@ -294,7 +231,7 @@ OPERATOR_TABLE: ta.Mapping[str, TokenKind] = {
     '|': TokenKind.PIPE,
     '(': TokenKind.L_PAREN,
     ')': TokenKind.R_PAREN,
-    '*': TokenKind.ASTERISK,
+    '*': TokenKind.AstERISK,
     '{': TokenKind.L_BRACE,
     '}': TokenKind.R_BRACE,
 }
@@ -307,14 +244,14 @@ class Token:
     lineno: int
 
 
-class ASDLSyntaxError(Exception):
+class AsdlSyntaxError(Exception):
     def __init__(self, msg: str, lineno: int | None = None) -> None:
         super().__init__()
         self.msg = msg
         self.lineno = lineno or '<unknown>'
 
     def __str__(self) -> str:
-        return 'Syntax error on line {0.lineno}: {0.msg}'.format(self)
+        return f'Syntax error on line {self.lineno}: {self.msg}'
 
 
 def tokenize_asdl(buf: str) -> ta.Iterator[Token]:
@@ -337,28 +274,31 @@ def tokenize_asdl(buf: str) -> ta.Iterator[Token]:
                 try:
                     op_kind = OPERATOR_TABLE[c]
                 except KeyError:
-                    raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
+                    raise AsdlSyntaxError(f'Invalid operator {c}', lineno)  # noqa
                 yield Token(op_kind, c, lineno)
 
 
 ##
 
 
-class ASDLParser:
+class AsdlParser:
     """
-    Parser for ASDL files.
+    Parser for Asdl files.
 
-    Create, then call the parse method on a buffer containing ASDL. This is a simple recursive descent parser that uses
+    Create, then call the parse method on a buffer containing Asdl. This is a simple recursive descent parser that uses
     tokenize_asdl for the lexing.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self._tokenizer = None
-        self.cur_token = None
+        self._tokenizer: ta.Iterator[Token] | None = None
+        self.cur_token: Token | None = None
+
+    def cur(self) -> Token:
+        return check.not_none(self.cur_token)
 
     def parse(self, buf: str) -> Module:
-        """Parse the ASDL in the buffer and return an AST with a Module root."""
+        """Parse the Asdl in the buffer and return an Ast with a Module root."""
 
         self._tokenizer = tokenize_asdl(buf)
         self._advance()
@@ -368,7 +308,7 @@ class ASDLParser:
         if self._at_keyword('module'):
             self._advance()
         else:
-            raise ASDLSyntaxError('Expected "module" (found {})'.format(self.cur_token.value), self.cur_token.lineno)
+            raise AsdlSyntaxError(f'Expected "module" (found {self.cur().value})', self.cur().lineno)  # noqa
         name = self._match(self._id_kinds)
         self._match(TokenKind.L_BRACE)
         defs = self._parse_definitions()
@@ -377,21 +317,21 @@ class ASDLParser:
 
     def _parse_definitions(self) -> ta.Sequence[Type]:
         defs = []
-        while self.cur_token.kind == TokenKind.TYPE_ID:
-            typename = self._advance()
+        while self.cur().kind == TokenKind.TYPE_ID:
+            typename = check.non_empty_str(self._advance())
             self._match(TokenKind.EQUALS)
-            type = self._parse_type()
-            defs.append(Type(typename, type))
+            ty = self._parse_type()
+            defs.append(Type(typename, ty))
         return defs
 
     def _parse_type(self) -> Sum | Product:
-        if self.cur_token.kind == TokenKind.L_PAREN:
+        if self.cur().kind == TokenKind.L_PAREN:
             # If we see a (, it's a product
             return self._parse_product()
         else:
             # Otherwise it's a sum. Look for ConstructorId
             sumlist = [Constructor(self._match(TokenKind.CONSTRUCTOR_ID), self._parse_optional_fields())]
-            while self.cur_token.kind == TokenKind.PIPE:
+            while self.cur().kind == TokenKind.PIPE:
                 # More constructors
                 self._advance()
                 sumlist.append(Constructor(
@@ -406,20 +346,20 @@ class ASDLParser:
     def _parse_fields(self) -> ta.Sequence[Field]:
         fields = []
         self._match(TokenKind.L_PAREN)
-        while self.cur_token.kind == TokenKind.TYPE_ID:
-            typename = self._advance()
+        while self.cur().kind == TokenKind.TYPE_ID:
+            typename = check.non_empty_str(self._advance())
             is_seq, is_opt = self._parse_optional_field_quantifier()
-            id = self._advance() if self.cur_token.kind in self._id_kinds else None
+            id = self._advance() if self.cur().kind in self._id_kinds else None  # noqa
             fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
-            if self.cur_token.kind == TokenKind.R_PAREN:
+            if self.cur().kind == TokenKind.R_PAREN:
                 break
-            elif self.cur_token.kind == TokenKind.COMMA:
+            elif self.cur().kind == TokenKind.COMMA:
                 self._advance()
         self._match(TokenKind.R_PAREN)
         return fields
 
     def _parse_optional_fields(self) -> ta.Sequence[Field] | None:
-        if self.cur_token.kind == TokenKind.L_PAREN:
+        if self.cur().kind == TokenKind.L_PAREN:
             return self._parse_fields()
         else:
             return None
@@ -433,10 +373,10 @@ class ASDLParser:
 
     def _parse_optional_field_quantifier(self) -> tuple[bool, bool]:  # (seq, opt)
         is_seq, is_opt = False, False
-        if self.cur_token.kind == TokenKind.ASTERISK:
+        if self.cur().kind == TokenKind.AstERISK:
             is_seq = True
             self._advance()
-        elif self.cur_token.kind == TokenKind.QUESTION:
+        elif self.cur().kind == TokenKind.QUESTION:
             is_opt = True
             self._advance()
         return is_seq, is_opt
@@ -446,7 +386,7 @@ class ASDLParser:
 
         cur_val = None if self.cur_token is None else self.cur_token.value
         try:
-            self.cur_token = next(self._tokenizer)
+            self.cur_token = next(check.not_none(self._tokenizer))
         except StopIteration:
             self.cur_token = None
         return cur_val
@@ -462,18 +402,18 @@ class ASDLParser:
         * Reads in the next token
         """
 
-        if isinstance(kind, tuple) and self.cur_token.kind in kind or self.cur_token.kind == kind:
-            value = self.cur_token.value
+        if isinstance(kind, tuple) and self.cur().kind in kind or self.cur().kind == kind:
+            value = self.cur().value
             self._advance()
             return value
         else:
-            raise ASDLSyntaxError(
-                'Unmatched {} (found {})'.format(kind, self.cur_token.kind),
-                self.cur_token.lineno,
+            raise AsdlSyntaxError(
+                f'Unmatched {kind} (found {self.cur().kind})',
+                self.cur().lineno,
             )
 
     def _at_keyword(self, keyword: str) -> bool:
-        return self.cur_token.kind == TokenKind.TYPE_ID and self.cur_token.value == keyword
+        return self.cur().kind == TokenKind.TYPE_ID and self.cur().value == keyword
 
 
 ##
@@ -516,7 +456,7 @@ def flatten(mod: Module) -> ta.Mapping[str, FlatNode]:
 
     def mk_field(af: Field) -> FlatField:
         return FlatField(
-            af.name,
+            check.non_empty_str(af.name),
             af.type,
             n='*' if af.seq else '?' if af.opt else 1,
         )
@@ -568,6 +508,8 @@ def flatten(mod: Module) -> ta.Mapping[str, FlatNode]:
 
 def build_fields_info(
         nodes: ta.Mapping[str, FlatNode],
+        *,
+        exclude_builtins: bool = False,
 ) -> ta.Mapping[str, ta.Mapping[str, tuple[str, FlatFieldArity]]]:
     dct: dict[str, dict[str, tuple[str, FlatFieldArity]]] = {}
     for n in nodes.values():
@@ -575,8 +517,9 @@ def build_fields_info(
         f: FlatField
         for f in [*n.fields, *n.attributes]:
             if f.type in BUILTIN_TYPES:
-                continue
-            if f.type not in nodes:
+                if exclude_builtins:
+                    continue
+            elif f.type not in nodes:
                 raise KeyError(f.type)
             cur[f.name] = (f.type, f.n)
         if cur:
