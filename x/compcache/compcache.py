@@ -51,6 +51,7 @@ import tempfile
 import typing as ta
 
 from omlish import cached
+from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
@@ -167,7 +168,33 @@ def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
         _CURRENT_CACHE = cache
         yield
     finally:
+        check.is_(_CURRENT_CACHE, cache)
         _CURRENT_CACHE = prev
+
+
+@dc.dataclass(frozen=True)
+class _CacheableContext:
+    cacheable: Cacheable
+    key: CacheKey
+
+    parent: ta.Optional['_CacheableContext'] | None = dc.field(default=None, kw_only=True)
+
+
+_CURRENT_CACHEABLE_CONTEXT: _CacheableContext | None = None
+
+
+@contextlib.contextmanager
+def _cacheable_context(ctx: _CacheableContext) -> ta.Iterator[_CacheableContext]:
+    check.none(ctx.parent)
+    global _CURRENT_CACHEABLE_CONTEXT
+    prev =_CURRENT_CACHEABLE_CONTEXT
+    ctx = dc.replace(ctx, parent=prev)
+    try:
+        _CURRENT_CACHEABLE_CONTEXT = ctx
+        yield ctx
+    finally:
+        check.is_(_CURRENT_CACHEABLE_CONTEXT, ctx)
+        _CURRENT_CACHEABLE_CONTEXT = prev
 
 
 def cached_fn(version: int) -> ta.Callable[[T], T]:
@@ -190,7 +217,12 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                 if (hit := cache.get(key)).present:
                     return hit.must()
 
-                val = fn(*args, **kwargs)
+                with _cacheable_context(_CacheableContext(
+                    cacheable,
+                    key,
+                )) as ctx:  # noqa
+                    val = fn(*args, **kwargs)
+
                 cache.put(key, val)
                 return val
 
