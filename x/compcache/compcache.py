@@ -138,6 +138,11 @@ class Cache:
 
         self._dct: dict[CacheKey, 'Cache._Entry'] = {}
 
+        self._num_hits = 0
+        self._num_misses = 0
+        self._num_invalidates = 0
+        self._num_puts = 0
+
     @dc.dataclass(frozen=True)
     class _Entry:
         key: CacheKey
@@ -155,21 +160,28 @@ class Cache:
         try:
             entry = self._dct[key]
         except KeyError:
+            self._num_misses += 1
             return lang.empty()
 
         new_versions = self._build_version_map(entry.versions)
         if entry.versions != new_versions:
             del self._dct[key]
+            self._num_invalidates = 0
             return lang.empty()
 
+        self._num_hits += 1
         return lang.just(entry.value)
 
     def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
+        if key in self._dct:
+            raise KeyError(key)
+
         self._dct[key] = Cache._Entry(
             key,
             versions,
             val,
         )
+        self._num_puts += 1
 
 
 ##
