@@ -21,6 +21,7 @@ TODO:
  - ** INPUTS **
   - if underlying impl changes, bust
   - kinda reacty/reffy/signally
+ - decorator unwrapping and shit
 
 manifest stuff
  - serialization_version
@@ -47,6 +48,7 @@ names:
 import abc
 import contextlib
 import functools
+import importlib
 import tempfile
 import typing as ta
 
@@ -81,6 +83,12 @@ class Cacheable(lang.Abstract):
     @property
     @abc.abstractmethod
     def version(self) -> CacheableVersion:
+        raise NotImplementedError
+
+
+class CacheableResolver(lang.Abstract):
+    @abc.abstractmethod
+    def resolve(self, name: CacheableName) -> Cacheable:
         raise NotImplementedError
 
 
@@ -127,6 +135,7 @@ class Cache:
 
 @dc.dataclass(frozen=True)
 class FnCacheableName(CacheableName, lang.Final):
+    module: str
     qualname: str
 
 
@@ -137,7 +146,29 @@ class FnCacheable(Cacheable, lang.Final):
 
     @cached.property
     def name(self) -> FnCacheableName:
-        return FnCacheableName(self.fn.__qualname__)
+        return FnCacheableName(self.__module__, self.fn.__qualname__)
+
+
+class FnCacheableResolver(CacheableResolver):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._cache: dict[FnCacheableName, FnCacheable] = {}
+
+    def resolve(self, name: CacheableName) -> Cacheable:
+        fname = check.isinstance(name, FnCacheableName)
+        try:
+            return self._cache[fname]
+        except KeyError:
+            pass
+        mod = importlib.import_module(fname.module)
+        obj = mod
+        for a in fname.qualname.split('.'):
+            obj = getattr(obj, a)
+        check.callable(obj)
+        fc = check.isinstance(obj.__cacheable__, FnCacheable)
+        self._cache[fname] = fc
+        return fc
 
 
 @dc.dataclass(frozen=True)
@@ -173,12 +204,25 @@ def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
 
 
 @dc.dataclass(frozen=True)
-class _CacheableContext:
-    cacheable: Cacheable
-    key: CacheKey
+class _CacheResult(ta.Generic[T], lang.Final):
+    hit: bool
+    value: T
 
-    parent: ta.Optional['_CacheableContext'] | None = dc.field(default=None, kw_only=True)
-    children: list['_CacheableContext'] = dc.field(default_factory=list)
+
+@dc.dataclass()
+class _CacheableContext(lang.Final):
+    cacheable: Cacheable = dc.xfield(frozen=True)
+    key: CacheKey = dc.xfield(frozen=True)
+
+    result: _CacheResult | None = None
+
+    parent: ta.Optional['_CacheableContext'] | None = dc.xfield(default=None, kw_only=True, frozen=True)
+    children: list['_CacheableContext'] = dc.xfield(default_factory=list, frozen=True)
+
+    def walk(self) -> ta.Iterator['_CacheableContext']:
+        yield self
+        for child in self.children:
+            yield from child.walk()
 
 
 _CURRENT_CACHEABLE_CONTEXT: _CacheableContext | None = None
@@ -207,6 +251,8 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
             version,
         )
 
+        fn.__cacheable__ = cacheable
+
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             if (cache := _CURRENT_CACHE) is not None:
@@ -217,17 +263,19 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                     col.frozendict(kwargs),
                 )
 
-                if (hit := cache.get(key)).present:
-                    return hit.must()
-
                 with _cacheable_context(_CacheableContext(
-                    cacheable,
-                    key,
+                        cacheable,
+                        key,
                 )) as ctx:  # noqa
-                    val = fn(*args, **kwargs)
+                    if (hit := cache.get(key)).present:
+                        val = hit.must()
+                        ctx.result = _CacheResult(True, val)
+                        return val
 
-                cache.put(key, val)
-                return val
+                    val = fn(*args, **kwargs)
+                    ctx.result = _CacheResult(False, val)
+                    cache.put(key, val)
+                    return val
 
             else:
                 return fn(*args, **kwargs)
@@ -259,6 +307,14 @@ def h(x: int, y: int) -> int:
 
 
 def _main() -> None:
+    fr = FnCacheableResolver()
+
+    h_fc = h.__cacheable__
+    h_fcn = h_fc.name
+    check.is_(fr.resolve(h_fcn), h_fc)
+
+    #
+
     # check.equal(h(1, 2), 11)
 
     #

@@ -42,12 +42,13 @@ from .metadata import METADATA_ATTR
 
 @dc.dataclass(frozen=True, kw_only=True)
 class FieldExtras(lang.Final):
-    derive: ta.Callable[..., ta.Any] | None = None
+    derive: ta.Callable[..., ta.Any] | None = None  # TODO
     coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
     validate: ta.Callable[[ta.Any], bool] | None = None
     check_type: bool | None = None
     override: bool = False
     repr_fn: ta.Callable[[ta.Any], str | None] | None = None
+    frozen: bool | None = None  # TODO
 
 
 DEFAULT_FIELD_EXTRAS = FieldExtras()
