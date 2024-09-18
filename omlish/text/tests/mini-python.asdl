@@ -1,0 +1,15 @@
+module MiniPython
+{
+    expr = BoolOp(boolop op, expr* values)
+         | BinOp(expr left, operator op, expr right)
+         | UnaryOp(unaryop op, expr operand)
+         | Constant(constant value, string? kind)
+
+          attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
+
+    boolop = And | Or
+
+    operator = Add | Sub | Mult | Div | Mod
+
+    unaryop = Not | UAdd | USub
+}

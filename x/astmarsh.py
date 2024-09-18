@@ -15,7 +15,7 @@ from omlish.text import asdl
 
 def _main() -> None:
     asdl_src = lang.get_relative_resources(globals=globals())['python-3.12.asdl'].read_bytes().decode('utf-8')
-    py_nodes = asdl.flatten(asdl.ASDLParser().parse(asdl_src))
+    py_nodes = asdl.flatten(asdl.AsdlParser().parse(asdl_src))
     py_node_fields = asdl.build_fields_info(py_nodes)
     print(py_node_fields)
 
