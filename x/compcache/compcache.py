@@ -44,11 +44,13 @@ names:
  - CacheableName = qualname of a cacheable
   - dir structure: __package__/__qualname__/... ?
 """
+import abc
 import contextlib
 import functools
 import tempfile
 import typing as ta
 
+from omlish import cached
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
@@ -61,11 +63,51 @@ CacheT = ta.TypeVar('CacheT', bound='Cache')
 ##
 
 
+CacheableVersion: ta.TypeAlias = ta.Any
+
+
+class CacheableName(lang.Abstract):
+    pass
+
+
+class Cacheable(lang.Abstract):
+    @property
+    @abc.abstractmethod
+    def name(self) -> CacheableName:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def version(self) -> CacheableVersion:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FnCacheableName(CacheableName):
+    qualname: str
+
+
+@dc.dataclass(frozen=True)
+class FnCacheable(Cacheable):
+    fn: ta.Callable
+    version: int = dc.xfield(override=True)
+
+    @cached.property
+    def name(self) -> FnCacheableName:
+        return FnCacheableName(self.fn.__qualname__)
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class CacheKey(lang.Final):
-    version: int
-    fn: ta.Callable
+    name: CacheableName
+    version: CacheableVersion
     args: tuple
     kwargs: col.frozendict[str, ta.Any]
 
@@ -73,8 +115,8 @@ class CacheKey(lang.Final):
     def _check_types(self) -> bool:
         hash(self)
         return (
-                isinstance(self.version, int) and self.version >= 0 and
-                callable(self.fn) and
+                isinstance(self.name, CacheableName) and
+                self.version is not None and
                 isinstance(self.args, tuple) and
                 isinstance(self.kwargs, col.frozendict)
         )
