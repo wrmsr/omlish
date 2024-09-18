@@ -16,16 +16,32 @@ from . import asdl
 
 
 @dc.dataclass(frozen=True)
-class NodeFieldInfo:
+class AsdlField:
     name: str
     type: str
     n: ta.Literal[1, '?', '*'] = 1
 
 
 @dc.dataclass(frozen=True)
-class NodeTypeInfo:
+class AsdlNode(lang.Abstract):
     name: str
-    fields: ta.Sequence[NodeFieldInfo]
+    attrs: ta.Sequence[AsdlField] = ()
+    field: ta.Sequence[AsdlField] = ()
+
+
+@dc.dataclass(frozen=True)
+class AsdlSum(AsdlNode):
+    ctors: ta.Sequence[str] = ()
+
+
+@dc.dataclass(frozen=True)
+class AsdlProduct(AsdlNode):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class AsdlConstructor(AsdlNode):
+    sum: str = dc.field(kw_only=True)
 
 
 def _main() -> None:
@@ -33,10 +49,25 @@ def _main() -> None:
     py_asdl = asdl.ASDLParser().parse(asdl_src)
     print(py_asdl)
 
+    dct: dict[str, AsdlNode] = {}
+
+    def mk_field(af: asdl.Field) -> AsdlField:
+        return AsdlField(
+            af.name,
+            af.type,
+            '*' if af.seq else '?' if af.opt else 1,
+        )
+
     for ty in py_asdl.dfns:
         v = ty.value
 
         if isinstance(v, asdl.Sum):
+            dct[ty.name] = AsdlSum(
+                ty.name,
+
+
+            )
+
             print(f'sum: {ty.name}')
             for a in v.attributes or ():
                 print(f'a: {a.name}')
