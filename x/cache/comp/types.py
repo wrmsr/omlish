@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -8,7 +9,7 @@ from omlish import lang
 T = ta.TypeVar('T')
 
 CacheableVersion: ta.TypeAlias = ta.Hashable
-CacheableVersionMap: ta.TypeAlias = ta.Mapping['CacheableName', CacheableVersion]
+CacheableVersionMap: ta.TypeAlias = col.frozendict['CacheableName', CacheableVersion]
 
 CacheableNameT = ta.TypeVar('CacheableNameT', bound='CacheableName')
 

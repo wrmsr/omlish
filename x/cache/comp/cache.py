@@ -22,6 +22,7 @@ TODO:
   - if underlying impl changes, bust
   - kinda reacty/reffy/signally
  - decorator unwrapping and shit
+ - proactive deep invalidate
 
 manifest stuff
  - serialization_version
@@ -48,6 +49,7 @@ names:
 import copy
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -87,12 +89,19 @@ class Cache:
         versions: CacheableVersionMap
         value: ta.Any
 
+        @dc.validate
+        def _check_types(self) -> bool:
+            return (
+                isinstance(self.key, CacheKey) and
+                isinstance(self.versions, col.frozendict)
+            )
+
     def _build_version_map(self, names: ta.Iterable[CacheableName]) -> CacheableVersionMap:
         dct = {}
         for n in names:
             c = self._resolver.resolve(n)
             dct[n] = c.version
-        return dct
+        return col.frozendict(dct)
 
     def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
         try:

@@ -2,6 +2,7 @@ import contextlib
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 
 from .cache import Cache
@@ -95,7 +96,7 @@ class CacheableContext(lang.Final):
             else:
                 if ex != c.version:
                     raise Exception(f'Version mismatch: {ex} {c}')
-        return versions
+        return col.frozendict(versions)
 
 
 #
