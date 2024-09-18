@@ -60,7 +60,7 @@ import enum
 import re
 import typing as ta
 
-from omlish import cached
+from .. import cached
 
 
 ##

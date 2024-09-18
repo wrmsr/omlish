@@ -10,7 +10,7 @@ from omlish import collections as col
 from omlish import lang
 from omlish import marshal as msh
 
-from . import asdl
+from omlish.text import asdl
 
 
 def _main() -> None:
