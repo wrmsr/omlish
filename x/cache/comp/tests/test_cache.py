@@ -1,4 +1,4 @@
-from omlish import check
+from omlish import dataclasses as dc
 
 from ..cache import Cache
 from ..contexts import cache_context
@@ -39,6 +39,16 @@ def test_cache():
 
         for _ in range(2):
             print(f'{f3(1, 1)=}')
+            print()
 
         before = cache.stats
 
+        f1.__cacheable__ = dc.replace(f1.__cacheable__, version=1)
+
+        for _ in range(2):
+            print(f'{f3(1, 1)=}')
+            print()
+
+        after = cache.stats
+
+        print((before, after))
