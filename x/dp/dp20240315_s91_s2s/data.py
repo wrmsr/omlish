@@ -1,7 +1,7 @@
-from omdev import datacache as dac
+from omdev.cache import data as daca
 
 
-DATA_SPEC = dac.GitCacheDataSpec(
+DATA_SPEC = daca.GitCacheDataSpec(
     'https://github.com/starry91/NMT-Lab',
     rev='d439c27dd09f37688ce806c2bdd67d137ec62c86',
     subtrees=[
@@ -12,7 +12,7 @@ DATA_SPEC = dac.GitCacheDataSpec(
 
 
 def _main() -> None:
-    data_path = dac.default().get(DATA_SPEC)
+    data_path = daca.default().get(DATA_SPEC)
     print(data_path)
 
 
