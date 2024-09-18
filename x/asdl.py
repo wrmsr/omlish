@@ -119,7 +119,7 @@ class Constructor(AST):
 @dc.dataclass(frozen=True)
 class Sum(AST):
     types: ta.Sequence[Constructor]
-    attributes: ta.Sequence = dc.field(default_factory=list)
+    attributes: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
         if self.attributes:
@@ -131,7 +131,7 @@ class Sum(AST):
 @dc.dataclass(frozen=True)
 class Product(AST):
     fields: ta.Sequence[Field]
-    attributes: ta.Sequence = dc.field(default_factory=list)
+    attributes: ta.Sequence[Field] | None = None
 
     def __repr__(self) -> str:
         if self.attributes:

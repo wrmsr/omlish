@@ -19,7 +19,7 @@ from . import asdl
 class NodeFieldInfo:
     name: str
     type: str
-    n: ta.Literal[1, '?', '*']
+    n: ta.Literal[1, '?', '*'] = 1
 
 
 @dc.dataclass(frozen=True)
@@ -35,7 +35,18 @@ def _main() -> None:
 
     for ty in py_asdl.dfns:
         print(ty.name)
-        ty.value
+        v = ty.value
+        if isinstance(v, asdl.Sum):
+            for c in v.types:
+                print(f'  sum: {c.name}')
+                for f in c.fields:
+                    print(f'    f: {f}')
+        elif isinstance(v, asdl.Product):
+            for f in v.fields:
+                print(f'  f: {f}')
+        else:
+            raise TypeError(v)
+        print()
 
     ##
 
