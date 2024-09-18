@@ -101,6 +101,29 @@ class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
 ##
 
 
+class Cache:
+    def __init__(self, base_dir: str) -> None:
+        super().__init__()
+
+        self._base_dir = base_dir
+
+        self._dct: dict[CacheKey, ta.Any] = {}
+
+    def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
+        try:
+            ret = self._dct[key]
+        except KeyError:
+            return lang.empty()
+        else:
+            return lang.just(ret)
+
+    def put(self, key: CacheKey, val: ta.Any) -> None:
+        self._dct[key] = val
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class FnCacheableName(CacheableName, lang.Final):
     qualname: str
@@ -124,33 +147,10 @@ class FnCacheKey(CacheKey[FnCacheableName], lang.Final):
     @dc.validate
     def _check_fn_types(self) -> bool:
         return (
-            isinstance(self.name, FnCacheableName) and
-            isinstance(self.args, tuple) and
-            isinstance(self.kwargs, col.frozendict)
+                isinstance(self.name, FnCacheableName) and
+                isinstance(self.args, tuple) and
+                isinstance(self.kwargs, col.frozendict)
         )
-
-
-##
-
-
-class Cache:
-    def __init__(self, base_dir: str) -> None:
-        super().__init__()
-
-        self._base_dir = base_dir
-
-        self._dct: dict[CacheKey, ta.Any] = {}
-
-    def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
-        try:
-            ret = self._dct[key]
-        except KeyError:
-            return lang.empty()
-        else:
-            return lang.just(ret)
-
-    def put(self, key: CacheKey, val: ta.Any) -> None:
-        self._dct[key] = val
 
 
 ##
