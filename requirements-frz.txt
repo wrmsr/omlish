@@ -34,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.22
-botocore==1.35.22
+boto3==1.35.23
+botocore==1.35.23
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -353,7 +353,7 @@ python-json-logger==2.0.7
 python-magic==0.4.27
 python-oxmsg==0.0.1
 python-snappy==0.7.3
-python-telegram-bot==21.5
+python-telegram-bot==21.6
 pytorch-lightning==2.4.0
 pytz==2024.2
 PyYAML==6.0.2
