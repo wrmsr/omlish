@@ -27,6 +27,7 @@ def get_relative_resources(
 
     if os.sep in path:
         raise ValueError(path)  # noqa
+
     if not path.startswith('.'):
         path = '.' + path
     if set(path) - {'.'}:
