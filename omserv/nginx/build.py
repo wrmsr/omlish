@@ -57,7 +57,7 @@ def build_nginx() -> None:
         '-O2',
         '-fstack-protector',
     ]
-    ldflags = []
+    ldflags: list[str] = []
 
     if sys.platform == 'darwin':
         openssl_prefix = subprocess.check_output(['brew', '--prefix', 'openssl']).decode().strip()
