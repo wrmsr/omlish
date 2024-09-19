@@ -5,6 +5,7 @@ TODO:
  - stupid little progress bars
  - groups of multiple files downloaded - 'spec set'? idk
   - torchvision.datasets.FashionMNIST
+ - chaining? or is this compcache..
 """
 import logging
 import os.path
