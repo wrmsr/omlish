@@ -46,6 +46,9 @@ def merge_version_maps(
 ##
 
 
+Metadata: ta.TypeAlias = ta.Mapping[str, ta.Any]
+
+
 class Object(lang.Abstract):
     @property
     @abc.abstractmethod
@@ -60,6 +63,11 @@ class Object(lang.Abstract):
     @property
     @abc.abstractmethod
     def passive(self) -> bool:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def metadata(self) -> Metadata:
         raise NotImplementedError
 
     @cached.property
