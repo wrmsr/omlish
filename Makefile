@@ -413,8 +413,8 @@ test-install: venv
 
 ### Publish
 
-LOCAL_VERSION:=$$(egrep '^__version__ = ' omlish/__about__.py | cut -d ' ' -f 3 | tr -d "'")
-PYPI_VERSION:=$$(curl -s https://pypi.org/rss/project/omlish/releases.xml | grep '<title>' | grep -v 'PyPI' | head -n1 | sed -E 's/[ ]*<title>([A-Za-z0-9\.]+)<\/title>/\1/')
+LOCAL_VERSION:=$$(${PYTHON} -c 'from omlish import __about__; print(__about__.__version__)')
+PYPI_VERSION:=$$(${PYHTON} -m omdev.tools.piptools lookup_latest_version omlish)
 
 .PHONY: publish
 publish: gen package test-install
