@@ -21,7 +21,7 @@ class Project(ProjectBase):
 
         'templates': [
             'jinja2 ~= 3.1',
-        ]
+        ],
     }
 
 
