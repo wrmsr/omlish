@@ -62,6 +62,11 @@ class Object(lang.Abstract):
 
     @property
     @abc.abstractmethod
+    def dependencies(self) -> ta.AbstractSet[Name]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
     def passive(self) -> bool:
         raise NotImplementedError
 

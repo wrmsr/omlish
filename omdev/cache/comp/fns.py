@@ -38,8 +38,11 @@ class FnObject(Object, lang.Final, ta.Generic[P, T]):
     fn: ta.Callable[P, T]
     version: Version = dc.xfield(override=True)
 
-    passive: bool = dc.xfield(default=False, kw_only=True, override=True)
-    metadata: Metadata = dc.xfield(default=col.frozendict(), kw_only=True, override=True)
+    _: dc.KW_ONLY
+
+    dependencies: ta.AbstractSet[Name] = dc.xfield(default=frozenset(), override=True)
+    passive: bool = dc.xfield(default=False, override=True)
+    metadata: Metadata = dc.xfield(default=col.frozendict(), override=True)
 
     @cached.property
     def name(self) -> FnName:
