@@ -23,6 +23,8 @@ TODO:
   - kinda reacty/reffy/signally
  - decorator unwrapping and shit
  - proactive deep invalidate
+ - tracked and versioned 'ops' but not result cached
+  - 'Versioned'
 
 manifest stuff
  - serialization_version
