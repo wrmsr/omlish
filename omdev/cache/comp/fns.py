@@ -14,7 +14,6 @@ from .types import Cacheable
 from .types import CacheableName
 from .types import CacheableResolver
 from .types import CacheKey
-from .types import CacheResult
 
 
 T = ta.TypeVar('T')
@@ -62,9 +61,9 @@ class FnCacheKey(CacheKey[FnCacheableName], lang.Final):
     @dc.validate
     def _check_fn_types(self) -> bool:
         return (
-                isinstance(self.name, FnCacheableName) and
-                isinstance(self.args, tuple) and
-                isinstance(self.kwargs, col.frozendict)
+            isinstance(self.name, FnCacheableName) and
+            isinstance(self.args, tuple) and
+            isinstance(self.kwargs, col.frozendict)
         )
 
 
