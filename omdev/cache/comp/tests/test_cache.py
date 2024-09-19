@@ -1,7 +1,7 @@
 from omlish import dataclasses as dc
 
 from ..cache import Cache
-from ..contexts import setting_current_cache
+from ..currents import setting_current_cache
 from ..fns import FnObjectResolver
 from ..fns import cached_fn
 

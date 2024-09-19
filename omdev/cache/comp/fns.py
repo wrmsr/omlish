@@ -8,8 +8,8 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .contexts import get_current_cache
-from .contexts import setting_current_context
+from .currents import get_current_cache
+from .currents import setting_current_context
 from .types import CacheKey
 from .types import Name
 from .types import Object
