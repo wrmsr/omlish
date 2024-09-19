@@ -48,23 +48,22 @@ _CURRENT_CONTEXT: Context | None = None
 def setting_current_context(
         obj: Object,
         key: CacheKey | None = None,
+        **kwargs: ta.Any,
 ) -> ta.Iterator[Context]:
     global _CURRENT_CONTEXT
     prev = _CURRENT_CONTEXT
 
+    ctx_kw = dict(
+        parent=prev,
+        **kwargs,
+    )
+
     ctx: Context
     if obj.passive:
         check.none(key)
-        ctx = PassiveContext(
-            obj,
-            parent=prev,
-        )
+        ctx = PassiveContext(obj, **ctx_kw)
     else:
-        ctx = ActiveContext(
-            obj,
-            check.isinstance(key, CacheKey),
-            parent=prev,
-        )
+        ctx = ActiveContext(obj, check.isinstance(key, CacheKey), **ctx_kw)
 
     try:
         _CURRENT_CONTEXT = ctx
