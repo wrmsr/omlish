@@ -17,9 +17,9 @@ def test_default():
 
     for spec in [
         specs.GitSpec(
-            'https://github.com/DOsinga/deep_learning_cookbook',
-            rev='04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
-            subtrees=['data/wp_movies_10k.ndjson'],
+            'https://github.com/wrmsr/omlish',
+            rev='b5afdda1733e406bf98c88cf526b04423e74581e',
+            subtrees=['docker/compose.yml'],
         ),
         specs.GithubContentSpec(
             'karpathy/char-rnn',

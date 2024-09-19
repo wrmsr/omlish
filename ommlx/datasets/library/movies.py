@@ -17,7 +17,7 @@ class Movie:
     rat_10: str
 
 
-MOVIES_DATA = daca.GithubContentCacheDataSpec(
+MOVIES_DATA = daca.GithubContentSpec(
     'DOsinga/deep_learning_cookbook',
     '04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
     ['data/wp_movies_10k.ndjson'],
