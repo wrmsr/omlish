@@ -179,6 +179,40 @@ sorted(os.environ)=[
   '__CF_USER_TEXT_ENCODING',
 ]
 
+==
+GOOD
+
+sys.argv=[
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
+  '--multiprocess',
+  '--qt-support=auto',
+  '--client',
+  '127.0.0.1',
+  '--port',
+  '50791',
+  '--file',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
+  '--target',
+  'omlish/diag/tests/test_asts.py::test_check_equal',
+]
+sys.orig_argv=[
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python',
+  '-X',
+  'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cpython-cache',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
+  '--multiprocess',
+  '--qt-support=auto',
+  '--client',
+  '127.0.0.1',
+  '--port',
+  '50791',
+  '--file',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
+  '--target',
+  'omlish/diag/tests/test_asts.py::test_check_equal',
+]
+os.getcwd()='/Users/spinlock/src/wrmsr/omlish'
+
 """
 import os
 import sys
