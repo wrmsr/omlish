@@ -39,7 +39,7 @@ class Project(ProjectBase):
             'trio-asyncio ~= 0.15',
         ],
 
-        'compression': [
+        'compress': [
             'lz4 ~= 4.0',
 
             'python-snappy ~= 0.7; python_version < "3.13"',

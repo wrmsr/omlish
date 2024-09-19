@@ -8,7 +8,6 @@ TODO:
  - build / package / publish / version roll
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
  - env vars - PYTHONPATH
- - optional uv backend
 
 lookit:
  - https://pdm-project.org/en/latest/
@@ -158,6 +157,11 @@ class Venv:
         if (sr := self._cfg.requires):
             rr = RequirementsRewriter(self._name)
             reqs = [rr.rewrite(req) for req in sr]
+
+            # TODO: automatically try slower uv download when it fails? lol
+            #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
+            #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
+
             subprocess_check_call(
                 ve,
                 '-m',
