@@ -76,7 +76,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
         def inner(*args, **kwargs):
             # NOTE: just for testing :x allows updating
             # TODO: proper wrapper obj probably (enforce name resolution)
-            cacheable = inner.__cacheable__
+            cacheable = inner.__cacheable__  # type: ignore
 
             if (cache := get_current_cache()) is not None:
                 key = FnCacheKey(
@@ -105,7 +105,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
             else:
                 return fn(*args, **kwargs)
 
-        inner.__cacheable__ = FnCacheable(
+        inner.__cacheable__ = FnCacheable(  # type: ignore
             fn,
             version,
         )

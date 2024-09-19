@@ -5,10 +5,10 @@ from omlish import check
 from omlish import lang
 
 from .cache import Cache
-from .types import CacheKey
-from .types import CacheResult
 from .types import Cacheable
 from .types import CacheableVersionMap
+from .types import CacheKey
+from .types import CacheResult
 from .types import merge_version_maps
 
 
