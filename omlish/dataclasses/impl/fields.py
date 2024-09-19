@@ -178,6 +178,9 @@ def field_init(
     if fx.derive is not None:
         raise NotImplementedError
 
+    if fx.frozen:
+        raise NotImplementedError
+
     if fx.coerce is not None:
         cn = f'__dataclass_coerce__{f.name}__'
         locals[cn] = fx.coerce

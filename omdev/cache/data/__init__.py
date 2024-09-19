@@ -1,5 +1,5 @@
 from .cache import (  # noqa
-    DataCache,
+    Cache,
 )
 
 from .defaults import (  # noqa

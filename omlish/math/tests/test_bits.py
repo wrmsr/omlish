@@ -1,8 +1,8 @@
-from ..math import Int64
-from ..math import get_bit
-from ..math import get_bits
-from ..math import set_bit
-from ..math import set_bits
+from ..bits import Int64
+from ..bits import get_bit
+from ..bits import get_bits
+from ..bits import set_bit
+from ..bits import set_bits
 
 
 def test_bits():

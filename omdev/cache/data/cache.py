@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-class DataCache:
+class Cache:
     def __init__(self, base_dir: str) -> None:
         super().__init__()
         self._base_dir = base_dir

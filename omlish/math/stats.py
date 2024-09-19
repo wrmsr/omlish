@@ -3,6 +3,7 @@ TODO:
  - reservoir
  - dep tdigest?
  - struct-of-arrays - array.array('f', ...) - backed SamplingHistogram
+ - https://docs.python.org/3/library/statistics.html
 """
 import bisect
 import collections
@@ -14,8 +15,8 @@ import random
 import time
 import typing as ta
 
-from . import cached
-from . import check
+from .. import cached
+from .. import check
 
 
 ##
