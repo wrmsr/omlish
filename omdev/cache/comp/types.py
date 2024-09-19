@@ -57,6 +57,11 @@ class Object(lang.Abstract):
     def version(self) -> Version:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def passive(self) -> bool:
+        raise NotImplementedError
+
     @cached.property
     def as_version_map(self) -> VersionMap:
         return col.frozendict({self.name: self.version})
