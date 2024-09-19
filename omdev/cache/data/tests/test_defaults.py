@@ -1,5 +1,7 @@
+import os.path
 import pytest
 
+from .. import actions
 from .. import defaults
 from .. import specs
 
@@ -23,10 +25,17 @@ def test_default():
             'master',
             ['data/tinyshakespeare/input.txt'],
         ),
-        specs.HttpCacheDataSpec(
+        specs.UrlCacheDataSpec(
             'https://apt.llvm.org/llvm.sh',
+        ),
+        specs.UrlCacheDataSpec(
+            os.path.join('file://' + os.path.join(os.path.dirname(__file__), 'ziptest.tar.gz')),
+            actions=[
+                actions.ExtractAction('ziptest.tar.gz'),
+            ],
         ),
     ]:
         print(spec)
         for _ in range(2):
             print(defaults.default().get(spec))
+

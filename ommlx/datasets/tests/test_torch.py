@@ -18,7 +18,7 @@ else:
 
 
 FASHION_MNIST_SPECS = {
-    file: daca.HttpCacheDataSpec(
+    file: daca.UrlCacheDataSpec(
         f'https://ossci-datasets.s3.amazonaws.com/mnist/{file}',
     )
     for file, md5 in [  # noqa

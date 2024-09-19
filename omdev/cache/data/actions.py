@@ -6,6 +6,7 @@ TODO:
 """
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
@@ -26,7 +27,8 @@ class Action(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 class ExtractAction(Action, lang.Final):
-    files: ta.Sequence[str]
+    files: ta.Sequence[str] = dc.field(coerce=lambda s: check.not_isinstance(s, str))
+    keep_archive: bool = False
 
 
 ##

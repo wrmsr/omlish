@@ -1,3 +1,7 @@
+from .actions import (  # noqa
+    ExtractAction,
+)
+
 from .cache import (  # noqa
     Cache,
 )
@@ -15,5 +19,5 @@ from .specs import (  # noqa
     CacheDataSpec,
     GitCacheDataSpec,
     GithubContentCacheDataSpec,
-    HttpCacheDataSpec,
+    UrlCacheDataSpec,
 )
