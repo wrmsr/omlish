@@ -5,6 +5,8 @@ from omlish import check
 
 from .cache import Cache
 from .contexts import Context
+from .contexts import ActiveContext
+from .contexts import PassiveContext
 from .types import CacheKey
 from .types import Object
 
@@ -47,7 +49,8 @@ def setting_current_context(
 ) -> ta.Iterator[Context]:
     global _CURRENT_CONTEXT
     prev = _CURRENT_CONTEXT
-    ctx = Context(
+    ctx_cls = PassiveContext if obj.passive else ActiveContext
+    ctx = ctx_cls(
         obj,
         key,
         parent=prev,
