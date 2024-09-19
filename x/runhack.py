@@ -1,6 +1,8 @@
 """
-*** THIS GOES IN OMDEV lol ***
- - or..? pycharm already in core lol..
+TODO:
+ - *** NOT JUST PYTEST - also just running, and running debugging
+ - *** THIS GOES IN OMDEV lol ***
+  - or..? pycharm already in core lol..
 
 pycharm 242.21829.153
 
