@@ -20,10 +20,13 @@ class Context(lang.Abstract, lang.Sealed):
             self,
             obj: Object,
             *,
+            dependencies: VersionMap = col.frozendict(),
             parent: ta.Optional['Context'] = None,
     ) -> None:
         super().__init__()
+
         self._obj = obj
+        self._dependencies = dependencies
         self._parent = parent
 
         self._result: CacheResult | None = None
@@ -38,6 +41,10 @@ class Context(lang.Abstract, lang.Sealed):
     @property
     def object(self) -> Object:
         return self._obj
+
+    @property
+    def dependencies(self) -> VersionMap:
+        return self._dependencies
 
     @property
     def parent(self) -> ta.Optional['Context']:
@@ -58,6 +65,7 @@ class Context(lang.Abstract, lang.Sealed):
         check.state(self.done)
         return merge_version_maps(
             self._obj.as_version_map,
+            self._dependencies,
             self._impl_versions(),
             *[c.versions() for c in self._children],
         )
@@ -68,19 +76,10 @@ class Context(lang.Abstract, lang.Sealed):
 
 
 class ActiveContext(Context, lang.Final):
-    def __init__(
-            self,
-            obj: Object,
-            key: CacheKey,
-            *,
-            parent: Context | None = None,
-    ) -> None:
+    def __init__(self, obj: Object, key: CacheKey, **kwargs: ta.Any) -> None:
         check.arg(not obj.passive)
 
-        super().__init__(
-            obj,
-            parent=parent,
-        )
+        super().__init__(obj, **kwargs)
 
         self._key = key
 
@@ -112,18 +111,10 @@ class ActiveContext(Context, lang.Final):
 
 
 class PassiveContext(Context, lang.Final):
-    def __init__(
-            self,
-            obj: Object,
-            *,
-            parent: Context | None = None,
-    ) -> None:
+    def __init__(self, obj: Object, **kwargs: ta.Any) -> None:
         check.arg(obj.passive)
 
-        super().__init__(
-            obj,
-            parent=parent,
-        )
+        super().__init__(obj, **kwargs)
 
         self._done = False
 
