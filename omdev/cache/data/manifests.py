@@ -6,7 +6,7 @@ from omlish import dataclasses as dc
 
 from ...git import get_git_revision
 from .consts import SERIALIZATION_VERSION
-from .specs import CacheDataSpec
+from .specs import Spec
 
 
 ##
@@ -24,8 +24,8 @@ def _lib_revision() -> str | None:
 
 
 @dc.dataclass(frozen=True)
-class CacheDataManifest:
-    spec: CacheDataSpec
+class Manifest:
+    spec: Spec
 
     start_at: datetime.datetime = dc.field(kw_only=True)
     end_at: datetime.datetime = dc.field(kw_only=True)
