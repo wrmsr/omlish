@@ -108,3 +108,31 @@ class ObjectResolver(lang.Abstract):
     @abc.abstractmethod
     def resolve(self, name: Name) -> Object:
         raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass()
+class CacheStats:
+    num_hits: int = 0
+    num_misses: int = 0
+    num_invalidates: int = 0
+    num_puts: int = 0
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CacheEntry:
+    key: CacheKey
+    versions: VersionMap
+    value: ta.Any
+
+    @dc.validate
+    def _check_types(self) -> bool:
+        return (
+            isinstance(self.key, CacheKey) and
+            isinstance(self.versions, col.frozendict)
+        )
