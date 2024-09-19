@@ -15,23 +15,23 @@ def test_default():
     #
 
     for spec in [
-        specs.GitCacheDataSpec(
+        specs.GitSpec(
             'https://github.com/DOsinga/deep_learning_cookbook',
             rev='04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
             subtrees=['data/wp_movies_10k.ndjson'],
         ),
-        specs.GithubContentCacheDataSpec(
+        specs.GithubContentSpec(
             'karpathy/char-rnn',
             'master',
             ['data/tinyshakespeare/input.txt'],
         ),
-        specs.UrlCacheDataSpec(
+        specs.UrlSpec(
             'https://apt.llvm.org/llvm.sh',
         ),
-        specs.UrlCacheDataSpec(
+        specs.UrlSpec(
             os.path.join('file://' + os.path.join(os.path.dirname(__file__), 'ziptest.tar.gz')),
             actions=[
-                actions.ExtractAction('ziptest.tar.gz'),
+                actions.ExtractAction(['ziptest.tar.gz']),
             ],
         ),
     ]:
