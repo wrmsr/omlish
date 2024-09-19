@@ -70,8 +70,6 @@ class Project(ProjectBase):
         ],
 
         'misc': [
-            'jinja2 ~= 3.1',
-
             'wrapt ~= 1.14',
         ],
 

@@ -18,6 +18,10 @@ class Project(ProjectBase):
             'priority ~= 2.0',
             'wsproto ~= 1.2',
         ],
+
+        'templates': [
+            'jinja2 ~= 3.1',
+        ]
     }
 
 
