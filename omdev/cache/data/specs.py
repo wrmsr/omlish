@@ -10,6 +10,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
 
+from .actions import Action
 from .consts import SERIALIZATION_VERSION
 
 
@@ -19,6 +20,8 @@ from .consts import SERIALIZATION_VERSION
 @dc.dataclass(frozen=True)
 class CacheDataSpec(lang.Abstract, lang.Sealed):
     serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
+
+    actions: ta.Sequence[Action] = dc.field(default=(), kw_only=True)
 
     @cached.property
     def json(self) -> str:
@@ -52,7 +55,7 @@ class GitCacheDataSpec(CacheDataSpec):
 
 
 @dc.dataclass(frozen=True)
-class HttpCacheDataSpec(CacheDataSpec):
+class UrlCacheDataSpec(CacheDataSpec):
     url: str = dc.xfield(validate=lambda u: bool(urllib.parse.urlparse(u)))
     file_name: str | None = None
 

@@ -7,6 +7,17 @@ DCGAN Tutorial
 
 """
 
+from omdev.cache import data as daca
+
+
+daca.UrlCacheDataSpec(
+    'https://cseweb.ucsd.edu/~weijian/static/datasets/celeba/img_align_celeba.zip',
+)
+
+
+
+
+
 ######################################################################
 # Introduction
 # ------------
