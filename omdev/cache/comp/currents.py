@@ -4,8 +4,8 @@ import typing as ta
 from omlish import check
 
 from .cache import Cache
-from .contexts import Context
 from .contexts import ActiveContext
+from .contexts import Context
 from .contexts import PassiveContext
 from .types import CacheKey
 from .types import Object
@@ -52,18 +52,17 @@ def setting_current_context(
     global _CURRENT_CONTEXT
     prev = _CURRENT_CONTEXT
 
+    ctx: Context
     if obj.passive:
         check.none(key)
         ctx = PassiveContext(
             obj,
             parent=prev,
         )
-
     else:
-        check.isinstance(key, CacheKey)
         ctx = ActiveContext(
             obj,
-            key,
+            check.isinstance(key, CacheKey),
             parent=prev,
         )
 
