@@ -147,7 +147,7 @@ class Cache:
         start_at = lang.utcnow()
         self._fetch_into(spec, fetch_dir)
         for action in spec.actions:
-            self._perform_action(action, data_dir)
+            self._perform_action(action, fetch_dir)
         end_at = lang.utcnow()
 
         #
