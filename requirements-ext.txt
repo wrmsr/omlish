@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.4.0
+simsimd==5.4.1
 
 spacy==3.8.0
 
@@ -198,9 +198,9 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.46.0
+openai==1.46.1
 
-trl==0.10.1
+trl==0.11.0
 tf-keras==2.17.0
 
 polars==1.7.1
@@ -231,7 +231,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.22
 
-langsmith==0.1.122
+langsmith==0.1.123
 
 tavily-python==0.5.0
 

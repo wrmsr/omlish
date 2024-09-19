@@ -30,7 +30,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'async': [
-            'anyio ~= 4.4',
+            'anyio ~= 4.5',
             'sniffio ~= 1.3',
 
             'greenlet ~= 3.1',
@@ -81,7 +81,9 @@ class Project(ProjectBase):
 
         'sql': [
             'sqlalchemy[asyncio] ~= 2.0',
+        ],
 
+        'sql-drivers': [
             'pg8000 ~= 1.31',
             # 'psycopg2 ~= 2.9',
             # 'psycopg ~= 3.2',
@@ -93,9 +95,7 @@ class Project(ProjectBase):
             'aiomysql ~= 0.2',
             'aiosqlite ~= 0.20',
             'asyncpg ~= 0.29; python_version < "3.13"',
-        ],
 
-        'sqlx': [
             'sqlean.py ~= 3.45; python_version < "3.13"',
 
             'duckdb ~= 1.1',
