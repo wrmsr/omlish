@@ -1,3 +1,7 @@
+"""
+TODO:
+ - threadlocal / contextvar / whatever
+"""
 import contextlib
 import typing as ta
 

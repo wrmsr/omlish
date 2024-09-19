@@ -1,23 +1,19 @@
 """
 TODO:
- - decorator
- - thread local cache instance - but shared
- - arbitrary user-specified cache keys
  - filesystem OPTIONAL
+ - also postgres + (s3?) blobstore
  - locking
- - Keyer scheme
- - per-module-ish CACHE_VERSION convention
+
+==
+
+TODO (old):
  - are pickles stable?
- - ComputeCache class
- - Cacheable - fn is one
  - ttl
- - nice to have: np mmap
+ - np mmap
+  - https://numpy.org/doc/stable/reference/generated/numpy.ndarray.flags.html freeze ndarray w writable=False
  - compress?
- - decos, descriptors, etc
  - overlap w/ jobs/dags/batches/whatever
  - joblib
- - keep src anyway, but just for warn
-  - strip comments?
  - ** INPUTS **
   - if underlying impl changes, bust
   - kinda reacty/reffy/signally
@@ -25,28 +21,39 @@ TODO:
  - proactive deep invalidate
  - tracked and versioned 'ops' but not result cached
   - 'Versioned'
+ ----
+ - version can be anything - hashes, etc
+ - version generators - one for ast
+ - configurable serde - marshal vs pickle? marshal w/ override for ndarray to write to file?
+ - ok:
+  - @fn - version, passive=False, deps=[Objectable, …]
+   - it no version use ast - specifically {'ast': <md5>}
+   - but if present just use literal they gave, probably int
+   - idiom: Version can be a frozendict, conventionally of str -> ta.Hashable
+  - auto deps - fn can get containing Packages
+  - Module, Resource, …
+  - hrm.. LiteralVersion, MapVersion? + custom Marshal? need to deser as frozendict
+ - storage
+  - object table? w/ versions? strictly one row per object, evict objects with diff versions than those encountered
+  - nah Cache iface, SimpleCache, SqlCache
+  - dir structure: __package__/__qualname__/... ?
+ - next: Versions get squashed into VersionHash, store whole version in db but only pass and cmp md5
+  - thus VersionHashMap
 
 manifest stuff
  - serialization_version
  - lib_version
  - lib_revision
 
-fn manifest stuff
- - source
- - qualname
- - location
-
 See:
- - https://github.com/amakelov/mandala
  - https://jax.readthedocs.io/en/latest/autodidax.html
- - tinyjit
+ - https://github.com/tinygrad/tinygrad/blob/78699d9924feb96dc0bac88c3646b5d4f9ecad23/tinygrad/engine/jit.py
+ - https://github.com/SeaOfNodes/Simple/tree/c7445ad142aeaece5b2b1059c193735ba7e509d9 (gvn)
+ - https://github.com/joblib/joblib/tree/bca1f4216a38cff82a85371c45dde79bed977d0e/joblib
  - https://docs.python.org/3/library/pickle.html#pickle.Pickler.dispatch_table
 
-names:
- - CacheKey = unambiguous, fully qualified, unhashed map key - usually Cacheable + args
- - Cacheable = usually a fn
- - CacheableName = qualname of a cacheable
-  - dir structure: __package__/__qualname__/... ?
+Don't see:
+ - https://github.com/amakelov/mandala
 """
 import copy
 import typing as ta

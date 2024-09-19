@@ -1,3 +1,7 @@
+"""
+TODO:
+ - weak children if not in debug?
+"""
 import abc
 import typing as ta
 
@@ -28,6 +32,8 @@ class Context(lang.Abstract, lang.Sealed):
         self._obj = obj
         self._dependencies = dependencies
         self._parent = parent
+
+        check.equal(set(dependencies), set(obj.dependencies))
 
         self._result: CacheResult | None = None
         self._children: list[Context] = []

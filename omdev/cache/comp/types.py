@@ -46,7 +46,7 @@ def merge_version_maps(
 ##
 
 
-Metadata: ta.TypeAlias = ta.Mapping[str, ta.Any]
+Metadata: ta.TypeAlias = ta.Mapping[str, ta.Any]  # *not* hashed - advisory
 
 
 class Object(lang.Abstract):

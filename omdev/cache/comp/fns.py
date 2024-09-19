@@ -1,8 +1,23 @@
+"""
+TODO:
+ - user specified key construction (skip args, default, transform, etc)
+ - option to not cache if too fast
+ - auto parent package chain per-module/package-ish CACHE_VERSION convention
+ - meditate on decos, descriptors, unwrapping, etc
+ - auto metadata:
+  - source
+  - qualname
+  - location
+  - ast? ast hash?
+  - keep src anyway, but just for warn
+   - strip comments?
+ - global tracking?
+  - *** or, at least, global constants? *** explicit Const obj, on access attach? hm...
+"""
 import functools
 import importlib
 import typing as ta
 
-from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
@@ -35,7 +50,8 @@ class FnName(Name, lang.Final):
 
 @dc.dataclass(frozen=True)
 class FnObject(Object, lang.Final, ta.Generic[P, T]):
-    fn: ta.Callable[P, T]
+    name: Name = dc.xfield(override=True)
+    fn: ta.Callable[P, T]  # type: ignore
     version: Version = dc.xfield(override=True)
 
     _: dc.KW_ONLY
@@ -43,10 +59,6 @@ class FnObject(Object, lang.Final, ta.Generic[P, T]):
     dependencies: ta.AbstractSet[Name] = dc.xfield(default=frozenset(), override=True)
     passive: bool = dc.xfield(default=False, override=True)
     metadata: Metadata = dc.xfield(default=col.frozendict(), override=True)
-
-    @cached.property
-    def name(self) -> FnName:
-        return FnName(self.fn.__module__, self.fn.__qualname__)  # noqa
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self.fn(*args, **kwargs)
@@ -130,6 +142,10 @@ def fn(
                 return val
 
         inner.__cacheable__ = FnObject(  # type: ignore
+            FnName(
+                fn.__module__,
+                fn.__qualname__,
+            ),
             fn,
             version,
             passive=passive,
