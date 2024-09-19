@@ -92,11 +92,11 @@ class CacheableContext(lang.Final):
 
     def set_hit(self, result: CacheResult) -> None:
         check.state(result.hit)
-        check.replacing_none(self._result, result)
+        self._result = check.replacing_none(self._result, result)
         self.result_versions()
 
     def set_miss(self, val: ta.Any) -> None:
-        check.replacing_none(CacheResult(
+        self._result = check.replacing_none(self._result, CacheResult(
             False,
             CacheableVersionMap(),
             val,

@@ -90,7 +90,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                         cacheable,
                         key,
                 ) as ctx:
-                    if hit := cache.get(key) is not None:
+                    if (hit := cache.get(key)) is not None:
                         ctx.set_hit(hit)
                         return hit.value
 
