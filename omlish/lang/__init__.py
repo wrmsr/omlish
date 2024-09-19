@@ -60,6 +60,7 @@ from .contextmanagers import (  # noqa
     NOP_CONTEXT_MANAGER,
     NopContextManaged,
     NopContextManager,
+    Timer,
     a_defer,
     attr_setting,
     breakpoint_on_exception,

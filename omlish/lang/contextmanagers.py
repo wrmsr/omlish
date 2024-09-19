@@ -367,3 +367,37 @@ def default_lock(value: DefaultLockable, default: DefaultLockable = None) -> Loc
 
     else:
         raise TypeError(value)
+
+
+##
+
+
+class Timer:
+    def __init__(
+            self,
+            clock: ta.Callable[[], float] | None = None,
+    ) -> None:
+        super().__init__()
+        self._clock = clock if clock is not None else time.monotonic
+
+    _start: float
+    _end: float
+
+    @property
+    def start(self) -> float:
+        return self._start
+
+    @property
+    def end(self) -> float:
+        return self._end
+
+    @property
+    def elapsed(self) -> float:
+        return self._end - self._start
+
+    def __enter__(self) -> ta.Self:
+        self._start = self._clock()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._end = self._clock

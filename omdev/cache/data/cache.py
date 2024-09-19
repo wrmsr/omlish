@@ -19,11 +19,13 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from ... import git
+from .actions import Action
+from .actions import ExtractAction
 from .manifests import CacheDataManifest
 from .specs import CacheDataSpec
 from .specs import GitCacheDataSpec
 from .specs import GithubContentCacheDataSpec
-from .specs import HttpCacheDataSpec
+from .specs import UrlCacheDataSpec
 
 
 log = logging.getLogger(__name__)
@@ -39,6 +41,8 @@ class Cache:
 
         self._items_dir = os.path.join(base_dir, 'items')
 
+    #
+
     def _fetch_url(self, url: str, out_file: str) -> None:
         log.info('Fetching url: %s -> %s', url, out_file)
 
@@ -47,7 +51,7 @@ class Cache:
     def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
         log.info('Fetching spec: %s %r -> %s', spec.digest, spec, data_dir)
 
-        if isinstance(spec, HttpCacheDataSpec):
+        if isinstance(spec, UrlCacheDataSpec):
             self._fetch_url(spec.url, os.path.join(data_dir, spec.file_name_or_default))
 
         elif isinstance(spec, GithubContentCacheDataSpec):
@@ -92,10 +96,13 @@ class Cache:
         else:
             raise TypeError(spec)
 
+    def _perform_action(self, action: Action) -> None:
+        pass
+
     def _return_val(self, spec: CacheDataSpec, data_dir: str) -> str:
         check.state(os.path.isdir(data_dir))
 
-        if isinstance(spec, HttpCacheDataSpec):
+        if isinstance(spec, UrlCacheDataSpec):
             data_file = os.path.join(data_dir, spec.file_name_or_default)
             if not os.path.isfile(data_file):
                 raise RuntimeError(data_file)  # noqa
@@ -111,6 +118,8 @@ class Cache:
 
         else:
             return data_dir
+
+    #
 
     def get(self, spec: CacheDataSpec) -> str:
         os.makedirs(self._items_dir, exist_ok=True)
@@ -133,6 +142,8 @@ class Cache:
 
         start_at = lang.utcnow()
         self._fetch_into(spec, fetch_dir)
+        for action in spec.actions:
+            self._perform_action(action)
         end_at = lang.utcnow()
 
         #
