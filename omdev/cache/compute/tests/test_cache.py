@@ -4,6 +4,7 @@ from ..cache import Cache
 from ..currents import setting_current_cache
 from ..fns import FnObjectResolver
 from ..fns import fn
+from ..storage import DictStorage
 
 
 @fn(0)
@@ -31,8 +32,10 @@ def f3(x: int, y: int) -> int:
 
 
 def test_cache():
-    fr = FnObjectResolver()
-    cache = Cache(resolver=fr)
+    cache = Cache(
+        FnObjectResolver(),
+        DictStorage(),
+    )
 
     with setting_current_cache(cache):
         print()
