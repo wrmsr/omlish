@@ -81,23 +81,26 @@ class FnCacheKey(CacheKey[FnName], lang.Final):
 
 def fn(
         version: Version,
+        *,
+        passive: bool = False,
+        metadata: Metadata = col.frozendict(),
 ) -> ta.Callable[[T], T]:
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             # NOTE: just for testing :x allows updating
             # TODO: proper wrapper obj probably (enforce name resolution)
-            cacheable = inner.__cacheable__  # type: ignore
+            obj = inner.__cacheable__  # type: ignore
 
             if (cache := get_current_cache()) is not None:
                 key = FnCacheKey(
-                    cacheable.name,
+                    obj.name,
                     args,
                     col.frozendict(kwargs),
                 )
 
                 with setting_current_context(
-                        cacheable,
+                        obj,
                         key,
                 ) as ctx:
                     if (hit := cache.get(key)) is not None:
@@ -119,6 +122,8 @@ def fn(
         inner.__cacheable__ = FnObject(  # type: ignore
             fn,
             version,
+            passive=passive,
+            metadata=metadata,
         )
 
         return inner

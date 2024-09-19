@@ -19,13 +19,11 @@ class Context(lang.Abstract, lang.Sealed):
     def __init__(
             self,
             obj: Object,
-            key: CacheKey,
             *,
             parent: ta.Optional['Context'] = None,
     ) -> None:
         super().__init__()
         self._obj = obj
-        self._key = key
         self._parent = parent
 
         self._result: CacheResult | None = None
@@ -42,18 +40,12 @@ class Context(lang.Abstract, lang.Sealed):
         return self._obj
 
     @property
-    def key(self) -> CacheKey:
-        return self._key
-
-    @property
     def parent(self) -> ta.Optional['Context']:
         return self._parent
 
     @property
     def children(self) -> ta.Sequence['Context']:
         return self._children
-
-    #
 
     @property
     @abc.abstractmethod
@@ -87,11 +79,16 @@ class ActiveContext(Context, lang.Final):
 
         super().__init__(
             obj,
-            key,
             parent=parent,
         )
 
+        self._key = key
+
         self._result: CacheResult | None = None
+
+    @property
+    def key(self) -> CacheKey:
+        return self._key
 
     @property
     def done(self) -> bool:
@@ -118,7 +115,6 @@ class PassiveContext(Context, lang.Final):
     def __init__(
             self,
             obj: Object,
-            key: CacheKey,
             *,
             parent: Context | None = None,
     ) -> None:
@@ -126,7 +122,6 @@ class PassiveContext(Context, lang.Final):
 
         super().__init__(
             obj,
-            key,
             parent=parent,
         )
 
