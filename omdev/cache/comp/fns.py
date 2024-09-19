@@ -33,6 +33,8 @@ class FnObject(Object, lang.Final):
     fn: ta.Callable
     version: int = dc.xfield(override=True)
 
+    passive: bool = dc.xfield(default=False, kw_only=True, override=True)
+
     @cached.property
     def name(self) -> FnName:
         return FnName(self.fn.__module__, self.fn.__qualname__)  # noqa
