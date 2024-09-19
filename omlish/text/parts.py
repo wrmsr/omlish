@@ -30,7 +30,7 @@ def _check_part(o: PartT) -> PartT:
     return o
 
 
-def _check_optional_part(o: PartT | None) -> PartT | None:
+def _check_opt_part(o: PartT | None) -> PartT | None:
     if o is None:
         return None
     return _check_part(o)
@@ -49,7 +49,7 @@ class Wrap(DataPart, lang.Final):
 
 
 class List(DataPart, lang.Final):
-    parts: ta.Sequence[Part | None] = dc.xfield(coerce=col.seq_of(_check_optional_part))
+    parts: ta.Sequence[Part | None] = dc.xfield(coerce=col.seq_of(_check_opt_part))
     delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
     trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
 

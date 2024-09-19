@@ -1,13 +1,8 @@
 import functools
-import struct
 import typing as ta
 
 
 ##
-
-
-def isclose(a: float, b: float, *, rel_tol: float = 1e-09, abs_tol: float = 0.0) -> float:
-    return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 
 def get_bit(bit: int, value: int) -> int:
@@ -27,14 +22,6 @@ def set_bit(bit: int, bit_value: int, value: int) -> int:
 
 def set_bits(bits_from: int, num_bits: int, bits_value: int, value: int) -> int:
     return value & ~(((1 << num_bits) - 1) << bits_from) | (bits_value << bits_from)
-
-
-def float_to_bytes(f: float) -> bytes:
-    return struct.pack('>f', f)
-
-
-def bytes_to_float(b: bytes) -> float:
-    return struct.unpack('>f', b)[0]
 
 
 ##

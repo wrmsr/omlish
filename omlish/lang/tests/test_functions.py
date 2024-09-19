@@ -2,7 +2,9 @@ import pytest
 
 from ..functions import Args
 from ..functions import as_async
+from ..functions import coalesce
 from ..functions import finally_
+from ..functions import opt_coalesce
 from ..functions import try_
 
 
@@ -43,3 +45,24 @@ def test_finally():
 @pytest.mark.asyncio
 async def test_as_async():
     assert (await as_async(lambda: 420)()) == 420
+
+
+def test_coalesce():
+    oi0: int | None = None
+    oi1: int | None = 1
+
+    #
+
+    assert coalesce(oi0, 2) == 2
+    assert coalesce(oi1, 2) == 1
+    assert coalesce(oi0, oi1, 2) == 1
+
+    with pytest.raises(ValueError):  # noqa
+        assert coalesce(oi0, None)
+
+    #
+
+    assert opt_coalesce(oi0, 2) == 2
+    assert opt_coalesce(oi1, 2) == 1
+    assert opt_coalesce(oi0, oi1, 2) == 1
+    assert opt_coalesce(oi0, None) is None

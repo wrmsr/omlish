@@ -217,7 +217,7 @@ class TokenKind(enum.IntEnum):
     COMMA = enum.auto()
     QUESTION = enum.auto()
     PIPE = enum.auto()
-    AstERISK = enum.auto()
+    ASTERISK = enum.auto()
     L_PAREN = enum.auto()
     R_PAREN = enum.auto()
     L_BRACE = enum.auto()
@@ -231,7 +231,7 @@ OPERATOR_TABLE: ta.Mapping[str, TokenKind] = {
     '|': TokenKind.PIPE,
     '(': TokenKind.L_PAREN,
     ')': TokenKind.R_PAREN,
-    '*': TokenKind.AstERISK,
+    '*': TokenKind.ASTERISK,
     '{': TokenKind.L_BRACE,
     '}': TokenKind.R_BRACE,
 }
@@ -373,7 +373,7 @@ class AsdlParser:
 
     def _parse_optional_field_quantifier(self) -> tuple[bool, bool]:  # (seq, opt)
         is_seq, is_opt = False, False
-        if self.cur().kind == TokenKind.AstERISK:
+        if self.cur().kind == TokenKind.ASTERISK:
             is_seq = True
             self._advance()
         elif self.cur().kind == TokenKind.QUESTION:
@@ -394,7 +394,8 @@ class AsdlParser:
     _id_kinds = (TokenKind.CONSTRUCTOR_ID, TokenKind.TYPE_ID)
 
     def _match(self, kind: TokenKind | tuple[TokenKind, ...]) -> str:
-        """The 'match' primitive of RD parsers.
+        """
+        The 'match' primitive of RD parsers.
 
         * Verifies that the current token is of the given kind (kind can be a tuple, in which the kind must match one of
           its members).

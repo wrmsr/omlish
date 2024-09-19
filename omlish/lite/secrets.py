@@ -20,3 +20,17 @@ class Secret:
 
     def reveal(self) -> str:
         return getattr(self, self._VALUE_ATTR)()
+
+    #
+
+    def __reduce__(self) -> ta.NoReturn:
+        raise TypeError
+
+    def __reduce_ex__(self, protocol) -> ta.NoReturn:
+        raise TypeError
+
+    def __getstate__(self) -> ta.NoReturn:
+        raise TypeError
+
+    def __setstate__(self, state) -> ta.NoReturn:
+        raise TypeError

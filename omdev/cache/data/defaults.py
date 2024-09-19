@@ -2,7 +2,7 @@ import os.path
 
 from omlish import lang
 
-from .cache import DataCache
+from .cache import Cache
 
 
 ##
@@ -14,5 +14,5 @@ def default_dir() -> str:
 
 
 @lang.cached_function(lock=True)
-def default() -> DataCache:
-    return DataCache(default_dir())
+def default() -> Cache:
+    return Cache(default_dir())

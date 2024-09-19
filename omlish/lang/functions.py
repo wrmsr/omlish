@@ -183,3 +183,20 @@ class Args:
 
     def __call__(self, fn: ta.Callable[..., T]) -> T:
         return fn(*self.args, **self.kwargs)
+
+
+##
+
+
+def coalesce(*vs: T | None) -> T:
+    for v in vs:
+        if v is not None:
+            return v
+    raise ValueError('No value given')
+
+
+def opt_coalesce(*vs: T | None) -> T | None:
+    for v in vs:
+        if v is not None:
+            return v
+    return None
