@@ -59,10 +59,12 @@ import copy
 import typing as ta
 
 from omlish import collections as col
-from omlish import dataclasses as dc
 
+from .storage import Storage
+from .types import CacheEntry
 from .types import CacheKey
 from .types import CacheResult
+from .types import CacheStats
 from .types import Name
 from .types import ObjectResolver
 from .types import VersionMap
@@ -72,38 +74,18 @@ class Cache:
     def __init__(
             self,
             resolver: ObjectResolver,
+            storage: Storage,
     ) -> None:
         super().__init__()
 
         self._resolver = resolver
+        self._storage = storage
 
-        self._dct: dict[CacheKey, Cache.Entry] = {}
-
-        self._stats = Cache.Stats()
-
-    @dc.dataclass()
-    class Stats:
-        num_hits: int = 0
-        num_misses: int = 0
-        num_invalidates: int = 0
-        num_puts: int = 0
+        self._stats = CacheStats()
 
     @property
-    def stats(self) -> Stats:
+    def stats(self) -> CacheStats:
         return copy.deepcopy(self._stats)
-
-    @dc.dataclass(frozen=True)
-    class Entry:
-        key: CacheKey
-        versions: VersionMap
-        value: ta.Any
-
-        @dc.validate
-        def _check_types(self) -> bool:
-            return (
-                isinstance(self.key, CacheKey) and
-                isinstance(self.versions, col.frozendict)
-            )
 
     def _build_version_map(self, names: ta.Iterable[Name]) -> VersionMap:
         dct = {}
@@ -113,15 +95,14 @@ class Cache:
         return col.frozendict(dct)
 
     def get(self, key: CacheKey) -> CacheResult | None:
-        try:
-            entry = self._dct[key]
-        except KeyError:
+        entry = self._storage.get(key)
+        if entry is None:
             self._stats.num_misses += 1
             return None
 
         new_versions = self._build_version_map(entry.versions)
         if entry.versions != new_versions:
-            del self._dct[key]
+            self._storage.delete(key)
             self._stats.num_invalidates += 1
             return None
 
@@ -133,12 +114,9 @@ class Cache:
         )
 
     def put(self, key: CacheKey, versions: VersionMap, val: ta.Any) -> None:
-        if key in self._dct:
-            raise KeyError(key)
-
-        self._dct[key] = Cache.Entry(
+        self._storage.put(CacheEntry(
             key,
             versions,
             val,
-        )
+        ))
         self._stats.num_puts += 1
