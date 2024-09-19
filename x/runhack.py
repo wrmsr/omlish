@@ -1,9 +1,11 @@
 """
 *** THIS GOES IN OMDEV lol ***
+ - or..? pycharm already in core lol..
 
 pycharm 242.21829.153
 
 https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
+https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pycharm/_jb_runner_tools.py
 
 ==
 
@@ -13,7 +15,7 @@ https://github.com/xolox/python-coloredlogs/blob/65bdfe976ac0bf81e8c0bd9a98242b9
 
 _distutils_hack
 
-runhack.pth: import x.runhack; x.runhack._run()
+omlish-pycharm-runhack.pth: import x.runhack; x.runhack._run()
 
 ==
 
@@ -336,21 +338,37 @@ def _run() -> None:
         return
     _HAS_RUN = True
 
+    #
+
+    # default_enabled = False
+    default_enabled = True
+
+    is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', default_enabled))
+    if not is_enabled:
+        return
+
+    #
+
+    is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG'))
+
     def debug(*args, **kwargs):
-        print(*args, **kwargs, file=sys.stderr)
+        if is_debug:
+            print(*args, **kwargs, file=sys.stderr)
+
+    #
 
     debug(f'{sys.argv=}')
     debug(f'{sys.orig_argv=}')
     debug(f'{os.getcwd()=}')
     debug(f'{sorted(os.environ)=}')
-    debug(f'{os.environ["LIBRARY_ROOTS"]=}')
-    debug(f'{os.environ["PATH"]=}')
-    debug(f'{os.environ["PYTHONPATH"]=}')
+    debug(f'{os.environ.get("LIBRARY_ROOTS")=}')
+    debug(f'{os.environ.get("PATH")=}')
+    debug(f'{os.environ.get("PYTHONPATH")=}')
     debug(f'{sys.path=}')
 
     # breakpoint()
 
-    # sys.argv[-1] = 'debug(2)'
+    #
 
     if len(sys.argv) > 2 and sys.argv[-2] == '--path':
         ide_roots = os.environ['IDE_PROJECT_ROOTS'].split(os.pathsep)
@@ -393,5 +411,20 @@ def _run() -> None:
 
         # mod_name = rel_path.rpartition('.')[0].replace(os.sep, '.')
 
-        sys.argv[-2:] = ['--target', rel_path]
+        # TODO:
+        #  - don't touch any args after '--'
+        #  - otherwise, pairs of --path or --target
+        #  - it appears take a single path *OR* any number of targets
+
+        sys.argv[-2:] = [
+            '--target',
+
+            # Pytest: path_to_file.py::module_name::class_name::fun_name
+            # When file is launched in pytest it should be file.py: you can't provide it as bare module
+            # [t + ".py" if ":" not in t else t for t in joined_targets]
+
+            # rel_path + '::test_lifecycles',  # one test
+            # rel_path.rpartition('.')[0],  # whole file
+            rel_path + '::test_lifecycles',  # whole file
+        ]
         debug(f'{sys.argv=}')
