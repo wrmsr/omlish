@@ -60,7 +60,7 @@ async = [
     'trio ~= 0.26',
     'trio-asyncio ~= 0.15',
 ]
-compression = [
+compress = [
     'lz4 ~= 4.0',
     'python-snappy ~= 0.7; python_version < "3.13"',
     'zstd ~= 1.5',
