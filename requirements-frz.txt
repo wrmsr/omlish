@@ -34,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.21
-botocore==1.35.21
+boto3==1.35.22
+botocore==1.35.22
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -196,7 +196,7 @@ langcodes==3.4.0
 langdetect==1.0.9
 langgraph==0.2.22
 langgraph-checkpoint==1.0.10
-langsmith==0.1.121
+langsmith==0.1.122
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -415,7 +415,7 @@ sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
 starlette==0.38.5
-sympy==1.13.2
+sympy==1.13.3
 tabulate==0.9.0
 tantivy==0.22.0
 tavily-python==0.5.0
@@ -447,7 +447,7 @@ trio_asyncio==0.15.0
 trl==0.10.1
 twine==5.1.1
 typer==0.12.5
-types-paramiko==3.4.0.20240423
+types-paramiko==3.5.0.20240918
 types-python-dateutil==2.9.0.20240906
 types-PyYAML==6.0.12.20240917
 types-requests==2.32.0.20240914
