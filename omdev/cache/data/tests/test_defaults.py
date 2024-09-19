@@ -1,4 +1,5 @@
 import os.path
+
 import pytest
 
 from .. import actions
@@ -38,4 +39,3 @@ def test_default():
         print(spec)
         for _ in range(2):
             print(defaults.default().get(spec))
-

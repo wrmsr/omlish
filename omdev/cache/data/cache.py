@@ -22,9 +22,9 @@ from ... import git
 from .actions import Action
 from .actions import ExtractAction
 from .manifests import Manifest
-from .specs import Spec
 from .specs import GitSpec
 from .specs import GithubContentSpec
+from .specs import Spec
 from .specs import UrlSpec
 
 

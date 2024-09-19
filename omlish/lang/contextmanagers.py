@@ -7,6 +7,7 @@ import contextlib
 import contextvars
 import functools
 import threading
+import time
 import types
 import typing as ta
 
@@ -400,4 +401,4 @@ class Timer:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._end = self._clock
+        self._end = self._clock()
