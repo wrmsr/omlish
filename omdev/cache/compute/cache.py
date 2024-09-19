@@ -19,8 +19,6 @@ TODO (old):
   - kinda reacty/reffy/signally
  - decorator unwrapping and shit
  - proactive deep invalidate
- - tracked and versioned 'ops' but not result cached
-  - 'Versioned'
  ----
  - version can be anything - hashes, etc
  - version generators - one for ast
