@@ -24,6 +24,12 @@ class Name(lang.Abstract):
 
 
 Version: ta.TypeAlias = ta.Hashable
+
+
+def version(**kwargs: Version) -> Version:
+    return col.frozendict(**kwargs)
+
+
 VersionMap: ta.TypeAlias = col.frozendict[Name, Version]
 
 
