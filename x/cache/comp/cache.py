@@ -51,12 +51,12 @@ import typing as ta
 
 from omlish import collections as col
 from omlish import dataclasses as dc
-from omlish import lang
 
+from .types import CacheKey
+from .types import CacheResult
 from .types import CacheableName
 from .types import CacheableResolver
 from .types import CacheableVersionMap
-from .types import CacheKey
 
 
 class Cache:
@@ -103,21 +103,25 @@ class Cache:
             dct[n] = c.version
         return col.frozendict(dct)
 
-    def get(self, key: CacheKey) -> lang.Maybe[ta.Any]:
+    def get(self, key: CacheKey) -> CacheResult | None:
         try:
             entry = self._dct[key]
         except KeyError:
             self._stats.num_misses += 1
-            return lang.empty()
+            return None
 
         new_versions = self._build_version_map(entry.versions)
         if entry.versions != new_versions:
             del self._dct[key]
             self._stats.num_invalidates += 1
-            return lang.empty()
+            return None
 
         self._stats.num_hits += 1
-        return lang.just(entry.value)
+        return CacheResult(
+            True,
+            entry.versions,
+            entry.value,
+        )
 
     def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
         if key in self._dct:

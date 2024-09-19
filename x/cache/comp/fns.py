@@ -40,9 +40,6 @@ class FnCacheable(Cacheable, lang.Final):
 
 
 class FnCacheableResolver(CacheableResolver):
-    def __init__(self) -> None:
-        super().__init__()
-
     def resolve(self, name: CacheableName) -> Cacheable:
         fname = check.isinstance(name, FnCacheableName)
 
@@ -76,15 +73,12 @@ class FnCacheKey(CacheKey[FnCacheableName], lang.Final):
 
 def cached_fn(version: int) -> ta.Callable[[T], T]:
     def outer(fn):
-        cacheable = FnCacheable(
-            fn,
-            version,
-        )
-
-        fn.__cacheable__ = cacheable
-
         @functools.wraps(fn)
         def inner(*args, **kwargs):
+            # NOTE: just for testing :x allows updating
+            # TODO: proper wrapper obj probably (enforce name resolution)
+            cacheable = inner.__cacheable__
+
             if (cache := get_current_cache()) is not None:
                 key = FnCacheKey(
                     cacheable.name,
@@ -96,22 +90,26 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                         cacheable,
                         key,
                 ) as ctx:
-                    if (hit := cache.get(key)).present:
-                        val = hit.must()
-                        ctx.set_result(CacheResult(True, val))
-                        return val
+                    if hit := cache.get(key) is not None:
+                        ctx.set_hit(hit)
+                        return hit.value
 
                     val = fn(*args, **kwargs)
-                    ctx.set_result(CacheResult(False, val))
+                    ctx.set_miss(val)
                     cache.put(
                         key,
-                        ctx.build_version_map(),
+                        ctx.result_versions(),
                         val,
                     )
                     return val
 
             else:
                 return fn(*args, **kwargs)
+
+        inner.__cacheable__ = FnCacheable(
+            fn,
+            version,
+        )
 
         return inner
 

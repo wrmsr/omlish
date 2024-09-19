@@ -6,12 +6,13 @@ from omlish import collections as col
 from omlish import lang
 
 from .cache import Cache
+from .types import CacheKey
+from .types import CacheResult
 from .types import Cacheable
 from .types import CacheableName
 from .types import CacheableVersion
 from .types import CacheableVersionMap
-from .types import CacheKey
-from .types import CacheResult
+from .types import merge_version_maps
 
 
 CacheT = ta.TypeVar('CacheT', bound='Cache')
@@ -59,7 +60,10 @@ class CacheableContext(lang.Final):
         self._children: list[CacheableContext] = []
 
         if parent is not None:
+            check.state(not parent.has_result)
             parent._children.append(self)  # noqa
+
+    #
 
     @property
     def cacheable(self) -> Cacheable:
@@ -77,26 +81,36 @@ class CacheableContext(lang.Final):
     def children(self) -> ta.Sequence['CacheableContext']:
         return self._children
 
-    def set_result(self, result: CacheResult) -> None:
+    #
+
+    @property
+    def has_result(self) -> bool:
+        return self._result is not None
+
+    def result(self) -> CacheResult:
+        return check.not_none(self._result)
+
+    def set_hit(self, result: CacheResult) -> None:
+        check.state(result.hit)
         check.replacing_none(self._result, result)
+        self.result_versions()
 
-    def walk(self) -> ta.Iterator['CacheableContext']:
-        yield self
-        for child in self.children:
-            yield from child.walk()
+    def set_miss(self, val: ta.Any) -> None:
+        check.replacing_none(CacheResult(
+            False,
+            CacheableVersionMap(),
+            val,
+        ))
+        self.result_versions()
 
-    def build_version_map(self) -> CacheableVersionMap:
-        versions: dict[CacheableName, CacheableVersion] = {}
-        for ctx in self.walk():
-            c = ctx.cacheable
-            try:
-                ex = versions[c.name]
-            except KeyError:
-                versions[c.name] = c.version
-            else:
-                if ex != c.version:
-                    raise Exception(f'Version mismatch: {ex} {c}')
-        return col.frozendict(versions)
+    @lang.cached_function
+    def result_versions(self) -> CacheableVersionMap:
+        r = check.not_none(self._result)
+        return merge_version_maps(
+            self._cacheable.as_version_map,
+            r.versions,
+            *[c.result_versions() for c in self._children],
+        )
 
 
 #
