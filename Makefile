@@ -416,6 +416,11 @@ test-install: venv
 LOCAL_VERSION:=$$(${PYTHON} -c 'from omlish import __about__; print(__about__.__version__)')
 PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.piptools lookup_latest_version omlish)
 
+.PHONY: versions
+versions: venv
+	echo "PyPI version: ${PYPI_VERSION}"
+	echo "Local version: ${LOCAL_VERSION}"
+
 .PHONY: publish
 publish: gen package test-install
 	ls -al dist/*
@@ -425,8 +430,7 @@ publish: gen package test-install
 		exit 1 ; \
 	fi
 
-	echo "PyPI version: ${PYPI_VERSION}"
-	echo "Local version: ${LOCAL_VERSION}"
+	${MAKE} versions
 	read -p "Press enter to publish"
 
 	${PYTHON} -m twine upload dist/*
