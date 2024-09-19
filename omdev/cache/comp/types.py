@@ -13,24 +13,24 @@ T = ta.TypeVar('T')
 ##
 
 
-CacheableNameT = ta.TypeVar('CacheableNameT', bound='CacheableName')
+NameT = ta.TypeVar('NameT', bound='Name')
 
 
-class CacheableName(lang.Abstract):
+class Name(lang.Abstract):
     pass
 
 
 ##
 
 
-CacheableVersion: ta.TypeAlias = ta.Hashable
-CacheableVersionMap: ta.TypeAlias = col.frozendict['CacheableName', CacheableVersion]
+Version: ta.TypeAlias = ta.Hashable
+VersionMap: ta.TypeAlias = col.frozendict[Name, Version]
 
 
 def merge_version_maps(
-        *dcts: ta.Mapping[CacheableName, CacheableVersion],
-) -> CacheableVersionMap:
-    out: dict[CacheableName, CacheableVersion] = {}
+        *dcts: ta.Mapping[Name, Version],
+) -> VersionMap:
+    out: dict[Name, Version] = {}
     for dct in dcts:
         for name, version in dct.items():
             try:
@@ -46,19 +46,19 @@ def merge_version_maps(
 ##
 
 
-class Cacheable(lang.Abstract):
+class Object(lang.Abstract):
     @property
     @abc.abstractmethod
-    def name(self) -> CacheableName:
+    def name(self) -> Name:
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
-    def version(self) -> CacheableVersion:
+    def version(self) -> Version:
         raise NotImplementedError
 
     @cached.property
-    def as_version_map(self) -> CacheableVersionMap:
+    def as_version_map(self) -> VersionMap:
         return col.frozendict({self.name: self.version})
 
 
@@ -67,26 +67,26 @@ class Cacheable(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
-class CacheKey(lang.Abstract, ta.Generic[CacheableNameT]):
-    name: CacheableNameT
+class CacheKey(lang.Abstract, ta.Generic[NameT]):
+    name: NameT
 
     @dc.validate
     def _check_types(self) -> bool:
         hash(self)
-        return isinstance(self.name, CacheableName)
+        return isinstance(self.name, Name)
 
 
 @dc.dataclass(frozen=True)
 class CacheResult(ta.Generic[T], lang.Final):
     hit: bool
-    versions: CacheableVersionMap
+    versions: VersionMap
     value: T
 
 
 ##
 
 
-class CacheableResolver(lang.Abstract):
+class ObjectResolver(lang.Abstract):
     @abc.abstractmethod
-    def resolve(self, name: CacheableName) -> Cacheable:
+    def resolve(self, name: Name) -> Object:
         raise NotImplementedError

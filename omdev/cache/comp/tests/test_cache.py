@@ -1,8 +1,8 @@
 from omlish import dataclasses as dc
 
 from ..cache import Cache
-from ..contexts import cache_context
-from ..fns import FnCacheableResolver
+from ..contexts import setting_current_cache
+from ..fns import FnObjectResolver
 from ..fns import cached_fn
 
 
@@ -31,10 +31,10 @@ def f3(x: int, y: int) -> int:
 
 
 def test_cache():
-    fr = FnCacheableResolver()
+    fr = FnObjectResolver()
     cache = Cache(resolver=fr)
 
-    with cache_context(cache):
+    with setting_current_cache(cache):
         print()
 
         for _ in range(2):
