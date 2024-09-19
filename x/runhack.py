@@ -3,6 +3,8 @@
 
 pycharm 242.21829.153
 
+https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
+
 ==
 
 https://docs.python.org/3/library/site.html
@@ -278,10 +280,9 @@ os.getcwd()='/Users/spinlock/src/wrmsr/omlish/omlish'
 GOOD:
 [..., '--target', 'omlish/diag/tests/test_asts.py::test_check_equal']
 os.getcwd()='/Users/spinlock/src/wrmsr/omlish'
-kkkk
 
 """
-import os
+import os.path
 import sys
 
 
@@ -294,14 +295,36 @@ def _run() -> None:
         return
     _HAS_RUN = True
 
-    print(f'{sys.argv=}')
-    print(f'{sys.orig_argv=}')
-    print(f'{os.getcwd()=}')
-    print(f'{sorted(os.environ)=}')
-    print(f'{os.environ["LIBRARY_ROOTS"]=}')
-    print(f'{os.environ["PATH"]=}')
-    print(f'{os.environ["PYTHONPATH"]=}')
+    debug = lambda *a, **k: print(*a, **k, file=sys.stderr)  # noqa
+
+    debug(f'{sys.argv=}')
+    debug(f'{sys.orig_argv=}')
+    debug(f'{os.getcwd()=}')
+    debug(f'{sorted(os.environ)=}')
+    debug(f'{os.environ["LIBRARY_ROOTS"]=}')
+    debug(f'{os.environ["PATH"]=}')
+    debug(f'{os.environ["PYTHONPATH"]=}')
 
     # breakpoint()
 
-    # sys.argv[-1] = 'print(2)'
+    # sys.argv[-1] = 'debug(2)'
+
+    if len(sys.argv) > 2 and sys.argv[-2] == '--path':
+        ide_roots = os.environ['IDE_PROJECT_ROOTS'].split(os.pathsep)
+        if len(ide_roots) != 1:
+            raise Exception(ide_roots)
+        root_dir = ide_roots[0]
+        debug(f'{root_dir=}')
+
+        os.chdir(root_dir)
+        debug(f'{os.getcwd()=}')
+
+        test_file = sys.argv[-1]
+        rel_path = os.path.relpath(test_file, root_dir)
+        if not rel_path.endswith('.py'):
+            raise Exception(rel_path)
+
+        # mod_name = rel_path.rpartition('.')[0].replace(os.sep, '.')
+
+        sys.argv[-2:] = ['--target', rel_path]
+        debug(f'{sys.argv=}')
