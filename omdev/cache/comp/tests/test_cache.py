@@ -43,7 +43,7 @@ def test_cache():
 
         before = cache.stats
 
-        f1.__cacheable__ = dc.replace(f1.__cacheable__, version=1)
+        f1.__cacheable__ = dc.replace(f1.__cacheable__, version=1)  # type: ignore
 
         for _ in range(2):
             v = f3(1, 1)
