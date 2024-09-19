@@ -414,7 +414,7 @@ test-install: venv
 ### Publish
 
 LOCAL_VERSION:=$$(${PYTHON} -c 'from omlish import __about__; print(__about__.__version__)')
-PYPI_VERSION:=$$(${PYHTON} -m omdev.tools.piptools lookup_latest_version omlish)
+PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.piptools lookup_latest_version omlish)
 
 .PHONY: publish
 publish: gen package test-install
