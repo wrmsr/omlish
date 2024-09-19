@@ -345,8 +345,8 @@ def _run() -> None:
 
     #
 
-    # default_enabled = False
-    default_enabled = True
+    default_enabled = False
+    # default_enabled = True
 
     is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', default_enabled))
     if not is_enabled:
@@ -354,8 +354,8 @@ def _run() -> None:
 
     #
 
-    # default_debug = False
-    default_debug = True
+    default_debug = False
+    # default_debug = True
 
     is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG', default_debug))
 
