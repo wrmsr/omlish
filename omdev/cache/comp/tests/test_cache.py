@@ -18,7 +18,7 @@ def f1(x: int, y: int) -> int:
     return f0(x, 1) + f0(y, 1)
 
 
-@fn(0)
+@fn(0, passive=True)
 def f2(x: int, y: int) -> int:
     print(f'f2({x}, {y})')
     return f0(x, 2) + f0(y, 1)
