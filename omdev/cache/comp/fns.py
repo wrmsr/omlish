@@ -11,11 +11,14 @@ from omlish import lang
 from .currents import get_current_cache
 from .currents import setting_current_context
 from .types import CacheKey
+from .types import Metadata
 from .types import Name
 from .types import Object
 from .types import ObjectResolver
+from .types import Version
 
 
+P = ta.ParamSpec('P')
 T = ta.TypeVar('T')
 
 
@@ -29,15 +32,19 @@ class FnName(Name, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class FnObject(Object, lang.Final):
-    fn: ta.Callable
-    version: int = dc.xfield(override=True)
+class FnObject(Object, lang.Final, ta.Generic[P, T]):
+    fn: ta.Callable[P, T]
+    version: Version = dc.xfield(override=True)
 
     passive: bool = dc.xfield(default=False, kw_only=True, override=True)
+    metadata: Metadata = dc.xfield(default=col.frozendict(), kw_only=True, override=True)
 
     @cached.property
     def name(self) -> FnName:
         return FnName(self.fn.__module__, self.fn.__qualname__)  # noqa
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        return self.fn(*args, **kwargs)
 
 
 class FnObjectResolver(ObjectResolver):
@@ -72,7 +79,9 @@ class FnCacheKey(CacheKey[FnName], lang.Final):
 ##
 
 
-def cached_fn(version: int) -> ta.Callable[[T], T]:
+def fn(
+        version: Version,
+) -> ta.Callable[[T], T]:
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):

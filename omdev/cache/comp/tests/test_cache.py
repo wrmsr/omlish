@@ -3,28 +3,28 @@ from omlish import dataclasses as dc
 from ..cache import Cache
 from ..currents import setting_current_cache
 from ..fns import FnObjectResolver
-from ..fns import cached_fn
+from ..fns import fn
 
 
-@cached_fn(0)
+@fn(0)
 def f0(x: int, y: int) -> int:
     print(f'f0({x}, {y})')
     return x + y
 
 
-@cached_fn(0)
+@fn(0)
 def f1(x: int, y: int) -> int:
     print(f'f1({x}, {y})')
     return f0(x, 1) + f0(y, 1)
 
 
-@cached_fn(0)
+@fn(0)
 def f2(x: int, y: int) -> int:
     print(f'f2({x}, {y})')
     return f0(x, 2) + f0(y, 1)
 
 
-@cached_fn(0)
+@fn(0)
 def f3(x: int, y: int) -> int:
     print(f'f3({x}, {y})')
     return f1(x, 2) + f2(y, 1)
