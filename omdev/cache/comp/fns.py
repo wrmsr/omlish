@@ -99,7 +99,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                     ctx.set_miss(val)
                     cache.put(
                         key,
-                        ctx.result_versions(),
+                        ctx.versions(),
                         val,
                     )
                     return val
