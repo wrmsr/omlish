@@ -8,6 +8,8 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .contexts import ActiveContext
+from .contexts import PassiveContext
 from .currents import get_current_cache
 from .currents import setting_current_context
 from .types import CacheKey
@@ -92,32 +94,37 @@ def fn(
             # TODO: proper wrapper obj probably (enforce name resolution)
             obj = inner.__cacheable__  # type: ignore
 
-            if (cache := get_current_cache()) is not None:
-                key = FnCacheKey(
-                    obj.name,
-                    args,
-                    col.frozendict(kwargs),
-                )
+            if (cache := get_current_cache()) is None:
+                return fn(*args, **kwargs)
 
-                with setting_current_context(
-                        obj,
-                        key,
-                ) as ctx:
-                    if (hit := cache.get(key)) is not None:
-                        ctx.set_hit(hit)
-                        return hit.value
-
+            if obj.passive:
+                with setting_current_context(obj) as ctx:
+                    pctx = check.isinstance(ctx, PassiveContext)
                     val = fn(*args, **kwargs)
-                    ctx.set_miss(val)
-                    cache.put(
-                        key,
-                        ctx.versions(),
-                        val,
-                    )
+                    pctx.finish()
                     return val
 
-            else:
-                return fn(*args, **kwargs)
+            key = FnCacheKey(
+                obj.name,
+                args,
+                col.frozendict(kwargs),
+            )
+
+            with setting_current_context(obj, key) as ctx:
+                actx = check.isinstance(ctx, ActiveContext)
+
+                if (hit := cache.get(key)) is not None:
+                    actx.set_hit(hit)
+                    return hit.value
+
+                val = fn(*args, **kwargs)
+                actx.set_miss(val)
+                cache.put(
+                    key,
+                    actx.versions(),
+                    val,
+                )
+                return val
 
         inner.__cacheable__ = FnObject(  # type: ignore
             fn,
