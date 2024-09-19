@@ -71,7 +71,7 @@ class CacheableContext(lang.Final):
         return self._key
 
     @property
-    def parent(self) -> 'CacheableContext | None':
+    def parent(self) -> ta.Optional['CacheableContext']:
         return self._parent
 
     @property
