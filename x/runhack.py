@@ -273,6 +273,47 @@ os.environ["PYTHONPATH"]=
 
 ====
 
+sys.path=[
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/third_party/thriftpy',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm',
+  '/Users/spinlock/src/wrmsr/omlish',
+  '/Users/spinlock/src/wrmsr/omlish/tinygrad',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display',
+  '/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cythonExtensions',
+  '/Applications/PyCharm.app/Contents/plugins/python/helpers-pro/pydevd_asyncio',
+  '/Users/spinlock/src/wrmsr/omlish/omlish',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python312.zip',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload',
+  '/Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages'
+]
+
+====
+
+sys.path=[
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/third_party/thriftpy',
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev',
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm',
+'/Users/spinlock/src/wrmsr/omlish',
+'/Users/spinlock/src/wrmsr/omlish/tinygrad',
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend',
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend',
+'/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display',
+'/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cythonExtensions',
+'/Applications/PyCharm.app/Contents/plugins/python/helpers-pro/pydevd_asyncio',
+'/Users/spinlock/src/wrmsr/omlish/omlish',
+'/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python312.zip',
+'/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12',
+'/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload',
+'/Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages'
+]
+
+
+====
+
 BAD:
 [..., '--path', '/Users/spinlock/src/wrmsr/omlish/omlish/lifecycles/tests/test_lifecycles.py']
 os.getcwd()='/Users/spinlock/src/wrmsr/omlish/omlish'
@@ -295,7 +336,8 @@ def _run() -> None:
         return
     _HAS_RUN = True
 
-    debug = lambda *a, **k: print(*a, **k, file=sys.stderr)  # noqa
+    def debug(*args, **kwargs):
+        print(*args, **kwargs, file=sys.stderr)
 
     debug(f'{sys.argv=}')
     debug(f'{sys.orig_argv=}')
@@ -304,6 +346,7 @@ def _run() -> None:
     debug(f'{os.environ["LIBRARY_ROOTS"]=}')
     debug(f'{os.environ["PATH"]=}')
     debug(f'{os.environ["PYTHONPATH"]=}')
+    debug(f'{sys.path=}')
 
     # breakpoint()
 
@@ -320,9 +363,33 @@ def _run() -> None:
         debug(f'{os.getcwd()=}')
 
         test_file = sys.argv[-1]
+        test_dir = os.path.dirname(test_file)
+        debug(f'{test_dir=}')
+
         rel_path = os.path.relpath(test_file, root_dir)
+        debug(f'{rel_path=}')
         if not rel_path.endswith('.py'):
             raise Exception(rel_path)
+
+        pkg_dir = os.path.join(root_dir, rel_path.split(os.sep)[0])
+        debug(f'{pkg_dir=}')
+
+        def is_pkg_dir(p: str) -> bool:
+            return p == pkg_dir or p.startswith(pkg_dir + os.sep)
+
+        os.environ['PYTHONPATH'] = os.pathsep.join(
+            d
+            for d in os.environ['PYTHONPATH'].split(os.pathsep)
+            if not is_pkg_dir(d)
+        )
+        debug(f'{os.environ["PYTHONPATH"]=}')
+
+        sys.path = [
+            d
+            for d in sys.path
+            if not is_pkg_dir(d)
+        ]
+        debug(f'{sys.path=}')
 
         # mod_name = rel_path.rpartition('.')[0].replace(os.sep, '.')
 
