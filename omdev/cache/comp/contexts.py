@@ -5,10 +5,10 @@ from omlish import check
 from omlish import lang
 
 from .cache import Cache
-from .types import Cacheable
-from .types import CacheableVersionMap
 from .types import CacheKey
 from .types import CacheResult
+from .types import Object
+from .types import VersionMap
 from .types import merge_version_maps
 
 
@@ -22,7 +22,7 @@ _CURRENT_CACHE: Cache | None = None
 
 
 @contextlib.contextmanager
-def cache_context(cache: CacheT) -> ta.Iterator[CacheT]:
+def setting_current_cache(cache: CacheT) -> ta.Iterator[CacheT]:
     global _CURRENT_CACHE
     prev = _CURRENT_CACHE
     try:
@@ -40,21 +40,21 @@ def get_current_cache() -> Cache | None:
 ##
 
 
-class CacheableContext(lang.Final):
+class Context(lang.Final):
     def __init__(
             self,
-            cacheable: Cacheable,
+            obj: Object,
             key: CacheKey,
             *,
-            parent: ta.Optional['CacheableContext'] = None,
+            parent: ta.Optional['Context'] = None,
     ) -> None:
         super().__init__()
-        self._cacheable = cacheable
+        self._obj = obj
         self._key = key
         self._parent = parent
 
         self._result: CacheResult | None = None
-        self._children: list[CacheableContext] = []
+        self._children: list[Context] = []
 
         if parent is not None:
             check.state(not parent.has_result)
@@ -63,19 +63,19 @@ class CacheableContext(lang.Final):
     #
 
     @property
-    def cacheable(self) -> Cacheable:
-        return self._cacheable
+    def object(self) -> Object:
+        return self._obj
 
     @property
     def key(self) -> CacheKey:
         return self._key
 
     @property
-    def parent(self) -> ta.Optional['CacheableContext']:
+    def parent(self) -> ta.Optional['Context']:
         return self._parent
 
     @property
-    def children(self) -> ta.Sequence['CacheableContext']:
+    def children(self) -> ta.Sequence['Context']:
         return self._children
 
     #
@@ -95,16 +95,16 @@ class CacheableContext(lang.Final):
     def set_miss(self, val: ta.Any) -> None:
         self._result = check.replacing_none(self._result, CacheResult(
             False,
-            CacheableVersionMap(),
+            VersionMap(),
             val,
         ))
         self.result_versions()
 
     @lang.cached_function
-    def result_versions(self) -> CacheableVersionMap:
+    def result_versions(self) -> VersionMap:
         r = check.not_none(self._result)
         return merge_version_maps(
-            self._cacheable.as_version_map,
+            self._obj.as_version_map,
             r.versions,
             *[c.result_versions() for c in self._children],
         )
@@ -113,24 +113,24 @@ class CacheableContext(lang.Final):
 #
 
 
-_CURRENT_CACHEABLE_CONTEXT: CacheableContext | None = None
+_CURRENT_CONTEXT: Context | None = None
 
 
 @contextlib.contextmanager
-def cacheable_context(
-        cacheable: Cacheable,
+def setting_current_context(
+        obj: Object,
         key: CacheKey,
-) -> ta.Iterator[CacheableContext]:
-    global _CURRENT_CACHEABLE_CONTEXT
-    prev = _CURRENT_CACHEABLE_CONTEXT
-    ctx = CacheableContext(
-        cacheable,
+) -> ta.Iterator[Context]:
+    global _CURRENT_CONTEXT
+    prev = _CURRENT_CONTEXT
+    ctx = Context(
+        obj,
         key,
         parent=prev,
     )
     try:
-        _CURRENT_CACHEABLE_CONTEXT = ctx
+        _CURRENT_CONTEXT = ctx
         yield ctx
     finally:
-        check.is_(_CURRENT_CACHEABLE_CONTEXT, ctx)
-        _CURRENT_CACHEABLE_CONTEXT = prev
+        check.is_(_CURRENT_CONTEXT, ctx)
+        _CURRENT_CONTEXT = prev
