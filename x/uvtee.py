@@ -50,8 +50,9 @@ def _main() -> None:
     pty.spawn([shutil.which('sh'), '-c', ' && '.join(cmds)], read)
 
     out = strip_ansi_escapes_bytes(buf.getvalue())
+    lines = out.split(b'\r\n')
 
-    print(repr(out))
+    print('\n'.join(map(repr, lines)))
 
     subprocess.run('rm -rf .venv-install', shell=True)
 
