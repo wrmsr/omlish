@@ -27,7 +27,7 @@ class Action(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 class ExtractAction(Action, lang.Final):
-    files: ta.Sequence[str] = dc.field(coerce=lambda s: check.not_isinstance(s, str))
+    files: ta.Sequence[str] = dc.xfield(coerce=lambda s: check.not_isinstance(s, str))
     keep_archive: bool = False
 
 
