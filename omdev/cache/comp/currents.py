@@ -24,9 +24,11 @@ _CURRENT_CACHE: Cache | None = None
 def setting_current_cache(cache: CacheT) -> ta.Iterator[CacheT]:
     global _CURRENT_CACHE
     prev = _CURRENT_CACHE
+
     try:
         _CURRENT_CACHE = cache
         yield cache
+
     finally:
         check.is_(_CURRENT_CACHE, cache)
         _CURRENT_CACHE = prev
@@ -45,19 +47,30 @@ _CURRENT_CONTEXT: Context | None = None
 @contextlib.contextmanager
 def setting_current_context(
         obj: Object,
-        key: CacheKey,
+        key: CacheKey | None = None,
 ) -> ta.Iterator[Context]:
     global _CURRENT_CONTEXT
     prev = _CURRENT_CONTEXT
-    ctx_cls = PassiveContext if obj.passive else ActiveContext
-    ctx = ctx_cls(
-        obj,
-        key,
-        parent=prev,
-    )
+
+    if obj.passive:
+        check.none(key)
+        ctx = PassiveContext(
+            obj,
+            parent=prev,
+        )
+
+    else:
+        check.isinstance(key, CacheKey)
+        ctx = ActiveContext(
+            obj,
+            key,
+            parent=prev,
+        )
+
     try:
         _CURRENT_CONTEXT = ctx
         yield ctx
+
     finally:
         check.is_(_CURRENT_CONTEXT, ctx)
         _CURRENT_CONTEXT = prev
