@@ -8,12 +8,12 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .contexts import setting_current_context
 from .contexts import get_current_cache
-from .types import Object
-from .types import Name
-from .types import ObjectResolver
+from .contexts import setting_current_context
 from .types import CacheKey
+from .types import Name
+from .types import Object
+from .types import ObjectResolver
 
 
 T = ta.TypeVar('T')
@@ -39,7 +39,7 @@ class FnObject(Object, lang.Final):
 
 
 class FnObjectResolver(ObjectResolver):
-    def resolve(self, name: FnName) -> FnObject:
+    def resolve(self, name: Name) -> FnObject:
         fname = check.isinstance(name, FnName)
 
         mod = importlib.import_module(fname.module)
