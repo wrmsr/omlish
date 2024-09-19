@@ -1,40 +1,13 @@
-import contextlib
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
-from .cache import Cache
 from .types import CacheKey
 from .types import CacheResult
 from .types import Object
 from .types import VersionMap
 from .types import merge_version_maps
-
-
-CacheT = ta.TypeVar('CacheT', bound='Cache')
-
-
-##
-
-
-_CURRENT_CACHE: Cache | None = None
-
-
-@contextlib.contextmanager
-def setting_current_cache(cache: CacheT) -> ta.Iterator[CacheT]:
-    global _CURRENT_CACHE
-    prev = _CURRENT_CACHE
-    try:
-        _CURRENT_CACHE = cache
-        yield cache
-    finally:
-        check.is_(_CURRENT_CACHE, cache)
-        _CURRENT_CACHE = prev
-
-
-def get_current_cache() -> Cache | None:
-    return _CURRENT_CACHE
 
 
 ##
@@ -108,29 +81,3 @@ class Context(lang.Final):
             r.versions,
             *[c.result_versions() for c in self._children],
         )
-
-
-#
-
-
-_CURRENT_CONTEXT: Context | None = None
-
-
-@contextlib.contextmanager
-def setting_current_context(
-        obj: Object,
-        key: CacheKey,
-) -> ta.Iterator[Context]:
-    global _CURRENT_CONTEXT
-    prev = _CURRENT_CONTEXT
-    ctx = Context(
-        obj,
-        key,
-        parent=prev,
-    )
-    try:
-        _CURRENT_CONTEXT = ctx
-        yield ctx
-    finally:
-        check.is_(_CURRENT_CONTEXT, ctx)
-        _CURRENT_CONTEXT = prev
