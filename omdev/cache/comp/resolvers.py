@@ -1,19 +1,19 @@
-from .types import Cacheable
-from .types import CacheableName
-from .types import CacheableResolver
+from .types import Name
+from .types import Object
+from .types import ObjectResolver
 
 
-class CachingCacheableResolver(CacheableResolver):
-    def __init__(self, child: CacheableResolver) -> None:
+class CachingCacheableResolver(ObjectResolver):
+    def __init__(self, child: ObjectResolver) -> None:
         super().__init__()
 
         self._child = child
-        self._dct: dict[CacheableName, Cacheable] = {}
+        self._dct: dict[Name, Object] = {}
 
     def clear(self) -> None:
         self._dct.clear()
 
-    def resolve(self, name: CacheableName) -> Cacheable:
+    def resolve(self, name: Name) -> Object:
         try:
             return self._dct[name]
         except KeyError:

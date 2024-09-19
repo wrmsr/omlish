@@ -8,11 +8,11 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .contexts import cacheable_context
+from .contexts import setting_current_context
 from .contexts import get_current_cache
-from .types import Cacheable
-from .types import CacheableName
-from .types import CacheableResolver
+from .types import Object
+from .types import Name
+from .types import ObjectResolver
 from .types import CacheKey
 
 
@@ -23,24 +23,24 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-class FnCacheableName(CacheableName, lang.Final):
+class FnName(Name, lang.Final):
     module: str
     qualname: str
 
 
 @dc.dataclass(frozen=True)
-class FnCacheable(Cacheable, lang.Final):
+class FnObject(Object, lang.Final):
     fn: ta.Callable
     version: int = dc.xfield(override=True)
 
     @cached.property
-    def name(self) -> FnCacheableName:
-        return FnCacheableName(self.fn.__module__, self.fn.__qualname__)  # noqa
+    def name(self) -> FnName:
+        return FnName(self.fn.__module__, self.fn.__qualname__)  # noqa
 
 
-class FnCacheableResolver(CacheableResolver):
-    def resolve(self, name: CacheableName) -> Cacheable:
-        fname = check.isinstance(name, FnCacheableName)
+class FnObjectResolver(ObjectResolver):
+    def resolve(self, name: FnName) -> FnObject:
+        fname = check.isinstance(name, FnName)
 
         mod = importlib.import_module(fname.module)
         obj = mod
@@ -48,20 +48,20 @@ class FnCacheableResolver(CacheableResolver):
             obj = getattr(obj, a)
 
         check.callable(obj)
-        fc = check.isinstance(obj.__cacheable__, FnCacheable)
+        fc = check.isinstance(obj.__cacheable__, FnObject)
 
         return fc
 
 
 @dc.dataclass(frozen=True)
-class FnCacheKey(CacheKey[FnCacheableName], lang.Final):
+class FnCacheKey(CacheKey[FnName], lang.Final):
     args: tuple
     kwargs: col.frozendict[str, ta.Any]
 
     @dc.validate
     def _check_fn_types(self) -> bool:
         return (
-            isinstance(self.name, FnCacheableName) and
+            isinstance(self.name, FnName) and
             isinstance(self.args, tuple) and
             isinstance(self.kwargs, col.frozendict)
         )
@@ -85,7 +85,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
                     col.frozendict(kwargs),
                 )
 
-                with cacheable_context(
+                with setting_current_context(
                         cacheable,
                         key,
                 ) as ctx:
@@ -105,7 +105,7 @@ def cached_fn(version: int) -> ta.Callable[[T], T]:
             else:
                 return fn(*args, **kwargs)
 
-        inner.__cacheable__ = FnCacheable(  # type: ignore
+        inner.__cacheable__ = FnObject(  # type: ignore
             fn,
             version,
         )

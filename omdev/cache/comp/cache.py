@@ -54,17 +54,17 @@ import typing as ta
 from omlish import collections as col
 from omlish import dataclasses as dc
 
-from .types import CacheableName
-from .types import CacheableResolver
-from .types import CacheableVersionMap
 from .types import CacheKey
 from .types import CacheResult
+from .types import Name
+from .types import ObjectResolver
+from .types import VersionMap
 
 
 class Cache:
     def __init__(
             self,
-            resolver: CacheableResolver,
+            resolver: ObjectResolver,
     ) -> None:
         super().__init__()
 
@@ -88,7 +88,7 @@ class Cache:
     @dc.dataclass(frozen=True)
     class Entry:
         key: CacheKey
-        versions: CacheableVersionMap
+        versions: VersionMap
         value: ta.Any
 
         @dc.validate
@@ -98,7 +98,7 @@ class Cache:
                 isinstance(self.versions, col.frozendict)
             )
 
-    def _build_version_map(self, names: ta.Iterable[CacheableName]) -> CacheableVersionMap:
+    def _build_version_map(self, names: ta.Iterable[Name]) -> VersionMap:
         dct = {}
         for n in names:
             c = self._resolver.resolve(n)
@@ -125,7 +125,7 @@ class Cache:
             entry.value,
         )
 
-    def put(self, key: CacheKey, versions: CacheableVersionMap, val: ta.Any) -> None:
+    def put(self, key: CacheKey, versions: VersionMap, val: ta.Any) -> None:
         if key in self._dct:
             raise KeyError(key)
 
