@@ -22,9 +22,9 @@ def test_default():
             subtrees=['docker/compose.yml'],
         ),
         specs.GithubContentSpec(
-            'karpathy/char-rnn',
-            'master',
-            ['data/tinyshakespeare/input.txt'],
+            'wrmsr/omlish',
+            'b5afdda1733e406bf98c88cf526b04423e74581e',
+            ['README.rst'],
         ),
         specs.UrlSpec(
             'https://apt.llvm.org/llvm.sh',

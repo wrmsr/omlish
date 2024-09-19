@@ -9,6 +9,7 @@ TODO:
 import logging
 import os.path
 import shutil
+import subprocess
 import tempfile
 import urllib.parse
 import urllib.request
@@ -98,7 +99,19 @@ class Cache:
 
     def _perform_action(self, action: Action, data_dir: str) -> None:
         if isinstance(action, ExtractAction):
-            raise NotImplementedError
+            for f in action.files:
+                file = os.path.join(data_dir, f)
+                if not os.path.isfile(file):
+                    raise Exception(f'Not file: {file}')
+
+                if file.endswith('.tar.gz'):
+                    subprocess.check_call(['tar', 'xzf', file], cwd=data_dir)
+
+                else:
+                    raise Exception(f'Unhandled archive extension: {file}')
+
+                if not action.keep_archive:
+                    os.unlink(file)
 
         else:
             raise TypeError(action)
@@ -106,22 +119,25 @@ class Cache:
     def _return_val(self, spec: Spec, data_dir: str) -> str:
         check.state(os.path.isdir(data_dir))
 
+        if any(isinstance(a, ExtractAction) for a in spec.actions):
+            return data_dir
+
+        single_file: str
         if isinstance(spec, UrlSpec):
-            data_file = os.path.join(data_dir, spec.file_name_or_default)
-            if not os.path.isfile(data_file):
-                raise RuntimeError(data_file)  # noqa
-            return data_file
+            single_file = os.path.join(data_dir, spec.file_name_or_default)
 
         elif isinstance(spec, GithubContentSpec):
             if len(spec.files) != 1:
                 return data_dir
-            data_file = os.path.join(data_dir, check.single(spec.files))
-            if not os.path.isfile(data_file):
-                raise RuntimeError(data_file)  # noqa
-            return data_file
+            single_file = os.path.join(data_dir, check.single(spec.files))
 
         else:
             return data_dir
+
+        if not os.path.isfile(single_file):
+            raise RuntimeError(single_file)  # noqa
+
+        return single_file
 
     #
 
