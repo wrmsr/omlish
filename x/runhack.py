@@ -15,7 +15,6 @@ https://github.com/xolox/python-coloredlogs/blob/65bdfe976ac0bf81e8c0bd9a98242b9
 
 _distutils_hack
 
-omlish-pycharm-runhack.pth: import x.runhack; x.runhack._run()
 
 ==
 
@@ -329,6 +328,12 @@ import os.path
 import sys
 
 
+r"""
+omlish-pycharm-runhack.pth:
+  import sys; exec('\n'.join(['try:', '  import x.runhack', 'except ImportError:', '  pass', 'else:', '  x.runhack._run()']))
+"""  # noqa
+
+
 _HAS_RUN = False
 
 
@@ -349,7 +354,10 @@ def _run() -> None:
 
     #
 
-    is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG'))
+    # default_debug = False
+    default_debug = True
+
+    is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG', default_debug))
 
     def debug(*args, **kwargs):
         if is_debug:
