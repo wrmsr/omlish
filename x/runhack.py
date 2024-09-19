@@ -323,6 +323,40 @@ GOOD:
 [..., '--target', 'omlish/diag/tests/test_asts.py::test_check_equal']
 os.getcwd()='/Users/spinlock/src/wrmsr/omlish'
 
+
+====
+
+In [6]: site.getuserbase()
+Out[6]: '/Users/spinlock/Library/Python/3.12'
+
+In [7]: site.getsitepackages()
+Out[7]: ['/Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages']
+
+In [8]: site.getusersitepackages()
+Out[8]: '/Users/spinlock/Library/Python/3.12/lib/python/site-packages'
+
+--
+
+>>> site.getuserbase()
+'/Users/spinlock/Library/Python/3.12'
+
+>>> site.getsitepackages()
+['/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages']
+
+>>> site.getusersitepackages()
+'/Users/spinlock/Library/Python/3.12/lib/python/site-packages'
+
+--
+
+>>> site.getuserbase()
+'/Users/spinlock/Library/Python/3.13'
+
+>>> site.getsitepackages()
+['/Users/spinlock/src/wrmsr/omlish/.venvs/13/lib/python3.13/site-packages']
+
+>>> site.getusersitepackages()
+'/Users/spinlock/Library/Python/3.13/lib/python/site-packages'
+
 """
 import os.path
 import sys
