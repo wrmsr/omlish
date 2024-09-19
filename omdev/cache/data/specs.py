@@ -18,14 +18,14 @@ from .consts import SERIALIZATION_VERSION
 
 
 @dc.dataclass(frozen=True)
-class CacheDataSpec(lang.Abstract, lang.Sealed):
+class Spec(lang.Abstract, lang.Sealed):
     serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
 
     actions: ta.Sequence[Action] = dc.field(default=(), kw_only=True)
 
     @cached.property
     def json(self) -> str:
-        return json.dumps_compact(msh.marshal(self, CacheDataSpec), sort_keys=True)
+        return json.dumps_compact(msh.marshal(self, Spec), sort_keys=True)
 
     @cached.property
     def digest(self) -> str:
@@ -42,7 +42,7 @@ def _maybe_sorted_strs(v: ta.Iterable[str] | None) -> ta.Sequence[str] | None:
 
 
 @dc.dataclass(frozen=True)
-class GitCacheDataSpec(CacheDataSpec):
+class GitSpec(Spec):
     url: str
 
     branch: str | None = dc.field(default=None, kw_only=True)
@@ -55,7 +55,7 @@ class GitCacheDataSpec(CacheDataSpec):
 
 
 @dc.dataclass(frozen=True)
-class UrlCacheDataSpec(CacheDataSpec):
+class UrlSpec(Spec):
     url: str = dc.xfield(validate=lambda u: bool(urllib.parse.urlparse(u)))
     file_name: str | None = None
 
@@ -77,7 +77,7 @@ def _repo_str(s: str) -> str:
 
 
 @dc.dataclass(frozen=True)
-class GithubContentCacheDataSpec(CacheDataSpec):
+class GithubContentSpec(Spec):
     repo: str = dc.field(validate=_repo_str)  # type: ignore
     rev: str
     files: lang.SequenceNotStr[str]
@@ -88,7 +88,7 @@ class GithubContentCacheDataSpec(CacheDataSpec):
 
 @lang.cached_function
 def _install_standard_marshalling() -> None:
-    specs_poly = msh.polymorphism_from_subclasses(CacheDataSpec)
+    specs_poly = msh.polymorphism_from_subclasses(Spec)
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(specs_poly)]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(specs_poly)]
 

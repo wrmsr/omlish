@@ -12,12 +12,12 @@ from .defaults import (  # noqa
 )
 
 from .manifests import (  # noqa
-    CacheDataManifest,
+    Manifest,
 )
 
 from .specs import (  # noqa
-    CacheDataSpec,
-    GitCacheDataSpec,
-    GithubContentCacheDataSpec,
-    UrlCacheDataSpec,
+    Spec,
+    GitSpec,
+    GithubContentSpec,
+    UrlSpec,
 )

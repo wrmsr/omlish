@@ -21,11 +21,11 @@ from omlish.formats import json
 from ... import git
 from .actions import Action
 from .actions import ExtractAction
-from .manifests import CacheDataManifest
-from .specs import CacheDataSpec
-from .specs import GitCacheDataSpec
-from .specs import GithubContentCacheDataSpec
-from .specs import UrlCacheDataSpec
+from .manifests import Manifest
+from .specs import Spec
+from .specs import GitSpec
+from .specs import GithubContentSpec
+from .specs import UrlSpec
 
 
 log = logging.getLogger(__name__)
@@ -48,13 +48,13 @@ class Cache:
 
         urllib.request.urlretrieve(url, out_file)  # noqa
 
-    def _fetch_into(self, spec: CacheDataSpec, data_dir: str) -> None:
+    def _fetch_into(self, spec: Spec, data_dir: str) -> None:
         log.info('Fetching spec: %s %r -> %s', spec.digest, spec, data_dir)
 
-        if isinstance(spec, UrlCacheDataSpec):
+        if isinstance(spec, UrlSpec):
             self._fetch_url(spec.url, os.path.join(data_dir, spec.file_name_or_default))
 
-        elif isinstance(spec, GithubContentCacheDataSpec):
+        elif isinstance(spec, GithubContentSpec):
             for repo_file in spec.files:
                 out_file = os.path.join(data_dir, repo_file)
                 if not os.path.abspath(out_file).startswith(os.path.abspath(data_dir)):
@@ -64,7 +64,7 @@ class Cache:
                 os.makedirs(os.path.dirname(out_file), exist_ok=True)
                 self._fetch_url(url, os.path.join(data_dir, out_file))
 
-        elif isinstance(spec, GitCacheDataSpec):
+        elif isinstance(spec, GitSpec):
             if not spec.subtrees:
                 raise NotImplementedError
 
@@ -96,19 +96,23 @@ class Cache:
         else:
             raise TypeError(spec)
 
-    def _perform_action(self, action: Action) -> None:
-        pass
+    def _perform_action(self, action: Action, data_dir: str) -> None:
+        if isinstance(action, ExtractAction):
+            raise NotImplementedError
 
-    def _return_val(self, spec: CacheDataSpec, data_dir: str) -> str:
+        else:
+            raise TypeError(action)
+
+    def _return_val(self, spec: Spec, data_dir: str) -> str:
         check.state(os.path.isdir(data_dir))
 
-        if isinstance(spec, UrlCacheDataSpec):
+        if isinstance(spec, UrlSpec):
             data_file = os.path.join(data_dir, spec.file_name_or_default)
             if not os.path.isfile(data_file):
                 raise RuntimeError(data_file)  # noqa
             return data_file
 
-        elif isinstance(spec, GithubContentCacheDataSpec):
+        elif isinstance(spec, GithubContentSpec):
             if len(spec.files) != 1:
                 return data_dir
             data_file = os.path.join(data_dir, check.single(spec.files))
@@ -121,7 +125,7 @@ class Cache:
 
     #
 
-    def get(self, spec: CacheDataSpec) -> str:
+    def get(self, spec: Spec) -> str:
         os.makedirs(self._items_dir, exist_ok=True)
 
         #
@@ -148,7 +152,7 @@ class Cache:
 
         #
 
-        manifest = CacheDataManifest(
+        manifest = Manifest(
             spec,
             start_at=start_at,
             end_at=end_at,
