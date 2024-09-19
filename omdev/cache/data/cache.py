@@ -6,6 +6,7 @@ TODO:
  - groups of multiple files downloaded - 'spec set'? idk
   - torchvision.datasets.FashionMNIST
  - chaining? or is this compcache..
+ - download resume ala hf_hub
 """
 import logging
 import os.path
