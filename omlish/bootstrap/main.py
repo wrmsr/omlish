@@ -1,3 +1,8 @@
+"""
+TODO:
+ - -x / --exec - os.exec entrypoint
+  - refuse to install non-exec-relevant Bootstraps when chosen
+"""
 # ruff: noqa: UP006 UP007
 import argparse
 import dataclasses as dc
