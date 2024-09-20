@@ -8,9 +8,9 @@ from x.dp.utils import load_secrets
 from omlish import logs
 from omlish.diag import pycharm
 
-from .models import Request
-from .openai import OpenaiPromptModel
-from .prompts import Prompt
+from ..models import Request
+from ..openai import OpenaiPromptModel
+from ..prompts import Prompt
 
 
 def _main() -> None:
