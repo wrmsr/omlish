@@ -111,6 +111,11 @@ class AsyncsPlugin:
         else:
             return
 
+        if 'trio_asyncio' in bes:
+            # NOTE: Importing it here is apparently necessary to get its patching working - otherwise fails later with
+            # `no running event loop` in anyio._backends._asyncio and such.
+            import trio_asyncio  # noqa
+
         if pdu.is_present():
             pdu.patch_for_trio_asyncio()
 
@@ -145,7 +150,6 @@ class AsyncsPlugin:
             @functools.wraps(obj)
             @trai.with_trio_asyncio_loop(wait=True)
             async def run(*args, **kwargs):
-                print('!!! RUNNING IN with_trio_asyncio_loop', file=sys.stderr)
                 await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
 
             item.obj = run
