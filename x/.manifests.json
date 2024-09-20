@@ -11,7 +11,7 @@
     }
   },
   {
-    "module": ".llm.state",
+    "module": ".llm.cli.state",
     "attr": "_STATE_CACHE_MANIFEST",
     "file": "state.py",
     "line": 65,

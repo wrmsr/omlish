@@ -316,6 +316,222 @@ sys.path=[
 
 
 ====
+BAD (RUN):
+
+sys.argv=['/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py']
+sys.orig_argv=[
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python',
+  '/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py',
+]
+os.getcwd()='/Users/spinlock/src/wrmsr/omlish/x/llm/cli'
+sorted(os.environ)=[
+  'COMMAND_MODE',
+  'DISPLAY',
+  'DOCKER_CLI_HINTS',
+  'HOME',
+  'HOMEBREW_CELLAR',
+  'HOMEBREW_PREFIX',
+  'HOMEBREW_REPOSITORY',
+  'INFOPATH',
+  'LC_CTYPE',
+  'LESS',
+  'LOGNAME',
+  'LSCOLORS',
+  'LS_COLORS',
+  'OLDPWD',
+  'PAGER',
+  'PATH',
+  'PS1',
+  'PWD',
+  'PYCHARM_DISPLAY_PORT',
+  'PYCHARM_HOSTED',
+  'PYCHARM_INTERACTIVE_PLOTS',
+  'PYCHARM_PROJECT_ID',
+  'PYTHONIOENCODING',
+  'PYTHONPATH',
+  'PYTHONUNBUFFERED',
+  'SHELL',
+  'SSH_AUTH_SOCK',
+  'TMPDIR',
+  'USER',
+  'VIRTUAL_ENV',
+  'WASIENV_DIR',
+  'WASMER_CACHE_DIR',
+  'WASMER_DIR',
+  'XPC_FLAGS',
+  'XPC_SERVICE_NAME',
+  'ZSH',
+  '__CFBundleIdentifier',
+  '__CF_USER_TEXT_ENCODING',
+]
+os.environ.get("LIBRARY_ROOTS")=None
+os.environ.get("PATH")='
+  /Users/spinlock/src/wrmsr/omlish/.venvs/default/bin:
+  /opt/homebrew/opt/mysql-client/bin:
+  /Users/spinlock/.local/bin:
+  /Users/spinlock/.wasienv/bin:
+  /Users/spinlock/.wasmer/bin:
+  /opt/homebrew/bin:
+  /opt/homebrew/sbin:
+  /usr/local/bin:
+  /usr/bin:
+  /bin:
+  /usr/sbin:
+  /sbin:
+  /Applications/VMware Fusion Tech Preview.app/Contents/Public:
+  /opt/X11/bin:
+  /Library/Apple/usr/bin:
+  /Users/spinlock/.cargo/bin:
+  /Users/spinlock/.wasmer/globals/wapm_packages/.bin'
+os.environ.get("PYTHONPATH")='
+  /Users/spinlock/src/wrmsr/omlish:
+  /Users/spinlock/src/wrmsr/omlish/tinygrad:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display'
+sys.path=[
+  '/Users/spinlock/src/wrmsr/omlish',
+  '/Users/spinlock/src/wrmsr/omlish/tinygrad',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python312.zip',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload',
+  '/Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages'
+]
+
+===
+BAD (DEBUG):
+
+sys.argv=[
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
+  '--multiprocess',
+  '--qt-support=auto',
+  '--client',
+  '127.0.0.1',
+  '--port',
+  '56431',
+  '--file',
+  '/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py',
+]
+sys.orig_argv=[
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python',
+  '-X',
+  'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cpython-cache',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
+  '--multiprocess',
+  '--qt-support=auto',
+  '--client',
+  '127.0.0.1',
+  '--port',
+  '56431',
+  '--file',
+  '/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py',
+]
+os.getcwd()='/Users/spinlock/src/wrmsr/omlish/x/llm/cli'
+sorted(os.environ)=[
+  'ASYNCIO_DEBUGGER_ENV',
+  'COMMAND_MODE',
+  'DISPLAY',
+  'DOCKER_CLI_HINTS',
+  'HALT_VARIABLE_RESOLVE_THREADS_ON_STEP_RESUME',
+  'HOME',
+  'HOMEBREW_CELLAR',
+  'HOMEBREW_PREFIX',
+  'HOMEBREW_REPOSITORY',
+  'IDE_PROJECT_ROOTS',
+  'INFOPATH',
+  'IPYTHONENABLE',
+  'LC_CTYPE',
+  'LESS',
+  'LIBRARY_ROOTS',
+  'LOGNAME',
+  'LSCOLORS',
+  'LS_COLORS',
+  'OLDPWD',
+  'PAGER',
+  'PATH',
+  'PS1',
+  'PWD',
+  'PYCHARM_DISPLAY_PORT',
+  'PYCHARM_HOSTED',
+  'PYCHARM_INTERACTIVE_PLOTS',
+  'PYCHARM_PROJECT_ID',
+  'PYDEVD_LOAD_VALUES_ASYNC',
+  'PYTHONIOENCODING',
+  'PYTHONPATH',
+  'PYTHONUNBUFFERED',
+  'SHELL',
+  'SSH_AUTH_SOCK',
+  'TMPDIR',
+  'USER',
+  'USE_LOW_IMPACT_MONITORING',
+  'VIRTUAL_ENV',
+  'WASIENV_DIR',
+  'WASMER_CACHE_DIR',
+  'WASMER_DIR',
+  'XPC_FLAGS',
+  'XPC_SERVICE_NAME',
+  'ZSH',
+  '__CFBundleIdentifier',
+  '__CF_USER_TEXT_ENCODING',
+]
+os.environ.get("LIBRARY_ROOTS")='
+  /Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12:
+  /Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload:
+  /Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages:
+  /Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/python_stubs/-2014666999:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/python-skeletons:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/typeshed/..:
+os.environ.get("PATH")='
+  /Users/spinlock/src/wrmsr/omlish/.venvs/default/bin:
+  /opt/homebrew/opt/mysql-client/bin:
+  /Users/spinlock/.local/bin:
+  /Users/spinlock/.wasienv/bin:
+  /Users/spinlock/.wasmer/bin:
+  /opt/homebrew/bin:
+  /opt/homebrew/sbin:
+  /usr/local/bin:
+  /usr/bin:
+  /bin:
+  /usr/sbin:
+  /sbin:
+  /Applications/VMware Fusion Tech Preview.app/Contents/Public:
+  /opt/X11/bin:
+  /Library/Apple/usr/bin:
+  /Users/spinlock/.cargo/bin:
+  /Users/spinlock/.wasmer/globals/wapm_packages/.bin'
+os.environ.get("PYTHONPATH")='
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/third_party/thriftpy:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev:
+  /Users/spinlock/src/wrmsr/omlish:
+  /Users/spinlock/src/wrmsr/omlish/tinygrad:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend:
+  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display:
+  /Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cythonExtensions:
+  /Applications/PyCharm.app/Contents/plugins/python/helpers-pro/pydevd_asyncio:
+  /Users/spinlock/src/wrmsr/omlish/x/llm/cli'
+sys.path=[
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/third_party/thriftpy',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev',
+  '/Users/spinlock/src/wrmsr/omlish',
+  '/Users/spinlock/src/wrmsr/omlish/tinygrad',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_plotly_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_matplotlib_backend',
+  '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm_display',
+  '/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cythonExtensions',
+  '/Applications/PyCharm.app/Contents/plugins/python/helpers-pro/pydevd_asyncio',
+  '/Users/spinlock/src/wrmsr/omlish/x/llm/cli',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python312.zip',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12',
+  '/Users/spinlock/.pyenv/versions/3.12.6/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload',
+  '/Users/spinlock/src/wrmsr/omlish/.venvs/default/lib/python3.12/site-packages',
+]
+
+
+====
 
 BAD:
 [..., '--path', '/Users/spinlock/src/wrmsr/omlish/omlish/lifecycles/tests/test_lifecycles.py']
@@ -390,8 +606,8 @@ def _run() -> None:
 
     #
 
-    default_debug = False
-    # default_debug = True
+    # default_debug = False
+    default_debug = True
 
     is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG', default_debug))
 

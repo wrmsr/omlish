@@ -2,6 +2,8 @@
 TODO:
  - mirrors
  - huggingface_hub
+  - datasets
+ - verify md5 (action)
  - stupid little progress bars
  - groups of multiple files downloaded - 'spec set'? idk
   - torchvision.datasets.FashionMNIST

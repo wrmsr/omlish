@@ -24,7 +24,7 @@ import datetime
 import os.path
 import sys
 
-from dp.utils import load_secrets
+from x.dp.utils import load_secrets
 from omlish import logs
 from omlish.diag import pycharm
 
