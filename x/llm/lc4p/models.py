@@ -40,8 +40,10 @@ class TokenUsage(lang.Final):
 class Response(lang.Final, ta.Generic[T]):
     v: T
 
-    usage: TokenUsage
-    reason: FinishReason
+    _: dc.KW_ONLY
+
+    usage: TokenUsage | None = None
+    reason: FinishReason | None = None
 
 
 ##

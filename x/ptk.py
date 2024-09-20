@@ -1,3 +1,6 @@
+"""
+https://github.com/prompt-toolkit/python-prompt-toolkit/blob/669541123c9a72da1fda662cbd0a18ffe9e6d113/examples/tutorial/sqlite-cli.py
+"""
 import sqlite3
 import sys
 
