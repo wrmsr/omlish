@@ -1,3 +1,8 @@
+"""
+TODO:
+  - lazy load
+  - serialize fs path not data
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
