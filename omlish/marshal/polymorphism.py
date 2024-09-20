@@ -98,6 +98,7 @@ def polymorphism_from_subclasses(
         ty: type,
         *,
         naming: Naming | None = None,
+        strip_suffix: bool = False,
 ) -> Polymorphism:
     dct: dict[str, Impl] = {}
 
@@ -112,15 +113,17 @@ def polymorphism_from_subclasses(
         if lang.is_abstract_class(cur):
             continue
 
-        nam = cur.__name__
+        name = cur.__name__
+        if strip_suffix:
+            name = lang.strip_suffix(name, ty.__name__)
         if naming is not None:
-            nam = translate_name(nam, naming)
-        if nam in dct:
-            raise KeyError(f'Duplicate name: {nam}')
+            name = translate_name(name, naming)
+        if name in dct:
+            raise KeyError(f'Duplicate name: {name}')
 
-        dct[nam] = Impl(
+        dct[name] = Impl(
             cur,
-            nam,
+            name,
         )
 
     return Polymorphism(ty, dct.values())

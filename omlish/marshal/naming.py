@@ -1,3 +1,8 @@
+"""
+TODO:
+ - Namer: ta.TypeAlias = ta.Callable[[str], str] ?
+  - this interface is ~intentionally~ limited, but custom overrides would be useful
+"""
 import enum
 
 from .. import lang
