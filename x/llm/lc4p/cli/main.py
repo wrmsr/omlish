@@ -8,8 +8,10 @@ from x.dp.utils import load_secrets
 from omlish import logs
 from omlish.diag import pycharm
 
+from ..backends.llamacpp import LlamacppPromptModel
+from ..backends.openai import OpenaiPromptModel
+from ..backends.transformers import TransformersPromptModel
 from ..models import Request
-from ..openai import OpenaiPromptModel
 from ..prompts import Prompt
 
 
@@ -20,6 +22,7 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
+    parser.add_argument('-b', '--backend', default='openai')
     args = parser.parse_args()
 
     args.new = True
@@ -38,7 +41,15 @@ def _main() -> None:
 
     #
 
-    pm = OpenaiPromptModel()
+    pm_cls = {
+        'llamacpp': LlamacppPromptModel,
+        'openai': OpenaiPromptModel,
+        'transformers': TransformersPromptModel,
+    }[args.backend]
+    pm = pm_cls()
+
+    #
+
     req = Request(Prompt(prompt))
     resp = pm.generate(req)
 
