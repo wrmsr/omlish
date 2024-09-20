@@ -145,6 +145,7 @@ class AsyncsPlugin:
             @functools.wraps(obj)
             @trai.with_trio_asyncio_loop(wait=True)
             async def run(*args, **kwargs):
+                print('!!! RUNNING IN with_trio_asyncio_loop', file=sys.stderr)
                 await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
 
             item.obj = run
