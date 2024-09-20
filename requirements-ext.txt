@@ -158,7 +158,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.2G4
+boto3>=1.35.24
 
 google-cloud-compute==1.19.2
 
@@ -216,7 +216,7 @@ customtkinter==5.2.2
 
 langchain==0.3.0
 
-langchain-core==0.3.2
+langchain-core==0.3.4
 
 langchain-anthropic==0.2.1
 langchain-community==0.3.0
@@ -230,7 +230,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.22
+langgraph==0.2.23
 
 langsmith==0.1.125
 
@@ -266,7 +266,7 @@ usearch==2.15.1
 
 ##
 
-llama-index-core==0.11.10
+llama-index-core==0.11.11
 
 unstructured==0.15.13
 
