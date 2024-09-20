@@ -77,11 +77,11 @@ class Project(ProjectBase):
             'cryptography ~= 43.0',
         ],
 
-        'sql': [
+        'sqlalchemy': [
             'sqlalchemy[asyncio] ~= 2.0',
         ],
 
-        'sql-drivers': [
+        'sqlalchemy-drivers': [
             'pg8000 ~= 1.31',
             # 'psycopg2 ~= 2.9',
             # 'psycopg ~= 3.2',

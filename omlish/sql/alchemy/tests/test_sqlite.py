@@ -8,8 +8,8 @@ import pytest
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
-from ... import lang
-from ...testing import pytest as ptu
+from .... import lang
+from ....testing import pytest as ptu
 
 
 ##
