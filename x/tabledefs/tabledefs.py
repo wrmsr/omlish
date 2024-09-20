@@ -2,6 +2,7 @@
 TODO:
  - QualifiedName
  - hybrid dataclass scheme
+ - sqlite without sqlalchemy
 
 ==
 
