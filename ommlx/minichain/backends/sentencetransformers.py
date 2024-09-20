@@ -1,21 +1,19 @@
 import typing as ta
 
-from omlish import check
 from omlish import lang
 
 from ..content import Content
 from ..content import Text
 from ..embeddings import Embedding
 from ..embeddings import EmbeddingModel_
+from ..images import Image
 from ..models import Request
 from ..models import Response
 
 
 if ta.TYPE_CHECKING:
-    import PIL.Image as pimg  # noqa
     import sentence_transformers as st
 else:
-    pimg = lang.proxy_import('PIL.Image')
     st = lang.proxy_import('sentence_transformers')
 
 
@@ -25,6 +23,15 @@ class SentencetransformersEmbeddingModel(EmbeddingModel_):
     def generate(self, request: Request[Content]) -> Response[Embedding]:
         mdl = st.SentenceTransformer(self.model)
 
-        response = mdl.encode(check.isinstance(request.v, Text).s)
+        obj: ta.Any
+        v = request.v
+        if isinstance(v, Text):
+            obj = v.s
+        elif isinstance(v, Image):
+            obj = v.i
+        else:
+            raise TypeError(v)
+
+        response = mdl.encode(obj)
 
         return Response(Embedding(response.tolist()))

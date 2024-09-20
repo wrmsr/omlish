@@ -11,7 +11,7 @@ from omlish import lang
 ##
 
 
-class Content(lang.Abstract, lang.Sealed):
+class Content(lang.Abstract, lang.PackageSealed):
     pass
 
 
