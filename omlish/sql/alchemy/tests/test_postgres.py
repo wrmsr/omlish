@@ -4,13 +4,13 @@ import pytest
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
-from ... import check
-from ... import lang
-from ...diag import pydevd as pdu  # noqa
-from ...testing import pytest as ptu
-from ..dbs import UrlDbLoc
-from ..dbs import set_url_engine
-from .dbs import Dbs
+from .... import check
+from .... import lang
+from ....diag import pydevd as pdu
+from ....testing import pytest as ptu
+from ...dbs import UrlDbLoc
+from ...dbs import set_url_engine
+from ...tests.dbs import Dbs
 
 
 ##

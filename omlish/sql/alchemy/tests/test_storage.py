@@ -9,7 +9,7 @@ import uuid
 
 import sqlalchemy as sa
 
-from ... import lang
+from .... import lang
 
 
 ##

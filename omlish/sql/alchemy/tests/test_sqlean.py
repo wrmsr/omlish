@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 
-from ... import lang
-from ...testing import pytest as ptu
+from .... import lang
+from ....testing import pytest as ptu
 from .. import sqlean as _sqlean
 from .test_sqlite import _test_sqlite  # noqa
 

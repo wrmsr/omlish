@@ -34,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.23
-botocore==1.35.23
+boto3==1.35.24
+botocore==1.35.24
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -85,6 +85,7 @@ docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
 duckdb==1.1.0
+durationpy==0.7
 einops==0.8.0
 elastic-transport==8.15.0
 elasticsearch==8.15.1
@@ -176,9 +177,9 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 keras==3.5.0
-keyring==25.4.0
+keyring==25.4.1
 kiwisolver==1.4.7
-kubernetes==30.1.0
+kubernetes==31.0.0
 langchain==0.3.0
 langchain-anthropic==0.2.1
 langchain-chroma==0.1.4
@@ -284,7 +285,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@f5dd2acfedd2f96ceee718a07456773207a53eb1
+peft @ git+https://github.com/huggingface/peft.git@5d944589d24a85ea21c8ff71e06c255c6b01378b
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -301,7 +302,7 @@ posthog==3.6.6
 pprintpp==0.4.0
 preshed==3.0.9
 priority==2.0.0
-prometheus_client==0.20.0
+prometheus_client==0.21.0
 prompt_toolkit==3.0.47
 proto-plus==1.24.0
 protobuf==4.25.5
@@ -427,7 +428,7 @@ terminado==0.18.1
 tf_keras==2.17.0
 thinc==8.2.5
 threadpoolctl==3.5.0
-tifffile==2024.8.30
+tifffile==2024.9.20
 tiktoken==0.7.0
 tinycss2==1.3.0
 tokenize-rt==6.0.0
@@ -462,7 +463,7 @@ unstructured-client==0.25.9
 uri-template==1.3.0
 urllib3==2.2.3
 usearch==2.15.1
-uv==0.4.13
+uv==0.4.14
 uvicorn==0.30.6
 uvloop==0.20.0
 voluptuous==0.15.2

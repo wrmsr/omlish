@@ -8,7 +8,7 @@ import typing as ta
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sap
 
-from .. import lang
+from ... import lang
 
 
 if ta.TYPE_CHECKING:

@@ -4,7 +4,7 @@ import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as sapg
 import sqlalchemy.orm
 
-from omlish import sql
+from omlish.sql import alchemy as sau
 
 from .sql import CREATE_UPDATED_AT_FUNCTION_STATEMENT
 from .sql import IdMixin
@@ -43,9 +43,9 @@ Nodes = Node.__table__
 install_updated_at_trigger(Metadata, 'nodes')
 
 
-async def setup_db(engine: sql.AsyncEngineLike, *, drop: bool = False) -> None:
-    conn: sql.AsyncConnection
-    async with sql.async_adapt(engine).connect() as conn:
+async def setup_db(engine: sau.AsyncEngineLike, *, drop: bool = False) -> None:
+    conn: sau.AsyncConnection
+    async with sau.async_adapt(engine).connect() as conn:
         async with conn.begin():
             if drop:
                 await conn.run_sync(Metadata.drop_all)

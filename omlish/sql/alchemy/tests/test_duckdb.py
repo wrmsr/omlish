@@ -1,9 +1,9 @@
 import pytest
 import sqlalchemy as sa
 
-from ... import lang
-from ...diag import pydevd as pdu  # noqa
-from ...testing import pytest as ptu
+from .... import lang
+from ....diag import pydevd as pdu
+from ....testing import pytest as ptu
 from .. import duckdb as _duckdb
 
 

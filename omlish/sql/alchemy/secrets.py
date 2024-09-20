@@ -2,7 +2,7 @@
 TODO:
  - sync/async...
 """
-from .. import secrets as sec
+from ... import secrets as sec
 
 
 class SqlFunctionSecrets(sec.Secrets):
