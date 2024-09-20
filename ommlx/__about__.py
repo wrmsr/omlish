@@ -43,6 +43,7 @@ class Project(ProjectBase):
 
         'wiki': [
             'mwparserfromhell ~= 0.6',
+
             'wikitextparser ~= 0.56',  # !! GPL
         ],
 
