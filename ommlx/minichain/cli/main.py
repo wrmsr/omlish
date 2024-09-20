@@ -14,6 +14,7 @@ from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.openai import OpenaiEmbeddingModel
 from ..backends.openai import OpenaiPromptModel
+from ..backends.sentencetransformers import SentencetransformersEmbeddingModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import Chat
 from ..chat import ChatModel
@@ -139,6 +140,7 @@ def _run_prompt(
 
 EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[EmbeddingModel]] = {
     'openai': OpenaiEmbeddingModel,
+    'sentencetransformers': SentencetransformersEmbeddingModel,
 }
 
 
@@ -149,7 +151,7 @@ def _run_embed(
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(Request(prompt))
+    response = mdl.generate(Request(Text(prompt)))
 
     print(json.dumps_compact(response.v.v))
 
