@@ -8,7 +8,7 @@ import time
 import typing as ta
 import zlib
 
-from .. import fnpairs as fps
+from .. import fnpairs as fpa
 from .. import lang
 from .. import secrets as sec
 from .cookies import dump_cookie
@@ -92,7 +92,7 @@ class SessionMarshal:
     def __init__(
             self,
             signer: Signer,
-            serializer: fps.ObjectStr = fps.of(JSON_TAGGER.dumps, JSON_TAGGER.loads),
+            serializer: fpa.ObjectStr = fpa.of(JSON_TAGGER.dumps, JSON_TAGGER.loads),
     ) -> None:
         super().__init__()
 
