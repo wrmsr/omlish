@@ -7,12 +7,16 @@ DCGAN Tutorial
 
 """
 
+import os.path
+
 from omdev.cache import data as daca
 
 
-daca.UrlCacheDataSpec(
+dataroot = os.path.join(daca.default().get(daca.UrlSpec(
     'https://cseweb.ucsd.edu/~weijian/static/datasets/celeba/img_align_celeba.zip',
-)
+    # 'https://huggingface.co/datasets/HK83/Anime/resolve/main/img_align_celeba.zip',
+    actions=[daca.ExtractAction('img_align_celeba.zip')],
+)), 'img_align_celeba')
 
 
 
@@ -194,7 +198,7 @@ torch.use_deterministic_algorithms(True)  # Needed for reproducible results
 #
 
 # Root directory for dataset
-dataroot = os.path.join(os.path.dirname(__file__), "data/celeba")
+# dataroot = os.path.join(os.path.dirname(__file__), "data/celeba")
 
 # Number of workers for dataloader
 workers = 2
