@@ -47,7 +47,7 @@ def unmarshal_state(obj: ta.Any, ty: type[T] | None = None, *, version: int = ST
     ms = msh.unmarshal(obj, MarshaledState)
     if ms.version < version:
         return None
-    return msh.unmarshal(ms.payload, ty)
+    return msh.unmarshal(ms.payload, ty)  # type: ignore
 
 
 def load_state(file: str, ty: type[T] | None, *, version: int = STATE_VERSION) -> T | None:

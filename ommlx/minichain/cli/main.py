@@ -70,9 +70,9 @@ def _run_chat(
     if new:
         state = ChatState()
     else:
-        state = load_state(chat_file, ChatState)
+        state = load_state(chat_file, ChatState)  # type: ignore
         if state is None:
-            state = ChatState()
+            state = ChatState()  # type: ignore
 
     #
 

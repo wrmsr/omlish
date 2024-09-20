@@ -29,8 +29,10 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'llama-cpp-python ~= 0.2',
+    'openai ~= 1.47',
     'tinygrad ~= 0.9',
     'torch ~= 2.4',
+    'transformers ~= 4.44',
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
     'lxml ~= 5.3; python_version < "3.13"',
@@ -38,11 +40,17 @@ all = [
 llamacpp = [
     'llama-cpp-python ~= 0.2',
 ]
+openai = [
+    'openai ~= 1.47',
+]
 tinygrad = [
     'tinygrad ~= 0.9',
 ]
 torch = [
     'torch ~= 2.4',
+]
+transformers = [
+    'transformers ~= 4.44',
 ]
 wiki = [
     'mwparserfromhell ~= 0.6',

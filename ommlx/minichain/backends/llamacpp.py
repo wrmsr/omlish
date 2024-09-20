@@ -35,7 +35,7 @@ class LlamacppPromptModel(PromptModel_):
             stop=['\n'],
         )
 
-        return Response(output['choices'][0]['text'])
+        return Response(output['choices'][0]['text'])  # type: ignore
 
 
 # class LlamacppChatLlm(ChatLlm):

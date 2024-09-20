@@ -113,7 +113,7 @@ def build_module_manifests(
                 module='.'.join(['', *mod_name.split('.')[1:]]),
                 attr=m.groupdict()['name'],
 
-                file=os.path.join(*os.path.split(file)[1:]),  # noqa
+                file=file,
                 line=i + 1,
             ))
 

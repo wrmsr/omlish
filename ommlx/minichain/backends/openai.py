@@ -65,7 +65,7 @@ class OpenaiChatModel(ChatModel_):
         response = openai.chat.completions.create(  # noqa
             model=self.model,
             messages=[
-                dict(
+                dict(  # type: ignore
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
                 )
@@ -79,4 +79,4 @@ class OpenaiChatModel(ChatModel_):
             stream=False,
         )
 
-        return Response(AiMessage(response.choices[0].message.content))
+        return Response(AiMessage(response.choices[0].message.content))  # type: ignore
