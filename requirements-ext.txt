@@ -199,7 +199,7 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.46.1
+openai==1.47.0
 
 trl==0.11.0
 tf-keras==2.17.0
@@ -268,4 +268,4 @@ usearch==2.15.1
 
 llama-index-core==0.11.10
 
-unstructured==0.15.12
+unstructured==0.15.13
