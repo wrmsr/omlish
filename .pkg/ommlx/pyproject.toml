@@ -28,35 +28,37 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'huggingface-hub ~= 0.25',
-    'datasets ~= 3.0',
     'llama-cpp-python ~= 0.2',
     'openai ~= 1.47',
+    'sentence_transformers ~= 3.1',
+    'transformers ~= 4.44',
+    'huggingface-hub ~= 0.25',
+    'datasets ~= 3.0',
+    'pillow ~= 10.4',
     'tinygrad ~= 0.9',
     'torch ~= 2.4',
-    'transformers ~= 4.44',
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
     'lxml ~= 5.3; python_version < "3.13"',
+]
+backends = [
+    'llama-cpp-python ~= 0.2',
+    'openai ~= 1.47',
+    'sentence_transformers ~= 3.1',
+    'transformers ~= 4.44',
 ]
 huggingface = [
     'huggingface-hub ~= 0.25',
     'datasets ~= 3.0',
 ]
-llamacpp = [
-    'llama-cpp-python ~= 0.2',
-]
-openai = [
-    'openai ~= 1.47',
+pillow = [
+    'pillow ~= 10.4',
 ]
 tinygrad = [
     'tinygrad ~= 0.9',
 ]
 torch = [
     'torch ~= 2.4',
-]
-transformers = [
-    'transformers ~= 4.44',
 ]
 wiki = [
     'mwparserfromhell ~= 0.6',
