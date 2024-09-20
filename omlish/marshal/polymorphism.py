@@ -100,22 +100,29 @@ def polymorphism_from_subclasses(
         naming: Naming | None = None,
 ) -> Polymorphism:
     dct: dict[str, Impl] = {}
+
     seen: set[type] = set()
     todo: list[type] = [ty]
     while todo:
         cur = todo.pop()
         seen.add(cur)
-        if not lang.is_abstract_class(cur):
-            nam = cur.__name__
-            if naming is not None:
-                nam = translate_name(nam, naming)
-            if nam in dct:
-                raise KeyError(f'Duplicate name: {nam}')
-            dct[nam] = Impl(
-                cur,
-                nam,
-            )
+
         todo.extend(nxt for nxt in cur.__subclasses__() if nxt not in seen)
+
+        if lang.is_abstract_class(cur):
+            continue
+
+        nam = cur.__name__
+        if naming is not None:
+            nam = translate_name(nam, naming)
+        if nam in dct:
+            raise KeyError(f'Duplicate name: {nam}')
+
+        dct[nam] = Impl(
+            cur,
+            nam,
+        )
+
     return Polymorphism(ty, dct.values())
 
 
