@@ -57,13 +57,3 @@ def load_state(file: str, ty: type[T] | None, *, version: int = STATE_VERSION) -
         data = f.read()
     dct = json.loads(data)
     return unmarshal_state(dct, ty, version=version)
-
-
-##
-
-
-# @omlish-manifest
-_STATE_CACHE_MANIFEST = {'$cache': {
-    'name': 'llm',
-    'version': STATE_VERSION,
-}}
