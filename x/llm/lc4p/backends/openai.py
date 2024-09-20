@@ -4,7 +4,7 @@ from omlish import check
 from omlish import lang
 
 from ..chat import AiMessage
-from ..chat import ChatModel
+from ..chat import ChatModel_
 from ..chat import ChatRequest
 from ..chat import Message
 from ..chat import SystemMessage
@@ -14,7 +14,7 @@ from ..content import Text
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
-from ..prompts import PromptModel
+from ..prompts import PromptModel_
 
 
 if ta.TYPE_CHECKING:
@@ -23,7 +23,7 @@ else:
     openai = lang.proxy_import('openai')
 
 
-class OpenaiPromptModel(PromptModel):
+class OpenaiPromptModel(PromptModel_):
     model = 'gpt-3.5-turbo-instruct'
 
     def generate(self, t: Request[Prompt]) -> Response[str]:
@@ -41,7 +41,7 @@ class OpenaiPromptModel(PromptModel):
         return Response(response.choices[0].text)
 
 
-class OpenaiChatModel(ChatModel):
+class OpenaiChatModel(ChatModel_):
     model = 'gpt-4o'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -61,7 +61,7 @@ class OpenaiChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def generate(self, request: Request[ChatRequest]) -> str:
+    def generate(self, request: Request[ChatRequest]) -> AiMessage:
         response = openai.chat.completions.create(  # noqa
             model=self.model,
             messages=[

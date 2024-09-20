@@ -102,7 +102,7 @@ def _run_chat(
         state,
         chat=[
             *state.chat,
-            AiMessage(response.v),
+            response.v,
         ],
     )
 

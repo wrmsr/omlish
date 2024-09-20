@@ -20,7 +20,7 @@ class Prompt(lang.Final):
 PromptModel: ta.TypeAlias = Model[Prompt, str]
 
 
-class PromptModel_(PromptModel):
+class PromptModel_(PromptModel, lang.Abstract):
     @abc.abstractmethod
     def generate(self, request: Request[Prompt]) -> Response[str]:
         raise NotImplementedError

@@ -7,7 +7,7 @@ from omlish import lang
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
-from ..prompts import PromptModel
+from ..prompts import PromptModel_
 
 
 if ta.TYPE_CHECKING:
@@ -16,7 +16,7 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
-class TransformersPromptModel(PromptModel):
+class TransformersPromptModel(PromptModel_):
     # model = 'meta-llama/Meta-Llama-3-8B"
     model = 'microsoft/phi-2'
 
