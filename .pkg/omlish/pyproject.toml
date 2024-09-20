@@ -86,10 +86,10 @@ misc = [
 secrets = [
     'cryptography ~= 43.0',
 ]
-sql = [
+sqlalchemy = [
     'sqlalchemy[asyncio] ~= 2.0',
 ]
-sql-drivers = [
+sqlalchemy-drivers = [
     'pg8000 ~= 1.31',
     'pymysql ~= 1.1',
     'aiomysql ~= 0.2',

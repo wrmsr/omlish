@@ -35,12 +35,12 @@ import typing as ta
 import sqlalchemy as sa
 import sqlalchemy.ext.compiler
 
-from ... import check
-from ... import lang
-from ...diag import pydevd as pdu  # noqa
-from ..dbs import UrlDbLoc
-from ..dbs import set_url_engine
-from .dbs import Dbs
+from .... import check
+from .... import lang
+from ....diag import pydevd as pdu  # noqa
+from ...dbs import UrlDbLoc
+from ...dbs import set_url_engine
+from ...tests.dbs import Dbs
 
 
 def make_pg_lock_name(s: str) -> int:

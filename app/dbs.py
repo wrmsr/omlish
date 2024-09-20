@@ -8,7 +8,7 @@ from omlish import check
 from omlish import inject as inj
 from omlish import lang
 from omlish import secrets as sec
-from omlish import sql
+from omlish.sql import alchemy as sau
 from omlish.sql import dbs
 
 
@@ -18,10 +18,10 @@ log = logging.getLogger(__name__)
 def _build_engine(
         spec: dbs.DbSpec,
         secrets: sec.Secrets = sec.EMPTY_SECRETS,
-) -> sql.AsyncEngine:
+) -> sau.AsyncEngine:
     check.equal(spec.type, dbs.DbTypes.POSTGRES)
     ul = check.isinstance(spec.loc, dbs.UrlDbLoc)
-    e = sql.async_adapt(saa.create_async_engine(secrets.fix(ul.url).reveal(), echo=True))
+    e = sau.async_adapt(saa.create_async_engine(secrets.fix(ul.url).reveal(), echo=True))
 
     log.info('Sqlalchemy engine created: %r', e)
 
@@ -44,7 +44,7 @@ def bind_dbs() -> inj.Elemental:
         ),
 
         inj.bind(
-            sql.AsyncEngine,
+            sau.AsyncEngine,
             to_fn=inj.make_async_managed_provider(
                 _build_engine,
                 lambda e: lang.a_defer(e.dispose()),  # noqa
