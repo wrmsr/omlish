@@ -1,9 +1,17 @@
-import openai
+import typing as ta
+
+from omlish import lang
 
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
 from ..prompts import PromptModel
+
+
+if ta.TYPE_CHECKING:
+    import openai
+else:
+    openai = lang.proxy_import('openai')
 
 
 class OpenaiPromptModel(PromptModel):

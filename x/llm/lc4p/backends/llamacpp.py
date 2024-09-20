@@ -1,11 +1,18 @@
 import os.path
+import typing as ta
 
-import llama_cpp
+from omlish import lang
 
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
 from ..prompts import PromptModel
+
+
+if ta.TYPE_CHECKING:
+    import llama_cpp
+else:
+    llama_cpp = lang.proxy_import('llama_cpp')
 
 
 class LlamacppPromptModel(PromptModel):

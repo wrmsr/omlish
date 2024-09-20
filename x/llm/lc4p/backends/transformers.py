@@ -1,12 +1,19 @@
 import os
 import sys
+import typing as ta
 
-import transformers
+from omlish import lang
 
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
 from ..prompts import PromptModel
+
+
+if ta.TYPE_CHECKING:
+    import transformers
+else:
+    transformers = lang.proxy_import('transformers')
 
 
 class TransformersPromptModel(PromptModel):
