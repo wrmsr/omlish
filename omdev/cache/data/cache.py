@@ -19,6 +19,7 @@ import urllib.request
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
+from omlish import os as  osu
 from omlish.formats import json
 
 from ... import git
@@ -141,20 +142,7 @@ class Cache:
 
         return single_file
 
-    #
-
-    def get(self, spec: Spec) -> str:
-        os.makedirs(self._items_dir, exist_ok=True)
-
-        #
-
-        item_dir = os.path.join(self._items_dir, spec.digest)
-        if os.path.isdir(item_dir):
-            data_dir = os.path.join(item_dir, 'data')
-            return self._return_val(spec, data_dir)
-
-        #
-
+    def _fetch_item(self, spec: Spec, item_dir: str) -> None:
         tmp_dir = tempfile.mkdtemp()
 
         #
@@ -191,6 +179,15 @@ class Cache:
         #
 
         shutil.move(tmp_dir, item_dir)
+
+    def get(self, spec: Spec) -> str:
+        os.makedirs(self._items_dir, exist_ok=True)
+
+        item_dir = os.path.join(self._items_dir, spec.digest)
+        if not os.path.isdir(item_dir):
+            self._fetch_item(spec, item_dir)
+
+        osu.touch(os.path.join(item_dir, 'accessed'))
 
         data_dir = os.path.join(item_dir, 'data')
         return self._return_val(spec, data_dir)
