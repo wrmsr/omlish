@@ -4,6 +4,7 @@ import typing as ta
 
 from omlish import lang
 
+from .content import Content
 from .models import Model
 from .models import Request
 from .models import Response
@@ -19,10 +20,10 @@ class Embedding:
     v: ta.Sequence[float]
 
 
-EmbeddingModel: ta.TypeAlias = Model[str, Embedding]
+EmbeddingModel: ta.TypeAlias = Model[Content, Embedding]
 
 
 class EmbeddingModel_(EmbeddingModel, lang.Abstract):  # noqa
     @abc.abstractmethod
-    def generate(self, request: Request[str]) -> Response[Embedding]:
+    def generate(self, request: Request[Content]) -> Response[Embedding]:
         raise NotImplementedError
