@@ -94,7 +94,7 @@ def _run_chat(
 
     #
 
-    print(response)
+    print(response.v.s.strip())
 
     #
 
@@ -113,7 +113,7 @@ def _run_chat(
         updated_at=datetime.datetime.now(),
     )
 
-    save_state(chat_file, chat, Chat)
+    save_state(chat_file, chat, ChatState)
 
 
 ##
@@ -149,8 +149,6 @@ def _main() -> None:
     parser.add_argument('-b', '--backend', default='openai')
     args = parser.parse_args()
 
-    args.new = True
-
     #
 
     prompt = args.prompt
@@ -177,20 +175,6 @@ def _main() -> None:
             prompt,
             backend=args.backend,
         )
-
-    pm_cls = {
-        'llamacpp': LlamacppPromptModel,
-        'openai': OpenaiPromptModel,
-        'transformers': TransformersPromptModel,
-    }[args.backend]
-    pm = pm_cls()
-
-    #
-
-    req = Request(Prompt(prompt))
-    resp = pm.generate(req)
-
-    print(resp)
 
 
 if __name__ == '__main__':

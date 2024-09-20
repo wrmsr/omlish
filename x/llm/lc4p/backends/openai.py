@@ -61,7 +61,7 @@ class OpenaiChatModel(ChatModel_):
         else:
             raise TypeError(m)
 
-    def generate(self, request: Request[ChatRequest]) -> AiMessage:
+    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
         response = openai.chat.completions.create(  # noqa
             model=self.model,
             messages=[
@@ -79,4 +79,4 @@ class OpenaiChatModel(ChatModel_):
             stream=False,
         )
 
-        return response.choices[0].message.content
+        return Response(AiMessage(response.choices[0].message.content))
