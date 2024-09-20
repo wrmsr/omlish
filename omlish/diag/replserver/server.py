@@ -9,7 +9,7 @@ TODO:
  - optional ipython embed
  - https://github.com/python/cpython/tree/56470004e58911b146c016fc9fec4461b8f69454/Lib/_pyrepl
 
-lookit:
+See:
  - https://github.com/vxgmichel/aioconsole/blob/e55f4b0601da3b3a40a88c965526d35ab38b5841/aioconsole/server.py
  - https://github.com/nhoad/aiomanhole
  - https://github.com/twisted/twisted/blob/00aa56f5257060304d41f09651c6ab58ee6104d6/src/twisted/conch/manhole.py
