@@ -4,6 +4,7 @@ TODO:
  - debug
 """
 # ruff: noqa: UP006 UP007 N802
+import contextlib
 import datetime
 import logging
 import threading
@@ -203,6 +204,24 @@ class StandardLogHandler(ProxyLogHandler):
 ##
 
 
+@contextlib.contextmanager
+def _locking_logging_module_lock() -> ta.Iterator[None]:
+    if hasattr(logging, '_acquireLock'):
+        logging._acquireLock()  # noqa
+        try:
+            yield
+        finally:
+            logging._releaseLock()  # type: ignore  # noqa
+
+    elif hasattr(logging, '_lock'):
+        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
+        with logging._lock:  # noqa
+            yield
+
+    else:
+        raise Exception("Can't find lock in logging module")
+
+
 def configure_standard_logging(
         level: ta.Union[int, str] = logging.INFO,
         *,
@@ -210,8 +229,7 @@ def configure_standard_logging(
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
 ) -> ta.Optional[StandardLogHandler]:
-    logging._acquireLock()  # type: ignore  # noqa
-    try:
+    with _locking_logging_module_lock():
         if target is None:
             target = logging.root
 
@@ -250,6 +268,3 @@ def configure_standard_logging(
         #
 
         return StandardLogHandler(handler)
-
-    finally:
-        logging._releaseLock()  # type: ignore  # noqa
