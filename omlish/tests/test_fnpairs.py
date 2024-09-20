@@ -1,45 +1,45 @@
 import pytest
 
-from .. import fnpairs as fps
+from .. import fnpairs as fpa
 from ..testing import pytest as ptu
 
 
 def test_simple():
-    fp = fps.of(lambda s: s.encode('utf-8'), lambda b: b.decode('utf-8'))
+    fp = fpa.of(lambda s: s.encode('utf-8'), lambda b: b.decode('utf-8'))
     assert fp.forward('hi') == b'hi'
     assert fp.backward(b'hi') == 'hi'
 
 
 def test_text():
-    fp = fps.text('utf-8')
+    fp = fpa.text('utf-8')
     assert fp.forward('hi') == b'hi'
     assert fp.backward(b'hi') == 'hi'
 
 
 def test_compose():
-    fp = fps.text('utf-8').compose(fps.Gzip())
+    fp = fpa.text('utf-8').compose(fpa.Gzip())
     buf = fp.forward('hi')
     assert isinstance(buf, bytes)
     assert fp.backward(buf) == 'hi'
 
-    jzfp = fps.Json() \
-        .compose(fps.UTF8) \
-        .compose(fps.Gzip())
+    jzfp = fpa.Json() \
+        .compose(fpa.UTF8) \
+        .compose(fpa.Gzip())
     obj = {'hi': ['there', 420]}
     buf = jzfp.forward(obj)
     assert isinstance(buf, bytes)
     assert jzfp.backward(buf) == obj
 
-    jlzfp = fps.JsonLines() \
-        .compose(fps.UTF8) \
-        .compose(fps.Gzip())
+    jlzfp = fpa.JsonLines() \
+        .compose(fpa.UTF8) \
+        .compose(fpa.Gzip())
     obj2 = [{'hi': ['there', 420]}, {'bye': {'yes': None}}]
     buf = jlzfp.forward(obj2)
     assert isinstance(buf, bytes)
     assert jlzfp.backward(buf) == obj2
 
 
-def _test_compression(cls: type[fps.Compression]) -> None:
+def _test_compression(cls: type[fpa.Compression]) -> None:
     fp = cls()
     o = b'abcd1234'
     c = fp.forward(o)
@@ -48,33 +48,33 @@ def _test_compression(cls: type[fps.Compression]) -> None:
 
 
 @pytest.mark.parametrize('cls', [
-    fps.Bz2,
-    fps.Gzip,
-    fps.Lzma,
-    fps.Lz4,
+    fpa.Bz2,
+    fpa.Gzip,
+    fpa.Lzma,
+    fpa.Lz4,
 ])
-def test_compression(cls: type[fps.Compression]) -> None:
+def test_compression(cls: type[fpa.Compression]) -> None:
     _test_compression(cls)
 
 
 @ptu.skip_if_cant_import('snappy')
 def test_compression_snappy() -> None:
-    _test_compression(fps.Snappy)
+    _test_compression(fpa.Snappy)
 
 
 @ptu.skip_if_cant_import('zstd')
 def test_compression_zstd() -> None:
-    _test_compression(fps.Zstd)
+    _test_compression(fpa.Zstd)
 
 
 @pytest.mark.parametrize('cls', [
-    fps.Pickle,
-    fps.Json,
-    fps.Cloudpickle,
-    fps.Yaml,
-    fps.YamlUnsafe,
+    fpa.Pickle,
+    fpa.Json,
+    fpa.Cloudpickle,
+    fpa.Yaml,
+    fpa.YamlUnsafe,
 ])
-def test_object(cls: type[fps.Object_]) -> None:
+def test_object(cls: type[fpa.Object_]) -> None:
     fp = cls()
     o = {'hi': {'i am': [123, 4.56, False, None, {'a': 'test'}]}}
     e = fp.forward(o)
@@ -83,10 +83,10 @@ def test_object(cls: type[fps.Object_]) -> None:
 
 
 def test_compose_types():
-    fp0 = fps.of[float, int](int, float)
-    fp1 = fps.of[int, str](str, int)
-    fp2 = fps.of[str, list[str]](list, ''.join)
+    fp0 = fpa.of[float, int](int, float)
+    fp1 = fpa.of[int, str](str, int)
+    fp2 = fpa.of[str, list[str]](list, ''.join)
 
-    cfp = fps.compose(fp0, fp1, fp2)
+    cfp = fpa.compose(fp0, fp1, fp2)
     assert cfp(13.1) == ['1', '3']
     assert cfp.backward(['2', '4']) == 24.
