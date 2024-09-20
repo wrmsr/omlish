@@ -1,8 +1,17 @@
 import os.path
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
+from ..chat import AiMessage
+from ..chat import ChatModel_
+from ..chat import ChatRequest
+from ..chat import Message
+from ..chat import SystemMessage
+from ..chat import ToolExecutionResultMessage
+from ..chat import UserMessage
+from ..content import Text
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
@@ -38,36 +47,47 @@ class LlamacppPromptModel(PromptModel_):
         return Response(output['choices'][0]['text'])  # type: ignore
 
 
-# class LlamacppChatLlm(ChatLlm):
-#     model_path = os.path.join(
-#         os.path.expanduser('~/.cache/huggingface/hub'),
-#         'models--TheBloke--Llama-2-7B-Chat-GGUF',
-#         'snapshots',
-#         '191239b3e26b2882fb562ffccdd1cf0f65402adb',
-#         'llama-2-7b-chat.Q5_0.gguf',
-#     )
-#
-#     ROLES_MAP: ta.ClassVar[ta.Mapping[ChatRole, str]] = {
-#         ChatRole.SYSTEM: 'system',
-#         ChatRole.USER: 'user',
-#         ChatRole.ASSISTANT: 'assistant',
-#     }
-#
-#     def get_completion(self, messages: ta.Sequence[ChatMessage]) -> str:
-#         llm = llama_cpp.Llama(
-#             model_path=self.model_path,
-#         )
-#
-#         output = llm.create_chat_completion(
-#             messages=[  # noqa
-#                 dict(
-#                     role=self.ROLES_MAP[m.role],
-#                     content=m.text,
-#                 )
-#                 for m in messages
-#             ],
-#             max_tokens=1024,
-#             # stop=["\n"],
-#         )
-#
-#         return output['choices'][0]['message']['content']
+class LlamacppChatModel(ChatModel_):
+    model_path = os.path.join(
+        os.path.expanduser('~/.cache/huggingface/hub'),
+        'models--TheBloke--Llama-2-7B-Chat-GGUF',
+        'snapshots',
+        '191239b3e26b2882fb562ffccdd1cf0f65402adb',
+        'llama-2-7b-chat.Q5_0.gguf',
+    )
+
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
+        SystemMessage: 'system',
+        UserMessage: 'user',
+        AiMessage: 'assistant',
+        ToolExecutionResultMessage: 'tool',
+    }
+
+    def _get_msg_content(self, m: Message) -> str:
+        if isinstance(m, (SystemMessage, AiMessage)):
+            return m.s
+
+        elif isinstance(m, UserMessage):
+            return ''.join(check.isinstance(c, Text).s for c in m.content)
+
+        else:
+            raise TypeError(m)
+
+    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
+        llm = llama_cpp.Llama(
+            model_path=self.model_path,
+        )
+
+        output = llm.create_chat_completion(
+            messages=[  # noqa
+                dict(  # type: ignore
+                    role=self.ROLES_MAP[type(m)],
+                    content=self._get_msg_content(m),
+                )
+                for m in request.v.chat
+            ],
+            max_tokens=1024,
+            # stop=['\n'],
+        )
+
+        return AiMessage(output['choices'][0]['message']['content'])  # type: ignore
