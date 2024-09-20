@@ -5,6 +5,7 @@ import os.path
 import sys
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import logs
 from omlish.diag import pycharm
@@ -20,6 +21,7 @@ from ..chat import Chat
 from ..chat import ChatModel
 from ..chat import ChatRequest
 from ..chat import UserMessage
+from ..content import Content
 from ..content import Text
 from ..embeddings import EmbeddingModel
 from ..models import Request
@@ -54,11 +56,15 @@ CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
 
 
 def _run_chat(
-        prompt: str,
+        content: Content,
         *,
         new: bool = False,
         backend: str | None = None,
 ) -> None:
+    prompt = check.isinstance(content, Text).s
+
+    #
+
     state_dir = os.path.expanduser('~/.omlish-llm')
     if not os.path.exists(state_dir):
         os.mkdir(state_dir)
@@ -124,10 +130,12 @@ PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[PromptModel]] = {
 
 
 def _run_prompt(
-        prompt: str,
+        content: Content,
         *,
         backend: str | None = None,
 ) -> None:
+    prompt = check.isinstance(content, Text).s
+
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
     response = mdl.generate(Request(Prompt(prompt)))
@@ -145,10 +153,12 @@ EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[EmbeddingModel]] = {
 
 
 def _run_embed(
-        prompt: str,
+        content: Content,
         *,
         backend: str | None = None,
 ) -> None:
+    prompt = check.isinstance(content, Text).s
+
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
     response = mdl.generate(Request(Text(prompt)))
@@ -179,6 +189,8 @@ def _main() -> None:
         stdin_data = sys.stdin.read()
         prompt = '\n'.join([prompt, stdin_data])
 
+    content = Text(prompt)
+
     #
 
     with open(os.path.join(os.path.expanduser('~/.omlish-llm/.env'))) as f:
@@ -191,20 +203,20 @@ def _main() -> None:
 
     if args.chat:
         _run_chat(
-            prompt,
+            content,
             backend=args.backend,
             new=bool(args.new),
         )
 
     elif args.embed:
         _run_embed(
-            prompt,
+            content,
             backend=args.backend,
         )
 
     else:
         _run_prompt(
-            prompt,
+            content,
             backend=args.backend,
         )
 
