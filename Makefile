@@ -86,7 +86,7 @@ dep-list:
 .PHONY: dep-freeze
 dep-freeze: venv
 	${PYTHON} -m pip freeze > requirements-frz.txt
-	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
+	sed -i '/^-e git+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
