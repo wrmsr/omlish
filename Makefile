@@ -86,7 +86,7 @@ dep-list:
 .PHONY: dep-freeze
 dep-freeze: venv
 	${PYTHON} -m pip freeze > requirements-frz.txt
-	sed -i '/^-e git+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
+	${PYTHON} -m omdev.tools.piptools filter_dev_deps -wq requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
@@ -409,7 +409,7 @@ package: venv clean-package
 test-install: venv
 	for f in $$(find dist -name 'omlish-*') ; do \
 		echo "Test installing $$f" ; \
-		${PYTHON} -mpip install --dry-run "$$f" ; \
+		${PYTHON} -m pip install --dry-run "$$f" ; \
 	done
 
 

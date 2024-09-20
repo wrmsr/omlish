@@ -21,6 +21,30 @@ class Cli(ap.Cli):
         latest = check.not_none(doc.find('./channel/item/title')).text
         print(latest)
 
+    @ap.command(
+        ap.arg('file'),
+        ap.arg('-w', '--write', action='store_true'),
+        ap.arg('-q', '--quiet', action='store_true'),
+    )
+    def filter_dev_deps(self) -> None:
+        with open(self.args.file) as f:
+            src = f.read()
+
+        out = []
+        for l in src.splitlines(keepends=True):
+            if l.startswith('-e'):
+                continue
+            out.append(l)
+
+        new_src = ''.join(out)
+
+        if not self.args.quiet:
+            print(new_src)
+
+        if self.args.write:
+            with open(self.args.file, 'w') as f:
+                f.write(new_src)
+
 
 if __name__ == '__main__':
     Cli()()
