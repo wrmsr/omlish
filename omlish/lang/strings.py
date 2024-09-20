@@ -4,13 +4,61 @@ import unicodedata
 
 ##
 
+@ta.overload
+def prefix_delimited(s: str, p: str, d: str) -> str:
+    ...
+
+
+@ta.overload
+def prefix_delimited(s: bytes, p: bytes, d: bytes) -> bytes:
+    ...
+
+
+def prefix_delimited(s, p, d):
+    return d.join([p + l for l in s.split(d)])
+
 
 def prefix_lines(s: str, p: str) -> str:
-    return '\n'.join([p + l for l in s.split('\n')])
+    return prefix_delimited(s, p, '\n')
 
 
 def indent_lines(s: str, num: int) -> str:
     return prefix_lines(s, ' ' * num)
+
+
+##
+
+
+@ta.overload
+def strip_prefix(s: str, pfx: str) -> str:
+    ...
+
+
+@ta.overload
+def strip_prefix(s: bytes, pfx: bytes) -> bytes:
+    ...
+
+
+def strip_prefix(s, pfx):
+    if not s.startswith(pfx):
+        raise ValueError(f'{s!r} does not start with {pfx!r}')
+    return s[len(pfx):]
+
+
+@ta.overload
+def strip_suffix(s: str, sfx: str) -> str:
+    ...
+
+
+@ta.overload
+def strip_suffix(s: bytes, sfx: bytes) -> bytes:
+    ...
+
+
+def strip_suffix(s, sfx):
+    if not s.endswith(sfx):
+        raise ValueError(f'{s!r} does not end with {sfx!r}')
+    return s[:-len(sfx)]
 
 
 ##

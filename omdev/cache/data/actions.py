@@ -25,9 +25,13 @@ class Action(lang.Abstract, lang.Sealed):
 ##
 
 
+def _non_empty_strs(v: ta.Sequence[str]) -> ta.Sequence[str]:
+    return [check.non_empty_str(s) for s in ([v] if isinstance(v, str) else v)]
+
+
 @dc.dataclass(frozen=True)
 class ExtractAction(Action, lang.Final):
-    files: ta.Sequence[str] = dc.xfield(coerce=lambda s: [s] if isinstance(s, str) else s)
+    files: ta.Sequence[str] = dc.xfield(coerce=_non_empty_strs)
     keep_archive: bool = False
 
 
