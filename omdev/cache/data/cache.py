@@ -19,7 +19,7 @@ import urllib.request
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
-from omlish import os as  osu
+from omlish import os as osu
 from omlish.formats import json
 
 from ... import git
