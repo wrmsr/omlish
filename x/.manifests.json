@@ -2,23 +2,11 @@
   {
     "module": ".foo",
     "attr": "_FOO_MANIFEST",
-    "file": "foo.py",
+    "file": "x/foo.py",
     "line": 4,
     "value": {
       "$some_manifest_thing": {
         "some_const": 420
-      }
-    }
-  },
-  {
-    "module": ".llm.cli.state",
-    "attr": "_STATE_CACHE_MANIFEST",
-    "file": "state.py",
-    "line": 65,
-    "value": {
-      "$cache": {
-        "name": "llm",
-        "version": 0
       }
     }
   }

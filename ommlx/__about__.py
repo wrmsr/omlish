@@ -17,6 +17,10 @@ class Project(ProjectBase):
             'llama-cpp-python ~= 0.2',
         ],
 
+        'openai': [
+            'openai ~= 1.47',
+        ],
+
         'tinygrad': [
             # 'git+https://github.com/tinygrad/tinygrad',
             'tinygrad ~= 0.9',
@@ -24,6 +28,10 @@ class Project(ProjectBase):
 
         'torch': [
             'torch ~= 2.4',
+        ],
+
+        'transformers': [
+            'transformers ~= 4.44',
         ],
 
         'wiki': [
