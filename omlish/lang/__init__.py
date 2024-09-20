@@ -189,8 +189,11 @@ from .strings import (  # noqa
     is_ident_cont,
     is_ident_start,
     is_sunder,
+    prefix_delimited,
     prefix_lines,
     snake_case,
+    strip_prefix,
+    strip_suffix,
 )
 
 from .sys import (  # noqa

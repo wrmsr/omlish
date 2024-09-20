@@ -78,6 +78,14 @@ class Apply(Func[T]):
         return o
 
 
+bind = Bind
+pipe = Pipe
+apply = Apply
+
+
+##
+
+
 def _main() -> None:
     assert Bind(operator.add, 1)(2) == 3
 
@@ -95,6 +103,20 @@ def _main() -> None:
 
     assert Bind(operator.truediv, 2)(4) == .5
     assert Bind(operator.truediv, ..., 2)(4) == 2.
+
+    #
+
+    from omlish import check
+    from omlish import lang
+
+    def replace_all(f: str, t: str, s: str) -> str:
+        return s.replace(f, t)
+
+    fn = bind(strip_suffix, 'Action') | lang.snake_case | bind(replace_all, '_', '-')
+    check.equal(fn('FooBarAction'), 'foo-bar')
+
+    fn = bind(strip_suffix, 'Action') | lang.snake_case | bind(str.replace, ..., '_', '-')
+    check.equal(fn('FooBarAction'), 'foo-bar')
 
 
 if __name__ == '__main__':
