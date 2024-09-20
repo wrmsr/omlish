@@ -47,7 +47,7 @@ class Abstract(abc.ABC):  # noqa
                 seen.update(dir(b))
             if ams:
                 raise TypeError(
-                    f'Cannot subclass abstract class {cls.__name__} with abstract methods'
+                    f'Cannot subclass abstract class {cls.__name__} with abstract methods: '
                     f'{", ".join(map(str, sorted(ams)))}',
                 )
 
