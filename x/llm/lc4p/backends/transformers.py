@@ -22,7 +22,7 @@ class TransformersPromptModel(PromptModel):
 
     def generate(self, t: Request[Prompt]) -> Response[str]:
         pipeline = transformers.pipeline(
-            "text-generation",
+            'text-generation',
             model=self.model,
             device='mps' if sys.platform == 'darwin' else 'cuda',
             token=os.environ.get('HUGGINGFACE_HUB_TOKEN'),
