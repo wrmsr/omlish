@@ -24,11 +24,18 @@ from ..chat import UserMessage
 from ..content import Content
 from ..content import Text
 from ..embeddings import EmbeddingModel
+from ..images import Image
 from ..models import Request
 from ..prompts import Prompt
 from ..prompts import PromptModel
 from .state import load_state
 from .state import save_state
+
+
+if ta.TYPE_CHECKING:
+    import PIL.Image as pimg  # noqa
+else:
+    pimg = lang.proxy_import('PIL.Image')
 
 
 ##
@@ -157,11 +164,9 @@ def _run_embed(
         *,
         backend: str | None = None,
 ) -> None:
-    prompt = check.isinstance(content, Text).s
-
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(Request(Text(prompt)))
+    response = mdl.generate(Request(content))
 
     print(json.dumps_compact(response.v.v))
 
@@ -175,21 +180,32 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
-    parser.add_argument('-c', '--chat', action='store_true')
-    parser.add_argument('-e', '--embed', action='store_true')
-    parser.add_argument('-n', '--new', action='store_true')
+
     parser.add_argument('-b', '--backend', default='openai')
+
+    parser.add_argument('-c', '--chat', action='store_true')
+    parser.add_argument('-n', '--new', action='store_true')
+
+    parser.add_argument('-e', '--embed', action='store_true')
+    parser.add_argument('-i', '--image', action='store_true')
+
     args = parser.parse_args()
 
     #
 
-    prompt = args.prompt
+    content: Content
 
-    if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
-        stdin_data = sys.stdin.read()
-        prompt = '\n'.join([prompt, stdin_data])
+    if args.image:
+        content = Image(pimg.open(check.non_empty_str(args.prompt)))
 
-    content = Text(prompt)
+    else:
+        prompt = args.prompt
+
+        if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
+            stdin_data = sys.stdin.read()
+            prompt = '\n'.join([prompt, stdin_data])
+
+        content = Text(prompt)
 
     #
 
