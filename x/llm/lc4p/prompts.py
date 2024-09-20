@@ -1,9 +1,12 @@
+import abc
 import dataclasses as dc
 import typing as ta
 
 from omlish import lang
 
 from .models import Model
+from .models import Request
+from .models import Response
 
 
 #
@@ -15,3 +18,9 @@ class Prompt(lang.Final):
 
 
 PromptModel: ta.TypeAlias = Model[Prompt, str]
+
+
+class PromptModel_(PromptModel):
+    @abc.abstractmethod
+    def generate(self, request: Request[Prompt]) -> Response[str]:
+        raise NotImplementedError

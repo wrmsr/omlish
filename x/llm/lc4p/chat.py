@@ -7,6 +7,8 @@ from omlish import lang
 from .content import Content
 from .json import JsonSchema
 from .models import Model
+from .models import Request
+from .models import Response
 from .tool import ToolExecutionRequest
 from .tool import ToolSpecification
 
@@ -78,6 +80,12 @@ class ChatRequest(lang.Final):
 
 
 ChatModel: ta.TypeAlias = Model[ChatRequest, AiMessage]
+
+
+class ChatModel_(ChatModel):
+    @abc.abstractmethod
+    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
+        raise NotImplementedError
 
 
 ##
