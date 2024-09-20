@@ -32,7 +32,7 @@ class LlamacppPromptModel(PromptModel_):
         output = llm.create_completion(
             request.v.s,
             max_tokens=1024,
-            stop=["\n"],
+            stop=['\n'],
         )
 
         return Response(output['choices'][0]['text'])

@@ -82,7 +82,7 @@ class ChatRequest(lang.Final):
 ChatModel: ta.TypeAlias = Model[ChatRequest, AiMessage]
 
 
-class ChatModel_(ChatModel, lang.Abstract):
+class ChatModel_(ChatModel, lang.Abstract):  # noqa
     @abc.abstractmethod
     def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
         raise NotImplementedError

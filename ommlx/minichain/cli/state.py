@@ -27,7 +27,7 @@ class MarshaledState:
 def marshal_state(obj: ta.Any, ty: type | None = None, *, version: int = STATE_VERSION) -> ta.Any:
     ms = MarshaledState(
         version=version,
-        payload=msh.marshal(obj, ty)
+        payload=msh.marshal(obj, ty),
     )
     return msh.marshal(ms)
 

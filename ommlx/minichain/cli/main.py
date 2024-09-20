@@ -5,7 +5,7 @@ import os.path
 import sys
 import typing as ta
 
-from x.dp.utils import load_secrets
+from omlish import lang
 from omlish import logs
 from omlish.diag import pycharm
 
@@ -13,7 +13,6 @@ from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.openai import OpenaiPromptModel
 from ..backends.transformers import TransformersPromptModel
-from ..chat import AiMessage
 from ..chat import Chat
 from ..chat import ChatModel
 from ..chat import ChatRequest
@@ -50,8 +49,8 @@ DEFAULT_BACKEND = 'openai'
 class ChatState:
     name: str | None = None
 
-    created_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
-    updated_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+    created_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
+    updated_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
     chat: Chat = ()
 
@@ -65,7 +64,7 @@ def _run_chat(
     state_dir = os.path.expanduser('~/.omlish-llm')
     if not os.path.exists(state_dir):
         os.mkdir(state_dir)
-        os.chmod(state_dir, 0o770)
+        os.chmod(state_dir, 0o770)  # noqa
 
     chat_file = os.path.join(state_dir, 'chat.json')
     if new:
@@ -110,7 +109,7 @@ def _run_chat(
 
     chat = dc.replace(
         chat,
-        updated_at=datetime.datetime.now(),
+        updated_at=lang.utcnow(),
     )
 
     save_state(chat_file, chat, ChatState)
@@ -158,6 +157,8 @@ def _main() -> None:
         prompt = '\n'.join([prompt, stdin_data])
 
     #
+
+    from x.dp.utils import load_secrets  # noqa
 
     load_secrets()
 
