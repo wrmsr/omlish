@@ -1,8 +1,8 @@
 import argparse
 import dataclasses as dc
 import datetime
-import os.path
 import sys
+import typing as ta
 
 from x.dp.utils import load_secrets
 from omlish import logs
@@ -11,8 +11,25 @@ from omlish.diag import pycharm
 from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiPromptModel
 from ..backends.transformers import TransformersPromptModel
+from ..chat import Message
 from ..models import Request
 from ..prompts import Prompt
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Chat:
+    name: str | None = None
+
+    created_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+    updated_at: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+
+    messages: ta.Sequence[Message] = ()
+
+
+##
 
 
 def _main() -> None:

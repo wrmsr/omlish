@@ -1,7 +1,16 @@
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
+from ..chat import AiMessage
+from ..chat import ChatModel
+from ..chat import ChatRequest
+from ..chat import Message
+from ..chat import SystemMessage
+from ..chat import ToolExecutionResultMessage
+from ..chat import UserMessage
+from ..content import Text
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
@@ -30,3 +39,44 @@ class OpenaiPromptModel(PromptModel):
         )
 
         return Response(response.choices[0].text)
+
+
+class OpenaiChatModel(ChatModel):
+    model = 'gpt-4o'
+
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
+        SystemMessage: 'system',
+        UserMessage: 'user',
+        AiMessage: 'assistant',
+        ToolExecutionResultMessage: 'tool',
+    }
+
+    def _get_msg_content(self, m: Message) -> str:
+        if isinstance(m, (SystemMessage, AiMessage)):
+            return m.s
+
+        elif isinstance(m, UserMessage):
+            return ''.join(check.isinstance(c, Text).s for c in m.content)
+
+        else:
+            raise TypeError(m)
+
+    def generate(self, request: Request[ChatRequest]) -> str:
+        response = openai.chat.completions.create(  # noqa
+            model=self.model,
+            messages=[
+                dict(
+                    role=self.ROLES_MAP[type(m)],
+                    content=self._get_msg_content(m),
+                )
+                for m in request.v.chat
+            ],
+            temperature=0,
+            max_tokens=1024,
+            top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stream=False,
+        )
+
+        return response.choices[0].message.content

@@ -51,5 +51,5 @@ class Response(lang.Final, ta.Generic[T]):
 
 class Model(lang.Abstract, ta.Generic[T, U]):
     @abc.abstractmethod
-    def generate(self, t: Request[T]) -> Response[U]:
+    def generate(self, request: Request[T]) -> Response[U]:
         raise NotImplementedError

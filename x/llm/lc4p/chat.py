@@ -56,6 +56,9 @@ class TextResponseFormat(ResponseFormat, lang.Final):
     pass
 
 
+TEXT_RESPONSE_FORMAT = TextResponseFormat()
+
+
 @dc.dataclass(frozen=True)
 class JsonResponseFormat(lang.Final):
     schema: JsonSchema | None = None
@@ -67,8 +70,11 @@ class JsonResponseFormat(lang.Final):
 @dc.dataclass(frozen=True)
 class ChatRequest(lang.Final):
     chat: Chat
-    tool_specs: ta.Sequence[ToolSpecification]
-    resp_fmt: ResponseFormat
+
+    _: dc.KW_ONLY
+
+    tool_specs: ta.Sequence[ToolSpecification] = ()
+    resp_fmt: ResponseFormat = TEXT_RESPONSE_FORMAT
 
 
 ChatModel: ta.TypeAlias = Model[ChatRequest, AiMessage]

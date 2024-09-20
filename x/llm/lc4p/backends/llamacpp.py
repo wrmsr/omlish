@@ -24,13 +24,13 @@ class LlamacppPromptModel(PromptModel):
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
-    def generate(self, t: Request[Prompt]) -> Response[str]:
+    def generate(self, request: Request[Prompt]) -> Response[str]:
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )
 
         output = llm.create_completion(
-            t.v.s,
+            request.v.s,
             max_tokens=1024,
             stop=["\n"],
         )
