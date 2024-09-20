@@ -13,17 +13,23 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        'backends': [
+            'llama-cpp-python ~= 0.2',
+
+            'openai ~= 1.47',
+
+            'sentence_transformers ~= 3.1',
+
+            'transformers ~= 4.44',
+        ],
+
         'huggingface': [
             'huggingface-hub ~= 0.25',
             'datasets ~= 3.0',
         ],
 
-        'llamacpp': [
-            'llama-cpp-python ~= 0.2',
-        ],
-
-        'openai': [
-            'openai ~= 1.47',
+        'pillow': [
+            'pillow ~= 10.4',
         ],
 
         'tinygrad': [
@@ -33,10 +39,6 @@ class Project(ProjectBase):
 
         'torch': [
             'torch ~= 2.4',
-        ],
-
-        'transformers': [
-            'transformers ~= 4.44',
         ],
 
         'wiki': [

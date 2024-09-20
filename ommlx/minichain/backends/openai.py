@@ -10,6 +10,7 @@ from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
+from ..content import Content
 from ..content import Text
 from ..embeddings import Embedding
 from ..embeddings import EmbeddingModel_
@@ -87,10 +88,10 @@ class OpenaiChatModel(ChatModel_):
 class OpenaiEmbeddingModel(EmbeddingModel_):
     model = 'text-embedding-3-small'
 
-    def generate(self, request: Request[str]) -> Response[Embedding]:
+    def generate(self, request: Request[Content]) -> Response[Embedding]:
         response = openai.embeddings.create(
             model=self.model,
-            input=request.v,
+            input=check.isinstance(request.v, Text).s,
         )
 
         return Response(Embedding(response.data[0].embedding))
