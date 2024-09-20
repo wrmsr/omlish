@@ -8,9 +8,11 @@ import typing as ta
 from omlish import lang
 from omlish import logs
 from omlish.diag import pycharm
+from omlish.formats import json
 
 from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
+from ..backends.openai import OpenaiEmbeddingModel
 from ..backends.openai import OpenaiPromptModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import Chat
@@ -18,6 +20,7 @@ from ..chat import ChatModel
 from ..chat import ChatRequest
 from ..chat import UserMessage
 from ..content import Text
+from ..embeddings import EmbeddingModel
 from ..models import Request
 from ..prompts import Prompt
 from ..prompts import PromptModel
@@ -27,17 +30,6 @@ from .state import save_state
 
 ##
 
-
-CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
-    'openai': OpenaiChatModel,
-}
-
-
-PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[PromptModel]] = {
-    'llamacpp': LlamacppPromptModel,
-    'openai': OpenaiPromptModel,
-    'transformers': TransformersPromptModel,
-}
 
 DEFAULT_BACKEND = 'openai'
 
@@ -53,6 +45,11 @@ class ChatState:
     updated_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
     chat: Chat = ()
+
+
+CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
+    'openai': OpenaiChatModel,
+}
 
 
 def _run_chat(
@@ -85,11 +82,11 @@ def _run_chat(
 
     #
 
-    llm = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+    mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
     #
 
-    response = llm.generate(Request(ChatRequest(state.chat)))
+    response = mdl.generate(Request(ChatRequest(state.chat)))
 
     #
 
@@ -118,20 +115,43 @@ def _run_chat(
 ##
 
 
+PROMPT_MODEL_BACKENDS: ta.Mapping[str, type[PromptModel]] = {
+    'llamacpp': LlamacppPromptModel,
+    'openai': OpenaiPromptModel,
+    'transformers': TransformersPromptModel,
+}
+
+
 def _run_prompt(
         prompt: str,
         *,
         backend: str | None = None,
 ) -> None:
-    llm = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+    mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    #
-
-    response = llm.generate(Request(Prompt(prompt)))
-
-    #
+    response = mdl.generate(Request(Prompt(prompt)))
 
     print(response.v.strip())
+
+
+##
+
+
+EMBEDDING_MODEL_BACKENDS: ta.Mapping[str, type[EmbeddingModel]] = {
+    'openai': OpenaiEmbeddingModel,
+}
+
+
+def _run_embed(
+        prompt: str,
+        *,
+        backend: str | None = None,
+) -> None:
+    mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
+
+    response = mdl.generate(Request(prompt))
+
+    print(json.dumps_compact(response.v.v))
 
 
 ##
@@ -144,6 +164,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
     parser.add_argument('-c', '--chat', action='store_true')
+    parser.add_argument('-e', '--embed', action='store_true')
     parser.add_argument('-n', '--new', action='store_true')
     parser.add_argument('-b', '--backend', default='openai')
     args = parser.parse_args()
@@ -171,6 +192,12 @@ def _main() -> None:
             prompt,
             backend=args.backend,
             new=bool(args.new),
+        )
+
+    elif args.embed:
+        _run_embed(
+            prompt,
+            backend=args.backend,
         )
 
     else:
