@@ -28,6 +28,8 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
+    'huggingface-hub ~= 0.25',
+    'datasets ~= 3.0',
     'llama-cpp-python ~= 0.2',
     'openai ~= 1.47',
     'tinygrad ~= 0.9',
@@ -36,6 +38,10 @@ all = [
     'mwparserfromhell ~= 0.6',
     'wikitextparser ~= 0.56',
     'lxml ~= 5.3; python_version < "3.13"',
+]
+huggingface = [
+    'huggingface-hub ~= 0.25',
+    'datasets ~= 3.0',
 ]
 llamacpp = [
     'llama-cpp-python ~= 0.2',

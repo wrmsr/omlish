@@ -13,6 +13,11 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        'huggingface': [
+            'huggingface-hub ~= 0.25',
+            'datasets ~= 3.0',
+        ],
+
         'llamacpp': [
             'llama-cpp-python ~= 0.2',
         ],
@@ -22,7 +27,7 @@ class Project(ProjectBase):
         ],
 
         'tinygrad': [
-            # 'git+https://github.com/tinygrad/tinygrad',
+            # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
             'tinygrad ~= 0.9',
         ],
 
