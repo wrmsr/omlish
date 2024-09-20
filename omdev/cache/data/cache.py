@@ -110,6 +110,10 @@ class Cache:
                 if file.endswith('.tar.gz'):
                     subprocess.check_call(['tar', 'xzf', file], cwd=data_dir)
 
+
+                elif file.endswith('.zip'):
+                    subprocess.check_call(['unzip', file], cwd=data_dir)
+
                 else:
                     raise Exception(f'Unhandled archive extension: {file}')
 
