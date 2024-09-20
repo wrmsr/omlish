@@ -5,6 +5,7 @@ NOISY_LOGGERS: set[str] = {
     'boto3.resources.action',
     'datadog.dogstatsd',
     'elasticsearch',
+    'httpx',
     'kazoo.client',
     'requests.packages.urllib3.connectionpool',
 }
