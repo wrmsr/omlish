@@ -103,3 +103,20 @@ class Pidfile:
     def kill(self, sig: int = signal.SIGTERM) -> None:
         pid = self.read()
         os.kill(pid, sig)  # Still racy
+
+
+def touch(self, mode: int = 0o666, exist_ok: bool = True) -> None:
+    if exist_ok:
+        # First try to bump modification time
+        # Implementation note: GNU touch uses the UTIME_NOW option of the utimensat() / futimens() functions.
+        try:
+            os.utime(self, None)
+        except OSError:
+            pass
+        else:
+            return
+    flags = os.O_CREAT | os.O_WRONLY
+    if not exist_ok:
+        flags |= os.O_EXCL
+    fd = os.open(self, flags, mode)
+    os.close(fd)

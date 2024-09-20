@@ -32,7 +32,7 @@ pyobjc-framework-metal==10.3.1; sys_platform == "darwin"
 
 ##
 
-pandas==2.2.2
+pandas==2.2.3
 pyarrow==17.0.0
 
 opencv-python==4.10.0.84
@@ -232,7 +232,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.22
 
-langsmith==0.1.123
+langsmith==0.1.125
 
 tavily-python==0.5.0
 
