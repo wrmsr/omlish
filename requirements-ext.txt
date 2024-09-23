@@ -158,7 +158,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.24
+boto3>=1.35.25
 
 google-cloud-compute==1.19.2
 
@@ -204,7 +204,7 @@ openai==1.47.1
 trl==0.11.0
 tf-keras==2.17.0
 
-polars==1.8.0
+polars==1.8.1
 
 pyzmq==26.2.0
 
