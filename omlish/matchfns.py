@@ -130,7 +130,7 @@ def multi(*children: MatchFn[P, T], strict: bool = False) -> MultiMatchFn:  # Mu
 ##
 
 
-class CachedMultiFn(MatchFn[P, T]):
+class CachedMatchFn(MatchFn[P, T]):
     @staticmethod
     def _default_key(*args, **kwargs):
         return (args, tuple(sorted(kwargs.items(), key=lambda t: t[0])))
@@ -187,7 +187,7 @@ class CachedMultiFn(MatchFn[P, T]):
         return self.__class__(self._f.__get__(instance, owner), key=self._key)  # noqa
 
 
-cached = CachedMultiFn
+cached = CachedMatchFn
 
 
 ##
