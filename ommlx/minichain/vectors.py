@@ -27,7 +27,7 @@ class Indexed(lang.Final):
 @dc.dataclass(frozen=True)
 class Search(lang.Final):
     vec: Vector
-    num: int = 10
+    k: int = 10
 
 
 @dc.dataclass(frozen=True)
@@ -43,7 +43,7 @@ class Hits(lang.Final):
 
 class VectorStore(lang.Abstract):
     @abc.abstractmethod
-    def index(self, obj: Indexed) -> None:
+    def index(self, doc: Indexed) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
