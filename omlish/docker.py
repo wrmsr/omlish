@@ -108,8 +108,12 @@ def cli_inspect(ids: list[str]) -> list[Inspect]:
 
 
 def has_cli() -> bool:
-    proc = subprocess.run(['docker', '--version'])  # noqa
-    return not proc.returncode
+    try:
+        proc = subprocess.run(['docker', '--version'])  # noqa
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return False
+    else:
+        return not proc.returncode
 
 
 ##
