@@ -4,7 +4,7 @@ TODO:
   - owned lock
   - async once
 
-lookit:
+See:
  - https://github.com/davidbrochart/sqlite-anyio/blob/a3ba4c6ef0535b14a5a60071fcd6ed565a514963/sqlite_anyio/sqlite.py
  - https://github.com/rafalkrupinski/ratelimit-anyio/blob/2910a8a3d6fa54ed17ee6ba457686c9f7a4c4beb/src/ratelimit_anyio/__init__.py
  - https://github.com/nekitdev/async-extensions/tree/main/async_extensions

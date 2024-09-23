@@ -9,7 +9,7 @@ TODO:
  - lifecycle / otp-ify
  - configify
 
-Lookit:
+See:
  - https://github.com/davidbrochart/anycorn
  - https://github.com/encode/starlette
  - https://github.com/tiangolo/fastapi

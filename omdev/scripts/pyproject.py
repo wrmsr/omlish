@@ -12,7 +12,7 @@ TODO:
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
  - env vars - PYTHONPATH
 
-lookit:
+See:
  - https://pdm-project.org/en/latest/
  - https://rye.astral.sh/philosophy/
  - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
