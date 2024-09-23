@@ -1,5 +1,5 @@
 """
-lookit:
+See:
  - piku, obviously
  - https://github.com/mitogen-hq/mitogen/
 

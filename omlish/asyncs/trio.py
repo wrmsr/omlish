@@ -1,5 +1,5 @@
 """
-lookit:
+See:
  - https://github.com/oremanj/trio-monitor
  - https://github.com/python-trio/trio-monitor/tree/master
  - https://github.com/python-trio/triopg
