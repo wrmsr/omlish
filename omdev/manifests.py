@@ -15,6 +15,7 @@
 import argparse
 import collections
 import dataclasses as dc
+import importlib
 import inspect
 import json
 import os.path
@@ -56,6 +57,8 @@ _MANIFEST_GLOBAL_PAT = re.compile(r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*')
 
 
 def _dump_module_manifests(spec: str, *attrs: str) -> None:
+    import collections.abc
+    import dataclasses as dc  # noqa
     import importlib
     import json
 
@@ -65,13 +68,35 @@ def _dump_module_manifests(spec: str, *attrs: str) -> None:
     for attr in attrs:
         manifest = getattr(mod, attr)
 
-        manifest_json = json.dumps(manifest)
-        rt_manifest = json.loads(manifest_json)
+        if dc.is_dataclass(manifest):
+            cls = type(manifest)
+            manifest_json = json.dumps(dc.asdict(manifest))  # type: ignore
+            manifest_dct = json.loads(manifest_json)
 
-        if rt_manifest != manifest:
-            raise Exception(f'Manifest failed to roundtrip: {manifest} != {rt_manifest}')
+            rt_manifest = cls(**manifest_dct)  # type: ignore
+            if rt_manifest != manifest:
+                raise Exception(f'Manifest failed to roundtrip: {manifest} -> {manifest_dct} != {rt_manifest}')
 
-        out[attr] = rt_manifest
+            key = f'${cls.__module__}.{cls.__qualname__}'
+            out[attr] = {key: manifest_dct}
+
+        elif isinstance(manifest, collections.abc.Mapping):
+            [(key, manifest_dct)] = manifest.items()
+            if not key.startswith('$'):  # noqa
+                raise Exception(f'Bad key: {key}')
+
+            if not isinstance(manifest_dct, collections.abc.Mapping):
+                raise Exception(f'Bad value: {manifest_dct}')
+
+            manifest_json = json.dumps(manifest_dct)
+            rt_manifest_dct = json.loads(manifest_json)
+            if manifest_dct != rt_manifest_dct:
+                raise Exception(f'Manifest failed to roundtrip: {manifest_dct} != {rt_manifest_dct}')
+
+            out[attr] = {key: manifest_dct}
+
+        else:
+            raise TypeError(f'Manifest must be dataclass or mapping: {manifest!r}')
 
     out_json = json.dumps(out, indent=None, separators=(',', ':'))
     print(out_json)
@@ -205,8 +230,49 @@ def build_package_manifests(
 ##
 
 
+def check_package_manifests(
+        name: str,
+        base: str,
+) -> None:
+    pkg_dir = os.path.join(base, name)
+    if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
+        raise Exception(pkg_dir)
+
+    manifests_file = os.path.join(pkg_dir, '.manifests.json')
+    if not os.path.isfile(manifests_file):
+        raise Exception(f'No manifests file: {manifests_file}')
+
+    with open(manifests_file) as f:
+        manifests_json = json.load(f)
+
+    for entry in manifests_json:
+        manifest = Manifest(**entry)
+        [(key, value_dct)] = manifest.value.items()
+        if not key.startswith('$'):
+            raise Exception(f'Bad key: {key}')
+
+        parts = key[1:].split('.')
+        pos = next(i for i, p in enumerate(parts) if p[0].isupper())
+        mod_name = '.'.join(parts[:pos])
+        mod = importlib.import_module(mod_name)
+
+        obj: ta.Any = mod
+        for ca in parts[pos:]:
+            obj = getattr(obj, ca)
+        cls = obj
+        if not isinstance(cls, type):
+            raise TypeError(cls)
+
+        if not dc.is_dataclass(cls):
+            raise TypeError(cls)
+        obj = cls(**value_dct)  # noqa
+
+
+##
+
+
 if __name__ == '__main__':
-    def _gen_cmd(args) -> None:
+    def _get_base(args) -> str:
         if args.base is not None:
             base = args.base
         else:
@@ -214,6 +280,10 @@ if __name__ == '__main__':
         base = os.path.abspath(base)
         if not os.path.isdir(base):
             raise RuntimeError(base)
+        return base
+
+    def _gen_cmd(args) -> None:
+        base = _get_base(args)
 
         for pkg in args.package:
             ms = build_package_manifests(
@@ -223,6 +293,15 @@ if __name__ == '__main__':
             )
             if not args.quiet:
                 print(json_dumps_pretty([dc.asdict(m) for m in ms]))
+
+    def _check_cmd(args) -> None:
+        base = _get_base(args)
+
+        for pkg in args.package:
+            check_package_manifests(
+                pkg,
+                base,
+            )
 
     def _main(argv=None) -> None:
         configure_standard_logging('INFO')
@@ -235,8 +314,12 @@ if __name__ == '__main__':
         parser_gen.add_argument('-w', '--write', action='store_true')
         parser_gen.add_argument('-q', '--quiet', action='store_true')
         parser_gen.add_argument('package', nargs='*')
-
         parser_gen.set_defaults(func=_gen_cmd)
+
+        parser_check = subparsers.add_parser('check')
+        parser_check.add_argument('-b', '--base')
+        parser_check.add_argument('package', nargs='*')
+        parser_check.set_defaults(func=_check_cmd)
 
         args = parser.parse_args(argv)
         if not getattr(args, 'func', None):

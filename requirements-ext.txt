@@ -14,7 +14,7 @@ numpy==1.26.4, <2.0
 
 matplotlib==3.9.2
 
-huggingface-hub==0.25.0
+huggingface-hub==0.25.1
 evaluate==0.4.3
 datasets==3.0.0
 
@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.4.1
+simsimd==5.4.2
 
 spacy==3.8.0
 
@@ -193,18 +193,18 @@ logbook==1.7.0.post0
 
 psutil==6.0.0
 
-mitogen==0.3.9
+mitogen==0.3.10
 
 cloudpickle==3.0.0
 
 ##
 
-openai==1.47.0
+openai==1.47.1
 
 trl==0.11.0
 tf-keras==2.17.0
 
-polars==1.7.1
+polars==1.8.0
 
 pyzmq==26.2.0
 
@@ -216,7 +216,7 @@ customtkinter==5.2.2
 
 langchain==0.3.0
 
-langchain-core==0.3.4
+langchain-core==0.3.5
 
 langchain-anthropic==0.2.1
 langchain-community==0.3.0
@@ -230,7 +230,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.23
+langgraph==0.2.24
 
 langsmith==0.1.125
 
@@ -266,7 +266,7 @@ usearch==2.15.1
 
 ##
 
-llama-index-core==0.11.11
+llama-index-core==0.11.12
 
 unstructured==0.15.13
 
