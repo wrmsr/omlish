@@ -12,8 +12,9 @@ TODO:
 See:
  - https://greenback.readthedocs.io/en/latest/
 """
+import functools  # noqa
 import itertools
-import sys
+import sys  # noqa
 import types
 import typing as ta
 import weakref
@@ -90,7 +91,7 @@ class UnexpectedBridgeNestingError(Exception):
 
 
 _DEBUG_PRINT: ta.Callable[..., None] | None = None
-# _DEBUG_PRINT = print  # noqa
+# _DEBUG_PRINT = functools.partial(print, file=sys.stderr)  # noqa
 
 _TRACK_TRANSITION_OBJS = False
 
@@ -253,8 +254,8 @@ def s_to_a(fn, *, require_await=False):
                 switch_occurred = True
                 try:
                     value = yield result
-                except BaseException:  # noqa
-                    result = g.throw(*sys.exc_info())
+                except BaseException as e:  # noqa
+                    result = g.throw(e)
                 else:
                     result = g.switch(value)
 
@@ -304,13 +305,17 @@ def a_to_s(fn):
             sv = None
             try:
                 while True:
-                    try:
-                        sv = cr.send(sv)
-                    except StopIteration:
-                        break
+                    if sv is None:
+                        try:
+                            sv = cr.send(sv)
+                        except StopIteration:
+                            break
 
                     if ret is missing or cr.cr_await is not None or cr.cr_running:
-                        sv = s_to_a_await(sv)
+                        try:
+                            sv = s_to_a_await(sv)
+                        except BaseException as e:  # noqa
+                            sv = cr.throw(e)
 
             finally:
                 cr.close()

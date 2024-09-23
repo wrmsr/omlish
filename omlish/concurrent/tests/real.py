@@ -123,7 +123,7 @@ class RealThreadlet(Threadlet, abc.ABC):
 
         return _squash_args(in_value)
 
-    def throw(self, ex: Exception) -> ta.Any:
+    def throw(self, ex: BaseException) -> ta.Any:
         raise NotImplementedError
 
 

@@ -106,7 +106,9 @@ async def a_sleep_callback4(arg):
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.asyncs
+# @pytest.mark.asyncs
+# @pytest.mark.asyncio
+@pytest.mark.trio
 async def test_async_bridge2():
     await anyio.sleep(.01)
 
