@@ -1,5 +1,11 @@
+import abc
 import dataclasses as dc
 import typing as ta
+
+from omlish import lang
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -7,3 +13,39 @@ class Vector:
     """array.array('f' | 'd', ...) preferred"""
 
     v: ta.Sequence[float]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Indexed(lang.Final):
+    vec: Vector
+    v: ta.Any
+
+
+@dc.dataclass(frozen=True)
+class Search(lang.Final):
+    vec: Vector
+    num: int = 10
+
+
+@dc.dataclass(frozen=True)
+class Hit(lang.Final):
+    score: float
+    v: ta.Any
+
+
+@dc.dataclass(frozen=True)
+class Hits(lang.Final):
+    l: ta.Sequence[Hit]
+
+
+class VectorStore(lang.Abstract):
+    @abc.abstractmethod
+    def index(self, obj: Indexed) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def search(self, search: Search) -> Hits:
+        raise NotImplementedError

@@ -26,6 +26,7 @@ class TransformersPromptModel(PromptModel_):
     )
 
     model: str = dc.field(default_factory=lambda: TransformersPromptModel.DEFAULT_MODEL)
+    kwargs: ta.Mapping[str, ta.Any] | None = None
 
     def generate(self, request: Request[Prompt]) -> Response[str]:
         pipeline = transformers.pipeline(
@@ -33,6 +34,7 @@ class TransformersPromptModel(PromptModel_):
             model=self.model,
             device='mps' if sys.platform == 'darwin' else 'cuda',
             token=os.environ.get('HUGGINGFACE_HUB_TOKEN'),
+            **(self.kwargs or {}),
         )
         output = pipeline(request.v.s)
         return Response(output)
