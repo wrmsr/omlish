@@ -34,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.24
-botocore==1.35.24
+boto3==1.35.25
+botocore==1.35.25
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -89,7 +89,7 @@ durationpy==0.7
 einops==0.8.0
 elastic-transport==8.15.0
 elasticsearch==8.15.1
-emoji==2.13.0
+emoji==2.13.2
 evaluate==0.4.3
 execnet==2.1.1
 executing==2.1.0
@@ -194,7 +194,7 @@ langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.0
 langdetect==1.0.9
-langgraph==0.2.24
+langgraph==0.2.25
 langgraph-checkpoint==1.0.10
 langsmith==0.1.125
 language_data==1.2.0
@@ -295,7 +295,7 @@ pipdeptree==2.23.4
 pkginfo==1.10.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.8.0
+polars==1.8.1
 pooch==1.8.2
 portalocker==2.8.2
 posthog==3.6.6
@@ -456,7 +456,7 @@ types-ujson==5.10.0.20240515
 typing-inspect==0.9.0
 typing_extensions==4.12.2
 tyro==0.8.11
-tzdata==2024.1
+tzdata==2024.2
 tzlocal==5.2
 ujson==5.10.0
 unstructured==0.15.13
@@ -486,7 +486,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
-yarl==1.11.1
+yarl==1.12.0
 zigpy==0.66.0
 zipp==3.20.2
 zwave-js-server-python==0.58.0
