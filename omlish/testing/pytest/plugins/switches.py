@@ -10,6 +10,7 @@ import pytest
 
 from .... import check
 from .... import collections as col
+from .... import docker
 from .... import lang
 from ._registry import register
 
@@ -17,9 +18,9 @@ from ._registry import register
 Configable = pytest.FixtureRequest | pytest.Config
 
 
-SWITCHES = {
-    'docker': True,
-    'docker-guest': False,
+SWITCHES: ta.Mapping[str, bool | ta.Callable[[], bool]] = {
+    'docker': docker.has_cli,
+    'docker-guest': docker.is_likely_in_docker,
     'online': True,
     'integration': True,
     'slow': False,
@@ -88,7 +89,10 @@ class SwitchesPlugin:
 
     @lang.cached_function
     def get_switches(self) -> ta.Mapping[str, SwitchState]:
-        return dict(SWITCHES)
+        return {
+            k: v() if callable(v) else v
+            for k, v in SWITCHES.items()
+        }
 
     def pytest_collection_modifyitems(self, config, items):
         sts = {
