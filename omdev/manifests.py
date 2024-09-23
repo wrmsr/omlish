@@ -1,14 +1,8 @@
 """
-!!! manifests! get-manifest, .manifest.json
- - dumb dicts, root keys are 'types'
- - get put in _manifest.py, root level dict or smth
-  - IMPORT files w comment
-  - comment must immediately precede a global val setter
-  - val is grabbed from imported module dict by name
-  - value is repr'd somehow (roundtrip checked) (naw, json lol)
-  - dumped in _manifest.py
- - # @omlish-manifest \n _CACHE_MANIFEST = {'cache': {'name': 'llm', …
- - also can do prechecks!
+TODO:
+ - split, cli.py / types.py
+ - opt to load only specified types
+ - prechecks
 """
 # ruff: noqa: UP006 UP007
 # @omlish-lite
@@ -49,6 +43,42 @@ class ManifestOrigin:
 @dc.dataclass(frozen=True)
 class Manifest(ManifestOrigin):
     value: ta.Any
+
+
+def load_manifest_entry(
+        entry: ta.Mapping[str, ta.Any],
+        *,
+        raw_values: bool = False,
+) -> Manifest:
+    manifest = Manifest(**entry)
+
+    [(key, value_dct)] = manifest.value.items()
+    if not key.startswith('$'):
+        raise Exception(f'Bad key: {key}')
+
+    if not raw_values:
+        parts = key[1:].split('.')
+        pos = next(i for i, p in enumerate(parts) if p[0].isupper())
+        mod_name = '.'.join(parts[:pos])
+        mod = importlib.import_module(mod_name)
+
+        obj: ta.Any = mod
+        for ca in parts[pos:]:
+            obj = getattr(obj, ca)
+        cls = obj
+        if not isinstance(cls, type):
+            raise TypeError(cls)
+
+        if not dc.is_dataclass(cls):
+            raise TypeError(cls)
+        obj = cls(**value_dct)  # noqa
+
+        manifest = dc.replace(manifest, value=obj)
+
+    return manifest
+
+
+##
 
 
 MANIFEST_MAGIC = '# @omlish-manifest'
@@ -246,26 +276,7 @@ def check_package_manifests(
         manifests_json = json.load(f)
 
     for entry in manifests_json:
-        manifest = Manifest(**entry)
-        [(key, value_dct)] = manifest.value.items()
-        if not key.startswith('$'):
-            raise Exception(f'Bad key: {key}')
-
-        parts = key[1:].split('.')
-        pos = next(i for i, p in enumerate(parts) if p[0].isupper())
-        mod_name = '.'.join(parts[:pos])
-        mod = importlib.import_module(mod_name)
-
-        obj: ta.Any = mod
-        for ca in parts[pos:]:
-            obj = getattr(obj, ca)
-        cls = obj
-        if not isinstance(cls, type):
-            raise TypeError(cls)
-
-        if not dc.is_dataclass(cls):
-            raise TypeError(cls)
-        obj = cls(**value_dct)  # noqa
+        load_manifest_entry(entry)
 
 
 ##
