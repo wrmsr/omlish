@@ -18,10 +18,10 @@ import contextlib
 import shlex
 import typing as ta
 
+from omdev.secrets import load_secrets
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omserv.secrets import load_secrets
 
 from .cmds import CommandRunner
 from .cmds import LocalCommandRunner
