@@ -126,7 +126,8 @@ async def test_lazy_fn3():
     assert c == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncs
+# @pytest.mark.asyncio
 # @pytest.mark.drain_asyncio
 async def test_cancel():
     await anu.gather(
