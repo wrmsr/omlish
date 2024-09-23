@@ -206,6 +206,7 @@ language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
+libtmux==0.37.0
 lightning-utilities==0.11.7
 litecli==1.12.3
 llama-index-core==0.11.12
