@@ -48,7 +48,7 @@ class Threadlet(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def throw(self, ex: Exception) -> ta.Any:
+    def throw(self, ex: BaseException) -> ta.Any:
         raise NotImplementedError
 
 
@@ -84,7 +84,7 @@ class GreenletThreadlet(Threadlet):
     def switch(self, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         return self.g.switch(*args, **kwargs)
 
-    def throw(self, ex: Exception) -> ta.Any:
+    def throw(self, ex: BaseException) -> ta.Any:
         return self.g.throw(ex)
 
 

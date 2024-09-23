@@ -124,3 +124,13 @@ async def test_lazy_fn3():
     assert c == 1
     assert await lfn.get() == 420
     assert c == 1
+
+
+@pytest.mark.asyncio
+# @pytest.mark.drain_asyncio
+async def test_cancel():
+    await anu.gather(
+        functools.partial(anyio.sleep, .02),
+        functools.partial(anyio.sleep, .01),
+        take_first=True,
+    )
