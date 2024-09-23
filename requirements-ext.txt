@@ -273,5 +273,6 @@ unstructured==0.15.13
 sentence_transformers==3.1.1
 
 google-generativeai==0.8.1
+google-ai-generativelanguage==0.6.9
 
 libtmux==0.37.0
