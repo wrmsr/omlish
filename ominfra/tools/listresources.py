@@ -16,10 +16,10 @@ import typing as ta
 
 import urllib3
 
+from omdev.secrets import load_secrets
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omserv.secrets import load_secrets
 
 
 ##
