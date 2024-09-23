@@ -3,9 +3,20 @@
     "module": ".foo",
     "attr": "_FOO_MANIFEST",
     "file": "x/foo.py",
-    "line": 4,
+    "line": 12,
     "value": {
-      "$some_manifest_thing": {
+      "$x.foo.SomeManifestThing": {
+        "some_const": 420
+      }
+    }
+  },
+  {
+    "module": ".foo",
+    "attr": "_FOO_MANIFEST2",
+    "file": "x/foo.py",
+    "line": 15,
+    "value": {
+      "$x.foo.SomeManifestThing": {
         "some_const": 420
       }
     }
