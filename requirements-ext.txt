@@ -230,7 +230,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.24
+langgraph==0.2.25
 
 langsmith==0.1.125
 
