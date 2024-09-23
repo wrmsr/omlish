@@ -4,11 +4,11 @@ from omlish import lang
 
 from ..content import Content
 from ..content import Text
-from ..embeddings import Embedding
 from ..embeddings import EmbeddingModel_
 from ..images import Image
 from ..models import Request
 from ..models import Response
+from ..vectors import Vector
 
 
 if ta.TYPE_CHECKING:
@@ -20,7 +20,7 @@ else:
 class SentencetransformersEmbeddingModel(EmbeddingModel_):
     model = 'clip-ViT-B-32'
 
-    def generate(self, request: Request[Content]) -> Response[Embedding]:
+    def generate(self, request: Request[Content]) -> Response[Vector]:
         mdl = st.SentenceTransformer(self.model)
 
         obj: ta.Any
@@ -34,4 +34,4 @@ class SentencetransformersEmbeddingModel(EmbeddingModel_):
 
         response = mdl.encode(obj)
 
-        return Response(Embedding(response.tolist()))
+        return Response(Vector(response.tolist()))

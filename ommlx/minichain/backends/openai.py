@@ -12,12 +12,12 @@ from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
 from ..content import Content
 from ..content import Text
-from ..embeddings import Embedding
 from ..embeddings import EmbeddingModel_
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
 from ..prompts import PromptModel_
+from ..vectors import Vector
 
 
 if ta.TYPE_CHECKING:
@@ -88,10 +88,10 @@ class OpenaiChatModel(ChatModel_):
 class OpenaiEmbeddingModel(EmbeddingModel_):
     model = 'text-embedding-3-small'
 
-    def generate(self, request: Request[Content]) -> Response[Embedding]:
+    def generate(self, request: Request[Content]) -> Response[Vector]:
         response = openai.embeddings.create(
             model=self.model,
             input=check.isinstance(request.v, Text).s,
         )
 
-        return Response(Embedding(response.data[0].embedding))
+        return Response(Vector(response.data[0].embedding))

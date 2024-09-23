@@ -1,3 +1,4 @@
+import dataclasses as dc
 import os
 import sys
 import typing as ta
@@ -16,9 +17,15 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
+@dc.dataclass(frozen=True)
 class TransformersPromptModel(PromptModel_):
-    # model = 'meta-llama/Meta-Llama-3-8B"
-    model = 'microsoft/phi-2'
+    DEFAULT_MODEL: ta.ClassVar[str] = (
+        'microsoft/phi-2'
+        # 'Qwen/Qwen2-0.5B'
+        # 'meta-llama/Meta-Llama-3-8B'
+    )
+
+    model: str = dc.field(default_factory=lambda: TransformersPromptModel.DEFAULT_MODEL)
 
     def generate(self, request: Request[Prompt]) -> Response[str]:
         pipeline = transformers.pipeline(
