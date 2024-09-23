@@ -107,6 +107,11 @@ def cli_inspect(ids: list[str]) -> list[Inspect]:
     return msh.unmarshal(json.loads(o.decode()), list[Inspect])
 
 
+def has_cli() -> bool:
+    proc = subprocess.run(['docker', '--version'])  # noqa
+    return not proc.returncode
+
+
 ##
 
 
