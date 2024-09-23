@@ -303,19 +303,22 @@ def a_to_s(fn):
 
             cr = gate()
             sv = None
+            he = False
             try:
                 while True:
-                    if sv is None:
+                    if not he:
                         try:
                             sv = cr.send(sv)
                         except StopIteration:
                             break
+                    he = False
 
                     if ret is missing or cr.cr_await is not None or cr.cr_running:
                         try:
-                            sv = s_to_a_await(sv)
+                            sv = s_to_a_await(sv)  # type: ignore
                         except BaseException as e:  # noqa
                             sv = cr.throw(e)
+                            he = True
 
             finally:
                 cr.close()
