@@ -2,6 +2,7 @@
 Tiny pre-commit
 
 TODO:
+ - ! manifests
  - global config
  - global analyses - FilesWithShebang
  - shebang files have no relative imports
