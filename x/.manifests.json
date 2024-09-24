@@ -5,7 +5,7 @@
     "file": "x/foo.py",
     "line": 14,
     "value": {
-      "$x.foo.SomeManifestThing": {
+      "$.foo.SomeManifestThing": {
         "some_const": 420
       }
     }
@@ -16,7 +16,7 @@
     "file": "x/foo.py",
     "line": 17,
     "value": {
-      "$x.foo.SomeManifestThing": {
+      "$.foo.SomeManifestThing": {
         "some_const": 420
       }
     }
