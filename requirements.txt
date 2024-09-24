@@ -69,7 +69,8 @@ cloudpickle==3.0.0
 
 ## other
 
-# cbor
+cbor2==5.6.4
+
 # msgpack
 
 

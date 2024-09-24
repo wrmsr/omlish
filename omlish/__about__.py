@@ -62,6 +62,8 @@ class Project(ProjectBase):
 
             'pyyaml ~= 5.0',
 
+            'cbor2 ~= 5.6',
+
             'cloudpickle ~= 3.0',
         ],
 
