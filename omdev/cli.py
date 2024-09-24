@@ -27,7 +27,7 @@ def _main() -> None:
     cms: list[CliModule] = []
 
     ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
-    pkgs = ldr.discover()  # ['omdev', 'x']
+    pkgs = ldr.discover() or ['omlish', 'omdev', 'x']
     for m in ldr.load(*pkgs, only=[CliModule]):
         cms.append(check.isinstance(m.value, CliModule))
 

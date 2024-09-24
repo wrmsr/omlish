@@ -38,6 +38,7 @@ from omlish import logs
 
 from .. import cmake
 from .. import findmagic
+from ..cli import CliModule
 from .magic import CextMagic
 
 
@@ -317,6 +318,10 @@ def _gen_cmd(args) -> None:
         use_exe_realpath=bool(args.realpath),
     )
     cpg.run()
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('cmake', __name__)
 
 
 def _main(argv=None) -> None:

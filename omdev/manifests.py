@@ -131,7 +131,9 @@ class ManifestLoader:
 
         lst: ta.List[Manifest] = []
         for e in obj:
-            lst.append(Manifest(**e))
+            m = Manifest(**e)
+            m = dc.replace(m, module=pkg_name + m.module)
+            lst.append(m)
 
         self._raw_cache[pkg_name] = lst
         return lst

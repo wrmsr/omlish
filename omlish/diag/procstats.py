@@ -37,8 +37,6 @@ class ProcStats:
 
     rss: int
 
-    times: Times
-
 
 def get_psutil_procstats(pid: int | None = None) -> ProcStats:
     if pid is None:
@@ -46,12 +44,9 @@ def get_psutil_procstats(pid: int | None = None) -> ProcStats:
 
     proc = _psutil.Process(pid)
     mi = proc.memory_info()
-    ts = times()
 
     return ProcStats(
         pid=pid,
 
         rss=mi.rss,
-
-        times=ts,
     )

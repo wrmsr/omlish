@@ -74,10 +74,6 @@ def _check_cmd(args) -> None:
 ##
 
 
-# @omlish-manifest
-_CLI_MODULE = CliModule('precheck', __name__)
-
-
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
@@ -88,6 +84,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_check.set_defaults(func=_check_cmd)
 
     return parser
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('precheck', __name__)
 
 
 def _main(argv: ta.Sequence[str] | None = None) -> None:
