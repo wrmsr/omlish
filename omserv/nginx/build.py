@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocessing as mp
 import os.path
 import shutil
 import subprocess
@@ -102,7 +102,7 @@ def build_nginx() -> None:
 
     #
 
-    make_jobs = max(multiprocessing.cpu_count() // 2, 1)
+    make_jobs = max(mp.cpu_count() // 2, 1)
     subprocess.check_call([
         'make',
         f'-j{make_jobs}',

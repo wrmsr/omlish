@@ -3,7 +3,7 @@
     "module": ".foo",
     "attr": "_FOO_MANIFEST",
     "file": "x/foo.py",
-    "line": 12,
+    "line": 14,
     "value": {
       "$x.foo.SomeManifestThing": {
         "some_const": 420
@@ -14,10 +14,22 @@
     "module": ".foo",
     "attr": "_FOO_MANIFEST2",
     "file": "x/foo.py",
-    "line": 15,
+    "line": 17,
     "value": {
       "$x.foo.SomeManifestThing": {
         "some_const": 420
+      }
+    }
+  },
+  {
+    "module": ".foo",
+    "attr": "_FOO_CLI_MODULE",
+    "file": "x/foo.py",
+    "line": 24,
+    "value": {
+      "$x.cli.CliModule": {
+        "cmd_name": "foo",
+        "mod_name": "x.foo"
       }
     }
   }
