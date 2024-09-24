@@ -42,7 +42,6 @@ from omlish.lite.runtime import REQUIRED_PYTHON_VERSION
 
 from .. import findmagic
 from .. import tokens as tks
-from ..cli import CliModule
 
 
 Tokens: ta.TypeAlias = tks.Tokens
@@ -596,10 +595,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_gen.set_defaults(func=_gen_cmd)
 
     return parser
-
-
-# @omlish-manifest
-_CLI_MODULE = CliModule('amalg', __name__)
 
 
 def _main() -> None:

@@ -1796,16 +1796,14 @@ class RunningInterpProvider(InterpProvider):
 """
 TODO:
  - custom tags
+  - 'aliases'
+  - https://github.com/pyenv/pyenv/pull/2966
+  - https://github.com/pyenv/pyenv/issues/218 (lol)
+  - probably need custom (temp?) definition file
+  - *or* python-build directly just into the versions dir?
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
-
-TODO opts:
- - --enable-loadable-sqlite-extensions LDFLAGS="-L/opt/homebrew/opt/sqlite/lib" CPPFLAGS="-I/opt/homebrew/opt/sqlite/include"
- - --enable-shared
- - --enable-optimizations
- - --enable-profiling ?
- - --enable-ipv6 ?
-"""  # noqa
+"""
 
 
 ##
@@ -1899,8 +1897,33 @@ class PyenvInstallOpts:
         )
 
 
-DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-s', '-v'])
+# TODO: https://github.com/pyenv/pyenv/blob/master/plugins/python-build/README.md#building-for-maximum-performance
+DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
+    opts=[
+        '-s',
+        '-v',
+        '-k',
+    ],
+    conf_opts=[
+        '--enable-loadable-sqlite-extensions',
+
+        # '--enable-shared',
+
+        '--enable-optimizations',
+        '--with-lto',
+
+        # '--enable-profiling', # ?
+
+        # '--enable-ipv6', # ?
+    ],
+    cflags=[
+        # '-march=native',
+        # '-mtune=native',
+    ],
+)
+
 DEBUG_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-g'])
+
 THREADED_PYENV_INSTALL_OPTS = PyenvInstallOpts(conf_opts=['--disable-gil'])
 
 
@@ -1999,6 +2022,7 @@ class PyenvVersionInstaller:
             opts: ta.Optional[PyenvInstallOpts] = None,
             interp_opts: InterpOpts = InterpOpts(),
             *,
+            install_name: ta.Optional[str] = None,
             no_default_opts: bool = False,
             pyenv: Pyenv = Pyenv(),
     ) -> None:
@@ -2019,6 +2043,7 @@ class PyenvVersionInstaller:
         self._version = version
         self._opts = opts
         self._interp_opts = interp_opts
+        self._given_install_name = install_name
 
         self._no_default_opts = no_default_opts
         self._pyenv = pyenv
@@ -2033,6 +2058,8 @@ class PyenvVersionInstaller:
 
     @cached_nullary
     def install_name(self) -> str:
+        if self._given_install_name is not None:
+            return self._given_install_name
         return self._version + ('-debug' if self._interp_opts.debug else '')
 
     @cached_nullary
@@ -2052,11 +2079,26 @@ class PyenvVersionInstaller:
                 v += ' ' + os.environ[k]
             env[k] = v
 
-        subprocess_check_call(
-            self._pyenv.exe(),
-            'install',
+        conf_args = [
             *self._opts.opts,
             self._version,
+        ]
+
+        if self._given_install_name is not None:
+            full_args = [
+                os.path.join(check_not_none(self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),
+                *conf_args,
+                self.install_dir(),
+            ]
+        else:
+            full_args = [
+                self._pyenv.exe(),
+                'install',
+                *conf_args,
+            ]
+
+        subprocess_check_call(
+            *full_args,
             env=env,
         )
 
@@ -2416,7 +2458,7 @@ def _list_cmd(args) -> None:
 def _resolve_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    print(check_not_none(r.resolve(s)).exe)
+    print(check_not_none(r.resolve(s, install=bool(args.install))).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -2426,12 +2468,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_list = subparsers.add_parser('list')
     parser_list.add_argument('version')
-    parser_list.add_argument('--debug', action='store_true')
+    parser_list.add_argument('-d', '--debug', action='store_true')
     parser_list.set_defaults(func=_list_cmd)
 
     parser_resolve = subparsers.add_parser('resolve')
     parser_resolve.add_argument('version')
-    parser_resolve.add_argument('--debug', action='store_true')
+    parser_resolve.add_argument('-d', '--debug', action='store_true')
+    parser_resolve.add_argument('-i', '--install', action='store_true')
     parser_resolve.set_defaults(func=_resolve_cmd)
 
     return parser

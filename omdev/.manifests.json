@@ -60,6 +60,30 @@
     }
   },
   {
+    "module": ".interp.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/interp/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "interp",
+        "mod_name": "omdev.interp.__main__"
+      }
+    }
+  },
+  {
+    "module": ".pyproject.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/pyproject/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "pyproject",
+        "mod_name": "omdev.pyproject.__main__"
+      }
+    }
+  },
+  {
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",
@@ -84,14 +108,14 @@
     }
   },
   {
-    "module": ".amalg.amalg",
+    "module": ".amalg.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/amalg/amalg.py",
-    "line": 601,
+    "file": "omdev/amalg/__main__.py",
+    "line": 4,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "amalg",
-        "mod_name": "omdev.amalg.amalg"
+        "mod_name": "omdev.amalg.__main__"
       }
     }
   }

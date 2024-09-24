@@ -27,7 +27,7 @@ def _list_cmd(args) -> None:
 def _resolve_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    print(check_not_none(r.resolve(s)).exe)
+    print(check_not_none(r.resolve(s, install=bool(args.install))).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -37,12 +37,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_list = subparsers.add_parser('list')
     parser_list.add_argument('version')
-    parser_list.add_argument('--debug', action='store_true')
+    parser_list.add_argument('-d', '--debug', action='store_true')
     parser_list.set_defaults(func=_list_cmd)
 
     parser_resolve = subparsers.add_parser('resolve')
     parser_resolve.add_argument('version')
-    parser_resolve.add_argument('--debug', action='store_true')
+    parser_resolve.add_argument('-d', '--debug', action='store_true')
+    parser_resolve.add_argument('-i', '--install', action='store_true')
     parser_resolve.set_defaults(func=_resolve_cmd)
 
     return parser
