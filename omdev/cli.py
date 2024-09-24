@@ -1,12 +1,16 @@
 """
 TODO:
+ - allow manually specifying manifest packages
+ - split to multiple modules so places can import CliModule dc w/o importing all the manifest shit
  - omlish.bootstrap always
  - https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
+ - https://packaging.python.org/en/latest/specifications/entry-points/#entry-points
 """
 import argparse
 import dataclasses as dc
 import functools
 import runpy
+import sys
 
 from omlish import check
 
@@ -23,13 +27,15 @@ def _main() -> None:
     cms: list[CliModule] = []
 
     ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
-    for m in ldr.load('omdev', only=[CliModule]) or []:
+    pkgs = ldr.discover()  # ['omdev', 'x']
+    for m in ldr.load(*pkgs, only=[CliModule]):
         cms.append(check.isinstance(m.value, CliModule))
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
     def run(cm: CliModule) -> None:
+        sys.argv = [cm.cmd_name, *(args.args or ())]
         runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
 
     seen: set[str] = set()
@@ -42,7 +48,10 @@ def _main() -> None:
         cmd_parser.set_defaults(func=functools.partial(run, cm))
 
     args = parser.parse_args()
-    args.func()
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func()
 
 
 if __name__ == '__main__':
