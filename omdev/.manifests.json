@@ -1,85 +1,13 @@
 [
   {
-    "module": ".classdot",
+    "module": ".amalg.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/classdot.py",
-    "line": 62,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "classdot",
-        "mod_name": "omdev.classdot"
-      }
-    }
-  },
-  {
-    "module": ".tools.piptools",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/piptools.py",
-    "line": 51,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "pip",
-        "mod_name": "omdev.tools.piptools"
-      }
-    }
-  },
-  {
-    "module": ".tools.gittools",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/gittools.py",
-    "line": 22,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "git",
-        "mod_name": "omdev.tools.gittools"
-      }
-    }
-  },
-  {
-    "module": ".tools.dockertools",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/dockertools.py",
-    "line": 183,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "docker",
-        "mod_name": "omdev.tools.dockertools"
-      }
-    }
-  },
-  {
-    "module": ".tools.sqlrepl",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/sqlrepl.py",
-    "line": 193,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "sqlrepl",
-        "mod_name": "omdev.tools.sqlrepl"
-      }
-    }
-  },
-  {
-    "module": ".interp.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/interp/__main__.py",
+    "file": "omdev/amalg/__main__.py",
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "interp",
-        "mod_name": "omdev.interp.__main__"
-      }
-    }
-  },
-  {
-    "module": ".pyproject.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/pyproject/__main__.py",
-    "line": 4,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "pyproject",
-        "mod_name": "omdev.pyproject.__main__"
+        "cmd_name": "amalg",
+        "mod_name": "omdev.amalg.__main__"
       }
     }
   },
@@ -96,6 +24,30 @@
     }
   },
   {
+    "module": ".classdot",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/classdot.py",
+    "line": 62,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "classdot",
+        "mod_name": "omdev.classdot"
+      }
+    }
+  },
+  {
+    "module": ".interp.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/interp/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "interp",
+        "mod_name": "omdev.interp.__main__"
+      }
+    }
+  },
+  {
     "module": ".precheck.precheck",
     "attr": "_CLI_MODULE",
     "file": "omdev/precheck/precheck.py",
@@ -108,14 +60,62 @@
     }
   },
   {
-    "module": ".amalg.__main__",
+    "module": ".pyproject.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/amalg/__main__.py",
+    "file": "omdev/pyproject/__main__.py",
     "line": 4,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "amalg",
-        "mod_name": "omdev.amalg.__main__"
+        "cmd_name": "pyproject",
+        "mod_name": "omdev.pyproject.__main__"
+      }
+    }
+  },
+  {
+    "module": ".tools.dockertools",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/dockertools.py",
+    "line": 183,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "docker",
+        "mod_name": "omdev.tools.dockertools"
+      }
+    }
+  },
+  {
+    "module": ".tools.gittools",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/gittools.py",
+    "line": 22,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "git",
+        "mod_name": "omdev.tools.gittools"
+      }
+    }
+  },
+  {
+    "module": ".tools.piptools",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/piptools.py",
+    "line": 51,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "pip",
+        "mod_name": "omdev.tools.piptools"
+      }
+    }
+  },
+  {
+    "module": ".tools.sqlrepl",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/sqlrepl.py",
+    "line": 193,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "sqlrepl",
+        "mod_name": "omdev.tools.sqlrepl"
       }
     }
   }

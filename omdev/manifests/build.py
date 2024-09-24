@@ -205,11 +205,11 @@ def build_package_manifests(
 
     manifests: ta.List[Manifest] = []
 
-    for file in findmagic.find_magic(
+    for file in sorted(findmagic.find_magic(
             [pkg_dir],
             [MANIFEST_MAGIC],
             ['py'],
-    ):
+    )):
         manifests.extend(build_module_manifests(os.path.relpath(file, base), base))
 
     if write:
