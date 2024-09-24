@@ -48,6 +48,18 @@
     }
   },
   {
+    "module": ".tools.sqlrepl",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/sqlrepl.py",
+    "line": 193,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "sqlrepl",
+        "mod_name": "omdev.tools.sqlrepl"
+      }
+    }
+  },
+  {
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",

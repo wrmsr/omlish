@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+exec ./python -m omdev.cli "$@"
