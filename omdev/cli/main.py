@@ -7,6 +7,7 @@ TODO:
 """
 import argparse
 import functools
+import os
 import runpy
 import sys
 
@@ -20,7 +21,14 @@ def _main() -> None:
     cms: list[CliModule] = []
 
     ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
-    pkgs = ldr.discover() or ['omlish', 'omdev', 'x']  # FIXME: lol
+
+    pkgs = ldr.discover()
+    if not pkgs:
+        pkgs = []
+        for n in os.listdir(os.getcwd()):
+            if os.path.isdir(n) and os.path.exists(os.path.join(n, '__init__.py')):
+                pkgs.append(n)
+
     for m in ldr.load(*pkgs, only=[CliModule]):
         cms.append(check.isinstance(m.value, CliModule))
 

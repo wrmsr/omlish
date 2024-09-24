@@ -7,6 +7,8 @@ import typing as ta
 
 from omlish.graphs import dot
 
+from .cli import CliModule
+
 
 def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
     roots = set(roots)
@@ -55,6 +57,10 @@ def _main() -> None:
 
     scd = gen_class_dot(roots)
     dot.open_dot(dot.render(scd), sleep_s=1.)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('classdot', __name__)
 
 
 if __name__ == '__main__':

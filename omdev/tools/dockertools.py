@@ -14,6 +14,8 @@ from omlish import lang
 from omlish import logs
 from omlish.formats import yaml
 
+from ..cli import CliModule
+
 
 @lang.cached_function
 def docker_exe() -> str:
@@ -176,6 +178,10 @@ class Cli(ap.Cli):
         if self.args.write:
             with open(yml_file, 'w') as f:
                 f.write(new_src)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('docker', __name__)
 
 
 if __name__ == '__main__':
