@@ -1,7 +1,6 @@
 """
 TODO:
  - relative keys - if startswith self pkg then `$.foo.bar`
- - split, cli.py / types.py
 
 - See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
@@ -11,13 +10,9 @@ TODO:
  - [project.entry-points.omlish-manifests] \n omdev = omdev
 """
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 import argparse
 import collections
 import dataclasses as dc
-import importlib.machinery
-import importlib.metadata
-import importlib.resources
 import inspect
 import json
 import os.path
@@ -33,150 +28,10 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
-from . import findmagic
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ManifestOrigin:
-    module: str
-    attr: str
-
-    file: str
-    line: int
-
-
-@dc.dataclass(frozen=True)
-class Manifest(ManifestOrigin):
-    value: ta.Any
-
-
-##
-
-
-class ManifestLoader:
-    def __init__(
-            self,
-            *,
-            module_remap: ta.Optional[ta.Mapping[str, str]] = None,
-    ) -> None:
-        super().__init__()
-
-        self._module_remap = module_remap or {}
-        self._module_reverse_remap = {v: k for k, v in self._module_remap.items()}
-
-        self._cls_cache: ta.Dict[str, type] = {}
-        self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
-
-    @classmethod
-    def from_entry_point(
-            cls,
-            name: str,
-            spec: importlib.machinery.ModuleSpec,
-            *,
-            module_remap: ta.Optional[ta.Mapping[str, str]] = None,
-            **kwargs: ta.Any,
-    ) -> 'ManifestLoader':
-        rm: ta.Dict[str, str] = {}
-        if module_remap:
-            rm.update(module_remap)
-        if '__main__' not in rm and name == '__main__':
-            rm[spec.name] = '__main__'
-        return cls(module_remap=rm, **kwargs)
-
-    def load_cls(self, key: str) -> type:
-        try:
-            return self._cls_cache[key]
-        except KeyError:
-            pass
-
-        if not key.startswith('$'):
-            raise Exception(f'Bad key: {key}')
-
-        parts = key[1:].split('.')
-        pos = next(i for i, p in enumerate(parts) if p[0].isupper())
-
-        mod_name = '.'.join(parts[:pos])
-        mod_name = self._module_remap.get(mod_name, mod_name)
-        mod = importlib.import_module(mod_name)
-
-        obj: ta.Any = mod
-        for ca in parts[pos:]:
-            obj = getattr(obj, ca)
-
-        cls = obj
-        if not isinstance(cls, type):
-            raise TypeError(cls)
-
-        self._cls_cache[key] = cls
-        return cls
-
-    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
-        try:
-            return self._raw_cache[pkg_name]
-        except KeyError:
-            pass
-
-        t = importlib.resources.files(pkg_name).joinpath('.manifests.json')
-        if not t.is_file():
-            self._raw_cache[pkg_name] = None
-            return None
-
-        src = t.read_text('utf-8')
-        obj = json.loads(src)
-        if not isinstance(obj, (list, tuple)):
-            raise TypeError(obj)
-
-        lst: ta.List[Manifest] = []
-        for e in obj:
-            m = Manifest(**e)
-            m = dc.replace(m, module=pkg_name + m.module)
-            lst.append(m)
-
-        self._raw_cache[pkg_name] = lst
-        return lst
-
-    def load(
-            self,
-            *pkg_names: str,
-            only: ta.Optional[ta.Iterable[type]] = None,
-    ) -> ta.Sequence[Manifest]:
-        only_keys: ta.Optional[ta.Set]
-        if only is not None:
-            only_keys = set()
-            for cls in only:
-                if not (isinstance(cls, type) and dc.is_dataclass(cls)):
-                    raise TypeError(cls)
-                mod_name = cls.__module__
-                mod_name = self._module_reverse_remap.get(mod_name, mod_name)
-                only_keys.add(f'${mod_name}.{cls.__qualname__}')
-        else:
-            only_keys = None
-
-        lst: ta.List[Manifest] = []
-        for pn in pkg_names:
-            for manifest in (self.load_raw(pn) or []):
-                [(key, value_dct)] = manifest.value.items()
-                if only_keys is not None and key not in only_keys:
-                    continue
-
-                cls = self.load_cls(key)
-                value = cls(**value_dct)
-
-                manifest = dc.replace(manifest, value=value)
-                lst.append(manifest)
-
-        return lst
-
-    ENTRY_POINT_GROUP = 'omlish.manifests'
-
-    def discover(self) -> ta.Sequence[str]:
-        return [
-            ep.value
-            for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)
-        ]
+from .. import findmagic
+from .load import ManifestLoader
+from .types import Manifest
+from .types import ManifestOrigin
 
 
 ##
