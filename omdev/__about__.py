@@ -41,7 +41,7 @@ class Project(ProjectBase):
 
     # FIXME: omdev-cli ?
     # scripts = {
-    #     'om': f'{name}.cli:_main [cli]',
+    #     'om': f'{name}.cli.main:_main [cli]',
     # }
 
 

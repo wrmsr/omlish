@@ -1,33 +1,26 @@
 """
 TODO:
  - allow manually specifying manifest packages
- - split to multiple modules so places can import CliModule dc w/o importing all the manifest shit
  - omlish.bootstrap always
  - https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
  - https://packaging.python.org/en/latest/specifications/entry-points/#entry-points
 """
 import argparse
-import dataclasses as dc
 import functools
 import runpy
 import sys
 
 from omlish import check
 
-from .manifests.load import ManifestLoader
-
-
-@dc.dataclass(frozen=True)
-class CliModule:
-    cmd_name: str
-    mod_name: str
+from ..manifests.load import ManifestLoader
+from .types import CliModule
 
 
 def _main() -> None:
     cms: list[CliModule] = []
 
     ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
-    pkgs = ldr.discover() or ['omlish', 'omdev', 'x']
+    pkgs = ldr.discover() or ['omlish', 'omdev', 'x']  # FIXME: lol
     for m in ldr.load(*pkgs, only=[CliModule]):
         cms.append(check.isinstance(m.value, CliModule))
 
