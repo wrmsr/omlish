@@ -280,3 +280,5 @@ libtmux==0.37.0
 sqlite-vec==0.1.2
 
 anthropic==0.34.2
+
+apsw==3.46.1.0

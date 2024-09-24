@@ -42,6 +42,7 @@ def test_sqlite_fts():
 @pytest.mark.skipif(not hasattr(sqlite3.Connection, 'enable_load_extension'), reason='requires enable_load_extension')
 @ptu.skip_if_cant_import('sqlite_vec')
 def test_sqlite_vec():
+    # https://github.com/asg017/sqlite-vec/tree/main
     import sqlite_vec
 
     db = sqlite3.connect(':memory:')
@@ -60,3 +61,27 @@ def test_sqlite_vec():
     result = db.execute('select vec_length(?)', [serialize_float32(embedding)])
 
     print(result.fetchone()[0])  # 4
+
+
+@ptu.skip_if_cant_import('apsw')
+def test_apsw():
+    # https://rogerbinns.github.io/apsw/pysqlite.html
+    import apsw
+
+    con = apsw.Connection(':memory:')
+    cur = con.cursor()
+    for row in cur.execute(
+            '; '.join([
+                'create table foo (x, y, z)',
+                'insert into foo values (?, ?, ?)',
+                'insert into foo values (?, ?, ?)',
+                'select * from foo',
+                'drop table foo',
+                'create table bar (x, y)',
+                'insert into bar values (?, ?)',
+                'insert into bar values (?, ?)',
+                'select * from bar',
+            ]),
+            (1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    ):
+        print(row)
