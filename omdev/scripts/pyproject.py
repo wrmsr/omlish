@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omdev-amalg-output ../pyproject/cli.py
+# @omlish-amalg-output ../pyproject/cli.py
 # ruff: noqa: N802 TCH003 UP006 UP007 UP036
 """
 TODO:
@@ -104,7 +104,7 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 class CextMagic:
-    MAGIC = '@omdev-cext'
+    MAGIC = '@omlish-cext'
     MAGIC_COMMENT = f'// {MAGIC}'
 
     FILE_EXTENSIONS = ('c', 'cc', 'cpp')
@@ -2022,7 +2022,7 @@ class RequirementsRewriter:
     def _tmp_dir(self) -> str:
         return tempfile.mkdtemp('-omlish-reqs')
 
-    VENV_MAGIC = '# @omdev-venv'
+    VENV_MAGIC = '# @omlish-venv'
 
     def rewrite_file(self, in_file: str) -> str:
         with open(in_file) as f:

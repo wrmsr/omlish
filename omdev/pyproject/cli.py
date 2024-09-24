@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ../scripts/pyproject.py
+# @omlish-amalg ../scripts/pyproject.py
 # ruff: noqa: UP006 UP007
 """
 TODO:

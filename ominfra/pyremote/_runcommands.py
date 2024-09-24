@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omdev-amalg-output runcommands.py
+# @omlish-amalg-output runcommands.py
 # ruff: noqa: N802 UP006 UP007 UP036
 import abc
 import base64
@@ -58,8 +58,8 @@ Basically this: https://mitogen.networkgenomics.com/howitworks.html
 _BOOTSTRAP_COMM_FD = 100
 _BOOTSTRAP_SRC_FD = 101
 
-_BOOTSTRAP_CHILD_PID_VAR = '_PYR_CPID'
-_BOOTSTRAP_ARGV0_VAR = '_PYR_ARGV0'
+_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CPID'
+_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
 
 BOOTSTRAP_ACK0 = b'OPYR000\n'
 BOOTSTRAP_ACK1 = b'OPYR001\n'
