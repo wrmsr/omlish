@@ -16,8 +16,6 @@ class Project(ProjectBase):
         'backends': [
             'anthropic ~= 0.34',
 
-            'llama-cpp-python ~= 0.2',
-
             'openai ~= 1.47',
 
             'sentence_transformers ~= 3.1',
@@ -28,6 +26,10 @@ class Project(ProjectBase):
         'huggingface': [
             'huggingface-hub ~= 0.25',
             'datasets ~= 3.0',
+        ],
+
+        'llamacpp': [
+            'llama-cpp-python ~= 0.2',
         ],
 
         'pillow': [
