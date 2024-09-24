@@ -1089,6 +1089,10 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 class TomlWriter:
+    @dc.dataclass(frozen=True)
+    class Literal:
+        s: str
+
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()
         self._out = out
@@ -1170,7 +1174,9 @@ class TomlWriter:
         self._w(']')
 
     def write_key(self, obj: ta.Any) -> None:
-        if isinstance(obj, str):
+        if isinstance(obj, TomlWriter.Literal):
+            self._w(obj.s)
+        elif isinstance(obj, str):
             self._w(self._maybe_quote(obj.replace('_', '-')))
         elif isinstance(obj, int):
             self._w(repr(str(obj)))
@@ -3977,7 +3983,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 **extras,
             }
 
-        #
+        if (eps := prj.pop('entry_points', None)):
+            pyp_dct['project.entry-points'] = {TomlWriter.Literal(f"'{k}'"): v for k, v in eps.items()}  # type: ignore  # noqa
+
+        if (scs := prj.pop('scripts', None)):
+            pyp_dct['project.scripts'] = scs
+
+        ##
 
         st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
@@ -4102,7 +4114,12 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         prj = specs.pyproject
         prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
         prj['name'] += self._pkg_suffix
-        prj.pop('optional_dependencies', None)
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+        ]:
+            prj.pop(k, None)
 
         pyp_dct['project'] = prj
 

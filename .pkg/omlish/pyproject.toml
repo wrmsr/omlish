@@ -102,6 +102,9 @@ testing = [
     'pytest ~= 8.0',
 ]
 
+[project.entry-points]
+'omlish.manifests' = {omlish = 'omlish'}
+
 [tool.setuptools]
 
 [tool.setuptools.packages.find]

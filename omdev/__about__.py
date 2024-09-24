@@ -35,6 +35,14 @@ class Project(ProjectBase):
         ],
     }
 
+    entry_points = {
+        'omlish.manifests': {name: name},
+    }
+
+    scripts = {
+        'om': f'{name}.cli:_main [cli]',
+    }
+
 
 class Setuptools(SetuptoolsBase):
     cexts = True

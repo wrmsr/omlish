@@ -295,7 +295,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 **extras,
             }
 
-        #
+        if (eps := prj.pop('entry_points', None)):
+            pyp_dct['project.entry-points'] = {TomlWriter.Literal(f"'{k}'"): v for k, v in eps.items()}  # type: ignore  # noqa
+
+        if (scs := prj.pop('scripts', None)):
+            pyp_dct['project.scripts'] = scs
+
+        ##
 
         st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
@@ -420,7 +426,12 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         prj = specs.pyproject
         prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
         prj['name'] += self._pkg_suffix
-        prj.pop('optional_dependencies', None)
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+        ]:
+            prj.pop(k, None)
 
         pyp_dct['project'] = prj
 
