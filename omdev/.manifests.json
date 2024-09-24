@@ -5,7 +5,7 @@
     "file": "omdev/classdot.py",
     "line": 62,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "classdot",
         "mod_name": "omdev.classdot"
       }
@@ -17,7 +17,7 @@
     "file": "omdev/tools/piptools.py",
     "line": 51,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "pip",
         "mod_name": "omdev.tools.piptools"
       }
@@ -29,7 +29,7 @@
     "file": "omdev/tools/gittools.py",
     "line": 22,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "git",
         "mod_name": "omdev.tools.gittools"
       }
@@ -41,7 +41,7 @@
     "file": "omdev/tools/dockertools.py",
     "line": 183,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "docker",
         "mod_name": "omdev.tools.dockertools"
       }
@@ -53,7 +53,7 @@
     "file": "omdev/cexts/cmake.py",
     "line": 323,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "cmake",
         "mod_name": "omdev.cexts.cmake"
       }
@@ -65,7 +65,7 @@
     "file": "omdev/precheck/precheck.py",
     "line": 90,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "precheck",
         "mod_name": "omdev.precheck.precheck"
       }
@@ -77,7 +77,7 @@
     "file": "omdev/amalg/amalg.py",
     "line": 601,
     "value": {
-      "$omdev.cli.types.CliModule": {
+      "$.cli.types.CliModule": {
         "cmd_name": "amalg",
         "mod_name": "omdev.amalg.amalg"
       }
