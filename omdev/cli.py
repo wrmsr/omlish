@@ -8,8 +8,9 @@ import dataclasses as dc
 import functools
 import runpy
 
-from omdev.manifests import ManifestLoader
 from omlish import check
+
+from .manifests import ManifestLoader
 
 
 @dc.dataclass(frozen=True)
@@ -22,7 +23,7 @@ def _main() -> None:
     cms: list[CliModule] = []
 
     ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
-    for m in ldr.load('x', only=[CliModule]):
+    for m in ldr.load('omdev', only=[CliModule]) or []:
         cms.append(check.isinstance(m.value, CliModule))
 
     parser = argparse.ArgumentParser()
@@ -32,13 +33,13 @@ def _main() -> None:
         runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
 
     seen: set[str] = set()
-    for m in cms:
-        if m.cmd_name in seen:
-            raise NameError(m)
+    for cm in cms:
+        if cm.cmd_name in seen:
+            raise NameError(cm)
 
-        cmd_parser = subparsers.add_parser(m.cmd_name)
+        cmd_parser = subparsers.add_parser(cm.cmd_name)
         cmd_parser.add_argument('args', nargs=argparse.REMAINDER)
-        cmd_parser.set_defaults(func=functools.partial(run, m))
+        cmd_parser.set_defaults(func=functools.partial(run, cm))
 
     args = parser.parse_args()
     args.func()

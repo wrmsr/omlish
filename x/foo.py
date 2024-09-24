@@ -1,6 +1,6 @@
 import dataclasses as dc
 
-from .cli import CliModule
+from omdev.cli import CliModule
 
 
 SOME_CONST = 420
