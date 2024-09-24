@@ -3,7 +3,14 @@ TODO:
  - custom tags
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
-"""
+
+TODO opts:
+ - --enable-loadable-sqlite-extensions LDFLAGS="-L/opt/homebrew/opt/sqlite/lib" CPPFLAGS="-I/opt/homebrew/opt/sqlite/include"
+ - --enable-shared
+ - --enable-optimizations
+ - --enable-profiling ?
+ - --enable-ipv6 ?
+"""  # noqa
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
