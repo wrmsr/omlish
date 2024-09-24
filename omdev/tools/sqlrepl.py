@@ -13,6 +13,8 @@ from omlish import check
 from omlish import lang
 from omlish import logs
 
+from ..cli import CliModule
+
 
 @dc.dataclass(frozen=True)
 class ServerSpec:
@@ -186,6 +188,10 @@ class Cli(ap.Cli):
             exec_postgres_cli(spec, *self.args.args, no_dbcli=self.args.no_dbcli)
         else:
             raise Exception(f'unhandled dialect: {dialect=}')
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('sqlrepl', __name__)
 
 
 if __name__ == '__main__':
