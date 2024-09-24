@@ -28,12 +28,13 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'llama-cpp-python ~= 0.2',
+    'anthropic ~= 0.34',
     'openai ~= 1.47',
     'sentence_transformers ~= 3.1',
     'transformers ~= 4.44',
     'huggingface-hub ~= 0.25',
     'datasets ~= 3.0',
+    'llama-cpp-python ~= 0.2',
     'pillow ~= 10.4',
     'tinygrad ~= 0.9',
     'torch ~= 2.4',
@@ -42,7 +43,7 @@ all = [
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 backends = [
-    'llama-cpp-python ~= 0.2',
+    'anthropic ~= 0.34',
     'openai ~= 1.47',
     'sentence_transformers ~= 3.1',
     'transformers ~= 4.44',
@@ -50,6 +51,9 @@ backends = [
 huggingface = [
     'huggingface-hub ~= 0.25',
     'datasets ~= 3.0',
+]
+llamacpp = [
+    'llama-cpp-python ~= 0.2',
 ]
 pillow = [
     'pillow ~= 10.4',

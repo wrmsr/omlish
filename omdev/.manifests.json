@@ -15,7 +15,7 @@
     "module": ".precheck.precheck",
     "attr": "_CLI_MODULE",
     "file": "omdev/precheck/precheck.py",
-    "line": 89,
+    "line": 90,
     "value": {
       "$omdev.cli.CliModule": {
         "cmd_name": "precheck",
