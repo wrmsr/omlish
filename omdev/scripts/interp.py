@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omdev-amalg-output ../interp/cli.py
+# @omlish-amalg-output ../interp/cli.py
 # ruff: noqa: N802 UP006 UP007 UP036
 """
 TODO:

@@ -22,7 +22,7 @@ class RequirementsRewriter:
     def _tmp_dir(self) -> str:
         return tempfile.mkdtemp('-omlish-reqs')
 
-    VENV_MAGIC = '# @omdev-venv'
+    VENV_MAGIC = '# @omlish-venv'
 
     def rewrite_file(self, in_file: str) -> str:
         with open(in_file) as f:

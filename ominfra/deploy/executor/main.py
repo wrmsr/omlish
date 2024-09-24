@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ../_executor.py
+# @omlish-amalg ../_executor.py
 r"""
 TODO:
  - flock

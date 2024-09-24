@@ -339,8 +339,8 @@ RUFF_DISABLES: ta.AbstractSet[str] = {
     'UP036',  # outdated-version-block
 }
 
-OUTPUT_COMMENT = '# @omdev-amalg-output '
-SCAN_COMMENT = '# @omdev-amalg '
+OUTPUT_COMMENT = '# @omlish-amalg-output '
+SCAN_COMMENT = '# @omlish-amalg '
 
 
 def gen_amalg(

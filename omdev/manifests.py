@@ -3,6 +3,12 @@ TODO:
  - split, cli.py / types.py
  - opt to load only specified types
  - prechecks
+ - entry_points
+  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
+  - https://docs.pytest.org/en/7.1.x/how-to/writing_plugins.html#setuptools-entry-points
+  - https://packaging.python.org/en/latest/specifications/entry-points/
+  - https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/
+  - [project.entry-points.omlish-manifests] \n omdev = omdev
 """
 # ruff: noqa: UP006 UP007
 # @omlish-lite
@@ -64,7 +70,7 @@ class ManifestLoader:
         self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
 
     @classmethod
-    def from_module(
+    def from_entry_point(
             cls,
             name: str,
             spec: importlib.machinery.ModuleSpec,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ./_main.py
+# @omlish-amalg ./_main.py
 from .deploy import DeployImpl  # noqa
 from .nginx import NginxDeployConcern  # noqa
 from .nginx import NginxSiteConcern  # noqa

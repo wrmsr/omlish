@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ../scripts/interp.py
+# @omlish-amalg ../scripts/interp.py
 # ruff: noqa: UP007
 """
 TODO:
