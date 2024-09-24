@@ -56,9 +56,6 @@ wheel = [
 [project.entry-points]
 'omlish.manifests' = {omdev = 'omdev'}
 
-[project.scripts]
-om = 'omdev.cli:_main [cli]'
-
 [tool.setuptools]
 
 [tool.setuptools.packages.find]

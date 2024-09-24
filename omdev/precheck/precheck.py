@@ -26,6 +26,7 @@ import typing as ta
 
 from omlish import logs
 
+from ..cli import CliModule
 from .base import Precheck
 from .base import PrecheckContext
 from .git import GitBlacklistPrecheck
@@ -71,6 +72,10 @@ def _check_cmd(args) -> None:
 
 
 ##
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('precheck', __name__)
 
 
 def _build_parser() -> argparse.ArgumentParser:
