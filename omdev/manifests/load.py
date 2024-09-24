@@ -93,7 +93,16 @@ class ManifestLoader:
         lst: ta.List[Manifest] = []
         for e in obj:
             m = Manifest(**e)
+
             m = dc.replace(m, module=pkg_name + m.module)
+
+            [(key, value_dct)] = m.value.items()
+            if not key.startswith('$'):
+                raise Exception(f'Bad key: {key}')
+            if key.startswith('$.'):
+                key = f'${pkg_name}{key[1:]}'
+                m = dc.replace(m, value={key: value_dct})
+
             lst.append(m)
 
         self._raw_cache[pkg_name] = lst
