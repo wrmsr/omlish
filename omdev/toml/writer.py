@@ -1,8 +1,13 @@
+import dataclasses as dc
 import string
 import typing as ta
 
 
 class TomlWriter:
+    @dc.dataclass(frozen=True)
+    class Literal:
+        s: str
+
     def __init__(self, out: ta.TextIO) -> None:
         super().__init__()
         self._out = out
@@ -84,7 +89,9 @@ class TomlWriter:
         self._w(']')
 
     def write_key(self, obj: ta.Any) -> None:
-        if isinstance(obj, str):
+        if isinstance(obj, TomlWriter.Literal):
+            self._w(obj.s)
+        elif isinstance(obj, str):
             self._w(self._maybe_quote(obj.replace('_', '-')))
         elif isinstance(obj, int):
             self._w(repr(str(obj)))

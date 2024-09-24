@@ -104,6 +104,10 @@ class Project(ProjectBase):
         ],
     }
 
+    entry_points = {
+        'omlish.manifests': {name: name},
+    }
+
 
 #
 
