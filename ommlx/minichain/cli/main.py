@@ -12,6 +12,7 @@ from omlish.diag import pycharm
 from omlish.formats import json
 
 from ..backends.anthropic import AnthropicChatModel
+from ..backends.google import GoogleChatModel
 from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.openai import OpenaiEmbeddingModel
@@ -60,6 +61,7 @@ class ChatState:
 
 CHAT_MODEL_BACKENDS: ta.Mapping[str, type[ChatModel]] = {
     'anthropic': AnthropicChatModel,
+    'google': GoogleChatModel,
     'openai': OpenaiChatModel,
 }
 

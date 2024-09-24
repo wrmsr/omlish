@@ -1,3 +1,6 @@
+"""
+https://docs.anthropic.com/en/docs/about-claude/models#model-comparison-table
+"""
 import typing as ta
 
 from omlish import check
