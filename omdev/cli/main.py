@@ -20,7 +20,7 @@ from .types import CliModule
 def _main() -> None:
     cms: list[CliModule] = []
 
-    ldr = ManifestLoader.from_entry_point(__name__, __spec__)  # noqa
+    ldr = ManifestLoader.from_entry_point(globals())
 
     pkgs = ldr.discover()
     if not pkgs:
