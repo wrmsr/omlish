@@ -29,17 +29,22 @@ class ManifestLoader:
     @classmethod
     def from_entry_point(
             cls,
-            name: str,
-            spec: importlib.machinery.ModuleSpec,
+            globals: ta.Mapping[str, ta.Any],  # noqa
             *,
             module_remap: ta.Optional[ta.Mapping[str, str]] = None,
             **kwargs: ta.Any,
     ) -> 'ManifestLoader':
         rm: ta.Dict[str, str] = {}
+
         if module_remap:
             rm.update(module_remap)
-        if '__main__' not in rm and name == '__main__':
-            rm[spec.name] = '__main__'
+
+        if '__name__' in globals and '__spec__' in globals:
+            name: str = globals['__name__']
+            spec: importlib.machinery.ModuleSpec = globals['__spec__']
+            if '__main__' not in rm and name == '__main__':
+                rm[spec.name] = '__main__'
+
         return cls(module_remap=rm, **kwargs)
 
     def load_cls(self, key: str) -> type:
