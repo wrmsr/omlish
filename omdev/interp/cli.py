@@ -15,6 +15,8 @@ from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 
 from .resolvers import DEFAULT_INTERP_RESOLVER
+from .resolvers import INTERP_PROVIDER_TYPES_BY_NAME
+from .resolvers import InterpResolver
 from .types import InterpSpecifier
 
 
@@ -25,7 +27,11 @@ def _list_cmd(args) -> None:
 
 
 def _resolve_cmd(args) -> None:
-    r = DEFAULT_INTERP_RESOLVER
+    if args.provider:
+        p = INTERP_PROVIDER_TYPES_BY_NAME[args.provider]()
+        r = InterpResolver([(p.name, p)])
+    else:
+        r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
     print(check_not_none(r.resolve(s, install=bool(args.install))).exe)
 
@@ -42,6 +48,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('resolve')
     parser_resolve.add_argument('version')
+    parser_resolve.add_argument('-p', '--provider')
     parser_resolve.add_argument('-d', '--debug', action='store_true')
     parser_resolve.add_argument('-i', '--install', action='store_true')
     parser_resolve.set_defaults(func=_resolve_cmd)
