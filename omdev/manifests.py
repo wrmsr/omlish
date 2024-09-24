@@ -9,6 +9,7 @@ TODO:
 import argparse
 import collections
 import dataclasses as dc
+import importlib.machinery
 import importlib.resources
 import inspect
 import json
@@ -49,11 +50,34 @@ class Manifest(ManifestOrigin):
 
 
 class ManifestLoader:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            module_remap: ta.Optional[ta.Mapping[str, str]] = None,
+    ) -> None:
         super().__init__()
+
+        self._module_remap = module_remap or {}
+        self._module_reverse_remap = {v: k for k, v in self._module_remap.items()}
 
         self._cls_cache: ta.Dict[str, type] = {}
         self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
+
+    @classmethod
+    def from_module(
+            cls,
+            name: str,
+            spec: importlib.machinery.ModuleSpec,
+            *,
+            module_remap: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> 'ManifestLoader':
+        rm: ta.Dict[str, str] = {}
+        if module_remap:
+            rm.update(module_remap)
+        if '__main__' not in rm and name == '__main__':
+            rm[spec.name] = '__main__'
+        return cls(module_remap=rm, **kwargs)
 
     def load_cls(self, key: str) -> type:
         try:
@@ -66,7 +90,9 @@ class ManifestLoader:
 
         parts = key[1:].split('.')
         pos = next(i for i, p in enumerate(parts) if p[0].isupper())
+
         mod_name = '.'.join(parts[:pos])
+        mod_name = self._module_remap.get(mod_name, mod_name)
         mod = importlib.import_module(mod_name)
 
         obj: ta.Any = mod
@@ -106,18 +132,25 @@ class ManifestLoader:
     def load(
             self,
             *pkg_names: str,
-            only: ta.Optional[ta.AbstractSet[type]] = None,
+            only: ta.Optional[ta.Iterable[type]] = None,
     ) -> ta.Optional[ta.Sequence[Manifest]]:
+        only_keys: ta.Optional[ta.Set]
         if only is not None:
-            only_keys = frozenset(f'${cls.__module__}.{cls.__qualname__}' for cls in only)
+            only_keys = set()
+            for cls in only:
+                if not (isinstance(cls, type) and dc.is_dataclass(cls)):
+                    raise TypeError(cls)
+                mod_name = cls.__module__
+                mod_name = self._module_reverse_remap.get(mod_name, mod_name)
+                only_keys.add(f'${mod_name}.{cls.__qualname__}')
         else:
-            only_keys = frozenset()
+            only_keys = None
 
         lst: ta.List[Manifest] = []
         for pn in pkg_names:
             for manifest in (self.load_raw(pn) or []):
                 [(key, value_dct)] = manifest.value.items()
-                if only is not None and key not in only_keys:
+                if only_keys is not None and key not in only_keys:
                     continue
 
                 cls = self.load_cls(key)
