@@ -1,5 +1,5 @@
 import functools
-import multiprocessing
+import multiprocessing as mp
 import multiprocessing.connection
 import multiprocessing.context
 import multiprocessing.synchronize
@@ -20,7 +20,7 @@ from .workers import serve
 
 
 async def check_multiprocess_shutdown_event(
-        shutdown_event: multiprocessing.synchronize.Event,
+        shutdown_event: mp.synchronize.Event,
         sleep: ta.Callable[[float], ta.Awaitable[ta.Any]],
 ) -> None:
     while True:
@@ -33,7 +33,7 @@ def _multiprocess_serve(
         app: AsgiFramework,
         config: Config,
         sockets: Sockets | None = None,
-        shutdown_event: multiprocessing.synchronize.Event | None = None,
+        shutdown_event: mp.synchronize.Event | None = None,
 ) -> None:
     if sockets is not None:
         for sock in sockets.insecure_sockets:
@@ -62,7 +62,7 @@ def serve_multiprocess(
     sockets = create_sockets(config)
 
     exitcode = 0
-    ctx = multiprocessing.get_context('spawn')
+    ctx = mp.get_context('spawn')
 
     active = True
     shutdown_event = ctx.Event()
@@ -72,7 +72,7 @@ def serve_multiprocess(
         shutdown_event.set()
         active = False
 
-    processes: list[multiprocessing.Process] = []
+    processes: list[mp.Process] = []
     while active:
         # Ignore SIGINT before creating the processes, so that they inherit the signal handling. This means that the
         # shutdown function controls the shutdown.
@@ -92,7 +92,7 @@ def serve_multiprocess(
             if hasattr(signal, signal_name):
                 signal.signal(getattr(signal, signal_name), shutdown)
 
-        multiprocessing.connection.wait(process.sentinel for process in processes)
+        mp.connection.wait(process.sentinel for process in processes)
 
         exitcode = _join_exited(processes)
         if exitcode != 0:
@@ -111,17 +111,17 @@ def serve_multiprocess(
 
 
 def _populate(
-        processes: list[multiprocessing.Process],
+        processes: list[mp.Process],
         app: AsgiFramework,
         config: Config,
         worker_func: ta.Callable,
         sockets: Sockets,
-        shutdown_event: multiprocessing.synchronize.Event,
-        ctx: multiprocessing.context.BaseContext,
+        shutdown_event: mp.synchronize.Event,
+        ctx: mp.context.BaseContext,
 ) -> None:
     num_workers = config.workers or 1
     if num_workers < 0:
-        num_workers = multiprocessing.cpu_count()
+        num_workers = mp.cpu_count()
     for _ in range(num_workers - len(processes)):
         process = ctx.Process(  # type: ignore
             target=worker_func,
@@ -145,7 +145,7 @@ def _populate(
             time.sleep(0.1)
 
 
-def _join_exited(processes: list[multiprocessing.Process]) -> int:
+def _join_exited(processes: list[mp.Process]) -> int:
     exitcode = 0
     for index in reversed(range(len(processes))):
         worker = processes[index]
