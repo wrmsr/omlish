@@ -9,7 +9,7 @@ TODO:
 import argparse
 import collections
 import dataclasses as dc
-import importlib
+import importlib.resources
 import inspect
 import json
 import os.path
@@ -45,18 +45,25 @@ class Manifest(ManifestOrigin):
     value: ta.Any
 
 
-def load_manifest_entry(
-        entry: ta.Mapping[str, ta.Any],
-        *,
-        raw_values: bool = False,
-) -> Manifest:
-    manifest = Manifest(**entry)
+##
 
-    [(key, value_dct)] = manifest.value.items()
-    if not key.startswith('$'):
-        raise Exception(f'Bad key: {key}')
 
-    if not raw_values:
+class ManifestLoader:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._cls_cache: ta.Dict[str, type] = {}
+        self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
+
+    def load_cls(self, key: str) -> type:
+        try:
+            return self._cls_cache[key]
+        except KeyError:
+            pass
+
+        if not key.startswith('$'):
+            raise Exception(f'Bad key: {key}')
+
         parts = key[1:].split('.')
         pos = next(i for i, p in enumerate(parts) if p[0].isupper())
         mod_name = '.'.join(parts[:pos])
@@ -65,17 +72,61 @@ def load_manifest_entry(
         obj: ta.Any = mod
         for ca in parts[pos:]:
             obj = getattr(obj, ca)
+
         cls = obj
         if not isinstance(cls, type):
             raise TypeError(cls)
 
-        if not dc.is_dataclass(cls):
-            raise TypeError(cls)
-        obj = cls(**value_dct)  # noqa
+        self._cls_cache[key] = cls
+        return cls
 
-        manifest = dc.replace(manifest, value=obj)
+    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+        try:
+            return self._raw_cache[pkg_name]
+        except KeyError:
+            pass
 
-    return manifest
+        t = importlib.resources.files(pkg_name).joinpath('.manifests.json')
+        if not t.is_file():
+            self._raw_cache[pkg_name] = None
+            return None
+
+        src = t.read_text('utf-8')
+        obj = json.loads(src)
+        if not isinstance(obj, (list, tuple)):
+            raise TypeError(obj)
+
+        lst: ta.List[Manifest] = []
+        for e in obj:
+            lst.append(Manifest(**e))
+
+        self._raw_cache[pkg_name] = lst
+        return lst
+
+    def load(
+            self,
+            *pkg_names: str,
+            only: ta.Optional[ta.AbstractSet[type]] = None,
+    ) -> ta.Optional[ta.Sequence[Manifest]]:
+        if only is not None:
+            only_keys = frozenset(f'${cls.__module__}.{cls.__qualname__}' for cls in only)
+        else:
+            only_keys = frozenset()
+
+        lst: ta.List[Manifest] = []
+        for pn in pkg_names:
+            for manifest in (self.load_raw(pn) or []):
+                [(key, value_dct)] = manifest.value.items()
+                if only is not None and key not in only_keys:
+                    continue
+
+                cls = self.load_cls(key)
+                value = cls(**value_dct)
+
+                manifest = dc.replace(manifest, value=value)
+                lst.append(manifest)
+
+        return lst
 
 
 ##
@@ -275,8 +326,12 @@ def check_package_manifests(
     with open(manifests_file) as f:
         manifests_json = json.load(f)
 
+    ldr = ManifestLoader()
     for entry in manifests_json:
-        load_manifest_entry(entry)
+        manifest = Manifest(**entry)
+        [(key, value_dct)] = manifest.value.items()
+        cls = ldr.load_cls(key)
+        value = cls(**value_dct)  # noqa
 
 
 ##
