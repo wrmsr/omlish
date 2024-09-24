@@ -406,7 +406,7 @@ ci-bash: ci-image
 ### Package
 
 .PHONY: package
-package: venv clean-package
+package: gen check clean-package
 	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b -r gen
 
 .PHONY: test-install
@@ -428,7 +428,7 @@ versions: venv
 	echo "Local version: ${LOCAL_VERSION}"
 
 .PHONY: publish
-publish: gen package test-install
+publish: package test-install
 	ls -al dist/*
 
 	if [[ $$(git status --porcelain=v1 2>/dev/null) ]] ; then \
