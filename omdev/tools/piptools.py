@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET  # noqa
 from omlish import argparse as ap
 from omlish import check
 
+from ..cli import CliModule
+
 
 PYPI_URL = 'https://pypi.org/'
 
@@ -44,6 +46,10 @@ class Cli(ap.Cli):
         if self.args.write:
             with open(self.args.file, 'w') as f:
                 f.write(new_src)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('pip', __name__)
 
 
 if __name__ == '__main__':

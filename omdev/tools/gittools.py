@@ -3,6 +3,8 @@ import subprocess
 from omlish import argparse as ap
 from omlish import logs
 
+from ..cli import CliModule
+
 
 class Cli(ap.Cli):
     @ap.command()
@@ -15,6 +17,10 @@ class Cli(ap.Cli):
             "sort --numeric-sort --key=2",
             shell=True,
         )
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('git', __name__)
 
 
 if __name__ == '__main__':

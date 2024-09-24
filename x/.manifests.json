@@ -27,7 +27,7 @@
     "file": "x/foo.py",
     "line": 24,
     "value": {
-      "$omdev.cli.CliModule": {
+      "$omdev.cli.types.CliModule": {
         "cmd_name": "foo",
         "mod_name": "x.foo"
       }
