@@ -16,6 +16,7 @@ import argparse
 import collections
 import dataclasses as dc
 import importlib.machinery
+import importlib.metadata
 import importlib.resources
 import inspect
 import json
@@ -139,7 +140,7 @@ class ManifestLoader:
             self,
             *pkg_names: str,
             only: ta.Optional[ta.Iterable[type]] = None,
-    ) -> ta.Optional[ta.Sequence[Manifest]]:
+    ) -> ta.Sequence[Manifest]:
         only_keys: ta.Optional[ta.Set]
         if only is not None:
             only_keys = set()
@@ -166,6 +167,14 @@ class ManifestLoader:
                 lst.append(manifest)
 
         return lst
+
+    ENTRY_POINT_GROUP = 'omlish.manifests'
+
+    def discover(self) -> ta.Sequence[str]:
+        return [
+            ep.value
+            for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)
+        ]
 
 
 ##
