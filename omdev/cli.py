@@ -14,7 +14,7 @@ import sys
 
 from omlish import check
 
-from .manifests import ManifestLoader
+from .manifests.load import ManifestLoader
 
 
 @dc.dataclass(frozen=True)

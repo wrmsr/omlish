@@ -124,7 +124,7 @@ gen-cmake:
 
 .PHONY: gen-manifest
 gen-manifest:
-	${PYTHON} -m omdev.manifests gen -wq ${SRCS} x
+	${PYTHON} -m omdev.manifests.build gen -wq ${SRCS} x
 
 .PHONY: gen-pkg
 gen-pkg:
@@ -166,7 +166,7 @@ precheck: venv
 
 .PHONY: check-manifest
 check-manifest:
-	${PYTHON} -m omdev.manifests check ${SRCS} x
+	${PYTHON} -m omdev.manifests.build check ${SRCS} x
 
 
 ## pre-commit
