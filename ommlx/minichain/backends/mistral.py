@@ -1,0 +1,72 @@
+"""
+https://docs.mistral.ai/getting-started/models/
+"""
+import os
+import typing as ta
+import urllib.request
+
+from omlish import check
+from omlish.formats import json
+
+from .. import Request
+from .. import Response
+from ..chat import AiMessage
+from ..chat import ChatModel_
+from ..chat import ChatRequest
+from ..chat import Message
+from ..chat import SystemMessage
+from ..chat import UserMessage
+from ..content import Text
+
+
+class MistralChatModel(ChatModel_):
+    model: ta.ClassVar[str] = 'mistral-large-latest'
+
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
+        SystemMessage: 'system',
+        UserMessage: 'user',
+        AiMessage: 'assistant',
+    }
+
+    def _get_msg_content(self, m: Message) -> str:
+        if isinstance(m, (SystemMessage, AiMessage)):
+            return m.s
+
+        elif isinstance(m, UserMessage):
+            return ''.join(check.isinstance(c, Text).s for c in m.content)
+
+        else:
+            raise TypeError(m)
+
+    def generate(
+            self,
+            request: Request[ChatRequest],
+    ) -> Response[AiMessage]:
+        key = os.environ['MISTRAL_API_KEY']
+
+        req_dct = {
+            'model': self.model,
+            'messages': [
+                {
+                    'role': self.ROLES_MAP[type(m)],
+                    'content': self._get_msg_content(m),
+                }
+                for m in request.v.chat
+            ],
+        }
+
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+                'https://api.mistral.ai/v1/chat/completions',
+                headers={
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': f'Bearer {key}',
+                },
+                data=json.dumps_compact(req_dct).encode('utf-8'),
+                method='POST',
+        )) as resp:
+            resp_buf = resp.read()
+
+        resp_dct = json.loads(resp_buf.decode('utf-8'))
+
+        return Response(AiMessage(resp_dct['choices'][0]['message']['content']))
