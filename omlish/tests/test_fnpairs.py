@@ -70,6 +70,7 @@ def test_compression_zstd() -> None:
 @pytest.mark.parametrize('cls', [
     fpa.Pickle,
     fpa.Json,
+    fpa.Cbor,
     fpa.Cloudpickle,
     fpa.Yaml,
     fpa.YamlUnsafe,
