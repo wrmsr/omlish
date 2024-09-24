@@ -33,6 +33,7 @@ if ta.TYPE_CHECKING:
     import struct as _struct
     import tomllib as _tomllib
 
+    import cbor2 as _cbor2
     import cloudpickle as _cloudpickle
     import json5 as _json5
     import lz4.frame as _lz4_frame
@@ -49,6 +50,7 @@ else:
     _struct = lang.proxy_import('struct')
     _tomllib = lang.proxy_import('tomllib')
 
+    _cbor2 = lang.proxy_import('cbor2')
     _cloudpickle = lang.proxy_import('cloudpickle')
     _json5 = lang.proxy_import('json5')
     _lz4_frame = lang.proxy_import('lz4.frame')
@@ -447,6 +449,15 @@ class Toml(ObjectStr_):
 
 
 #
+
+
+@_register_extension('cbor')
+class Cbor(ObjectBytes_):
+    def forward(self, f: ta.Any) -> bytes:
+        return _cbor2.dumps(f)
+
+    def backward(self, t: bytes) -> ta.Any:
+        return _cbor2.loads(t)
 
 
 @_register_extension('clpkl')

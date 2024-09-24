@@ -41,6 +41,7 @@ bsddb3==6.2.9
 build==1.2.2
 cachetools==5.5.0
 catalogue==2.0.10
+cbor2==5.6.4
 certifi==2024.8.30
 cffi==1.17.0
 chardet==5.2.0
@@ -60,7 +61,7 @@ comm==0.2.2
 confection==0.1.5
 configobj==5.0.9
 contourpy==1.3.0
-cramjam==2.8.3
+cramjam==2.8.4
 crccheck==1.3.0
 cryptography==43.0.1
 customtkinter==5.2.2
@@ -84,7 +85,7 @@ distro==1.9.0
 docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
-duckdb==1.1.0
+duckdb==1.1.1
 durationpy==0.7
 einops==0.8.0
 elastic-transport==8.15.0
@@ -103,7 +104,7 @@ fire==0.6.0
 flake8==7.1.1
 Flake8-pyproject==1.2.3
 flatbuffers==24.3.25
-fonttools==4.54.0
+fonttools==4.54.1
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.4
@@ -113,13 +114,13 @@ ftfy==6.2.3
 future==1.0.0
 gast==0.6.0
 geopandas==1.0.1
-google-ai-generativelanguage==0.6.9
+google-ai-generativelanguage==0.6.10
 google-api-core==2.20.0
 google-api-python-client==2.146.0
 google-auth==2.35.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.19.2
-google-generativeai==0.8.1
+google-generativeai==0.8.2
 google-pasta==0.2.0
 googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
@@ -199,9 +200,9 @@ langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.0
 langdetect==1.0.9
-langgraph==0.2.25
-langgraph-checkpoint==1.0.10
-langsmith==0.1.125
+langgraph==0.2.27
+langgraph-checkpoint==1.0.11
+langsmith==0.1.127
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -209,7 +210,7 @@ librosa==0.10.2.post1
 libtmux==0.37.0
 lightning-utilities==0.11.7
 litecli==1.12.3
-llama-index-core==0.11.12
+llama-index-core==0.11.13.post1
 llama_cpp_python==0.2.90
 llvmlite==0.43.0
 Logbook==1.7.0.post0
@@ -291,7 +292,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@f4cf170a9c51d822f950cde0a0e1c87dc013403a
+peft @ git+https://github.com/huggingface/peft.git@8f3970865079ca1ca1a406cc9f3b3870d677dfb4
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -452,7 +453,7 @@ traitlets==5.14.3
 transformers==4.44.2
 trio==0.26.2
 trio_asyncio==0.15.0
-trl==0.11.0
+trl==0.11.1
 twine==5.1.1
 typer==0.12.5
 types-paramiko==3.5.0.20240918
@@ -494,7 +495,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
-yarl==1.12.0
+yarl==1.12.1
 zigpy==0.66.0
 zipp==3.20.2
 zwave-js-server-python==0.58.0

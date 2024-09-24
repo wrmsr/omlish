@@ -11,11 +11,33 @@ else:
     _psutil = lang.proxy_import('psutil')
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+class Times:
+    user: float
+    system: float
+    children_user: float
+    children_system: float
+    elapsed: float
+
+
+def times() -> Times:
+    t = os.times()
+    return Times(**{f.name: getattr(t, f.name) for f in dc.fields(Times)})
+
+
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class ProcStats:
     pid: int
 
     rss: int
+
+    times: Times
 
 
 def get_psutil_procstats(pid: int | None = None) -> ProcStats:
@@ -24,9 +46,12 @@ def get_psutil_procstats(pid: int | None = None) -> ProcStats:
 
     proc = _psutil.Process(pid)
     mi = proc.memory_info()
+    ts = times()
 
     return ProcStats(
         pid=pid,
 
         rss=mi.rss,
+
+        times=ts,
     )
