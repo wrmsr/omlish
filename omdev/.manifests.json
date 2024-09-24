@@ -1,13 +1,37 @@
 [
   {
+    "module": ".cexts.cmake",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/cexts/cmake.py",
+    "line": 323,
+    "value": {
+      "$omdev.cli.CliModule": {
+        "cmd_name": "cmake",
+        "mod_name": "omdev.cexts.cmake"
+      }
+    }
+  },
+  {
     "module": ".precheck.precheck",
     "attr": "_CLI_MODULE",
     "file": "omdev/precheck/precheck.py",
-    "line": 77,
+    "line": 89,
     "value": {
       "$omdev.cli.CliModule": {
         "cmd_name": "precheck",
         "mod_name": "omdev.precheck.precheck"
+      }
+    }
+  },
+  {
+    "module": ".amalg.amalg",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/amalg/amalg.py",
+    "line": 601,
+    "value": {
+      "$omdev.cli.CliModule": {
+        "cmd_name": "amalg",
+        "mod_name": "omdev.amalg.amalg"
       }
     }
   }
