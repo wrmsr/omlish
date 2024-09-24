@@ -1,6 +1,6 @@
 """
 TODO:
- - relative keys - if startswith self pkg then `$.foo.bar`
+ - separate build from cli
 
 - See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
