@@ -14,6 +14,8 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
+            'anthropic ~= 0.34',
+
             'llama-cpp-python ~= 0.2',
 
             'openai ~= 1.47',
