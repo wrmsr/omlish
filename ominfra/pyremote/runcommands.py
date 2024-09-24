@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ./_runcommands.py
+# @omlish-amalg ./_runcommands.py
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 import io

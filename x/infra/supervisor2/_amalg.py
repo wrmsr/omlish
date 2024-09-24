@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omdev-amalg-output supervisord.py
+# @omlish-amalg-output supervisord.py
 """
 TODO:
  - amalg or not? only use om.logs and dc's

@@ -1,4 +1,4 @@
-// @omdev-cext
+// @omlish-cext
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"

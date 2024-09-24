@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg _amalg.py
+# @omlish-amalg _amalg.py
 """
 TODO:
  - amalg or not? only use om.logs and dc's

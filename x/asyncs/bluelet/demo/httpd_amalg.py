@@ -1,5 +1,5 @@
 """A simple Web server built with Bluelet to support concurrent requests in a single OS thread."""
-# @omdev-amalg ./_httpd_amalg.py
+# @omlish-amalg ./_httpd_amalg.py
 import dataclasses as dc
 import mimetypes
 import os

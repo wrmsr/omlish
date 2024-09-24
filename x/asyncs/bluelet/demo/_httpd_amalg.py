@@ -1,5 +1,5 @@
 # noinspection DuplicatedCode
-# @omdev-amalg-output httpd_amalg.py
+# @omlish-amalg-output httpd_amalg.py
 """A simple Web server built with Bluelet to support concurrent requests in a single OS thread."""
 import abc
 import collections
