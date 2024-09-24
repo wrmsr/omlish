@@ -39,7 +39,6 @@ def test_sqlite_fts():
         print(res.fetchall())
 
 
-@pytest.mark.skip('sqlite loadable exts')
 @pytest.mark.skipif(not hasattr(sqlite3.Connection, 'enable_load_extension'), reason='requires enable_load_extension')
 @ptu.skip_if_cant_import('sqlite_vec')
 def test_sqlite_vec():
