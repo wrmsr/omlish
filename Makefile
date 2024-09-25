@@ -459,11 +459,10 @@ install:
 	pipx install omdev-cli
 	pipx inject omdev-cli \
 		ominfra \
-		\
 		ommlx \
-		openai \
-		\
 		omserv \
+		\
+		openai \
 
 
 ### Utils
