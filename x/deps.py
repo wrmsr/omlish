@@ -1,8 +1,8 @@
 import importlib.metadata
 import sys
 
-from omdev.versioning.names import canonicalize_name
-from omdev.versioning.versions import canonicalize_version
+from omdev.packaging.names import canonicalize_name
+from omdev.packaging.versions import canonicalize_version
 
 
 def _main() -> None:

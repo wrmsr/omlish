@@ -27,8 +27,10 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omdev.packaging.specifiers import Specifier
+from omlish.lite.check import check_not_none
 from omlish.lite.check import check_state
+
+from .specifiers import Specifier
 
 
 @dc.dataclass()
@@ -57,7 +59,7 @@ class RequiresParserSyntaxError(Exception):
         return '\n    '.join([self.message, self.source, marker])
 
 
-REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, re.Pattern[str]]] = {
+REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, ta.Pattern[str]]] = {
     'LEFT_PARENTHESIS': r'\(',
     'RIGHT_PARENTHESIS': r'\)',
     'LEFT_BRACKET': r'\[',
@@ -114,11 +116,11 @@ class RequiresTokenizer:
         self,
         source: str,
         *,
-        rules: ta.Dict[str, str | re.Pattern[str]],
+        rules: ta.Dict[str, ta.Union[str, ta.Pattern[str]]],
     ) -> None:
         super().__init__()
         self.source = source
-        self.rules: ta.Dict[str, re.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
+        self.rules: ta.Dict[str, ta.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
         self.next_token: ta.Optional[RequiresToken] = None
         self.position = 0
 
@@ -148,10 +150,10 @@ class RequiresTokenizer:
         token = self.next_token
         check_state(token is not None)
 
-        self.position += len(token.text)
+        self.position += len(check_not_none(token).text)
         self.next_token = None
 
-        return token
+        return check_not_none(token)
 
     def raise_syntax_error(
         self,
@@ -222,10 +224,10 @@ class RequiresOp(RequiresNode):
         return str(self)
 
 
-RequiresMarkerVar = ta.Union[RequiresVariable, RequiresValue]
-RequiresMarkerItem = ta.Tuple[RequiresMarkerVar, RequiresOp, RequiresMarkerVar]
-RequiresMarkerAtom = ta.Union[RequiresMarkerItem, ta.Sequence['RequiresMarkerAtom']]
-RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', RequiresMarkerAtom, str]]
+RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']
+RequiresMarkerItem = ta.Tuple['RequiresMarkerVar', 'RequiresOp', 'RequiresMarkerVar']
+RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]
+RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]
 
 
 class ParsedRequirement(ta.NamedTuple):
@@ -449,7 +451,7 @@ def _parse_requires_marker_var(tokenizer: RequiresTokenizer) -> RequiresMarkerVa
         return process_requires_python_str(tokenizer.read().text)
     else:
         tokenizer.raise_syntax_error(message='Expected a marker variable or quoted string')
-        raise RuntimeError
+        raise RuntimeError  # noqa
 
 
 def process_requires_env_var(env_var: str) -> RequiresVariable:
