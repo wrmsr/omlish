@@ -36,6 +36,9 @@ ssh = [
     'asyncssh ~= 2.17; python_version < "3.13"',
 ]
 
+[project.entry-points]
+'omlish.manifests' = {ominfra = 'ominfra'}
+
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
