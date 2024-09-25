@@ -302,3 +302,22 @@ ignore = [
     'W503',
     'W504',
 ]
+
+
+##
+
+[tool.pyright]
+include = [
+    'omlish',
+]
+
+exclude = [
+    '.cache',
+    '.git',
+    '.idea',
+    '.venv',
+    'omlish/dataclasses/tests/cpython/',
+]
+
+venvPath = '.'
+venv = '.venv'

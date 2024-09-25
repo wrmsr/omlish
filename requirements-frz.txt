@@ -131,7 +131,7 @@ gym==0.26.2
 gym-notices==0.0.8
 h11==0.14.0
 h2==4.1.0
-h5py==3.11.0
+h5py==3.12.0
 hexdump==3.3
 hpack==4.0.0
 httpcore==1.0.5
@@ -194,7 +194,7 @@ langchain-ollama==0.2.0
 langchain-openai==0.2.0
 langchain-text-splitters==0.3.0
 langchainhub==0.1.21
-langcodes==3.4.0
+langcodes==3.4.1
 langdetect==1.0.9
 langgraph==0.2.27
 langgraph-checkpoint==1.0.11
@@ -263,7 +263,7 @@ ollama==0.3.3
 onnx==1.16.2
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.47.1
+openai==1.48.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.27.0
 opentelemetry-exporter-otlp-proto-common==1.27.0
@@ -288,7 +288,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@8f3970865079ca1ca1a406cc9f3b3870d677dfb4
+peft @ git+https://github.com/huggingface/peft.git@ccc350151f95a9ff95da046bae5671da75eab52f
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -306,7 +306,7 @@ pprintpp==0.4.0
 preshed==3.0.9
 priority==2.0.0
 prometheus_client==0.21.0
-prompt_toolkit==3.0.47
+prompt_toolkit==3.0.48
 proto-plus==1.24.0
 protobuf==4.25.5
 psutil==6.0.0
@@ -414,7 +414,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.35
 sqlean.py==3.45.1
-sqlglot==25.22.0
+sqlglot==25.23.2
 sqlite-vec==0.1.2
 sqlparse==0.4.4
 srsly==2.4.8
@@ -491,6 +491,6 @@ wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
 yarl==1.12.1
-zigpy==0.66.0
+zigpy==0.67.0
 zipp==3.20.2
 zwave-js-server-python==0.58.0
