@@ -24,21 +24,21 @@ import re
 
 
 # Core metadata spec for `Name`
-_CANONICAL_NAME_VALIDATE_REGEX = re.compile(r'^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$', re.IGNORECASE)
-_CANONICAL_NAME_CANONICALIZE_REGEX = re.compile(r'[-_.]+')
-_CANONICAL_NAME_NORMALIZED_REGEX = re.compile(r'^([a-z0-9]|[a-z0-9]([a-z0-9-](?!--))*[a-z0-9])$')
+_CANONICAL_NAME_VALIDATE_PATTERN = re.compile(r'^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$', re.IGNORECASE)
+_CANONICAL_NAME_CANONICALIZE_PATTERN = re.compile(r'[-_.]+')
+_CANONICAL_NAME_NORMALIZED_PATTERN = re.compile(r'^([a-z0-9]|[a-z0-9]([a-z0-9-](?!--))*[a-z0-9])$')
 
 # PEP 427: The build number must start with a digit.
-_CANONICAL_NAME_BUILD_TAG_REGEX = re.compile(r'(\d+)(.*)')
+_CANONICAL_NAME_BUILD_TAG_PATTERN = re.compile(r'(\d+)(.*)')
 
 
 def canonicalize_name(name: str, *, validate: bool = False) -> str:
-    if validate and not _CANONICAL_NAME_VALIDATE_REGEX.match(name):
+    if validate and not _CANONICAL_NAME_VALIDATE_PATTERN.match(name):
         raise NameError(f'name is invalid: {name!r}')
     # This is taken from PEP 503.
-    value = _CANONICAL_NAME_CANONICALIZE_REGEX.sub('-', name).lower()
+    value = _CANONICAL_NAME_CANONICALIZE_PATTERN.sub('-', name).lower()
     return value
 
 
 def is_normalized_name(name: str) -> bool:
-    return _CANONICAL_NAME_NORMALIZED_REGEX.match(name) is not None
+    return _CANONICAL_NAME_NORMALIZED_PATTERN.match(name) is not None

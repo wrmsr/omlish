@@ -205,6 +205,7 @@ def make_import(
 
 
 TYPE_ALIAS_COMMENT = '# ta.TypeAlias'
+NOQA_TYPE_ALIAS_COMMENT = TYPE_ALIAS_COMMENT + '  # noqa'
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -218,7 +219,8 @@ class Typing:
 
 
 def _is_typing(lts: Tokens) -> bool:
-    if tks.join_toks(lts).strip().endswith(TYPE_ALIAS_COMMENT):
+    es = tks.join_toks(lts).strip()
+    if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
         return True
 
     wts = list(tks.ignore_ws(lts))
