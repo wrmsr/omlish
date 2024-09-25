@@ -39,10 +39,9 @@ class Project(ProjectBase):
         'omlish.manifests': {name: name},
     }
 
-    # FIXME: omdev-cli ?
-    # scripts = {
-    #     'om': f'{name}.cli.main:_main [cli]',
-    # }
+    cli_scripts = {
+        'om': f'{name}.cli.main:_main',
+    }
 
 
 class Setuptools(SetuptoolsBase):

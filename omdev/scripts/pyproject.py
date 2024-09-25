@@ -3989,6 +3989,8 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         if (scs := prj.pop('scripts', None)):
             pyp_dct['project.scripts'] = scs
 
+        prj.pop('cli_scripts', None)
+
         ##
 
         st = dict(specs.setuptools)
@@ -4073,6 +4075,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 pkg_suffix='-cext',
             ).gen(opts)
 
+        if self.build_specs().pyproject.get('cli_scripts'):
+            _PyprojectCliPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-cli',
+            ).gen(opts)
+
         return ret
 
 
@@ -4118,6 +4127,7 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
             'optional_dependencies',
             'entry_points',
             'scripts',
+            'cli_scripts',
         ]:
             prj.pop(k, None)
 
@@ -4182,6 +4192,76 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
         with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
             f.write(fc.setup_py)
+
+
+##
+
+
+class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
+        prj['name'] += self._pkg_suffix
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+        ]:
+            prj.pop(k, None)
+
+        pyp_dct['project'] = prj
+
+        if (scs := prj.pop('cli_scripts', None)):
+            pyp_dct['project.scripts'] = scs
+
+        #
+
+        st = dict(specs.setuptools)
+        pyp_dct['tool.setuptools'] = st
+
+        for k in [
+            'cexts',
+
+            'find_packages',
+            'package_data',
+            'manifest_in',
+        ]:
+            st.pop(k, None)
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [],
+        }
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
 
 
 ########################################
