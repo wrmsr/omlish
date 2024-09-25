@@ -1,4 +1,6 @@
+import importlib.metadata
 import io
+import sys
 import urllib.request
 import xml.etree.ElementTree as ET  # noqa
 
@@ -6,6 +8,8 @@ from omlish import argparse as ap
 from omlish import check
 
 from ..cli import CliModule
+from ..packaging.names import canonicalize_name
+from ..packaging.requires import parse_requirement
 
 
 PYPI_URL = 'https://pypi.org/'
@@ -46,6 +50,36 @@ class Cli(ap.Cli):
         if self.args.write:
             with open(self.args.file, 'w') as f:
                 f.write(new_src)
+
+    @ap.command(
+        ap.arg('path', nargs='*'),
+    )
+    def list_root_dists(self) -> None:
+        paths = self.args.path or sys.path
+
+        dists: set[str] = set()
+        reqs_by_use: dict[str, set[str]] = {}
+        uses_by_req: dict[str, set[str]] = {}
+        for dist in importlib.metadata.distributions(paths=paths):
+            dist_cn = canonicalize_name(dist.metadata['Name'], validate=True)
+            if dist_cn in dists:
+                # raise NameError(dist_cn)
+                print(f'!! duplicate dist: {dist_cn}', file=sys.stderr)
+                continue
+
+            dists.add(dist_cn)
+            for req_str in dist.requires or []:
+                req = parse_requirement(req_str)
+                if req.extras:
+                    continue
+
+                req_cn = canonicalize_name(req.name)
+                reqs_by_use.setdefault(dist_cn, set()).add(req_cn)
+                uses_by_req.setdefault(req_cn, set()).add(dist_cn)
+
+        for d in sorted(dists):
+            if not uses_by_req.get(d):
+                print(d)
 
 
 # @omlish-manifest
