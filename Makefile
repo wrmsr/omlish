@@ -462,8 +462,13 @@ INSTALL_EXTRAS=\
 
 .PHONY: install
 install:
-	MGR=pipx ; \
-	INJ="--preinstall" ; \
+	if uv --version 2>/dev/null ; then \
+		MGR="uv tool" ; \
+		INJ="--with" ; \
+	else \
+		MGR="pipx" ; \
+		INJ="--preinstall" ; \
+	fi ; \
 	\
 	CMD="$$MGR uninstall omdev-cli || true ; $$MGR install omdev-cli" ; \
 	for D in ${INSTALL_EXTRAS} ; do \
