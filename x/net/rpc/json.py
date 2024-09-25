@@ -111,8 +111,10 @@ CUSTOM_ERROR_BASE = -32000
 
 def _main() -> None:
     for obj in [
-        Request()
-    ]
+        request(0, 'foo'),
+        result(0, 'bar'),
+    ]:
+        print(json.dumps(msh.marshal(obj)))
 
 
 if __name__ == '__main__':
