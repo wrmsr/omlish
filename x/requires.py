@@ -27,24 +27,23 @@ import re
 import typing as ta
 
 from omdev.packaging.specifiers import Specifier
+from omlish.lite.check import check_state
 
 
 @dc.dataclass()
-class Token:
+class RequiresToken:
     name: str
     text: str
     position: int
 
 
-class ParserSyntaxError(Exception):
-    """The provided source text could not be parsed correctly."""
-
+class RequiresParserSyntaxError(Exception):
     def __init__(
         self,
         message: str,
         *,
         source: str,
-        span: tuple[int, int],
+        span: ta.Tuple[int, int],
     ) -> None:
         self.span = span
         self.message = message
@@ -57,7 +56,7 @@ class ParserSyntaxError(Exception):
         return "\n    ".join([self.message, self.source, marker])
 
 
-DEFAULT_RULES: dict[str, str | re.Pattern[str]] = {
+REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, re.Pattern[str]]] = {
     "LEFT_PARENTHESIS": r"\(",
     "RIGHT_PARENTHESIS": r"\)",
     "LEFT_BRACKET": r"\[",
@@ -95,7 +94,7 @@ DEFAULT_RULES: dict[str, str | re.Pattern[str]] = {
         re.VERBOSE,
     ),
     "SPECIFIER": re.compile(
-        Specifier._operator_regex_str + Specifier._version_regex_str,
+        Specifier._operator_regex_str + Specifier._version_regex_str,  # noqa
         re.VERBOSE | re.IGNORECASE,
     ),
     "AT": r"\@",
@@ -108,42 +107,27 @@ DEFAULT_RULES: dict[str, str | re.Pattern[str]] = {
 }
 
 
-class Tokenizer:
-    """Context-sensitive token parsing.
-
-    Provides methods to examine the input stream to check whether the next token
-    matches.
-    """
+class RequiresTokenizer:
 
     def __init__(
         self,
         source: str,
         *,
-        rules: dict[str, str | re.Pattern[str]],
+        rules: ta.Dict[str, str | re.Pattern[str]],
     ) -> None:
+        super().__init__()
         self.source = source
-        self.rules: dict[str, re.Pattern[str]] = {
-            name: re.compile(pattern) for name, pattern in rules.items()
-        }
-        self.next_token: Token | None = None
+        self.rules: ta.Dict[str, re.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
+        self.next_token: ta.Optional[RequiresToken] = None
         self.position = 0
 
     def consume(self, name: str) -> None:
-        """Move beyond provided token name, if at current position."""
         if self.check(name):
             self.read()
 
     def check(self, name: str, *, peek: bool = False) -> bool:
-        """Check whether the next token has the provided name.
-
-        By default, if the check succeeds, the token *must* be read before
-        another check. If `peek` is set to `True`, the token is not loaded and
-        would need to be checked again.
-        """
-        assert (
-            self.next_token is None
-        ), f"Cannot check for {name!r}, already have {self.next_token!r}"
-        assert name in self.rules, f"Unknown token name: {name!r}"
+        check_state(self.next_token is None, f"Cannot check for {name!r}, already have {self.next_token!r}")
+        check_state(name in self.rules, f"Unknown token name: {name!r}")
 
         expression = self.rules[name]
 
@@ -151,22 +135,17 @@ class Tokenizer:
         if match is None:
             return False
         if not peek:
-            self.next_token = Token(name, match[0], self.position)
+            self.next_token = RequiresToken(name, match[0], self.position)
         return True
 
-    def expect(self, name: str, *, expected: str) -> Token:
-        """Expect a certain token name next, failing with a syntax error otherwise.
-
-        The token is *not* read.
-        """
+    def expect(self, name: str, *, expected: str) -> RequiresToken:
         if not self.check(name):
             raise self.raise_syntax_error(f"Expected {expected}")
         return self.read()
 
-    def read(self) -> Token:
-        """Consume the next token and return it."""
+    def read(self) -> RequiresToken:
         token = self.next_token
-        assert token is not None
+        check_state(token is not None)
 
         self.position += len(token.text)
         self.next_token = None
@@ -177,24 +156,21 @@ class Tokenizer:
         self,
         message: str,
         *,
-        span_start: int | None = None,
-        span_end: int | None = None,
+        span_start: ta.Optional[int] = None,
+        span_end: ta.Optional[int] = None,
     ) -> ta.NoReturn:
-        """Raise ParserSyntaxError at the given position."""
         span = (
             self.position if span_start is None else span_start,
             self.position if span_end is None else span_end,
         )
-        raise ParserSyntaxError(
+        raise RequiresParserSyntaxError(
             message,
             source=self.source,
             span=span,
         )
 
     @contextlib.contextmanager
-    def enclosing_tokens(
-        self, open_token: str, close_token: str, *, around: str
-    ) -> ta.Iterator[None]:
+    def enclosing_tokens(self, open_token: str, close_token: str, *, around: str) -> ta.Iterator[None]:
         if self.check(open_token):
             open_position = self.position
             self.read()
@@ -215,8 +191,9 @@ class Tokenizer:
         self.read()
 
 
-class Node:
+class RequiresNode:
     def __init__(self, value: str) -> None:
+        super().__init__()
         self.value = value
 
     def __str__(self) -> str:
@@ -229,55 +206,47 @@ class Node:
         raise NotImplementedError
 
 
-class Variable(Node):
+class RequiresVariable(RequiresNode):
     def serialize(self) -> str:
         return str(self)
 
 
-class Value(Node):
+class RequiresValue(RequiresNode):
     def serialize(self) -> str:
         return f'"{self}"'
 
 
-class Op(Node):
+class RequiresOp(RequiresNode):
     def serialize(self) -> str:
         return str(self)
 
 
-MarkerVar = ta.Union[Variable, Value]
-MarkerItem = ta.Tuple[MarkerVar, Op, MarkerVar]
-MarkerAtom = ta.Union[MarkerItem, ta.Sequence["MarkerAtom"]]
-MarkerList = ta.Sequence[ta.Union["MarkerList", MarkerAtom, str]]
+RequiresMarkerVar = ta.Union[RequiresVariable, RequiresValue]
+RequiresMarkerItem = ta.Tuple[RequiresMarkerVar, RequiresOp, RequiresMarkerVar]
+RequiresMarkerAtom = ta.Union[RequiresMarkerItem, ta.Sequence["RequiresMarkerAtom"]]
+RequiresMarkerList = ta.Sequence[ta.Union["RequiresMarkerList", RequiresMarkerAtom, str]]
 
 
 class ParsedRequirement(ta.NamedTuple):
     name: str
     url: str
-    extras: list[str]
+    extras: ta.List[str]
     specifier: str
-    marker: MarkerList | None
+    marker: ta.Optional[RequiresMarkerList]
 
 
-# --------------------------------------------------------------------------------------
-# Recursive descent parser for dependency specifier
-# --------------------------------------------------------------------------------------
 def parse_requirement(source: str) -> ParsedRequirement:
-    return _parse_requirement(Tokenizer(source, rules=DEFAULT_RULES))
+    return _parse_requirement(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
 
 
-def _parse_requirement(tokenizer: Tokenizer) -> ParsedRequirement:
-    """
-    requirement = WS? IDENTIFIER WS? extras WS? requirement_details
-    """
+def _parse_requirement(tokenizer: RequiresTokenizer) -> ParsedRequirement:
     tokenizer.consume("WS")
 
-    name_token = tokenizer.expect(
-        "IDENTIFIER", expected="package name at the start of dependency specifier"
-    )
+    name_token = tokenizer.expect("IDENTIFIER", expected="package name at the start of dependency specifier")
     name = name_token.text
     tokenizer.consume("WS")
 
-    extras = _parse_extras(tokenizer)
+    extras = _parse_requires_extras(tokenizer)
     tokenizer.consume("WS")
 
     url, specifier, marker = _parse_requirement_details(tokenizer)
@@ -286,14 +255,7 @@ def _parse_requirement(tokenizer: Tokenizer) -> ParsedRequirement:
     return ParsedRequirement(name, url, extras, specifier, marker)
 
 
-def _parse_requirement_details(
-    tokenizer: Tokenizer,
-) -> tuple[str, str, MarkerList | None]:
-    """
-    requirement_details = AT URL (WS requirement_marker?)?
-                        | specifier WS? (requirement_marker)?
-    """
-
+def _parse_requirement_details(tokenizer: RequiresTokenizer) -> ta.Tuple[str, str, ta.Optional[RequiresMarkerList]]:
     specifier = ""
     url = ""
     marker = None
@@ -318,7 +280,7 @@ def _parse_requirement_details(
         )
     else:
         specifier_start = tokenizer.position
-        specifier = _parse_specifier(tokenizer)
+        specifier = _parse_requires_specifier(tokenizer)
         tokenizer.consume("WS")
 
         if tokenizer.check("END", peek=True):
@@ -338,12 +300,8 @@ def _parse_requirement_details(
 
 
 def _parse_requirement_marker(
-    tokenizer: Tokenizer, *, span_start: int, after: str
-) -> MarkerList:
-    """
-    requirement_marker = SEMICOLON marker WS?
-    """
-
+    tokenizer: RequiresTokenizer, *, span_start: int, after: str
+) -> RequiresMarkerList:
     if not tokenizer.check("SEMICOLON"):
         tokenizer.raise_syntax_error(
             f"Expected end or semicolon (after {after})",
@@ -351,16 +309,13 @@ def _parse_requirement_marker(
         )
     tokenizer.read()
 
-    marker = _parse_marker(tokenizer)
+    marker = _parse_requires_marker(tokenizer)
     tokenizer.consume("WS")
 
     return marker
 
 
-def _parse_extras(tokenizer: Tokenizer) -> list[str]:
-    """
-    extras = (LEFT_BRACKET wsp* extras_list? wsp* RIGHT_BRACKET)?
-    """
+def _parse_requires_extras(tokenizer: RequiresTokenizer) -> ta.List[str]:
     if not tokenizer.check("LEFT_BRACKET", peek=True):
         return []
 
@@ -370,17 +325,14 @@ def _parse_extras(tokenizer: Tokenizer) -> list[str]:
         around="extras",
     ):
         tokenizer.consume("WS")
-        extras = _parse_extras_list(tokenizer)
+        extras = _parse_requires_extras_list(tokenizer)
         tokenizer.consume("WS")
 
     return extras
 
 
-def _parse_extras_list(tokenizer: Tokenizer) -> list[str]:
-    """
-    extras_list = identifier (wsp* ',' wsp* identifier)*
-    """
-    extras: list[str] = []
+def _parse_requires_extras_list(tokenizer: RequiresTokenizer) -> ta.List[str]:
+    extras: ta.List[str] = []
 
     if not tokenizer.check("IDENTIFIER"):
         return extras
@@ -403,27 +355,20 @@ def _parse_extras_list(tokenizer: Tokenizer) -> list[str]:
     return extras
 
 
-def _parse_specifier(tokenizer: Tokenizer) -> str:
-    """
-    specifier = LEFT_PARENTHESIS WS? version_many WS? RIGHT_PARENTHESIS
-              | WS? version_many WS?
-    """
+def _parse_requires_specifier(tokenizer: RequiresTokenizer) -> str:
     with tokenizer.enclosing_tokens(
         "LEFT_PARENTHESIS",
         "RIGHT_PARENTHESIS",
         around="version specifier",
     ):
         tokenizer.consume("WS")
-        parsed_specifiers = _parse_version_many(tokenizer)
+        parsed_specifiers = _parse_requires_version_many(tokenizer)
         tokenizer.consume("WS")
 
     return parsed_specifiers
 
 
-def _parse_version_many(tokenizer: Tokenizer) -> str:
-    """
-    version_many = (SPECIFIER (WS? COMMA WS? SPECIFIER)*)?
-    """
+def _parse_requires_version_many(tokenizer: RequiresTokenizer) -> str:
     parsed_specifiers = ""
     while tokenizer.check("SPECIFIER"):
         span_start = tokenizer.position
@@ -449,37 +394,26 @@ def _parse_version_many(tokenizer: Tokenizer) -> str:
     return parsed_specifiers
 
 
-# --------------------------------------------------------------------------------------
-# Recursive descent parser for marker expression
-# --------------------------------------------------------------------------------------
-def parse_marker(source: str) -> MarkerList:
-    return _parse_full_marker(Tokenizer(source, rules=DEFAULT_RULES))
+def parse_requires_marker(source: str) -> RequiresMarkerList:
+    return _parse_requires_full_marker(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
 
 
-def _parse_full_marker(tokenizer: Tokenizer) -> MarkerList:
-    retval = _parse_marker(tokenizer)
+def _parse_requires_full_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
+    retval = _parse_requires_marker(tokenizer)
     tokenizer.expect("END", expected="end of marker expression")
     return retval
 
 
-def _parse_marker(tokenizer: Tokenizer) -> MarkerList:
-    """
-    marker = marker_atom (BOOLOP marker_atom)+
-    """
-    expression = [_parse_marker_atom(tokenizer)]
+def _parse_requires_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
+    expression = [_parse_requires_marker_atom(tokenizer)]
     while tokenizer.check("BOOLOP"):
         token = tokenizer.read()
-        expr_right = _parse_marker_atom(tokenizer)
+        expr_right = _parse_requires_marker_atom(tokenizer)
         expression.extend((token.text, expr_right))
     return expression
 
 
-def _parse_marker_atom(tokenizer: Tokenizer) -> MarkerAtom:
-    """
-    marker_atom = WS? LEFT_PARENTHESIS WS? marker WS? RIGHT_PARENTHESIS WS?
-                | WS? marker_item WS?
-    """
-
+def _parse_requires_marker_atom(tokenizer: RequiresTokenizer) -> RequiresMarkerAtom:
     tokenizer.consume("WS")
     if tokenizer.check("LEFT_PARENTHESIS", peek=True):
         with tokenizer.enclosing_tokens(
@@ -488,68 +422,59 @@ def _parse_marker_atom(tokenizer: Tokenizer) -> MarkerAtom:
             around="marker expression",
         ):
             tokenizer.consume("WS")
-            marker: MarkerAtom = _parse_marker(tokenizer)
+            marker: RequiresMarkerAtom = _parse_requires_marker(tokenizer)
             tokenizer.consume("WS")
     else:
-        marker = _parse_marker_item(tokenizer)
+        marker = _parse_requires_marker_item(tokenizer)
     tokenizer.consume("WS")
     return marker
 
 
-def _parse_marker_item(tokenizer: Tokenizer) -> MarkerItem:
-    """
-    marker_item = WS? marker_var WS? marker_op WS? marker_var WS?
-    """
+def _parse_requires_marker_item(tokenizer: RequiresTokenizer) -> RequiresMarkerItem:
     tokenizer.consume("WS")
-    marker_var_left = _parse_marker_var(tokenizer)
+    marker_var_left = _parse_requires_marker_var(tokenizer)
     tokenizer.consume("WS")
-    marker_op = _parse_marker_op(tokenizer)
+    marker_op = _parse_requires_marker_op(tokenizer)
     tokenizer.consume("WS")
-    marker_var_right = _parse_marker_var(tokenizer)
+    marker_var_right = _parse_requires_marker_var(tokenizer)
     tokenizer.consume("WS")
     return (marker_var_left, marker_op, marker_var_right)
 
 
-def _parse_marker_var(tokenizer: Tokenizer) -> MarkerVar:
-    """
-    marker_var = VARIABLE | QUOTED_STRING
-    """
+def _parse_requires_marker_var(tokenizer: RequiresTokenizer) -> RequiresMarkerVar:
     if tokenizer.check("VARIABLE"):
-        return process_env_var(tokenizer.read().text.replace(".", "_"))
+        return process_requires_env_var(tokenizer.read().text.replace(".", "_"))
     elif tokenizer.check("QUOTED_STRING"):
-        return process_python_str(tokenizer.read().text)
+        return process_requires_python_str(tokenizer.read().text)
     else:
         tokenizer.raise_syntax_error(
             message="Expected a marker variable or quoted string"
         )
 
 
-def process_env_var(env_var: str) -> Variable:
+def process_requires_env_var(env_var: str) -> RequiresVariable:
     if env_var in ("platform_python_implementation", "python_implementation"):
-        return Variable("platform_python_implementation")
+        return RequiresVariable("platform_python_implementation")
     else:
-        return Variable(env_var)
+        return RequiresVariable(env_var)
 
 
-def process_python_str(python_str: str) -> Value:
+def process_requires_python_str(python_str: str) -> RequiresValue:
     value = ast.literal_eval(python_str)
-    return Value(str(value))
+    return RequiresValue(str(value))
 
 
-def _parse_marker_op(tokenizer: Tokenizer) -> Op:
-    """
-    marker_op = IN | NOT IN | OP
-    """
+def _parse_requires_marker_op(tokenizer: RequiresTokenizer) -> RequiresOp:
     if tokenizer.check("IN"):
         tokenizer.read()
-        return Op("in")
+        return RequiresOp("in")
     elif tokenizer.check("NOT"):
         tokenizer.read()
         tokenizer.expect("WS", expected="whitespace after 'not'")
         tokenizer.expect("IN", expected="'in' after 'not'")
-        return Op("not in")
+        return RequiresOp("not in")
     elif tokenizer.check("OP"):
-        return Op(tokenizer.read().text)
+        return RequiresOp(tokenizer.read().text)
     else:
         return tokenizer.raise_syntax_error(
             "Expected marker operator, one of "
