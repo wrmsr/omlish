@@ -450,6 +450,21 @@ publish: package test-install
 	${PYTHON} -m omdev.scripts.bumpversion -w omlish/__about__.py
 	${MAKE} gen
 
+### Install
+
+.PHONY: install
+install:
+	pipx uninstall omdev-cli || true
+	pipx install \
+		omdev-cli \
+		\
+		--preinstall ominfra \
+		\
+		--preinstall ommlx \
+		--preinstall openai \
+		\
+		--preinstall omserv \
+
 
 ### Utils
 
