@@ -7,6 +7,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish import reflect as rfl
 from omlish.formats import json
 
 
@@ -111,7 +112,8 @@ CUSTOM_ERROR_BASE = -32000
 
 @lang.cached_function
 def _install_standard_marshalling() -> None:
-    pass
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.ForbiddenTypeMarshalerFactory({rfl.type_(type[NotSpecified])})]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.ForbiddenTypeUnmarshalerFactory({rfl.type_(type[NotSpecified])})]
 
 
 _install_standard_marshalling()
