@@ -43,7 +43,7 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../versioning/versions.py
+# ../../packaging/versions.py
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
@@ -54,14 +54,14 @@ VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 # ../../../omlish/lite/check.py
 T = ta.TypeVar('T')
 
-# ../../versioning/specifiers.py
+# ../../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 ########################################
-# ../../versioning/versions.py
+# ../../packaging/versions.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #
@@ -632,7 +632,7 @@ def is_sunder(name: str) -> bool:
 
 
 ########################################
-# ../../versioning/specifiers.py
+# ../../packaging/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #
