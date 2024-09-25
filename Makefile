@@ -456,15 +456,14 @@ publish: package test-install
 .PHONY: install
 install:
 	pipx uninstall omdev-cli || true
-	pipx install \
-		omdev-cli \
+	pipx install omdev-cli
+	pipx inject omdev-cli \
+		ominfra \
 		\
-		--preinstall ominfra \
+		ommlx \
+		openai \
 		\
-		--preinstall ommlx \
-		--preinstall openai \
-		\
-		--preinstall omserv \
+		omserv \
 
 
 ### Utils
