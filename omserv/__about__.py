@@ -24,6 +24,10 @@ class Project(ProjectBase):
         ],
     }
 
+    entry_points = {
+        'omlish.manifests': {name: name},
+    }
+
 
 class Setuptools(SetuptoolsBase):
     find_packages = {

@@ -72,6 +72,9 @@ xml = [
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 
+[project.entry-points]
+'omlish.manifests' = {ommlx = 'ommlx'}
+
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
