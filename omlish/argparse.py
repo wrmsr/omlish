@@ -1,6 +1,7 @@
 """
 TODO:
  - default command
+ - auto match all underscores to hyphens
 """
 import argparse
 import dataclasses as dc

@@ -471,7 +471,7 @@ install:
 
 	if uv --version 2>/dev/null ; then \
 		MGR="uv tool" ; \
-		INST="install --prerelease=allow --python=${INSTALL_PYTHON_VERSION}"; \
+		INST="install --refresh --prerelease=allow --python=${INSTALL_PYTHON_VERSION}"; \
 		INJ="--with" ; \
 	else \
 		MGR="pipx" ; \
