@@ -1,7 +1,6 @@
 """
 TODO:
  - allow manually specifying manifest packages
- - omlish.bootstrap always
  - https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
  - https://packaging.python.org/en/latest/specifications/entry-points/#entry-points
 """

@@ -10,5 +10,29 @@
         "mod_name": "omlish.bootstrap.__main__"
       }
     }
+  },
+  {
+    "module": ".diag.procfs",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/diag/procfs.py",
+    "line": 361,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "procfs",
+        "mod_name": "omlish.diag.procfs"
+      }
+    }
+  },
+  {
+    "module": ".diag.pycharm",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/diag/pycharm.py",
+    "line": 138,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "pycharm",
+        "mod_name": "omlish.diag.pycharm"
+      }
+    }
   }
 ]

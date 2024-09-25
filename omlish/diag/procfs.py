@@ -358,5 +358,12 @@ def _main() -> None:
         args.func(args)
 
 
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'procfs',
+    'mod_name': __name__,
+}}
+
+
 if __name__ == '__main__':
     _main()

@@ -135,5 +135,12 @@ def pycharm_remote_debugger_attach(
     )
 
 
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'pycharm',
+    'mod_name': __name__,
+}}
+
+
 if __name__ == '__main__':
     print(get_pycharm_version())
