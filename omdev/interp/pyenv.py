@@ -25,8 +25,8 @@ from omlish.lite.subprocesses import subprocess_check_call
 from omlish.lite.subprocesses import subprocess_check_output_str
 from omlish.lite.subprocesses import subprocess_try_output
 
-from ..versioning.versions import InvalidVersion
-from ..versioning.versions import Version
+from ..packaging.versions import InvalidVersion
+from ..packaging.versions import Version
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
 from .providers import InterpProvider
