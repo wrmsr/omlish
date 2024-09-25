@@ -12,7 +12,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
-from ..versioning.versions import InvalidVersion
+from ..packaging.versions import InvalidVersion
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
 from .providers import InterpProvider
