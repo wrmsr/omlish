@@ -218,7 +218,7 @@ langchain==0.3.1
 langchain-core==0.3.6
 
 langchain-anthropic==0.2.1
-langchain-community==0.3.0
+langchain-community==0.3.1
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.1
 langchain-mistralai==0.2.0
@@ -281,3 +281,5 @@ sqlite-vec==0.1.2
 anthropic==0.34.2
 
 apsw==3.46.1.0
+
+jedi-language-server==0.41.4
