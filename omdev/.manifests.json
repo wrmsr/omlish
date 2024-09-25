@@ -48,14 +48,14 @@
     }
   },
   {
-    "module": ".precheck.precheck",
+    "module": ".precheck.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omdev/precheck/precheck.py",
-    "line": 90,
+    "file": "omdev/precheck/__main__.py",
+    "line": 4,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "precheck",
-        "mod_name": "omdev.precheck.precheck"
+        "mod_name": "omdev.precheck.__main__"
       }
     }
   },
