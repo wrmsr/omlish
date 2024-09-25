@@ -450,6 +450,7 @@ publish: package test-install
 	${PYTHON} -m omdev.scripts.bumpversion -w omlish/__about__.py
 	${MAKE} gen
 
+
 ### Install
 
 .PHONY: install
