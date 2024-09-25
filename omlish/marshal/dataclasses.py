@@ -67,6 +67,7 @@ def get_field_infos(
             kw.update(
                 metadata=fmd,
                 omit_if=fmd.omit_if,
+                default=fmd.default,
             )
 
             if fmd.name is not None:
@@ -98,11 +99,14 @@ class DataclassMarshalerFactory(MarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
         check.state(dc.is_dataclass(ty))
+
         dc_md = get_dataclass_metadata(ty)
+
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
             for fi in get_field_infos(ty, ctx.options)
         ]
+
         return ObjectMarshaler(
             fields,
             unknown_field=dc_md.unknown_field,
@@ -119,16 +123,23 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         ty = check.isinstance(rty, type)
         check.state(dc.is_dataclass(ty))
+
         dc_md = get_dataclass_metadata(ty)
+
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+        defaults: dict[str, ta.Any] = {}
         for fi in get_field_infos(ty, ctx.options):
             tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
             for un in fi.unmarshal_names:
                 if un in d:
                     raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
                 d[un] = tup
+            if fi.default.present:
+                defaults[fi.name] = fi.default.must()
+
         return ObjectUnmarshaler(
             ty,
             d,
             unknown_field=dc_md.unknown_field,
+            defaults=defaults,
         )

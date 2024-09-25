@@ -193,7 +193,14 @@ def field_init(
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'
-        locals[cn] = f.type
+        if isinstance(fx.check_type, type):
+            ct = fx.check_type
+        # FIXME:
+        # elif info.params_extras.generic_init:
+        #     ct = info.generic_replaced_field_annotations[f.name]
+        else:
+            ct = f.type
+        locals[cn] = ct
         lines.append(
             f'if not __dataclass_builtins_isinstance__({value}, {cn}): '
             f'raise __dataclass_builtins_TypeError__({value}, {cn})',

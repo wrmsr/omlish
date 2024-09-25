@@ -4,12 +4,15 @@ TODO:
  - adapters for dataclasses / namedtuples / user objects (as confitured)
  - mro-merge ObjectMetadata
  - key ordering override - like slice, -1 means last
+ - dedupe omit_if/default fields on Metadata/Info - FieldOptions prob
+  - impl merge, update helpers:update_fields_metadata
 """
 import collections.abc
 import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
+from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -30,6 +33,7 @@ class FieldMetadata:
     alts: ta.Iterable[str] | None = None
 
     omit_if: ta.Callable[[ta.Any], bool] | None = None
+    default: lang.Maybe[ta.Any] = dc.xfield(lang.empty(), check_type=lang.Maybe)
 
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
@@ -61,6 +65,7 @@ class FieldInfo:
     metadata: FieldMetadata = FieldMetadata()
 
     omit_if: ta.Callable[[ta.Any], bool] | None = None
+    default: lang.Maybe[ta.Any] = lang.empty()
 
 
 ##
@@ -69,6 +74,9 @@ class FieldInfo:
 @dc.dataclass(frozen=True)
 class ObjectMarshaler(Marshaler):
     fields: ta.Sequence[tuple[FieldInfo, Marshaler]]
+
+    _: dc.KW_ONLY
+
     unknown_field: str | None = None
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
@@ -92,6 +100,9 @@ class ObjectMarshaler(Marshaler):
 @dc.dataclass(frozen=True)
 class SimpleObjectMarshalerFactory(MarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
+
+    _: dc.KW_ONLY
+
     unknown_field: str | None = None
 
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
@@ -99,11 +110,14 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
+
         flds = self.dct[ty]
+
         fields = [
             (fi, ctx.make(fi.type))
             for fi in flds
         ]
+
         return ObjectMarshaler(
             fields,
             unknown_field=self.unknown_field,
@@ -117,10 +131,15 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 class ObjectUnmarshaler(Unmarshaler):
     cls: type
     fields_by_unmarshal_name: ta.Mapping[str, tuple[FieldInfo, Unmarshaler]]
+
+    _: dc.KW_ONLY
+
     unknown_field: str | None = None
+    defaults: ta.Mapping[str, ta.Any] | None = None
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
+
         u: ta.Any
         kw: dict[str, ta.Any] = {}
         ukf: dict[str, ta.Any] | None = None
@@ -145,12 +164,19 @@ class ObjectUnmarshaler(Unmarshaler):
 
             kw[fi.name] = u.unmarshal(ctx, mv)
 
+        if self.defaults:
+            for dk, dv in self.defaults.items():
+                kw.setdefault(dk, dv)
+
         return self.cls(**kw)
 
 
 @dc.dataclass(frozen=True)
 class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
+
+    _: dc.KW_ONLY
+
     unknown_field: str | None = None
 
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
@@ -158,14 +184,24 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         ty = check.isinstance(rty, type)
+
         flds = self.dct[ty]
+
         fields_by_unmarshal_name = {
             n: (fi, ctx.make(fi.type))
             for fi in flds
             for n in fi.unmarshal_names
         }
+
+        defaults = {
+            fi.name: fi.default.must()
+            for fi in flds
+            if fi.default.present
+        }
+
         return ObjectUnmarshaler(
             ty,
             fields_by_unmarshal_name,
             unknown_field=self.unknown_field,
+            defaults=defaults,
         )

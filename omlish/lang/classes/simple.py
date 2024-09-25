@@ -68,6 +68,9 @@ class _MarkerMeta(abc.ABCMeta):
 class Marker(NotInstantiable, metaclass=_MarkerMeta):
     """A marker."""
 
+    def __bool__(self):
+        raise TypeError
+
 
 ##
 
