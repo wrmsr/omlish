@@ -412,11 +412,12 @@ package: gen check clean-package
 .PHONY: test-install
 test-install: venv
 	for EXT in '.tar.gz' '.whl' ; do \
-		echo "$$EXT" ; \
+		D=$$(mktemp -d) ; \
+		echo "$$D" ; \
+		${PYTHON} -m venv "$$D/venv" ; \
+		find dist -name "*$$EXT" | xargs "$$D/venv/bin/python3" -m pip install --no-cache-dir || exit 1 ; \
+		rm -rf "$$D" ; \
 	done
-
-	# ${PYTHON} -m pip install --dry-run dist/*.tar.gz
-	# ${PYTHON} -m pip install --dry-run dist/*.whl
 
 
 ### Publish
