@@ -464,13 +464,15 @@ INSTALL_EXTRAS=\
 install:
 	if uv --version 2>/dev/null ; then \
 		MGR="uv tool" ; \
+		INST="install --prerelease=allow"; \
 		INJ="--with" ; \
 	else \
 		MGR="pipx" ; \
+		INST="install"; \
 		INJ="--preinstall" ; \
 	fi ; \
 	\
-	CMD="$$MGR uninstall omdev-cli || true ; $$MGR install omdev-cli" ; \
+	CMD="$$MGR uninstall omdev-cli || true ; $$MGR $$INST omdev-cli" ; \
 	for D in ${INSTALL_EXTRAS} ; do \
 		CMD+=" $$INJ $$D" ; \
 	done ; \
