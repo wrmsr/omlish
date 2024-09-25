@@ -81,7 +81,9 @@ class PrimitiveUnionUnmarshaler(Unmarshaler):
     tys: ta.Sequence[type]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        raise NotImplementedError
+        if type(v) not in self.tys:
+            raise TypeError(v)
+        return v
 
 
 @dc.dataclass(frozen=True)

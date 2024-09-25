@@ -176,6 +176,7 @@ def _main() -> None:
         d = json.loads(j)
         u = msh.unmarshal(d, type(obj))
         print(u)
+        assert u == obj
 
 
 if __name__ == '__main__':
