@@ -19,7 +19,7 @@ fi
 export PYTHONPATH="$PYTHONPATH:."
 
 if [ $# -eq 0 ] && "$PYTHON" -c "import IPython" 2> /dev/null ; then
-    "$PYTHON" -m IPython
+    exec "$PYTHON" -m IPython
 else
-    "$PYTHON" "$@"
+    exec "$PYTHON" "$@"
 fi

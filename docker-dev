@@ -29,7 +29,7 @@ if [ -z "$DOCKER_HOST_PLATFORM" ] ; then
     fi
 fi
 
-docker exec \
+exec docker exec \
     $TTY_ENV_ARGS \
     -e DOCKER_HOST_PLATFORM="$DOCKER_HOST_PLATFORM" \
     --privileged \
