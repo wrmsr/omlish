@@ -3,29 +3,12 @@
 TODO:
  - usable as 'curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/x/cli_install.py | python3'
  - used for self-reinstall, preserving non-root dists
-
-==
-
-if uv --version 2>/dev/null ; then \
-    MGR="uv tool" ; \
-    INST="install --refresh --prerelease=allow --python=${INSTALL_PYTHON_VERSION}"; \
-    INJ="--with" ; \
-else \
-    MGR="pipx" ; \
-    INST="install"; \
-    INJ="--preinstall" ; \
-fi ; \
-\
-CMD="$$MGR uninstall omdev-cli || true ; $$MGR $$INST omdev-cli" ; \
-for D in ${INSTALL_EXTRAS} ; do \
-    CMD+=" $$INJ $$D" ; \
-done ; \
-${SHELL} -c "$$CMD"
 """
 import abc
 import argparse
 import dataclasses as dc
 import itertools
+import re
 import shutil
 import subprocess
 import sys
@@ -57,14 +40,14 @@ class UvInstallMgr(InstallMgr):
     def uninstall(self, cli_pkg: str) -> None:
         out = subprocess.check_output(['uv', 'tool', 'list']).decode()
 
-        inst = {
+        installed = {
             s.partition(' ')[0]
             for l in out.splitlines()
             if (s := l.strip())
             and not s.startswith('-')
         }
 
-        if cli_pkg not in inst:
+        if cli_pkg not in installed:
             return
 
         subprocess.check_call([
@@ -84,13 +67,31 @@ class UvInstallMgr(InstallMgr):
         ])
 
 
-def _install_pipx(
-        cli: str,
-        py: str,
-        *,
-        extras: ta.Sequence[str],
-) -> None:
-    raise NotImplementedError
+class PipxInstallMgr(InstallMgr):
+    _INSTALLED_PAT: ta.ClassVar[ta.Pattern] = re.compile(r'^\s+package\s+(?P<pkg>[a-zA-Z\-_][a-zA-Z0-9\-_]*)')
+
+    def uninstall(self, cli_pkg: str) -> None:
+        out = subprocess.check_output(['pipx', 'list'])
+
+        installed = {
+            m.groupdict()['pkg']
+            for l in out.splitlines()
+            if (s := l.strip())
+            and (m := self._INSTALLED_PAT.match(s))
+        }
+
+        raise NotImplementedError
+
+    def install(self, opts: InstallOpts) -> None:
+        # FIXME: py_version
+
+        subprocess.run([
+            'pipx',
+            'install',
+            opts.cli_pkg,
+            *itertools.chain.from_iterable(['--preinstall', e] for e in (opts.extras or [])),
+        ])
+
 
 
 def _main() -> None:
