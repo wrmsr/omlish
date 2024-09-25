@@ -3,6 +3,7 @@ TODO:
  - cfg naming
  - adapters for dataclasses / namedtuples / user objects (as confitured)
  - mro-merge ObjectMetadata
+ - key ordering override - like slice, -1 means last
 """
 import collections.abc
 import typing as ta
