@@ -109,6 +109,17 @@ CUSTOM_ERROR_BASE = -32000
 ##
 
 
+@lang.cached_function
+def _install_standard_marshalling() -> None:
+    pass
+
+
+_install_standard_marshalling()
+
+
+##
+
+
 def _main() -> None:
     for obj in [
         request(0, 'foo'),
