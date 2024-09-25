@@ -56,7 +56,9 @@ class PrimitiveUnionMarshaler(Marshaler):
     tys: ta.Sequence[type]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        raise NotImplementedError
+        if type(o) not in self.tys:
+            raise TypeError(o)
+        return o
 
 
 @dc.dataclass(frozen=True)

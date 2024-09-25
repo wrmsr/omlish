@@ -88,6 +88,14 @@ from .standard import (  # noqa
     new_standard_unmarshaler_factory,
 )
 
+from .unions import (  # noqa
+    PRIMITIVE_UNION_TYPES,
+    PrimitiveUnionMarshaler,
+    PrimitiveUnionMarshalerFactory,
+    PrimitiveUnionUnmarshaler,
+    PrimitiveUnionUnmarshalerFactory,
+)
+
 from .values import (  # noqa
     Value,
 )
