@@ -44,6 +44,14 @@ class Request:
     dc.validate(lambda self: self.jsonrpc == VERSION)
 
 
+def request(id: Id, method: str, params: Object | None = None) -> Request:  # noqa
+    return Request(id, method, params)
+
+
+def notification(method: str, params: Object | None = None) -> Request:
+    return Request(NotSpecified, method, params)
+
+
 ##
 
 
@@ -52,12 +60,18 @@ class Request:
 class Response:
     id: Id
 
-    result: ta.Any = NotSpecified
-    error: ta.Union['Error', type[NotSpecified]] = NotSpecified
+    _: dc.KW_ONLY
+
+    result: ta.Any = dc.field(default=NotSpecified)
+    error: ta.Union['Error', type[NotSpecified]] = dc.field(default=NotSpecified)
     dc.validate(lambda self: is_not_specified(self.result) ^ is_not_specified(self.error))
 
-    jsonrpc: str = dc.field(default=VERSION, kw_only=True)
+    jsonrpc: str = dc.field(default=VERSION)
     dc.validate(lambda self: self.jsonrpc == VERSION)
+
+
+def result(id: Id, result: ta.Any) -> Response:  # noqa
+    return Response(id, result=result)
 
 
 @dc.dataclass(frozen=True)
@@ -67,6 +81,9 @@ class Error:
     message: str
     data: ta.Any = NotSpecified
 
+
+def error(id: Id, error: Error) -> Response:  # noqa
+    return Response(id, error=result)
 
 #
 
@@ -93,7 +110,9 @@ CUSTOM_ERROR_BASE = -32000
 
 
 def _main() -> None:
-    pass
+    for obj in [
+        Request()
+    ]
 
 
 if __name__ == '__main__':
