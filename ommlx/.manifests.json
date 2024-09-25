@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "module": ".minichain.cli.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "ommlx/minichain/cli/__main__.py",
+    "line": 4,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "mc",
+        "mod_name": "ommlx.minichain.cli.__main__"
+      }
+    }
+  }
+]
