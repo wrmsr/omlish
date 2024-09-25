@@ -380,7 +380,7 @@ def test_cached_property():
         f.x = 5  # type: ignore  # noqa
 
 
-def test_cached_init_property_outer_deco():
+def test_cached_init_property_outer_deco_BAD_DO_NOT_DO():  # noqa
     c = 0
 
     @dc.dataclass(frozen=True)
