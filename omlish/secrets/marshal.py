@@ -50,7 +50,7 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
     })
 
 
-@lang.cached_function
+@lang.static_init
 def _install_standard_marshalling() -> None:
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
         msh.ForbiddenTypeMarshalerFactory({Secret}),
@@ -65,6 +65,3 @@ def _install_standard_marshalling() -> None:
             rfl.type_(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
         }),
     ]
-
-
-_install_standard_marshalling()

@@ -38,11 +38,8 @@ class ExtractAction(Action, lang.Final):
 ##
 
 
-@lang.cached_function
+@lang.static_init
 def _install_standard_marshalling() -> None:
     actions_poly = msh.polymorphism_from_subclasses(Action, naming=msh.Naming.SNAKE, strip_suffix=True)
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(actions_poly)]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(actions_poly)]
-
-
-_install_standard_marshalling()

@@ -1,6 +1,7 @@
 from .cached import (  # noqa
     cached_function,
     cached_property,
+    static_init,
 )
 
 from .classes import (  # noqa
