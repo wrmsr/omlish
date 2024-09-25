@@ -1,8 +1,9 @@
 """
 TODO:
  - separate build from cli
+ - parallelize & sort
 
-- See (entry_points):
+See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
  - https://docs.pytest.org/en/7.1.x/how-to/writing_plugins.html#setuptools-entry-points
  - https://packaging.python.org/en/latest/specifications/entry-points/
