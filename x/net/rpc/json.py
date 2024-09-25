@@ -4,9 +4,11 @@ https://www.jsonrpc.org/specification
 import operator
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish import matchfns as mfs
 from omlish import reflect as rfl
 from omlish.formats import json
 
@@ -24,6 +26,9 @@ VERSION = '2.0'
 
 class NotSpecified(lang.Marker):
     pass
+
+
+_NOT_SPECIFIED_RTY = rfl.type_(type[NotSpecified])
 
 
 def is_not_specified(v: ta.Any) -> bool:
@@ -110,13 +115,51 @@ CUSTOM_ERROR_BASE = -32000
 ##
 
 
-@lang.cached_function
+@dc.dataclass(frozen=True)
+class NotSpecifiedUnionMarshaler(msh.Marshaler):
+    m: msh.Marshaler
+
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        if o is NotSpecified:
+            raise TypeError(o)
+        return self.m.marshal(ctx, o)
+
+
+class NotSpecifiedUnionMarshalerFactory(msh.MarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: (
+            isinstance(rty, rfl.Union) and
+            not rty.is_optional and
+            _NOT_SPECIFIED_RTY in rty.args
+    ))
+    def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
+        args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
+        nty = rfl.type_(ta.Union[*args])
+        m = ctx.make(nty)
+        return NotSpecifiedUnionMarshaler(m)
+
+
+class NotSpecifiedUnionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: (
+            isinstance(rty, rfl.Union) and
+            not rty.is_optional and
+            _NOT_SPECIFIED_RTY in rty.args
+    ))
+    def fn(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
+        args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
+        nty = rfl.type_(ta.Union[*args])
+        return ctx.make(nty)
+
+
+@lang.static_init
 def _install_standard_marshalling() -> None:
-    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.ForbiddenTypeMarshalerFactory({rfl.type_(type[NotSpecified])})]
-    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.ForbiddenTypeUnmarshalerFactory({rfl.type_(type[NotSpecified])})]
-
-
-_install_standard_marshalling()
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
+        msh.ForbiddenTypeMarshalerFactory({_NOT_SPECIFIED_RTY}),
+        NotSpecifiedUnionMarshalerFactory(),
+    ]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
+        msh.ForbiddenTypeUnmarshalerFactory({_NOT_SPECIFIED_RTY}),
+        NotSpecifiedUnionUnmarshalerFactory(),
+    ]
 
 
 ##
@@ -127,7 +170,12 @@ def _main() -> None:
         request(0, 'foo'),
         result(0, 'bar'),
     ]:
-        print(json.dumps(msh.marshal(obj)))
+        m = msh.marshal(obj)
+        j = json.dumps(m)
+        print(j)
+        d = json.loads(j)
+        u = msh.unmarshal(d, type(obj))
+        print(u)
 
 
 if __name__ == '__main__':

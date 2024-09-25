@@ -5,6 +5,7 @@ TODO:
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
  - streaming? Start/EndObject, etc..
  - lang.Marker - class name, handle type[Foo]
+  - can't disambiguate from str - can't coexist in bare union
 
 See:
  - https://github.com/python-attrs/cattrs
