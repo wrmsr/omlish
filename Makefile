@@ -460,11 +460,18 @@ INSTALL_EXTRAS=\
 	\
 	openai \
 
+INSTALL_PYTHON_VERSION:=$$(\
+	${PYPROJECT_PYTHON} -c \
+	'from omlish.__about__ import ProjectBase; print(ProjectBase.requires_python.rpartition("=")[2])' \
+)
+
 .PHONY: install
 install:
+	echo "Installing with python ${INSTALL_PYTHON_VERSION}"
+
 	if uv --version 2>/dev/null ; then \
 		MGR="uv tool" ; \
-		INST="install --prerelease=allow"; \
+		INST="install --prerelease=allow --python=${INSTALL_PYTHON_VERSION}"; \
 		INJ="--with" ; \
 	else \
 		MGR="pipx" ; \
