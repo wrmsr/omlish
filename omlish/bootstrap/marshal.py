@@ -4,7 +4,7 @@ from .base import Bootstrap
 from .harness import BOOTSTRAP_TYPES_BY_NAME
 
 
-@lang.cached_function
+@lang.static_init
 def _install_standard_marshalling() -> None:
     cfgs_poly = msh.Polymorphism(
         Bootstrap.Config,
@@ -13,6 +13,3 @@ def _install_standard_marshalling() -> None:
 
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(cfgs_poly)]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(cfgs_poly)]
-
-
-_install_standard_marshalling()

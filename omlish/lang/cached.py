@@ -17,6 +17,7 @@ from .descriptors import unwrap_func_with_partials
 
 P = ta.ParamSpec('P')
 T = ta.TypeVar('T')
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 _IGNORE = object()
 
@@ -215,6 +216,12 @@ def cached_function(fn=None, **kwargs):  # noqa
         return _CachedFunction(fn, opts=opts, value_fn=unwrap_func(fn))
     scope = classmethod if isinstance(fn, classmethod) else None
     return _CachedFunctionDescriptor(fn, scope, opts=opts)
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_function(fn)
+    fn()
+    return fn
 
 
 ##
