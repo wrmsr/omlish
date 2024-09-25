@@ -20,19 +20,16 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/cf2cbe2aec28f87c6228a6fb136c27931c9af407/src/packaging/_parser.py#L65
-
 import ast
-from typing import NamedTuple, Sequence, Tuple, Union
-
 import contextlib
+import dataclasses as dc
 import re
-from dataclasses import dataclass
-from typing import Iterator, NoReturn
+import typing as ta
 
 from omdev.packaging.specifiers import Specifier
 
 
-@dataclass
+@dc.dataclass()
 class Token:
     name: str
     text: str
@@ -182,7 +179,7 @@ class Tokenizer:
         *,
         span_start: int | None = None,
         span_end: int | None = None,
-    ) -> NoReturn:
+    ) -> ta.NoReturn:
         """Raise ParserSyntaxError at the given position."""
         span = (
             self.position if span_start is None else span_start,
@@ -197,7 +194,7 @@ class Tokenizer:
     @contextlib.contextmanager
     def enclosing_tokens(
         self, open_token: str, close_token: str, *, around: str
-    ) -> Iterator[None]:
+    ) -> ta.Iterator[None]:
         if self.check(open_token):
             open_position = self.position
             self.read()
@@ -247,13 +244,13 @@ class Op(Node):
         return str(self)
 
 
-MarkerVar = Union[Variable, Value]
-MarkerItem = Tuple[MarkerVar, Op, MarkerVar]
-MarkerAtom = Union[MarkerItem, Sequence["MarkerAtom"]]
-MarkerList = Sequence[Union["MarkerList", MarkerAtom, str]]
+MarkerVar = ta.Union[Variable, Value]
+MarkerItem = ta.Tuple[MarkerVar, Op, MarkerVar]
+MarkerAtom = ta.Union[MarkerItem, ta.Sequence["MarkerAtom"]]
+MarkerList = ta.Sequence[ta.Union["MarkerList", MarkerAtom, str]]
 
 
-class ParsedRequirement(NamedTuple):
+class ParsedRequirement(ta.NamedTuple):
     name: str
     url: str
     extras: list[str]
