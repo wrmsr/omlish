@@ -453,16 +453,23 @@ publish: package test-install
 
 ### Install
 
+INSTALL_EXTRAS=\
+	ominfra \
+	ommlx \
+	omserv \
+	\
+	openai \
+
 .PHONY: install
 install:
-	pipx uninstall omdev-cli || true
-	pipx install omdev-cli
-	pipx inject omdev-cli \
-		ominfra \
-		ommlx \
-		omserv \
-		\
-		openai \
+	MGR=pipx ; \
+	INJ="--preinstall" ; \
+	\
+	CMD="$$MGR uninstall omdev-cli || true ; $$MGR install omdev-cli" ; \
+	for D in ${INSTALL_EXTRAS} ; do \
+		CMD+=" $$INJ $$D" ; \
+	done ; \
+	${SHELL} -c "$$CMD"
 
 
 ### Utils
