@@ -26,30 +26,20 @@ import argparse
 import itertools
 import subprocess
 import sys
+import typing as ta
 
 
 DEFAULT_CLI_PKG = 'omdev-cli'
 DEFAULT_PY_VERSION = '3.12'
 
 
-def _main() -> None:
-    if sys.version_info < (3, 8):
-        raise RuntimeError(f'Unsupported python version: {sys.version_info}')
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cli', default=DEFAULT_CLI_PKG)
-    parser.add_argument('--py', default=DEFAULT_PY_VERSION)
-    parser.add_argument('extra', nargs='*')
-    args = parser.parse_args()
-
+def _install_uv(
+        cli: str,
+        py: str,
+        *,
+        extras: ta.Sequence[str],
+) -> None:
     subprocess.check_call(['uv', '--version'])
-
-    cli = args.cli
-    if not cli:
-        raise ValueError(f'Must specify cli')
-    py = args.py
-    if not py:
-        raise ValueError(f'Must specify py')
 
     out = subprocess.check_output(['uv', 'tool', 'list']).decode()
     inst = {
@@ -71,8 +61,32 @@ def _main() -> None:
         '--prerelease=allow',
         f'--python={py}',
         cli,
-        *itertools.chain.from_iterable(['--with', e] for e in args.extra),
+        *itertools.chain.from_iterable(['--with', e] for e in (extras or [])),
     ])
+
+
+def _main() -> None:
+    if sys.version_info < (3, 8):
+        raise RuntimeError(f'Unsupported python version: {sys.version_info}')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cli', default=DEFAULT_CLI_PKG)
+    parser.add_argument('--py', default=DEFAULT_PY_VERSION)
+    parser.add_argument('extra', nargs='*')
+    args = parser.parse_args()
+
+    cli = args.cli
+    if not cli:
+        raise ValueError(f'Must specify cli')
+    py = args.py
+    if not py:
+        raise ValueError(f'Must specify py')
+
+    _install_uv(
+        cli,
+        py,
+        extras=args.extra,
+    )
 
 
 if __name__ == '__main__':
