@@ -1,5 +1,12 @@
 """
 https://www.jsonrpc.org/specification
+
+TODO:
+ - drop NotSpecified, use lang.Maybe, make marshal do that
+ - server/client impl
+
+See:
+ - https://github.com/python-lsp/python-lsp-jsonrpc
 """
 import operator
 import typing as ta
@@ -32,9 +39,9 @@ def is_not_specified(v: ta.Any) -> bool:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['id'], omit_if=is_not_specified)
+@msh.update_fields_metadata(['id'], omit_if=is_not_specified, default=lang.just(NotSpecified))
 @msh.update_fields_metadata(['params'], omit_if=operator.not_)
-class Request:
+class Request(lang.Final):
     id: Id | type[NotSpecified]
     method: str
     params: Object | None = None
@@ -56,7 +63,7 @@ def notification(method: str, params: Object | None = None) -> Request:
 
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['result', 'error'], omit_if=is_not_specified)
-class Response:
+class Response(lang.Final):
     id: Id
     dc.validate(lambda self: self.id is not NotSpecified)
 
@@ -76,7 +83,7 @@ def result(id: Id, result: ta.Any) -> Response:  # noqa
 
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['data'], omit_if=is_not_specified)
-class Error:
+class Error(lang.Final):
     code: int
     message: str
     data: ta.Any = NotSpecified

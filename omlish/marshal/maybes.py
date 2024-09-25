@@ -1,3 +1,7 @@
+"""
+TODO:
+ - option to coordinate with objects and omit if empty / render unboxed
+"""
 import dataclasses as dc
 import typing as ta
 
