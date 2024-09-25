@@ -20,7 +20,7 @@ class Project(ProjectBase):
 
             'sentence_transformers ~= 3.1',
 
-            'transformers ~= 4.44',
+            'transformers ~= 4.45',
         ],
 
         'huggingface': [
@@ -29,7 +29,7 @@ class Project(ProjectBase):
         ],
 
         'llamacpp': [
-            'llama-cpp-python ~= 0.2',
+            'llama-cpp-python ~= 0.3',
         ],
 
         'pillow': [
