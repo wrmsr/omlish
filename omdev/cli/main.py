@@ -6,7 +6,6 @@ TODO:
  - https://packaging.python.org/en/latest/specifications/entry-points/#entry-points
 """
 import argparse
-import functools
 import os
 import runpy
 import sys
@@ -32,27 +31,24 @@ def _main() -> None:
     for m in ldr.load(*pkgs, only=[CliModule]):
         cms.append(check.isinstance(m.value, CliModule))
 
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-
-    def run(cm: CliModule) -> None:
-        sys.argv = [cm.cmd_name, *(args.args or ())]
-        runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
-
-    seen: set[str] = set()
+    dct: dict[str, CliModule] = {}
     for cm in cms:
-        if cm.cmd_name in seen:
+        if cm.cmd_name in dct:
             raise NameError(cm)
+        dct[cm.cmd_name] = cm
 
-        cmd_parser = subparsers.add_parser(cm.cmd_name)
-        cmd_parser.add_argument('args', nargs=argparse.REMAINDER)
-        cmd_parser.set_defaults(func=functools.partial(run, cm))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('cmd', nargs='?', choices=dct.keys())
+    parser.add_argument('args', nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
-    if not getattr(args, 'func', None):
+    if not args.cmd:
         parser.print_help()
-    else:
-        args.func()
+        return
+
+    cm = dct[args.cmd]
+    sys.argv = [cm.cmd_name, *(args.args or ())]
+    runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
 
 
 if __name__ == '__main__':
