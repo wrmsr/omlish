@@ -1,10 +1,10 @@
 """
 TODO:
- - mappings
  - redacted
  - strongly typed MarshalerFactory base class?
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
  - streaming? Start/EndObject, etc..
+ - lang.Marker - class name, handle type[Foo]
 
 See:
  - https://github.com/python-attrs/cattrs
