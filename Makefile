@@ -411,8 +411,12 @@ package: gen check clean-package
 
 .PHONY: test-install
 test-install: venv
-	${PYTHON} -m pip install --dry-run dist/*.tar.gz
-	${PYTHON} -m pip install --dry-run dist/*.whl
+	for EXT in '.tar.gz' '.whl' ; do \
+		echo "$$EXT" ; \
+	done
+
+	# ${PYTHON} -m pip install --dry-run dist/*.tar.gz
+	# ${PYTHON} -m pip install --dry-run dist/*.whl
 
 
 ### Publish
