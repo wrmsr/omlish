@@ -411,10 +411,8 @@ package: gen check clean-package
 
 .PHONY: test-install
 test-install: venv
-	for f in $$(find dist -name 'omlish-*') ; do \
-		echo "Test installing $$f" ; \
-		${PYTHON} -m pip install --dry-run "$$f" ; \
-	done
+	${PYTHON} -m pip install --dry-run dist/*.tar.gz
+	${PYTHON} -m pip install --dry-run dist/*.whl
 
 
 ### Publish
