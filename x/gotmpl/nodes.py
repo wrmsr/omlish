@@ -174,7 +174,7 @@ class CommandNode(Node):
 
 
 @dc.dataclass()
-type IdentifierNode struct {
+class IdentifierNode(Node):
     # IdentifierNode holds an identifier.
 
     Ident string # The identifier's name.
@@ -205,7 +205,7 @@ func NewIdentifier(ident string) *IdentifierNode {
 }
 
 @dc.dataclass()
-type VariableNode struct {
+class VariableNode(Node):
     # VariableNode holds a list of variable names, possibly with chained field accesses. The dollar sign is part of the (first) name.
 
     Ident []string # Variable name and fields in lexical order.
@@ -215,7 +215,7 @@ type VariableNode struct {
     }
 
 @dc.dataclass()
-type DotNode struct {
+class DotNode(Node):
     # DotNode holds the special identifier '.'.
 
     def (d *DotNode) Type() NodeType {
@@ -231,7 +231,7 @@ type DotNode struct {
 
 
 @dc.dataclass()
-type NilNode struct {
+class NilNode(Node):
     # NilNode holds the special identifier 'nil' representing an untyped nil constant.
 
     def (n *NilNode) Type() NodeType {
@@ -246,7 +246,7 @@ type NilNode struct {
     }
 
 @dc.dataclass()
-type FieldNode struct {
+class FieldNode(Node):
     # FieldNode holds a field (identifier starting with '.'). The names may be chained ('.x.y'). The period is dropped
     # from each ident.
 
@@ -258,7 +258,7 @@ type FieldNode struct {
 
 
 @dc.dataclass()
-type ChainNode struct {
+class ChainNode(Node):
     # ChainNode holds a term followed by a chain of field accesses (identifier starting with '.'). The names may be
     # chained ('.x.y'). The periods are dropped from each ident.
     
@@ -282,7 +282,7 @@ type ChainNode struct {
     }
 
 @dc.dataclass()
-type BoolNode struct {
+class BoolNode(Node):
     # BoolNode holds a boolean constant.
 
     True bool # The value of the boolean constant.
@@ -293,7 +293,7 @@ type BoolNode struct {
 
 
 @dc.dataclass()
-type NumberNode struct {
+class NumberNode(Node):
     # NumberNode holds a number: signed or unsigned integer, float, or complex. The value is parsed and stored under all
     # the types that can represent the value. This simulates in a small amount of code the behavior of Go's ideal
     # constants.
@@ -333,7 +333,7 @@ type NumberNode struct {
 
 
 @dc.dataclass()
-type StringNode struct {
+class StringNode(Node):
     # StringNode holds a string constant. The value has been "unquoted".
     
     Quoted string # The original text of the string, with quotes.
@@ -345,7 +345,7 @@ type StringNode struct {
 
 
 @dc.dataclass()
-type EndNode struct {
+class EndNode(Node):
     # EndNode represents an {{end}} action. It does not appear in the final parse tree.
 
     def (e *EndNode) Copy() Node {
@@ -354,7 +354,7 @@ type EndNode struct {
 
 
 @dc.dataclass()
-type ElseNode struct {
+class ElseNode(Node):
     # ElseNode represents an {{else}} action. Does not appear in the final tree.
     
     Line int # The line number in the input. Deprecated: Kept for compatibility.
@@ -369,7 +369,7 @@ type ElseNode struct {
 
 
 @dc.dataclass()
-type BranchNode struct {
+class BranchNode(Node):
     # BranchNode is the common representation of if, range, and with.
     
     Line     int       # The line number in the input. Deprecated: Kept for compatibility.
@@ -391,17 +391,15 @@ type BranchNode struct {
     }
 
 @dc.dataclass()
-type IfNode struct {
+type IfNode(BranchNode):
     # IfNode represents an {{if}} action and its commands.
-
-    BranchNode
 
     def (i *IfNode) Copy() Node {
         return i.tr.newIf(i.Pos, i.Line, i.Pipe.CopyPipe(), i.List.CopyList(), i.ElseList.CopyList())
     }
 
 @dc.dataclass()
-type BreakNode struct {
+class BreakNode(Node):
     # BreakNode represents a {{break}} action.
     
     Line int
@@ -410,7 +408,7 @@ type BreakNode struct {
 
 
 @dc.dataclass()
-type ContinueNode struct {
+class ContinueNode(Node):
     # ContinueNode represents a {{continue}} action.
 
     Line int
@@ -419,10 +417,8 @@ type ContinueNode struct {
 
 
 @dc.dataclass()
-type RangeNode struct {
+class RangeNode(BranchNode):
     # RangeNode represents a {{range}} action and its commands.
-
-    BranchNode
 
     def (r *RangeNode) Copy() Node {
         return r.tr.newRange(r.Pos, r.Line, r.Pipe.CopyPipe(), r.List.CopyList(), r.ElseList.CopyList())
@@ -430,7 +426,7 @@ type RangeNode struct {
     
 
 @dc.dataclass()
-type WithNode struct {
+class WithNode(Node):
     # WithNode represents a {{with}} action and its commands.
 
     BranchNode
@@ -441,7 +437,7 @@ type WithNode struct {
 
 
 @dc.dataclass()
-type TemplateNode struct {
+class TemplateNode(Node):
     # TemplateNode represents a {{template}} action.
 
     Line int       # The line number in the input. Deprecated: Kept for compatibility.
