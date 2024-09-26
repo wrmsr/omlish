@@ -1,7 +1,12 @@
+"""
+Should be kept somewhat lightweight - used in cli entrypoints.
+
+TODO:
+ - persisted caching support - {pkg_name: manifests}
+"""
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 import importlib.machinery
-import importlib.metadata
 import importlib.resources
 import json
 import typing as ta
@@ -74,19 +79,7 @@ class ManifestLoader:
         self._cls_cache[key] = cls
         return cls
 
-    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
-        try:
-            return self._raw_cache[pkg_name]
-        except KeyError:
-            pass
-
-        t = importlib.resources.files(pkg_name).joinpath('.manifests.json')
-        if not t.is_file():
-            self._raw_cache[pkg_name] = None
-            return None
-
-        src = t.read_text('utf-8')
-        obj = json.loads(src)
+    def load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
@@ -104,6 +97,26 @@ class ManifestLoader:
                 m = dc.replace(m, value={key: value_dct})
 
             lst.append(m)
+
+        return lst
+
+    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+        try:
+            return self._raw_cache[pkg_name]
+        except KeyError:
+            pass
+
+        t = importlib.resources.files(pkg_name).joinpath('.manifests.json')
+        if not t.is_file():
+            self._raw_cache[pkg_name] = None
+            return None
+
+        src = t.read_text('utf-8')
+        obj = json.loads(src)
+        if not isinstance(obj, (list, tuple)):
+            raise TypeError(obj)
+
+        lst = self.load_contents(obj, pkg_name)
 
         self._raw_cache[pkg_name] = lst
         return lst
@@ -143,6 +156,9 @@ class ManifestLoader:
     ENTRY_POINT_GROUP = 'omlish.manifests'
 
     def discover(self) -> ta.Sequence[str]:
+        # This is a fat dep so do it late.
+        import importlib.metadata
+
         return [
             ep.value
             for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)

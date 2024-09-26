@@ -72,6 +72,30 @@
     }
   },
   {
+    "module": ".scripts.execrss",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/scripts/execrss.py",
+    "line": 11,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "execrss",
+        "mod_name": "omdev.scripts.execrss"
+      }
+    }
+  },
+  {
+    "module": ".scripts.importtrace",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/scripts/importtrace.py",
+    "line": 481,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "importtrace",
+        "mod_name": "omdev.scripts.importtrace"
+      }
+    }
+  },
+  {
     "module": ".tools.dockertools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/dockertools.py",
@@ -92,6 +116,18 @@
       "$.cli.types.CliModule": {
         "cmd_name": "git",
         "mod_name": "omdev.tools.gittools"
+      }
+    }
+  },
+  {
+    "module": ".tools.importscan",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/importscan.py",
+    "line": 165,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "importscan",
+        "mod_name": "omdev.tools.importscan"
       }
     }
   },

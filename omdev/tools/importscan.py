@@ -17,6 +17,8 @@ import typing as ta
 from omlish import concurrent as cu
 from omlish import lang
 
+from ..cli import CliModule
+
 
 ##
 
@@ -158,6 +160,10 @@ def run(
 
 
 ##
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('importscan', __name__)
 
 
 def _main() -> None:

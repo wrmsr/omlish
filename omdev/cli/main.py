@@ -1,5 +1,7 @@
 """
 TODO:
+ - cache ldr.discover() somehow if in uvx/pipx - very slow
+  - <venv-root>/.omdev-cli-manifest-cache.json - {pkg_name: manifests_json}
  - allow manually specifying manifest packages
  - https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
  - https://packaging.python.org/en/latest/specifications/entry-points/#entry-points
@@ -46,6 +48,7 @@ def _main() -> None:
     ldr = ManifestLoader.from_entry_point(globals())
 
     pkgs = ldr.discover()
+
     if not pkgs:
         pkgs = []
         for n in os.listdir(os.getcwd()):
