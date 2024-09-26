@@ -36,6 +36,18 @@
     }
   },
   {
+    "module": ".cli._version",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/cli/_version.py",
+    "line": 5,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "version",
+        "mod_name": "omdev.cli._version"
+      }
+    }
+  },
+  {
     "module": ".interp.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/interp/__main__.py",
