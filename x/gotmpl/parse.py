@@ -55,19 +55,19 @@ from .nodes import WithNode
 
 # Tree is the representation of a single parsed template.
 class Tree:
-    def __init__(self, name: str, funcs: ta.Mapping[str, ta.Callable]) -> None:
+    def __init__(self, name: str, funcs: dict[str, ta.Callable]) -> None:
         super().__init__()
 
         self._name = name  # name of the template represented by the tree.
         self._funcs = funcs
 
         self._parse_name: str = ''  # name of the top-level template during parsing, for error messages.
-        self._root: ListNode  # top-level root of the tree.
+        self._root: ListNode | None = None  # top-level root of the tree.
         self._mode: int = 0  # parsing mode.
         self._text: str = ''  # text parsed to create the template (or its parent)
 
         # Parsing only; cleared after parse.
-        self._lex: Lexer
+        self._lex: Lexer | None = None
         self._token: list[Token] = []  # three-token lookahead for parser.
         self._peek_count: int = 0
         self._vars: list[str] = []  # variables defined at the moment.
@@ -235,7 +235,7 @@ class Tree:
         if self._peek_count > 0:
             self._peek_count -= 1
         else:
-            self._token[0] = self._lex.nextItem()
+            self._token[0] = self._lex.next_token()
         return self._token[self._peek_count]
 
     def backup(self) -> None:
@@ -258,7 +258,7 @@ class Tree:
         if self._peek_count > 0:
             return self._token[self._peek_count - 1]
         self._peek_count = 1
-        self._token[0] = self._lex.nextItem()
+        self._token[0] = self._lex.next_token()
         return self._token[0]
 
     # next_non_space returns the next non-space token.
@@ -275,6 +275,26 @@ class Tree:
         self.backup()
         return token
 
+    # Parsing.
+
+    def error_context(self, n: Node) -> tuple[str, str]:  # (location, context)
+        # ErrorContext returns a textual representation of the location of the node in the input text. The receiver is
+        # only used when the node does not have a pointer to the tree inside, which can occur in old code.
+        pos = n.pos
+        tree = n.tree
+        if not tree:
+            tree = self
+        text = tree._text[:pos]
+        byte_num = text.rfind('\n')
+        if byte_num == -1:
+            byte_num = pos # On first line.
+        else:
+            byte_num += 1 # After the newline.
+            byte_num = pos - byte_num
+        line_num = 1 + text.count('\n')
+        context = str(n)
+        return "%s:%d:%d" % (tree._parse_name, line_num, byte_num), context
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -289,8 +309,8 @@ def parse(
         text: str,
         left_delim: str,
         right_delim: str,
-        funcs: ta.Mapping[str, ta.Callable],
-) -> ta.Mapping[str, Tree]:
+        funcs: dict[str, ta.Callable],
+) -> dict[str, Tree]:
     tree_set: dict[str, Tree] = {}
     t = Tree(name, funcs)
     t._text = text
@@ -299,28 +319,6 @@ def parse(
 
 
 """
-# Parsing.
-
-# ErrorContext returns a textual representation of the location of the node in the input text. The receiver is only used
-# when the node does not have a pointer to the tree inside, which can occur in old code.
-    def error_context(self, n: Node) (location, context str) {
-        pos := int(n.Position())
-        tree := n.tree()
-        if tree == nil {
-            tree = t
-        }
-        text := tree.text[:pos]
-        byteNum := strings.LastIndex(text, "\n")
-        if byteNum == -1 {
-            byteNum = pos # On first line.
-        } else {
-            byteNum+=1 # After the newline.
-            byteNum = pos - byteNum
-        }
-        lineNum := 1 + strings.Count(text, "\n")
-        context = n.String()
-        return fmt.Sprintf("%s:%d:%d", tree.parse_name, lineNum, byteNum), context
-    }
 
 # errorf formats the error and terminates processing.
 def (t *Tree) errorf(format str, args ...any) {
@@ -381,27 +379,25 @@ def (t *Tree) recover(errp *error) {
     }
 }
 
-# startParse initializes the parser, using the lexer.
-def (t *Tree) startParse(funcs []map[str]any, lex *lexer, tree_set map[str]*Tree) {
-    t.Root = nil
-    t.lex = lex
-    t.vars = []str{"$"}
-    t.funcs = funcs
-    t.tree_set = tree_set
-    lex.options = lexOptions{
-        emitComment: t.Mode&ParseComments != 0,
-        breakOK:     !t.hasFunction("break"),
-        continueOK:  !t.hasFunction("continue"),
-    }
-}
+    def start_parse(self, funcs: list[dict[str, ta.Any]], lex: Lexer, tree_set dict[str, Tree]) -> None:
+        # startParse initializes the parser, using the lexer.
+        self._root = None
+        self._lex = lex
+        self._vars = ['$']
+        self._funcs = funcs
+        self._tree_set = tree_set
+        lex._options = LexOptions(  # noqa
+            emit_comment= (self.mode & MODE_PARSE_COMMENTS) != 0,
+            break_ok=     not self.has_function('break'),
+            continue_ok=  not self.has_function('continue'),
+        )
 
-# stopParse terminates parsing.
-def (t *Tree) stopParse() {
-    t.lex = nil
-    t.vars = nil
-    t.funcs = nil
-    t.tree_set = nil
-}
+    def stop_parse(self) -> None:
+        # stopParse terminates parsing.
+        self._lex = None
+        self._vars = None
+        self._funcs = None
+        self._tree_set = None
 
 # Parse parses the template definition string to construct a representation of
 # the template for execution. If either action delimiter string is empty, the
