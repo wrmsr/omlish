@@ -18,7 +18,7 @@ def _patch_for_trio_asyncio_fixture():
 ##
 
 
-@ptu.skip_if_cant_import('duckdb')
+@ptu.skip.if_cant_import('duckdb')
 def test_postgres_duckdb():
     url = _duckdb.DuckdbDialect.name + '://'
 

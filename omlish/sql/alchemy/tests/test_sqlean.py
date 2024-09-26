@@ -6,7 +6,7 @@ from .. import sqlean as _sqlean
 from .test_sqlite import _test_sqlite  # noqa
 
 
-@ptu.skip_if_cant_import('sqlean')
+@ptu.skip.if_cant_import('sqlean')
 def test_sqlite_sqlean():
     import sqlean
     sqlean.extensions.enable_all()

@@ -7,7 +7,7 @@ from ..formats import json
 from ..testing import pytest as ptu
 
 
-@ptu.skip_if_not_on_path('docker')
+@ptu.skip.if_not_on_path('docker')
 def test_docker():
     silence_subprocess_check()
 

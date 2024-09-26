@@ -22,7 +22,7 @@ def test_simple():
         assert disp.dispatch(A) == 'A'
 
 
-@ptu.skip_if_nogil()
+@ptu.skip.if_nogil()
 def test_weaks():
     disp: Dispatcher[str] = Dispatcher()
 

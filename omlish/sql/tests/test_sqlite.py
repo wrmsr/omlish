@@ -40,7 +40,7 @@ def test_sqlite_fts():
 
 
 @pytest.mark.skipif(not hasattr(sqlite3.Connection, 'enable_load_extension'), reason='requires enable_load_extension')
-@ptu.skip_if_cant_import('sqlite_vec')
+@ptu.skip.if_cant_import('sqlite_vec')
 def test_sqlite_vec():
     # https://github.com/asg017/sqlite-vec/tree/main
     import sqlite_vec
@@ -63,7 +63,7 @@ def test_sqlite_vec():
     print(result.fetchone()[0])  # 4
 
 
-@ptu.skip_if_cant_import('apsw')
+@ptu.skip.if_cant_import('apsw')
 def test_apsw():
     # https://rogerbinns.github.io/apsw/pysqlite.html
     import apsw

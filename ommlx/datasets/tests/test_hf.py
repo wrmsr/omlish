@@ -21,7 +21,7 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
-@ptu.skip_if_cant_import('datasets')
+@ptu.skip.if_cant_import('datasets')
 @pytest.mark.slow
 def test_hfds():
     ds_builder = hfds.load_dataset_builder('rotten_tomatoes')
@@ -40,8 +40,8 @@ def test_hfds():
         break
 
 
-@ptu.skip_if_cant_import('datasets')
-@ptu.skip_if_cant_import('transformers')
+@ptu.skip.if_cant_import('datasets')
+@ptu.skip.if_cant_import('transformers')
 @pytest.mark.slow
 def test_tokenize():
     dataset = hfds.load_dataset('rotten_tomatoes', split='train')
@@ -59,8 +59,8 @@ def test_tokenize():
     print(dataset[0]['text'])
 
 
-@ptu.skip_if_cant_import('datasets')
-@ptu.skip_if_cant_import('transformers')
+@ptu.skip.if_cant_import('datasets')
+@ptu.skip.if_cant_import('transformers')
 @pytest.mark.slow
 def test_audio():
     feature_extractor = transformers.AutoFeatureExtractor.from_pretrained('facebook/wav2vec2-base-960h')
@@ -83,7 +83,7 @@ def test_audio():
     print(dataset[0]['audio'])
 
 
-@ptu.skip_if_cant_import('datasets')
+@ptu.skip.if_cant_import('datasets')
 @pytest.mark.slow
 def test_aug():
     # feature_extractor = transformers.AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")

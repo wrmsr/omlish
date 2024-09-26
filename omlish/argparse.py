@@ -73,7 +73,7 @@ class Command:
 
     def __post_init__(self) -> None:
         check.isinstance(self.name, str)
-        check.not_in('-', self.name)
+        check.not_in('_', self.name)
         check.not_empty(self.name)
 
         check.callable(self.fn)
@@ -103,7 +103,7 @@ def command(
 
     def inner(fn):
         return Command(
-            (name if name is not None else fn.__name__).replace('-', '_'),
+            (name if name is not None else fn.__name__).replace('_', '-'),
             fn,
             args,
             parent=parent,
