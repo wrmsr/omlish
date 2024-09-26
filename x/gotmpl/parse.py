@@ -653,31 +653,6 @@ class Tree:
         finally:
             self.pop_vars(len(self._vars))
 
-
-
-    # A mode value is a set of flags (or 0). Modes control parser behavior.
-MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
-MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
-
-
-# Parse returns a map from template name to [Tree], created by parsing the templates described in the argument string.
-# The top-level template will be given the specified name. If an error is encountered, parsing stops and an empty map is
-# returned with the error.
-def parse(
-        name: str,
-        text: str,
-        left_delim: str,
-        right_delim: str,
-        funcs: dict[str, ta.Callable],
-) -> dict[str, Tree]:
-    tree_set: dict[str, Tree] = {}
-    t = Tree(name, funcs)
-    t._text = text
-    t.parse(text, left_delim, right_delim, tree_set, funcs)
-    return tree_set
-
-
-"""
     def if_control(self) -> Node:
         # If:
         #
@@ -712,8 +687,32 @@ def parse(
         #    {{end}}
         #
         # End keyword is past.
-        return self.new_end(self.expect(item_right_delim, 'end').pos)
+        return self.new_end(self.expect(TokenType.RIGHT_PAREN, 'end').pos)
 
+
+# A mode value is a set of flags (or 0). Modes control parser behavior.
+MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
+MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
+
+
+# Parse returns a map from template name to [Tree], created by parsing the templates described in the argument string.
+# The top-level template will be given the specified name. If an error is encountered, parsing stops and an empty map is
+# returned with the error.
+def parse(
+        name: str,
+        text: str,
+        left_delim: str,
+        right_delim: str,
+        funcs: dict[str, ta.Callable],
+) -> dict[str, Tree]:
+    tree_set: dict[str, Tree] = {}
+    t = Tree(name, funcs)
+    t._text = text
+    t.parse(text, left_delim, right_delim, tree_set, funcs)
+    return tree_set
+
+
+"""
     def else_control(self) -> Node:
         # Else:
         #
