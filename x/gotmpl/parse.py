@@ -496,7 +496,7 @@ class Tree:
         self.backup()
         token = self.peek()
         # Do not pop variables; they persist until 'end'.
-        return self.new_action(token.pos, token.line, t.pipeline('command', TokenType.RIGHT_DELIM))
+        return self.new_action(token.pos, token.line, self.pipeline('command', TokenType.RIGHT_DELIM))
 
     def break_control(self, pos: Pos, line: int) -> Node:
         # Break:
@@ -578,6 +578,7 @@ class Tree:
                 # At this point, the pipeline is complete
                 self.check_pipeline(pipe, context)
                 return pipe
+
             elif token.typ in (
                 TokenType.BOOL,
                 TokenType.CHAR_CONSTANT,
@@ -594,11 +595,67 @@ class Tree:
             ):
                 self.backup()
                 pipe.append(self.command())
+
             else:
                 self.unexpected(token, context)
 
+    def check_pipeline(self, pipe: PipeNode, context: str) -> None:
+        # Reject empty pipelines
+        if not pipe.cmds:
+            self.errorf('missing value for %s', context)
+        # Only the first command of a pipeline can start with a non executable operand
+        for i, c in enumerate(pipe.cmds[1:]):
+            if c.args[0].type in (NodeType.BOOL, NodeType.DOT, NodeType.NIL, NodeType.NUMBER, NodeType.STRING):
+                # With A|B|C, pipeline stage 2 is B
+                self.errorf('non executable command in pipeline stage %d', i+2)
 
-# A mode value is a set of flags (or 0). Modes control parser behavior.
+    def parse_control(self, context: str) -> tuple[Pos, int, PipeNode, ListNode, ListNode]:  # (pos, line, pipe, lst, else_lst)  # noqa
+        try:
+            pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
+            if context == 'range':
+                self._range_depth += 1
+
+            lst, next = self.item_list()
+            if context == 'range':
+                self._range_depth -= 1
+
+            else_lst = []
+
+            if next.type == NodeType.END:  # done
+                pass
+
+            elif next.type == NodeType.ELSE:
+                # Special case for "else if" and "else with".
+                # If the "else" is followed immediately by an "if" or "with",
+                # the else_control will have left the "if" or "with" token pending. Treat
+                #    {{if a}}_{{else if b}}_{{end}}
+                #  {{with a}}_{{else with b}}_{{end}}
+                # as
+                #    {{if a}}_{{else}}{{if b}}_{{end}}{{end}}
+                #  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
+                # To do this, parse the "if" or "with" as usual and stop at it {{end}};
+                # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
+                if context == 'if' and self.peek().typ == TokenType.IF:
+                    self.next()  # Consume the "if" token.
+                    else_lst = self.new_list(next.pos)
+                    else_lst.append(self.if_control())
+                elif context == 'with' and self.peek().typ == TokenType.WITH:
+                    self.next()
+                    else_lst = self.new_list(next.pos)
+                    else_lst.append(self.with_control())
+                else:
+                    else_lst, next = self.item_list()
+                    if next.type != NodeType.END:
+                        self.errorf('expected end; found %s', next)
+
+            return pipe.pos, pipe.line, pipe, lst, else_lst
+
+        finally:
+            self.pop_vars(len(self._vars))
+
+
+
+    # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
 MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
 
@@ -621,59 +678,6 @@ def parse(
 
 
 """
-    def check_pipeline(self, pipe: PipeNode, context: str) -> None:
-        # Reject empty pipelines
-        if len(pipe.Cmds) == 0 {
-            self.errorf("missing value for %s", context)
-        # Only the first command of a pipeline can start with a non executable operand
-        for i, c = range pipe.Cmds[1:] {
-            switch c.Args[0].type {
-            case NodeBool, NodeDot, NodeNil, NodeNumber, NodeString:
-                # With A|B|C, pipeline stage 2 is B
-                self.errorf("non executable command in pipeline stage %d", i+2)
-
-    def parse_control(context str) (pos Pos, line int, pipe *PipeNode, lst, elseLst *ListNode) {
-        defer self.pop_vars(len(self._vars))
-        pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
-        if context == "range" {
-            self._range_depth+=1
-        }
-        var next Node
-        lst, next = self.item_list()
-        if context == "range" {
-            self._range_depth-=1
-        }
-        switch next.type {
-        case NodeType.END: #done
-        case NodeType.ELSE:
-            # Special case for "else if" and "else with".
-            # If the "else" is followed immediately by an "if" or "with",
-            # the else_control will have left the "if" or "with" token pending. Treat
-            #    {{if a}}_{{else if b}}_{{end}}
-            #  {{with a}}_{{else with b}}_{{end}}
-            # as
-            #    {{if a}}_{{else}}{{if b}}_{{end}}{{end}}
-            #  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
-            # To do this, parse the "if" or "with" as usual and stop at it {{end}};
-            # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
-            if context == "if" and self.peek().typ == TokenType.IF {
-                self.next() # Consume the "if" token.
-                elseLst = self.new_list(next.Position())
-                elseLst.append(self.if_control())
-            } else if context == "with" and self.peek().typ == TokenType.WITH {
-                self.next()
-                elseLst = self.new_list(next.Position())
-                elseLst.append(self.with_control())
-            } else {
-                elseLst, next = self.item_list()
-                if next.type != NodeType.END {
-                    self.errorf("expected end; found %s", next)
-                }
-            }
-        }
-        return pipe.Position(), pipe.Line, pipe, lst, elseLst
-    }
-
     def if_control(self) -> Node:
         # If:
         #
@@ -833,10 +837,10 @@ def parse(
             # More complex error cases will have to be handled at execution time.
             switch node.type {
             case NodeField:
-                node = self.newField(chain.Position(), chain.String())
+                node = self.new_field(chain.pos, chain.String())
             case NodeVariable:
-                node = self.newVariable(chain.Position(), chain.String())
-            case NodeBool, NodeString, NodeNumber, NodeNil, NodeDot:
+                node = self.new_variable(chain.pos, chain.String())
+            case NodeType.BOOL, NodeString, NodeNumber, NodeNil, NodeDot:
                 self.errorf("unexpected . after term %r", node.String())
             default:
                 node = chain
@@ -868,7 +872,7 @@ def parse(
         case TokenType.VARIABLE:
             return self.use_var(token.pos, token.val)
         case TokenType.FIELD:
-            return self.newField(token.pos, token.val)
+            return self.new_field(token.pos, token.val)
         case TokenType.BOOL:
             return self.newBool(token.pos, token.val == "true")
         case TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.NUMBER:
@@ -906,7 +910,7 @@ def parse(
     def use_var(self, pos: Pos, name: str) -> Node:
         # use_var returns a node for a variable reference. It errors if the
         # variable is not defined.
-        v = self.newVariable(pos, name)
+        v = self.new_variable(pos, name)
         for _, varName = range self._vars {
             if varName == v.Ident[0] {
                 return v
