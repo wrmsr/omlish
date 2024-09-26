@@ -330,6 +330,59 @@ class Tree:
             self.errorf("%s%s", token, extra)
         self.errorf("unexpected %s in %s", token, context)
 
+    def start_parse(
+            self,
+            funcs: list[dict[str, ta.Any]],
+            lex: Lexer,
+            tree_set: dict[str, 'Tree'],
+    ) -> None:
+        # startParse initializes the parser, using the lexer.
+        self._root = None
+        self._lex = lex
+        self._vars = ['$']
+        self._funcs = funcs
+        self._tree_set = tree_set
+        lex._options = LexOptions(  # noqa
+            emit_comment=(self._mode & MODE_PARSE_COMMENTS) != 0,
+            break_ok=not self.has_function('break'),
+            continue_ok=not self.has_function('continue'),
+        )
+
+    def stop_parse(self) -> None:
+        # stopParse terminates parsing.
+        self._lex = None
+        self._vars = None
+        self._funcs = None
+        self._tree_set = None
+
+    def parse(
+            self,
+            text: str,
+            left_delim: str,
+            right_delim: str,
+            tree_set: dict[str, 'Tree'],
+            *funcs: dict[str, ta.Any],
+    ) -> 'Tree':
+        # Parse parses the template definition string to construct a representation of the template for execution. If
+        # either action delimiter string is empty, the default ("{{" or "}}") is used. Embedded template definitions are
+        # added to the tree_set map.
+        try:
+            self._parse_name = self._name
+            lexer = Lexer(
+                self._name,
+                text,
+                left_delim=left_delim,
+                right_delim=right_delim,
+            )
+            self.start_parse(list(funcs), lexer, tree_set)
+            self._text = text
+            self.parse()
+            self.add()
+            self.stop_parse()
+            return self
+        except Exception as e:
+            self.stop_parse()
+            raise e
 
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
@@ -355,58 +408,8 @@ def parse(
 
 
 """
-
-def recover(self, errp *error) {
-    # recover is the handler that turns panics into returns from the top level of Parse.
-    e := recover()
-    if e != nil {
-        if _, ok := e.(runtime.Error); ok {
-            panic(e)
-        }
-        if t != nil {
-            t.stopParse()
-        }
-        *errp = e.(error)
-    }
-}
-
-    def start_parse(self, funcs: list[dict[str, ta.Any]], lex: Lexer, tree_set dict[str, Tree]) -> None:
-        # startParse initializes the parser, using the lexer.
-        self._root = None
-        self._lex = lex
-        self._vars = ['$']
-        self._funcs = funcs
-        self._tree_set = tree_set
-        lex._options = LexOptions(  # noqa
-            emit_comment= (self.mode & MODE_PARSE_COMMENTS) != 0,
-            break_ok=     not self.has_function('break'),
-            continue_ok=  not self.has_function('continue'),
-        )
-
-    def stop_parse(self) -> None:
-        # stopParse terminates parsing.
-        self._lex = None
-        self._vars = None
-        self._funcs = None
-        self._tree_set = None
-
-    def (t *Tree) Parse(text, left_delim, right_delim str, tree_set map[str]*Tree, funcs ...map[str]any) (tree *Tree, err error) {
-        # Parse parses the template definition string to construct a representation of the template for execution. If
-        # either action delimiter string is empty, the default ("{{" or "}}") is used. Embedded template definitions are
-        # added to the tree_set map.
-        defer t.recover(&err)
-        t.parse_name = t.Name
-        lexer := lex(t.Name, text, left_delim, right_delim)
-        t.startParse(funcs, lexer, tree_set)
-        t.text = text
-        t.parse()
-        t.add()
-        t.stopParse()
-        return t, nil
-    }
-
-    # add adds tree to t.tree_set.
     def (t *Tree) add() {
+        # add adds tree to t.tree_set.
         tree := t.tree_set[t.Name]
         if tree == nil or is_empty_tree(tree.Root) {
             t.tree_set[t.Name] = t
@@ -417,10 +420,9 @@ def recover(self, errp *error) {
         }
     }
 
-    # parse is the top-level parser for a template, essentially the same
-    # as itemList except it also parses {{define}} actions.
-    # It runs to EOF.
     def (t *Tree) parse() {
+        # parse is the top-level parser for a template, essentially the same as itemList except it also parses
+        # {{define}} actions. It runs to EOF.
         t.Root = t.newList(t.peek().pos)
         for t.peek().typ != itemEOF {
             if t.peek().typ == itemLeftDelim {
@@ -445,10 +447,9 @@ def recover(self, errp *error) {
         }
     }
 
-    # parseDefinition parses a {{define}} ...  {{end}} template definition and
-    # installs the definition in t.tree_set. The "define" keyword has already
-    # been scanned.
     def (t *Tree) parseDefinition() {
+        # parseDefinition parses a {{define}} ...  {{end}} template definition and installs the definition in
+        # t.tree_set. The "define" keyword has already been scanned.
         const context = "define clause"
         name := t.expect_one_of(itemString, itemRawString, context)
         var err error
@@ -466,12 +467,12 @@ def recover(self, errp *error) {
         t.stopParse()
     }
 
-    # itemList:
-    #
-    #    textOrAction*
-    #
-    # Terminates at {{end}} or {{else}}, returned separately.
     def (t *Tree) itemList() (list *ListNode, next Node) {
+        # itemList:
+        #
+        #    textOrAction*
+        #
+        # Terminates at {{end}} or {{else}}, returned separately.
         list = t.newList(t.peek_non_space().pos)
         for t.peek_non_space().typ != itemEOF {
             n := t.textOrAction()
@@ -485,10 +486,10 @@ def recover(self, errp *error) {
         return
     }
 
-    # textOrAction:
-    #
-    #    text | comment | action
     def (t *Tree) textOrAction() Node {
+        # textOrAction:
+        #
+        #    text | comment | action
         switch token := t.next_non_space(); token.typ {
         case itemText:
             return t.newText(token.pos, token.val)
@@ -508,14 +509,14 @@ def recover(self, errp *error) {
         t.action_line = 0
     }
 
-    # Action:
-    #
-    #    control
-    #    command ("|" command)*
-    #
-    # Left delim is past. Now get actions.
-    # First word could be a keyword such as range.
     def (t *Tree) action() (n Node) {
+        # Action:
+        #
+        #    control
+        #    command ("|" command)*
+        #
+        # Left delim is past. Now get actions.
+        # First word could be a keyword such as range.
         switch token := t.next_non_space(); token.typ {
         case itemBlock:
             return t.blockControl()
@@ -542,12 +543,12 @@ def recover(self, errp *error) {
         return t.newAction(token.pos, token.line, t.pipeline("command", itemRightDelim))
     }
 
-    # Break:
-    #
-    #    {{break}}
-    #
-    # Break keyword is past.
     def (t *Tree) breakControl(pos Pos, line int) Node {
+        # Break:
+        #
+        #    {{break}}
+        #
+        # Break keyword is past.
         if token := t.next_non_space(); token.typ != itemRightDelim {
             t.unexpected(token, "{{break}}")
         }
@@ -557,12 +558,12 @@ def recover(self, errp *error) {
         return t.newBreak(pos, line)
     }
 
-    # Continue:
-    #
-    #    {{continue}}
-    #
-    # Continue keyword is past.
     def (t *Tree) continueControl(pos Pos, line int) Node {
+        # Continue:
+        #
+        #    {{continue}}
+        #
+        # Continue keyword is past.
         if token := t.next_non_space(); token.typ != itemRightDelim {
             t.unexpected(token, "{{continue}}")
         }
@@ -572,10 +573,10 @@ def recover(self, errp *error) {
         return t.newContinue(pos, line)
     }
 
-    # Pipeline:
-    #
-    #    declarations? command ('|' command)*
     def (t *Tree) pipeline(context str, end TokenType) (pipe *PipeNode) {
+        # Pipeline:
+        #
+        #    declarations? command ('|' command)*
         token := t.peek_non_space()
         pipe = t.newPipeline(token.pos, token.line, nil)
         # Are there declarations or assignments?
@@ -723,12 +724,12 @@ def recover(self, errp *error) {
         # End keyword is past.
         return self.new_end(self.expect(item_right_delim, 'end').pos)
 
-    # Else:
-    #
-    #    {{else}}
-    #
-    # Else keyword is past.
     def (t *Tree) elseControl() Node {
+        # Else:
+        #
+        #    {{else}}
+        #
+        # Else keyword is past.
         peek := t.peek_non_space()
         # The "{{else if ... " and "{{else with ..." will be
         # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
@@ -740,14 +741,14 @@ def recover(self, errp *error) {
         return t.newElse(token.pos, token.line)
     }
 
-    # Block:
-    #
-    #    {{block stringValue pipeline}}
-    #
-    # Block keyword is past.
-    # The name must be something that can evaluate to a string.
-    # The pipeline is mandatory.
     def (t *Tree) blockControl() Node {
+        # Block:
+        #
+        #    {{block stringValue pipeline}}
+        #
+        # Block keyword is past.
+        # The name must be something that can evaluate to a string.
+        # The pipeline is mandatory.
         const context = "block clause"
 
         token := t.next_non_space()
@@ -770,12 +771,12 @@ def recover(self, errp *error) {
         return t.newTemplate(token.pos, token.line, name, pipe)
     }
 
-    # Template:
-    #
-    #    {{template stringValue pipeline}}
-    #
-    # Template keyword is past. The name must be something that can evaluate to a string.
     def (t *Tree) templateControl() Node {
+        # Template:
+        #
+        #    {{template stringValue pipeline}}
+        #
+        # Template keyword is past. The name must be something that can evaluate to a string.
         const context = "template clause"
         token := t.next_non_space()
         name := t.parseTemplateName(token, context)
@@ -802,13 +803,13 @@ def recover(self, errp *error) {
         return
     }
 
-    # command:
-    #
-    #    operand (space operand)*
-    #
-    # space-separated arguments up to a pipeline character or right delimiter.
-    # we consume the pipe character but leave the right delim to terminate the action.
     def (t *Tree) command() *CommandNode {
+        # command:
+        #
+        #    operand (space operand)*
+        #
+        # space-separated arguments up to a pipeline character or right delimiter.
+        # we consume the pipe character but leave the right delim to terminate the action.
         cmd := t.newCommand(t.peek_non_space().pos)
         for {
             t.peek_non_space() # skip leading spaces.
@@ -834,14 +835,14 @@ def recover(self, errp *error) {
         return cmd
     }
 
-    # operand:
-    #
-    #    term .Field*
-    #
-    # An operand is a space-separated component of a command,
-    # a term possibly followed by field accesses.
-    # A nil return means the next item is not an operand.
     def (t *Tree) operand() Node {
+        # operand:
+        #
+        #    term .Field*
+        #
+        # An operand is a space-separated component of a command,
+        # a term possibly followed by field accesses.
+        # A nil return means the next item is not an operand.
         node := t.term()
         if node == nil {
             return nil
@@ -870,18 +871,18 @@ def recover(self, errp *error) {
         return node
     }
 
-    # term:
-    #
-    #    literal (number, str, nil, boolean)
-    #    function (identifier)
-    #    .
-    #    .Field
-    #    $
-    #    '(' pipeline ')'
-    #
-    # A term is a simple "expression".
-    # A nil return means the next item is not a term.
     def (t *Tree) term() Node {
+        # term:
+        #
+        #    literal (number, str, nil, boolean)
+        #    function (identifier)
+        #    .
+        #    .Field
+        #    $
+        #    '(' pipeline ')'
+        #
+        # A term is a simple "expression".
+        # A nil return means the next item is not a term.
         switch token := t.next_non_space(); token.typ {
         case itemIdentifier:
             checkFunc := t.Mode&SkipFuncCheck == 0
@@ -918,8 +919,8 @@ def recover(self, errp *error) {
         return nil
     }
 
-    # hasFunction reports if a function name exists in the Tree's maps.
     def (t *Tree) hasFunction(name str) bool {
+        # hasFunction reports if a function name exists in the Tree's maps.
         for _, funcMap := range t.funcs {
             if funcMap == nil {
                 continue
@@ -931,14 +932,14 @@ def recover(self, errp *error) {
         return false
     }
 
-    # popVars trims the variable list to the specified length
     def (t *Tree) popVars(n int) {
+        # popVars trims the variable list to the specified length
         t.vars = t.vars[:n]
     }
 
-    # useVar returns a node for a variable reference. It errors if the
-    # variable is not defined.
     def (t *Tree) useVar(pos Pos, name str) Node {
+        # useVar returns a node for a variable reference. It errors if the
+        # variable is not defined.
         v := t.newVariable(pos, name)
         for _, varName := range t.vars {
             if varName == v.Ident[0] {
@@ -950,8 +951,8 @@ def recover(self, errp *error) {
     }
 
 
-# is_empty_tree reports whether this tree (node) is empty of everything but space or comments.
 def is_empty_tree(n: Node) -> bool:
+    # is_empty_tree reports whether this tree (node) is empty of everything but space or comments.
     if n is None:
         return True
     elif isinstance(n, ActionNode, CommentNode):
