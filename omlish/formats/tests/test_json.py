@@ -1,4 +1,4 @@
-from ..formats import json
+from .. import json
 
 
 def test_json():
