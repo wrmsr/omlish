@@ -21,7 +21,34 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import abc
+import enum
 import dataclasses as dc
+
+
+class NodeType(enum.IntEnum):
+    TEXT = enum.auto()        # Plain text.
+    ACTION = enum.auto()      # A non-control action such as a field evaluation.
+    BOOL = enum.auto()        # A boolean constant.
+    CHAIN = enum.auto()       # A sequence of field accesses.
+    COMMAND = enum.auto()     # An element of a pipeline.
+    DOT = enum.auto()         # The cursor, dot.
+    ELSE = enum.auto()        # An else action. Not added to tree.
+    END = enum.auto()         # An end action. Not added to tree.
+    FIELD = enum.auto()       # A field or method name.
+    IDENTIFIER = enum.auto()  # An identifier; always a function name.
+    IF = enum.auto()          # An if action.
+    LIST = enum.auto()        # A list of Nodes.
+    NIL = enum.auto()         # An untyped nil constant.
+    NUMBER = enum.auto()      # A numerical constant.
+    PIPE = enum.auto()        # A pipeline of commands.
+    RANGE = enum.auto()       # A range action.
+    STRING = enum.auto()      # A string constant.
+    TEMPLATE = enum.auto()    # A template invocation action.
+    VARIABLE = enum.auto()    # A $ variable.
+    WITH = enum.auto()        # A with action.
+    COMMENT = enum.auto()     # A comment.
+    BREAK = enum.auto()       # A break action.
+    CONTINUE = enum.auto()    # A continue action.
 
 
 class Node(abc.ABC):
@@ -65,32 +92,6 @@ func (p Pos) Position() Pos {
 func (t NodeType) Type() NodeType {
     return t
 }
-
-const (
-    NodeText       NodeType = iota # Plain text.
-    NodeAction                     # A non-control action such as a field evaluation.
-    NodeBool                       # A boolean constant.
-    NodeChain                      # A sequence of field accesses.
-    NodeCommand                    # An element of a pipeline.
-    NodeDot                        # The cursor, dot.
-    nodeElse                       # An else action. Not added to tree.
-    nodeEnd                        # An end action. Not added to tree.
-    NodeField                      # A field or method name.
-    NodeIdentifier                 # An identifier; always a function name.
-    NodeIf                         # An if action.
-    NodeList                       # A list of Nodes.
-    NodeNil                        # An untyped nil constant.
-    NodeNumber                     # A numerical constant.
-    NodePipe                       # A pipeline of commands.
-    NodeRange                      # A range action.
-    NodeString                     # A string constant.
-    NodeTemplate                   # A template invocation action.
-    NodeVariable                   # A $ variable.
-    NodeWith                       # A with action.
-    NodeComment                    # A comment.
-    NodeBreak                      # A break action.
-    NodeContinue                   # A continue action.
-)
 
 # Nodes.
 

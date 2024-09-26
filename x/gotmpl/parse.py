@@ -120,35 +120,26 @@ def parse(
 """
 # Parsing.
 
-# New allocates a new parse tree with the given name.
-def New(name str, funcs ...map[str]any) *Tree {
-    return &Tree{
-        Name:  name,
-        funcs: funcs,
+# ErrorContext returns a textual representation of the location of the node in the input text. The receiver is only used
+# when the node does not have a pointer to the tree inside, which can occur in old code.
+    def error_context(self, n: Node) (location, context str) {
+        pos := int(n.Position())
+        tree := n.tree()
+        if tree == nil {
+            tree = t
+        }
+        text := tree.text[:pos]
+        byteNum := strings.LastIndex(text, "\n")
+        if byteNum == -1 {
+            byteNum = pos # On first line.
+        } else {
+            byteNum+=1 # After the newline.
+            byteNum = pos - byteNum
+        }
+        lineNum := 1 + strings.Count(text, "\n")
+        context = n.String()
+        return fmt.Sprintf("%s:%d:%d", tree.parse_name, lineNum, byteNum), context
     }
-}
-
-# ErrorContext returns a textual representation of the location of the node in the input text.
-# The receiver is only used when the node does not have a pointer to the tree inside,
-# which can occur in old code.
-def (t *Tree) ErrorContext(n Node) (location, context str) {
-    pos := int(n.Position())
-    tree := n.tree()
-    if tree == nil {
-        tree = t
-    }
-    text := tree.text[:pos]
-    byteNum := strings.LastIndex(text, "\n")
-    if byteNum == -1 {
-        byteNum = pos # On first line.
-    } else {
-        byteNum+=1 # After the newline.
-        byteNum = pos - byteNum
-    }
-    lineNum := 1 + strings.Count(text, "\n")
-    context = n.String()
-    return fmt.Sprintf("%s:%d:%d", tree.parse_name, lineNum, byteNum), context
-}
 
 # errorf formats the error and terminates processing.
 def (t *Tree) errorf(format str, args ...any) {
