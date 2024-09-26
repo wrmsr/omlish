@@ -3,8 +3,8 @@ import typing as ta
 from ... import check
 from ...docker import get_compose_port
 from ...docker import is_likely_in_docker
+from ...docker.tests.services import ComposeServices
 from ...testing.pytest import inject as pti
-from ...tests.docker import ComposeServices
 from ..dbs import DbSpec
 from ..dbs import DbTypes
 from ..dbs import UrlDbLoc
