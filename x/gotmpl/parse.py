@@ -26,11 +26,12 @@ from .lex import Lexer
 from .lex import Pos
 from .lex import Token
 from .lex import TokenType
+from .nodes import ActionNode
+from .nodes import CommandNode
 from .nodes import CommentNode
 from .nodes import ListNode
 from .nodes import NodeType
 from .nodes import PipeNode
-from .nodes import ActionNode
 from .nodes import TextNode
 
 
