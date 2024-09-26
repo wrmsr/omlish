@@ -82,12 +82,15 @@ TOKEN_TYPE_MAP: ta.Mapping[str, TokenType] = {
 }
 
 
+Pos: ta.TypeAlias = int
+
+
 @dc.dataclass(frozen=True)
 class Token:
     """~template/parse/lex:item"""
 
     typ: TokenType
-    pos:  int
+    pos:  Pos
     val:  str
     line: int
 
@@ -134,8 +137,8 @@ class Lexer:
         self._right_delim = right_delim  # end of action marker
         self._options = options
 
-        self._pos = 0  # current position in the input
-        self._start = 0  # start position of this token
+        self._pos: Pos = 0  # current position in the input
+        self._start: Pos = 0  # start position of this token
         self._at_eof = False  # we have hit the end of input and returned eof
         self._paren_depth = 0  # nesting depth of ( ) exprs
         self._line = 1  # 1+number of newlines seen
@@ -552,12 +555,12 @@ class Lexer:
         return self.emit(TokenType.RAW_STRING)
 
 
-def right_trim_length(s: str) -> int:
+def right_trim_length(s: str) -> Pos:
     # right_trim_length returns the length of the spaces at the end of the string.
     return len(s) - len(s.rstrip(SPACE_CHARS))
 
 
-def left_trim_length(s: str) -> int:
+def left_trim_length(s: str) -> Pos:
     # left_trim_length returns the length of the spaces at the beginning of the string.
     return len(s) - len(s.lstrip(SPACE_CHARS))
 

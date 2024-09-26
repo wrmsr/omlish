@@ -23,8 +23,14 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 import typing as ta
 
 from .lex import Lexer
+from .lex import Pos
 from .lex import Token
 from .lex import TokenType
+from .nodes import CommentNode
+from .nodes import ListNode
+from .nodes import NodeType
+from .nodes import PipeNode
+from .nodes import TextNode
 
 
 # Tree is the representation of a single parsed template.
@@ -48,6 +54,22 @@ class Tree:
         self._tree_set: dict[str, Tree] = {}
         self._action_line: int = 0  # line of left delim starting action
         self._range_depth: int = 0
+
+    #
+
+    def new_list(self, pos: Pos) -> ListNode:
+        return ListNode(tree=self, type=NodeType.LIST, pos=pos)
+
+    def new_text(self, pos: Pos, text: str) -> TextNode:
+        return TextNode(tree=self, type=NodeType.TEXT, pos=pos, text=text)
+
+    def new_comment(self, pos: Pos, text: str) -> CommentNode:
+        return CommentNode(tree=self, type=NodeType.COMMENT, pos=pos, text=text)
+
+    def new_pipeline(self, pos: Pos, line: int, vars: list[VariableNode]) -> PipeNode:
+        return PipeNode(tree=self, type=NodeType.PIPE, pos=pos, line=line, decl=vars)
+
+    #
 
     def next(self) -> Token:
         # next returns the next token.

@@ -22,7 +22,15 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import abc
 import enum
-import dataclasses as dc
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from .lex import Pos
+
+
+if ta.TYPE_CHECKING:
+    from . import parse
 
 
 class NodeType(enum.IntEnum):
@@ -52,226 +60,116 @@ class NodeType(enum.IntEnum):
 
 
 class Node(abc.ABC):
-    pass
+    """
+    A Node is an element in the parse tree. The interface is trivial. The interface contains an unexported method so
+    that only types local to this package can satisfy it.
+    """
 
+    @property
+    @abc.abstractmethod
+    def type(self) -> NodeType:
+        raise NotImplementedError
 
-"""
-var textFormat = "%s" // Changed to "%q" in tests for better error messages.
+    @abc.abstractmethod
+    def copy(self) -> 'Node':
+        raise NotImplementedError
 
-# A Node is an element in the parse tree. The interface is trivial.
-# The interface contains an unexported method so that only
-# types local to this package can satisfy it.
-type Node interface {
-    Type() NodeType
-    String() string
-    # Copy does a deep copy of the Node and all its components.
-    # To avoid type assertions, some XxxNodes also have specialized
-    # CopyXxx methods that return *XxxNode.
-    Copy() Node
-    Position() Pos # byte position of start of node in full original input string
-    # tree returns the containing *Tree.
-    # It is unexported so all implementations of Node are in this package.
-    tree() *Tree
-    # writeTo writes the String output to the builder.
-    writeTo(*strings.Builder)
-}
+    @property
+    @abc.abstractmethod
+    def pos(self) -> Pos:
+        raise NotImplementedError
 
-# NodeType identifies the type of a parse tree node.
-type NodeType int
+    @property
+    @abc.abstractmethod
+    def tree(self) -> 'parse.Tree':
+        raise NotImplementedError
 
-# Pos represents a byte position in the original input text from which
-# this template was parsed.
-type Pos int
-
-func (p Pos) Position() Pos {
-    return p
-}
-
-# Type returns itself and provides an easy default implementation
-# for embedding in a Node. Embedded in all non-trivial Nodes.
-func (t NodeType) Type() NodeType {
-    return t
-}
 
 # Nodes.
 
-# ListNode holds a sequence of nodes.
-type ListNode struct {
-    NodeType
-    Pos
-    tr    *Tree
-    Nodes []Node # The element nodes in lexical order.
-}
 
-func (t *Tree) newList(pos Pos) *ListNode {
-    return &ListNode{tr: t, NodeType: NodeList, Pos: pos}
-}
+@dc.dataclass()
+class ListNode(Node):
+    # ListNode holds a sequence of nodes.
 
-func (l *ListNode) append(n Node) {
-    l.Nodes = append(l.Nodes, n)
-}
+    type: NodeType = dc.xfield(override=True)
+    pos: Pos = dc.xfield(override=True)
+    tree: 'parse.Tree' = dc.xfield(override=True)
 
-func (l *ListNode) tree() *Tree {
-    return l.tr
-}
+    nodes: list[Node] = dc.field(default_factory=list)
 
-func (l *ListNode) String() string {
-    var sb strings.Builder
-    l.writeTo(&sb)
-    return sb.String()
-}
+    def append(self, n: Node) -> None:
+        self.nodes.append(n)
 
-func (l *ListNode) writeTo(sb *strings.Builder) {
-    for _, n := range l.Nodes {
-        n.writeTo(sb)
-    }
-}
+    def copy_list(self) -> 'ListNode':
+        n = self.tree.new_list(self.pos)
+        for node in self.nodes:
+            n.append(node.copy())
+        return n
 
-func (l *ListNode) CopyList() *ListNode {
-    if l == nil {
-        return l
-    }
-    n := l.tr.newList(l.Pos)
-    for _, elem := range l.Nodes {
-        n.append(elem.Copy())
-    }
-    return n
-}
+    def copy(self) -> Node:
+        return self.copy()
 
-func (l *ListNode) Copy() Node {
-    return l.CopyList()
-}
 
-# TextNode holds plain text.
-type TextNode struct {
-    NodeType
-    Pos
-    tr   *Tree
-    Text []byte # The text; may span newlines.
-}
+@dc.dataclass()
+class TextNode(Node):
+    # TextNode holds plain text.
 
-func (t *Tree) newText(pos Pos, text string) *TextNode {
-    return &TextNode{tr: t, NodeType: NodeText, Pos: pos, Text: []byte(text)}
-}
+    type: NodeType = dc.xfield(override=True)
+    pos: Pos = dc.xfield(override=True)
+    tree: 'parse.Tree' = dc.xfield(override=True)
 
-func (t *TextNode) String() string {
-    return fmt.Sprintf(textFormat, t.Text)
-}
+    text: str  # The text; may span newlines.
 
-func (t *TextNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(t.String())
-}
+    def copy(self) -> Node:
+        return TextNode(tree=self.tree, type=NodeType.TEXT, pos=self.pos, text=self.text)
 
-func (t *TextNode) tree() *Tree {
-    return t.tr
-}
 
-func (t *TextNode) Copy() Node {
-    return &TextNode{tr: t.tr, NodeType: NodeText, Pos: t.Pos, Text: append([]byte{}, t.Text...)}
-}
+@dc.dataclass()
+class CommentNode(Node):
+    # CommentNode holds a comment.
 
-# CommentNode holds a comment.
-type CommentNode struct {
-    NodeType
-    Pos
-    tr   *Tree
-    Text string # Comment text.
-}
+    type: NodeType = dc.xfield(override=True)
+    pos: Pos = dc.xfield(override=True)
+    tree: 'parse.Tree' = dc.xfield(override=True)
 
-func (t *Tree) newComment(pos Pos, text string) *CommentNode {
-    return &CommentNode{tr: t, NodeType: NodeComment, Pos: pos, Text: text}
-}
+    text: str # Comment text.
 
-func (c *CommentNode) String() string {
-    var sb strings.Builder
-    c.writeTo(&sb)
-    return sb.String()
-}
+    def copy(self) -> Node:
+        return TextNode(tree=self.tree, type=NodeType.COMMENT, pos=self.pos, text=self.text)
 
-func (c *CommentNode) writeTo(sb *strings.Builder) {
-    sb.WriteString("{{")
-    sb.WriteString(c.Text)
-    sb.WriteString("}}")
-}
 
-func (c *CommentNode) tree() *Tree {
-    return c.tr
-}
+@dc.dataclass()
+class PipeNode(Node):
+    # PipeNode holds a pipeline with optional declaration
 
-func (c *CommentNode) Copy() Node {
-    return &CommentNode{tr: c.tr, NodeType: NodeComment, Pos: c.Pos, Text: c.Text}
-}
+    type: NodeType = dc.xfield(override=True)
+    pos: Pos = dc.xfield(override=True)
+    tree: 'parse.Tree' = dc.xfield(override=True)
 
-# PipeNode holds a pipeline with optional declaration
-type PipeNode struct {
-    NodeType
-    Pos
-    tr       *Tree
-    Line     int             # The line number in the input. Deprecated: Kept for compatibility.
-    IsAssign bool            # The variables are being assigned, not declared.
-    Decl     []*VariableNode # Variables in lexical order.
-    Cmds     []*CommandNode  # The commands in lexical order.
-}
+    line: int  # The line number in the input. Deprecated: Kept for compatibility.
+    is_assign: bool  # The variables are being assigned, not declared.
+    decl: list['VariableNode']  # Variables in lexical order.
+    cmds: list['CommandNode']  # The commands in lexical order.
 
-func (t *Tree) newPipeline(pos Pos, line int, vars []*VariableNode) *PipeNode {
-    return &PipeNode{tr: t, NodeType: NodePipe, Pos: pos, Line: line, Decl: vars}
-}
+    def append(self, command: 'CommandNode') -> None:
+        self.cmds.append(command)
 
-func (p *PipeNode) append(command *CommandNode) {
-    p.Cmds = append(p.Cmds, command)
-}
+    def copy_pipe(self) -> 'PipeNode':
+        vars: list[VariableNode] = []
+        for d in self.decl:
+            vars.append(d.copy())
+        n = self.tree.new_pipeline(self.pos, self.line, vars)
+        n.is_assign = self.is_assign
+        for c in self.cmds:
+            n.append(c.copy())
+        return n
 
-func (p *PipeNode) String() string {
-    var sb strings.Builder
-    p.writeTo(&sb)
-    return sb.String()
-}
+    def copy(self) -> Node:
+        return self.copy_pipe()
 
-func (p *PipeNode) writeTo(sb *strings.Builder) {
-    if len(p.Decl) > 0 {
-        for i, v := range p.Decl {
-            if i > 0 {
-                sb.WriteString(", ")
-            }
-            v.writeTo(sb)
-        }
-        if p.IsAssign {
-            sb.WriteString(" = ")
-        } else {
-            sb.WriteString(" := ")
-        }
-    }
-    for i, c := range p.Cmds {
-        if i > 0 {
-            sb.WriteString(" | ")
-        }
-        c.writeTo(sb)
-    }
-}
 
-func (p *PipeNode) tree() *Tree {
-    return p.tr
-}
-
-func (p *PipeNode) CopyPipe() *PipeNode {
-    if p == nil {
-        return p
-    }
-    vars := make([]*VariableNode, len(p.Decl))
-    for i, d := range p.Decl {
-        vars[i] = d.Copy().(*VariableNode)
-    }
-    n := p.tr.newPipeline(p.Pos, p.Line, vars)
-    n.IsAssign = p.IsAssign
-    for _, c := range p.Cmds {
-        n.append(c.Copy().(*CommandNode))
-    }
-    return n
-}
-
-func (p *PipeNode) Copy() Node {
-    return p.CopyPipe()
-}
+"""
 
 # ActionNode holds an action (something bounded by delimiters).
 # Control actions have their own nodes; ActionNode represents simple
