@@ -94,6 +94,94 @@ class Tree:
     def new_bool(self, pos: Pos, is_true: bool) -> BoolNode:
         return BoolNode(tree=self, type=NodeType.BOOL, pos=pos, is_true=is_true)
 
+    def new_number(self, pos: Pos, text: str, typ: TokenType) -> NumberNode:
+        n = NumberNode(tree=self, type=NodeType.NUMBER, pos=pos, text=text)  # noqa
+
+        # switch typ {
+        # case itemCharConstant:
+        #     rune, _, tail, err := strconv.UnquoteChar(text[1:], text[0])
+        #     if err != nil {
+        #         return nil, err
+        #     }
+        #     if tail != "'" {
+        #         return nil, fmt.Errorf("malformed character constant: %s", text)
+        #     }
+        #     n.Int64 = int64(rune)
+        #     n.IsInt = true
+        #     n.Uint64 = uint64(rune)
+        #     n.IsUint = true
+        #     n.Float64 = float64(rune) # odd but those are the rules.
+        #     n.IsFloat = true
+        #     return n, nil
+        # case itemComplex:
+        #     # fmt.Sscan can parse the pair, so let it do the work.
+        #     if _, err := fmt.Sscan(text, &n.Complex128); err != nil {
+        #         return nil, err
+        #     }
+        #     n.IsComplex = true
+        #     n.simplifyComplex()
+        #     return n, nil
+        # }
+        # # Imaginary constants can only be complex unless they are zero.
+        # if len(text) > 0 && text[len(text)-1] == 'i' {
+        #     f, err := strconv.ParseFloat(text[:len(text)-1], 64)
+        #     if err == nil {
+        #         n.IsComplex = true
+        #         n.Complex128 = complex(0, f)
+        #         n.simplifyComplex()
+        #         return n, nil
+        #     }
+        # }
+        # # Do integer test first so we get 0x123 etc.
+        # u, err := strconv.ParseUint(text, 0, 64) # will fail for -0; fixed below.
+        # if err == nil {
+        #     n.IsUint = true
+        #     n.Uint64 = u
+        # }
+        # i, err := strconv.ParseInt(text, 0, 64)
+        # if err == nil {
+        #     n.IsInt = true
+        #     n.Int64 = i
+        #     if i == 0 {
+        #         n.IsUint = true # in case of -0.
+        #         n.Uint64 = u
+        #     }
+        # }
+        # # If an integer extraction succeeded, promote the float.
+        # if n.IsInt {
+        #     n.IsFloat = true
+        #     n.Float64 = float64(n.Int64)
+        # } else if n.IsUint {
+        #     n.IsFloat = true
+        #     n.Float64 = float64(n.Uint64)
+        # } else {
+        #     f, err := strconv.ParseFloat(text, 64)
+        #     if err == nil {
+        #         # If we parsed it as a float but it looks like an integer,
+        #         # it's a huge number too large to fit in an int. Reject it.
+        #         if !strings.ContainsAny(text, ".eEpP") {
+        #             return nil, fmt.Errorf("integer overflow: %q", text)
+        #         }
+        #         n.IsFloat = true
+        #         n.Float64 = f
+        #         # If a floating-point extraction succeeded, extract the int if needed.
+        #         if !n.IsInt && float64(int64(f)) == f {
+        #             n.IsInt = true
+        #             n.Int64 = int64(f)
+        #         }
+        #         if !n.IsUint && float64(uint64(f)) == f {
+        #             n.IsUint = true
+        #             n.Uint64 = uint64(f)
+        #         }
+        #     }
+        # }
+        # if !n.IsInt && !n.IsUint && !n.IsFloat {
+        #     return nil, fmt.Errorf("illegal number syntax: %q", text)
+        # }
+        # return n, nil
+
+        raise NotImplementedError
+
     def new_string(self, pos: Pos, orig: str, text: str) -> StringNode:
         return StringNode(tree=self, type=NodeType.STRING, pos=pos, quoted=orig, text=text)
 
