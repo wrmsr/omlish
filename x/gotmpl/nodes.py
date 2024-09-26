@@ -397,41 +397,29 @@ class ContinueNode(Node):
         return self.tree.new_continue(self.pos, self.line)
 
 
-"""
-
-
 @dc.dataclass()
 class RangeNode(BranchNode):
     # RangeNode represents a {{range}} action and its commands.
 
     def copy(self) -> Node:
-    def (r *RangeNode) Copy() Node {
-        return r.tr.newRange(r.Pos, r.Line, r.Pipe.CopyPipe(), r.List.CopyList(), r.ElseList.CopyList())
-    }
-    
+        return self.tree.new_range(self.pos, self.line, self.pipe.copy_pipe(), self.lst.copy_list(), self.else_lst.copy_list())  # noqa
+
 
 @dc.dataclass()
-class WithNode(Node):
+class WithNode(BranchNode):
     # WithNode represents a {{with}} action and its commands.
 
-    BranchNode
-
     def copy(self) -> Node:
-    def (w *WithNode) Copy() Node {
-        return w.tr.newWith(w.Pos, w.Line, w.Pipe.CopyPipe(), w.List.CopyList(), w.ElseList.CopyList())
-    }
+        return self.tree.new_with(self.pos, self.line, self.pipe.copy_pipe(), self.lst.copy_list(), self.else_lst.copy_list())  # noqa
 
 
 @dc.dataclass()
 class TemplateNode(Node):
     # TemplateNode represents a {{template}} action.
 
-    Line int       # The line number in the input. Deprecated: Kept for compatibility.
-    Name string    # The name of the template (unquoted).
-    Pipe *PipeNode # The command to evaluate as dot for the template.
+    line: int  # The line number in the input. Deprecated: Kept for compatibility.
+    name: str  # The name of the template (unquoted).
+    pipe: PipeNode  # The command to evaluate as dot for the template.
 
     def copy(self) -> Node:
-    def (t *TemplateNode) Copy() Node {
-        return t.tr.newTemplate(t.Pos, t.Line, t.Name, t.Pipe.CopyPipe())
-    }
-"""
+        return self.tree.new_template(self.pos, self.line, self.name, self.pipe.copy_pipe())

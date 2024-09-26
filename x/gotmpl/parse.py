@@ -45,9 +45,12 @@ from .nodes import Node
 from .nodes import NodeType
 from .nodes import NumberNode
 from .nodes import PipeNode
+from .nodes import RangeNode
 from .nodes import StringNode
+from .nodes import TemplateNode
 from .nodes import TextNode
 from .nodes import VariableNode
+from .nodes import WithNode
 
 
 # Tree is the representation of a single parsed template.
