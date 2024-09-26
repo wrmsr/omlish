@@ -46,7 +46,7 @@ class InstallMgr(abc.ABC):
         raise NotImplementedError
 
 
-class UvInstallMgr(InstallMgr):
+class UvxInstallMgr(InstallMgr):
     def is_available(self) -> bool:
         return bool(shutil.which('uv'))
 
@@ -110,7 +110,7 @@ class PipxInstallMgr(InstallMgr):
 
 
 INSTALL_MGRS = {
-    'uv': UvInstallMgr(),
+    'uvx': UvxInstallMgr(),
     'pipx': PipxInstallMgr(),
 }
 

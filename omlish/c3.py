@@ -43,7 +43,8 @@ T = ta.TypeVar('T')
 
 
 def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
-    """Merges MROs in *sequences* to a single MRO using the C3 algorithm.
+    """
+    Merges MROs in *sequences* to a single MRO using the C3 algorithm.
 
     Adapted from https://www.python.org/download/releases/2.3/mro/.
     """
@@ -78,7 +79,8 @@ def mro(
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
 ) -> list[T]:
-    """Computes the method resolution order using extended C3 linearization.
+    """
+    Computes the method resolution order using extended C3 linearization.
 
     If no *abcs* are given, the algorithm works exactly like the built-in C3 linearization used for method resolution.
 
@@ -128,7 +130,8 @@ def compose_mro(
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
         get_subclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),
 ) -> list[T]:
-    """Calculates the method resolution order for a given class *cls*.
+    """
+    Calculates the method resolution order for a given class *cls*.
 
     Includes relevant abstract base classes (with their respective bases) from the *types* list. Uses a modified C3
     linearization algorithm.
