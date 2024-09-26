@@ -142,7 +142,7 @@ class Tree:
         #     return n, nil
         # }
         # # Imaginary constants can only be complex unless they are zero.
-        # if len(text) > 0 && text[len(text)-1] == 'i' {
+        # if len(text) > 0 and text[len(text)-1] == 'i' {
         #     f, err := strconv.ParseFloat(text[:len(text)-1], 64)
         #     if err == nil {
         #         n.IsComplex = true
@@ -184,17 +184,17 @@ class Tree:
         #         n.IsFloat = true
         #         n.Float64 = f
         #         # If a floating-point extraction succeeded, extract the int if needed.
-        #         if !n.IsInt && float64(int64(f)) == f {
+        #         if !n.IsInt and float64(int64(f)) == f {
         #             n.IsInt = true
         #             n.Int64 = int64(f)
         #         }
-        #         if !n.IsUint && float64(uint64(f)) == f {
+        #         if !n.IsUint and float64(uint64(f)) == f {
         #             n.IsUint = true
         #             n.Uint64 = uint64(f)
         #         }
         #     }
         # }
-        # if !n.IsInt && !n.IsUint && !n.IsFloat {
+        # if !n.IsInt and !n.IsUint and !n.IsFloat {
         #     return nil, fmt.Errorf("illegal number syntax: %q", text)
         # }
         # return n, nil
@@ -295,6 +295,42 @@ class Tree:
         context = str(n)
         return "%s:%d:%d" % (tree._parse_name, line_num, byte_num), context
 
+    def errorf(self, format: str, *args: ta.Any) -> None:
+        # errorf formats the error and terminates processing.
+        self._root = None
+        format = 'template: %s:%d: %s' % (self._parse_name, self._token[0].line, format)
+        raise Exception(format, *args)
+
+    def error(self, err: Exception) -> None:
+        # error terminates processing.
+        raise err
+
+    def expect(self, expected: TokenType, context: str) -> Token:
+        # expect consumes the next token and guarantees it has the required type.
+        token = self.next_non_space()
+        if token.typ != expected:
+            self.unexpected(token, context)
+        return token
+
+    def expect_one_of(self, expected1: TokenType, expected2: TokenType, context: str) -> Token:
+        # expect_one_of consumes the next token and guarantees it has one of the required types.
+        token = self.next_non_space()
+        if token.typ != expected1 and token.typ != expected2:
+            self.unexpected(token, context)
+        return token
+
+    def unexpected(self, token: Token, context: str) -> None:
+        # unexpected complains about the token and terminates processing.
+        if token.typ == TokenType.ERROR:
+            extra = ''
+            if self._action_line != 0 and self._action_line != token.line:
+                extra = ' in action started at %s:%d' % (self._parse_name, self._action_line)
+                if token.val.endswith(' action'):
+                    extra = extra[len(' in action'):]  # avoid "action in action"
+            self.errorf("%s%s", token, extra)
+        self.errorf("unexpected %s in %s", token, context)
+
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -320,53 +356,8 @@ def parse(
 
 """
 
-# errorf formats the error and terminates processing.
-def (t *Tree) errorf(format str, args ...any) {
-    t.Root = nil
-    format = fmt.Sprintf("template: %s:%d: %s", t.parse_name, t.token[0].line, format)
-    panic(fmt.Errorf(format, args...))
-}
-
-# error terminates processing.
-def (t *Tree) error(err error) {
-    t.errorf("%s", err)
-}
-
-# expect consumes the next token and guarantees it has the required type.
-def (t *Tree) expect(expected itemType, context str) Token {
-    token := t.next_non_space()
-    if token.typ != expected {
-        t.unexpected(token, context)
-    }
-    return token
-}
-
-# expectOneOf consumes the next token and guarantees it has one of the required types.
-def (t *Tree) expectOneOf(expected1, expected2 itemType, context str) Token {
-    token := t.next_non_space()
-    if token.typ != expected1 && token.typ != expected2 {
-        t.unexpected(token, context)
-    }
-    return token
-}
-
-# unexpected complains about the token and terminates processing.
-def (t *Tree) unexpected(token Token, context str) {
-    if token.typ == itemError {
-        extra := ""
-        if t.action_line != 0 && t.action_line != token.line {
-            extra = fmt.Sprintf(" in action started at %s:%d", t.parse_name, t.action_line)
-            if strings.HasSuffix(token.val, " action") {
-                extra = extra[len(" in action"):] # avoid "action in action"
-            }
-        }
-        t.errorf("%s%s", token, extra)
-    }
-    t.errorf("unexpected %s in %s", token, context)
-}
-
-# recover is the handler that turns panics into returns from the top level of Parse.
-def (t *Tree) recover(errp *error) {
+def recover(self, errp *error) {
+    # recover is the handler that turns panics into returns from the top level of Parse.
     e := recover()
     if e != nil {
         if _, ok := e.(runtime.Error); ok {
@@ -417,7 +408,7 @@ def (t *Tree) recover(errp *error) {
     # add adds tree to t.tree_set.
     def (t *Tree) add() {
         tree := t.tree_set[t.Name]
-        if tree == nil || is_empty_tree(tree.Root) {
+        if tree == nil or is_empty_tree(tree.Root) {
             t.tree_set[t.Name] = t
             return
         }
@@ -459,7 +450,7 @@ def (t *Tree) recover(errp *error) {
     # been scanned.
     def (t *Tree) parseDefinition() {
         const context = "define clause"
-        name := t.expectOneOf(itemString, itemRawString, context)
+        name := t.expect_one_of(itemString, itemRawString, context)
         var err error
         t.Name, err = strconv.Unquote(name.val)
         if err != nil {
@@ -584,7 +575,7 @@ def (t *Tree) recover(errp *error) {
     # Pipeline:
     #
     #    declarations? command ('|' command)*
-    def (t *Tree) pipeline(context str, end itemType) (pipe *PipeNode) {
+    def (t *Tree) pipeline(context str, end TokenType) (pipe *PipeNode) {
         token := t.peek_non_space()
         pipe = t.newPipeline(token.pos, token.line, nil)
         # Are there declarations or assignments?
@@ -603,11 +594,11 @@ def (t *Tree) recover(errp *error) {
                 t.next_non_space()
                 pipe.Decl = append(pipe.Decl, t.newVariable(v.pos, v.val))
                 t.vars = append(t.vars, v.val)
-            case next.typ == itemChar && next.val == ",":
+            case next.typ == itemChar and next.val == ",":
                 t.next_non_space()
                 pipe.Decl = append(pipe.Decl, t.newVariable(v.pos, v.val))
                 t.vars = append(t.vars, v.val)
-                if context == "range" && len(pipe.Decl) < 2 {
+                if context == "range" and len(pipe.Decl) < 2 {
                     switch t.peek_non_space().typ {
                     case itemVariable, itemRightDelim, itemRightParen:
                         # second initialized variable in a range pipeline
@@ -678,11 +669,11 @@ def (t *Tree) recover(errp *error) {
             #  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
             # To do this, parse the "if" or "with" as usual and stop at it {{end}};
             # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
-            if context == "if" && t.peek().typ == itemIf {
+            if context == "if" and t.peek().typ == itemIf {
                 t.next() # Consume the "if" token.
                 elseList = t.newList(next.Position())
                 elseList.append(t.ifControl())
-            } else if context == "with" && t.peek().typ == itemWith {
+            } else if context == "with" and t.peek().typ == itemWith {
                 t.next()
                 elseList = t.newList(next.Position())
                 elseList.append(t.withControl())
@@ -742,7 +733,7 @@ def (t *Tree) recover(errp *error) {
         # The "{{else if ... " and "{{else with ..." will be
         # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
         # So return the else node here.
-        if peek.typ == itemIf || peek.typ == itemWith {
+        if peek.typ == itemIf or peek.typ == itemWith {
             return t.newElse(peek.pos, peek.line)
         }
         token := t.expect(itemRightDelim, "else")
@@ -894,7 +885,7 @@ def (t *Tree) recover(errp *error) {
         switch token := t.next_non_space(); token.typ {
         case itemIdentifier:
             checkFunc := t.Mode&SkipFuncCheck == 0
-            if checkFunc && !t.hasFunction(token.val) {
+            if checkFunc and !t.hasFunction(token.val) {
                 t.errorf("function %q not defined", token.val)
             }
             return NewIdentifier(token.val).SetTree(t).SetPos(token.pos)
