@@ -478,6 +478,13 @@ class SqliteWriter:
 ##
 
 
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'importtrace',
+    'mod_name': __name__,
+}}
+
+
 def _main() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
