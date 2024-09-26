@@ -29,7 +29,7 @@ all = [
     'greenlet ~= 3.1',
     'trio ~= 0.26',
     'trio-asyncio ~= 0.15',
-    'lz4 ~= 4.0',
+    'lz4 ~= 4.3',
     'python-snappy ~= 0.7; python_version < "3.13"',
     'zstd ~= 1.5',
     'asttokens ~= 2.4',
@@ -50,6 +50,7 @@ all = [
     'aiomysql ~= 0.2',
     'aiosqlite ~= 0.20',
     'asyncpg ~= 0.29; python_version < "3.13"',
+    'apsw ~= 3.46',
     'sqlean.py ~= 3.45; python_version < "3.13"',
     'duckdb ~= 1.1',
     'pytest ~= 8.0',
@@ -62,7 +63,7 @@ async = [
     'trio-asyncio ~= 0.15',
 ]
 compress = [
-    'lz4 ~= 4.0',
+    'lz4 ~= 4.3',
     'python-snappy ~= 0.7; python_version < "3.13"',
     'zstd ~= 1.5',
 ]
@@ -91,12 +92,13 @@ secrets = [
 sqlalchemy = [
     'sqlalchemy[asyncio] ~= 2.0',
 ]
-sqlalchemy-drivers = [
+sqldrivers = [
     'pg8000 ~= 1.31',
     'pymysql ~= 1.1',
     'aiomysql ~= 0.2',
     'aiosqlite ~= 0.20',
     'asyncpg ~= 0.29; python_version < "3.13"',
+    'apsw ~= 3.46',
     'sqlean.py ~= 3.45; python_version < "3.13"',
     'duckdb ~= 1.1',
 ]
