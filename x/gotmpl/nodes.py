@@ -374,7 +374,7 @@ class IfNode(BranchNode):
     # IfNode represents an {{if}} action and its commands.
 
     def copy(self) -> Node:
-        return self.tree.new_if(i.pos, i.line, i.pipe.copy_pipe(), self.lst.copy_list(), self.else_lst.copy_list())
+        return self.tree.new_if(self.pos, self.line, self.pipe.copy_pipe(), self.lst.copy_list(), self.else_lst.copy_list())  # noqa
 
 
 @dc.dataclass()
