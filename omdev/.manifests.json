@@ -99,7 +99,7 @@
     "module": ".tools.piptools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/piptools.py",
-    "line": 85,
+    "line": 87,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
