@@ -84,6 +84,8 @@ TOKEN_TYPE_MAP: ta.Mapping[str, TokenType] = {
 
 @dc.dataclass(frozen=True)
 class Token:
+    """~template/parse/lex:item"""
+
     typ: TokenType
     pos:  int
     val:  str

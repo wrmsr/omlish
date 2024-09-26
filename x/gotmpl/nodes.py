@@ -20,6 +20,14 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import abc
+import dataclasses as dc
+
+
+class Node(abc.ABC):
+    pass
+
+
 """
 var textFormat = "%s" // Changed to "%q" in tests for better error messages.
 
