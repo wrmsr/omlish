@@ -524,6 +524,79 @@ class Tree:
             self.errorf('{{continue}} outside {{range}}')
         return self.new_continue(pos, line)
 
+    def pipeline(self, context: str, end: TokenType) -> PipeNode:
+        # Pipeline:
+        #
+        #    declarations? command ('|' command)*
+        token = self.peek_non_space()
+        pipe = self.new_pipeline(token.pos, token.line, nil)
+
+        # Are there declarations or assignments?
+        while True:
+            v = self.peek_non_space()
+            if v.typ == TokenType.VARIABLE:
+                self.next()
+                # Since space is a token, we need 3-token look-ahead here in the worst case: in "$x foo" we need to read
+                # "foo" (as opposed to "=") to know that $x is an argument variable rather than a declaration. So
+                # remember the token adjacent to the variable so we can push it back if necessary.
+                token_after_variable = self.peek()
+                next = self.peek_non_space()
+
+                if next.typ in (TokenType.ASSIGN, TokenType.DECLARE):
+                    pipe.is_assign = next.typ == TokenType.ASSIGN
+                    self.next_non_space()
+                    pipe.decl.append(self.new_variable(v.pos, v.val))
+                    self._vars.append(v.val)
+
+                elif next.typ == TokenType.CHAR and next.val == ',':
+                    self.next_non_space()
+                    pipe.decl.append(self.new_variable(v.pos, v.val))
+                    self._vars.append(v.val)
+                    if context == 'range' and len(pipe.Decl) < 2:
+                        if self.peek_non_space().typ in (
+                                TokenType.VARIABLE,
+                                TokenType.RIGHT_DELIM,
+                                TokenType.RIGHT_PAREN,
+                        ):
+                            # second initialized variable in a range pipeline
+                            continue
+                        else:
+                            self.errorf('range can only initialize variables')
+                    self.errorf('too many declarations in %s', context)
+
+                elif token_after_variable.typ == TokenType.SPACE:
+                    self.backup3(v, token_after_variable)
+
+                else:
+                    self.backup2(v)
+
+            break
+
+        while True:
+            token = self.next_non_space()
+            if token.typ == end:
+                # At this point, the pipeline is complete
+                self.check_pipeline(pipe, context)
+                return pipe
+            elif token.typ in (
+                TokenType.BOOL,
+                TokenType.CHAR_CONSTANT,
+                TokenType.COMPLEX,
+                TokenType.DOT,
+                TokenType.FIELD,
+                TokenType.IDENTIFIER,
+                TokenType.NUMBER,
+                TokenType.NIL,
+                TokenType.RAW_STRING,
+                TokenType.STRING,
+                TokenType.VARIABLE,
+                TokenType.LEFT_PAREN,
+            ):
+                self.backup()
+                pipe.append(self.command())
+            else:
+                self.unexpected(token, context)
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -548,63 +621,6 @@ def parse(
 
 
 """
-    def pipeline(self, context: str, end: TokenType) -> PipeNode:
-        # Pipeline:
-        #
-        #    declarations? command ('|' command)*
-        token = self.peek_non_space()
-        pipe = self.new_pipeline(token.pos, token.line, nil)
-
-        # Are there declarations or assignments?
-        while True:
-            if v = self.peek_non_space(); v.typ == TokenType.VARIABLE {
-                self.next()
-                # Since space is a token, we need 3-token look-ahead here in the worst case:
-                # in "$x foo" we need to read "foo" (as opposed to "=") to know that $x is an
-                # argument variable rather than a declaration. So remember the token
-                # adjacent to the variable so we can push it back if necessary.
-                token_after_variable = self.peek()
-                next = self.peek_non_space()
-
-                if next.typ in (TokenType.ASSIGN, TokenType.DECLARE):
-                    pipe.is_assign = next.typ == TokenType.ASSIGN
-                    self.next_non_space()
-                    pipe.decl.append(self.new_variable(v.pos, v.val))
-                    self._vars.append(v.val)
-                    
-                elif next.typ == TokenType.CHAR and next.val == ',':
-                    self.next_non_space()
-                    pipe.decl.append(self.new_variable(v.pos, v.val))
-                    self._vars.append(v.val)
-                    if context == 'range' and len(pipe.Decl) < 2:
-                        if self.peek_non_space().typ in (TokenType.VARIABLE, TokenType.RIGHT_DELIM, TokenType.RIGHT_PAREN):
-                            # second initialized variable in a range pipeline
-                            continue
-                        else:
-                            self.errorf('range can only initialize variables')
-                    self.errorf('too many declarations in %s', context)
-                    
-                elif token_after_variable.typ == TokenType.SPACE:
-                    self.backup3(v, token_after_variable)
-
-                else:
-                    self.backup2(v)
-            
-            break
-
-        while True:
-            token = self.next_non_space()
-            if token.typ == end:
-                # At this point, the pipeline is complete
-                self.check_pipeline(pipe, context)
-                return pipe
-            elif token.typ in (TokenType.BOOL, TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.DOT, TokenType.FIELD, TokenType.IDENTIFIER,
-                TokenType.NUMBER, TokenType.NIL, TokenType.RAWS_TRING, TokenType.STRING, TokenType.VARIABLE, TokenType.LEFT_PAREN):
-                self.backup()
-                pipe.append(self.command())
-            else:
-                self.unexpected(token, context)
-
     def check_pipeline(self, pipe: PipeNode, context: str) -> None:
         # Reject empty pipelines
         if len(pipe.Cmds) == 0 {
