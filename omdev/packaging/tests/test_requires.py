@@ -8,5 +8,6 @@ class TestSpecifiers(unittest.TestCase):
     def test_requires(self):
         for s in [
             """pytest-mypy ; (platform_python_implementation != "PyPy") and extra == 'testing'""",
+            """openai ~=1.48 ; extra == 'backends'""",
         ]:
-            parse_requirement(s)
+            print(parse_requirement(s))

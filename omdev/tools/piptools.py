@@ -9,6 +9,7 @@ from omlish import check
 
 from ..cli import CliModule
 from ..packaging.names import canonicalize_name
+from ..packaging.requires import RequiresVariable
 from ..packaging.requires import parse_requirement
 
 
@@ -70,7 +71,8 @@ class Cli(ap.Cli):
             dists.add(dist_cn)
             for req_str in dist.requires or []:
                 req = parse_requirement(req_str)
-                if req.extras:
+
+                if any(v.value == 'extra' for m in req.marker or [] if isinstance(v := m[0], RequiresVariable)):
                     continue
 
                 req_cn = canonicalize_name(req.name)
