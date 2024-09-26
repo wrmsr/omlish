@@ -27,12 +27,19 @@ from .lex import Pos
 from .lex import Token
 from .lex import TokenType
 from .nodes import ActionNode
+from .nodes import BoolNode
+from .nodes import ChainNode
 from .nodes import CommandNode
 from .nodes import CommentNode
+from .nodes import DotNode
+from .nodes import FieldNode
 from .nodes import ListNode
+from .nodes import NilNode
+from .nodes import Node
 from .nodes import NodeType
 from .nodes import PipeNode
 from .nodes import TextNode
+from .nodes import VariableNode
 
 
 # Tree is the representation of a single parsed template.

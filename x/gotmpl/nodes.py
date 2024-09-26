@@ -67,7 +67,7 @@ class Node(abc.ABC):
 
     type: NodeType
     pos: Pos
-    tree: 'parse.Tree'
+    tree: ta.Optional['parse.Tree'}
 
     @abc.abstractmethod
     def copy(self) -> 'Node':
@@ -110,7 +110,7 @@ class TextNode(Node):
 class CommentNode(Node):
     # CommentNode holds a comment.
 
-    text: str # Comment text.
+    text: str  # Comment text.
 
     def copy(self) -> Node:
         return TextNode(tree=self.tree, type=NodeType.COMMENT, pos=self.pos, text=self.text)
@@ -170,127 +170,117 @@ class CommandNode(Node):
         return n
 
 
-"""
-
-
 @dc.dataclass()
 class IdentifierNode(Node):
     # IdentifierNode holds an identifier.
 
-    Ident string # The identifier's name.
+    ident: str  # The identifier's name.
 
-    # SetPos sets the position. [NewIdentifier] is a public method so we can't modify its signature.
-    # Chained for convenience.
-    # TODO: fix one day?
-    def (i *IdentifierNode) SetPos(pos Pos) *IdentifierNode {
-        i.Pos = pos
-        return i
-    }
+    def set_pos(self, pos: Pos) -> 'IdentifierNode':
+        # SetPos sets the position. [NewIdentifier] is a public method so we can't modify its signature. Chained for
+        # convenience.
+        # TODO: fix one day?
+        self.pos = pos
+        return self
 
-    # SetTree sets the parent tree for the node. [NewIdentifier] is a public method so we can't modify its signature.
-    # Chained for convenience.
-    # TODO: fix one day?
-    def (i *IdentifierNode) SetTree(t *Tree) *IdentifierNode {
-        i.tr = t
-        return i
-    }
+    def set_tree(self, t: 'parse.Tree') -> 'IdentifierNode':
+        # SetTree sets the parent tree for the node. [NewIdentifier] is a public method so we can't modify its
+        # signature. Chained for convenience.
+        # TODO: fix one day?
+        self.tree = t
+        return self
 
-    def (i *IdentifierNode) Copy() Node {
-        return NewIdentifier(i.Ident).SetTree(i.tr).SetPos(i.Pos)
-    }
+    def copy(self) -> Node:
+        return new_identifier(self.ident).set_tree(self.tree).set_pos(self.pos)
+
 
 # NewIdentifier returns a new [IdentifierNode] with the given identifier name.
-func NewIdentifier(ident string) *IdentifierNode {
-    return &IdentifierNode{NodeType: NodeIdentifier, Ident: ident}
-}
+def new_identifier(ident: str) -> IdentifierNode:
+    return IdentifierNode(tree=None, pos=0, type=NodeType.IDENTIFIER, ident=ident)
+
 
 @dc.dataclass()
 class VariableNode(Node):
-    # VariableNode holds a list of variable names, possibly with chained field accesses. The dollar sign is part of the (first) name.
+    # VariableNode holds a list of variable names, possibly with chained field accesses. The dollar sign is part of the
+    # (first) name.
 
-    Ident []string # Variable name and fields in lexical order.
+    ident: list[str]  # Variable name and fields in lexical order.
 
-    def (v *VariableNode) Copy() Node {
-        return &VariableNode{tr: v.tr, NodeType: NodeVariable, Pos: v.Pos, Ident: append([]string{}, v.Ident...)}
-    }
+    def copy(self) -> Node:
+        return VariableNode(tree=self.tree, type=NodeType.VARIABLE, pos=self.pos, ident=list(self.ident))
+
 
 @dc.dataclass()
 class DotNode(Node):
     # DotNode holds the special identifier '.'.
 
-    def (d *DotNode) Type() NodeType {
-        # Override method on embedded NodeType for API compatibility.
-        # TODO: Not really a problem; could change API without effect but
-        # api tool complains.
-        return NodeDot
-    }
+    # @property
+    # def type(self) -> NodeType:
+    #     # Override method on embedded NodeType for API compatibility.
+    #     # TODO: Not really a problem; could change API without effect but api tool complains.
+    #     return NodeType.DOT
 
-    def (d *DotNode) Copy() Node {
-        return d.tr.newDot(d.Pos)
-    }
+    def copy(self) -> Node:
+        return self.tree.new_dot(self.pos)
 
 
 @dc.dataclass()
 class NilNode(Node):
     # NilNode holds the special identifier 'nil' representing an untyped nil constant.
 
-    def (n *NilNode) Type() NodeType {
-        # Override method on embedded NodeType for API compatibility.
-        # TODO: Not really a problem; could change API without effect but
-        # api tool complains.
-        return NodeNil
-    }
+    # @property
+    # def type(self) -> NodeType:
+    #     # Override method on embedded NodeType for API compatibility.
+    #     # TODO: Not really a problem; could change API without effect but api tool complains.
+    #     return NodeType.NIL
 
-    def (n *NilNode) Copy() Node {
-        return n.tr.newNil(n.Pos)
-    }
+    def copy(self) -> Node:
+        return self.tree.new_nil(self.pos)
+
 
 @dc.dataclass()
 class FieldNode(Node):
     # FieldNode holds a field (identifier starting with '.'). The names may be chained ('.x.y'). The period is dropped
     # from each ident.
 
-    Ident []string # The identifiers in lexical order.
+    ident: list[str]  # The identifiers in lexical order.
 
-    def (f *FieldNode) Copy() Node {
-        return &FieldNode{tr: f.tr, NodeType: NodeField, Pos: f.Pos, Ident: append([]string{}, f.Ident...)}
-    }
+    def copy(self) -> Node:
+        return FieldNode(tree=self.tree, type=NodeType.FIELD, pos=self.pos, ident=list(self.ident))
 
 
 @dc.dataclass()
 class ChainNode(Node):
     # ChainNode holds a term followed by a chain of field accesses (identifier starting with '.'). The names may be
     # chained ('.x.y'). The periods are dropped from each ident.
-    
-    Node  Node
-    Field []string # The identifiers in lexical order.
+
+    node: Node
+    field: list[str]  # The identifiers in lexical order.
 
     # Add adds the named field (which should start with a period) to the end of the chain.
-    def (c *ChainNode) Add(field string) {
-        if len(field) == 0 || field[0] != '.' {
-            panic("no dot in field")
-        }
-        field = field[1:] # Remove leading dot.
-        if field == "" {
-            panic("empty field")
-        }
-        c.Field = append(c.Field, field)
-    }
+    def add(self, field: str) -> None:
+        if not field or field[0] != '.':
+            raise ValueError('no dot in field')
+        field = field[1:]  # Remove leading dot.
+        if not field:
+            raise ValueError('empty field')
+        self.field.append(field)
 
-    def (c *ChainNode) Copy() Node {
-        return &ChainNode{tr: c.tr, NodeType: NodeChain, Pos: c.Pos, Node: c.Node, Field: append([]string{}, c.Field...)}
-    }
+    def copy(self) -> Node:
+        return ChainNode(tree=self.tree, type=NodeType.CHAIN, pos=self.pos, node=self.node, field=list(self.field))
+
 
 @dc.dataclass()
 class BoolNode(Node):
     # BoolNode holds a boolean constant.
 
-    True bool # The value of the boolean constant.
+    is_true: bool  # The value of the boolean constant.
 
-    def (b *BoolNode) Copy() Node {
-        return b.tr.newBool(b.Pos, b.True)
-    }
+    def copy(self) -> Node:
+        return self.tree.new_bool(self.pos, self.is_true)
 
+
+"""
 
 @dc.dataclass()
 class NumberNode(Node):
@@ -325,6 +315,7 @@ class NumberNode(Node):
         }
     }
 
+    def copy(self) -> Node:
     def (n *NumberNode) Copy() Node {
         nn := new(NumberNode)
         *nn = *n # Easy, fast, correct.
@@ -339,6 +330,7 @@ class StringNode(Node):
     Quoted string # The original text of the string, with quotes.
     Text   string # The string, after quote processing.
 
+    def copy(self) -> Node:
     def (s *StringNode) Copy() Node {
         return s.tr.newString(s.Pos, s.Quoted, s.Text)
     }
@@ -348,6 +340,7 @@ class StringNode(Node):
 class EndNode(Node):
     # EndNode represents an {{end}} action. It does not appear in the final parse tree.
 
+    def copy(self) -> Node:
     def (e *EndNode) Copy() Node {
         return e.tr.newEnd(e.Pos)
     }
@@ -363,6 +356,7 @@ class ElseNode(Node):
         return nodeElse
     }
 
+    def copy(self) -> Node:
     def (e *ElseNode) Copy() Node {
         return e.tr.newElse(e.Pos, e.Line)
     }
@@ -377,6 +371,7 @@ class BranchNode(Node):
     List     *ListNode # What to execute if the value is non-empty.
     ElseList *ListNode # What to execute if the value is empty (nil if absent).
 
+    def copy(self) -> Node:
     def (b *BranchNode) Copy() Node {
         switch b.NodeType {
         case NodeIf:
@@ -394,6 +389,7 @@ class BranchNode(Node):
 type IfNode(BranchNode):
     # IfNode represents an {{if}} action and its commands.
 
+    def copy(self) -> Node:
     def (i *IfNode) Copy() Node {
         return i.tr.newIf(i.Pos, i.Line, i.Pipe.CopyPipe(), i.List.CopyList(), i.ElseList.CopyList())
     }
@@ -404,6 +400,7 @@ class BreakNode(Node):
     
     Line int
 
+    def copy(self) -> Node:
     def (b *BreakNode) Copy() Node                  { return b.tr.newBreak(b.Pos, b.Line) }
 
 
@@ -413,6 +410,7 @@ class ContinueNode(Node):
 
     Line int
 
+    def copy(self) -> Node:
     def (c *ContinueNode) Copy() Node                  { return c.tr.newContinue(c.Pos, c.Line) }
 
 
@@ -420,6 +418,7 @@ class ContinueNode(Node):
 class RangeNode(BranchNode):
     # RangeNode represents a {{range}} action and its commands.
 
+    def copy(self) -> Node:
     def (r *RangeNode) Copy() Node {
         return r.tr.newRange(r.Pos, r.Line, r.Pipe.CopyPipe(), r.List.CopyList(), r.ElseList.CopyList())
     }
@@ -431,6 +430,7 @@ class WithNode(Node):
 
     BranchNode
 
+    def copy(self) -> Node:
     def (w *WithNode) Copy() Node {
         return w.tr.newWith(w.Pos, w.Line, w.Pipe.CopyPipe(), w.List.CopyList(), w.ElseList.CopyList())
     }
@@ -444,6 +444,7 @@ class TemplateNode(Node):
     Name string    # The name of the template (unquoted).
     Pipe *PipeNode # The command to evaluate as dot for the template.
 
+    def copy(self) -> Node:
     def (t *TemplateNode) Copy() Node {
         return t.tr.newTemplate(t.Pos, t.Line, t.Name, t.Pipe.CopyPipe())
     }
