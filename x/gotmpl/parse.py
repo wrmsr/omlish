@@ -43,7 +43,6 @@ from .nodes import ListNode
 from .nodes import NilNode
 from .nodes import Node
 from .nodes import NodeType
-from .nodes import NodeType
 from .nodes import NumberNode
 from .nodes import PipeNode
 from .nodes import RangeNode
@@ -296,13 +295,13 @@ class Tree:
         context = str(n)
         return "%s:%d:%d" % (tree._parse_name, line_num, byte_num), context
 
-    def errorf(self, format: str, *args: ta.Any) -> None:
+    def errorf(self, format: str, *args: ta.Any) -> ta.NoReturn:
         # errorf formats the error and terminates processing.
         self._root = None
         format = 'template: %s:%d: %s' % (self._parse_name, self._token[0].line, format)
         raise Exception(format, *args)
 
-    def error(self, err: Exception) -> None:
+    def error(self, err: Exception) -> ta.NoReturn:
         # error terminates processing.
         raise err
 
@@ -320,7 +319,7 @@ class Tree:
             self.unexpected(token, context)
         return token
 
-    def unexpected(self, token: Token, context: str) -> None:
+    def unexpected(self, token: Token, context: str) -> ta.NoReturn:
         # unexpected complains about the token and terminates processing.
         if token.typ == TokenType.ERROR:
             extra = ''
@@ -350,7 +349,7 @@ class Tree:
         )
 
     def stop_parse(self) -> None:
-        # stopParse terminates parsing.
+        # stop_parse terminates parsing.
         self._lex = None
         self._vars = None
         self._funcs = None
@@ -416,6 +415,57 @@ class Tree:
             else:
                 self._root.append(n)
 
+    def parse_definition(self) -> None:
+        # parseDefinition parses a {{define}} ...  {{end}} template definition and installs the definition in
+        # t.tree_set. The "define" keyword has already been scanned.
+        context = 'define clause'
+        name = self.expect_one_of(TokenType.STRING, TokenType.RAW_STRING, context)
+        try:
+            self._name = unquote(name.val)
+        except Exception as err:
+            self.error(err)
+        self.expect(TokenType.RIGHT_DELIM, context)
+        self._root, end = self.item_list()
+        if end.type != NodeType.END:
+            self.errorf("unexpected %s in %s", end, context)
+        self.add()
+        self.stop_parse()
+
+    def item_list(self) -> tuple[ListNode, Node]:  # (list, next)
+        # itemList:
+        #
+        #    text_or_action*
+        #
+        # Terminates at {{end}} or {{else}}, returned separately.
+        lst = self.new_list(self.peek_non_space().pos)
+        while self.peek_non_space().typ != TokenType.EOF:
+            n = self.text_or_action()
+            if n.type in (NodeType.END, NodeType.ELSE):
+                return lst, n
+            lst.append(n)
+        self.errorf('unexpected EOF')
+
+    def text_or_action(self) -> Node:
+        # text_or_action:
+        #
+        #    text | comment | action
+        token = self.next_non_space()
+        if token.typ == TokenType.TEXT:
+            return self.new_text(token.pos, token.val)
+        elif token.typ == TokenType.LEFT_DELIM:
+            self._action_line = token.line
+            try:
+                return self.action()
+            finally:
+                self.clear_action_line()
+        elif token.typ == TokenType.COMMENT:
+            return self.new_comment(token.pos, token.val)
+        else:
+            self.unexpected(token, 'input')
+
+    def clear_action_line(self) -> None:
+        self._action_line = 0
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -440,59 +490,6 @@ def parse(
 
 
 """
-    def parse_definition(self) -> None:
-        # parseDefinition parses a {{define}} ...  {{end}} template definition and installs the definition in
-        # t.tree_set. The "define" keyword has already been scanned.
-        const context = "define clause"
-        name = t.expect_one_of(TokenType.STRING, TokenType.RAW_STRING, context)
-        var err error
-        self._name, err = strconv.Unquote(name.val)
-        if err != nil:
-            t.error(err)
-        t.expect(TokenType.RIGHT_DELIM, context)
-        var end Node
-        self._root, end = t.itemList()
-        if end.type != NodeType.END:
-            t.errorf("unexpected %s in %s", end, context)
-        t.add()
-        t.stopParse()
-
-    def itemList(self) -> tuple[ListNode, Node]:  # (list, next)
-        # itemList:
-        #
-        #    text_or_action*
-        #
-        # Terminates at {{end}} or {{else}}, returned separately.
-        list = t.new_list(t.peek_non_space().pos)
-        for t.peek_non_space().typ != TokenType.EOF:
-            n = t.text_or_action()
-            switch n.type {
-            case NodeType.END, nodeElse:
-                return list, n
-            list.append(n)
-        t.errorf("unexpected EOF")
-        return
-
-    def text_or_action(self) -> Node:
-        # text_or_action:
-        #
-        #    text | comment | action
-        switch token = t.next_non_space(); token.typ {
-        case TokenType.TEXT:
-            return t.new_text(token.pos, token.val)
-        case TokenType.LEFT_DELIM:
-            t.action_line = token.line
-            defer t.clear_action_line()
-            return t.action()
-        case TokenType.COMMENT:
-            return t.newComment(token.pos, token.val)
-        default:
-            t.unexpected(token, "input")
-        return nil
-
-    def clear_action_line(self) -> None:
-        self._action_line = 0
-
     def action(self) -> Node:
         # Action:
         #
@@ -611,20 +608,20 @@ def parse(
                 # With A|B|C, pipeline stage 2 is B
                 t.errorf("non executable command in pipeline stage %d", i+2)
 
-    def parse_control(context str) (pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) {
+    def parse_control(context str) (pos Pos, line int, pipe *PipeNode, lst, elseLst *ListNode) {
         defer t.pop_vars(len(t.vars))
         pipe = t.pipeline(context, TokenType.RIGHT_DELIM)
         if context == "range" {
             t.range_depth+=1
         }
         var next Node
-        list, next = t.itemList()
+        lst, next = t.item_list()
         if context == "range" {
             t.range_depth-=1
         }
         switch next.type {
         case NodeType.END: #done
-        case nodeElse:
+        case NodeType.ELSE:
             # Special case for "else if" and "else with".
             # If the "else" is followed immediately by an "if" or "with",
             # the else_control will have left the "if" or "with" token pending. Treat
@@ -637,20 +634,20 @@ def parse(
             # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
             if context == "if" and t.peek().typ == TokenType.IF {
                 t.next() # Consume the "if" token.
-                elseList = t.new_list(next.Position())
-                elseList.append(t.ifControl())
+                elseLst = t.new_list(next.Position())
+                elseLst.append(t.ifControl())
             } else if context == "with" and t.peek().typ == TokenType.WITH {
                 t.next()
-                elseList = t.new_list(next.Position())
-                elseList.append(t.withControl())
+                elseLst = t.new_list(next.Position())
+                elseLst.append(t.withControl())
             } else {
-                elseList, next = t.itemList()
+                elseLst, next = t.item_list()
                 if next.type != NodeType.END {
                     t.errorf("expected end; found %s", next)
                 }
             }
         }
-        return pipe.Position(), pipe.Line, pipe, list, elseList
+        return pipe.Position(), pipe.Line, pipe, lst, elseLst
     }
 
     def if_control(self) -> Node:
@@ -724,12 +721,12 @@ def parse(
         block.parse_name = t.parse_name
         block.startParse(t.funcs, t.lex, t.tree_set)
         var end Node
-        block.Root, end = block.itemList()
+        block.Root, end = block.item_list()
         if end.type != NodeType.END {
             t.errorf("unexpected %s in %s", end, context)
         }
         block.add()
-        block.stopParse()
+        block.stop_parse()
 
         return t.newTemplate(token.pos, token.line, name, pipe)
 
