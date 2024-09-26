@@ -39,8 +39,88 @@ curl -XPOST -H 'Content-Type: application/json' http://127.0.0.1:49319/completio
 }
 '
 """
-import os.path
+import enum
 import json
+import operator
+import os.path
+import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import marshal as msh
+from omlish import lang
+
+
+class Capability(enum.Enum):
+    COMPLETION = 'completion'
+    TOOLS = 'tools'
+    INSERT = 'insert'
+
+
+class Role(enum.Enum):
+    USER = 'user'
+    ASSISTANT = 'assistant'
+    SYSTEM = 'system'
+
+
+@dc.dataclass(frozen=True)
+class RootFs(lang.Final):
+    type: str
+    diff_ids: ta.Sequence[str]
+
+
+@dc.dataclass(frozen=True)
+class ConfigV2(lang.Final):
+    model_format: str
+    model_family: str
+    model_families: ta.Sequence[str]
+    model_type: str
+    file_type: str
+
+    architecture: str  # required by spec
+    os: str  # required by spec
+    rootfs: RootFs  # required by spec
+
+
+ToolCallFunctionArguments: ta.TypeAlias = ta.Mapping[str, ta.Any]
+
+
+@dc.dataclass(frozen=True)
+class ToolCallFunction(lang.Final):
+    name: str
+    arguments: ToolCallFunctionArguments
+
+
+@dc.dataclass(frozen=True)
+class ToolCall(lang.Final):
+    function: ToolCallFunction
+
+
+@dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['images', 'tool_calls'], omit_if=operator.not_)
+class Message(lang.Final):
+    role: str
+    content: str
+    images: ta.Sequence[bytes]
+    tool_calls: ta.Sequence[ToolCall]
+
+
+@dc.dataclass(frozen=True)
+class Model(lang.Final):
+    name: str
+    config: ConfigV2
+    short_name: str
+    model_path: str
+    parent_model: str
+    adapter_paths: ta.Sequence[str]
+    projector_paths: ta.Sequence[str]
+    system: str
+    license: ta.Sequence[str]
+    digest: str
+    options: ta.Mapping[str, ta.Any]
+
+    messages: ta.Sequence[Message]
+
+    template: str
 
 
 def _main() -> None:
