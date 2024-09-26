@@ -26,8 +26,8 @@ DEFAULT_PY_VERSION = '3.12'
 
 @dc.dataclass(frozen=True)
 class InstallOpts:
-    cli_pkg: str
-    py_version: str
+    cli_pkg: str = DEFAULT_CLI_PKG
+    py_version: str = DEFAULT_PY_VERSION
 
     extras: ta.Sequence[str] = dc.field(default_factory=list)
 
