@@ -62,21 +62,21 @@ def _test_mysql(url: str) -> None:
             assert rows[0].name == 'some name 1'
 
 
-@ptu.skip_if_cant_import('mysql.connector')
+@ptu.skip.if_cant_import('mysql.connector')
 def test_mysql_mysql_connector_python(harness) -> None:
     url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqlconnector')
     _test_mysql(url)
 
 
-@ptu.skip_if_cant_import('MySQLdb')
+@ptu.skip.if_cant_import('MySQLdb')
 def test_mysql_mysqlclient(harness) -> None:
     url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqldb')
     _test_mysql(url)
 
 
-@ptu.skip_if_cant_import('pymysql')
+@ptu.skip.if_cant_import('pymysql')
 def test_mysql_pymysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+pymysql')
@@ -112,8 +112,8 @@ async def _test_mysql_async(url: str) -> None:
             assert rows[0].name == 'some name 1'
 
 
-@ptu.skip_if_cant_import('aiomysql')
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('aiomysql')
+@ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncio
 async def test_async_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
@@ -121,9 +121,9 @@ async def test_async_mysql_aiomysql(harness) -> None:
     await _test_mysql_async(url)
 
 
-@ptu.skip_if_cant_import('aiomysql')
-@ptu.skip_if_cant_import('trio')
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('aiomysql')
+@ptu.skip.if_cant_import('trio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_mysql_aiomysql(harness) -> None:
     url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)

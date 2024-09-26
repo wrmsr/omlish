@@ -47,7 +47,7 @@ class SimpleVectorStore(VectorStore):
         ])
 
 
-@ptu.skip_if_cant_import('numpy')
+@ptu.skip.if_cant_import('numpy')
 def test_vectors():
     store = SimpleVectorStore()
 

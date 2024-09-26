@@ -11,7 +11,7 @@ else:
     cl = lang.proxy_import('pyopencl')
 
 
-@ptu.skip_if_cant_import('pyopencl')
+@ptu.skip.if_cant_import('pyopencl')
 def test_opencl():
     dev_lsts: ta.List[ta.List[cl.Device]] = [
         ds

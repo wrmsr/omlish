@@ -33,7 +33,7 @@ def _test_threadlets(api: Threadlets):
 
 
 # @pytest.mark.skip
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 def test_greenlet():
     _test_threadlets(GreenletThreadlets())
 

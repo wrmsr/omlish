@@ -57,12 +57,12 @@ def test_compression(cls: type[fpa.Compression]) -> None:
     _test_compression(cls)
 
 
-@ptu.skip_if_cant_import('snappy')
+@ptu.skip.if_cant_import('snappy')
 def test_compression_snappy() -> None:
     _test_compression(fpa.Snappy)
 
 
-@ptu.skip_if_cant_import('zstd')
+@ptu.skip.if_cant_import('zstd')
 def test_compression_zstd() -> None:
     _test_compression(fpa.Zstd)
 

@@ -29,7 +29,7 @@ set search_path to secrets, public;
 # from .dbs import Dbs
 #
 #
-# @ptu.skip_if_cant_import('pg8000')
+# @ptu.skip.if_cant_import('pg8000')
 # def test_postgres_pg8000(harness) -> None:
 #     url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
 #     url = set_url_engine(url, 'postgresql+pg8000')
