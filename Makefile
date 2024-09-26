@@ -451,41 +451,6 @@ publish: package test-install
 	${MAKE} gen
 
 
-### Install
-
-INSTALL_EXTRAS=\
-	ominfra \
-	ommlx \
-	omserv \
-	\
-	openai \
-
-INSTALL_PYTHON_VERSION:=$$(\
-	${PYPROJECT_PYTHON} -c \
-	'from omlish.__about__ import ProjectBase; print(ProjectBase.requires_python.rpartition("=")[2])' \
-)
-
-.PHONY: install
-install:
-	echo "Installing with python ${INSTALL_PYTHON_VERSION}"
-
-	if uv --version 2>/dev/null ; then \
-		MGR="uv tool" ; \
-		INST="install --refresh --prerelease=allow --python=${INSTALL_PYTHON_VERSION}"; \
-		INJ="--with" ; \
-	else \
-		MGR="pipx" ; \
-		INST="install"; \
-		INJ="--preinstall" ; \
-	fi ; \
-	\
-	CMD="$$MGR uninstall omdev-cli || true ; $$MGR $$INST omdev-cli" ; \
-	for D in ${INSTALL_EXTRAS} ; do \
-		CMD+=" $$INJ $$D" ; \
-	done ; \
-	${SHELL} -c "$$CMD"
-
-
 ### Utils
 
 .PHONY: my-repl

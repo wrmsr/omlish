@@ -132,18 +132,17 @@ def _main() -> None:
     if not (py := args.py):
         raise ValueError(f'Must specify py')
 
-    if not (mgr := args.mgr):
-        if shutil.which('uv'):
-            mgr = 'uv'
-        elif shutil.which('pipx'):
-            mgr = 'pipx'
+    if mgr := args.mgr:
+        if (im := INSTALL_MGRS.get(mgr)) is None:
+            raise ValueError(f'Unsupported mgr: {mgr}')
+        if not im.is_available():
+            raise ValueError(f'Unavailable mgr: {mgr}')
+    else:
+        for im in INSTALL_MGRS.values():
+            if im.is_available():
+                break
         else:
-            raise RuntimeError("Can't find package manager")
-
-    if (im := INSTALL_MGRS.get(mgr)) is None:
-        raise ValueError(f'Unsupported mgr: {mgr}')
-    if not im.is_available():
-        raise ValueError(f'Unavailable mgr: {mgr}')
+            raise RuntimeError("Can't find install manager")
 
     for m in INSTALL_MGRS.values():
         if m.is_available():
