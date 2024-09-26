@@ -452,7 +452,7 @@ def parse(
         t.expect(TokenType.RIGHT_DELIM, context)
         var end Node
         self._root, end = t.itemList()
-        if end.Type() != NodeType.END:
+        if end.type != NodeType.END:
             t.errorf("unexpected %s in %s", end, context)
         t.add()
         t.stopParse()
@@ -466,7 +466,7 @@ def parse(
         list = t.new_list(t.peek_non_space().pos)
         for t.peek_non_space().typ != TokenType.EOF:
             n = t.text_or_action()
-            switch n.Type() {
+            switch n.type {
             case NodeType.END, nodeElse:
                 return list, n
             list.append(n)
@@ -606,7 +606,7 @@ def parse(
             t.errorf("missing value for %s", context)
         # Only the first command of a pipeline can start with a non executable operand
         for i, c = range pipe.Cmds[1:] {
-            switch c.Args[0].Type() {
+            switch c.Args[0].type {
             case NodeBool, NodeDot, NodeNil, NodeNumber, NodeString:
                 # With A|B|C, pipeline stage 2 is B
                 t.errorf("non executable command in pipeline stage %d", i+2)
@@ -622,7 +622,7 @@ def parse(
         if context == "range" {
             t.range_depth-=1
         }
-        switch next.Type() {
+        switch next.type {
         case NodeType.END: #done
         case nodeElse:
             # Special case for "else if" and "else with".
@@ -645,7 +645,7 @@ def parse(
                 elseList.append(t.withControl())
             } else {
                 elseList, next = t.itemList()
-                if next.Type() != NodeType.END {
+                if next.type != NodeType.END {
                     t.errorf("expected end; found %s", next)
                 }
             }
@@ -725,7 +725,7 @@ def parse(
         block.startParse(t.funcs, t.lex, t.tree_set)
         var end Node
         block.Root, end = block.itemList()
-        if end.Type() != NodeType.END {
+        if end.type != NodeType.END {
             t.errorf("unexpected %s in %s", end, context)
         }
         block.add()
@@ -810,7 +810,7 @@ def parse(
             # Otherwise, keep the Chain node.
             # Obvious parsing errors involving literal values are detected here.
             # More complex error cases will have to be handled at execution time.
-            switch node.Type() {
+            switch node.type {
             case NodeField:
                 node = t.newField(chain.Position(), chain.String())
             case NodeVariable:
