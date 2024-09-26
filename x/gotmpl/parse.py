@@ -28,13 +28,17 @@ from .lex import Token
 from .lex import TokenType
 from .nodes import ActionNode
 from .nodes import BoolNode
+from .nodes import BranchNode
+from .nodes import BreakNode
 from .nodes import ChainNode
 from .nodes import CommandNode
 from .nodes import CommentNode
+from .nodes import ContinueNode
 from .nodes import DotNode
 from .nodes import ElseNode
 from .nodes import EndNode
 from .nodes import FieldNode
+from .nodes import IfNode
 from .nodes import ListNode
 from .nodes import NilNode
 from .nodes import Node

@@ -349,55 +349,55 @@ class ElseNode(Node):
         return self.tree.new_else(self.pos, self.line)
 
 
-"""
-
 @dc.dataclass()
 class BranchNode(Node):
     # BranchNode is the common representation of if, range, and with.
-    
-    line     : int       # The line number in the input. Deprecated: Kept for compatibility.
-    pipe     : PipeNode # The pipeline to be evaluated.
-    lst      : ListNode # What to execute if the value is non-empty.
-    else_lst : ListNode # What to execute if the value is empty (nil if absent).
+
+    line: int  # The line number in the input. Deprecated: Kept for compatibility.
+    pipe: PipeNode  # The pipeline to be evaluated.
+    lst: ListNode  # What to execute if the value is non-empty.
+    else_lst: ListNode  # What to execute if the value is empty (nil if absent).
 
     def copy(self) -> Node:
-        switch b.NodeType {
-        case NodeIf:
-            return b.tr.newIf(b.Pos, b.Line, b.Pipe, b.List, b.ElseList)
-        case NodeRange:
-            return b.tr.newRange(b.Pos, b.Line, b.Pipe, b.List, b.ElseList)
-        case NodeWith:
-            return b.tr.newWith(b.Pos, b.Line, b.Pipe, b.List, b.ElseList)
-        default:
-            panic("unknown branch type")
+        if self.type == NodeType.IF:
+            return self.tree.new_if(self.pos, self.line, self.pipe, self.lst, self.else_lst)
+        elif self.type == NodeType.RANGE:
+            return self.tree.new_range(self.pos, self.line, self.pipe, self.lst, self.else_lst)
+        elif self.type == NodeType.WITH:
+            return self.tree.new_with(self.pos, self.line, self.pipe, self.lst, self.else_lst)
+        else:
+            raise TypeError(self)
+
 
 @dc.dataclass()
-type IfNode(BranchNode):
+class IfNode(BranchNode):
     # IfNode represents an {{if}} action and its commands.
 
     def copy(self) -> Node:
-    def (i *IfNode) Copy() Node {
-        return i.tr.newIf(i.Pos, i.Line, i.Pipe.CopyPipe(), i.List.CopyList(), i.ElseList.CopyList())
-    }
+        return self.tree.new_if(i.pos, i.line, i.pipe.copy_pipe(), self.lst.copy_list(), self.else_lst.copy_list())
+
 
 @dc.dataclass()
 class BreakNode(Node):
     # BreakNode represents a {{break}} action.
-    
-    Line int
+
+    line: int
 
     def copy(self) -> Node:
-    def (b *BreakNode) Copy() Node                  { return b.tr.newBreak(b.Pos, b.Line) }
+        return self.tree.new_break(self.pos, self.line)
 
 
 @dc.dataclass()
 class ContinueNode(Node):
     # ContinueNode represents a {{continue}} action.
 
-    Line int
+    line: int
 
     def copy(self) -> Node:
-    def (c *ContinueNode) Copy() Node                  { return c.tr.newContinue(c.Pos, c.Line) }
+        return self.tree.new_continue(self.pos, self.line)
+
+
+"""
 
 
 @dc.dataclass()
