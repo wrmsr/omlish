@@ -73,6 +73,54 @@ class Tree:
     def new_action(self, pos: Pos, line: int, pipe: PipeNode) -> ActionNode:
         return ActionNode(tree=self, type=NodeType.ACTION, pos=pos, line=line, pipe=pipe)
 
+    def new_command(self, pos: Pos) -> CommandNode:
+        return CommandNode(tree=self, type=NodeType.COMMAND, pos=pos)
+
+    def new_variable(self, pos: Pos, ident: str) -> VariableNode:
+        return VariableNode(tree=self, type=NodeType.VARIABLE, pos=pos, ident=ident.split('.'))
+
+    def new_dot(self, pos: Pos) -> DotNode:
+        return DotNode(tree=self, type=NodeType.DOT, pos=pos)
+
+    def new_nil(self, pos: Pos) -> NilNode:
+        return NilNode(tree=self, type=NodeType.NIL, pos=pos)
+
+    def new_field(self, pos: Pos, ident: str) -> FieldNode:
+        return FieldNode(tree=self, type=NodeType.FIELD, pos=pos, ident=ident[1:].split('.'))  # [1:] to drop leading period  # noqa
+
+    def new_chain(self, pos: Pos, node: Node) -> ChainNode:
+        return ChainNode(tree=self, type=NodeType.CHAIN, pos=pos, node=node)
+
+    def new_bool(self, pos: Pos, is_true: bool) -> BoolNode:
+        return BoolNode(tree=self, type=NodeType.BOOL, pos=pos, is_true=is_true)
+
+    def new_string(self, pos: Pos, orig: str, text: str) -> StringNode:
+        return StringNode(tree=self, type=NodeType.STRING, pos=pos, quoted=orig, text=text)
+
+    def new_end(self, pos: Pos) -> EndNode:
+        return EndNode(tree=self, type=NodeType.END, pos=pos)
+
+    def new_else(self, pos: Pos, line: int) -> ElseNode:
+        return ElseNode(tree=self, type=NodeType.ELSE, pos=pos, line=line)
+
+    def new_if(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> IfNode:
+        return IfNode(BranchNode(tree=self, type=NodeType.IF, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+
+    def new_break(self, pos: Pos, line: int) -> BreakNode:
+        return BreakNode(tree=self, type=NodeType.BREAK, pos=pos, line=line)
+
+    def new_continue(self, pos: Pos, line: int) -> ContinueNode:
+        return ContinueNode(tree=self, type=NodeType.CONTINUE, pos=pos, line=line)
+
+    def new_range(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_list) -> RangeNode:
+        return RangeNode(BranchNode(tree=self, type=NodeType.RANGE, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+
+    def new_with(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> WithNode:
+        return WithNode(BranchNode(tree=self, type=NodeType.WITH, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+
+    def new_template(self, pos: Pos, line: int, name: str, pipe: PipeNode) -> TemplateNode:
+        return TemplateNode(tree=self, type=NodeType.TEMPLATE, pos=pos, line=line, name=name, pipe=pipe)
+
     #
 
     def next(self) -> Token:
