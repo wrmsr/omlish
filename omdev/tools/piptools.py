@@ -56,6 +56,7 @@ class Cli(ap.Cli):
         ap.arg('path', nargs='*'),
     )
     def list_root_dists(self) -> None:
+        # FIXME: track req extras - tuple[str, str] with ('pkg', '') as 'bare'?
         paths = self.args.path or sys.path
 
         dists: set[str] = set()
