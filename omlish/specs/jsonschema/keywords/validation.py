@@ -1,5 +1,4 @@
-from omlish import lang
-
+from .... import lang
 from .base import BooleanKeyword
 from .base import Keyword
 from .base import KeywordsKeyword

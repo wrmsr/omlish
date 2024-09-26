@@ -47,7 +47,7 @@ def unregister_on_raise(fn: OnRaiseFn) -> None:
 _ARGS_RENDERER: ta.Callable[..., str | None] | None = None
 
 
-def _enable_args_rendering() -> bool:
+def _try_enable_args_rendering() -> bool:
     global _ARGS_RENDERER
     if _ARGS_RENDERER is not None:
         return True
@@ -71,19 +71,19 @@ def _enable_args_rendering() -> bool:
     return True
 
 
-_ENABLED_ARGS_RENDERING: bool | None = None
+_TRIED_ENABLED_ARGS_RENDERING: bool | None = None
 
 
-def enable_args_rendering() -> bool:
-    global _ENABLED_ARGS_RENDERING
-    if _ENABLED_ARGS_RENDERING is not None:
-        return _ENABLED_ARGS_RENDERING
+def try_enable_args_rendering() -> bool:
+    global _TRIED_ENABLED_ARGS_RENDERING
+    if _TRIED_ENABLED_ARGS_RENDERING is not None:
+        return _TRIED_ENABLED_ARGS_RENDERING
 
     with _CONFIG_LOCK:
-        if _ENABLED_ARGS_RENDERING is None:
-            _ENABLED_ARGS_RENDERING = _enable_args_rendering()
+        if _TRIED_ENABLED_ARGS_RENDERING is None:
+            _TRIED_ENABLED_ARGS_RENDERING = _try_enable_args_rendering()
 
-        return _ENABLED_ARGS_RENDERING
+        return _TRIED_ENABLED_ARGS_RENDERING
 
 
 ##
@@ -132,7 +132,7 @@ def _raise(
         **ak.kwargs,
     )
 
-    enable_args_rendering()
+    try_enable_args_rendering()
 
     for fn in _ON_RAISE:
         fn(exc)

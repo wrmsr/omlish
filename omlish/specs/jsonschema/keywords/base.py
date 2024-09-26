@@ -1,11 +1,11 @@
 import operator
 import typing as ta
 
-from omlish import cached
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
+from .... import cached
+from .... import check
+from .... import collections as col
+from .... import dataclasses as dc
+from .... import lang
 
 
 KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
