@@ -21,13 +21,13 @@ import typing as ta
 
 
 DEFAULT_CLI_PKG = 'omdev-cli'
-DEFAULT_PY_VERSION = '3.12'
+DEFAULT_PY_VER = '3.12'
 
 
 @dc.dataclass(frozen=True)
 class InstallOpts:
     cli_pkg: str = DEFAULT_CLI_PKG
-    py_version: str = DEFAULT_PY_VERSION
+    py_ver: str = DEFAULT_PY_VER
 
     extras: ta.Sequence[str] = dc.field(default_factory=list)
 
@@ -75,7 +75,7 @@ class UvInstallMgr(InstallMgr):
             'install',
             '--refresh',
             '--prerelease=allow',
-            f'--python={opts.py_version}',
+            f'--python={opts.py_ver}',
             opts.cli_pkg,
             *itertools.chain.from_iterable(['--with', e] for e in (opts.extras or [])),
         ])
@@ -103,7 +103,7 @@ class PipxInstallMgr(InstallMgr):
         subprocess.check_call([
             'pipx',
             'install',
-            f'--python={opts.py_version}',
+            f'--python={opts.py_ver}',
             opts.cli_pkg,
             *itertools.chain.from_iterable(['--preinstall', e] for e in (opts.extras or [])),
         ])
@@ -121,7 +121,7 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--cli', default=DEFAULT_CLI_PKG)
-    parser.add_argument('-p', '--py', default=DEFAULT_PY_VERSION)
+    parser.add_argument('-p', '--py', default=DEFAULT_PY_VER)
     parser.add_argument('-m', '--mgr')
     parser.add_argument('extra', nargs='*')
     args = parser.parse_args()
@@ -151,7 +151,7 @@ def _main() -> None:
 
     im.install(InstallOpts(
         cli_pkg=cli,
-        py_version=py,
+        py_ver=py,
         extras=args.extra,
     ))
 
