@@ -9,4 +9,6 @@ https://github.com/python-lsp/python-lsp-server
 https://github.com/pappasam/jedi-language-server
 https://github.com/DetachHead/basedpyright
 https://github.com/mtshiba/pylyzer
+
+https://github.com/microsoft/pyright/blob/main/docs/mypy-comparison.md
 """
