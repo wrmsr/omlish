@@ -157,35 +157,28 @@ class ActionNode(Node):
 """
 
 
-func (t *Tree) newCommand(pos Pos) *CommandNode {
-    return &CommandNode{tr: t, NodeType: NodeCommand, Pos: pos}
-}
+    def new_command(self, pos: Pos) -> CommandNode:
+        return &CommandNode{tr: t, NodeType: NodeCommand, Pos: pos}
 
-func (t *Tree) newVariable(pos Pos, ident string) *VariableNode {
-    return &VariableNode{tr: t, NodeType: NodeVariable, Pos: pos, Ident: strings.Split(ident, ".")}
-}
+    def new_variable(self, pos: Pos, ident string) -> VariableNode:
+        return &VariableNode{tr: t, NodeType: NodeVariable, Pos: pos, Ident: strings.Split(ident, ".")}
 
-func (t *Tree) newDot(pos Pos) *DotNode {
-    return &DotNode{tr: t, NodeType: NodeDot, Pos: pos}
-}
+    def new_dot(self, pos: Pos) -> DotNode:
+        return &DotNode{tr: t, NodeType: NodeDot, Pos: pos}
 
-func (t *Tree) newNil(pos Pos) *NilNode {
-    return &NilNode{tr: t, NodeType: NodeNil, Pos: pos}
-}
+    def new_nil(self, pos: Pos) -> NilNode:
+        return &NilNode{tr: t, NodeType: NodeNil, Pos: pos}
 
-func (t *Tree) newField(pos Pos, ident string) *FieldNode {
-    return &FieldNode{tr: t, NodeType: NodeField, Pos: pos, Ident: strings.Split(ident[1:], ".")} # [1:] to drop leading period
-}
+    def new_field(self, pos: Pos, ident string) -> FieldNode:
+        return &FieldNode{tr: t, NodeType: NodeField, Pos: pos, Ident: strings.Split(ident[1:], ".")} # [1:] to drop leading period
 
-func (t *Tree) newChain(pos Pos, node Node) *ChainNode {
-    return &ChainNode{tr: t, NodeType: NodeChain, Pos: pos, Node: node}
-}
+    def new_chain(self, pos: Pos, node Node) -> ChainNode:
+        return &ChainNode{tr: t, NodeType: NodeChain, Pos: pos, Node: node}
 
-func (t *Tree) newBool(pos Pos, true bool) *BoolNode {
-    return &BoolNode{tr: t, NodeType: NodeBool, Pos: pos, True: true}
-}
+    def new_bool(self, pos: Pos, true bool) -> BoolNode:
+        return &BoolNode{tr: t, NodeType: NodeBool, Pos: pos, True: true}
 
-func (t *Tree) newNumber(pos Pos, text string, typ itemType) (*NumberNode, error) {
+def new_number(self, pos: Pos, text string, typ itemType) (*NumberNode, error) {
     n := &NumberNode{tr: t, NodeType: NodeNumber, Pos: pos, Text: text}
     switch typ {
     case itemCharConstant:
@@ -271,41 +264,32 @@ func (t *Tree) newNumber(pos Pos, text string, typ itemType) (*NumberNode, error
     return n, nil
 }
 
-func (t *Tree) newString(pos Pos, orig, text string) *StringNode {
-    return &StringNode{tr: t, NodeType: NodeString, Pos: pos, Quoted: orig, Text: text}
-}
+    def new_string(self, pos: Pos, orig, text string) -> StringNode:
+        return &StringNode{tr: t, NodeType: NodeString, Pos: pos, Quoted: orig, Text: text}
 
-func (t *Tree) newEnd(pos Pos) *endNode {
-    return &endNode{tr: t, NodeType: nodeEnd, Pos: pos}
-}
+    def new_end(self, pos: Pos) -> endNode:
+        return &endNode{tr: t, NodeType: nodeEnd, Pos: pos}
 
-func (t *Tree) newElse(pos Pos, line int) *elseNode {
-    return &elseNode{tr: t, NodeType: nodeElse, Pos: pos, Line: line}
-}
+    def new_else(self, pos: Pos, line: int) -> elseNode:
+        return &elseNode{tr: t, NodeType: nodeElse, Pos: pos, Line: line}
 
-func (t *Tree) newIf(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *IfNode {
-    return &IfNode{BranchNode{tr: t, NodeType: NodeIf, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
-}
+    def new_if(self, pos: Pos, line: int, pipe *PipeNode, list, elseList *ListNode) -> IfNode:
+        return &IfNode{BranchNode{tr: t, NodeType: NodeIf, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 
-func (t *Tree) newBreak(pos Pos, line int) *BreakNode {
-    return &BreakNode{tr: t, NodeType: NodeBreak, Pos: pos, Line: line}
-}
+    def new_break(self, pos: Pos, line: int) -> BreakNode:
+        return &BreakNode{tr: t, NodeType: NodeBreak, Pos: pos, Line: line}
 
-func (t *Tree) newContinue(pos Pos, line int) *ContinueNode {
-    return &ContinueNode{tr: t, NodeType: NodeContinue, Pos: pos, Line: line}
-}
+    def new_continue(self, pos: Pos, line: int) -> ContinueNode:
+        return &ContinueNode{tr: t, NodeType: NodeContinue, Pos: pos, Line: line}
 
-func (t *Tree) newRange(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *RangeNode {
-    return &RangeNode{BranchNode{tr: t, NodeType: NodeRange, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
-}
+    def new_range(self, pos: Pos, line: int, pipe *PipeNode, list, elseList *ListNode) -> RangeNode:
+        return &RangeNode{BranchNode{tr: t, NodeType: NodeRange, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 
-func (t *Tree) newWith(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *WithNode {
-    return &WithNode{BranchNode{tr: t, NodeType: NodeWith, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
-}
+    def new_with(self, pos: Pos, line: int, pipe *PipeNode, list, elseList *ListNode) -> WithNode:
+        return &WithNode{BranchNode{tr: t, NodeType: NodeWith, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 
-func (t *Tree) newTemplate(pos Pos, line int, name string, pipe *PipeNode) *TemplateNode {
-    return &TemplateNode{tr: t, NodeType: NodeTemplate, Pos: pos, Line: line, Name: name, Pipe: pipe}
-}
+    def new_template(self, pos: Pos, line: int, name string, pipe *PipeNode) -> TemplateNode:
+        return &TemplateNode{tr: t, NodeType: NodeTemplate, Pos: pos, Line: line, Name: name, Pipe: pipe}
 
 
 
