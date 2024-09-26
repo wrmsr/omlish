@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
+# @omlish-lite
+# @omlish-script
 """
 TODO:
- - usable as 'curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/x/cli_install.py | python3'
- - used for self-reinstall, preserving non-root dists
+ - used for self-reinstall, preserving non-root dists - fix list_root_dists
+
+==
+
+curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/x/cli_install.py | python3
 """
 import abc
 import argparse
 import dataclasses as dc
 import itertools
-import re
+import json
 import shutil
 import subprocess
 import sys
@@ -23,10 +28,15 @@ DEFAULT_PY_VERSION = '3.12'
 class InstallOpts:
     cli_pkg: str
     py_version: str
-    extras: ta.Sequence[str] = dc.field(default_factory=list, kw_only=True)
+
+    extras: ta.Sequence[str] = dc.field(default_factory=list)
 
 
 class InstallMgr(abc.ABC):
+    @abc.abstractmethod
+    def is_available(self) -> bool:
+        raise NotImplementedError
+
     @abc.abstractmethod
     def uninstall(self, cli_pkg: str) -> None:
         raise NotImplementedError
@@ -37,6 +47,9 @@ class InstallMgr(abc.ABC):
 
 
 class UvInstallMgr(InstallMgr):
+    def is_available(self) -> bool:
+        return bool(shutil.which('uv'))
+
     def uninstall(self, cli_pkg: str) -> None:
         out = subprocess.check_output(['uv', 'tool', 'list']).decode()
 
@@ -52,11 +65,12 @@ class UvInstallMgr(InstallMgr):
 
         subprocess.check_call([
             'uv', 'tool',
-            'uninstall', cli_pkg,
+            'uninstall',
+            cli_pkg,
         ])
 
     def install(self, opts: InstallOpts) -> None:
-        subprocess.run([
+        subprocess.check_call([
             'uv', 'tool',
             'install',
             '--refresh',
@@ -68,40 +82,47 @@ class UvInstallMgr(InstallMgr):
 
 
 class PipxInstallMgr(InstallMgr):
-    _INSTALLED_PAT: ta.ClassVar[ta.Pattern] = re.compile(r'^\s+package\s+(?P<pkg>[a-zA-Z\-_][a-zA-Z0-9\-_]*)')
+    def is_available(self) -> bool:
+        return bool(shutil.which('pipx'))
 
     def uninstall(self, cli_pkg: str) -> None:
-        out = subprocess.check_output(['pipx', 'list'])
+        out = subprocess.check_output(['pipx', 'list', '--json']).decode()
 
-        installed = {
-            m.groupdict()['pkg']
-            for l in out.splitlines()
-            if (s := l.strip())
-            and (m := self._INSTALLED_PAT.match(s))
-        }
+        dct = json.loads(out)
 
-        raise NotImplementedError
+        if cli_pkg not in dct.get('venvs', {}):
+            return
+
+        subprocess.check_call([
+            'pipx',
+            'uninstall',
+            cli_pkg,
+        ])
 
     def install(self, opts: InstallOpts) -> None:
-        # FIXME: py_version
-
-        subprocess.run([
+        subprocess.check_call([
             'pipx',
             'install',
+            f'--python={opts.py_version}',
             opts.cli_pkg,
             *itertools.chain.from_iterable(['--preinstall', e] for e in (opts.extras or [])),
         ])
 
 
+INSTALL_MGRS = {
+    'uv': UvInstallMgr(),
+    'pipx': PipxInstallMgr(),
+}
+
 
 def _main() -> None:
-    if sys.version_info < (3, 8):
+    if sys.version_info < (3, 8):  # noqa
         raise RuntimeError(f'Unsupported python version: {sys.version_info}')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cli', default=DEFAULT_CLI_PKG)
-    parser.add_argument('--py', default=DEFAULT_PY_VERSION)
-    parser.add_argument('--mgr')
+    parser.add_argument('-c', '--cli', default=DEFAULT_CLI_PKG)
+    parser.add_argument('-p', '--py', default=DEFAULT_PY_VERSION)
+    parser.add_argument('-m', '--mgr')
     parser.add_argument('extra', nargs='*')
     args = parser.parse_args()
 
@@ -119,22 +140,20 @@ def _main() -> None:
         else:
             raise RuntimeError("Can't find package manager")
 
-    if mgr == 'uv':
-        _install_uv(
-            cli,
-            py,
-            extras=args.extra,
-        )
-
-    elif mgr == 'pipx':
-        _install_pipx(
-            cli,
-            py,
-            extras=args.extra,
-        )
-
-    else:
+    if (im := INSTALL_MGRS.get(mgr)) is None:
         raise ValueError(f'Unsupported mgr: {mgr}')
+    if not im.is_available():
+        raise ValueError(f'Unavailable mgr: {mgr}')
+
+    for m in INSTALL_MGRS.values():
+        if m.is_available():
+            m.uninstall(cli)
+
+    im.install(InstallOpts(
+        cli_pkg=cli,
+        py_version=py,
+        extras=args.extra,
+    ))
 
 
 if __name__ == '__main__':
