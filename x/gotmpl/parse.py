@@ -117,7 +117,7 @@ class Tree:
         n = NumberNode(tree=self, type=NodeType.NUMBER, pos=pos, text=text)  # noqa
 
         # switch typ {
-        # case itemCharConstant:
+        # case TokenType.CHAR_CONSTANT:
         #     rune, _, tail, err := strconv.UnquoteChar(text[1:], text[0])
         #     if err != nil {
         #         return nil, err
@@ -132,7 +132,7 @@ class Tree:
         #     n.Float64 = float64(rune) # odd but those are the rules.
         #     n.IsFloat = true
         #     return n, nil
-        # case itemComplex:
+        # case TokenType.COMPLEX:
         #     # fmt.Sscan can parse the pair, so let it do the work.
         #     if _, err := fmt.Sscan(text, &n.Complex128); err != nil {
         #         return nil, err
@@ -179,7 +179,7 @@ class Tree:
         #         # If we parsed it as a float but it looks like an integer,
         #         # it's a huge number too large to fit in an int. Reject it.
         #         if !strings.ContainsAny(text, ".eEpP") {
-        #             return nil, fmt.Errorf("integer overflow: %q", text)
+        #             return nil, fmt.Errorf("integer overflow: %r", text)
         #         }
         #         n.IsFloat = true
         #         n.Float64 = f
@@ -195,7 +195,7 @@ class Tree:
         #     }
         # }
         # if !n.IsInt and !n.IsUint and !n.IsFloat {
-        #     return nil, fmt.Errorf("illegal number syntax: %q", text)
+        #     return nil, fmt.Errorf("illegal number syntax: %r", text)
         # }
         # return n, nil
 
@@ -384,6 +384,15 @@ class Tree:
             self.stop_parse()
             raise e
 
+    def add(self) -> None:
+        # add adds tree to t.tree_set.
+        tree = self._tree_set[self._name]
+        if tree is None or is_empty_tree(tree._root):
+            self._tree_set[self._name] = self
+            return
+        if not is_empty_tree(self._root):
+            self.errorf('template: multiple definition of template %r', self._name)
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -408,26 +417,14 @@ def parse(
 
 
 """
-    def (t *Tree) add() {
-        # add adds tree to t.tree_set.
-        tree := t.tree_set[t.Name]
-        if tree == nil or is_empty_tree(tree.Root) {
-            t.tree_set[t.Name] = t
-            return
-        }
-        if !is_empty_tree(t.Root) {
-            t.errorf("template: multiple definition of template %q", t.Name)
-        }
-    }
-
-    def (t *Tree) parse() {
-        # parse is the top-level parser for a template, essentially the same as itemList except it also parses
+    def parse(self) -> None:
+        # parse is the top-level parser for a template, essentially the same as TokenType.LIST except it also parses
         # {{define}} actions. It runs to EOF.
-        t.Root = t.newList(t.peek().pos)
-        for t.peek().typ != itemEOF {
-            if t.peek().typ == itemLeftDelim {
+        self._root = t.newList(t.peek().pos)
+        while self.peek().typ != TokenType.EOF {
+            if t.peek().typ == TokenType.LEFT_DELIM {
                 delim := t.next()
-                if t.next_non_space().typ == itemDefine {
+                if t.next_non_space().typ == TokenType.DEFINE {
                     newT := New("definition") # name will be updated once we know it.
                     newT.text = t.text
                     newT.Mode = t.Mode
@@ -442,7 +439,7 @@ def parse(
             case nodeEnd, nodeElse:
                 t.errorf("unexpected %s", n)
             default:
-                t.Root.append(n)
+                self._root.append(n)
             }
         }
     }
@@ -451,15 +448,15 @@ def parse(
         # parseDefinition parses a {{define}} ...  {{end}} template definition and installs the definition in
         # t.tree_set. The "define" keyword has already been scanned.
         const context = "define clause"
-        name := t.expect_one_of(itemString, itemRawString, context)
+        name := t.expect_one_of(TokenType.STRING, TokenType.RAW_STRING, context)
         var err error
-        t.Name, err = strconv.Unquote(name.val)
+        self._name, err = strconv.Unquote(name.val)
         if err != nil {
             t.error(err)
         }
-        t.expect(itemRightDelim, context)
+        t.expect(TokenType.RIGHT_DELIM, context)
         var end Node
-        t.Root, end = t.itemList()
+        self._root, end = t.itemList()
         if end.Type() != nodeEnd {
             t.errorf("unexpected %s in %s", end, context)
         }
@@ -474,7 +471,7 @@ def parse(
         #
         # Terminates at {{end}} or {{else}}, returned separately.
         list = t.newList(t.peek_non_space().pos)
-        for t.peek_non_space().typ != itemEOF {
+        for t.peek_non_space().typ != TokenType.EOF {
             n := t.textOrAction()
             switch n.Type() {
             case nodeEnd, nodeElse:
@@ -491,13 +488,13 @@ def parse(
         #
         #    text | comment | action
         switch token := t.next_non_space(); token.typ {
-        case itemText:
+        case TokenType.TEXT:
             return t.newText(token.pos, token.val)
-        case itemLeftDelim:
+        case TokenType.LEFT_DELIM:
             t.action_line = token.line
             defer t.clearActionLine()
             return t.action()
-        case itemComment:
+        case TokenType.COMMENT:
             return t.newComment(token.pos, token.val)
         default:
             t.unexpected(token, "input")
@@ -518,29 +515,29 @@ def parse(
         # Left delim is past. Now get actions.
         # First word could be a keyword such as range.
         switch token := t.next_non_space(); token.typ {
-        case itemBlock:
+        case TokenType.BLOCK:
             return t.blockControl()
-        case itemBreak:
+        case TokenType.BREAK:
             return t.breakControl(token.pos, token.line)
-        case itemContinue:
+        case TokenType.CONTINUE:
             return t.continueControl(token.pos, token.line)
-        case itemElse:
+        case TokenType.ELSE:
             return t.elseControl()
-        case itemEnd:
+        case TokenType.END:
             return t.endControl()
-        case itemIf:
+        case TokenType.IF:
             return t.ifControl()
-        case itemRange:
+        case TokenType.RANGE:
             return t.rangeControl()
-        case itemTemplate:
+        case TokenType.TEMPLATE:
             return t.templateControl()
-        case itemWith:
+        case TokenType.WITH:
             return t.withControl()
         }
         t.backup()
         token := t.peek()
         # Do not pop variables; they persist until "end".
-        return t.newAction(token.pos, token.line, t.pipeline("command", itemRightDelim))
+        return t.newAction(token.pos, token.line, t.pipeline("command", TokenType.RIGHT_DELIM))
     }
 
     def (t *Tree) breakControl(pos Pos, line int) Node {
@@ -549,7 +546,7 @@ def parse(
         #    {{break}}
         #
         # Break keyword is past.
-        if token := t.next_non_space(); token.typ != itemRightDelim {
+        if token := t.next_non_space(); token.typ != TokenType.RIGHT_DELIM {
             t.unexpected(token, "{{break}}")
         }
         if t.range_depth == 0 {
@@ -564,7 +561,7 @@ def parse(
         #    {{continue}}
         #
         # Continue keyword is past.
-        if token := t.next_non_space(); token.typ != itemRightDelim {
+        if token := t.next_non_space(); token.typ != TokenType.RIGHT_DELIM {
             t.unexpected(token, "{{continue}}")
         }
         if t.range_depth == 0 {
@@ -581,7 +578,7 @@ def parse(
         pipe = t.newPipeline(token.pos, token.line, nil)
         # Are there declarations or assignments?
     decls:
-        if v := t.peek_non_space(); v.typ == itemVariable {
+        if v := t.peek_non_space(); v.typ == TokenType.VARIABLE {
             t.next()
             # Since space is a token, we need 3-token look-ahead here in the worst case:
             # in "$x foo" we need to read "foo" (as opposed to ":=") to know that $x is an
@@ -590,18 +587,18 @@ def parse(
             tokenAfterVariable := t.peek()
             next := t.peek_non_space()
             switch {
-            case next.typ == itemAssign, next.typ == itemDeclare:
-                pipe.IsAssign = next.typ == itemAssign
+            case next.typ == TokenType.ASSIGN, next.typ == TokenType.DECLARE:
+                pipe.IsAssign = next.typ == TokenType.ASSIGN
                 t.next_non_space()
                 pipe.Decl = append(pipe.Decl, t.newVariable(v.pos, v.val))
                 t.vars = append(t.vars, v.val)
-            case next.typ == itemChar and next.val == ",":
+            case next.typ == TokenType.CHAR and next.val == ",":
                 t.next_non_space()
                 pipe.Decl = append(pipe.Decl, t.newVariable(v.pos, v.val))
                 t.vars = append(t.vars, v.val)
                 if context == "range" and len(pipe.Decl) < 2 {
                     switch t.peek_non_space().typ {
-                    case itemVariable, itemRightDelim, itemRightParen:
+                    case TokenType.VARIABLE, TokenType.RIGHT_DELIM, TokenType.RIGHT_PAREN:
                         # second initialized variable in a range pipeline
                         goto decls
                     default:
@@ -609,7 +606,7 @@ def parse(
                     }
                 }
                 t.errorf("too many declarations in %s", context)
-            case tokenAfterVariable.typ == itemSpace:
+            case tokenAfterVariable.typ == TokenType.SPACE:
                 t.backup3(v, tokenAfterVariable)
             default:
                 t.backup2(v)
@@ -621,8 +618,8 @@ def parse(
                 # At this point, the pipeline is complete
                 t.checkPipeline(pipe, context)
                 return
-            case itemBool, itemCharConstant, itemComplex, itemDot, itemField, itemIdentifier,
-                itemNumber, itemNil, itemRawString, itemString, itemVariable, itemLeftParen:
+            case TokenType.BOOL, TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.DOT, TokenType.FIELD, TokenType.IDENTIFIER,
+                TokenType.NUMBER, TokenType.NIL, TokenType.RAWS_TRING, TokenType.STRING, TokenType.VARIABLE, TokenType.LEFT_PAREN:
                 t.backup()
                 pipe.append(t.command())
             default:
@@ -648,7 +645,7 @@ def parse(
 
     def (t *Tree) parseControl(context str) (pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) {
         defer t.popVars(len(t.vars))
-        pipe = t.pipeline(context, itemRightDelim)
+        pipe = t.pipeline(context, TokenType.RIGHT_DELIM)
         if context == "range" {
             t.range_depth+=1
         }
@@ -670,11 +667,11 @@ def parse(
             #  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
             # To do this, parse the "if" or "with" as usual and stop at it {{end}};
             # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
-            if context == "if" and t.peek().typ == itemIf {
+            if context == "if" and t.peek().typ == TokenType.IF {
                 t.next() # Consume the "if" token.
                 elseList = t.newList(next.Position())
                 elseList.append(t.ifControl())
-            } else if context == "with" and t.peek().typ == itemWith {
+            } else if context == "with" and t.peek().typ == TokenType.WITH {
                 t.next()
                 elseList = t.newList(next.Position())
                 elseList.append(t.withControl())
@@ -734,10 +731,10 @@ def parse(
         # The "{{else if ... " and "{{else with ..." will be
         # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
         # So return the else node here.
-        if peek.typ == itemIf or peek.typ == itemWith {
+        if peek.typ == TokenType.IF or peek.typ == TokenType.WITH {
             return t.newElse(peek.pos, peek.line)
         }
-        token := t.expect(itemRightDelim, "else")
+        token := t.expect(TokenType.RIGHT_DELIM, "else")
         return t.newElse(token.pos, token.line)
     }
 
@@ -753,7 +750,7 @@ def parse(
 
         token := t.next_non_space()
         name := t.parseTemplateName(token, context)
-        pipe := t.pipeline(context, itemRightDelim)
+        pipe := t.pipeline(context, TokenType.RIGHT_DELIM)
 
         block := New(name) # name will be updated once we know it.
         block.text = t.text
@@ -781,17 +778,17 @@ def parse(
         token := t.next_non_space()
         name := t.parseTemplateName(token, context)
         var pipe *PipeNode
-        if t.next_non_space().typ != itemRightDelim {
+        if t.next_non_space().typ != TokenType.RIGHT_DELIM {
             t.backup()
             # Do not pop variables; they persist until "end".
-            pipe = t.pipeline(context, itemRightDelim)
+            pipe = t.pipeline(context, TokenType.RIGHT_DELIM)
         }
         return t.newTemplate(token.pos, token.line, name, pipe)
     }
 
     def (t *Tree) parseTemplateName(token Token, context str) (name str) {
         switch token.typ {
-        case itemString, itemRawString:
+        case TokenType.STRING, TokenType.RAW_STRING:
             s, err := strconv.Unquote(token.val)
             if err != nil {
                 t.error(err)
@@ -818,9 +815,9 @@ def parse(
                 cmd.append(operand)
             }
             switch token := t.next(); token.typ {
-            case itemSpace:
+            case TokenType.SPACE:
                 continue
-            case itemRightDelim, itemRightParen:
+            case TokenType.RIGHT_DELIM, TokenType.RIGHT_PAREN:
                 t.backup()
             case itemPipe:
                 # nothing here; break loop below
@@ -847,9 +844,9 @@ def parse(
         if node == nil {
             return nil
         }
-        if t.peek().typ == itemField {
+        if t.peek().typ == TokenType.FIELD {
             chain := t.newChain(t.peek().pos, node)
-            for t.peek().typ == itemField {
+            for t.peek().typ == TokenType.FIELD {
                 chain.Add(t.next().val)
             }
             # Compatibility with original API: If the term is of type NodeField
@@ -863,7 +860,7 @@ def parse(
             case NodeVariable:
                 node = t.newVariable(chain.Position(), chain.String())
             case NodeBool, NodeString, NodeNumber, NodeNil, NodeDot:
-                t.errorf("unexpected . after term %q", node.String())
+                t.errorf("unexpected . after term %r", node.String())
             default:
                 node = chain
             }
@@ -887,7 +884,7 @@ def parse(
         case itemIdentifier:
             checkFunc := t.Mode&SkipFuncCheck == 0
             if checkFunc and !t.hasFunction(token.val) {
-                t.errorf("function %q not defined", token.val)
+                t.errorf("function %r not defined", token.val)
             }
             return NewIdentifier(token.val).SetTree(t).SetPos(token.pos)
         case itemDot:
@@ -946,7 +943,7 @@ def parse(
                 return v
             }
         }
-        t.errorf("undefined variable %q", v.Ident[0])
+        t.errorf("undefined variable %r", v.Ident[0])
         return nil
     }
 
