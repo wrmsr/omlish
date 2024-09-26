@@ -32,12 +32,16 @@ from .nodes import ChainNode
 from .nodes import CommandNode
 from .nodes import CommentNode
 from .nodes import DotNode
+from .nodes import ElseNode
+from .nodes import EndNode
 from .nodes import FieldNode
 from .nodes import ListNode
 from .nodes import NilNode
 from .nodes import Node
 from .nodes import NodeType
+from .nodes import NumberNode
 from .nodes import PipeNode
+from .nodes import StringNode
 from .nodes import TextNode
 from .nodes import VariableNode
 

@@ -67,7 +67,7 @@ class Node(abc.ABC):
 
     type: NodeType
     pos: Pos
-    tree: ta.Optional['parse.Tree'}
+    tree: ta.Optional['parse.Tree']
 
     @abc.abstractmethod
     def copy(self) -> 'Node':
@@ -280,60 +280,51 @@ class BoolNode(Node):
         return self.tree.new_bool(self.pos, self.is_true)
 
 
-"""
-
 @dc.dataclass()
 class NumberNode(Node):
     # NumberNode holds a number: signed or unsigned integer, float, or complex. The value is parsed and stored under all
     # the types that can represent the value. This simulates in a small amount of code the behavior of Go's ideal
     # constants.
-    
-    IsInt      bool       # Number has an integral value.
-    IsUint     bool       # Number has an unsigned integral value.
-    IsFloat    bool       # Number has a floating-point value.
-    IsComplex  bool       # Number is complex.
-    Int64      int64      # The signed integer value.
-    Uint64     uint64     # The unsigned integer value.
-    Float64    float64    # The floating-point value.
-    Complex128 complex128 # The complex value.
-    Text       string     # The original textual representation from the input.
 
-    # simplifyComplex pulls out any other types that are represented by the complex number.
-    # These all require that the imaginary part be zero.
-    def (n *NumberNode) simplifyComplex() {
-        n.IsFloat = imag(n.Complex128) == 0
-        if n.IsFloat {
-            n.Float64 = real(n.Complex128)
-            n.IsInt = float64(int64(n.Float64)) == n.Float64
-            if n.IsInt {
-                n.Int64 = int64(n.Float64)
-            }
-            n.IsUint = float64(uint64(n.Float64)) == n.Float64
-            if n.IsUint {
-                n.Uint64 = uint64(n.Float64)
-            }
-        }
-    }
+    # IsInt      bool       # Number has an integral value.
+    # IsUint     bool       # Number has an unsigned integral value.
+    # IsFloat    bool       # Number has a floating-point value.
+    # IsComplex  bool       # Number is complex.
+    # Int64      int64      # The signed integer value.
+    # Uint64     uint64     # The unsigned integer value.
+    # Float64    float64    # The floating-point value.
+    # Complex128 complex128 # The complex value.
+
+    text: str  # The original textual representation from the input.
+
+    def simplify_complex(self) -> None:
+        # simplifyComplex pulls out any other types that are represented by the complex number. These all require that
+        # the imaginary part be zero.
+        # n.IsFloat = imag(n.Complex128) == 0
+        # if n.IsFloat
+        #     n.Float64 = real(n.Complex128)
+        #     n.IsInt = float64(int64(n.Float64)) == n.Float64
+        #     if n.IsInt
+        #         n.Int64 = int64(n.Float64)
+        #     n.IsUint = float64(uint64(n.Float64)) == n.Float64
+        #     if n.IsUint
+        #         n.Uint64 = uint64(n.Float64)
+        raise NotImplementedError
 
     def copy(self) -> Node:
-    def (n *NumberNode) Copy() Node {
-        nn := new(NumberNode)
-        *nn = *n # Easy, fast, correct.
+        nn = NumberNode(**dc.asdict(self))
         return nn
-    }
 
 
 @dc.dataclass()
 class StringNode(Node):
     # StringNode holds a string constant. The value has been "unquoted".
-    
-    Quoted string # The original text of the string, with quotes.
-    Text   string # The string, after quote processing.
+
+    quoted: str  # The original text of the string, with quotes.
+    text: str  # The string, after quote processing.
 
     def copy(self) -> Node:
-    def (s *StringNode) Copy() Node {
-        return s.tr.newString(s.Pos, s.Quoted, s.Text)
-    }
+        return self.tree.new_string(self.pos, self.quoted, self.text)
 
 
 @dc.dataclass()
@@ -341,38 +332,35 @@ class EndNode(Node):
     # EndNode represents an {{end}} action. It does not appear in the final parse tree.
 
     def copy(self) -> Node:
-    def (e *EndNode) Copy() Node {
-        return e.tr.newEnd(e.Pos)
-    }
+        return self.tree.new_end(self.pos)
 
 
 @dc.dataclass()
 class ElseNode(Node):
     # ElseNode represents an {{else}} action. Does not appear in the final tree.
-    
-    Line int # The line number in the input. Deprecated: Kept for compatibility.
 
-    def (e *ElseNode) Type() NodeType {
-        return nodeElse
-    }
+    line: int  # The line number in the input. Deprecated: Kept for compatibility.
+
+    # @property
+    # def type(self) -> NodeType:
+    #     return NodeType.ELSE
 
     def copy(self) -> Node:
-    def (e *ElseNode) Copy() Node {
-        return e.tr.newElse(e.Pos, e.Line)
-    }
+        return self.tree.new_else(self.pos, self.line)
 
+
+"""
 
 @dc.dataclass()
 class BranchNode(Node):
     # BranchNode is the common representation of if, range, and with.
     
-    Line     int       # The line number in the input. Deprecated: Kept for compatibility.
-    Pipe     *PipeNode # The pipeline to be evaluated.
-    List     *ListNode # What to execute if the value is non-empty.
-    ElseList *ListNode # What to execute if the value is empty (nil if absent).
+    line     : int       # The line number in the input. Deprecated: Kept for compatibility.
+    pipe     : PipeNode # The pipeline to be evaluated.
+    lst      : ListNode # What to execute if the value is non-empty.
+    else_lst : ListNode # What to execute if the value is empty (nil if absent).
 
     def copy(self) -> Node:
-    def (b *BranchNode) Copy() Node {
         switch b.NodeType {
         case NodeIf:
             return b.tr.newIf(b.Pos, b.Line, b.Pipe, b.List, b.ElseList)
@@ -382,8 +370,6 @@ class BranchNode(Node):
             return b.tr.newWith(b.Pos, b.Line, b.Pipe, b.List, b.ElseList)
         default:
             panic("unknown branch type")
-        }
-    }
 
 @dc.dataclass()
 type IfNode(BranchNode):
