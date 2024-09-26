@@ -9,9 +9,9 @@ from .. import lang
 
 
 if ta.TYPE_CHECKING:
-    docker = lang.proxy_import('omlish.docker')
+    docker = lang.proxy_import('..docker')
 else:
-    from omlish import docker
+    from .. import docker
 
 
 ##
