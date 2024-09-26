@@ -466,6 +466,38 @@ class Tree:
     def clear_action_line(self) -> None:
         self._action_line = 0
 
+    def action(self) -> Node:
+        # Action:
+        #
+        #    control
+        #    command ("|" command)*
+        #
+        # Left delim is past. Now get actions.
+        # First word could be a keyword such as range.
+        token = self.next_non_space()
+        if token.typ == TokenType.BLOCK:
+            return self.block_control()
+        elif token.typ == TokenType.BREAK:
+            return self.break_control(token.pos, token.line)
+        elif token.typ == TokenType.CONTINUE:
+            return self.continue_control(token.pos, token.line)
+        elif token.typ == TokenType.ELSE:
+            return self.else_control()
+        elif token.typ == TokenType.END:
+            return self.end_control()
+        elif token.typ == TokenType.IF:
+            return self.if_control()
+        elif token.typ == TokenType.RANGE:
+            return self.range_control()
+        elif token.typ == TokenType.TEMPLATE:
+            return self.template_control()
+        elif token.typ == TokenType.WITH:
+            return self.with_control()
+        self.backup()
+        token = self.peek()
+        # Do not pop variables; they persist until 'end'.
+        return self.new_action(token.pos, token.line, t.pipeline('command', TokenType.RIGHT_DELIM))
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -490,37 +522,6 @@ def parse(
 
 
 """
-    def action(self) -> Node:
-        # Action:
-        #
-        #    control
-        #    command ("|" command)*
-        #
-        # Left delim is past. Now get actions.
-        # First word could be a keyword such as range.
-        switch token = t.next_non_space(); token.typ {
-        case TokenType.BLOCK:
-            return t.block_control()
-        case TokenType.BREAK:
-            return t.break_control(token.pos, token.line)
-        case TokenType.CONTINUE:
-            return t.continue_control(token.pos, token.line)
-        case TokenType.ELSE:
-            return t.else_control()
-        case TokenType.END:
-            return t.endControl()
-        case TokenType.IF:
-            return t.ifControl()
-        case TokenType.RANGE:
-            return t.rangeControl()
-        case TokenType.TEMPLATE:
-            return t.template_control()
-        case TokenType.WITH:
-            return t.withControl()
-        t.backup()
-        token = t.peek()
-        # Do not pop variables; they persist until "end".
-        return t.newAction(token.pos, token.line, t.pipeline("command", TokenType.RIGHT_DELIM))
 
     def break_control(self, pos: Pos, line: int) -> Node:
         # Break:
@@ -635,11 +636,11 @@ def parse(
             if context == "if" and t.peek().typ == TokenType.IF {
                 t.next() # Consume the "if" token.
                 elseLst = t.new_list(next.Position())
-                elseLst.append(t.ifControl())
+                elseLst.append(t.if_control())
             } else if context == "with" and t.peek().typ == TokenType.WITH {
                 t.next()
                 elseLst = t.new_list(next.Position())
-                elseLst.append(t.withControl())
+                elseLst.append(t.with_control())
             } else {
                 elseLst, next = t.item_list()
                 if next.type != NodeType.END {
