@@ -8,16 +8,39 @@ from omlish import lang
 from omlish import marshal as msh
 
 
+class MediaTypes(lang.Namespace):
+    # schema1 (existing manifest format)
+    MANIFEST_V1 = 'application/vnd.docker.distribution.manifest.v1+json'
+
+    # New image manifest format (schemaVersion = 2)
+    MANIFEST_V2 = 'application/vnd.docker.distribution.manifest.v2+json'
+
+    # Manifest list, aka "fat manifest"
+    MANIFEST_LIST = 'application/vnd.docker.distribution.manifest.list.v2+json'
+
+    # Container config JSON
+    CONTAINER_CONFIG = 'application/vnd.docker.container.image.v1+json'
+
+    # "Layer", as a gzipped tar
+    LAYER = 'application/vnd.docker.image.rootfs.diff.tar.gzip'
+
+    # "Layer", as a gzipped tar that should never be pushed
+    LAYER_NEVER_PUSH = 'application/vnd.docker.image.rootfs.foreign.diff.tar.gzip'
+
+    # Plugin config JSON
+    PLUGIN_CONFIG = 'application/vnd.docker.plugin.v1+json'
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
 @msh.update_fields_metadata(['os_version'], name='os.version')
 @msh.update_fields_metadata(['os_features'], name='os.features')
 class Platform(lang.Final):
     # The architecture field specifies the CPU architecture, for example amd64 or ppc64le.
-    architecture: str | None = None
+    architecture: str
 
     # The os field specifies the operating system, for example linux or windows.
-    os: str | None = None
+    os: str
 
     # The optional os.version field specifies the operating system version, for example 10.0.10586.
     os_version: str | None = None
