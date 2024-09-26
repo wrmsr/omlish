@@ -7,7 +7,7 @@ TODO:
 
 ==
 
-curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/x/cli_install.py | python3
+curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py | python3 -
 """
 import abc
 import argparse
