@@ -444,7 +444,7 @@ def parse(
         }
     }
 
-    def (t *Tree) parseDefinition() {
+    def parseDefinition() {
         # parseDefinition parses a {{define}} ...  {{end}} template definition and installs the definition in
         # t.tree_set. The "define" keyword has already been scanned.
         const context = "define clause"
@@ -464,7 +464,7 @@ def parse(
         t.stopParse()
     }
 
-    def (t *Tree) itemList() (list *ListNode, next Node) {
+    def itemList() (list *ListNode, next Node) {
         # itemList:
         #
         #    textOrAction*
@@ -483,7 +483,7 @@ def parse(
         return
     }
 
-    def (t *Tree) textOrAction() Node {
+    def textOrAction() Node {
         # textOrAction:
         #
         #    text | comment | action
@@ -502,11 +502,11 @@ def parse(
         return nil
     }
 
-    def (t *Tree) clearActionLine() {
+    def clearActionLine() {
         t.action_line = 0
     }
 
-    def (t *Tree) action() (n Node) {
+    def action() (n Node) {
         # Action:
         #
         #    control
@@ -540,7 +540,7 @@ def parse(
         return t.newAction(token.pos, token.line, t.pipeline("command", TokenType.RIGHT_DELIM))
     }
 
-    def (t *Tree) breakControl(pos Pos, line int) Node {
+    def breakControl(pos Pos, line int) Node {
         # Break:
         #
         #    {{break}}
@@ -555,7 +555,7 @@ def parse(
         return t.newBreak(pos, line)
     }
 
-    def (t *Tree) continueControl(pos Pos, line int) Node {
+    def continueControl(pos Pos, line int) Node {
         # Continue:
         #
         #    {{continue}}
@@ -570,7 +570,7 @@ def parse(
         return t.newContinue(pos, line)
     }
 
-    def (t *Tree) pipeline(context str, end TokenType) (pipe *PipeNode) {
+    def pipeline(context str, end TokenType) (pipe *PipeNode) {
         # Pipeline:
         #
         #    declarations? command ('|' command)*
@@ -628,7 +628,7 @@ def parse(
         }
     }
 
-    def (t *Tree) checkPipeline(pipe *PipeNode, context str) {
+    def checkPipeline(pipe *PipeNode, context str) {
         # Reject empty pipelines
         if len(pipe.Cmds) == 0 {
             t.errorf("missing value for %s", context)
@@ -643,7 +643,7 @@ def parse(
         }
     }
 
-    def (t *Tree) parseControl(context str) (pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) {
+    def parseControl(context str) (pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) {
         defer t.popVars(len(t.vars))
         pipe = t.pipeline(context, TokenType.RIGHT_DELIM)
         if context == "range" {
@@ -721,7 +721,7 @@ def parse(
         # End keyword is past.
         return self.new_end(self.expect(item_right_delim, 'end').pos)
 
-    def (t *Tree) elseControl() Node {
+    def elseControl() Node {
         # Else:
         #
         #    {{else}}
@@ -738,7 +738,7 @@ def parse(
         return t.newElse(token.pos, token.line)
     }
 
-    def (t *Tree) blockControl() Node {
+    def blockControl() Node {
         # Block:
         #
         #    {{block stringValue pipeline}}
@@ -768,7 +768,7 @@ def parse(
         return t.newTemplate(token.pos, token.line, name, pipe)
     }
 
-    def (t *Tree) templateControl() Node {
+    def templateControl() Node {
         # Template:
         #
         #    {{template stringValue pipeline}}
@@ -786,7 +786,7 @@ def parse(
         return t.newTemplate(token.pos, token.line, name, pipe)
     }
 
-    def (t *Tree) parseTemplateName(token Token, context str) (name str) {
+    def parseTemplateName(token Token, context str) (name str) {
         switch token.typ {
         case TokenType.STRING, TokenType.RAW_STRING:
             s, err := strconv.Unquote(token.val)
@@ -800,7 +800,7 @@ def parse(
         return
     }
 
-    def (t *Tree) command() *CommandNode {
+    def command() *CommandNode {
         # command:
         #
         #    operand (space operand)*
@@ -832,7 +832,7 @@ def parse(
         return cmd
     }
 
-    def (t *Tree) operand() Node {
+    def operand() Node {
         # operand:
         #
         #    term .Field*
@@ -868,7 +868,7 @@ def parse(
         return node
     }
 
-    def (t *Tree) term() Node {
+    def term() Node {
         # term:
         #
         #    literal (number, str, nil, boolean)
@@ -916,7 +916,7 @@ def parse(
         return nil
     }
 
-    def (t *Tree) hasFunction(name str) bool {
+    def hasFunction(name str) bool {
         # hasFunction reports if a function name exists in the Tree's maps.
         for _, funcMap := range t.funcs {
             if funcMap == nil {
@@ -929,12 +929,12 @@ def parse(
         return false
     }
 
-    def (t *Tree) popVars(n int) {
+    def popVars(n int) {
         # popVars trims the variable list to the specified length
         t.vars = t.vars[:n]
     }
 
-    def (t *Tree) useVar(pos Pos, name str) Node {
+    def useVar(pos Pos, name str) Node {
         # useVar returns a node for a variable reference. It errors if the
         # variable is not defined.
         v := t.newVariable(pos, name)
