@@ -111,6 +111,8 @@ RIGHT_COMMENT = '*/'
 
 EOF = ''
 
+MAX_ASCII = 127
+
 
 class Lexer:
     def __init__(
@@ -373,7 +375,7 @@ class Lexer:
             if self._paren_depth < 0:
                 return self.error('unexpected right paren')
             return self.emit(TokenType.RIGHT_PAREN)
-        elif r <= unicode.MaxASCII and unicode.IsPrint(r):
+        elif ord(r) <= MAX_ASCII and r.isprintable():
             return self.emit(TokenType.CHAR)
         else:
             return self.error('unrecognized character in action: %r', r)
