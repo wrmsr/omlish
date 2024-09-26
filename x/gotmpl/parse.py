@@ -716,45 +716,41 @@ def (t *Tree) parseControl(context str) (pos Pos, line int, pipe *PipeNode, list
     return pipe.Position(), pipe.Line, pipe, list, elseList
 }
 
-# If:
-#
-#    {{if pipeline}} itemList {{end}}
-#    {{if pipeline}} itemList {{else}} itemList {{end}}
-#
-# If keyword is past.
-def (t *Tree) ifControl() Node {
-    return t.newIf(t.parseControl("if"))
-}
+    def if_control(self) -> Node:
+        # If:
+        #
+        #    {{if pipeline}} itemList {{end}}
+        #    {{if pipeline}} itemList {{else}} itemList {{end}}
+        #
+        # If keyword is past.
+        return self.new_if(self.parse_control('if'))
 
-# Range:
-#
-#    {{range pipeline}} itemList {{end}}
-#    {{range pipeline}} itemList {{else}} itemList {{end}}
-#
-# Range keyword is past.
-def (t *Tree) rangeControl() Node {
-    r := t.newRange(t.parseControl("range"))
-    return r
-}
+    def range_control(self) -> Node:
+        # Range:
+        #
+        #    {{range pipeline}} itemList {{end}}
+        #    {{range pipeline}} itemList {{else}} itemList {{end}}
+        #
+        # Range keyword is past.
+        r = self.new_range(self.parse_control('range'))
+        return r
 
-# With:
-#
-#    {{with pipeline}} itemList {{end}}
-#    {{with pipeline}} itemList {{else}} itemList {{end}}
-#
-# If keyword is past.
-def (t *Tree) withControl() Node {
-    return t.newWith(t.parseControl("with"))
-}
+    def with_control(self) -> Node:
+        # With:
+        #
+        #    {{with pipeline}} itemList {{end}}
+        #    {{with pipeline}} itemList {{else}} itemList {{end}}
+        #
+        # If keyword is past.
+        return self.new_with(self.parse_control('with'))
 
-# End:
-#
-#    {{end}}
-#
-# End keyword is past.
-def (t *Tree) endControl() Node {
-    return t.newEnd(t.expect(itemRightDelim, "end").pos)
-}
+    def end_control(self) -> Node:
+        # End:
+        #
+        #    {{end}}
+        #
+        # End keyword is past.
+        return self.new_end(self.expect(item_right_delim, 'end').pos)
 
 # Else:
 #
