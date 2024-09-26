@@ -159,7 +159,10 @@ def get_compose_port(cfg: ta.Mapping[str, ta.Any], default: int) -> int:
 ##
 
 
-def timebomb_payload(delay_s: float, name: str = 'omlish-docker-timebomb') -> str:
+_DEFAULT_TIMEBOMB_NAME = '-'.join([*__name__.split('.'), 'timebomb'])
+
+
+def timebomb_payload(delay_s: float, name: str = _DEFAULT_TIMEBOMB_NAME) -> str:
     return (
         '('
         f'echo {shlex.quote(name)} && '

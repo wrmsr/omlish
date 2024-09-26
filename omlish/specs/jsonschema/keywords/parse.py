@@ -1,10 +1,9 @@
 import operator
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import lang
-
+from .... import check
+from .... import collections as col
+from .... import lang
 from . import core  # noqa
 from . import metadata  # noqa
 from . import validation  # noqa

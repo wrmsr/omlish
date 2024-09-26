@@ -40,7 +40,8 @@ class Project(ProjectBase):
         ],
 
         'compress': [
-            'lz4 ~= 4.0',
+            'lz4 ~= 4.3',
+            # 'lz4 @ git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED'
 
             'python-snappy ~= 0.7; python_version < "3.13"',
 
@@ -83,7 +84,7 @@ class Project(ProjectBase):
             'sqlalchemy[asyncio] ~= 2.0',
         ],
 
-        'sqlalchemy-drivers': [
+        'sqldrivers': [
             'pg8000 ~= 1.31',
             # 'psycopg2 ~= 2.9',
             # 'psycopg ~= 3.2',
@@ -95,6 +96,8 @@ class Project(ProjectBase):
             'aiomysql ~= 0.2',
             'aiosqlite ~= 0.20',
             'asyncpg ~= 0.29; python_version < "3.13"',
+
+            'apsw ~= 3.46',
 
             'sqlean.py ~= 3.45; python_version < "3.13"',
 
