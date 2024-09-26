@@ -1,6 +1,6 @@
-from .. import lang
-from ..docker import ComposeConfig
-from ..testing.pytest import inject as pti
+from ... import lang
+from ...testing.pytest import inject as pti
+from ..compose import ComposeConfig
 
 
 @pti.bind()
