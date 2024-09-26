@@ -21,10 +21,9 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import abc
+import dataclasses as dc
 import enum
 import typing as ta
-
-from omlish import dataclasses as dc
 
 from .lex import Pos
 
@@ -59,29 +58,19 @@ class NodeType(enum.IntEnum):
     CONTINUE = enum.auto()    # A continue action.
 
 
+@dc.dataclass()
 class Node(abc.ABC):
     """
     A Node is an element in the parse tree. The interface is trivial. The interface contains an unexported method so
     that only types local to this package can satisfy it.
     """
 
-    @property
-    @abc.abstractmethod
-    def type(self) -> NodeType:
-        raise NotImplementedError
+    type: NodeType
+    pos: Pos
+    tree: 'parse.Tree'
 
     @abc.abstractmethod
     def copy(self) -> 'Node':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def pos(self) -> Pos:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def tree(self) -> 'parse.Tree':
         raise NotImplementedError
 
 
@@ -91,10 +80,6 @@ class Node(abc.ABC):
 @dc.dataclass()
 class ListNode(Node):
     # ListNode holds a sequence of nodes.
-
-    type: NodeType = dc.xfield(override=True)
-    pos: Pos = dc.xfield(override=True)
-    tree: 'parse.Tree' = dc.xfield(override=True)
 
     nodes: list[Node] = dc.field(default_factory=list)
 
@@ -115,10 +100,6 @@ class ListNode(Node):
 class TextNode(Node):
     # TextNode holds plain text.
 
-    type: NodeType = dc.xfield(override=True)
-    pos: Pos = dc.xfield(override=True)
-    tree: 'parse.Tree' = dc.xfield(override=True)
-
     text: str  # The text; may span newlines.
 
     def copy(self) -> Node:
@@ -129,10 +110,6 @@ class TextNode(Node):
 class CommentNode(Node):
     # CommentNode holds a comment.
 
-    type: NodeType = dc.xfield(override=True)
-    pos: Pos = dc.xfield(override=True)
-    tree: 'parse.Tree' = dc.xfield(override=True)
-
     text: str # Comment text.
 
     def copy(self) -> Node:
@@ -142,10 +119,6 @@ class CommentNode(Node):
 @dc.dataclass()
 class PipeNode(Node):
     # PipeNode holds a pipeline with optional declaration
-
-    type: NodeType = dc.xfield(override=True)
-    pos: Pos = dc.xfield(override=True)
-    tree: 'parse.Tree' = dc.xfield(override=True)
 
     line: int  # The line number in the input. Deprecated: Kept for compatibility.
     is_assign: bool  # The variables are being assigned, not declared.
@@ -173,10 +146,6 @@ class PipeNode(Node):
 class ActionNode(Node):
     # ActionNode holds an action (something bounded by delimiters). Control actions have their own nodes; ActionNode
     # represents simple ones such as field evaluations and parenthesized pipelines.
-
-    type: NodeType = dc.xfield(override=True)
-    pos: Pos = dc.xfield(override=True)
-    tree: 'parse.Tree' = dc.xfield(override=True)
 
     line: int  # The line number in the input. Deprecated: Kept for compatibility.
     pipe: PipeNode  # The pipeline in the action.
