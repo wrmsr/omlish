@@ -44,41 +44,49 @@ def unregister_on_raise(fn: OnRaiseFn) -> None:
 #
 
 
-_render_args: ta.Callable[..., str | None] | None = None
+_ARGS_RENDERER: ta.Callable[..., str | None] | None = None
+
+
+def _enable_args_rendering() -> bool:
+    global _ARGS_RENDERER
+    if _ARGS_RENDERER is not None:
+        return True
+
+    try:
+        from .diag.asts import ArgsRenderer
+
+        ArgsRenderer.smoketest()
+
+    except Exception:  # noqa
+        return False
+
+    def _real_render_args(fmt: str, *args: ta.Any) -> str | None:
+        ra = ArgsRenderer(back=3).render_args(*args)
+        if ra is None:
+            return None
+
+        return fmt % tuple(str(a) for a in ra)
+
+    _ARGS_RENDERER = _real_render_args
+    return True
+
+
+_ENABLED_ARGS_RENDERING: bool | None = None
 
 
 def enable_args_rendering() -> bool:
-    global _render_args
-    if _render_args is not None:
-        return True
+    global _ENABLED_ARGS_RENDERING
+    if _ENABLED_ARGS_RENDERING is not None:
+        return _ENABLED_ARGS_RENDERING
 
     with _CONFIG_LOCK:
-        if _render_args is not None:
-            return True  # type: ignore
+        if _ENABLED_ARGS_RENDERING is None:
+            _ENABLED_ARGS_RENDERING = _enable_args_rendering()
 
-        try:
-            from .diag.asts import ArgsRenderer
-
-            ArgsRenderer.smoketest()
-
-        except Exception:  # noqa
-            return False
-
-        def _real_render_args(fmt: str, *args: ta.Any) -> str | None:
-            ra = ArgsRenderer(back=3).render_args(*args)
-            if ra is None:
-                return None
-
-            return fmt % tuple(str(a) for a in ra)
-
-        _render_args = _real_render_args
-        return True
+        return _ENABLED_ARGS_RENDERING
 
 
-enable_args_rendering()
-
-
-#
+##
 
 
 def _default_exception_factory(exc_cls: type[Exception], *args, **kwargs) -> Exception:
@@ -111,8 +119,8 @@ def _raise(
     if message is None:
         message = default_message
 
-    if render_fmt is not None and _render_args is not None:
-        rendered_args = _render_args(render_fmt, *ak.args)
+    if render_fmt is not None and _ARGS_RENDERER is not None:
+        rendered_args = _ARGS_RENDERER(render_fmt, *ak.args)
         if rendered_args is not None:
             message = f'{message} : {rendered_args}'
 
@@ -123,6 +131,8 @@ def _raise(
         *ak.args,
         **ak.kwargs,
     )
+
+    enable_args_rendering()
 
     for fn in _ON_RAISE:
         fn(exc)
