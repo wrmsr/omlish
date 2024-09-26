@@ -881,31 +881,31 @@ def parse(
         # A term is a simple "expression".
         # A nil return means the next item is not a term.
         switch token := t.next_non_space(); token.typ {
-        case itemIdentifier:
+        case TokenType.IDENTIFIER:
             checkFunc := t.Mode&SkipFuncCheck == 0
             if checkFunc and !t.hasFunction(token.val) {
                 t.errorf("function %r not defined", token.val)
             }
             return NewIdentifier(token.val).SetTree(t).SetPos(token.pos)
-        case itemDot:
+        case TokenType.DOT:
             return t.newDot(token.pos)
-        case itemNil:
+        case TokenType.NIL:
             return t.newNil(token.pos)
-        case itemVariable:
+        case TokenType.VARIABLE:
             return t.useVar(token.pos, token.val)
-        case itemField:
+        case TokenType.FIELD:
             return t.newField(token.pos, token.val)
-        case itemBool:
+        case TokenType.BOOL:
             return t.newBool(token.pos, token.val == "true")
-        case itemCharConstant, itemComplex, itemNumber:
+        case TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.NUMBER:
             number, err := t.newNumber(token.pos, token.val, token.typ)
             if err != nil {
                 t.error(err)
             }
             return number
-        case itemLeftParen:
-            return t.pipeline("parenthesized pipeline", itemRightParen)
-        case itemString, itemRawString:
+        case TokenType.LEFT_PAREN:
+            return t.pipeline("parenthesized pipeline", TokenType.RIGHT_PAREN)
+        case TokenType.STRING, TokenType.RAW_STRING:
             s, err := strconv.Unquote(token.val)
             if err != nil {
                 t.error(err)
