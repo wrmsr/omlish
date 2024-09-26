@@ -11,3 +11,11 @@ Core packages installable from git via:
 
 Core packages have no required dependencies, but numerous optional ones - see their respective ``pyproject.toml`` files
 for details.
+
+The cli is installable through uvx or pipx via:
+
+.. code-block::
+
+  curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py | python3 -
+
+Additional deps to be injected may be appended to the command.
