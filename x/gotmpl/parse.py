@@ -30,6 +30,7 @@ from .nodes import CommentNode
 from .nodes import ListNode
 from .nodes import NodeType
 from .nodes import PipeNode
+from .nodes import ActionNode
 from .nodes import TextNode
 
 
@@ -68,6 +69,9 @@ class Tree:
 
     def new_pipeline(self, pos: Pos, line: int, vars: list[VariableNode]) -> PipeNode:
         return PipeNode(tree=self, type=NodeType.PIPE, pos=pos, line=line, decl=vars)
+
+    def new_action(self, pos: Pos, line: int, pipe: PipeNode) -> ActionNode:
+        return ActionNode(tree=self, type=NodeType.ACTION, pos=pos, line=line, pipe=pipe)
 
     #
 

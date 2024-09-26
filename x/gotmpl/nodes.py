@@ -169,43 +169,23 @@ class PipeNode(Node):
         return self.copy_pipe()
 
 
+@dc.dataclass()
+class ActionNode(Node):
+    # ActionNode holds an action (something bounded by delimiters). Control actions have their own nodes; ActionNode
+    # represents simple ones such as field evaluations and parenthesized pipelines.
+
+    type: NodeType = dc.xfield(override=True)
+    pos: Pos = dc.xfield(override=True)
+    tree: 'parse.Tree' = dc.xfield(override=True)
+
+    line: int  # The line number in the input. Deprecated: Kept for compatibility.
+    pipe: PipeNode  # The pipeline in the action.
+
+    def copy(self) -> Node:
+        return self.tree.new_action(self.pos, self.line, self.pipe.copy_pipe())
+
+
 """
-
-# ActionNode holds an action (something bounded by delimiters).
-# Control actions have their own nodes; ActionNode represents simple
-# ones such as field evaluations and parenthesized pipelines.
-type ActionNode struct {
-    NodeType
-    Pos
-    tr   *Tree
-    Line int       # The line number in the input. Deprecated: Kept for compatibility.
-    Pipe *PipeNode # The pipeline in the action.
-}
-
-func (t *Tree) newAction(pos Pos, line int, pipe *PipeNode) *ActionNode {
-    return &ActionNode{tr: t, NodeType: NodeAction, Pos: pos, Line: line, Pipe: pipe}
-}
-
-func (a *ActionNode) String() string {
-    var sb strings.Builder
-    a.writeTo(&sb)
-    return sb.String()
-}
-
-func (a *ActionNode) writeTo(sb *strings.Builder) {
-    sb.WriteString("{{")
-    a.Pipe.writeTo(sb)
-    sb.WriteString("}}")
-}
-
-func (a *ActionNode) tree() *Tree {
-    return a.tr
-}
-
-func (a *ActionNode) Copy() Node {
-    return a.tr.newAction(a.Pos, a.Line, a.Pipe.CopyPipe())
-}
-
 # CommandNode holds a command (a pipeline inside an evaluating action).
 type CommandNode struct {
     NodeType
@@ -220,31 +200,6 @@ func (t *Tree) newCommand(pos Pos) *CommandNode {
 
 func (c *CommandNode) append(arg Node) {
     c.Args = append(c.Args, arg)
-}
-
-func (c *CommandNode) String() string {
-    var sb strings.Builder
-    c.writeTo(&sb)
-    return sb.String()
-}
-
-func (c *CommandNode) writeTo(sb *strings.Builder) {
-    for i, arg := range c.Args {
-        if i > 0 {
-            sb.WriteByte(' ')
-        }
-        if arg, ok := arg.(*PipeNode); ok {
-            sb.WriteByte('(')
-            arg.writeTo(sb)
-            sb.WriteByte(')')
-            continue
-        }
-        arg.writeTo(sb)
-    }
-}
-
-func (c *CommandNode) tree() *Tree {
-    return c.tr
 }
 
 func (c *CommandNode) Copy() Node {
@@ -287,18 +242,6 @@ func (i *IdentifierNode) SetTree(t *Tree) *IdentifierNode {
     return i
 }
 
-func (i *IdentifierNode) String() string {
-    return i.Ident
-}
-
-func (i *IdentifierNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(i.String())
-}
-
-func (i *IdentifierNode) tree() *Tree {
-    return i.tr
-}
-
 func (i *IdentifierNode) Copy() Node {
     return NewIdentifier(i.Ident).SetTree(i.tr).SetPos(i.Pos)
 }
@@ -314,25 +257,6 @@ type VariableNode struct {
 
 func (t *Tree) newVariable(pos Pos, ident string) *VariableNode {
     return &VariableNode{tr: t, NodeType: NodeVariable, Pos: pos, Ident: strings.Split(ident, ".")}
-}
-
-func (v *VariableNode) String() string {
-    var sb strings.Builder
-    v.writeTo(&sb)
-    return sb.String()
-}
-
-func (v *VariableNode) writeTo(sb *strings.Builder) {
-    for i, id := range v.Ident {
-        if i > 0 {
-            sb.WriteByte('.')
-        }
-        sb.WriteString(id)
-    }
-}
-
-func (v *VariableNode) tree() *Tree {
-    return v.tr
 }
 
 func (v *VariableNode) Copy() Node {
@@ -357,18 +281,6 @@ func (d *DotNode) Type() NodeType {
     return NodeDot
 }
 
-func (d *DotNode) String() string {
-    return "."
-}
-
-func (d *DotNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(d.String())
-}
-
-func (d *DotNode) tree() *Tree {
-    return d.tr
-}
-
 func (d *DotNode) Copy() Node {
     return d.tr.newDot(d.Pos)
 }
@@ -391,18 +303,6 @@ func (n *NilNode) Type() NodeType {
     return NodeNil
 }
 
-func (n *NilNode) String() string {
-    return "nil"
-}
-
-func (n *NilNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(n.String())
-}
-
-func (n *NilNode) tree() *Tree {
-    return n.tr
-}
-
 func (n *NilNode) Copy() Node {
     return n.tr.newNil(n.Pos)
 }
@@ -419,23 +319,6 @@ type FieldNode struct {
 
 func (t *Tree) newField(pos Pos, ident string) *FieldNode {
     return &FieldNode{tr: t, NodeType: NodeField, Pos: pos, Ident: strings.Split(ident[1:], ".")} # [1:] to drop leading period
-}
-
-func (f *FieldNode) String() string {
-    var sb strings.Builder
-    f.writeTo(&sb)
-    return sb.String()
-}
-
-func (f *FieldNode) writeTo(sb *strings.Builder) {
-    for _, id := range f.Ident {
-        sb.WriteByte('.')
-        sb.WriteString(id)
-    }
-}
-
-func (f *FieldNode) tree() *Tree {
-    return f.tr
 }
 
 func (f *FieldNode) Copy() Node {
@@ -469,30 +352,6 @@ func (c *ChainNode) Add(field string) {
     c.Field = append(c.Field, field)
 }
 
-func (c *ChainNode) String() string {
-    var sb strings.Builder
-    c.writeTo(&sb)
-    return sb.String()
-}
-
-func (c *ChainNode) writeTo(sb *strings.Builder) {
-    if _, ok := c.Node.(*PipeNode); ok {
-        sb.WriteByte('(')
-        c.Node.writeTo(sb)
-        sb.WriteByte(')')
-    } else {
-        c.Node.writeTo(sb)
-    }
-    for _, field := range c.Field {
-        sb.WriteByte('.')
-        sb.WriteString(field)
-    }
-}
-
-func (c *ChainNode) tree() *Tree {
-    return c.tr
-}
-
 func (c *ChainNode) Copy() Node {
     return &ChainNode{tr: c.tr, NodeType: NodeChain, Pos: c.Pos, Node: c.Node, Field: append([]string{}, c.Field...)}
 }
@@ -507,21 +366,6 @@ type BoolNode struct {
 
 func (t *Tree) newBool(pos Pos, true bool) *BoolNode {
     return &BoolNode{tr: t, NodeType: NodeBool, Pos: pos, True: true}
-}
-
-func (b *BoolNode) String() string {
-    if b.True {
-        return "true"
-    }
-    return "false"
-}
-
-func (b *BoolNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(b.String())
-}
-
-func (b *BoolNode) tree() *Tree {
-    return b.tr
 }
 
 func (b *BoolNode) Copy() Node {
@@ -649,18 +493,6 @@ func (n *NumberNode) simplifyComplex() {
     }
 }
 
-func (n *NumberNode) String() string {
-    return n.Text
-}
-
-func (n *NumberNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(n.String())
-}
-
-func (n *NumberNode) tree() *Tree {
-    return n.tr
-}
-
 func (n *NumberNode) Copy() Node {
     nn := new(NumberNode)
     *nn = *n # Easy, fast, correct.
@@ -680,18 +512,6 @@ func (t *Tree) newString(pos Pos, orig, text string) *StringNode {
     return &StringNode{tr: t, NodeType: NodeString, Pos: pos, Quoted: orig, Text: text}
 }
 
-func (s *StringNode) String() string {
-    return s.Quoted
-}
-
-func (s *StringNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(s.String())
-}
-
-func (s *StringNode) tree() *Tree {
-    return s.tr
-}
-
 func (s *StringNode) Copy() Node {
     return s.tr.newString(s.Pos, s.Quoted, s.Text)
 }
@@ -706,18 +526,6 @@ type endNode struct {
 
 func (t *Tree) newEnd(pos Pos) *endNode {
     return &endNode{tr: t, NodeType: nodeEnd, Pos: pos}
-}
-
-func (e *endNode) String() string {
-    return "{{end}}"
-}
-
-func (e *endNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(e.String())
-}
-
-func (e *endNode) tree() *Tree {
-    return e.tr
 }
 
 func (e *endNode) Copy() Node {
@@ -740,18 +548,6 @@ func (e *elseNode) Type() NodeType {
     return nodeElse
 }
 
-func (e *elseNode) String() string {
-    return "{{else}}"
-}
-
-func (e *elseNode) writeTo(sb *strings.Builder) {
-    sb.WriteString(e.String())
-}
-
-func (e *elseNode) tree() *Tree {
-    return e.tr
-}
-
 func (e *elseNode) Copy() Node {
     return e.tr.newElse(e.Pos, e.Line)
 }
@@ -765,41 +561,6 @@ type BranchNode struct {
     Pipe     *PipeNode # The pipeline to be evaluated.
     List     *ListNode # What to execute if the value is non-empty.
     ElseList *ListNode # What to execute if the value is empty (nil if absent).
-}
-
-func (b *BranchNode) String() string {
-    var sb strings.Builder
-    b.writeTo(&sb)
-    return sb.String()
-}
-
-func (b *BranchNode) writeTo(sb *strings.Builder) {
-    name := ""
-    switch b.NodeType {
-    case NodeIf:
-        name = "if"
-    case NodeRange:
-        name = "range"
-    case NodeWith:
-        name = "with"
-    default:
-        panic("unknown branch type")
-    }
-    sb.WriteString("{{")
-    sb.WriteString(name)
-    sb.WriteByte(' ')
-    b.Pipe.writeTo(sb)
-    sb.WriteString("}}")
-    b.List.writeTo(sb)
-    if b.ElseList != nil {
-        sb.WriteString("{{else}}")
-        b.ElseList.writeTo(sb)
-    }
-    sb.WriteString("{{end}}")
-}
-
-func (b *BranchNode) tree() *Tree {
-    return b.tr
 }
 
 func (b *BranchNode) Copy() Node {
@@ -841,9 +602,6 @@ func (t *Tree) newBreak(pos Pos, line int) *BreakNode {
 }
 
 func (b *BreakNode) Copy() Node                  { return b.tr.newBreak(b.Pos, b.Line) }
-func (b *BreakNode) String() string              { return "{{break}}" }
-func (b *BreakNode) tree() *Tree                 { return b.tr }
-func (b *BreakNode) writeTo(sb *strings.Builder) { sb.WriteString("{{break}}") }
 
 # ContinueNode represents a {{continue}} action.
 type ContinueNode struct {
@@ -858,9 +616,6 @@ func (t *Tree) newContinue(pos Pos, line int) *ContinueNode {
 }
 
 func (c *ContinueNode) Copy() Node                  { return c.tr.newContinue(c.Pos, c.Line) }
-func (c *ContinueNode) String() string              { return "{{continue}}" }
-func (c *ContinueNode) tree() *Tree                 { return c.tr }
-func (c *ContinueNode) writeTo(sb *strings.Builder) { sb.WriteString("{{continue}}") }
 
 # RangeNode represents a {{range}} action and its commands.
 type RangeNode struct {
@@ -900,26 +655,6 @@ type TemplateNode struct {
 
 func (t *Tree) newTemplate(pos Pos, line int, name string, pipe *PipeNode) *TemplateNode {
     return &TemplateNode{tr: t, NodeType: NodeTemplate, Pos: pos, Line: line, Name: name, Pipe: pipe}
-}
-
-func (t *TemplateNode) String() string {
-    var sb strings.Builder
-    t.writeTo(&sb)
-    return sb.String()
-}
-
-func (t *TemplateNode) writeTo(sb *strings.Builder) {
-    sb.WriteString("{{template ")
-    sb.WriteString(strconv.Quote(t.Name))
-    if t.Pipe != nil {
-        sb.WriteByte(' ')
-        t.Pipe.writeTo(sb)
-    }
-    sb.WriteString("}}")
-}
-
-func (t *TemplateNode) tree() *Tree {
-    return t.tr
 }
 
 func (t *TemplateNode) Copy() Node {
