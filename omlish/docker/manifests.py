@@ -91,10 +91,12 @@ class Manifest(lang.Final):
 class ManifestList(lang.Final):
     # This field specifies the image manifest schema version as an integer. This schema uses the version 2.
     schema_version: int
+    dc.validate(lambda self: self.schema_version == SCHEMA_VERSION)
 
     # The MIME type of the manifest list. This should be set to
     # application/vnd.docker.distribution.manifest.list.v2+json.
     media_type: str
+    dc.validate(lambda self: self.media_type == MediaTypes.MANIFEST_LIST)
 
     # The manifests field contains a list of manifests for specific platforms.
     manifests: ta.Sequence[Manifest]
@@ -107,9 +109,11 @@ class ManifestList(lang.Final):
 class ImageManifest(lang.Final):
     # This field specifies the image manifest schema version as an integer. This schema uses version 2.
     schema_version: int
+    dc.validate(lambda self: self.schema_version == SCHEMA_VERSION)
 
     # The MIME type of the manifest. This should be set to application/vnd.docker.distribution.manifest.v2+json.
     media_type: str
+    dc.validate(lambda self: self.media_type == MediaTypes.MANIFEST_V2)
 
     @dc.dataclass(frozen=True)
     @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
