@@ -268,7 +268,7 @@ ollama==0.3.3
 onnx==1.16.2
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.48.0
+openai==1.49.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.27.0
 opentelemetry-exporter-otlp-proto-common==1.27.0
@@ -452,7 +452,7 @@ torchvision==0.19.1
 tornado==6.4.1
 tqdm==4.66.5
 traitlets==5.14.3
-transformers==4.45.0
+transformers==4.45.1
 trio==0.26.2
 trio_asyncio==0.15.0
 trl==0.11.1
