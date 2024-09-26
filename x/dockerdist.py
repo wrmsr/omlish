@@ -72,3 +72,65 @@ class ManifestList(lang.Final):
 
     # The manifests field contains a list of manifests for specific platforms.
     manifests: ta.Sequence[Manifest]
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+class ImageManifest(lang.Final):
+    # This field specifies the image manifest schema version as an integer. This schema uses version 2.
+    schema_version: int
+
+    # The MIME type of the manifest. This should be set to application/vnd.docker.distribution.manifest.v2+json.
+    media_type: str
+
+    @dc.dataclass(frozen=True)
+    @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+    class Config(lang.Final):
+        # The MIME type of the referenced object. This should generally be
+        # application/vnd.docker.container.image.v1+json.
+        media_type: str
+
+        # The size in bytes of the object. This field exists so that a client will have an expected size for the content
+        # before validating. If the length of the retrieved content does not match the specified length, the content
+        # should not be trusted.
+        size: int
+
+        # The digest of the content, as defined by the Registry V2 HTTP API Specification.
+        digest: str
+
+        x: ta.Mapping[str, ta.Any] | None = None
+
+    # The config field references a configuration object for a container, by digest. This configuration item is a JSON
+    # blob that the runtime uses to set up the container. This new schema uses a tweaked version of this configuration
+    # o allow image content-addressability on the daemon side.
+    config: Config | None = None
+
+    @dc.dataclass(frozen=True)
+    @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+    class Layer(lang.Final):
+        # The MIME type of the referenced object. This should generally be
+        # application/vnd.docker.image.rootfs.diff.tar.gzip. Layers of type
+        # application/vnd.docker.image.rootfs.foreign.diff.tar.gzip may be pulled from a remote location but they should
+        # never be pushed.
+        media_type: str
+
+        # The size in bytes of the object. This field exists so that a client will have an expected size for the content
+        # before validating. If the length of the retrieved content does not match the specified length, the content
+        # should not be trusted.
+        size: int
+
+        # The digest of the content, as defined by the Registry V2 HTTP API Specification.
+        digest: str
+
+        # Provides a list of URLs from which the content may be fetched. Content must be verified against the digest and
+        # size. This field is optional and uncommon.
+        urls: ta.Sequence[str] | None = None
+
+        x: ta.Mapping[str, ta.Any] | None = None
+
+    # The layer list is ordered starting from the base image (opposite order of schema1).
+    layers: ta.Sequence[Layer] | None = None
+
+    x: ta.Mapping[str, ta.Any] | None = None
