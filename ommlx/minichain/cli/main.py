@@ -1,3 +1,9 @@
+"""
+See:
+ - https://github.com/simonw/llm
+ - https://github.com/TheR1D/shell_gpt
+ - https://github.com/paul-gauthier/aider
+"""
 import argparse
 import dataclasses as dc
 import datetime
