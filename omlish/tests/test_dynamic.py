@@ -97,7 +97,7 @@ def test_cm():
     assert v() == 420
 
 
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 def test_greenlet():
     import greenlet
 

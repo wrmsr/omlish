@@ -64,7 +64,7 @@ class SomeAsyncManager:
         self.xc += 1
 
 
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncio
 @pytest.mark.parametrize('eager', [False, True])
 async def test_async_managed(eager):

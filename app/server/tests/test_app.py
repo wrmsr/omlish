@@ -32,7 +32,7 @@ def randhex(l: int) -> str:
 
 
 @pytest.mark.integration
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncs(
     'asyncio',
     'trio',

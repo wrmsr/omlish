@@ -21,7 +21,7 @@ def test_openssl_subproc_crypto(sec: crypto.Crypto) -> None:
     assert dec == raw
 
 
-@ptu.skip_if_cant_import('cryptography')
+@ptu.skip.if_cant_import('cryptography')
 @pytest.mark.parametrize('sec', [
     openssl.OpensslAescbcCrypto(),
 ])

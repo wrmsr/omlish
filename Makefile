@@ -86,7 +86,7 @@ dep-list:
 .PHONY: dep-freeze
 dep-freeze: venv
 	${PYTHON} -m pip freeze > requirements-frz.txt
-	${PYTHON} -m omdev.tools.piptools filter_dev_deps -wq requirements-frz.txt
+	${PYTHON} -m omdev.tools.piptools filter-dev-deps -wq requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
@@ -345,7 +345,7 @@ DOCKER_BASE_PORT=35220
 
 .PHONY: docker-ports
 docker-ports: venv
-	${PYTHON} -m omdev.tools.dockertools reset_compose_ports -wq ${DOCKER_BASE_PORT}
+	${PYTHON} -m omdev.tools.dockertools reset-compose-ports -wq ${DOCKER_BASE_PORT}
 
 
 ### CI
@@ -423,7 +423,7 @@ test-install: venv
 ### Publish
 
 LOCAL_VERSION:=$$(${PYTHON} -c 'from omlish import __about__; print(__about__.__version__)')
-PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.piptools lookup_latest_version omlish)
+PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.piptools lookup-latest-version omlish)
 
 .PHONY: versions
 versions: venv

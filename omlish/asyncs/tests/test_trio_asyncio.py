@@ -31,7 +31,7 @@ def _patch_for_trio_asyncio_fixture():
     pdu.patch_for_trio_asyncio()
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_hybrid():
     async def hybrid():
         await trio.sleep(.1)
@@ -41,7 +41,7 @@ def test_hybrid():
     trai.run(trai.allow_asyncio, hybrid)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio0():
     async def aio_sleep(sec=.1):
         await asyncio.sleep(sec)
@@ -52,7 +52,7 @@ def test_asyncio_from_trio0():
     trai.run(trio_sleep, .3)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio1():
     @trai.aio_as_trio
     async def trio_sleep(sec=.1):
@@ -61,7 +61,7 @@ def test_asyncio_from_trio1():
     trai.run(trio_sleep, .3)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio2():
     async def aio_sleep(sec=.1):
         await asyncio.sleep(sec)
@@ -72,7 +72,7 @@ def test_asyncio_from_trio2():
     trai.run(trio_sleep, .3)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio3():
     async def aio_sleep(sec=.1):
         await asyncio.sleep(sec)
@@ -87,7 +87,7 @@ def test_asyncio_from_trio3():
     trai.run(trio_sleep, .3)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio4():
     async def aio_slow():
         n = 0.
@@ -103,7 +103,7 @@ def test_asyncio_from_trio4():
     trai.run(printer)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_asyncio_from_trio5():
     class AsyncCtx:
         async def __aenter__(self):
@@ -124,7 +124,7 @@ def test_asyncio_from_trio5():
     trai.run(trio_ctx)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_trio_from_asyncio0():
     async def trio_sleep(sec=.1):
         await trio.sleep(sec)
@@ -135,7 +135,7 @@ def test_trio_from_asyncio0():
     trai.run(trai.aio_as_trio, functools.partial(aio_sleep, .3))
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_trio_from_asyncio1():
     @trai.trio_as_aio
     async def aio_sleep(sec=.2):
@@ -144,7 +144,7 @@ def test_trio_from_asyncio1():
     trai.run(trai.aio_as_trio, functools.partial(aio_sleep, .3))
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 def test_trio_from_asyncio2():
     async def trio_sleep(sec=.1):
         await trio.sleep(sec)
@@ -162,7 +162,7 @@ def test_trio_from_asyncio2():
     trai.run(trai.aio_as_trio, functools.partial(aio_sleep, .3))
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_asyncio_loop(harness) -> None:
     async with trai.open_loop() as loop:  # noqa
@@ -170,7 +170,7 @@ async def test_trio_asyncio_loop(harness) -> None:
         await trai.aio_as_trio(asyncio.sleep)(.1)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.asyncs
 async def test_all_asyncs(__async_backend):  # noqa
     await anyio.sleep(.1)
@@ -208,7 +208,7 @@ async def test_all_asyncs(__async_backend):  # noqa
             raise ValueError(__async_backend)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.trio_asyncio
 async def test_just_trio_asyncio(__async_backend):  # noqa
     assert __async_backend == 'trio_asyncio'
@@ -219,7 +219,7 @@ async def test_just_trio_asyncio(__async_backend):  # noqa
     await anyio.sleep(.1)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.asyncio
 async def test_asyncio_no_loop():
     backend = sniffio.current_async_library()

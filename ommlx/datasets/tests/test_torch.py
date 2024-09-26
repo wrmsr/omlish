@@ -30,7 +30,7 @@ FASHION_MNIST_SPECS = {
 }
 
 
-@ptu.skip_if_cant_import('torchvision')
+@ptu.skip.if_cant_import('torchvision')
 def test_torch():
     for spec in FASHION_MNIST_SPECS.values():
         print(daca.default().get(spec))

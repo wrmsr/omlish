@@ -5,7 +5,7 @@ from ..asts import ArgsRenderer
 from .asts import check_foo
 
 
-@ptu.skip_if_cant_import('executing')
+@ptu.skip.if_cant_import('executing')
 def test_check_equal():
     assert ArgsRenderer.smoketest()
 

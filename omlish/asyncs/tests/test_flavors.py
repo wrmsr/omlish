@@ -63,7 +63,7 @@ async def _trio_func(cross):
 ##
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.asyncio
 async def test_asyncio_loop(harness) -> None:
     await _anyio_func(True, False)
@@ -75,7 +75,7 @@ async def test_asyncio_loop(harness) -> None:
     #     await trio_asyncio.trio_as_aio(_trio_func)(True)
 
 
-@ptu.skip_if_cant_import('trio_asyncio')
+@ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_loop(harness) -> None:
     await _anyio_func(False, True)

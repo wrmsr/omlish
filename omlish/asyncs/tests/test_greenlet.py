@@ -9,7 +9,7 @@ import functools
 from ...testing import pytest as ptu
 
 
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 def test_greenlet():
     import greenlet
 
@@ -35,7 +35,7 @@ def test_greenlet():
     assert done == 2
 
 
-@ptu.skip_if_cant_import('greenlet')
+@ptu.skip.if_cant_import('greenlet')
 def test_bridge(event_loop):
     import greenlet
 
