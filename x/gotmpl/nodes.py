@@ -175,10 +175,10 @@ class PipeNode(Node):
                 if i > 0:
                     out.write(", ")
                 v.write(out)
-        if self.is_assign:
-            out.write(" = ")
-        else:
-            out.write(" := ")
+            if self.is_assign:
+                out.write(" = ")
+            else:
+                out.write(" := ")
 
         for i, c in enumerate(self.cmds):
             if i > 0:
