@@ -51,11 +51,11 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
 
     # easy cases
     if not s:
-        raise Exception('syntax')
+        raise SyntaxError
 
     c = s[0]
     if c == quote and (quote == ord('\'') or quote == ord('"')):
-        raise Exception('syntax')
+        raise SyntaxError
     elif c >= utf8.RuneSelf:
         r, size = utf8.DecodeRuneInString(s)
         return r, True, s[size:]
@@ -64,7 +64,7 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
 
     # hard case: c is backslash
     if len(s) <= 1:
-        raise Exception('syntax')
+        raise SyntaxError
 
     c = s[1]
     s = s[2:]
@@ -93,12 +93,12 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
         elif c == 'U':
             n = 8
         if len(s) < n:
-            raise Exception('syntax')
+            raise SyntaxError
         v = 0
         for j in range(n):
             x = unhex(s[j])
             if x is None:
-                raise Exception('syntax')
+                raise SyntaxError
             v = v << 4 | x
         s = s[n:]
         if c == 'x':
@@ -106,30 +106,30 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
             value = v
         else:
             if not utf8.ValidRune(v):
-                raise Exception('syntax')
+                raise SyntaxError
             value = v
             multibyte = True
     elif c in ('0', '1', '2', '3', '4', '5', '6', '7'):
         v = rune(c) - '0'
         if len(s) < 2:
-            raise Exception('syntax')
+            raise SyntaxError
         for j in range(2):  # one digit already; two more
             x = rune(s[j]) - '0'
             if x < 0 or x > 7:
-                raise Exception('syntax')
+                raise SyntaxError
             v = (v << 3) | x
         s = s[2:]
         if v > 255:
-            raise Exception('syntax')
+            raise SyntaxError
         value = v
     elif c == '\\':
         value = '\\'
     elif c in ('\'', '"'):
         if c != quote:
-            raise Exception('syntax')
+            raise SyntaxError
         value = rune(c)
     else:
-        raise Exception('syntax')
+        raise SyntaxError
 
     tail = s
     return value, multibyte, tail
@@ -142,11 +142,11 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
 
     # Determine the quote form and optimistically find the terminating quote.
     if len(ins) < 2:
-        raise Exception('syntax')
+        raise SyntaxError
     quote = ord(ins[0])
     end = ins[1:].find(chr(quote))
     if end < 0:
-        raise Exception('syntax')
+        raise SyntaxError
     end += 2  # position after terminating quote; may be wrong if escape sequences are present
 
     if quote == '`':
@@ -191,7 +191,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
             # Process the next character, rejecting any unescaped newline characters which are invalid.
             r, multibyte, rem = unquote_char(ins, quote)
             if ins[0] == '\n':
-                raise Exception('syntax')
+                raise SyntaxError
             ins = rem
 
             # Append the character if unescaping the input.
@@ -207,7 +207,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
 
         # Verify that the string ends with a terminating quote.
         if not (len(ins) > 0 and ins[0] == quote):
-            raise Exception('syntax')
+            raise SyntaxError
 
         ins = ins[1:]  # skip terminating quote
 
@@ -217,7 +217,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         return in0[:len(in0) - len(ins)], ins
 
     else:
-        raise Exception('syntax')
+        raise SyntaxError
 
 
 def unquote(s: str) -> str:
@@ -226,11 +226,14 @@ def unquote(s: str) -> str:
     # corresponding one-character string.)
     out, rem = unquote_(s, True)
     if rem:
-        raise Exception('syntax')
+        raise SyntaxError
     return out
 
 
 ##
+
+
+import pytest
 
 
 def test_unquote():
@@ -273,7 +276,22 @@ def test_unquote():
         ("` `", ' '),
         ("`a\rb`", "ab"),
     ]:
-        pass
+        assert unquote(ins) == out
+
+    """
+    for out, ins in [
+        ("\a\b\f\r\n\t\v", `"\a\b\f\r\n\t\v"`),
+        ("\\", `"\\"`),
+        ("abc\xffdef", `"abc\xffdef"`),
+        ("\u263a", `"☺"`),
+        ("\U0010ffff", `"\U0010ffff"`),
+        ("\x04", `"\x04"`),
+        # Some non-printable but graphic runes. Final column is double-quoted.
+        ("!\u00a0!\u2000!\u3000!", `"!\u00a0!\u2000!\u3000!"`),
+        ("\x7f", `"\x7f"`),
+    ]:
+        assert unquote(ins) == out
+    """
 
     for ins in [
         '',
@@ -302,7 +320,8 @@ def test_unquote():
         "\"\n\"",
         "\"\\n\n\"",
         "'\n'",
-        '"\udead"',
-        '"\ud83d\ude4f"',
+        r'"\udead"',
+        r'"\ud83d\ude4f"',
     ]:
-        pass
+        with pytest.raises(SyntaxError):
+            unquote(ins)
