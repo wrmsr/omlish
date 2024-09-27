@@ -138,6 +138,11 @@ class CommentNode(Node):
     def copy(self) -> Node:
         return TextNode(tree=self.tree, type=NodeType.COMMENT, pos=self.pos, text=self.text)
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write("{{")
+        out.write(self.text)
+        out.write("}}")
+
 
 @dc.dataclass()
 class PipeNode(Node):
@@ -163,6 +168,30 @@ class PipeNode(Node):
 
     def copy(self) -> Node:
         return self.copy_pipe()
+
+    def write(self, out: ta.TextIO) -> None:
+        """
+        	if len(p.Decl) > 0 {
+		for i, v := range p.Decl {
+			if i > 0 {
+				sb.WriteString(", ")
+			}
+			v.writeTo(sb)
+		}
+		if p.IsAssign {
+			sb.WriteString(" = ")
+		} else {
+			sb.WriteString(" := ")
+		}
+	}
+	for i, c := range p.Cmds {
+		if i > 0 {
+			sb.WriteString(" | ")
+		}
+		c.writeTo(sb)
+	}
+        """
+        pass
 
 
 @dc.dataclass()
