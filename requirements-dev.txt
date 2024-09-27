@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.16
+uv>=0.4.17
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -74,7 +74,7 @@ ujson==5.10.0
 
 markupsafe==2.1.5
 
-redis==5.0.8
+redis==5.1.0
 
 sqlean.py==3.45.1; python_version < "3.13"
 duckdb==1.1.1
