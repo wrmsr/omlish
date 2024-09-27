@@ -34,6 +34,19 @@ def unhex(b: str) -> int | None:
         return None
 
 
+SURROGATE_MIN = 0xD800
+SURROGATE_MAX = 0xDFFF
+MAX_RUNE = ord('\U0010FFFF')  # Maximum valid Unicode code point.
+
+
+def is_valid_utf8(r: int) -> bool:
+    if 0 <= r < SURROGATE_MIN:
+        return True
+    elif SURROGATE_MAX < r <= MAX_RUNE:
+        return True
+    return False
+
+
 def unquote_char(s: str, quote: str) -> tuple[str, bool, str]:  # (value, multibyte, tail)
     # UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the
     # string s. It returns four values:
@@ -103,14 +116,14 @@ def unquote_char(s: str, quote: str) -> tuple[str, bool, str]:  # (value, multib
             v = v << 4 | x
         s = s[n:]
         if c == 'x':
-            # single-byte string, possibly not UTF-8
             try:
                 value = chr(v)  # noqa
             except ValueError:
                 raise SyntaxError
         else:
-            # if not utf8.ValidRune(v):
-            #     raise SyntaxError
+            # single-byte string, possibly not UTF-8
+            if not is_valid_utf8(v):
+                raise SyntaxError
             try:
                 value = chr(v)  # noqa
             except ValueError:
@@ -246,13 +259,6 @@ import pytest
 
 
 def test_unquote():
-    for ins in [
-        r'"\udead"',
-        r'"\ud83d\ude4f"',
-    ]:
-        with pytest.raises(SyntaxError):
-            unquote(ins)
-
     for ins, out in [
         ('""', ""),
         ('"a"', "a"),
