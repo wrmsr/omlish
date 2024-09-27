@@ -156,7 +156,7 @@ def test_parse():
         )['-']
         print(t)
 
-    for name, ins, ok, result in [
+    for name, ins, has_err, result in [
         ("empty", "", False, ''),
         ("comment", "{{/*\n\n\n*/}}", False, ''),
         ("spaces", " \t\n", False, r'" \t\n"'),
@@ -173,7 +173,7 @@ def test_parse():
         ("nested pipeline", "{{.X (.Y .Z) (.A | .B .C) (.E)}}", False, '{{.X (.Y .Z) (.A | .B .C) (.E)}}'),
         ("field applied to parentheses", "{{(.Y .Z).Field}}", False, '{{(.Y .Z).Field}}'),
     ]:
-        if ok:
+        if not has_err:
             t = parse(
                 '-',
                 s,
