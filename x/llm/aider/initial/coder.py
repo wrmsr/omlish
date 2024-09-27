@@ -23,8 +23,8 @@ from rich.prompt import Prompt
 from rich.text import Text
 from tqdm import tqdm
 
-import prompts
-from dump import dump
+from . import prompts
+from .dump import dump
 
 
 history_file = ".coder.history"
@@ -545,6 +545,14 @@ def main():
     )
 
     args = parser.parse_args()
+
+    with open(os.path.expanduser('~/.omlish-llm/.env')) as f:
+        os.environ.update({
+            k: v
+            for l in f
+            if (s := l.strip())
+            for k, v in [s.split('=')]
+        })
 
     use_gpt_4 = not args.gpt_3_5_turbo
     fnames = args.files
