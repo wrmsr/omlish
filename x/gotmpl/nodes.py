@@ -254,7 +254,10 @@ class IdentifierNode(Node):
         return new_identifier(self.ident).set_tree(self.tree).set_pos(self.pos)
 
     def write(self, out: ta.TextIO) -> None:
-        pass
+        out.write(self.ident)
+
+    def string(self) -> str:
+        return self.ident
 
 
 # NewIdentifier returns a new [IdentifierNode] with the given identifier name.
@@ -272,6 +275,12 @@ class VariableNode(Node):
     def copy(self) -> Node:
         return VariableNode(tree=self.tree, type=NodeType.VARIABLE, pos=self.pos, ident=list(self.ident))
 
+    def write(self, out: ta.TextIO) -> None:
+        for i, id in enumerate(self.ident):  # noqa
+            if i > 0:
+                out.write('.')
+            out.write(id)
+
 
 @dc.dataclass()
 class DotNode(Node):
@@ -285,6 +294,12 @@ class DotNode(Node):
 
     def copy(self) -> Node:
         return self.tree.new_dot(self.pos)
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write('.')
+
+    def string(self) -> str:
+        return '.'
 
 
 @dc.dataclass()
@@ -300,6 +315,12 @@ class NilNode(Node):
     def copy(self) -> Node:
         return self.tree.new_nil(self.pos)
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write('nil')
+
+    def string(self) -> str:
+        return 'nil'
+
 
 @dc.dataclass()
 class FieldNode(Node):
@@ -310,6 +331,11 @@ class FieldNode(Node):
 
     def copy(self) -> Node:
         return FieldNode(tree=self.tree, type=NodeType.FIELD, pos=self.pos, ident=list(self.ident))
+
+    def write(self, out: ta.TextIO) -> None:
+        for id in self.ident:  # noqa
+            out.write(".")
+            out.write(id)
 
 
 @dc.dataclass()
@@ -331,6 +357,17 @@ class ChainNode(Node):
 
     def copy(self) -> Node:
         return ChainNode(tree=self.tree, type=NodeType.CHAIN, pos=self.pos, node=self.node, field=list(self.field))
+
+    def write(self, out: ta.TextIO) -> None:
+        if isinstance(self.node, PipeNode):
+            out.write('(')
+            self.node.write(out)
+            out.write(')')
+        else:
+            self.node.write(out)
+        for field in self.field:
+            out.write('.')
+            out.write(field)
 
 
 @dc.dataclass()
