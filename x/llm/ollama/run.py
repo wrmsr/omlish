@@ -123,27 +123,43 @@ class Model(lang.Final):
     template: str
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=operator.not_)
 class Options:
-    num_keep: int = dc.field(metadata={'json': 'num_keep', 'omitempty': True})
-    seed: int = dc.field(metadata={'json': 'seed', 'omitempty': True})
-    num_predict: int = dc.field(metadata={'json': 'num_predict', 'omitempty': True})
-    top_k: int = dc.field(metadata={'json': 'top_k', 'omitempty': True})
-    top_p: float = dc.field(metadata={'json': 'top_p', 'omitempty': True})
-    min_p: float = dc.field(metadata={'json': 'min_p', 'omitempty': True})
-    tfs_z: float = dc.field(metadata={'json': 'tfs_z', 'omitempty': True})
-    typical_p: float = dc.field(metadata={'json': 'typical_p', 'omitempty': True})
-    repeat_last_n: int = dc.field(metadata={'json': 'repeat_last_n', 'omitempty': True})
-    temperature: float = dc.field(metadata={'json': 'temperature', 'omitempty': True})
-    repeat_penalty: float = dc.field(metadata={'json': 'repeat_penalty', 'omitempty': True})
-    presence_penalty: float = dc.field(metadata={'json': 'presence_penalty', 'omitempty': True})
-    frequency_penalty: float = dc.field(metadata={'json': 'frequency_penalty', 'omitempty': True})
-    mirostat: int = dc.field(metadata={'json': 'mirostat', 'omitempty': True})
-    mirostat_tau: float = dc.field(metadata={'json': 'mirostat_tau', 'omitempty': True})
-    mirostat_eta: float = dc.field(metadata={'json': 'mirostat_eta', 'omitempty': True})
-    penalize_newline: bool = dc.field(metadata={'json': 'penalize_newline', 'omitempty': True})
-    stop: ta.Sequence[str] = dc.field(metadata={'json': 'stop', 'omitempty': True})
+    num_keep: int = 0
+    seed: int = 0
+    num_predict: int = 0
+    top_k: int = 0
+    top_p: float = 0.
+    min_p: float = 0.
+    tfs_z: float = 0.
+    typical_p: float = 0.
+    repeat_last_n: int = 0
+    temperature: float = 0.0
+    repeat_penalty: float = 0.
+    presence_penalty: float = 0.
+    frequency_penalty: float = 0.
+    mirostat: int = 0
+    mirostat_tau: float = 0.
+    mirostat_eta: float = 0.
+    penalize_newline: bool = False
+    stop: ta.Sequence[str] = ()
+
+
+@dc.dataclass(frozen=True)
+@msh.update_fields_metadata(omit_if=operator.not_)
+class Runner:
+    num_ctx: int = 0
+    num_batch: int = 0
+    num_gpu: int = 0
+    main_gpu: int = 0
+    low_vram: bool = False
+    f16_kv: bool = False
+    logits_all: bool = False
+    vocab_only: bool = False
+    use_mmap: bool | None = None
+    use_mlock: bool = False
+    num_thread: int = 0
 
 
 def _main() -> None:
