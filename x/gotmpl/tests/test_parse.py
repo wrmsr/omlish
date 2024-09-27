@@ -6,6 +6,7 @@ import pytest
 
 from omlish import lang
 
+from ..parse import ParseError
 from ..parse import parse
 
 
@@ -32,70 +33,6 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
     "lt": operator.lt,  # <
     "ne": operator.ne,  # !=
 }
-
-
-"""
-
-    # Errors.
-    "hello{{range",
-    "{{end}}",
-    "{{else}}",
-    "{{if .X}}hello{{end}}{{else}}",
-    "{{if .X}}1{{else}}2{{else}}3{{end}}",
-    "hello{{range .x}}",
-    "hello{{range .x}}{{else}}",
-    "hello{{undefined}}",
-    "{{$x}}",
-    "{{with $x := 4}}{{end}}{{$x}}",
-    "{{template $v}}",
-    "{{with $x.Y := 4}}{{end}}",
-    "{{template .X}}",
-    "{{template $v}}",
-    "{{printf 3, 4}}",
-    "{{with $v, $u := 3}}{{end}}",
-    "{{range $u, $v, $w := 3}}{{end}}",
-    "{{printf (printf .).}}",
-    "{{printf 3`x`}}",
-    "{{printf `x`.}}",
-    "{{if .X}}a{{else if .Y}}b{{end}}{{end}}",
-    "{{range .}}{{end}} {{break}}",
-    "{{range .}}{{end}} {{continue}}",
-    "{{range .}}{{else}}{{break}}{{end}}",
-    "{{range .}}{{else}}{{continue}}{{end}}",
-    # Other kinds of assignments and operators aren't available yet.
-    "{{$x := 0}}{{$x}}",
-    "{{$x += 1}}{{$x}}",
-    "{{$x ! 2}}{{$x}}",
-    "{{$x % 3}}{{$x}}",
-    # Check the parse fails for := rather than comma.
-    "{{range $x := $y := 3}}{{end}}",
-    # Another bug: variable read must ignore following punctuation.
-    "{{$x:=.}}{{$x!2}}", hasError,
-    "{{$x:=.}}{{$x+2}}", hasError,
-    "{{$x:=.}}{{$x +2}}", noError,
-    # Check the range handles assignment vs. declaration properly.
-    "{{range $x := 0}}{{$x}}{{end}}",
-    "{{range $x = 0}}{{$x}}{{end}}",
-    # dot following a literal value
-    "{{1.E}}",
-    "{{0.1.E}}",
-    "{{true.E}}",
-    "{{'a'.any}}",
-    `{{"hello".guys}}`,
-    "{{..E}}",
-    "{{nil.E}}",
-    # Wrong pipeline
-    "{{12|.}}",
-    "{{.|12|printf}}",
-    "{{.|printf|\"error\"}}",
-    "{{12|printf|'e'}}",
-    "{{.|true}}",
-    "{{'c'|nil}}",
-    `{{printf "%d" ( ) }}`,
-    # Missing pipeline in block
-    '{{block "foo"}}hello{{end}}',
-
-"""
 
 
 def test_parse():
@@ -173,6 +110,68 @@ def test_parse():
         print(t)
 
     for s in [
-
+        # Errors.
+        "hello{{range",
+        "{{end}}",
+        "{{else}}",
+        "{{if .X}}hello{{end}}{{else}}",
+        "{{if .X}}1{{else}}2{{else}}3{{end}}",
+        "hello{{range .x}}",
+        "hello{{range .x}}{{else}}",
+        "hello{{undefined}}",
+        "{{$x}}",
+        "{{with $x := 4}}{{end}}{{$x}}",
+        "{{template $v}}",
+        "{{with $x.Y := 4}}{{end}}",
+        "{{template .X}}",
+        "{{template $v}}",
+        "{{printf 3, 4}}",
+        "{{with $v, $u := 3}}{{end}}",
+        "{{range $u, $v, $w := 3}}{{end}}",
+        "{{printf (printf .).}}",
+        "{{printf 3`x`}}",
+        "{{printf `x`.}}",
+        "{{if .X}}a{{else if .Y}}b{{end}}{{end}}",
+        "{{range .}}{{end}} {{break}}",
+        "{{range .}}{{end}} {{continue}}",
+        "{{range .}}{{else}}{{break}}{{end}}",
+        "{{range .}}{{else}}{{continue}}{{end}}",
+        # Other kinds of assignments and operators aren't available yet.
+        "{{$x := 0}}{{$x}}",
+        "{{$x += 1}}{{$x}}",
+        "{{$x ! 2}}{{$x}}",
+        "{{$x % 3}}{{$x}}",
+        # Check the parse fails for := rather than comma.
+        "{{range $x := $y := 3}}{{end}}",
+        # Another bug: variable read must ignore following punctuation.
+        "{{$x:=.}}{{$x!2}}",
+        "{{$x:=.}}{{$x+2}}",
+        "{{$x:=.}}{{$x +2}}",
+        # Check the range handles assignment vs. declaration properly.
+        "{{range $x := 0}}{{$x}}{{end}}",
+        "{{range $x = 0}}{{$x}}{{end}}",
+        # dot following a literal value
+        "{{1.E}}",
+        "{{0.1.E}}",
+        "{{true.E}}",
+        "{{'a'.any}}",
+        '{{"hello".guys}}',
+        "{{..E}}",
+        "{{nil.E}}",
+        # Wrong pipeline
+        "{{12|.}}",
+        "{{.|12|printf}}",
+        "{{.|printf|\"error\"}}",
+        "{{12|printf|'e'}}",
+        "{{.|true}}",
+        "{{'c'|nil}}",
+        '{{printf "%d" ( ) }}',
+        # Missing pipeline in block
+        '{{block "foo"}}hello{{end}}',
     ]:
-        with pytest.raises(Exception):  # noqa
+        with pytest.raises(ParseError):  # noqa
+            parse(
+                '-',
+                s,
+                funcs=dict(BUILTINS),
+            )
