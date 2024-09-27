@@ -141,66 +141,31 @@ class Tree:
             n.simplify()
             return n
 
-        """
         # Imaginary constants can only be complex unless they are zero.
-        if len(text) > 0 and text[len(text)-1] == 'i':
-            f, err = strconv.ParseFloat(text[:len(text)-1], 64)
-            if err == nil:
-                n.IsComplex = true
-                n.Complex128 = complex(0, f)
-                n.simplify()
-                return n, nil
-                
-        # Do integer test first so we get 0x123 etc.
-        u, err = strconv.ParseUint(text, 0, 64) # will fail for -0; fixed below.
-        if err == nil:
-            n.IsUint = true
-            n.Uint64 = u
-            
-        i, err = strconv.ParseInt(text, 0, 64)
-        if err == nil:
-            n.IsInt = true
-            n.Int64 = i
-            if i == 0:
-                n.IsUint = true # in case of -0.
-                n.Uint64 = u
-                
-        # If an integer extraction succeeded, promote the float.
-        if n.IsInt:
-            n.IsFloat = true
-            n.Float64 = float64(n.Int64)
-            
-        else if n.IsUint:
-            n.IsFloat = true
-            n.Float64 = float64(n.Uint64)
-            
-        else:
-            f, err = strconv.ParseFloat(text, 64)
-            if err == nil:
-                # If we parsed it as a float but it looks like an integer,
-                # it's a huge number too large to fit in an int. Reject it.
-                if !strings.ContainsAny(text, ".eEpP"):
-                    return nil, fmt.Errorf("integer overflow: %r", text)
-                    
-                n.IsFloat = true
-                n.Float64 = f
-                
-                # If a floating-point extraction succeeded, extract the int if needed.
-                if !n.IsInt and float64(int64(f)) == f:
-                    n.IsInt = true
-                    n.Int64 = int64(f)
-                    
-                if !n.IsUint and float64(uint64(f)) == f:
-                    n.IsUint = true
-                    n.Uint64 = uint64(f)
-                    
-        if !n.IsInt and !n.IsUint and !n.IsFloat:
-            return nil, fmt.Errorf("illegal number syntax: %r", text)
-            
-        return n, nil
-        """
+        if text and text[len(text)-1] == 'i':
+            n.v = float(text[:len(text)-1])
+            n.simplify()
+            return n
 
-        raise NotImplementedError
+        try:
+            # Do integer test first so we get 0x123 etc.
+            v = int(text, 0)
+        except ValueError:
+            v = None
+        
+        if v is None:
+            try:
+                v = float(text)
+            except ValueError:
+                pass
+
+        if v is None:
+            raise Exception(f'illegal number syntax: {text!r}')
+
+        n.v = v
+        n.simplify()
+
+        return n
 
     def new_string(self, pos: Pos, orig: str, text: str) -> StringNode:
         return StringNode(tree=self, type=NodeType.STRING, pos=pos, quoted=orig, text=text)
