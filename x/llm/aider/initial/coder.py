@@ -2,17 +2,18 @@
 """
 https://github.com/paul-gauthier/aider/blob/14f863e732ad69ebbea60b66fa692e2a5029f036/coder.py
 """
-
 import argparse
 import os
+import pathlib
 import re
 import readline
 import sys
 import traceback
-from pathlib import Path
+import typing as ta
 
 import git
 import openai
+import openai.types.chat
 from colorama import Fore
 from colorama import Style
 from rich.console import Console
@@ -43,18 +44,31 @@ def find_index(list1, list2):
     return -1
 
 
-class Coder:
-    fnames = dict()
-    last_modified = 0
+Message: ta.TypeAlias = ta.Mapping[str, ta.Any]
+Fname: ta.TypeAlias = str | pathlib.Path
+CompletionChunk: ta.TypeAlias = openai.types.chat.ChatCompletionChunk
 
-    def __init__(self, use_gpt_4, files, pretty):
+
+class Coder:
+
+    def __init__(
+            self,
+            use_gpt_4,
+            files,
+            pretty,
+    ) -> None:
+        super().__init__()
+
+        self.fnames = dict()
+        self.last_modified = 0
+
         if use_gpt_4:
             self.main_model = "gpt-4"
         else:
             self.main_model = "gpt-3.5-turbo"
 
         for fname in files:
-            self.fnames[fname] = Path(fname).stat().st_mtime
+            self.fnames[fname] = pathlib.Path(fname).stat().st_mtime
 
         self.check_for_local_edits(True)
 
@@ -65,21 +79,21 @@ class Coder:
         else:
             self.console = Console(force_terminal=True, no_color=True)
 
-    def quoted_file(self, fname):
+    def quoted_file(self, fname: str) -> str:
         prompt = "\n"
         prompt += fname
         prompt += "\n```\n"
-        prompt += Path(fname).read_text()
+        prompt += pathlib.Path(fname).read_text()
         prompt += "\n```\n"
         return prompt
 
-    def get_files_content(self):
+    def get_files_content(self) -> str:
         prompt = ""
         for fname in self.fnames:
             prompt += self.quoted_file(fname)
         return prompt
 
-    def get_input(self):
+    def get_input(self) -> str | None:
         if self.pretty:
             self.console.rule()
         else:
@@ -106,8 +120,8 @@ class Coder:
         readline.write_history_file(history_file)
         return inp
 
-    def check_for_local_edits(self, init=False):
-        last_modified = max(Path(fname).stat().st_mtime for fname in self.fnames)
+    def check_for_local_edits(self, init: bool = False) -> bool | None:
+        last_modified = max(pathlib.Path(fname).stat().st_mtime for fname in self.fnames)
         since = last_modified - self.last_modified
         self.last_modified = last_modified
         if init:
@@ -116,8 +130,8 @@ class Coder:
             return True
         return False
 
-    def get_files_messages(self):
-        files_content = prompts.files_content_prefix
+    def get_files_messages(self) -> list[dict[str, ta.Any]]:
+        files_content = prompts.FILES_CONTENT_PREFIX
         files_content += self.get_files_content()
 
         files_messages = [
@@ -125,13 +139,13 @@ class Coder:
             dict(role="assistant", content="Ok."),
             dict(
                 role="system",
-                content=prompts.files_content_suffix + prompts.system_reminder,
+                content=prompts.FILES_CONTENT_SUFFIX + prompts.SYSTEM_REMINDER,
             ),
         ]
 
         return files_messages
 
-    def run(self):
+    def run(self) -> None:
         self.done_messages = []
         self.cur_messages = []
 
@@ -149,7 +163,7 @@ class Coder:
         if self.pretty:
             print(Style.RESET_ALL)
 
-    def run_loop(self):
+    def run_loop(self) -> bool | None:
         inp = self.get_input()
         if inp is None:
             return
@@ -162,7 +176,7 @@ class Coder:
             # files changed, move cur messages back behind the files messages
             self.done_messages += self.cur_messages
             self.done_messages += [
-                dict(role="user", content=prompts.files_content_local_edits),
+                dict(role="user", content=prompts.FILES_CONTENT_LOCAL_EDITS),
                 dict(role="assistant", content="Ok."),
             ]
             self.cur_messages = []
@@ -172,7 +186,7 @@ class Coder:
         ]
 
         messages = [
-            dict(role="system", content=prompts.main_system + prompts.system_reminder),
+            dict(role="system", content=prompts.MAIN_SYSTEM + prompts.SYSTEM_REMINDER),
         ]
         messages += self.done_messages
         messages += self.get_files_messages()
@@ -184,7 +198,7 @@ class Coder:
         if interrupted:
             content += "\n^C KeyboardInterrupt"
 
-        Path("tmp.last-edit.md").write_text(content)
+        pathlib.Path("tmp.last-edit.md").write_text(content)
 
         self.cur_messages += [
             dict(role="assistant", content=content),
@@ -209,13 +223,13 @@ class Coder:
         if res:
             commit_hash, commit_message = res
 
-            saved_message = prompts.files_content_gpt_edits.format(
+            saved_message = prompts.FILES_CONTENT_GPT_EDITS.format(
                 hash=commit_hash,
                 message=commit_message,
             )
         else:
             self.console.print('[red bold]Edits failed to change the files?')
-            saved_message = prompts.files_content_gpt_no_edits
+            saved_message = prompts.FILES_CONTENT_GPT_NO_EDITS
 
         self.check_for_local_edits(True)
         self.done_messages += self.cur_messages
@@ -226,7 +240,11 @@ class Coder:
         self.cur_messages = []
         return True
 
-    def show_messages(self, messages, title):
+    def show_messages(
+            self,
+            messages: ta.Iterable[Message],
+            title: str,
+    ) -> None:
         print(title.upper(), "*" * 50)
 
         for msg in messages:
@@ -237,28 +255,24 @@ class Coder:
             for line in content:
                 print(role, line)
 
-    def send(self, messages, model=None, progress_bar_expected=0, silent=False):
+    def send(
+            self,
+            messages: ta.Iterable[Message],
+            model: str | None = None,
+            progress_bar_expected: int = 0,
+            silent: bool = False,
+    ):
         # self.show_messages(messages, "all")
 
         if not model:
             model = self.main_model
 
-        import time
-        # from openai.error import RateLimitError
-
-        while True:
-            # try:
-            completion = openai.ChatCompletion.create(
-                model=model,
-                messages=messages,
-                temperature=0,
-                stream=True,
-            )
-            break
-            # except RateLimitError as e:
-            #     retry_after = e.retry_after
-            #     print(f"Rate limit exceeded. Retrying in {retry_after} seconds.")
-            #     time.sleep(retry_after)
+        completion = openai.chat.completions.create(  # noqa
+            model=model,
+            messages=messages,
+            temperature=0,
+            stream=True,
+        )
 
         interrupted = False
         try:
@@ -273,7 +287,11 @@ class Coder:
 
         return self.resp, interrupted
 
-    def show_send_progress(self, completion, progress_bar_expected):
+    def show_send_progress(
+            self,
+            completion: ta.Iterable[CompletionChunk],
+            progress_bar_expected: int,
+    ) -> None:
         self.resp = ""
         pbar = tqdm(total=progress_bar_expected)
         for chunk in completion:
@@ -288,7 +306,11 @@ class Coder:
         pbar.update(progress_bar_expected)
         pbar.close()
 
-    def show_send_output_plain(self, completion, silent):
+    def show_send_output_plain(
+            self,
+            completion: ta.Iterable[CompletionChunk],
+            silent: bool,
+    ) -> None:
         self.resp = ""
 
         for chunk in completion:
@@ -304,7 +326,7 @@ class Coder:
                 sys.stdout.write(text)
                 sys.stdout.flush()
 
-    def show_send_output_color(self, completion):
+    def show_send_output_color(self, completion: ta.Iterable[CompletionChunk]) -> None:
         self.resp = ""
 
         with Live(vertical_overflow="scroll") as live:
@@ -313,7 +335,8 @@ class Coder:
                     assert False, "Exceeded context window!"
                 try:
                     text = chunk.choices[0].delta.content
-                    self.resp += text
+                    if text is not None:
+                        self.resp += text
                 except AttributeError:
                     continue
 
@@ -326,19 +349,19 @@ class Coder:
         md = Markdown(self.resp, style="blue", code_theme="default")
         self.console.print(md)
 
-    pattern = re.compile(
+    pattern: ta.ClassVar = re.compile(
         r"(^```\S*\s*)?^((?:[a-zA-Z]:\\|/)?(?:[\w\s.-]+[\\/])*\w+(\.\w+)?)\s+(^```\S*\s*)?^<<<<<<< ORIGINAL\n(.*?\n?)^=======\n(.*?)^>>>>>>> UPDATED",
         # noqa: E501
         re.MULTILINE | re.DOTALL,
     )
 
-    def update_files(self, content, inp):
+    def update_files(self, content: str, inp: str) -> set[str]:
         edited = set()
         for match in self.pattern.finditer(content):
             _, path, _, _, original, updated = match.groups()
 
             if path not in self.fnames:
-                if not Path(path).exists():
+                if not pathlib.Path(path).exists():
                     question = f"[red bold]Allow creation of new file {path}?"
                 else:
                     question = f"[red bold]Allow edits to {path} which was not previously provided?"
@@ -356,11 +379,11 @@ class Coder:
 
         return edited
 
-    def do_replace(self, fname, before_text, after_text):
+    def do_replace(self, fname: str, before_text: str, after_text: str) -> bool | None:
         before_text = self.strip_quoted_wrapping(before_text, fname)
         after_text = self.strip_quoted_wrapping(after_text, fname)
 
-        fname = Path(fname)
+        fname = pathlib.Path(fname)
 
         # does it want to make a new file?
         if not fname.exists() and not before_text:
@@ -389,13 +412,13 @@ class Coder:
         self.console.print(f"[red]Applied edit to {fname}")
         return True
 
-    def do_gpt_powered_replace(self, fname, edit, request):
+    def do_gpt_powered_replace(self, fname: str, edit: str, request: str) -> None:
         model = "gpt-3.5-turbo"
         print(f"Asking {model} to apply ambiguous edit to {fname}...")
 
-        fname = Path(fname)
+        fname = pathlib.Path(fname)
         content = fname.read_text()
-        prompt = prompts.editor_user.format(
+        prompt = prompts.EDITOR_USER.format(
             request=request,
             edit=edit,
             fname=fname,
@@ -403,7 +426,7 @@ class Coder:
         )
 
         messages = [
-            dict(role="system", content=prompts.editor_system),
+            dict(role="system", content=prompts.EDITOR_SYSTEM),
             dict(role="user", content=prompt),
         ]
         res, interrupted = self.send(
@@ -415,13 +438,13 @@ class Coder:
         res = self.strip_quoted_wrapping(res, fname)
         fname.write_text(res)
 
-    def strip_quoted_wrapping(self, res, fname=None):
+    def strip_quoted_wrapping(self, res: str, fname: pathlib.Path | str | None = None) -> str:
         if not res:
             return res
 
         res = res.splitlines()
 
-        if fname and res[0].strip().endswith(Path(fname).name):
+        if fname and res[0].strip().endswith(pathlib.Path(fname).name):
             res = res[1:]
 
         if res[0].startswith("```") and res[-1].startswith("```"):
@@ -433,7 +456,12 @@ class Coder:
 
         return res
 
-    def commit(self, history=None, prefix=None, ask=False):
+    def commit(
+            self,
+            history=None,
+            prefix=None,
+            ask=False,
+    ):
         repo_paths = set(
             git.Repo(fname, search_parent_directories=True).git_dir
             for fname in self.fnames
@@ -475,7 +503,7 @@ class Coder:
                 context += msg["role"].upper() + ": " + msg["content"] + "\n"
 
         messages = [
-            dict(role="system", content=prompts.commit_system),
+            dict(role="system", content=prompts.COMMIT_SYSTEM),
             dict(role="user", content=context + diffs),
         ]
 
@@ -500,7 +528,7 @@ class Coder:
         self.console.print(f"[red]Suggested commit message:\n{commit_message}\n")
 
         if ask:
-            res = Prompt.ask("[red]Commit before the chat proceeds? \[y/n/commit message]").strip()
+            res = Prompt.ask("[red]Commit before the chat proceeds? [y/n/commit message]").strip()
 
             if res.lower() in ['n', 'no']:
                 self.console.print("[red]Skipped commmit.")
@@ -515,7 +543,7 @@ class Coder:
         return commit_hash, commit_message
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Chat with GPT about code")
     parser.add_argument(
         "files", metavar="FILE", nargs="+", help="a list of source code files"

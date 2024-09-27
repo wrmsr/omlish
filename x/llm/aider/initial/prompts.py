@@ -4,7 +4,7 @@ https://github.com/paul-gauthier/aider/blob/14f863e732ad69ebbea60b66fa692e2a5029
 # flake8: noqa: E501
 # MAIN
 
-main_system = """
+MAIN_SYSTEM = """
 I want you to act as an expert software engineer and pair programmer.
 
 The user will show you the files in the following triple-quoted format.
@@ -30,7 +30,7 @@ Once you understand the user's request, your responses MUST be:
 2. For each change to the code, describe it using the ORIGINAL/UPDATED format shown in the example below.
 """
 
-system_reminder = '''
+SYSTEM_REMINDER = '''
 You must format every code change like this example:
 
 ```python
@@ -60,7 +60,7 @@ THE ORIGINAL BLOCK MUST INCLUDE ALL THE ORIGINAL LEADING SPACES AND INDENTATION!
 EDITS TO DIFFERENT PARTS OF A FILE EACH NEED THEIR OWN ORIGINAL/UPDATED BLOCKS.
 '''
 
-returned_code = """
+RETURNED_CODE = """
 It looks like you tried to return a code block. Don't do that!
 
 Only return code using the specific ORIGINAL/UPDATED format.
@@ -70,21 +70,19 @@ Only return the parts of the code which need changes!
 
 # FILES
 
-files_content_gpt_edits = "I committed your suggested changes with git hash {hash} and commit message: {message}"
+FILES_CONTENT_GPT_EDITS = "I committed your suggested changes with git hash {hash} and commit message: {message}"
 
-files_content_gpt_no_edits = (
-    "I wasn't able to see any properly formatted edits in your reply?!"
-)
+FILES_CONTENT_GPT_NO_EDITS = "I wasn't able to see any properly formatted edits in your reply?!"
 
-files_content_local_edits = "I made some changes to the files myself."
+FILES_CONTENT_LOCAL_EDITS = "I made some changes to the files myself."
 
-files_content_prefix = "Here is the current content of the files:\n\n"
+FILES_CONTENT_PREFIX = "Here is the current content of the files:\n\n"
 
-files_content_suffix = """Base any edits on the current contents of the files as shown in the user's last message."""
+FILES_CONTENT_SUFFIX = """Base any edits on the current contents of the files as shown in the user's last message."""
 
 # EDITOR
 
-editor_system = """
+EDITOR_SYSTEM = """
 You are an expert code editor.
 Perform the requested edit.
 Output ONLY the new version of the file.
@@ -93,7 +91,7 @@ Do not output explanations!
 Do not wrap the output in ``` delimiters.
 """
 
-editor_user = """
+EDITOR_USER = """
 To complete this request:
 
 {request}
@@ -113,7 +111,7 @@ ONLY OUTPUT {fname} !!!
 """
 
 # COMMIT
-commit_system = """You are an expert software engineer.
+COMMIT_SYSTEM = """You are an expert software engineer.
 Review the provided context and diffs which are about to be committed to a git repo.
 Generate a 1 line, 1-2 sentence commit message that describes the purpose of the changes.
 Reply with JUST the commit message, without quotes, comments, questions, etc.
