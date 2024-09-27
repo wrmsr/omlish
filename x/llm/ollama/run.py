@@ -125,7 +125,23 @@ class Model(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=operator.not_)
-class Options:
+class Runner:
+    num_ctx: int = 0
+    num_batch: int = 0
+    num_gpu: int = 0
+    main_gpu: int = 0
+    low_vram: bool = False
+    f16_kv: bool = False
+    logits_all: bool = False
+    vocab_only: bool = False
+    use_mmap: bool | None = None
+    use_mlock: bool = False
+    num_thread: int = 0
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=operator.not_)
+class Options(Runner):
     num_keep: int = 0
     seed: int = 0
     num_predict: int = 0
@@ -146,20 +162,34 @@ class Options:
     stop: ta.Sequence[str] = ()
 
 
-@dc.dataclass(frozen=True)
-@msh.update_fields_metadata(omit_if=operator.not_)
-class Runner:
-    num_ctx: int = 0
-    num_batch: int = 0
-    num_gpu: int = 0
-    main_gpu: int = 0
-    low_vram: bool = False
-    f16_kv: bool = False
-    logits_all: bool = False
-    vocab_only: bool = False
-    use_mmap: bool | None = None
-    use_mlock: bool = False
-    num_thread: int = 0
+DEFAULT_OPTIONS = Options(
+    num_ctx=2048,
+    num_batch=512,
+    num_gpu=-1,
+    num_thread=0,
+    low_vram=False,
+    f16_kv=True,
+    use_mlock=False,
+    use_mmap=None,
+
+    num_predict=-1,
+
+    num_keep=4,
+    temperature=0.8,
+    top_k=40,
+    top_p=0.9,
+    tfs_z=1.0,
+    typical_p=1.0,
+    repeat_last_n=64,
+    repeat_penalty=1.1,
+    presence_penalty=0.0,
+    frequency_penalty=0.0,
+    mirostat=0,
+    mirostat_tau=5.0,
+    mirostat_eta=0.1,
+    penalize_newline=True,
+    seed=-1,
+)
 
 
 @dc.dataclass(frozen=True)
