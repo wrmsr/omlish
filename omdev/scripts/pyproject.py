@@ -242,11 +242,15 @@ def get_git_revision(
     if cwd is None:
         cwd = os.getcwd()
 
-    if subprocess.run([  # noqa
-        'git',
-        'rev-parse',
-        '--is-inside-work-tree',
-    ], stderr=subprocess.PIPE).returncode:
+    if subprocess.run(  # noqa
+        [
+            'git',
+            'rev-parse',
+            '--is-inside-work-tree',
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).returncode:
         return None
 
     has_untracked = bool(subprocess.check_output([
@@ -3879,12 +3883,33 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
     #
 
-    def _run_build(
+    def children(self) -> ta.Sequence['BasePyprojectPackageGenerator']:
+        return []
+
+    #
+
+    def gen(self) -> str:
+        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
+
+        self._pkg_dir()
+        self._write_git_ignore()
+        self._symlink_source_dir()
+        self._write_file_contents()
+        self._symlink_standard_files()
+
+        return self._pkg_dir()
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class BuildOpts:
+        add_revision: bool = False
+        test: bool = False
+
+    def build(
             self,
-            build_output_dir: ta.Optional[str] = None,
-            *,
-            add_revision: bool = False,
-            test: bool = False,
+            output_dir: ta.Optional[str] = None,
+            opts: BuildOpts = BuildOpts(),
     ) -> None:
         subprocess_check_call(
             sys.executable,
@@ -3895,10 +3920,10 @@ class BasePyprojectPackageGenerator(abc.ABC):
 
         dist_dir = os.path.join(self._pkg_dir(), 'dist')
 
-        if add_revision:
+        if opts.add_revision:
             GitRevisionAdder().add_to(dist_dir)
 
-        if test:
+        if opts.test:
             for fn in os.listdir(dist_dir):
                 tmp_dir = tempfile.mkdtemp()
 
@@ -3917,34 +3942,9 @@ class BasePyprojectPackageGenerator(abc.ABC):
                     cwd=tmp_dir,
                 )
 
-        if build_output_dir is not None:
+        if output_dir is not None:
             for fn in os.listdir(dist_dir):
-                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(build_output_dir, fn))
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class GenOpts:
-        run_build: bool = False
-        build_output_dir: ta.Optional[str] = None
-        add_revision: bool = False
-
-    def gen(self, opts: GenOpts = GenOpts()) -> str:
-        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
-
-        self._pkg_dir()
-        self._write_git_ignore()
-        self._symlink_source_dir()
-        self._write_file_contents()
-        self._symlink_standard_files()
-
-        if opts.run_build:
-            self._run_build(
-                opts.build_output_dir,
-                add_revision=opts.add_revision,
-            )
-
-        return self._pkg_dir()
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(output_dir, fn))
 
 
 #
@@ -4070,24 +4070,25 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
     #
 
-    def gen(self, opts: BasePyprojectPackageGenerator.GenOpts = BasePyprojectPackageGenerator.GenOpts()) -> str:
-        ret = super().gen(opts)
+    @cached_nullary
+    def children(self) -> ta.Sequence[BasePyprojectPackageGenerator]:
+        out: ta.List[BasePyprojectPackageGenerator] = []
 
         if self.build_specs().setuptools.get('cexts'):
-            _PyprojectCextPackageGenerator(
+            out.append(_PyprojectCextPackageGenerator(
                 self._dir_name,
                 self._pkgs_root,
                 pkg_suffix='-cext',
-            ).gen(opts)
+            ))
 
         if self.build_specs().pyproject.get('cli_scripts'):
-            _PyprojectCliPackageGenerator(
+            out.append(_PyprojectCliPackageGenerator(
                 self._dir_name,
                 self._pkgs_root,
                 pkg_suffix='-cli',
-            ).gen(opts)
+            ))
 
-        return ret
+        return out
 
 
 #
@@ -5275,24 +5276,33 @@ def _pkg_cmd(args) -> None:
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
 
-        num_threads = max(mp.cpu_count() // 2, 1)
+        pgs = [
+            PyprojectPackageGenerator(
+                dir_name,
+                pkgs_root,
+            )
+            for dir_name in run.cfg().pkgs
+        ]
+
+        num_threads = args.jobs or max(mp.cpu_count() // 2, 1)
         with cf.ThreadPoolExecutor(num_threads) as ex:
-            futs = [
-                ex.submit(functools.partial(
-                    PyprojectPackageGenerator(
-                        dir_name,
-                        pkgs_root,
-                    ).gen,
-                    PyprojectPackageGenerator.GenOpts(
-                        run_build=run_build,
-                        build_output_dir=build_output_dir,
-                        add_revision=add_revision,
-                    ),
-                ))
-                for dir_name in run.cfg().pkgs
-            ]
+            futs = [ex.submit(pg.gen) for pg in pgs]
             for fut in futs:
                 fut.result()
+
+            if run_build:
+                futs = [
+                    functools.partial(
+                        pg.build,
+                        build_output_dir,
+                        BasePyprojectPackageGenerator.BuildOpts(
+                            add_revision=add_revision,
+                        ),
+                    )
+                    for pg in pgs
+                ]
+                for fut in futs:
+                    fut.result()
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')
@@ -5317,6 +5327,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve = subparsers.add_parser('pkg')
     parser_resolve.add_argument('-b', '--build', action='store_true')
     parser_resolve.add_argument('-r', '--revision', action='store_true')
+    parser_resolve.add_argument('-j', '--jobs', type=int)
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_pkg_cmd)
