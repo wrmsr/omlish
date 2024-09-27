@@ -438,8 +438,7 @@ class Tree:
         #    control
         #    command ("|" command)*
         #
-        # Left delim is past. Now get actions.
-        # First word could be a keyword such as range.
+        # Left delim is past. Now get actions. First word could be a keyword such as range.
         token = self.next_non_space()
         if token.typ == TokenType.BLOCK:
             return self.block_control()
@@ -591,16 +590,19 @@ class Tree:
                 pass
 
             elif next.type == NodeType.ELSE:
-                # Special case for "else if" and "else with".
-                # If the "else" is followed immediately by an "if" or "with",
-                # the else_control will have left the "if" or "with" token pending. Treat
+                # Special case for "else if" and "else with". If the "else" is followed immediately by an "if" or
+                # "with", the else_control will have left the "if" or "with" token pending. Treat
+                #
                 #    {{if a}}_{{else if b}}_{{end}}
                 #  {{with a}}_{{else with b}}_{{end}}
+                #
                 # as
+                #
                 #    {{if a}}_{{else}}{{if b}}_{{end}}{{end}}
                 #  {{with a}}_{{else}}{{with b}}_{{end}}{{end}}.
-                # To do this, parse the "if" or "with" as usual and stop at it {{end}};
-                # the subsequent{{end}} is assumed. This technique works even for long if-else-if chains.
+                #
+                # To do this, parse the "if" or "with" as usual and stop at it {{end}}; the subsequent{{end}} is
+                # assumed. This technique works even for long if-else-if chains.
                 if context == 'if' and self.peek().typ == TokenType.IF:
                     self.next()  # Consume the "if" token.
                     else_lst = self.new_list(next.pos)
@@ -662,9 +664,8 @@ class Tree:
         #
         # Else keyword is past.
         peek = self.peek_non_space()
-        # The "{{else if ... " and "{{else with ..." will be
-        # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
-        # So return the else node here.
+        # The "{{else if ... " and "{{else with ..." will be treated as "{{else}}{{if ..." and "{{else}}{{with ...". So
+        # return the else node here.
         if peek.typ == TokenType.IF or peek.typ == TokenType.WITH:
             return self.new_else(peek.pos, peek.line)
         token = self.expect(TokenType.RIGHT_DELIM, "else")
@@ -675,9 +676,7 @@ class Tree:
         #
         #    {{block stringValue pipeline}}
         #
-        # Block keyword is past.
-        # The name must be something that can evaluate to a string.
-        # The pipeline is mandatory.
+        # Block keyword is past. The name must be something that can evaluate to a string. The pipeline is mandatory.
         context = 'block clause'
 
         token = self.next_non_space()
@@ -728,8 +727,8 @@ class Tree:
         #
         #    operand (space operand)*
         #
-        # space-separated arguments up to a pipeline character or right delimiter.
-        # we consume the pipe character but leave the right delim to terminate the action.
+        # space-separated arguments up to a pipeline character or right delimiter. we consume the pipe character but
+        # leave the right delim to terminate the action.
         cmd = self.new_command(self.peek_non_space().pos)
         while True:
             self.peek_non_space()  # skip leading spaces.
@@ -756,9 +755,8 @@ class Tree:
         #
         #    term .Field*
         #
-        # An operand is a space-separated component of a command,
-        # a term possibly followed by field accesses.
-        # A nil return means the next item is not an operand.
+        # An operand is a space-separated component of a command, a term possibly followed by field accesses. A nil
+        # return means the next item is not an operand.
         node = self.term()
         if not node:
             return None  # FIXME  # noqa
@@ -767,17 +765,16 @@ class Tree:
             while self.peek().typ == TokenType.FIELD:
                 chain.add(self.next().val)
 
-            # Compatibility with original API: If the term is of type NodeField
-            # or NodeVariable, just put more fields on the original.
-            # Otherwise, keep the Chain node.
-            # Obvious parsing errors involving literal values are detected here.
-            # More complex error cases will have to be handled at execution time.
+            # Compatibility with original API: If the term is of type NodeField or NodeVariable, just put more fields on
+            # the original. Otherwise, keep the Chain node.
+            # Obvious parsing errors involving literal values are detected here. More complex error cases will have to
+            # be handled at execution time.
             if node.type == NodeType.FIELD:
                 node = self.new_field(chain.pos, chain.String())  # FIXME
             elif node.type == NodeType.VARIABLE:
                 node = self.new_variable(chain.pos, chain.String())  # FIXME
             elif node.type in (NodeType.BOOL, NodeType.STRING, NodeType.NUMBER, NodeType.NIL, NodeType.DOT):
-                self.errorf('unexpected . after term %r', node.String())
+                self.errorf('unexpected . after term %r', node)
             else:
                 node = chain
         return node
@@ -792,8 +789,7 @@ class Tree:
         #    $
         #    '(' pipeline ')'
         #
-        # A term is a simple "expression".
-        # A nil return means the next item is not a term.
+        # A term is a simple "expression". A nil return means the next item is not a term.
         token = self.next_non_space()
         if token.typ == TokenType.IDENTIFIER:
             check_func = self._mode & MODE_SKIP_FUNC_CHECK == 0
@@ -841,8 +837,7 @@ class Tree:
         self._vars = self._vars[:n]
 
     def use_var(self, pos: Pos, name: str) -> Node:
-        # use_var returns a node for a variable reference. It errors if the
-        # variable is not defined.
+        # use_var returns a node for a variable reference. It errors if the variable is not defined.
         v = self.new_variable(pos, name)
         for var_name in self._vars:
             if var_name == v.ident[0]:
