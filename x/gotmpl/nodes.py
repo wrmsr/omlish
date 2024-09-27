@@ -519,6 +519,12 @@ class BreakNode(Node):
     def copy(self) -> Node:
         return self.tree.new_break(self.pos, self.line)
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return "{{break}}"
+
 
 @dc.dataclass()
 class ContinueNode(Node):
@@ -528,6 +534,12 @@ class ContinueNode(Node):
 
     def copy(self) -> Node:
         return self.tree.new_continue(self.pos, self.line)
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return "{{continue}}"
 
 
 @dc.dataclass()
@@ -552,7 +564,15 @@ class TemplateNode(Node):
 
     line: int  # The line number in the input. Deprecated: Kept for compatibility.
     name: str  # The name of the template (unquoted).
-    pipe: PipeNode  # The command to evaluate as dot for the template.
+    pipe: PipeNode | None  # The command to evaluate as dot for the template.
 
     def copy(self) -> Node:
         return self.tree.new_template(self.pos, self.line, self.name, self.pipe.copy_pipe())
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write("{{template ")
+        out.write(repr(self.name))
+        if self.pipe:
+            out.write(' ')
+            self.pipe.write(out)
+        out.write("}}")
