@@ -2,7 +2,10 @@ import operator
 import textwrap
 import typing as ta
 
+import pytest
+
 from omlish import lang
+
 from ..parse import parse
 
 
@@ -32,59 +35,6 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
 
 
 """
-    "",
-    "{{/*\n\n\n*/}}",
-    " \t\n",
-    "some text",
-    "{{}}",
-    "{{.X}}",
-    "{{printf}}",
-    "{{$}}",
-    "{{with $x := 3}}{{$x 23}}{{end}}",
-    "{{$.I}}",
-    "{{printf `%d` 23}}",
-    "{{.X|.Y}}",
-    "{{$x := .X|.Y}}",
-    "{{.X (.Y .Z) (.A | .B .C) (.E)}}",
-    "{{(.Y .Z).Field}}",
-    "{{if .X}}hello{{end}}",
-    "{{if .X}}true{{else}}false{{end}}",
-    "{{if .X}}true{{else if .Y}}false{{end}}",
-    "+{{if .X}}X{{else if .Y}}Y{{else if .Z}}Z{{end}}+",
-    "{{range .X}}hello{{end}}",
-    "{{range .X.Y.Z}}hello{{end}}",
-    "{{range .X}}hello{{range .Y}}goodbye{{end}}{{end}}",
-    "{{range .X}}true{{else}}false{{end}}",
-    "{{range .X|.M}}true{{else}}false{{end}}",
-    "{{range .SI}}{{.}}{{end}}",
-    "{{range $x := .SI}}{{.}}{{end}}",
-    "{{range $x, $y := .SI}}{{.}}{{end}}", noError,
-    "{{range .SI}}{{.}}{{break}}{{end}}",
-    "{{range .SI}}{{.}}{{continue}}{{end}}",
-    "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}",
-    "{{template `x`}}",
-    "{{template `x` .Y}}",
-    "{{with .X}}hello{{end}}",
-    "{{with .X}}hello{{else}}goodbye{{end}}",
-    "{{with .X}}hello{{else with .Y}}goodbye{{end}}",
-    "{{with .X}}X{{else with .Y}}Y{{else with .Z}}Z{{end}}",
-    # Trimming spaces.
-    "x \r\n\t{{- 3}}",
-    "{{3 -}}\n\n\ty",
-    "x \r\n\t{{- 3 -}}\n\n\ty",
-    "x\n{{-  3   -}}\ny",
-    "x \r\n\t{{- /* hi */}}",
-    "{{/* hi */ -}}\n\n\ty",
-    "x \r\n\t{{- /* */ -}}\n\n\ty",
-    `{{block "foo" .}}hello{{end}}`,
-
-    "{{ $x \n := \n 1 \n }}",
-    "{{\n}}",
-    "{{\n\"x\"\n|\nprintf\n}}",
-    "{{/*\nhello\n*/}}",
-    "{{-\n/*\nhello\n*/\n-}}",
-    "{{range .SI}}{{.}}{{ continue }}{{end}}",
-    "{{range .SI}}{{.}}{{ break }}{{end}}",
 
     # Errors.
     "hello{{range",
@@ -143,7 +93,7 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
     "{{'c'|nil}}",
     `{{printf "%d" ( ) }}`,
     # Missing pipeline in block
-    `{{block "foo"}}hello{{end}}`,
+    '{{block "foo"}}hello{{end}}',
 
 """
 
@@ -151,7 +101,7 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
 def test_parse():
     for s in [
         'hi',
-        # '{{ hi }} there',
+
         textwrap.dedent("""
             {{- range .Messages }}GPT4 Correct
             {{- if eq .Role "system" }} System:
@@ -160,6 +110,60 @@ def test_parse():
             {{- end }} {{ .Content }}<|end_of_turn|>
             {{- end }}GPT4 Correct Assistant:
         """),
+
+        "",
+        "{{/*\n\n\n*/}}",
+        " \t\n",
+        "some text",
+        "{{}}",
+        "{{.X}}",
+        "{{printf}}",
+        "{{$}}",
+        "{{with $x := 3}}{{$x 23}}{{end}}",
+        "{{$.I}}",
+        "{{printf `%d` 23}}",
+        "{{.X|.Y}}",
+        "{{$x := .X|.Y}}",
+        "{{.X (.Y .Z) (.A | .B .C) (.E)}}",
+        "{{(.Y .Z).Field}}",
+        "{{if .X}}hello{{end}}",
+        "{{if .X}}true{{else}}false{{end}}",
+        "{{if .X}}true{{else if .Y}}false{{end}}",
+        "+{{if .X}}X{{else if .Y}}Y{{else if .Z}}Z{{end}}+",
+        "{{range .X}}hello{{end}}",
+        "{{range .X.Y.Z}}hello{{end}}",
+        "{{range .X}}hello{{range .Y}}goodbye{{end}}{{end}}",
+        "{{range .X}}true{{else}}false{{end}}",
+        "{{range .X|.M}}true{{else}}false{{end}}",
+        "{{range .SI}}{{.}}{{end}}",
+        "{{range $x := .SI}}{{.}}{{end}}",
+        "{{range $x, $y := .SI}}{{.}}{{end}}",
+        "{{range .SI}}{{.}}{{break}}{{end}}",
+        "{{range .SI}}{{.}}{{continue}}{{end}}",
+        "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}",
+        "{{template `x`}}",
+        "{{template `x` .Y}}",
+        "{{with .X}}hello{{end}}",
+        "{{with .X}}hello{{else}}goodbye{{end}}",
+        "{{with .X}}hello{{else with .Y}}goodbye{{end}}",
+        "{{with .X}}X{{else with .Y}}Y{{else with .Z}}Z{{end}}",
+        # Trimming spaces.
+        "x \r\n\t{{- 3}}",
+        "{{3 -}}\n\n\ty",
+        "x \r\n\t{{- 3 -}}\n\n\ty",
+        "x\n{{-  3   -}}\ny",
+        "x \r\n\t{{- /* hi */}}",
+        "{{/* hi */ -}}\n\n\ty",
+        "x \r\n\t{{- /* */ -}}\n\n\ty",
+        '{{block "foo" .}}hello{{end}}',
+
+        "{{ $x \n := \n 1 \n }}",
+        "{{\n}}",
+        "{{\n\"x\"\n|\nprintf\n}}",
+        "{{/*\nhello\n*/}}",
+        "{{-\n/*\nhello\n*/\n-}}",
+        "{{range .SI}}{{.}}{{ continue }}{{end}}",
+        "{{range .SI}}{{.}}{{ break }}{{end}}",
     ]:
         t = parse(
             '-',
@@ -167,3 +171,8 @@ def test_parse():
             funcs=dict(BUILTINS),
         )['-']
         print(t)
+
+    for s in [
+
+    ]:
+        with pytest.raises(Exception):  # noqa

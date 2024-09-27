@@ -66,6 +66,10 @@ MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
 MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
 
 
+class ParseError(Exception):
+    pass
+
+
 # Tree is the representation of a single parsed template.
 class Tree:
     def __init__(self, name: str, *funcs: dict[str, ta.Callable]) -> None:
@@ -159,7 +163,7 @@ class Tree:
                 pass
 
         if v is None:
-            raise Exception(f'illegal number syntax: {text!r}')
+            raise ParseError(f'illegal number syntax: {text!r}')
 
         n.v = v
         n.simplify()
@@ -264,9 +268,9 @@ class Tree:
         # errorf formats the error and terminates processing.
         self._root = None
         format = 'template: %s:%d: %s' % (self._parse_name, self._token[0].line, format)  # noqa
-        raise Exception(format, *args)
+        raise ParseError(format, *args)
 
-    def error(self, err: Exception) -> ta.NoReturn:
+    def error(self, err: ParseError) -> ta.NoReturn:
         # error terminates processing.
         raise err
 
@@ -347,7 +351,7 @@ class Tree:
             return self
         except Exception as e:
             self.stop_parse()
-            raise e
+            raise ParseError from e
 
     def add(self) -> None:
         # add adds tree to t.tree_set.
@@ -388,7 +392,7 @@ class Tree:
         try:
             self._name = unquote(name.val)
         except Exception as err:
-            self.error(err)
+            self.error(ParseError(err))
         self.expect(TokenType.RIGHT_DELIM, context)
         self._root, end = self.item_list()
         if end.type != NodeType.END:
@@ -716,7 +720,7 @@ class Tree:
             try:
                 s = unquote(token.val)
             except Exception as err:
-                self.error(err)
+                self.error(ParseError(err))
             return s
         else:
             self.unexpected(token, context)
@@ -809,7 +813,7 @@ class Tree:
             try:
                 number = self.new_number(token.pos, token.val, token.typ)
             except Exception as err:
-                self.error(err)
+                self.error(ParseError(err))
             return number
         elif token.typ == TokenType.LEFT_PAREN:
             return self.pipeline('parenthesized pipeline', TokenType.RIGHT_PAREN)
@@ -817,10 +821,10 @@ class Tree:
             try:
                 s = unquote(token.val)
             except Exception as err:
-                self.error(err)
+                self.error(ParseError(err))
             return self.new_string(token.pos, token.val, s)
         self.backup()
-        return None
+        return None  # FIXME
 
     def has_function(self, name: str) -> bool:
         # has_function reports if a function name exists in the Tree's maps.
