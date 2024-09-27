@@ -47,6 +47,7 @@ from ..toml.parser import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
 from .configs import VenvConfig
+from .pkg import BasePyprojectPackageGenerator
 from .pkg import PyprojectPackageGenerator
 from .reqs import RequirementsRewriter
 
@@ -338,24 +339,33 @@ def _pkg_cmd(args) -> None:
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
 
-        num_threads = max(mp.cpu_count() // 2, 1)
+        pgs = [
+            PyprojectPackageGenerator(
+                dir_name,
+                pkgs_root,
+            )
+            for dir_name in run.cfg().pkgs
+        ]
+
+        num_threads = args.jobs or max(mp.cpu_count() // 2, 1)
         with cf.ThreadPoolExecutor(num_threads) as ex:
-            futs = [
-                ex.submit(functools.partial(
-                    PyprojectPackageGenerator(
-                        dir_name,
-                        pkgs_root,
-                    ).gen,
-                    PyprojectPackageGenerator.GenOpts(
-                        run_build=run_build,
-                        build_output_dir=build_output_dir,
-                        add_revision=add_revision,
-                    ),
-                ))
-                for dir_name in run.cfg().pkgs
-            ]
+            futs = [ex.submit(pg.gen) for pg in pgs]
             for fut in futs:
                 fut.result()
+
+            if run_build:
+                futs = [
+                    functools.partial(
+                        pg.build,
+                        build_output_dir,
+                        BasePyprojectPackageGenerator.BuildOpts(
+                            add_revision=add_revision,
+                        ),
+                    )
+                    for pg in pgs
+                ]
+                for fut in futs:
+                    fut.result()
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')
@@ -380,6 +390,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve = subparsers.add_parser('pkg')
     parser_resolve.add_argument('-b', '--build', action='store_true')
     parser_resolve.add_argument('-r', '--revision', action='store_true')
+    parser_resolve.add_argument('-j', '--jobs', type=int)
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
     parser_resolve.set_defaults(func=_pkg_cmd)
