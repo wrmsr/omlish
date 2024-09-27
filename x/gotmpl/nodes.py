@@ -123,7 +123,7 @@ class TextNode(Node):
         return TextNode(tree=self.tree, type=NodeType.TEXT, pos=self.pos, text=self.text)
 
     def write(self, out: ta.TextIO) -> None:
-        out.write(self.text)
+        out.write(self.string())
 
     def string(self) -> str:
         return self.text
@@ -254,7 +254,7 @@ class IdentifierNode(Node):
         return new_identifier(self.ident).set_tree(self.tree).set_pos(self.pos)
 
     def write(self, out: ta.TextIO) -> None:
-        out.write(self.ident)
+        out.write(self.string())
 
     def string(self) -> str:
         return self.ident
@@ -296,7 +296,7 @@ class DotNode(Node):
         return self.tree.new_dot(self.pos)
 
     def write(self, out: ta.TextIO) -> None:
-        out.write('.')
+        out.write(self.string())
 
     def string(self) -> str:
         return '.'
@@ -316,7 +316,7 @@ class NilNode(Node):
         return self.tree.new_nil(self.pos)
 
     def write(self, out: ta.TextIO) -> None:
-        out.write('nil')
+        out.write(self.string())
 
     def string(self) -> str:
         return 'nil'
@@ -379,6 +379,12 @@ class BoolNode(Node):
     def copy(self) -> Node:
         return self.tree.new_bool(self.pos, self.is_true)
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return 'true' if self.is_true else 'false'
+
 
 @dc.dataclass()
 class NumberNode(Node):
@@ -400,6 +406,9 @@ class NumberNode(Node):
         nn = NumberNode(**dc.asdict(self))
         return nn
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.text)
+
 
 @dc.dataclass()
 class StringNode(Node):
@@ -410,6 +419,12 @@ class StringNode(Node):
 
     def copy(self) -> Node:
         return self.tree.new_string(self.pos, self.quoted, self.text)
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return self.quoted
 
 
 @dc.dataclass()
