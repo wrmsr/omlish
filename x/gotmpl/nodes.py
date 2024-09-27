@@ -23,6 +23,7 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 import abc
 import dataclasses as dc
 import enum
+import io
 import typing as ta
 
 from omlish import check
@@ -76,6 +77,15 @@ class Node(abc.ABC):
     def copy(self) -> 'Node':
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def write(self, out: ta.TextIO) -> None:
+        raise NotImplementedError
+
+    def string(self) -> str:
+        out = io.StringIO()
+        self.write(out)
+        return out.getvalue()
+
 
 # Nodes.
 
@@ -98,6 +108,10 @@ class ListNode(Node):
     def copy(self) -> Node:
         return self.copy()
 
+    def write(self, out: ta.TextIO) -> None:
+        for n in self.nodes:
+            n.write(out)
+
 
 @dc.dataclass()
 class TextNode(Node):
@@ -107,6 +121,12 @@ class TextNode(Node):
 
     def copy(self) -> Node:
         return TextNode(tree=self.tree, type=NodeType.TEXT, pos=self.pos, text=self.text)
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.text)
+
+    def string(self) -> str:
+        return self.text
 
 
 @dc.dataclass()
