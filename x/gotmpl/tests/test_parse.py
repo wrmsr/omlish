@@ -34,10 +34,6 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
     "ne": operator.ne,  # !=
 }
 
-"""
-
-"""
-
 
 def test_parse():
     for s in [
