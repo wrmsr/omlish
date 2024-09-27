@@ -453,6 +453,8 @@ tornado==6.4.1
 tqdm==4.66.5
 traitlets==5.14.3
 transformers==4.45.1
+tree-sitter==0.23.0
+tree-sitter-python==0.23.2
 trio==0.26.2
 trio_asyncio==0.15.0
 trl==0.11.1

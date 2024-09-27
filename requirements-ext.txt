@@ -283,3 +283,6 @@ anthropic==0.34.2
 apsw==3.46.1.0
 
 jedi-language-server==0.41.4
+
+tree-sitter==0.23.0
+tree-sitter-python==0.23.2
