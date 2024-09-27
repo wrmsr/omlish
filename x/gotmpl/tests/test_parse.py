@@ -172,7 +172,7 @@ def test_parse():
         if not has_err:
             t = parse(
                 '-',
-                s,
+                ins,
                 funcs=dict(BUILTINS),
             )['-']
             print(t)
@@ -181,6 +181,6 @@ def test_parse():
             with pytest.raises(ParseError):  # noqa
                 parse(
                     '-',
-                    s,
+                    ins,
                     funcs=dict(BUILTINS),
                 )

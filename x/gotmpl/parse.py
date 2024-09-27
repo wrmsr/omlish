@@ -194,7 +194,7 @@ class Tree:
     def new_with(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> WithNode:
         return WithNode(tree=self, type=NodeType.WITH, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst)  # noqa
 
-    def new_template(self, pos: Pos, line: int, name: str, pipe: PipeNode) -> TemplateNode:
+    def new_template(self, pos: Pos, line: int, name: str, pipe: PipeNode | None) -> TemplateNode:
         return TemplateNode(tree=self, type=NodeType.TEMPLATE, pos=pos, line=line, name=name, pipe=pipe)
 
     #
@@ -712,12 +712,12 @@ class Tree:
         context = 'template clause'
         token = self.next_non_space()
         name = self.parse_template_name(token, context)
-        pipe: PipeNode
+        pipe: PipeNode | None = None
         if self.next_non_space().typ != TokenType.RIGHT_DELIM:
             self.backup()
             # Do not pop variables; they persist until "end".
             pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
-        return self.new_template(token.pos, token.line, name, pipe)  # FIXME  # noqa
+        return self.new_template(token.pos, token.line, name, pipe)
 
     def parse_template_name(self, token: Token, context: str) -> str:
         if token.typ in (TokenType.STRING, TokenType.RAW_STRING):

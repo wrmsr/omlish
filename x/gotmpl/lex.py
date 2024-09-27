@@ -410,7 +410,7 @@ class Lexer:
         # _lex_identifier scans an alphanumeric.
         while True:
             r = self.next()
-            if is_alpha_numeric(r):
+            if r != EOF and is_alpha_numeric(r):
                 # absorb.
                 pass
             else:
