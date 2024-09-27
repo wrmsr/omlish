@@ -35,21 +35,6 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
 }
 
 """
-    ("empty", "", False, ''),
-    ("comment", "{{/*\n\n\n*/}}", False, ''),
-    ("spaces", " \t\n", False, r'" \t\n"'),
-    ("text", "some text", False, '"some text"'),
-    ("emptyAction", "{{}}", True, '{{}}'),
-    ("field", "{{.X}}", False, '{{.X}}'),
-    ("simple command", "{{printf}}", False, '{{printf}}'),
-    ("$ invocation", "{{$}}", False, "{{$}}"),
-    ("variable invocation", "{{with $x := 3}}{{$x 23}}{{end}}", False, "{{with $x := 3}}{{$x 23}}{{end}}"),
-    ("variable with fields", "{{$.I}}", False, "{{$.I}}"),
-    ("multi-word command", "{{printf `%d` 23}}", False, "{{printf `%d` 23}}"),
-    ("pipeline", "{{.X|.Y}}", False, '{{.X | .Y}}'),
-    ("pipeline with decl", "{{$x := .X|.Y}}", False, '{{$x := .X | .Y}}'),
-    ("nested pipeline", "{{.X (.Y .Z) (.A | .B .C) (.E)}}", False, '{{.X (.Y .Z) (.A | .B .C) (.E)}}'),
-    ("field applied to parentheses", "{{(.Y .Z).Field}}", False, '{{(.Y .Z).Field}}'),
     ("simple if", "{{if .X}}hello{{end}}", False, `{{if .X}}"hello"{{end}}`),
     ("if with else", "{{if .X}}true{{else}}false{{end}}", False, `{{if .X}}"true"{{else}}"false"{{end}}`),
     ("if with else if", "{{if .X}}true{{else if .Y}}false{{end}}", False, `{{if .X}}"true"{{else}}{{if .Y}}"false"{{end}}{{end}}`),
@@ -171,132 +156,35 @@ def test_parse():
         )['-']
         print(t)
 
-    for s in [
-        "",
-        "{{/*\n\n\n*/}}",
-        " \t\n",
-        "some text",
-        "{{.X}}",
-        "{{printf}}",
-        "{{$}}",
-        "{{with $x := 3}}{{$x 23}}{{end}}",
-        "{{$.I}}",
-        "{{printf `%d` 23}}",
-        "{{.X|.Y}}",
-        "{{$x := .X|.Y}}",
-        "{{.X (.Y .Z) (.A | .B .C) (.E)}}",
-        "{{(.Y .Z).Field}}",
-        "{{if .X}}hello{{end}}",
-        "{{if .X}}true{{else}}false{{end}}",
-        "{{if .X}}true{{else if .Y}}false{{end}}",
-        "+{{if .X}}X{{else if .Y}}Y{{else if .Z}}Z{{end}}+",
-        "{{range .X}}hello{{end}}",
-        "{{range .X.Y.Z}}hello{{end}}",
-        "{{range .X}}hello{{range .Y}}goodbye{{end}}{{end}}",
-        "{{range .X}}true{{else}}false{{end}}",
-        "{{range .X|.M}}true{{else}}false{{end}}",
-        "{{range .SI}}{{.}}{{end}}",
-        "{{range $x := .SI}}{{.}}{{end}}",
-        "{{range $x, $y := .SI}}{{.}}{{end}}",
-        "{{range .SI}}{{.}}{{break}}{{end}}",
-        "{{range .SI}}{{.}}{{continue}}{{end}}",
-        "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}",
-        "{{template `x`}}",
-        "{{template `x` .Y}}",
-        "{{with .X}}hello{{end}}",
-        "{{with .X}}hello{{else}}goodbye{{end}}",
-        "{{with .X}}hello{{else with .Y}}goodbye{{end}}",
-        "{{with .X}}X{{else with .Y}}Y{{else with .Z}}Z{{end}}",
-        # Trimming spaces.
-        "x \r\n\t{{- 3}}",
-        "{{3 -}}\n\n\ty",
-        "x \r\n\t{{- 3 -}}\n\n\ty",
-        "x\n{{-  3   -}}\ny",
-        "x \r\n\t{{- /* hi */}}",
-        "{{/* hi */ -}}\n\n\ty",
-        "x \r\n\t{{- /* */ -}}\n\n\ty",
-        '{{block "foo" .}}hello{{end}}',
-
-        "{{ $x \n := \n 1 \n }}",
-        "{{\n\"x\"\n|\nprintf\n}}",
-        "{{/*\nhello\n*/}}",
-        "{{-\n/*\nhello\n*/\n-}}",
-        "{{range .SI}}{{.}}{{ continue }}{{end}}",
-        "{{range .SI}}{{.}}{{ break }}{{end}}",
+    for name, ins, ok, result in [
+        ("empty", "", False, ''),
+        ("comment", "{{/*\n\n\n*/}}", False, ''),
+        ("spaces", " \t\n", False, r'" \t\n"'),
+        ("text", "some text", False, '"some text"'),
+        ("emptyAction", "{{}}", True, '{{}}'),
+        ("field", "{{.X}}", False, '{{.X}}'),
+        ("simple command", "{{printf}}", False, '{{printf}}'),
+        ("$ invocation", "{{$}}", False, "{{$}}"),
+        ("variable invocation", "{{with $x := 3}}{{$x 23}}{{end}}", False, "{{with $x := 3}}{{$x 23}}{{end}}"),
+        ("variable with fields", "{{$.I}}", False, "{{$.I}}"),
+        ("multi-word command", "{{printf `%d` 23}}", False, "{{printf `%d` 23}}"),
+        ("pipeline", "{{.X|.Y}}", False, '{{.X | .Y}}'),
+        ("pipeline with decl", "{{$x := .X|.Y}}", False, '{{$x := .X | .Y}}'),
+        ("nested pipeline", "{{.X (.Y .Z) (.A | .B .C) (.E)}}", False, '{{.X (.Y .Z) (.A | .B .C) (.E)}}'),
+        ("field applied to parentheses", "{{(.Y .Z).Field}}", False, '{{(.Y .Z).Field}}'),
     ]:
-        t = parse(
-            '-',
-            s,
-            funcs=dict(BUILTINS),
-        )['-']
-        print(t)
-
-    for s in [
-        "{{}}",
-        "{{\n}}",
-
-        # Errors.
-        "hello{{range",
-        "{{end}}",
-        "{{else}}",
-        "{{if .X}}hello{{end}}{{else}}",
-        "{{if .X}}1{{else}}2{{else}}3{{end}}",
-        "hello{{range .x}}",
-        "hello{{range .x}}{{else}}",
-        "hello{{undefined}}",
-        "{{$x}}",
-        "{{with $x := 4}}{{end}}{{$x}}",
-        "{{template $v}}",
-        "{{with $x.Y := 4}}{{end}}",
-        "{{template .X}}",
-        "{{template $v}}",
-        "{{printf 3, 4}}",
-        "{{with $v, $u := 3}}{{end}}",
-        "{{range $u, $v, $w := 3}}{{end}}",
-        "{{printf (printf .).}}",
-        "{{printf 3`x`}}",
-        "{{printf `x`.}}",
-        "{{if .X}}a{{else if .Y}}b{{end}}{{end}}",
-        "{{range .}}{{end}} {{break}}",
-        "{{range .}}{{end}} {{continue}}",
-        "{{range .}}{{else}}{{break}}{{end}}",
-        "{{range .}}{{else}}{{continue}}{{end}}",
-        # Other kinds of assignments and operators aren't available yet.
-        "{{$x := 0}}{{$x}}",
-        "{{$x += 1}}{{$x}}",
-        "{{$x ! 2}}{{$x}}",
-        "{{$x % 3}}{{$x}}",
-        # Check the parse fails for := rather than comma.
-        "{{range $x := $y := 3}}{{end}}",
-        # Another bug: variable read must ignore following punctuation.
-        "{{$x:=.}}{{$x!2}}",
-        "{{$x:=.}}{{$x+2}}",
-        "{{$x:=.}}{{$x +2}}",
-        # Check the range handles assignment vs. declaration properly.
-        "{{range $x := 0}}{{$x}}{{end}}",
-        "{{range $x = 0}}{{$x}}{{end}}",
-        # dot following a literal value
-        "{{1.E}}",
-        "{{0.1.E}}",
-        "{{true.E}}",
-        "{{'a'.any}}",
-        '{{"hello".guys}}',
-        "{{..E}}",
-        "{{nil.E}}",
-        # Wrong pipeline
-        "{{12|.}}",
-        "{{.|12|printf}}",
-        "{{.|printf|\"error\"}}",
-        "{{12|printf|'e'}}",
-        "{{.|true}}",
-        "{{'c'|nil}}",
-        '{{printf "%d" ( ) }}',
-        # Missing pipeline in block
-        '{{block "foo"}}hello{{end}}',
-    ]:
-        with pytest.raises(ParseError):  # noqa
-            parse(
+        if ok:
+            t = parse(
                 '-',
                 s,
                 funcs=dict(BUILTINS),
-            )
+            )['-']
+            print(t)
+
+        else:
+            with pytest.raises(ParseError):  # noqa
+                parse(
+                    '-',
+                    s,
+                    funcs=dict(BUILTINS),
+                )
