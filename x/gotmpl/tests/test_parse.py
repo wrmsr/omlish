@@ -183,8 +183,9 @@ def test_parse():
 
         else:
             with pytest.raises(ParseError):  # noqa
-                parse(
+                t = parse(
                     '-',
                     ins,
                     funcs=dict(BUILTINS),
-                )
+                )['-']
+                r = t._root.string()  # noqa
