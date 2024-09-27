@@ -37,22 +37,21 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
 
 def test_parse():
     for s in [
-        # 'hi',
-        #
-        # textwrap.dedent("""
-        #     {{- range .Messages }}GPT4 Correct
-        #     {{- if eq .Role "system" }} System:
-        #     {{- else if eq .Role "user" }} User:
-        #     {{- else if eq .Role "assistant" }} Assistant:
-        #     {{- end }} {{ .Content }}<|end_of_turn|>
-        #     {{- end }}GPT4 Correct Assistant:
-        # """),
-        #
-        # "",
-        # "{{/*\n\n\n*/}}",
-        # " \t\n",
-        # "some text",
-        "{{}}",
+        'hi',
+
+        textwrap.dedent("""
+            {{- range .Messages }}GPT4 Correct
+            {{- if eq .Role "system" }} System:
+            {{- else if eq .Role "user" }} User:
+            {{- else if eq .Role "assistant" }} Assistant:
+            {{- end }} {{ .Content }}<|end_of_turn|>
+            {{- end }}GPT4 Correct Assistant:
+        """),
+
+        "",
+        "{{/*\n\n\n*/}}",
+        " \t\n",
+        "some text",
         "{{.X}}",
         "{{printf}}",
         "{{$}}",
@@ -95,7 +94,6 @@ def test_parse():
         '{{block "foo" .}}hello{{end}}',
 
         "{{ $x \n := \n 1 \n }}",
-        "{{\n}}",
         "{{\n\"x\"\n|\nprintf\n}}",
         "{{/*\nhello\n*/}}",
         "{{-\n/*\nhello\n*/\n-}}",
@@ -110,6 +108,9 @@ def test_parse():
         print(t)
 
     for s in [
+        "{{}}",
+        "{{\n}}",
+
         # Errors.
         "hello{{range",
         "{{end}}",
