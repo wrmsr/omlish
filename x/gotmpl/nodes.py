@@ -170,28 +170,20 @@ class PipeNode(Node):
         return self.copy_pipe()
 
     def write(self, out: ta.TextIO) -> None:
-        """
-        	if len(p.Decl) > 0 {
-		for i, v := range p.Decl {
-			if i > 0 {
-				sb.WriteString(", ")
-			}
-			v.writeTo(sb)
-		}
-		if p.IsAssign {
-			sb.WriteString(" = ")
-		} else {
-			sb.WriteString(" := ")
-		}
-	}
-	for i, c := range p.Cmds {
-		if i > 0 {
-			sb.WriteString(" | ")
-		}
-		c.writeTo(sb)
-	}
-        """
-        pass
+        if self.decl:
+            for i, v in enumerate(self.decl):
+                if i > 0:
+                    out.write(", ")
+                v.write(out)
+        if self.is_assign:
+            out.write(" = ")
+        else:
+            out.write(" := ")
+
+        for i, c in enumerate(self.cmds):
+            if i > 0:
+                out.write(" | ")
+            c.write(out)
 
 
 @dc.dataclass()
@@ -204,6 +196,11 @@ class ActionNode(Node):
 
     def copy(self) -> Node:
         return self.tree.new_action(self.pos, self.line, self.pipe.copy_pipe())
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write("{{")
+        self.pipe.write(out)
+        out.write("}}")
 
 
 @dc.dataclass()
@@ -220,6 +217,17 @@ class CommandNode(Node):
         for c in self.args:
             n.append(c.copy())
         return n
+
+    def write(self, out: ta.TextIO) -> None:
+        for i, arg in enumerate(self.args):
+            if i > 0:
+                out.write(' ')
+            if isinstance(arg, PipeNode):
+                out.write('(')
+                arg.write(out)
+                out.write(')')
+                continue
+            arg.write(out)
 
 
 @dc.dataclass()
@@ -244,6 +252,9 @@ class IdentifierNode(Node):
 
     def copy(self) -> Node:
         return new_identifier(self.ident).set_tree(self.tree).set_pos(self.pos)
+
+    def write(self, out: ta.TextIO) -> None:
+        pass
 
 
 # NewIdentifier returns a new [IdentifierNode] with the given identifier name.
