@@ -55,6 +55,7 @@ from .nodes import TextNode
 from .nodes import VariableNode
 from .nodes import WithNode
 from .nodes import new_identifier
+from .unquote import unquote
 
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
