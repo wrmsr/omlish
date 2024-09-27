@@ -351,7 +351,7 @@ class Tree:
             return self
         except Exception as e:
             self.stop_parse()
-            raise ParseError from e
+            raise ParseError(e)
 
     def add(self) -> None:
         # add adds tree to t.tree_set.
