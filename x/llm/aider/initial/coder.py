@@ -45,7 +45,6 @@ def find_index(list1, list2):
 
 
 Message: ta.TypeAlias = ta.Mapping[str, ta.Any]
-Fname: ta.TypeAlias = str | pathlib.Path
 CompletionChunk: ta.TypeAlias = openai.types.chat.ChatCompletionChunk
 
 
@@ -59,25 +58,25 @@ class Coder:
     ) -> None:
         super().__init__()
 
-        self.fnames = dict()
-        self.last_modified = 0
+        self._fnames: dict[str, float] = dict()
+        self._last_modified = 0
 
         if use_gpt_4:
-            self.main_model = "gpt-4"
+            self._main_model = "gpt-4"
         else:
-            self.main_model = "gpt-3.5-turbo"
+            self._main_model = "gpt-3.5-turbo"
 
         for fname in files:
-            self.fnames[fname] = pathlib.Path(fname).stat().st_mtime
+            self._fnames[fname] = pathlib.Path(fname).stat().st_mtime
 
         self.check_for_local_edits(True)
 
-        self.pretty = pretty
+        self._pretty = pretty
 
         if pretty:
-            self.console = Console()
+            self._console = Console()
         else:
-            self.console = Console(force_terminal=True, no_color=True)
+            self._console = Console(force_terminal=True, no_color=True)
 
     def quoted_file(self, fname: str) -> str:
         prompt = "\n"
@@ -89,18 +88,18 @@ class Coder:
 
     def get_files_content(self) -> str:
         prompt = ""
-        for fname in self.fnames:
+        for fname in self._fnames:
             prompt += self.quoted_file(fname)
         return prompt
 
     def get_input(self) -> str | None:
-        if self.pretty:
-            self.console.rule()
+        if self._pretty:
+            self._console.rule()
         else:
             print()
 
         inp = ""
-        if self.pretty:
+        if self._pretty:
             print(Fore.GREEN, end="\r")
         else:
             print()
@@ -112,7 +111,7 @@ class Coder:
                 return
 
         ###
-        if self.pretty:
+        if self._pretty:
             print(Style.RESET_ALL)
         else:
             print()
@@ -121,9 +120,9 @@ class Coder:
         return inp
 
     def check_for_local_edits(self, init: bool = False) -> bool | None:
-        last_modified = max(pathlib.Path(fname).stat().st_mtime for fname in self.fnames)
-        since = last_modified - self.last_modified
-        self.last_modified = last_modified
+        last_modified = max(pathlib.Path(fname).stat().st_mtime for fname in self._fnames)
+        since = last_modified - self._last_modified
+        self._last_modified = last_modified
         if init:
             return
         if since > 0:
@@ -145,22 +144,27 @@ class Coder:
 
         return files_messages
 
-    def run(self) -> None:
-        self.done_messages = []
-        self.cur_messages = []
+    _done_messages: list[Message]
+    _cur_messages: list[Message]
 
-        self.num_control_c = 0
+    _num_control_c: int
+
+    def run(self) -> None:
+        self._done_messages = []
+        self._cur_messages = []
+
+        self._num_control_c = 0
 
         while True:
             try:
                 self.run_loop()
             except KeyboardInterrupt:
-                self.num_control_c += 1
-                if self.num_control_c >= 2:
+                self._num_control_c += 1
+                if self._num_control_c >= 2:
                     break
-                self.console.print("[bold red]^C again to quit")
+                self._console.print("[bold red]^C again to quit")
 
-        if self.pretty:
+        if self._pretty:
             print(Style.RESET_ALL)
 
     def run_loop(self) -> bool | None:
@@ -168,29 +172,29 @@ class Coder:
         if inp is None:
             return
 
-        self.num_control_c = 0
+        self._num_control_c = 0
 
         if self.check_for_local_edits():
             self.commit(ask=True)
 
             # files changed, move cur messages back behind the files messages
-            self.done_messages += self.cur_messages
-            self.done_messages += [
+            self._done_messages += self._cur_messages
+            self._done_messages += [
                 dict(role="user", content=prompts.FILES_CONTENT_LOCAL_EDITS),
                 dict(role="assistant", content="Ok."),
             ]
-            self.cur_messages = []
+            self._cur_messages = []
 
-        self.cur_messages += [
+        self._cur_messages += [
             dict(role="user", content=inp),
         ]
 
         messages = [
             dict(role="system", content=prompts.MAIN_SYSTEM + prompts.SYSTEM_REMINDER),
         ]
-        messages += self.done_messages
+        messages += self._done_messages
         messages += self.get_files_messages()
-        messages += self.cur_messages
+        messages += self._cur_messages
 
         self.show_messages(messages, "all")
 
@@ -200,11 +204,11 @@ class Coder:
 
         pathlib.Path("tmp.last-edit.md").write_text(content)
 
-        self.cur_messages += [
+        self._cur_messages += [
             dict(role="assistant", content=content),
         ]
 
-        self.console.print()
+        self._console.print()
         if interrupted:
             return True
 
@@ -219,7 +223,7 @@ class Coder:
         if not edited:
             return True
 
-        res = self.commit(history=self.cur_messages)
+        res = self.commit(history=self._cur_messages)
         if res:
             commit_hash, commit_message = res
 
@@ -228,16 +232,16 @@ class Coder:
                 message=commit_message,
             )
         else:
-            self.console.print('[red bold]Edits failed to change the files?')
+            self._console.print('[red bold]Edits failed to change the files?')
             saved_message = prompts.FILES_CONTENT_GPT_NO_EDITS
 
         self.check_for_local_edits(True)
-        self.done_messages += self.cur_messages
-        self.done_messages += [
+        self._done_messages += self._cur_messages
+        self._done_messages += [
             dict(role="user", content=saved_message),
             dict(role="assistant", content="Ok."),
         ]
-        self.cur_messages = []
+        self._cur_messages = []
         return True
 
     def show_messages(
@@ -255,17 +259,19 @@ class Coder:
             for line in content:
                 print(role, line)
 
+    _resp: str
+
     def send(
             self,
             messages: ta.Iterable[Message],
             model: str | None = None,
             progress_bar_expected: int = 0,
             silent: bool = False,
-    ):
+    ) -> tuple[str, bool]:
         # self.show_messages(messages, "all")
 
         if not model:
-            model = self.main_model
+            model = self._main_model
 
         completion = openai.chat.completions.create(  # noqa
             model=model,
@@ -278,26 +284,26 @@ class Coder:
         try:
             if progress_bar_expected:
                 self.show_send_progress(completion, progress_bar_expected)
-            elif self.pretty and not silent:
+            elif self._pretty and not silent:
                 self.show_send_output_color(completion)
             else:
                 self.show_send_output_plain(completion, silent)
         except KeyboardInterrupt:
             interrupted = True
 
-        return self.resp, interrupted
+        return self._resp, interrupted
 
     def show_send_progress(
             self,
             completion: ta.Iterable[CompletionChunk],
             progress_bar_expected: int,
     ) -> None:
-        self.resp = ""
+        self._resp = ""
         pbar = tqdm(total=progress_bar_expected)
         for chunk in completion:
             try:
                 text = chunk.choices[0].delta.content
-                self.resp += text
+                self._resp += text
             except AttributeError:
                 continue
 
@@ -311,14 +317,14 @@ class Coder:
             completion: ta.Iterable[CompletionChunk],
             silent: bool,
     ) -> None:
-        self.resp = ""
+        self._resp = ""
 
         for chunk in completion:
             if chunk.choices[0].finish_reason not in (None, "stop"):
                 dump(chunk.choices[0].finish_reason)
             try:
                 text = chunk.choices[0].delta.content
-                self.resp += text
+                self._resp += text
             except AttributeError:
                 continue
 
@@ -327,7 +333,7 @@ class Coder:
                 sys.stdout.flush()
 
     def show_send_output_color(self, completion: ta.Iterable[CompletionChunk]) -> None:
-        self.resp = ""
+        self._resp = ""
 
         with Live(vertical_overflow="scroll") as live:
             for chunk in completion:
@@ -336,18 +342,18 @@ class Coder:
                 try:
                     text = chunk.choices[0].delta.content
                     if text is not None:
-                        self.resp += text
+                        self._resp += text
                 except AttributeError:
                     continue
 
-                md = Markdown(self.resp, style="blue", code_theme="default")
+                md = Markdown(self._resp, style="blue", code_theme="default")
                 live.update(md)
 
             live.update(Text(""))
             live.stop()
 
-        md = Markdown(self.resp, style="blue", code_theme="default")
-        self.console.print(md)
+        md = Markdown(self._resp, style="blue", code_theme="default")
+        self._console.print(md)
 
     pattern: ta.ClassVar = re.compile(
         r"(^```\S*\s*)?^((?:[a-zA-Z]:\\|/)?(?:[\w\s.-]+[\\/])*\w+(\.\w+)?)\s+(^```\S*\s*)?^<<<<<<< ORIGINAL\n(.*?\n?)^=======\n(.*?)^>>>>>>> UPDATED",
@@ -360,16 +366,16 @@ class Coder:
         for match in self.pattern.finditer(content):
             _, path, _, _, original, updated = match.groups()
 
-            if path not in self.fnames:
+            if path not in self._fnames:
                 if not pathlib.Path(path).exists():
                     question = f"[red bold]Allow creation of new file {path}?"
                 else:
                     question = f"[red bold]Allow edits to {path} which was not previously provided?"
-                if not Confirm.ask(question, console=self.console):
-                    self.console.print(f"[red]Skipping edit to {path}")
+                if not Confirm.ask(question, console=self._console):
+                    self._console.print(f"[red]Skipping edit to {path}")
                     continue
 
-                self.fnames[path] = 0
+                self._fnames[path] = 0
 
             edited.add(path)
             if self.do_replace(path, original, updated):
@@ -409,7 +415,7 @@ class Coder:
             new_content = "\n".join(new_content) + "\n"
 
         fname.write_text(new_content)
-        self.console.print(f"[red]Applied edit to {fname}")
+        self._console.print(f"[red]Applied edit to {fname}")
         return True
 
     def do_gpt_powered_replace(self, fname: str, edit: str, request: str) -> None:
@@ -464,7 +470,7 @@ class Coder:
     ):
         repo_paths = set(
             git.Repo(fname, search_parent_directories=True).git_dir
-            for fname in self.fnames
+            for fname in self._fnames
         )
 
         if len(repo_paths) > 1:
@@ -478,7 +484,7 @@ class Coder:
         diffs = ''
         dirty_fnames = []
         relative_dirty_fnames = []
-        for fname in self.fnames:
+        for fname in self._fnames:
             relative_fname = os.path.relpath(fname, repo.working_tree_dir)
             these_diffs = repo.git.diff("HEAD", relative_fname)
             if these_diffs:
@@ -489,12 +495,12 @@ class Coder:
         if not dirty_fnames:
             return
 
-        self.console.print(Text(diffs))
+        self._console.print(Text(diffs))
 
         diffs = "# Diffs:\n" + diffs
 
         # for fname in dirty_fnames:
-        #    self.console.print(f"[red]  {fname}")
+        #    self._console.print(f"[red]  {fname}")
 
         context = ""
         if history:
@@ -524,14 +530,14 @@ class Coder:
         if prefix:
             commit_message = prefix + commit_message
 
-        self.console.print("[red]Files have uncommitted changes.\n")
-        self.console.print(f"[red]Suggested commit message:\n{commit_message}\n")
+        self._console.print("[red]Files have uncommitted changes.\n")
+        self._console.print(f"[red]Suggested commit message:\n{commit_message}\n")
 
         if ask:
             res = Prompt.ask("[red]Commit before the chat proceeds? [y/n/commit message]").strip()
 
             if res.lower() in ['n', 'no']:
-                self.console.print("[red]Skipped commmit.")
+                self._console.print("[red]Skipped commmit.")
                 return
             if res.lower() not in ['y', 'yes']:
                 commit_message = res
@@ -539,7 +545,7 @@ class Coder:
         repo.git.add(*relative_dirty_fnames)
         commit_result = repo.git.commit("-m", commit_message, "--no-verify")
         commit_hash = repo.head.commit.hexsha[:7]
-        self.console.print(f"[green]{commit_hash} {commit_message}")
+        self._console.print(f"[green]{commit_hash} {commit_message}")
         return commit_hash, commit_message
 
 
