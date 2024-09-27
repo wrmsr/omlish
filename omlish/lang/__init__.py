@@ -192,6 +192,7 @@ from .strings import (  # noqa
     is_sunder,
     prefix_delimited,
     prefix_lines,
+    replace_many,
     snake_case,
     strip_prefix,
     strip_suffix,
