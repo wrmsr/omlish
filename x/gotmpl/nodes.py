@@ -121,9 +121,9 @@ class PipeNode(Node):
     # PipeNode holds a pipeline with optional declaration
 
     line: int  # The line number in the input. Deprecated: Kept for compatibility.
-    is_assign: bool  # The variables are being assigned, not declared.
-    decl: list['VariableNode']  # Variables in lexical order.
-    cmds: list['CommandNode']  # The commands in lexical order.
+    is_assign: bool = False  # The variables are being assigned, not declared.
+    decl: list['VariableNode'] = dc.field(default_factory=list)  # Variables in lexical order.
+    cmds: list['CommandNode'] = dc.field(default_factory=list)  # The commands in lexical order.
 
     def append(self, command: 'CommandNode') -> None:
         self.cmds.append(command)
@@ -158,7 +158,7 @@ class ActionNode(Node):
 class CommandNode(Node):
     # CommandNode holds a command (a pipeline inside an evaluating action).
 
-    args: list[Node]  # Arguments in lexical order: Identifier, field, or constant.
+    args: list[Node] = dc.field(default_factory=list)  # Arguments in lexical order: Identifier, field, or constant.
 
     def append(self, arg: Node) -> None:
         self.args.append(arg)

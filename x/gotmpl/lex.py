@@ -385,7 +385,7 @@ class Lexer:
         else:
             return self.error('unrecognized character in action: %r', r)
 
-    def _lex_pace(self) -> StateFn:
+    def _lex_space(self) -> StateFn:
         # _lex_space scans a run of space characters. We have not consumed the first space, which is known to be
         # present. Take care if there is a trim-marked right delimiter, which starts with a space.
         num_spaces = 0
@@ -418,7 +418,7 @@ class Lexer:
                 word = self._input[self._start:self._pos]
                 if not self.at_terminator():
                     return self.error('bad character %r', r)
-                if TOKEN_TYPE_MAP[word] > TokenType.KEYWORD:
+                if TOKEN_TYPE_MAP.get(word, TokenType.ERROR) > TokenType.KEYWORD:
                     item = TOKEN_TYPE_MAP[word]
                     if (
                             (item == TokenType.BREAK and not self._options.break_ok) or
