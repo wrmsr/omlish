@@ -20,6 +20,19 @@ https:#github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/st
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+def unhex(b: str) -> int | None:
+    c = ord(b)
+    if ord('0') <= c <= ord('9'):
+        return c - ord('0')
+    elif ord('a') <= c <= ord('f'):
+        return c - ord('a') + 10
+    elif ord('A') <= c <= ord('F'):
+        return c - ord('A') + 10
+    else:
+        return None
+
+
 def unquote(s: str) -> str:
     # Unquote interprets s as a single-quoted, double-quoted, or backquoted Go string literal, returning the string
     # value that s quotes.  (If s is single-quoted, it would be a Go character literal; Unquote returns the
@@ -35,6 +48,7 @@ def unquote_(ins string, unescape bool) (out, rem string, err error) {
     # unquote parses a quoted string at the start of the input, returning the parsed prefix, the remaining suffix, and
     # any parse errors. If unescape is true, the parsed prefix is unescaped, otherwise the input prefix is provided
     # verbatim.
+
     # Determine the quote form and optimistically find the terminating quote.
     if len(ins) < 2:
         raise Exception('syntax')
@@ -115,58 +129,56 @@ def unquote_(ins string, unescape bool) (out, rem string, err error) {
         raise Exception('syntax')
 
 
-func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string, err error) {
-    # UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the string s. It returns four values:
+func unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multibyte, tail)
+    # UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the
+    # string s. It returns four values:
     #
     #  1. value, the decoded Unicode code point or byte value;
     #  2. multibyte, a boolean indicating whether the decoded character requires a multibyte UTF-8 representation;
     #  3. tail, the remainder of the string after the character; and
     #  4. an error that will be nil if the character is syntactically valid.
     #
-    # The second argument, quote, specifies the type of literal being parsed and therefore which escaped quote character is permitted.
+    # The second argument, quote, specifies the type of literal being parsed and therefore which escaped quote character
+    # is permitted.
     # If set to a single quote, it permits the sequence \' and disallows unescaped '.
     # If set to a double quote, it permits \" and disallows unescaped ".
     # If set to zero, it does not permit either escape and allows both quote characters to appear unescaped.
+
     # easy cases
-    if len(s) == 0 {
-        err = ErrSyntax
-        return
-    }
-    switch c = s[0]; {
-    case c == quote and (quote == '\'' or quote == '"'):
-        err = ErrSyntax
-        return
-    case c >= utf8.RuneSelf:
+    if not s:
+        raise Exception('syntax')
+
+    c = s[0]
+    if c == quote and (quote == ord('\'') or quote == ord('"')):
+        raise Exception('syntax')
+    elif c >= utf8.RuneSelf:
         r, size = utf8.DecodeRuneInString(s)
-        return r, true, s[size:], nil
-    case c != '\\':
-        return rune(s[0]), false, s[1:], nil
-    }
+        return r, true, s[size:]
+    elif c != '\\':
+        return rune(s[0]), false, s[1:]
 
     # hard case: c is backslash
-    if len(s) <= 1 {
-        err = ErrSyntax
-        return
-    }
+    if len(s) <= 1:
+        raise Exception('syntax')
+
     c = s[1]
     s = s[2:]
 
-    switch c {
-    case 'a':
+    if c == 'a':
         value = '\a'
-    case 'b':
+    elif c == 'b':
         value = '\b'
-    case 'f':
+    elif c == 'f':
         value = '\f'
-    case 'n':
+    elif c == 'n':
         value = '\n'
-    case 'r':
+    elif c == 'r':
         value = '\r'
-    case 't':
+    elif c == 't':
         value = '\t'
-    case 'v':
+    elif c == 'v':
         value = '\v'
-    case 'x', 'u', 'U':
+    elif c in ('x', 'u', 'U'):
         n = 0
         switch c {
         case 'x':
@@ -177,16 +189,12 @@ func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string,
             n = 8
         }
         var v rune
-        if len(s) < n {
-            err = ErrSyntax
-            return
-        }
+        if len(s) < n:
+            raise Exception('syntax')
         for j = 0; j < n; j++ {
             x, ok = unhex(s[j])
-            if !ok {
-                err = ErrSyntax
-                return
-            }
+            if not ok:
+                raise Exception('syntax')
             v = v<<4 | x
         }
         s = s[n:]
@@ -195,58 +203,33 @@ func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string,
             value = v
             break
         }
-        if !utf8.ValidRune(v) {
-            err = ErrSyntax
-            return
-        }
+        if !utf8.ValidRune(v):
+            raise Exception('syntax')
         value = v
         multibyte = true
-    case '0', '1', '2', '3', '4', '5', '6', '7':
+    elif c in ('0', '1', '2', '3', '4', '5', '6', '7'):
         v = rune(c) - '0'
-        if len(s) < 2 {
-            err = ErrSyntax
-            return
-        }
+        if len(s) < 2:
+            raise Exception('syntax')
         for j = 0; j < 2; j++ { # one digit already; two more
             x = rune(s[j]) - '0'
-            if x < 0 or x > 7 {
-                err = ErrSyntax
-                return
-            }
+            if x < 0 or x > 7:
+                raise Exception('syntax')
             v = (v << 3) | x
         }
         s = s[2:]
-        if v > 255 {
-            err = ErrSyntax
-            return
-        }
+        if v > 255:
+            raise Exception('syntax')
         value = v
-    case '\\':
+    elif c == '\\':
         value = '\\'
-    case '\'', '"':
-        if c != quote {
-            err = ErrSyntax
-            return
-        }
+    elif c in ('\'', '"'):
+        if c != quote:
+            raise Exception('syntax')
         value = rune(c)
-    default:
-        err = ErrSyntax
-        return
-    }
-    tail = s
-    return
-}
+    else:
+        raise Exception('syntax')
 
-func unhex(b byte) (v rune, ok bool) {
-    c = rune(b)
-    switch {
-    case '0' <= c and c <= '9':
-        return c - '0', true
-    case 'a' <= c and c <= 'f':
-        return c - 'a' + 10, true
-    case 'A' <= c and c <= 'F':
-        return c - 'A' + 10, true
-    }
-    return
-}
+    tail = s
+    return value, multibyte, tail
 """
