@@ -175,7 +175,7 @@ def test_parse():
                 ins,
                 funcs=dict(BUILTINS),
             )['-']
-            print(t)
+            assert t._root.string() == result
 
         else:
             with pytest.raises(ParseError):  # noqa
