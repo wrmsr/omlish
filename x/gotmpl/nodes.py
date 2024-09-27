@@ -288,30 +288,15 @@ class NumberNode(Node):
     # the types that can represent the value. This simulates in a small amount of code the behavior of Go's ideal
     # constants.
 
-    # IsInt      bool       # Number has an integral value.
-    # IsUint     bool       # Number has an unsigned integral value.
-    # IsFloat    bool       # Number has a floating-point value.
-    # IsComplex  bool       # Number is complex.
-    # Int64      int64      # The signed integer value.
-    # Uint64     uint64     # The unsigned integer value.
-    # Float64    float64    # The floating-point value.
-    # Complex128 complex128 # The complex value.
-
     text: str  # The original textual representation from the input.
 
-    def simplify_complex(self) -> None:
-        # simplifyComplex pulls out any other types that are represented by the complex number. These all require that
-        # the imaginary part be zero.
-        # n.IsFloat = imag(n.Complex128) == 0
-        # if n.IsFloat
-        #     n.Float64 = real(n.Complex128)
-        #     n.IsInt = float64(int64(n.Float64)) == n.Float64
-        #     if n.IsInt
-        #         n.Int64 = int64(n.Float64)
-        #     n.IsUint = float64(uint64(n.Float64)) == n.Float64
-        #     if n.IsUint
-        #         n.Uint64 = uint64(n.Float64)
-        raise NotImplementedError
+    v: int | float | complex = 0
+
+    def simplify(self) -> None:
+        if isinstance(self.v, complex) and self.v.imag == 0:
+            self.v = self.v.real
+        if isinstance(self.v, float) and self.v.is_integer():
+            self.v = int(self.v)
 
     def copy(self) -> Node:
         nn = NumberNode(**dc.asdict(self))
