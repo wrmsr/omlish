@@ -2,63 +2,51 @@ import typing as ta
 import unicodedata
 
 
+StrOrBytes: ta.TypeAlias = str | bytes
+StrOrBytesT = ta.TypeVar('StrOrBytesT', bound=StrOrBytes)
+
+
 ##
 
-@ta.overload
-def prefix_delimited(s: str, p: str, d: str) -> str:
-    ...
 
-
-@ta.overload
-def prefix_delimited(s: bytes, p: bytes, d: bytes) -> bytes:
-    ...
-
-
-def prefix_delimited(s, p, d):
+def prefix_delimited(s: StrOrBytesT, p: StrOrBytesT, d: StrOrBytesT) -> StrOrBytesT:
     return d.join([p + l for l in s.split(d)])
 
 
-def prefix_lines(s: str, p: str) -> str:
-    return prefix_delimited(s, p, '\n')
+def prefix_lines(s: StrOrBytesT, p: StrOrBytesT) -> StrOrBytesT:
+    return prefix_delimited(s, p, '\n' if isinstance(s, str) else b'\n')
 
 
-def indent_lines(s: str, num: int) -> str:
-    return prefix_lines(s, ' ' * num)
+def indent_lines(s: StrOrBytesT, num: StrOrBytesT) -> StrOrBytesT:
+    return prefix_lines(s, (' ' if isinstance(s, str) else b' ') * num)
 
 
 ##
 
 
-@ta.overload
-def strip_prefix(s: str, pfx: str) -> str:
-    ...
-
-
-@ta.overload
-def strip_prefix(s: bytes, pfx: bytes) -> bytes:
-    ...
-
-
-def strip_prefix(s, pfx):
+def strip_prefix(s: StrOrBytesT, pfx: StrOrBytesT) -> StrOrBytesT:
     if not s.startswith(pfx):
         raise ValueError(f'{s!r} does not start with {pfx!r}')
     return s[len(pfx):]
 
 
-@ta.overload
-def strip_suffix(s: str, sfx: str) -> str:
-    ...
-
-
-@ta.overload
-def strip_suffix(s: bytes, sfx: bytes) -> bytes:
-    ...
-
-
-def strip_suffix(s, sfx):
+def strip_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
     if not s.endswith(sfx):
         raise ValueError(f'{s!r} does not end with {sfx!r}')
     return s[:-len(sfx)]
+
+
+##
+
+
+def replace_many(
+        s: StrOrBytesT,
+        old: ta.Iterable[StrOrBytesT],
+        new: StrOrBytesT, count_each: int = -1,
+) -> StrOrBytesT:
+    for o in old:
+        s = s.replace(o, new, count_each)
+    return s
 
 
 ##
