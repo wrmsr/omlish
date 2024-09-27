@@ -339,15 +339,17 @@ def _pkg_cmd(args) -> None:
         if run_build:
             os.makedirs(build_output_dir, exist_ok=True)
 
-        pgs = [
+        pgs: ta.List[BasePyprojectPackageGenerator] = [
             PyprojectPackageGenerator(
                 dir_name,
                 pkgs_root,
             )
             for dir_name in run.cfg().pkgs
         ]
+        pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
 
         num_threads = args.jobs or max(mp.cpu_count() // 2, 1)
+        futs: ta.List[cf.Future]
         with cf.ThreadPoolExecutor(num_threads) as ex:
             futs = [ex.submit(pg.gen) for pg in pgs]
             for fut in futs:
@@ -355,13 +357,13 @@ def _pkg_cmd(args) -> None:
 
             if run_build:
                 futs = [
-                    functools.partial(
+                    ex.submit(functools.partial(
                         pg.build,
                         build_output_dir,
                         BasePyprojectPackageGenerator.BuildOpts(
                             add_revision=add_revision,
                         ),
-                    )
+                    ))
                     for pg in pgs
                 ]
                 for fut in futs:
