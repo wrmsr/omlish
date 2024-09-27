@@ -54,6 +54,11 @@ from .nodes import WithNode
 from .nodes import new_identifier
 
 
+# A mode value is a set of flags (or 0). Modes control parser behavior.
+MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
+MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
+
+
 # Tree is the representation of a single parsed template.
 class Tree:
     def __init__(self, name: str, *funcs: dict[str, ta.Callable]) -> None:
@@ -817,30 +822,6 @@ class Tree:
                 node = chain
         return node
 
-
-# A mode value is a set of flags (or 0). Modes control parser behavior.
-MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
-MODE_SKIP_FUNC_CHECK = 1 << 1  # do not check that functions are defined
-
-
-# Parse returns a map from template name to [Tree], created by parsing the templates described in the argument string.
-# The top-level template will be given the specified name. If an error is encountered, parsing stops and an empty map is
-# returned with the error.
-def parse(
-        name: str,
-        text: str,
-        left_delim: str,
-        right_delim: str,
-        funcs: dict[str, ta.Callable],
-) -> dict[str, Tree]:
-    tree_set: dict[str, Tree] = {}
-    t = Tree(name, funcs)
-    t._text = text
-    t.parse(text, left_delim, right_delim, tree_set, funcs)
-    return tree_set
-
-
-"""
     def term(self) -> Node:
         # term:
         #
@@ -855,7 +836,7 @@ def parse(
         # A nil return means the next item is not a term.
         token = self.next_non_space()
         if token.typ == TokenType.IDENTIFIER:
-            check_func = self._mode & SkipFuncCheck == 0
+            check_func = self._mode & MODE_SKIP_FUNC_CHECK == 0
             if check_func and not self.has_function(token.val):
                 self.errorf('function %r not defined', token.val)
             return new_identifier(token.val).set_tree(self).set_pos(token.pos)
@@ -877,16 +858,14 @@ def parse(
             return number
         elif token.typ == TokenType.LEFT_PAREN:
             return self.pipeline('parenthesized pipeline', TokenType.RIGHT_PAREN)
-        elif token.typ == TokenType.STRING, TokenType.RAW_STRING:
+        elif token.typ in (TokenType.STRING, TokenType.RAW_STRING):
             try:
                 s = unquote(token.val)
             except Exception as err:
                 self.error(err)
             return self.new_string(token.pos, token.val, s)
-        }
         self.backup()
-        return nil
-    }
+        return None
 
     def has_function(self, name: str) -> bool:
         # has_function reports if a function name exists in the Tree's maps.
@@ -909,7 +888,6 @@ def parse(
             if var_name == v.ident[0]:
                 return v
         self.errorf('undefined variable %r', v.Ident[0])
-        return None
 
 
 def is_empty_tree(n: Node) -> bool:
@@ -924,10 +902,26 @@ def is_empty_tree(n: Node) -> bool:
                 return False
         return True
     elif isinstance(n, (RangeNode, TemplateNode, TextNode)):
-        return len(n.Text.strip(' ')) == 0
+        return len(n.text.strip(' ')) == 0
     elif isinstance(n, WithNode):
         pass
     else:
         raise TypeError(f'unknown node: {n}')
     return False
-"""
+
+
+# Parse returns a map from template name to [Tree], created by parsing the templates described in the argument string.
+# The top-level template will be given the specified name. If an error is encountered, parsing stops and an empty map is
+# returned with the error.
+def parse(
+        name: str,
+        text: str,
+        left_delim: str,
+        right_delim: str,
+        funcs: dict[str, ta.Callable],
+) -> dict[str, Tree]:
+    tree_set: dict[str, Tree] = {}
+    t = Tree(name, funcs)
+    t._text = text
+    t.parse(text, left_delim, right_delim, tree_set, funcs)
+    return tree_set
