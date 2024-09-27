@@ -11,18 +11,16 @@ import sys
 import traceback
 import typing as ta
 
+import colorama
 import git
 import openai
 import openai.types.chat
-from colorama import Fore
-from colorama import Style
-from rich.console import Console
-from rich.live import Live
-from rich.markdown import Markdown
-from rich.prompt import Confirm
-from rich.prompt import Prompt
-from rich.text import Text
-from tqdm import tqdm
+import rich
+import rich.live
+import rich.markdown
+import rich.prompt
+import rich.text
+import tqdm
 
 from . import prompts
 from .dump import dump
@@ -74,9 +72,9 @@ class Coder:
         self._pretty = pretty
 
         if pretty:
-            self._console = Console()
+            self._console = rich.console.Console()
         else:
-            self._console = Console(force_terminal=True, no_color=True)
+            self._console = rich.console.Console(force_terminal=True, no_color=True)
 
     def quoted_file(self, fname: str) -> str:
         prompt = "\n"
@@ -100,7 +98,7 @@ class Coder:
 
         inp = ""
         if self._pretty:
-            print(Fore.GREEN, end="\r")
+            print(colorama.Fore.GREEN, end="\r")
         else:
             print()
 
@@ -112,7 +110,7 @@ class Coder:
 
         ###
         if self._pretty:
-            print(Style.RESET_ALL)
+            print(colorama.Style.RESET_ALL)
         else:
             print()
 
@@ -165,7 +163,7 @@ class Coder:
                 self._console.print("[bold red]^C again to quit")
 
         if self._pretty:
-            print(Style.RESET_ALL)
+            print(colorama.Style.RESET_ALL)
 
     def run_loop(self) -> bool | None:
         inp = self.get_input()
@@ -299,7 +297,7 @@ class Coder:
             progress_bar_expected: int,
     ) -> None:
         self._resp = ""
-        pbar = tqdm(total=progress_bar_expected)
+        pbar = tqdm.tqdm(total=progress_bar_expected)
         for chunk in completion:
             try:
                 text = chunk.choices[0].delta.content
@@ -335,7 +333,7 @@ class Coder:
     def show_send_output_color(self, completion: ta.Iterable[CompletionChunk]) -> None:
         self._resp = ""
 
-        with Live(vertical_overflow="scroll") as live:
+        with rich.live.Live(vertical_overflow="scroll") as live:
             for chunk in completion:
                 if chunk.choices[0].finish_reason not in (None, "stop"):
                     assert False, "Exceeded context window!"
@@ -346,24 +344,31 @@ class Coder:
                 except AttributeError:
                     continue
 
-                md = Markdown(self._resp, style="blue", code_theme="default")
+                md = rich.markdown.Markdown(self._resp, style="blue", code_theme="default")
                 live.update(md)
 
-            live.update(Text(""))
+            live.update(rich.text.Text(""))
             live.stop()
 
-        md = Markdown(self._resp, style="blue", code_theme="default")
+        md = rich.markdown.Markdown(self._resp, style="blue", code_theme="default")
         self._console.print(md)
 
-    pattern: ta.ClassVar = re.compile(
-        r"(^```\S*\s*)?^((?:[a-zA-Z]:\\|/)?(?:[\w\s.-]+[\\/])*\w+(\.\w+)?)\s+(^```\S*\s*)?^<<<<<<< ORIGINAL\n(.*?\n?)^=======\n(.*?)^>>>>>>> UPDATED",
-        # noqa: E501
+    _update_pattern: ta.ClassVar = re.compile(
+        (
+            r"(^```\S*\s*)?"
+            r"^((?:[a-zA-Z]:\\|/)?(?:[\w\s.-]+[\\/])*\w+(\.\w+)?)\s+"
+            r"(^```\S*\s*)?"
+            r"^<<<<<<< ORIGINAL\n"
+            r"(.*?\n?)"
+            r"^=======\n(.*?)"
+            r"^>>>>>>> UPDATED"
+        ),
         re.MULTILINE | re.DOTALL,
     )
 
     def update_files(self, content: str, inp: str) -> set[str]:
         edited = set()
-        for match in self.pattern.finditer(content):
+        for match in self._update_pattern.finditer(content):
             _, path, _, _, original, updated = match.groups()
 
             if path not in self._fnames:
@@ -371,7 +376,7 @@ class Coder:
                     question = f"[red bold]Allow creation of new file {path}?"
                 else:
                     question = f"[red bold]Allow edits to {path} which was not previously provided?"
-                if not Confirm.ask(question, console=self._console):
+                if not rich.prompt.Confirm.ask(question, console=self._console):
                     self._console.print(f"[red]Skipping edit to {path}")
                     continue
 
@@ -436,15 +441,17 @@ class Coder:
             dict(role="user", content=prompt),
         ]
         res, interrupted = self.send(
-            messages, progress_bar_expected=len(content) + len(edit) / 2, model=model
+            messages,
+            progress_bar_expected=len(content) + len(edit) // 2,
+            model=model
         )
         if interrupted:
             return
 
-        res = self.strip_quoted_wrapping(res, fname)
+        res = self.strip_quoted_wrapping(res, str(fname))
         fname.write_text(res)
 
-    def strip_quoted_wrapping(self, res: str, fname: pathlib.Path | str | None = None) -> str:
+    def strip_quoted_wrapping(self, res: str, fname: str | None = None) -> str:
         if not res:
             return res
 
@@ -464,10 +471,10 @@ class Coder:
 
     def commit(
             self,
-            history=None,
-            prefix=None,
-            ask=False,
-    ):
+            history: ta.Iterable[Message] | None = None,
+            prefix: str | None = None,
+            ask: bool = False,
+    ) -> tuple[str, str] | None:
         repo_paths = set(
             git.Repo(fname, search_parent_directories=True).git_dir
             for fname in self._fnames
@@ -495,7 +502,7 @@ class Coder:
         if not dirty_fnames:
             return
 
-        self._console.print(Text(diffs))
+        self._console.print(rich.text.Text(diffs))
 
         diffs = "# Diffs:\n" + diffs
 
@@ -534,7 +541,7 @@ class Coder:
         self._console.print(f"[red]Suggested commit message:\n{commit_message}\n")
 
         if ask:
-            res = Prompt.ask("[red]Commit before the chat proceeds? [y/n/commit message]").strip()
+            res = rich.prompt.Prompt.ask("[red]Commit before the chat proceeds? [y/n/commit message]").strip()
 
             if res.lower() in ['n', 'no']:
                 self._console.print("[red]Skipped commmit.")
@@ -552,7 +559,10 @@ class Coder:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Chat with GPT about code")
     parser.add_argument(
-        "files", metavar="FILE", nargs="+", help="a list of source code files"
+        "files",
+        metavar="FILE",
+        nargs="+",
+        help="a list of source code files",
     )
     parser.add_argument(
         "-3",
