@@ -73,11 +73,15 @@ def get_git_revision(
     if cwd is None:
         cwd = os.getcwd()
 
-    if subprocess.run([  # noqa
-        'git',
-        'rev-parse',
-        '--is-inside-work-tree',
-    ], stderr=subprocess.PIPE).returncode:
+    if subprocess.run(  # noqa
+            [
+                'git',
+                'rev-parse',
+                '--is-inside-work-tree',
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+    ).returncode:
         return None
 
     has_untracked = bool(subprocess.check_output([
