@@ -26,6 +26,7 @@ import enum
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from .lex import Pos
 
@@ -337,7 +338,7 @@ class ElseNode(Node):
 
 
 @dc.dataclass()
-class BranchNode(Node):
+class BranchNode(Node, lang.Abstract):
     # BranchNode is the common representation of if, range, and with.
 
     line: int  # The line number in the input. Deprecated: Kept for compatibility.

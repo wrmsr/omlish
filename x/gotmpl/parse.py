@@ -34,7 +34,6 @@ from .lex import Token
 from .lex import TokenType
 from .nodes import ActionNode
 from .nodes import BoolNode
-from .nodes import BranchNode
 from .nodes import BreakNode
 from .nodes import ChainNode
 from .nodes import CommandNode
@@ -177,7 +176,7 @@ class Tree:
         return ElseNode(tree=self, type=NodeType.ELSE, pos=pos, line=line)
 
     def new_if(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> IfNode:
-        return IfNode(BranchNode(tree=self, type=NodeType.IF, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+        return IfNode(tree=self, type=NodeType.IF, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst)  # noqa
 
     def new_break(self, pos: Pos, line: int) -> BreakNode:
         return BreakNode(tree=self, type=NodeType.BREAK, pos=pos, line=line)
@@ -186,10 +185,10 @@ class Tree:
         return ContinueNode(tree=self, type=NodeType.CONTINUE, pos=pos, line=line)
 
     def new_range(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> RangeNode:
-        return RangeNode(BranchNode(tree=self, type=NodeType.RANGE, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+        return RangeNode(tree=self, type=NodeType.RANGE, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst)  # noqa
 
     def new_with(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> WithNode:
-        return WithNode(BranchNode(tree=self, type=NodeType.WITH, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
+        return WithNode(tree=self, type=NodeType.WITH, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst)  # noqa
 
     def new_template(self, pos: Pos, line: int, name: str, pipe: PipeNode) -> TemplateNode:
         return TemplateNode(tree=self, type=NodeType.TEMPLATE, pos=pos, line=line, name=name, pipe=pipe)
