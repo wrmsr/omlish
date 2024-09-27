@@ -10,7 +10,7 @@ StrOrBytesT = ta.TypeVar('StrOrBytesT', bound=StrOrBytes)
 
 
 def prefix_delimited(s: StrOrBytesT, p: StrOrBytesT, d: StrOrBytesT) -> StrOrBytesT:
-    return d.join([p + l for l in s.split(d)])
+    return d.join([p + l for l in s.split(d)])  # type: ignore
 
 
 def prefix_lines(s: StrOrBytesT, p: StrOrBytesT) -> StrOrBytesT:
@@ -18,22 +18,22 @@ def prefix_lines(s: StrOrBytesT, p: StrOrBytesT) -> StrOrBytesT:
 
 
 def indent_lines(s: StrOrBytesT, num: StrOrBytesT) -> StrOrBytesT:
-    return prefix_lines(s, (' ' if isinstance(s, str) else b' ') * num)
+    return prefix_lines(s, (' ' if isinstance(s, str) else b' ') * num)  # type: ignore
 
 
 ##
 
 
 def strip_prefix(s: StrOrBytesT, pfx: StrOrBytesT) -> StrOrBytesT:
-    if not s.startswith(pfx):
+    if not s.startswith(pfx):  # type: ignore
         raise ValueError(f'{s!r} does not start with {pfx!r}')
-    return s[len(pfx):]
+    return s[len(pfx):]  # type: ignore
 
 
 def strip_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
-    if not s.endswith(sfx):
+    if not s.endswith(sfx):  # type: ignore
         raise ValueError(f'{s!r} does not end with {sfx!r}')
-    return s[:-len(sfx)]
+    return s[:-len(sfx)]  # type: ignore
 
 
 ##
@@ -45,7 +45,7 @@ def replace_many(
         new: StrOrBytesT, count_each: int = -1,
 ) -> StrOrBytesT:
     for o in old:
-        s = s.replace(o, new, count_each)
+        s = s.replace(o, new, count_each)  # type: ignore
     return s
 
 
