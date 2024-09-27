@@ -123,6 +123,29 @@ class Model(lang.Final):
     template: str
 
 
+@dc.dataclass(frozen=True)
+@msh.update_fields_metadata(omit_if=operator.not_)
+class Options:
+    num_keep: int = dc.field(metadata={'json': 'num_keep', 'omitempty': True})
+    seed: int = dc.field(metadata={'json': 'seed', 'omitempty': True})
+    num_predict: int = dc.field(metadata={'json': 'num_predict', 'omitempty': True})
+    top_k: int = dc.field(metadata={'json': 'top_k', 'omitempty': True})
+    top_p: float = dc.field(metadata={'json': 'top_p', 'omitempty': True})
+    min_p: float = dc.field(metadata={'json': 'min_p', 'omitempty': True})
+    tfs_z: float = dc.field(metadata={'json': 'tfs_z', 'omitempty': True})
+    typical_p: float = dc.field(metadata={'json': 'typical_p', 'omitempty': True})
+    repeat_last_n: int = dc.field(metadata={'json': 'repeat_last_n', 'omitempty': True})
+    temperature: float = dc.field(metadata={'json': 'temperature', 'omitempty': True})
+    repeat_penalty: float = dc.field(metadata={'json': 'repeat_penalty', 'omitempty': True})
+    presence_penalty: float = dc.field(metadata={'json': 'presence_penalty', 'omitempty': True})
+    frequency_penalty: float = dc.field(metadata={'json': 'frequency_penalty', 'omitempty': True})
+    mirostat: int = dc.field(metadata={'json': 'mirostat', 'omitempty': True})
+    mirostat_tau: float = dc.field(metadata={'json': 'mirostat_tau', 'omitempty': True})
+    mirostat_eta: float = dc.field(metadata={'json': 'mirostat_eta', 'omitempty': True})
+    penalize_newline: bool = dc.field(metadata={'json': 'penalize_newline', 'omitempty': True})
+    stop: ta.Sequence[str] = dc.field(metadata={'json': 'stop', 'omitempty': True})
+
+
 def _main() -> None:
     model_name = 'llama3.2'
     model_version = '3b'
