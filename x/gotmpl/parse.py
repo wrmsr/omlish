@@ -20,6 +20,7 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import string
 import typing as ta
 
 from omlish import lang
@@ -134,15 +135,13 @@ class Tree:
             n.v = ord(rune)
             return n
 
-        """
         elif typ == TokenType.COMPLEX:
             # fmt.Sscan can parse the pair, so let it do the work.
-            n.v = complex(text.replace(' '
-            if _, err = fmt.Sscan(text, &n.Complex128); err != nil:
-                return nil, err
+            n.v = complex(lang.replace_many(text, string.whitespace, ''))
             n.simplify()
-            return n, nil
+            return n
 
+        """
         # Imaginary constants can only be complex unless they are zero.
         if len(text) > 0 and text[len(text)-1] == 'i':
             f, err = strconv.ParseFloat(text[:len(text)-1], 64)
