@@ -58,8 +58,8 @@ def test_parse():
     for name, ins, has_err, result in [
         ("empty", "", False, ''),
         ("comment", "{{/*\n\n\n*/}}", False, ''),
-        ("spaces", " \t\n", False, r'" \t\n"'),
-        ("text", "some text", False, '"some text"'),
+        ("spaces", " \t\n", False, " \t\n"),
+        ("text", "some text", False, "some text"),
         ("emptyAction", "{{}}", True, '{{}}'),
         ("field", "{{.X}}", False, '{{.X}}'),
         ("simple command", "{{printf}}", False, '{{printf}}'),
@@ -175,7 +175,8 @@ def test_parse():
                 ins,
                 funcs=dict(BUILTINS),
             )['-']
-            assert t._root.string() == result
+            r = t._root.string()
+            assert r == result
 
         else:
             with pytest.raises(ParseError):  # noqa

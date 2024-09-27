@@ -786,7 +786,7 @@ class Tree:
                 node = chain
         return node
 
-    def term(self) -> Node:
+    def term(self) -> Node | None:
         # term:
         #
         #    literal (number, str, nil, boolean)
