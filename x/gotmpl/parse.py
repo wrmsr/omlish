@@ -95,7 +95,7 @@ class Tree:
     def new_comment(self, pos: Pos, text: str) -> CommentNode:
         return CommentNode(tree=self, type=NodeType.COMMENT, pos=pos, text=text)
 
-    def new_pipeline(self, pos: Pos, line: int, vars: list[VariableNode]) -> PipeNode:
+    def new_pipeline(self, pos: Pos, line: int, vars: list[VariableNode]) -> PipeNode:  # noqa
         return PipeNode(tree=self, type=NodeType.PIPE, pos=pos, line=line, decl=vars)
 
     def new_action(self, pos: Pos, line: int, pipe: PipeNode) -> ActionNode:
@@ -228,7 +228,7 @@ class Tree:
     def new_continue(self, pos: Pos, line: int) -> ContinueNode:
         return ContinueNode(tree=self, type=NodeType.CONTINUE, pos=pos, line=line)
 
-    def new_range(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_list) -> RangeNode:
+    def new_range(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> RangeNode:
         return RangeNode(BranchNode(tree=self, type=NodeType.RANGE, pos=pos, line=line, pipe=pipe, lst=lst, else_lst=else_lst))  # noqa
 
     def new_with(self, pos: Pos, line: int, pipe: PipeNode, lst: ListNode, else_lst: ListNode) -> WithNode:
@@ -296,18 +296,18 @@ class Tree:
         text = tree._text[:pos]
         byte_num = text.rfind('\n')
         if byte_num == -1:
-            byte_num = pos # On first line.
+            byte_num = pos  # On first line.
         else:
-            byte_num += 1 # After the newline.
+            byte_num += 1  # After the newline.
             byte_num = pos - byte_num
         line_num = 1 + text.count('\n')
         context = str(n)
         return "%s:%d:%d" % (tree._parse_name, line_num, byte_num), context
 
-    def errorf(self, format: str, *args: ta.Any) -> ta.NoReturn:
+    def errorf(self, format: str, *args: ta.Any) -> ta.NoReturn:  # noqa
         # errorf formats the error and terminates processing.
         self._root = None
-        format = 'template: %s:%d: %s' % (self._parse_name, self._token[0].line, format)
+        format = 'template: %s:%d: %s' % (self._parse_name, self._token[0].line, format)  # noqa
         raise Exception(format, *args)
 
     def error(self, err: Exception) -> ta.NoReturn:
@@ -549,7 +549,7 @@ class Tree:
                 # "foo" (as opposed to "=") to know that $x is an argument variable rather than a declaration. So
                 # remember the token adjacent to the variable so we can push it back if necessary.
                 token_after_variable = self.peek()
-                next = self.peek_non_space()
+                next = self.peek_non_space()  # noqa
 
                 if next.typ in (TokenType.ASSIGN, TokenType.DECLARE):
                     pipe.is_assign = next.typ == TokenType.ASSIGN
@@ -561,7 +561,7 @@ class Tree:
                     self.next_non_space()
                     pipe.decl.append(self.new_variable(v.pos, v.val))
                     self._vars.append(v.val)
-                    if context == 'range' and len(pipe.Decl) < 2:
+                    if context == 'range' and len(pipe.decl) < 2:
                         if self.peek_non_space().typ in (
                                 TokenType.VARIABLE,
                                 TokenType.RIGHT_DELIM,
@@ -624,7 +624,7 @@ class Tree:
             if context == 'range':
                 self._range_depth += 1
 
-            lst, next = self.item_list()
+            lst, next = self.item_list()  # noqa
             if context == 'range':
                 self._range_depth -= 1
 
@@ -653,7 +653,7 @@ class Tree:
                     else_lst = self.new_list(next.pos)
                     else_lst.append(self.with_control())
                 else:
-                    else_lst, next = self.item_list()
+                    else_lst, next = self.item_list()  # noqa
                     if next.type != NodeType.END:
                         self.errorf('expected end; found %s', next)
 
@@ -727,7 +727,7 @@ class Tree:
         name = self.parse_template_name(token, context)
         pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
 
-        block = Tree(name) # name will be updated once we know it.
+        block = Tree(name)  # name will be updated once we know it.
         block._text = self._text
         block._mode = self._mode
         block._parse_name = self._parse_name

@@ -123,7 +123,7 @@ class Lexer:
     def __init__(
             self,
             name: str,
-            input: str,
+            input: str,  # noqa
             options: LexOptions = LexOptions(),
             *,
             left_delim: str = LEFT_DELIM,
@@ -366,7 +366,7 @@ class Lexer:
             # '.' can start a number.
             self.backup()
             return self._lex_number
-        elif r == '+' or r == '-' or ('0' <= r and r <= '9'):
+        elif r == '+' or r == '-' or ('0' <= r <= '9'):
             self.backup()
             return self._lex_number
         elif is_alpha_numeric(r):
@@ -445,11 +445,10 @@ class Lexer:
 
     def _lex_field_or_variable(self, typ: TokenType) -> StateFn:
         # _lex_field_or_variable scans a field or variable: [.$]Alphanumeric. The . or $ has been scanned.
-        if self.at_terminator(): # Nothing interesting follows -> '.' or '$'.
+        if self.at_terminator():  # Nothing interesting follows -> '.' or '$'.
             if typ == TokenType.VARIABLE:
                 return self.emit(TokenType.VARIABLE)
             return self.emit(TokenType.DOT)
-        r = ''
         while True:
             r = self.next()
             if not is_alpha_numeric(r):
@@ -581,24 +580,3 @@ def has_left_trim_marker(s: str) -> bool:
 
 def has_right_trim_marker(s: str) -> bool:
     return len(s) >= 2 and is_space(s[0]) and s[1] == TRIM_MARKER
-
-
-##
-
-
-SRC = """
-{{- range .Messages }}GPT4 Correct
-{{- if eq .Role "system" }} System:
-{{- else if eq .Role "user" }} User:
-{{- else if eq .Role "assistant" }} Assistant:
-{{- end }} {{ .Content }}<|end_of_turn|>
-{{- end }}GPT4 Correct Assistant:
-"""
-
-
-def _main():
-    pass
-
-
-if __name__ == '__main__':
-    _main()

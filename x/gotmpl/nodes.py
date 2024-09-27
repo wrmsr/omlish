@@ -25,6 +25,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish import check
+
 from .lex import Pos
 
 
@@ -129,13 +131,13 @@ class PipeNode(Node):
         self.cmds.append(command)
 
     def copy_pipe(self) -> 'PipeNode':
-        vars: list[VariableNode] = []
+        vars: list[VariableNode] = []  # noqa
         for d in self.decl:
-            vars.append(d.copy())
+            vars.append(check.isinstance(d.copy(), VariableNode))
         n = self.tree.new_pipeline(self.pos, self.line, vars)
         n.is_assign = self.is_assign
         for c in self.cmds:
-            n.append(c.copy())
+            n.append(check.isinstance(c.copy(), CommandNode))
         return n
 
     def copy(self) -> Node:
