@@ -434,6 +434,12 @@ class EndNode(Node):
     def copy(self) -> Node:
         return self.tree.new_end(self.pos)
 
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return "{{end}}"
+
 
 @dc.dataclass()
 class ElseNode(Node):
@@ -447,6 +453,12 @@ class ElseNode(Node):
 
     def copy(self) -> Node:
         return self.tree.new_else(self.pos, self.line)
+
+    def write(self, out: ta.TextIO) -> None:
+        out.write(self.string())
+
+    def string(self) -> str:
+        return "{{else}}"
 
 
 @dc.dataclass()
