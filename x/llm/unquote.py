@@ -278,20 +278,18 @@ def test_unquote():
     ]:
         assert unquote(ins) == out
 
-    """
     for out, ins in [
-        ("\a\b\f\r\n\t\v", `"\a\b\f\r\n\t\v"`),
-        ("\\", `"\\"`),
-        ("abc\xffdef", `"abc\xffdef"`),
-        ("\u263a", `"☺"`),
-        ("\U0010ffff", `"\U0010ffff"`),
-        ("\x04", `"\x04"`),
+        ("\a\b\f\r\n\t\v", r'"\a\b\f\r\n\t\v"'),
+        ("\\", r'"\\"'),
+        ("abc\xffdef", r'"abc\xffdef"'),
+        ("\u263a", '"☺"'),
+        ("\U0010ffff", r'"\U0010ffff"'),
+        ("\x04", r'"\x04"'),
         # Some non-printable but graphic runes. Final column is double-quoted.
-        ("!\u00a0!\u2000!\u3000!", `"!\u00a0!\u2000!\u3000!"`),
-        ("\x7f", `"\x7f"`),
+        ("!\u00a0!\u2000!\u3000!", r'"!\u00a0!\u2000!\u3000!"'),
+        ("\x7f", r'"\x7f"'),
     ]:
         assert unquote(ins) == out
-    """
 
     for ins in [
         '',
