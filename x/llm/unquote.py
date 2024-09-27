@@ -129,7 +129,7 @@ def unquote_(ins string, unescape bool) (out, rem string, err error) {
         raise Exception('syntax')
 
 
-func unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multibyte, tail)
+def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multibyte, tail)
     # UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the
     # string s. It returns four values:
     #
@@ -153,9 +153,9 @@ func unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multi
         raise Exception('syntax')
     elif c >= utf8.RuneSelf:
         r, size = utf8.DecodeRuneInString(s)
-        return r, true, s[size:]
-    elif c != '\\':
-        return rune(s[0]), false, s[1:]
+        return r, True, s[size:]
+    elif c != ord('\\'):
+        return rune(s[0]), False, s[1:]
 
     # hard case: c is backslash
     if len(s) <= 1:
@@ -180,43 +180,37 @@ func unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multi
         value = '\v'
     elif c in ('x', 'u', 'U'):
         n = 0
-        switch c {
-        case 'x':
+        if c == 'x':
             n = 2
-        case 'u':
+        elif c == 'u':
             n = 4
-        case 'U':
+        elif c == 'U':
             n = 8
-        }
-        var v rune
         if len(s) < n:
             raise Exception('syntax')
-        for j = 0; j < n; j++ {
-            x, ok = unhex(s[j])
-            if not ok:
+        for j in range(n):
+            x = unhex(s[j])
+            if x is None:
                 raise Exception('syntax')
             v = v<<4 | x
-        }
         s = s[n:]
-        if c == 'x' {
+        if c == 'x':
             # single-byte string, possibly not UTF-8
             value = v
-            break
-        }
-        if !utf8.ValidRune(v):
-            raise Exception('syntax')
-        value = v
-        multibyte = true
+        else:
+            if not utf8.ValidRune(v):
+                raise Exception('syntax')
+            value = v
+            multibyte = True
     elif c in ('0', '1', '2', '3', '4', '5', '6', '7'):
         v = rune(c) - '0'
         if len(s) < 2:
             raise Exception('syntax')
-        for j = 0; j < 2; j++ { # one digit already; two more
+        for j in range(2):  # one digit already; two more
             x = rune(s[j]) - '0'
             if x < 0 or x > 7:
                 raise Exception('syntax')
             v = (v << 3) | x
-        }
         s = s[2:]
         if v > 255:
             raise Exception('syntax')
