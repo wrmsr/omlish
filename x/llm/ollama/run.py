@@ -38,6 +38,23 @@ curl -XPOST -H 'Content-Type: application/json' http://127.0.0.1:49319/completio
   "typical_p" : 1
 }
 '
+
+unknown backend opts:
+ - n_ctx
+ - model
+ - dynatemp_range
+ - dynatemp_exponent
+ - penalty_prompt_tokens
+ - use_penalty_prompt_tokens
+ - max_tokens
+ - n_discard
+ - ignore_eos
+ - stream
+ - logit_bias
+ - n_probs
+ - min_keep
+ - grammar
+ - samplers
 """
 import enum
 import json
