@@ -153,11 +153,11 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         if not unescape:
             out = ins[:end]  # include quotes
         elif '\r' not in ins[:end]:
-            out = ins[len("`") : end-len("`")] # exclude quotes
+            out = ins[len("`"): end - len("`")]  # exclude quotes
         else:
             # Carriage return characters ('\r') inside raw string literals are discarded from the raw string value.
             buf = []
-            for i in range(len("`"), end-len("`")):
+            for i in range(len("`"), end - len("`")):
                 if ins[i] != '\r':
                     buf.append(ins[i])
             out = ''.join(buf)
@@ -172,14 +172,14 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         if '\\' not in ins[:end] and '\n' not in ins[:end]:
             valid = False
             if quote == '"':
-                valid = utf8.ValidString(ins[len('"') : end-len('"')])
+                valid = utf8.ValidString(ins[len('"'): end - len('"')])
             elif quote == '\'':
-                r, n = utf8.DecodeRuneInString(ins[len("'") : end-len("'")])
-                valid = len("'")+n+len("'") == end and (r != utf8.RuneError or n != 1)
+                r, n = utf8.DecodeRuneInString(ins[len("'"): end - len("'")])
+                valid = len("'") + n + len("'") == end and (r != utf8.RuneError or n != 1)
             if valid:
                 out = ins[:end]
                 if unescape:
-                    out = out[1 : end-1]  # exclude quotes
+                    out = out[1: end - 1]  # exclude quotes
                 return out, ins[end:]
 
         # Handle quoted strings with escape sequences.
@@ -214,7 +214,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         if unescape:
             return ''.join(buf), ins
 
-        return in0[:len(in0)-len(ins)], ins
+        return in0[:len(in0) - len(ins)], ins
 
     else:
         raise Exception('syntax')
@@ -229,3 +229,82 @@ def unquote(s: str) -> str:
         raise Exception('syntax')
     return out
 
+
+##
+
+
+def test_unquote():
+    """
+    for ins, out in [
+        (`""`, ""),
+        (`"a"`, "a"),
+        (`"abc"`, "abc"),
+        (`"☺"`, "☺"),
+        (`"hello world"`, "hello world"),
+        (`"\xFF"`, "\xFF"),
+        (`"\377"`, "\377"),
+        (`"\u1234"`, "\u1234"),
+        (`"\U00010111"`, "\U00010111"),
+        (`"\U0001011111"`, "\U0001011111"),
+        (`"\a\b\f\n\r\t\v\\\""`, "\a\b\f\n\r\t\v\\\""),
+        (`"'"`, "'"),
+
+        (`'a'`, "a"),
+        (`'☹'`, "☹"),
+        (`'\a'`, "\a"),
+        (`'\x10'`, "\x10"),
+        (`'\377'`, "\377"),
+        (`'\u1234'`, "\u1234"),
+        (`'\U00010111'`, "\U00010111"),
+        (`'\t'`, "\t"),
+        (`' '`, " "),
+        (`'\''`, "'"),
+        (`'"'`, "\""),
+
+        ("``", ``),
+        ("`a`", `a`),
+        ("`abc`", `abc`),
+        ("`☺`", `☺`),
+        ("`hello world`", `hello world`),
+        ("`\\xFF`", `\xFF`),
+        ("`\\377`", `\377`),
+        ("`\\`", `\`),
+        ("`\n`", "\n"),
+        ("`	`", `	`),
+        ("` `", ` `),
+        ("`a\rb`", "ab"),
+    ]:
+        pass
+    """
+
+    for ins in [
+        '',
+        '"',
+        '"a',
+        """"'""",
+        'b"',
+        r'"\"',
+        r'"\9"',
+        r'"\19"',
+        r'"\129"',
+        r"'\'",
+        r"'\9'",
+        r"'\19'",
+        r"'\129'",
+        "'ab'",
+        r'"\x1!"',
+        r'"\U12345678"',
+        r'"\z"',
+        "`",
+        "`xxx",
+        "``x\r",
+        "`\"",
+        `"\'"`,
+        `'\"'`,
+        "\"\n\"",
+        "\"\\n\n\"",
+        "'\n'",
+        '"\udead"',
+        '"\ud83d\ude4f"',
+    ]:
+        pass
