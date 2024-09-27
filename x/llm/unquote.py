@@ -246,6 +246,13 @@ import pytest
 
 
 def test_unquote():
+    for ins in [
+        r'"\udead"',
+        r'"\ud83d\ude4f"',
+    ]:
+        with pytest.raises(SyntaxError):
+            unquote(ins)
+
     for ins, out in [
         ('""', ""),
         ('"a"', "a"),
