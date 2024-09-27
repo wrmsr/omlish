@@ -34,7 +34,7 @@ def unhex(b: str) -> int | None:
         return None
 
 
-def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multibyte, tail)
+def unquote_char(s: str, quote: str) -> tuple[str, bool, str]:  # (value, multibyte, tail)
     # UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the
     # string s. It returns four values:
     #
@@ -54,12 +54,12 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
         raise SyntaxError
 
     c = s[0]
-    if c == quote and (quote == ord('\'') or quote == ord('"')):
+    if c == quote and (quote == '\'' or quote == '"'):
         raise SyntaxError
     # elif c >= utf8.RuneSelf:
     #     r, size = utf8.DecodeRuneInString(s)
     #     return r, True, s[size:]
-    elif c != ord('\\'):
+    elif c != '\\':
         return s[0], False, s[1:]
 
     # hard case: c is backslash
@@ -68,6 +68,7 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
 
     c = s[1]
     s = s[2:]
+    value: str
     multibyte = False
 
     if c == 'a':
@@ -103,31 +104,37 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
         s = s[n:]
         if c == 'x':
             # single-byte string, possibly not UTF-8
-            value = v
-        else:
-            if not utf8.ValidRune(v):
+            try:
+                value = chr(v)  # noqa
+            except ValueError:
                 raise SyntaxError
-            value = v
+        else:
+            # if not utf8.ValidRune(v):
+            #     raise SyntaxError
+            try:
+                value = chr(v)  # noqa
+            except ValueError:
+                raise SyntaxError
             multibyte = True
     elif c in ('0', '1', '2', '3', '4', '5', '6', '7'):
-        v = rune(c) - '0'
+        v = ord(c) - ord('0')
         if len(s) < 2:
             raise SyntaxError
         for j in range(2):  # one digit already; two more
-            x = rune(s[j]) - '0'
+            x = ord(s[j]) - ord('0')
             if x < 0 or x > 7:
                 raise SyntaxError
             v = (v << 3) | x
         s = s[2:]
         if v > 255:
             raise SyntaxError
-        value = v
+        value = chr(v)
     elif c == '\\':
         value = '\\'
     elif c in ('\'', '"'):
         if c != quote:
             raise SyntaxError
-        value = rune(c)
+        value = c
     else:
         raise SyntaxError
 
@@ -191,7 +198,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
 
         while ins and ins[0] != quote:
             # Process the next character, rejecting any unescaped newline characters which are invalid.
-            r, multibyte, rem = unquote_char(ins, ord(quote))
+            r, multibyte, rem = unquote_char(ins, quote)
             if ins[0] == '\n':
                 raise SyntaxError
             ins = rem
@@ -208,7 +215,7 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
                 break
 
         # Verify that the string ends with a terminating quote.
-        if not (len(ins) > 0 and ins[0] == quote):
+        if not (ins and ins[0] == quote):
             raise SyntaxError
 
         ins = ins[1:]  # skip terminating quote
