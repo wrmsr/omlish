@@ -142,24 +142,24 @@ class Runner:
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=operator.not_)
 class Options(Runner):
-    num_keep: int = 0
-    seed: int = 0
-    num_predict: int = 0
-    top_k: int = 0
-    top_p: float = 0.
-    min_p: float = 0.
-    tfs_z: float = 0.
-    typical_p: float = 0.
-    repeat_last_n: int = 0
-    temperature: float = 0.0
-    repeat_penalty: float = 0.
-    presence_penalty: float = 0.
-    frequency_penalty: float = 0.
-    mirostat: int = 0
-    mirostat_tau: float = 0.
-    mirostat_eta: float = 0.
-    penalize_newline: bool = False
-    stop: ta.Sequence[str] = ()
+    num_keep: int = 0  # be: n_keep
+    seed: int = 0  # be:
+    num_predict: int = 0  # be: n_predict
+    top_k: int = 0  # be:
+    top_p: float = 0.  # be:
+    min_p: float = 0.  # be:
+    tfs_z: float = 0.  # be:
+    typical_p: float = 0.  # be:
+    repeat_last_n: int = 0  # be:
+    temperature: float = 0.0  # be:
+    repeat_penalty: float = 0.  # be:
+    presence_penalty: float = 0.  # be:
+    frequency_penalty: float = 0.  # be:
+    mirostat: int = 0  # be:
+    mirostat_tau: float = 0.  # be:
+    mirostat_eta: float = 0.  # be:
+    penalize_newline: bool = False  # be: penalize_nl
+    stop: ta.Sequence[str] = ()  # be:
 
 
 DEFAULT_OPTIONS = Options(
