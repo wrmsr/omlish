@@ -51,6 +51,7 @@ from .nodes import TemplateNode
 from .nodes import TextNode
 from .nodes import VariableNode
 from .nodes import WithNode
+from .nodes import new_identifier
 
 
 # Tree is the representation of a single parsed template.
@@ -689,6 +690,133 @@ class Tree:
         # End keyword is past.
         return self.new_end(self.expect(TokenType.RIGHT_PAREN, 'end').pos)
 
+    def else_control(self) -> Node:
+        # Else:
+        #
+        #    {{else}}
+        #
+        # Else keyword is past.
+        peek = self.peek_non_space()
+        # The "{{else if ... " and "{{else with ..." will be
+        # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
+        # So return the else node here.
+        if peek.typ == TokenType.IF or peek.typ == TokenType.WITH:
+            return self.new_else(peek.pos, peek.line)
+        token = self.expect(TokenType.RIGHT_DELIM, "else")
+        return self.new_else(token.pos, token.line)
+
+    def block_control(self) -> Node:
+        # Block:
+        #
+        #    {{block stringValue pipeline}}
+        #
+        # Block keyword is past.
+        # The name must be something that can evaluate to a string.
+        # The pipeline is mandatory.
+        context = 'block clause'
+
+        token = self.next_non_space()
+        name = self.parse_template_name(token, context)
+        pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
+
+        block = Tree(name) # name will be updated once we know it.
+        block._text = self._text
+        block._mode = self._mode
+        block._parse_name = self._parse_name
+        block.start_parse(self._funcs, self._lex, self._tree_set)
+        block._root, end = block.item_list()
+        if end.type != NodeType.END:
+            self.errorf('unexpected %s in %s', end, context)
+        block.add()
+        block.stop_parse()
+
+        return self.new_template(token.pos, token.line, name, pipe)
+
+    def template_control(self) -> Node:
+        # Template:
+        #
+        #    {{template stringValue pipeline}}
+        #
+        # Template keyword is past. The name must be something that can evaluate to a string.
+        context = 'template clause'
+        token = self.next_non_space()
+        name = self.parse_template_name(token, context)
+        pipe: PipeNode
+        if self.next_non_space().typ != TokenType.RIGHT_DELIM:
+            self.backup()
+            # Do not pop variables; they persist until "end".
+            pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
+        return self.new_template(token.pos, token.line, name, pipe)  # FIXME  # noqa
+
+    def parse_template_name(self, token: Token, context: str) -> str:
+        if token.typ in (TokenType.STRING, TokenType.RAW_STRING):
+            try:
+                s = unquote(token.val)
+            except Exception as err:
+                self.error(err)
+            return s
+        else:
+            self.unexpected(token, context)
+
+    def command(self) -> CommandNode:
+        # command:
+        #
+        #    operand (space operand)*
+        #
+        # space-separated arguments up to a pipeline character or right delimiter.
+        # we consume the pipe character but leave the right delim to terminate the action.
+        cmd = self.new_command(self.peek_non_space().pos)
+        while True:
+            self.peek_non_space()  # skip leading spaces.
+            operand = self.operand()
+            if operand:
+                cmd.append(operand)
+            token = self.next()
+            if token.typ == TokenType.SPACE:
+                continue
+            elif token.typ in (TokenType.RIGHT_DELIM, TokenType.RIGHT_PAREN):
+                self.backup()
+            elif token.typ == TokenType.PIPE:
+                # nothing here; break loop below
+                pass
+            else:
+                self.unexpected(token, 'operand')
+            break
+        if not cmd.args:
+            self.errorf('empty command')
+        return cmd
+
+    def operand(self) -> Node:
+        # operand:
+        #
+        #    term .Field*
+        #
+        # An operand is a space-separated component of a command,
+        # a term possibly followed by field accesses.
+        # A nil return means the next item is not an operand.
+        node = self.term()
+        if not node:
+            return None  # FIXME  # noqa
+        if self.peek().typ == TokenType.FIELD:
+            chain = self.new_chain(self.peek().pos, node)
+            while self.peek().typ == TokenType.FIELD:
+                chain.add(self.next().val)
+
+            # Compatibility with original API: If the term is of type NodeField
+            # or NodeVariable, just put more fields on the original.
+            # Otherwise, keep the Chain node.
+            # Obvious parsing errors involving literal values are detected here.
+            # More complex error cases will have to be handled at execution time.
+            if node.type == NodeType.FIELD:
+                node = self.new_field(chain.pos, chain.String())  # FIXME
+            elif node.type == NodeType.VARIABLE:
+                node = self.new_variable(chain.pos, chain.String())  # FIXME
+            elif node.type in (NodeType.BOOL, NodeType.STRING, NodeType.NUMBER, NodeType.NIL, NodeType.DOT):
+                self.errorf('unexpected . after term %r', node.String())
+            else:
+                node = chain
+        return node
+
 
 # A mode value is a set of flags (or 0). Modes control parser behavior.
 MODE_PARSE_COMMENTS = 1 << 0  # parse comments and add them to AST
@@ -713,138 +841,6 @@ def parse(
 
 
 """
-    def else_control(self) -> Node:
-        # Else:
-        #
-        #    {{else}}
-        #
-        # Else keyword is past.
-        peek = self.peek_non_space()
-        # The "{{else if ... " and "{{else with ..." will be
-        # treated as "{{else}}{{if ..." and "{{else}}{{with ...".
-        # So return the else node here.
-        if peek.typ == TokenType.IF or peek.typ == TokenType.WITH:
-            return self.newElse(peek.pos, peek.line)
-        token = self.expect(TokenType.RIGHT_DELIM, "else")
-        return self.newElse(token.pos, token.line)
-
-    def block_control(self) -> Node:
-        # Block:
-        #
-        #    {{block stringValue pipeline}}
-        #
-        # Block keyword is past.
-        # The name must be something that can evaluate to a string.
-        # The pipeline is mandatory.
-        const context = "block clause"
-
-        token = self.next_non_space()
-        name = self.parse_template_name(token, context)
-        pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
-
-        block = New(name) # name will be updated once we know it.
-        block.text = self._text
-        block.Mode = self._mode
-        block.parse_name = self.parse_name
-        block.startParse(self.funcs, self.lex, self.tree_set)
-        var end Node
-        block.Root, end = block.item_list()
-        if end.type != NodeType.END {
-            self.errorf("unexpected %s in %s", end, context)
-        }
-        block.add()
-        block.stop_parse()
-
-        return self.newTemplate(token.pos, token.line, name, pipe)
-
-    def template_control(self) -> Node:
-        # Template:
-        #
-        #    {{template stringValue pipeline}}
-        #
-        # Template keyword is past. The name must be something that can evaluate to a string.
-        const context = "template clause"
-        token = self.next_non_space()
-        name = self.parse_template_name(token, context)
-        var pipe *PipeNode
-        if self.next_non_space().typ != TokenType.RIGHT_DELIM {
-            self.backup()
-            # Do not pop variables; they persist until "end".
-            pipe = self.pipeline(context, TokenType.RIGHT_DELIM)
-        return self.newTemplate(token.pos, token.line, name, pipe)
-
-    def parse_template_name(self, token Token, context str) -> (name str):
-        switch token.typ:
-        case TokenType.STRING, TokenType.RAW_STRING:
-            s, err = strconv.Unquote(token.val)
-            if err != nil:
-                self.error(err)
-            name = s
-        default:
-            self.unexpected(token, context)
-        return
-
-    def command(self) -> CommandNode:
-        # command:
-        #
-        #    operand (space operand)*
-        #
-        # space-separated arguments up to a pipeline character or right delimiter.
-        # we consume the pipe character but leave the right delim to terminate the action.
-        cmd = self.newCommand(self.peek_non_space().pos)
-        for {
-            self.peek_non_space() # skip leading spaces.
-            operand = self.operand()
-            if operand != nil {
-                cmd.append(operand)
-            }
-            switch token = self.next(); token.typ {
-            case TokenType.SPACE:
-                continue
-            case TokenType.RIGHT_DELIM, TokenType.RIGHT_PAREN:
-                self.backup()
-            case itemPipe:
-                # nothing here; break loop below
-            default:
-                self.unexpected(token, "operand")
-            }
-            break
-        if len(cmd.Args) == 0 {
-            self.errorf("empty command")
-        return cmd
-
-    def operand(self) -> Node:
-        # operand:
-        #
-        #    term .Field*
-        #
-        # An operand is a space-separated component of a command,
-        # a term possibly followed by field accesses.
-        # A nil return means the next item is not an operand.
-        node = self.term()
-        if node == nil {
-            return nil
-        if self.peek().typ == TokenType.FIELD {
-            chain = self.newChain(self.peek().pos, node)
-            for self.peek().typ == TokenType.FIELD {
-                chain.Add(self.next().val)
-            }
-            # Compatibility with original API: If the term is of type NodeField
-            # or NodeVariable, just put more fields on the original.
-            # Otherwise, keep the Chain node.
-            # Obvious parsing errors involving literal values are detected here.
-            # More complex error cases will have to be handled at execution time.
-            switch node.type {
-            case NodeField:
-                node = self.new_field(chain.pos, chain.String())
-            case NodeVariable:
-                node = self.new_variable(chain.pos, chain.String())
-            case NodeType.BOOL, NodeString, NodeNumber, NodeNil, NodeDot:
-                self.errorf("unexpected . after term %r", node.String())
-            default:
-                node = chain
-        return node
-
     def term(self) -> Node:
         # term:
         #
@@ -857,37 +853,36 @@ def parse(
         #
         # A term is a simple "expression".
         # A nil return means the next item is not a term.
-        switch token = self.next_non_space(); token.typ {
-        case TokenType.IDENTIFIER:
-            checkFunc = self._mode & SkipFuncCheck == 0
-            if checkFunc and !self.has_function(token.val) {
-                self.errorf("function %r not defined", token.val)
-            }
-            return NewIdentifier(token.val).SetTree(t).SetPos(token.pos)
-        case TokenType.DOT:
-            return self.newDot(token.pos)
-        case TokenType.NIL:
-            return self.newNil(token.pos)
-        case TokenType.VARIABLE:
+        token = self.next_non_space()
+        if token.typ == TokenType.IDENTIFIER:
+            check_func = self._mode & SkipFuncCheck == 0
+            if check_func and not self.has_function(token.val):
+                self.errorf('function %r not defined', token.val)
+            return new_identifier(token.val).set_tree(self).set_pos(token.pos)
+        elif token.typ == TokenType.DOT:
+            return self.new_dot(token.pos)
+        elif token.typ == TokenType.NIL:
+            return self.new_nil(token.pos)
+        elif token.typ == TokenType.VARIABLE:
             return self.use_var(token.pos, token.val)
-        case TokenType.FIELD:
+        elif token.typ == TokenType.FIELD:
             return self.new_field(token.pos, token.val)
-        case TokenType.BOOL:
-            return self.newBool(token.pos, token.val == "true")
-        case TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.NUMBER:
-            number, err = self.newNumber(token.pos, token.val, token.typ)
-            if err != nil {
+        elif token.typ == TokenType.BOOL:
+            return self.new_bool(token.pos, token.val == "true")
+        elif token.typ in (TokenType.CHAR_CONSTANT, TokenType.COMPLEX, TokenType.NUMBER):
+            try:
+                number = self.new_number(token.pos, token.val, token.typ)
+            except Exception as err:
                 self.error(err)
-            }
             return number
-        case TokenType.LEFT_PAREN:
-            return self.pipeline("parenthesized pipeline", TokenType.RIGHT_PAREN)
-        case TokenType.STRING, TokenType.RAW_STRING:
-            s, err = strconv.Unquote(token.val)
-            if err != nil {
+        elif token.typ == TokenType.LEFT_PAREN:
+            return self.pipeline('parenthesized pipeline', TokenType.RIGHT_PAREN)
+        elif token.typ == TokenType.STRING, TokenType.RAW_STRING:
+            try:
+                s = unquote(token.val)
+            except Exception as err:
                 self.error(err)
-            }
-            return self.newString(token.pos, token.val, s)
+            return self.new_string(token.pos, token.val, s)
         }
         self.backup()
         return nil
@@ -895,12 +890,12 @@ def parse(
 
     def has_function(self, name: str) -> bool:
         # has_function reports if a function name exists in the Tree's maps.
-        for _, funcMap = range self._funcs {
-            if funcMap == nil {
+        for func_map in self._funcs:
+            if not func_map:
                 continue
-            if funcMap[name] != nil {
-                return true
-        return false
+            if name in func_map:
+                return True
+        return False
 
     def pop_vars(self, n: int) -> None:
         # pop_vars trims the variable list to the specified length
@@ -910,11 +905,11 @@ def parse(
         # use_var returns a node for a variable reference. It errors if the
         # variable is not defined.
         v = self.new_variable(pos, name)
-        for _, varName = range self._vars {
-            if varName == v.Ident[0] {
+        for var_name in self._vars:
+            if var_name == v.ident[0]:
                 return v
-        self.errorf("undefined variable %r", v.Ident[0])
-        return nil
+        self.errorf('undefined variable %r', v.Ident[0])
+        return None
 
 
 def is_empty_tree(n: Node) -> bool:
