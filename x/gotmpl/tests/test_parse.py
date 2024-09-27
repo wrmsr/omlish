@@ -6,6 +6,7 @@ import pytest
 
 from omlish import lang
 
+from ..nodes import TextNode
 from ..parse import ParseError
 from ..parse import parse
 
@@ -55,12 +56,14 @@ def test_parse():
     #     )['-']
     #     print(t)
 
+    TextNode._QUOTE_STRINGS = True  # FIXME: lol
+
     for name, ins, has_err, result in [
-        # ("empty", "", False, ''),
-        # ("comment", "{{/*\n\n\n*/}}", False, ''),
-        # ("spaces", " \t\n", False, " \t\n"),
-        # ("text", "some text", False, "some text"),
-        # ("emptyAction", "{{}}", True, '{{}}'),
+        ("empty", "", False, ''),
+        ("comment", "{{/*\n\n\n*/}}", False, ''),
+        ("spaces", " \t\n", False, r'" \t\n"'),
+        ("text", "some text", False, '"some text"'),
+        ("emptyAction", "{{}}", True, '{{}}'),
         ("field", "{{.X}}", False, '{{.X}}'),
         ("simple command", "{{printf}}", False, '{{printf}}'),
         ("$ invocation", "{{$}}", False, "{{$}}"),

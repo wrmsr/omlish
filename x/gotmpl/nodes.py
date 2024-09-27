@@ -125,8 +125,17 @@ class TextNode(Node):
     def write(self, out: ta.TextIO) -> None:
         out.write(self.string())
 
+    _QUOTE_STRINGS = False
+
     def string(self) -> str:
-        return self.text
+        if self._QUOTE_STRINGS:
+            return ''.join([
+                '"',
+                self.text.encode('unicode_escape').decode().replace('"', r'\"'),
+                '"',
+            ])
+        else:
+            return self.text
 
 
 @dc.dataclass()
