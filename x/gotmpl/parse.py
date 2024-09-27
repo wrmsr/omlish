@@ -777,9 +777,9 @@ class Tree:
             # Obvious parsing errors involving literal values are detected here. More complex error cases will have to
             # be handled at execution time.
             if node.type == NodeType.FIELD:
-                node = self.new_field(chain.pos, chain.String())  # FIXME
+                node = self.new_field(chain.pos, chain.string())
             elif node.type == NodeType.VARIABLE:
-                node = self.new_variable(chain.pos, chain.String())  # FIXME
+                node = self.new_variable(chain.pos, chain.string())
             elif node.type in (NodeType.BOOL, NodeType.STRING, NodeType.NUMBER, NodeType.NIL, NodeType.DOT):
                 self.errorf('unexpected . after term %r', node)
             else:
