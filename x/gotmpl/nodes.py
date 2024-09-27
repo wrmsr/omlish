@@ -480,6 +480,27 @@ class BranchNode(Node, lang.Abstract):
         else:
             raise TypeError(self)
 
+    def write(self, out: ta.TextIO) -> None:
+        if self.type == NodeType.IF:
+            name = "if"
+        elif self.type == NodeType.RANGE:
+            name = "range"
+        elif self.type == NodeType.WITH:
+            name = "with"
+        else:
+            raise TypeError("unknown branch type")
+
+        out.write("{{")
+        out.write(name)
+        out.write(" ")
+        self.pipe.write(out)
+        out.write("}}")
+        self.lst.write(out)
+        if self.else_lst:
+            out.write("{{else}}")
+            self.else_lst.write(out)
+        out.write("{{end}}")
+
 
 @dc.dataclass()
 class IfNode(BranchNode):
