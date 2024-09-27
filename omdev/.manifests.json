@@ -84,6 +84,18 @@
     }
   },
   {
+    "module": ".scripts.exectime",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/scripts/exectime.py",
+    "line": 7,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "exectime",
+        "mod_name": "omdev.scripts.exectime"
+      }
+    }
+  },
+  {
     "module": ".scripts.importtrace",
     "attr": "_CLI_MODULE",
     "file": "omdev/scripts/importtrace.py",
