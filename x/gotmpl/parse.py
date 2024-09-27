@@ -81,7 +81,7 @@ class Tree:
 
         # Parsing only; cleared after parse.
         self._lex: Lexer | None = None
-        self._token: list[Token] = [None, None, None]  # three-token lookahead for parser.
+        self._token: list[Token | None] = [None, None, None]  # three-token lookahead for parser.
         self._peek_count: int = 0
         self._vars: list[str] = []  # variables defined at the moment.
         self._tree_set: dict[str, Tree] = {}
