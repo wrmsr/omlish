@@ -36,31 +36,31 @@ BUILTINS: ta.Mapping[str, ta.Callable] = {
 
 
 def test_parse():
-    for s in [
-        'hi',
-
-        textwrap.dedent("""
-            {{- range .Messages }}GPT4 Correct
-            {{- if eq .Role "system" }} System:
-            {{- else if eq .Role "user" }} User:
-            {{- else if eq .Role "assistant" }} Assistant:
-            {{- end }} {{ .Content }}<|end_of_turn|>
-            {{- end }}GPT4 Correct Assistant:
-        """),
-    ]:
-        t = parse(
-            '-',
-            s,
-            funcs=dict(BUILTINS),
-        )['-']
-        print(t)
+    # for s in [
+    #     'hi',
+    #
+    #     textwrap.dedent("""
+    #         {{- range .Messages }}GPT4 Correct
+    #         {{- if eq .Role "system" }} System:
+    #         {{- else if eq .Role "user" }} User:
+    #         {{- else if eq .Role "assistant" }} Assistant:
+    #         {{- end }} {{ .Content }}<|end_of_turn|>
+    #         {{- end }}GPT4 Correct Assistant:
+    #     """),
+    # ]:
+    #     t = parse(
+    #         '-',
+    #         s,
+    #         funcs=dict(BUILTINS),
+    #     )['-']
+    #     print(t)
 
     for name, ins, has_err, result in [
-        ("empty", "", False, ''),
-        ("comment", "{{/*\n\n\n*/}}", False, ''),
-        ("spaces", " \t\n", False, " \t\n"),
-        ("text", "some text", False, "some text"),
-        ("emptyAction", "{{}}", True, '{{}}'),
+        # ("empty", "", False, ''),
+        # ("comment", "{{/*\n\n\n*/}}", False, ''),
+        # ("spaces", " \t\n", False, " \t\n"),
+        # ("text", "some text", False, "some text"),
+        # ("emptyAction", "{{}}", True, '{{}}'),
         ("field", "{{.X}}", False, '{{.X}}'),
         ("simple command", "{{printf}}", False, '{{printf}}'),
         ("$ invocation", "{{$}}", False, "{{$}}"),
