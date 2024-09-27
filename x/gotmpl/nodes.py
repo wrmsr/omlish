@@ -580,7 +580,7 @@ class TemplateNode(Node):
 
     def write(self, out: ta.TextIO) -> None:
         out.write("{{template ")
-        out.write(repr(self.name))
+        out.write(f'"{self.name}"')
         if self.pipe:
             out.write(' ')
             self.pipe.write(out)
