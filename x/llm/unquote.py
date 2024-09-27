@@ -56,9 +56,9 @@ def unquote_char(s: str, quote: int) -> tuple[str, bool, str]:  # (value, multib
     c = s[0]
     if c == quote and (quote == ord('\'') or quote == ord('"')):
         raise SyntaxError
-    elif c >= utf8.RuneSelf:
-        r, size = utf8.DecodeRuneInString(s)
-        return r, True, s[size:]
+    # elif c >= utf8.RuneSelf:
+    #     r, size = utf8.DecodeRuneInString(s)
+    #     return r, True, s[size:]
     elif c != ord('\\'):
         return s[0], False, s[1:]
 
@@ -189,19 +189,19 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         in0 = ins
         ins = ins[1:]  # skip starting quote
 
-        while len(ins) > 0 and ins[0] != quote:
+        while ins and ins[0] != quote:
             # Process the next character, rejecting any unescaped newline characters which are invalid.
-            r, multibyte, rem = unquote_char(ins, quote)
+            r, multibyte, rem = unquote_char(ins, ord(quote))
             if ins[0] == '\n':
                 raise SyntaxError
             ins = rem
 
             # Append the character if unescaping the input.
             if unescape:
-                if r < utf8.RuneSelf or not multibyte:
-                    buf.append(byte(r))
-                else:
-                    buf.append(r)
+                # if r < utf8.RuneSelf or not multibyte:
+                #     buf.append(byte(r))
+                # else:
+                buf.append(r)
 
             # Single quoted strings must be a single character.
             if quote == '\'':
