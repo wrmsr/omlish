@@ -535,7 +535,7 @@ class Tree:
         #
         #    declarations? command ('|' command)*
         token = self.peek_non_space()
-        pipe = self.new_pipeline(token.pos, token.line, nil)
+        pipe = self.new_pipeline(token.pos, token.line, [])
 
         # Are there declarations or assignments?
         while True:
@@ -887,7 +887,7 @@ class Tree:
         for var_name in self._vars:
             if var_name == v.ident[0]:
                 return v
-        self.errorf('undefined variable %r', v.Ident[0])
+        self.errorf('undefined variable %r', v.ident[0])
 
 
 def is_empty_tree(n: Node) -> bool:
