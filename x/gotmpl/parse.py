@@ -628,7 +628,7 @@ class Tree:
         #    {{if pipeline}} itemList {{else}} itemList {{end}}
         #
         # If keyword is past.
-        return self.new_if(self.parse_control('if'))
+        return self.new_if(*self.parse_control('if'))
 
     def range_control(self) -> Node:
         # Range:
@@ -637,7 +637,7 @@ class Tree:
         #    {{range pipeline}} itemList {{else}} itemList {{end}}
         #
         # Range keyword is past.
-        r = self.new_range(self.parse_control('range'))
+        r = self.new_range(*self.parse_control('range'))
         return r
 
     def with_control(self) -> Node:
@@ -647,7 +647,7 @@ class Tree:
         #    {{with pipeline}} itemList {{else}} itemList {{end}}
         #
         # If keyword is past.
-        return self.new_with(self.parse_control('with'))
+        return self.new_with(*self.parse_control('with'))
 
     def end_control(self) -> Node:
         # End:
@@ -655,7 +655,7 @@ class Tree:
         #    {{end}}
         #
         # End keyword is past.
-        return self.new_end(self.expect(TokenType.RIGHT_PAREN, 'end').pos)
+        return self.new_end(self.expect(TokenType.RIGHT_DELIM, 'end').pos)
 
     def else_control(self) -> Node:
         # Else:
