@@ -226,7 +226,7 @@ class Lexer:
         if self._inside_action:
             state = self._lex_inside_action
         while True:
-            state = state(self)
+            state = state()
             if state is None:
                 return self._token
 

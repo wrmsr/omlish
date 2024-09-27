@@ -22,8 +22,11 @@ https://github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/t
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import typing as ta
 
+from .lex import LEFT_DELIM
+from .lex import LexOptions
 from .lex import Lexer
 from .lex import Pos
+from .lex import RIGHT_DELIM
 from .lex import Token
 from .lex import TokenType
 from .nodes import ActionNode
@@ -74,7 +77,7 @@ class Tree:
 
         # Parsing only; cleared after parse.
         self._lex: Lexer | None = None
-        self._token: list[Token] = []  # three-token lookahead for parser.
+        self._token: list[Token] = [None, None, None]  # three-token lookahead for parser.
         self._peek_count: int = 0
         self._vars: list[str] = []  # variables defined at the moment.
         self._tree_set: dict[str, Tree] = {}
@@ -392,7 +395,7 @@ class Tree:
 
     def add(self) -> None:
         # add adds tree to t.tree_set.
-        tree = self._tree_set[self._name]
+        tree = self._tree_set.get(self._name)
         if tree is None or is_empty_tree(tree._root):
             self._tree_set[self._name] = self
             return
@@ -916,12 +919,12 @@ def is_empty_tree(n: Node) -> bool:
 def parse(
         name: str,
         text: str,
-        left_delim: str,
-        right_delim: str,
-        funcs: dict[str, ta.Callable],
+        left_delim: str = LEFT_DELIM,
+        right_delim: str = RIGHT_DELIM,
+        funcs: dict[str, ta.Callable] | None = None,
 ) -> dict[str, Tree]:
     tree_set: dict[str, Tree] = {}
     t = Tree(name, funcs)
     t._text = text
-    t.parse(text, left_delim, right_delim, tree_set, funcs)
+    t.parse(text, left_delim, right_delim, tree_set, funcs or {})
     return tree_set
