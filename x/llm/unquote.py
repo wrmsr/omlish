@@ -143,8 +143,8 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
     # Determine the quote form and optimistically find the terminating quote.
     if len(ins) < 2:
         raise SyntaxError
-    quote = ord(ins[0])
-    end = ins[1:].find(chr(quote))
+    quote = ins[0]
+    end = ins[1:].find(quote)
     if end < 0:
         raise SyntaxError
     end += 2  # position after terminating quote; may be wrong if escape sequences are present
@@ -172,10 +172,12 @@ def unquote_(ins: str, unescape: bool) -> tuple[str, str]:  # (out, rem)
         if '\\' not in ins[:end] and '\n' not in ins[:end]:
             valid = False
             if quote == '"':
-                valid = utf8.ValidString(ins[len('"'): end - len('"')])
+                # valid = utf8.ValidString(ins[len('"'): end - len('"')])
+                valid = True
             elif quote == '\'':
-                r, n = utf8.DecodeRuneInString(ins[len("'"): end - len("'")])
-                valid = len("'") + n + len("'") == end and (r != utf8.RuneError or n != 1)
+                # r, n = utf8.DecodeRuneInString(ins[len("'"): end - len("'")])
+                # valid = len("'") + n + len("'") == end and (r != utf8.RuneError or n != 1)
+                valid = end == 3
             if valid:
                 out = ins[:end]
                 if unescape:
