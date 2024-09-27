@@ -74,13 +74,13 @@ def get_git_revision(
         cwd = os.getcwd()
 
     if subprocess.run(  # noqa
-            [
-                'git',
-                'rev-parse',
-                '--is-inside-work-tree',
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        [
+            'git',
+            'rev-parse',
+            '--is-inside-work-tree',
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     ).returncode:
         return None
 
