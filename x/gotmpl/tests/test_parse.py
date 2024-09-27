@@ -89,7 +89,7 @@ def test_parse():
         ("range 2 vars", "{{range $x, $y := .SI}}{{.}}{{end}}", False, '{{range $x, $y := .SI}}{{.}}{{end}}'),
         ("range with break", "{{range .SI}}{{.}}{{break}}{{end}}", False, '{{range .SI}}{{.}}{{break}}{{end}}'),
         ("range with continue", "{{range .SI}}{{.}}{{continue}}{{end}}", False, '{{range .SI}}{{.}}{{continue}}{{end}}'),
-        ("constants", "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}", False, '{{range .SI 1 -3.2i true false 'a' nil}}{{end}}'),
+        ("constants", "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}", False, "{{range .SI 1 -3.2i true false 'a' nil}}{{end}}"),
         ("template", "{{template `x`}}", False, '{{template "x"}}'),
         ("template with arg", "{{template `x` .Y}}", False, '{{template "x" .Y}}'),
         ("with", "{{with .X}}hello{{end}}", False, '{{with .X}}"hello"{{end}}'),
