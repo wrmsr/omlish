@@ -354,7 +354,8 @@ class Tree:
             if isinstance(e, ParseError):
                 raise
             else:
-                raise ParseError from e
+                # raise ParseError from e
+                raise
 
     def add(self) -> None:
         # add adds tree to t.tree_set.

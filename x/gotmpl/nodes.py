@@ -246,7 +246,7 @@ class FieldNode(Node):
     # FieldNode holds a field (identifier starting with '.'). The names may be chained ('.x.y'). The period is dropped
     # from each ident.
 
-    ident: list[str]  # The identifiers in lexical order.
+    ident: list[str] = dc.field(default_factory=list)  # The identifiers in lexical order.
 
     def copy(self) -> Node:
         return FieldNode(tree=self.tree, type=NodeType.FIELD, pos=self.pos, ident=list(self.ident))
@@ -258,7 +258,7 @@ class ChainNode(Node):
     # chained ('.x.y'). The periods are dropped from each ident.
 
     node: Node
-    field: list[str]  # The identifiers in lexical order.
+    field: list[str] = dc.field(default_factory=list)  # The identifiers in lexical order.
 
     # Add adds the named field (which should start with a period) to the end of the chain.
     def add(self, field: str) -> None:
