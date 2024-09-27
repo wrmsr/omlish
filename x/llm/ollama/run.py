@@ -162,6 +162,16 @@ class Runner:
     num_thread: int = 0
 
 
+@dc.dataclass(frozen=True)
+class ModelDetails:
+    parent_model: str
+    format: str
+    family: str
+    families: ta.Sequence[str]
+    parameter_size: str
+    quantization_level: str
+
+
 def _main() -> None:
     model_name = 'llama3.2'
     model_version = '3b'
