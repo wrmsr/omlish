@@ -36,6 +36,18 @@
     }
   },
   {
+    "module": ".cli.clicmds",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/cli/clicmds.py",
+    "line": 16,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "cli",
+        "mod_name": "omdev.cli.clicmds"
+      }
+    }
+  },
+  {
     "module": ".interp.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/interp/__main__.py",
