@@ -10,8 +10,8 @@ import argparse
 import os
 import runpy
 import sys
+import typing as ta
 
-from omlish import __about__
 from omlish import check
 
 from ..manifests.load import ManifestLoader
@@ -23,18 +23,7 @@ from .types import CliModule
 ##
 
 
-def _print_version() -> None:
-    print(__about__.__version__)
-
-
-def _print_revision() -> None:
-    print(__about__.__revision__)
-
-
-_CLI_FUNCS = [
-    CliFunc('version', _print_version),
-    CliFunc('revision', _print_revision),
-]
+_CLI_FUNCS: ta.Sequence[CliFunc] = []
 
 
 ##
