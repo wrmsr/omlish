@@ -1,11 +1,9 @@
 """
 TODO:
  - cfg naming
- - adapters for dataclasses / namedtuples / user objects (as confitured)
+ - adapters for dataclasses / namedtuples / user objects (as configured)
  - mro-merge ObjectMetadata
  - key ordering override - like slice, -1 means last
- - dedupe omit_if/default fields on Metadata/Info - FieldOptions prob
-  - impl merge, update helpers:update_fields_metadata
 """
 import collections.abc
 import typing as ta
@@ -100,7 +98,7 @@ class ObjectMarshaler(Marshaler):
     unknown_field: str | None = None
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        ret = {}
+        ret: dict[str, ta.Any] = {}
         for fi, m in self.fields:
             v = getattr(o, fi.name)
 
@@ -111,7 +109,7 @@ class ObjectMarshaler(Marshaler):
 
             if fi.options.embed:
                 for ek, ev in check.isinstance(mv, collections.abc.Mapping).items():
-                    ret[fi.marshal_name + ek] = ev
+                    ret[fi.marshal_name + check.non_empty_str(ek)] = ev  # type: ignore
 
             else:
                 ret[fi.marshal_name] = mv
@@ -168,7 +166,7 @@ class ObjectUnmarshaler(Unmarshaler):
     defaults: ta.Mapping[str, ta.Any] | None = None
 
     embeds: ta.Mapping[str, type] | None = None
-    embeds_by_embedded_field: ta.Mapping[str, tuple[str, str]] | None = None
+    embeds_by_unmarshal_name: ta.Mapping[str, tuple[str, str]] | None = None
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
@@ -194,7 +192,7 @@ class ObjectUnmarshaler(Unmarshaler):
                     continue
                 raise
 
-            if self.embeds_by_embedded_field and (en := self.embeds_by_embedded_field.get(fi.name)):
+            if self.embeds_by_unmarshal_name and (en := self.embeds_by_unmarshal_name.get(ks)):
                 tkw, tk = ekws[en[0]], en[1]
             else:
                 tkw, tk = kw, fi.name
@@ -204,10 +202,10 @@ class ObjectUnmarshaler(Unmarshaler):
 
             tkw[tk] = u.unmarshal(ctx, mv)
 
-        for en, ecls in self.embeds.items() if self.embeds else ():
-            ekw = ekws[en]
+        for em, ecls in self.embeds.items() if self.embeds else ():
+            ekw = ekws[em]
             ev = ecls(**ekw)
-            kw[en] = ev
+            kw[em] = ev
 
         if self.defaults:
             for dk, dv in self.defaults.items():
