@@ -21,4 +21,5 @@ TODO:
  - proto/jsonschema gen
  - enums
  - nodal
+ - embedding? forward kwargs in general? or only for replace?
 """

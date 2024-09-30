@@ -1,6 +1,5 @@
 """
 https://swagger.io/specification/
-
 """
 import os.path
 import typing as ta
@@ -142,33 +141,12 @@ class Tag:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['common'], embed=True, name='')
 class Header:
     """https://swagger.io/specification/#header-object"""
 
     # TODO: marshal embedding, shared with Parameter
-
-    description: str | None = None
-    required: bool | None = None
-    deprecated: bool | None = None
-    allow_empty_value: bool | None = None
-
-    style: str | None = None
-    explode: bool | None = None
-    allow_reserved: bool | None = None
-    schema: Schema | None = None
-    example: ta.Any = None
-    examples: ta.Mapping[str, ta.Union['Example', Reference]] | None = None
-
-    content: ta.Mapping[str, 'MediaType'] | None = None
-
-    # style: ta.Any = None
-    matrix: ta.Any = None
-    label: ta.Any = None
-    form: ta.Any = None
-    simple: ta.Any = None
-    space_delimited: ta.Any = None
-    pipe_delimited: ta.Any = None
-    deep_object: ta.Any = None
+    common: 'ParameterCommon'
 
 
 @dc.dataclass(frozen=True)
@@ -247,45 +225,9 @@ class RequestBody:
     required: bool | None = None
 
 
-# FIXME: embed
-# @dc.dataclass(frozen=True)
-# @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-# class ParameterCommon:
-#     description: str | None = None
-#     required: bool | None = None
-#     deprecated: bool | None = None
-#     allow_empty_value: bool | None = None
-#
-#     style: str | None = None
-#     explode: bool | None = None
-#     allow_reserved: bool | None = None
-#     schema: Schema | None = None
-#     example: ta.Any = None
-#     examples: ta.Mapping[str, Example | Reference] | None = None
-#
-#     content: ta.Mapping[str, MediaType] | None = None
-#
-#     # style: ta.Any = None
-#     matrix: ta.Any = None
-#     label: ta.Any = None
-#     form: ta.Any = None
-#     simple: ta.Any = None
-#     space_delimited: ta.Any = None
-#     pipe_delimited: ta.Any = None
-#     deep_object: ta.Any = None
-
-
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['in_'], name='in')
-class Parameter:
-    """https://swagger.io/specification/#parameter-object"""
-
-    name: str
-    in_: str
-
-    # TODO: marshal embedding, shared with Header
-
+class ParameterCommon:
     description: str | None = None
     required: bool | None = None
     deprecated: bool | None = None
@@ -308,6 +250,19 @@ class Parameter:
     space_delimited: ta.Any = None
     pipe_delimited: ta.Any = None
     deep_object: ta.Any = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_metadata(['in_'], name='in')
+@msh.update_fields_metadata(['common'], embed=True, name='')
+class Parameter:
+    """https://swagger.io/specification/#parameter-object"""
+
+    name: str
+    in_: str
+
+    common: ParameterCommon
 
 
 @dc.dataclass(frozen=True)
