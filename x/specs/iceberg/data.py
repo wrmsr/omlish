@@ -4,6 +4,7 @@ from omdev.cache import data as dac
 
 TEST_DATA_SPEC = dac.UrlSpec(
     'https://duckdb.org/data/iceberg_data.zip',
+    headers={'User-Agent': 'Wget/1.24.5'},
     actions=[dac.ExtractAction('iceberg_data.zip')],
 )
 
