@@ -36,6 +36,10 @@ def opt_repr(o: ta.Any) -> str | None:
 #
 
 
+def fields_dict(cls_or_instance: ta.Any) -> dict[str, dc.Field]:
+    return {f.name: f for f in dc.fields(cls_or_instance)}
+
+
 class field_modifier:  # noqa
     def __init__(self, fn: ta.Callable[[dc.Field], dc.Field]) -> None:
         super().__init__()

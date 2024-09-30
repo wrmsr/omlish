@@ -28,18 +28,36 @@ from .values import Value
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+class FieldOptions:
+    omit_if: ta.Callable[[ta.Any], bool] | None = None
+
+    default: lang.Maybe[ta.Any] = dc.xfield(default=lang.empty(), check_type=lang.Maybe)
+
+
+_FIELD_OPTIONS_KWARGS: frozenset[str] = frozenset(dc.fields_dict(FieldOptions).keys())
+
+
+@dc.dataclass(frozen=True, kw_only=True)
 class FieldMetadata:
     name: str | None = None
     alts: ta.Iterable[str] | None = None
 
-    omit_if: ta.Callable[[ta.Any], bool] | None = None
-    default: lang.Maybe[ta.Any] = dc.xfield(lang.empty(), check_type=lang.Maybe)
+    options: FieldOptions = FieldOptions()
 
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
 
     unmarshaler: Unmarshaler | None = None
     unmarshaler_factory: UnmarshalerFactory | None = None
+
+    def update(self, **kwargs: ta.Any) -> 'FieldMetadata':
+        okw = {k: v for k, v in kwargs.items() if k in _FIELD_OPTIONS_KWARGS}
+        mkw = {k: v for k, v in kwargs.items() if k not in _FIELD_OPTIONS_KWARGS}
+        return dc.replace(
+            self,
+            **(dict(options=dc.replace(self.options, **okw)) if okw else {}),
+            **mkw,
+        )
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -64,8 +82,7 @@ class FieldInfo:
 
     metadata: FieldMetadata = FieldMetadata()
 
-    omit_if: ta.Callable[[ta.Any], bool] | None = None
-    default: lang.Maybe[ta.Any] = lang.empty()
+    options: FieldOptions = FieldOptions()
 
 
 ##
@@ -83,7 +100,7 @@ class ObjectMarshaler(Marshaler):
         ret = {}
         for fi, m in self.fields:
             v = getattr(o, fi.name)
-            if fi.omit_if is not None and fi.omit_if(v):
+            if fi.options.omit_if is not None and fi.options.omit_if(v):
                 continue
             ret[fi.marshal_name] = m.marshal(ctx, v)
 
@@ -194,9 +211,9 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
         }
 
         defaults = {
-            fi.name: fi.default.must()
+            fi.name: fi.options.default.must()
             for fi in flds
-            if fi.default.present
+            if fi.options.default.present
         }
 
         return ObjectUnmarshaler(

@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
+from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -15,6 +16,7 @@ from .naming import Naming
 from .naming import translate_name
 from .objects import FieldInfo
 from .objects import FieldMetadata
+from .objects import FieldOptions
 from .objects import ObjectMarshaler
 from .objects import ObjectMetadata
 from .objects import ObjectUnmarshaler
@@ -43,6 +45,11 @@ def get_field_infos(
         for k, v in dc.asdict(dc_md.field_defaults).items()
         if v is not None
     }
+    fo_defaults = {
+        k: v
+        for k, v in fi_defaults.pop('options').items()
+        if v not in (None, lang.empty())
+    }
 
     type_hints = ta.get_type_hints(ty)
 
@@ -53,8 +60,10 @@ def get_field_infos(
         else:
             um_name = field.name
 
-        kw = dict(fi_defaults)
-        kw.update(
+        fi_kw = dict(fi_defaults)
+        fo_kw = dict(fo_defaults)
+
+        fi_kw.update(
             name=field.name,
             type=type_hints[field.name],
             metadata=FieldMetadata(),
@@ -64,19 +73,27 @@ def get_field_infos(
         )
 
         if (fmd := field.metadata.get(FieldMetadata)) is not None:
-            kw.update(
+            fi_kw.update(
                 metadata=fmd,
-                omit_if=fmd.omit_if,
-                default=fmd.default,
             )
 
+            if fmd.options.omit_if is not None:
+                fo_kw.update(omit_if=fmd.options.omit_if)
+            if fmd.options.default.present:
+                fo_kw.update(default=fmd.options.default)
+
             if fmd.name is not None:
-                kw.update(
+                fi_kw.update(
                     marshal_name=fmd.name,
                     unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
                 )
 
-        ret.append(FieldInfo(**kw))
+        ret.append(
+            FieldInfo(
+                options=FieldOptions(**fo_kw),
+                **fi_kw,
+            ),
+        )
 
     return ret
 
@@ -134,8 +151,8 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                 if un in d:
                     raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
                 d[un] = tup
-            if fi.default.present:
-                defaults[fi.name] = fi.default.must()
+            if fi.options.default.present:
+                defaults[fi.name] = fi.options.default.must()
 
         return ObjectUnmarshaler(
             ty,

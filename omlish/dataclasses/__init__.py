@@ -92,6 +92,7 @@ from .utils import (  # noqa
     chain_metadata,
     deep_replace,
     field_modifier,
+    fields_dict,
     maybe_post_init,
     opt_repr,
     update_class_metadata,
