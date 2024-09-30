@@ -39,7 +39,7 @@
     "module": ".cli.clicmds",
     "attr": "_CLI_MODULE",
     "file": "omdev/cli/clicmds.py",
-    "line": 16,
+    "line": 56,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cli",
