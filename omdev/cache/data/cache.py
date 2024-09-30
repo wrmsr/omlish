@@ -10,11 +10,14 @@ TODO:
  - chaining? or is this compcache..
  - download resume ala hf_hub
 """
+import contextlib
 import logging
 import os.path
 import shutil
 import subprocess
 import tempfile
+import typing as ta
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -40,6 +43,57 @@ log = logging.getLogger(__name__)
 ##
 
 
+def _url_retrieve(
+        req: urllib.request.Request,
+        out_file: str | None = None,
+) -> tuple[str, ta.Any]:
+    p = urllib.parse.urlparse(req.full_url)
+
+    with contextlib.ExitStack() as es:
+        fp = es.enter_context(contextlib.closing(urllib.request.urlopen(req)))  # noqa
+
+        headers = fp.info()
+
+        # Just return the local path and the "headers" for file:// URLs. No sense in performing a copy unless requested.
+        if p.scheme == 'file' and not out_file:
+            return os.path.normpath(p.path), headers
+
+        success = False
+
+        tfp: ta.Any
+        if out_file:
+            tfp = es.enter_context(open(out_file, 'wb'))
+
+        else:
+            tfp = es.enter_context(tempfile.NamedTemporaryFile(delete=False))
+            out_file = tfp.name
+
+            def _cleanup():
+                if not success and out_file:
+                    os.unlink(out_file)
+
+            es.enter_context(lang.defer(_cleanup))  # noqa
+
+        result = out_file, headers
+        size = -1
+        read = 0
+        if 'content-length' in headers:
+            size = int(headers['Content-Length'])
+
+        while block := fp.read(1024 * 8):
+            read += len(block)
+            tfp.write(block)
+
+    if size >= 0 and read < size:
+        raise urllib.error.ContentTooShortError(
+            f'retrieval incomplete: got only {read} out of {size} bytes',
+            result,  # type: ignore
+        )
+
+    success = True
+    return result  # type: ignore
+
+
 class Cache:
     def __init__(self, base_dir: str) -> None:
         super().__init__()
@@ -49,16 +103,32 @@ class Cache:
 
     #
 
-    def _fetch_url(self, url: str, out_file: str) -> None:
+    def _fetch_url(
+            self,
+            url: str,
+            out_file: str,
+            *,
+            headers: ta.Mapping[str, str] | None = None,
+    ) -> None:
         log.info('Fetching url: %s -> %s', url, out_file)
 
-        urllib.request.urlretrieve(url, out_file)  # noqa
+        _url_retrieve(
+            urllib.request.Request(  # noqa
+                url,
+                **(dict(headers=headers) if headers is not None else {}),  # type: ignore
+            ),
+            out_file,
+        )
 
     def _fetch_into(self, spec: Spec, data_dir: str) -> None:
         log.info('Fetching spec: %s %r -> %s', spec.digest, spec, data_dir)
 
         if isinstance(spec, UrlSpec):
-            self._fetch_url(spec.url, os.path.join(data_dir, spec.file_name_or_default))
+            self._fetch_url(
+                spec.url,
+                os.path.join(data_dir, spec.file_name_or_default),
+                headers=spec.headers,
+            )
 
         elif isinstance(spec, GithubContentSpec):
             for repo_file in spec.files:
@@ -104,7 +174,7 @@ class Cache:
 
     def _perform_action(self, action: Action, data_dir: str) -> None:
         if isinstance(action, ExtractAction):
-            for f in action.files:
+            for f in [action.files] if isinstance(action.files, str) else action.files:
                 file = os.path.join(data_dir, f)
                 if not os.path.isfile(file):
                     raise Exception(f'Not file: {file}')
