@@ -23,7 +23,7 @@ from .types import CliModule
 ##
 
 
-def _post_install(args):
+def _post_install() -> None:
     from .managers import setup_install_manager
 
     setup_install_manager()
