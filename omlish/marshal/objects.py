@@ -107,11 +107,14 @@ class ObjectMarshaler(Marshaler):
             if fi.options.omit_if is not None and fi.options.omit_if(v):
                 continue
 
+            mv = m.marshal(ctx, v)
+
             if fi.options.embed:
-                # TODO: marshal_name is prefix
-                raise NotImplementedError
+                for ek, ev in check.isinstance(mv, collections.abc.Mapping).items():
+                    ret[fi.marshal_name + ek] = ev
+
             else:
-                ret[fi.marshal_name] = m.marshal(ctx, v)
+                ret[fi.marshal_name] = mv
 
         if self.unknown_field is not None:
             if (ukf := getattr(o, self.unknown_field)):
