@@ -36,14 +36,14 @@
     }
   },
   {
-    "module": ".cli.clicmds",
+    "module": ".cli.clicli",
     "attr": "_CLI_MODULE",
-    "file": "omdev/cli/clicmds.py",
-    "line": 57,
+    "file": "omdev/cli/clicli.py",
+    "line": 63,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cli",
-        "mod_name": "omdev.cli.clicmds"
+        "mod_name": "omdev.cli.clicli"
       }
     }
   },
@@ -135,7 +135,7 @@
     "module": ".tools.gittools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/gittools.py",
-    "line": 22,
+    "line": 64,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "git",

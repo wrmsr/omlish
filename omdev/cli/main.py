@@ -23,7 +23,18 @@ from .types import CliModule
 ##
 
 
-_CLI_FUNCS: ta.Sequence[CliFunc] = []
+def _post_install(args):
+    from .managers import setup_install_manager
+
+    setup_install_manager()
+
+
+##
+
+
+_CLI_FUNCS: ta.Sequence[CliFunc] = [
+    CliFunc('_post_install', _post_install),
+]
 
 
 ##
