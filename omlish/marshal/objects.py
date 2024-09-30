@@ -33,8 +33,12 @@ class FieldOptions:
 
     default: lang.Maybe[ta.Any] = dc.xfield(default=lang.empty(), check_type=lang.Maybe)
 
+    embed: bool = False
+    embed_prefix: str | None = None
 
-_FIELD_OPTIONS_KWARGS: frozenset[str] = frozenset(dc.fields_dict(FieldOptions).keys())
+
+DEFAULT_FIELD_OPTIONS = FieldOptions()
+FIELD_OPTIONS_KWARGS: frozenset[str] = frozenset(dc.fields_dict(FieldOptions).keys())
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -42,7 +46,7 @@ class FieldMetadata:
     name: str | None = None
     alts: ta.Iterable[str] | None = None
 
-    options: FieldOptions = FieldOptions()
+    options: FieldOptions = DEFAULT_FIELD_OPTIONS
 
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
@@ -51,8 +55,8 @@ class FieldMetadata:
     unmarshaler_factory: UnmarshalerFactory | None = None
 
     def update(self, **kwargs: ta.Any) -> 'FieldMetadata':
-        okw = {k: v for k, v in kwargs.items() if k in _FIELD_OPTIONS_KWARGS}
-        mkw = {k: v for k, v in kwargs.items() if k not in _FIELD_OPTIONS_KWARGS}
+        okw = {k: v for k, v in kwargs.items() if k in FIELD_OPTIONS_KWARGS}
+        mkw = {k: v for k, v in kwargs.items() if k not in FIELD_OPTIONS_KWARGS}
         return dc.replace(
             self,
             **(dict(options=dc.replace(self.options, **okw)) if okw else {}),

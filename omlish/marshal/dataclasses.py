@@ -3,7 +3,6 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
-from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -14,6 +13,8 @@ from .base import Unmarshaler
 from .base import UnmarshalerFactory
 from .naming import Naming
 from .naming import translate_name
+from .objects import DEFAULT_FIELD_OPTIONS
+from .objects import FIELD_OPTIONS_KWARGS
 from .objects import FieldInfo
 from .objects import FieldMetadata
 from .objects import FieldOptions
@@ -48,7 +49,7 @@ def get_field_infos(
     fo_defaults = {
         k: v
         for k, v in fi_defaults.pop('options').items()
-        if v not in (None, lang.empty())
+        if v != getattr(DEFAULT_FIELD_OPTIONS, k)
     }
 
     type_hints = ta.get_type_hints(ty)
@@ -77,10 +78,9 @@ def get_field_infos(
                 metadata=fmd,
             )
 
-            if fmd.options.omit_if is not None:
-                fo_kw.update(omit_if=fmd.options.omit_if)
-            if fmd.options.default.present:
-                fo_kw.update(default=fmd.options.default)
+            for fo_k in FIELD_OPTIONS_KWARGS:
+                if (fo_v := getattr(fmd.options, fo_k)) != getattr(DEFAULT_FIELD_OPTIONS, fo_k):
+                    fo_kw[fo_k] = fo_v
 
             if fmd.name is not None:
                 fi_kw.update(
