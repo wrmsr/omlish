@@ -47,8 +47,10 @@ def _reinstall(args) -> None:
 
     os.execl(
         sys.executable,
+        sys.executable,
         '-c',
         install_src,
+        *deps,
     )
 
 
