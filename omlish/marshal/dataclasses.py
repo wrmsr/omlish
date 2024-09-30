@@ -153,25 +153,23 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         defaults: dict[str, ta.Any] = {}
         embeds: dict[str, type] = {}
-        embeds_by_embedded_field: dict[str, tuple[str, str]] = {}
+        embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
 
         def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
+            ret: list[str] = []
+
             if fi.options.embed:
                 e_ty = check.isinstance(fi.type, type)
                 check.state(dc.is_dataclass(e_ty))
                 # e_dc_md = get_dataclass_metadata(e_ty)
 
-                ret: list[str] = []
                 embeds[fi.name] = e_ty
                 for e_fi in get_field_infos(e_ty, ctx.options):
                     e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
-                    embeds_by_embedded_field.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
+                    embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
                     ret.extend(e_ns)
 
-                return ret
-
             else:
-                ret: list[str] = []
                 tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
 
                 for pfx in prefixes:
@@ -185,7 +183,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                 if fi.options.default.present:
                     defaults[fi.name] = fi.options.default.must()
 
-                return ret
+            return ret
 
         for fi in get_field_infos(ty, ctx.options):
             add_field(fi)
@@ -196,5 +194,5 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
             unknown_field=dc_md.unknown_field,
             defaults=defaults,
             embeds=embeds,
-            embeds_by_embedded_field=embeds_by_embedded_field,
+            embeds_by_unmarshal_name=embeds_by_unmarshal_name,
         )
