@@ -242,7 +242,7 @@ class Cli(metaclass=_CliMeta):
 
         if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
             msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
-            if (parser := self.get_parser()).exit_on_error:  # noqa
+            if (parser := self.get_parser()).exit_on_error:  # type: ignore
                 parser.error(msg)
             else:
                 raise ArgumentError(None, msg)
