@@ -73,6 +73,7 @@ def get_field_infos(
             unmarshal_names=[um_name],
         )
 
+        has_set_name = False
         if (fmd := field.metadata.get(FieldMetadata)) is not None:
             fi_kw.update(
                 metadata=fmd,
@@ -83,10 +84,17 @@ def get_field_infos(
                     fo_kw[fo_k] = fo_v
 
             if fmd.name is not None:
+                has_set_name = True
                 fi_kw.update(
                     marshal_name=fmd.name,
                     unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
                 )
+
+        if fo_kw.get('embed') and not has_set_name:
+            fi_kw.update(
+                marshal_name=fi_kw['marshal_name'] + '_',
+                unmarshal_names=[n + '_' for n in fi_kw['unmarshal_names']],
+            )
 
         ret.append(
             FieldInfo(

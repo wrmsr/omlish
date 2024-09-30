@@ -34,7 +34,6 @@ class FieldOptions:
     default: lang.Maybe[ta.Any] = dc.xfield(default=lang.empty(), check_type=lang.Maybe)
 
     embed: bool = False
-    embed_prefix: str | None = None
 
 
 DEFAULT_FIELD_OPTIONS = FieldOptions()
@@ -104,9 +103,15 @@ class ObjectMarshaler(Marshaler):
         ret = {}
         for fi, m in self.fields:
             v = getattr(o, fi.name)
+
             if fi.options.omit_if is not None and fi.options.omit_if(v):
                 continue
-            ret[fi.marshal_name] = m.marshal(ctx, v)
+
+            if fi.options.embed:
+                # TODO: marshal_name is prefix
+                raise NotImplementedError
+            else:
+                ret[fi.marshal_name] = m.marshal(ctx, v)
 
         if self.unknown_field is not None:
             if (ukf := getattr(o, self.unknown_field)):
