@@ -164,7 +164,11 @@ class ObjectUnmarshaler(Unmarshaler):
     _: dc.KW_ONLY
 
     unknown_field: str | None = None
+
     defaults: ta.Mapping[str, ta.Any] | None = None
+
+    embeds: ta.Mapping[str, type] | None = None
+    embeds_by_embedded_field: ta.Mapping[str, tuple[str, str]] | None = None
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
@@ -172,6 +176,8 @@ class ObjectUnmarshaler(Unmarshaler):
         u: ta.Any
         kw: dict[str, ta.Any] = {}
         ukf: dict[str, ta.Any] | None = None
+
+        ekws: dict[str, dict[str, ta.Any]] = {en: {} for en in self.embeds or ()}
 
         if self.unknown_field is not None:
             kw[self.unknown_field] = ukf = {}
@@ -188,10 +194,20 @@ class ObjectUnmarshaler(Unmarshaler):
                     continue
                 raise
 
-            if fi.name in kw:
-                raise KeyError(f'Duplicate keys for field {fi.name!r}: {ks!r}')
+            if self.embeds_by_embedded_field and (en := self.embeds_by_embedded_field.get(fi.name)):
+                tkw, tk = ekws[en[0]], en[1]
+            else:
+                tkw, tk = kw, fi.name
 
-            kw[fi.name] = u.unmarshal(ctx, mv)
+            if tk in tkw:
+                raise KeyError(f'Duplicate keys for field {tk!r}: {ks!r}')
+
+            tkw[tk] = u.unmarshal(ctx, mv)
+
+        for en, ecls in self.embeds.items() if self.embeds else ():
+            ekw = ekws[en]
+            ev = ecls(**ekw)
+            kw[en] = ev
 
         if self.defaults:
             for dk, dv in self.defaults.items():
