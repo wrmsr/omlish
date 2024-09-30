@@ -66,7 +66,7 @@ class Cli(ap.Cli):
             dist_cn = canonicalize_name(dist.metadata['Name'], validate=True)
             if dist_cn in dists:
                 # raise NameError(dist_cn)
-                print(f'!! duplicate dist: {dist_cn}', file=sys.stderr)
+                # print(f'!! duplicate dist: {dist_cn}', file=sys.stderr)
                 continue
 
             dists.add(dist_cn)
