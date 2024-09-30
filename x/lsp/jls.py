@@ -1,3 +1,6 @@
+"""
+https://www.jsonrpc.org/historical/json-rpc-over-http.html
+"""
 import json
 import os.path
 import sys
@@ -101,4 +104,4 @@ async def _main() -> None:
 
 
 if __name__ == '__main__':
-    anyio.run(_main)
+    anyio.run(_main)  # noqa
