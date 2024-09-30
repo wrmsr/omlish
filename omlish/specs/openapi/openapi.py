@@ -1,18 +1,15 @@
 """
 https://swagger.io/specification/
 """
-import os.path
 import typing as ta
 
-import yaml
-
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import matchfns as mfs
-from omlish import reflect as rfl
-from omlish.formats import json
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
+from ... import marshal as msh
+from ... import matchfns as mfs
+from ... import reflect as rfl
+from ...formats import json
 
 
 ##
@@ -114,7 +111,7 @@ class Schema:
 
     @dc.init
     def _check_x(self) -> None:
-        for k in (self.x or {}).keys():
+        for k in self.x or {}:
             check.arg(k.startswith('x-'))
 
 
@@ -298,7 +295,7 @@ class Operation:
 
     @dc.init
     def _check_x(self) -> None:
-        for k in (self.x or {}).keys():
+        for k in self.x or {}:
             check.arg(k.startswith('x-'))
 
 
@@ -420,14 +417,14 @@ class Openapi:
 
     @dc.init
     def _check_x(self) -> None:
-        for k in (self.x or {}).keys():
+        for k in self.x or {}:
             check.arg(k.startswith('x-'))
 
 
 #
 
 
-def _reference_union_arg(rty: rfl.Type) -> type | None:
+def _reference_union_arg(rty: rfl.Type) -> rfl.Type | None:
     if isinstance(rty, rfl.Union) and len(rty.args) == 2 and Reference in rty.args:
         return check.single(a for a in rty.args if a is not Reference)
     else:
@@ -485,7 +482,16 @@ _install_standard_marshalling()
 
 
 def _main():
-    with open(os.path.join(os.path.dirname(__file__), '..', 'llm', 'openai', 'api.yaml')) as f:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('schema_path')
+
+    args = parser.parse_args()
+
+    import yaml
+
+    with open(args.schema_path) as f:
         doc = yaml.safe_load(f)
 
     api = msh.unmarshal(doc, Openapi)
