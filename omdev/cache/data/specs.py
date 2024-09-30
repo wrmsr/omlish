@@ -1,4 +1,5 @@
 import hashlib
+import operator
 import typing as ta
 import urllib.parse
 import urllib.request
@@ -58,6 +59,10 @@ class GitSpec(Spec):
 class UrlSpec(Spec):
     url: str = dc.xfield(validate=lambda u: bool(urllib.parse.urlparse(u)))
     file_name: str | None = None
+
+    _: dc.KW_ONLY
+
+    headers: ta.Mapping[str, str] | None = dc.field(default=None) | msh.update_field_metadata(omit_if=operator.not_)
 
     @cached.property
     def file_name_or_default(self) -> str:
