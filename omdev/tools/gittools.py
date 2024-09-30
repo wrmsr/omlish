@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 
@@ -21,25 +22,43 @@ class Cli(ap.Cli):
 
     #
 
+    @ap.command()
+    def commits_by_date(self) -> None:
+        subprocess.check_call(['git log --date=short --pretty=format:%ad | sort | uniq -c'], shell=True)  # noqa
+
+    #
+
     _GITHUB_PAT = re.compile(r'((http(s)?://)?(www\./)?github(\.com)?/)?(?P<user>[^/.]+)/(?P<repo>[^/.]+)(/.*)?')
 
     @ap.command(
-        ap.arg('url'),
+        ap.arg('repo'),
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
     def clone(self) -> None:
-        if not (m := self._GITHUB_PAT.fullmatch(self.args.url)):
+        if not (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
             subprocess.check_call([
                 'git',
                 'clone',
                 *self.unknown_args,
                 *self.args.args,
-                self.args.url,
+                self.args.repo,
             ])
             return
 
-        raise NotImplementedError
+        user = m.group('user')
+        repo = m.group('repo')
+
+        os.makedirs(user, 0o755, exist_ok=True)
+
+        subprocess.check_call([
+            'git',
+            'clone',
+            *self.unknown_args,
+            *self.args.args,
+            f'https://github.com/{user}/{repo}.git',
+            os.path.join(user, repo),
+        ])
 
 
 # @omlish-manifest
