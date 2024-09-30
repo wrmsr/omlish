@@ -57,6 +57,7 @@ from .helpers import (  # noqa
 from .objects import (  # noqa
     FieldInfo,
     FieldMetadata,
+    FieldOptions,
     ObjectMarshaler,
     ObjectMetadata,
     ObjectUnmarshaler,
