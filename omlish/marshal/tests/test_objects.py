@@ -86,3 +86,5 @@ def test_embed():
     )
     m = marshal(o)
     print(m)
+    u = unmarshal(m, E3)
+    assert u == o
