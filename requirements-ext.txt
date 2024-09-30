@@ -193,7 +193,7 @@ logbook==1.7.0.post0
 
 psutil==6.0.0
 
-mitogen==0.3.10
+mitogen==0.3.11
 
 cloudpickle==3.0.0
 
@@ -229,7 +229,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.28
+langgraph==0.2.29
 
 langsmith==0.1.129
 
