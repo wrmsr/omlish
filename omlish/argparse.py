@@ -16,6 +16,9 @@ from . import check
 T = ta.TypeVar('T')
 
 
+##
+
+
 SUPPRESS = argparse.SUPPRESS
 
 OPTIONAL = argparse.OPTIONAL
@@ -45,6 +48,9 @@ Namespace = argparse.Namespace
 ArgumentParser = argparse.ArgumentParser
 
 
+##
+
+
 @dc.dataclass(eq=False)
 class Arg:
     args: ta.Sequence[ta.Any]
@@ -61,6 +67,9 @@ def arg(*args, **kwargs) -> Arg:
     return Arg(args, kwargs)
 
 
+#
+
+
 CommandFn = ta.Callable[[], None]
 
 
@@ -70,6 +79,7 @@ class Command:
     fn: CommandFn
     args: ta.Sequence[Arg] = ()
     parent: ta.Optional['Command'] = None
+    accepts_unknown: bool = False
 
     def __post_init__(self) -> None:
         check.isinstance(self.name, str)
@@ -79,6 +89,7 @@ class Command:
         check.callable(self.fn)
         check.arg(all(isinstance(a, Arg) for a in self.args))
         check.isinstance(self.parent, (Command, None))
+        check.isinstance(self.accepts_unknown, bool)
 
         functools.update_wrapper(self, self.fn)
 
@@ -95,6 +106,7 @@ def command(
         *args: Arg,
         name: str | None = None,
         parent: Command | None = None,
+        accepts_unknown: bool = False,
 ) -> ta.Any:  # ta.Callable[[CommandFn], Command]:  # FIXME
     for arg in args:
         check.isinstance(arg, Arg)
@@ -107,9 +119,13 @@ def command(
             fn,
             args,
             parent=parent,
+            accepts_unknown=accepts_unknown,
         )
 
     return inner
+
+
+##
 
 
 def get_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
@@ -197,7 +213,8 @@ class Cli(metaclass=_CliMeta):
         super().__init__()
 
         self._argv = argv if argv is not None else sys.argv[1:]
-        self._args = self.get_parser().parse_args(self._argv)
+
+        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
 
     _parser: ta.ClassVar[ArgumentParser]
 
@@ -213,12 +230,25 @@ class Cli(metaclass=_CliMeta):
     def args(self) -> Namespace:
         return self._args
 
+    @property
+    def unknown_args(self) -> ta.Sequence[str]:
+        return self._unknown_args
+
     def _run_cmd(self, cmd: Command) -> None:
         cmd.__get__(self, type(self))()
 
     def __call__(self) -> None:
         cmd = getattr(self.args, '_cmd', None)
+
+        if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
+            msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
+            if (parser := self.get_parser()).exit_on_error:  # noqa
+                parser.error(msg)
+            else:
+                raise ArgumentError(None, msg)
+
         if cmd is None:
             self.get_parser().print_help()
             return
+
         self._run_cmd(cmd)

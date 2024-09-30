@@ -26,10 +26,17 @@ class Cli(ap.Cli):
     @ap.command(
         ap.arg('url'),
         ap.arg('args', nargs=ap.REMAINDER),
+        accepts_unknown=True,
     )
     def clone(self) -> None:
         if not (m := self._GITHUB_PAT.fullmatch(self.args.url)):
-            subprocess.check_call(['git', 'clone', *self.args.args, self.args.url])
+            subprocess.check_call([
+                'git',
+                'clone',
+                *self.unknown_args,
+                *self.args.args,
+                self.args.url,
+            ])
             return
 
         raise NotImplementedError
