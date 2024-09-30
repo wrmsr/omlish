@@ -12,11 +12,11 @@ from .types import CliModule
 
 class CliCli(ap.Cli):
 
-    @ap.command()
+    @ap.command(name='version')
     def print_version(self) -> None:
         print(__about__.__version__)
 
-    @ap.command()
+    @ap.command(name='revision')
     def print_revision(self) -> None:
         print(__about__.__revision__)
 

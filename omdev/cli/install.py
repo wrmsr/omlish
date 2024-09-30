@@ -32,7 +32,7 @@ class InstallOpts:
     extras: ta.Sequence[str] = dc.field(default_factory=list)
 
 
-class InstallMgr(abc.ABC):
+class InstallManager(abc.ABC):
     @abc.abstractmethod
     def is_available(self) -> bool:
         raise NotImplementedError
@@ -46,7 +46,7 @@ class InstallMgr(abc.ABC):
         raise NotImplementedError
 
 
-class UvxInstallMgr(InstallMgr):
+class UvxInstallManager(InstallManager):
     def is_available(self) -> bool:
         return bool(shutil.which('uv'))
 
@@ -80,15 +80,25 @@ class UvxInstallMgr(InstallMgr):
             *itertools.chain.from_iterable(['--with', e] for e in (opts.extras or [])),
         ])
 
+        subprocess.check_call([
+            'uv', 'tool',
+            'run',
+            '--from', opts.cli_pkg,
+            'om',
+            '_post_install',
+        ])
 
-class PipxInstallMgr(InstallMgr):
+
+class PipxInstallManager(InstallManager):
     def is_available(self) -> bool:
         return bool(shutil.which('pipx'))
 
-    def uninstall(self, cli_pkg: str) -> None:
+    def _list_installed(self) -> ta.Any:
         out = subprocess.check_output(['pipx', 'list', '--json']).decode()
+        return json.loads(out)
 
-        dct = json.loads(out)
+    def uninstall(self, cli_pkg: str) -> None:
+        dct = self._list_installed()
 
         if cli_pkg not in dct.get('venvs', {}):
             return
@@ -108,10 +118,19 @@ class PipxInstallMgr(InstallMgr):
             *itertools.chain.from_iterable(['--preinstall', e] for e in (opts.extras or [])),
         ])
 
+        dct = self._list_installed()
 
-INSTALL_MGRS = {
-    'uvx': UvxInstallMgr(),
-    'pipx': PipxInstallMgr(),
+        exe = dct[opts.cli_pkg]['metadata']['main_package']['app_paths'][0]['__Path__']
+
+        subprocess.check_call([
+            exe,
+            '_post_install',
+        ])
+
+
+INSTALL_MANAGERS = {
+    'uvx': UvxInstallManager(),
+    'pipx': PipxInstallManager(),
 }
 
 
@@ -133,18 +152,18 @@ def _main() -> None:
         raise ValueError(f'Must specify py')
 
     if mgr := args.mgr:
-        if (im := INSTALL_MGRS.get(mgr)) is None:
+        if (im := INSTALL_MANAGERS.get(mgr)) is None:
             raise ValueError(f'Unsupported mgr: {mgr}')
         if not im.is_available():
             raise ValueError(f'Unavailable mgr: {mgr}')
     else:
-        for im in INSTALL_MGRS.values():
+        for im in INSTALL_MANAGERS.values():
             if im.is_available():
                 break
         else:
             raise RuntimeError("Can't find install manager")
 
-    for m in INSTALL_MGRS.values():
+    for m in INSTALL_MANAGERS.values():
         if m.is_available():
             m.uninstall(cli)
 
