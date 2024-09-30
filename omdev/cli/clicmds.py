@@ -30,8 +30,7 @@ def _reinstall(args) -> None:
     ]).decode()
 
     deps = sorted(
-        {s for l in out.splitlines() if (s := l.strip())}
-        | set(args.extra_deps or [])
+        ({s for l in out.splitlines() if (s := l.strip())} | set(args.extra_deps or []))
         - {install.DEFAULT_CLI_PKG}  # noqa
     )
 
