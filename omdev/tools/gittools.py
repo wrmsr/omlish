@@ -1,3 +1,4 @@
+import re
 import subprocess
 
 from omlish import argparse as ap
@@ -17,6 +18,21 @@ class Cli(ap.Cli):
             "sort --numeric-sort --key=2",
             shell=True,
         )
+
+    #
+
+    _GITHUB_PAT = re.compile(r'((http(s)?://)?(www\./)?github(\.com)?/)?(?P<user>[^/.]+)/(?P<repo>[^/.]+)(/.*)?')
+
+    @ap.command(
+        ap.arg('url'),
+        ap.arg('args', nargs=ap.REMAINDER),
+    )
+    def clone(self) -> None:
+        if not (m := self._GITHUB_PAT.fullmatch(self.args.url)):
+            subprocess.check_call(['git', 'clone', *self.args.args, self.args.url])
+            return
+
+        raise NotImplementedError
 
 
 # @omlish-manifest
