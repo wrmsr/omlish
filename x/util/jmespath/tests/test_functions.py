@@ -1,8 +1,8 @@
 import datetime
 import json
+import unittest
 
 from ... import jmespath
-from . import unittest
 
 
 class TestFunctions(unittest.TestCase):

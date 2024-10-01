@@ -1,7 +1,8 @@
+import unittest
+
 from ... import jmespath
 from ..exceptions import EmptyExpressionError
 from ..exceptions import LexerError
-from . import unittest
 
 
 class TestRegexLexer(unittest.TestCase):

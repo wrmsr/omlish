@@ -1,8 +1,8 @@
 import decimal
 import sys
+import unittest
 
 from ... import jmespath
-from . import unittest
 
 
 class TestSearchOptions(unittest.TestCase):

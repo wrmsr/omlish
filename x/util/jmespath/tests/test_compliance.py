@@ -1,9 +1,9 @@
+import json
 import os
 import pprint
 import unittest
 
 from ... import jmespath
-from . import json
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))

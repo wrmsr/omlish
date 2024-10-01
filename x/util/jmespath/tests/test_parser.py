@@ -2,12 +2,12 @@ import random
 import re
 import string
 import threading
+import unittest
 
 from .. import ast
 from .. import exceptions
 from .. import parser
 from .. import visitor
-from . import unittest
 
 
 class TestParser(unittest.TestCase):
