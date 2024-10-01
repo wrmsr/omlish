@@ -305,7 +305,7 @@ pipdeptree==2.23.4
 pkginfo==1.10.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.8.2
+polars==1.9.0
 pooch==1.8.2
 portalocker==2.8.2
 posthog==3.6.6
