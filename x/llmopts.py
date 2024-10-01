@@ -37,6 +37,8 @@ class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseU]):
     class Request(lang.Abstract, ta.Generic[T]):
         v: T
 
+        options: ta.Sequence[Option] = ()
+
     @dc.dataclass(frozen=True)
     class Response(lang.Abstract, ta.Generic[U]):
         v: U
@@ -58,16 +60,16 @@ class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
     class Response(Model.Response[str]):
         pass
 
-    def generate(self, request: Request, *options: Option) -> Response:
-        print(options)
+    def generate(self, request: Request) -> Response:
+        print(request.options)
         return PromptModel.Response('foo')
 
 
 def _main() -> None:
     m = PromptModel()
-    m.generate(PromptModel.Request('foo'), TopK(1))
-    m.generate(PromptModel.Request('foo'), Temperature(.1))
-    m.generate(PromptModel.Request('foo'), TopK(1), Temperature(.1))
+    m.generate(PromptModel.Request('foo', [TopK(1)]))
+    m.generate(PromptModel.Request('foo', [Temperature(.1)]))
+    m.generate(PromptModel.Request('foo', [TopK(1), Temperature(.1)]))
 
 
 if __name__ == '__main__':
