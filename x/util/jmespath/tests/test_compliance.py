@@ -1,7 +1,6 @@
 import os
-from pprint import pformat
-
-import pytest
+import pprint
+import unittest
 
 from ... import jmespath
 from . import json
@@ -68,69 +67,73 @@ def load_cases(full_path):
             yield (given, test_type, case)
 
 
-@pytest.mark.parametrize(
-    'given, expression, expected, filename', _compliance_tests('result'),
-)
-def test_expression(given, expression, expected, filename):
-    try:
-        parsed = jmespath.compile(expression)
-    except ValueError as e:
-        raise AssertionError('jmespath expression failed to compile: "%s", error: %s"' % (expression, e))
-    actual = parsed.search(given, options=OPTIONS)
-    expected_repr = json.dumps(expected, indent=4)
-    actual_repr = json.dumps(actual, indent=4)
-    error_msg = (
-        "\n\n  (%s) The expression '%s' was suppose to give:\n%s\n"
-        "Instead it matched:\n%s\nparsed as:\n%s\ngiven:\n%s"
-        % (
-            filename,
-            expression,
-            expected_repr,
-            actual_repr,
-            pformat(parsed.parsed),
-            json.dumps(given, indent=4),
-        )
-    )
-    error_msg = error_msg.replace(r'\n', '\n')
-    assert actual == expected, error_msg
-
-
-@pytest.mark.parametrize(
-    'given, expression, error, filename', _compliance_tests('error'),
-)
-def test_error_expression(given, expression, error, filename):
-    if error not in (
-        'syntax',
-        'invalid-type',
-        'unknown-function',
-        'invalid-arity',
-        'invalid-value',
-    ):
-        raise RuntimeError("Unknown error type '%s'" % error)
-
-    try:
-        parsed = jmespath.compile(expression)
-        parsed.search(given)
-
-    except ValueError:
-        # Test passes, it raised a parse error as expected.
-        pass
-
-    except Exception as e:
-        # Failure because an unexpected exception was raised.
+class TestExpression(unittest.TestCase):
+    def _test_expression(self, given, expression, expected, filename):
+        try:
+            parsed = jmespath.compile(expression)
+        except ValueError as e:
+            raise AssertionError('jmespath expression failed to compile: "%s", error: %s"' % (expression, e))
+        actual = parsed.search(given, options=OPTIONS)
+        expected_repr = json.dumps(expected, indent=4)
+        actual_repr = json.dumps(actual, indent=4)
         error_msg = (
-            "\n\n  (%s) The expression '%s' was suppose to be a "
-            "syntax error, but it raised an unexpected error:\n\n%s"
-            % (filename, expression, e)
+            "\n\n  (%s) The expression '%s' was suppose to give:\n%s\n"
+            "Instead it matched:\n%s\nparsed as:\n%s\ngiven:\n%s"
+            % (
+                filename,
+                expression,
+                expected_repr,
+                actual_repr,
+                pprint.pformat(parsed.parsed),
+                json.dumps(given, indent=4),
+            )
         )
         error_msg = error_msg.replace(r'\n', '\n')
-        raise AssertionError(error_msg)
+        self.assertEqual(actual, expected, error_msg)
 
-    else:
-        error_msg = (
-            "\n\n  (%s) The expression '%s' was suppose to be a "
-            "syntax error, but it successfully parsed as:\n\n%s"
-            % (filename, expression, pformat(parsed.parsed))
-        )
-        error_msg = error_msg.replace(r'\n', '\n')
-        raise AssertionError(error_msg)
+    def test_expression(self):
+        for given, expression, expected, filename in _compliance_tests('result'):
+            self._test_expression(given, expression, expected, filename)
+
+
+class TestErrorExpression(unittest.TestCase):
+    def _test_error_expression(self, given, expression, error, filename):
+        if error not in (
+                'syntax',
+                'invalid-type',
+                'unknown-function',
+                'invalid-arity',
+                'invalid-value',
+        ):
+            raise RuntimeError("Unknown error type '%s'" % error)
+
+        try:
+            parsed = jmespath.compile(expression)
+            parsed.search(given)
+
+        except ValueError:
+            # Test passes, it raised a parse error as expected.
+            pass
+
+        except Exception as e:
+            # Failure because an unexpected exception was raised.
+            error_msg = (
+                    "\n\n  (%s) The expression '%s' was suppose to be a "
+                    "syntax error, but it raised an unexpected error:\n\n%s"
+                    % (filename, expression, e)
+            )
+            error_msg = error_msg.replace(r'\n', '\n')
+            raise AssertionError(error_msg)
+
+        else:
+            error_msg = (
+                    "\n\n  (%s) The expression '%s' was suppose to be a "
+                    "syntax error, but it successfully parsed as:\n\n%s"
+                    % (filename, expression, pprint.pformat(parsed.parsed))
+            )
+            error_msg = error_msg.replace(r'\n', '\n')
+            raise AssertionError(error_msg)
+
+    def test_error_expression(self):
+        for given, expression, error, filename in _compliance_tests('error'):
+            self._test_error_expression(given, expression, error, filename)
