@@ -2,7 +2,8 @@
 TODO:
  - generic omlish.dispatch - tuple[T, U], best-match, reject ambiguous
  - every method is a dispatch.method, call unbound - Doubler.double(5)
-  - !! doesn't dispatch on first arg, dispatches on T (if present)
+  - what's 'self'? are they are made classmethods?
+  - doesn't dispatch on first arg, dispatches on T (if present)
  - cache instances, invalidate on register
 
 ==
@@ -139,14 +140,27 @@ class Doubler(Typeclass[T], singleton=True):
         raise NotImplementedError
 
 
-class _(Doubler[int]):
+class _(Doubler[int]):  # noqa
     def double(self, x: int) -> int:
         return x * 2
 
 
+class _(Doubler[str]):  # noqa
+    def double(self, x: str) -> str:
+        return x * 2
+
+
+class _(Doubler[list]):  # noqa
+    def double(self, x: list) -> list:
+        return [Doubler[e.__class__]().double(e) for e in x]
+
+
 def _main() -> None:
-    assert Doubler[int]().double(21) == 42
-    # assert Doubler.double(21) == 42
+    assert (di0 := Doubler[int]()).double(21) == 42
+    assert (di1 := Doubler[int]()).double(21) == 42
+    assert di0 is di1
+
+    assert Doubler[list]().double([5, 'a', [10, 'b']]) == [10, 'aa', [20, 'bb']]
 
 
 if __name__ == '__main__':
