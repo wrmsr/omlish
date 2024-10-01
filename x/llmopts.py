@@ -14,19 +14,18 @@ OptionT = ta.TypeVar('OptionT', bound='Option')
 ##
 
 
-@dc.dataclass(frozen=True)
-class Option(ta.Generic[T], lang.Abstract):
-    v: T
-
-
-@dc.dataclass(frozen=True)
-class TopK(Option[int], lang.Final):
+class Option(lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class Temperature(Option[float], lang.Final):
-    pass
+class TopK(Option, lang.Final):
+    v: int
+
+
+@dc.dataclass(frozen=True)
+class Temperature(Option, lang.Final):
+    f: float
 
 
 ##
