@@ -86,6 +86,7 @@ class UvxInstallManager(InstallManager):
             '--from', opts.cli_pkg,
             'om',
             '_post_install',
+            opts.cli_pkg,
         ])
 
 
@@ -125,6 +126,7 @@ class PipxInstallManager(InstallManager):
         subprocess.check_call([
             exe,
             '_post_install',
+            opts.cli_pkg,
         ])
 
 
