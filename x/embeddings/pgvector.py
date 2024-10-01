@@ -32,7 +32,7 @@ def _main():
                 'drop table if exists items',
                 'create table items (id bigserial primary key, embedding vector(3))',
                 "insert into items (embedding) values ('[1,2,3]'), ('[4,5,6]')",
-                "select * from items order by embedding <-> '[3,1,2]' limit 5;",
+                "select * from items order by embedding <-> '[3,1,2]' limit 5",
             ]:
                 print(stmt)
                 result = conn.execute(sa.text(stmt))
