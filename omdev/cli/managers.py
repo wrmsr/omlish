@@ -11,9 +11,6 @@ def _normalize_pkg_name(s: str) -> str:
     return s.lower().replace('_', '-')
 
 
-CLI_PKG = _normalize_pkg_name(__name__.split('.')[0])
-
-
 ##
 
 
@@ -22,7 +19,7 @@ class ManagerType(enum.Enum):
     PIPX = 'pipx'
 
 
-def _detect_install_manager() -> ManagerType | None:
+def detect_install_manager(cli_pkg: str) -> ManagerType | None:
     if os.path.isfile(fp := os.path.join(sys.prefix, 'uv-receipt.toml')):
         import tomllib
 
@@ -31,7 +28,7 @@ def _detect_install_manager() -> ManagerType | None:
 
         reqs = dct.get('tool', {}).get('requirements')
         main_pkg = _normalize_pkg_name(reqs[0].get('name', ''))
-        if reqs and main_pkg == CLI_PKG:
+        if reqs and main_pkg == cli_pkg:
             return ManagerType.UVX
 
     if os.path.isfile(fp := os.path.join(sys.prefix, 'pipx_metadata.json')):
@@ -41,19 +38,10 @@ def _detect_install_manager() -> ManagerType | None:
             dct = json.loads(f.read())
 
         main_pkg = _normalize_pkg_name(dct.get('main_package', {}).get('package_or_url', ''))
-        if main_pkg == CLI_PKG:
+        if main_pkg == cli_pkg:
             return ManagerType.PIPX
 
     return None
-
-
-def detect_install_manager() -> ManagerType | None:
-    try:
-        return globals()['_DETECTED_MANAGER_TYPE']
-    except KeyError:
-        pass
-    ret = globals()['_DETECTED_MANAGER_TYPE'] = _detect_install_manager()
-    return ret
 
 
 ##
@@ -100,8 +88,8 @@ def _install_path_hack_file() -> None:
 ##
 
 
-def setup_install_manager() -> None:
-    if detect_install_manager() is None:
+def setup_install_manager(cli_pkg: str) -> None:
+    if detect_install_manager(cli_pkg) is None:
         return
 
     _install_path_hack_file()
