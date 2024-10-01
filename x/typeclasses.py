@@ -39,7 +39,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         _: dc.KW_ONLY
 
-        singleton: bool = False
+        singleton: bool
 
     @dc.dataclass(frozen=True)
     class _Internals:
