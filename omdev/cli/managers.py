@@ -7,6 +7,16 @@ import sys
 ##
 
 
+def _normalize_pkg_name(s: str) -> str:
+    return s.lower().replace('_', '-')
+
+
+CLI_PKG = _normalize_pkg_name(__name__.split('.')[0])
+
+
+##
+
+
 class ManagerType(enum.Enum):
     UVX = 'uvx'
     PIPX = 'pipx'
@@ -14,12 +24,25 @@ class ManagerType(enum.Enum):
 
 def _detect_install_manager() -> ManagerType | None:
     if os.path.isfile(fp := os.path.join(sys.prefix, 'uv-receipt.toml')):
-        with open(fp) as f:
-            if any(l.strip() == '[tool]' for l in f):
-                return ManagerType.UVX
+        import tomllib
 
-    if os.path.isfile(os.path.join(sys.prefix, 'pipx_metadata.json')):
-        return ManagerType.PIPX
+        with open(fp) as f:
+            dct = tomllib.loads(f.read())
+
+        reqs = dct.get('tool', {}).get('requirements')
+        main_pkg = _normalize_pkg_name(reqs[0].get('name', ''))
+        if reqs and main_pkg == CLI_PKG:
+            return ManagerType.UVX
+
+    if os.path.isfile(fp := os.path.join(sys.prefix, 'pipx_metadata.json')):
+        import json
+
+        with open(fp) as f:
+            dct = json.loads(f.read())
+
+        main_pkg = _normalize_pkg_name(dct.get('main_package', {}).get('package_or_url', ''))
+        if main_pkg == CLI_PKG:
+            return ManagerType.PIPX
 
     return None
 
@@ -34,17 +57,24 @@ def detect_install_manager() -> ManagerType | None:
 
 
 ##
+# Python is insistent in prepending sys.path with an empty string (translating to the current working directory),
+# which leads to problems when using the cli in directories containing python packages (such as within this very
+# source tree). This can't be done in cli main as the code frequently spawns other sys.executable processes which
+# wouldn't know to do that, so a .pth file hack is used. Cleaning sys.path solely there is also insufficient as that
+# code runs before the problematic empty string is added, so a sys.meta_path hook is prepended.
+#
+# See:
+#     https://github.com/python/cpython/blob/da1e5526aee674bb33c17a498aa3781587b9850c/Python/sysmodule.c#L3939
 
 
-def _ensure_correct_path() -> None:
-    sp = site.getsitepackages()[0]
-    if sys.path[0] != sp:
-        sys.path.insert(0, sp)
+def _remove_empty_from_sys_path() -> None:
+    while '' in sys.path:
+        sys.path.remove('')
 
 
 class _PathHackMetaFinder:
     def find_spec(self, fullname, path, target=None):
-        _ensure_correct_path()
+        _remove_empty_from_sys_path()
         return None  # noqa
 
 

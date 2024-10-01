@@ -120,7 +120,7 @@ class PipxInstallManager(InstallManager):
 
         dct = self._list_installed()
 
-        exe = dct[opts.cli_pkg]['metadata']['main_package']['app_paths'][0]['__Path__']
+        exe = dct['venvs'][opts.cli_pkg]['metadata']['main_package']['app_paths'][0]['__Path__']
 
         subprocess.check_call([
             exe,
@@ -147,6 +147,8 @@ def _main() -> None:
 
     if not (cli := args.cli):
         raise ValueError(f'Must specify cli')
+
+    cli = cli.lower().replace('_', '-')
 
     if not (py := args.py):
         raise ValueError(f'Must specify py')
