@@ -17,7 +17,7 @@ class Dbs:
         self._compose_services = compose_services
 
     def specs(self) -> ta.Mapping[str, DbSpec]:
-        svcs = self._compose_services.compose_config().get_services()
+        svcs = self._compose_services.config().get_services()
         lst: list[DbSpec] = []
 
         in_docker = is_likely_in_docker()

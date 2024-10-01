@@ -21,6 +21,7 @@ services:
       # ext
       - 'omlish-elasticsearch'
       # - 'omlish-neo4j'
+      - 'omlish-pgvector'
       - 'omlish-redis'
     links: *dev-deps
     expose:
@@ -50,6 +51,7 @@ services:
     depends_on: &ci-deps
       - 'omlish-mysql'
       - 'omlish-postgres'
+      - 'omlish-s3'
     links: *ci-deps
 
   # main
@@ -113,10 +115,21 @@ services:
       - '35229:7474'
       - '35230:7687'
 
+  omlish-pgvector:
+    image: 'pgvector/pgvector:0.7.4-pg17'
+    restart: 'unless-stopped'
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'omlish'
+    expose:
+      - '5432'
+    ports:
+      - '35231:5432'
+
   omlish-redis:
     image: 'redis:7.4.0'
     restart: 'unless-stopped'
     expose:
       - '6379'
     ports:
-      - '35231:6379'
+      - '35232:6379'
