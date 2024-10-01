@@ -1,8 +1,8 @@
 import operator
+import numbers
 
-from jmespath import functions
-from jmespath.compat import string_type
-from numbers import Number
+from . import functions
+from .compat import string_type
 
 
 def _equals(x, y):
@@ -53,7 +53,7 @@ def _is_actual_number(x):
     # True
     if isinstance(x, bool):
         return False
-    return isinstance(x, Number)
+    return isinstance(x, numbers.Number)
 
 
 class Options(object):
