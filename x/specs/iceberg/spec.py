@@ -2,8 +2,6 @@
 https://iceberg.apache.org/spec/ <-- winner
 
 https://duckdb.org/docs/extensions/iceberg.html
-
-
 """
 import enum
 
