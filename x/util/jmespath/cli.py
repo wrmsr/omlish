@@ -43,19 +43,19 @@ def main():
         sys.stdout.write('\n')
 
     except exceptions.ArityError as e:
-        sys.stderr.write("invalid-arity: %s\n" % e)
+        sys.stderr.write('invalid-arity: %s\n' % e)
         return 1
 
     except exceptions.JmespathTypeError as e:
-        sys.stderr.write("invalid-type: %s\n" % e)
+        sys.stderr.write('invalid-type: %s\n' % e)
         return 1
 
     except exceptions.UnknownFunctionError as e:
-        sys.stderr.write("unknown-function: %s\n" % e)
+        sys.stderr.write('unknown-function: %s\n' % e)
         return 1
 
     except exceptions.ParseError as e:
-        sys.stderr.write("syntax-error: %s\n" % e)
+        sys.stderr.write('syntax-error: %s\n' % e)
         return 1
 
 

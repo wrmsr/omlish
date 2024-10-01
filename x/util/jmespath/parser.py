@@ -117,7 +117,7 @@ class Parser:
                 t['start'],
                 t['value'],
                 t['type'],
-                "Unexpected token: %s" % t['value'],
+                'Unexpected token: %s' % t['value'],
             )
 
         return ParsedResult(expression, parsed)
@@ -463,7 +463,7 @@ class Parser:
         else:
             t = self._lookahead_token(0)
             allowed = ['quoted_identifier', 'unquoted_identifier', 'lbracket', 'lbrace']
-            msg = "Expecting: %s, got: %s" % (allowed, t['type'])
+            msg = 'Expecting: %s, got: %s' % (allowed, t['type'])
             self._raise_parse_error_for_token(t, msg)
 
     def _error_nud_token(self, token):

@@ -69,7 +69,7 @@ class ArityError(ParseError):
     def __str__(self):
         return (
             f"Expected {self.expected_arity} {self._pluralize('argument', self.expected_arity)} "
-            f"for function {self.function_name}(), received {self.actual_arity}"
+            f'for function {self.function_name}(), received {self.actual_arity}'
         )
 
     def _pluralize(self, word, count):
@@ -83,7 +83,7 @@ class VariadicArityError(ArityError):
     def __str__(self):
         return (
             f"Expected at least {self.expected_arity} {self._pluralize('argument', self.expected_arity)} "
-            f"for function {self.function_name}(), received {self.actual_arity}"
+            f'for function {self.function_name}(), received {self.actual_arity}'
         )
 
 
@@ -108,7 +108,7 @@ class JmespathTypeError(JmespathError):
 
 class EmptyExpressionError(JmespathError):
     def __init__(self):
-        super().__init__("Invalid Jmespath expression: cannot be empty.")
+        super().__init__('Invalid Jmespath expression: cannot be empty.')
 
 
 class UnknownFunctionError(JmespathError):

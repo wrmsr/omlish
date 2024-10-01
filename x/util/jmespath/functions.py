@@ -73,8 +73,7 @@ class Functions(metaclass=FunctionRegistry):
         try:
             spec = self.FUNCTION_TABLE[function_name]
         except KeyError:
-            raise exceptions.UnknownFunctionError(
-                "Unknown function: %s()" % function_name)
+            raise exceptions.UnknownFunctionError('Unknown function: %s()' % function_name)
 
         function = spec['function']
         signature = spec['signature']
@@ -232,15 +231,15 @@ class Functions(metaclass=FunctionRegistry):
         else:
             return list(reversed(arg))
 
-    @signature({"types": ['number']})
+    @signature({'types': ['number']})
     def _func_ceil(self, arg):
         return math.ceil(arg)
 
-    @signature({"types": ['number']})
+    @signature({'types': ['number']})
     def _func_floor(self, arg):
         return math.floor(arg)
 
-    @signature({"types": ['string']}, {"types": ['array-string']})
+    @signature({'types': ['string']}, {'types': ['array-string']})
     def _func_join(self, separator, array):
         return separator.join(array)
 
@@ -251,58 +250,58 @@ class Functions(metaclass=FunctionRegistry):
             result.append(expref.visit(expref.expression, element))
         return result
 
-    @signature({"types": ['array-number', 'array-string']})
+    @signature({'types': ['array-number', 'array-string']})
     def _func_max(self, arg):
         if arg:
             return max(arg)
         else:
             return None
 
-    @signature({"types": ["object"], "variadic": True})
+    @signature({'types': ['object'], 'variadic': True})
     def _func_merge(self, *arguments):
         merged = {}
         for arg in arguments:
             merged.update(arg)
         return merged
 
-    @signature({"types": ['array-number', 'array-string']})
+    @signature({'types': ['array-number', 'array-string']})
     def _func_min(self, arg):
         if arg:
             return min(arg)
         else:
             return None
 
-    @signature({"types": ['array-string', 'array-number']})
+    @signature({'types': ['array-string', 'array-number']})
     def _func_sort(self, arg):
         return list(sorted(arg))
 
-    @signature({"types": ['array-number']})
+    @signature({'types': ['array-number']})
     def _func_sum(self, arg):
         return sum(arg)
 
-    @signature({"types": ['object']})
+    @signature({'types': ['object']})
     def _func_keys(self, arg):
         # To be consistent with .values() should we also return the indices of a list?
         return list(arg.keys())
 
-    @signature({"types": ['object']})
+    @signature({'types': ['object']})
     def _func_values(self, arg):
         return list(arg.values())
 
     @signature({'types': []})
     def _func_type(self, arg):
         if isinstance(arg, str):
-            return "string"
+            return 'string'
         elif isinstance(arg, bool):
-            return "boolean"
+            return 'boolean'
         elif isinstance(arg, list):
-            return "array"
+            return 'array'
         elif isinstance(arg, dict):
-            return "object"
+            return 'object'
         elif isinstance(arg, (float, int)):
-            return "number"
+            return 'number'
         elif arg is None:
-            return "null"
+            return 'null'
 
     @signature({'types': ['array']}, {'types': ['expref']})
     def _func_sort_by(self, array, expref):

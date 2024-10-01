@@ -12,7 +12,7 @@ class Lexer:
 
     VALID_NUMBER = set(string.digits)
 
-    WHITESPACE = set(" \t\n\r")
+    WHITESPACE = set(' \t\n\r')
 
     SIMPLE_TOKENS = {
         '.': 'dot',
@@ -168,7 +168,7 @@ class Lexer:
                 raise LexerError(
                     lexer_position=self._position,
                     lexer_value=self._current,
-                    message="Unknown token %s" % self._current,
+                    message='Unknown token %s' % self._current,
                 )
 
         yield {
@@ -219,7 +219,7 @@ class Lexer:
                 raise LexerError(
                     lexer_position=start,
                     lexer_value=self._expression[start:],
-                    message="Unclosed %s delimiter" % delimiter,
+                    message='Unclosed %s delimiter' % delimiter,
                 )
 
             buff += self._current
@@ -240,12 +240,12 @@ class Lexer:
             try:
                 # Invalid JSON values should be converted to quoted JSON strings during the JEP-12 deprecation period.
                 parsed_json = json.loads('"%s"' % lexeme.lstrip())
-                warnings.warn("deprecated string literal syntax", PendingDeprecationWarning)
+                warnings.warn('deprecated string literal syntax', PendingDeprecationWarning)
             except ValueError:
                 raise LexerError(
                     lexer_position=start,
                     lexer_value=self._expression[start:],
-                    message="Bad token %s" % lexeme,
+                    message='Bad token %s' % lexeme,
                 )
 
         token_len = self._position - start

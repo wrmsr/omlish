@@ -85,7 +85,7 @@ class Visitor:
         return method(node, *args, **kwargs)
 
     def default_visit(self, node, *args, **kwargs):
-        raise NotImplementedError("default_visit")
+        raise NotImplementedError('default_visit')
 
 
 class TreeInterpreter(Visitor):
