@@ -35,6 +35,7 @@ _IS_TYPECLASS_METHOD_ATTR = '__istypeclassmethod__'
 
 
 def typeclassmethod(funcobj):
+    check.callable(funcobj)
     setattr(funcobj, _IS_TYPECLASS_METHOD_ATTR, True)
     return abc.abstractmethod(funcobj)
 
@@ -74,8 +75,11 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
             impl = self.impls[tca]
 
-            result = impl.cls(*args, **kwargs)
-            result.__orig_class__ = self.cls[tca]  # type: ignore
+            result = impl.cls(
+                *args,
+                __typeclass_arg__=tca,
+                **kwargs,
+            )
 
             if self.singleton or impl.singleton:
                 self.insts[tca] = result
@@ -126,30 +130,38 @@ class Typeclass(abc.ABC, ta.Generic[T]):
         else:
             cls.__typeclass_internals__ = lang.access_forbidden()
 
-            for base in rfl.get_orig_bases(cls):
-                rty = rfl.type_(base)
-                if not (isinstance(rty, rfl.Generic) and Typeclass in rty.cls.__bases__):
-                    continue
+            tcs = [
+                rty
+                for base in rfl.get_orig_bases(cls)
+                if isinstance(rty := rfl.type_(base), rfl.Generic)
+                and Typeclass in rty.cls.__bases__
+            ]
+            rty = check.single(tcs)
 
-                intr: Typeclass._Internals = rty.cls.__typeclass_internals__  # type: ignore
-                tca = check.single(rty.args)
+            intr: Typeclass._Internals = rty.cls.__typeclass_internals__  # type: ignore
+            tca = check.single(rty.args)
 
-                if tca in intr.impls:
-                    raise KeyError(tca)
+            if tca in intr.impls:
+                raise KeyError(tca)
 
-                intr.impls[tca] = Typeclass._Impl(
-                    cls,
-                    tca,
-                    singleton=singleton,
-                )
+            intr.impls[tca] = Typeclass._Impl(
+                cls,
+                tca,
+                singleton=singleton,
+            )
 
     #
 
-    def __new__(cls, *args, **kwargs):
-        if Typeclass not in cls.__bases__:
-            return super().__new__(cls, *args, **kwargs)
+    __typeclass_arg__: rfl.Type
 
-        raise TypeError(cls)
+    def __new__(cls, *args, **kwargs):
+        if Typeclass in cls.__bases__:
+            raise TypeError(cls)
+
+        tca = kwargs.pop('__typeclass_arg__')
+        obj = super().__new__(cls, *args, **kwargs)
+        obj.__typeclass_arg__ = tca
+        return obj
 
     #
 
@@ -191,7 +203,9 @@ class Typeclass(abc.ABC, ta.Generic[T]):
         def __call__(self, *args, **kwargs):
             intr: Typeclass._Internals = self.__origin__.__typeclass_internals__  # noqa
             tca = check.single(self.__args__)
-            return intr.dispatch(tca, *args, **kwargs)
+            result = intr.dispatch(tca, *args, **kwargs)
+            result.__orig_class__ = self  # type: ignore
+            return result
 
     rfl.types._SIMPLE_GENERIC_ALIAS_TYPES.add(_DispatchingGenericAlias)  # noqa
 
