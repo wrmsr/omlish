@@ -80,7 +80,7 @@ class Visitor:
         node_type = node['type']
         method = self._method_cache.get(node_type)
         if method is None:
-            method = getattr(self, 'visit_%s' % node['type'], self.default_visit)
+            method = getattr(self, f'visit_{node["type"]}', self.default_visit)
             self._method_cache[node_type] = method
         return method(node, *args, **kwargs)
 
@@ -325,16 +325,16 @@ class GraphvizVisitor(Visitor):
 
     def visit(self, node, *args, **kwargs):
         self._lines.append('digraph AST {')
-        current = '%s%s' % (node['type'], self._count)
+        current = f"{node['type']}{self._count}"
         self._count += 1
         self._visit(node, current)
         self._lines.append('}')
         return '\n'.join(self._lines)
 
     def _visit(self, node, current):
-        self._lines.append('%s [label="%s(%s)"]' % (current, node['type'], node.get('value', '')))
+        self._lines.append('%s [label="%s(%s)"]' % (current, node['type'], node.get('value', '')))  # noqa
         for child in node.get('children', []):
-            child_name = '%s%s' % (child['type'], self._count)
+            child_name = f"{child['type']}{self._count}"
             self._count += 1
-            self._lines.append('  %s -> %s' % (current, child_name))
+            self._lines.append(f'  {current} -> {child_name}')
             self._visit(child, child_name)
