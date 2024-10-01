@@ -76,6 +76,11 @@ class Coder:
         else:
             self._console = rich.console.Console(force_terminal=True, no_color=True)
 
+        self._done_messages = []
+        self._cur_messages = []
+
+        self._num_control_c = 0
+
     def quoted_file(self, fname: str) -> str:
         prompt = "\n"
         prompt += fname
@@ -170,6 +175,9 @@ class Coder:
         if inp is None:
             return
 
+        self._handle_input(inp)
+
+    def _handle_input(self, inp: str) -> bool | None:
         self._num_control_c = 0
 
         if self.check_for_local_edits():
@@ -322,11 +330,12 @@ class Coder:
                 dump(chunk.choices[0].finish_reason)
             try:
                 text = chunk.choices[0].delta.content
-                self._resp += text
+                if text is not None:
+                    self._resp += text
             except AttributeError:
                 continue
 
-            if not silent:
+            if not silent and text:
                 sys.stdout.write(text)
                 sys.stdout.flush()
 
