@@ -31,6 +31,14 @@ T = ta.TypeVar('T')
 TypeclassT = ta.TypeVar('TypeclassT', bound='Typeclass')
 
 
+_IS_TYPECLASS_METHOD_ATTR = '__istypeclassmethod__'
+
+
+def typeclassmethod(funcobj):
+    setattr(funcobj, _IS_TYPECLASS_METHOD_ATTR, True)
+    return abc.abstractmethod(funcobj)
+
+
 class Typeclass(abc.ABC, ta.Generic[T]):
     @dc.dataclass(frozen=True)
     class _Impl:
@@ -39,7 +47,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         _: dc.KW_ONLY
 
-        singleton: bool
+        singleton: bool | None
 
     @dc.dataclass(frozen=True)
     class _Internals:
@@ -47,8 +55,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         _: dc.KW_ONLY
 
-        singleton: bool
-        tcms: ta.Mapping[str, classmethod]
+        singleton: bool | None
+        tcms: ta.Mapping[str, ta.Any]
 
         impls: dict[rfl.Type, 'Typeclass._Impl'] = dc.field(default_factory=dict)
         insts: dict[rfl.Type, 'Typeclass'] = dc.field(default_factory=dict)
@@ -67,7 +75,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
             impl = self.impls[tca]
 
             result = impl.cls(*args, **kwargs)
-            result.__orig_class__ = self.cls[tca]
+            result.__orig_class__ = self.cls[tca]  # type: ignore
 
             if self.singleton or impl.singleton:
                 self.insts[tca] = result
@@ -88,14 +96,14 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         if Typeclass in cls.__bases__:
             rty = rfl.type_(cls)
-            tca = check.single(rty.args)
+            tca = check.single(rty.args)  # type: ignore
             tcv = check.isinstance(tca, ta.TypeVar)
 
-            tcms: dict[str, classmethod] = {}
+            tcms: dict[str, ta.Any] = {}
             for a, v in list(cls.__dict__.items()):
                 if not (
-                    getattr(v, '__isabstractmethod__', False) and  # noqa
-                    isinstance(v, classmethod)
+                    isinstance(v, classmethod) and
+                    getattr(v.__func__, _IS_TYPECLASS_METHOD_ATTR, False)
                 ):
                     continue
 
@@ -123,7 +131,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                 if not (isinstance(rty, rfl.Generic) and Typeclass in rty.cls.__bases__):
                     continue
 
-                intr: Typeclass._Internals = rty.cls.__typeclass_internals__  # noqa
+                intr: Typeclass._Internals = rty.cls.__typeclass_internals__  # type: ignore
                 tca = check.single(rty.args)
 
                 if tca in intr.impls:
@@ -146,6 +154,22 @@ class Typeclass(abc.ABC, ta.Generic[T]):
     #
 
     @classmethod
+    def dispatch(
+            cls: type[TypeclassT],
+            tca: ta.Any,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> TypeclassT:
+        if Typeclass not in cls.__bases__:
+            raise TypeError(cls)
+
+        intr: Typeclass._Internals = cls.__typeclass_internals__  # noqa
+        inst = intr.dispatch(tca, *args, **kwargs)
+        return inst  # type: ignore
+
+    #
+
+    @classmethod
     def __typeclass_classmethod__(
             cls,
             attr: str,
@@ -156,15 +180,14 @@ class Typeclass(abc.ABC, ta.Generic[T]):
         if Typeclass not in cls.__bases__:
             raise TypeError(cls)
 
-        intr: Typeclass._Internals = cls.__typeclass_internals__  # noqa
         tca = args[0].__class__
-        inst = intr.dispatch(tca)
+        inst = cls.dispatch(tca)
         fn = getattr(inst, attr)
         return fn(*args, **kwargs)
 
     #
 
-    class _DispatchingGenericAlias(ta._GenericAlias, _root=True):  # noqa
+    class _DispatchingGenericAlias(ta._GenericAlias, _root=True):  # type: ignore  # noqa
         def __call__(self, *args, **kwargs):
             intr: Typeclass._Internals = self.__origin__.__typeclass_internals__  # noqa
             tca = check.single(self.__args__)
@@ -174,7 +197,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
     @classmethod
     def __class_getitem__(cls, item):
-        ret = super().__class_getitem__(item)  # noqa
+        ret = super().__class_getitem__(item)  # type: ignore
 
         if Typeclass in cls.__bases__ and not isinstance(ret, Typeclass._DispatchingGenericAlias):
             ret.__class__ = Typeclass._DispatchingGenericAlias
@@ -187,24 +210,27 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
 class Doubler(Typeclass[T], singleton=True):
     @classmethod
-    @abc.abstractmethod
+    @typeclassmethod
     def double(cls, x: T) -> T:
         raise NotImplementedError
 
 
-class _(Doubler[int]):  # noqa
-    def double(self, x: int) -> int:
+class _IntDoubler(Doubler[int]):
+    @classmethod
+    def double(cls, x: int) -> int:
         return x * 2
 
 
-class _(Doubler[str]):  # noqa
-    def double(self, x: str) -> str:
+class _StrDoubler(Doubler[str]):
+    @classmethod
+    def double(cls, x: str) -> str:
         return x * 2
 
 
-class _(Doubler[list]):  # noqa
+class _ListDoubler(Doubler[list]):
     def double(self, x: list) -> list:
-        return [Doubler[e.__class__]().double(e) for e in x]
+        # return [Doubler[type(e)]().double(e) for e in x]
+        return [Doubler.double(e) for e in x]
 
 
 def _main() -> None:
