@@ -32,7 +32,7 @@ def _main():
         return 0
 
     if args.filename:
-        with open(args.filename, 'r') as f:
+        with open(args.filename) as f:
             data = json.load(f)
     else:
         data = sys.stdin.read()

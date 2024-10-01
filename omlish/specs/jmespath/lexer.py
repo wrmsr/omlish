@@ -1,6 +1,6 @@
+import json
 import string
 import warnings
-import json
 
 from .exceptions import EmptyExpressionError
 from .exceptions import LexerError
