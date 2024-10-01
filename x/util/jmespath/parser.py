@@ -570,3 +570,11 @@ class ParsedResult:
 
     def __repr__(self):
         return repr(self.parsed)
+
+
+def compile(expression):
+    return Parser().parse(expression)
+
+
+def search(expression, data, options=None):
+    return Parser().parse(expression).search(data, options=options)
