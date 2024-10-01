@@ -67,7 +67,7 @@ _SIMPLE_GENERIC_ALIAS_TYPES: set[type] = set()
 def is_simple_generic_alias_type(oty: type) -> bool:
     return (
         oty is _GenericAlias or
-        oty is ta._GenericAlias or  # type: ignore  # noqa
+        oty is ta.GenericAlias or  # type: ignore  # noqa
         oty in _SIMPLE_GENERIC_ALIAS_TYPES
     )
 
