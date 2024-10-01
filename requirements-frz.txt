@@ -267,7 +267,7 @@ oauthlib==3.2.2
 objgraph==3.6.1
 olefile==0.47
 ollama==0.3.3
-onnx==1.16.2
+onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.19.2
 openai==1.51.0
