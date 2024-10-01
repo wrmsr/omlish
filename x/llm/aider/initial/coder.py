@@ -175,9 +175,9 @@ class Coder:
         if inp is None:
             return
 
-        self._handle_input(inp)
+        self.handle_input(inp)
 
-    def _handle_input(self, inp: str) -> bool | None:
+    def handle_input(self, inp: str) -> bool | None:
         self._num_control_c = 0
 
         if self.check_for_local_edits():

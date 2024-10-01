@@ -17,7 +17,8 @@ def _main() -> None:
 
     coder = Coder(True, ['js/game_manager.js'], False)
 
-    coder._handle_input('What is this repo?')  # noqa
+    coder.handle_input('What is this repo?')
+    coder.handle_input('How is scoring done?')
 
 
 if __name__ == '__main__':
