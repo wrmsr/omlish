@@ -1,4 +1,4 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 PT027
 import random
 import re
 import string
@@ -128,13 +128,12 @@ class TestErrorMessages(unittest.TestCase):
         except exception as e:
             self.assertEqual(error_message, str(e))
             return
-        except Exception as e:
+        except Exception as e:  # noqa
             self.fail(
-                'Unexpected error raised (%s: %s) for bad expression: %s'
-                % (e.__class__.__name__, e, expression),
+                f'Unexpected error raised ({e.__class__.__name__}: {e}) for bad expression: {expression}',
             )
         else:
-            self.fail('ParseError not raised for bad expression: %s' % expression)
+            self.fail(f'ParseError not raised for bad expression: {expression}')
 
     def test_bad_parse(self):
         with self.assertRaises(exceptions.ParseError):
@@ -322,11 +321,11 @@ class TestParserCaching(unittest.TestCase):
         p = parser.Parser()
         compiled = []
         compiled2 = []
-        for i in range(parser.Parser._MAX_SIZE + 1):
-            compiled.append(p.parse('foo%s' % i))
+        for i in range(parser.Parser._MAX_SIZE + 1):  # noqa
+            compiled.append(p.parse(f'foo{i}'))
         # Rerun the test and half of these entries should be from the cache but they should still be equal to compiled.
-        for i in range(parser.Parser._MAX_SIZE + 1):
-            compiled2.append(p.parse('foo%s' % i))
+        for i in range(parser.Parser._MAX_SIZE + 1):  # noqa
+            compiled2.append(p.parse(f'foo{i}'))
         self.assertEqual(len(compiled), len(compiled2))
         self.assertEqual(
             [expr.parsed for expr in compiled], [expr.parsed for expr in compiled2],
@@ -353,11 +352,11 @@ class TestParserCaching(unittest.TestCase):
             for expression in expressions:
                 try:
                     p.parse(expression)
-                except Exception as e:
+                except Exception as e:  # noqa
                     errors.append(e)
 
         threads = []
-        for i in range(10):
+        for _ in range(10):
             threads.append(threading.Thread(target=worker))
         for thread in threads:
             thread.start()
@@ -387,13 +386,13 @@ class TestRenderGraphvizFile(unittest.TestCase):
     def test_dot_file_rendered(self):
         p = parser.Parser()
         result = p.parse('foo')
-        dot_contents = result._render_dot_file()
+        dot_contents = result._render_dot_file()  # noqa
         self.assertEqual(dot_contents, 'digraph AST {\nfield1 [label="field(foo)"]\n}')
 
     def test_dot_file_subexpr(self):
         p = parser.Parser()
         result = p.parse('foo.bar')
-        dot_contents = result._render_dot_file()
+        dot_contents = result._render_dot_file()  # noqa
         self.assertEqual(
             dot_contents,
             'digraph AST {\n'

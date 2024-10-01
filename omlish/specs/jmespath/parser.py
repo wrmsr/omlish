@@ -117,7 +117,7 @@ class Parser:
                 t['start'],
                 t['value'],
                 t['type'],
-                'Unexpected token: %s' % t['value'],
+                f'Unexpected token: {t["value"]}',
             )
 
         return ParsedResult(expression, parsed)
@@ -128,7 +128,8 @@ class Parser:
         self._advance()
 
         nud_function = getattr(
-            self, '_token_nud_%s' % left_token['type'],
+            self,
+            f'_token_nud_{left_token["type"]}',
             self._error_nud_token,
         )
 
@@ -136,7 +137,11 @@ class Parser:
 
         current_token = self._current_token()
         while binding_power < self.BINDING_POWER[current_token]:
-            led = getattr(self, '_token_led_%s' % current_token, None)
+            led = getattr(
+                self,
+                f'_token_led_{current_token}',
+                None,
+            )
             if led is None:
                 error_token = self._lookahead_token(0)
                 self._error_led_token(error_token)
@@ -299,7 +304,7 @@ class Parser:
                 prev_t['start'],
                 prev_t['value'],
                 prev_t['type'],
-                "Invalid function name '%s'" % prev_t['value'],
+                f"Invalid function name '{prev_t['value']}'",
             )
 
         name = left['value']
@@ -463,7 +468,7 @@ class Parser:
         else:
             t = self._lookahead_token(0)
             allowed = ['quoted_identifier', 'unquoted_identifier', 'lbracket', 'lbrace']
-            msg = 'Expecting: %s, got: %s' % (allowed, t['type'])
+            msg = f'Expecting: {allowed}, got: {t["type"]}'
             self._raise_parse_error_for_token(t, msg)
 
     def _error_nud_token(self, token):
@@ -526,7 +531,7 @@ class Parser:
                 actual_type,
             )
 
-        message = 'Expecting: %s, got: %s' % (expected_type, actual_type)
+        message = f'Expecting: {expected_type}, got: {actual_type}'
         raise exceptions.ParseError(
             lex_position,
             actual_value,
@@ -572,7 +577,7 @@ class ParsedResult:
         return repr(self.parsed)
 
 
-def compile(expression):
+def compile(expression):  # noqa
     return Parser().parse(expression)
 
 

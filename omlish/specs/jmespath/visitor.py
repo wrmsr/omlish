@@ -1,5 +1,6 @@
 import numbers
 import operator
+import typing as ta
 
 from . import functions
 
@@ -31,6 +32,9 @@ def _is_special_number_case(x, y):
 
     elif _is_actual_number(y) and y in (0, 1):
         return isinstance(x, bool)
+
+    else:
+        return None
 
 
 def _is_comparable(x):
@@ -89,7 +93,7 @@ class Visitor:
 
 
 class TreeInterpreter(Visitor):
-    COMPARATOR_FUNC = {
+    COMPARATOR_FUNC: ta.Mapping[str, ta.Callable] = {
         'eq': _equals,
         'ne': lambda x, y: not _equals(x, y),
         'lt': operator.lt,
@@ -98,7 +102,7 @@ class TreeInterpreter(Visitor):
         'gte': operator.ge,
     }
 
-    _EQUALITY_OPS = ['eq', 'ne']
+    _EQUALITY_OPS: ta.Sequence[str] = ['eq', 'ne']
 
     MAP_TYPE = dict
 
@@ -124,8 +128,8 @@ class TreeInterpreter(Visitor):
 
     def visit_subexpression(self, node, value):
         result = value
-        for node in node['children']:
-            result = self.visit(node, result)
+        for child in node['children']:
+            result = self.visit(child, result)
         return result
 
     def visit_field(self, node, value):
@@ -212,8 +216,8 @@ class TreeInterpreter(Visitor):
 
     def visit_index_expression(self, node, value):
         result = value
-        for node in node['children']:
-            result = self.visit(node, result)
+        for child in node['children']:
+            result = self.visit(child, result)
 
         return result
 
@@ -276,8 +280,8 @@ class TreeInterpreter(Visitor):
 
     def visit_pipe(self, node, value):
         result = value
-        for node in node['children']:
-            result = self.visit(node, result)
+        for child in node['children']:
+            result = self.visit(child, result)
         return result
 
     def visit_projection(self, node, value):
@@ -311,7 +315,7 @@ class TreeInterpreter(Visitor):
     def _is_false(self, value):
         # This looks weird, but we're explicitly using equality checks because the truth/false values are different
         # between python and jmespath.
-        return (value == '' or value == [] or value == {} or value is None or value is False)
+        return (value == '' or value == [] or value == {} or value is None or value is False)  # noqa
 
     def _is_true(self, value):
         return not self._is_false(value)
