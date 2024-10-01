@@ -6,9 +6,9 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
-U = ta.TypeVar('U')
 ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
-ModelResponseU = ta.TypeVar('ModelResponseU', bound='Model.Response')
+ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
+OptionT = ta.TypeVar('OptionT', bound='Option')
 
 
 ##
@@ -32,19 +32,19 @@ class Temperature(Option[float], lang.Final):
 ##
 
 
-class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseU]):
+class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
     @dc.dataclass(frozen=True)
-    class Request(lang.Abstract, ta.Generic[T]):
+    class Request(lang.Abstract, ta.Generic[T, OptionT]):
         v: T
 
-        options: ta.Sequence[Option] = ()
+        options: ta.Sequence[OptionT] = ()
 
     @dc.dataclass(frozen=True)
-    class Response(lang.Abstract, ta.Generic[U]):
-        v: U
+    class Response(lang.Abstract, ta.Generic[T]):
+        v: T
 
     @abc.abstractmethod
-    def generate(self, request: ModelRequestT) -> ModelResponseU:
+    def generate(self, request: ModelRequestT) -> ModelResponseT:
         raise NotImplementedError
 
 
@@ -53,7 +53,7 @@ class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseU]):
 
 class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
     @dc.dataclass(frozen=True)
-    class Request(Model.Request[str]):
+    class Request(Model.Request[str, Option]):
         pass
 
     @dc.dataclass(frozen=True)
