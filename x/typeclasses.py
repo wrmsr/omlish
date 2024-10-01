@@ -18,6 +18,7 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import functools
 import inspect
 import typing as ta
 
@@ -68,9 +69,9 @@ class Typeclass(abc.ABC, ta.Generic[T]):
             arg = check.single(rty.args)
             tcv = check.isinstance(arg, ta.TypeVar)
 
-            for a, v in cls.__dict__.items():
+            for a, v in list(cls.__dict__.items()):
                 if not (
-                    getattr(v, '__isabstractmethod__', False) and
+                    getattr(v, '__isabstractmethod__', False) and  # noqa
                     isinstance(v, classmethod)
                 ):
                     continue
@@ -80,7 +81,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                 if len(params) < 2 or params[1].annotation is not tcv:
                     continue
 
-                raise NotImplementedError
+                tcm = functools.partial(Typeclass.__typeclass_classmethod__, a, v)
+                setattr(cls, a, tcm)
 
             cls.__typeclass_internals__ = Typeclass._Internals(
                 cls,
@@ -106,6 +108,16 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                     arg,
                     singleton=singleton,
                 )
+
+    @classmethod
+    def __typeclass_classmethod__(
+            cls,
+            attr: str,
+            cm: classmethod,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Any:
+        raise NotImplementedError
 
     #
 
