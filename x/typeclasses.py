@@ -18,6 +18,7 @@ TODO:
 """
 import abc
 import dataclasses as dc
+import inspect
 import typing as ta
 
 from omlish import check
@@ -63,6 +64,24 @@ class Typeclass(abc.ABC, ta.Generic[T]):
         super().__init_subclass__(**kwargs)
 
         if Typeclass in cls.__bases__:
+            rty = rfl.type_(cls)
+            arg = check.single(rty.args)
+            tcv = check.isinstance(arg, ta.TypeVar)
+
+            for a, v in cls.__dict__.items():
+                if not (
+                    getattr(v, '__isabstractmethod__', False) and
+                    isinstance(v, classmethod)
+                ):
+                    continue
+
+                sig = inspect.signature(v.__func__)
+                params = list(sig.parameters.values())
+                if len(params) < 2 or params[1].annotation is not tcv:
+                    continue
+
+                raise NotImplementedError
+
             cls.__typeclass_internals__ = Typeclass._Internals(
                 cls,
                 singleton=singleton,
@@ -135,8 +154,9 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
 
 class Doubler(Typeclass[T], singleton=True):
+    @classmethod
     @abc.abstractmethod
-    def double(self, x: T) -> T:
+    def double(cls, x: T) -> T:
         raise NotImplementedError
 
 
@@ -161,6 +181,8 @@ def _main() -> None:
     assert di0 is di1
 
     assert Doubler[list]().double([5, 'a', [10, 'b']]) == [10, 'aa', [20, 'bb']]
+
+    assert Doubler.double(5) == 10
 
 
 if __name__ == '__main__':
