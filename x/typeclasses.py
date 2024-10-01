@@ -52,6 +52,27 @@ class Typeclass(abc.ABC, ta.Generic[T]):
         impls: dict[rfl.Type, 'Typeclass._Impl'] = dc.field(default_factory=dict)
         insts: dict[rfl.Type, 'Typeclass'] = dc.field(default_factory=dict)
 
+        def dispatch(
+                self,
+                tca: rfl.Type,
+                *args: ta.Any,
+                **kwargs: ta.Any,
+        ) -> 'Typeclass':
+            try:
+                return self.insts[tca]
+            except KeyError:
+                pass
+
+            impl = self.impls[tca]
+
+            result = impl.cls(*args, **kwargs)
+            result.__orig_class__ = self.cls[tca]
+
+            if self.singleton or impl.singleton:
+                self.insts[tca] = result
+
+            return result
+
     __typeclass_internals__: ta.ClassVar[_Internals]
 
     #
@@ -66,8 +87,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         if Typeclass in cls.__bases__:
             rty = rfl.type_(cls)
-            arg = check.single(rty.args)
-            tcv = check.isinstance(arg, ta.TypeVar)
+            tca = check.single(rty.args)
+            tcv = check.isinstance(tca, ta.TypeVar)
 
             for a, v in list(cls.__dict__.items()):
                 if not (
@@ -81,7 +102,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                 if len(params) < 2 or params[1].annotation is not tcv:
                     continue
 
-                tcm = functools.partial(Typeclass.__typeclass_classmethod__, a, v)
+                tcm = functools.partial(cls.__typeclass_classmethod__, a, v)
                 setattr(cls, a, tcm)
 
             cls.__typeclass_internals__ = Typeclass._Internals(
@@ -98,14 +119,14 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                     continue
 
                 intr: Typeclass._Internals = rty.cls.__typeclass_internals__  # noqa
-                arg = check.single(rty.args)
+                tca = check.single(rty.args)
 
-                if arg in intr.impls:
-                    raise KeyError(arg)
+                if tca in intr.impls:
+                    raise KeyError(tca)
 
-                intr.impls[arg] = Typeclass._Impl(
+                intr.impls[tca] = Typeclass._Impl(
                     cls,
-                    arg,
+                    tca,
                     singleton=singleton,
                 )
 
@@ -132,23 +153,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
     class _DispatchingGenericAlias(ta._GenericAlias, _root=True):  # noqa
         def __call__(self, *args, **kwargs):
             intr: Typeclass._Internals = self.__origin__.__typeclass_internals__  # noqa
-            arg = check.single(self.__args__)
-
-            if intr.insts is not None:
-                try:
-                    return intr.insts[arg]
-                except KeyError:
-                    pass
-
-            impl = intr.impls[arg]
-
-            result = impl.cls(*args, **kwargs)
-            result.__orig_class__ = self
-
-            if intr.singleton or impl.singleton:
-                intr.insts[arg] = result
-
-            return result
+            tca = check.single(self.__args__)
+            return intr.dispatch(tca, *args, **kwargs)
 
     rfl.types._SIMPLE_GENERIC_ALIAS_TYPES.add(_DispatchingGenericAlias)  # noqa
 
