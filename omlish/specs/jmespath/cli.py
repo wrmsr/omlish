@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import json
 import pprint
@@ -43,19 +44,19 @@ def _main():
         sys.stdout.write('\n')
 
     except exceptions.ArityError as e:
-        sys.stderr.write('invalid-arity: %s\n' % e)
+        sys.stderr.write(f'invalid-arity: {e}\n')
         return 1
 
     except exceptions.JmespathTypeError as e:
-        sys.stderr.write('invalid-type: %s\n' % e)
+        sys.stderr.write(f'invalid-type: {e}\n')
         return 1
 
     except exceptions.UnknownFunctionError as e:
-        sys.stderr.write('unknown-function: %s\n' % e)
+        sys.stderr.write(f'unknown-function: {e}\n')
         return 1
 
     except exceptions.ParseError as e:
-        sys.stderr.write('syntax-error: %s\n' % e)
+        sys.stderr.write(f'syntax-error: {e}\n')
         return 1
 
 

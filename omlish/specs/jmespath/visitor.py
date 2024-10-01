@@ -86,7 +86,7 @@ class Visitor:
         if method is None:
             method = getattr(self, f'visit_{node["type"]}', self.default_visit)
             self._method_cache[node_type] = method
-        return method(node, *args, **kwargs)
+        return method(node, *args, **kwargs)  # type: ignore
 
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError('default_visit')
