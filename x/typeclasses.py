@@ -43,12 +43,9 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         raise NotImplementedError
 
-    class _GenericAliasHandler:
-        def __init__(self, alias):
-            self._alias = alias
-
+    class _GenericAlias(ta._GenericAlias, _root=True):  # noqa
         def __call__(self, *args, **kwargs):
-            ret = self._alias.__class__.__call__(self._alias, *args, **kwargs)
+            ret = super().__call__(*args, **kwargs)
 
             return ret
 
@@ -56,8 +53,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
     def __class_getitem__(cls, item):
         ret = super().__class_getitem__(item)  # noqa
 
-        if not isinstance(ret.__call__, Typeclass._GenericAliasHandler):
-            ret.__call__ = Typeclass._GenericAliasHandler(ret)
+        if not isinstance(ret, Typeclass._GenericAlias):
+            ret.__class__ = Typeclass._GenericAlias
 
         return ret
 
