@@ -302,6 +302,8 @@ class Functions(metaclass=FunctionRegistry):
             return 'number'
         elif arg is None:
             return 'null'
+        else:
+            return None
 
     @signature({'types': ['array']}, {'types': ['expref']})
     def _func_sort_by(self, array, expref):
