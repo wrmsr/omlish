@@ -1,13 +1,18 @@
 
-class JMESPathError(ValueError):
+class JmespathError(ValueError):
     pass
 
 
-class ParseError(JMESPathError):
+class ParseError(JmespathError):
     _ERROR_MESSAGE = 'Invalid jmespath expression'
-    def __init__(self, lex_position, token_value, token_type,
-                 msg=_ERROR_MESSAGE):
-        super(ParseError, self).__init__(lex_position, token_value, token_type)
+    def __init__(
+            self,
+            lex_position,
+            token_value,
+            token_type,
+            msg=_ERROR_MESSAGE,
+    ):
+        super().__init__(lex_position, token_value, token_type)
         self.lex_position = lex_position
         self.token_value = token_value
         self.token_type = token_type.upper()
@@ -45,7 +50,7 @@ class LexerError(ParseError):
         self.lexer_position = lexer_position
         self.lexer_value = lexer_value
         self.message = message
-        super(LexerError, self).__init__(lexer_position,
+        super().__init__(lexer_position,
                                          lexer_value,
                                          message)
         # Whatever catches LexerError can set this.
@@ -65,12 +70,7 @@ class ArityError(ParseError):
         self.expression = None
 
     def __str__(self):
-        return ("Expected %s %s for function %s(), "
-                "received %s" % (
-                    self.expected_arity,
-                    self._pluralize('argument', self.expected_arity),
-                    self.function_name,
-                    self.actual_arity))
+        return f"Expected {self.expected_arity} {self._pluralize('argument', self.expected_arity)} for function {self.function_name}(), received {self.actual_arity}"
 
     def _pluralize(self, word, count):
         if count == 1:
@@ -89,7 +89,7 @@ class VariadictArityError(ArityError):
                     self.actual_arity))
 
 
-class JMESPathTypeError(JMESPathError):
+class JmespathTypeError(JmespathError):
     def __init__(self, function_name, current_value, actual_type,
                  expected_types):
         self.function_name = function_name
@@ -104,11 +104,11 @@ class JMESPathTypeError(JMESPathError):
                     self.expected_types, self.actual_type))
 
 
-class EmptyExpressionError(JMESPathError):
+class EmptyExpressionError(JmespathError):
     def __init__(self):
-        super(EmptyExpressionError, self).__init__(
-            "Invalid JMESPath expression: cannot be empty.")
+        super().__init__(
+            "Invalid Jmespath expression: cannot be empty.")
 
 
-class UnknownFunctionError(JMESPathError):
+class UnknownFunctionError(JmespathError):
     pass

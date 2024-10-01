@@ -24,7 +24,7 @@ def verify_preconditions():
 def main():
     verify_preconditions()
     parser = argparse.ArgumentParser()
-    parser.add_argument('expression', help='JMESPath expression.')
+    parser.add_argument('expression', help='Jmespath expression.')
     parser.add_argument('-s', '--save-file',
                         help='The filename to save the rendered AST.  If no '
                         'value is specified, a temporary file will be used '
@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
     try:
         parsed = jmespath.compile(args.expression)
-    except jmespath.exceptions.JMESPathError as e:
+    except jmespath.exceptions.JmespathError as e:
         sys.stderr.write("Invalid expressions: %s\n" % e)
         return 1
     with tempfile.NamedTemporaryFile('w') as f:

@@ -56,10 +56,10 @@ def _is_actual_number(x):
 
 
 class Options(object):
-    """Options to control how a JMESPath function is evaluated."""
+    """Options to control how a Jmespath function is evaluated."""
     def __init__(self, dict_cls=None, custom_functions=None):
         #: The class to use when creating a dict.  The interpreter
-        #  may create dictionaries during the evaluation of a JMESPath
+        #  may create dictionaries during the evaluation of a Jmespath
         #  expression.  For example, a multi-select hash will
         #  create a dictionary.  By default we use a dict() type.
         #  You can set this value to change what dict type is used.

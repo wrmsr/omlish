@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""JMESPath compliance test runner.
+"""Jmespath compliance test runner.
 
-This is a test runner that will run the JMESPath compliance tests against a
-JMESPath executable.
+This is a test runner that will run the Jmespath compliance tests against a
+Jmespath executable.
 
 Compliance tests are broken down into three components:
 
@@ -199,7 +199,7 @@ def test_spec(value):
 
 def main():
     parser = argparse.ArgumentParser(usage=__doc__)
-    parser.add_argument('-e', '--exe', help='The JMESPath executable to use.')
+    parser.add_argument('-e', '--exe', help='The Jmespath executable to use.')
     parser.add_argument('-t', '--tests', help=('The compliance tests to run.  '
                                               'If this value is not provided, '
                                               'then all compliance tests are '

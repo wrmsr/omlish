@@ -108,7 +108,7 @@ class Functions(metaclass=FunctionRegistry):
         # integers in python for example).
         actual_typename = type(current).__name__
         if actual_typename not in allowed_types:
-            raise exceptions.JMESPathTypeError(
+            raise exceptions.JmespathTypeError(
                 function_name, current,
                 self._convert_to_jmespath_type(actual_typename), types)
         # If we're dealing with a list type, we can have
@@ -141,7 +141,7 @@ class Functions(metaclass=FunctionRegistry):
             for element in current:
                 actual_typename = type(element).__name__
                 if actual_typename not in allowed_subtypes:
-                    raise exceptions.JMESPathTypeError(
+                    raise exceptions.JmespathTypeError(
                         function_name, element, actual_typename, types)
         elif len(allowed_subtypes) > 1 and current:
             # Dynamic type validation.  Based on the first
@@ -153,12 +153,12 @@ class Functions(metaclass=FunctionRegistry):
                     allowed = subtypes
                     break
             else:
-                raise exceptions.JMESPathTypeError(
+                raise exceptions.JmespathTypeError(
                     function_name, current[0], first, types)
             for element in current:
                 actual_typename = type(element).__name__
                 if actual_typename not in allowed:
-                    raise exceptions.JMESPathTypeError(
+                    raise exceptions.JmespathTypeError(
                         function_name, element, actual_typename, types)
 
     @signature({'types': ['number']})
@@ -319,7 +319,7 @@ class Functions(metaclass=FunctionRegistry):
         required_type = self._convert_to_jmespath_type(
             type(expref.visit(expref.expression, array[0])).__name__)
         if required_type not in ['number', 'string']:
-            raise exceptions.JMESPathTypeError(
+            raise exceptions.JmespathTypeError(
                 'sort_by', array[0], required_type, ['string', 'number'])
         keyfunc = self._create_key_func(expref,
                                         [required_type],
@@ -353,7 +353,7 @@ class Functions(metaclass=FunctionRegistry):
             jmespath_type = self._convert_to_jmespath_type(actual_typename)
             # allowed_types is in term of jmespath types, not python types.
             if jmespath_type not in allowed_types:
-                raise exceptions.JMESPathTypeError(
+                raise exceptions.JmespathTypeError(
                     function_name, result, jmespath_type, allowed_types)
             return result
         return keyfunc

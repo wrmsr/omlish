@@ -39,7 +39,7 @@ def main():
     except exceptions.ArityError as e:
         sys.stderr.write("invalid-arity: %s\n" % e)
         return 1
-    except exceptions.JMESPathTypeError as e:
+    except exceptions.JmespathTypeError as e:
         sys.stderr.write("invalid-type: %s\n" % e)
         return 1
     except exceptions.UnknownFunctionError as e:

@@ -10,7 +10,7 @@ from jmespath import exceptions
 class TestFunctions(unittest.TestCase):
 
     def test_can_max_datetimes(self):
-        # This is python specific behavior, but JMESPath does not specify what
+        # This is python specific behavior, but Jmespath does not specify what
         # you should do with language specific types.  We're going to add the
         # ability that ``to_string`` will always default to str()'ing values it
         # doesn't understand.
@@ -19,7 +19,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(json.loads(result), str(data[-1]))
 
     def test_type_error_messages(self):
-        with self.assertRaises(exceptions.JMESPathTypeError) as e:
+        with self.assertRaises(exceptions.JmespathTypeError) as e:
             jmespath.search('length(@)', 2)
         exception = e.exception
         # 1. Function name should be in error message
