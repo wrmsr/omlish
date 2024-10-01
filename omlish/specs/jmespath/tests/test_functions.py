@@ -1,4 +1,4 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 PT027
 import datetime
 import json
 import unittest
@@ -12,7 +12,7 @@ class TestFunctions(unittest.TestCase):
         # This is python specific behavior, but Jmespath does not specify what you should do with language specific
         # types.  We're going to add the ability that ``to_string`` will always default to str()'ing values it doesn't
         # understand.
-        data = [datetime.datetime.now(), datetime.datetime.now() + datetime.timedelta(seconds=1)]
+        data = [datetime.datetime.now(), datetime.datetime.now() + datetime.timedelta(seconds=1)]  # noqa
         result = jmespath.search('max([*].to_string(@))', data)
         self.assertEqual(json.loads(result), str(data[-1]))
 

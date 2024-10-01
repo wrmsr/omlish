@@ -44,16 +44,17 @@ def _walk_files():
     if single_file is not None:
         yield os.path.abspath(single_file)
     else:
-        for root, dirnames, filenames in os.walk(TEST_DIR):
+        for root, _, filenames in os.walk(TEST_DIR):
             for filename in filenames:
                 yield os.path.join(root, filename)
-        for root, dirnames, filenames in os.walk(LEGACY_DIR):
+        for root, _, filenames in os.walk(LEGACY_DIR):
             for filename in filenames:
                 yield os.path.join(root, filename)
 
 
 def load_cases(full_path):
-    all_test_data = json.load(open(full_path))
+    with open(full_path) as f:
+        all_test_data = json.load(f)
     for test_data in all_test_data:
         given = test_data['given']
         for case in test_data['cases']:
@@ -64,21 +65,23 @@ def load_cases(full_path):
             elif 'bench' in case:
                 test_type = 'bench'
             else:
-                raise RuntimeError('Unknown test type: %s' % json.dumps(case))
+                raise RuntimeError(f'Unknown test type: {json.dumps(case)}')
             yield (given, test_type, case)
 
 
 class TestExpression(unittest.TestCase):
     def _test_expression(self, given, expression, expected, filename):
+        print(f'_test_expression: {expression}')
+
         try:
             parsed = jmespath.compile(expression)
         except ValueError as e:
-            raise AssertionError('jmespath expression failed to compile: "%s", error: %s"' % (expression, e))
+            raise AssertionError(f'jmespath expression failed to compile: "{expression}", error: {e}"')  # noqa
         actual = parsed.search(given, options=OPTIONS)
         expected_repr = json.dumps(expected, indent=4)
         actual_repr = json.dumps(actual, indent=4)
         error_msg = (
-            "\n\n  (%s) The expression '%s' was suppose to give:\n%s\n"
+            "\n\n  (%s) The expression '%s' was suppose to give:\n%s\n"  # noqa
             "Instead it matched:\n%s\nparsed as:\n%s\ngiven:\n%s"
             % (
                 filename,
@@ -99,6 +102,8 @@ class TestExpression(unittest.TestCase):
 
 class TestErrorExpression(unittest.TestCase):
     def _test_error_expression(self, given, expression, error, filename):
+        print(f'_test_error_expression: {expression}')
+
         if error not in (
                 'syntax',
                 'invalid-type',
@@ -106,7 +111,7 @@ class TestErrorExpression(unittest.TestCase):
                 'invalid-arity',
                 'invalid-value',
         ):
-            raise RuntimeError("Unknown error type '%s'" % error)
+            raise RuntimeError(f"Unknown error type '{error}'")
 
         try:
             parsed = jmespath.compile(expression)
@@ -116,24 +121,24 @@ class TestErrorExpression(unittest.TestCase):
             # Test passes, it raised a parse error as expected.
             pass
 
-        except Exception as e:
+        except Exception as e:  # noqa
             # Failure because an unexpected exception was raised.
             error_msg = (
-                "\n\n  (%s) The expression '%s' was suppose to be a "
+                "\n\n  (%s) The expression '%s' was suppose to be a "  # noqa
                 "syntax error, but it raised an unexpected error:\n\n%s"
                 % (filename, expression, e)
             )
             error_msg = error_msg.replace(r'\n', '\n')
-            raise AssertionError(error_msg)
+            raise AssertionError(error_msg)  # noqa
 
         else:
             error_msg = (
-                "\n\n  (%s) The expression '%s' was suppose to be a "
+                "\n\n  (%s) The expression '%s' was suppose to be a "  # noqa
                 "syntax error, but it successfully parsed as:\n\n%s"
                 % (filename, expression, pprint.pformat(parsed.parsed))
             )
             error_msg = error_msg.replace(r'\n', '\n')
-            raise AssertionError(error_msg)
+            raise AssertionError(error_msg)  # noqa
 
     def test_error_expression(self):
         for given, expression, error, filename in _compliance_tests('error'):
