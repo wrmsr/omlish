@@ -1,5 +1,8 @@
-from jmespath import parser
-from jmespath.visitor import Options
+from . import exceptions
+from . import functions
+from . import lexer
+from . import parser
+from .visitor import Options
 
 __version__ = '1.0.1'
 

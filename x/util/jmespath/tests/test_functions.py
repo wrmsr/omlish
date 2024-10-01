@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-from tests import unittest
+from . import unittest
 from datetime import datetime, timedelta
 import json
 
-import jmespath
-from jmespath import exceptions
+from ... import jmespath
 
 
 class TestFunctions(unittest.TestCase):
@@ -19,7 +18,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(json.loads(result), str(data[-1]))
 
     def test_type_error_messages(self):
-        with self.assertRaises(exceptions.JmespathTypeError) as e:
+        with self.assertRaises(jmespath.exceptions.JmespathTypeError) as e:
             jmespath.search('length(@)', 2)
         exception = e.exception
         # 1. Function name should be in error message
@@ -33,7 +32,7 @@ class TestFunctions(unittest.TestCase):
         self.assertIn('received: "number"', str(exception))
 
     def test_singular_in_error_message(self):
-        with self.assertRaises(exceptions.ArityError) as e:
+        with self.assertRaises(jmespath.exceptions.ArityError) as e:
             jmespath.search('length(@, @)', [0, 1])
         exception = e.exception
         self.assertEqual(
@@ -41,7 +40,7 @@ class TestFunctions(unittest.TestCase):
             'Expected 1 argument for function length(), received 2')
 
     def test_error_message_is_pluralized(self):
-        with self.assertRaises(exceptions.ArityError) as e:
+        with self.assertRaises(jmespath.exceptions.ArityError) as e:
             jmespath.search('sort_by(@)', [0, 1])
         exception = e.exception
         self.assertEqual(
@@ -49,7 +48,7 @@ class TestFunctions(unittest.TestCase):
             'Expected 2 arguments for function sort_by(), received 1')
 
     def test_variadic_is_pluralized(self):
-        with self.assertRaises(exceptions.VariadicArityError) as e:
+        with self.assertRaises(jmespath.exceptions.VariadicArityError) as e:
             jmespath.search('not_null()', 'foo')
         exception = e.exception
         self.assertEqual(

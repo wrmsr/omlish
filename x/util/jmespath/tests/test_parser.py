@@ -3,12 +3,12 @@ import re
 import random
 import string
 import threading
-from tests import unittest, OrderedDict
+from . import unittest, OrderedDict
 
-from jmespath import parser
-from jmespath import visitor
-from jmespath import ast
-from jmespath import exceptions
+from .. import parser
+from .. import visitor
+from .. import ast
+from .. import exceptions
 
 
 class TestParser(unittest.TestCase):

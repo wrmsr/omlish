@@ -1,18 +1,18 @@
 import os
 from pprint import pformat
-from tests import OrderedDict
-from tests import json
+from . import OrderedDict
+from . import json
 
 import pytest
 
-from jmespath.visitor import Options
+from ... import jmespath
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 COMPLIANCE_DIR = os.path.join(TEST_DIR, 'compliance')
 LEGACY_DIR = os.path.join(TEST_DIR, 'legacy')
 NOT_SPECIFIED = object()
-OPTIONS = Options(dict_cls=OrderedDict)
+OPTIONS = jmespath.Options(dict_cls=OrderedDict)
 
 
 def _compliance_tests(requested_test_type):
@@ -68,7 +68,6 @@ def load_cases(full_path):
     _compliance_tests('result')
 )
 def test_expression(given, expression, expected, filename):
-    import jmespath.parser
     try:
         parsed = jmespath.compile(expression)
     except ValueError as e:
@@ -92,7 +91,6 @@ def test_expression(given, expression, expected, filename):
     _compliance_tests('error')
 )
 def test_error_expression(given, expression, error, filename):
-    import jmespath.parser
     if error not in ('syntax', 'invalid-type',
                      'unknown-function', 'invalid-arity', 'invalid-value'):
         raise RuntimeError("Unknown error type '%s'" % error)

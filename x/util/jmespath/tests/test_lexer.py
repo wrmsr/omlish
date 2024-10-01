@@ -1,13 +1,13 @@
-from tests import unittest
+from . import unittest
 
-from jmespath import lexer
-from jmespath.exceptions import LexerError, EmptyExpressionError
+from ... import jmespath
+from ..exceptions import LexerError, EmptyExpressionError
 
 
 class TestRegexLexer(unittest.TestCase):
 
     def setUp(self):
-        self.lexer = lexer.Lexer()
+        self.lexer = jmespath.lexer.Lexer()
 
     def assert_tokens(self, actual, expected):
         # The expected tokens only need to specify the
