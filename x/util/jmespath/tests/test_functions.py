@@ -49,7 +49,7 @@ class TestFunctions(unittest.TestCase):
             'Expected 2 arguments for function sort_by(), received 1')
 
     def test_variadic_is_pluralized(self):
-        with self.assertRaises(exceptions.VariadictArityError) as e:
+        with self.assertRaises(exceptions.VariadicArityError) as e:
             jmespath.search('not_null()', 'foo')
         exception = e.exception
         self.assertEqual(

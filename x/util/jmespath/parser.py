@@ -1,39 +1,34 @@
-"""Top down operator precedence parser.
+"""
+Top down operator precedence parser.
 
-This is an implementation of Vaughan R. Pratt's
-"Top Down Operator Precedence" parser.
+This is an implementation of Vaughan R. Pratt's "Top Down Operator Precedence" parser.
 (http://dl.acm.org/citation.cfm?doid=512927.512931).
 
-These are some additional resources that help explain the
-general idea behind a Pratt parser:
+These are some additional resources that help explain the general idea behind a Pratt parser:
 
 * http://effbot.org/zone/simple-top-down-parsing.htm
 * http://javascript.crockford.com/tdop/tdop.html
 
 A few notes on the implementation.
 
-* All the nud/led tokens are on the Parser class itself, and are dispatched
-  using getattr().  This keeps all the parsing logic contained to a single
-  class.
-* We use two passes through the data.  One to create a list of token,
-  then one pass through the tokens to create the AST.  While the lexer actually
-  yields tokens, we convert it to a list so we can easily implement two tokens
-  of lookahead.  A previous implementation used a fixed circular buffer, but it
-  was significantly slower.  Also, the average jmespath expression typically
-  does not have a large amount of token so this is not an issue.  And
-  interestingly enough, creating a token list first is actually faster than
-  consuming from the token iterator one token at a time.
-
+* All the nud/led tokens are on the Parser class itself, and are dispatched using getattr().  This keeps all the parsing
+  logic contained to a single class.
+* We use two passes through the data.  One to create a list of token, then one pass through the tokens to create the
+  AST.  While the lexer actually yields tokens, we convert it to a list so we can easily implement two tokens of
+  lookahead.  A previous implementation used a fixed circular buffer, but it was significantly slower.  Also, the
+  average jmespath expression typically does not have a large amount of token so this is not an issue.  And
+  interestingly enough, creating a token list first is actually faster than consuming from the token iterator one token
+  at a time.
 """
 import random
 
-from jmespath import lexer
-from jmespath import ast
-from jmespath import exceptions
-from jmespath import visitor
+from . import lexer
+from . import ast
+from . import exceptions
+from . import visitor
 
 
-class Parser(object):
+class Parser:
     BINDING_POWER = {
         'eof': 0,
         'unquoted_identifier': 0,
@@ -494,10 +489,11 @@ class Parser(object):
     @classmethod
     def purge(cls):
         """Clear the expression compilation cache."""
+
         cls._CACHE.clear()
 
 
-class ParsedResult(object):
+class ParsedResult:
     def __init__(self, expression, parsed):
         self.expression = expression
         self.parsed = parsed
@@ -508,15 +504,14 @@ class ParsedResult(object):
         return result
 
     def _render_dot_file(self):
-        """Render the parsed AST as a dot file.
-
-        Note that this is marked as an internal method because
-        the AST is an implementation detail and is subject
-        to change.  This method can be used to help troubleshoot
-        or for development purposes, but is not considered part
-        of the public supported API.  Use at your own risk.
-
         """
+        Render the parsed AST as a dot file.
+
+        Note that this is marked as an internal method because the AST is an implementation detail and is subject to
+        change.  This method can be used to help troubleshoot or for development purposes, but is not considered part of
+        the public supported API.  Use at your own risk.
+        """
+
         renderer = visitor.GraphvizVisitor()
         contents = renderer.visit(self.parsed)
         return contents

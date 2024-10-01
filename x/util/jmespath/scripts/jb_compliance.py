@@ -46,7 +46,6 @@ Run the filter and function tests in group 1::
     jp-compliance -e jp -t filters,1 functions,1
 
 """
-
 import sys
 import argparse
 import os
@@ -55,12 +54,7 @@ import json
 import shlex
 
 
-if sys.version_info[:2] == (2, 6):
-    import simplejson as json
-    from ordereddict import OrderedDict
-else:
-    import json
-    from collections import OrderedDict
+from collections import OrderedDict
 
 
 _abs = os.path.abspath
@@ -70,7 +64,7 @@ _splitext = os.path.splitext
 _bname = os.path.basename
 
 
-class ComplianceTestRunner(object):
+class ComplianceTestRunner:
     TEST_DIR = _pjoin(_dname(_dname(_abs(__file__))), 'tests', 'compliance')
 
     def __init__(self, exe=None, tests=None, test_dir=TEST_DIR):

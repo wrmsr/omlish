@@ -55,7 +55,7 @@ def _is_actual_number(x):
     return isinstance(x, numbers.Number)
 
 
-class Options(object):
+class Options:
     """Options to control how a Jmespath function is evaluated."""
     def __init__(self, dict_cls=None, custom_functions=None):
         #: The class to use when creating a dict.  The interpreter
@@ -70,7 +70,7 @@ class Options(object):
         self.custom_functions = custom_functions
 
 
-class _Expression(object):
+class _Expression:
     def __init__(self, expression, interpreter):
         self.expression = expression
         self.interpreter = interpreter
@@ -79,7 +79,7 @@ class _Expression(object):
         return self.interpreter.visit(node, *args, **kwargs)
 
 
-class Visitor(object):
+class Visitor:
     def __init__(self):
         self._method_cache = {}
 
@@ -109,7 +109,7 @@ class TreeInterpreter(Visitor):
     MAP_TYPE = dict
 
     def __init__(self, options=None):
-        super(TreeInterpreter, self).__init__()
+        super().__init__()
         self._dict_cls = self.MAP_TYPE
         if options is None:
             options = Options()
@@ -305,7 +305,7 @@ class TreeInterpreter(Visitor):
 
 class GraphvizVisitor(Visitor):
     def __init__(self):
-        super(GraphvizVisitor, self).__init__()
+        super().__init__()
         self._lines = []
         self._count = 1
 
