@@ -47,7 +47,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
         _: dc.KW_ONLY
 
-        singleton: bool = False
+        singleton: bool
+        tcms: ta.Mapping[str, classmethod]
 
         impls: dict[rfl.Type, 'Typeclass._Impl'] = dc.field(default_factory=dict)
         insts: dict[rfl.Type, 'Typeclass'] = dc.field(default_factory=dict)
@@ -90,6 +91,7 @@ class Typeclass(abc.ABC, ta.Generic[T]):
             tca = check.single(rty.args)
             tcv = check.isinstance(tca, ta.TypeVar)
 
+            tcms: dict[str, classmethod] = {}
             for a, v in list(cls.__dict__.items()):
                 if not (
                     getattr(v, '__isabstractmethod__', False) and  # noqa
@@ -103,11 +105,14 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                     continue
 
                 tcm = functools.partial(cls.__typeclass_classmethod__, a, v)
+                functools.update_wrapper(tcm, v.__func__)
                 setattr(cls, a, tcm)
+                tcms[a] = tcm
 
             cls.__typeclass_internals__ = Typeclass._Internals(
                 cls,
                 singleton=singleton,
+                tcms=tcms,
             )
 
         else:
@@ -130,6 +135,16 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                     singleton=singleton,
                 )
 
+    #
+
+    def __new__(cls, *args, **kwargs):
+        if Typeclass not in cls.__bases__:
+            return super().__new__(cls, *args, **kwargs)
+
+        raise TypeError(cls)
+
+    #
+
     @classmethod
     def __typeclass_classmethod__(
             cls,
@@ -138,15 +153,14 @@ class Typeclass(abc.ABC, ta.Generic[T]):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> ta.Any:
-        raise NotImplementedError
-
-    #
-
-    def __new__(cls, *args, **kwargs):
         if Typeclass not in cls.__bases__:
-            return super().__new__(cls, *args, **kwargs)
+            raise TypeError(cls)
 
-        raise TypeError(cls)
+        intr: Typeclass._Internals = cls.__typeclass_internals__  # noqa
+        tca = args[0].__class__
+        inst = intr.dispatch(tca)
+        fn = getattr(inst, attr)
+        return fn(*args, **kwargs)
 
     #
 
