@@ -34,5 +34,17 @@
         "mod_name": "omlish.diag.pycharm"
       }
     }
+  },
+  {
+    "module": ".specs.jmespath.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/specs/jmespath/__main__.py",
+    "line": 1,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "jp",
+        "mod_name": "omlish.specs.jmespath.__main__"
+      }
+    }
   }
 ]

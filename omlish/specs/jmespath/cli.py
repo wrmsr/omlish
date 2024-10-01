@@ -8,7 +8,7 @@ from .parser import compile
 from .parser import search
 
 
-def main():
+def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('expression')
     parser.add_argument(
@@ -60,4 +60,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(_main())
