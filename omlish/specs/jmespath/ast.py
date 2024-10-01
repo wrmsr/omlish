@@ -82,7 +82,7 @@ def subexpression(children):
     return {'type': 'subexpression', 'children': children}
 
 
-def slice(start, end, step):
+def slice(start, end, step):  # noqa
     return {'type': 'slice', 'children': [start, end, step]}
 
 

@@ -67,13 +67,13 @@ class FunctionRegistry(type):
 
 class Functions(metaclass=FunctionRegistry):
 
-    FUNCTION_TABLE = {}  # noqa
+    FUNCTION_TABLE: dict = {}  # noqa
 
     def call_function(self, function_name, resolved_args):
         try:
             spec = self.FUNCTION_TABLE[function_name]
         except KeyError:
-            raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')
+            raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
         function = spec['function']
         signature = spec['signature']
@@ -118,8 +118,8 @@ class Functions(metaclass=FunctionRegistry):
             self._subtype_check(current, allowed_subtypes, types, function_name)
 
     def _get_allowed_pytypes(self, types):
-        allowed_types = []
-        allowed_subtypes = []
+        allowed_types: list = []
+        allowed_subtypes: list = []
 
         for t in types:
             type_ = t.split('-', 1)

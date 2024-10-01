@@ -67,7 +67,7 @@ class Parser:
     _PROJECTION_STOP = 10
 
     # The _MAX_SIZE most recent expressions are cached in _CACHE dict.
-    _CACHE = {}  # noqa
+    _CACHE: dict = {}  # noqa
     _MAX_SIZE = 128
 
     def __init__(self, lookahead=2):
@@ -503,10 +503,10 @@ class Parser:
         self._index += 1
 
     def _current_token(self):
-        return self._tokens[self._index]['type']
+        return self._tokens[self._index]['type']  # type: ignore
 
     def _lookahead(self, number):
-        return self._tokens[self._index + number]['type']
+        return self._tokens[self._index + number]['type']  # noqa
 
     def _lookahead_token(self, number):
         return self._tokens[self._index + number]
