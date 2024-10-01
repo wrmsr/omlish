@@ -67,13 +67,13 @@ class FunctionRegistry(type):
 
 class Functions(metaclass=FunctionRegistry):
 
-    FUNCTION_TABLE = {}
+    FUNCTION_TABLE = {}  # noqa
 
     def call_function(self, function_name, resolved_args):
         try:
             spec = self.FUNCTION_TABLE[function_name]
         except KeyError:
-            raise exceptions.UnknownFunctionError('Unknown function: %s()' % function_name)
+            raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')
 
         function = spec['function']
         signature = spec['signature']
@@ -173,6 +173,7 @@ class Functions(metaclass=FunctionRegistry):
         for argument in arguments:
             if argument is not None:
                 return argument
+        return None
 
     @signature({'types': []})
     def _func_to_array(self, arg):
