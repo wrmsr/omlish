@@ -56,7 +56,10 @@ class SqliteVecVectorStore(vectors.VectorStore):
             f'select v, distance from {self._tn} where vec match ? order by distance limit {search.k}',
             (sqlite_vec.serialize_float32(search.vec.v),),
         )
-        raise NotImplementedError
+        ret = []
+        for row in rows:
+            ret.append(vectors.Hit(row[1], row[0]))
+        return ret
 
 
 def _main():
