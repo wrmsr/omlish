@@ -16,7 +16,7 @@ class Project(ProjectBase):
         'backends': [
             'anthropic ~= 0.34',
 
-            'openai ~= 1.50',
+            'openai ~= 1.51',
 
             'sentence_transformers ~= 3.1',
 

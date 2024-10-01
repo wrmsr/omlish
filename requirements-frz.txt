@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.30
-botocore==1.35.30
+boto3==1.35.31
+botocore==1.35.31
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -139,7 +139,7 @@ h2==4.1.0
 h5py==3.12.1
 hexdump==3.3
 hpack==4.0.0
-httpcore==1.0.5
+httpcore==1.0.6
 httptools==0.6.1
 httpx==0.27.2
 httpx-sse==0.4.0
@@ -202,8 +202,8 @@ langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.31
-langgraph-checkpoint==1.0.14
+langgraph==0.2.32
+langgraph-checkpoint==2.0.0
 langsmith==0.1.129
 language_data==1.2.0
 lazy_loader==0.4
@@ -270,7 +270,7 @@ ollama==0.3.3
 onnx==1.16.2
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.50.2
+openai==1.51.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.27.0
 opentelemetry-exporter-otlp-proto-common==1.27.0
