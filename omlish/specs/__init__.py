@@ -4,6 +4,5 @@ TODO:
  - jmespath
  - jsonpatch
  - jsonpointer.py
- - openapi
  - protobuf
 """
