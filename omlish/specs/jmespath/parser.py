@@ -21,6 +21,7 @@ A few notes on the implementation.
   at a time.
 """
 import random
+import typing as ta
 
 from . import ast
 from . import exceptions
@@ -509,7 +510,7 @@ class Parser:
     def _lookahead_token(self, number):
         return self._tokens[self._index + number]
 
-    def _raise_parse_error_for_token(self, token, reason):
+    def _raise_parse_error_for_token(self, token, reason) -> ta.NoReturn:
         lex_position = token['start']
         actual_value = token['value']
         actual_type = token['type']
