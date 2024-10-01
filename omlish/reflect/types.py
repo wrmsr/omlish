@@ -61,6 +61,13 @@ _KNOWN_SPECIAL_TYPE_VARS = tuple(
 ##
 
 
+def is_simple_generic_alias_type(oty: type) -> bool:
+    return (
+        oty is _GenericAlias or
+        oty is ta._GenericAlias  # type: ignore  # noqa
+    )
+
+
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if isinstance(obj, type):
         if issubclass(obj, ta.Generic):  # type: ignore
@@ -71,10 +78,7 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
 
     oty = type(obj)
 
-    if (
-            oty is _GenericAlias or
-            oty is ta.GenericAlias  # type: ignore  # noqa
-    ):
+    if is_simple_generic_alias_type(oty):
         return obj.__dict__.get('__parameters__', ())  # noqa
 
     if oty is _CallableGenericAlias:
@@ -199,8 +203,7 @@ def is_type(obj: ta.Any) -> bool:
             isinstance(obj, ta.NewType) or  # noqa
 
             (
-                oty is _GenericAlias or
-                oty is ta.GenericAlias or  # type: ignore  # noqa
+                is_simple_generic_alias_type(oty) or
                 oty is _CallableGenericAlias
             ) or
 
@@ -226,8 +229,7 @@ def type_(obj: ta.Any) -> Type:
         return NewType(obj)
 
     if (
-            oty is _GenericAlias or
-            oty is ta.GenericAlias or  # type: ignore  # noqa
+            is_simple_generic_alias_type(oty) or
             oty is _CallableGenericAlias
     ):
         origin = ta.get_origin(obj)
