@@ -1,5 +1,6 @@
 import json
 import string
+import typing as ta
 import warnings
 
 from .exceptions import EmptyExpressionError
@@ -7,14 +8,14 @@ from .exceptions import LexerError
 
 
 class Lexer:
-    START_IDENTIFIER = set(string.ascii_letters + '_')
-    VALID_IDENTIFIER = set(string.ascii_letters + string.digits + '_')
+    START_IDENTIFIER: ta.AbstractSet[str] = set(string.ascii_letters + '_')
+    VALID_IDENTIFIER: ta.AbstractSet[str] = set(string.ascii_letters + string.digits + '_')
 
-    VALID_NUMBER = set(string.digits)
+    VALID_NUMBER: ta.AbstractSet[str] = set(string.digits)
 
-    WHITESPACE = set(' \t\n\r')
+    WHITESPACE: ta.AbstractSet[str] = set(' \t\n\r')
 
-    SIMPLE_TOKENS = {
+    SIMPLE_TOKENS: ta.Mapping[str, str] = {
         '.': 'dot',
         '*': 'star',
         ']': 'rbracket',
@@ -126,7 +127,7 @@ class Lexer:
                     raise LexerError(
                         lexer_position=start,
                         lexer_value=buff,
-                        message="Unknown token '%s'" % buff,
+                        message=f"Unknown token '{buff}'",
                     )
 
             elif self._current == '"':
@@ -168,7 +169,7 @@ class Lexer:
                 raise LexerError(
                     lexer_position=self._position,
                     lexer_value=self._current,
-                    message='Unknown token %s' % self._current,
+                    message=f'Unknown token {self._current}',
                 )
 
         yield {
@@ -188,7 +189,7 @@ class Lexer:
 
     def _initialize_for_expression(self, expression):
         if not expression:
-            raise EmptyExpressionError()
+            raise EmptyExpressionError
         self._position = 0
         self._expression = expression
         self._chars = list(self._expression)
@@ -219,7 +220,7 @@ class Lexer:
                 raise LexerError(
                     lexer_position=start,
                     lexer_value=self._expression[start:],
-                    message='Unclosed %s delimiter' % delimiter,
+                    message=f'Unclosed {delimiter} delimiter',
                 )
 
             buff += self._current
@@ -239,13 +240,13 @@ class Lexer:
         except ValueError:
             try:
                 # Invalid JSON values should be converted to quoted JSON strings during the JEP-12 deprecation period.
-                parsed_json = json.loads('"%s"' % lexeme.lstrip())
+                parsed_json = json.loads('"%s"' % lexeme.lstrip())  # noqa
                 warnings.warn('deprecated string literal syntax', PendingDeprecationWarning)
             except ValueError:
-                raise LexerError(
+                raise LexerError(  # noqa
                     lexer_position=start,
                     lexer_value=self._expression[start:],
-                    message='Bad token %s' % lexeme,
+                    message=f'Bad token {lexeme}',
                 )
 
         token_len = self._position - start
@@ -271,7 +272,7 @@ class Lexer:
 
         except ValueError as e:
             error_message = str(e).split(':')[0]
-            raise LexerError(
+            raise LexerError(  # noqa
                 lexer_position=start,
                 lexer_value=lexeme,
                 message=error_message,

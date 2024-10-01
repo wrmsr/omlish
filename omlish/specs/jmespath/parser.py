@@ -30,7 +30,7 @@ from . import visitor
 
 
 class Parser:
-    BINDING_POWER = {
+    BINDING_POWER: ta.Mapping[str, int] = {
         'eof': 0,
         'unquoted_identifier': 0,
         'quoted_identifier': 0,
@@ -67,7 +67,7 @@ class Parser:
     _PROJECTION_STOP = 10
 
     # The _MAX_SIZE most recent expressions are cached in _CACHE dict.
-    _CACHE = {}
+    _CACHE = {}  # noqa
     _MAX_SIZE = 128
 
     def __init__(self, lookahead=2):
@@ -241,14 +241,14 @@ class Parser:
         parts = [None, None, None]
         index = 0
         current_token = self._current_token()
-        while current_token != 'rbracket' and index < 3:
-            if current_token == 'colon':
+        while current_token != 'rbracket' and index < 3:  # noqa
+            if current_token == 'colon':  # noqa
                 index += 1
                 if index == 3:
                     self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
                 self._advance()
 
-            elif current_token == 'number':
+            elif current_token == 'number':  # noqa
                 parts[index] = self._lookahead_token(0)['value']
                 self._advance()
 
@@ -471,6 +471,7 @@ class Parser:
             allowed = ['quoted_identifier', 'unquoted_identifier', 'lbracket', 'lbrace']
             msg = f'Expecting: {allowed}, got: {t["type"]}'
             self._raise_parse_error_for_token(t, msg)
+            raise RuntimeError  # noqa
 
     def _error_nud_token(self, token):
         if token['type'] == 'eof':
