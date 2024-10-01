@@ -61,11 +61,11 @@ class Parser:
         'lbracket': 55,
         'lparen': 60,
     }
-    # The maximum binding power for a token that can stop
-    # a projection.
+
+    # The maximum binding power for a token that can stop a projection.
     _PROJECTION_STOP = 10
-    # The _MAX_SIZE most recent expressions are cached in
-    # _CACHE dict.
+
+    # The _MAX_SIZE most recent expressions are cached in _CACHE dict.
     _CACHE = {}
     _MAX_SIZE = 128
 
@@ -79,21 +79,27 @@ class Parser:
         cached = self._CACHE.get(expression)
         if cached is not None:
             return cached
+
         parsed_result = self._do_parse(expression)
+
         self._CACHE[expression] = parsed_result
         if len(self._CACHE) > self._MAX_SIZE:
             self._free_cache_entries()
+
         return parsed_result
 
     def _do_parse(self, expression):
         try:
             return self._parse(expression)
+
         except exceptions.LexerError as e:
             e.expression = expression
             raise
+
         except exceptions.IncompleteExpressionError as e:
             e.set_expression(expression)
             raise
+
         except exceptions.ParseError as e:
             e.expression = expression
             raise
@@ -102,30 +108,44 @@ class Parser:
         self.tokenizer = lexer.Lexer().tokenize(expression)
         self._tokens = list(self.tokenizer)
         self._index = 0
+
         parsed = self._expression(binding_power=0)
+
         if not self._current_token() == 'eof':
             t = self._lookahead_token(0)
-            raise exceptions.ParseError(t['start'], t['value'], t['type'],
-                                        "Unexpected token: %s" % t['value'])
+            raise exceptions.ParseError(
+                t['start'],
+                t['value'],
+                t['type'],
+                "Unexpected token: %s" % t['value'],
+            )
+
         return ParsedResult(expression, parsed)
 
     def _expression(self, binding_power=0):
         left_token = self._lookahead_token(0)
+
         self._advance()
+
         nud_function = getattr(
             self, '_token_nud_%s' % left_token['type'],
-            self._error_nud_token)
+            self._error_nud_token,
+        )
+
         left = nud_function(left_token)
+
         current_token = self._current_token()
         while binding_power < self.BINDING_POWER[current_token]:
             led = getattr(self, '_token_led_%s' % current_token, None)
             if led is None:
                 error_token = self._lookahead_token(0)
                 self._error_led_token(error_token)
+
             else:
                 self._advance()
                 left = led(left)
                 current_token = self._current_token()
+
         return left
 
     def _token_nud_literal(self, token):
@@ -136,13 +156,17 @@ class Parser:
 
     def _token_nud_quoted_identifier(self, token):
         field = ast.field(token['value'])
-        # You can't have a quoted identifier as a function
-        # name.
+
+        # You can't have a quoted identifier as a function name.
         if self._current_token() == 'lparen':
             t = self._lookahead_token(0)
             raise exceptions.ParseError(
-                0, t['value'], t['type'],
-                'Quoted identifier not allowed for function names.')
+                0,
+                t['value'],
+                t['type'],
+                'Quoted identifier not allowed for function names.',
+            )
+
         return field
 
     def _token_nud_star(self, token):
@@ -177,17 +201,16 @@ class Parser:
     def _token_nud_lbracket(self, token):
         if self._current_token() in ['number', 'colon']:
             right = self._parse_index_expression()
-            # We could optimize this and remove the identity() node.
-            # We don't really need an index_expression node, we can
-            # just use emit an index node here if we're not dealing
-            # with a slice.
+            # We could optimize this and remove the identity() node. We don't really need an index_expression node, we
+            # can just use emit an index node here if we're not dealing with a slice.
             return self._project_if_slice(ast.identity(), right)
-        elif self._current_token() == 'star' and \
-                self._lookahead(1) == 'rbracket':
+
+        elif self._current_token() == 'star' and self._lookahead(1) == 'rbracket':
             self._advance()
             self._advance()
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
             return ast.projection(ast.identity(), right)
+
         else:
             return self._parse_multi_select_list()
 
@@ -196,9 +219,9 @@ class Parser:
         # [<current>
         #  ^
         #  | current token
-        if (self._lookahead(0) == 'colon' or
-                self._lookahead(1) == 'colon'):
+        if (self._lookahead(0) == 'colon' or self._lookahead(1) == 'colon'):
             return self._parse_slice_expression()
+
         else:
             # Parse the syntax [number]
             node = ast.index(self._lookahead_token(0)['value'])
@@ -208,8 +231,7 @@ class Parser:
 
     def _parse_slice_expression(self):
         # [start:end:step]
-        # Where start, end, and step are optional.
-        # The last colon is optional as well.
+        # Where start, end, and step are optional. The last colon is optional as well.
         parts = [None, None, None]
         index = 0
         current_token = self._current_token()
@@ -217,16 +239,18 @@ class Parser:
             if current_token == 'colon':
                 index += 1
                 if index == 3:
-                    self._raise_parse_error_for_token(
-                        self._lookahead_token(0), 'syntax error')
+                    self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
                 self._advance()
+
             elif current_token == 'number':
                 parts[index] = self._lookahead_token(0)['value']
                 self._advance()
+
             else:
-                self._raise_parse_error_for_token(
-                    self._lookahead_token(0), 'syntax error')
+                self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
+
             current_token = self._current_token()
+
         self._match('rbracket')
         return ast.slice(*parts)
 
@@ -243,13 +267,14 @@ class Parser:
             if left['type'] == 'subexpression':
                 left['children'].append(right)
                 return left
+
             else:
                 return ast.subexpression([left, right])
+
         else:
             # We're creating a projection.
             self._advance()
-            right = self._parse_projection_rhs(
-                self.BINDING_POWER['dot'])
+            right = self._parse_projection_rhs(self.BINDING_POWER['dot'])
             return ast.value_projection(left, right)
 
     def _token_led_pipe(self, left):
@@ -271,8 +296,12 @@ class Parser:
             # -2 - invalid function "name".
             prev_t = self._lookahead_token(-2)
             raise exceptions.ParseError(
-                prev_t['start'], prev_t['value'], prev_t['type'],
-                "Invalid function name '%s'" % prev_t['value'])
+                prev_t['start'],
+                prev_t['value'],
+                prev_t['type'],
+                "Invalid function name '%s'" % prev_t['value'],
+            )
+
         name = left['value']
         args = []
         while not self._current_token() == 'rparen':
@@ -281,6 +310,7 @@ class Parser:
                 self._match('comma')
             args.append(expression)
         self._match('rparen')
+
         function_node = ast.function_expression(name, args)
         return function_node
 
@@ -314,8 +344,7 @@ class Parser:
 
     def _token_led_flatten(self, left):
         left = ast.flatten(left)
-        right = self._parse_projection_rhs(
-            self.BINDING_POWER['flatten'])
+        right = self._parse_projection_rhs(self.BINDING_POWER['flatten'])
         return ast.projection(left, right)
 
     def _token_led_lbracket(self, left):
@@ -323,13 +352,14 @@ class Parser:
         if token['type'] in ['number', 'colon']:
             right = self._parse_index_expression()
             if left['type'] == 'index_expression':
-                # Optimization: if the left node is an index expr,
-                # we can avoid creating another node and instead just add
-                # the right node as a child of the left.
+                # Optimization: if the left node is an index expr, we can avoid creating another node and instead just
+                # add the right node as a child of the left.
                 left['children'].append(right)
                 return left
+
             else:
                 return self._project_if_slice(left, right)
+
         else:
             # We have a projection
             self._match('star')
@@ -342,7 +372,8 @@ class Parser:
         if right['type'] == 'slice':
             return ast.projection(
                 index_expr,
-                self._parse_projection_rhs(self.BINDING_POWER['star']))
+                self._parse_projection_rhs(self.BINDING_POWER['star']),
+            )
         else:
             return index_expr
 
@@ -366,20 +397,24 @@ class Parser:
         pairs = []
         while True:
             key_token = self._lookahead_token(0)
-            # Before getting the token value, verify it's
-            # an identifier.
-            self._match_multiple_tokens(
-                token_types=['quoted_identifier', 'unquoted_identifier'])
+
+            # Before getting the token value, verify it's an identifier.
+            self._match_multiple_tokens(token_types=['quoted_identifier', 'unquoted_identifier'])
             key_name = key_token['value']
+
             self._match('colon')
             value = self._expression(0)
+
             node = ast.key_val_pair(key_name=key_name, node=value)
+
             pairs.append(node)
             if self._current_token() == 'comma':
                 self._match('comma')
+
             elif self._current_token() == 'rbrace':
                 self._match('rbrace')
                 break
+
         return ast.multi_select_dict(nodes=pairs)
 
     def _parse_projection_rhs(self, binding_power):
@@ -387,16 +422,20 @@ class Parser:
         if self.BINDING_POWER[self._current_token()] < self._PROJECTION_STOP:
             # BP of 10 are all the tokens that stop a projection.
             right = ast.identity()
+
         elif self._current_token() == 'lbracket':
             right = self._expression(binding_power)
+
         elif self._current_token() == 'filter':
             right = self._expression(binding_power)
+
         elif self._current_token() == 'dot':
             self._match('dot')
             right = self._parse_dot_rhs(binding_power)
+
         else:
-            self._raise_parse_error_for_token(self._lookahead_token(0),
-                                              'syntax error')
+            self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
+
         return right
 
     def _parse_dot_rhs(self, binding_power):
@@ -406,31 +445,35 @@ class Parser:
         #                  multi-select-hash /
         #                  function-expression /
         #                  *
-        # In terms of tokens that means that after a '.',
-        # you can have:
+        # In terms of tokens that means that after a '.', you can have:
         lookahead = self._current_token()
+
         # Common case "foo.bar", so first check for an identifier.
         if lookahead in ['quoted_identifier', 'unquoted_identifier', 'star']:
             return self._expression(binding_power)
+
         elif lookahead == 'lbracket':
             self._match('lbracket')
             return self._parse_multi_select_list()
+
         elif lookahead == 'lbrace':
             self._match('lbrace')
             return self._parse_multi_select_hash()
+
         else:
             t = self._lookahead_token(0)
-            allowed = ['quoted_identifier', 'unquoted_identifier',
-                       'lbracket', 'lbrace']
-            msg = (
-                "Expecting: %s, got: %s" % (allowed, t['type'])
-            )
+            allowed = ['quoted_identifier', 'unquoted_identifier', 'lbracket', 'lbrace']
+            msg = "Expecting: %s, got: %s" % (allowed, t['type'])
             self._raise_parse_error_for_token(t, msg)
 
     def _error_nud_token(self, token):
         if token['type'] == 'eof':
             raise exceptions.IncompleteExpressionError(
-                token['start'], token['value'], token['type'])
+                token['start'],
+                token['value'],
+                token['type'],
+            )
+
         self._raise_parse_error_for_token(token, 'invalid token')
 
     def _error_led_token(self, token):
@@ -442,13 +485,11 @@ class Parser:
             # inline'd self._advance()
             self._advance()
         else:
-            self._raise_parse_error_maybe_eof(
-                token_type, self._lookahead_token(0))
+            self._raise_parse_error_maybe_eof(token_type, self._lookahead_token(0))
 
     def _match_multiple_tokens(self, token_types):
         if self._current_token() not in token_types:
-            self._raise_parse_error_maybe_eof(
-                token_types, self._lookahead_token(0))
+            self._raise_parse_error_maybe_eof(token_types, self._lookahead_token(0))
         self._advance()
 
     def _advance(self):
@@ -467,8 +508,12 @@ class Parser:
         lex_position = token['start']
         actual_value = token['value']
         actual_type = token['type']
-        raise exceptions.ParseError(lex_position, actual_value,
-                                    actual_type, reason)
+        raise exceptions.ParseError(
+            lex_position,
+            actual_value,
+            actual_type,
+            reason,
+        )
 
     def _raise_parse_error_maybe_eof(self, expected_type, token):
         lex_position = token['start']
@@ -476,11 +521,18 @@ class Parser:
         actual_type = token['type']
         if actual_type == 'eof':
             raise exceptions.IncompleteExpressionError(
-                lex_position, actual_value, actual_type)
-        message = 'Expecting: %s, got: %s' % (expected_type,
-                                              actual_type)
+                lex_position,
+                actual_value,
+                actual_type,
+            )
+
+        message = 'Expecting: %s, got: %s' % (expected_type, actual_type)
         raise exceptions.ParseError(
-            lex_position, actual_value, actual_type, message)
+            lex_position,
+            actual_value,
+            actual_type,
+            message,
+        )
 
     def _free_cache_entries(self):
         for key in random.sample(list(self._CACHE.keys()), int(self._MAX_SIZE / 2)):
