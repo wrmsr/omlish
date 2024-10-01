@@ -51,6 +51,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
     __typeclass_internals__: ta.ClassVar[_Internals]
 
+    #
+
     def __init_subclass__(
             cls,
             *,
@@ -85,11 +87,15 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                     singleton=singleton,
                 )
 
+    #
+
     def __new__(cls, *args, **kwargs):
         if Typeclass not in cls.__bases__:
             return super().__new__(cls, *args, **kwargs)
 
         raise TypeError(cls)
+
+    #
 
     class _DispatchingGenericAlias(ta._GenericAlias, _root=True):  # noqa
         def __call__(self, *args, **kwargs):
@@ -122,6 +128,9 @@ class Typeclass(abc.ABC, ta.Generic[T]):
             ret.__class__ = Typeclass._DispatchingGenericAlias
 
         return ret
+
+
+##
 
 
 class Doubler(Typeclass[T], singleton=True):
