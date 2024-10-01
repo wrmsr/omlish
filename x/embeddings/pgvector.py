@@ -19,7 +19,7 @@ def _main():
     )
     ds = Dbs(cs)
 
-    url = check.isinstance(check.isinstance(ds.specs()['postgres'].loc, dbs.UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(ds.specs()['pgvector'].loc, dbs.UrlDbLoc).url, str)
     url = dbs.set_url_engine(url, 'postgresql+pg8000')
 
     with contextlib.ExitStack() as es:
