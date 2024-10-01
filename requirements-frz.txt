@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.29
-botocore==1.35.29
+boto3==1.35.30
+botocore==1.35.30
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2
@@ -79,7 +79,6 @@ decorator==5.1.1
 deepdiff==8.0.1
 defusedxml==0.7.1
 Deprecated==1.2.14
-DHParser==1.8.0
 dill==0.3.8
 directsearch==1.0
 dirtyjson==1.0.8
@@ -91,7 +90,7 @@ docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
 duckdb==1.1.1
-durationpy==0.7
+durationpy==0.8
 einops==0.8.0
 elastic-transport==8.15.0
 elasticsearch==8.15.1
@@ -242,7 +241,6 @@ more-itertools==10.5.0
 mpmath==1.3.0
 msgpack==1.1.0
 multidict==6.1.0
-multilspy @ git+https://github.com/microsoft/multilspy@633423bc231f7fcec6405774ce3428abd04ffc09
 multiprocess==0.70.16
 murmurhash==1.0.10
 mwparserfromhell==0.6.6
@@ -297,7 +295,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@aa3bd8fbf6820bb000e148a289b6b0c48c339774
+peft @ git+https://github.com/huggingface/peft.git@2a807359bd34df64dd8dd29c1bd1024125d13312
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -348,7 +346,7 @@ pyparsing==2.4.7
 pypdf==5.0.1
 pyperclip==1.9.0
 PyPika==0.48.9
-pyproj==3.6.1
+pyproj==3.7.0
 pyproject_hooks==1.2.0
 pyserial==3.5
 pyserial-asyncio==0.6
@@ -387,7 +385,7 @@ requests-toolbelt==1.0.0
 rfc3339-validator==0.1.4
 rfc3986==2.0.0
 rfc3986-validator==0.1.1
-rich==13.8.1
+rich==13.9.1
 rpds-py==0.20.0
 rsa==4.9
 rubicon-objc==0.4.9
@@ -425,7 +423,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.35
 sqlean.py==3.45.1
-sqlglot==25.24.0
+sqlglot==25.24.1
 sqlite-vec==0.1.3
 sqlparse==0.4.4
 srsly==2.4.8
@@ -463,7 +461,6 @@ tree-sitter-python==0.23.2
 trio==0.26.2
 trio_asyncio==0.15.0
 trl==0.11.1
-ts2python==0.7.5
 twine==5.1.1
 typer==0.12.5
 types-paramiko==3.5.0.20240928

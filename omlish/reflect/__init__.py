@@ -7,6 +7,7 @@ from .types import (  # noqa
     TYPES,
     Type,
     Union,
+    get_orig_bases,
     get_orig_class,
     get_params,
     is_type,
