@@ -49,6 +49,8 @@ class Typeclass(abc.ABC, ta.Generic[T]):
 
             return ret
 
+    rfl.types._SIMPLE_GENERIC_ALIAS_TYPES.add(_GenericAlias)  # noqa
+
     @classmethod
     def __class_getitem__(cls, item):
         ret = super().__class_getitem__(item)  # noqa
