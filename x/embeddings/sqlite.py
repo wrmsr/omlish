@@ -2,13 +2,21 @@ import glob
 import io
 import os.path
 import sqlite3
+import typing as ta
 
-import PIL.Image
-import sentence_transformers
 import sqlite_vec
 
 from omlish import check
+from omlish import lang
 from ommlx.minichain import vectors
+
+
+if ta.TYPE_CHECKING:
+    import PIL.Image as pil_img  # noqa
+    import sentence_transformers as sen_tfm
+else:
+    pil_img = lang.proxy_import('PIL.Image')
+    sen_tfm = lang.proxy_import('sentence_transformers')
 
 
 class SqliteVecVectorStore(vectors.VectorStore):
@@ -29,10 +37,9 @@ class SqliteVecVectorStore(vectors.VectorStore):
         db.enable_load_extension(False)
 
         db.execute(''.join([
-            f'create table {self._tn} (',
+            f'create virtual table {self._tn} using vec0 (',
             ', ' .join([
-                'id integer primary key autoincrement',
-                'v string',
+                'v integer primary key',
                 f'vec float[{d}]',
             ]),
             ')',
@@ -46,8 +53,7 @@ class SqliteVecVectorStore(vectors.VectorStore):
 
     def search(self, search: vectors.Search) -> vectors.Hits:
         rows = self._db.execute(
-            f'with t as (select v, vec_distance_cosine(?, vec) as distance from {self._tn}) '
-            f'select v, distance from t order by distance limit {search.k}',
+            f'select v, distance from {self._tn} where vec match ? order by distance limit {search.k}',
             (sqlite_vec.serialize_float32(search.vec.v),),
         )
         raise NotImplementedError
@@ -56,9 +62,9 @@ class SqliteVecVectorStore(vectors.VectorStore):
 def _main():
     db = sqlite3.connect(':memory:')
     vs = SqliteVecVectorStore(db, 't', 3)
-    vs.index(vectors.Indexed(vectors.Vector([1., 2., 3.]), 'foo'))
-    vs.index(vectors.Indexed(vectors.Vector([-1., 2., 3.]), 'bar'))
-    vs.index(vectors.Indexed(vectors.Vector([-1., -2., 3.]), 'baz'))
+    vs.index(vectors.Indexed(vectors.Vector([1., 2., 3.]), 0))
+    vs.index(vectors.Indexed(vectors.Vector([-1., 2., 3.]), 1))
+    vs.index(vectors.Indexed(vectors.Vector([-1., -2., 3.]), 2))
     hits = vs.search(vectors.Search(vectors.Vector([0., 2., 1.])))
     print(hits)
 
@@ -81,7 +87,7 @@ def _main():
 
     ##
 
-    model = sentence_transformers.SentenceTransformer('clip-ViT-B-32')
+    model = sen_tfm.SentenceTransformer('clip-ViT-B-32')
 
     ##
 
@@ -92,7 +98,7 @@ def _main():
         print(fn)
 
         with open(fn, 'rb') as f:
-            img = PIL.Image.open(io.BytesIO(f.read()))
+            img = pil_img.open(io.BytesIO(f.read()))
         print(img)
 
         [emb] = model.encode([img])  # noqa
