@@ -54,9 +54,6 @@ import json
 import shlex
 
 
-from collections import OrderedDict
-
-
 _abs = os.path.abspath
 _dname = os.path.dirname
 _pjoin = os.path.join
@@ -96,7 +93,7 @@ class ComplianceTestRunner:
 
     def _load_test_file(self, test_json_file):
         with open(test_json_file) as f:
-            loaded_test = json.loads(f.read(), object_pairs_hook=OrderedDict)
+            loaded_test = json.loads(f.read())
         return loaded_test
 
     def _load_test_cases(self, filename, group_number, test_group):

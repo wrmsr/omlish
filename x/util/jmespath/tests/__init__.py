@@ -1,9 +1,8 @@
-import sys
-from jmespath import ast
-
-import unittest
 import json
-from collections import OrderedDict
+import sys
+import unittest
+
+from jmespath import ast
 
 
 # Helper method used to create an s-expression
@@ -16,16 +15,14 @@ def as_s_expression(node):
 
 
 def _as_s_expression(node, parts):
-    parts.append("(%s" % (node.__class__.__name__.lower()))
+    parts.append('(%s' % (node.__class__.__name__.lower()))
     if isinstance(node, ast.Field):
-        parts.append(" %s" % node.name)
+        parts.append(' %s' % node.name)
     elif isinstance(node, ast.FunctionExpression):
-        parts.append(" %s" % node.name)
+        parts.append(' %s' % node.name)
     elif isinstance(node, ast.KeyValPair):
-        parts.append(" %s" % node.key_name)
+        parts.append(' %s' % node.key_name)
     for child in node.children:
-        parts.append(" ")
+        parts.append(' ')
         _as_s_expression(child, parts)
-    parts.append(")")
-
-
+    parts.append(')')
