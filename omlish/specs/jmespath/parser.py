@@ -22,9 +22,9 @@ A few notes on the implementation.
 """
 import random
 
-from . import lexer
 from . import ast
 from . import exceptions
+from . import lexer
 from . import visitor
 
 
@@ -111,7 +111,7 @@ class Parser:
 
         parsed = self._expression(binding_power=0)
 
-        if not self._current_token() == 'eof':
+        if self._current_token() != 'eof':
             t = self._lookahead_token(0)
             raise exceptions.ParseError(
                 t['start'],
@@ -235,7 +235,7 @@ class Parser:
         parts = [None, None, None]
         index = 0
         current_token = self._current_token()
-        while not current_token == 'rbracket' and index < 3:
+        while current_token != 'rbracket' and index < 3:
             if current_token == 'colon':
                 index += 1
                 if index == 3:
@@ -262,7 +262,7 @@ class Parser:
         return ast.expref(expression)
 
     def _token_led_dot(self, left):
-        if not self._current_token() == 'star':
+        if self._current_token() != 'star':
             right = self._parse_dot_rhs(self.BINDING_POWER['dot'])
             if left['type'] == 'subexpression':
                 left['children'].append(right)
@@ -304,7 +304,7 @@ class Parser:
 
         name = left['value']
         args = []
-        while not self._current_token() == 'rparen':
+        while self._current_token() != 'rparen':
             expression = self._expression()
             if self._current_token() == 'comma':
                 self._match('comma')

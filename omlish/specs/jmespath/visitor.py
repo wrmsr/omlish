@@ -1,5 +1,5 @@
-import operator
 import numbers
+import operator
 
 from . import functions
 
@@ -95,7 +95,7 @@ class TreeInterpreter(Visitor):
         'lt': operator.lt,
         'gt': operator.gt,
         'lte': operator.le,
-        'gte': operator.ge
+        'gte': operator.ge,
     }
 
     _EQUALITY_OPS = ['eq', 'ne']
@@ -140,7 +140,7 @@ class TreeInterpreter(Visitor):
         if node['value'] in self._EQUALITY_OPS:
             return comparator_func(
                 self.visit(node['children'][0], value),
-                self.visit(node['children'][1], value)
+                self.visit(node['children'][1], value),
             )
 
         else:

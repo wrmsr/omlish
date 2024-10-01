@@ -26,7 +26,7 @@ TYPES_MAP = {
 REVERSE_TYPES_MAP = {
     'boolean': ('bool',),
     'array': ('list', '_Projection'),
-    'object': ('dict', 'OrderedDict',),
+    'object': ('dict', 'OrderedDict'),
     'null': ('NoneType',),
     'string': ('unicode', 'str'),
     'number': ('float', 'int', 'long'),
@@ -273,7 +273,7 @@ class Functions(metaclass=FunctionRegistry):
 
     @signature({'types': ['array-string', 'array-number']})
     def _func_sort(self, arg):
-        return list(sorted(arg))
+        return sorted(arg)
 
     @signature({'types': ['array-number']})
     def _func_sum(self, arg):
@@ -322,7 +322,7 @@ class Functions(metaclass=FunctionRegistry):
 
         keyfunc = self._create_key_func(expref, [required_type], 'sort_by')
 
-        return list(sorted(array, key=keyfunc))
+        return sorted(array, key=keyfunc)
 
     @signature({'types': ['array']}, {'types': ['expref']})
     def _func_min_by(self, array, expref):
