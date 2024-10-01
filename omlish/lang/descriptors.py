@@ -220,8 +220,8 @@ class AccessForbiddenDescriptor:
         raise AccessForbiddenError(self._name)
 
 
-def access_forbidden():  # noqa
-    return AccessForbiddenDescriptor()
+def access_forbidden(name=None):  # noqa
+    return AccessForbiddenDescriptor(name)
 
 
 ##
