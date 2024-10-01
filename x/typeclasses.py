@@ -27,6 +27,12 @@ class Typeclass(abc.ABC, ta.Generic[T]):
                         raise KeyError(arg)
                     dct[arg] = cls
 
+    def __new__(cls, *args, **kwargs):
+        if Typeclass not in cls.__bases__:
+            return super().__new__(cls, *args, **kwargs)
+
+        raise NotImplementedError
+
 
 def lookup_typeclass(cls: type[TypeclassT], arg: rfl.Type) -> type[TypeclassT]:
     return _TYPECLASS_IMPLS[cls][arg]
