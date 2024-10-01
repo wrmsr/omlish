@@ -148,7 +148,7 @@ class TreeInterpreter(Visitor):
             # yield a None value.
             left = self.visit(node['children'][0], value)
             right = self.visit(node['children'][1], value)
-            num_types = (int, float)
+            # num_types = (int, float)
             if not (_is_comparable(left) and _is_comparable(right)):
                 return None
             return comparator_func(left, right)

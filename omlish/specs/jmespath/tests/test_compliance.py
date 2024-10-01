@@ -1,3 +1,4 @@
+# ruff: noqa: PT009
 import json
 import os
 import pprint
@@ -118,18 +119,18 @@ class TestErrorExpression(unittest.TestCase):
         except Exception as e:
             # Failure because an unexpected exception was raised.
             error_msg = (
-                    "\n\n  (%s) The expression '%s' was suppose to be a "
-                    "syntax error, but it raised an unexpected error:\n\n%s"
-                    % (filename, expression, e)
+                "\n\n  (%s) The expression '%s' was suppose to be a "
+                "syntax error, but it raised an unexpected error:\n\n%s"
+                % (filename, expression, e)
             )
             error_msg = error_msg.replace(r'\n', '\n')
             raise AssertionError(error_msg)
 
         else:
             error_msg = (
-                    "\n\n  (%s) The expression '%s' was suppose to be a "
-                    "syntax error, but it successfully parsed as:\n\n%s"
-                    % (filename, expression, pprint.pformat(parsed.parsed))
+                "\n\n  (%s) The expression '%s' was suppose to be a "
+                "syntax error, but it successfully parsed as:\n\n%s"
+                % (filename, expression, pprint.pformat(parsed.parsed))
             )
             error_msg = error_msg.replace(r'\n', '\n')
             raise AssertionError(error_msg)

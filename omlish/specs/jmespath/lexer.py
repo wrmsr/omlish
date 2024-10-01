@@ -179,7 +179,7 @@ class Lexer:
         }
 
     def _consume_number(self):
-        start = self._position
+        start = self._position  # noqa
 
         buff = self._current
         while self._next() in self.VALID_NUMBER:

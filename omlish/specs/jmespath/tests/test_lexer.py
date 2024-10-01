@@ -1,3 +1,4 @@
+# ruff: noqa: PT009
 import unittest
 
 from ... import jmespath
@@ -148,12 +149,12 @@ class TestRegexLexer(unittest.TestCase):
         )
 
     def test_unknown_character(self):
-        with self.assertRaises(LexerError) as e:
-            tokens = list(self.lexer.tokenize('foo[0^]'))
+        with self.assertRaises(LexerError) as e:  # noqa
+            tokens = list(self.lexer.tokenize('foo[0^]'))  # noqa
 
     def test_bad_first_character(self):
         with self.assertRaises(LexerError):
-            tokens = list(self.lexer.tokenize('^foo[0]'))
+            tokens = list(self.lexer.tokenize('^foo[0]'))  # noqa
 
     def test_unknown_character_with_identifier(self):
         with self.assertRaisesRegex(LexerError, 'Unknown token'):

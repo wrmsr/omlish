@@ -1,3 +1,4 @@
+# ruff: noqa: PT009
 import random
 import re
 import string

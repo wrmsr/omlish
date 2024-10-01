@@ -106,6 +106,7 @@ class JmespathTypeError(JmespathError):
             f'expected one of: {self.expected_types}, received: "{self.actual_type}"'
         )
 
+
 class EmptyExpressionError(JmespathError):
     def __init__(self):
         super().__init__('Invalid Jmespath expression: cannot be empty.')
