@@ -6,7 +6,7 @@ from .base import StrKeyword
 ##
 
 
-class MetadataKeyword(Keyword, lang.Abstract):
+class MetadataKeyword(Keyword, lang.Abstract, lang.Sealed):
     pass
 
 
