@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.17
+uv>=0.4.18
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -31,7 +31,7 @@ gprof2dot==2024.6.6
 guppy3==3.1.4.post1; python_version < "3.13"
 objgraph==3.6.1
 
-ipython==8.27.0
+ipython==8.28.0
 
 pg8000==1.31.2
 pymysql==1.1.1
