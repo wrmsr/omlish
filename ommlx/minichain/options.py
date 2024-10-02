@@ -53,7 +53,7 @@ class Options(lang.Final, ta.Generic[OptionT]):
         dct: dict = {}
         for o in tmp:
             if isinstance(o, tuple):
-                uo, idx = o
+                uo, idx = o  # type: ignore
                 ulst = udct[uo.unique_option_cls]
                 if idx == len(ulst):
                     lst.append(uo)
@@ -66,11 +66,21 @@ class Options(lang.Final, ta.Generic[OptionT]):
         self._lst = lst
         self._dct = dct
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'
+
     def __iter__(self) -> ta.Iterator[OptionT]:
         return iter(self._lst)
 
     def __len__(self) -> int:
         return len(self._lst)
+
+    def __contains__(self, cls: type[OptionU]) -> bool:
+        return cls in self._dct
+
+    @ta.overload
+    def __getitem__(self, idx: int) -> OptionT:
+        ...
 
     @ta.overload
     def __getitem__(self, cls: type[UniqueOptionU]) -> UniqueOptionU:  # type: ignore[overload-overlap]
@@ -80,5 +90,8 @@ class Options(lang.Final, ta.Generic[OptionT]):
     def __getitem__(self, cls: type[OptionU]) -> ta.Sequence[OptionU]:
         ...
 
-    def __getitem__(self, cls):
-        return self._dct[cls]
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._lst[key]
+        else:
+            return self._dct[key]
