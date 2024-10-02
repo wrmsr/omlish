@@ -18,7 +18,7 @@ EXCLUDED_TESTS = ["literal.json"]
 def _compliance_tests(requested_test_type):
     for full_path in _walk_files():
         if full_path.endswith(".json"):
-            for given, test_type, test_data in load_cases(full_path):
+            for idx, (given, test_type, test_data) in enumerate(load_cases(full_path)):
                 t = test_data
                 # Benchmark tests aren't run as part of the normal test suite, so we only care about 'result' and
                 # 'error' test_types.
@@ -28,6 +28,7 @@ def _compliance_tests(requested_test_type):
                         t["expression"],
                         t["result"],
                         os.path.basename(full_path),
+                        idx,
                     )
                 elif test_type == "error" and test_type == requested_test_type:
                     yield (
@@ -35,6 +36,7 @@ def _compliance_tests(requested_test_type):
                         t["expression"],
                         t["error"],
                         os.path.basename(full_path),
+                        idx,
                     )
 
 
@@ -75,11 +77,11 @@ def load_cases(full_path):
 
 class TestExpression(unittest.TestCase):
     def test_expression(self):
-        for given, expression, expected, filename in _compliance_tests('result'):
-            self._test_expression(given, expression, expected, filename)
+        for given, expression, expected, filename, idx in _compliance_tests('result'):
+            self._test_expression(given, expression, expected, filename, idx)
 
-    def _test_expression(self, given, expression, expected, filename):
-        print(f'_test_expression: {expression}')
+    def _test_expression(self, given, expression, expected, filename, idx):
+        print(f'_test_expression: {filename}:{idx}: {expression}')
 
         try:
             (actual, parsed) = _search_expression(given, expression, filename)
@@ -108,11 +110,11 @@ class TestExpression(unittest.TestCase):
 
 class TestErrorExpression(unittest.TestCase):
     def test_error_expression(self):
-        for given, expression, error, filename in _compliance_tests('error'):
-            self._test_error_expression(given, expression, error, filename)
+        for given, expression, error, filename, idx in _compliance_tests('error'):
+            self._test_error_expression(given, expression, error, filename, idx)
 
-    def _test_error_expression(self, given, expression, error, filename):
-        print(f'_test_error_expression: {expression}')
+    def _test_error_expression(self, given, expression, error, filename, idx):
+        print(f'_test_error_expression: {filename}:{idx}: {expression}')
 
         if error not in (
             "syntax",
@@ -122,11 +124,14 @@ class TestErrorExpression(unittest.TestCase):
             "invalid-value",
         ):
             raise RuntimeError("Unknown error type '%s'" % error)
+
         try:
             (_, parsed) = _search_expression(given, expression, filename)
+
         except ValueError:
             # Test passes, it raised a parse error as expected.
             pass
+
         except Exception as e:
             # Failure because an unexpected exception was raised.
             error_msg = (
@@ -136,6 +141,7 @@ class TestErrorExpression(unittest.TestCase):
             )
             error_msg = error_msg.replace(r"\n", "\n")
             raise AssertionError(error_msg)
+
         else:
             error_msg = (
                 "\n\n  (%s) The expression '%s' was suppose to be a "
