@@ -1,25 +1,47 @@
 [
-    {
-        "given": {
-            "foo": [{"name": "a"}, {"name": "b"}],
-            "bar": {"baz": "qux"}
+  {
+    "given": {
+      "foo": [
+        {
+          "name": "a"
         },
-        "cases": [
+        {
+          "name": "b"
+        }
+      ],
+      "bar": {
+        "baz": "qux"
+      }
+    },
+    "cases": [
+      {
+        "expression": "@",
+        "result": {
+          "foo": [
             {
-                "expression": "@",
-                "result": {
-                    "foo": [{"name": "a"}, {"name": "b"}],
-                    "bar": {"baz": "qux"}
-                }
+              "name": "a"
             },
             {
-                "expression": "@.bar",
-                "result": {"baz": "qux"}
-            },
-            {
-                "expression": "@.foo[0]",
-                "result": {"name": "a"}
+              "name": "b"
             }
-        ]
-    }
+          ],
+          "bar": {
+            "baz": "qux"
+          }
+        }
+      },
+      {
+        "expression": "@.bar",
+        "result": {
+          "baz": "qux"
+        }
+      },
+      {
+        "expression": "@.foo[0]",
+        "result": {
+          "name": "a"
+        }
+      }
+    ]
+  }
 ]

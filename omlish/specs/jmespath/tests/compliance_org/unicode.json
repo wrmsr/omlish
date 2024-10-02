@@ -1,38 +1,56 @@
 [
-    {
-        "given": {"foo": [{"✓": "✓"}, {"✓": "✗"}]},
-        "cases": [
-            {
-                "expression": "foo[].\"✓\"",
-                "result": ["✓", "✗"]
-            }
-        ]
+  {
+    "given": {
+      "foo": [
+        {
+          "✓": "✓"
+        },
+        {
+          "✓": "✗"
+        }
+      ]
     },
-    {
-        "given": {"☯": true},
-        "cases": [
-            {
-                "expression": "\"☯\"",
-                "result": true
-            }
+    "cases": [
+      {
+        "expression": "foo[].\"✓\"",
+        "result": [
+          "✓",
+          "✗"
         ]
+      }
+    ]
+  },
+  {
+    "given": {
+      "☯": true
     },
-    {
-        "given": {"♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪": true},
-        "cases": [
-            {
-                "expression": "\"♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪\"",
-                "result": true
-            }
-        ]
+    "cases": [
+      {
+        "expression": "\"☯\"",
+        "result": true
+      }
+    ]
+  },
+  {
+    "given": {
+      "♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪": true
     },
-    {
-        "given": {"☃": true},
-        "cases": [
-            {
-                "expression": "\"☃\"",
-                "result": true
-            }
-        ]
-    }
+    "cases": [
+      {
+        "expression": "\"♪♫•*¨*•.¸¸❤¸¸.•*¨*•♫♪\"",
+        "result": true
+      }
+    ]
+  },
+  {
+    "given": {
+      "☃": true
+    },
+    "cases": [
+      {
+        "expression": "\"☃\"",
+        "result": true
+      }
+    ]
+  }
 ]

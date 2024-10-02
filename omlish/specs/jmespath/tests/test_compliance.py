@@ -5,6 +5,7 @@ import pprint
 import unittest
 
 from ... import jmespath
+from ....diag import pydevd
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +19,7 @@ LEGACY_OPTIONS = jmespath.Options(dict_cls=dict, enable_legacy_literals=True)
 def _compliance_tests(requested_test_type):
     for full_path in _walk_files():
         if full_path.endswith('.json'):
-            for given, test_type, test_data in load_cases(full_path):
+            for idx, (given, test_type, test_data) in enumerate(load_cases(full_path)):
                 t = test_data
                 # Benchmark tests aren't run as part of the normal test suite, so we only care about 'result' and
                 # 'error' test_types.
@@ -28,6 +29,7 @@ def _compliance_tests(requested_test_type):
                         t['expression'],
                         t['result'],
                         os.path.basename(full_path),
+                        idx,
                     )
                 elif test_type == 'error' and test_type == requested_test_type:
                     yield (
@@ -35,6 +37,7 @@ def _compliance_tests(requested_test_type):
                         t['expression'],
                         t['error'],
                         os.path.basename(full_path),
+                        idx,
                     )
 
 
@@ -49,7 +52,6 @@ def _walk_files():
             for root, dirnames, filenames in os.walk(dir):
                 for filename in filenames:
                     if filename.endswith('.json') and not filename.endswith('schema.json'):
-                        print(filename)
                         yield os.path.join(root, filename)
 
 
@@ -72,16 +74,21 @@ def load_cases(full_path):
 
 class TestExpression(unittest.TestCase):
     def test_expression(self):
-        for given, expression, expected, filename in _compliance_tests('result'):
-            self._test_expression(given, expression, expected, filename)
+        for given, expression, expected, filename, idx in _compliance_tests('result'):
+            self._test_expression(given, expression, expected, filename, idx)
 
-    def _test_expression(self, given, expression, expected, filename):
-        print(f'_test_expression: {expression}')
+    def _test_expression(self, given, expression, expected, filename, idx):
+        print(f'_test_expression: {filename}:{idx}: {expression}')
+
+        # if (filename, idx) != ('slice.json', 41):
+        #     return
 
         try:
             (actual, parsed) = _search_expression(given, expression, filename)
         except ValueError as e:
-            raise AssertionError(f'jmespath expression failed to compile: "{expression}", error: {e}"')  # noqa
+            if pydevd.is_present():
+                raise
+            raise AssertionError(f'jmespath expression failed to compile: "{expression}", error: {e}"') from e  # noqa
 
         expected_repr = json.dumps(expected, indent=4)
         actual_repr = json.dumps(actual, indent=4)
@@ -103,11 +110,11 @@ class TestExpression(unittest.TestCase):
 
 class TestErrorExpression(unittest.TestCase):
     def test_error_expression(self):
-        for given, expression, error, filename in _compliance_tests('error'):
-            self._test_error_expression(given, expression, error, filename)
+        for given, expression, error, filename, idx in _compliance_tests('error'):
+            self._test_error_expression(given, expression, error, filename, idx)
 
-    def _test_error_expression(self, given, expression, error, filename):
-        print(f'_test_error_expression: {expression}')
+    def _test_error_expression(self, given, expression, error, filename, idx):
+        print(f'_test_error_expression: {filename}:{idx}: {expression}')
 
         if error not in (
                 'syntax',
@@ -147,8 +154,6 @@ class TestErrorExpression(unittest.TestCase):
 
 
 def _search_expression(given, expression, filename):
-    import jmespath.parser
-
     options = LEGACY_OPTIONS if filename.startswith('legacy') else COMPLIANCE_OPTIONS
 
     # This test suite contains identical expressions tested against both a legacy and a JEP-12 standards-compliant
