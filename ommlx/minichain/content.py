@@ -3,8 +3,7 @@ TODO:
  - metadata?
  - ListOfContent? what to name
 """
-import dataclasses as dc
-
+from omlish import dataclasses as dc
 from omlish import lang
 
 

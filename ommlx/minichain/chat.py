@@ -1,14 +1,13 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 from .content import Content
 from .json import JsonSchema
 from .models import Model
-from .models import Request
-from .models import Response
+from .options import Option
 from .tool import ToolExecutionRequest
 from .tool import ToolSpecification
 
@@ -69,23 +68,34 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
-class ChatRequest(lang.Final):
-    chat: Chat
+class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
+    class RequestOption(Option, lang.Abstract):
+        pass
 
-    _: dc.KW_ONLY
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Request(Model.Request[Chat, Model.RequestOption | RequestOption]):
+        pass
 
-    tool_specs: ta.Sequence[ToolSpecification] = ()
-    resp_fmt: ResponseFormat = TEXT_RESPONSE_FORMAT
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Response(Model.Response[AiMessage]):
+        pass
 
-
-ChatModel: ta.TypeAlias = Model[ChatRequest, AiMessage]
-
-
-class ChatModel_(ChatModel, lang.Abstract):  # noqa
     @abc.abstractmethod
-    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
+    def generate(self, request: Request) -> Response:
         raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Tool(ChatModel.RequestOption, lang.Final):
+    spec: ToolSpecification
+
+
+@dc.dataclass(frozen=True)
+class ResponseFmt(ChatModel.RequestOption, lang.Final):
+    fmt: ResponseFormat
 
 
 ##
