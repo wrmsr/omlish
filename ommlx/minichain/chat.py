@@ -96,8 +96,11 @@ TEXT_RESPONSE_FORMAT = TextResponseFormat()
 
 
 @dc.dataclass(frozen=True)
-class JsonResponseFormat(lang.Final):
+class JsonResponseFormat(ResponseFormat, lang.Final):
     schema: JsonSchema | None = None
+
+
+JSON_RESPONSE_FORMAT = JsonResponseFormat()
 
 
 ##

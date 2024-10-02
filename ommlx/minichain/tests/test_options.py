@@ -1,7 +1,9 @@
-from ..chat import ResponseFormat  # noqa
+from ..chat import JSON_RESPONSE_FORMAT
+from ..chat import ResponseFormat
 from ..chat import TEXT_RESPONSE_FORMAT
 from ..chat import Tool
 from ..models import TopK
+from ..options import DuplicateUniqueOptionError
 from ..options import Options
 from ..tool import ToolParameters
 from ..tool import ToolSpecification
@@ -32,3 +34,13 @@ def test_options():
         TEXT_RESPONSE_FORMAT,
         Tool(foo_tool),
     ]
+
+    try:
+        Options(
+            TEXT_RESPONSE_FORMAT,
+            JSON_RESPONSE_FORMAT,
+        )
+    except DuplicateUniqueOptionError as e:
+        assert e == DuplicateUniqueOptionError(ResponseFormat, JSON_RESPONSE_FORMAT, TEXT_RESPONSE_FORMAT)
+    else:
+        raise Exception('Did not raise!')  # noqa

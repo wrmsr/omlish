@@ -1,5 +1,7 @@
 import typing as ta
 
+from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 
@@ -33,6 +35,13 @@ class UniqueOption(Option):
 ##
 
 
+@dc.dataclass()
+class DuplicateUniqueOptionError(Exception, ta.Generic[UniqueOptionU]):
+    cls: type[UniqueOptionU]
+    new: UniqueOptionU
+    old: UniqueOptionU
+
+
 class Options(lang.Final, ta.Generic[OptionT]):
     def __init__(self, *options: OptionT, override: bool = False) -> None:
         super().__init__()
@@ -41,9 +50,15 @@ class Options(lang.Final, ta.Generic[OptionT]):
         udct: dict = {}
         for o in options:
             if isinstance(o, UniqueOption):
-                if not override and o.unique_option_cls in udct:
-                    raise KeyError(type(o))
-                ulst = udct.setdefault(o.unique_option_cls, [])
+                uoc = o.unique_option_cls
+                if not override:
+                    try:
+                        exu = udct[uoc]
+                    except KeyError:
+                        pass
+                    else:
+                        raise DuplicateUniqueOptionError(uoc, o, check.single(exu))
+                ulst = udct.setdefault(uoc, [])
                 ulst.append(o)
                 tmp.append((o, len(ulst)))
             else:
