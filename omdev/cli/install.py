@@ -2,11 +2,6 @@
 # @omlish-lite
 # @omlish-script
 """
-TODO:
- - used for self-reinstall, preserving non-root dists - fix list_root_dists
-
-==
-
 curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py | python3 -
 """
 import abc
