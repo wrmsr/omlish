@@ -75,6 +75,7 @@ def run_one(
         spec: str,
         *,
         shell_wrap: bool = True,
+        python: str | None = None,
 ) -> Item:
     spec_payload_src = '\n\n'.join([
         payload_src(),
@@ -82,7 +83,7 @@ def run_one(
     ])
 
     args = [
-        sys.executable,
+        python or sys.executable,
         '-c',
         spec_payload_src,
     ]
@@ -171,6 +172,7 @@ def _main() -> None:
     parser.add_argument('-j', '--jobs', type=int)
     parser.add_argument('-f', '--filter', action='append')
     parser.add_argument('-t', '--filter-tests', action='store_true')
+    parser.add_argument('--python', default=sys.executable)
     parser.add_argument('root', nargs='+')
     args = parser.parse_args()
 
@@ -185,6 +187,7 @@ def _main() -> None:
             *args.root,
             filters=filters,
             num_threads=args.jobs,
+            python=args.python,
     ).values():
         print(json.dumps(dc.asdict(item)))
 
