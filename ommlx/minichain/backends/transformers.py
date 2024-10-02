@@ -5,11 +5,9 @@ import typing as ta
 
 from omlish import lang
 
-from ..models import Request
-from ..models import Response
 from ..prompts import PromptModel
-from ..prompts import PromptResponse
 from ..prompts import PromptRequest
+from ..prompts import PromptResponse
 
 
 if ta.TYPE_CHECKING:

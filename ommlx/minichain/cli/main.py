@@ -33,8 +33,8 @@ from ..chat import UserMessage
 from ..content import Content
 from ..content import Text
 from ..embeddings import EmbeddingModel
+from ..embeddings import EmbeddingRequest
 from ..images import Image
-from ..models import Request
 from ..prompts import Prompt
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
@@ -104,7 +104,8 @@ def _run_chat(
         state,
         chat=[
             *state.chat,
-            UserMessage([Text(prompt)])],
+            UserMessage([Text(prompt)]),
+        ],
     )
 
     #
@@ -179,7 +180,7 @@ def _run_embed(
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(Request(content))
+    response = mdl.generate(EmbeddingRequest.new(content))
 
     print(json.dumps_compact(response.v.v))
 
