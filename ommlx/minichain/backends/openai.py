@@ -6,6 +6,7 @@ from omlish import lang
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
+from ..chat import ChatRequestOptions
 from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
@@ -17,6 +18,8 @@ from ..embeddings import EmbeddingRequest
 from ..embeddings import EmbeddingResponse
 from ..generative import MaxTokens
 from ..generative import Temperature
+from ..options import Options
+from ..options import ScalarOption
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
@@ -57,6 +60,11 @@ class OpenaiChatModel(ChatModel):
         ToolExecutionResultMessage: 'tool',
     }
 
+    DEFAULT_OPTIONS: ta.ClassVar[Options[ChatRequestOptions]] = Options(
+        Temperature(0.),
+        MaxTokens(1024),
+    )
+
     def _get_msg_content(self, m: Message) -> str:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
@@ -67,6 +75,11 @@ class OpenaiChatModel(ChatModel):
         else:
             raise TypeError(m)
 
+    _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[ScalarOption], str] = {
+        Temperature: 'temperature',
+        MaxTokens: 'max_tokens',
+    }
+
     def invoke(self, request: ChatRequest) -> ChatResponse:
         kw: dict = dict(
             temperature=0,
@@ -74,11 +87,8 @@ class OpenaiChatModel(ChatModel):
         )
 
         for opt in request.options:
-            if isinstance(opt, Temperature):
-                kw.update(temperature=opt.v)
-
-            elif isinstance(opt, MaxTokens):
-                kw.update(max_tokens=opt.v)
+            if isinstance(opt, ScalarOption) and (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None:
+                kw[kwn] = opt.v
 
             else:
                 raise TypeError(opt)
