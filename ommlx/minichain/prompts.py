@@ -14,7 +14,7 @@ class Prompt(lang.Final):
     s: str
 
 
-class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
+class PromptModel(Model['PromptModel.Request', 'PromptModel.Response'], lang.Abstract):
     @dc.dataclass(frozen=True, kw_only=True)
     class Request(Model.Request[Prompt, Model.RequestOption]):
         pass
