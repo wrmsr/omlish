@@ -2,6 +2,18 @@
 # {'type': <node type>', children: [], 'value': ''}
 
 
+def arithmetic_unary(operator, expression):
+    return {'type': 'arithmetic_unary', 'children': [expression], 'value': operator}
+
+
+def arithmetic(operator, left, right):
+    return {'type': 'arithmetic', 'children': [left, right], 'value': operator}
+
+
+def assign(name, expr):
+    return {'type': 'assign', 'children': [expr], 'value': name}
+
+
 def comparator(name, first, second):
     return {'type': 'comparator', 'children': [first, second], 'value': name}
 
