@@ -9,7 +9,6 @@ from omlish import reflect as rfl
 
 from .options import Option
 from .options import Options
-from .options import UniqueOption
 
 
 T = ta.TypeVar('T')
@@ -127,16 +126,3 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
         return self.invoke(ta.cast(RequestT, request))
 
     __call__ = invoke_new
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class TopK(RequestOption, UniqueOption, lang.Final):
-    k: int
-
-
-@dc.dataclass(frozen=True)
-class Temperature(RequestOption, UniqueOption, lang.Final):
-    f: float
