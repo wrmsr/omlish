@@ -7,8 +7,8 @@ from omlish import lang
 from .content import Content
 from .models import Model
 from .models import Request
-from .models import Response
 from .models import RequestOption
+from .models import Response
 from .vectors import Vector
 
 

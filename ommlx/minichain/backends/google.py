@@ -8,8 +8,6 @@ import urllib.request
 from omlish import check
 from omlish.formats import json
 
-from .. import Request
-from .. import Response
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
