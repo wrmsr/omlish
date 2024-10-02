@@ -17,6 +17,12 @@ from .metadata import (  # noqa
 )
 
 from .parse import (  # noqa
+    DEFAULT_KEYWORD_SUPERTYPES,
+    DEFAULT_KEYWORD_TYPES,
+    DEFAULT_KEYWORD_TYPES_BY_TAG,
+    DEFAULT_PARSER,
+    Parser,
+    build_keyword_types_by_tag,
     parse_keyword,
     parse_keywords,
 )
