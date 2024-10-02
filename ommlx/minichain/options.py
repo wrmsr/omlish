@@ -16,7 +16,13 @@ class Option(lang.Abstract):
 
 
 class UniqueOption(Option):
-    pass
+    unique_option_cls: ta.ClassVar[type[Option]]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if UniqueOption in cls.__bases__:
+            cls.unique_option_cls = cls
 
 
 ##
