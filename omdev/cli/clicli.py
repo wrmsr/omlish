@@ -2,12 +2,17 @@ import inspect
 import os
 import subprocess
 import sys
+import urllib.parse
+import urllib.request
 
 from omlish import __about__
 from omlish import argparse as ap
 
 from . import install
 from .types import CliModule
+
+
+DEFAULT_REINSTALL_URL = 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py'
 
 
 class CliCli(ap.Cli):
@@ -21,6 +26,8 @@ class CliCli(ap.Cli):
         print(__about__.__revision__)
 
     @ap.command(
+        ap.arg('--url', default=DEFAULT_REINSTALL_URL),
+        ap.arg('--local', action='store_true'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
@@ -45,10 +52,25 @@ class CliCli(ap.Cli):
         else:
             print('No additional dependencies detected.')
         print()
+
+        if self.args.local:
+            print('Reinstalling from local installer.')
+        else:
+            print(f'Reinstalling from script url: {self.args.url}')
+        print()
+
         print('Continue with reinstall? (ctrl-c to cancel)')
         input()
 
-        install_src = inspect.getsource(install)
+        if self.args.local:
+            install_src = inspect.getsource(install)
+        else:
+            url = self.args.url
+            parsed = urllib.parse.urlparse(url)
+            if parsed.scheme not in ('https', 'file'):
+                raise RuntimeError(f'Insecure url schem: {url}')
+            with urllib.request.urlopen(urllib.request.Request(url)) as resp:  # noqa
+                install_src = resp.read().decode('utf-8')
 
         os.execl(
             sys.executable,
