@@ -7,6 +7,9 @@ from omlish import lang
 from .content import Content
 from .json import JsonSchema
 from .models import Model
+from .models import Request
+from .models import RequestOption
+from .models import Response
 from .options import Option
 from .tool import ToolExecutionRequest
 from .tool import ToolSpecification
@@ -68,20 +71,26 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
-class ChatModel(Model['ChatModel.Request', 'ChatModel.Response'], lang.Abstract):
-    class RequestOption(Option, lang.Abstract):
-        pass
+class ChatRequestOption(Option, lang.Abstract):
+    pass
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Request(Model.Request[Chat, Model.RequestOption | RequestOption]):
-        pass
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Response(Model.Response[AiMessage]):
-        pass
+ChatRequestOptions: ta.TypeAlias = RequestOption | ChatRequestOption
 
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatRequest(Request[Chat, ChatRequestOptions], lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatResponse(Response[AiMessage], lang.Final):
+    pass
+
+
+class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], lang.Abstract):
     @abc.abstractmethod
-    def generate(self, request: Request) -> Response:
+    def generate(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError
 
 
@@ -89,12 +98,12 @@ class ChatModel(Model['ChatModel.Request', 'ChatModel.Response'], lang.Abstract)
 
 
 @dc.dataclass(frozen=True)
-class Tool(ChatModel.RequestOption, lang.Final):
+class Tool(ChatRequestOption, lang.Final):
     spec: ToolSpecification
 
 
 @dc.dataclass(frozen=True)
-class ResponseFmt(ChatModel.RequestOption, lang.Final):
+class ResponseFmt(ChatRequestOption, lang.Final):
     fmt: ResponseFormat
 
 

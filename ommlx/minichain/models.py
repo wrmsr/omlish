@@ -12,8 +12,8 @@ from .options import UniqueOption
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
-ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
-ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
+RequestT = ta.TypeVar('RequestT', bound='Request')
+ResponseT = ta.TypeVar('ResponseT', bound='Response')
 OptionT = ta.TypeVar('OptionT', bound='Option')
 
 
@@ -38,39 +38,43 @@ class TokenUsage(lang.Final):
 ##
 
 
-class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
-    class RequestOption(Option, lang.Abstract):
-        pass
+class RequestOption(Option, lang.Abstract):
+    pass
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Request(lang.Abstract, ta.Generic[T, OptionT]):
-        v: T
 
-        options: Options[OptionT] = Options()
+@dc.dataclass(frozen=True, kw_only=True)
+class Request(lang.Abstract, ta.Generic[T, OptionT]):
+    v: T
 
-        @classmethod
-        def new(cls, v: T, *options: OptionT, **kwargs: ta.Any) -> ta.Self:
-            return cls(v, Options(*options), **kwargs)
+    options: Options[OptionT] = Options()
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Response(lang.Abstract, ta.Generic[T]):
-        v: T
+    @classmethod
+    def new(cls, v: T, *options: OptionT, **kwargs: ta.Any) -> ta.Self:
+        return cls(v, Options(*options), **kwargs)
 
-        usage: TokenUsage | None = None
-        reason: FinishReason | None = None
 
+@dc.dataclass(frozen=True, kw_only=True)
+class Response(lang.Abstract, ta.Generic[T]):
+    v: T
+
+    usage: TokenUsage | None = None
+    reason: FinishReason | None = None
+
+
+class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
     @abc.abstractmethod
-    def generate(self, request: ModelRequestT) -> ModelResponseT:
+    def generate(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class TopK(Model.RequestOption, UniqueOption, lang.Final):
+class TopK(RequestOption, UniqueOption, lang.Final):
     k: int
 
 
 @dc.dataclass(frozen=True)
-class Temperature(Model.RequestOption, UniqueOption, lang.Final):
+class Temperature(RequestOption, UniqueOption, lang.Final):
     f: float
