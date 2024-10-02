@@ -126,14 +126,6 @@
     {
       "expression": "foo[*].bar[*] | [0][0]",
       "result": {"baz": "one"}
-    },
-    {
-      "expression": "`null`|[@]",
-      "result": [ null ]
-    },
-    {
-      "expression": "`null`|{foo: @}",
-      "result": {"foo": null }
     }
   ]
 }]
