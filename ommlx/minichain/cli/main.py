@@ -113,7 +113,7 @@ def _run_chat(
 
     #
 
-    response = mdl.generate(Request(ChatRequest(state.chat)))
+    response = mdl.generate(ChatRequest.new(state.chat))
 
     #
 
