@@ -1,12 +1,26 @@
 # ruff: noqa: PT009 PT027
+import contextlib
 import unittest
+import warnings
 
 from ... import jmespath
 from ..exceptions import EmptyExpressionError
 from ..exceptions import LexerError
 
 
+@contextlib.contextmanager
+def suppress_deprecated_string_literals_warning():
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='deprecated string literal syntax')
+        yield
+
+
 class LexerUtils(unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        self.enterContext(suppress_deprecated_string_literals_warning())
 
     def assert_tokens(self, actual, expected):
         # The expected tokens only need to specify the type and value.  The line/column numbers are not checked, and we
@@ -25,6 +39,8 @@ class LexerUtils(unittest.TestCase):
 class TestRegexLexer(LexerUtils):
 
     def setUp(self):
+        super().setUp()
+
         self.lexer = jmespath.lexer.Lexer()
 
     def test_empty_string(self):

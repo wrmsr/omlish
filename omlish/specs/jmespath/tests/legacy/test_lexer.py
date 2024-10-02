@@ -10,6 +10,8 @@ from ..test_lexer import LexerUtils
 class TestLegacyRegexLexer(LexerUtils):
 
     def setUp(self):
+        super().setUp()
+
         self.lexer = lexer.Lexer()
         self.options = Options(enable_legacy_literals=True)
 
