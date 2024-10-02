@@ -19,7 +19,7 @@ def _main() -> None:
         UserMessage([Text("hi!")]),
     ]
 
-    result = model.generate(ChatRequest.new(messages))
+    result = model.invoke(ChatRequest.new(messages))
     print(result)
 
 

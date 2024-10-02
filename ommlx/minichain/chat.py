@@ -88,7 +88,7 @@ class ChatResponse(Response[ChatOutput], lang.Final):
 
 class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], lang.Abstract):
     @abc.abstractmethod
-    def generate(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError
 
 

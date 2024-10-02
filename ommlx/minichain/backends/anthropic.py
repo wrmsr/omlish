@@ -41,7 +41,7 @@ class AnthropicChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def generate(
+    def invoke(
             self,
             request: ChatRequest,
             *,
