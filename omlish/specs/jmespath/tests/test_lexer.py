@@ -52,16 +52,16 @@ class TestRegexLexer(LexerUtils):
         self.assert_tokens(tokens, [{'type': 'minus', 'value': '-'}])
 
     def test_minus_unicode(self):
-        tokens = list(self.lexer.tokenize(u'\u2212'))
-        self.assert_tokens(tokens, [{'type': 'minus', 'value': u'\u2212'}])
+        tokens = list(self.lexer.tokenize('\u2212'))
+        self.assert_tokens(tokens, [{'type': 'minus', 'value': '\u2212'}])
 
     def test_multiplication(self):
         tokens = list(self.lexer.tokenize('*'))
         self.assert_tokens(tokens, [{'type': 'star', 'value': '*'}])
 
     def test_multiplication_unicode(self):
-        tokens = list(self.lexer.tokenize(u'\u00d7'))
-        self.assert_tokens(tokens, [{'type': 'multiply', 'value': u'\u00d7'}])
+        tokens = list(self.lexer.tokenize('\u00d7'))
+        self.assert_tokens(tokens, [{'type': 'multiply', 'value': '\u00d7'}])
 
     def test_division(self):
         tokens = list(self.lexer.tokenize('/'))
@@ -150,25 +150,25 @@ class TestRegexLexer(LexerUtils):
     def test_raw_string_literal(self):
         tokens = list(self.lexer.tokenize("'foo'"))
         self.assert_tokens(tokens, [
-            {'type': 'literal', 'value': 'foo'}
+            {'type': 'literal', 'value': 'foo'},
         ])
 
     def test_raw_string_literal_preserve_escape(self):
         tokens = list(self.lexer.tokenize("'foo\\z'"))
         self.assert_tokens(tokens, [
-            {'type': 'literal', 'value': 'foo\\z'}
+            {'type': 'literal', 'value': 'foo\\z'},
         ])
 
     def test_raw_string_literal_escaped_apostrophe(self):
-        tokens = list(self.lexer.tokenize("'foo\\\'bar'"))
+        tokens = list(self.lexer.tokenize("'foo\\'bar'"))
         self.assert_tokens(tokens, [
-            {'type': 'literal', 'value': 'foo\'bar'}
+            {'type': 'literal', 'value': 'foo\'bar'},
         ])
 
     def test_raw_string_literal_escaped_reverse_solidus(self):
         tokens = list(self.lexer.tokenize("'foo\\\\bar'"))
         self.assert_tokens(tokens, [
-            {'type': 'literal', 'value': 'foo\\bar'}
+            {'type': 'literal', 'value': 'foo\\bar'},
         ])
 
     def test_position_information(self):
@@ -232,8 +232,8 @@ class TestRegexLexer(LexerUtils):
                 {'type': 'unquoted_identifier', 'value': 'foo', 'start': 0, 'end': 3},
                 {'type': 'minus', 'value': '-', 'start': 3, 'end': 4},
                 {'type': 'unquoted_identifier', 'value': 'bar', 'start': 4, 'end': 7},
-                {'type': 'eof', 'value': '', 'start': 7, 'end': 7}
-            ]
+                {'type': 'eof', 'value': '', 'start': 7, 'end': 7},
+            ],
         )
 
     def test_invalid_character_in_json_literal(self):

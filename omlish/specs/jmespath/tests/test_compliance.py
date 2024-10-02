@@ -4,8 +4,8 @@ import os
 import pprint
 import unittest
 
-from ... import jmespath
 from ....diag import pydevd
+from ... import jmespath
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -48,8 +48,8 @@ def _walk_files():
     if single_file is not None:
         yield os.path.abspath(single_file)
     else:
-        for dir in [COMPLIANCE_DIR, LEGACY_DIR]:
-            for root, dirnames, filenames in os.walk(dir):
+        for dir in [COMPLIANCE_DIR, LEGACY_DIR]:  # noqa
+            for root, _, filenames in os.walk(dir):
                 for filename in filenames:
                     if filename.endswith('.json') and not filename.endswith('schema.json'):
                         yield os.path.join(root, filename)

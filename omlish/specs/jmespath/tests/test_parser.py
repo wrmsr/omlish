@@ -81,13 +81,13 @@ class TestParser(unittest.TestCase):
             '//': 'div',
             '/': 'divide',
             '%': 'modulo',
-            u'\u2212': 'minus',
-            u'\u00d7': 'multiply',
-            u'\u00f7': 'divide',
+            '\u2212': 'minus',
+            '\u00d7': 'multiply',
+            '\u00f7': 'divide',
         }
         for sign in operations:
             operation = operations[sign]
-            expression = 'foo {} bar'.format(sign)
+            expression = f'foo {sign} bar'
             self.assert_parsed_ast(
                 expression,
                 ast.arithmetic(
@@ -100,11 +100,11 @@ class TestParser(unittest.TestCase):
         operations = {
             '+': 'plus',
             '-': 'minus',
-            u'\u2212': 'minus',
+            '\u2212': 'minus',
         }
         for sign in operations:
             operation = operations[sign]
-            expression = '{} foo'.format(sign)
+            expression = f'{sign} foo'
             self.assert_parsed_ast(
                 expression,
                 ast.arithmetic_unary(
@@ -169,7 +169,7 @@ class TestParser(unittest.TestCase):
                 'children': [
                     {'type': 'root', 'children': []},
                     {'type': 'index', 'value': 0, 'children': []},
-                ]
+                ],
             },
         )
 

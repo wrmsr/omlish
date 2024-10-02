@@ -1,3 +1,4 @@
+# ruff: noqa: PT027
 import inspect
 import unittest
 
@@ -12,42 +13,42 @@ class TestFunctionSignatures(unittest.TestCase):
 
     def test_signature_with_monotype_argument(self):
         (function_name, signature) = self._make_test('_function_with_monotyped_arguments')
-        self._functions._validate_arguments(['string'], signature, function_name)
+        self._functions._validate_arguments(['string'], signature, function_name)  # noqa
         self.assertRaises(
             exceptions.ArityError, lambda:
-            self._functions._validate_arguments([], signature, function_name)
+            self._functions._validate_arguments([], signature, function_name),  # noqa
         )
 
     def test_signature_with_optional_arguments(self):
         (function_name, signature) = self._make_test('_function_with_optional_arguments')
-        self._functions._validate_arguments(['string'], signature, function_name)
-        self._functions._validate_arguments(['string', 42], signature, function_name)
-        self._functions._validate_arguments(['string', 43], signature, function_name)
+        self._functions._validate_arguments(['string'], signature, function_name)  # noqa
+        self._functions._validate_arguments(['string', 42], signature, function_name)  # noqa
+        self._functions._validate_arguments(['string', 43], signature, function_name)  # noqa
         self.assertRaises(
             exceptions.ArityError, lambda:
-            self._functions._validate_arguments([], signature, function_name)
+            self._functions._validate_arguments([], signature, function_name),  # noqa
         )
         self.assertRaises(
             exceptions.ArityError, lambda:
-            self._functions._validate_arguments(['string', 42, 43, 44], signature, function_name)
+            self._functions._validate_arguments(['string', 42, 43, 44], signature, function_name),  # noqa
         )
 
     def test_signature_with_variadic_arguments(self):
         (function_name, signature) = self._make_test('_function_with_variadic_arguments')
-        self._functions._validate_arguments(['string', 'text1'], signature, function_name)
-        self._functions._validate_arguments(['string', 'text1', 'text2'], signature, function_name)
+        self._functions._validate_arguments(['string', 'text1'], signature, function_name)  # noqa
+        self._functions._validate_arguments(['string', 'text1', 'text2'], signature, function_name)  # noqa
         self.assertRaises(
             exceptions.VariadicArityError, lambda:
-            self._functions._validate_arguments(['string'], signature, function_name)
+            self._functions._validate_arguments(['string'], signature, function_name),  # noqa
         )
 
     def test_signature_with_empty_argument(self):
         (function_name, signature) = self._make_test('_function_with_empty_argument')
-        self._functions._validate_arguments([], signature, function_name)
+        self._functions._validate_arguments([], signature, function_name)  # noqa
 
     def test_signature_with_no_arguments(self):
         (function_name, signature) = self._make_test('_function_with_no_arguments')
-        self._functions._validate_arguments([], signature, function_name)
+        self._functions._validate_arguments([], signature, function_name)  # noqa
 
     def _make_test(self, func_name):
         for name, method in inspect.getmembers(TestFunctionSignatures, predicate=inspect.isfunction):

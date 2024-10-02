@@ -134,7 +134,7 @@ class UnknownFunctionError(JmespathError):
     pass
 
 
-class UndefinedVariable(JmespathError):
+class UndefinedVariableError(JmespathError):
     def __init__(self, varname):
         self.varname = varname
         super().__init__(f'Reference to undefined variable: {self.varname}')

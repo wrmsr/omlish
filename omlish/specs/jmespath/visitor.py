@@ -119,7 +119,7 @@ class TreeInterpreter(Visitor):
 
     _ARITHMETIC_UNARY_FUNC: ta.Mapping[str, ta.Callable] = {
         'minus': operator.neg,
-        'plus': lambda x: x
+        'plus': lambda x: x,
     }
 
     _ARITHMETIC_FUNC: ta.Mapping[str, ta.Callable] = {
@@ -380,7 +380,7 @@ class TreeInterpreter(Visitor):
         try:
             return self._scope[node['value']]
         except KeyError:
-            raise exceptions.UndefinedVariable(node['value'])
+            raise exceptions.UndefinedVariableError(node['value'])  # noqa
 
     def visit_value_projection(self, node, value):
         base = self.visit(node['children'][0], value)
