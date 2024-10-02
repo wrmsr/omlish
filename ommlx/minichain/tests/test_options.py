@@ -44,3 +44,22 @@ def test_options():
         assert e == DuplicateUniqueOptionError(ResponseFormat, JSON_RESPONSE_FORMAT, TEXT_RESPONSE_FORMAT)  # noqa
     else:
         raise Exception('Did not raise!')  # noqa
+
+    assert list(opts := Options(
+        TopK(5),
+        TEXT_RESPONSE_FORMAT,
+        Tool(foo_tool),
+        JSON_RESPONSE_FORMAT,
+        TopK(10),
+        Tool(bar_tool),
+        override=True,
+    )) == [
+        Tool(foo_tool),
+        JSON_RESPONSE_FORMAT,
+        TopK(10),
+        Tool(bar_tool),
+    ]
+
+    assert opts[TopK] == TopK(10)
+    assert opts[Tool] == [Tool(foo_tool), Tool(bar_tool)]
+    assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
