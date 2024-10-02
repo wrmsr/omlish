@@ -22,7 +22,12 @@ class UniqueOption(Option):
         super().__init_subclass__(**kwargs)
 
         if UniqueOption in cls.__bases__:
-            cls.unique_option_cls = cls
+            try:
+                cls.unique_option_cls  # noqa
+            except AttributeError:
+                cls.unique_option_cls = cls
+            else:
+                raise TypeError(f'Class already has unique_option_cls: {cls}')
 
 
 ##
@@ -32,17 +37,19 @@ class Options(lang.Final, ta.Generic[OptionT]):
     def __init__(self, *options: OptionT, override: bool = False) -> None:
         super().__init__()
 
-        self._lst = options
-
-        dct: dict = {}
+        lst: list = []
+        udct: dict = {}
         for o in options:
             if isinstance(o, UniqueOption):
-                if not override and type(o) in dct:
+                if not override and o.unique_option_cls in udct:
                     raise KeyError(type(o))
-                dct[type(o)] = o
+                ulst = udct.setdefault(o.unique_option_cls, [])
+                ulst.append(o)
+                lst.append((o.unique_option_cls, len(ulst)))
             else:
-                dct.setdefault(type(o), []).append(o)
-        self._dct = dct
+                lst.append(o)
+
+        raise NotImplementedError
 
     def __iter__(self) -> ta.Iterator[OptionT]:
         return iter(self._lst)
