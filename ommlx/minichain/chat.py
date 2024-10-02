@@ -87,6 +87,7 @@ class ResponseFormat(ChatRequestOption, UniqueOption, lang.Abstract, lang.Sealed
     pass
 
 
+@dc.dataclass(frozen=True)
 class TextResponseFormat(ResponseFormat, lang.Final):
     pass
 
