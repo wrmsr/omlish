@@ -74,6 +74,53 @@ class TestParser(unittest.TestCase):
             'foo || bar', ast.or_expression(ast.field('foo'), ast.field('bar')),
         )
 
+    def test_arithmetic_expressions(self):
+        operations = {
+            '+': 'plus',
+            '-': 'minus',
+            '//': 'div',
+            '/': 'divide',
+            '%': 'modulo',
+            u'\u2212': 'minus',
+            u'\u00d7': 'multiply',
+            u'\u00f7': 'divide',
+        }
+        for sign in operations:
+            operation = operations[sign]
+            expression = 'foo {} bar'.format(sign)
+            self.assert_parsed_ast(
+                expression,
+                ast.arithmetic(
+                    operation,
+                    ast.field('foo'),
+                    ast.field('bar'),
+                ))
+
+    def test_arithmetic_unary(self):
+        operations = {
+            '+': 'plus',
+            '-': 'minus',
+            u'\u2212': 'minus',
+        }
+        for sign in operations:
+            operation = operations[sign]
+            expression = '{} foo'.format(sign)
+            self.assert_parsed_ast(
+                expression,
+                ast.arithmetic_unary(
+                    operation,
+                    ast.field('foo'),
+                ))
+
+    def test_arithmetic_multiplication(self):
+        self.assert_parsed_ast(
+            'foo * bar',
+            ast.arithmetic(
+                'multiply',
+                ast.field('foo'),
+                ast.field('bar'),
+            ))
+
     def test_unicode_literals_escaped(self):
         self.assert_parsed_ast(r'`"\u2713"`', ast.literal('\u2713'))
 
@@ -111,6 +158,18 @@ class TestParser(unittest.TestCase):
                 ],
                 'type': 'function_expression',
                 'value': 'f',
+            },
+        )
+
+    def test_root_node(self):
+        self.assert_parsed_ast(
+            '$[0]',
+            {
+                'type': 'index_expression',
+                'children': [
+                    {'type': 'root', 'children': []},
+                    {'type': 'index', 'value': 0, 'children': []},
+                ]
             },
         )
 
