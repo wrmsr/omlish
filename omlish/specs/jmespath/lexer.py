@@ -5,6 +5,7 @@ import warnings
 
 from .exceptions import EmptyExpressionError
 from .exceptions import LexerError
+from .visitor import Options
 
 
 class Lexer:
@@ -26,9 +27,20 @@ class Lexer:
         ')': 'rparen',
         '{': 'lbrace',
         '}': 'rbrace',
+        '+': 'plus',
+        '%': 'modulo',
+        u'\u2212': 'minus',
+        u'\u00d7': 'multiply',
+        u'\u00f7': 'divide',
     }
 
-    def tokenize(self, expression):
+    def __init__(self):
+        self._enable_legacy_literals = False
+
+    def tokenize(self, expression, options=None):
+        if options is not None:
+            self._enable_legacy_literals = options.enable_legacy_literals
+
         self._initialize_for_expression(expression)
         while self._current is not None:
             if self._current in self.SIMPLE_TOKENS:
