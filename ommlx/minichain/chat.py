@@ -71,6 +71,10 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
+ChatInput: ta.TypeAlias = Chat
+ChatOutput: ta.TypeAlias = AiMessage
+
+
 class ChatRequestOption(Option, lang.Abstract):
     pass
 
@@ -79,12 +83,12 @@ ChatRequestOptions: ta.TypeAlias = RequestOption | ChatRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ChatRequest(Request[Chat, ChatRequestOptions], lang.Final):
+class ChatRequest(Request[ChatInput, ChatRequestOptions], lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ChatResponse(Response[AiMessage], lang.Final):
+class ChatResponse(Response[ChatOutput], lang.Final):
     pass
 
 
