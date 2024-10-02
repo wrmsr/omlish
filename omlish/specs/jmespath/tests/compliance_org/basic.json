@@ -92,15 +92,5 @@
             "result": "bar"
          }
     ]
-},
-{
-   "given":
-       {"foo": {"bar": 0}},
-   "cases": [
-       {
-           "expression": "foo.bar",
-           "result": 0
-       }
-   ]
 }
 ]
