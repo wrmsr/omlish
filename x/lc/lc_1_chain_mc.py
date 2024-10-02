@@ -16,10 +16,10 @@ def _main() -> None:
 
     messages = [
         SystemMessage('Translate the following from English into Italian'),
-        UserMessage([Text("hi!")]),
+        UserMessage.of('Hi!'),
     ]
 
-    result = model.invoke(ChatRequest.new(messages))
+    result = model(messages)
     print(result)
 
 
