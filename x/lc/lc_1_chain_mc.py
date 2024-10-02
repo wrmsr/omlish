@@ -3,7 +3,6 @@ from ommlx.minichain.chat import ChatRequest
 from ommlx.minichain.chat import SystemMessage
 from ommlx.minichain.chat import UserMessage
 from ommlx.minichain.content import Text
-from ommlx.minichain.models import Request
 
 from x.lc.utils import load_secrets
 
@@ -20,7 +19,7 @@ def _main() -> None:
         UserMessage([Text("hi!")]),
     ]
 
-    result = model.generate(Request(ChatRequest(messages)))
+    result = model.generate(ChatRequest.new(messages))
     print(result)
 
 
