@@ -1,6 +1,6 @@
 from ..chat import JSON_RESPONSE_FORMAT
-from ..chat import ResponseFormat
 from ..chat import TEXT_RESPONSE_FORMAT
+from ..chat import ResponseFormat
 from ..chat import Tool
 from ..models import TopK
 from ..options import DuplicateUniqueOptionError
