@@ -41,6 +41,6 @@ def test_options():
             JSON_RESPONSE_FORMAT,
         )
     except DuplicateUniqueOptionError as e:
-        assert e == DuplicateUniqueOptionError(ResponseFormat, JSON_RESPONSE_FORMAT, TEXT_RESPONSE_FORMAT)
+        assert e == DuplicateUniqueOptionError(ResponseFormat, JSON_RESPONSE_FORMAT, TEXT_RESPONSE_FORMAT)  # noqa
     else:
         raise Exception('Did not raise!')  # noqa
