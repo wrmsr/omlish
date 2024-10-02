@@ -22,6 +22,10 @@ def current_node():
     return {'type': 'current', 'children': []}
 
 
+def root_node():
+    return {'type': 'root', 'children': []}
+
+
 def expref(expression):
     return {'type': 'expref', 'children': [expression]}
 
@@ -56,6 +60,10 @@ def index_expression(children):
 
 def key_val_pair(key_name, node):
     return {'type': 'key_val_pair', 'children': [node], 'value': key_name}
+
+
+def let_expression(bindings, expr):
+    return {'type': 'let_expression', 'children': [*bindings, expr]}
 
 
 def literal(literal_value):
@@ -100,3 +108,7 @@ def slice(start, end, step):  # noqa
 
 def value_projection(left, right):
     return {'type': 'value_projection', 'children': [left, right]}
+
+
+def variable_ref(name):
+    return {'type': 'variable_ref', 'children': [], 'value': name}

@@ -107,6 +107,24 @@ class JmespathTypeError(JmespathError):
         )
 
 
+class JmespathValueError(JmespathError):
+    def __init__(
+            self,
+            function_name,
+            current_value,
+            expected_types,
+    ):
+        self.function_name = function_name
+        self.current_value = current_value
+        self.expected_types = expected_types
+
+    def __str__(self):
+        return (
+            f'In function {self.function_name}(), invalid value: "{self.current_value}", '
+            f'expected: {self.expected_types}'
+        )
+
+
 class EmptyExpressionError(JmespathError):
     def __init__(self):
         super().__init__('Invalid Jmespath expression: cannot be empty.')
@@ -114,3 +132,9 @@ class EmptyExpressionError(JmespathError):
 
 class UnknownFunctionError(JmespathError):
     pass
+
+
+class UndefinedVariable(JmespathError):
+    def __init__(self, varname):
+        self.varname = varname
+        super().__init__(f'Reference to undefined variable: {self.varname}')
