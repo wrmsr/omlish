@@ -5,6 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 
+T = ta.TypeVar('T')
 OptionT = ta.TypeVar('OptionT', bound='Option')
 OptionU = ta.TypeVar('OptionU', bound='Option')
 UniqueOptionU = ta.TypeVar('UniqueOptionU', bound='UniqueOption')
@@ -17,7 +18,7 @@ class Option(lang.Abstract):
     pass
 
 
-class UniqueOption(Option):
+class UniqueOption(Option, lang.Abstract):
     unique_option_cls: ta.ClassVar[type[Option]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
@@ -30,6 +31,11 @@ class UniqueOption(Option):
                 cls.unique_option_cls = cls
             else:
                 raise TypeError(f'Class already has unique_option_cls: {cls}')
+
+
+@dc.dataclass(frozen=True)
+class ScalarOption(Option, lang.Abstract, ta.Generic[T]):
+    v: T
 
 
 ##

@@ -75,10 +75,10 @@ class OpenaiChatModel(ChatModel):
 
         for opt in request.options:
             if isinstance(opt, Temperature):
-                kw.update(temperature=opt.f)
+                kw.update(temperature=opt.v)
 
             elif isinstance(opt, MaxTokens):
-                kw.update(max_tokens=opt.n)
+                kw.update(max_tokens=opt.v)
 
             else:
                 raise TypeError(opt)

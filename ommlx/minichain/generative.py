@@ -1,7 +1,7 @@
-from omlish import dataclasses as dc
 from omlish import lang
 
 from .options import Option
+from .options import ScalarOption
 from .options import UniqueOption
 
 
@@ -19,16 +19,13 @@ class GenerativeRequestOption(Option, lang.Abstract):
     pass
 
 
-@dc.dataclass(frozen=True)
-class TopK(GenerativeRequestOption, UniqueOption, lang.Final):
-    k: int
+class TopK(GenerativeRequestOption, UniqueOption, ScalarOption[int], lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True)
-class Temperature(GenerativeRequestOption, UniqueOption, lang.Final):
-    f: float
+class Temperature(GenerativeRequestOption, UniqueOption, ScalarOption[float], lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True)
-class MaxTokens(GenerativeRequestOption, UniqueOption, lang.Final):
-    n: int
+class MaxTokens(GenerativeRequestOption, UniqueOption, ScalarOption[int], lang.Final):
+    pass
