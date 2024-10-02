@@ -51,6 +51,10 @@ def _main():
         sys.stderr.write(f'invalid-type: {e}\n')
         return 1
 
+    except exceptions.JmespathValueError as e:
+        sys.stderr.write(f'invalid-value: {e}\n')
+        return 1
+
     except exceptions.UnknownFunctionError as e:
         sys.stderr.write(f'unknown-function: {e}\n')
         return 1

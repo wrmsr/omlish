@@ -579,9 +579,9 @@ class ParsedResult:
         return repr(self.parsed)
 
 
-def compile(expression):  # noqa
-    return Parser().parse(expression)
+def compile(expression, options=None):  # noqa
+    return Parser().parse(expression, options=options)
 
 
 def search(expression, data, options=None):
-    return Parser().parse(expression).search(data, options=options)
+    return compile(expression, options).search(data, options=options)
