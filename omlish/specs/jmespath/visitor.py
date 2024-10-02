@@ -2,7 +2,9 @@ import numbers
 import operator
 import typing as ta
 
+from . import exceptions
 from . import functions
+from .scope import ScopedChainDict
 
 
 def _equals(x, y):
@@ -58,13 +60,24 @@ def _is_actual_number(x):
 class Options:
     """Options to control how a Jmespath function is evaluated."""
 
-    def __init__(self, dict_cls=None, custom_functions=None):
+    def __init__(
+            self,
+            dict_cls=None,
+            custom_functions=None,
+            enable_legacy_literals=False,
+    ):
         #: The class to use when creating a dict.  The interpreter may create dictionaries during the evaluation of a
         #  Jmespath expression.  For example, a multi-select hash will create a dictionary.  By default we use a dict()
         #  type. You can set this value to change what dict type is used. The most common reason you would change this
         #  is if you want to set a collections.OrderedDict so that you can have predictable key ordering.
         self.dict_cls = dict_cls
         self.custom_functions = custom_functions
+
+        #: The flag to enable pre-JEP-12 literal compatibility.
+        #  JEP-12 deprecates `foo` -> "foo" syntax.
+        #  Valid expressions MUST use: `"foo"` -> "foo"
+        #  Setting this flag to `True` enables support for legacy syntax.
+        self.enable_legacy_literals = enable_legacy_literals
 
 
 class _Expression:
@@ -103,6 +116,20 @@ class TreeInterpreter(Visitor):
     }
 
     _EQUALITY_OPS: ta.Sequence[str] = ['eq', 'ne']
+
+    _ARITHMETIC_UNARY_FUNC: ta.Mapping[str, ta.Callable] = {
+        'minus': operator.neg,
+        'plus': lambda x: x
+    }
+
+    _ARITHMETIC_FUNC: ta.Mapping[str, ta.Callable] = {
+        'div': operator.floordiv,
+        'divide': operator.truediv,
+        'minus': operator.sub,
+        'modulo': operator.mod,
+        'multiply': operator.mul,
+        'plus': operator.add,
+    }
 
     MAP_TYPE = dict
 
