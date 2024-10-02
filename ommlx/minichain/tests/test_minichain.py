@@ -11,6 +11,11 @@ from ..prompts import PromptRequest
 @ptu.skip.if_cant_import('transformers')
 def test_minichain():
     llm = TransformersPromptModel('Qwen/Qwen2-0.5B', dict(max_new_tokens=20, device=None))
+
     resp = llm.generate(PromptRequest.new(Prompt('Is water dry?')))
+    print(resp)
+    assert resp.v
+
+    resp = llm.generate_new(Prompt('Is water dry?'))
     print(resp)
     assert resp.v
