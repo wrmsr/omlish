@@ -37,6 +37,9 @@ class UniqueOption(Option, lang.Abstract):
 class ScalarOption(Option, lang.Abstract, ta.Generic[T]):
     v: T
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.v!r})'
+
 
 ##
 
