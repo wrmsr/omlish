@@ -170,7 +170,34 @@ class Parser:
         return ast.variable_ref(token['value'][1:])
 
     def _token_nud_unquoted_identifier(self, token):
-        return ast.field(token['value'])
+        if token['value'] == 'let' and self._current_token() == 'variable':
+            return self._parse_let_expression()
+        else:
+            return ast.field(token['value'])
+
+    def _parse_let_expression(self):
+        bindings = []
+        while True:
+            var_token = self._lookahead_token(0)
+            # Strip off the '$'.
+            varname = var_token['value'][1:]
+            self._advance()
+            self._match('assign')
+            assign_expr = self._expression()
+            bindings.append(ast.assign(varname, assign_expr))
+            if self._is_in_keyword(self._lookahead_token(0)):
+                self._advance()
+                break
+            else:
+                self._match('comma')
+        expr = self._expression()
+        return ast.let_expression(bindings, expr)
+
+    def _is_in_keyword(self, token):
+        return (
+            token['type'] == 'unquoted_identifier' and
+            token['value'] == 'in'
+        )
 
     def _token_nud_quoted_identifier(self, token):
         field = ast.field(token['value'])
@@ -205,6 +232,12 @@ class Parser:
         expression = self._expression()
         self._match('rparen')
         return expression
+
+    def _token_nud_minus(self, token):
+        return self._parse_arithmetic_unary(token)
+
+    def _token_nud_plus(self, token):
+        return self._parse_arithmetic_unary(token)
 
     def _token_nud_flatten(self, token):
         left = ast.flatten(ast.identity())
@@ -274,6 +307,9 @@ class Parser:
 
     def _token_nud_current(self, token):
         return ast.current_node()
+
+    def _token_nud_root(self, token):
+        return ast.root_node()
 
     def _token_nud_expref(self, token):
         expression = self._expression(self.BINDING_POWER['expref'])
@@ -360,6 +396,27 @@ class Parser:
     def _token_led_lte(self, left):
         return self._parse_comparator(left, 'lte')
 
+    def _token_led_div(self, left):
+        return self._parse_arithmetic(left, 'div')
+
+    def _token_led_divide(self, left):
+        return self._parse_arithmetic(left, 'divide')
+
+    def _token_led_minus(self, left):
+        return self._parse_arithmetic(left, 'minus')
+
+    def _token_led_modulo(self, left):
+        return self._parse_arithmetic(left, 'modulo')
+
+    def _token_led_multiply(self, left):
+        return self._parse_arithmetic(left, 'multiply')
+
+    def _token_led_plus(self, left):
+        return self._parse_arithmetic(left, 'plus')
+
+    def _token_led_star(self, left):
+        return self._parse_arithmetic(left, 'multiply')
+
     def _token_led_flatten(self, left):
         left = ast.flatten(left)
         right = self._parse_projection_rhs(self.BINDING_POWER['flatten'])
@@ -398,6 +455,14 @@ class Parser:
     def _parse_comparator(self, left, comparator):
         right = self._expression(self.BINDING_POWER[comparator])
         return ast.comparator(comparator, left, right)
+
+    def _parse_arithmetic_unary(self, token):
+        expression = self._expression(self.BINDING_POWER[token['type']])
+        return ast.arithmetic_unary(token['type'], expression)
+
+    def _parse_arithmetic(self, left, operator):
+        right = self._expression(self.BINDING_POWER[operator])
+        return ast.arithmetic(operator, left, right)
 
     def _parse_multi_select_list(self):
         expressions = []
@@ -554,7 +619,8 @@ class Parser:
         )
 
     def _free_cache_entries(self):
-        for key in random.sample(list(self._CACHE.keys()), int(self._MAX_SIZE / 2)):
+        keys = list(self._CACHE.keys())
+        for key in random.sample(keys, min(len(keys), int(self._MAX_SIZE / 2))):
             self._CACHE.pop(key, None)
 
     @classmethod
