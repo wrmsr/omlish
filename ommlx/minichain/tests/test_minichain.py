@@ -16,11 +16,11 @@ from ..prompts import PromptRequest
 def test_transformers():
     llm = TransformersPromptModel('Qwen/Qwen2-0.5B', dict(max_new_tokens=20, device=None))
 
-    resp = llm.generate(PromptRequest.new(Prompt('Is water dry?')))
+    resp = llm.invoke(PromptRequest.new(Prompt('Is water dry?')))
     print(resp)
     assert resp.v
 
-    resp = llm.generate_new(Prompt('Is water dry?'))
+    resp = llm.invoke_new(Prompt('Is water dry?'))
     print(resp)
     assert resp.v
 
@@ -37,6 +37,6 @@ def test_openai():
 
     llm = OpenaiChatModel()
 
-    resp = llm.generate_new([UserMessage.of('Is water dry?')])
+    resp = llm.invoke_new([UserMessage.of('Is water dry?')])
     print(resp)
     assert resp.v

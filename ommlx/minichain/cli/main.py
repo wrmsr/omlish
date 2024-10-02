@@ -114,7 +114,7 @@ def _run_chat(
 
     #
 
-    response = mdl.generate(ChatRequest.new(state.chat))
+    response = mdl.invoke(ChatRequest.new(state.chat))
 
     #
 
@@ -159,7 +159,7 @@ def _run_prompt(
 
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(PromptRequest.new(Prompt(prompt)))
+    response = mdl.invoke(PromptRequest.new(Prompt(prompt)))
 
     print(response.v.strip())
 
@@ -180,7 +180,7 @@ def _run_embed(
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(EmbeddingRequest.new(content))
+    response = mdl.invoke(EmbeddingRequest.new(content))
 
     print(json.dumps_compact(response.v.v))
 

@@ -109,10 +109,10 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
         cls.response_cls = response_cls
 
     @abc.abstractmethod
-    def generate(self, request: RequestT) -> ResponseT:
+    def invoke(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
 
-    def generate_new(
+    def invoke_new(
         self,
         v: T,
         *options: OptionT,
@@ -123,7 +123,7 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
             *options,
             **kwargs,
         )
-        return self.generate(ta.cast(RequestT, request))
+        return self.invoke(ta.cast(RequestT, request))
 
 
 ##

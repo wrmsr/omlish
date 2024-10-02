@@ -19,7 +19,7 @@ else:
 class SentencetransformersEmbeddingModel(EmbeddingModel):
     model = 'clip-ViT-B-32'
 
-    def generate(self, request: EmbeddingRequest) -> EmbeddingResponse:
+    def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         mdl = st.SentenceTransformer(self.model)
 
         obj: ta.Any

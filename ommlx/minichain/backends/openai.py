@@ -30,7 +30,7 @@ else:
 class OpenaiPromptModel(PromptModel):
     model = 'gpt-3.5-turbo-instruct'
 
-    def generate(self, t: PromptRequest) -> PromptResponse:
+    def invoke(self, t: PromptRequest) -> PromptResponse:
         response = openai.completions.create(
             model=self.model,
             prompt=t.v.s,
@@ -65,7 +65,7 @@ class OpenaiChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def generate(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatRequest) -> ChatResponse:
         response = openai.chat.completions.create(  # noqa
             model=self.model,
             messages=[
@@ -89,7 +89,7 @@ class OpenaiChatModel(ChatModel):
 class OpenaiEmbeddingModel(EmbeddingModel):
     model = 'text-embedding-3-small'
 
-    def generate(self, request: EmbeddingRequest) -> EmbeddingResponse:
+    def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         response = openai.embeddings.create(
             model=self.model,
             input=check.isinstance(request.v, Text).s,

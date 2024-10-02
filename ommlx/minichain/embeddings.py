@@ -33,5 +33,5 @@ class EmbeddingResponse(Response[EmbeddingOutput], lang.Final):
 
 class EmbeddingModel(Model[EmbeddingRequest, EmbeddingRequestOptions, EmbeddingResponse], lang.Abstract):
     @abc.abstractmethod
-    def generate(self, request: EmbeddingRequest) -> EmbeddingResponse:
+    def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raise NotImplementedError

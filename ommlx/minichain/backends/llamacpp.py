@@ -33,7 +33,7 @@ class LlamacppPromptModel(PromptModel):
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
-    def generate(self, request: PromptRequest) -> PromptResponse:
+    def invoke(self, request: PromptRequest) -> PromptResponse:
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )
@@ -73,7 +73,7 @@ class LlamacppChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def generate(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatRequest) -> ChatResponse:
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )

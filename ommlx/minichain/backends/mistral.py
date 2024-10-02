@@ -37,7 +37,7 @@ class MistralChatModel(ChatModel):
         else:
             raise TypeError(m)
 
-    def generate(
+    def invoke(
             self,
             request: ChatRequest,
     ) -> ChatResponse:
