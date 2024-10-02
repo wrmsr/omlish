@@ -123,24 +123,48 @@ class Lexer:
                 }
 
             elif self._current == '-':
-                # Negative number.
-                start = self._position
-
-                buff = self._consume_number()
-                if len(buff) > 1:
+                if not self._peek_is_next_digit():
+                    self._next()
                     yield {
-                        'type': 'number',
-                        'value': int(buff),
-                        'start': start,
-                        'end': start + len(buff),
+                        'type': 'minus',
+                        'value': '-',
+                        'start': self._position - 1,
+                        'end': self._position,
                     }
-
                 else:
-                    raise LexerError(
-                        lexer_position=start,
-                        lexer_value=buff,
-                        message=f"Unknown token '{buff}'",
-                    )
+                    # Negative number.
+                    start = self._position
+                    buff = self._consume_number()
+                    if len(buff) > 1:
+                        yield {
+                            'type': 'number',
+                            'value': int(buff),
+                            'start': start,
+                            'end': start + len(buff),
+                        }
+                    else:
+                        raise LexerError(
+                            lexer_position=start,
+                            lexer_value=buff,
+                            message=f"Unknown token '{buff}'")
+
+            elif self._current == '/':
+                self._next()
+                if self._current == '/':
+                    self._next()
+                    yield {
+                        'type': 'div',
+                        'value': '//',
+                        'start': self._position - 1,
+                        'end': self._position,
+                    }
+                else:
+                    yield {
+                        'type': 'divide',
+                        'value': '/',
+                        'start': self._position,
+                        'end': self._position + 1,
+                    }
 
             elif self._current == '"':
                 yield self._consume_quoted_identifier()
@@ -155,33 +179,24 @@ class Lexer:
                 yield self._match_or_else('=', 'ne', 'not')
 
             elif self._current == '=':
-                if self._next() == '=':
+                yield self._match_or_else('=', 'eq', 'assign')
+
+            elif self._current == '$':
+                if self._peek_may_be_valid_unquoted_identifier():
+                    yield self._consume_variable()
+                else:
                     yield {
-                        'type': 'eq',
-                        'value': '==',
-                        'start': self._position - 1,
-                        'end': self._position,
+                        'type': 'root',
+                        'value': self._current,
+                        'start': self._position,
+                        'end': self._position + 1,
                     }
                     self._next()
-
-                else:
-                    if self._current is None:
-                        # If we're at the EOF, we never advanced the position so we don't need to rewind it back one
-                        # location.
-                        position = self._position
-                    else:
-                        position = self._position - 1
-                    raise LexerError(
-                        lexer_position=position,
-                        lexer_value='=',
-                        message="Unknown token '='",
-                    )
-
             else:
                 raise LexerError(
                     lexer_position=self._position,
                     lexer_value=self._current,
-                    message=f'Unknown token {self._current}',
+                    message=f'Unknown token {self._current})',
                 )
 
         yield {
@@ -198,6 +213,43 @@ class Lexer:
         while self._next() in self.VALID_NUMBER:
             buff += self._current
         return buff
+
+    def _consume_variable(self):
+        start = self._position
+
+        buff = self._current
+        self._next()
+        if self._current not in self.START_IDENTIFIER:
+            raise LexerError(
+                lexer_position=start,
+                lexer_value=self._current,
+                message=f'Invalid variable starting character {self._current}',
+            )
+
+        buff += self._current
+        while self._next() in self.VALID_IDENTIFIER:
+            buff += self._current
+
+        return {
+            'type': 'variable',
+            'value': buff,
+            'start': start,
+            'end': start + len(buff),
+        }
+
+    def _peek_may_be_valid_unquoted_identifier(self):
+        if (self._position == self._length - 1):
+            return False
+        else:
+            next = self._chars[self._position + 1]
+            return next in self.START_IDENTIFIER
+
+    def _peek_is_next_digit(self):
+        if (self._position == self._length - 1):
+            return False
+        else:
+            next = self._chars[self._position + 1]
+            return next in self.VALID_NUMBER
 
     def _initialize_for_expression(self, expression):
         if not expression:
@@ -245,15 +297,26 @@ class Lexer:
     def _consume_literal(self):
         start = self._position
 
-        lexeme = self._consume_until('`').replace('\\`', '`')
+        token = self._consume_until('`')
+        lexeme = token.replace('\\`', '`')
+        parsed_json = None
         try:
             # Assume it is valid JSON and attempt to parse.
             parsed_json = json.loads(lexeme)
         except ValueError:
+            error = LexerError(
+                lexer_position=start,
+                lexer_value=self._expression[start:],
+                message=f'Bad token %s `{token}`',
+            )
+
+            if not self._enable_legacy_literals:
+                raise error
+
             try:
                 # Invalid JSON values should be converted to quoted JSON strings during the JEP-12 deprecation period.
                 parsed_json = json.loads('"%s"' % lexeme.lstrip())  # noqa
-                warnings.warn('deprecated string literal syntax', PendingDeprecationWarning)
+                warnings.warn('deprecated string literal syntax', DeprecationWarning)
             except ValueError:
                 raise LexerError(  # noqa
                     lexer_position=start,
@@ -293,7 +356,10 @@ class Lexer:
     def _consume_raw_string_literal(self):
         start = self._position
 
-        lexeme = self._consume_until("'").replace("\\'", "'")
+        lexeme = self._consume_until("'") \
+            .replace("\\'", "'")  \
+            .replace('\\\\', '\\')
+
         token_len = self._position - start
         return {
             'type': 'literal',
