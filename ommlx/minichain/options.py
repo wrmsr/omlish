@@ -81,6 +81,11 @@ class Options(lang.Final, ta.Generic[OptionT]):
         self._lst = lst
         self._dct = dct
 
+    def without(self, *tys: type) -> ta.Iterator[OptionT]:
+        for o in self._lst:
+            if not isinstance(o, tys):
+                yield o
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(map(repr, self._lst))})'
 
