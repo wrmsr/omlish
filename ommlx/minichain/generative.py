@@ -8,6 +8,13 @@ from .options import UniqueOption
 ##
 
 
+class Generative(lang.Abstract):
+    pass
+
+
+##
+
+
 class GenerativeRequestOption(Option, lang.Abstract):
     pass
 
@@ -20,3 +27,8 @@ class TopK(GenerativeRequestOption, UniqueOption, lang.Final):
 @dc.dataclass(frozen=True)
 class Temperature(GenerativeRequestOption, UniqueOption, lang.Final):
     f: float
+
+
+@dc.dataclass(frozen=True)
+class MaxTokens(GenerativeRequestOption, UniqueOption, lang.Final):
+    n: int
