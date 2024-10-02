@@ -11,6 +11,7 @@ from .models import Request
 from .models import RequestOption
 from .models import Response
 from .options import Option
+from .options import UniqueOption
 from .tool import ToolExecutionRequest
 from .tool import ToolSpecification
 
@@ -82,7 +83,7 @@ class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], lang.Abstr
 ##
 
 
-class ResponseFormat(lang.Abstract, lang.Sealed):
+class ResponseFormat(ChatRequestOption, UniqueOption, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -104,11 +105,6 @@ class JsonResponseFormat(lang.Final):
 @dc.dataclass(frozen=True)
 class Tool(ChatRequestOption, lang.Final):
     spec: ToolSpecification
-
-
-@dc.dataclass(frozen=True)
-class ResponseFmt(ChatRequestOption, lang.Final):
-    fmt: ResponseFormat
 
 
 ##
