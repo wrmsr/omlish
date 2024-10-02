@@ -6,39 +6,18 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
+OptionT = ta.TypeVar('OptionT')
 ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
 ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
-OptionT = ta.TypeVar('OptionT', bound='Option', contravariant=True)
-
-
-##
-
-
-class Option(lang.Abstract):
-    pass
-
-
-##
-
-
-class ModelRequestOption(Option, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class TopK(ModelRequestOption, lang.Final):
-    k: int
-
-
-@dc.dataclass(frozen=True)
-class Temperature(ModelRequestOption, lang.Final):
-    f: float
 
 
 ##
 
 
 class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
+    class Option(lang.Abstract):
+        pass
+
     @dc.dataclass(frozen=True)
     class Request(lang.Abstract, ta.Generic[T, OptionT]):
         v: T
@@ -54,12 +33,22 @@ class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+class TopK(Model.Option, lang.Final):
+    k: int
+
+
+@dc.dataclass(frozen=True)
+class Temperature(Model.Option, lang.Final):
+    f: float
+
+
 ##
 
 
 class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
     @dc.dataclass(frozen=True)
-    class Request(Model.Request[str, ModelRequestOption]):
+    class Request(Model.Request[str, Model.Option]):
         pass
 
     @dc.dataclass(frozen=True)
@@ -74,21 +63,12 @@ class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
 ##
 
 
-class ChatModelRequestOption(Option, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Tool(ChatModelRequestOption, lang.Final):
-    name: str
-
-
-#
-
-
 class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
+    class Option(lang.Abstract):
+        pass
+
     @dc.dataclass(frozen=True)
-    class Request(Model.Request[list[str], ModelRequestOption | ChatModelRequestOption]):
+    class Request(Model.Request[list[str], Model.Option | Option]):
         pass
 
     @dc.dataclass(frozen=True)
@@ -100,6 +80,11 @@ class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
         return ChatModel.Response('foo')
 
 
+@dc.dataclass(frozen=True)
+class Tool(ChatModel.Option, lang.Final):
+    name: str
+
+
 ##
 
 
@@ -107,7 +92,16 @@ def _main() -> None:
     pm = PromptModel()
     pm.generate(PromptModel.Request('foo', [TopK(1)]))
     pm.generate(PromptModel.Request('foo', [Temperature(.1)]))
-    pm.generate(PromptModel.Request('foo', [TopK(1), Temperature(.1)]))  # , Tool('foo')]))
+    pm.generate(
+        PromptModel.Request(
+            'foo',
+            [
+                TopK(1),
+                Temperature(.1),
+                # Tool('foo'),
+            ],
+        ),
+    )
 
     cm = ChatModel()
     cm.generate(ChatModel.Request(['foo'], [TopK(1)]))
