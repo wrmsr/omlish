@@ -7,6 +7,7 @@ from omlish import lang
 
 T = ta.TypeVar('T')
 OptionT = ta.TypeVar('OptionT', bound='Option')
+OptionU = ta.TypeVar('OptionU', bound='Option')
 UniqueOptionT = ta.TypeVar('UniqueOptionT', bound='UniqueOption')
 ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
 ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
@@ -49,11 +50,11 @@ class Options(lang.Final, ta.Generic[OptionT]):
         return len(self._lst)
 
     @ta.overload
-    def __getitem__(self, cls: type[OptionT]) -> ta.Sequence[OptionT]:
+    def __getitem__(self, cls: type[UniqueOptionT]) -> UniqueOptionT:  # type: ignore[overload-overlap]
         ...
 
     @ta.overload
-    def __getitem__(self, cls: type[UniqueOptionT]) -> UniqueOptionT:
+    def __getitem__(self, cls: type[OptionU]) -> ta.Sequence[OptionU]:
         ...
 
     def __getitem__(self, cls):
