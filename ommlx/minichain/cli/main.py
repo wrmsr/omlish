@@ -37,6 +37,7 @@ from ..images import Image
 from ..models import Request
 from ..prompts import Prompt
 from ..prompts import PromptModel
+from ..prompts import PromptRequest
 from .state import load_state
 from .state import save_state
 
@@ -157,7 +158,7 @@ def _run_prompt(
 
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.generate(Request(Prompt(prompt)))
+    response = mdl.generate(PromptRequest.new(Prompt(prompt)))
 
     print(response.v.strip())
 
