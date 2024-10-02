@@ -39,7 +39,7 @@ class GoogleChatModel(ChatModel):
 
     BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-    def generate(
+    def invoke(
             self,
             request: ChatRequest,
     ) -> ChatResponse:

@@ -39,5 +39,5 @@ class PromptResponse(Response[PromptOutput], lang.Final):
 
 class PromptModel(Model[PromptRequest, PromptRequestOptions, PromptResponse], lang.Abstract):
     @abc.abstractmethod
-    def generate(self, request: PromptRequest) -> PromptResponse:
+    def invoke(self, request: PromptRequest) -> PromptResponse:
         raise NotImplementedError

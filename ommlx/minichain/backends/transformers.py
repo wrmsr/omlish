@@ -27,7 +27,7 @@ class TransformersPromptModel(PromptModel):
     model: str = dc.field(default_factory=lambda: TransformersPromptModel.DEFAULT_MODEL)
     kwargs: ta.Mapping[str, ta.Any] | None = None
 
-    def generate(self, request: PromptRequest) -> PromptResponse:
+    def invoke(self, request: PromptRequest) -> PromptResponse:
         pipeline = transformers.pipeline(
             'text-generation',
             model=self.model,
