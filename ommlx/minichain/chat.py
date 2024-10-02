@@ -5,6 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .content import Content
+from .content import Contentable
 from .json import JsonSchema
 from .models import Model
 from .models import Request
@@ -32,6 +33,17 @@ class SystemMessage(Message, lang.Final):
 class UserMessage(Message, lang.Final):
     content: ta.Sequence[Content]
     name: str | None = None
+
+    @classmethod
+    def of(cls, c: ta.Iterable[Contentable] | Contentable, **kwargs: ta.Any) -> 'UserMessage':
+        if isinstance(c, ta.Iterable):
+            content = [Content.of(e) for e in c]
+        else:
+            content = [Content.of(c)]
+        return cls(
+            content,
+            **kwargs,
+        )
 
 
 @dc.dataclass(frozen=True)
