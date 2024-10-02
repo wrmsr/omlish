@@ -1,5 +1,6 @@
 from ..chat import JSON_RESPONSE_FORMAT
 from ..chat import TEXT_RESPONSE_FORMAT
+from ..chat import JsonResponseFormat
 from ..chat import ResponseFormat
 from ..chat import Tool
 from ..models import TopK
@@ -63,3 +64,4 @@ def test_options():
     assert opts[TopK] == TopK(10)
     assert opts[Tool] == [Tool(foo_tool), Tool(bar_tool)]
     assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
+    assert opts[JsonResponseFormat] == JSON_RESPONSE_FORMAT
