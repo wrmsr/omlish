@@ -6,6 +6,8 @@ from omlish import lang
 
 from .content import Content
 from .content import Contentable
+from .generative import Generative
+from .generative import GenerativeRequestOption
 from .json import JsonSchema
 from .models import Model
 from .models import Request
@@ -73,7 +75,7 @@ class ChatRequestOption(Option, lang.Abstract):
     pass
 
 
-ChatRequestOptions: ta.TypeAlias = RequestOption | ChatRequestOption
+ChatRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption | ChatRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -86,7 +88,7 @@ class ChatResponse(Response[ChatOutput], lang.Final):
     pass
 
 
-class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], lang.Abstract):
+class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], Generative, lang.Abstract):
     @abc.abstractmethod
     def invoke(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError

@@ -15,6 +15,8 @@ from ..content import Text
 from ..embeddings import EmbeddingModel
 from ..embeddings import EmbeddingRequest
 from ..embeddings import EmbeddingResponse
+from ..generative import MaxTokens
+from ..generative import Temperature
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
@@ -68,7 +70,18 @@ class OpenaiChatModel(ChatModel):
     def invoke(self, request: ChatRequest) -> ChatResponse:
         kw: dict = dict(
             temperature=0,
+            max_tokens=1024,
         )
+
+        for opt in request.options:
+            if isinstance(opt, Temperature):
+                kw.update(temperature=opt.f)
+
+            elif isinstance(opt, MaxTokens):
+                kw.update(max_tokens=opt.n)
+
+            else:
+                raise TypeError(opt)
 
         response = openai.chat.completions.create(  # noqa
             model=self.model,
@@ -79,7 +92,6 @@ class OpenaiChatModel(ChatModel):
                 )
                 for m in request.v
             ],
-            max_tokens=1024,
             top_p=1,
             frequency_penalty=0.0,
             presence_penalty=0.0,
