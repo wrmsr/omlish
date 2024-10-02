@@ -32,6 +32,8 @@ from . import visitor
 class Parser:
     BINDING_POWER: ta.Mapping[str, int] = {
         'eof': 0,
+        'variable': 0,
+        'assign': 0,
         'unquoted_identifier': 0,
         'quoted_identifier': 0,
         'literal': 0,
@@ -41,6 +43,7 @@ class Parser:
         'rbrace': 0,
         'number': 0,
         'current': 0,
+        'root': 0,
         'expref': 0,
         'colon': 0,
         'pipe': 1,
@@ -52,6 +55,12 @@ class Parser:
         'gte': 5,
         'lte': 5,
         'ne': 5,
+        'minus': 6,
+        'plus': 6,
+        'div': 7,
+        'divide': 7,
+        'modulo': 7,
+        'multiply': 7,
         'flatten': 9,
         # Everything above stops a projection.
         'star': 20,
@@ -76,12 +85,12 @@ class Parser:
         self._buffer_size = lookahead
         self._index = 0
 
-    def parse(self, expression):
+    def parse(self, expression, options=None):
         cached = self._CACHE.get(expression)
         if cached is not None:
             return cached
 
-        parsed_result = self._do_parse(expression)
+        parsed_result = self._do_parse(expression, options)
 
         self._CACHE[expression] = parsed_result
         if len(self._CACHE) > self._MAX_SIZE:
@@ -89,9 +98,9 @@ class Parser:
 
         return parsed_result
 
-    def _do_parse(self, expression):
+    def _do_parse(self, expression, options=None):
         try:
-            return self._parse(expression)
+            return self._parse(expression, options)
 
         except exceptions.LexerError as e:
             e.expression = expression
@@ -105,8 +114,8 @@ class Parser:
             e.expression = expression
             raise
 
-    def _parse(self, expression):
-        self.tokenizer = lexer.Lexer().tokenize(expression)
+    def _parse(self, expression, options=None):
+        self.tokenizer = lexer.Lexer().tokenize(expression, options)
         self._tokens = list(self.tokenizer)
         self._index = 0
 
@@ -156,6 +165,9 @@ class Parser:
 
     def _token_nud_literal(self, token):
         return ast.literal(token['value'])
+
+    def _token_nud_variable(self, token):
+        return ast.variable_ref(token['value'][1:])
 
     def _token_nud_unquoted_identifier(self, token):
         return ast.field(token['value'])
