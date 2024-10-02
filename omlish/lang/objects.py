@@ -2,6 +2,8 @@ import types
 import typing as ta
 import weakref
 
+from .classes.abstract import is_abstract_class
+
 
 T = ta.TypeVar('T')
 
@@ -85,7 +87,7 @@ def super_meta(
 ##
 
 
-def deep_subclasses(cls: type) -> ta.Iterator[type]:
+def deep_subclasses(cls: type, *, concrete_only: bool = False) -> ta.Iterator[type]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
     while todo:
@@ -93,7 +95,8 @@ def deep_subclasses(cls: type) -> ta.Iterator[type]:
         if cur in seen:
             continue
         seen.add(cur)
-        yield cur
+        if not (concrete_only and is_abstract_class(cur)):
+            yield cur
         todo.extend(reversed(cur.__subclasses__()))
 
 
