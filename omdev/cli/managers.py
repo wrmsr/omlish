@@ -52,7 +52,7 @@ def detect_install_manager(cli_pkg: str) -> ManagerType | None:
 # code runs before the problematic empty string is added, so a sys.meta_path hook is prepended.
 #
 # See:
-#     https://github.com/python/cpython/blob/da1e5526aee674bb33c17a498aa3781587b9850c/Python/sysmodule.c#L3939
+#   https://github.com/python/cpython/blob/da1e5526aee674bb33c17a498aa3781587b9850c/Python/sysmodule.c#L3939
 
 
 def _remove_empty_from_sys_path() -> None:
