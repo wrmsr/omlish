@@ -4,8 +4,7 @@ from omlish import check
 from omlish import lang
 
 from ..chat import AiMessage
-from ..chat import ChatModel_
-from ..chat import ChatRequest
+from ..chat import ChatModel
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
@@ -13,10 +12,8 @@ from ..chat import UserMessage
 from ..content import Content
 from ..content import Text
 from ..embeddings import EmbeddingModel_
-from ..models import Request
-from ..models import Response
 from ..prompts import Prompt
-from ..prompts import PromptModel_
+from ..prompts import PromptModel
 from ..vectors import Vector
 
 
@@ -26,10 +23,10 @@ else:
     openai = lang.proxy_import('openai')
 
 
-class OpenaiPromptModel(PromptModel_):
+class OpenaiPromptModel(PromptModel):
     model = 'gpt-3.5-turbo-instruct'
 
-    def generate(self, t: Request[Prompt]) -> Response[str]:
+    def generate(self, t: PromptModel.Request[Prompt]) -> Response[str]:
         response = openai.completions.create(
             model=self.model,
             prompt=t.v.s,

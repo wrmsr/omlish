@@ -68,7 +68,7 @@ class JsonResponseFormat(lang.Final):
 ##
 
 
-class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
+class ChatModel(Model['ChatModel.Request', 'ChatModel.Response'], lang.Abstract):
     class RequestOption(Option, lang.Abstract):
         pass
 
