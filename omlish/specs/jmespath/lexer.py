@@ -5,7 +5,6 @@ import warnings
 
 from .exceptions import EmptyExpressionError
 from .exceptions import LexerError
-from .visitor import Options
 
 
 class Lexer:
