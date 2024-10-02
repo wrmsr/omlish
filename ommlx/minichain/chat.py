@@ -52,25 +52,6 @@ Chat: ta.TypeAlias = ta.Sequence[Message]
 ##
 
 
-class ResponseFormat(lang.Abstract, lang.Sealed):
-    pass
-
-
-class TextResponseFormat(ResponseFormat, lang.Final):
-    pass
-
-
-TEXT_RESPONSE_FORMAT = TextResponseFormat()
-
-
-@dc.dataclass(frozen=True)
-class JsonResponseFormat(lang.Final):
-    schema: JsonSchema | None = None
-
-
-##
-
-
 ChatInput: ta.TypeAlias = Chat
 ChatOutput: ta.TypeAlias = AiMessage
 
@@ -96,6 +77,25 @@ class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], lang.Abstr
     @abc.abstractmethod
     def generate(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError
+
+
+##
+
+
+class ResponseFormat(lang.Abstract, lang.Sealed):
+    pass
+
+
+class TextResponseFormat(ResponseFormat, lang.Final):
+    pass
+
+
+TEXT_RESPONSE_FORMAT = TextResponseFormat()
+
+
+@dc.dataclass(frozen=True)
+class JsonResponseFormat(lang.Final):
+    schema: JsonSchema | None = None
 
 
 ##
