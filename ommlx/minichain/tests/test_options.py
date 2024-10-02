@@ -65,3 +65,6 @@ def test_options():
     assert opts[Tool] == [Tool(foo_tool), Tool(bar_tool)]
     assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
     assert opts[JsonResponseFormat] == JSON_RESPONSE_FORMAT
+
+    assert list(Options(*opts.without(ResponseFormat))) == [Tool(foo_tool), TopK(10), Tool(bar_tool)]
+    assert list(Options(*opts.without(Tool))) == [JSON_RESPONSE_FORMAT, TopK(10)]
