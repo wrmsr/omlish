@@ -23,7 +23,7 @@ class UniqueOption(Option):
 
 
 class Options(lang.Final, ta.Generic[OptionT]):
-    def __init__(self, *options: OptionT) -> None:
+    def __init__(self, *options: OptionT, override: bool = False) -> None:
         super().__init__()
 
         self._lst = options
@@ -31,7 +31,7 @@ class Options(lang.Final, ta.Generic[OptionT]):
         dct: dict = {}
         for o in options:
             if isinstance(o, UniqueOption):
-                if type(o) in dct:
+                if not override and type(o) in dct:
                     raise KeyError(type(o))
                 dct[type(o)] = o
             else:
