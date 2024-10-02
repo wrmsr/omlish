@@ -25,7 +25,7 @@ KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
 
 KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = col.make_map_by(  # noqa
     operator.attrgetter('tag'),
-    (cls for cls in lang.deep_subclasses(Keyword) if not lang.is_abstract_class(cls)),
+    lang.deep_subclasses(Keyword, concrete_only=True),
     strict=True,
 )
 
