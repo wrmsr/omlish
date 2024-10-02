@@ -6,6 +6,7 @@ import unittest
 
 from ... import jmespath
 from ..visitor import Options
+from .test_lexer import suppress_deprecated_string_literals_warning
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +77,11 @@ def load_cases(full_path):
 
 
 class TestExpression(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.enterContext(suppress_deprecated_string_literals_warning())
+
     def test_expression(self):
         for given, expression, expected, filename, idx in _compliance_tests('result'):
             self._test_expression(given, expression, expected, filename, idx)
@@ -107,6 +113,11 @@ class TestExpression(unittest.TestCase):
 
 
 class TestErrorExpression(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.enterContext(suppress_deprecated_string_literals_warning())
+
     def test_error_expression(self):
         for given, expression, error, filename, idx in _compliance_tests('error'):
             self._test_error_expression(given, expression, error, filename, idx)

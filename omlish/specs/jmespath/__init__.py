@@ -22,7 +22,7 @@ See:
  - https://github.com/jmespath-community/python-jmespath
  - https://github.com/jmespath-community/jmespath.spec/discussions?discussions_q=label%3Ajep-candidate
  - https://github.com/jmespath-community/jmespath.spec/discussions/97
-"""
+"""  # noqa
 from . import exceptions  # noqa
 from . import functions  # noqa
 from . import lexer  # noqa
