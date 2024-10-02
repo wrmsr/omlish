@@ -37,7 +37,7 @@ class Options(lang.Final, ta.Generic[OptionT]):
     def __init__(self, *options: OptionT, override: bool = False) -> None:
         super().__init__()
 
-        lst: list = []
+        tmp: list = []
         udct: dict = {}
         for o in options:
             if isinstance(o, UniqueOption):
@@ -45,11 +45,26 @@ class Options(lang.Final, ta.Generic[OptionT]):
                     raise KeyError(type(o))
                 ulst = udct.setdefault(o.unique_option_cls, [])
                 ulst.append(o)
-                lst.append((o.unique_option_cls, len(ulst)))
+                tmp.append((o, len(ulst)))
+            else:
+                tmp.append(o)
+
+        lst: list = []
+        dct: dict = {}
+        for o in tmp:
+            if isinstance(o, tuple):
+                uo, idx = o
+                ulst = udct[uo.unique_option_cls]
+                if idx == len(ulst):
+                    lst.append(uo)
+                    dct[uo.unique_option_cls] = uo
+                    dct[type(uo)] = uo
             else:
                 lst.append(o)
+                dct.setdefault(type(o), []).append(o)
 
-        raise NotImplementedError
+        self._lst = lst
+        self._dct = dct
 
     def __iter__(self) -> ta.Iterator[OptionT]:
         return iter(self._lst)
