@@ -20,7 +20,7 @@ def test_transformers():
     print(resp)
     assert resp.v
 
-    resp = llm.invoke_new(Prompt('Is water dry?'))
+    resp = llm(Prompt('Is water dry?'))
     print(resp)
     assert resp.v
 
@@ -37,6 +37,6 @@ def test_openai():
 
     llm = OpenaiChatModel()
 
-    resp = llm.invoke_new([UserMessage.of('Is water dry?')])
+    resp = llm([UserMessage.of('Is water dry?')])
     print(resp)
     assert resp.v
