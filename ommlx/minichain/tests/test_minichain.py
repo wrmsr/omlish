@@ -7,6 +7,7 @@ from omlish.testing import pytest as ptu
 from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import UserMessage
+from ..generative import MaxTokens
 from ..generative import Temperature
 from ..prompts import Prompt
 from ..prompts import PromptRequest
@@ -41,6 +42,7 @@ def test_openai():
     resp = llm(
         [UserMessage.of('Is water dry?')],
         Temperature(.1),
+        MaxTokens(64),
     )
     print(resp)
     assert resp.v
