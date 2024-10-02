@@ -1,3 +1,4 @@
+# ruff: noqa: PT009 PT027
 import unittest
 
 from ... import lexer
@@ -18,7 +19,7 @@ class TestLegacyRegexLexer(LexerUtils):
     def test_literal_string(self):
         tokens = list(self.tokenize('`foobar`'))
         self.assert_tokens(tokens, [
-            {'type': 'literal', 'value': "foobar"},
+            {'type': 'literal', 'value': 'foobar'},
         ])
 
     def test_literal_with_invalid_json(self):
@@ -33,11 +34,10 @@ class TestLegacyRegexLexer(LexerUtils):
         tokens = list(self.tokenize('`{{}`'))
         self.assertEqual(
             tokens,
-            [{'type': 'literal', 'value': '{{}',
-              'start': 0, 'end': 4},
-             {'type': 'eof', 'value': '',
-              'start': 5, 'end': 5}
-             ]
+            [
+                {'type': 'literal', 'value': '{{}', 'start': 0, 'end': 4},
+                {'type': 'eof', 'value': '', 'start': 5, 'end': 5},
+            ],
         )
 
 

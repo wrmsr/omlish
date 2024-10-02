@@ -343,7 +343,7 @@ class Functions(metaclass=FunctionRegistry):
             search,
             lambda t, s: t.find(s),
             start,
-            end
+            end,
         )
 
     @signature(
@@ -359,7 +359,7 @@ class Functions(metaclass=FunctionRegistry):
             search,
             lambda t, s: t.rfind(s),
             start,
-            end
+            end,
         )
 
     def _find_impl(self, text, search, func, start, end):
@@ -398,7 +398,7 @@ class Functions(metaclass=FunctionRegistry):
         if len(padding) != 1:
             raise exceptions.JmespathError(
                 f'syntax-error: pad_right() expects $padding to have a single character, but received '
-                f'`{padding}` instead.'
+                f'`{padding}` instead.',
             )
         return func()
 
@@ -437,7 +437,7 @@ class Functions(metaclass=FunctionRegistry):
             if count is None:
                 return chars
 
-            head = [c for c in chars[:count]]
+            head = list(chars[:count])
             tail = [''.join(chars[count:])]
             return head + tail
 
@@ -567,7 +567,7 @@ class Functions(metaclass=FunctionRegistry):
             return None
 
         result = {}
-        keys = list(dict.fromkeys([keyfunc(item) for item in array if keyfunc(item) != None]))
+        keys = list(dict.fromkeys([keyfunc(item) for item in array if keyfunc(item) is not None]))
         for key in keys:
             items = [item for item in array if keyfunc(item) == key]
             result.update({key: items})
