@@ -147,7 +147,7 @@
     "module": ".tools.importscan",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/importscan.py",
-    "line": 165,
+    "line": 166,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "importscan",
