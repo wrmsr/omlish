@@ -197,13 +197,13 @@ class TestRegexLexer(LexerUtils):
         tokens = list(self.lexer.tokenize('$[0]'))
         self.assertEqual(
             tokens,
-              [
-                  {'type': 'root', 'value': '$', 'start': 0, 'end': 1},
-                  {'type': 'lbracket', 'value': '[', 'start': 1, 'end': 2},
-                  {'type': 'number', 'value': 0, 'start': 2, 'end': 3},
-                  {'type': 'rbracket', 'value': ']', 'start': 3, 'end': 4},
-                  {'type': 'eof', 'value': '', 'start': 4, 'end': 4},
-              ],
+            [
+                {'type': 'root', 'value': '$', 'start': 0, 'end': 1},
+                {'type': 'lbracket', 'value': '[', 'start': 1, 'end': 2},
+                {'type': 'number', 'value': 0, 'start': 2, 'end': 3},
+                {'type': 'rbracket', 'value': ']', 'start': 3, 'end': 4},
+                {'type': 'eof', 'value': '', 'start': 4, 'end': 4},
+            ],
         )
 
     def test_variable(self):
@@ -237,7 +237,7 @@ class TestRegexLexer(LexerUtils):
         )
 
     def test_invalid_character_in_json_literal(self):
-        with self.assertRaises(LexerError) as e:
+        with self.assertRaises(LexerError) as e:  # noqa
             tokens = list(self.lexer.tokenize(u'`0\u2028`'))  # noqa
 
 
