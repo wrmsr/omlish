@@ -14,7 +14,7 @@ KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 ##
 
 
-class Keyword(lang.Abstract, lang.PackageSealed):
+class Keyword(lang.Abstract):
     tag: ta.ClassVar[str]
 
     def __init_subclass__(cls, *, tag: str | None = None, **kwargs: ta.Any) -> None:

@@ -6,7 +6,7 @@ from .base import StrKeyword
 ##
 
 
-class CoreKeyword(Keyword, lang.Abstract):
+class CoreKeyword(Keyword, lang.Abstract, lang.Sealed):
     pass
 
 

@@ -10,7 +10,7 @@ from .base import StrToKeywordsKeyword
 ##
 
 
-class ValidationKeyword(Keyword, lang.Abstract):
+class ValidationKeyword(Keyword, lang.Abstract, lang.Sealed):
     pass
 
 
