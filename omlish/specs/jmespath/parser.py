@@ -636,9 +636,8 @@ class ParsedResult:
         self.parsed = parsed
 
     def search(self, value, options=None):
-        interpreter = visitor.TreeInterpreter(options)
-        result = interpreter.visit(self.parsed, value)
-        return result
+        evaluator = visitor.TreeInterpreter(options)
+        return evaluator.evaluate(self.parsed, value)
 
     def _render_dot_file(self):
         """
