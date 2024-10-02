@@ -6,7 +6,7 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
-OptionT = ta.TypeVar('OptionT')
+OptionT = ta.TypeVar('OptionT', bound='Option')
 ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
 ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
 
@@ -14,8 +14,16 @@ ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
 ##
 
 
+class Option(lang.Abstract):
+    pass
+
+
+class UniqueOption(lang.Abstract):
+    pass
+
+
 class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
-    class Option(lang.Abstract):
+    class RequestOption(Option, lang.Abstract):
         pass
 
     @dc.dataclass(frozen=True)
@@ -34,12 +42,12 @@ class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
 
 
 @dc.dataclass(frozen=True)
-class TopK(Model.Option, lang.Final):
+class TopK(Model.RequestOption, UniqueOption, lang.Final):
     k: int
 
 
 @dc.dataclass(frozen=True)
-class Temperature(Model.Option, lang.Final):
+class Temperature(Model.RequestOption, UniqueOption, lang.Final):
     f: float
 
 
@@ -48,7 +56,7 @@ class Temperature(Model.Option, lang.Final):
 
 class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
     @dc.dataclass(frozen=True)
-    class Request(Model.Request[str, Model.Option]):
+    class Request(Model.Request[str, Model.RequestOption]):
         pass
 
     @dc.dataclass(frozen=True)
@@ -64,11 +72,11 @@ class PromptModel(Model['PromptModel.Request', 'PromptModel.Response']):
 
 
 class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
-    class Option(lang.Abstract):
+    class RequestOption(Option, lang.Abstract):
         pass
 
     @dc.dataclass(frozen=True)
-    class Request(Model.Request[list[str], Model.Option | Option]):
+    class Request(Model.Request[list[str], Model.RequestOption | RequestOption]):
         pass
 
     @dc.dataclass(frozen=True)
@@ -81,7 +89,7 @@ class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
 
 
 @dc.dataclass(frozen=True)
-class Tool(ChatModel.Option, lang.Final):
+class Tool(ChatModel.RequestOption, lang.Final):
     name: str
 
 
