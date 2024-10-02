@@ -339,8 +339,6 @@ class TreeInterpreter(Visitor):
 
     def visit_projection(self, node, value):
         base = self.visit(node['children'][0], value)
-        if not isinstance(base, list):
-            return None
 
         allow_string = False
         first_child = node['children'][0]
@@ -353,6 +351,8 @@ class TreeInterpreter(Visitor):
             # projections are really sub-expressions in disguise evaluate the rhs when lhs is a sliced string
             return self.visit(node['children'][1], base)
 
+        if not isinstance(base, list):
+            return None
         collected = []
         for element in base:
             current = self.visit(node['children'][1], element)
