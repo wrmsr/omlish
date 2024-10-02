@@ -11,9 +11,10 @@ from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
-from ..content import Content
 from ..content import Text
-from ..embeddings import EmbeddingModel_
+from ..embeddings import EmbeddingModel
+from ..embeddings import EmbeddingRequest
+from ..embeddings import EmbeddingResponse
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
@@ -41,7 +42,7 @@ class OpenaiPromptModel(PromptModel):
             stream=False,
         )
 
-        return PromptResponse(response.choices[0].text)
+        return PromptResponse(v=response.choices[0].text)
 
 
 class OpenaiChatModel(ChatModel):
@@ -82,16 +83,16 @@ class OpenaiChatModel(ChatModel):
             stream=False,
         )
 
-        return ChatResponse(AiMessage(response.choices[0].message.content))  # type: ignore
+        return ChatResponse(v=AiMessage(response.choices[0].message.content))  # type: ignore
 
 
-class OpenaiEmbeddingModel(EmbeddingModel_):
+class OpenaiEmbeddingModel(EmbeddingModel):
     model = 'text-embedding-3-small'
 
-    def generate(self, request: Request[Content]) -> Response[Vector]:
+    def generate(self, request: EmbeddingRequest) -> EmbeddingResponse:
         response = openai.embeddings.create(
             model=self.model,
             input=check.isinstance(request.v, Text).s,
         )
 
-        return Response(Vector(response.data[0].embedding))
+        return EmbeddingResponse(v=Vector(response.data[0].embedding))

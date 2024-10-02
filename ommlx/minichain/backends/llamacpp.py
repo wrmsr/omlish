@@ -5,8 +5,9 @@ from omlish import check
 from omlish import lang
 
 from ..chat import AiMessage
-from ..chat import ChatModel_
+from ..chat import ChatModel
 from ..chat import ChatRequest
+from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
@@ -15,7 +16,9 @@ from ..content import Text
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
-from ..prompts import PromptModel_
+from ..prompts import PromptModel
+from ..prompts import PromptRequest
+from ..prompts import PromptResponse
 
 
 if ta.TYPE_CHECKING:
@@ -24,7 +27,7 @@ else:
     llama_cpp = lang.proxy_import('llama_cpp')
 
 
-class LlamacppPromptModel(PromptModel_):
+class LlamacppPromptModel(PromptModel):
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         'models--QuantFactory--Meta-Llama-3-8B-GGUF',
@@ -33,7 +36,7 @@ class LlamacppPromptModel(PromptModel_):
         'Meta-Llama-3-8B.Q8_0.gguf',
     )
 
-    def generate(self, request: Request[Prompt]) -> Response[str]:
+    def generate(self, request: PromptRequest) -> PromptResponse:
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )
@@ -44,10 +47,10 @@ class LlamacppPromptModel(PromptModel_):
             stop=['\n'],
         )
 
-        return Response(output['choices'][0]['text'])  # type: ignore
+        return PromptResponse(v=output['choices'][0]['text'])  # type: ignore
 
 
-class LlamacppChatModel(ChatModel_):
+class LlamacppChatModel(ChatModel):
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         'models--TheBloke--Llama-2-7B-Chat-GGUF',
@@ -73,7 +76,7 @@ class LlamacppChatModel(ChatModel_):
         else:
             raise TypeError(m)
 
-    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
+    def generate(self, request: ChatRequest) -> ChatResponse:
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )
@@ -84,10 +87,10 @@ class LlamacppChatModel(ChatModel_):
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
                 )
-                for m in request.v.chat
+                for m in request.v
             ],
             max_tokens=1024,
             # stop=['\n'],
         )
 
-        return AiMessage(output['choices'][0]['message']['content'])  # type: ignore
+        return ChatResponse(v=AiMessage(output['choices'][0]['message']['content']))  # type: ignore
