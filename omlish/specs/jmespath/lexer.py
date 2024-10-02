@@ -28,9 +28,9 @@ class Lexer:
         '}': 'rbrace',
         '+': 'plus',
         '%': 'modulo',
-        u'\u2212': 'minus',
-        u'\u00d7': 'multiply',
-        u'\u00f7': 'divide',
+        '\u2212': 'minus',
+        '\u00d7': 'multiply',
+        '\u00f7': 'divide',
     }
 
     def __init__(self):
@@ -240,15 +240,15 @@ class Lexer:
         if (self._position == self._length - 1):
             return False
         else:
-            next = self._chars[self._position + 1]
-            return next in self.START_IDENTIFIER
+            nxt = self._chars[self._position + 1]
+            return nxt in self.START_IDENTIFIER
 
     def _peek_is_next_digit(self):
         if (self._position == self._length - 1):
             return False
         else:
-            next = self._chars[self._position + 1]
-            return next in self.VALID_NUMBER
+            nxt = self._chars[self._position + 1]
+            return nxt in self.VALID_NUMBER
 
     def _initialize_for_expression(self, expression):
         if not expression:
@@ -310,7 +310,7 @@ class Lexer:
             )
 
             if not self._enable_legacy_literals:
-                raise error
+                raise error  # noqa
 
             try:
                 # Invalid JSON values should be converted to quoted JSON strings during the JEP-12 deprecation period.
