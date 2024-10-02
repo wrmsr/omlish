@@ -112,6 +112,7 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
     def invoke(self, request: RequestT) -> ResponseT:
         raise NotImplementedError
 
+    @ta.final
     def invoke_new(
         self,
         v: T,
@@ -124,6 +125,8 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
             **kwargs,
         )
         return self.invoke(ta.cast(RequestT, request))
+
+    __call__ = invoke_new
 
 
 ##
