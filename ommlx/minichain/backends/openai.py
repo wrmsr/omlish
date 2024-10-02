@@ -5,6 +5,8 @@ from omlish import lang
 
 from ..chat import AiMessage
 from ..chat import ChatModel
+from ..chat import ChatRequest
+from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
@@ -12,8 +14,9 @@ from ..chat import UserMessage
 from ..content import Content
 from ..content import Text
 from ..embeddings import EmbeddingModel_
-from ..prompts import Prompt
 from ..prompts import PromptModel
+from ..prompts import PromptRequest
+from ..prompts import PromptResponse
 from ..vectors import Vector
 
 
@@ -26,7 +29,7 @@ else:
 class OpenaiPromptModel(PromptModel):
     model = 'gpt-3.5-turbo-instruct'
 
-    def generate(self, t: PromptModel.Request[Prompt]) -> Response[str]:
+    def generate(self, t: PromptRequest) -> PromptResponse:
         response = openai.completions.create(
             model=self.model,
             prompt=t.v.s,
@@ -38,10 +41,10 @@ class OpenaiPromptModel(PromptModel):
             stream=False,
         )
 
-        return Response(response.choices[0].text)
+        return PromptResponse(response.choices[0].text)
 
 
-class OpenaiChatModel(ChatModel_):
+class OpenaiChatModel(ChatModel):
     model = 'gpt-4o'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -61,7 +64,7 @@ class OpenaiChatModel(ChatModel_):
         else:
             raise TypeError(m)
 
-    def generate(self, request: Request[ChatRequest]) -> Response[AiMessage]:
+    def generate(self, request: ChatRequest) -> ChatResponse:
         response = openai.chat.completions.create(  # noqa
             model=self.model,
             messages=[
@@ -69,7 +72,7 @@ class OpenaiChatModel(ChatModel_):
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
                 )
-                for m in request.v.chat
+                for m in request.v
             ],
             temperature=0,
             max_tokens=1024,
@@ -79,7 +82,7 @@ class OpenaiChatModel(ChatModel_):
             stream=False,
         )
 
-        return Response(AiMessage(response.choices[0].message.content))  # type: ignore
+        return ChatResponse(AiMessage(response.choices[0].message.content))  # type: ignore
 
 
 class OpenaiEmbeddingModel(EmbeddingModel_):

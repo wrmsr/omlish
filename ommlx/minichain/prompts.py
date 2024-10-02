@@ -13,21 +13,27 @@ from .models import Response
 ##
 
 
-PromptRequestOptions: ta.TypeAlias = RequestOption
-
-
 @dc.dataclass(frozen=True)
 class Prompt(lang.Final):
     s: str
 
 
+##
+
+
+PromptInput: ta.TypeAlias = Prompt
+PromptOutput: ta.TypeAlias = str
+
+PromptRequestOptions: ta.TypeAlias = RequestOption
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class PromptRequest(Request[Prompt, PromptRequestOptions], lang.Final):
+class PromptRequest(Request[PromptInput, PromptRequestOptions], lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class PromptResponse(Response[str], lang.Final):
+class PromptResponse(Response[PromptOutput], lang.Final):
     pass
 
 
