@@ -202,7 +202,7 @@ langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.33
+langgraph==0.2.34
 langgraph-checkpoint==2.0.0
 langsmith==0.1.130
 language_data==1.2.0
