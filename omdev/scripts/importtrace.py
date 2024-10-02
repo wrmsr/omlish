@@ -490,11 +490,31 @@ def _main() -> None:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
     import argparse
+
     parser = argparse.ArgumentParser()
+    parser.add_argument('--python')
     parser.add_argument('--sqlite')
     parser.add_argument('--pretty', action='store_true')
     parser.add_argument('mod')
     args = parser.parse_args()
+
+    if args.python:
+        import inspect
+        import subprocess
+
+        mod_src = inspect.getsource(sys.modules[__name__])
+        subprocess.run(
+            [
+                args.python,
+                '-',
+                *(['--sqlite', args.sqlite] if args.sqlite else []),
+                *(['--pretty'] if args.pretty else []),
+                args.mod,
+            ],
+            input=mod_src.encode(),
+            check=True,
+        )
+        return
 
     node = ImportTracer(stringify_fields=True).trace(args.mod)
 
