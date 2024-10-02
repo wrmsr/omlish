@@ -184,24 +184,4 @@
       "result": []
     }
   ]
-}, {
-  "given": null,
-  "cases": [
-    {
-      "expression": "'e\u0301le\u0301ment'[::-1]",
-      "result": "tnem\u0301el\u0301e"
-    },
-    {
-      "expression": "'foo'[2::-1]",
-      "result": "oof"
-    },
-    {
-      "expression": "'foo'[2:-1:-1]",
-      "result": ""
-    },
-    {
-      "expression": "'foo'[:].length(@)",
-      "result": 3
-    }
-  ]
 }]

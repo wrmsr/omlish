@@ -150,13 +150,22 @@ class TreeInterpreter(Visitor):
         else:
             self._functions = functions.Functions()
 
+        self._root = None
+        self._scope = ScopedChainDict()
+
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError(node['type'])
+
+    def evaluate(self, ast, root):
+        self._root = root
+        return self.visit(ast, root)
 
     def visit_subexpression(self, node, value):
         result = value
         for child in node['children']:
             result = self.visit(child, result)
+            if result is None:
+                return None
         return result
 
     def visit_field(self, node, value):
@@ -184,8 +193,24 @@ class TreeInterpreter(Visitor):
                 return None
             return comparator_func(left, right)
 
+    def visit_arithmetic_unary(self, node, value):
+        operation = self._ARITHMETIC_UNARY_FUNC[node['value']]
+        return operation(
+            self.visit(node['children'][0], value),
+        )
+
+    def visit_arithmetic(self, node, value):
+        operation = self._ARITHMETIC_FUNC[node['value']]
+        return operation(
+            self.visit(node['children'][0], value),
+            self.visit(node['children'][1], value),
+        )
+
     def visit_current(self, node, value):
         return value
+
+    def visit_root(self, node, value):
+        return self._root
 
     def visit_expref(self, node, value):
         return _Expression(node['children'][0], self)
@@ -249,8 +274,15 @@ class TreeInterpreter(Visitor):
         return result
 
     def visit_slice(self, node, value):
+        if isinstance(value, str):
+            start = node['children'][0]
+            end = node['children'][1]
+            step = node['children'][2]
+            return value[start:end:step]
+
         if not isinstance(value, list):
             return None
+
         s = slice(*node['children'])
         return value[s]
 
@@ -261,9 +293,6 @@ class TreeInterpreter(Visitor):
         return node['value']
 
     def visit_multi_select_dict(self, node, value):
-        if value is None:
-            return None
-
         collected = self._dict_cls()
         for child in node['children']:
             collected[child['value']] = self.visit(child, value)
@@ -271,9 +300,6 @@ class TreeInterpreter(Visitor):
         return collected
 
     def visit_multi_select_list(self, node, value):
-        if value is None:
-            return None
-
         collected = []
         for child in node['children']:
             collected.append(self.visit(child, value))
@@ -316,6 +342,17 @@ class TreeInterpreter(Visitor):
         if not isinstance(base, list):
             return None
 
+        allow_string = False
+        first_child = node['children'][0]
+        if first_child['type'] == 'index_expression':
+            nested_children = first_child['children']
+            if len(nested_children) > 1 and nested_children[1]['type'] == 'slice':
+                allow_string = True
+
+        if isinstance(base, str) and allow_string:
+            # projections are really sub-expressions in disguise evaluate the rhs when lhs is a sliced string
+            return self.visit(node['children'][1], base)
+
         collected = []
         for element in base:
             current = self.visit(node['children'][1], element)
@@ -323,6 +360,27 @@ class TreeInterpreter(Visitor):
                 collected.append(current)
 
         return collected
+
+    def visit_let_expression(self, node, value):
+        *bindings, expr = node['children']
+        scope = {}
+        for assign in bindings:
+            scope.update(self.visit(assign, value))
+        self._scope.push_scope(scope)
+        result = self.visit(expr, value)
+        self._scope.pop_scope()
+        return result
+
+    def visit_assign(self, node, value):
+        name = node['value']
+        value = self.visit(node['children'][0], value)
+        return {name: value}
+
+    def visit_variable_ref(self, node, value):
+        try:
+            return self._scope[node['value']]
+        except KeyError:
+            raise exceptions.UndefinedVariable(node['value'])
 
     def visit_value_projection(self, node, value):
         base = self.visit(node['children'][0], value)

@@ -6,10 +6,7 @@ from ..exceptions import EmptyExpressionError
 from ..exceptions import LexerError
 
 
-class TestRegexLexer(unittest.TestCase):
-
-    def setUp(self):
-        self.lexer = jmespath.lexer.Lexer()
+class LexerUtils(unittest.TestCase):
 
     def assert_tokens(self, actual, expected):
         # The expected tokens only need to specify the type and value.  The line/column numbers are not checked, and we
@@ -23,6 +20,12 @@ class TestRegexLexer(unittest.TestCase):
         self.assertEqual(stripped[-1]['type'], 'eof')
         stripped.pop()
         self.assertEqual(stripped, expected)
+
+
+class TestRegexLexer(LexerUtils):
+
+    def setUp(self):
+        self.lexer = jmespath.lexer.Lexer()
 
     def test_empty_string(self):
         with self.assertRaises(EmptyExpressionError):
@@ -39,6 +42,42 @@ class TestRegexLexer(unittest.TestCase):
     def test_negative_number(self):
         tokens = list(self.lexer.tokenize('-24'))
         self.assert_tokens(tokens, [{'type': 'number', 'value': -24}])
+
+    def test_plus(self):
+        tokens = list(self.lexer.tokenize('+'))
+        self.assert_tokens(tokens, [{'type': 'plus', 'value': '+'}])
+
+    def test_minus(self):
+        tokens = list(self.lexer.tokenize('-'))
+        self.assert_tokens(tokens, [{'type': 'minus', 'value': '-'}])
+
+    def test_minus_unicode(self):
+        tokens = list(self.lexer.tokenize(u'\u2212'))
+        self.assert_tokens(tokens, [{'type': 'minus', 'value': u'\u2212'}])
+
+    def test_multiplication(self):
+        tokens = list(self.lexer.tokenize('*'))
+        self.assert_tokens(tokens, [{'type': 'star', 'value': '*'}])
+
+    def test_multiplication_unicode(self):
+        tokens = list(self.lexer.tokenize(u'\u00d7'))
+        self.assert_tokens(tokens, [{'type': 'multiply', 'value': u'\u00d7'}])
+
+    def test_division(self):
+        tokens = list(self.lexer.tokenize('/'))
+        self.assert_tokens(tokens, [{'type': 'divide', 'value': '/'}])
+
+    def test_division_unicode(self):
+        tokens = list(self.lexer.tokenize('÷'))
+        self.assert_tokens(tokens, [{'type': 'divide', 'value': '÷'}])
+
+    def test_modulo(self):
+        tokens = list(self.lexer.tokenize('%'))
+        self.assert_tokens(tokens, [{'type': 'modulo', 'value': '%'}])
+
+    def test_integer_division(self):
+        tokens = list(self.lexer.tokenize('//'))
+        self.assert_tokens(tokens, [{'type': 'div', 'value': '//'}])
 
     def test_quoted_identifier(self):
         tokens = list(self.lexer.tokenize('"foobar"'))
@@ -91,7 +130,7 @@ class TestRegexLexer(unittest.TestCase):
         )
 
     def test_literal_string(self):
-        tokens = list(self.lexer.tokenize('`foobar`'))
+        tokens = list(self.lexer.tokenize('`"foobar"`'))
         self.assert_tokens(
             tokens,
             [
@@ -108,13 +147,29 @@ class TestRegexLexer(unittest.TestCase):
             ],
         )
 
-    def test_literal_with_invalid_json(self):
-        with self.assertRaises(LexerError):
-            list(self.lexer.tokenize('`foo"bar`'))
+    def test_raw_string_literal(self):
+        tokens = list(self.lexer.tokenize("'foo'"))
+        self.assert_tokens(tokens, [
+            {'type': 'literal', 'value': 'foo'}
+        ])
 
-    def test_literal_with_empty_string(self):
-        tokens = list(self.lexer.tokenize('``'))
-        self.assert_tokens(tokens, [{'type': 'literal', 'value': ''}])
+    def test_raw_string_literal_preserve_escape(self):
+        tokens = list(self.lexer.tokenize("'foo\\z'"))
+        self.assert_tokens(tokens, [
+            {'type': 'literal', 'value': 'foo\\z'}
+        ])
+
+    def test_raw_string_literal_escaped_apostrophe(self):
+        tokens = list(self.lexer.tokenize("'foo\\\'bar'"))
+        self.assert_tokens(tokens, [
+            {'type': 'literal', 'value': 'foo\'bar'}
+        ])
+
+    def test_raw_string_literal_escaped_reverse_solidus(self):
+        tokens = list(self.lexer.tokenize("'foo\\\\bar'"))
+        self.assert_tokens(tokens, [
+            {'type': 'literal', 'value': 'foo\\bar'}
+        ])
 
     def test_position_information(self):
         tokens = list(self.lexer.tokenize('foo'))
@@ -138,13 +193,26 @@ class TestRegexLexer(unittest.TestCase):
             ],
         )
 
-    def test_adds_quotes_when_invalid_json(self):
-        tokens = list(self.lexer.tokenize('`{{}`'))
+    def test_root_reference(self):
+        tokens = list(self.lexer.tokenize('$[0]'))
+        self.assertEqual(
+            tokens,
+              [
+                  {'type': 'root', 'value': '$', 'start': 0, 'end': 1},
+                  {'type': 'lbracket', 'value': '[', 'start': 1, 'end': 2},
+                  {'type': 'number', 'value': 0, 'start': 2, 'end': 3},
+                  {'type': 'rbracket', 'value': ']', 'start': 3, 'end': 4},
+                  {'type': 'eof', 'value': '', 'start': 4, 'end': 4},
+              ],
+        )
+
+    def test_variable(self):
+        tokens = list(self.lexer.tokenize('$foo'))
         self.assertEqual(
             tokens,
             [
-                {'type': 'literal', 'value': '{{}', 'start': 0, 'end': 4},
-                {'type': 'eof', 'value': '', 'start': 5, 'end': 5},
+                {'type': 'variable', 'value': '$foo', 'start': 0, 'end': 4},
+                {'type': 'eof', 'value': '', 'start': 4, 'end': 4},
             ],
         )
 
@@ -156,9 +224,21 @@ class TestRegexLexer(unittest.TestCase):
         with self.assertRaises(LexerError):
             tokens = list(self.lexer.tokenize('^foo[0]'))  # noqa
 
-    def test_unknown_character_with_identifier(self):
-        with self.assertRaisesRegex(LexerError, 'Unknown token'):
-            list(self.lexer.tokenize('foo-bar'))
+    def test_arithmetic_expression(self):
+        tokens = list(self.lexer.tokenize('foo-bar'))
+        self.assertEqual(
+            tokens,
+            [
+                {'type': 'unquoted_identifier', 'value': 'foo', 'start': 0, 'end': 3},
+                {'type': 'minus', 'value': '-', 'start': 3, 'end': 4},
+                {'type': 'unquoted_identifier', 'value': 'bar', 'start': 4, 'end': 7},
+                {'type': 'eof', 'value': '', 'start': 7, 'end': 7}
+            ]
+        )
+
+    def test_invalid_character_in_json_literal(self):
+        with self.assertRaises(LexerError) as e:
+            tokens = list(self.lexer.tokenize(u'`0\u2028`'))  # noqa
 
 
 if __name__ == '__main__':
