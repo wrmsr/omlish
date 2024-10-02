@@ -7,6 +7,7 @@ from omlish import lang
 
 T = ta.TypeVar('T')
 OptionT = ta.TypeVar('OptionT', bound='Option')
+UniqueOptionT = ta.TypeVar('UniqueOptionT', bound='UniqueOption')
 ModelRequestT = ta.TypeVar('ModelRequestT', bound='Model.Request')
 ModelResponseT = ta.TypeVar('ModelResponseT', bound='Model.Response')
 
@@ -18,8 +19,45 @@ class Option(lang.Abstract):
     pass
 
 
-class UniqueOption(lang.Abstract):
+class UniqueOption(Option):
     pass
+
+
+#
+
+
+class Options(lang.Final, ta.Generic[OptionT]):
+    def __init__(self, *options: OptionT) -> None:
+        super().__init__()
+
+        self._lst = options
+
+        dct: dict = {}
+        for o in options:
+            if isinstance(o, UniqueOption):
+                if type(o) in dct:
+                    raise KeyError(type(o))
+                dct[type(o)] = o
+            else:
+                dct.setdefault(type(o), []).append(o)
+        self._dct = dct
+
+    def __iter__(self) -> ta.Iterator[OptionT]:
+        return iter(self._lst)
+
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    @ta.overload
+    def __getitem__(self, cls: type[OptionT]) -> ta.Sequence[OptionT]:
+        ...
+
+    @ta.overload
+    def __getitem__(self, cls: type[UniqueOptionT]) -> UniqueOptionT:
+        ...
+
+    def __getitem__(self, cls):
+        return self._dct[cls]
 
 
 class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
@@ -30,7 +68,7 @@ class Model(lang.Abstract, ta.Generic[ModelRequestT, ModelResponseT]):
     class Request(lang.Abstract, ta.Generic[T, OptionT]):
         v: T
 
-        options: ta.Sequence[OptionT] = ()
+        options: Options[OptionT] = Options()
 
     @dc.dataclass(frozen=True)
     class Response(lang.Abstract, ta.Generic[T]):
@@ -84,7 +122,6 @@ class ChatModel(Model['ChatModel.Request', 'ChatModel.Response']):
         pass
 
     def generate(self, request: Request) -> Response:
-        print(request)
         return ChatModel.Response('foo')
 
 
@@ -98,23 +135,23 @@ class Tool(ChatModel.RequestOption, lang.Final):
 
 def _main() -> None:
     pm = PromptModel()
-    pm.generate(PromptModel.Request('foo', [TopK(1)]))
-    pm.generate(PromptModel.Request('foo', [Temperature(.1)]))
+    pm.generate(PromptModel.Request('foo', Options(TopK(1))))
+    pm.generate(PromptModel.Request('foo', Options(Temperature(.1))))
     pm.generate(
         PromptModel.Request(
             'foo',
-            [
+            Options(
                 TopK(1),
                 Temperature(.1),
                 # Tool('foo'),
-            ],
+            ),
         ),
     )
 
     cm = ChatModel()
-    cm.generate(ChatModel.Request(['foo'], [TopK(1)]))
-    cm.generate(ChatModel.Request(['foo'], [Temperature(.1)]))
-    cm.generate(ChatModel.Request(['foo'], [TopK(1), Temperature(.1), Tool('foo')]))
+    cm.generate(ChatModel.Request(['foo'], Options(TopK(1))))
+    cm.generate(ChatModel.Request(['foo'], Options(Temperature(.1))))
+    cm.generate(ChatModel.Request(['foo'], Options(TopK(1), Temperature(.1), Tool('foo'))))
 
 
 if __name__ == '__main__':
