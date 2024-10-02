@@ -11,15 +11,16 @@ from omlish.formats import json
 from .. import Request
 from .. import Response
 from ..chat import AiMessage
-from ..chat import ChatModel_
+from ..chat import ChatModel
 from ..chat import ChatRequest
+from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import UserMessage
 from ..content import Text
 
 
-class MistralChatModel(ChatModel_):
+class MistralChatModel(ChatModel):
     model: ta.ClassVar[str] = 'mistral-large-latest'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -40,8 +41,8 @@ class MistralChatModel(ChatModel_):
 
     def generate(
             self,
-            request: Request[ChatRequest],
-    ) -> Response[AiMessage]:
+            request: ChatRequest,
+    ) -> ChatResponse:
         key = os.environ['MISTRAL_API_KEY']
 
         req_dct = {
@@ -51,7 +52,7 @@ class MistralChatModel(ChatModel_):
                     'role': self.ROLES_MAP[type(m)],
                     'content': self._get_msg_content(m),
                 }
-                for m in request.v.chat
+                for m in request.v
             ],
         }
 
@@ -69,4 +70,4 @@ class MistralChatModel(ChatModel_):
 
         resp_dct = json.loads(resp_buf.decode('utf-8'))
 
-        return Response(AiMessage(resp_dct['choices'][0]['message']['content']))
+        return ChatResponse(v=AiMessage(resp_dct['choices'][0]['message']['content']))

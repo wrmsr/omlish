@@ -11,15 +11,16 @@ from omlish.formats import json
 from .. import Request
 from .. import Response
 from ..chat import AiMessage
-from ..chat import ChatModel_
+from ..chat import ChatModel
 from ..chat import ChatRequest
+from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import UserMessage
 from ..content import Text
 
 
-class GoogleChatModel(ChatModel_):
+class GoogleChatModel(ChatModel):
     model: ta.ClassVar[str] = 'gemini-1.5-flash-latest'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -42,8 +43,8 @@ class GoogleChatModel(ChatModel_):
 
     def generate(
             self,
-            request: Request[ChatRequest],
-    ) -> Response[AiMessage]:
+            request: ChatRequest,
+    ) -> ChatResponse:
         key = os.environ['GEMINI_API_KEY']
 
         req_dct = {
@@ -56,7 +57,7 @@ class GoogleChatModel(ChatModel_):
                         },
                     ],
                 }
-                for m in request.v.chat
+                for m in request.v
             ],
         }
 
@@ -70,4 +71,4 @@ class GoogleChatModel(ChatModel_):
 
         resp_dct = json.loads(resp_buf.decode('utf-8'))
 
-        return Response(AiMessage(resp_dct['candidates'][0]['content']['parts'][0]['text']))
+        return ChatResponse(v=AiMessage(resp_dct['candidates'][0]['content']['parts'][0]['text']))

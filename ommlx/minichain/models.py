@@ -50,7 +50,11 @@ class Request(lang.Abstract, ta.Generic[T, OptionT]):
 
     @classmethod
     def new(cls, v: T, *options: OptionT, **kwargs: ta.Any) -> ta.Self:
-        return cls(v, Options(*options), **kwargs)
+        return cls(
+            v=v,
+            options=Options(*options),
+            **kwargs,
+        )
 
 
 @dc.dataclass(frozen=True, kw_only=True)

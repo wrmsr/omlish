@@ -6,11 +6,10 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .. import Request
-from .. import Response
 from ..chat import AiMessage
-from ..chat import ChatModel_
+from ..chat import ChatModel
 from ..chat import ChatRequest
+from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import UserMessage
@@ -23,7 +22,7 @@ else:
     anthropic = lang.proxy_import('anthropic')
 
 
-class AnthropicChatModel(ChatModel_):
+class AnthropicChatModel(ChatModel):
     model: ta.ClassVar[str] = 'claude-3-opus-20240229'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
@@ -44,10 +43,10 @@ class AnthropicChatModel(ChatModel_):
 
     def generate(
             self,
-            request: Request[ChatRequest],
+            request: ChatRequest,
             *,
             max_tokens: int = 4096,
-    ) -> Response[AiMessage]:
+    ) -> ChatResponse:
         client = anthropic.Anthropic()
         response = client.messages.create(
             model=self.model,
@@ -56,8 +55,8 @@ class AnthropicChatModel(ChatModel_):
                     role=self.ROLES_MAP[type(m)],  # type: ignore
                     content=self._get_msg_content(m),
                 )
-                for m in request.v.chat
+                for m in request.v
             ],
             max_tokens=max_tokens,
         )
-        return Response(AiMessage(response.content[0].text))  # type: ignore
+        return ChatResponse(v=AiMessage(response.content[0].text))  # type: ignore

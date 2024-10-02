@@ -7,8 +7,9 @@ from omlish import lang
 
 from ..models import Request
 from ..models import Response
-from ..prompts import Prompt
-from ..prompts import PromptModel_
+from ..prompts import PromptModel
+from ..prompts import PromptResponse
+from ..prompts import PromptRequest
 
 
 if ta.TYPE_CHECKING:
@@ -18,7 +19,7 @@ else:
 
 
 @dc.dataclass(frozen=True)
-class TransformersPromptModel(PromptModel_):
+class TransformersPromptModel(PromptModel):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
         # 'Qwen/Qwen2-0.5B'
@@ -28,7 +29,7 @@ class TransformersPromptModel(PromptModel_):
     model: str = dc.field(default_factory=lambda: TransformersPromptModel.DEFAULT_MODEL)
     kwargs: ta.Mapping[str, ta.Any] | None = None
 
-    def generate(self, request: Request[Prompt]) -> Response[str]:
+    def generate(self, request: PromptRequest) -> PromptResponse:
         pipeline = transformers.pipeline(
             'text-generation',
             model=self.model,
@@ -41,4 +42,4 @@ class TransformersPromptModel(PromptModel_):
             },
         )
         output = pipeline(request.v.s)
-        return Response(output)
+        return PromptResponse(v=output)

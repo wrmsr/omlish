@@ -2,12 +2,11 @@ import typing as ta
 
 from omlish import lang
 
-from ..content import Content
 from ..content import Text
-from ..embeddings import EmbeddingModel_
+from ..embeddings import EmbeddingModel
+from ..embeddings import EmbeddingRequest
+from ..embeddings import EmbeddingResponse
 from ..images import Image
-from ..models import Request
-from ..models import Response
 from ..vectors import Vector
 
 
@@ -17,10 +16,10 @@ else:
     st = lang.proxy_import('sentence_transformers')
 
 
-class SentencetransformersEmbeddingModel(EmbeddingModel_):
+class SentencetransformersEmbeddingModel(EmbeddingModel):
     model = 'clip-ViT-B-32'
 
-    def generate(self, request: Request[Content]) -> Response[Vector]:
+    def generate(self, request: EmbeddingRequest) -> EmbeddingResponse:
         mdl = st.SentenceTransformer(self.model)
 
         obj: ta.Any
@@ -34,4 +33,4 @@ class SentencetransformersEmbeddingModel(EmbeddingModel_):
 
         response = mdl.encode(obj)
 
-        return Response(Vector(response.tolist()))
+        return EmbeddingResponse(v=Vector(response.tolist()))
