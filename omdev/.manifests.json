@@ -156,14 +156,14 @@
     }
   },
   {
-    "module": ".tools.mkrelimport",
+    "module": ".tools.mkrelimp",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/mkrelimport.py",
+    "file": "omdev/tools/mkrelimp.py",
     "line": 147,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "mkrelimport",
-        "mod_name": "omdev.tools.mkrelimport"
+        "cmd_name": "mkrelimp",
+        "mod_name": "omdev.tools.mkrelimp"
       }
     }
   },
