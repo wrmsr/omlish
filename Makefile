@@ -325,8 +325,12 @@ docker-stop:
 	${DOCKER_COMPOSE} stop
 
 DOCKER_DEV_CONTAINERS=\
-	omlish-dev
-#	omlish-dev-amd64
+	omlish-dev \
+#	omlish-dev-amd64 \
+
+DOCKER_LITE_CONTAINERS=\
+	omlish-mysql \
+	omlish-postgres \
 
 .PHONY: docker-rebuild
 docker-rebuild: docker-stop
@@ -336,6 +340,10 @@ docker-rebuild: docker-stop
 .PHONY: docker-reup
 docker-reup: docker-rebuild
 	${DOCKER_COMPOSE} up --attach-dependencies ${DOCKER_DEV_CONTAINERS}
+
+.PHONY: docker-reup-lite
+docker-reup-lite: docker-rebuild
+	${DOCKER_COMPOSE} up --attach-dependencies ${DOCKER_LITE_CONTAINERS}
 
 .PHONY: docker-invalidate
 docker-invalidate:
