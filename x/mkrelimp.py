@@ -1,14 +1,19 @@
 import argparse
 import itertools
+import logging
 import os.path
 import typing as ta
 
 from omdev import tokens as tks
+from omlish import logs
 
 import tokenize_rt as trt
 
 
 T = ta.TypeVar('T')
+
+
+log = logging.getLogger(__name__)
 
 
 def indexfn(
@@ -98,6 +103,8 @@ class Processor:
             self,
             src_file: str,
     ) -> None:
+        log.info('Processing file: %s : %s', self._mod_name, src_file)
+
         with open(src_file) as f:
             src = f.read()
 
@@ -141,6 +148,8 @@ def _main() -> None:
     parser.add_argument('mod-name', nargs='?')
     parser.add_argument('-w', '--write', action='store_true')
     args = parser.parse_args()
+
+    logs.configure_standard_logging('INFO')
 
     Processor(
         args.base_dir,
