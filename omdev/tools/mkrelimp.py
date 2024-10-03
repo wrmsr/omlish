@@ -55,11 +55,11 @@ class Processor:
     def process_line_tks(
             self,
             in_tks: tks.Tokens,
-            src_dir: str,
+            src_file: str,
     ) -> tks.Tokens:
         lst = list(in_tks)
         pfx = []
-        while lst and (tks.is_ws(lst[0]) or lst[0].name == 'DEDENT'):
+        while lst and (tks.is_ws(lst[0]) or lst[0].name in ('INDENT', 'DEDENT')):
             pfx.append(lst.pop(0))
 
         if (
@@ -79,6 +79,7 @@ class Processor:
 
         ##
 
+        src_dir = os.path.dirname(src_file)
         rel_path = os.path.relpath(os.path.join(self._base_dir, *imp_name_parts[1:]), src_dir)
         rel_path_parts = rel_path.split(os.sep)
         pd_pos = indexfn(lambda s: s != '..', rel_path_parts)
@@ -115,7 +116,7 @@ class Processor:
         out_ls = [
             self.process_line_tks(
                 l,
-                os.path.dirname(src_file),
+                src_file,
             )
             for l in in_ls
         ]
