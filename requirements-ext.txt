@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.4.3
+simsimd==5.4.4
 
 spacy==3.8.0  # FIXME: llama-index-core
 
