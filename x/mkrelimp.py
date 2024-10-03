@@ -85,6 +85,27 @@ class Processor:
         lst[0:0] = pfx
         return lst
 
+    def process_file(
+            self,
+            src_file: str,
+    ) -> None:
+        with open(src_file) as f:
+            src = f.read()
+
+        ts = trt.src_to_tokens(src)
+        in_ls = tks.split_lines(ts)
+        out_ls = [
+            p.process_line_tks(
+                l,
+                os.path.dirname(src_file),
+            )
+            for l in in_ls
+        ]
+        out_src = tks.join_lines(out_ls)
+
+        with open(src_file, 'w') as f:
+            f.write(out_src)
+
 
 def _main() -> None:
     base_dir = os.path.join(os.path.dirname(__file__), 'antlr_dev/_runtime')
@@ -101,23 +122,7 @@ def _main() -> None:
             if not fn.endswith('.py'):
                 continue
 
-            fp = os.path.join(dp, fn)
-            with open(fp) as f:
-                src = f.read()
-
-            ts = trt.src_to_tokens(src)
-            in_ls = tks.split_lines(ts)
-            out_ls = [
-                p.process_line_tks(
-                    l,
-                    dp,
-                )
-                for l in in_ls
-            ]
-            out_src = tks.join_lines(out_ls)
-
-            with open(fp, 'w') as f:
-                f.write(out_src)
+            p.process_file(os.path.join(dp, fn))
 
 
 if __name__ == '__main__':
