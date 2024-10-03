@@ -4,6 +4,7 @@ import typing as ta
 
 from omdev import tokens as tks
 from omlish import check
+
 import tokenize_rt as trt
 
 
@@ -110,23 +111,29 @@ class Processor:
         with open(src_file, 'w') as f:
             f.write(out_src)
 
+    def process_dir(
+            self,
+            base_dir: str,
+    ) -> None:
+        for dp, dns, fns in os.walk(base_dir):
+            for fn in fns:
+                if not fn.endswith('.py'):
+                    continue
+
+                self.process_file(os.path.join(dp, fn))
+
+    def process(self) -> None:
+        self.process_dir(self._base_dir)
+
 
 def _main() -> None:
     base_dir = os.path.join(os.path.dirname(__file__), 'antlr_dev/_runtime')
-    check.state(os.path.isdir(base_dir))
     mod_name = 'antlr4'  # os.path.basename(base_dir)
 
-    p = Processor(
+    Processor(
         mod_name,
         base_dir,
-    )
-
-    for dp, dns, fns in os.walk(base_dir):
-        for fn in fns:
-            if not fn.endswith('.py'):
-                continue
-
-            p.process_file(os.path.join(dp, fn))
+    ).process()
 
 
 if __name__ == '__main__':
