@@ -49,14 +49,14 @@ class Processor:
         pfx = []
         while lst and (tks.is_ws(lst[0]) or lst[0].name == 'DEDENT'):
             pfx.append(lst.pop(0))
-        if not lst:
-            return in_tks
 
-        first_tk: trt.Token = lst[0]
-
-        if first_tk.name != 'NAME' or first_tk.src not in ('import', 'from'):
-            return in_tks
-        if not (len(lst) >= 3 and lst[2].name == 'NAME' and lst[2].src == self._mod_name):
+        if (
+                len(lst) < 3 or
+                lst[0].name != 'NAME' or
+                lst[0].src not in ('import', 'from') or
+                lst[2].name != 'NAME' or
+                lst[2].src != self._mod_name
+        ):
             return in_tks
 
         ##
