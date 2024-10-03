@@ -47,10 +47,22 @@ def _main() -> None:
             ts = trt.src_to_tokens(src)
             ls = tks.split_lines(ts)
             for l in ls:
+                lpfx = []
+                while l and (tks.is_ws(l[0]) or l[0].name == 'DEDENT'):
+                    lpfx.append(l.pop(0))
+                if not l:
+                    l[0:0] = lpfx
+                    continue
+
                 ft: trt.Token = l[0]
+                if fn == 'Errors.py' and ft.line == 37:
+                    breakpoint()
+
                 if ft.name != 'NAME' or ft.src not in ('import', 'from'):
+                    l[0:0] = lpfx
                     continue
                 if not (len(l) >= 3 and l[2].name == 'NAME' and l[2].src == mod_name):
+                    l[0:0] = lpfx
                     continue
 
                 print(tks.join_toks(l).strip())
@@ -84,6 +96,7 @@ def _main() -> None:
                     trt.Token(name='OP', src='.'),
                     [trt.Token(name='NAME', src=p) for p in ps],
                 )
+                l[0:0] = lpfx
 
                 ##
 
