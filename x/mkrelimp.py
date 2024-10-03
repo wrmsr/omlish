@@ -61,26 +61,26 @@ class Processor:
 
         ##
 
-        e = indexfn(tks.is_ws, lst, 3)
-        ip = list(lst[2:e])
-        del lst[2:e]
-        ps = [t.src for t in ip if t.name == 'NAME']
+        ws_pos = indexfn(tks.is_ws, lst, 3)
+        imp_name_tks = list(lst[2:ws_pos])
+        del lst[2:ws_pos]
+        imp_name_parts = [t.src for t in imp_name_tks if t.name == 'NAME']
 
         ##
 
-        rel_path = os.path.relpath(os.path.join(self._base_dir, *ps[1:]), src_dir)
-        sr = rel_path.split(os.sep)
-        nr = indexfn(lambda s: s != '..', sr)
-        if nr < 0:
-            ps = ['.' * (len(sr) + 1)]
+        rel_path = os.path.relpath(os.path.join(self._base_dir, *imp_name_parts[1:]), src_dir)
+        rel_path_parts = rel_path.split(os.sep)
+        pd_pos = indexfn(lambda s: s != '..', rel_path_parts)
+        if pd_pos < 0:
+            rel_imp_name_parts = ['.' * (len(rel_path_parts) + 1)]
         else:
-            ps = ['.' * nr, *sr[nr:]]
+            rel_imp_name_parts = ['.' * pd_pos, *rel_path_parts[pd_pos:]]
 
         ##
 
         lst[2:2] = interleave(
             trt.Token(name='OP', src='.'),
-            [trt.Token(name='NAME', src=p) for p in ps],
+            [trt.Token(name='NAME', src=p) for p in rel_imp_name_parts],
         )
         lst[0:0] = pfx
         return lst
