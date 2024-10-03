@@ -37,7 +37,7 @@ value
     ;
 
 STRING
-    : '"' (ESC | SAFECODEPOINT)* '"'
+    : '"' (ESC | SAFE_CODEPOINT)* '"'
     ;
 
 fragment ESC
@@ -52,7 +52,7 @@ fragment HEX
     : [0-9a-fA-F]
     ;
 
-fragment SAFECODEPOINT
+fragment SAFE_CODEPOINT
     : ~ ["\\\u0000-\u001F]
     ;
 
