@@ -3,7 +3,6 @@ import os.path
 import typing as ta
 
 from omdev import tokens as tks
-from omlish import check
 
 import tokenize_rt as trt
 
@@ -34,12 +33,12 @@ def interleave(sep: T, it: ta.Iterable[T]) -> ta.Iterable[T]:
 class Processor:
     def __init__(
             self,
-            mod_name: str,
             base_dir: str,
+            mod_name: str | None = None,
     ) -> None:
         super().__init__()
-        self._mod_name = mod_name
         self._base_dir = base_dir
+        self._mod_name = mod_name if mod_name is not None else os.path.basename(base_dir)
 
     def process_line_tks(
             self,
@@ -131,8 +130,8 @@ def _main() -> None:
     mod_name = 'antlr4'  # os.path.basename(base_dir)
 
     Processor(
-        mod_name,
         base_dir,
+        mod_name,
     ).process()
 
 
