@@ -34,7 +34,7 @@ def _main() -> None:
     mod_path = os.path.join(os.path.dirname(__file__), 'antlr_dev/_runtime')
     check.state(os.path.isdir(mod_path))
 
-    mod_name = os.path.basename(mod_path)
+    mod_name = 'antlr4'  # os.path.basename(mod_path)
     for dp, dns, fns in os.walk(mod_path):
         for fn in fns:
             if not fn.endswith('.py'):
@@ -50,43 +50,45 @@ def _main() -> None:
                 ft: trt.Token = l[0]
                 if ft.name != 'NAME' or ft.src not in ('import', 'from'):
                     continue
-                if len(l) >= 3 and l[2].name == 'NAME' and l[2].src == mod_name:
-                    print(tks.join_toks(l).strip())
+                if not (len(l) >= 3 and l[2].name == 'NAME' and l[2].src == mod_name):
+                    continue
 
-                    ##
+                print(tks.join_toks(l).strip())
 
-                    e = indexfn(tks.is_ws, l, 3)
-                    ip = list(l[2:e])
-                    del l[2:e]
-                    ps = [t.src for t in ip if t.name == 'NAME']
+                ##
 
-                    ##
+                e = indexfn(tks.is_ws, l, 3)
+                ip = list(l[2:e])
+                del l[2:e]
+                ps = [t.src for t in ip if t.name == 'NAME']
 
-                    print((dp, fn))
-                    print(ps)
-                    rel_path = os.path.relpath(os.path.join(mod_path, *ps[1:]), dp)
-                    print(rel_path)
-                    sr = rel_path.split(os.sep)
-                    print(sr)
-                    nr = indexfn(lambda s: s != '..', sr)
-                    print(nr)
-                    if nr < 0:
-                        ps = ['.' * (len(sr) + 1)]
-                    else:
-                        ps = ['.' * nr, *sr[nr:]]
-                    print(ps)
+                ##
 
-                    ##
+                print((dp, fn))
+                print(ps)
+                rel_path = os.path.relpath(os.path.join(mod_path, *ps[1:]), dp)
+                print(rel_path)
+                sr = rel_path.split(os.sep)
+                print(sr)
+                nr = indexfn(lambda s: s != '..', sr)
+                print(nr)
+                if nr < 0:
+                    ps = ['.' * (len(sr) + 1)]
+                else:
+                    ps = ['.' * nr, *sr[nr:]]
+                print(ps)
 
-                    l[2:2] = interleave(
-                        trt.Token(name='OP', src='.'),
-                        [trt.Token(name='NAME', src=p) for p in ps],
-                    )
+                ##
 
-                    ##
+                l[2:2] = interleave(
+                    trt.Token(name='OP', src='.'),
+                    [trt.Token(name='NAME', src=p) for p in ps],
+                )
 
-                    print(tks.join_toks(l).strip())
-                    print()
+                ##
+
+                print(tks.join_toks(l).strip())
+                print()
 
             new_src = tks.join_lines(ls)
 
