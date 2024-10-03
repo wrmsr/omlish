@@ -144,8 +144,8 @@ class Processor:
 
 def _main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('base-dir')
-    parser.add_argument('mod-name', nargs='?')
+    parser.add_argument('base_dir')
+    parser.add_argument('mod_name', nargs='?')
     parser.add_argument('-w', '--write', action='store_true')
     args = parser.parse_args()
 
