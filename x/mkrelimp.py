@@ -31,7 +31,7 @@ def interleave(sep: T, it: ta.Iterable[T]) -> ta.Iterable[T]:
 
 
 def _main() -> None:
-    mod_path = 'x/antlr/_vendor/antlr4'
+    mod_path = 'x/antlr_dev/_runtime'
     check.state(os.path.isdir(mod_path))
 
     mod_name = os.path.basename(mod_path)
