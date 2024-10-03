@@ -35,3 +35,18 @@ class GitWatch:
     rev: str
     path: str | None = None  # trailing slash means tree
     base: str | None = None  # defaults to repo default branch
+
+    @classmethod
+    def parse(cls, s: str) -> 'GitWatch':
+        raise NotImplementedError
+
+    def __str__(self) -> str:
+        raise NotImplementedError
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()
