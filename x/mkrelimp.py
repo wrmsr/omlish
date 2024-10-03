@@ -95,7 +95,7 @@ class Processor:
         ts = trt.src_to_tokens(src)
         in_ls = tks.split_lines(ts)
         out_ls = [
-            p.process_line_tks(
+            self.process_line_tks(
                 l,
                 os.path.dirname(src_file),
             )
