@@ -63,7 +63,6 @@ class Processor:
 
         ws_pos = indexfn(tks.is_ws, lst, 3)
         imp_name_tks = list(lst[2:ws_pos])
-        del lst[2:ws_pos]
         imp_name_parts = [t.src for t in imp_name_tks if t.name == 'NAME']
 
         ##
@@ -78,12 +77,17 @@ class Processor:
 
         ##
 
-        lst[2:2] = interleave(
+        new_tks = interleave(
             trt.Token(name='OP', src='.'),
             [trt.Token(name='NAME', src=p) for p in rel_imp_name_parts],
         )
-        lst[0:0] = pfx
-        return lst
+        out_tks = [
+            *pfx,
+            *lst[:ws_pos],
+            *new_tks,
+            *lst[ws_pos:],
+        ]
+        return out_tks
 
     def process_file(
             self,
