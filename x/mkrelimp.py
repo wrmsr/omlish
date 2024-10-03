@@ -30,6 +30,53 @@ def interleave(sep: T, it: ta.Iterable[T]) -> ta.Iterable[T]:
         yield e
 
 
+def _process_line_tks(
+        in_tks: tks.Tokens,
+        dir_path: str,
+        mod_name: str,
+        mod_path: str,
+) -> tks.Tokens:
+    lst = list(in_tks)
+    pfx = []
+    while lst and (tks.is_ws(lst[0]) or lst[0].name == 'DEDENT'):
+        pfx.append(lst.pop(0))
+    if not lst:
+        return in_tks
+
+    first_tk: trt.Token = lst[0]
+
+    if first_tk.name != 'NAME' or first_tk.src not in ('import', 'from'):
+        return in_tks
+    if not (len(lst) >= 3 and lst[2].name == 'NAME' and lst[2].src == mod_name):
+        return in_tks
+
+    ##
+
+    e = indexfn(tks.is_ws, lst, 3)
+    ip = list(lst[2:e])
+    del lst[2:e]
+    ps = [t.src for t in ip if t.name == 'NAME']
+
+    ##
+
+    rel_path = os.path.relpath(os.path.join(mod_path, *ps[1:]), dir_path)
+    sr = rel_path.split(os.sep)
+    nr = indexfn(lambda s: s != '..', sr)
+    if nr < 0:
+        ps = ['.' * (len(sr) + 1)]
+    else:
+        ps = ['.' * nr, *sr[nr:]]
+
+    ##
+
+    lst[2:2] = interleave(
+        trt.Token(name='OP', src='.'),
+        [trt.Token(name='NAME', src=p) for p in ps],
+    )
+    lst[0:0] = pfx
+    return lst
+
+
 def _main() -> None:
     mod_path = os.path.join(os.path.dirname(__file__), 'antlr_dev/_runtime')
     check.state(os.path.isdir(mod_path))
@@ -45,68 +92,20 @@ def _main() -> None:
                 src = f.read()
 
             ts = trt.src_to_tokens(src)
-            ls = tks.split_lines(ts)
-            for l in ls:
-                lpfx = []
-                while l and (tks.is_ws(l[0]) or l[0].name == 'DEDENT'):
-                    lpfx.append(l.pop(0))
-                if not l:
-                    l[0:0] = lpfx
-                    continue
-
-                ft: trt.Token = l[0]
-                if fn == 'Errors.py' and ft.line == 37:
-                    breakpoint()
-
-                if ft.name != 'NAME' or ft.src not in ('import', 'from'):
-                    l[0:0] = lpfx
-                    continue
-                if not (len(l) >= 3 and l[2].name == 'NAME' and l[2].src == mod_name):
-                    l[0:0] = lpfx
-                    continue
-
-                print(tks.join_toks(l).strip())
-
-                ##
-
-                e = indexfn(tks.is_ws, l, 3)
-                ip = list(l[2:e])
-                del l[2:e]
-                ps = [t.src for t in ip if t.name == 'NAME']
-
-                ##
-
-                print((dp, fn))
-                print(ps)
-                rel_path = os.path.relpath(os.path.join(mod_path, *ps[1:]), dp)
-                print(rel_path)
-                sr = rel_path.split(os.sep)
-                print(sr)
-                nr = indexfn(lambda s: s != '..', sr)
-                print(nr)
-                if nr < 0:
-                    ps = ['.' * (len(sr) + 1)]
-                else:
-                    ps = ['.' * nr, *sr[nr:]]
-                print(ps)
-
-                ##
-
-                l[2:2] = interleave(
-                    trt.Token(name='OP', src='.'),
-                    [trt.Token(name='NAME', src=p) for p in ps],
+            in_ls = tks.split_lines(ts)
+            out_ls = [
+                _process_line_tks(
+                    l,
+                    dp,
+                    mod_name,
+                    mod_path,
                 )
-                l[0:0] = lpfx
-
-                ##
-
-                print(tks.join_toks(l).strip())
-                print()
-
-            new_src = tks.join_lines(ls)
+                for l in in_ls
+            ]
+            out_src = tks.join_lines(out_ls)
 
             with open(fp, 'w') as f:
-                f.write(new_src)
+                f.write(out_src)
 
 
 if __name__ == '__main__':
