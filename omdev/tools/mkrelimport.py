@@ -4,10 +4,12 @@ import logging
 import os.path
 import typing as ta
 
-from omdev import tokens as tks
+import tokenize_rt as trt
+
 from omlish import logs
 
-import tokenize_rt as trt
+from .. import tokens as tks
+from ..cli import CliModule
 
 
 T = ta.TypeVar('T')
@@ -131,7 +133,7 @@ class Processor:
             self,
             base_dir: str,
     ) -> None:
-        for dp, dns, fns in os.walk(base_dir):
+        for dp, _, fns in os.walk(base_dir):
             for fn in fns:
                 if not fn.endswith('.py'):
                     continue
@@ -140,6 +142,10 @@ class Processor:
 
     def process(self) -> None:
         self.process_dir(self._base_dir)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('mkrelimport', __name__)
 
 
 def _main() -> None:

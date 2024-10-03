@@ -156,6 +156,18 @@
     }
   },
   {
+    "module": ".tools.mkrelimport",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/mkrelimport.py",
+    "line": 147,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "mkrelimport",
+        "mod_name": "omdev.tools.mkrelimport"
+      }
+    }
+  },
+  {
     "module": ".tools.piptools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/piptools.py",
