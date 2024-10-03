@@ -91,7 +91,7 @@ class Trees(object):
 
     @classmethod
     def _findAllNodes(cls, t:ParseTree, index:int, findTokens:bool, nodes:list):
-        from antlr4.ParserRuleContext import ParserRuleContext
+        from ..ParserRuleContext import ParserRuleContext
         # check this node (the root) first
         if findTokens and isinstance(t, TerminalNode):
             if t.symbol.type==index:

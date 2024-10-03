@@ -52,7 +52,7 @@ class ATN(object):
     #  the rule surrounding {@code s}. In other words, the set will be
     #  restricted to tokens reachable staying within {@code s}'s rule.
     def nextTokensInContext(self, s:ATNState, ctx:RuleContext):
-        from antlr4.LL1Analyzer import LL1Analyzer
+        from ..LL1Analyzer import LL1Analyzer
         anal = LL1Analyzer(self)
         return anal.LOOK(s, ctx=ctx)
 

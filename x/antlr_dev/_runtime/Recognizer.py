@@ -52,7 +52,7 @@ class Recognizer(object):
     def getTokenTypeMap(self):
         tokenNames = self.getTokenNames()
         if tokenNames is None:
-            from antlr4.error.Errors import UnsupportedOperationException
+            from .error.Errors import UnsupportedOperationException
             raise UnsupportedOperationException("The current recognizer does not provide a list of token names.")
         result = self.tokenTypeMapCache.get(tokenNames, None)
         if result is None:
@@ -68,7 +68,7 @@ class Recognizer(object):
     def getRuleIndexMap(self):
         ruleNames = self.getRuleNames()
         if ruleNames is None:
-            from antlr4.error.Errors import UnsupportedOperationException
+            from .error.Errors import UnsupportedOperationException
             raise UnsupportedOperationException("The current recognizer does not provide a list of rule names.")
         result = self.ruleIndexMapCache.get(ruleNames, None)
         if result is None:

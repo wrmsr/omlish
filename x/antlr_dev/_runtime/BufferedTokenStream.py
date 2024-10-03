@@ -260,7 +260,7 @@ class BufferedTokenStream(TokenStream):
         for i in range(left, right+1):
             t = self.tokens[i]
             if channel==-1:
-                from antlr4.Lexer import Lexer
+                from .Lexer import Lexer
                 if t.channel!= Lexer.DEFAULT_TOKEN_CHANNEL:
                     hidden.append(t)
             elif t.channel==channel:
