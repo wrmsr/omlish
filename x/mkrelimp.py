@@ -77,13 +77,13 @@ class Processor:
 
         ##
 
-        new_tks = interleave(
+        new_tks = list(interleave(
             trt.Token(name='OP', src='.'),
             [trt.Token(name='NAME', src=p) for p in rel_imp_name_parts],
-        )
+        ))
         out_tks = [
             *pfx,
-            *lst[:ws_pos],
+            *lst[:2],
             *new_tks,
             *lst[ws_pos:],
         ]
