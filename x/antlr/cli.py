@@ -18,17 +18,21 @@ import sys
 import re
 import typing as ta
 
+from omdev.cache import data as dcache
 from omlish import argparse as ap
+from omlish import cached
 from omlish import concurrent as cu
 from omlish import lang
 from omlish import logs
-from omlish import cached
 
 
 log = logging.getLogger(__name__)
 
 
 ANTLR_VERSION = '4.13.2'
+ANTLR_JAR_NAME = f'antlr-{ANTLR_VERSION}-complete.jar'
+ANTLR_JAR_URL = f'https://www.antlr.org/download/{ANTLR_JAR_NAME}'
+ANTLR_JAR_CACHE = dcache.UrlSpec(ANTLR_JAR_URL)
 
 ANTLR_RUNTIME_PACKAGE = 'antlr4-python3-runtime'
 ANTLR_GITHUB_REPO = 'antlr/antlr4'
@@ -64,17 +68,11 @@ class Cli(ap.Cli):
 
     @lang.cached_function
     def get_antlr_jar_path(self) -> str:
-        fn = f'antlr-{ANTLR_VERSION}-complete.jar'
-        fp = os.path.join(self.work_path, '.cache', fn)
-        if not os.path.exists(fp):
-            subprocess.check_call([
-                'curl',
-                '--proto', '=https',
-                '--tlsv1.2',
-                f'https://www.antlr.org/download/antlr-{ANTLR_VERSION}-complete.jar',
-                '-o', fp,
-            ])
-        return os.path.abspath(fp)
+        return dcache.default().get(ANTLR_JAR_CACHE)
+
+    @ap.command()
+    def jar(self) -> None:
+        print(self.get_antlr_jar_path())
 
     @ap.command(
         ap.arg('base_path', metavar='base-path'),
@@ -187,6 +185,10 @@ class Cli(ap.Cli):
         m = re.fullmatch(rf'{ANTLR_RUNTIME_PACKAGE} \((?P<version>[^)]+)\)', tl)
         v = m.groupdict()['version']
         print(v)
+
+    @ap.command()
+    def vendor(self) -> None:
+        raise NotImplementedError
 
 
 def main():
