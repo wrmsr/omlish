@@ -2,13 +2,13 @@
 # Use of this file is governed by the BSD 3-clause license that
 # can be found in the LICENSE.txt file in the project root.
 #/
-from antlr4.IntervalSet import IntervalSet
+from ..IntervalSet import IntervalSet
 
-from antlr4.RuleContext import RuleContext
+from ..RuleContext import RuleContext
 
-from antlr4.Token import Token
-from antlr4.atn.ATNType import ATNType
-from antlr4.atn.ATNState import ATNState, DecisionState
+from ..Token import Token
+from .ATNType import ATNType
+from .ATNState import ATNState, DecisionState
 
 
 class ATN(object):
