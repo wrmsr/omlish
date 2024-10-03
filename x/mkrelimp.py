@@ -1,3 +1,4 @@
+import argparse
 import itertools
 import os.path
 import typing as ta
@@ -35,10 +36,14 @@ class Processor:
             self,
             base_dir: str,
             mod_name: str | None = None,
+            *,
+            write: bool = False,
     ) -> None:
         super().__init__()
+
         self._base_dir = base_dir
         self._mod_name = mod_name if mod_name is not None else os.path.basename(base_dir)
+        self._write = write
 
     def process_line_tks(
             self,
@@ -107,8 +112,13 @@ class Processor:
         ]
         out_src = tks.join_lines(out_ls)
 
-        with open(src_file, 'w') as f:
-            f.write(out_src)
+        if self._write:
+            with open(src_file, 'w') as f:
+                f.write(out_src)
+
+        else:
+            print(out_src)
+            print()
 
     def process_dir(
             self,
@@ -126,12 +136,16 @@ class Processor:
 
 
 def _main() -> None:
-    base_dir = os.path.join(os.path.dirname(__file__), 'antlr_dev/_runtime')
-    mod_name = 'antlr4'  # os.path.basename(base_dir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('base-dir')
+    parser.add_argument('mod-name', nargs='?')
+    parser.add_argument('-w', '--write', action='store_true')
+    args = parser.parse_args()
 
     Processor(
-        base_dir,
-        mod_name,
+        args.base_dir,
+        args.mod_name,
+        write=args.write,
     ).process()
 
 
