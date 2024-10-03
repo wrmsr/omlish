@@ -145,7 +145,7 @@ class Processor:
 
 
 # @omlish-manifest
-_CLI_MODULE = CliModule('mkrelimport', __name__)
+_CLI_MODULE = CliModule('mkrelimp', __name__)
 
 
 def _main() -> None:
