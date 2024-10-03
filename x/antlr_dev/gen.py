@@ -1,4 +1,5 @@
 import os.path
+import re
 import shutil
 import subprocess
 
@@ -16,7 +17,7 @@ class GenPy:
             self,
             out_dir: str,
             *,
-            runtime_import: str = 'omlish.antlr._runtime',
+            runtime_import: str = 'x.antlr_dev._runtime',
     ) -> None:
         super().__init__()
         self._out_dir = out_dir
@@ -38,10 +39,15 @@ class GenPy:
 
     def process_py(self, py_file: str) -> None:
         with open(py_file) as f:
-            lines = list(f)
+            in_lines = list(f)
+
+        out_lines = []
+        for l in in_lines:
+            l = re.sub(r'^(from antlr4)(.*)', rf'from {self._runtime_import}\2', l)
+            out_lines.append(l)
 
         with open(py_file, 'w') as f:
-            f.write(''.join(lines))
+            f.write(''.join(out_lines))
 
 
 def _main() -> None:

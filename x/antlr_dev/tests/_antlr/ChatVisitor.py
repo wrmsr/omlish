@@ -1,5 +1,5 @@
 # Generated from /Users/spinlock/src/wrmsr/omlish/x/antlr_dev/tests/Chat.g4 by ANTLR 4.13.2
-from antlr4 import *
+from x.antlr_dev._runtime import *
 if "." in __name__:
     from .ChatParser import ChatParser
 else:
