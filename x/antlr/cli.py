@@ -62,10 +62,6 @@ def _find_files(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: 
 
 class Cli(ap.Cli):
 
-    @cached.property
-    def work_path(self) -> str:
-        return os.getcwd()
-
     @lang.cached_function
     def get_antlr_jar_path(self) -> str:
         return dcache.default().get(ANTLR_JAR_CACHE)
