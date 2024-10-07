@@ -159,7 +159,7 @@
     "module": ".tools.mkrelimp",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/mkrelimp.py",
-    "line": 147,
+    "line": 148,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "mkrelimp",
