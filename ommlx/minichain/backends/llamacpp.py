@@ -44,7 +44,7 @@ class LlamacppPromptModel(PromptModel):
             stop=['\n'],
         )
 
-        return PromptResponse(v=output['choices'][0]['text'])  # type: ignore
+        return PromptResponse(v=output['choices'][0]['text'])
 
 
 class LlamacppChatModel(ChatModel):
@@ -80,7 +80,7 @@ class LlamacppChatModel(ChatModel):
 
         output = llm.create_chat_completion(
             messages=[  # noqa
-                dict(  # type: ignore
+                dict(
                     role=self.ROLES_MAP[type(m)],
                     content=self._get_msg_content(m),
                 )
@@ -90,4 +90,4 @@ class LlamacppChatModel(ChatModel):
             # stop=['\n'],
         )
 
-        return ChatResponse(v=AiMessage(output['choices'][0]['message']['content']))  # type: ignore
+        return ChatResponse(v=AiMessage(output['choices'][0]['message']['content']))
