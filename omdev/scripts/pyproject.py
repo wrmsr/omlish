@@ -4386,11 +4386,12 @@ class Pyenv:
             return []
         ret = []
         vp = os.path.join(root, 'versions')
-        for dn in os.listdir(vp):
-            ep = os.path.join(vp, dn, 'bin', 'python')
-            if not os.path.isfile(ep):
-                continue
-            ret.append((dn, ep))
+        if os.path.isdir(vp):
+            for dn in os.listdir(vp):
+                ep = os.path.join(vp, dn, 'bin', 'python')
+                if not os.path.isfile(ep):
+                    continue
+                ret.append((dn, ep))
         return ret
 
     def installable_versions(self) -> ta.List[str]:
