@@ -4,6 +4,7 @@ import pytest
 
 from omlish.testing import pytest as ptu
 
+from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import UserMessage
@@ -41,6 +42,17 @@ def test_openai():
 
     resp = llm(
         [UserMessage.of('Is water dry?')],
+        Temperature(.1),
+        MaxTokens(64),
+    )
+    print(resp)
+    assert resp.v
+
+
+def test_llamacpp():
+    llm = LlamacppPromptModel()
+    resp = llm(
+        Prompt('Is water dry?'),
         Temperature(.1),
         MaxTokens(64),
     )
