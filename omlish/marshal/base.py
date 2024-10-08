@@ -160,7 +160,7 @@ class Option:
 
 @dc.dataclass(frozen=True)
 class BaseContext(lang.Abstract):
-    registry: Registry[ta.Any]
+    registry: Registry
     options: col.TypeMap[Option] = col.TypeMap()
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
