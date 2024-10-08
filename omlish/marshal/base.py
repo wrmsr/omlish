@@ -160,7 +160,7 @@ class Option:
 
 @dc.dataclass(frozen=True)
 class BaseContext(lang.Abstract):
-    registry: Registry
+    registry: Registry[ta.Any]
     options: col.TypeMap[Option] = col.TypeMap()
 
 
