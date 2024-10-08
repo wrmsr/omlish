@@ -15,16 +15,8 @@ from .models import Response
 ##
 
 
-@dc.dataclass(frozen=True)
-class Prompt(lang.Final):
-    s: str
-
-
-##
-
-
-PromptInput: ta.TypeAlias = Prompt
-PromptNew: ta.TypeAlias = ta.Any
+PromptInput: ta.TypeAlias = str
+PromptNew: ta.TypeAlias = str
 PromptOutput: ta.TypeAlias = str
 
 PromptRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption
@@ -41,7 +33,7 @@ class PromptRequest(
 ):
     @dc.validate
     def _validate_v(self) -> bool:
-        return isinstance(self.v, Prompt)
+        return isinstance(self.v, str)
 
 
 @dc.dataclass(frozen=True, kw_only=True)

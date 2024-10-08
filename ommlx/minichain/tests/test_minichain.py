@@ -9,7 +9,6 @@ from ..backends.transformers import TransformersPromptModel
 from ..chat import UserMessage
 from ..generative import MaxTokens
 from ..generative import Temperature
-from ..prompts import Prompt
 from ..prompts import PromptRequest
 
 
@@ -18,11 +17,11 @@ from ..prompts import PromptRequest
 def test_transformers():
     llm = TransformersPromptModel('Qwen/Qwen2-0.5B', dict(max_new_tokens=20, device=None))
 
-    resp = llm.invoke(PromptRequest.new(Prompt('Is water dry?')))
+    resp = llm.invoke(PromptRequest.new('Is water dry?'))
     print(resp)
     assert resp.v
 
-    resp = llm(Prompt('Is water dry?'))
+    resp = llm('Is water dry?')
     print(resp)
     assert resp.v
 
@@ -43,7 +42,7 @@ def test_openai(harness):
 def test_llamacpp():
     llm = LlamacppPromptModel()
     resp = llm(
-        Prompt('Is water dry?'),
+        'Is water dry?',
         Temperature(.1),
         MaxTokens(64),
     )
