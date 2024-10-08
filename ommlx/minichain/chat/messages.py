@@ -27,7 +27,7 @@ class UserMessage(Message, lang.Final):
 
     @classmethod
     def of(cls, c: ta.Iterable[Contentable] | Contentable, **kwargs: ta.Any) -> 'UserMessage':
-        if isinstance(c, ta.Iterable):
+        if isinstance(c, ta.Iterable) and not isinstance(c, str):
             content = [Content.of(e) for e in c]
         else:
             content = [Content.of(c)]
