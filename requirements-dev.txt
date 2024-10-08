@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.18
+uv>=0.4.19
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -19,7 +19,7 @@ flake8-pyproject==1.2.3
 ruff==0.6.9
 
 docutils-stubs==0.0.22
-types-paramiko==3.5.0.20240928  # @omdev-venv !13t
+types-paramiko==3.5.0.20240928  # @omlish-venv !13t
 types-pyyaml==6.0.12.20240917
 types-ujson==5.10.0.20240515
 
@@ -36,9 +36,9 @@ ipython==8.28.0
 pg8000==1.31.2
 pymysql==1.1.1
 
-litecli==1.12.3  # @omdev-venv !13t
-mycli==1.27.2  # @omdev-venv !13t
-pgcli==4.1.0  # @omdev-venv !13t
+litecli==1.12.3  # @omlish-venv !13t
+mycli==1.27.2  # @omlish-venv !13t
+pgcli==4.1.0  # @omlish-venv !13t
 
 # pydevd_pycharm==241.18034.82
 
@@ -49,7 +49,7 @@ cython==3.0.11
 
 jinja2==3.1.4
 
-lxml==5.3.0  # @omdev-venv !13t
+lxml==5.3.0  # @omlish-venv !13t
 
 # clang
 
@@ -85,7 +85,7 @@ pycparser==2.22
 cffi==1.17.0
 pcpp==1.30
 
-paramiko==3.5.0  # @omdev-venv !13t  # !! LGPL
+paramiko==3.5.0  # @omlish-venv !13t  # !! LGPL
 
 docutils==0.21.2
 

@@ -99,7 +99,7 @@ evaluate==0.4.3
 execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
-faiss-cpu==1.8.0.post1
+faiss-cpu==1.9.0
 fastapi==0.115.0
 fastjsonschema==2.20.0
 filelock==3.16.1
@@ -146,7 +146,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.25.1
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.112.4
+hypothesis==6.112.5
 idna==3.10
 ifaddr==0.2.0
 imageio==2.35.1
@@ -156,7 +156,7 @@ iniconfig==2.0.0
 ipykernel==6.29.4
 ipython==8.28.0
 ipywidgets==8.1.2
-isodate==0.6.1
+isodate==0.7.0
 isoduration==20.11.0
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
@@ -164,7 +164,7 @@ jaraco.functools==4.1.0
 jedi==0.19.1
 jedi-language-server==0.41.4
 Jinja2==3.1.4
-jiter==0.6.0
+jiter==0.6.1
 jmespath==1.0.1
 joblib==1.4.2
 json5==0.9.25
@@ -172,7 +172,7 @@ jsonpatch==1.33
 jsonpath-python==1.0.6
 jsonpointer==3.0.0
 jsonschema==4.23.0
-jsonschema-specifications==2023.12.1
+jsonschema-specifications==2024.10.1
 jupyter-console==6.6.3
 jupyter-events==0.10.0
 jupyter-lsp==2.2.5
@@ -270,7 +270,7 @@ ollama==0.3.3
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.51.1
+openai==1.51.2
 opencv-python==4.10.0.84
 opentelemetry-api==1.27.0
 opentelemetry-exporter-otlp-proto-common==1.27.0
@@ -295,7 +295,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@859fd880e66fd152401b48c1f8c8bacbcc576f70
+peft @ git+https://github.com/huggingface/peft.git@5e91b546354159a143b1c71dc6bfc15569e067ad
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -314,6 +314,7 @@ preshed==3.0.9
 priority==2.0.0
 prometheus_client==0.21.0
 prompt_toolkit==3.0.48
+propcache==0.2.0
 proto-plus==1.24.0
 protobuf==4.25.5
 psutil==6.0.0
@@ -423,7 +424,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.35
 sqlean.py==3.45.1
-sqlglot==25.24.4
+sqlglot==25.24.5
 sqlite-vec==0.1.3
 sqlparse==0.4.4
 srsly==2.4.8
@@ -479,7 +480,7 @@ unstructured-client==0.25.9
 uri-template==1.3.0
 urllib3==2.2.3
 usearch==2.15.2
-uv==0.4.18
+uv==0.4.19
 uvicorn==0.31.0
 uvloop==0.20.0
 voluptuous==0.15.2
@@ -501,7 +502,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.5.0
-yarl==1.13.1
+yarl==1.14.0
 zigpy==0.67.0
 zipp==3.20.2
 zwave-js-server-python==0.58.1
