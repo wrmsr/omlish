@@ -19,11 +19,19 @@ from .options import ChatRequestOptions
 
 
 ChatInput: ta.TypeAlias = Chat
+ChatNew: ta.TypeAlias = ta.Any
 ChatOutput: ta.TypeAlias = AiMessage
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ChatRequest(Request[ChatInput, ChatRequestOptions], lang.Final):
+class ChatRequest(
+    Request[
+        ChatInput,
+        ChatRequestOptions,
+        ChatNew,
+    ],
+    lang.Final,
+):
     @dc.validate
     def _validate_v(self) -> bool:
         return (
@@ -38,7 +46,16 @@ class ChatResponse(Response[ChatOutput], lang.Final):
     pass
 
 
-class ChatModel(Model[ChatRequest, ChatRequestOptions, ChatResponse], Generative, lang.Abstract):
+class ChatModel(
+    Model[
+        ChatRequest,
+        ChatRequestOptions,
+        ChatNew,
+        ChatResponse,
+    ],
+    Generative,
+    lang.Abstract,
+):
     @abc.abstractmethod
     def invoke(self, request: ChatRequest) -> ChatResponse:
         raise NotImplementedError
