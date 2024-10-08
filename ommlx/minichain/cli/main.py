@@ -31,13 +31,13 @@ from ..chat import ChatModel
 from ..chat import ChatRequest
 from ..chat import UserMessage
 from ..content import Content
+from ..content import Image
 from ..content import Text
-from ..embeddings import EmbeddingModel
-from ..embeddings import EmbeddingRequest
-from ..images import Image
 from ..prompts import Prompt
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
+from ..vectors import EmbeddingModel
+from ..vectors import EmbeddingRequest
 from .state import load_state
 from .state import save_state
 
