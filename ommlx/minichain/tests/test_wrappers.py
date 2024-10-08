@@ -14,7 +14,12 @@ from ..prompts import Prompt
 from ..prompts import PromptModel
 
 
-class WrapperModel(Model):
+RequestT = ta.TypeVar('RequestT', bound='Request')
+ResponseT = ta.TypeVar('ResponseT', bound='Response')
+OptionT = ta.TypeVar('OptionT', bound='Option')
+
+
+class WrapperModel(Model[RequestT, OptionT, ResponseT]):
     def __init__(self, underlying: Model) -> None:
         super().__init__()
         self._underlying = underlying
@@ -31,7 +36,7 @@ class WrapperModel(Model):
     def response_cls(self) -> type[Response]:  # type: ignore[override]
         return self._underlying.response_cls
 
-    def invoke(self, request: Request) -> Response:
+    def invoke(self, request: RequestT) -> ResponseT:
         return self._underlying.invoke(request)
 
 
