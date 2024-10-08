@@ -1,4 +1,5 @@
 import dataclasses as dc
+import typing as ta
 
 from ... import matchfns as mfs
 from .. import polymorphism as poly
@@ -74,7 +75,7 @@ def _test_polymorphism(tt):
 
     o = PS2('0', PS1('1', 420))
 
-    reg = Registry()
+    reg: Registry[ta.Any] = Registry()
 
     mc = MarshalContext(registry=reg, factory=mf)
     v = mc.make(PB).marshal(mc, o)
