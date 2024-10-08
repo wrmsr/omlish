@@ -40,7 +40,7 @@ from .... import lang
 from ....diag import pydevd as pdu  # noqa
 from ...dbs import UrlDbLoc
 from ...dbs import set_url_engine
-from ...tests.dbs import Dbs
+from ...tests.dbs import TestingDbs
 
 
 def make_pg_lock_name(s: str) -> int:
@@ -62,7 +62,7 @@ def _compile_pg_lock_name(
 
 
 def test_pglocks(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+pg8000')
 
     with contextlib.ExitStack() as es:
