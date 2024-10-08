@@ -99,6 +99,12 @@ class Secrets(lang.Abstract):
         else:
             return Secret(key=key, value=raw)
 
+    def try_get(self, key: str) -> Secret | None:
+        try:
+            return self.get(key)
+        except KeyError:
+            return None
+
     @abc.abstractmethod
     def _get_raw(self, key: str) -> str:
         raise NotImplementedError
@@ -119,15 +125,34 @@ EMPTY_SECRETS = EmptySecrets()
 
 
 class MappingSecrets(Secrets):
-    def __init__(self, dct: ta.Mapping[str, str]) -> None:
+    def __init__(
+            self,
+            dct: ta.Mapping[str, str | Secret],
+            no_copy: bool = False,
+    ) -> None:
         super().__init__()
+
+        if not no_copy:
+            dct = {
+                k: v if isinstance(v, Secret) else Secret(key=k, value=v)
+                for k, v in dct.items()
+            }
+
         self._dct = dct
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({{{", ".join(map(repr, self._dct.keys()))}}})'
 
     def _get_raw(self, key: str) -> str:
-        return self._dct[key]
+        try:
+            e = self._dct[key]
+        except KeyError:
+            raise
+        else:
+            if isinstance(e, Secret):
+                return e.reveal()
+            else:
+                return e
 
 
 ##
@@ -167,7 +192,7 @@ class CachingSecrets(Secrets):
     ) -> None:
         super().__init__()
         self._child = child
-        self._dct: dict[str, str] = {}
+        self._dct: dict[str, Secret] = {}
         self._ttl_s = ttl_s
         self._clock = clock
         self._deque: collections.deque[tuple[str, float]] = collections.deque()
@@ -187,15 +212,17 @@ class CachingSecrets(Secrets):
     def _get_raw(self, key: str) -> str:
         self.evict()
         try:
-            return self._dct[key]
+            e = self._dct[key]
         except KeyError:
             pass
-        out = self._child._get_raw(key)  # noqa
+        else:
+            return e.reveal()
+        out = self._child.get(key)  # noqa
         self._dct[key] = out
         if self._ttl_s is not None:
             dl = self._clock() + self._ttl_s
             self._deque.append((key, dl))
-        return out
+        return out.reveal()
 
 
 ##
