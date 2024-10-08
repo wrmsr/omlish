@@ -37,7 +37,7 @@ def test_marshal():
 
     mf = new_standard_marshaler_factory()
 
-    reg: Registry[ta.Any] = Registry()
+    reg: Registry = Registry()
 
     print()
 
