@@ -1,7 +1,6 @@
-import os.path
-
 import pytest
 
+from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.testing import pytest as ptu
 
 from ..backends.llamacpp import LlamacppPromptModel
@@ -28,17 +27,8 @@ def test_transformers():
     assert resp.v
 
 
-def test_openai():
-    env_file = os.path.join(os.path.expanduser('~/.omlish-llm/.env'))
-    if not os.path.isfile(env_file):
-        pytest.skip('No env file')
-    with open(env_file) as f:
-        for l in f:
-            if l := l.strip():
-                k, _, v = l.partition('=')
-                os.environ[k] = v
-
-    llm = OpenaiChatModel()
+def test_openai(harness):
+    llm = OpenaiChatModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
     resp = llm(
         [UserMessage.of('Is water dry?')],
