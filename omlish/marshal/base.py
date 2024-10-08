@@ -163,13 +163,18 @@ class BaseContext(lang.Abstract):
     registry: Registry[ta.Any]
     options: col.TypeMap[Option] = col.TypeMap()
 
+    def _reflect(self, o: ta.Any) -> rfl.Type:
+        if (ovr := self.registry.get_of(o, ReflectOverride)):
+            return ovr[-1].rty
+        return rfl.type_(o)
+
 
 @dc.dataclass(frozen=True)
 class MarshalContext(BaseContext, lang.Final):
     factory: MarshalerFactory | None = None
 
     def make(self, o: ta.Any) -> Marshaler:
-        rty = rfl.type_(o)
+        rty = self._reflect(o)
         try:
             return check.not_none(self.factory)(self, rty)  # type: ignore
         except mfs.MatchGuardError:
@@ -181,7 +186,7 @@ class UnmarshalContext(BaseContext, lang.Final):
     factory: UnmarshalerFactory | None = None
 
     def make(self, o: ta.Any) -> Unmarshaler:
-        rty = rfl.type_(o)
+        rty = self._reflect(o)
         try:
             return check.not_none(self.factory)(self, rty)  # type: ignore
         except mfs.MatchGuardError:
@@ -214,10 +219,15 @@ class RecursiveUnmarshalerFactory(RecursiveTypeFactory[UnmarshalContext, Unmarsh
 ##
 
 
-@dc.dataclass(frozen=True)
-class SetType(RegistryItem, lang.Final):
+@dc.dataclass(frozen=True, kw_only=True)
+class Override(RegistryItem, lang.Final):
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
 
     unmarshaler: Unmarshaler | None = None
     unmarshaler_factory: UnmarshalerFactory | None = None
+
+
+@dc.dataclass(frozen=True)
+class ReflectOverride(RegistryItem, lang.Final):
+    rty: rfl.Type
