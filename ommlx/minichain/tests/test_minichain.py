@@ -49,6 +49,7 @@ def test_openai():
     assert resp.v
 
 
+@ptu.skip.if_cant_import('llama_cpp')
 def test_llamacpp():
     llm = LlamacppPromptModel()
     resp = llm(

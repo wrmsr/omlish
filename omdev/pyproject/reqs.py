@@ -8,6 +8,7 @@ import tempfile
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.logs import log
 
 
 class RequirementsRewriter:
@@ -57,6 +58,7 @@ class RequirementsRewriter:
 
         with open(out_file, 'w') as f:
             f.write(''.join(out_lines))
+        log.info('Rewrote requirements file %s to %s', in_file, out_file)
         return out_file
 
     def rewrite(self, in_req: str, *, for_file: bool = False) -> str:
