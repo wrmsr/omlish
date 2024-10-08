@@ -31,7 +31,9 @@ PromptRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption
 
 @dc.dataclass(frozen=True, kw_only=True)
 class PromptRequest(Request[PromptInput, PromptRequestOptions], lang.Final):
-    pass
+    @dc.validate
+    def _validate_v(self) -> bool:
+        return isinstance(self.v, Prompt)
 
 
 @dc.dataclass(frozen=True, kw_only=True)
