@@ -64,9 +64,9 @@ def _main() -> None:
         out_dir,
     )
 
-    g4_file = os.path.join(base_dir, 'tests', 'Chat.g4')
-
-    gp.process_g4(g4_file)
+    for f in os.listdir(g4_dir := os.path.join(base_dir, 'tests')):
+        if f.endswith('.g4'):
+            gp.process_g4(os.path.join(g4_dir, f))
 
     for f in os.listdir(out_dir):
         if f != '__init__.py' and f.endswith('.py'):
