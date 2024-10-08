@@ -12,7 +12,7 @@ from ..dbs import UrlDbLoc
 
 
 @pti.bind('function')
-class TestingDbs:
+class HarnessDbs:
     def __init__(self, compose_services: ComposeServices) -> None:
         super().__init__()
         self._compose_services = compose_services
