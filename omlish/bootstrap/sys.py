@@ -29,7 +29,7 @@ else:
     libc = lang.proxy_import('..libc', __package__)
     logs = lang.proxy_import('..logs', __package__)
     osu = lang.proxy_import('..os', __package__)
-    dotenv = lang.proxy_import('.formats.dotenv', __package__)
+    dotenv = lang.proxy_import('..formats.dotenv', __package__)
 
 
 ##
