@@ -1,8 +1,4 @@
-"""
-FIXME:
- - str / list special case
- - ... pil image to b64 lol
-"""
+import collections.abc
 import dataclasses as dc
 import typing as ta
 
@@ -27,7 +23,14 @@ class _ContentMarshaler(msh.Marshaler):
     et: msh.Marshaler
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        raise NotImplementedError
+        if isinstance(o, str):
+            return o
+        elif isinstance(o, ta.Sequence):
+            return [self.marshal(ctx, e) for e in o]
+        elif isinstance(o, ExtendedContent):
+            return self.et.marshal(ctx, o)
+        else:
+            raise TypeError(o)
 
 
 class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
@@ -41,7 +44,14 @@ class _ContentUnmarshaler(msh.Unmarshaler):
     et: msh.Unmarshaler
 
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
-        raise NotImplementedError
+        if isinstance(v, str):
+            return v
+        elif isinstance(v, ta.Sequence):
+            return [self.unmarshal(ctx, e) for e in v]
+        elif isinstance(v, collections.abc.Mapping):
+            return self.et.unmarshal(ctx, v)  # noqa
+        else:
+            raise TypeError(v)
 
 
 class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
