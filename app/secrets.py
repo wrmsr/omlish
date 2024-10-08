@@ -15,7 +15,13 @@ log = logging.getLogger(__name__)
 
 def get_secret_db_url() -> str:
     cfg = load_secrets()
-    return f'postgresql+asyncpg://{cfg["postgres_user"]}:{cfg["postgres_pass"]}@{cfg["postgres_host"]}:5432'
+    return (
+        f'postgresql+asyncpg://'
+        f'{cfg.get("postgres_user").reveal()}'
+        f':{cfg.get("postgres_pass").reveal()}'
+        f'@{cfg.get("postgres_host").reveal()}'
+        f':5432'
+    )
 
 
 def get_docker_db_url() -> str:
@@ -24,7 +30,13 @@ def get_docker_db_url() -> str:
     svc = cc.get_services()['postgres']
     port = docker.get_compose_port(svc, 5432)
     env = svc['environment']
-    return f'postgresql+asyncpg://{env["POSTGRES_USER"]}:{env["POSTGRES_PASSWORD"]}@127.0.0.1:{port}'
+    return (
+        f'postgresql+asyncpg://'
+        f'{env["POSTGRES_USER"]}'
+        f':{env["POSTGRES_PASSWORD"]}'
+        f'@127.0.0.1'
+        f':{port}'
+    )
 
 
 def get_db_url() -> str:

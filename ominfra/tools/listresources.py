@@ -12,7 +12,6 @@ unique server ids:
 """
 import json
 import pprint
-import typing as ta
 
 import urllib3
 
@@ -20,13 +19,14 @@ from omdev.secrets import load_secrets
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import secrets as sec
 
 
 ##
 
 
 @lang.cached_function
-def _get_secrets() -> dict[str, ta.Any]:
+def _get_secrets() -> sec.Secrets:
     return load_secrets()
 
 
@@ -72,9 +72,9 @@ def get_ec2_servers() -> list[Ec2Server]:
     cfg = _get_secrets()
     import boto3
     session = boto3.Session(
-        aws_access_key_id=cfg['aws_access_key_id'],
-        aws_secret_access_key=cfg['aws_secret_access_key'],
-        region_name=cfg['aws_region'],
+        aws_access_key_id=cfg.get('aws_access_key_id').reveal(),
+        aws_secret_access_key=cfg.get('aws_secret_access_key').reveal(),
+        region_name=cfg.get('aws_region').reveal(),
     )
     ec2 = session.client('ec2')
     resp = ec2.describe_instances()
@@ -103,9 +103,9 @@ def get_rds_instances() -> list[RdsInstance]:
     cfg = _get_secrets()
     import boto3
     session = boto3.Session(
-        aws_access_key_id=cfg['aws_access_key_id'],
-        aws_secret_access_key=cfg['aws_secret_access_key'],
-        region_name=cfg['aws_region'],
+        aws_access_key_id=cfg.get('aws_access_key_id').reveal(),
+        aws_secret_access_key=cfg.get('aws_secret_access_key').reveal(),
+        region_name=cfg.get('aws_region').reveal(),
     )
     rds = session.client('rds')
     resp = rds.describe_db_instances()
@@ -132,13 +132,20 @@ class GcpServer(Server):
 
 def get_gcp_servers() -> list[GcpServer]:
     cfg = _get_secrets()
+
+    # FIXME: it's a dict lol
+    if not (creds := cfg.try_get('gcp_oauth2')):
+        return []
+
     from google.oauth2 import service_account
-    credentials = service_account.Credentials.from_service_account_info(cfg['gcp_oauth2'])
+    credentials = service_account.Credentials.from_service_account_info(creds.reveal())
+
     from google.cloud import compute_v1
     instance_client = compute_v1.InstancesClient(credentials=credentials)
     request = compute_v1.AggregatedListInstancesRequest()
-    request.project = cfg['gcp_project_id']
+    request.project = cfg.get('gcp_project_id').reveal()
     request.max_results = 50
+
     out: list[GcpServer] = []
     for zone, response in instance_client.aggregated_list(request=request):
         for instance in (response.instances or []):
@@ -148,6 +155,7 @@ def get_gcp_servers() -> list[GcpServer]:
                 id=instance.name,
                 zone=zone,
             ))
+
     return out
 
 
@@ -160,7 +168,7 @@ class RunpodServer(Server):
 
 
 def get_runpod_servers() -> list[RunpodServer]:
-    api_key = _get_secrets()['runpod_api_key']
+    api_key = _get_secrets().get('runpod_api_key').reveal()
     query = 'query Pods { myself { pods { id runtime { ports { ip isIpPublic privatePort publicPort type } } } } }'
     resp = urllib3.request(
         'POST',
@@ -190,7 +198,7 @@ class LambdaLabsServer(Server):
 
 
 def get_lambda_labs_servers() -> list[LambdaLabsServer]:
-    api_key = _get_secrets()['lambda_labs_api_key']
+    api_key = _get_secrets().get('lambda_labs_api_key').reveal()
     resp = urllib3.request(
         'GET',
         'https://cloud.lambdalabs.com/api/v1/instances',
@@ -217,7 +225,7 @@ class DigitalOceanServer(Server):
 
 
 def get_digital_ocean_servers() -> list[DigitalOceanServer]:
-    api_key = _get_secrets()['digital_ocean_api_key']
+    api_key = _get_secrets().get('digital_ocean_api_key').reveal()
     resp = urllib3.request(
         'GET',
         'https://api.digitalocean.com/v2/droplets',
