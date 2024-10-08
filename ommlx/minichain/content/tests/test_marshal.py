@@ -1,7 +1,7 @@
 from omlish import marshal as msh
 
-from ..content import Content
+from ..marshal import MarshalContent
 
 
 def test_marshal():
-    assert msh.marshal('hi', Content) == 'hi'
+    assert msh.marshal('hi', MarshalContent) == 'hi'
