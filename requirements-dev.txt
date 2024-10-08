@@ -72,7 +72,7 @@ mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 
 ujson==5.10.0
 
-markupsafe==2.1.5
+markupsafe==3.0.1
 
 redis==5.1.1
 
