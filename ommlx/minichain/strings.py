@@ -12,7 +12,6 @@ from .chat import ToolExecutionResultMessage
 from .chat import UserMessage
 from .content import Content
 from .content import Image
-from .content import Text
 from .models import Request
 from .prompts import Prompt
 
@@ -52,10 +51,6 @@ class StringTransform:
         return dc.replace(s, s=self.apply(s.s))
 
     #
-
-    @apply.register
-    def apply_text(self, s: Text) -> Text:
-        return dc.replace(s, s=self.apply(s.s))
 
     @apply.register
     def apply_image(self, s: Image) -> Image:
