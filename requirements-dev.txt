@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.19
+uv>=0.4.20
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
