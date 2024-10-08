@@ -3,6 +3,7 @@ FIXME:
  - str / list special case
  - ... pil image to b64 lol
 """
+import dataclasses as dc
 import typing as ta
 
 from omlish import lang
@@ -14,11 +15,17 @@ from .content import Content
 from .content import ExtendedContent
 
 
+##
+
+
 class _Content(lang.NotInstantiable, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class _ContentMarshaler(msh.Marshaler):
+    et: msh.Marshaler
+
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
         raise NotImplementedError
 
@@ -26,7 +33,27 @@ class _ContentMarshaler(msh.Marshaler):
 class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: rty is _Content)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
+        return _ContentMarshaler(ctx.make(ExtendedContent))
+
+
+@dc.dataclass(frozen=True)
+class _ContentUnmarshaler(msh.Unmarshaler):
+    et: msh.Unmarshaler
+
+    def marshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         raise NotImplementedError
+
+
+class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: rty is _Content)
+    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
+        return _ContentUnmarshaler(ctx.make(ExtendedContent))
+
+
+##
+
+
+##
 
 
 @lang.static_init
@@ -38,6 +65,7 @@ def _install_standard_marshalling() -> None:
     ]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismUnmarshalerFactory(extended_content_poly),
+        _ContentUnmarshalerFactory(),
     ]
 
     msh.GLOBAL_REGISTRY.register(Content, msh.ReflectOverride(_Content))
