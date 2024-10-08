@@ -10,7 +10,7 @@ from omdev.secrets import load_secrets
 
 
 def _main():
-    key = load_secrets()['gemini_api_key']
+    key = load_secrets().get('gemini_api_key').reveal()
 
     ##
 
