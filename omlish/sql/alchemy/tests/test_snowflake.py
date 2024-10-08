@@ -5,12 +5,14 @@ import sqlalchemy as sa
 import yaml
 
 from .... import lang
+from ....secrets.tests.secrets import TestSecrets
 from ....testing import pytest as ptu
 
 
 @ptu.skip.if_cant_import('snowflake.sqlalchemy')
 @pytest.mark.online
-def test_snowflake():
+def test_snowflake(harness):
+    if (url := harness[TestSecrets].try_get())
     if not os.path.isfile(sec_file := os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')):
         pytest.skip('No secrets')
 
