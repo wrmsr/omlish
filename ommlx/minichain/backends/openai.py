@@ -65,6 +65,10 @@ class OpenaiChatModel(ChatModel):
         MaxTokens(1024),
     )
 
+    def __init__(self, *, api_key: str | None = None) -> None:
+        super().__init__()
+        self._api_key = api_key
+
     def _get_msg_content(self, m: Message) -> str:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
@@ -93,7 +97,11 @@ class OpenaiChatModel(ChatModel):
             else:
                 raise TypeError(opt)
 
-        response = openai.chat.completions.create(  # noqa
+        client = openai.OpenAI(
+            api_key=self._api_key,
+        )
+
+        response = client.chat.completions.create(  # noqa
             model=self.model,
             messages=[
                 dict(  # type: ignore
