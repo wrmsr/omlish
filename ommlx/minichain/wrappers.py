@@ -10,10 +10,11 @@ from .models import Response
 
 RequestT = ta.TypeVar('RequestT', bound='Request')
 ResponseT = ta.TypeVar('ResponseT', bound='Response')
+NewRequestT = ta.TypeVar('NewRequestT')
 OptionT = ta.TypeVar('OptionT', bound='Option')
 
 
-class WrapperModel(Model[RequestT, OptionT, ResponseT], lang.Abstract):
+class WrapperModel(Model[RequestT, OptionT, NewRequestT, ResponseT], lang.Abstract):
     def __init__(self, underlying: Model) -> None:
         super().__init__()
         self._underlying = underlying
@@ -25,6 +26,10 @@ class WrapperModel(Model[RequestT, OptionT, ResponseT], lang.Abstract):
     @property
     def option_cls_set(self) -> frozenset[type[Option]]:  # type: ignore[override]
         return self._underlying.option_cls_set
+
+    @property
+    def new_request_cls(self) -> ta.Any:
+        return self._underlying.new_request_cls
 
     @property
     def response_cls(self) -> type[Response]:  # type: ignore[override]

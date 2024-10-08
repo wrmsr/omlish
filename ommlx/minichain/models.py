@@ -14,8 +14,9 @@ from .options import Options
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 RequestT = ta.TypeVar('RequestT', bound='Request')
-ResponseT = ta.TypeVar('ResponseT', bound='Response')
 OptionT = ta.TypeVar('OptionT', bound='Option')
+NewT = ta.TypeVar('NewT')
+ResponseT = ta.TypeVar('ResponseT', bound='Response')
 
 
 ##
@@ -44,7 +45,7 @@ class RequestOption(Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Request(lang.Abstract, ta.Generic[T, OptionT]):
+class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
     v: T
 
     options: Options[OptionT] = Options()
@@ -52,12 +53,12 @@ class Request(lang.Abstract, ta.Generic[T, OptionT]):
     @classmethod
     def new(
             cls,
-            v: T,
+            v: NewT,
             *options: OptionT,
             **kwargs: ta.Any,
     ) -> ta.Self:
         return cls(
-            v=v,
+            v=v,  # type: ignore
             options=Options(*options),
             **kwargs,
         )
@@ -71,9 +72,10 @@ class Response(lang.Abstract, ta.Generic[T]):
     reason: FinishReason | None = None
 
 
-class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
+class Model(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
     request_cls: type[Request]
     option_cls_set: frozenset[type[Option]]
+    new_request_cls: ta.Any
     response_cls: type[Response]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
@@ -93,16 +95,24 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
 
         model_base = check.single(model_bases)
 
-        present_attr_ct = lang.ilen(a for a in ('request_cls', 'option_cls_set', 'response_cls') if hasattr(cls, a))
+        present_attr_ct = lang.ilen(
+            a for a in (
+                'request_cls',
+                'option_cls_set',
+                'new_request_cls',
+                'response_cls',
+            ) if hasattr(cls, a)
+        )
         if present_attr_ct:
-            if present_attr_ct != 3:
+            if present_attr_ct != 4:
                 raise AttributeError('Must set all model attrs if any set')
             return
 
-        request_ann, option_ann, response_ann = model_base.args
+        request_ann, option_ann, new_request_ann, response_ann = model_base.args
 
         request_cls: type[Request] = check.issubclass(check.isinstance(request_ann, type), Request)  # noqa
         response_cls: type[Response] = check.issubclass(check.isinstance(response_ann, type), Response)  # noqa
+        new_request_cls: ta.Any = new_request_ann
 
         option_cls_set: frozenset[type[Option]]
         if isinstance(option_ann, rfl.Union):
@@ -112,6 +122,7 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
 
         cls.request_cls = request_cls
         cls.option_cls_set = option_cls_set
+        cls.new_request_cls = new_request_cls
         cls.response_cls = response_cls
 
     @abc.abstractmethod
@@ -121,7 +132,7 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
     @ta.final
     def invoke_new(
         self,
-        v: T,
+        v: NewT,
         *options: OptionT,
         **kwargs: ta.Any,
     ) -> ResponseT:

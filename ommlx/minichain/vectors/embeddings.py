@@ -16,13 +16,21 @@ from .vectors import Vector
 
 
 EmbeddingInput: ta.TypeAlias = Content
+EmbeddingNew: ta.TypeAlias = ta.Any
 EmbeddingOutput: ta.TypeAlias = Vector
 
 EmbeddingRequestOptions: ta.TypeAlias = RequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class EmbeddingRequest(Request[EmbeddingInput, EmbeddingRequestOptions], lang.Final):
+class EmbeddingRequest(
+    Request[
+        EmbeddingInput,
+        EmbeddingRequestOptions,
+        EmbeddingNew,
+    ],
+    lang.Final,
+):
     pass
 
 
@@ -31,7 +39,15 @@ class EmbeddingResponse(Response[EmbeddingOutput], lang.Final):
     pass
 
 
-class EmbeddingModel(Model[EmbeddingRequest, EmbeddingRequestOptions, EmbeddingResponse], lang.Abstract):
+class EmbeddingModel(
+    Model[
+        EmbeddingRequest,
+        EmbeddingRequestOptions,
+        EmbeddingNew,
+        EmbeddingResponse,
+    ],
+    lang.Abstract,
+):
     @abc.abstractmethod
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raise NotImplementedError
