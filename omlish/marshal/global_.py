@@ -17,7 +17,7 @@ T = ta.TypeVar('T')
 ##
 
 
-GLOBAL_REGISTRY = Registry()
+GLOBAL_REGISTRY: Registry[ta.Any] = Registry()
 
 
 ##
