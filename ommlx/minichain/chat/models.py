@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -10,6 +11,7 @@ from ..models import Request
 from ..models import Response
 from .messages import AiMessage
 from .messages import Chat
+from .messages import Message
 from .options import ChatRequestOptions
 
 
@@ -22,7 +24,13 @@ ChatOutput: ta.TypeAlias = AiMessage
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ChatRequest(Request[ChatInput, ChatRequestOptions], lang.Final):
-    pass
+    @dc.validate
+    def _validate_v(self) -> bool:
+        return (
+            not isinstance(self.v, str) and  # type: ignore[unreachable]
+            isinstance(self.v, collections.abc.Sequence) and
+            all(isinstance(e, Message) for e in self.v)
+        )
 
 
 @dc.dataclass(frozen=True, kw_only=True)
