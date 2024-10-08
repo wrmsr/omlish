@@ -1,4 +1,5 @@
 import enum
+import os
 
 from omlish import dataclasses as dc
 from omlish import inject as inj
@@ -24,7 +25,7 @@ class ServerConfig:
 
     node_registry_enabled: bool = False
 
-    base_server_url: str = 'http://localhost:8000/'
+    base_server_url: str = dc.field(default_factory=lambda: os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/'))
 
 
 def bind_user_store(cfg: ServerConfig) -> inj.Elemental:
