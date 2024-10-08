@@ -172,9 +172,9 @@ async def _a_main() -> None:
     cfg = load_secrets()
 
     sc = SshConfig(
-        host=cfg['ec2_ssh_host'],
-        username=cfg['ec2_ssh_user'],
-        key_file_path=cfg['ec2_ssh_key_file'],
+        host=cfg.get('ec2_ssh_host').reveal(),
+        username=cfg.get('ec2_ssh_user').reveal(),
+        key_file_path=cfg.get('ec2_ssh_key_file').reveal(),
     )
 
     for scr in [
