@@ -72,9 +72,9 @@ class Response(lang.Abstract, ta.Generic[T]):
 
 
 class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
-    request_cls: ta.ClassVar[type[Request]]
-    option_cls_set: ta.ClassVar[frozenset[type[Option]]]
-    response_cls: ta.ClassVar[type[Response]]
+    request_cls: type[Request]
+    option_cls_set: frozenset[type[Option]]
+    response_cls: type[Response]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -92,6 +92,13 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, ResponseT]):
             return
 
         model_base = check.single(model_bases)
+
+        present_attr_ct = lang.ilen(a for a in ('request_cls', 'option_cls_set', 'response_cls') if hasattr(cls, a))
+        if present_attr_ct:
+            if present_attr_ct != 3:
+                raise AttributeError('Must set all model attrs if any set')
+            return
+
         request_ann, option_ann, response_ann = model_base.args
 
         request_cls: type[Request] = check.issubclass(check.isinstance(request_ann, type), Request)  # noqa
