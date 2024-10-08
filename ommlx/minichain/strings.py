@@ -13,6 +13,7 @@ from .chat import UserMessage
 from .content import Content
 from .content import Text
 from .images import Image
+from .models import Request
 from .prompts import Prompt
 
 
@@ -22,6 +23,7 @@ StringTransformable = ta.Union[  # noqa
     Prompt,
     Content,
     Message,
+    Request,
 ]
 
 StringTransformableT = ta.TypeVar('StringTransformableT', bound=StringTransformable)
@@ -76,6 +78,12 @@ class StringTransform:
     @apply.register
     def apply_user_message(self, s: UserMessage) -> UserMessage:
         return dc.replace(s, content=self.apply(s.content))
+
+    #
+
+    @apply.register
+    def apply_request(self, s: Request) -> Request:
+        return dc.replace(s, v=self.apply(s.v))
 
 
 @dc.dataclass(frozen=True)

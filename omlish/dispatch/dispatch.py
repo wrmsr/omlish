@@ -25,12 +25,18 @@ def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
     if not ann:
         raise TypeError(f'Invalid impl func: {func!r}')
 
+    def erase(a):
+        if isinstance(a, rfl.Generic):
+            return a.cls
+        else:
+            return check.isinstance(a, type)
+
     _, cls = next(iter(ta.get_type_hints(func).items()))
     rty = rfl.type_(cls)
     if isinstance(rty, rfl.Union):
-        ret = frozenset(check.isinstance(arg, type) for arg in rty.args)
+        ret = frozenset(erase(arg) for arg in rty.args)
     else:
-        ret = frozenset([check.isinstance(rty, type)])
+        ret = frozenset([erase(rty)])
 
     _IMPL_FUNC_CLS_SET_CACHE[func] = ret
     return ret
