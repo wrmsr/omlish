@@ -4,15 +4,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Vector:
-    """array.array('f' | 'd', ...) preferred"""
-
-    v: ta.Sequence[float]
+from .vectors import Vector
 
 
 ##

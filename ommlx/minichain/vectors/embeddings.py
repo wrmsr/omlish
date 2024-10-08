@@ -4,11 +4,11 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .content import Content
-from .models import Model
-from .models import Request
-from .models import RequestOption
-from .models import Response
+from ..content import Content
+from ..models import Model
+from ..models import Request
+from ..models import RequestOption
+from ..models import Response
 from .vectors import Vector
 
 
