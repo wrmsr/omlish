@@ -10,14 +10,14 @@ from omlish import check
 from omlish import lang
 from omlish.docker.tests.services import ComposeServices
 from omlish.sql import dbs
-from omlish.sql.tests.dbs import Dbs
+from omlish.sql.tests.dbs import TestingDbs
 
 
 def _main():
     cs = ComposeServices(
         config_file_path=os.path.join(os.path.dirname(__file__), '../../docker/compose.yml'),
     )
-    ds = Dbs(cs)
+    ds = TestingDbs(cs)
 
     url = check.isinstance(check.isinstance(ds.specs()['pgvector'].loc, dbs.UrlDbLoc).url, str)
     url = dbs.set_url_engine(url, 'postgresql+pg8000')

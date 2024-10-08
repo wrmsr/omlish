@@ -9,13 +9,13 @@ from ..secrets import Secret
 from ..secrets import MappingSecrets
 
 
-TestSecrets = ta.NewType('TestSecrets', Secrets)
+TestingSecrets = ta.NewType('TestingSecrets', Secrets)
 
 
 @pti.bind('session')
-def provide_test_secrets() -> TestSecrets:
+def provide_testing_secrets() -> TestingSecrets:
     if not os.path.isfile(sec_file := os.path.expanduser('~/Dropbox/.dotfiles/secrets.yml')):
-        return ta.cast(TestSecrets, MappingSecrets({}))
+        return ta.cast(TestingSecrets, MappingSecrets({}))
 
     dct: dict[str, Secret] = {}
     with open(sec_file) as f:
@@ -23,4 +23,4 @@ def provide_test_secrets() -> TestSecrets:
             if isinstance(v, str):
                 dct[k] = Secret(key=k, value=v)
 
-    return ta.cast(TestSecrets, MappingSecrets(dct))
+    return ta.cast(TestingSecrets, MappingSecrets(dct))
