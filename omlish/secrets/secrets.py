@@ -146,13 +146,15 @@ class MappingSecrets(Secrets):
     def _get_raw(self, key: str) -> str:
         try:
             e = self._dct[key]
-        except KeyError:
+        except KeyError:  # noqa
             raise
         else:
             if isinstance(e, Secret):
                 return e.reveal()
-            else:
+            elif isinstance(e, str):
                 return e
+            else:
+                raise TypeError(e)
 
 
 ##

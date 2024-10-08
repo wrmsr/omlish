@@ -10,7 +10,7 @@ from ....diag import pydevd as pdu
 from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...dbs import set_url_engine
-from ...tests.dbs import Dbs
+from ...tests.dbs import TestingDbs
 
 
 ##
@@ -64,21 +64,21 @@ def _test_mysql(url: str) -> None:
 
 @ptu.skip.if_cant_import('mysql.connector')
 def test_mysql_mysql_connector_python(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqlconnector')
     _test_mysql(url)
 
 
 @ptu.skip.if_cant_import('MySQLdb')
 def test_mysql_mysqlclient(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+mysqldb')
     _test_mysql(url)
 
 
 @ptu.skip.if_cant_import('pymysql')
 def test_mysql_pymysql(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+pymysql')
     _test_mysql(url)
 
@@ -116,7 +116,7 @@ async def _test_mysql_async(url: str) -> None:
 @ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncio
 async def test_async_mysql_aiomysql(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')
     await _test_mysql_async(url)
 
@@ -126,7 +126,7 @@ async def test_async_mysql_aiomysql(harness) -> None:
 @ptu.skip.if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_mysql_aiomysql(harness) -> None:
-    url = check.isinstance(check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    url = check.isinstance(check.isinstance(harness[TestingDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'mysql+aiomysql')
 
     import trio_asyncio  # noqa

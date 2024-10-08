@@ -180,13 +180,12 @@ def bind(
         *,
         eager: bool = False,  # FIXME
 ) -> ta.Callable[[TypeT], TypeT]:
-    def inner(cls):
+    def inner(obj):
         pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
-        check.isinstance(cls, type)
         register(inj.as_elements(
-            inj.bind(cls, in_=_SCOPES_BY_PYTEST_SCOPE[pts]),
+            inj.bind(obj, in_=_SCOPES_BY_PYTEST_SCOPE[pts]),
         ))
-        return cls
+        return obj
     return inner
 
 
