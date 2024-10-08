@@ -24,7 +24,8 @@ from .base import (  # noqa
     RecursiveMarshalerFactory,
     RecursiveUnmarshalerFactory,
 
-    SetType,
+    Override,
+    ReflectOverride,
 )
 
 from .exceptions import (  # noqa
@@ -44,6 +45,8 @@ from .naming import (  # noqa
 )
 
 from .global_ import (  # noqa
+    GLOBAL_REGISTRY,
+
     marshal,
     unmarshal,
 )
