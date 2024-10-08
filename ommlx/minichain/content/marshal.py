@@ -9,6 +9,7 @@ from omlish import reflect as rfl
 
 from .content import Content
 from .content import ExtendedContent
+from .images import Image
 
 
 ##
@@ -63,16 +64,35 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
 ##
 
 
+class _ImageMarshaler(msh.Marshaler):
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        raise NotImplementedError
+
+
+class _ImageUnmarshaler(msh.Unmarshaler):
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        raise NotImplementedError
+
+
+##
+
+
 @lang.static_init
 def _install_standard_marshalling() -> None:
     extended_content_poly = msh.polymorphism_from_subclasses(ExtendedContent, naming=msh.Naming.SNAKE)
     msh.STANDARD_MARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismMarshalerFactory(extended_content_poly),
+        msh.TypeMapMarshalerFactory({Image: _ImageMarshaler()}),
         _ContentMarshalerFactory(),
     ]
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [
         msh.PolymorphismUnmarshalerFactory(extended_content_poly),
+        msh.TypeMapUnmarshalerFactory({Image: _ImageUnmarshaler()}),
         _ContentUnmarshalerFactory(),
     ]
 
-    msh.GLOBAL_REGISTRY.register(Content, msh.ReflectOverride(MarshalContent))
+    msh.GLOBAL_REGISTRY.register(
+        Content,
+        msh.ReflectOverride(MarshalContent),
+        identity=True,
+    )
