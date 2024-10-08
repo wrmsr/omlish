@@ -24,13 +24,21 @@ class Prompt(lang.Final):
 
 
 PromptInput: ta.TypeAlias = Prompt
+PromptNew: ta.TypeAlias = ta.Any
 PromptOutput: ta.TypeAlias = str
 
 PromptRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class PromptRequest(Request[PromptInput, PromptRequestOptions], lang.Final):
+class PromptRequest(
+    Request[
+        PromptInput,
+        PromptRequestOptions,
+        PromptNew,
+    ],
+    lang.Final,
+):
     @dc.validate
     def _validate_v(self) -> bool:
         return isinstance(self.v, Prompt)
@@ -41,7 +49,16 @@ class PromptResponse(Response[PromptOutput], lang.Final):
     pass
 
 
-class PromptModel(Model[PromptRequest, PromptRequestOptions, PromptResponse], Generative, lang.Abstract):
+class PromptModel(
+    Model[
+        PromptRequest,
+        PromptRequestOptions,
+        PromptNew,
+        PromptResponse,
+    ],
+    Generative,
+    lang.Abstract,
+):
     @abc.abstractmethod
     def invoke(self, request: PromptRequest) -> PromptResponse:
         raise NotImplementedError
