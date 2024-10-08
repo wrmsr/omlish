@@ -7,37 +7,24 @@ from ..backends.openai import OpenaiPromptModel
 from ..generative import MaxTokens
 from ..generative import Temperature
 from ..models import Model
-from ..models import Option
 from ..models import Request
 from ..models import Response
 from ..prompts import Prompt
 from ..prompts import PromptModel
+from ..strings import transform_strings
+from ..templates import DictTemplater
+from ..templates import Templater
+from ..wrappers import WrapperModel
 
 
-RequestT = ta.TypeVar('RequestT', bound='Request')
-ResponseT = ta.TypeVar('ResponseT', bound='Response')
-OptionT = ta.TypeVar('OptionT', bound='Option')
+class TemplatingModel(WrapperModel):
+    def __init__(self, underlying: Model, templater: Templater) -> None:
+        super().__init__(underlying)
+        self._templater = templater
 
-
-class WrapperModel(Model[RequestT, OptionT, ResponseT]):
-    def __init__(self, underlying: Model) -> None:
-        super().__init__()
-        self._underlying = underlying
-
-    @property
-    def request_cls(self) -> type[Request]:  # type: ignore[override]
-        return self._underlying.request_cls
-
-    @property
-    def option_cls_set(self) -> frozenset[type[Option]]:  # type: ignore[override]
-        return self._underlying.option_cls_set
-
-    @property
-    def response_cls(self) -> type[Response]:  # type: ignore[override]
-        return self._underlying.response_cls
-
-    def invoke(self, request: RequestT) -> ResponseT:
-        return self._underlying.invoke(request)
+    def invoke(self, request: Request) -> Response:
+        out_request = transform_strings(self._templater.apply, request)
+        return super().invoke(out_request)
 
 
 def test_openai_prompt():
@@ -51,10 +38,10 @@ def test_openai_prompt():
                 os.environ[k] = v
 
     llm: PromptModel = OpenaiPromptModel()
-    llm = ta.cast(PromptModel, WrapperModel(llm))
+    llm = ta.cast(PromptModel, TemplatingModel(llm, DictTemplater(dict(what='water'))))
 
     resp = llm(
-        Prompt('Is water dry?'),
+        Prompt('Is {what} dry?'),
         Temperature(.1),
         MaxTokens(64),
     )
