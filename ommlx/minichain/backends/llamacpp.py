@@ -38,7 +38,7 @@ class LlamacppPromptModel(PromptModel):
         )
 
         output = llm.create_completion(
-            request.v.s,
+            request.v,
             max_tokens=1024,
             stop=['\n'],
         )

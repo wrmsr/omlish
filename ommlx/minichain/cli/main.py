@@ -32,7 +32,6 @@ from ..chat import ChatRequest
 from ..chat import UserMessage
 from ..content import Content
 from ..content import Image
-from ..prompts import Prompt
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
 from ..vectors import EmbeddingModel
@@ -158,7 +157,7 @@ def _run_prompt(
 
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
-    response = mdl.invoke(PromptRequest.new(Prompt(prompt)))
+    response = mdl.invoke(PromptRequest.new(prompt))
 
     print(response.v.strip())
 

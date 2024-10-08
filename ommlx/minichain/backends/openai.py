@@ -45,7 +45,7 @@ class OpenaiPromptModel(PromptModel):
 
         response = client.completions.create(
             model=self.model,
-            prompt=t.v.s,
+            prompt=t.v,
             temperature=0,
             max_tokens=1024,
             top_p=1,

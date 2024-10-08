@@ -13,13 +13,11 @@ from .chat import UserMessage
 from .content import Content
 from .content import Image
 from .models import Request
-from .prompts import Prompt
 
 
 StringTransformable = ta.Union[  # noqa
     str,
     ta.Sequence['StringTransformable'],
-    Prompt,
     Content,
     Message,
     Request,
@@ -43,12 +41,6 @@ class StringTransform:
     @apply.register
     def apply_sequence(self, s: collections.abc.Sequence) -> collections.abc.Sequence:
         return [self.apply(e) for e in s]
-
-    #
-
-    @apply.register
-    def apply_prompt(self, s: Prompt) -> Prompt:
-        return dc.replace(s, s=self.apply(s.s))
 
     #
 

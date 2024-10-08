@@ -46,5 +46,5 @@ class TransformersPromptModel(PromptModel):
                 **(self._kwargs or {}),
             },
         )
-        output = pipeline(request.v.s)
+        output = pipeline(request.v)
         return PromptResponse(v=output)
