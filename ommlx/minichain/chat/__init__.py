@@ -29,7 +29,7 @@ from .models import (  # noqa
     ChatResponse,
 )
 
-from .tools import (
+from .tools import (  # noqa
     Tool,
     ToolExecutionRequest,
     ToolParameters,
