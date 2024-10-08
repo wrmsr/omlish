@@ -1,8 +1,8 @@
 import typing as ta
 
-from .dbs import TestingDbs
+from .harness import HarnessDbs
 
 
 def test_dbs(harness):
-    dbs = harness[TestingDbs]
+    dbs = harness[HarnessDbs]
     assert isinstance(dbs.specs(), ta.Mapping)

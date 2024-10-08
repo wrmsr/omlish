@@ -172,14 +172,11 @@ def register(*args: inj.Element | inj.Elements) -> None:
     _HARNESS_ELEMENTS_LIST.append(inj.as_elements(*args))
 
 
-TypeT = ta.TypeVar('TypeT', bound=type)
-
-
 def bind(
         scope: PytestScope | str = PytestScope.SESSION,
         *,
         eager: bool = False,  # FIXME
-) -> ta.Callable[[TypeT], TypeT]:
+) -> ta.Callable[[T], T]:
     def inner(obj):
         pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
         register(inj.as_elements(
