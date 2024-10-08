@@ -27,7 +27,7 @@ class _ImageMarshaler(msh.Marshaler):
 
 
 class _ImageUnmarshaler(msh.Unmarshaler):
-    def unmarshal(self, ctx: msh.MarshalContext, v: msh.Value) -> ta.Any:
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         raise NotImplementedError
 
 
@@ -35,5 +35,6 @@ class _ImageUnmarshaler(msh.Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_metadata(['i'], marshaler=_ImageMarshaler(), unmarshaler=_ImageUnmarshaler())
 class Image(ExtendedContent, lang.Final):
-    i: 'pimg.Image' = dc.field() | msh.update_field_metadata(marshaler=_ImageMarshaler, unmarshaler=_ImageUnmarshaler)
+    i: 'pimg.Image' = dc.field()

@@ -193,7 +193,7 @@ def field_init(
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'
-        if isinstance(fx.check_type, type):
+        if isinstance(fx.check_type, (type, tuple)):
             ct = fx.check_type
         # FIXME:
         # elif info.params_extras.generic_init:
