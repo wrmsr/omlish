@@ -13,9 +13,6 @@ from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
 from ..content import Text
-from ..embeddings import EmbeddingModel
-from ..embeddings import EmbeddingRequest
-from ..embeddings import EmbeddingResponse
 from ..generative import MaxTokens
 from ..generative import Temperature
 from ..options import Options
@@ -23,6 +20,9 @@ from ..options import ScalarOption
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
 from ..prompts import PromptResponse
+from ..vectors import EmbeddingModel
+from ..vectors import EmbeddingRequest
+from ..vectors import EmbeddingResponse
 from ..vectors import Vector
 
 

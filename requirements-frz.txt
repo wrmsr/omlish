@@ -7,7 +7,7 @@ aiosignal==1.3.1
 aiosqlite==0.20.0
 alembic==1.13.3
 annotated-types==0.7.0
-anthropic==0.35.0
+anthropic==0.36.0
 anyio==4.6.0
 appdirs==1.4.4
 appnope==0.1.4
@@ -336,6 +336,7 @@ pydantic_core==2.23.4
 pyflakes==3.2.0
 pygls==1.3.1
 Pygments==2.18.0
+PyJWT==2.9.0
 PyMySQL==1.1.1
 PyNaCl==1.5.0
 pyobjc-core==10.3.1
@@ -343,6 +344,7 @@ pyobjc-framework-Cocoa==10.3.1
 pyobjc-framework-libdispatch==10.3.1
 pyobjc-framework-Metal==10.3.1
 pyogrio==0.10.0
+pyOpenSSL==24.2.1
 pyparsing==2.4.7
 pypdf==5.0.1
 pyperclip==1.9.0
@@ -412,6 +414,8 @@ six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
 sniffio==1.3.1
+snowflake-connector-python==3.12.2
+snowflake-sqlalchemy==1.6.1
 soco==0.30.4
 sortedcontainers==2.4.0
 sounddevice==0.5.0
@@ -448,6 +452,7 @@ tiktoken==0.8.0
 tinycss2==1.3.0
 tokenize-rt==6.0.0
 tokenizers==0.20.0
+tomlkit==0.13.2
 torch==2.4.1
 torchinfo==1.8.0
 torchmetrics==1.4.2
