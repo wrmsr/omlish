@@ -18,7 +18,7 @@ from .content import ExtendedContent
 ##
 
 
-class _Content(lang.NotInstantiable, lang.Final):
+class MarshalContent(lang.NotInstantiable, lang.Final):
     pass
 
 
@@ -31,7 +31,7 @@ class _ContentMarshaler(msh.Marshaler):
 
 
 class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is _Content)
+    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return _ContentMarshaler(ctx.make(ExtendedContent))
 
@@ -40,17 +40,14 @@ class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
 class _ContentUnmarshaler(msh.Unmarshaler):
     et: msh.Unmarshaler
 
-    def marshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         raise NotImplementedError
 
 
 class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is _Content)
+    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return _ContentUnmarshaler(ctx.make(ExtendedContent))
-
-
-##
 
 
 ##
@@ -68,4 +65,4 @@ def _install_standard_marshalling() -> None:
         _ContentUnmarshalerFactory(),
     ]
 
-    msh.GLOBAL_REGISTRY.register(Content, msh.ReflectOverride(_Content))
+    msh.GLOBAL_REGISTRY.register(Content, msh.ReflectOverride(MarshalContent))

@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from .content import ExtendedContent
 
@@ -17,6 +18,22 @@ else:
     pimg = lang.proxy_import('PIL.Image')
 
 
+##
+
+
+class _ImageMarshaler(msh.Marshaler):
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        raise NotImplementedError
+
+
+class _ImageUnmarshaler(msh.Unmarshaler):
+    def unmarshal(self, ctx: msh.MarshalContext, v: msh.Value) -> ta.Any:
+        raise NotImplementedError
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class Image(ExtendedContent, lang.Final):
-    i: 'pimg.Image'
+    i: 'pimg.Image' = dc.field() | msh.update_field_metadata(marshaler=_ImageMarshaler, unmarshaler=_ImageUnmarshaler)
