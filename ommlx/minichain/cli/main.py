@@ -32,7 +32,6 @@ from ..chat import ChatRequest
 from ..chat import UserMessage
 from ..content import Content
 from ..content import Image
-from ..content import Text
 from ..prompts import Prompt
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
@@ -81,7 +80,7 @@ def _run_chat(
         new: bool = False,
         backend: str | None = None,
 ) -> None:
-    prompt = check.isinstance(content, Text).s
+    prompt = check.isinstance(content, str)
 
     #
 
@@ -104,7 +103,7 @@ def _run_chat(
         state,
         chat=[
             *state.chat,
-            UserMessage([Text(prompt)]),
+            UserMessage(prompt),
         ],
     )
 
@@ -155,7 +154,7 @@ def _run_prompt(
         *,
         backend: str | None = None,
 ) -> None:
-    prompt = check.isinstance(content, Text).s
+    prompt = check.isinstance(content, str)
 
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
 
@@ -219,7 +218,7 @@ def _main() -> None:
             stdin_data = sys.stdin.read()
             prompt = '\n'.join([prompt, stdin_data])
 
-        content = Text(prompt)
+        content = prompt
 
     #
 

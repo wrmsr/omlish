@@ -12,7 +12,6 @@ from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
-from ..content import Text
 from ..generative import MaxTokens
 from ..generative import Temperature
 from ..options import Options
@@ -82,7 +81,7 @@ class OpenaiChatModel(ChatModel):
             return m.s
 
         elif isinstance(m, UserMessage):
-            return ''.join(check.isinstance(c, Text).s for c in m.content)
+            return check.isinstance(m.content, str)
 
         else:
             raise TypeError(m)
@@ -142,7 +141,7 @@ class OpenaiEmbeddingModel(EmbeddingModel):
 
         response = client.embeddings.create(
             model=self.model,
-            input=check.isinstance(request.v, Text).s,
+            input=check.isinstance(request.v, str),
         )
 
         return EmbeddingResponse(v=Vector(response.data[0].embedding))

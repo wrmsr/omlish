@@ -8,7 +8,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .content import Content
+from .content import ExtendedContent
 
 
 if ta.TYPE_CHECKING:
@@ -18,5 +18,5 @@ else:
 
 
 @dc.dataclass(frozen=True)
-class Image(Content, lang.Final):
+class Image(ExtendedContent, lang.Final):
     i: 'pimg.Image'

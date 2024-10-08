@@ -6,7 +6,6 @@ from omlish.testing import pytest as ptu
 from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
-from ..chat import UserMessage
 from ..generative import MaxTokens
 from ..generative import Temperature
 from ..prompts import Prompt
@@ -31,7 +30,7 @@ def test_openai(harness):
     llm = OpenaiChatModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
     resp = llm(
-        [UserMessage.of('Is water dry?')],
+        'Is water dry?',
         Temperature(.1),
         MaxTokens(64),
     )
