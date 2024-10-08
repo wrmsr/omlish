@@ -3,7 +3,6 @@ import typing as ta
 from omlish import lang
 
 from ..content import Image
-from ..content import Text
 from ..vectors import EmbeddingModel
 from ..vectors import EmbeddingRequest
 from ..vectors import EmbeddingResponse
@@ -24,8 +23,8 @@ class SentencetransformersEmbeddingModel(EmbeddingModel):
 
         obj: ta.Any
         v = request.v
-        if isinstance(v, Text):
-            obj = v.s
+        if isinstance(v, str):
+            obj = v
         elif isinstance(v, Image):
             obj = v.i
         else:

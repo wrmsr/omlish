@@ -13,7 +13,6 @@ from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import UserMessage
-from ..content import Text
 
 
 if ta.TYPE_CHECKING:
@@ -40,7 +39,7 @@ class AnthropicChatModel(ChatModel):
             return m.s
 
         elif isinstance(m, UserMessage):
-            return ''.join(check.isinstance(c, Text).s for c in m.content)
+            return check.isinstance(m.content, str)
 
         else:
             raise TypeError(m)

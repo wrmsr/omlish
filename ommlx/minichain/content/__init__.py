@@ -1,7 +1,6 @@
 from .content import (  # noqa
     Content,
-    Contentable,
-    Text,
+    ExtendedContent,
 )
 
 from .images import (  # noqa
