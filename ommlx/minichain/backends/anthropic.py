@@ -31,6 +31,10 @@ class AnthropicChatModel(ChatModel):
         AiMessage: 'assistant',
     }
 
+    def __init__(self, *, api_key: str | None = None) -> None:
+        super().__init__()
+        self._api_key = api_key
+
     def _get_msg_content(self, m: Message) -> str:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
@@ -47,7 +51,10 @@ class AnthropicChatModel(ChatModel):
             *,
             max_tokens: int = 4096,
     ) -> ChatResponse:
-        client = anthropic.Anthropic()
+        client = anthropic.Anthropic(
+            api_key=self._api_key,
+        )
+
         response = client.messages.create(
             model=self.model,
             messages=[  # noqa
@@ -59,4 +66,5 @@ class AnthropicChatModel(ChatModel):
             ],
             max_tokens=max_tokens,
         )
+
         return ChatResponse(v=AiMessage(response.content[0].text))  # type: ignore

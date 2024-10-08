@@ -35,8 +35,16 @@ else:
 class OpenaiPromptModel(PromptModel):
     model = 'gpt-3.5-turbo-instruct'
 
+    def __init__(self, *, api_key: str | None = None) -> None:
+        super().__init__()
+        self._api_key = api_key
+
     def invoke(self, t: PromptRequest) -> PromptResponse:
-        response = openai.completions.create(
+        client = openai.OpenAI(
+            api_key=self._api_key,
+        )
+
+        response = client.completions.create(
             model=self.model,
             prompt=t.v.s,
             temperature=0,
@@ -123,8 +131,16 @@ class OpenaiChatModel(ChatModel):
 class OpenaiEmbeddingModel(EmbeddingModel):
     model = 'text-embedding-3-small'
 
+    def __init__(self, *, api_key: str | None = None) -> None:
+        super().__init__()
+        self._api_key = api_key
+
     def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
-        response = openai.embeddings.create(
+        client = openai.OpenAI(
+            api_key=self._api_key,
+        )
+
+        response = client.embeddings.create(
             model=self.model,
             input=check.isinstance(request.v, Text).s,
         )

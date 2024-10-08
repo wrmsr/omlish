@@ -1,7 +1,6 @@
-import os.path
 import typing as ta
 
-import pytest
+from omlish.secrets.tests.harness import HarnessSecrets
 
 from ..backends.openai import OpenaiPromptModel
 from ..generative import MaxTokens
@@ -16,17 +15,8 @@ def test_templates():
     assert DictTemplater(dict(x='foo')).apply('hi {x}!') == 'hi foo!'
 
 
-def test_templating_model():
-    env_file = os.path.join(os.path.expanduser('~/.omlish-llm/.env'))
-    if not os.path.isfile(env_file):
-        pytest.skip('No env file')
-    with open(env_file) as f:
-        for l in f:
-            if l := l.strip():
-                k, _, v = l.partition('=')
-                os.environ[k] = v
-
-    llm: PromptModel = OpenaiPromptModel()
+def test_templating_model(harness):
+    llm: PromptModel = OpenaiPromptModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
     llm = ta.cast(PromptModel, TemplatingModel(llm, DictTemplater(dict(what='water'))))
 
     resp = llm(

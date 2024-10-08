@@ -1,4 +1,3 @@
-import dataclasses as dc
 import os
 import sys
 import typing as ta
@@ -16,7 +15,6 @@ else:
     transformers = lang.proxy_import('transformers')
 
 
-@dc.dataclass(frozen=True)
 class TransformersPromptModel(PromptModel):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'microsoft/phi-2'
@@ -24,19 +22,28 @@ class TransformersPromptModel(PromptModel):
         # 'meta-llama/Meta-Llama-3-8B'
     )
 
-    model: str = dc.field(default_factory=lambda: TransformersPromptModel.DEFAULT_MODEL)
-    kwargs: ta.Mapping[str, ta.Any] | None = None
+    def __init__(
+            self,
+            model: str = DEFAULT_MODEL,
+            kwargs: ta.Mapping[str, ta.Any] | None = None,
+            *,
+            token: str | None = None,
+    ) -> None:
+        super().__init__()
+        self._model = model
+        self._kwargs = kwargs
+        self._token = token
 
     def invoke(self, request: PromptRequest) -> PromptResponse:
         pipeline = transformers.pipeline(
             'text-generation',
-            model=self.model,
+            model=self._model,
             **{
                 **dict(
                     device='mps' if sys.platform == 'darwin' else 'cuda',
-                    token=os.environ.get('HUGGINGFACE_HUB_TOKEN'),
+                    token=self._token or os.environ.get('HUGGINGFACE_HUB_TOKEN'),
                 ),
-                **(self.kwargs or {}),
+                **(self._kwargs or {}),
             },
         )
         output = pipeline(request.v.s)

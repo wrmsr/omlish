@@ -27,6 +27,10 @@ class GoogleChatModel(ChatModel):
         AiMessage: 'assistant',
     }
 
+    def __init__(self, *, api_key: str | None = None) -> None:
+        super().__init__()
+        self._api_key = api_key
+
     def _get_msg_content(self, m: Message) -> str:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
@@ -43,7 +47,8 @@ class GoogleChatModel(ChatModel):
             self,
             request: ChatRequest,
     ) -> ChatResponse:
-        key = os.environ['GEMINI_API_KEY']
+        if not (key := self._api_key):
+            key = os.environ['GEMINI_API_KEY']
 
         req_dct = {
             'contents': [
