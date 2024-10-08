@@ -3,7 +3,7 @@ from omlish import lang
 
 from ..json import JsonSchema
 from ..options import UniqueOption
-from .models import ChatRequestOption
+from .options import ChatRequestOption
 
 
 ##

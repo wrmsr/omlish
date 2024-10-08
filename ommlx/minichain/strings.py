@@ -11,8 +11,8 @@ from .chat import SystemMessage
 from .chat import ToolExecutionResultMessage
 from .chat import UserMessage
 from .content import Content
+from .content import Image
 from .content import Text
-from .images import Image
 from .models import Request
 from .prompts import Prompt
 

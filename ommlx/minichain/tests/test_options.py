@@ -3,11 +3,11 @@ from ..chat import TEXT_RESPONSE_FORMAT
 from ..chat import JsonResponseFormat
 from ..chat import ResponseFormat
 from ..chat import Tool
+from ..chat import ToolParameters
+from ..chat import ToolSpecification
 from ..generative import TopK
 from ..options import DuplicateUniqueOptionError
 from ..options import Options
-from ..tool import ToolParameters
-from ..tool import ToolSpecification
 
 
 def test_options():

@@ -24,9 +24,12 @@ from .models import (  # noqa
     ChatModel,
     ChatOutput,
     ChatRequest,
+    ChatResponse,
+)
+
+from .options import (  # noqa
     ChatRequestOption,
     ChatRequestOptions,
-    ChatResponse,
 )
 
 from .tools import (  # noqa

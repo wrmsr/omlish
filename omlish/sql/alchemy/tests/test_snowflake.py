@@ -23,4 +23,4 @@ def test_snowflake():
 
     with lang.disposing(sa.create_engine(os.environ['SNOWFLAKE_URL'])) as engine:
         with engine.connect() as conn:
-            print(conn.execute(sa.text('select current_version()')).fetchone()[0])
+            print(conn.execute(sa.text('select current_version()')).fetchone()[0])  # type: ignore
