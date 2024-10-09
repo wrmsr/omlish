@@ -116,6 +116,19 @@ class Argument(ContentNode):
 ##
 
 
+def _install_msh_poly(cls: type) -> None:
+    p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+
+
+_install_msh_poly(Node)
+_install_msh_poly(ContentNode)
+
+
+##
+
+
 def one_text(nodes: Content) -> str | None:
     if len(nodes) == 1 and isinstance(n := nodes[0], Text):
         return n.s

@@ -9,14 +9,6 @@ from .data import WIKI_FILES
 
 
 def test_dom():
-    def install_msh_poly(cls: type) -> None:
-        p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
-        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
-        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
-
-    install_msh_poly(mfh.Node)
-    install_msh_poly(mfh.ContentNode)
-
     print()
 
     for n, src in sorted(WIKI_FILES.items(), key=lambda t: t[0]):
