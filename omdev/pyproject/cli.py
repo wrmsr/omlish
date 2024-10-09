@@ -348,7 +348,7 @@ def _pkg_cmd(args) -> None:
         ]
         pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
 
-        num_threads = args.jobs or max(mp.cpu_count() // 1.5, 1)
+        num_threads = args.jobs or int(max(mp.cpu_count() // 1.5, 1))
         futs: ta.List[cf.Future]
         with cf.ThreadPoolExecutor(num_threads) as ex:
             futs = [ex.submit(pg.gen) for pg in pgs]
