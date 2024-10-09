@@ -22,13 +22,13 @@ class SystemMessage(Message, lang.Final):
 @dc.dataclass(frozen=True)
 class UserMessage(Message, lang.Final):
     content: Content
-    name: str | None = None
+    name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)
 class AiMessage(Message, lang.Final):
     s: str
-    tool_execution_requests: ta.Sequence['ToolExecutionRequest'] | None = None
+    tool_execution_requests: ta.Sequence['ToolExecutionRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)

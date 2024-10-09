@@ -107,6 +107,9 @@ class Options(lang.Final, ta.Generic[OptionT]):
     def __contains__(self, cls: type[OptionU]) -> bool:
         return cls in self._dct
 
+    def __bool__(self) -> bool:
+        return bool(self._lst)
+
     @ta.overload
     def __getitem__(self, idx: int) -> OptionT:
         ...

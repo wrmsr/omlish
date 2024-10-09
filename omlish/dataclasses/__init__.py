@@ -89,15 +89,19 @@ from .impl.reflect import (  # noqa
 )
 
 from .utils import (  # noqa
-    chain_metadata,
-    deep_replace,
-    field_modifier,
-    fields_dict,
     maybe_post_init,
+
     opt_repr,
+    truthy_repr,
+
+    fields_dict,
+    field_modifier,
+    chain_metadata,
     update_class_metadata,
-    update_field_extras,
     update_field_metadata,
+    update_field_extras,
     update_fields,
     update_fields_metadata,
+
+    deep_replace,
 )
