@@ -1,6 +1,4 @@
 import sqlite3
-import struct
-import typing as ta
 
 from ..vectors import CALC_SIMILARITIES_FUNCS
 from ..vectors import Hit
@@ -34,7 +32,7 @@ class SqliteVectorStore(VectorStore):
     def index(self, doc: Indexed) -> None:
         self._db.execute(
             f'insert into {self._table_name} (v, vec) values (?, ?)',
-            (doc.v, _encode_floats(doc.vec.v)),
+            (doc.v, doc.vec.bytes()),
         )
 
     def search(self, search: Search) -> Hits:

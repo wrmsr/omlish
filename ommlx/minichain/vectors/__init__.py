@@ -15,13 +15,14 @@ from .stores import (  # noqa
 )
 
 from .similarity import (  # noqa
-    CALC_SIMILARITIES_FUNCS,
+    CALC_NP_SIMILARITIES_FUNCS,
     Similarity,
-    calc_cosine_similarities,
-    calc_dot_similarities,
-    calc_similarities,
+    calc_np_cosine_similarities,
+    calc_np_dot_similarities,
+    calc_np_similarities,
 )
 
 from .vectors import (  # noqa
     Vector,
+    Vectorable,
 )

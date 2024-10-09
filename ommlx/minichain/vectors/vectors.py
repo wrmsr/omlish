@@ -1,22 +1,17 @@
 """
-Preferred storage is array.array until numpy is imported.
-
-Storage:
- - f32 bytes
- - Sequence[float]
- - array.array
- - np.ndarray
-
-Storage?:
- - memoryview ?
- - torch.Tensor ?
+TODO:
+ - __getitem__ return Vector? views? this isn't a replacement for strided tensors, just List[float]
+ - memoryview?
+ - torch.Tensor?
 """
 import array
+import functools
 import struct
 import sys
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 
@@ -42,31 +37,43 @@ Vectorable: ta.TypeAlias = ta.Union[
     'Vector',
     'VectorStorage',
     bytes,
-    ta.Sequence[float],
+    ta.Iterable[float],
 ]
 
 
 ##
 
 
-class _NdarrayPlaceholder(lang.NotInstantiable, lang.Final):
-    pass
+@dc.dataclass(frozen=True)
+class _StorageImpl:
+    cls: type[VectorStorage]
+    ctor: ta.Callable[[ta.Iterable[float]], VectorStorage]
+
+    _: dc.KW_ONLY
+
+    is_np: bool = False
 
 
-_Ndarray: type = _NdarrayPlaceholder
+_ARRAY_STORAGE_IMPL = _StorageImpl(
+    array.array,
+    functools.partial(array.array, 'f'),
+)
+
+_STORAGE_IMPL: _StorageImpl = _ARRAY_STORAGE_IMPL
 
 
-def _get_preferred_storage() -> type[VectorStorage]:
+def _get_storage_impl() -> _StorageImpl:
     if 'numpy' in sys.modules:
-        global _Ndarray
+        global _STORAGE_IMPL
 
-        if _Ndarray is _NdarrayPlaceholder:
-            _Ndarray = np.ndarray
+        if _STORAGE_IMPL is _ARRAY_STORAGE_IMPL:
+            _STORAGE_IMPL = _StorageImpl(
+                np.ndarray,
+                functools.partial(np.array, dtype=np.float32),
+                is_np=True,
+            )
 
-        return np.ndarray
-
-    else:
-        return array.array
+    return _STORAGE_IMPL  # noqa
 
 
 ##
@@ -80,7 +87,7 @@ def _decode_float_bytes(b: bytes) -> ta.Sequence[float]:
     return struct.unpack('<' + 'f' * (len(b) // 4), b)
 
 
-class Vector(lang.Final):
+class Vector(lang.Final, ta.Sequence[float]):
     def __init__(self, obj: Vectorable) -> None:
         if isinstance(obj, Vector):
             check.is_(self, obj)
@@ -88,10 +95,60 @@ class Vector(lang.Final):
 
         super().__init__()
 
-        self._storage = obj
+        s: VectorStorage
+        si = _get_storage_impl()
+        if isinstance(obj, si.cls):
+            s = obj
+        else:
+            l: ta.Iterable[float]
+            if isinstance(obj, bytes):
+                l = _decode_float_bytes(obj)
+            else:
+                l = obj
+            s = si.ctor(l)
+
+        self._s = s
 
     def __new__(cls, obj):
         if isinstance(obj, Vector):
             return obj
 
         return super().__new__(cls)
+
+    #
+
+    def __iter__(self) -> ta.Iterator[float]:
+        return iter(self._s)
+
+    @ta.overload
+    def __getitem__(self, index: int) -> float:
+        ...
+
+    @ta.overload
+    def __getitem__(self, index: slice) -> ta.Sequence[float]:
+        ...
+
+    def __getitem__(self, index):
+        return self._s[index]
+
+    def __len__(self) -> int:
+        return len(self._s)
+
+    #
+
+    def bytes(self) -> bytes:
+        return _encode_float_bytes(self._s)
+
+    def np(self) -> 'np.ndarray':
+        si = _get_storage_impl()
+
+        if not si.is_np:
+            import numpy  # noqa
+
+            si = _get_storage_impl()
+            check.state(si.is_np)
+
+        if not isinstance(self._s, si.cls):
+            self._s = si.ctor(self._s)
+
+        return self._s
