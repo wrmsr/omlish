@@ -45,10 +45,10 @@ class FieldMetadata:
 
     options: FieldOptions = DEFAULT_FIELD_OPTIONS
 
-    marshaler: Marshaler | None = dc.xfield(default=None, check_type=(Marshaler, type(None)))
+    marshaler: Marshaler | None = dc.xfield(None, check_type=(Marshaler, None))
     marshaler_factory: MarshalerFactory | None = None
 
-    unmarshaler: Unmarshaler | None = dc.xfield(default=None, check_type=(Unmarshaler, type(None)))
+    unmarshaler: Unmarshaler | None = dc.xfield(None, check_type=(Unmarshaler, None))
     unmarshaler_factory: UnmarshalerFactory | None = None
 
     def update(self, **kwargs: ta.Any) -> 'FieldMetadata':
