@@ -23,7 +23,7 @@ class Node:
     allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='AllowedPs')
     tags: ta.Sequence[str] | None = None
 
-    x: ta.Mapping[str, ta.Any] | None = None
+    x: ta.Mapping[str, ta.Any] | None = dc.xfield(None) | msh.update_field_metadata(no_marshal=True)
 
 
 @dc.dataclass(frozen=True)
@@ -46,7 +46,7 @@ class Status:
     def nodes_by_host_name(self) -> ta.Mapping[str, Node]:
         return col.make_map(((n.host_name, n) for n in self.nodes if n.host_name), strict=True)
 
-    x: ta.Mapping[str, ta.Any] | None = None
+    x: ta.Mapping[str, ta.Any] | None = dc.xfield(None) | msh.update_field_metadata(no_marshal=True)
 
 
 class Cli(ap.Cli):

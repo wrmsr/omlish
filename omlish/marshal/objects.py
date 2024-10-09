@@ -103,7 +103,7 @@ class FieldInfo:
     name: str
     type: ta.Any
 
-    marshal_name: str
+    marshal_name: str | None
     unmarshal_names: ta.Sequence[str]
 
     metadata: FieldMetadata = FieldMetadata()
@@ -129,7 +129,7 @@ class FieldInfos:
     @cached.property
     @dc.init
     def by_marshal_name(self) -> ta.Mapping[str, FieldInfo]:
-        return col.make_map(((fi.marshal_name, fi) for fi in self), strict=True)
+        return col.make_map(((fi.marshal_name, fi) for fi in self if fi.marshal_name is not None), strict=True)
 
     @cached.property
     @dc.init
@@ -159,14 +159,18 @@ class ObjectMarshaler(Marshaler):
             if fi.name in self.specials.set:
                 continue
 
+            mn = fi.marshal_name
+            if mn is None:
+                continue
+
             mv = m.marshal(ctx, v)
 
             if fi.options.embed:
                 for ek, ev in check.isinstance(mv, collections.abc.Mapping).items():
-                    ret[fi.marshal_name + check.non_empty_str(ek)] = ev  # type: ignore
+                    ret[mn + check.non_empty_str(ek)] = ev  # type: ignore
 
             else:
-                ret[fi.marshal_name] = mv
+                ret[mn] = mv
 
         if self.specials.unknown is not None:
             if (ukf := getattr(o, self.specials.unknown)):
