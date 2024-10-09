@@ -160,9 +160,6 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
 
         def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
-            if fi.name in dc_md.specials.set:
-                return []
-
             ret: list[str] = []
 
             if fi.options.embed:
@@ -195,6 +192,8 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
             return ret
 
         for fi in get_field_infos(ty, ctx.options):
+            if fi.name in dc_md.specials.set:
+                continue
             add_field(fi)
 
         return ObjectUnmarshaler(
