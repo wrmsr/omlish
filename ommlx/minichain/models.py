@@ -48,7 +48,7 @@ class RequestOption(Option, lang.Abstract):
 class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
     v: T
 
-    options: Options[OptionT] = Options()
+    options: Options[OptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
 
     @classmethod
     def new(
@@ -68,8 +68,8 @@ class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
 class Response(lang.Abstract, ta.Generic[T]):
     v: T
 
-    usage: TokenUsage | None = None
-    reason: FinishReason | None = None
+    usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 class Model(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
