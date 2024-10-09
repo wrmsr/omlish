@@ -8,6 +8,8 @@ from .formats import (  # noqa
 
 from .history import (  # noqa
     ChatHistory,
+    ChatHistoryModel,
+    ListChatHistory,
 )
 
 from .messages import (  # noqa

@@ -20,6 +20,10 @@ class WrapperModel(Model[RequestT, OptionT, NewRequestT, ResponseT], lang.Abstra
         self._underlying = underlying
 
     @property
+    def underlying(self) -> Model[RequestT, OptionT, NewRequestT, ResponseT]:
+        return self._underlying
+
+    @property
     def request_cls(self) -> type[Request]:  # type: ignore[override]
         return self._underlying.request_cls
 
