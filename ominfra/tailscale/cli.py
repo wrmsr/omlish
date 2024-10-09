@@ -13,8 +13,9 @@ from omlish import marshal as msh
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
 class Status:
-    version: str
-    backend_state: str
+    version: str | None = None
+    backend_state: str | None = None
+    TailscaleIPs: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
 
     x: ta.Mapping[str, ta.Any] | None = None
 
