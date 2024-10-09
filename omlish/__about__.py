@@ -28,6 +28,8 @@ class Project(ProjectBase):
     name = 'omlish'
     description = 'omlish'
 
+    #
+
     optional_dependencies = {
         'async': [
             'anyio ~= 4.6',
@@ -109,6 +111,32 @@ class Project(ProjectBase):
         ],
     }
 
+    #
+
+    _plus_dependencies = [
+        'anyio',
+        'sniffio',
+
+        'asttokens',
+        'executing',
+
+        'orjson',
+        'pyyaml',
+
+        'wrapt',
+    ]
+
+    _dependency_specs_by_name = (lambda od: {  # noqa
+        s.split()[0]: s
+        for l in od.values() for s in l
+    })(optional_dependencies)
+
+    optional_dependencies['plus'] = (lambda ds, pd: [  # noqa
+        ds[n] for n in pd
+    ])(_dependency_specs_by_name, _plus_dependencies)
+
+    #
+
     entry_points = {
         'omlish.manifests': {name: name},
     }
@@ -134,6 +162,7 @@ class SetuptoolsBase:
             '*.c',
             '*.cc',
             '*.cu',
+            '*.g4',
             '*.h',
 
             '.manifests.json',

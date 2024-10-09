@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
+from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -119,11 +120,12 @@ def _make_field_obj(ctx, ty, obj, fac):
 
 class DataclassMarshalerFactory(MarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and dc.is_dataclass(rty)
+        return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
         check.state(dc.is_dataclass(ty))
+        check.state(not lang.is_abstract_class(ty))
 
         dc_md = get_dataclass_metadata(ty)
 
@@ -143,11 +145,12 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and dc.is_dataclass(rty)
+        return isinstance(rty, type) and dc.is_dataclass(rty) and not lang.is_abstract_class(rty)
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         ty = check.isinstance(rty, type)
         check.state(dc.is_dataclass(ty))
+        check.state(not lang.is_abstract_class(ty))
         dc_md = get_dataclass_metadata(ty)
 
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
