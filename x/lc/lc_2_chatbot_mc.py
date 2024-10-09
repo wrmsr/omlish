@@ -1,5 +1,7 @@
 from ommlx.minichain.backends.openai import OpenaiChatModel
 from ommlx.minichain.chat import AiMessage
+from ommlx.minichain.chat import ChatHistoryModel
+from ommlx.minichain.chat import ListChatHistory
 from ommlx.minichain.chat import SystemMessage
 from ommlx.minichain.chat import UserMessage
 from ommlx.minichain.strings import transform_strings
@@ -31,6 +33,21 @@ def _main() -> None:
         AiMessage("Hello Bob! How can I assist you today?"),
         UserMessage("What's my name?"),
     ])
+    print(result)
+
+    #
+
+    hist = ListChatHistory([
+        SystemMessage("You are a helpful assistant. Answer all questions to the best of your ability."),
+    ])
+    model = ChatHistoryModel(model, hist)
+
+    result = model([
+        UserMessage("hi! I'm bob"),
+    ])
+    print(result)
+
+    result = model([UserMessage("What's my name?")])
     print(result)
 
 
