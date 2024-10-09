@@ -38,7 +38,7 @@ all = [
     'orjson ~= 3.10',
     'ujson ~= 5.10',
     'json5 ~= 0.9',
-    'pyyaml ~= 5.0',
+    'pyyaml ~= 6.0',
     'cbor2 ~= 5.6',
     'cloudpickle ~= 3.0',
     'httpx[http2] ~= 0.27',
@@ -59,7 +59,7 @@ all = [
     'asttokens ~= 2.4',
     'executing ~= 2.1',
     'orjson ~= 3.10',
-    'pyyaml ~= 5.0',
+    'pyyaml ~= 6.0',
     'wrapt ~= 1.14',
 ]
 async = [
@@ -83,7 +83,7 @@ formats = [
     'orjson ~= 3.10',
     'ujson ~= 5.10',
     'json5 ~= 0.9',
-    'pyyaml ~= 5.0',
+    'pyyaml ~= 6.0',
     'cbor2 ~= 5.6',
     'cloudpickle ~= 3.0',
 ]
@@ -118,7 +118,7 @@ plus = [
     'asttokens ~= 2.4',
     'executing ~= 2.1',
     'orjson ~= 3.10',
-    'pyyaml ~= 5.0',
+    'pyyaml ~= 6.0',
     'wrapt ~= 1.14',
 ]
 
