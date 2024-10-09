@@ -32,6 +32,10 @@ class Project(ProjectBase):
             'llama-cpp-python ~= 0.3',
         ],
 
+        'numpy': [
+            'numpy >= 1.20',
+        ],
+
         'pillow': [
             'pillow ~= 10.4',
         ],

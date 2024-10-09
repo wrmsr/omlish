@@ -94,3 +94,5 @@ wikitextparser==0.56.2  # !! GPL
 
 executing==2.1.0
 asttokens==2.4.1
+
+numpy>=1.20

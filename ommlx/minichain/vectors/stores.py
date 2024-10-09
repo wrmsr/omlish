@@ -4,6 +4,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .similarity import Similarity
 from .vectors import Vector
 
 
@@ -19,7 +20,11 @@ class Indexed(lang.Final):
 @dc.dataclass(frozen=True)
 class Search(lang.Final):
     vec: Vector
+
+    _: dc.KW_ONLY
+
     k: int = 10
+    similarity: Similarity = Similarity.DOT
 
 
 @dc.dataclass(frozen=True)
