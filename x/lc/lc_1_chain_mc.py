@@ -1,8 +1,6 @@
 from ommlx.minichain.backends.openai import OpenaiChatModel
-from ommlx.minichain.chat import ChatRequest
 from ommlx.minichain.chat import SystemMessage
 from ommlx.minichain.chat import UserMessage
-from ommlx.minichain.content import Text
 from ommlx.minichain.strings import transform_strings
 from ommlx.minichain.templates import DictTemplater
 from ommlx.minichain.templates import TemplatingModel
@@ -19,7 +17,7 @@ def _main() -> None:
 
     messages = [
         SystemMessage('Translate the following from English into Italian'),
-        UserMessage.of('Hi!'),
+        UserMessage('Hi!'),
     ]
 
     result = model(messages)
@@ -31,7 +29,7 @@ def _main() -> None:
 
     prompt_template = [
         SystemMessage(system_template),
-        UserMessage.of("{text}"),
+        UserMessage("{text}"),
     ]
 
     templater = DictTemplater({"language": "italian", "text": "hi"})
