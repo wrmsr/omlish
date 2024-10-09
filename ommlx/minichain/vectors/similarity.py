@@ -4,6 +4,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .vectors import Vectorable
+
 
 if ta.TYPE_CHECKING:
     import numpy as np
@@ -18,8 +20,6 @@ class Similarity(enum.Enum):
     DOT = enum.auto()
     COSINE = enum.auto()
 
-
-Vectorable: ta.TypeAlias = 'np.ndarray'
 
 CalcSimilaritiesFunc: ta.TypeAlias = ta.Callable[[Vectorable, Vectorable], 'np.ndarray']
 
