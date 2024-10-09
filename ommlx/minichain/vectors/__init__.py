@@ -14,6 +14,14 @@ from .stores import (  # noqa
     VectorStore,
 )
 
+from .similarity import (  # noqa
+    CALC_SIMILARITIES_FUNCS,
+    Similarity,
+    calc_cosine_similarities,
+    calc_dot_similarities,
+    calc_similarities,
+)
+
 from .vectors import (  # noqa
     Vector,
 )
