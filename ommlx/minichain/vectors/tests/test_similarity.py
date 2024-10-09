@@ -5,6 +5,7 @@ from omlish.testing import pytest as ptu
 
 from ..similarity import Similarity
 from ..similarity import calc_similarities
+from ..vectors import Vector
 
 
 if ta.TYPE_CHECKING:
