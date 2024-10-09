@@ -1,6 +1,18 @@
+"""
+Storage:
+ - f32 bytes
+ - Sequence[float]
+ - array.array
+ - np.ndarray
+
+Storage?:
+ - memoryview ?
+ - torch.Tensor ?
+"""
+import array
 import typing as ta
 
-from omlish import dataclasses as dc
+from omlish import check
 from omlish import lang
 
 
@@ -13,11 +25,27 @@ else:
 ##
 
 
-Vectorable: ta.TypeAlias = 'np.ndarray'
+Vectorable: ta.TypeAlias = ta.Union[
+    bytes,
+    ta.Sequence[float],
+    'array.array',
+    'np.ndarray',
+    'Vector',
+]
 
 
-@dc.dataclass(frozen=True)
-class Vector:
-    """array.array('f' | 'd', ...) preferred"""
+class Vector(lang.Final):
+    def __init__(self, obj: Vectorable) -> None:
+        if isinstance(obj, Vector):
+            check.is_(self, obj)
+            return
 
-    v: ta.Sequence[float]
+        super().__init__()
+
+        self._obj = obj
+
+    def __new__(cls, obj):
+        if isinstance(obj, Vector):
+            return obj
+
+        return super().__new__(cls)

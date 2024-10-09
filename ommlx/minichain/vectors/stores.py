@@ -13,8 +13,8 @@ from .vectors import Vector
 
 @dc.dataclass(frozen=True)
 class Indexed(lang.Final):
-    vec: Vector
     v: ta.Any
+    vec: Vector
 
 
 @dc.dataclass(frozen=True)
@@ -29,8 +29,8 @@ class Search(lang.Final):
 
 @dc.dataclass(frozen=True)
 class Hit(lang.Final):
-    score: float
     v: ta.Any
+    score: float
 
 
 @dc.dataclass(frozen=True)
