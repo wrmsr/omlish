@@ -35,6 +35,7 @@ all = [
     'huggingface-hub ~= 0.25',
     'datasets ~= 3.0',
     'llama-cpp-python ~= 0.3',
+    'numpy >= 1.20',
     'pillow ~= 10.4',
     'tinygrad ~= 0.9',
     'torch ~= 2.4',
@@ -54,6 +55,9 @@ huggingface = [
 ]
 llamacpp = [
     'llama-cpp-python ~= 0.3',
+]
+numpy = [
+    'numpy >= 1.20',
 ]
 pillow = [
     'pillow ~= 10.4',
