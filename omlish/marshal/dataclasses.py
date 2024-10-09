@@ -132,6 +132,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
             for fi in get_field_infos(ty, ctx.options)
+            if fi.name not in dc_md.specials.set
         ]
 
         return ObjectMarshaler(
@@ -159,12 +160,17 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
 
         def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
+            if fi.name in dc_md.specials.set:
+                return []
+
             ret: list[str] = []
 
             if fi.options.embed:
                 e_ty = check.isinstance(fi.type, type)
                 check.state(dc.is_dataclass(e_ty))
-                # e_dc_md = get_dataclass_metadata(e_ty)
+                e_dc_md = get_dataclass_metadata(e_ty)
+                if e_dc_md.specials.set:
+                    raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
                 embeds[fi.name] = e_ty
                 for e_fi in get_field_infos(e_ty, ctx.options):
