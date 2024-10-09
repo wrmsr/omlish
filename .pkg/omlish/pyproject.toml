@@ -54,6 +54,13 @@ all = [
     'sqlean.py ~= 3.45; python_version < "3.13"',
     'duckdb ~= 1.1',
     'pytest ~= 8.0',
+    'anyio ~= 4.6',
+    'sniffio ~= 1.3',
+    'asttokens ~= 2.4',
+    'executing ~= 2.1',
+    'orjson ~= 3.10',
+    'pyyaml ~= 5.0',
+    'wrapt ~= 1.14',
 ]
 async = [
     'anyio ~= 4.6',
@@ -105,6 +112,15 @@ sqldrivers = [
 testing = [
     'pytest ~= 8.0',
 ]
+plus = [
+    'anyio ~= 4.6',
+    'sniffio ~= 1.3',
+    'asttokens ~= 2.4',
+    'executing ~= 2.1',
+    'orjson ~= 3.10',
+    'pyyaml ~= 5.0',
+    'wrapt ~= 1.14',
+]
 
 [project.entry-points]
 'omlish.manifests' = {omlish = 'omlish'}
@@ -126,6 +142,7 @@ exclude = [
     '*.c',
     '*.cc',
     '*.cu',
+    '*.g4',
     '*.h',
     '.manifests.json',
     'LICENSE',
