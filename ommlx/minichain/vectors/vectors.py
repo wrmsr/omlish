@@ -77,7 +77,6 @@ def _encode_float_bytes(fs: ta.Sequence[float]) -> bytes:
 
 
 def _decode_float_bytes(b: bytes) -> ta.Sequence[float]:
-    check.arg(not (len(b) % 4))
     return struct.unpack('<' + 'f' * (len(b) // 4), b)
 
 
