@@ -8,6 +8,7 @@ TODO:
 import collections.abc
 import typing as ta
 
+from .. import cached
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
@@ -68,7 +69,7 @@ class ObjectMetadata:
     unknown_field: str | None = None
     source_field: str | None = None
 
-    @property
+    @cached.property
     def specials(self) -> 'ObjectSpecials':
         return ObjectSpecials(
             unknown=self.unknown_field,
@@ -82,6 +83,13 @@ class ObjectMetadata:
 class ObjectSpecials:
     unknown: str | None = None
     source: str | None = None
+
+    @cached.property
+    def set(self) -> frozenset[str]:
+        return frozenset(f for f in (
+            self.unknown,
+            self.source,
+        ) if f is not None)
 
 
 ##
