@@ -1,5 +1,6 @@
 """
 TODO:
+ - marshal
  - __getitem__ return Vector? views? this isn't a replacement for strided tensors, just List[float]
  - memoryview?
  - torch.Tensor?
@@ -98,7 +99,7 @@ class Vector(lang.Final, ta.Sequence[float]):
         s: VectorStorage
         si = _get_storage_impl()
         if isinstance(obj, si.cls):
-            s = obj
+            s = obj  # type: ignore
         else:
             l: ta.Iterable[float]
             if isinstance(obj, bytes):
@@ -137,7 +138,7 @@ class Vector(lang.Final, ta.Sequence[float]):
     #
 
     def bytes(self) -> bytes:
-        return _encode_float_bytes(self._s)
+        return _encode_float_bytes(self._s)  # type: ignore
 
     def np(self) -> 'np.ndarray':
         si = _get_storage_impl()
@@ -151,4 +152,4 @@ class Vector(lang.Final, ta.Sequence[float]):
         if not isinstance(self._s, si.cls):
             self._s = si.ctor(self._s)
 
-        return self._s
+        return self._s  # type: ignore

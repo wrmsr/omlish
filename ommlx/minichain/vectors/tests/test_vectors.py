@@ -6,4 +6,4 @@ def test_vector():
     assert Vector(v) is v
 
     assert len(Vector([1, 2, 3])) == 3
-    assert Vector([1, 2, 3])[2] == 2.
+    assert Vector([1, 2, 3])[2] == 3.

@@ -1,10 +1,17 @@
+"""
+TODO:
+ - udf name manager - acquire leases to unique names, release back to pool, replace with dummy
+"""
 import sqlite3
 
-from ..vectors import CALC_SIMILARITIES_FUNCS
+from omlish import lang
+
+from ..vectors import CALC_NP_SIMILARITIES_FUNCS
 from ..vectors import Hit
 from ..vectors import Hits
 from ..vectors import Indexed
 from ..vectors import Search
+from ..vectors import Vector
 from ..vectors.stores import VectorStore
 
 
@@ -31,24 +38,33 @@ class SqliteVectorStore(VectorStore):
 
     def index(self, doc: Indexed) -> None:
         self._db.execute(
-            f'insert into {self._table_name} (v, vec) values (?, ?)',
+            f'insert into {self._table_name} (v, vec) values (?, ?)',  # noqa
             (doc.v, doc.vec.bytes()),
         )
 
     def search(self, search: Search) -> Hits:
-        sfn = CALC_SIMILARITIES_FUNCS[search.similarity]
+        snp = search.vec.np()
+        npfn = CALC_NP_SIMILARITIES_FUNCS[search.similarity]
 
         def calc_score(binary):
-            vec = _decode_floats(binary)
-            return sfn()
+            rnp = Vector(binary).np()
+            score = float(npfn(rnp.reshape(1, -1), snp)[0])
+            return score
 
-        self._db.create_function('calc_score', 1, calc_score)
+        udf_name = 'calc_score'
+        self._db.create_function(udf_name, 1, calc_score)
+        try:
+            rows = self._db.execute(
+                f'select v, calc_score(vec) as score '  # noqa
+                f'from {self._table_name} '
+                f'order by score desc '
+                f'limit {search.k}',
+            )
 
-        rows = self._db.execute(
-            f'select v, calc_score(vec) as score from {self._table_name} order by score desc limit {search.k}',
-        )
+            ret = []
+            for row in rows:
+                ret.append(Hit(row[0], row[1]))
+            return Hits(ret)
 
-        ret = []
-        for row in rows:
-            ret.append(Hit(row[1], row[0]))
-        return Hits(ret)
+        finally:
+            self._db.create_function(udf_name, 0, lang.void)
