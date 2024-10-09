@@ -12,10 +12,9 @@ See (entry_points):
 """
 # ruff: noqa: UP006 UP007
 import argparse
+import asyncio
 import collections
-import concurrent.futures as cf
 import dataclasses as dc
-import functools
 import inspect
 import itertools
 import json
@@ -37,6 +36,9 @@ from .. import findmagic
 from .load import ManifestLoader
 from .types import Manifest
 from .types import ManifestOrigin
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -98,138 +100,160 @@ def _payload_src() -> str:
     return inspect.getsource(_dump_module_manifests)
 
 
-def build_module_manifests(
-        file: str,
-        base: str,
-        *,
-        shell_wrap: bool = True,
-        warn_threshold_s: ta.Optional[float] = 1.,
-) -> ta.Sequence[Manifest]:
-    log.info('Extracting manifests from file %s', file)
+class ManifestBuilder:
+    def __init__(
+            self,
+            base: str,
+            concurrency: int = 8,
+            *,
+            write: bool = False,
+    ) -> None:
+        super().__init__()
 
-    if not file.endswith('.py'):
-        raise Exception(file)
+        self._base = base
+        self._sem = asyncio.Semaphore(concurrency)
+        self._write = write
 
-    mod_name = file.rpartition('.')[0].replace(os.sep, '.')
-    mod_base = mod_name.split('.')[0]
-    if mod_base != (first_dir := file.split(os.path.sep)[0]):
-        raise Exception(f'Unexpected module base: {mod_base=} != {first_dir=}')
+    async def _spawn(self, fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T:
+        await self._sem.acquire()
+        try:
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:  # noqa
+                log.exception('Exception in task: %s, %r, %r', fn, args, kwargs)
+                raise
+        finally:
+            self._sem.release()
 
-    with open(os.path.join(base, file)) as f:
-        src = f.read()
+    async def build_module_manifests(
+            self,
+            file: str,
+            *,
+            shell_wrap: bool = True,
+            warn_threshold_s: ta.Optional[float] = 1.,
+    ) -> ta.Sequence[Manifest]:
+        log.info('Extracting manifests from file %s', file)
 
-    origins: ta.List[ManifestOrigin] = []
-    lines = src.splitlines(keepends=True)
-    for i, l in enumerate(lines):
-        if l.startswith(MANIFEST_MAGIC):
-            if (m := _MANIFEST_GLOBAL_PAT.match(nl := lines[i + 1])) is None:
-                raise Exception(nl)
+        if not file.endswith('.py'):
+            raise Exception(file)
 
-            origins.append(ManifestOrigin(
-                module='.'.join(['', *mod_name.split('.')[1:]]),
-                attr=m.groupdict()['name'],
+        mod_name = file.rpartition('.')[0].replace(os.sep, '.')
+        mod_base = mod_name.split('.')[0]
+        if mod_base != (first_dir := file.split(os.path.sep)[0]):
+            raise Exception(f'Unexpected module base: {mod_base=} != {first_dir=}')
 
-                file=file,
-                line=i + 1,
+        with open(os.path.join(self._base, file)) as f:  # noqa
+            src = f.read()
+
+        origins: ta.List[ManifestOrigin] = []
+        lines = src.splitlines(keepends=True)
+        for i, l in enumerate(lines):
+            if l.startswith(MANIFEST_MAGIC):
+                if (m := _MANIFEST_GLOBAL_PAT.match(nl := lines[i + 1])) is None:
+                    raise Exception(nl)
+
+                origins.append(ManifestOrigin(
+                    module='.'.join(['', *mod_name.split('.')[1:]]),
+                    attr=m.groupdict()['name'],
+
+                    file=file,
+                    line=i + 1,
+                ))
+
+        if not origins:
+            raise Exception('no manifests found')
+
+        if (dups := [k for k, v in collections.Counter(o.attr for o in origins).items() if v > 1]):
+            raise Exception(f'Duplicate attrs: {dups}')
+
+        attrs = [o.attr for o in origins]
+
+        subproc_src = '\n\n'.join([
+            _payload_src(),
+            f'_dump_module_manifests({mod_name!r}, {", ".join(repr(a) for a in attrs)})\n',
+        ])
+
+        args = [
+            sys.executable,
+            '-c',
+            subproc_src,
+        ]
+
+        if shell_wrap:
+            args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
+
+        start_time = time.time()
+
+        proc = await asyncio.create_subprocess_exec(*args, stdout=subprocess.PIPE)
+        subproc_out, _ = await proc.communicate()
+        if proc.returncode:
+            raise Exception('Subprocess failed')
+
+        end_time = time.time()
+
+        if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
+            log.warning('Manifest extraction took a long time: %s, %.2f s', file, elapsed_time)
+
+        sp_lines = subproc_out.decode().strip().splitlines()
+        if len(sp_lines) != 1:
+            raise Exception('Unexpected subprocess output')
+
+        dct = json.loads(sp_lines[0])
+        if set(dct) != set(attrs):
+            raise Exception('Unexpected subprocess output keys')
+
+        out: ta.List[Manifest] = []
+
+        for o in origins:
+            value = dct[o.attr]
+
+            if not (
+                    isinstance(value, ta.Mapping) and
+                    len(value) == 1 and
+                    all(isinstance(k, str) and k.startswith('$') and len(k) > 1 for k in value)
+            ):
+                raise TypeError(f'Manifests must be mappings of strings starting with $: {value!r}')
+
+            [(key, value_dct)] = value.items()
+            kb, _, kr = key[1:].partition('.')  # noqa
+            if kb == mod_base:  # noqa
+                key = f'$.{kr}'
+                value = {key: value_dct}
+
+            out.append(Manifest(
+                **dc.asdict(o),
+                value=value,
             ))
 
-    if not origins:
-        raise Exception('no manifests found')
+        return out
 
-    if (dups := [k for k, v in collections.Counter(o.attr for o in origins).items() if v > 1]):
-        raise Exception(f'Duplicate attrs: {dups}')
+    async def build_package_manifests(
+            self,
+            name: str,
+    ) -> ta.List[Manifest]:
+        pkg_dir = os.path.join(self._base, name)
+        if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
+            raise Exception(pkg_dir)
 
-    attrs = [o.attr for o in origins]
-
-    subproc_src = '\n\n'.join([
-        _payload_src(),
-        f'_dump_module_manifests({mod_name!r}, {", ".join(repr(a) for a in attrs)})\n',
-    ])
-
-    args = [
-        sys.executable,
-        '-c',
-        subproc_src,
-    ]
-
-    if shell_wrap:
-        args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
-
-    start_time = time.time()
-
-    subproc_out = subprocess.check_output(args)
-
-    end_time = time.time()
-
-    if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
-        log.warning('Manifest extraction took a long time: %s, %.2f s', file, elapsed_time)
-
-    sp_lines = subproc_out.decode().strip().splitlines()
-    if len(sp_lines) != 1:
-        raise Exception('Unexpected subprocess output')
-
-    dct = json.loads(sp_lines[0])
-    if set(dct) != set(attrs):
-        raise Exception('Unexpected subprocess output keys')
-
-    out: ta.List[Manifest] = []
-
-    for o in origins:
-        value = dct[o.attr]
-
-        if not (
-                isinstance(value, ta.Mapping) and
-                len(value) == 1 and
-                all(isinstance(k, str) and k.startswith('$') and len(k) > 1 for k in value)
-        ):
-            raise TypeError(f'Manifests must be mappings of strings starting with $: {value!r}')
-
-        [(key, value_dct)] = value.items()
-        kb, _, kr = key[1:].partition('.')  # noqa
-        if kb == mod_base:  # noqa
-            key = f'$.{kr}'
-            value = {key: value_dct}
-
-        out.append(Manifest(
-            **dc.asdict(o),
-            value=value,
+        files = sorted(findmagic.find_magic(
+            [pkg_dir],
+            [MANIFEST_MAGIC],
+            ['py'],
         ))
+        manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(await asyncio.gather(*[
+            self._spawn(
+                self.build_module_manifests,
+                os.path.relpath(file, self._base),
+            )
+            for file in files
+        ])))
 
-    return out
+        if self._write:
+            with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:  # noqa
+                f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
+                f.write('\n')
 
-
-def build_package_manifests(
-        ex: cf.Executor,
-        name: str,
-        base: str,
-        *,
-        write: bool = False,
-) -> ta.List[Manifest]:
-    pkg_dir = os.path.join(base, name)
-    if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
-        raise Exception(pkg_dir)
-
-    files = sorted(findmagic.find_magic(
-        [pkg_dir],
-        [MANIFEST_MAGIC],
-        ['py'],
-    ))
-    futs = [
-        ex.submit(functools.partial(
-            build_module_manifests,
-            os.path.relpath(file, base),
-            base,
-        ))
-        for file in files
-    ]
-    manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(fut.result() for fut in futs))
-
-    if write:
-        with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:
-            f.write(json_dumps_pretty([dc.asdict(m) for m in manifests]))
-            f.write('\n')
-
-    return manifests
+        return manifests
 
 
 ##
@@ -277,22 +301,23 @@ if __name__ == '__main__':
     def _gen_cmd(args) -> None:
         base = _get_base(args)
 
-        num_threads = args.jobs or max(mp.cpu_count() // 2, 1)
-        with cf.ThreadPoolExecutor(num_threads) as ex:
-            futs = [
-                ex.submit(functools.partial(
-                    build_package_manifests,
-                    ex,
-                    pkg,
-                    base,
-                    write=args.write or False,
-                ))
+        jobs = args.jobs or max(mp.cpu_count() // 1.5, 1)
+        builder = ManifestBuilder(
+            base,
+            jobs,
+            write=args.write or False,
+        )
+
+        async def do():
+            return await asyncio.gather(*[
+                builder.build_package_manifests(pkg)
                 for pkg in args.package
-            ]
-            mss = [fut.result() for fut in futs]
-            if not args.quiet:
-                for ms in mss:
-                    print(json_dumps_pretty([dc.asdict(m) for m in ms]))
+            ])
+
+        mss = asyncio.run(do())
+        if not args.quiet:
+            for ms in mss:
+                print(json_dumps_pretty([dc.asdict(m) for m in ms]))
 
     def _check_cmd(args) -> None:
         base = _get_base(args)

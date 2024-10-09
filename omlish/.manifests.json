@@ -42,7 +42,10 @@
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "jp",
+        "cmd_name": [
+          "jmespath",
+          "jp"
+        ],
         "mod_name": "omlish.specs.jmespath.__main__"
       }
     }
