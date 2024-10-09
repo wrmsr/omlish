@@ -26,6 +26,7 @@ def test_transformers():
     assert resp.v
 
 
+@ptu.skip.if_cant_import('openai')
 def test_openai(harness):
     llm = OpenaiChatModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
 
