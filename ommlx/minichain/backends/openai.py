@@ -58,7 +58,7 @@ class OpenaiPromptModel(PromptModel):
 
 
 class OpenaiChatModel(ChatModel):
-    model = 'gpt-4o'
+    DEFAULT_MODEL = 'gpt-4o'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -72,8 +72,14 @@ class OpenaiChatModel(ChatModel):
         MaxTokens(1024),
     )
 
-    def __init__(self, *, api_key: str | None = None) -> None:
+    def __init__(
+            self,
+            *,
+            model: str | None = None,
+            api_key: str | None = None,
+    ) -> None:
         super().__init__()
+        self._model = model or self.DEFAULT_MODEL
         self._api_key = api_key
 
     def _get_msg_content(self, m: Message) -> str:
@@ -109,7 +115,7 @@ class OpenaiChatModel(ChatModel):
         )
 
         response = client.chat.completions.create(  # noqa
-            model=self.model,
+            model=self._model,
             messages=[
                 dict(  # type: ignore
                     role=self.ROLES_MAP[type(m)],

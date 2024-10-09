@@ -15,7 +15,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 
-from dp.utils import load_secrets
+from x.lc.utils import load_secrets
 
 
 def _main() -> None:
