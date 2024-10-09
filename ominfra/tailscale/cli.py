@@ -71,10 +71,11 @@ class Cli(ap.Cli):
 
     @ap.command(
         ap.arg('name'),
+        ap.arg('-s', '--src', action='store_true'),
     )
     def ip(self) -> None:
         node = self.status().nodes_by_host_name[self.args.name]
-        print(json.dumps_pretty(msh.marshal(node)))
+        print(json.dumps_pretty(node.x if self.args.src else msh.marshal(node)))
 
 
 # @omlish-manifest
