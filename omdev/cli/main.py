@@ -64,9 +64,10 @@ def _main() -> None:
 
     dct: dict[str, CliCmd] = {}
     for cc in ccs:
-        if cc.cmd_name in dct:
-            raise NameError(cc)
-        dct[cc.cmd_name] = cc
+        for cn in [cc.cmd_name] if isinstance(cc.cmd_name, str) else cc.cmd_name:
+            if cn in dct:
+                raise NameError(cc)
+            dct[cn] = cc
 
     #
 
@@ -76,7 +77,26 @@ def _main() -> None:
 
     args = parser.parse_args()
     if not args.cmd:
-        parser.print_help()
+        mdct: dict = {}
+        for cc in ccs:
+            if isinstance(cc.cmd_name, str) and cc.cmd_name[0] == '_':
+                continue
+            if isinstance(cc, CliFunc):
+                mdct.setdefault('-', []).append(cc)
+            elif isinstance(cc, CliModule):
+                mdct.setdefault(cc.mod_name.partition('.')[0], []).append(cc)
+            else:
+                raise TypeError(cc)
+
+        print('Subcommands:\n')
+        for m, l in sorted(mdct.items(), key=lambda t: (t[0] == '-', t[0])):
+            print(f'  {m}')
+            for cc in sorted(l, key=lambda c: c.primary_name):
+                if isinstance(cc.cmd_name, str):
+                    print(f'    {cc.cmd_name}')
+                else:
+                    print(f'    {cc.cmd_name[0]} ({", ".join(cc.cmd_name[1:])})')
+            print()
         return
 
     #
@@ -84,7 +104,7 @@ def _main() -> None:
     cc = dct[args.cmd]
 
     if isinstance(cc, CliModule):
-        sys.argv = [cc.cmd_name, *(args.args or ())]
+        sys.argv = [args.cmd, *(args.args or ())]
         runpy._run_module_as_main(cc.mod_name)  # type: ignore  # noqa
 
     elif isinstance(cc, CliFunc):
