@@ -81,11 +81,11 @@ https://github.com/yukinarit/pyserde
  - Flatten
 """
 import abc
-import dataclasses as dc
 import typing as ta
 
 from .. import check
 from .. import collections as col
+from .. import dataclasses as dc
 from .. import lang
 from .. import matchfns as mfs
 from .. import reflect as rfl
@@ -221,10 +221,10 @@ class RecursiveUnmarshalerFactory(RecursiveTypeFactory[UnmarshalContext, Unmarsh
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Override(RegistryItem, lang.Final):
-    marshaler: Marshaler | None = None
+    marshaler: Marshaler | None = dc.xfield(None, check_type=(Marshaler, None))
     marshaler_factory: MarshalerFactory | None = None
 
-    unmarshaler: Unmarshaler | None = None
+    unmarshaler: Unmarshaler | None = dc.xfield(None, check_type=(Unmarshaler, None))
     unmarshaler_factory: UnmarshalerFactory | None = None
 
 
