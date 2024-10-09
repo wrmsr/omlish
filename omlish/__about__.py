@@ -63,7 +63,7 @@ class Project(ProjectBase):
 
             'json5 ~= 0.9',
 
-            'pyyaml ~= 5.0',
+            'pyyaml ~= 6.0',
 
             'cbor2 ~= 5.6',
 
