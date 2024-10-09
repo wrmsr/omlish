@@ -4,8 +4,7 @@ from omlish import lang
 from omlish.testing import pytest as ptu
 
 from ..similarity import Similarity
-from ..similarity import calc_similarities
-from ..vectors import Vector
+from ..similarity import calc_np_similarities
 
 
 if ta.TYPE_CHECKING:
@@ -22,5 +21,5 @@ def test_calc():
     ])
     b = np.array([.2, .3, .4])
 
-    assert np.allclose(calc_similarities(Similarity.DOT, a, b), np.array([0.55, 0.75]))
-    assert np.allclose(calc_similarities(Similarity.COSINE, a, b), np.array([0.91350028, 0.92847669]))
+    assert np.allclose(calc_np_similarities(Similarity.DOT, a, b), np.array([0.55, 0.75]))
+    assert np.allclose(calc_np_similarities(Similarity.COSINE, a, b), np.array([0.91350028, 0.92847669]))

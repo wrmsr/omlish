@@ -34,15 +34,15 @@ class SimpleVectorStore(VectorStore):
         self._docs.append(doc)
 
     def search(self, search: Search) -> Hits:
-        nsv = l2_norm(search.vec.v)
+        nsv = l2_norm(search.vec)
         h: list[tuple[float, int]] = []
         for i, doc in enumerate(self._docs):
-            score = np.dot(nsv, l2_norm(doc.vec.v))
+            score = np.dot(nsv, l2_norm(doc.vec))
             heapq.heappush(h, (score, i))
             while len(h) > search.k:
                 heapq.heappop(h)
         return Hits([
-            Hit(score, self._docs[i])
+            Hit(self._docs[i], score)
             for score, i in reversed(h)
         ])
 
@@ -52,11 +52,11 @@ def test_vectors():
     store = SimpleVectorStore()
 
     for doc in [
-        Indexed(Vector([1., 0., 0.]), 'foo'),
-        Indexed(Vector([.9, .1, 0.]), 'foo2'),
-        Indexed(Vector([0., 1., 0.]), 'bar'),
-        Indexed(Vector([.1, .9, 0.]), 'bar'),
-        Indexed(Vector([1., 1., 0.]), 'baz'),
+        Indexed('foo', Vector([1., 0., 0.])),
+        Indexed('foo2', Vector([.9, .1, 0.])),
+        Indexed('bar', Vector([0., 1., 0.])),
+        Indexed('bar', Vector([.1, .9, 0.])),
+        Indexed('baz', Vector([1., 1., 0.])),
     ]:
         store.index(doc)
 
