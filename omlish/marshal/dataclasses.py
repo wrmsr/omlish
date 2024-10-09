@@ -102,6 +102,15 @@ def get_field_infos(
                 unmarshal_names=[n + '_' for n in fi_kw['unmarshal_names']],
             )
 
+        if fo_kw.get('no_marshal'):
+            fi_kw.update(
+                marshal_name=None,
+            )
+        if fo_kw.get('no_unmarshal'):
+            fi_kw.update(
+                unmarshal_names=(),
+            )
+
         ret.append(
             FieldInfo(
                 options=FieldOptions(**fo_kw),
