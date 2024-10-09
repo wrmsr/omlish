@@ -64,7 +64,7 @@ class StringTransform:
 
     @apply.register
     def apply_user_message(self, s: UserMessage) -> UserMessage:
-        return dc.replace(s, content=self.apply(s.content))
+        return dc.replace(s, content=self.apply(s.c))
 
     #
 

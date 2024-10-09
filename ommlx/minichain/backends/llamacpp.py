@@ -67,7 +67,7 @@ class LlamacppChatModel(ChatModel):
             return m.s
 
         elif isinstance(m, UserMessage):
-            return check.isinstance(m.content, str)
+            return check.isinstance(m.c, str)
 
         else:
             raise TypeError(m)
