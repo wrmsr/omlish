@@ -21,7 +21,7 @@ class SystemMessage(Message, lang.Final):
 
 @dc.dataclass(frozen=True)
 class UserMessage(Message, lang.Final):
-    content: Content
+    c: Content
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
