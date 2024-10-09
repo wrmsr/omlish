@@ -6,7 +6,10 @@
     "line": 4,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": "mc",
+        "cmd_name": [
+          "minichain",
+          "mc"
+        ],
         "mod_name": "ommlx.minichain.cli.__main__"
       }
     }
