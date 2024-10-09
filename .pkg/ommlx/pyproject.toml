@@ -92,6 +92,7 @@ exclude = [
     '*.c',
     '*.cc',
     '*.cu',
+    '*.g4',
     '*.h',
     '.manifests.json',
     'LICENSE',
