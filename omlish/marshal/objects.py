@@ -10,6 +10,7 @@ import typing as ta
 
 from .. import cached
 from .. import check
+from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
@@ -108,6 +109,27 @@ class FieldInfo:
     options: FieldOptions = FieldOptions()
 
 
+@dc.dataclass(frozen=True)
+class FieldInfos:
+    lst: ta.Sequence[FieldInfo]
+
+    def __iter__(self) -> ta.Iterator[FieldInfo]:
+        return iter(self.lst)
+
+    def __len__(self) -> int:
+        return len(self.lst)
+
+    @cached.property
+    @dc.init
+    def by_marshal_name(self) -> ta.Mapping[str, FieldInfo]:
+        return col.make_map(((fi.marshal_name, fi) for fi in self), strict=True)
+
+    @cached.property
+    @dc.init
+    def by_unmarshal_name(self) -> ta.Mapping[str, FieldInfo]:
+        return col.make_map(((n, fi) for fi in self for n in fi.unmarshal_names), strict=True)
+
+
 ##
 
 
@@ -160,7 +182,7 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
 
-        flds = self.dct[ty]
+        flds = FieldInfos(self.dct[ty])
 
         fields = [
             (fi, ctx.make(fi.type))
@@ -250,7 +272,7 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         ty = check.isinstance(rty, type)
 
-        flds = self.dct[ty]
+        flds = FieldInfos(self.dct[ty])
 
         fields_by_unmarshal_name = {
             n: (fi, ctx.make(fi.type))

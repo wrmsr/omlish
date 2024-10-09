@@ -17,6 +17,7 @@ from .naming import translate_name
 from .objects import DEFAULT_FIELD_OPTIONS
 from .objects import FIELD_OPTIONS_KWARGS
 from .objects import FieldInfo
+from .objects import FieldInfos
 from .objects import FieldMetadata
 from .objects import FieldOptions
 from .objects import ObjectMarshaler
@@ -38,7 +39,7 @@ def get_dataclass_metadata(ty: type) -> ObjectMetadata:
 def get_field_infos(
         ty: type,
         opts: col.TypeMap[Option] = col.TypeMap(),
-) -> ta.Sequence[FieldInfo]:
+) -> FieldInfos:
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
 
@@ -104,7 +105,7 @@ def get_field_infos(
             ),
         )
 
-    return ret
+    return FieldInfos(ret)
 
 
 def _make_field_obj(ctx, ty, obj, fac):
@@ -128,10 +129,11 @@ class DataclassMarshalerFactory(MarshalerFactory):
         check.state(not lang.is_abstract_class(ty))
 
         dc_md = get_dataclass_metadata(ty)
+        fis = get_field_infos(ty, ctx.options)
 
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
-            for fi in get_field_infos(ty, ctx.options)
+            for fi in fis
             if fi.name not in dc_md.specials.set
         ]
 
@@ -152,7 +154,9 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         ty = check.isinstance(rty, type)
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
+
         dc_md = get_dataclass_metadata(ty)
+        fis = get_field_infos(ty, ctx.options)
 
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         defaults: dict[str, ta.Any] = {}
@@ -191,7 +195,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
 
             return ret
 
-        for fi in get_field_infos(ty, ctx.options):
+        for fi in fis:
             if fi.name in dc_md.specials.set:
                 continue
             add_field(fi)
