@@ -1,3 +1,7 @@
+"""
+TODO:
+ - tangled with objects - Field/ObjectMetadata defined over there but unused
+"""
 import typing as ta
 
 from .. import check
@@ -22,7 +26,6 @@ from .objects import FieldMetadata
 from .objects import FieldOptions
 from .objects import ObjectMarshaler
 from .objects import ObjectMetadata
-from .objects import ObjectSpecials
 from .objects import ObjectUnmarshaler
 
 
@@ -140,7 +143,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
         return ObjectMarshaler(
             fields,
-            specials=ObjectSpecials(unknown=dc_md.specials.unknown),
+            specials=dc_md.specials,
         )
 
 
@@ -208,4 +211,5 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
             defaults=defaults,
             embeds=embeds,
             embeds_by_unmarshal_name=embeds_by_unmarshal_name,
+            ignore_unknown=dc_md.ignore_unknown,
         )
