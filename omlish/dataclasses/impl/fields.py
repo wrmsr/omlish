@@ -193,8 +193,11 @@ def field_init(
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'
-        if isinstance(fx.check_type, (type, tuple)):
+        ct: ta.Any
+        if isinstance(fx.check_type, tuple):
             ct = tuple(type(None) if e is None else check_.isinstance(e, type) for e in fx.check_type)
+        elif isinstance(fx.check_type, (type, tuple)):
+            ct = fx.check_type
         # FIXME:
         # elif info.params_extras.generic_init:
         #     ct = info.generic_replaced_field_annotations[f.name]
