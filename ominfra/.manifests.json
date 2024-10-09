@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "module": ".tailscale.cli",
+    "attr": "_CLI_MODULE",
+    "file": "ominfra/tailscale/cli.py",
+    "line": 4,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": [
+          "tailscale",
+          "ts"
+        ],
+        "mod_name": "ominfra.tailscale.cli"
+      }
+    }
+  }
+]
