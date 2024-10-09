@@ -1,3 +1,4 @@
+import contextlib
 import typing as ta
 
 from omlish import check
@@ -14,6 +15,7 @@ from ..chat import ToolExecutionResultMessage
 from ..chat import UserMessage
 from ..generative import MaxTokens
 from ..generative import Temperature
+from ..models import TokenUsage
 from ..options import Options
 from ..options import ScalarOption
 from ..prompts import PromptModel
@@ -27,6 +29,7 @@ from ..vectors import Vector
 
 if ta.TYPE_CHECKING:
     import openai
+    import openai.types.chat
 else:
     openai = lang.proxy_import('openai')
 
@@ -110,27 +113,34 @@ class OpenaiChatModel(ChatModel):
             else:
                 raise TypeError(opt)
 
-        client = openai.OpenAI(
+        with contextlib.closing(openai.OpenAI(
             api_key=self._api_key,
-        )
+        )) as client:
+            raw_response = client.chat.completions.create(  # noqa
+                model=self._model,
+                messages=[
+                    dict(  # type: ignore
+                        role=self.ROLES_MAP[type(m)],
+                        content=self._get_msg_content(m),
+                    )
+                    for m in request.v
+                ],
+                top_p=1,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                stream=False,
+                **kw,
+            )
 
-        response = client.chat.completions.create(  # noqa
-            model=self._model,
-            messages=[
-                dict(  # type: ignore
-                    role=self.ROLES_MAP[type(m)],
-                    content=self._get_msg_content(m),
-                )
-                for m in request.v
-            ],
-            top_p=1,
-            frequency_penalty=0.0,
-            presence_penalty=0.0,
-            stream=False,
-            **kw,
+        response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # type: ignore  # noqa
+        return ChatResponse(
+            v=AiMessage(response.choices[0].message.content),  # type: ignore
+            usage=TokenUsage(
+                input=response.usage.prompt_tokens,
+                output=response.usage.completion_tokens,
+                total=response.usage.total_tokens,
+            ) if response.usage is not None else None,
         )
-
-        return ChatResponse(v=AiMessage(response.choices[0].message.content))  # type: ignore
 
 
 class OpenaiEmbeddingModel(EmbeddingModel):
