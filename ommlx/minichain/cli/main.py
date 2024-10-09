@@ -180,7 +180,7 @@ def _run_embed(
 
     response = mdl.invoke(EmbeddingRequest.new(content))
 
-    print(json.dumps_compact(response.v.v))
+    print(json.dumps_compact(response.v))
 
 
 ##
