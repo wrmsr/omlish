@@ -10,14 +10,6 @@ from ..vectors import Search
 from ..vectors.stores import VectorStore
 
 
-def _encode_floats(values: ta.Sequence[float]) -> bytes:
-    return struct.pack('<' + 'f' * len(values), *values)
-
-
-def _decode_floats(binary: bytes) -> ta.Sequence[float]:
-    return struct.unpack('<' + 'f' * (len(binary) // 4), binary)
-
-
 class SqliteVectorStore(VectorStore):
 
     def __init__(
