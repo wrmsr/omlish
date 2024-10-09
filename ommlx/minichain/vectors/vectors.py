@@ -1,4 +1,6 @@
 """
+Preferred storage is array.array until numpy is imported.
+
 Storage:
  - f32 bytes
  - Sequence[float]
@@ -10,6 +12,8 @@ Storage?:
  - torch.Tensor ?
 """
 import array
+import struct
+import sys
 import typing as ta
 
 from omlish import check
@@ -22,16 +26,59 @@ else:
     np = lang.proxy_import('numpy')
 
 
+_HAS_NP = lang.can_import('numpy')
+
+
 ##
 
 
-Vectorable: ta.TypeAlias = ta.Union[
-    bytes,
-    ta.Sequence[float],
+VectorStorage: ta.TypeAlias = ta.Union[
     'array.array',
     'np.ndarray',
-    'Vector',
 ]
+
+
+Vectorable: ta.TypeAlias = ta.Union[
+    'Vector',
+    'VectorStorage',
+    bytes,
+    ta.Sequence[float],
+]
+
+
+##
+
+
+class _NdarrayPlaceholder(lang.NotInstantiable, lang.Final):
+    pass
+
+
+_Ndarray: type = _NdarrayPlaceholder
+
+
+def _get_preferred_storage() -> type[VectorStorage]:
+    if 'numpy' in sys.modules:
+        global _Ndarray
+
+        if _Ndarray is _NdarrayPlaceholder:
+            _Ndarray = np.ndarray
+
+        return np.ndarray
+
+    else:
+        return array.array
+
+
+##
+
+
+def _encode_float_bytes(fs: ta.Sequence[float]) -> bytes:
+    return struct.pack('<' + 'f' * len(fs), *fs)
+
+
+def _decode_float_bytes(b: bytes) -> ta.Sequence[float]:
+    check.arg(not (len(b) % 4))
+    return struct.unpack('<' + 'f' * (len(b) // 4), b)
 
 
 class Vector(lang.Final):
@@ -42,7 +89,7 @@ class Vector(lang.Final):
 
         super().__init__()
 
-        self._obj = obj
+        self._storage = obj
 
     def __new__(cls, obj):
         if isinstance(obj, Vector):
