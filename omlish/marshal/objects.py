@@ -66,8 +66,22 @@ class ObjectMetadata:
     field_naming: Naming | None = None
 
     unknown_field: str | None = None
+    source_field: str | None = None
+
+    @property
+    def specials(self) -> 'ObjectSpecials':
+        return ObjectSpecials(
+            unknown=self.unknown_field,
+            source=self.source_field,
+        )
 
     field_defaults: FieldMetadata = FieldMetadata()
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ObjectSpecials:
+    unknown: str | None = None
+    source: str | None = None
 
 
 ##
@@ -95,7 +109,7 @@ class ObjectMarshaler(Marshaler):
 
     _: dc.KW_ONLY
 
-    unknown_field: str | None = None
+    specials: ObjectSpecials = ObjectSpecials()
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         ret: dict[str, ta.Any] = {}
@@ -114,8 +128,8 @@ class ObjectMarshaler(Marshaler):
             else:
                 ret[fi.marshal_name] = mv
 
-        if self.unknown_field is not None:
-            if (ukf := getattr(o, self.unknown_field)):
+        if self.specials.unknown is not None:
+            if (ukf := getattr(o, self.specials.unknown)):
                 if (dks := set(ret) & set(ukf)):
                     raise KeyError(f'Unknown field keys duplicate fields: {dks!r}')
 
@@ -130,7 +144,7 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 
     _: dc.KW_ONLY
 
-    unknown_field: str | None = None
+    specials: ObjectSpecials = ObjectSpecials()
 
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and rty in self.dct
@@ -147,7 +161,7 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 
         return ObjectMarshaler(
             fields,
-            unknown_field=self.unknown_field,
+            specials=self.specials,
         )
 
 
@@ -161,7 +175,7 @@ class ObjectUnmarshaler(Unmarshaler):
 
     _: dc.KW_ONLY
 
-    unknown_field: str | None = None
+    specials: ObjectSpecials = ObjectSpecials()
 
     defaults: ta.Mapping[str, ta.Any] | None = None
 
@@ -177,8 +191,8 @@ class ObjectUnmarshaler(Unmarshaler):
 
         ekws: dict[str, dict[str, ta.Any]] = {en: {} for en in self.embeds or ()}
 
-        if self.unknown_field is not None:
-            kw[self.unknown_field] = ukf = {}
+        if self.specials.unknown is not None:
+            kw[self.specials.unknown] = ukf = {}
 
         for k, mv in ma.items():
             ks = check.isinstance(k, str)
@@ -220,7 +234,7 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
 
     _: dc.KW_ONLY
 
-    unknown_field: str | None = None
+    specials: ObjectSpecials = ObjectSpecials()
 
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return isinstance(rty, type) and rty in self.dct
@@ -245,6 +259,6 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
         return ObjectUnmarshaler(
             ty,
             fields_by_unmarshal_name,
-            unknown_field=self.unknown_field,
+            specials=self.specials,
             defaults=defaults,
         )
