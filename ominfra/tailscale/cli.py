@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 import typing as ta
@@ -12,9 +13,12 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 
+##
+
+
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, source_field='x', ignore_unknown=True)
-class Node:
+@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+class CliNode:
     id: str = dc.xfield() | msh.update_field_metadata(name='ID')
     public_key: str = dc.xfield()
     host_name: str = dc.xfield()
@@ -23,30 +27,36 @@ class Node:
     allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='AllowedPs')
     tags: ta.Sequence[str] | None = None
 
-    x: ta.Mapping[str, ta.Any] | None = dc.xfield(None) | msh.update_field_metadata(no_marshal=True)
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, source_field='x', ignore_unknown=True)
-class Status:
+@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+class CliStatus:
     version: str | None = None
     backend_state: str | None = None
     tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
-    self: Node | None = None
-    peers: ta.Mapping[str, Node] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
+    self: CliNode | None = None
+    peers: ta.Mapping[str, CliNode] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
 
     @cached.property
-    def nodes(self) -> ta.Sequence[Node]:
+    def nodes(self) -> ta.Sequence[CliNode]:
         return [
             *([self.self] if self.self is not None else []),
             *(self.peers.values() if self.peers else []),
         ]
 
     @cached.property
-    def nodes_by_host_name(self) -> ta.Mapping[str, Node]:
+    def nodes_by_host_name(self) -> ta.Mapping[str, CliNode]:
         return col.make_map(((n.host_name, n) for n in self.nodes if n.host_name), strict=True)
 
-    x: ta.Mapping[str, ta.Any] | None = dc.xfield(None) | msh.update_field_metadata(no_marshal=True)
+    x: ta.Mapping[str, ta.Any] | None = None
+
+
+##
+
+
+_IP_V4_PAT = re.compile(r'\d{1,3}(\.\d{1,3}){3}')
 
 
 class Cli(ap.Cli):
@@ -61,21 +71,34 @@ class Cli(ap.Cli):
     def bin_cmd(self) -> None:
         print(self.bin())
 
-    def status(self) -> Status:
+    def status(self) -> CliStatus:
         stdout = subprocess.check_output([
             self.bin(),
             'status',
             '--json',
         ])
-        return msh.unmarshal(json.loads(stdout.decode()), Status)
+        return msh.unmarshal(json.loads(stdout.decode()), CliStatus)
+
+    @ap.command(
+        ap.arg('name', nargs='?'),
+        name='status',
+    )
+    def status_cmd(self) -> None:
+        status = self.status()
+        out: ta.Any
+        if (name := self.args.name):
+            out = status.nodes_by_host_name[name]
+        else:
+            out = status
+        print(json.dumps_pretty(msh.marshal(out)))
 
     @ap.command(
         ap.arg('name'),
-        ap.arg('-s', '--src', action='store_true'),
     )
     def ip(self) -> None:
         node = self.status().nodes_by_host_name[self.args.name]
-        print(json.dumps_pretty(node.x if self.args.src else msh.marshal(node)))
+        ips = [i for i in node.tailscale_ips or () if _IP_V4_PAT.fullmatch(i)]
+        print(ips[0])
 
 
 # @omlish-manifest
