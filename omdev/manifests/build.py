@@ -301,7 +301,7 @@ if __name__ == '__main__':
     def _gen_cmd(args) -> None:
         base = _get_base(args)
 
-        jobs = args.jobs or max(mp.cpu_count() // 1.5, 1)
+        jobs = args.jobs or int(max(mp.cpu_count() // 1.5, 1))
         builder = ManifestBuilder(
             base,
             jobs,
