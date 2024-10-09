@@ -34,6 +34,14 @@ def register_calc_similarities_func(s):
     return inner
 
 
+def calc_similarities(
+        similarity: Similarity,
+        haystack: Vectorable,  # (n, d)
+        needle: Vectorable,  # (d,)
+) -> 'np.ndarray':
+    return CALC_SIMILARITIES_FUNCS[similarity](haystack, needle)
+
+
 ##
 
 
@@ -51,25 +59,3 @@ def calc_cosine_similarities(
         needle: Vectorable,  # (d,)
 ) -> 'np.ndarray':  # (n,)
     return np.dot(haystack, needle) / (np.linalg.norm(haystack, axis=1) * np.linalg.norm(needle))
-
-
-##
-
-
-def _main():
-    a = np.array([
-        [2, 1, 2],
-        [3, 2, 9],
-        [-1, 2, -3],
-        [-2, 3, -4],
-    ])
-    b = np.array([3, 4, 2])
-
-    print(f'a:\n{a}\n')
-    print(f'b:\n{b}\n')
-
-    print(f'cosine_similarity:\n{calc_cosine_similarities(a, b)}\n', )
-
-
-if __name__ == '__main__':
-    _main()
