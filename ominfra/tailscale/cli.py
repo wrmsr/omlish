@@ -13,7 +13,7 @@ from omlish.formats import json
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, source_field='x', ignore_unknown=True)
 class Node:
     id: str = dc.xfield() | msh.update_field_metadata(name='ID')
     public_key: str = dc.xfield()
@@ -27,7 +27,7 @@ class Node:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
+@msh.update_object_metadata(field_naming=msh.Naming.CAMEL, source_field='x', ignore_unknown=True)
 class Status:
     version: str | None = None
     backend_state: str | None = None

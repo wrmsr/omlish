@@ -79,6 +79,8 @@ class ObjectMetadata:
 
     field_defaults: FieldMetadata = FieldMetadata()
 
+    ignore_unknown: bool = False
+
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ObjectSpecials:
@@ -88,9 +90,6 @@ class ObjectSpecials:
     @cached.property
     def set(self) -> frozenset[str]:
         return frozenset(k for k, v in dc.asdict(self).items() if v is not None)
-
-    def map(self, fn: ta.Callable[[str], str]) -> 'ObjectSpecials':
-        return ObjectSpecials(**{k: fn(v) for k, v in dc.asdict(self).items() if v is not None})
 
 
 ##
@@ -121,6 +120,11 @@ class FieldInfos:
 
     @cached.property
     @dc.init
+    def by_name(self) -> ta.Mapping[str, FieldInfo]:
+        return col.make_map(((fi.name, fi) for fi in self), strict=True)
+
+    @cached.property
+    @dc.init
     def by_marshal_name(self) -> ta.Mapping[str, FieldInfo]:
         return col.make_map(((fi.marshal_name, fi) for fi in self), strict=True)
 
@@ -147,6 +151,9 @@ class ObjectMarshaler(Marshaler):
             v = getattr(o, fi.name)
 
             if fi.options.omit_if is not None and fi.options.omit_if(v):
+                continue
+
+            if fi.name in self.specials.set:
                 continue
 
             mv = m.marshal(ctx, v)
@@ -212,6 +219,8 @@ class ObjectUnmarshaler(Unmarshaler):
     embeds: ta.Mapping[str, type] | None = None
     embeds_by_unmarshal_name: ta.Mapping[str, tuple[str, str]] | None = None
 
+    ignore_unknown: bool = False
+
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
 
@@ -237,6 +246,10 @@ class ObjectUnmarshaler(Unmarshaler):
                 if ukf is not None:
                     ukf[ks] = mv  # FIXME: unmarshal?
                     continue
+
+                if self.ignore_unknown:
+                    continue
+
                 raise
 
             if self.embeds_by_unmarshal_name and (en := self.embeds_by_unmarshal_name.get(ks)):
