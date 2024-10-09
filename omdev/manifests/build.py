@@ -13,9 +13,13 @@ See (entry_points):
 # ruff: noqa: UP006 UP007
 import argparse
 import collections
+import concurrent.futures as cf
 import dataclasses as dc
+import functools
 import inspect
+import itertools
 import json
+import multiprocessing as mp
 import os.path
 import re
 import shlex
@@ -195,6 +199,7 @@ def build_module_manifests(
 
 
 def build_package_manifests(
+        ex: cf.Executor,
         name: str,
         base: str,
         *,
@@ -204,14 +209,20 @@ def build_package_manifests(
     if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
         raise Exception(pkg_dir)
 
-    manifests: ta.List[Manifest] = []
-
-    for file in sorted(findmagic.find_magic(
-            [pkg_dir],
-            [MANIFEST_MAGIC],
-            ['py'],
-    )):
-        manifests.extend(build_module_manifests(os.path.relpath(file, base), base))
+    files = sorted(findmagic.find_magic(
+        [pkg_dir],
+        [MANIFEST_MAGIC],
+        ['py'],
+    ))
+    futs = [
+        ex.submit(functools.partial(
+            build_module_manifests,
+            os.path.relpath(file, base),
+            base,
+        ))
+        for file in files
+    ]
+    manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(fut.result() for fut in futs))
 
     if write:
         with open(os.path.join(pkg_dir, '.manifests.json'), 'w') as f:
@@ -266,14 +277,22 @@ if __name__ == '__main__':
     def _gen_cmd(args) -> None:
         base = _get_base(args)
 
-        for pkg in args.package:
-            ms = build_package_manifests(
-                pkg,
-                base,
-                write=args.write or False,
-            )
+        num_threads = args.jobs or max(mp.cpu_count() // 2, 1)
+        with cf.ThreadPoolExecutor(num_threads) as ex:
+            futs = [
+                ex.submit(functools.partial(
+                    build_package_manifests,
+                    ex,
+                    pkg,
+                    base,
+                    write=args.write or False,
+                ))
+                for pkg in args.package
+            ]
+            mss = [fut.result() for fut in futs]
             if not args.quiet:
-                print(json_dumps_pretty([dc.asdict(m) for m in ms]))
+                for ms in mss:
+                    print(json_dumps_pretty([dc.asdict(m) for m in ms]))
 
     def _check_cmd(args) -> None:
         base = _get_base(args)
@@ -294,6 +313,7 @@ if __name__ == '__main__':
         parser_gen.add_argument('-b', '--base')
         parser_gen.add_argument('-w', '--write', action='store_true')
         parser_gen.add_argument('-q', '--quiet', action='store_true')
+        parser_gen.add_argument('-j', '--jobs', type=int)
         parser_gen.add_argument('package', nargs='*')
         parser_gen.set_defaults(func=_gen_cmd)
 
