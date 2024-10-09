@@ -35,6 +35,9 @@ class FieldOptions:
 
     embed: bool = False
 
+    no_marshal: bool = False
+    no_unmarshal: bool = False
+
 
 DEFAULT_FIELD_OPTIONS = FieldOptions()
 FIELD_OPTIONS_KWARGS: frozenset[str] = frozenset(dc.fields_dict(FieldOptions).keys())
