@@ -22,6 +22,7 @@ from .objects import FieldMetadata
 from .objects import FieldOptions
 from .objects import ObjectMarshaler
 from .objects import ObjectMetadata
+from .objects import ObjectSpecials
 from .objects import ObjectUnmarshaler
 
 
@@ -139,7 +140,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
         return ObjectMarshaler(
             fields,
-            specials=dc_md.specials,
+            specials=ObjectSpecials(unknown=dc_md.specials.unknown),
         )
 
 

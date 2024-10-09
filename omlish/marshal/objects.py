@@ -87,10 +87,10 @@ class ObjectSpecials:
 
     @cached.property
     def set(self) -> frozenset[str]:
-        return frozenset(f for f in (
-            self.unknown,
-            self.source,
-        ) if f is not None)
+        return frozenset(k for k, v in dc.asdict(self).items() if v is not None)
+
+    def map(self, fn: ta.Callable[[str], str]) -> 'ObjectSpecials':
+        return ObjectSpecials(**{k: fn(v) for k, v in dc.asdict(self).items() if v is not None})
 
 
 ##
@@ -220,6 +220,9 @@ class ObjectUnmarshaler(Unmarshaler):
         ukf: dict[str, ta.Any] | None = None
 
         ekws: dict[str, dict[str, ta.Any]] = {en: {} for en in self.embeds or ()}
+
+        if self.specials.source is not None:
+            kw[self.specials.source] = v
 
         if self.specials.unknown is not None:
             kw[self.specials.unknown] = ukf = {}
