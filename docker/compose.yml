@@ -80,7 +80,7 @@ services:
       - '35225:3306'
 
   omlish-s3:
-    image: 'adobe/s3mock:3.10.1'
+    image: 'adobe/s3mock:3.11.0'
     restart: 'unless-stopped'
     expose:
       - '9090'
@@ -92,7 +92,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.15.1'
+    image: 'elasticsearch:8.15.2'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
@@ -104,7 +104,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.23.0-community'
+    image: 'neo4j:5.24.1-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
