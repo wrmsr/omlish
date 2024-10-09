@@ -12,11 +12,14 @@ from omlish.formats import json
 
 @dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.CAMEL, unknown_field='x')
-class Peer:
+class Node:
     id: str = dc.xfield() | msh.update_field_metadata(name='ID')
     public_key: str = dc.xfield()
     host_name: str = dc.xfield()
     dns_name: str | None = dc.xfield(None) | msh.update_field_metadata(name='DNSName')
+    tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
+    allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='AllowedPs')
+    tags: ta.Sequence[str] | None = None
 
     x: ta.Mapping[str, ta.Any] | None = None
 
@@ -27,7 +30,8 @@ class Status:
     version: str | None = None
     backend_state: str | None = None
     tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
-    peers: ta.Mapping[str, Peer] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
+    self: Node | None = None
+    peers: ta.Mapping[str, Node] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
 
     x: ta.Mapping[str, ta.Any] | None = None
 
