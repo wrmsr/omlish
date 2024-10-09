@@ -4,6 +4,8 @@ import typing as ta
 
 from omdev.cli import CliModule
 from omlish import argparse as ap
+from omlish import cached
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
@@ -33,6 +35,17 @@ class Status:
     self: Node | None = None
     peers: ta.Mapping[str, Node] | None = dc.xfield(None) | msh.update_field_metadata(name='Peer')
 
+    @cached.property
+    def nodes(self) -> ta.Sequence[Node]:
+        return [
+            *([self.self] if self.self is not None else []),
+            *(self.peers.values() if self.peers else []),
+        ]
+
+    @cached.property
+    def nodes_by_host_name(self) -> ta.Mapping[str, Node]:
+        return col.make_map(((n.host_name, n) for n in self.nodes if n.host_name), strict=True)
+
     x: ta.Mapping[str, ta.Any] | None = None
 
 
@@ -48,17 +61,20 @@ class Cli(ap.Cli):
     def bin_cmd(self) -> None:
         print(self.bin())
 
-    @ap.command(
-        ap.arg('name'),
-    )
-    def ip(self) -> None:
+    def status(self) -> Status:
         stdout = subprocess.check_output([
             self.bin(),
             'status',
             '--json',
         ])
-        status = msh.unmarshal(json.loads(stdout.decode()), Status)
-        print(json.dumps_pretty(msh.marshal(status)))
+        return msh.unmarshal(json.loads(stdout.decode()), Status)
+
+    @ap.command(
+        ap.arg('name'),
+    )
+    def ip(self) -> None:
+        node = self.status().nodes_by_host_name[self.args.name]
+        print(json.dumps_pretty(msh.marshal(node)))
 
 
 # @omlish-manifest

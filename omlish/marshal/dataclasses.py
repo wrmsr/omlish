@@ -136,7 +136,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
         return ObjectMarshaler(
             fields,
-            unknown_field=dc_md.unknown_field,
+            specials=dc_md.specials,
         )
 
 
@@ -194,7 +194,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         return ObjectUnmarshaler(
             ty,
             d,
-            unknown_field=dc_md.unknown_field,
+            specials=dc_md.specials,
             defaults=defaults,
             embeds=embeds,
             embeds_by_unmarshal_name=embeds_by_unmarshal_name,

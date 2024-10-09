@@ -63,6 +63,7 @@ from .objects import (  # noqa
     FieldOptions,
     ObjectMarshaler,
     ObjectMetadata,
+    ObjectSpecials,
     ObjectUnmarshaler,
     SimpleObjectMarshalerFactory,
     SimpleObjectUnmarshalerFactory,

@@ -8,6 +8,7 @@ from ..global_ import unmarshal
 from ..helpers import update_fields_metadata
 from ..objects import FieldInfo
 from ..objects import ObjectMarshaler
+from ..objects import ObjectSpecials
 from ..objects import ObjectUnmarshaler
 from ..primitives import PRIMITIVE_MARSHALER_UNMARSHALER
 from ..registries import Registry
@@ -39,14 +40,14 @@ def test_unknown_fields():
     ou = ObjectUnmarshaler(
         C,
         {fi.name: (fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis},
-        unknown_field='x',
+        specials=ObjectSpecials(unknown='x'),
     )
     c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
     print(c)
 
     om = ObjectMarshaler(
         [(fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis],
-        unknown_field='x',
+        specials=ObjectSpecials(unknown='x'),
     )
     o = om.marshal(MarshalContext(Registry()), c)
     print(o)
