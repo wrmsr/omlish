@@ -14,6 +14,7 @@ from omlish import lang
 
 from ..cache import data as dcache
 from .consts import ANTLR_JAR_URL
+from .consts import ANTLR_RUNTIME_VENDOR
 
 
 ANTLR_JAR_CACHE = dcache.UrlSpec(ANTLR_JAR_URL)
@@ -25,7 +26,7 @@ class GenPy:
             dir: str,  # noqa
             *,
             out_subdir: str = '_antlr',
-            runtime_import: str = 'omlish.antlr._runtime',
+            runtime_import: str = ANTLR_RUNTIME_VENDOR,
     ) -> None:
         super().__init__()
         check.arg(not os.path.isabs(out_subdir) and '..' not in out_subdir)
