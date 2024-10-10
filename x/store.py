@@ -132,6 +132,10 @@ gt = functools.partial(cmp, CmpOp.GT)
 ge = functools.partial(cmp, CmpOp.GE)
 
 
+def in_(field: FieldRef, *values: ta.Any) -> Filter:
+    return or_(*[eq(field, v) for v in values])
+
+
 ##
 
 
@@ -184,6 +188,7 @@ class Doc:
 def _main() -> None:
     print(f('foo'))
     print(eq(f('foo'), 1) & le(f('bar'), 2))
+    print(in_(f('barf'), 1, 2, 3, 4))
 
 
 if __name__ == '__main__':
