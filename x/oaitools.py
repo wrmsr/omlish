@@ -5,40 +5,16 @@ import typing as ta
 
 import openai
 
-from omlish import dataclasses as dc
-from omlish import lang
 from omdev.secrets import load_secrets
-
-
-ToolDtype: ta.TypeAlias = str
-
-
-@dc.dataclass(frozen=True)
-class ToolParam(lang.Final):
-    name: str
-    dtype: ToolDtype
-
-    _: dc.KW_ONLY
-
-    desc: str | None = None
-    required: bool = False
-
-
-@dc.dataclass(frozen=True)
-class ToolDef(lang.Final):
-    name: str
-    params: ta.Sequence[ToolParam]
-
-    _: dc.KW_ONLY
-
-    desc: str
+from ommlx.minichain.chat import ToolParam
+from ommlx.minichain.chat import ToolSpec
 
 
 def _opt_dct_fld(k, v):
     return {k: v} if v else {}
 
 
-def render_tool_def(td: ToolDef) -> ta.Any:
+def render_tool_spec(td: ToolSpec) -> ta.Any:
     return {
         'type': 'function',
         'function': {
@@ -65,7 +41,7 @@ def render_tool_def(td: ToolDef) -> ta.Any:
 
 
 def _main() -> None:
-    tool = ToolDef(
+    tool = ToolSpec(
         'get_delivery_date',
         [
             ToolParam('order_id', 'string', desc="The customer's order ID.", required=True),
@@ -76,7 +52,7 @@ def _main() -> None:
         ),
     )
 
-    tools = [render_tool_def(tool)]
+    tools = [render_tool_spec(tool)]
 
     messages = [
         {
