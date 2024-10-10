@@ -62,7 +62,7 @@ class LlamacppChatModel(ChatModel):
         ToolExecutionResultMessage: 'tool',
     }
 
-    def _get_msg_content(self, m: Message) -> str:
+    def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
 

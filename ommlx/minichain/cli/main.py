@@ -116,7 +116,7 @@ def _run_chat(
 
     #
 
-    print(response.v.s.strip())
+    print(check.isinstance(response.v.s, str).strip())
 
     #
 

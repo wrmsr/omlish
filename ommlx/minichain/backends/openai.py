@@ -85,7 +85,7 @@ class OpenaiChatModel(ChatModel):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = api_key
 
-    def _get_msg_content(self, m: Message) -> str:
+    def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
 
@@ -134,7 +134,7 @@ class OpenaiChatModel(ChatModel):
 
         response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # type: ignore  # noqa
         return ChatResponse(
-            v=AiMessage(response.choices[0].message.content),  # type: ignore
+            v=AiMessage(response.choices[0].message.content),
             usage=TokenUsage(
                 input=response.usage.prompt_tokens,
                 output=response.usage.completion_tokens,
