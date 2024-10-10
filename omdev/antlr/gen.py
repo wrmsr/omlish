@@ -1,3 +1,8 @@
+"""
+TODO:
+ - fix relpath in omlish/
+ - sem-bounded parallelism
+"""
 import argparse
 import os.path
 import re
