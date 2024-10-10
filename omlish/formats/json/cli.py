@@ -1,5 +1,7 @@
 import argparse
 import contextlib
+import dataclasses as dc
+import enum
 import json
 import subprocess
 import sys
@@ -16,6 +18,7 @@ if ta.TYPE_CHECKING:
     import yaml
 
     from .. import dotenv
+    from .. import props
 
 else:
     tomllib = lang.proxy_import('tomllib')
@@ -23,6 +26,7 @@ else:
     yaml = lang.proxy_import('yaml')
 
     dotenv = lang.proxy_import('..dotenv', __package__)
+    props = lang.proxy_import('..props', __package__)
 
 
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
@@ -32,6 +36,28 @@ def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
         return term.SGR(term.SGRs.FG.GREEN), term.SGR(term.SGRs.RESET)
     else:
         return '', ''
+
+
+@dc.dataclass(frozen=True)
+class Format:
+    names: ta.Sequence[str]
+    load: ta.Callable[[ta.TextIO], ta.Any]
+
+
+class Formats(enum.Enum):
+    JSON = Format(['json'], json.load)
+    YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
+    TOML = Format(['toml'], lambda f: tomllib.loads(f.read()))
+    ENV = Format(['env', 'dotenv'], lambda f: dotenv.dotenv_values(stream=f))
+    PROPS = Format(['properties', 'props'], lambda f: dict(props.Properties().load(f.read())))
+
+
+FORMATS_BY_NAME: ta.Mapping[str, Format] = {
+    n: f
+    for e in Formats
+    for f in [e.value]
+    for n in f.names
+}
 
 
 def _main() -> None:
@@ -60,22 +86,23 @@ def _main() -> None:
         except ValueError:
             indent = args.indent
 
+    fmt_name = args.format
+    if fmt_name is None:
+        if args.file is not None:
+            ext = args.file.rpartition('.')[2]
+            if ext in FORMATS_BY_NAME:
+                fmt_name = ext
+    if fmt_name is None:
+        fmt_name = 'json'
+    fmt = FORMATS_BY_NAME[fmt_name]
+
     with contextlib.ExitStack() as es:
         if args.file is None:
             in_file = sys.stdin
         else:
             in_file = es.enter_context(open(args.file))
 
-        if args.format in (None, 'json'):
-            data = json.load(in_file)
-        elif args.format in ('yml', 'yaml'):
-            data = yaml.safe_load(in_file)
-        elif args.format == 'toml':
-            data = tomllib.loads(in_file.read())
-        elif args.format in ('env', 'dotenv'):
-            data = dotenv.dotenv_values(stream=in_file)
-        else:
-            raise ValueError(f'Unknown format: {args.format}')
+        data = fmt.load(in_file)
 
     kw: dict[str, ta.Any] = dict(
         indent=indent,
