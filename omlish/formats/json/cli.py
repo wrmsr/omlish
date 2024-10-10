@@ -22,8 +22,9 @@ def _main() -> None:
     parser.add_argument('file', nargs='?')
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
-    parser.add_argument('-c', '--color', action='store_true')
     parser.add_argument('-i', '--indent')
+    parser.add_argument('-s', '--sort-keys', action='store_true')
+    parser.add_argument('-c', '--color', action='store_true')
     args = parser.parse_args()
 
     separators = None

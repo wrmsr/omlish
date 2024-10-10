@@ -15,6 +15,7 @@ class JsonRenderer:
             *,
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
+            sort_keys: bool = False,
             style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
     ) -> None:
         super().__init__()
@@ -32,6 +33,7 @@ class JsonRenderer:
         else:
             raise TypeError(indent)
         self._comma, self._colon = separators
+        self._sort_keys = sort_keys
         self._style = style
 
         self._level = 0
@@ -68,7 +70,10 @@ class JsonRenderer:
         elif isinstance(o, ta.Mapping):
             self._write('{')
             self._level += 1
-            for i, (k, v) in enumerate(o.items()):
+            items = list(o.items())
+            if self._sort_keys:
+                items.sort(key=lambda t: t[0])
+            for i, (k, v) in enumerate(items):
                 if i:
                     self._write(self._comma)
                 self._write_indent()
