@@ -1,6 +1,7 @@
 import argparse
 import contextlib
 import json
+import subprocess
 import sys
 import typing as ta
 
@@ -19,12 +20,14 @@ def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
 
 def _main() -> None:
     parser = argparse.ArgumentParser()
+
     parser.add_argument('file', nargs='?')
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
     parser.add_argument('-s', '--sort-keys', action='store_true')
     parser.add_argument('-c', '--color', action='store_true')
+    parser.add_argument('-l', '--less', action='store_true')
     args = parser.parse_args()
 
     separators = None
@@ -55,18 +58,30 @@ def _main() -> None:
     )
 
     if args.color:
-        JsonRenderer(
-            sys.stdout,
-            **kw,
-            style=term_color,
-        ).render(data)
-        print()
-
-    else:
-        print(json.dumps(
+        out = JsonRenderer.render_str(
             data,
             **kw,
-        ))
+            style=term_color,
+        )
+
+    else:
+        out = json.dumps(
+            data,
+            **kw,
+        )
+
+    if args.less:
+        subprocess.run(
+            [
+                'less',
+                *(['-R'] if args.color else []),
+            ],
+            input=out.encode(),
+            check=True,
+        )
+
+    else:
+        print(out)
 
 
 if __name__ == '__main__':
