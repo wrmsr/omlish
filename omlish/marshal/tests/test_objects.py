@@ -6,11 +6,11 @@ from ..base import UnmarshalContext
 from ..global_ import marshal
 from ..global_ import unmarshal
 from ..helpers import update_fields_metadata
+from ..nop import NOP_MARSHALER_UNMARSHALER
 from ..objects import FieldInfo
 from ..objects import ObjectMarshaler
 from ..objects import ObjectSpecials
 from ..objects import ObjectUnmarshaler
-from ..primitives import PRIMITIVE_MARSHALER_UNMARSHALER
 from ..registries import Registry
 
 
@@ -39,14 +39,14 @@ def test_unknown_fields():
 
     ou = ObjectUnmarshaler(
         C,
-        {fi.name: (fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis},
+        {fi.name: (fi, NOP_MARSHALER_UNMARSHALER) for fi in fis},
         specials=ObjectSpecials(unknown='x'),
     )
     c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
     assert c == C(i=420, s='foo', x={'qqq': 'huh'})
 
     om = ObjectMarshaler(
-        [(fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis],
+        [(fi, NOP_MARSHALER_UNMARSHALER) for fi in fis],
         specials=ObjectSpecials(unknown='x'),
     )
     o = om.marshal(MarshalContext(Registry()), c)
@@ -71,7 +71,7 @@ def test_source_fields():
 
     ou = ObjectUnmarshaler(
         C,
-        {fi.name: (fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis},
+        {fi.name: (fi, NOP_MARSHALER_UNMARSHALER) for fi in fis},
         specials=ObjectSpecials(source='x'),
         ignore_unknown=True,
     )
@@ -79,7 +79,7 @@ def test_source_fields():
     assert c == C(i=420, s='foo', x={'i': 420, 's': 'foo', 'qqq': 'huh'})
 
     om = ObjectMarshaler(
-        [(fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis],
+        [(fi, NOP_MARSHALER_UNMARSHALER) for fi in fis],
         specials=ObjectSpecials(source='x'),
     )
     o = om.marshal(MarshalContext(Registry()), c)

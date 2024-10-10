@@ -39,11 +39,6 @@ from .forbidden import (  # noqa
     ForbiddenTypeUnmarshalerFactory,
 )
 
-from .naming import (  # noqa
-    Naming,
-    translate_name,
-)
-
 from .global_ import (  # noqa
     GLOBAL_REGISTRY,
 
@@ -55,6 +50,16 @@ from .helpers import (  # noqa
     update_field_metadata,
     update_fields_metadata,
     update_object_metadata,
+)
+
+from .naming import (  # noqa
+    Naming,
+    translate_name,
+)
+
+from .nop import (  # noqa
+    NOP_MARSHALER_UNMARSHALER,
+    NopMarshalerUnmarshaler,
 )
 
 from .objects import (  # noqa
