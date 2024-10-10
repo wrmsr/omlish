@@ -8,7 +8,7 @@ from omlish import dispatch
 from .chat import AiMessage
 from .chat import Message
 from .chat import SystemMessage
-from .chat import ToolExecutionResultMessage
+from .chat import ToolExecResultMessage
 from .chat import UserMessage
 from .content import Content
 from .content import Image
@@ -59,7 +59,7 @@ class StringTransform:
         return dc.replace(s, s=self.apply(s.s))
 
     @apply.register
-    def apply_tool_execution_result_message(self, s: ToolExecutionResultMessage) -> ToolExecutionResultMessage:
+    def apply_tool_exec_result_message(self, s: ToolExecResultMessage) -> ToolExecResultMessage:
         return s
 
     @apply.register

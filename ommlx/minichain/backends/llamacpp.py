@@ -10,7 +10,7 @@ from ..chat import ChatRequest
 from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
-from ..chat import ToolExecutionResultMessage
+from ..chat import ToolExecResultMessage
 from ..chat import UserMessage
 from ..prompts import PromptModel
 from ..prompts import PromptRequest
@@ -59,7 +59,7 @@ class LlamacppChatModel(ChatModel):
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
-        ToolExecutionResultMessage: 'tool',
+        ToolExecResultMessage: 'tool',
     }
 
     def _get_msg_content(self, m: Message) -> str | None:

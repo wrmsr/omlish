@@ -25,7 +25,7 @@ ResponseT = ta.TypeVar('ResponseT', bound='Response')
 class FinishReason(enum.Enum):
     STOP = enum.auto()
     LENGTH = enum.auto()
-    TOOL_EXECUTION = enum.auto()
+    TOOL_EXEC = enum.auto()
     CONTENT_FILTER = enum.auto()
     OTHER = enum.auto()
 

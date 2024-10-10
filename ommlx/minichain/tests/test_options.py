@@ -3,16 +3,15 @@ from ..chat import TEXT_RESPONSE_FORMAT
 from ..chat import JsonResponseFormat
 from ..chat import ResponseFormat
 from ..chat import Tool
-from ..chat import ToolParameters
-from ..chat import ToolSpecification
+from ..chat import ToolSpec
 from ..generative import TopK
 from ..options import DuplicateUniqueOptionError
 from ..options import Options
 
 
 def test_options():
-    foo_tool = ToolSpecification('foo', 'foo', ToolParameters('str', {}, set()))
-    bar_tool = ToolSpecification('bar', 'bar', ToolParameters('str', {}, set()))
+    foo_tool = ToolSpec('foo', [], desc='foo')
+    bar_tool = ToolSpec('bar', [], desc='bar')
 
     assert list(Options(
         TopK(5),
