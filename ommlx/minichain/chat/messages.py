@@ -27,7 +27,7 @@ class UserMessage(Message, lang.Final):
 
 @dc.dataclass(frozen=True)
 class AiMessage(Message, lang.Final):
-    s: str
+    s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
     tool_execution_requests: ta.Sequence['ToolExecutionRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
