@@ -1,29 +1,25 @@
-import argparse
-import contextlib
 import enum
+import io
 import json
-import sys
 import typing as ta
 
-from omlish import term
 
-
-class JsonPrinter:
+class JsonRenderer:
     class State(enum.Enum):
         VALUE = enum.auto()
         KEY = enum.auto()
 
     def __init__(
             self,
-            out: ta.TextIO | None = None,
+            out: ta.TextIO,
             *,
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
-            style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None
+            style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
     ) -> None:
         super().__init__()
 
-        self._out = out if out is not None else sys.stdout
+        self._out = out
         if isinstance(indent, (str, int)):
             self._indent = (' ' * indent) if isinstance(indent, int) else indent
             self._endl = '\n'
@@ -39,11 +35,12 @@ class JsonPrinter:
         self._style = style
 
         self._level = 0
-        self._literals = {
-            True: 'true',
-            False: 'false',
-            None: 'null',
-        }
+
+    _literals: ta.ClassVar[ta.Mapping[ta.Any, str]] = {
+        True: 'true',
+        False: 'false',
+        None: 'null',
+    }
 
     def _write(self, s: str) -> None:
         if s:
@@ -55,7 +52,7 @@ class JsonPrinter:
             if self._level:
                 self._write(self._indent * self._level)
 
-    def _print(self, o: ta.Any, state: State = State.VALUE) -> None:
+    def _render(self, o: ta.Any, state: State = State.VALUE) -> None:
         if self._style is not None:
             pre, post = self._style(o, state)
             self._write(pre)
@@ -75,9 +72,9 @@ class JsonPrinter:
                 if i:
                     self._write(self._comma)
                 self._write_indent()
-                self._print(k, JsonPrinter.State.KEY)
+                self._render(k, JsonRenderer.State.KEY)
                 self._write(self._colon)
-                self._print(v)
+                self._render(v)
             self._level -= 1
             if o:
                 self._write_indent()
@@ -90,7 +87,7 @@ class JsonPrinter:
                 if i:
                     self._write(self._comma)
                 self._write_indent()
-                self._print(e)
+                self._render(e)
             self._level -= 1
             if o:
                 self._write_indent()
@@ -102,64 +99,12 @@ class JsonPrinter:
         if post:
             self._write(post)
 
-    def print(self, o: ta.Any) -> None:
-        self._print(o)
+    def render(self, o: ta.Any) -> None:
+        self._render(o)
         self._write(self._endl)
 
-
-def term_color(o: ta.Any, state: JsonPrinter.State) -> tuple[str, str]:
-    if state is JsonPrinter.State.KEY:
-        return term.SGR(term.SGRs.FG.BRIGHT_BLUE), term.SGR(term.SGRs.RESET)
-    elif isinstance(o, str):
-        return term.SGR(term.SGRs.FG.GREEN), term.SGR(term.SGRs.RESET)
-    else:
-        return '', ''
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', nargs='?')
-    parser.add_argument('-c', '--color', action='store_true')
-    parser.add_argument('-z', '--compact', action='store_true')
-    parser.add_argument('-i', '--indent')
-    args = parser.parse_args()
-
-    if args.compact:
-        separators = (',', ':')
-    else:
-        separators = None
-
-    if args.indent:
-        try:
-            indent = int(args.indent)
-        except ValueError:
-            indent = args.indent
-    else:
-        indent = None
-
-    with contextlib.ExitStack() as es:
-        if args.file is None:
-            in_file = sys.stdin
-        else:
-            in_file = es.enter_context(open(args.file))
-
-        data = json.load(in_file)
-
-    if args.color:
-        JsonPrinter(
-            sys.stdout,
-            indent=indent,
-            separators=separators,
-            style=term_color,
-        ).print(data)
-
-    else:
-        print(json.dumps(
-            data,
-            indent=indent,
-            separators=separators,
-        ))
-
-
-if __name__ == "__main__":
-    main()
+    @classmethod
+    def render_str(cls, o: ta.Any, **kwargs: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out, **kwargs).render(o)
+        return out.getvalue()
