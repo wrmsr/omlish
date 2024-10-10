@@ -34,7 +34,7 @@ class AnthropicChatModel(ChatModel):
         super().__init__()
         self._api_key = api_key
 
-    def _get_msg_content(self, m: Message) -> str:
+    def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
 
@@ -59,7 +59,7 @@ class AnthropicChatModel(ChatModel):
             messages=[  # noqa
                 dict(
                     role=self.ROLES_MAP[type(m)],  # type: ignore
-                    content=self._get_msg_content(m),
+                    content=check.isinstance(self._get_msg_content(m), str),
                 )
                 for m in request.v
             ],

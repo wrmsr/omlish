@@ -30,7 +30,7 @@ class MistralChatModel(ChatModel):
         super().__init__()
         self._api_key = api_key
 
-    def _get_msg_content(self, m: Message) -> str:
+    def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, (SystemMessage, AiMessage)):
             return m.s
 
