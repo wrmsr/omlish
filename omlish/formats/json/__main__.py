@@ -1,6 +1,6 @@
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': ['json'],
+    'cmd_name': 'json',
     'mod_name': __name__,
 }}
 

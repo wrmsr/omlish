@@ -95,7 +95,10 @@ def _main() -> None:
                 if isinstance(cc.cmd_name, str):
                     print(f'    {cc.cmd_name}')
                 else:
-                    print(f'    {cc.cmd_name[0]} ({", ".join(cc.cmd_name[1:])})')
+                    print(
+                        f'    {cc.cmd_name[0]}'
+                        f'{(" (" + ", ".join(cc.cmd_name[1:]) + ")") if len(cc.cmd_name) > 1 else ""}',
+                    )
             print()
         return
 
