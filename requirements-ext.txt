@@ -59,7 +59,7 @@ librosa==0.10.2.post1
 
 ## tinygrad
 
-networkx==3.3
+networkx==3.4
 
 nevergrad==1.0.5
 
@@ -158,7 +158,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.37
+boto3>=1.35.38
 
 google-cloud-compute==1.19.2
 
@@ -267,7 +267,7 @@ usearch==2.15.3
 
 llama-index-core==0.11.17
 
-unstructured==0.15.13
+unstructured==0.15.14
 
 sentence_transformers==3.2.0
 
