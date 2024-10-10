@@ -101,7 +101,6 @@ class JsonRenderer:
 
     def render(self, o: ta.Any) -> None:
         self._render(o)
-        self._write(self._endl)
 
     @classmethod
     def render_str(cls, o: ta.Any, **kwargs: ta.Any) -> str:

@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from ..render import JsonRenderer
 
 
@@ -50,10 +52,17 @@ DOC = """
 """
 
 
-def test_render():
+@pytest.mark.parametrize('indent', [None, 2])
+@pytest.mark.parametrize('separators', [None, (',', ':'), (', ', ': ')])
+def test_render(
+        indent,
+        separators,
+):
     obj = json.loads(DOC)
-
-    kw = {}
+    kw = dict(
+        indent=indent,
+        separators=separators,
+    )
     l = JsonRenderer.render_str(obj, **kw)
     r = json.dumps(obj, **kw)
     assert l == r
