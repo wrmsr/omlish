@@ -11,7 +11,7 @@ from ..chat import ChatRequestOptions
 from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
-from ..chat import ToolExecutionResultMessage
+from ..chat import ToolExecResultMessage
 from ..chat import UserMessage
 from ..generative import MaxTokens
 from ..generative import Temperature
@@ -67,7 +67,7 @@ class OpenaiChatModel(ChatModel):
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
-        ToolExecutionResultMessage: 'tool',
+        ToolExecResultMessage: 'tool',
     }
 
     DEFAULT_OPTIONS: ta.ClassVar[Options[ChatRequestOptions]] = Options(

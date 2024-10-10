@@ -6,33 +6,40 @@ from omlish import lang
 from .options import ChatRequestOption
 
 
+ToolDtype: ta.TypeAlias = str
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
 class Tool(ChatRequestOption, lang.Final):
-    spec: 'ToolSpecification'
-
-
-##
+    spec: 'ToolSpec'
 
 
 @dc.dataclass(frozen=True)
-class ToolParameters(lang.Final):
-    type: str
-    props: ta.Mapping[str, ta.Mapping[str, ta.Any]]
-    req: ta.AbstractSet[str]
-
-
-@dc.dataclass(frozen=True)
-class ToolSpecification(lang.Final):
+class ToolParam(lang.Final):
     name: str
-    desc: str
-    params: ToolParameters
+    dtype: ToolDtype
+
+    _: dc.KW_ONLY
+
+    desc: str | None = None
+    required: bool = False
 
 
 @dc.dataclass(frozen=True)
-class ToolExecutionRequest(lang.Final):
+class ToolSpec(lang.Final):
+    name: str
+    params: ta.Sequence[ToolParam]
+
+    _: dc.KW_ONLY
+
+    desc: str
+
+
+@dc.dataclass(frozen=True)
+class ToolExecRequest(lang.Final):
     id: str
     name: str
     args: str
