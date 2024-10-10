@@ -26,39 +26,44 @@ class Filter(lang.Abstract):
 #
 
 
-class CompositeFilter(Filter, lang.Abstract):
-    pass
+class MultiOp(enum.Enum):
+    AND = '&&'
+    OR = '||'
 
 
 @dc.dataclass(frozen=True)
-class And(CompositeFilter, lang.Final):
+class MultiFilter(Filter, lang.Final):
+    op: MultiOp = dc.xfield(check_type=True)
     children: ta.Sequence[Filter] = dc.xfield(override=True, validate=lambda v: all(isinstance(e, Filter) for e in v))
 
+    def __str__(self) -> str:
+        raise NotImplementedError
+
+
+def multi_(op: MultiOp, *children: Filter) -> Filter:
+    if len(children) == 1:
+        return children[0]
+    return MultiFilter(op, children)
+
+
+def and_(*children: Filter) -> Filter:
+    return multi_(MultiOp.AND, *children)
+
+
+def or_(*children: Filter) -> Filter:
+    return multi_(MultiOp.OR, *children)
+
+
+#
+
 
 @dc.dataclass(frozen=True)
-class Or(CompositeFilter, lang.Final):
-    children: ta.Sequence[Filter] = dc.xfield(override=True, validate=lambda v: all(isinstance(e, Filter) for e in v))
-
-
-@dc.dataclass(frozen=True)
-class Not(CompositeFilter, lang.Final):
+class Not(Filter, lang.Final):
     child: Filter = dc.xfield(check_type=True)
 
     @property
     def children(self) -> ta.Iterable[Filter]:
         return (self.child,)
-
-
-def and_(*children: Filter) -> Filter:
-    if len(children) == 1:
-        return children[0]
-    return And(children)
-
-
-def or_(*children: Filter) -> Filter:
-    if len(children) == 1:
-        return children[0]
-    return Or(children)
 
 
 def not_(child: Filter) -> Filter:
@@ -75,7 +80,7 @@ class Field(lang.Final):
     n: str = dc.xfield(check_type=True)
 
     def __str__(self) -> str:
-        return f'f:{self.n}'
+        return f':{self.n}'
 
 
 def f(f: str | Field) -> Field:  # noqa
@@ -84,7 +89,7 @@ def f(f: str | Field) -> Field:  # noqa
     return Field(f)
 
 
-class Op(enum.Enum):
+class CmpOp(enum.Enum):
     EQ = '='
     NE = '!='
     LT = '<'
@@ -95,33 +100,40 @@ class Op(enum.Enum):
 
 @dc.dataclass
 class Cmp(Filter, lang.Final):
-    op: Op = dc.xfield(check_type=True)
+    op: CmpOp = dc.xfield(check_type=True)
     field: Field = dc.xfield(check_type=True)
     value: ta.Any = dc.field()
 
+    def __str__(self) -> str:
+        return f'{self.field} {self.op.value} {self.value}'
+
+
+def cmp(op: CmpOp, field: Field, value: ta.Any) -> Filter:
+    return Cmp(op, field, value)
+
 
 def eq(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.EQ, field, value)
+    return cmp(CmpOp.EQ, field, value)
 
 
 def ne(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.NE, field, value)
+    return cmp(CmpOp.NE, field, value)
 
 
 def lt(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.LT, field, value)
+    return cmp(CmpOp.LT, field, value)
 
 
 def le(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.LE, field, value)
+    return cmp(CmpOp.LE, field, value)
 
 
 def gt(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.GT, field, value)
+    return cmp(CmpOp.GT, field, value)
 
 
 def ge(field: Field, value: ta.Any) -> Filter:
-    return Cmp(Op.GE, field, value)
+    return cmp(CmpOp.GE, field, value)
 
 
 ##
