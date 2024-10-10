@@ -1,5 +1,10 @@
+"""
+TODO:
+ - field-configurable coercion
+"""
 import typing as ta
 
+from .. import dataclasses as dc
 from .base import MarshalContext
 from .base import Marshaler
 from .base import TypeMapMarshalerFactory
@@ -25,24 +30,29 @@ PRIMITIVE_TYPES: tuple[type, ...] = (
 ##
 
 
+@dc.dataclass(frozen=True)
 class PrimitiveMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    ty: type
+
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        if isinstance(o, PRIMITIVE_TYPES):
+        if isinstance(o, self.ty):
             return o  # type: ignore
+        if isinstance(o, PRIMITIVE_TYPES):
+            return self.ty(o)
         raise TypeError(o)
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        if isinstance(v, PRIMITIVE_TYPES):
+        if isinstance(v, self.ty):
             return v
+        if isinstance(v, PRIMITIVE_TYPES):
+            return self.ty(v)
         raise TypeError(v)
 
 
-PRIMITIVE_MARSHALER_UNMARSHALER = PrimitiveMarshalerUnmarshaler()
-
 PRIMITIVE_MARSHALER_FACTORY = TypeMapMarshalerFactory({  # noqa
-    t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
+    t: PrimitiveMarshalerUnmarshaler(t) for t in PRIMITIVE_TYPES
 })
 
 PRIMITIVE_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({  # noqa
-    t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
+    t: PrimitiveMarshalerUnmarshaler(t) for t in PRIMITIVE_TYPES
 })
