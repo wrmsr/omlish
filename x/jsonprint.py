@@ -21,11 +21,11 @@ class JsonPrinter:
             self._indent = (' ' * indent) if isinstance(indent, int) else indent
             self._endl = '\n'
             if separators is None:
-                separators = (', ', ': ')
+                separators = (',', ': ')
         elif indent is None:
             self._indent = self._endl = ''
             if separators is None:
-                separators = (',', ':')
+                separators = (', ', ': ')
         else:
             raise TypeError(indent)
         self._comma, self._colon = separators
@@ -105,7 +105,7 @@ def main() -> None:
         data = json.load(in_file)
 
     if args.color:
-        JsonPrinter(sys.stdout).print(data)
+        JsonPrinter(sys.stdout, indent=4).print(data)
 
     else:
         pretty_json = json.dumps(data, indent=4)
