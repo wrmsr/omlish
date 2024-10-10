@@ -231,7 +231,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.35
 
-langsmith==0.1.133
+langsmith==0.1.134
 
 tavily-python==0.5.0
 
