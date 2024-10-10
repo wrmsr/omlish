@@ -1,4 +1,5 @@
 import enum
+import functools
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -43,18 +44,14 @@ class MultiFilter(Filter, lang.Final):
         return f'({f" {self.op.value} ".join(map(str, self.children))})'
 
 
-def multi_(op: MultiOp, *children: Filter) -> Filter:
+def multi(op: MultiOp, *children: Filter) -> Filter:
     if len(children) == 1:
         return children[0]
     return MultiFilter(op, children)
 
 
-def and_(*children: Filter) -> Filter:
-    return multi_(MultiOp.AND, *children)
-
-
-def or_(*children: Filter) -> Filter:
-    return multi_(MultiOp.OR, *children)
+and_ = functools.partial(multi, MultiOp.AND)
+or_ = functools.partial(multi, MultiOp.OR)
 
 
 #
@@ -115,28 +112,12 @@ def cmp(op: CmpOp, field: Field, value: ta.Any) -> Filter:
     return Cmp(op, field, value)
 
 
-def eq(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.EQ, field, value)
-
-
-def ne(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.NE, field, value)
-
-
-def lt(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.LT, field, value)
-
-
-def le(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.LE, field, value)
-
-
-def gt(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.GT, field, value)
-
-
-def ge(field: Field, value: ta.Any) -> Filter:
-    return cmp(CmpOp.GE, field, value)
+eq = functools.partial(cmp, CmpOp.EQ)
+ne = functools.partial(cmp, CmpOp.NE)
+lt = functools.partial(cmp, CmpOp.LT)
+le = functools.partial(cmp, CmpOp.LE)
+gt = functools.partial(cmp, CmpOp.GT)
+ge = functools.partial(cmp, CmpOp.GE)
 
 
 ##
