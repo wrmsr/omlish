@@ -5,8 +5,20 @@ import subprocess
 import sys
 import typing as ta
 
+from ... import lang
 from ... import term
 from .render import JsonRenderer
+
+
+if ta.TYPE_CHECKING:
+    import tomllib
+
+    import yaml
+
+else:
+    tomllib = lang.proxy_import('tomllib')
+
+    yaml = lang.proxy_import('yaml')
 
 
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
@@ -22,6 +34,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file', nargs='?')
+    parser.add_argument('-f', '--format')
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
@@ -49,7 +62,14 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file))
 
-        data = json.load(in_file)
+        if args.format in (None, 'json'):
+            data = json.load(in_file)
+        elif args.format in ('yml', 'yaml'):
+            data = yaml.safe_load(in_file)
+        elif args.format == 'toml':
+            data = tomllib.loads(in_file.read())
+        else:
+            raise ValueError(f'Unknown format: {args.format}')
 
     kw: dict[str, ta.Any] = dict(
         indent=indent,
