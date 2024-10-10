@@ -1,7 +1,7 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
-# Generated from /Users/spinlock/src/wrmsr/omlish/omdev/antlr/tests/Chat.g4 by ANTLR 4.13.2
+# Generated from Chat.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from omlish.antlr._runtime import *
 from io import StringIO
