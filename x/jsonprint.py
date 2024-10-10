@@ -12,7 +12,7 @@ class JsonPrinter:
             self,
             out: ta.TextIO | None = None,
             indent: int | str | None = None,
-            separators: tuple[str, str] = (', ', ': '),
+            separators: tuple[str, str] | None = None,
     ) -> None:
         super().__init__()
 
@@ -20,8 +20,14 @@ class JsonPrinter:
         if isinstance(indent, (str, int)):
             self._indent = (' ' * indent) if isinstance(indent, int) else indent
             self._endl = '\n'
-        else:
+            if separators is None:
+                separators = (', ', ': ')
+        elif indent is None:
             self._indent = self._endl = ''
+            if separators is None:
+                separators = (',', ':')
+        else:
+            raise TypeError(indent)
         self._comma, self._colon = separators
 
         self._level = 0
@@ -35,7 +41,13 @@ class JsonPrinter:
         if s:
             self._out.write(s)
 
-    def print(self, o: ta.Any) -> None:
+    def _write_indent(self) -> None:
+        if self._indent:
+            self._write(self._endl)
+            if self._level:
+                self._write(self._indent * self._level)
+
+    def _print(self, o: ta.Any) -> None:
         if o is None or isinstance(o, bool):
             self._write(self._literals[o])
 
@@ -44,24 +56,38 @@ class JsonPrinter:
 
         elif isinstance(o, ta.Mapping):
             self._write('{')
+            self._level += 1
             for i, (k, v) in enumerate(o.items()):
                 if i:
                     self._write(self._comma)
-                self.print(k)
+                self._write_indent()
+                self._print(k)
                 self._write(self._colon)
-                self.print(v)
+                self._print(v)
+            self._level -= 1
+            if o:
+                self._write_indent()
             self._write('}')
 
         elif isinstance(o, ta.Sequence):
             self._write('[')
+            self._level += 1
             for i, e in enumerate(o):
                 if i:
                     self._write(self._comma)
-                self.print(e)
+                self._write_indent()
+                self._print(e)
+            self._level -= 1
+            if o:
+                self._write_indent()
             self._write(']')
 
         else:
             raise TypeError(o)
+
+    def print(self, o: ta.Any) -> None:
+        self._print(o)
+        self._write(self._endl)
 
 
 def main() -> None:
@@ -79,7 +105,7 @@ def main() -> None:
         data = json.load(in_file)
 
     if args.color:
-        JsonPrinter(sys.stdout).print(data)
+        JsonPrinter(sys.stdout, indent=2).print(data)
 
     else:
         pretty_json = json.dumps(data, indent=4)
