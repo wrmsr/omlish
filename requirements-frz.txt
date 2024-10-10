@@ -146,7 +146,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.25.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.114.0
+hypothesis==6.114.1
 idna==3.10
 ifaddr==0.2.0
 imageio==2.35.1
@@ -204,7 +204,7 @@ langcodes==3.4.1
 langdetect==1.0.9
 langgraph==0.2.35
 langgraph-checkpoint==2.0.1
-langsmith==0.1.132
+langsmith==0.1.133
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -264,7 +264,7 @@ notebook_shim==0.2.4
 numba==0.60.0
 numpy==1.26.4
 oauthlib==3.2.2
-objgraph==3.6.1
+objgraph==3.6.2
 olefile==0.47
 ollama==0.3.3
 onnx==1.17.0
@@ -295,7 +295,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@1eab9bd10f5099305ac08d9bf30dec3e753428c6
+peft @ git+https://github.com/huggingface/peft.git@c925d0ae25a1fef79a2b29a71fae7c983e40a61e
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -321,6 +321,7 @@ psutil==6.0.0
 psycopg==3.2.3
 psycopg2==2.9.9
 ptyprocess==0.7.0
+pudb==2024.1.2
 pure-pcapy3==1.0.1
 pure_eval==0.2.3
 py-cpuinfo==9.0.0
@@ -401,7 +402,7 @@ scipy==1.14.1
 scramp==1.4.5
 selectolax==0.3.21
 Send2Trash==1.8.3
-sentence-transformers==3.1.1
+sentence-transformers==3.2.0
 sentencepiece==0.2.0
 setproctitle==1.3.3
 setuptools==75.1.0
@@ -409,7 +410,7 @@ setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.6.3
+simsimd==5.6.4
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -451,11 +452,11 @@ tifffile==2024.9.20
 tiktoken==0.8.0
 tinycss2==1.3.0
 tokenize-rt==6.0.0
-tokenizers==0.20.0
+tokenizers==0.20.1
 tomlkit==0.13.2
 torch==2.4.1
 torchinfo==1.8.0
-torchmetrics==1.4.2
+torchmetrics==1.4.3
 torchsummary==1.5.1
 torchvision==0.19.1
 tornado==6.4.1
@@ -466,7 +467,7 @@ tree-sitter==0.23.1
 tree-sitter-python==0.23.2
 trio==0.26.2
 trio_asyncio==0.15.0
-trl==0.11.2
+trl==0.11.3
 twine==5.1.1
 typer==0.12.5
 types-paramiko==3.5.0.20240928
@@ -484,7 +485,9 @@ unstructured==0.15.13
 unstructured-client==0.25.9
 uri-template==1.3.0
 urllib3==2.2.3
-usearch==2.15.2
+urwid==2.6.15
+urwid_readline==0.15.1
+usearch==2.15.3
 uv==0.4.20
 uvicorn==0.31.1
 uvloop==0.20.0
