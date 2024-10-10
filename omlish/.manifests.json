@@ -42,9 +42,7 @@
     "line": 1,
     "value": {
       "$omdev.cli.types.CliModule": {
-        "cmd_name": [
-          "json"
-        ],
+        "cmd_name": "json",
         "mod_name": "omlish.formats.json.__main__"
       }
     }
