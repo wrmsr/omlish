@@ -11,7 +11,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import bs4
 
-from dp.utils import load_secrets
+from x.lc.utils import load_secrets
 
 
 def _main() -> None:
