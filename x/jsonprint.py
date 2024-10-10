@@ -105,7 +105,7 @@ def main() -> None:
         data = json.load(in_file)
 
     if args.color:
-        JsonPrinter(sys.stdout, indent=2).print(data)
+        JsonPrinter(sys.stdout).print(data)
 
     else:
         pretty_json = json.dumps(data, indent=4)
