@@ -43,14 +43,47 @@ def test_unknown_fields():
         specials=ObjectSpecials(unknown='x'),
     )
     c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
-    print(c)
+    assert c == C(i=420, s='foo', x={'qqq': 'huh'})
 
     om = ObjectMarshaler(
         [(fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis],
         specials=ObjectSpecials(unknown='x'),
     )
     o = om.marshal(MarshalContext(Registry()), c)
-    print(o)
+    assert o == {'i': 420, 's': 'foo', 'qqq': 'huh'}
+
+
+def test_source_fields():
+    fis = [
+        FieldInfo(
+            name='i',
+            type=int,
+            marshal_name='i',
+            unmarshal_names=['i'],
+        ),
+        FieldInfo(
+            name='s',
+            type=str,
+            marshal_name='s',
+            unmarshal_names=['s'],
+        ),
+    ]
+
+    ou = ObjectUnmarshaler(
+        C,
+        {fi.name: (fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis},
+        specials=ObjectSpecials(source='x'),
+        ignore_unknown=True,
+    )
+    c = ou.unmarshal(UnmarshalContext(Registry()), {'i': 420, 's': 'foo', 'qqq': 'huh'})
+    assert c == C(i=420, s='foo', x={'i': 420, 's': 'foo', 'qqq': 'huh'})
+
+    om = ObjectMarshaler(
+        [(fi, PRIMITIVE_MARSHALER_UNMARSHALER) for fi in fis],
+        specials=ObjectSpecials(source='x'),
+    )
+    o = om.marshal(MarshalContext(Registry()), c)
+    assert o == {'i': 420, 's': 'foo'}
 
 
 ##

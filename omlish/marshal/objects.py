@@ -92,7 +92,7 @@ class ObjectSpecials:
 
     @cached.property
     def set(self) -> frozenset[str]:
-        return frozenset(k for k, v in dc.asdict(self).items() if v is not None)
+        return frozenset(v for v in dc.asdict(self).values() if v is not None)
 
 
 ##
