@@ -17,7 +17,7 @@ from .messages import (  # noqa
     Chat,
     Message,
     SystemMessage,
-    ToolExecutionResultMessage,
+    ToolExecResultMessage,
     UserMessage,
 )
 
@@ -36,9 +36,10 @@ from .options import (  # noqa
 
 from .tools import (  # noqa
     Tool,
-    ToolExecutionRequest,
-    ToolParameters,
-    ToolSpecification,
+    ToolDtype,
+    ToolExecRequest,
+    ToolParam,
+    ToolSpec,
 )
 
 

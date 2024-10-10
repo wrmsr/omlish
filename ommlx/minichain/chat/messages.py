@@ -4,7 +4,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..content import Content
-from .tools import ToolExecutionRequest
+from .tools import ToolExecRequest
 
 
 ##
@@ -28,11 +28,11 @@ class UserMessage(Message, lang.Final):
 @dc.dataclass(frozen=True)
 class AiMessage(Message, lang.Final):
     s: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
-    tool_execution_requests: ta.Sequence['ToolExecutionRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    tool_exec_requests: ta.Sequence['ToolExecRequest'] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)
-class ToolExecutionResultMessage(Message, lang.Final):
+class ToolExecResultMessage(Message, lang.Final):
     id: str
     tool_name: str
     s: str
