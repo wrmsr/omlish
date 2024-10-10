@@ -18,7 +18,7 @@ class Project(ProjectBase):
 
             'openai ~= 1.51',
 
-            'sentence_transformers ~= 3.1',
+            'sentence_transformers ~= 3.2',
 
             'transformers ~= 4.45',
         ],

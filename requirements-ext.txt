@@ -269,7 +269,7 @@ llama-index-core==0.11.17
 
 unstructured==0.15.13
 
-sentence_transformers==3.1.1
+sentence_transformers==3.2.0
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
