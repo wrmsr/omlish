@@ -17,7 +17,7 @@ class DumpOpts:
     check_circular: bool = True  # if False a circular reference will result in an RecursionError
     allow_nan: bool = True  # use JS equivalents for out-of-range float values, otherwise raise ValueError
     indent: int | None = None  # item indent - 0 will insert only newlines, None is most compact
-    separators: tuple[str, str] = None  # (item_separator, key_separator) - default (', ', ': ') if indent is None else (',', ': ')  # noqa
+    separators: tuple[str, str] | None  = None  # (item_separator, key_separator) - default (', ', ': ') if indent is None else (',', ': ')  # noqa
     default: ta.Callable[[ta.Any], ta.Any] | None = None  # should return a serializable version of obj or raise TypeError  # noqa
     sort_keys: bool = False
 
@@ -27,8 +27,8 @@ class LoadOpts:
     cls: type[json.JSONDecoder] | None = None
 
     parse_float: ta.Callable[[str], ta.Any] | None = None  # by default this is equivalent to float(num_str)
-    parse_int: ta.Callable[[str], ta.Any] = None  # by default this is equivalent to int(num_str)
-    parse_constant: ta.Callable[[str], ta.Any] = None  # # called with one of the following strings: -Infinity, Infinity, NaN  # noqa
+    parse_int: ta.Callable[[str], ta.Any] | None = None  # by default this is equivalent to int(num_str)
+    parse_constant: ta.Callable[[str], ta.Any] | None = None  # # called with one of the following strings: -Infinity, Infinity, NaN  # noqa
 
     # called with the result of any object literal decoded
     object_hook: ta.Callable[[dict], ta.Any] | None = None

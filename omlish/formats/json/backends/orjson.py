@@ -5,7 +5,13 @@ def dumps(obj: ta.Any, **DumpOpts) -> bytes
 import dataclasses as dc
 import typing as ta
 
-import orjson as oj
+from .... import lang
+
+
+if ta.TYPE_CHECKING:
+    import orjson as oj
+else:
+    oj = lang.proxy_import('orjson')
 
 
 @dc.dataclass(frozen=True, kw_only=True)

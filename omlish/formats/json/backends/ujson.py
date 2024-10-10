@@ -5,6 +5,7 @@ dump(obj: ta.Any, fp: File, **DumpOpts) -> None
 dumps(obj: ta.Any, **DumpOpts) -> None
 """
 import dataclasses as dc
+import typing as ta
 
 
 @dc.dataclass(frozen=True, kw_only=True)
