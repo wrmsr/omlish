@@ -11,13 +11,17 @@ class JsonPrinter:
     def __init__(
             self,
             out: ta.TextIO | None = None,
-            indent: int | str = '',
+            indent: int | str | None = None,
             separators: tuple[str, str] = (', ', ': '),
     ) -> None:
         super().__init__()
 
         self._out = out if out is not None else sys.stdout
-        self._indent = (' ' * indent) if isinstance(indent, int) else indent
+        if isinstance(indent, (str, int)):
+            self._indent = (' ' * indent) if isinstance(indent, int) else indent
+            self._endl = '\n'
+        else:
+            self._indent = self._endl = ''
         self._comma, self._colon = separators
 
         self._level = 0
@@ -28,7 +32,8 @@ class JsonPrinter:
         }
 
     def _write(self, s: str) -> None:
-        self._out.write(s)
+        if s:
+            self._out.write(s)
 
     def print(self, o: ta.Any) -> None:
         if o is None or isinstance(o, bool):
