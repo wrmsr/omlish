@@ -22,14 +22,11 @@ else:
     np = lang.proxy_import('numpy')
 
 
-_HAS_NP = lang.can_import('numpy')
-
-
 ##
 
 
 VectorStorage: ta.TypeAlias = ta.Union[
-    'array.array',
+    array.array,
     'np.ndarray',
 ]
 
@@ -80,12 +77,26 @@ def _get_storage_impl() -> _StorageImpl:
 ##
 
 
+_STRUCT_FLOATS_FMTS: dict[int, str] = {}
+
+
+def _get_struct_float_fmt(d: int) -> str:
+    try:
+        return _STRUCT_FLOATS_FMTS[d]
+    except KeyError:
+        fmt = _STRUCT_FLOATS_FMTS[d] = '<' + 'f' * d
+        return fmt
+
+
 def _encode_float_bytes(fs: ta.Sequence[float]) -> bytes:
-    return struct.pack('<' + 'f' * len(fs), *fs)
+    return struct.pack(_get_struct_float_fmt(len(fs)), *fs)
 
 
 def _decode_float_bytes(b: bytes) -> ta.Sequence[float]:
-    return struct.unpack('<' + 'f' * (len(b) // 4), b)
+    return struct.unpack(_get_struct_float_fmt(len(b) // 4), b)
+
+
+##
 
 
 class Vector(lang.Final, ta.Sequence[float]):
