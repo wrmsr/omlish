@@ -34,10 +34,13 @@ class MultiOp(enum.Enum):
 @dc.dataclass(frozen=True)
 class MultiFilter(Filter, lang.Final):
     op: MultiOp = dc.xfield(check_type=True)
-    children: ta.Sequence[Filter] = dc.xfield(override=True, validate=lambda v: all(isinstance(e, Filter) for e in v))
+    children: ta.Sequence[Filter] = dc.xfield(
+        override=True,
+        validate=lambda v: len(v) > 1 and all(isinstance(e, Filter) for e in v),
+    )
 
     def __str__(self) -> str:
-        raise NotImplementedError
+        return f'({f" {self.op.value} ".join(map(str, self.children))})'
 
 
 def multi_(op: MultiOp, *children: Filter) -> Filter:
@@ -102,7 +105,7 @@ class CmpOp(enum.Enum):
 class Cmp(Filter, lang.Final):
     op: CmpOp = dc.xfield(check_type=True)
     field: Field = dc.xfield(check_type=True)
-    value: ta.Any = dc.field()
+    value: ta.Any = dc.xfield()
 
     def __str__(self) -> str:
         return f'{self.field} {self.op.value} {self.value}'
