@@ -34,47 +34,6 @@ dump
     OPT_SORT_KEYS
     OPT_STRICT_INTEGER
     OPT_UTC_Z
-  rapidjson
-    skipkeys=False,
-    ensure_ascii=True,
-    write_mode=WM_COMPACT,
-    write_mode|WM_COMPACT
-    write_mode|WM_PRETTY
-    write_mode|WM_SINGLE_LINE_ARRAY
-    indent=4,
-    default=None,
-    sort_keys=False,
-    number_mode=None,
-    number_mode|NM_NONE
-    number_mode|NM_DECIMAL
-    number_mode|NM_NAN
-    number_mode|NM_NATIVE
-    datetime_mode=None,
-    datetime_mode|DM_NONE
-    datetime_mode|DM_ISO8601
-    datetime_mode|DM_UNIX_TIME
-    datetime_mode|DM_ONLY_SECONDS
-    datetime_mode|DM_IGNORE_TZ
-    datetime_mode|DM_NAIVE_IS_UTC
-    datetime_mode|DM_SHIFT_TO_UTC
-    uuid_mode=None,
-    uuid_mode|UM_NONE
-    uuid_mode|UM_CANONICAL
-    uuid_mode|UM_HEX
-    bytes_mode=BM_UTF8,
-    bytes_mode|BM_NONE
-    bytes_mode|BM_UTF8
-    iterable_mode=IM_ANY_ITERABLE,
-    iterable_mode|IM_ANY_ITERABLE
-    iterable_mode|IM_ONLY_LISTS
-    mapping_mode=MM_ANY_MAPPING,
-    mapping_mode|MM_ANY_MAPPING
-    mapping_mode|MM_ONLY_DICTS
-    mapping_mode|MM_COERCE_KEYS_TO_STRINGS
-    mapping_mode|MM_SKIP_NON_STRING_KEYS
-    mapping_mode|MM_SORT_KEYS
-    chunk_size
-    allow_nan=True
 
 load
   std
@@ -84,17 +43,6 @@ load
     parse_int=None
     parse_constant=None
     object_pairs_hook=None
-  rapidjson
-    object_hook=None,
-    number_mode=None,
-    datetime_mode=None,
-    uuid_mode=None,
-    parse_mode=None,
-    parse_mode|PM_NONE
-    parse_mode|PM_COMMENTS
-    parse_mode|PM_TRAILING_COMMAS
-    chunk_size=65536,
-    allow_nan=True
 """
 
 
@@ -166,72 +114,6 @@ class OrjsonBackend(Backend):
         OPT_STRICT_INTEGER
         OPT_UTC_Z
     loads
-    """
-
-
-class RapidjsonBackend(Backend):
-    """
-    dump
-      skipkeys=False,
-      ensure_ascii=True,
-      write_mode=WM_COMPACT,
-        WM_COMPACT
-        WM_PRETTY
-        WM_SINGLE_LINE_ARRAY
-      indent=4,
-      default=None,
-      sort_keys=False,
-      number_mode=None,
-        NM_NONE
-        NM_DECIMAL
-        NM_NAN
-        NM_NATIVE
-      datetime_mode=None,
-        DM_NONE
-        DM_ISO8601
-        DM_UNIX_TIME
-        DM_ONLY_SECONDS
-        DM_IGNORE_TZ
-        DM_NAIVE_IS_UTC
-        DM_SHIFT_TO_UTC
-      uuid_mode=None,
-        UM_NONE
-        UM_CANONICAL
-        UM_HEX
-      bytes_mode=BM_UTF8,
-        BM_NONE
-        BM_UTF8
-      iterable_mode=IM_ANY_ITERABLE,
-        IM_ANY_ITERABLE
-        IM_ONLY_LISTS
-      mapping_mode=MM_ANY_MAPPING,
-        MM_ANY_MAPPING
-        MM_ONLY_DICTS
-        MM_COERCE_KEYS_TO_STRINGS
-        MM_SKIP_NON_STRING_KEYS
-        MM_SORT_KEYS
-      chunk_size
-      allow_nan=True
-    dumps
-      ^
-      -chunk_size
-    load
-      object_hook=None,
-      number_mode=None,
-        ^
-      datetime_mode=None,
-        ^
-      uuid_mode=None,
-        ^
-      parse_mode=None,
-        PM_NONE
-        PM_COMMENTS
-        PM_TRAILING_COMMAS
-      chunk_size=65536,
-      allow_nan=True
-    loads
-      ^
-      -chunk_size
     """
 
 
