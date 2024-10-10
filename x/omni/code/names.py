@@ -5,11 +5,11 @@ TODO:
 import string
 import typing as ta
 
-from .. import check
-from ..collections.identity import IdentityKeyDict
+from omlish import check
+from omlish import collections as col
 
 
-NameGenerator = ta.Callable[..., str]
+NameGenerator: ta.TypeAlias = ta.Callable[..., str]
 
 
 class NameGeneratorImpl:
@@ -19,20 +19,20 @@ class NameGeneratorImpl:
     def __init__(
             self,
             *,
-            unavailable_names: ta.Iterable[str] = None,
+            reserved_names: ta.Iterable[str] = None,
             global_prefix: str = None,
             use_global_prefix_if_present: bool = False,
             add_global_prefix_before_number: bool = False,
     ) -> None:
         super().__init__()
 
-        check.arg(not isinstance(unavailable_names, str))
-        self._names = {check.isinstance(n, str) for n in (unavailable_names or [])}
+        check.arg(not isinstance(reserved_names, str))
+        self._reserved_names = {check.isinstance(n, str) for n in (reserved_names or [])}
         self._global_prefix = global_prefix if global_prefix is not None else self.DEFAULT_PREFIX
         self._use_global_prefix_if_present = bool(use_global_prefix_if_present)
         self._add_global_prefix_before_number = bool(add_global_prefix_before_number)
 
-        self._name_counts: ta.Dict[str, int] = {}
+        self._name_counts: dict[str, int] = {}
 
     def __call__(self, prefix: str = '') -> str:
         if self._use_global_prefix_if_present and prefix.startswith(self._global_prefix):
@@ -62,7 +62,7 @@ class NameGeneratorImpl:
             count = self._name_counts.get(base_name, 0)
             self._name_counts[base_name] = count + 1
             name = base_name + str(count)
-            if name not in self._names:
+            if name not in self._reserved_names:
                 return name
 
 
@@ -74,24 +74,24 @@ class NamespaceBuilder(ta.Mapping[str, ta.Any]):
     def __init__(
             self,
             *,
-            unavailable_names: ta.Iterable[str] = None,
+            reserved_names: ta.Iterable[str] = None,
             name_generator: NameGenerator = None,
     ) -> None:
         super().__init__()
 
-        self._unavailable_names = {
+        self._reserved_names = {
             check.isinstance(n, str)
-            for n in (check.not_isinstance(unavailable_names, str) or [])
+            for n in (check.not_isinstance(reserved_names, str) or [])
         }
         self._name_generator = check.callable(name_generator) if name_generator is not None else \
-            NameGeneratorImpl(unavailable_names=self._unavailable_names, use_global_prefix_if_present=True)
+            NameGeneratorImpl(reserved_names=self._reserved_names, use_global_prefix_if_present=True)
 
         self._dct: ta.MutableMapping[str, ta.Any] = {}
-        self._dedupe_dct: ta.MutableMapping[ta.Any, str] = IdentityKeyDict()
+        self._dedupe_dct: ta.MutableMapping[ta.Any, str] = col.IdentityKeyDict()
 
     @property
-    def unavailable_names(self) -> ta.AbstractSet[str]:
-        return self._unavailable_names
+    def reserved_names(self) -> ta.AbstractSet[str]:
+        return self._reserved_names
 
     @property
     def name_generator(self) -> NameGenerator:
@@ -106,7 +106,7 @@ class NamespaceBuilder(ta.Mapping[str, ta.Any]):
     def __iter__(self) -> ta.Iterable[str]:
         return iter(self._dct)
 
-    def items(self) -> ta.Iterable[ta.Tuple[str, ta.Any]]:
+    def items(self) -> ta.Iterable[tuple[str, ta.Any]]:
         return self._dct.items()
 
     def put(
@@ -128,7 +128,7 @@ class NamespaceBuilder(ta.Mapping[str, ta.Any]):
                 pass
 
         if name is not None:
-            if name not in self._unavailable_names:
+            if name not in self._reserved_names:
                 try:
                     existing = self._dct[name]
                 except KeyError:

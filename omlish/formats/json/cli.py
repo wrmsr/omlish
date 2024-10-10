@@ -51,6 +51,7 @@ def _main() -> None:
     kw: dict[str, ta.Any] = dict(
         indent=indent,
         separators=separators,
+        sort_keys=args.sort_keys,
     )
 
     if args.color:
