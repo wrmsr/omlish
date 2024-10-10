@@ -15,10 +15,14 @@ if ta.TYPE_CHECKING:
 
     import yaml
 
+    from .. import dotenv
+
 else:
     tomllib = lang.proxy_import('tomllib')
 
     yaml = lang.proxy_import('yaml')
+
+    dotenv = lang.proxy_import('..dotenv', __package__)
 
 
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
@@ -68,6 +72,8 @@ def _main() -> None:
             data = yaml.safe_load(in_file)
         elif args.format == 'toml':
             data = tomllib.loads(in_file.read())
+        elif args.format in ('env', 'dotenv'):
+            data = dotenv.dotenv_values(stream=in_file)
         else:
             raise ValueError(f'Unknown format: {args.format}')
 
