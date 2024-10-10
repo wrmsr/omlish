@@ -98,7 +98,7 @@ class CmpOp(enum.Enum):
     GE = '>='
 
 
-@dc.dataclass
+@dc.dataclass(frozen=True)
 class Cmp(Filter, lang.Final):
     op: CmpOp = dc.xfield(check_type=True)
     field: Field = dc.xfield(check_type=True)
