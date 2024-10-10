@@ -508,7 +508,7 @@ class Properties(collections.abc.MutableMapping):
             source_data,
             encoding: str | None = 'iso-8859-1',
             metadoc: bool = False,
-    ) -> None:
+    ) -> ta.Self:
         self.reset(metadoc)
 
         if isinstance(source_data, bytes):
@@ -522,6 +522,8 @@ class Properties(collections.abc.MutableMapping):
 
         self._parse()
 
+        return self
+
     def store(
             self,
             out_stream,
@@ -530,7 +532,7 @@ class Properties(collections.abc.MutableMapping):
             strict: bool = True,
             strip_meta: bool = True,
             timestamp: bool = True,
-    ) -> None:
+    ) -> ta.Self:
         out_codec_info = codecs.lookup(encoding)
         wrapped_out_stream = out_codec_info.streamwriter(out_stream, _jbackslash_replace_codec_name)
         properties_escape_nonprinting = strict and out_codec_info == codecs.lookup('latin_1')
@@ -596,6 +598,8 @@ class Properties(collections.abc.MutableMapping):
                     ]),
                     file=wrapped_out_stream,
                 )
+
+        return self
 
     def list(self, out_stream=sys.stderr) -> None:
         print('-- listing properties --', file=out_stream)
