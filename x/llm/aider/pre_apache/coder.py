@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import time
@@ -16,14 +15,7 @@ from . import utils
 from .commands import Commands
 
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-
 class Coder:
-    abs_fnames = None
-    repo = None
-    last_aider_commit_hash = None
-    last_asked_for_commit_time = 0
 
     def __init__(
             self,
@@ -37,46 +29,77 @@ class Coder:
     ):
         super().__init__()
 
-        self.abs_fnames = set()
+        self._abs_fnames = set()
 
-        self.io = io
+        self._io = io
 
-        self.auto_commits = auto_commits
-        self.dry_run = dry_run
+        self._auto_commits = auto_commits
+        self._dry_run = dry_run
 
         if pretty:
-            self.console = Console()
+            self._console = Console()
         else:
-            self.console = Console(force_terminal=True, no_color=True)
+            self._console = Console(force_terminal=True, no_color=True)
 
-        self.commands = Commands(self.io, self)
-        self.main_model = main_model
+        self._done_messages = []
+        self._cur_messages = []
+
+        self._num_control_c = 0
+
+        self._last_aider_commit_hash = None
+        self._last_asked_for_commit_time = 0
+
+        self._commands = Commands(self._io, self)
+        self._main_model = main_model
         if main_model == 'gpt-3.5-turbo':
-            self.io.tool_error(
-                f"Aider doesn't work well with {main_model}, use gpt-4 for best results.",
-            )
+            self._io.tool_error(f"Aider doesn't work well with {main_model}, use gpt-4 for best results.")
 
-        self.set_repo(fnames)
+        self._repo = None
+        self._set_repo(fnames)
 
-        if not self.repo:
-            self.io.tool_error(
+        if not self._repo:
+            self._io.tool_error(
                 'No suitable git repo, will not automatically commit edits.',
             )
-            self.find_common_root()
+            self._find_common_root()
 
-        self.pretty = pretty
-        self.show_diffs = show_diffs
+        self._pretty = pretty
+        self._show_diffs = show_diffs
 
-    def find_common_root(self):
-        if self.abs_fnames:
-            common_prefix = os.path.commonpath(list(self.abs_fnames))
-            self.root = os.path.dirname(common_prefix)
+    @property
+    def cur_messages(self):
+        return self._cur_messages
+
+    @property
+    def last_aider_commit_hash(self):
+        return self._last_aider_commit_hash
+
+    @property
+    def pretty(self):
+        return self._pretty
+
+    @property
+    def repo(self):
+        return self._repo
+
+    @property
+    def root(self):
+        return self._root
+
+    @property
+    def abs_fnames(self):
+        return self._abs_fnames
+
+    def _find_common_root(self):
+        if self._abs_fnames:
+            common_prefix = os.path.commonpath(list(self._abs_fnames))
+            self._root = os.path.dirname(common_prefix)
         else:
-            self.root = os.getcwd()
+            self._root = os.getcwd()
 
-        self.io.tool(f'Common root directory: {self.root}')
+        self._io.tool(f'Common root directory: {self._root}')
 
-    def set_repo(self, cmd_line_fnames):
+    def _set_repo(self, cmd_line_fnames):
         if not cmd_line_fnames:
             cmd_line_fnames = ['.']
 
@@ -84,7 +107,7 @@ class Coder:
         for fname in cmd_line_fnames:
             fname = pathlib.Path(fname)
             if not fname.exists():
-                self.io.tool(f'Creating empty file {fname}')
+                self._io.tool(f'Creating empty file {fname}')
                 fname.parent.mkdir(parents=True, exist_ok=True)
                 fname.touch()
 
@@ -97,28 +120,28 @@ class Coder:
             if fname.is_dir():
                 continue
 
-            self.io.tool(f'Added {fname} to the chat')
+            self._io.tool(f'Added {fname} to the chat')
 
             fname = fname.resolve()
-            self.abs_fnames.add(str(fname))
+            self._abs_fnames.add(str(fname))
 
         num_repos = len(set(repo_paths))
 
         if num_repos == 0:
-            self.io.tool_error('Files are not in a git repo.')
+            self._io.tool_error('Files are not in a git repo.')
             return
         if num_repos > 1:
-            self.io.tool_error('Files are in different git repos.')
+            self._io.tool_error('Files are in different git repos.')
             return
 
         # https://github.com/gitpython-developers/GitPython/issues/427
-        repo = git.Repo(repo_paths.pop(), odbt=git.GitDB)
+        repo = git.Repo(repo_paths.pop(), odbt=git.GitDB)  # noqa
 
-        self.root = repo.working_tree_dir
+        self._root = repo.working_tree_dir
 
         new_files = []
-        for fname in self.abs_fnames:
-            relative_fname = self.get_rel_fname(fname)
+        for fname in self._abs_fnames:
+            relative_fname = self._get_rel_fname(fname)
             tracked_files = set(repo.git.ls_files().splitlines())
             if relative_fname not in tracked_files:
                 new_files.append(relative_fname)
@@ -126,42 +149,42 @@ class Coder:
         if new_files:
             rel_repo_dir = os.path.relpath(repo.git_dir, os.getcwd())
 
-            self.io.tool(f'Files not tracked in {rel_repo_dir}:')
+            self._io.tool(f'Files not tracked in {rel_repo_dir}:')
             for fn in new_files:
-                self.io.tool(f' - {fn}')
-            if self.io.confirm_ask('Add them?'):
+                self._io.tool(f' - {fn}')
+            if self._io.confirm_ask('Add them?'):
                 for relative_fname in new_files:
                     repo.git.add(relative_fname)
-                    self.io.tool(f'Added {relative_fname} to the git repo')
+                    self._io.tool(f'Added {relative_fname} to the git repo')
                 show_files = ', '.join(new_files)
                 commit_message = f'Added new files to the git repo: {show_files}'
                 repo.git.commit('-m', commit_message, '--no-verify')
                 commit_hash = repo.head.commit.hexsha[:7]
-                self.io.tool(f'Commit {commit_hash} {commit_message}')
+                self._io.tool(f'Commit {commit_hash} {commit_message}')
             else:
-                self.io.tool_error('Skipped adding new files to the git repo.')
+                self._io.tool_error('Skipped adding new files to the git repo.')
                 return
 
-        self.repo = repo
+        self._repo = repo
 
-    def get_files_content(self, fnames=None):
+    def _get_files_content(self, fnames=None):
         if not fnames:
-            fnames = self.abs_fnames
+            fnames = self._abs_fnames
 
         prompt = ''
         for fname in fnames:
-            relative_fname = self.get_rel_fname(fname)
+            relative_fname = self._get_rel_fname(fname)
             prompt += utils.quoted_file(fname, relative_fname)
         return prompt
 
-    def get_files_messages(self):
+    def _get_files_messages(self):
         files_content = prompts.files_content_prefix
-        files_content += self.get_files_content()
+        files_content += self._get_files_content()
 
         all_content = files_content
 
-        if self.repo is not None:
-            tracked_files = set(self.repo.git.ls_files().splitlines())
+        if self._repo is not None:
+            tracked_files = set(self._repo.git.ls_files().splitlines())
             files_listing = '\n'.join(tracked_files)
             repo_content = prompts.repo_content_prefix
             repo_content += files_listing
@@ -180,107 +203,107 @@ class Coder:
         return files_messages
 
     def run(self):
-        self.done_messages = []
-        self.cur_messages = []
+        self._done_messages = []
+        self._cur_messages = []
 
-        self.num_control_c = 0
+        self._num_control_c = 0
 
         while True:
             try:
-                new_user_message = self.run_loop()
+                new_user_message = self._run_loop()
                 while new_user_message:
-                    new_user_message = self.send_new_user_message(new_user_message)
+                    new_user_message = self._send_new_user_message(new_user_message)
 
             except KeyboardInterrupt:
-                self.num_control_c += 1
-                if self.num_control_c >= 2:
+                self._num_control_c += 1
+                if self._num_control_c >= 2:
                     break
-                self.io.tool_error('^C again to quit')
+                self._io.tool_error('^C again to quit')
             except EOFError:
                 return
 
-    def should_auto_commit(self, inp):
+    def _should_auto_commit(self, inp):
         is_commit_command = inp and inp.startswith('/commit')
 
-        if not self.auto_commits:
+        if not self._auto_commits:
             return None
-        if not self.repo:
+        if not self._repo:
             return None
-        if not self.repo.is_dirty():
+        if not self._repo.is_dirty():
             return None
         if is_commit_command:
             return None
-        if self.last_asked_for_commit_time >= self.get_last_modified():
+        if self._last_asked_for_commit_time >= self._get_last_modified():
             return None
         return True
 
-    def run_loop(self):
-        inp = self.io.get_input(self.abs_fnames, self.commands)
+    def _run_loop(self):
+        inp = self._io.get_input(self._abs_fnames, self._commands)
 
-        self.num_control_c = 0
+        self._num_control_c = 0
 
-        if self.should_auto_commit(inp):
+        if self._should_auto_commit(inp):
             self.commit(ask=True, which='repo_files')
 
             # files changed, move cur messages back behind the files messages
-            self.done_messages += self.cur_messages
-            self.done_messages += [
+            self._done_messages += self._cur_messages
+            self._done_messages += [
                 dict(role='user', content=prompts.files_content_local_edits),
                 dict(role='assistant', content='Ok.'),
             ]
-            self.cur_messages = []
+            self._cur_messages = []
 
         if not inp:
             return None
 
         if inp.startswith('/'):
-            return self.commands.run(inp)
+            return self._commands.run(inp)
 
-        return self.send_new_user_message(inp)
+        return self._send_new_user_message(inp)
 
-    def send_new_user_message(self, inp):
-        self.cur_messages += [
+    def _send_new_user_message(self, inp):
+        self._cur_messages += [
             dict(role='user', content=inp),
         ]
 
         messages = [
             dict(role='system', content=prompts.main_system + prompts.system_reminder),
         ]
-        messages += self.done_messages
-        messages += self.get_files_messages()
-        messages += self.cur_messages
+        messages += self._done_messages
+        messages += self._get_files_messages()
+        messages += self._cur_messages
 
         # utils.show_messages(messages, "all")
 
-        content, interrupted = self.send(messages)
+        content, interrupted = self._send(messages)
         if interrupted:
-            self.io.tool_error('\n\n^C KeyboardInterrupt')
+            self._io.tool_error('\n\n^C KeyboardInterrupt')
             content += '\n^C KeyboardInterrupt'
 
-        self.cur_messages += [
+        self._cur_messages += [
             dict(role='assistant', content=content),
         ]
 
-        self.io.tool()
+        self._io.tool()
         if interrupted:
             return None
 
-        edited, edit_error = self.apply_updates(content, inp)
+        edited, edit_error = self._apply_updates(content, inp)
         if edit_error:
             return edit_error
 
-        if edited and self.auto_commits:
-            self.auto_commit()
+        if edited and self._auto_commits:
+            self._auto_commit()
 
-        add_rel_files_message = self.check_for_file_mentions(content)
+        add_rel_files_message = self._check_for_file_mentions(content)
         if add_rel_files_message:
             return add_rel_files_message
 
-    def auto_commit(self):
-        res = self.commit(history=self.cur_messages, prefix='aider: ')
+    def _auto_commit(self):
+        res = self.commit(history=self._cur_messages, prefix='aider: ')
         if res:
             commit_hash, commit_message = res
-            self.last_aider_commit_hash = commit_hash
+            self._last_aider_commit_hash = commit_hash
 
             saved_message = prompts.files_content_gpt_edits.format(
                 hash=commit_hash,
@@ -288,17 +311,17 @@ class Coder:
             )
         else:
             # TODO: if not self.repo then the files_content_gpt_no_edits isn't appropriate
-            self.io.tool_error('Warning: no changes found in tracked files.')
+            self._io.tool_error('Warning: no changes found in tracked files.')
             saved_message = prompts.files_content_gpt_no_edits
 
-        self.done_messages += self.cur_messages
-        self.done_messages += [
+        self._done_messages += self._cur_messages
+        self._done_messages += [
             dict(role='user', content=saved_message),
             dict(role='assistant', content='Ok.'),
         ]
-        self.cur_messages = []
+        self._cur_messages = []
 
-    def check_for_file_mentions(self, content):
+    def _check_for_file_mentions(self, content):
         words = set(word for word in content.split())
 
         # drop sentence punctuation from the end
@@ -321,19 +344,19 @@ class Coder:
             return None
 
         for rel_fname in mentioned_rel_fnames:
-            self.io.tool(rel_fname)
+            self._io.tool(rel_fname)
 
-        if not self.io.confirm_ask('Add these files to the chat?'):
+        if not self._io.confirm_ask('Add these files to the chat?'):
             return None
 
         for rel_fname in mentioned_rel_fnames:
-            self.abs_fnames.add(os.path.abspath(os.path.join(self.root, rel_fname)))
+            self._abs_fnames.add(os.path.abspath(os.path.join(self._root, rel_fname)))
 
         return prompts.added_files.format(fnames=', '.join(mentioned_rel_fnames))
 
-    def send(self, messages, model=None, silent=False):
+    def _send(self, messages, model=None, silent=False):
         if not model:
-            model = self.main_model
+            model = self._main_model
 
         class RateLimitError(Exception):
             pass
@@ -355,19 +378,19 @@ class Coder:
                     # print(f"Rate limit exceeded. Retrying in {retry_after} seconds.")
                     time.sleep(retry_after)
 
-            self.show_send_output(completion, silent)
+            self._show_send_output(completion, silent)
         except KeyboardInterrupt:
             interrupted = True
 
         if not silent:
-            self.io.ai_output(self.resp)
+            self._io.ai_output(self.resp)
 
         return self.resp, interrupted
 
-    def show_send_output(self, completion, silent):
+    def _show_send_output(self, completion, silent):
         live = None
-        if self.pretty and not silent:
-            live = Live(vertical_overflow='scroll')
+        if self._pretty and not silent:
+            live = Live(vertical_overflow='scroll')  # noqa
 
         try:
             if live:
@@ -387,7 +410,7 @@ class Coder:
                 if silent:
                     continue
 
-                if self.pretty:
+                if self._pretty:
                     md = Markdown(self.resp, style='blue', code_theme='default')
                     live.update(md)
                 else:
@@ -397,50 +420,50 @@ class Coder:
             if live:
                 live.stop()
 
-    def update_files(self, content, inp):
+    def update_files(self, content, inp):  # noqa
         # might raise ValueError for malformed ORIG/UPD blocks
         edits = list(utils.find_original_update_blocks(content))
 
         edited = set()
         for path, original, updated in edits:
-            full_path = os.path.abspath(os.path.join(self.root, path))
+            full_path = os.path.abspath(os.path.join(self._root, path))
 
-            if full_path not in self.abs_fnames:
+            if full_path not in self._abs_fnames:
                 if not pathlib.Path(full_path).exists():
                     question = f'Allow creation of new file {path}?'  # noqa: E501
                 else:
                     question = f'Allow edits to {path} which was not previously provided?'  # noqa: E501
-                if not self.io.confirm_ask(question):
-                    self.io.tool_error(f'Skipping edit to {path}')
+                if not self._io.confirm_ask(question):
+                    self._io.tool_error(f'Skipping edit to {path}')
                     continue
 
                 if not pathlib.Path(full_path).exists():
                     pathlib.Path(full_path).parent.mkdir(parents=True, exist_ok=True)
                     pathlib.Path(full_path).touch()
 
-                self.abs_fnames.add(full_path)
+                self._abs_fnames.add(full_path)
 
                 # Check if the file is already in the repo
-                if self.repo:
-                    tracked_files = set(self.repo.git.ls_files().splitlines())
-                    relative_fname = self.get_rel_fname(full_path)
-                    if relative_fname not in tracked_files and self.io.confirm_ask(
+                if self._repo:
+                    tracked_files = set(self._repo.git.ls_files().splitlines())
+                    relative_fname = self._get_rel_fname(full_path)
+                    if relative_fname not in tracked_files and self._io.confirm_ask(
                         f'Add {path} to git?',
                     ):
-                        self.repo.git.add(full_path)
+                        self._repo.git.add(full_path)
 
             edited.add(path)
-            if utils.do_replace(full_path, original, updated, self.dry_run):
-                if self.dry_run:
-                    self.io.tool(f'Dry run, did not apply edit to {path}')
+            if utils.do_replace(full_path, original, updated, self._dry_run):
+                if self._dry_run:
+                    self._io.tool(f'Dry run, did not apply edit to {path}')
                 else:
-                    self.io.tool(f'Applied edit to {path}')
+                    self._io.tool(f'Applied edit to {path}')
             else:
-                self.io.tool_error(f'Failed to apply edit to {path}')
+                self._io.tool_error(f'Failed to apply edit to {path}')
 
         return edited
 
-    def get_context_from_history(self, history):
+    def _get_context_from_history(self, history):
         context = ''
         if history:
             context += '# Context:\n'
@@ -448,7 +471,7 @@ class Coder:
                 context += msg['role'].upper() + ': ' + msg['content'] + '\n'
         return context
 
-    def get_commit_message(self, diffs, context):
+    def _get_commit_message(self, diffs, context):
         diffs = '# Diffs:\n' + diffs
 
         messages = [
@@ -456,7 +479,7 @@ class Coder:
             dict(role='user', content=context + diffs),
         ]
 
-        commit_message, interrupted = self.send(
+        commit_message, interrupted = self._send(
             messages,
             model='gpt-3.5-turbo',
             silent=True,
@@ -465,7 +488,7 @@ class Coder:
         commit_message = commit_message.strip().strip('"').strip()
 
         if interrupted:
-            self.io.tool_error(
+            self._io.tool_error(
                 'Unable to get commit message from gpt-3.5-turbo. Use /commit to try again.',
             )
             return None
@@ -473,9 +496,14 @@ class Coder:
         return commit_message
 
     def commit(
-        self, history=None, prefix=None, ask=False, message=None, which='chat_files',
+            self,
+            history=None,
+            prefix=None,
+            ask=False,
+            message=None,
+            which='chat_files',
     ):
-        repo = self.repo
+        repo = self._repo
         if not repo:
             return None
 
@@ -483,10 +511,10 @@ class Coder:
             return None
 
         def get_dirty_files_and_diffs(file_list):
-            diffs = ''
+            diffs = ''  # noqa
             relative_dirty_files = []
             for fname in file_list:
-                relative_fname = self.get_rel_fname(fname)
+                relative_fname = self._get_rel_fname(fname)
                 relative_dirty_files.append(relative_fname)
 
                 try:
@@ -499,7 +527,7 @@ class Coder:
                 if not current_branch_commit_count:
                     continue
 
-                if self.pretty:
+                if self._pretty:
                     these_diffs = repo.git.diff('HEAD', '--color', '--', relative_fname)
                 else:
                     these_diffs = repo.git.diff('HEAD', relative_fname)
@@ -511,43 +539,43 @@ class Coder:
 
         if which == 'repo_files':
             all_files = [
-                os.path.join(self.root, f) for f in self.get_all_relative_files()
+                os.path.join(self._root, f) for f in self.get_all_relative_files()
             ]
             relative_dirty_fnames, diffs = get_dirty_files_and_diffs(all_files)
         elif which == 'chat_files':
-            relative_dirty_fnames, diffs = get_dirty_files_and_diffs(self.abs_fnames)
+            relative_dirty_fnames, diffs = get_dirty_files_and_diffs(self._abs_fnames)
         else:
             raise ValueError(f"Invalid value for 'which': {which}")
 
-        if self.show_diffs or ask:
+        if self._show_diffs or ask:
             # don't use io.tool() because we don't want to log or further colorize
             print(diffs)
 
-        context = self.get_context_from_history(history)
+        context = self._get_context_from_history(history)
         if message:
             commit_message = message
         else:
-            commit_message = self.get_commit_message(diffs, context)
+            commit_message = self._get_commit_message(diffs, context)
 
         if prefix:
             commit_message = prefix + commit_message
 
         if ask:
             if which == 'repo_files':
-                self.io.tool('Git repo has uncommitted changes.')
+                self._io.tool('Git repo has uncommitted changes.')
             else:
-                self.io.tool('Files have uncommitted changes.')
+                self._io.tool('Files have uncommitted changes.')
 
-            res = self.io.prompt_ask(
+            res = self._io.prompt_ask(
                 'Commit before the chat proceeds [y/n/commit message]?',
                 default=commit_message,
             ).strip()
-            self.last_asked_for_commit_time = self.get_last_modified()
+            self._last_asked_for_commit_time = self._get_last_modified()
 
-            self.io.tool()
+            self._io.tool()
 
             if res.lower() in ['n', 'no']:
-                self.io.tool_error('Skipped commmit.')
+                self._io.tool_error('Skipped commit.')
                 return None
             if res.lower() not in ['y', 'yes'] and res:
                 commit_message = res
@@ -557,44 +585,44 @@ class Coder:
         full_commit_message = commit_message + '\n\n' + context
         repo.git.commit('-m', full_commit_message, '--no-verify')
         commit_hash = repo.head.commit.hexsha[:7]
-        self.io.tool(f'Commit {commit_hash} {commit_message}')
+        self._io.tool(f'Commit {commit_hash} {commit_message}')
 
         return commit_hash, commit_message
 
-    def get_rel_fname(self, fname):
-        return os.path.relpath(fname, self.root)
+    def _get_rel_fname(self, fname):
+        return os.path.relpath(fname, self._root)
 
     def get_inchat_relative_files(self):
-        files = [self.get_rel_fname(fname) for fname in self.abs_fnames]
+        files = [self._get_rel_fname(fname) for fname in self._abs_fnames]
         return sorted(set(files))
 
     def get_all_relative_files(self):
-        if self.repo:
-            files = self.repo.git.ls_files().splitlines()
+        if self._repo:
+            files = self._repo.git.ls_files().splitlines()
         else:
             files = self.get_inchat_relative_files()
 
         return sorted(set(files))
 
-    def get_all_abs_files(self):
+    def _get_all_abs_files(self):
         files = self.get_all_relative_files()
-        files = [os.path.abspath(os.path.join(self.root, path)) for path in files]
+        files = [os.path.abspath(os.path.join(self._root, path)) for path in files]
         return files
 
-    def get_last_modified(self):
-        files = self.get_all_abs_files()
+    def _get_last_modified(self):
+        files = self._get_all_abs_files()
         if not files:
             return 0
         return max(pathlib.Path(path).stat().st_mtime for path in files)
 
-    def apply_updates(self, content, inp):
+    def _apply_updates(self, content, inp):
         try:
             edited = self.update_files(content, inp)
             return edited, None
         except ValueError as err:
             err = err.args[0]
-            self.io.tool_error('Malformed ORIGINAL/UPDATE blocks, retrying...')
-            self.io.tool_error(str(err))
+            self._io.tool_error('Malformed ORIGINAL/UPDATE blocks, retrying...')
+            self._io.tool_error(str(err))
             return None, err
 
         except Exception as err:
