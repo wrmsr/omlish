@@ -1,5 +1,4 @@
 # flake8: noqa: E501
-
 import unittest
 
 from .. import utils
