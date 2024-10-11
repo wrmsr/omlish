@@ -199,7 +199,7 @@ def _main() -> None:
     parser.add_argument('-n', '--new', action='store_true')
 
     parser.add_argument('-e', '--embed', action='store_true')
-    parser.add_argument('-i', '--image', action='store_true')
+    parser.add_argument('-j', '--image', action='store_true')
 
     args = parser.parse_args()
 
