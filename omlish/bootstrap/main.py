@@ -8,6 +8,8 @@ import argparse
 import dataclasses as dc
 import io
 import itertools
+import os
+import shutil
 import sys
 import typing as ta
 
@@ -153,18 +155,28 @@ def _main() -> int:
 
     parser.add_argument('-m', '--module', action='store_true')
     parser.add_argument('-c', '--code', action='store_true')
+    parser.add_argument('-x', '--exec', action='store_true')
     parser.add_argument('target')
     parser.add_argument('args', nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
-    if len([a for a in ('module', 'code') if getattr(args, a)]) > 1:
+    if len([a for a in ('module', 'code', 'exec') if getattr(args, a)]) > 1:
         raise Exception('Multiple exec mode specified')
 
     cfgs = _process_arguments(args)
 
     with bootstrap(*cfgs):
         tgt = args.target
+
+        if args.exec:
+            exe = shutil.which(tgt)
+            if exe is None:
+                raise FileNotFoundError(exe)
+
+            os.execl(exe, exe, *args.args)
+
+            return 0  # type: ignore  # noqa
 
         sys.argv = [tgt, *(args.args or ())]
 
