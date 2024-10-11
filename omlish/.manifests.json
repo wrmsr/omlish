@@ -27,7 +27,7 @@
     "module": ".diag.pycharm",
     "attr": "_CLI_MODULE",
     "file": "omlish/diag/pycharm.py",
-    "line": 138,
+    "line": 141,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": "pycharm",

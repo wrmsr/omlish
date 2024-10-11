@@ -59,7 +59,7 @@ librosa==0.10.2.post1
 
 ## tinygrad
 
-networkx==3.4
+networkx==3.4.1
 
 nevergrad==1.0.5
 
@@ -110,7 +110,7 @@ pytorch-lightning==2.4.0
 
 torchsummary==1.5.1
 
-ftfy==6.2.3
+ftfy==6.3.0
 
 fire==0.6.0
 
@@ -158,7 +158,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.38
+boto3>=1.35.39
 
 google-cloud-compute==1.19.2
 

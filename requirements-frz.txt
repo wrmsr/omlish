@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.38
-botocore==1.35.38
+boto3==1.35.39
+botocore==1.35.39
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -114,7 +114,7 @@ fqdn==1.5.1
 frozendict==2.4.5
 frozenlist==1.4.1
 fsspec==2024.6.1
-ftfy==6.2.3
+ftfy==6.3.0
 future==1.0.0
 gast==0.6.0
 geopandas==1.0.1
@@ -255,7 +255,7 @@ nbconvert==7.16.4
 nbformat==5.10.4
 neo4j==5.25.0
 nest-asyncio==1.6.0
-networkx==3.4
+networkx==3.4.1
 nevergrad==1.0.5
 nh3==0.2.18
 nltk==3.9.1
@@ -295,7 +295,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@c925d0ae25a1fef79a2b29a71fae7c983e40a61e
+peft @ git+https://github.com/huggingface/peft.git@749b92456218f7dddc8f7a9aa27a41815b3d6c2e
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -477,7 +477,7 @@ types-requests==2.32.0.20240914
 types-ujson==5.10.0.20240515
 typing-inspect==0.9.0
 typing_extensions==4.12.2
-tyro==0.8.11
+tyro==0.8.12
 tzdata==2024.2
 tzlocal==5.2
 ujson==5.10.0

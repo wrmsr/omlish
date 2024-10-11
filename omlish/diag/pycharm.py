@@ -27,11 +27,11 @@ def is_pycharm_hosted() -> bool:
 ##
 
 
-PYCHARM_HOME = '/Applications/PyCharm.app'
+DARWIN_PYCHARM_HOME = '/Applications/PyCharm.app'
 
 
-def read_pycharm_info_plist() -> ta.Mapping[str, ta.Any] | None:
-    plist_file = os.path.join(PYCHARM_HOME, 'Contents', 'Info.plist')
+def read_darwin_pycharm_info_plist() -> ta.Mapping[str, ta.Any] | None:
+    plist_file = os.path.join(DARWIN_PYCHARM_HOME, 'Contents', 'Info.plist')
     if not os.path.isfile(plist_file):
         return None
 
@@ -43,13 +43,17 @@ def read_pycharm_info_plist() -> ta.Mapping[str, ta.Any] | None:
 
 @lang.cached_function
 def get_pycharm_version() -> str | None:
-    plist = read_pycharm_info_plist()
-    if plist is None:
-        return None
+    if sys.platform == 'darwin':
+        plist = read_darwin_pycharm_info_plist()
+        if plist is None:
+            return None
 
-    ver = check.non_empty_str(plist['CFBundleVersion'])
-    check.state(ver.startswith('PY-'))
-    return ver[3:]
+        ver = check.non_empty_str(plist['CFBundleVersion'])
+        check.state(ver.startswith('PY-'))
+        return ver[3:]
+
+    else:
+        return None
 
 
 ##
@@ -108,10 +112,6 @@ def pycharm_remote_debugger_attach(
         *,
         version: str | None = None,
 ) -> None:
-    # if version is None:
-    #     version = get_pycharm_version()
-    # check.non_empty_str(version)
-
     if host is None:
         if (
                 sys.platform == 'linux' and
@@ -121,6 +121,9 @@ def pycharm_remote_debugger_attach(
             host = docker.DOCKER_FOR_MAC_HOSTNAME
         else:
             host = 'localhost'
+
+    if version is None and host in ('localhost', '127.0.0.1'):
+        version = get_pycharm_version()
 
     if ta.TYPE_CHECKING:
         import pydevd_pycharm  # noqa

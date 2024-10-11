@@ -2,6 +2,7 @@
 FIXME:
  - lol shutdown deadlocks
  - whole thing is just gross is this its own thread or what
+ - cli with client helper too
 
 TODO:
  - !!! ANYIO !!!
