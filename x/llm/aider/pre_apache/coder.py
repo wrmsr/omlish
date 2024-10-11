@@ -26,8 +26,17 @@ class Coder:
     last_asked_for_commit_time = 0
 
     def __init__(
-        self, main_model, fnames, pretty, show_diffs, auto_commits, io, dry_run,
+            self,
+            main_model,
+            fnames,
+            pretty,
+            show_diffs,
+            auto_commits,
+            io,
+            dry_run,
     ):
+        super().__init__()
+
         self.abs_fnames = set()
 
         self.io = io
@@ -334,7 +343,7 @@ class Coder:
         try:
             while True:
                 try:
-                    completion = openai.ChatCompletion.create(
+                    completion = openai.chat.completions.create(
                         model=model,
                         messages=messages,
                         temperature=0,
@@ -370,7 +379,8 @@ class Coder:
 
                 try:
                     text = chunk.choices[0].delta.content
-                    self.resp += text
+                    if text is not None:
+                        self.resp += text
                 except AttributeError:
                     continue
 

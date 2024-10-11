@@ -1,18 +1,11 @@
-import os.path
-
-
-with open(os.path.expanduser('~/.omlish-llm/.env')) as f:
-    os.environ.update({k: v for l in f if (s := l.strip()) for k, v in [s.split('=')]})
-
-
 import argparse
-import os
+import os.path
 import sys
 
 import dotenv
 
 from .coder import Coder
-from .getinput import InputOutput
+from .io import InputOutput
 
 
 def main(args=None, input=None, output=None):
@@ -105,6 +98,9 @@ def main(args=None, input=None, output=None):
     args = parser.parse_args(args)
     fnames = args.files
     pretty = args.pretty
+
+    with open(os.path.expanduser('~/.omlish-llm/.env')) as f:
+        os.environ.update({k: v for l in f if (s := l.strip()) for k, v in [s.split('=')]})
 
     io = InputOutput(
         args.pretty,
