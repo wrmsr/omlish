@@ -2,8 +2,6 @@ import argparse
 import os.path
 import sys
 
-import dotenv
-
 from .coder import Coder
 from .io import InputOutput
 

@@ -15,8 +15,8 @@ from omlish import lang
 
 DEFAULT_METADATA_URL = 'http://169.254.169.254/'
 
-METADATA_TOKEN_HEADER = 'X-aws-ec2-metadata-token'
-METADATA_TOKEN_TTL_HEADER = 'X-aws-ec2-metadata-token-ttl-seconds'
+METADATA_TOKEN_HEADER = 'X-aws-ec2-metadata-token'  # noqa
+METADATA_TOKEN_TTL_HEADER = 'X-aws-ec2-metadata-token-ttl-seconds'  # noqa
 
 
 def read_metadata(
@@ -28,8 +28,8 @@ def read_metadata(
         token_ttl: int = 60,
         encoding: str = 'utf-8',
 ) -> dict[str, str | None] | None:
-    if url is None:
-        return None
+    check.not_isinstance(keys, str)
+
     if not url.endswith('/'):
         url += '/'
 
@@ -37,7 +37,7 @@ def read_metadata(
     if not parsed.scheme:
         url = 'http://' + url
         parsed = urllib.parse.urlparse(url)
-    check.arg(parsed.netloc)
+    check.arg(bool(parsed.netloc))
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ping_sock:
         ping_sock.settimeout(ping_timeout_s)
@@ -46,7 +46,7 @@ def read_metadata(
         except OSError:
             return None
 
-    with urllib.request.urlopen(urllib.request.Request(
+    with urllib.request.urlopen(urllib.request.Request(  # noqa
             urllib.parse.urljoin(url, f'{version}/api/token'),
             method='PUT',
             headers={
@@ -60,7 +60,7 @@ def read_metadata(
     dct = {}
     for key in keys:
         try:
-            with urllib.request.urlopen(urllib.request.Request(
+            with urllib.request.urlopen(urllib.request.Request(  # noqa
                     urllib.parse.urljoin(url, f'{version}/meta-data/{key}/'),
                     headers={
                         METADATA_TOKEN_HEADER: token,
