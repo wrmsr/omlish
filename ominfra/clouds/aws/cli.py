@@ -6,12 +6,12 @@ from . import metadata
 
 class Cli(ap.Cli):
     @ap.command(
-        ap.arg('key', action='append'),
+        ap.arg('key', nargs='*'),
         ap.arg('--url'),
     )
     def metadata(self) -> None:
         md = metadata.read_metadata(
-            self.args.keys or metadata.DEFAULT_METADATA_KEYS,
+            self.args.key or metadata.DEFAULT_METADATA_KEYS,
             url=self.args.url or metadata.DEFAULT_METADATA_URL,
         )
         print(json.dumps_pretty(md))

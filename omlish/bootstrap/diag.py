@@ -17,6 +17,7 @@ if ta.TYPE_CHECKING:
     import cProfile  # noqa
     import pstats
 
+    from ..diag import debug as ddbg
     from ..diag import pycharm as diagpc
     from ..diag import replserver as diagrs
     from ..diag import threads as diagt
@@ -25,6 +26,7 @@ else:
     cProfile = lang.proxy_import('cProfile')  # noqa
     pstats = lang.proxy_import('pstats')
 
+    ddbg = lang.proxy_import('..diag.debug', __package__)
     diagpc = lang.proxy_import('..diag.pycharm', __package__)
     diagrs = lang.proxy_import('..diag.replserver', __package__)
     diagt = lang.proxy_import('..diag.threads', __package__)
@@ -199,4 +201,21 @@ class ReplServerBootstrap(ContextBootstrap['ReplServerBootstrap.Config']):
             thread = threading.Thread(target=rs.run, name='replserver')
             thread.start()
 
+            yield
+
+
+##
+
+
+class DebugBootstrap(ContextBootstrap['DebugBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        enable: bool = False
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.enable:
+            return
+
+        with ddbg.debugging_on_exception():
             yield

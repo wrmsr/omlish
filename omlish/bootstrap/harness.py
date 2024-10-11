@@ -16,8 +16,6 @@ TODO diag:
 
 
 TODO new items:
- - debugging / pdb
-  - https://github.com/inducer/pudb
  - packaging fixups
  - daemonize ( https://github.com/thesharp/daemonize/blob/master/daemonize.py )
 """
