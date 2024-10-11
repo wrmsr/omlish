@@ -4,12 +4,14 @@ Run all of the t????-*.in tests in the current directory and compare with the
 expected output.
 """
 
-from __future__ import print_function
 
-import sys, os
-import glob
 import difflib
-from subprocess import Popen, PIPE
+import glob
+import os
+import sys
+from subprocess import PIPE
+from subprocess import Popen
+
 
 PROG = '../vt100.py'
 IN_EXT = '.in'
@@ -22,9 +24,9 @@ def slurp(filename):
 def compare_output(command, out_filename):
     try:
         expected = slurp(out_filename)
-    except IOError as e:
+    except OSError as e:
         if e.errno == 2:
-            print("%s not found" % out_filename, file=sys.stderr)
+            print('%s not found' % out_filename, file=sys.stderr)
             return False
         else:
             raise
@@ -33,7 +35,7 @@ def compare_output(command, out_filename):
     output = output.decode('ascii')
     stderr = stderr.decode('utf-8')
     if p.returncode != 0 or stderr:
-        print("program returned %d:" % p.returncode)
+        print('program returned %d:' % p.returncode)
         print('\x1b[33m%s\x1b[m' % stderr, end='')
         return False
     elif output == expected:
@@ -86,7 +88,7 @@ def main(patterns = None):
     r = test_all(tests)
     return int(not all(x[1] for x in r))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         sys.exit(main(sys.argv[1:]))
     except KeyboardInterrupt:
