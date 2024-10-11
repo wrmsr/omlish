@@ -15,16 +15,13 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-This module implements a VT100-style (ANSI) terminal emulator for the purpose
-of parsing the output of script(1) file and printing to a human-readable
-format.  The intent is to mimic the exact output of xterm(1), as though you
-cut and pasted the output from the terminal.
+This module implements a VT100-style (ANSI) terminal emulator for the purpose of parsing the output of script(1) file
+and printing to a human-readable format.  The intent is to mimic the exact output of xterm(1), as though you cut and
+pasted the output from the terminal.
 
-This program can be used to parse any file containing ANSI (ECMA-48) terminal
-codes.  Usually the input is a typescript file as output from script(1), which
-is usually not human-readable.  Another potential use of this program to to
-parse the output of a program that produces color codes (ESC [ # m) and
-produce color HTML.
+This program can be used to parse any file containing ANSI (ECMA-48) terminal codes.  Usually the input is a typescript
+file as output from script(1), which is usually not human-readable.  Another potential use of this program to to parse
+the output of a program that produces color codes (ESC [ # m) and produce color HTML.
 
 Output Formats
 --------------
@@ -32,20 +29,18 @@ Output Formats
 A number of output formats are available.  Currently, that number is two.
 
 text
-    The output is a pure ASCII file with unix line endings.  All character
-    attributes are ignored (even 'hidden').
+    The output is a pure ASCII file with unix line endings.  All character attributes are ignored (even 'hidden').
 
 html
-    The output is a snippet of HTML with one ``pre`` element.  Character
-    attributes, including xterm 256 colors, are supported.
+    The output is a snippet of HTML with one ``pre`` element.  Character attributes, including xterm 256 colors, are
+    supported.
 
 
 Unimplemented Features
 ----------------------
 
-This module is designed to mimic the output (and only output) of xterm.
-Therefore, there are no plans to implement any sequence that affects input,
-causes the terminal to respond, or that xterm does not itself implement.
+This module is designed to mimic the output (and only output) of xterm. Therefore, there are no plans to implement any
+sequence that affects input, causes the terminal to respond, or that xterm does not itself implement.
 
 
 OPTIONS
@@ -72,16 +67,14 @@ The following only affect HTML output.
 CONFIGURATION
 =============
 
-By default, vt100.py reads ~/.vt100rc for the following 'key = value` pairs.
-COLOR is any valid HTML color.  The order does not matter, except that all the
-settings following ``[SECTION]`` belong to a specific section.
+By default, vt100.py reads ~/.vt100rc for the following 'key = value` pairs. COLOR is any valid HTML color.  The order
+does not matter, except that all the settings following ``[SECTION]`` belong to a specific section.
 
 background = COLOR
     Default background color.
 
 color0 = COLOR ...through... color255 = COLOR
-    Color for the 8 ANSI colors (0-7), 8 bright ANSI colors (8-15), and xterm
-    extended colors (16-255).
+    Color for the 8 ANSI colors (0-7), 8 bright ANSI colors (8-15), and xterm extended colors (16-255).
 
 colorscheme = SECTION
     Import settings from [SECTION] before any in the current section.
@@ -93,32 +86,22 @@ foreground = COLOR
     Default foreground color.
 
 geometry = {WxH, detect}
-    Use W columns and H rows in output.  If the value 'detect' is given, the
-    current terminal's geometry is detected using ``stty size``.
-    Default is '80x24'.
+    Use W columns and H rows in output.  If the value 'detect' is given, the current terminal's geometry is detected
+    using ``stty size``. Default is '80x24'.
 
 inverse_bg = COLOR
-    Background color to use for the "inverse" attribute when neither the
-    character's foreground color attribute nor the ``foreground`` option is
-    set.  Default is 'black'.
+    Background color to use for the "inverse" attribute when neither the character's foreground color attribute nor the
+    ``foreground`` option is set.  Default is 'black'.
 
 inverse_fg = COLOR
-    Foreground color to use for the "inverse" attribute when neither the
-    character's background color attribute nor the ``background`` option is
-    set.  Default is 'white'.
+    Foreground color to use for the "inverse" attribute when neither the character's background color attribute nor the
+    ``background`` option is set.  Default is 'white'.
 
 verbosity = INT
-    Act as those ``-v`` or ``-q`` was given abs(INT) times, if INT positive or
-    negative, respectively.  Default is '0'.
+    Act as those ``-v`` or ``-q`` was given abs(INT) times, if INT positive or negative, respectively.  Default is '0'.
 
 [SECTION]
     Start a definition of a color scheme named SECTION.
-
-
-REQUIREMENTS
-============
-
-* Python 2.6+ or 3.0+ (tested on 2.6, 2.7, 3.1, and 3.2)
 
 
 TODO
@@ -130,14 +113,13 @@ See TODO for things that are not yet implemented.  There are many.
 NOTES
 =====
 
-For testing how a terminal implements a feature, the included *rawcat* program
-may be helpful.  It acts like cat(1), except that it outputs the file
-literally; it does not perform LF to CRLF translation.  Alternatively, one may
-replace the LF (0x0a) character with VT (0x0b) or FF (0x0c), which are treated
-identically but are not subject to newline translation.
+For testing how a terminal implements a feature, the included *rawcat* program may be helpful.  It acts like cat(1),
+except that it outputs the file literally; it does not perform LF to CRLF translation.  Alternatively, one may replace
+the LF (0x0a) character with VT (0x0b) or FF (0x0c), which are treated identically but are not subject to newline
+translation.
 
-A neat feature of *rawcat* is the ``-w`` option, which causes it to pause
-after each output byte so you can observe xterm draw the screen.
+A neat feature of *rawcat* is the ``-w`` option, which causes it to pause after each output byte so you can observe
+xterm draw the screen.
 
 
 SEE ALSO
@@ -155,33 +137,22 @@ Mark Lodato <lodatom@gmail.com>
 THANKS
 ======
 
-Thanks to http://vt100.net for lots of helpful information, especially the
-DEC-compatible parser page.
+Thanks to http://vt100.net for lots of helpful information, especially the DEC-compatible parser page.
 """
-__version__ = '0.4-git'
-__author__ = 'Mark Lodato'
-
-__license__ = """
-Copyright (c) 2010 Mark Lodato
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# Copyright (c) 2010 Mark Lodato
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import argparse
 import configparser
 import itertools
@@ -194,17 +165,12 @@ import sys
 class TextFormatter:
     """Terminal formatter for plain text output."""
 
-    def __init__(self, config=None, eol='\n'):
+    def __init__(self, eol='\n'):
         self.eol = eol
         self.init()
-        if config is not None:
-            self.parse_config(config)
 
     def init(self):
         """Initialize any default instance variables."""
-
-    def parse_config(self, config):
-        """Parse a SafeConfigParser object."""
 
     def format(self, lines):
         """Return a stringification of the given lines."""
@@ -311,37 +277,6 @@ class HtmlFormatter(TextFormatter):
     def set_color(self, index, value):
         self.attr_map['fg_color', index] = 'color: %s' % value
         self.attr_map['bg_color', index] = 'background-color: %s' % value
-
-    def parse_config(self, config):
-        self._parse_config(config, config.initial_section, set())
-        if self.options['foreground']:
-            self.options['inverse_bg'] = self.options['foreground']
-        if self.options['background']:
-            self.options['inverse_fg'] = self.options['background']
-
-    def _parse_config(self, config, section, seen):
-        if config.has_option(section, 'colorscheme'):
-            scheme = config.get(section, 'colorscheme')
-            if scheme not in seen:
-                if config.has_section(scheme):
-                    seen.add(scheme)
-                    self._parse_config(config, scheme, seen)
-                else:
-                    print('warning: colorscheme "%s" not found' % scheme, file=sys.stderr)
-            else:
-                print(
-                    'warning: recursion in color scheme: [%s] -> %s'
-                    % (section, scheme),
-                    file=sys.stderr,
-                )
-        for i in range(256):
-            key = 'color%d' % i
-            if config.has_option(section, key):
-                self.set_color(i, config.get(section, key))
-        for key in self.options:
-            if config.has_option(section, key):
-                value = config.get(section, key)
-                self.options[key] = value
 
     def _compute_style(self, attr):
         # TODO implement inverse
@@ -477,7 +412,6 @@ class NoNeedToImplement(Exception):
     """A function for which there is no need to implement."""
 
 
-
 class Screen:
     """A two-dimensional collection of characters."""
 
@@ -532,7 +466,6 @@ class Screen:
 
 
 class Terminal:
-
     # ---------- Decorators for Defining Sequences ----------
 
     commands = {}
@@ -2362,9 +2295,8 @@ class Terminal:
 
 def remove_script_lines(text):
     """Remove the starting and ending lines produced by script(1)."""
-    script_re = re.compile(
-        r'^Script (started|done) on \w+ \d+ \w+ \d{4} \d\d:\d\d:\d\d \w+ \w+$',
-    )
+
+    script_re = re.compile(r'^Script (started|done) on \w+ \d+ \w+ \d{4} \d\d:\d\d:\d\d \w+ \w+$')
     try:
         first_newline = text.index(b'\n')
         first_line = text[:first_newline].decode('ascii')
@@ -2386,6 +2318,7 @@ def remove_script_lines(text):
 
 def detect_geometry():
     """Determine the console geometry from the current console."""
+
     # This is not very portable, but works on Linux and is easy!
     p = subprocess.Popen(['stty', 'size'], stdout=subprocess.PIPE)
     stdout = p.communicate()[0]
@@ -2395,6 +2328,7 @@ def detect_geometry():
 
 def parse_geometry(s):
     """Parse a WxH geometry string."""
+
     cols, rows = s.split('x')
     cols = int(cols.strip())
     rows = int(rows.strip())
@@ -2416,39 +2350,9 @@ class FileInserter:
         return itertools.chain([self.line], self.fp)
 
 
-class SimpleConfigParser(configparser.ConfigParser):
-    """Configuration parser that allows a default section if none is specified
-    in the configuration file.
-
-    Based on SimpleConfigParser, copyright 2010 Philippe Lagadec.
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.initial_section = kwargs.pop('initial_section', 'NOSECTION')
-        super().__init__(self, *args, **kwargs)
-        self.add_section(self.initial_section)
-
-    def _read(self, fp, fpname):
-        firstline = '[%s]\n' % self.initial_section
-        fp = FileInserter(fp, firstline)
-        return super()._read(self, fp, fpname)
-
-    def get(self, section, *args, **kwargs):
-        if section is None:
-            section = self.initial_section
-        return super().get(self, section, *args, **kwargs)
-
-    def set(self, section, *args, **kwargs):
-        if section is None:
-            section = self.initial_section
-        return super().set(self, section, *args, **kwargs)
-
-
 def main():
-
-    usage = '%prog [OPTIONS] [-f FORMAT] [-g WxH] (filename|-)'
-    version = '%%prog %s' % __version__
-    parser = argparse.ArgumentParser(usage=usage, version=version)
+    usage = '%(prog)s [OPTIONS] [-f FORMAT] [-g WxH] (filename|-)'
+    parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument(
         '--man',
         action='store_true',
@@ -2474,19 +2378,11 @@ def main():
         help='do not ignore "Script (started|done) on <date>" lines',
     )
     parser.add_argument(
-        '--rc',
-        metavar='FILE',
-        default='~/.vt100rc',
-        help='read configuration from FILE (default %default)',
-    )
-    parser.add_argument(
-        '--no-rc',
-        action='store_true',
-        default=False,
-        help='suppress reading of configuration file',
-    )
-    parser.add_argument(
-        '-q', '--quiet', action='count', default=0, help='decrease debugging verbosity',
+        '-q',
+        '--quiet',
+        action='count',
+        default=0,
+        help='decrease debugging verbosity',
     )
     parser.add_argument(
         '-v',
@@ -2495,77 +2391,79 @@ def main():
         default=0,
         help='increase debugging verbosity',
     )
+    parser.add_argument(
+        'args',
+        nargs=argparse.REMAINDER,
+    )
 
     html_group = parser.add_argument_group('HTML Options')
     html_group.add_argument(
-        '--background', metavar='COLOR', help='set the default foreground color',
+        '--background',
+        metavar='COLOR',
+        help='set the default foreground color',
     )
     html_group.add_argument(
-        '--foreground', metavar='COLOR', help='set the default background color',
+        '--foreground',
+        metavar='COLOR',
+        help='set the default background color',
     )
     html_group.add_argument(
-        '--colorscheme', metavar='SCHEME', help='use the given color scheme',
+        '--colorscheme',
+        metavar='SCHEME',
+        help='use the given color scheme',
     )
 
-    options, args = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.man:
+    if args.man:
         print(globals()['__doc__'])
         return 0
 
-    defaults = {
+    config = {
         'format': 'text',
         'geometry': '80x24',
         'verbosity': '0',
     }
-    config = SimpleConfigParser(defaults)
-    if not options.no_rc:
-        configfile = os.path.expanduser(options.rc)
-        config.read(configfile)
 
-    for opt in html_group.option_list:
-        name = opt.dest
-        value = getattr(options, name)
+    for name in ('background', 'foreground', 'colorscheme'):
+        value = getattr(args, name)
         if value is not None:
-            config.set(None, name, value)
+            config[name] = value
 
-    options.verbose -= options.quiet
-    options.verbose += config.getint(None, 'verbosity')
-    del options.quiet
+    args.verbose -= args.quiet
+    args.verbose += int(config['verbosity'])
+    del args.quiet
 
-    if len(args) != 1:
+    if len(args.args) != 1:
         parser.error('missing required filename argument')
-    (filename,) = args
+    (filename,) = args.args
     if filename == '-':
-        if hasattr(sys.stdin, 'buffer'):
-            # Python 3: Read in binary mode
-            text = sys.stdin.buffer.read()
-        else:
-            # Python 2: Technically we should be reading in binary mode on
-            # Windows, but that's too difficult. This works on Linux at least.
-            text = sys.stdin.read()
+        text = sys.stdin.buffer.read()
     else:
         with open(filename, 'rb') as f:
             text = f.read()
 
-    if options.format is None:
-        options.format = config.get(None, 'format')
-    formatter = formatters[options.format](config=config)
+    if args.format is None:
+        args.format = config['format']
+    formatter = formatters[args.format]()
 
-    if options.geometry is None:
-        options.geometry = config.get(None, 'geometry')
-    if options.geometry == 'detect':
+    if args.geometry is None:
+        args.geometry = config['geometry']
+    if args.geometry == 'detect':
         rows, cols = detect_geometry()
     else:
         try:
-            rows, cols = parse_geometry(options.geometry)
+            rows, cols = parse_geometry(args.geometry)
         except:
-            parser.error('invalid format for --geometry: %s' % options.geometry)
+            parser.error('invalid format for --geometry: %s' % args.geometry)
 
     t = Terminal(
-        verbosity=options.verbose, formatter=formatter, width=cols, height=rows,
+        verbosity=args.verbose,
+        formatter=formatter,
+        width=cols,
+        height=rows,
     )
-    if not options.non_script:
+    if not args.non_script:
         text = remove_script_lines(text)
     t.parse(text)
     print(t.to_string(), end='')
