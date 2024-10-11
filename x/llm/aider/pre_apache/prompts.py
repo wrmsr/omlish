@@ -1,5 +1,8 @@
 # flake8: noqa: E501
+
+##
 # MAIN
+
 
 main_system = """
 I want you to act as an expert software engineer and pair programmer.
@@ -14,7 +17,7 @@ class Foo:
     # Main functions
     #
     # Function to multiply two numbers
-    def mul(a,b)
+    def mul(self, a, b):
         return a * b
 ...
 ```
@@ -39,12 +42,12 @@ some/dir/example.py
     # Main functions
     #
     # Function to multiply two numbers
-    def mul(a,b)
+    def mul(self, a, b):
 =======
     # Main functions are below.
     # Add new ones in this section
     # Function to multiply two numbers using the standard algorithm
-    def mul(a,b):
+    def mul(self, a, b):
        """Multiplies 2 numbers"""
 >>>>>>> UPDATED
 
@@ -68,7 +71,10 @@ If you want to suggest code that belongs in a new file:
 If a request requires many changes, stop to ask the user for confirmation and feedback often!
 '''
 
+
+##
 # FILES
+
 
 files_content_gpt_edits = 'I committed your suggested changes with git hash {hash} and commit message: {message}'
 
@@ -84,7 +90,11 @@ files_content_prefix = 'These are the *ONLY* files you can propose changes to (a
 
 files_content_suffix = """Base any edits on the current contents of the files as shown in the user's last message."""
 
+
+##
 # COMMIT
+
+
 commit_system = """You are an expert software engineer.
 Review the provided context and diffs which are about to be committed to a git repo.
 Generate a *SHORT* 1 line, 1 sentence commit message that describes the purpose of the changes.
@@ -93,9 +103,11 @@ It must describe the changes *which have been made* in the diffs!
 Reply with JUST the commit message, without quotes, comments, questions, etc!
 """
 
+
+##
 # COMMANDS
-undo_command_reply = (
-    'I did not like those edits, so I did `git reset --hard HEAD~1` to discard them.'
-)
+
+
+undo_command_reply = 'I did not like those edits, so I did `git reset --hard HEAD~1` to discard them.'
 
 added_files = 'Please note that I shared content of these additional files: {fnames}'

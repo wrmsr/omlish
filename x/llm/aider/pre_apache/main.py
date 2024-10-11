@@ -8,11 +8,14 @@ from .coder import Coder
 from .io import InputOutput
 
 
-def main(args=None, input=None, output=None):
+def main(
+        args=None,
+        input=None,
+        output=None,
+):
     if args is None:
         args = sys.argv[1:]
 
-    dotenv.load_dotenv()
     env_prefix = 'AIDER_'
     parser = argparse.ArgumentParser(
         description='aider - chat with GPT about your code',

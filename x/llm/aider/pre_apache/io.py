@@ -18,19 +18,23 @@ from rich.console import Console
 from rich.text import Text
 
 
-class FileContentCompleter(Completer):
+class _FileContentCompleter(Completer):
     def __init__(self, fnames, commands):
+        super().__init__()
+
         self.commands = commands
 
         self.words = set()
         for fname in fnames:
             with open(fname) as f:
                 content = f.read()
+
             try:
                 lexer = guess_lexer_for_filename(fname, content)
             except ClassNotFound:
                 continue
-            tokens = list(lexer.get_tokens(content))
+
+            tokens = list(lexer.get_tokens(content))  # noqa
             self.words.update(token[1] for token in tokens if token[0] in Token.Name)
 
     def get_completions(self, document, complete_event):
@@ -58,31 +62,34 @@ class FileContentCompleter(Completer):
 
 
 class InputOutput:
+
     def __init__(
         self,
         pretty,
         yes,
         input_history_file,
         chat_history_file,
-        input=None,
+        input=None,  # noqa
         output=None,
     ):
-        self.input = input
-        self.output = output
-        self.pretty = pretty
-        self.yes = yes
-        self.input_history_file = input_history_file
-        self.chat_history_file = pathlib.Path(chat_history_file)
+        super().__init__()
+
+        self._input = input
+        self._output = output
+        self._pretty = pretty
+        self._yes = yes
+        self._input_history_file = input_history_file
+        self._chat_history_file = pathlib.Path(chat_history_file)
 
         if pretty:
-            self.console = Console()
+            self._console = Console()
         else:
-            self.console = Console(force_terminal=True, no_color=True)
+            self._console = Console(force_terminal=True, no_color=True)
 
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.append_chat_history(f'\n# Aider chat started at {current_time}\n\n')
+        self._append_chat_history(f'\n# Aider chat started at {current_time}\n\n')
 
-    def canned_input(self, show_prompt):
+    def _canned_input(self, show_prompt):
         console = Console()
 
         input_line = input()
@@ -96,8 +103,8 @@ class InputOutput:
         return input_line
 
     def get_input(self, fnames, commands):
-        if self.pretty:
-            self.console.rule()
+        if self._pretty:
+            self._console.rule()
         else:
             print()
 
@@ -118,7 +125,7 @@ class InputOutput:
         show += '> '
 
         # if not sys.stdin.isatty():
-        #    return self.canned_input(show)
+        #    return self._canned_input(show)
 
         inp = ''
         multiline_input = False
@@ -126,19 +133,19 @@ class InputOutput:
         style = Style.from_dict({'': 'green'})
 
         while True:
-            completer_instance = FileContentCompleter(fnames, commands)
+            completer_instance = _FileContentCompleter(fnames, commands)
             if multiline_input:
                 show = '. '
 
             session = PromptSession(
                 message=show,
                 completer=completer_instance,
-                history=FileHistory(self.input_history_file),
+                history=FileHistory(self._input_history_file),
                 style=style,
                 reserve_space_for_menu=4,
                 complete_style=CompleteStyle.MULTI_COLUMN,
-                input=self.input,
-                output=self.output,
+                input=self._input,
+                output=self._output,
             )
             line = session.prompt()
             if line.strip() == '{' and not multiline_input:
@@ -165,7 +172,7 @@ class InputOutput:
         hist = f"""
 ---
 {prefix} {hist}"""
-        self.append_chat_history(hist, linebreak=True)
+        self._append_chat_history(hist, linebreak=True)
 
         return inp
 
@@ -173,50 +180,50 @@ class InputOutput:
 
     def ai_output(self, content):
         hist = '\n' + content.strip() + '\n\n'
-        self.append_chat_history(hist)
+        self._append_chat_history(hist)
 
     def confirm_ask(self, question, default='y'):
-        if self.yes:
+        if self._yes:
             res = 'yes'
         else:
             res = prompt(question + ' ', default=default)
 
         hist = f'{question.strip()} {res.strip()}'
-        self.append_chat_history(hist, linebreak=True, blockquote=True)
+        self._append_chat_history(hist, linebreak=True, blockquote=True)
 
         if not res or not res.strip():
             return None
         return res.strip().lower().startswith('y')
 
     def prompt_ask(self, question, default=None):
-        if self.yes:
+        if self._yes:
             res = 'yes'
         else:
             res = prompt(question + ' ', default=default)
 
         hist = f'{question.strip()} {res.strip()}'
-        self.append_chat_history(hist, linebreak=True, blockquote=True)
+        self._append_chat_history(hist, linebreak=True, blockquote=True)
 
         return res
 
     def tool_error(self, message):
         if message.strip():
             hist = f'{message.strip()}'
-            self.append_chat_history(hist, linebreak=True, blockquote=True)
+            self._append_chat_history(hist, linebreak=True, blockquote=True)
 
         message = Text(message)
-        self.console.print(message, style='red')
+        self._console.print(message, style='red')
 
     def tool(self, *messages):
         if messages:
             hist = ' '.join(messages)
             hist = f'{hist.strip()}'
-            self.append_chat_history(hist, linebreak=True, blockquote=True)
+            self._append_chat_history(hist, linebreak=True, blockquote=True)
 
         messages = list(map(Text, messages))
-        self.console.print(*messages)
+        self._console.print(*messages)
 
-    def append_chat_history(self, text, linebreak=False, blockquote=False):
+    def _append_chat_history(self, text, linebreak=False, blockquote=False):
         if blockquote:
             text = text.strip()
             text = '> ' + text
@@ -225,5 +232,5 @@ class InputOutput:
             text = text + '  \n'
         if not text.endswith('\n'):
             text += '\n'
-        with self.chat_history_file.open('a') as f:
+        with self._chat_history_file.open('a') as f:
             f.write(text)

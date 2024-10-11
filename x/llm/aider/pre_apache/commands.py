@@ -9,6 +9,7 @@ from . import prompts
 
 class Commands:
     def __init__(self, io, coder):
+        super().__init__()
         self.io = io
         self.coder = coder
 
