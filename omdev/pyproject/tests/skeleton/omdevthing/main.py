@@ -1,5 +1,8 @@
+from .foo import bar
+
+
 def _main():
-    pass
+    print(bar())
 
 
 if __name__ == '__main__':

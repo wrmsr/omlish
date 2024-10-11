@@ -1,2 +1,5 @@
+from ..foo import bar
+
+
 def test_main():
-    pass
+    assert bar() == 42
