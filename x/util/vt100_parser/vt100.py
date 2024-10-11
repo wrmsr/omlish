@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 """
+FIXME:
+ - UNICODE. lol
+"""
+"""
 NAME
 ====
 
@@ -154,9 +158,7 @@ Thanks to http://vt100.net for lots of helpful information, especially the DEC-c
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import argparse
-import configparser
 import itertools
-import os.path
 import re
 import subprocess
 import sys
@@ -2304,10 +2306,10 @@ def remove_script_lines(text):
         pass
     else:
         if script_re.match(first_line):
-            text = text[first_newline + 1 :]
+            text = text[first_newline + 1:]
     try:
         last_newline = text.rstrip().rindex(b'\n')
-        last_line = text[last_newline + 1 :].decode('ascii')
+        last_line = text[last_newline + 1:].decode('ascii')
     except (ValueError, UnicodeDecodeError):
         pass
     else:
@@ -2454,7 +2456,7 @@ def main():
     else:
         try:
             rows, cols = parse_geometry(args.geometry)
-        except:
+        except Exception:  # noqa
             parser.error('invalid format for --geometry: %s' % args.geometry)
 
     t = Terminal(
