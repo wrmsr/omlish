@@ -38,29 +38,41 @@ _CLI_FUNCS: ta.Sequence[CliFunc] = [
 ##
 
 
-def _main() -> None:
-    ccs: list[CliCmd] = []
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cli-pkg-root', action='append')
+    parser.add_argument('cmd', nargs='?')
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+    return parser
 
-    #
+
+def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
+    ccs: list[CliCmd] = []
 
     ldr = ManifestLoader.from_entry_point(globals())
 
-    pkgs = ldr.discover()
+    pkgs: list[str] = []
 
-    if not pkgs:
-        pkgs = []
-        for n in os.listdir(os.getcwd()):
-            if os.path.isdir(n) and os.path.exists(os.path.join(n, '__init__.py')):
+    def scan_pkg_root(r: str) -> None:
+        r = os.path.expanduser(r)
+        for n in os.listdir(r):
+            if os.path.isdir(p := os.path.join(r, n)) and os.path.exists(os.path.join(p, '__init__.py')):
                 pkgs.append(n)
+
+    if args.cli_pkg_root:
+        for r in args.cli_pkg_root:
+            scan_pkg_root(r)
+
+    else:
+        pkgs.extend(ldr.discover())
+
+        if not pkgs:
+            scan_pkg_root(os.getcwd())
 
     for m in ldr.load(*pkgs, only=[CliModule]):
         ccs.append(check.isinstance(m.value, CliModule))
 
-    #
-
     ccs.extend(_CLI_FUNCS)
-
-    #
 
     dct: dict[str, CliCmd] = {}
     for cc in ccs:
@@ -69,53 +81,75 @@ def _main() -> None:
                 raise NameError(cc)
             dct[cn] = cc
 
-    #
+    return dct
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('cmd', nargs='?', choices=dct.keys())
-    parser.add_argument('args', nargs=argparse.REMAINDER)
 
-    args = parser.parse_args()
-    if not args.cmd:
-        mdct: dict = {}
-        for cc in ccs:
-            if isinstance(cc.cmd_name, str) and cc.cmd_name[0] == '_':
-                continue
-            if isinstance(cc, CliFunc):
-                mdct.setdefault('-', []).append(cc)
-            elif isinstance(cc, CliModule):
-                mdct.setdefault(cc.mod_name.partition('.')[0], []).append(cc)
-            else:
-                raise TypeError(cc)
+def _select_cmd(args: ta.Any, cmds: ta.Mapping[str, CliCmd]) -> CliCmd | int:
+    cmd = args.cmd
+    if cmd and cmd in cmds:
+        return cmds[cmd]
 
-        print('Subcommands:\n')
-        for m, l in sorted(mdct.items(), key=lambda t: (t[0] == '-', t[0])):
-            print(f'  {m}')
-            for cc in sorted(l, key=lambda c: c.primary_name):
-                if isinstance(cc.cmd_name, str):
-                    print(f'    {cc.cmd_name}')
-                else:
-                    print(
-                        f'    {cc.cmd_name[0]}'
-                        f'{(" (" + ", ".join(cc.cmd_name[1:]) + ")") if len(cc.cmd_name) > 1 else ""}',
-                    )
-            print()
-        return
+    def print_err(*args, **kwargs):  # noqa
+        print(*args, **kwargs, file=sys.stderr)
 
-    #
-
-    cc = dct[args.cmd]
-
-    if isinstance(cc, CliModule):
-        sys.argv = [args.cmd, *(args.args or ())]
-        runpy._run_module_as_main(cc.mod_name)  # type: ignore  # noqa
-
-    elif isinstance(cc, CliFunc):
-        cc.fn(*(args.args or ()))
-
+    if cmd:
+        print_err(f'Invalid command: {cmd}\n')
+        rc = 1
     else:
-        raise TypeError(cc)
+        rc = 0
+
+    mset = set()
+    mdct: dict = {}
+    for cc in cmds.values():
+        if id(cc) in mset:
+            continue
+        mset.add(id(cc))
+        if isinstance(cc.cmd_name, str) and cc.cmd_name[0] == '_':
+            continue
+        if isinstance(cc, CliFunc):
+            mdct.setdefault('-', []).append(cc)
+        elif isinstance(cc, CliModule):
+            mdct.setdefault(cc.mod_name.partition('.')[0], []).append(cc)
+        else:
+            raise TypeError(cc)
+
+    print_err('Subcommands:\n')
+    for m, l in sorted(mdct.items(), key=lambda t: (t[0] == '-', t[0])):
+        print_err(f'  {m}')
+        for cc in sorted(l, key=lambda c: c.primary_name):
+            if isinstance(cc.cmd_name, str):
+                print_err(f'    {cc.cmd_name}')
+            else:
+                print_err(
+                    f'    {cc.cmd_name[0]}'
+                    f'{(" (" + ", ".join(cc.cmd_name[1:]) + ")") if len(cc.cmd_name) > 1 else ""}',
+                )
+        print_err()
+
+    return rc
+
+
+def _main() -> ta.Any:
+    parser = _build_arg_parser()
+    args = parser.parse_args()
+    cmds = _build_cmd_dct(args)
+    sel = _select_cmd(args, cmds)
+
+    match sel:
+        case int():
+            return sel
+
+        case CliModule() as cm:
+            sys.argv = [args.cmd, *(args.args or ())]
+            runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
+            return 0
+
+        case CliFunc() as cf:
+            return cf.fn(*(args.args or ()))
+
+        case _:
+            raise TypeError(sel)
 
 
 if __name__ == '__main__':
-    _main()
+    sys.exit(rc if isinstance(rc := _main(), int) else 0)
