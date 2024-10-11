@@ -143,4 +143,10 @@ class Model(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
         )
         return self.invoke(ta.cast(RequestT, request))
 
-    __call__ = invoke_new
+    def __call__(
+            self,
+            v: NewT,
+            *options: OptionT,
+            **kwargs: ta.Any,
+    ) -> ResponseT:
+        return self.invoke_new(v, *options, **kwargs)
