@@ -1,19 +1,12 @@
-from __future__ import annotations
-
-from enum import Enum
-
-__all__ = [
-    "Keys",
-    "ALL_KEYS",
-]
+import enum
+import typing as ta
 
 
-class Keys(str, Enum):
+class Keys(str, enum.Enum):
     """
     List of keys for use in key bindings.
 
-    Note that this is an "StrEnum", all values can be compared against
-    strings.
+    Note that this is an "StrEnum", all values can be compared against strings.
     """
 
     value: str
@@ -197,19 +190,18 @@ class Keys(str, Enum):
     Enter = ControlM
     Backspace = ControlH
 
-    # ShiftControl was renamed to ControlShift in
-    # 888fcb6fa4efea0de8333177e1bbc792f3ff3c24 (20 Feb 2020).
+    # ShiftControl was renamed to ControlShift in 888fcb6fa4efea0de8333177e1bbc792f3ff3c24 (20 Feb 2020).
     ShiftControlLeft = ControlShiftLeft
     ShiftControlRight = ControlShiftRight
     ShiftControlHome = ControlShiftHome
     ShiftControlEnd = ControlShiftEnd
 
 
-ALL_KEYS: list[str] = [k.value for k in Keys]
+ALL_KEYS: ta.Sequence[str] = [k.value for k in Keys]
 
 
 # Aliases.
-KEY_ALIASES: dict[str, str] = {
+KEY_ALIASES: ta.Mapping[str, str] = {
     "backspace": "c-h",
     "c-space": "c-@",
     "enter": "c-m",
