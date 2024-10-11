@@ -1,10 +1,7 @@
+import difflib
 import math
+import pathlib
 import re
-from difflib import SequenceMatcher
-from pathlib import Path
-
-
-# from aider.dump import dump
 
 
 def try_dotdotdots(whole, part, replace):
@@ -90,7 +87,7 @@ def replace_most_similar_chunk(whole, part, replace):
             chunk = whole_lines[i : i + length]
             chunk = '\n'.join(chunk)
 
-            similarity = SequenceMatcher(None, chunk, part).ratio()
+            similarity = difflib.SequenceMatcher(None, chunk, part).ratio()
 
             if similarity > max_similarity and similarity:
                 max_similarity = similarity
@@ -118,7 +115,7 @@ def quoted_file(fname, display_fname):
     prompt = '\n'
     prompt += display_fname
     prompt += '\n```\n'
-    prompt += Path(fname).read_text()
+    prompt += pathlib.Path(fname).read_text()
     prompt += '\n```\n'
     return prompt
 
@@ -139,7 +136,7 @@ def strip_quoted_wrapping(res, fname=None):
 
     res = res.splitlines()
 
-    if fname and res[0].strip().endswith(Path(fname).name):
+    if fname and res[0].strip().endswith(pathlib.Path(fname).name):
         res = res[1:]
 
     if res[0].startswith('```') and res[-1].startswith('```'):
@@ -155,7 +152,7 @@ def strip_quoted_wrapping(res, fname=None):
 def do_replace(fname, before_text, after_text, dry_run=False):
     before_text = strip_quoted_wrapping(before_text, fname)
     after_text = strip_quoted_wrapping(after_text, fname)
-    fname = Path(fname)
+    fname = pathlib.Path(fname)
 
     # does it want to make a new file?
     if not fname.exists() and not before_text.strip():

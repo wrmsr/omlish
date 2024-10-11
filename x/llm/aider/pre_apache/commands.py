@@ -1,8 +1,10 @@
 import os
 
-from aider import prompts
 from prompt_toolkit.completion import Completion
 from rich.prompt import Confirm
+import git
+
+from . import prompts
 
 
 class Commands:

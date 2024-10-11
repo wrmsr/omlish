@@ -1,22 +1,19 @@
 #!/usr/bin/env python
-
 import os
 import sys
 import time
 import traceback
-from pathlib import Path
+import pathlib
 
-import git
-import openai
-from aider import prompts
-
-# from aider.dump import dump
-from aider import utils
-from aider.commands import Commands
-from openai.error import RateLimitError
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
+import git
+import openai
+
+from . import prompts
+from . import utils
+from .commands import Commands
 
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -76,7 +73,7 @@ class Coder:
 
         repo_paths = []
         for fname in cmd_line_fnames:
-            fname = Path(fname)
+            fname = pathlib.Path(fname)
             if not fname.exists():
                 self.io.tool(f'Creating empty file {fname}')
                 fname.parent.mkdir(parents=True, exist_ok=True)
@@ -329,6 +326,9 @@ class Coder:
         if not model:
             model = self.main_model
 
+        class RateLimitError(Exception):
+            pass
+
         self.resp = ''
         interrupted = False
         try:
@@ -396,7 +396,7 @@ class Coder:
             full_path = os.path.abspath(os.path.join(self.root, path))
 
             if full_path not in self.abs_fnames:
-                if not Path(full_path).exists():
+                if not pathlib.Path(full_path).exists():
                     question = f'Allow creation of new file {path}?'  # noqa: E501
                 else:
                     question = f'Allow edits to {path} which was not previously provided?'  # noqa: E501
@@ -404,9 +404,9 @@ class Coder:
                     self.io.tool_error(f'Skipping edit to {path}')
                     continue
 
-                if not Path(full_path).exists():
-                    Path(full_path).parent.mkdir(parents=True, exist_ok=True)
-                    Path(full_path).touch()
+                if not pathlib.Path(full_path).exists():
+                    pathlib.Path(full_path).parent.mkdir(parents=True, exist_ok=True)
+                    pathlib.Path(full_path).touch()
 
                 self.abs_fnames.add(full_path)
 
@@ -575,7 +575,7 @@ class Coder:
         files = self.get_all_abs_files()
         if not files:
             return 0
-        return max(Path(path).stat().st_mtime for path in files)
+        return max(pathlib.Path(path).stat().st_mtime for path in files)
 
     def apply_updates(self, content, inp):
         try:

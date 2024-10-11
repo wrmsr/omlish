@@ -9,16 +9,17 @@ import argparse
 import os
 import sys
 
-from aider.coder import Coder
-from aider.getinput import InputOutput
-from dotenv import load_dotenv
+import dotenv
+
+from .coder import Coder
+from .getinput import InputOutput
 
 
 def main(args=None, input=None, output=None):
     if args is None:
         args = sys.argv[1:]
 
-    load_dotenv()
+    dotenv.load_dotenv()
     env_prefix = 'AIDER_'
     parser = argparse.ArgumentParser(
         description='aider - chat with GPT about your code',

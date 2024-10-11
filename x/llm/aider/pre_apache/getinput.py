@@ -1,8 +1,8 @@
+import datetime
 import os
+import pathlib
 import random
 import time
-from datetime import datetime
-from pathlib import Path
 
 from prompt_toolkit.completion import Completer
 from prompt_toolkit.completion import Completion
@@ -72,14 +72,14 @@ class InputOutput:
         self.pretty = pretty
         self.yes = yes
         self.input_history_file = input_history_file
-        self.chat_history_file = Path(chat_history_file)
+        self.chat_history_file = pathlib.Path(chat_history_file)
 
         if pretty:
             self.console = Console()
         else:
             self.console = Console(force_terminal=True, no_color=True)
 
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.append_chat_history(f'\n# Aider chat started at {current_time}\n\n')
 
     def canned_input(self, show_prompt):
