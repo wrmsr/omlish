@@ -3,15 +3,19 @@ https://github.com/prompt-toolkit/python-prompt-toolkit/tree/c12ac9164357b72dd99
 """
 from __future__ import annotations
 
-from .base import DummyInput, Input, PipeInput
-from .defaults import create_input, create_pipe_input
+from .base import DummyInput
+from .base import Input
+from .base import PipeInput
+from .defaults import create_input
+from .defaults import create_pipe_input
+
 
 __all__ = [
     # Base.
-    "Input",
-    "PipeInput",
-    "DummyInput",
+    'Input',
+    'PipeInput',
+    'DummyInput',
     # Defaults.
-    "create_input",
-    "create_pipe_input",
+    'create_input',
+    'create_pipe_input',
 ]

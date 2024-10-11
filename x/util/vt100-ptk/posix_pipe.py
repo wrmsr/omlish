@@ -49,29 +49,29 @@ class PosixPipeInput(Vt100Input, PipeInput):
 
     _id = 0
 
-    def __init__(self, _pipe: _Pipe, _text: str = "") -> None:
+    def __init__(self, _pipe: _Pipe, _text: str = '') -> None:
         # Private constructor. Users should use the public `.create()` method.
         self.pipe = _pipe
 
         class Stdin:
-            encoding = "utf-8"
+            encoding = 'utf-8'
 
-            def isatty(stdin) -> bool:
+            def isatty(stdin) -> bool:  # noqa
                 return True
 
-            def fileno(stdin) -> int:
+            def fileno(stdin) -> int:  # noqa
                 return self.pipe.read_fd
 
         super().__init__(ta.cast(ta.TextIO, Stdin()))
         self.send_text(_text)
 
         # Identifier for every PipeInput for the hash.
-        self.__class__._id += 1
-        self._id = self.__class__._id
+        self.__class__._id += 1  # noqa
+        self._id = self.__class__._id  # noqa
 
     @classmethod
     @contextlib.contextmanager
-    def create(cls, text: str = "") -> ta.Iterator['PosixPipeInput']:
+    def create(cls, text: str = '') -> ta.Iterator['PosixPipeInput']:
         pipe = _Pipe()
         try:
             yield PosixPipeInput(_pipe=pipe, _text=text)
@@ -84,7 +84,7 @@ class PosixPipeInput(Vt100Input, PipeInput):
     def send_text(self, data: str) -> None:
         """Send text to the input."""
 
-        os.write(self.pipe.write_fd, data.encode("utf-8"))
+        os.write(self.pipe.write_fd, data.encode('utf-8'))
 
     def raw_mode(self) -> ta.ContextManager[None]:
         return contextlib.nullcontext()

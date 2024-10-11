@@ -1,6 +1,6 @@
+import codecs
 import os
 import select
-import codecs
 
 
 class PosixStdinReader:
@@ -27,8 +27,8 @@ class PosixStdinReader:
     def __init__(
         self,
             stdin_fd: int,
-            errors: str = "surrogateescape",
-            encoding: str = "utf-8",
+            errors: str = 'surrogateescape',
+            encoding: str = 'utf-8',
     ) -> None:
         self.stdin_fd = stdin_fd
         self.errors = errors
@@ -54,14 +54,14 @@ class PosixStdinReader:
         # loop to process all these key bindings also at once without going back to the loop. This will make the
         # application feel unresponsive.
         if self.closed:
-            return ""
+            return ''
 
         # Check whether there is some input to read. `os.read` would block otherwise.
         # (Actually, the event loop is responsible to make sure that this function is only called when there is
         # something to read, but for some reason this happens in certain situations.)
         try:
             if not select.select([self.stdin_fd], [], [], 0)[0]:
-                return ""
+                return ''
         except OSError:
             # Happens for instance when the file descriptor was closed.
             # (We had this in ptterm, where the FD became ready, a callback was scheduled, but in the meantime another
@@ -75,12 +75,12 @@ class PosixStdinReader:
             data = os.read(self.stdin_fd, count)
 
             # Nothing more to read, stream is closed.
-            if data == b"":
+            if data == b'':
                 self.closed = True
-                return ""
+                return ''
 
         except OSError:
             # In case of SIGWINCH
-            data = b""
+            data = b''
 
         return self._stdin_decoder.decode(data)

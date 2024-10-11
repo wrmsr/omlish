@@ -11,23 +11,21 @@ from .keys import Keys
 
 # Regex matching any CPR response
 # (Note that we use '\Z' instead of '$', because '$' could include a trailing newline.)
-_cpr_response_re = re.compile("^" + re.escape("\x1b[") + r"\d+;\d+R\Z")
+_cpr_response_re = re.compile('^' + re.escape('\x1b[') + r'\d+;\d+R\Z')
 
 # Mouse events:
 # Typical: "Esc[MaB*"  Urxvt: "Esc[96;14;13M" and for Xterm SGR: "Esc[<64;85;12M"
-_mouse_event_re = re.compile("^" + re.escape("\x1b[") + r"(<?[\d;]+[mM]|M...)\Z")
+_mouse_event_re = re.compile('^' + re.escape('\x1b[') + r'(<?[\d;]+[mM]|M...)\Z')
 
 # Regex matching any valid prefix of a CPR response.
 # (Note that it doesn't contain the last character, the 'R'. The prefix has to be shorter.)
-_cpr_response_prefix_re = re.compile("^" + re.escape("\x1b[") + r"[\d;]*\Z")
+_cpr_response_prefix_re = re.compile('^' + re.escape('\x1b[') + r'[\d;]*\Z')
 
-_mouse_event_prefix_re = re.compile("^" + re.escape("\x1b[") + r"(<?[\d;]*|M.{0,2})\Z")
+_mouse_event_prefix_re = re.compile('^' + re.escape('\x1b[') + r'(<?[\d;]*|M.{0,2})\Z')
 
 
 class _Flush:
     """Helper object to indicate flush operation to the parser."""
-
-    pass
 
 
 class _IsPrefixOfLongerMatchCache(dict[str, bool]):
@@ -108,7 +106,7 @@ class Vt100Parser:
     def _input_parser_generator(self) -> ta.Generator[None, str | _Flush, None]:
         """Coroutine (state machine) for the input parser."""
 
-        prefix = ""
+        prefix = ''
         retry = False
         flush = False
 
@@ -134,7 +132,7 @@ class Vt100Parser:
                 # Exact matches found, call handlers..
                 if (flush or not is_prefix_of_longer_match) and match:
                     self._call_handler(match, prefix)
-                    prefix = ""
+                    prefix = ''
 
                 # No exact match found.
                 elif (flush or not is_prefix_of_longer_match) and not match:
@@ -164,13 +162,12 @@ class Vt100Parser:
             # Received ANSI sequence that corresponds with multiple keys (probably alt+something). Handle keys
             # individually, but only pass data payload to first KeyPress (so that we won't insert it multiple times).
             for i, k in enumerate(key):
-                self._call_handler(k, insert_text if i == 0 else "")
+                self._call_handler(k, insert_text if i == 0 else '')
+        elif key == Keys.BracketedPaste:
+            self._in_bracketed_paste = True
+            self._paste_buffer = ''
         else:
-            if key == Keys.BracketedPaste:
-                self._in_bracketed_paste = True
-                self._paste_buffer = ""
-            else:
-                self.feed_key_callback(KeyPress(key, insert_text))
+            self.feed_key_callback(KeyPress(key, insert_text))
 
     def feed(self, data: str) -> None:
         """
@@ -183,7 +180,7 @@ class Vt100Parser:
         # we see the end mark.) This is much faster then parsing character by character.
         if self._in_bracketed_paste:
             self._paste_buffer += data
-            end_mark = "\x1b[201~"
+            end_mark = '\x1b[201~'
 
             if end_mark in self._paste_buffer:
                 end_index = self._paste_buffer.index(end_mark)
@@ -195,7 +192,7 @@ class Vt100Parser:
                 # Quit bracketed paste mode and handle remaining input.
                 self._in_bracketed_paste = False
                 remaining = self._paste_buffer[end_index + len(end_mark) :]
-                self._paste_buffer = ""
+                self._paste_buffer = ''
 
                 self.feed(remaining)
 
@@ -219,6 +216,7 @@ class Vt100Parser:
         called after a timeout, and processes everything that's still in the buffer as-is, so without assuming any
         characters will follow.
         """
+
         self._input_parser.send(_Flush())
 
     def feed_and_flush(self, data: str) -> None:

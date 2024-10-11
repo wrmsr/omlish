@@ -2,8 +2,8 @@
 Abstraction of CLI Input.
 """
 import abc
-import typing as ta
 import contextlib
+import typing as ta
 
 from .key_binding import KeyPress
 
@@ -34,7 +34,7 @@ class Input(abc.ABC):
         """
         return []
 
-    def flush(self) -> None:
+    def flush(self) -> None:  # noqa
         """The event loop can call this when the input has to be flushed."""
 
     @property
@@ -68,7 +68,7 @@ class Input(abc.ABC):
         Return a context manager that makes sure that this input is not active in the current event loop.
         """
 
-    def close(self) -> None:
+    def close(self) -> None:  # noqa
         """Close input."""
 
 

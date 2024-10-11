@@ -1,3 +1,5 @@
+from omlish import check
+
 from .keys import Keys
 
 
@@ -8,7 +10,7 @@ class KeyPress:
     """
 
     def __init__(self, key: Keys | str, data: str | None = None) -> None:
-        assert isinstance(key, Keys) or len(key) == 1
+        check.arg(isinstance(key, Keys) or len(key) == 1)
 
         if data is None:
             if isinstance(key, Keys):
@@ -20,7 +22,7 @@ class KeyPress:
         self.data = data
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(key={self.key!r}, data={self.data!r})"
+        return f'{self.__class__.__name__}(key={self.key!r}, data={self.data!r})'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, KeyPress):

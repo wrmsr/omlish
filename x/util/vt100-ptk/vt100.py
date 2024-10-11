@@ -19,7 +19,7 @@ class Vt100Input(Input):
     """
 
     # For the error messages. Only display "Input is not a terminal" once per file descriptor.
-    _fds_not_a_terminal: set[int] = set()
+    _fds_not_a_terminal: ta.ClassVar[set[int]] = set()
 
     def __init__(self, stdin: ta.TextIO) -> None:
         # Test whether the given input object has a file descriptor.
@@ -28,10 +28,10 @@ class Vt100Input(Input):
             # This should not raise, but can return 0.
             stdin.fileno()
         except io.UnsupportedOperation as e:
-            if "idlelib.run" in sys.modules:
-                raise io.UnsupportedOperation("Stdin is not a terminal. Running from Idle is not supported.") from e
+            if 'idlelib.run' in sys.modules:
+                raise io.UnsupportedOperation('Stdin is not a terminal. Running from Idle is not supported.') from e
             else:
-                raise io.UnsupportedOperation("Stdin is not a terminal.") from e
+                raise io.UnsupportedOperation('Stdin is not a terminal.') from e
 
         # Even when we have a file descriptor, it doesn't mean it's a TTY. Normally, this requires a real TTY device,
         # but people instantiate this class often during unit tests as well. They use for instance pexpect to pipe data
@@ -40,7 +40,7 @@ class Vt100Input(Input):
         fd = stdin.fileno()
 
         if not isatty and fd not in Vt100Input._fds_not_a_terminal:
-            msg = "Warning: Input is not a terminal (fd=%r).\n"
+            msg = 'Warning: Input is not a terminal (fd=%r).\n'
             sys.stderr.write(msg % fd)
             sys.stderr.flush()
             Vt100Input._fds_not_a_terminal.add(fd)
@@ -115,14 +115,14 @@ class Vt100Input(Input):
 
 
 _current_callbacks: dict[
-    tuple[asyncio.AbstractEventLoop, int], ta.Callable[[], None] | None
+    tuple[asyncio.AbstractEventLoop, int], ta.Callable[[], None] | None,
 ] = {}  # (loop, fd) -> current callback
 
 
 @contextlib.contextmanager
 def _attached_input(
-        input: Vt100Input,
-        callback: ta.Callable[[], None]
+        input: Vt100Input,  # noqa
+        callback: ta.Callable[[], None],
 ) -> ta.Generator[None, None, None]:
     """
     Context manager that makes this input active in the current event loop.
@@ -153,7 +153,7 @@ def _attached_input(
         # `SelectSelector` apparently). Whenever we get a `PermissionError`, we can raise `EOFError`, because there's
         # not more to be read anyway. `EOFError` is an exception that people expect in
         # `prompt_toolkit.application.Application.run()`. To reproduce, do: `ptpython 0< /dev/null 1< /dev/null`
-        raise EOFError
+        raise EOFError  # noqa
 
     _current_callbacks[loop, fd] = callback
 
@@ -170,7 +170,7 @@ def _attached_input(
 
 
 @contextlib.contextmanager
-def _detached_input(input: Vt100Input) -> ta.Generator[None, None, None]:
+def _detached_input(input: Vt100Input) -> ta.Generator[None, None, None]:  # noqa
     loop = asyncio.get_running_loop()
     fd = input.fileno()
     previous = _current_callbacks.get((loop, fd))
@@ -187,7 +187,7 @@ def _detached_input(input: Vt100Input) -> ta.Generator[None, None, None]:
             _current_callbacks[loop, fd] = previous
 
 
-class raw_mode:
+class raw_mode:  # noqa
     """
     ::
 
@@ -265,7 +265,7 @@ class raw_mode:
             # self._stdout.write('\x1b[?1h')
 
 
-class cooked_mode(raw_mode):
+class cooked_mode(raw_mode):  # noqa
     """
     The opposite of ``raw_mode``, used when we need cooked mode inside a `raw_mode` block.  Used in
     `Application.run_in_terminal`.::
