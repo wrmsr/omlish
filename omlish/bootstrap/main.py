@@ -1,7 +1,7 @@
 """
 TODO:
  - -x / --exec - os.exec entrypoint
-  - refuse to install non-exec-relevant Bootstraps when chosen
+ - refuse to install non-exec-relevant Bootstraps when chosen
 """
 # ruff: noqa: UP006 UP007
 import argparse
@@ -152,10 +152,15 @@ def _main() -> int:
     _add_arguments(parser)
 
     parser.add_argument('-m', '--module', action='store_true')
+    parser.add_argument('-c', '--code', action='store_true')
     parser.add_argument('target')
     parser.add_argument('args', nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
+
+    if len([a for a in ('module', 'code') if getattr(args, a)]) > 1:
+        raise Exception('Multiple exec mode specified')
+
     cfgs = _process_arguments(args)
 
     with bootstrap(*cfgs):
@@ -163,7 +168,10 @@ def _main() -> int:
 
         sys.argv = [tgt, *(args.args or ())]
 
-        if args.module:
+        if args.code:
+            exec(tgt, {}, {})
+
+        elif args.module:
             runpy._run_module_as_main(tgt)  # type: ignore  # noqa
 
         else:
