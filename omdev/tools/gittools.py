@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import urllib.parse
 
 from omlish import argparse as ap
 from omlish import logs
@@ -36,7 +37,29 @@ class Cli(ap.Cli):
         accepts_unknown=True,
     )
     def clone(self) -> None:
-        if not (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
+        out_dir: str
+
+        if (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
+            user = m.group('user')
+            repo = m.group('repo')
+
+            os.makedirs(user, 0o755, exist_ok=True)
+
+            subprocess.check_call([
+                'git',
+                'clone',
+                *self.unknown_args,
+                *self.args.args,
+                f'https://github.com/{user}/{repo}.git',
+                os.path.join(user, repo),
+            ])
+
+            out_dir = os.path.join(user, repo)
+
+        else:
+            parsed = urllib.parse.urlparse(self.args.repo)
+            out_dir = parsed.path.split('/')[-1]
+
             subprocess.check_call([
                 'git',
                 'clone',
@@ -44,21 +67,8 @@ class Cli(ap.Cli):
                 *self.args.args,
                 self.args.repo,
             ])
-            return
 
-        user = m.group('user')
-        repo = m.group('repo')
-
-        os.makedirs(user, 0o755, exist_ok=True)
-
-        subprocess.check_call([
-            'git',
-            'clone',
-            *self.unknown_args,
-            *self.args.args,
-            f'https://github.com/{user}/{repo}.git',
-            os.path.join(user, repo),
-        ])
+        print(out_dir)
 
 
 # @omlish-manifest

@@ -1,7 +1,4 @@
-# ruff: noqa: ANN201
-# ruff: noqa: N801
-# ruff: noqa: N802
-
+# ruff: noqa: ANN201, N801, N802
 import ctypes as ct
 import errno
 import platform
@@ -213,7 +210,14 @@ class Mmap:
         return self._base
 
     def __enter__(self) -> 'Mmap':
-        base = mmap(self._desired_base, self._length, self._prot, self._flags, self._fd, self._offset)
+        base = mmap(
+            self._desired_base,
+            self._length,
+            self._prot,
+            self._flags,
+            self._fd,
+            self._offset,
+        )
         if base == MAP_FAILED:
             err, msg = lasterr()
             raise OSError(err, 'mmap failed: ' + msg)
