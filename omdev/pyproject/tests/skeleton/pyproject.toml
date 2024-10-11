@@ -1,0 +1,22 @@
+[build-system]
+requires = [
+    "python_version>='3.11'",
+    "setuptools>=70",
+    "setuptools_scm>=8",
+]
+build-backend = 'setuptools.build_meta'
+
+
+##
+
+[project]
+name = 'omdevthing'
+
+
+##
+
+[tool.omlish.pyproject.srcs]
+main = ['omdevthing']
+
+[tool.omlish.pyproject.venvs]
+default = { interp = '3.12.7', requires = ['-rrequirements-dev.txt'], srcs = ['@main'] }
