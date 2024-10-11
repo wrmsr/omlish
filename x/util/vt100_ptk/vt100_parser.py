@@ -201,7 +201,7 @@ class Vt100Parser:
             for i, c in enumerate(data):
                 if self._in_bracketed_paste:
                     # Quit loop and process from this position when the parser entered bracketed paste.
-                    self.feed(data[i:])
+                    self.feed(data[i:])  # type: ignore[unreachable]
                     break
                 else:
                     self._input_parser.send(c)
