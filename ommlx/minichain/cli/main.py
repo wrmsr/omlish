@@ -81,8 +81,6 @@ def _run_chat(
 ) -> None:
     prompt = check.isinstance(content, str)
 
-    #
-
     state_dir = os.path.expanduser('~/.omlish-llm')
     if not os.path.exists(state_dir):
         os.mkdir(state_dir)
@@ -96,8 +94,6 @@ def _run_chat(
         if state is None:
             state = ChatState()  # type: ignore
 
-    #
-
     state = dc.replace(
         state,
         chat=[
@@ -106,19 +102,9 @@ def _run_chat(
         ],
     )
 
-    #
-
     mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-
-    #
-
     response = mdl.invoke(ChatRequest.new(state.chat))
-
-    #
-
     print(check.isinstance(response.v.s, str).strip())
-
-    #
 
     chat = dc.replace(
         state,
@@ -127,8 +113,6 @@ def _run_chat(
             response.v,
         ],
     )
-
-    #
 
     chat = dc.replace(
         chat,
@@ -154,11 +138,8 @@ def _run_prompt(
         backend: str | None = None,
 ) -> None:
     prompt = check.isinstance(content, str)
-
     mdl = PROMPT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-
     response = mdl.invoke(PromptRequest.new(prompt))
-
     print(response.v.strip())
 
 
@@ -177,9 +158,7 @@ def _run_embed(
         backend: str | None = None,
 ) -> None:
     mdl = EMBEDDING_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
-
     response = mdl.invoke(EmbeddingRequest.new(content))
-
     print(json.dumps_compact(response.v))
 
 
@@ -191,12 +170,13 @@ def _main() -> None:
     #
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('prompt')
+    parser.add_argument('prompt', nargs='+')
 
     parser.add_argument('-b', '--backend', default='openai')
 
     parser.add_argument('-c', '--chat', action='store_true')
     parser.add_argument('-n', '--new', action='store_true')
+    parser.add_argument('-i', '--interactive', action='store_true')
 
     parser.add_argument('-e', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
@@ -208,10 +188,10 @@ def _main() -> None:
     content: Content
 
     if args.image:
-        content = Image(pimg.open(check.non_empty_str(args.prompt)))
+        content = Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
 
     else:
-        prompt = args.prompt
+        prompt = check.single(args.prompt)
 
         if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
             stdin_data = sys.stdin.read()
