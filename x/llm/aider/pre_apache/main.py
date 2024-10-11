@@ -1,22 +1,17 @@
 import os.path
 
+
 with open(os.path.expanduser('~/.omlish-llm/.env')) as f:
-    os.environ.update({
-        k: v
-        for l in f
-        if (s := l.strip())
-        for k, v in [s.split('=')]
-    })
+    os.environ.update({k: v for l in f if (s := l.strip()) for k, v in [s.split('=')]})
 
 
 import argparse
 import os
 import sys
 
-from dotenv import load_dotenv
-
 from aider.coder import Coder
 from aider.getinput import InputOutput
+from dotenv import load_dotenv
 
 
 def main(args=None, input=None, output=None):
@@ -24,80 +19,86 @@ def main(args=None, input=None, output=None):
         args = sys.argv[1:]
 
     load_dotenv()
-    env_prefix = "AIDER_"
-    parser = argparse.ArgumentParser(description="aider - chat with GPT about your code")
-    parser.add_argument(
-        "files",
-        metavar="FILE",
-        nargs="*",
-        help="a list of source code files (optional)",
+    env_prefix = 'AIDER_'
+    parser = argparse.ArgumentParser(
+        description='aider - chat with GPT about your code',
     )
     parser.add_argument(
-        "--input-history-file",
-        metavar="INPUT_HISTORY_FILE",
-        default=os.environ.get(f"{env_prefix}INPUT_HISTORY_FILE", ".aider.input.history"),
+        'files',
+        metavar='FILE',
+        nargs='*',
+        help='a list of source code files (optional)',
+    )
+    parser.add_argument(
+        '--input-history-file',
+        metavar='INPUT_HISTORY_FILE',
+        default=os.environ.get(
+            f'{env_prefix}INPUT_HISTORY_FILE', '.aider.input.history',
+        ),
         help=(
-            "Specify the chat input history file (default: .aider.input.history,"
-            f" ${env_prefix}INPUT_HISTORY_FILE)"
+            'Specify the chat input history file (default: .aider.input.history,'
+            f' ${env_prefix}INPUT_HISTORY_FILE)'
         ),
     )
     parser.add_argument(
-        "--chat-history-file",
-        metavar="CHAT_HISTORY_FILE",
-        default=os.environ.get(f"{env_prefix}CHAT_HISTORY_FILE", ".aider.chat.history.md"),
+        '--chat-history-file',
+        metavar='CHAT_HISTORY_FILE',
+        default=os.environ.get(
+            f'{env_prefix}CHAT_HISTORY_FILE', '.aider.chat.history.md',
+        ),
         help=(
-            "Specify the chat history file (default: .aider.chat.history.md,"
-            f" ${env_prefix}CHAT_HISTORY_FILE)"
+            'Specify the chat history file (default: .aider.chat.history.md,'
+            f' ${env_prefix}CHAT_HISTORY_FILE)'
         ),
     )
     parser.add_argument(
-        "--model",
-        metavar="MODEL",
-        default=os.environ.get(f"{env_prefix}MODEL", "gpt-4"),
-        help=f"Specify the model to use for the main chat (default: gpt-4, ${env_prefix}MODEL)",
+        '--model',
+        metavar='MODEL',
+        default=os.environ.get(f'{env_prefix}MODEL', 'gpt-4'),
+        help=f'Specify the model to use for the main chat (default: gpt-4, ${env_prefix}MODEL)',
     )
     parser.add_argument(
-        "-3",
-        action="store_const",
-        dest="model",
-        const="gpt-3.5-turbo",
-        help="Use gpt-3.5-turbo model for the main chat (not advised)",
+        '-3',
+        action='store_const',
+        dest='model',
+        const='gpt-3.5-turbo',
+        help='Use gpt-3.5-turbo model for the main chat (not advised)',
     )
     parser.add_argument(
-        "--no-pretty",
-        action="store_false",
-        dest="pretty",
-        help=f"Disable pretty, colorized output (${env_prefix}PRETTY)",
-        default=bool(int(os.environ.get(f"{env_prefix}PRETTY", 1))),
+        '--no-pretty',
+        action='store_false',
+        dest='pretty',
+        help=f'Disable pretty, colorized output (${env_prefix}PRETTY)',
+        default=bool(int(os.environ.get(f'{env_prefix}PRETTY', 1))),
     )
     parser.add_argument(
-        "--apply",
-        metavar="FILE",
-        help="Apply the changes from the given file instead of running the chat (debug)",
+        '--apply',
+        metavar='FILE',
+        help='Apply the changes from the given file instead of running the chat (debug)',
     )
     parser.add_argument(
-        "--no-auto-commits",
-        action="store_false",
-        dest="auto_commits",
-        help=f"Disable auto commit of changes (${env_prefix}AUTO_COMMITS)",
-        default=bool(int(os.environ.get(f"{env_prefix}AUTO_COMMITS", 1))),
+        '--no-auto-commits',
+        action='store_false',
+        dest='auto_commits',
+        help=f'Disable auto commit of changes (${env_prefix}AUTO_COMMITS)',
+        default=bool(int(os.environ.get(f'{env_prefix}AUTO_COMMITS', 1))),
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Perform a dry run without applying changes (default: False)",
+        '--dry-run',
+        action='store_true',
+        help='Perform a dry run without applying changes (default: False)',
         default=False,
     )
     parser.add_argument(
-        "--show-diffs",
-        action="store_true",
-        help=f"Show diffs when committing changes (default: False, ${env_prefix}SHOW_DIFFS)",
-        default=bool(int(os.environ.get(f"{env_prefix}SHOW_DIFFS", 0))),
+        '--show-diffs',
+        action='store_true',
+        help=f'Show diffs when committing changes (default: False, ${env_prefix}SHOW_DIFFS)',
+        default=bool(int(os.environ.get(f'{env_prefix}SHOW_DIFFS', 0))),
     )
     parser.add_argument(
-        "--yes",
-        action="store_true",
-        help="Always say yes to every confirmation",
+        '--yes',
+        action='store_true',
+        help='Always say yes to every confirmation',
         default=False,
     )
     args = parser.parse_args(args)
@@ -123,17 +124,17 @@ def main(args=None, input=None, output=None):
         args.dry_run,
     )
     if args.auto_commits:
-        coder.commit(ask=True, prefix="wip: ", which="repo_files")
+        coder.commit(ask=True, prefix='wip: ', which='repo_files')
 
     if args.apply:
-        with open(args.apply, "r") as f:
+        with open(args.apply) as f:
             content = f.read()
-        coder.update_files(content, inp="")
+        coder.update_files(content, inp='')
         return
 
     coder.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     status = main()
     sys.exit(status)

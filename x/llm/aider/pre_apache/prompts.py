@@ -70,23 +70,19 @@ If a request requires many changes, stop to ask the user for confirmation and fe
 
 # FILES
 
-files_content_gpt_edits = (
-    "I committed your suggested changes with git hash {hash} and commit message: {message}"
+files_content_gpt_edits = 'I committed your suggested changes with git hash {hash} and commit message: {message}'
+
+files_content_gpt_no_edits = (
+    "I wasn't able to see any properly formatted edits in your reply?!"
 )
 
-files_content_gpt_no_edits = "I wasn't able to see any properly formatted edits in your reply?!"
+files_content_local_edits = 'I made some changes to the files myself.'
 
-files_content_local_edits = "I made some changes to the files myself."
+repo_content_prefix = 'These are the files in the git repo:\n\n'
 
-repo_content_prefix = "These are the files in the git repo:\n\n"
+files_content_prefix = 'These are the *ONLY* files you can propose changes to (ask if you need to see others):\n\n'
 
-files_content_prefix = (
-    "These are the *ONLY* files you can propose changes to (ask if you need to see others):\n\n"
-)
-
-files_content_suffix = (
-    """Base any edits on the current contents of the files as shown in the user's last message."""
-)
+files_content_suffix = """Base any edits on the current contents of the files as shown in the user's last message."""
 
 # COMMIT
 commit_system = """You are an expert software engineer.
@@ -99,7 +95,7 @@ Reply with JUST the commit message, without quotes, comments, questions, etc!
 
 # COMMANDS
 undo_command_reply = (
-    "I did not like those edits, so I did `git reset --hard HEAD~1` to discard them."
+    'I did not like those edits, so I did `git reset --hard HEAD~1` to discard them.'
 )
 
-added_files = "Please note that I shared content of these additional files: {fnames}"
+added_files = 'Please note that I shared content of these additional files: {fnames}'

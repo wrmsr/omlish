@@ -1,45 +1,50 @@
 # flake8: noqa: E501
 
 import unittest
-from aider import utils
+
+from .. import utils
 
 
 class TestUtils(unittest.TestCase):
     def test_replace_most_similar_chunk(self):
-        whole = "This is a sample text.\nAnother line of text.\nYet another line.\n"
-        part = "This is a sample text"
-        replace = "This is a replaced text."
-        expected_output = "This is a replaced text..\nAnother line of text.\nYet another line.\n"
+        whole = 'This is a sample text.\nAnother line of text.\nYet another line.\n'
+        part = 'This is a sample text'
+        replace = 'This is a replaced text.'
+        expected_output = (
+            'This is a replaced text..\nAnother line of text.\nYet another line.\n'
+        )
 
         result = utils.replace_most_similar_chunk(whole, part, replace)
         self.assertEqual(result, expected_output)
 
     def test_replace_most_similar_chunk_not_perfect_match(self):
-        whole = "This is a sample text.\nAnother line of text.\nYet another line."
-        part = "This was a sample text.\nAnother line of txt"
-        replace = "This is a replaced text.\nModified line of text."
-        expected_output = "This is a replaced text.\nModified line of text.\nYet another line."
+        whole = 'This is a sample text.\nAnother line of text.\nYet another line.'
+        part = 'This was a sample text.\nAnother line of txt'
+        replace = 'This is a replaced text.\nModified line of text.'
+        expected_output = (
+            'This is a replaced text.\nModified line of text.\nYet another line.'
+        )
 
         result = utils.replace_most_similar_chunk(whole, part, replace)
         self.assertEqual(result, expected_output)
 
     def test_strip_quoted_wrapping(self):
-        input_text = (
-            "filename.ext\n```\nWe just want this content\nNot the filename and triple quotes\n```"
+        input_text = 'filename.ext\n```\nWe just want this content\nNot the filename and triple quotes\n```'
+        expected_output = (
+            'We just want this content\nNot the filename and triple quotes\n'
         )
-        expected_output = "We just want this content\nNot the filename and triple quotes\n"
-        result = utils.strip_quoted_wrapping(input_text, "filename.ext")
+        result = utils.strip_quoted_wrapping(input_text, 'filename.ext')
         self.assertEqual(result, expected_output)
 
     def test_strip_quoted_wrapping_no_filename(self):
-        input_text = "```\nWe just want this content\nNot the triple quotes\n```"
-        expected_output = "We just want this content\nNot the triple quotes\n"
+        input_text = '```\nWe just want this content\nNot the triple quotes\n```'
+        expected_output = 'We just want this content\nNot the triple quotes\n'
         result = utils.strip_quoted_wrapping(input_text)
         self.assertEqual(result, expected_output)
 
     def test_strip_quoted_wrapping_no_wrapping(self):
-        input_text = "We just want this content\nNot the triple quotes\n"
-        expected_output = "We just want this content\nNot the triple quotes\n"
+        input_text = 'We just want this content\nNot the triple quotes\n'
+        expected_output = 'We just want this content\nNot the triple quotes\n'
         result = utils.strip_quoted_wrapping(input_text)
         self.assertEqual(result, expected_output)
 
@@ -60,7 +65,7 @@ Hope you like it!
 """
 
         edits = list(utils.find_original_update_blocks(edit))
-        self.assertEqual(edits, [("foo.txt", "Two\n", "Tooooo\n")])
+        self.assertEqual(edits, [('foo.txt', 'Two\n', 'Tooooo\n')])
 
     def test_find_original_update_blocks_quote_below_filename(self):
         edit = """
@@ -79,7 +84,7 @@ Hope you like it!
 """
 
         edits = list(utils.find_original_update_blocks(edit))
-        self.assertEqual(edits, [("foo.txt", "Two\n", "Tooooo\n")])
+        self.assertEqual(edits, [('foo.txt', 'Two\n', 'Tooooo\n')])
 
     def test_find_original_update_blocks_unclosed(self):
         edit = """
@@ -98,7 +103,7 @@ oops!
 
         with self.assertRaises(ValueError) as cm:
             list(utils.find_original_update_blocks(edit))
-        self.assertIn("Incomplete", str(cm.exception))
+        self.assertIn('Incomplete', str(cm.exception))
 
     def test_find_original_update_blocks_missing_filename(self):
         edit = """
@@ -116,7 +121,7 @@ oops!
 
         with self.assertRaises(ValueError) as cm:
             list(utils.find_original_update_blocks(edit))
-        self.assertIn("filename", str(cm.exception))
+        self.assertIn('filename', str(cm.exception))
 
     def test_find_original_update_blocks_no_final_newline(self):
         edit = """
@@ -154,5 +159,5 @@ aider/coder.py
         list(utils.find_original_update_blocks(edit))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

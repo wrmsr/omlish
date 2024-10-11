@@ -18,23 +18,25 @@ def try_dotdotdots(whole, part, replace):
     If perfect edit succeeds, return the updated whole.
     """
 
-    dots_re = re.compile(r"(^\s*\.\.\.\n)", re.MULTILINE | re.DOTALL)
+    dots_re = re.compile(r'(^\s*\.\.\.\n)', re.MULTILINE | re.DOTALL)
 
     part_pieces = re.split(dots_re, part)
     replace_pieces = re.split(dots_re, replace)
 
     if len(part_pieces) != len(replace_pieces):
-        raise ValueError("Unpaired ... in edit block")
+        raise ValueError('Unpaired ... in edit block')
 
     if len(part_pieces) == 1:
         # no dots in this edit block, just return None
-        return
+        return None
 
     # Compare odd strings in part_pieces and replace_pieces
-    all_dots_match = all(part_pieces[i] == replace_pieces[i] for i in range(1, len(part_pieces), 2))
+    all_dots_match = all(
+        part_pieces[i] == replace_pieces[i] for i in range(1, len(part_pieces), 2)
+    )
 
     if not all_dots_match:
-        raise ValueError("Unmatched ... in edit block")
+        raise ValueError('Unmatched ... in edit block')
 
     part_pieces = [part_pieces[i] for i in range(0, len(part_pieces), 2)]
     replace_pieces = [replace_pieces[i] for i in range(0, len(replace_pieces), 2)]
@@ -45,13 +47,13 @@ def try_dotdotdots(whole, part, replace):
             continue
 
         if not part and replace:
-            if not whole.endswith("\n"):
-                whole += "\n"
+            if not whole.endswith('\n'):
+                whole += '\n'
             whole += replace
             continue
 
         if part not in whole:
-            raise ValueError("No perfect matching chunk in edit block with ...")
+            raise ValueError('No perfect matching chunk in edit block with ...')
 
         whole = whole.replace(part, replace)
 
@@ -65,7 +67,7 @@ def replace_most_similar_chunk(whole, part, replace):
     try:
         res = try_dotdotdots(whole, part, replace)
     except ValueError:
-        return
+        return None
 
     if res:
         return res
@@ -85,8 +87,8 @@ def replace_most_similar_chunk(whole, part, replace):
 
     for length in range(min_len, max_len):
         for i in range(len(whole_lines) - length + 1):
-            chunk = whole_lines[i: i + length]
-            chunk = "\n".join(chunk)
+            chunk = whole_lines[i : i + length]
+            chunk = '\n'.join(chunk)
 
             similarity = SequenceMatcher(None, chunk, part).ratio()
 
@@ -96,28 +98,28 @@ def replace_most_similar_chunk(whole, part, replace):
                 most_similar_chunk_end = i + length
 
     if max_similarity < similarity_thresh:
-        return
+        return None
 
     replace_lines = replace.splitlines()
     modified_whole = (
-            whole_lines[:most_similar_chunk_start]
-            + replace_lines
-            + whole_lines[most_similar_chunk_end:]
+        whole_lines[:most_similar_chunk_start]
+        + replace_lines
+        + whole_lines[most_similar_chunk_end:]
     )
-    modified_whole = "\n".join(modified_whole)
+    modified_whole = '\n'.join(modified_whole)
 
-    if whole.endswith("\n"):
-        modified_whole += "\n"
+    if whole.endswith('\n'):
+        modified_whole += '\n'
 
     return modified_whole
 
 
 def quoted_file(fname, display_fname):
-    prompt = "\n"
+    prompt = '\n'
     prompt += display_fname
-    prompt += "\n```\n"
+    prompt += '\n```\n'
     prompt += Path(fname).read_text()
-    prompt += "\n```\n"
+    prompt += '\n```\n'
     return prompt
 
 
@@ -140,12 +142,12 @@ def strip_quoted_wrapping(res, fname=None):
     if fname and res[0].strip().endswith(Path(fname).name):
         res = res[1:]
 
-    if res[0].startswith("```") and res[-1].startswith("```"):
+    if res[0].startswith('```') and res[-1].startswith('```'):
         res = res[1:-1]
 
-    res = "\n".join(res)
-    if res and res[-1] != "\n":
-        res += "\n"
+    res = '\n'.join(res)
+    if res and res[-1] != '\n':
+        res += '\n'
 
     return res
 
@@ -170,7 +172,7 @@ def do_replace(fname, before_text, after_text, dry_run=False):
     else:
         new_content = replace_most_similar_chunk(content, before_text, after_text)
         if not new_content:
-            return
+            return None
 
     if not dry_run:
         fname.write_text(new_content)
@@ -179,30 +181,30 @@ def do_replace(fname, before_text, after_text, dry_run=False):
 
 
 def show_messages(messages, title):
-    print(title.upper(), "*" * 50)
+    print(title.upper(), '*' * 50)
 
     for msg in messages:
         print()
-        print("-" * 50)
-        role = msg["role"].upper()
-        content = msg["content"].splitlines()
+        print('-' * 50)
+        role = msg['role'].upper()
+        content = msg['content'].splitlines()
         for line in content:
             print(role, line)
 
 
-ORIGINAL = "<<<<<<< ORIGINAL"
-DIVIDER = "======="
-UPDATED = ">>>>>>> UPDATED"
+ORIGINAL = '<<<<<<< ORIGINAL'
+DIVIDER = '======='
+UPDATED = '>>>>>>> UPDATED'
 
-separators = "|".join([ORIGINAL, DIVIDER, UPDATED])
+separators = '|'.join([ORIGINAL, DIVIDER, UPDATED])
 
-split_re = re.compile(r"^((?:" + separators + r")[ ]*\n)", re.MULTILINE | re.DOTALL)
+split_re = re.compile(r'^((?:' + separators + r')[ ]*\n)', re.MULTILINE | re.DOTALL)
 
 
 def find_original_update_blocks(content):
     # make sure we end with a newline, otherwise the regex will miss <<UPD on the last line
-    if not content.endswith("\n"):
-        content = content + "\n"
+    if not content.endswith('\n'):
+        content = content + '\n'
 
     pieces = re.split(split_re, content)
 
@@ -215,7 +217,7 @@ def find_original_update_blocks(content):
 
             if cur in (DIVIDER, UPDATED):
                 processed.append(cur)
-                raise ValueError(f"Unexpected {cur}")
+                raise ValueError(f'Unexpected {cur}')
 
             if cur.strip() != ORIGINAL:
                 processed.append(cur)
@@ -224,10 +226,12 @@ def find_original_update_blocks(content):
             processed.append(cur)  # original_marker
 
             filename = processed[-2].splitlines()[-1].strip()
-            if not len(filename) or "`" in filename:
+            if not len(filename) or '`' in filename:
                 filename = processed[-2].splitlines()[-2].strip()
-                if not len(filename) or "`" in filename:
-                    raise ValueError(f"Bad/missing filename. It should go right above {ORIGINAL}")
+                if not len(filename) or '`' in filename:
+                    raise ValueError(
+                        f'Bad/missing filename. It should go right above {ORIGINAL}',
+                    )
 
             original_text = pieces.pop()
             processed.append(original_text)
@@ -235,28 +239,28 @@ def find_original_update_blocks(content):
             divider_marker = pieces.pop()
             processed.append(divider_marker)
             if divider_marker.strip() != DIVIDER:
-                raise ValueError(f"Expected {DIVIDER}")
+                raise ValueError(f'Expected {DIVIDER}')
 
             updated_text = pieces.pop()
 
             updated_marker = pieces.pop()
             if updated_marker.strip() != UPDATED:
-                raise ValueError(f"Expected {UPDATED}")
+                raise ValueError(f'Expected {UPDATED}')
 
             yield filename, original_text, updated_text
     except ValueError as e:
-        processed = "".join(processed)
+        processed = ''.join(processed)
         err = e.args[0]
-        raise ValueError(f"{processed}\n^^^ {err}")
+        raise ValueError(f'{processed}\n^^^ {err}')
     except IndexError:
-        processed = "".join(processed)
-        raise ValueError(f"{processed}\n^^^ Incomplete ORIGINAL/UPDATED block.")
+        processed = ''.join(processed)
+        raise ValueError(f'{processed}\n^^^ Incomplete ORIGINAL/UPDATED block.')
     except Exception:
-        processed = "".join(processed)
-        raise ValueError(f"{processed}\n^^^ Error parsing ORIGINAL/UPDATED block.")
+        processed = ''.join(processed)
+        raise ValueError(f'{processed}\n^^^ Error parsing ORIGINAL/UPDATED block.')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     edit = """
 Here's the change:
 
