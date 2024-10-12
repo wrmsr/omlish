@@ -20,6 +20,15 @@ class MarshalContent(lang.NotInstantiable, lang.Final):
     pass
 
 
+MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
+    ta.Sequence[MarshalContent],
+    SingleContent,
+]
+
+
+_MARSHAL_CONTENT_UNION_RTY = rfl.type_(MarshalContentUnion)
+
+
 @dc.dataclass(frozen=True)
 class _ContentMarshaler(msh.Marshaler):
     et: msh.Marshaler
@@ -36,7 +45,7 @@ class _ContentMarshaler(msh.Marshaler):
 
 
 class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent)
+    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY)
     def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         return _ContentMarshaler(ctx.make(ExtendedContent))
 
@@ -57,7 +66,7 @@ class _ContentUnmarshaler(msh.Unmarshaler):
 
 
 class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent)
+    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY)
     def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
         return _ContentUnmarshaler(ctx.make(ExtendedContent))
 
@@ -96,9 +105,4 @@ def _install_standard_marshalling() -> None:
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,
-    )
-
-    msh.GLOBAL_REGISTRY.register(
-        MarshalContent | SingleContent,
-        msh.ReflectOverride(MarshalContent),
     )
