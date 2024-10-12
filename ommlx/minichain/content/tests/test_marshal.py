@@ -13,5 +13,4 @@ class Foo:
 def test_marshal():
     assert msh.marshal('hi', MarshalContent) == 'hi'
     assert msh.marshal('hi', Content) == 'hi'  # type: ignore
-    # FIXME: UGH
-    # assert msh.marshal(Foo('hi')) == {'c': 'hi'}
+    assert msh.marshal(Foo('hi')) == {'c': 'hi'}
