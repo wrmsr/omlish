@@ -11,12 +11,20 @@ from omlish import lang
 ##
 
 
-Content: ta.TypeAlias = ta.Union[
+class ExtendedContent(lang.Abstract, lang.PackageSealed):
+    pass
+
+
+##
+
+
+SingleContent: ta.TypeAlias = ta.Union[  # noqa
     str,
-    ta.Sequence['Content'],
-    'ExtendedContent',
+    ExtendedContent,
 ]
 
 
-class ExtendedContent(lang.Abstract, lang.PackageSealed):
-    pass
+Content: ta.TypeAlias = ta.Union[  # noqa
+    ta.Sequence['Content'],
+    SingleContent,
+]
