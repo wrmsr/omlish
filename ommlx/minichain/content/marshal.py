@@ -9,6 +9,7 @@ from omlish import reflect as rfl
 
 from .content import Content
 from .content import ExtendedContent
+from .content import SingleContent
 from .images import Image
 
 
@@ -95,4 +96,9 @@ def _install_standard_marshalling() -> None:
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,
+    )
+
+    msh.GLOBAL_REGISTRY.register(
+        MarshalContent | SingleContent,
+        msh.ReflectOverride(MarshalContent),
     )

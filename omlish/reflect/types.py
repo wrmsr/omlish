@@ -195,92 +195,111 @@ TYPES: tuple[type, ...] = (
 ##
 
 
-def is_type(obj: ta.Any) -> bool:
-    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
-        return True
+class Reflector:
+    def __init__(
+            self,
+            *,
+            override: ta.Callable[[ta.Any], ta.Any] | None = None,
+    ) -> None:
+        super().__init__()
 
-    oty = type(obj)
+        self._override = override
 
-    return (
-            oty is _UnionGenericAlias or oty is types.UnionType or  # noqa
+    def is_type(self, obj: ta.Any) -> bool:
+        if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
+            return True
 
-            isinstance(obj, ta.NewType) or  # noqa
+        oty = type(obj)
 
-            (
-                is_simple_generic_alias_type(oty) or
-                oty is _CallableGenericAlias
-            ) or
+        return (
+                oty is _UnionGenericAlias or oty is types.UnionType or  # noqa
 
-            isinstance(obj, type) or
+                isinstance(obj, ta.NewType) or  # noqa
 
-            isinstance(obj, _SpecialGenericAlias)
-    )
+                (
+                    is_simple_generic_alias_type(oty) or
+                    oty is _CallableGenericAlias
+                ) or
 
+                isinstance(obj, type) or
 
-def type_(obj: ta.Any) -> Type:
-    if obj is ta.Any:
-        return ANY
-
-    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
-        return obj
-
-    oty = type(obj)
-
-    if oty is _UnionGenericAlias or oty is types.UnionType:
-        return Union(frozenset(type_(a) for a in ta.get_args(obj)))
-
-    if isinstance(obj, ta.NewType):  # noqa
-        return NewType(obj)
-
-    if (
-            is_simple_generic_alias_type(oty) or
-            oty is _CallableGenericAlias
-    ):
-        origin = ta.get_origin(obj)
-        args = ta.get_args(obj)
-        if oty is _CallableGenericAlias:
-            p, r = args
-            if p is Ellipsis or isinstance(p, ta.ParamSpec):
-                raise TypeError(f'Callable argument not yet supported for {obj=}')
-            args = (*p, r)
-            params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
-        elif origin is ta.Generic:
-            params = args
-        else:
-            params = get_params(origin)
-        if len(args) != len(params):
-            raise TypeError(f'Mismatched {args=} and {params=} for {obj=}')
-        return Generic(
-            origin,
-            tuple(type_(a) for a in args),
-            params,
-            obj,
+                isinstance(obj, _SpecialGenericAlias)
         )
 
-    if isinstance(obj, type):
-        if issubclass(obj, ta.Generic):  # type: ignore
-            params = get_params(obj)
-            if params:
-                return Generic(
-                    obj,
-                    params,
-                    params,
-                    obj,
-                )
-        return obj
+    def type(self, obj: ta.Any) -> Type:
+        if self._override is not None:
+            if (ovr := self._override(obj)) is not None:
+                return ovr
 
-    if isinstance(obj, _SpecialGenericAlias):
-        if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
-            params = _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+        if obj is ta.Any:
+            return ANY
+
+        if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
+            return obj
+
+        oty = type(obj)
+
+        if oty is _UnionGenericAlias or oty is types.UnionType:
+            return Union(frozenset(self.type(a) for a in ta.get_args(obj)))
+
+        if isinstance(obj, ta.NewType):  # noqa
+            return NewType(obj)
+
+        if (
+                is_simple_generic_alias_type(oty) or
+                oty is _CallableGenericAlias
+        ):
+            origin = ta.get_origin(obj)
+            args = ta.get_args(obj)
+            if oty is _CallableGenericAlias:
+                p, r = args
+                if p is Ellipsis or isinstance(p, ta.ParamSpec):
+                    raise TypeError(f'Callable argument not yet supported for {obj=}')
+                args = (*p, r)
+                params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+            elif origin is ta.Generic:
+                params = args
+            else:
+                params = get_params(origin)
+            if len(args) != len(params):
+                raise TypeError(f'Mismatched {args=} and {params=} for {obj=}')
             return Generic(
-                ks.origin,
-                params,
+                origin,
+                tuple(self.type(a) for a in args),
                 params,
                 obj,
             )
 
-    if isinstance(obj, _AnnotatedAlias):
-        o = ta.get_args(obj)[0]
-        return Annotated(type_(o), md=obj.__metadata__, obj=obj)
+        if isinstance(obj, type):
+            if issubclass(obj, ta.Generic):  # type: ignore
+                params = get_params(obj)
+                if params:
+                    return Generic(
+                        obj,
+                        params,
+                        params,
+                        obj,
+                    )
+            return obj
 
-    raise TypeError(obj)
+        if isinstance(obj, _SpecialGenericAlias):
+            if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
+                params = _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+                return Generic(
+                    ks.origin,
+                    params,
+                    params,
+                    obj,
+                )
+
+        if isinstance(obj, _AnnotatedAlias):
+            o = ta.get_args(obj)[0]
+            return Annotated(self.type(o), md=obj.__metadata__, obj=obj)
+
+        raise TypeError(obj)
+
+
+DEFAULT_REFLECTOR = Reflector()
+
+is_type = DEFAULT_REFLECTOR.is_type
+type_ = DEFAULT_REFLECTOR.type

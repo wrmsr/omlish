@@ -164,9 +164,12 @@ class BaseContext(lang.Abstract):
     options: col.TypeMap[Option] = col.TypeMap()
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
-        if (ovr := self.registry.get_of(o, ReflectOverride)):
-            return ovr[-1].rty
-        return rfl.type_(o)
+        def override(o):
+            if (ovr := self.registry.get_of(o, ReflectOverride)):
+                return ovr[-1].rty
+            return None
+
+        return rfl.Reflector(override=override).type(o)
 
 
 @dc.dataclass(frozen=True)
