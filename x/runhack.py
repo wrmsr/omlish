@@ -580,10 +580,7 @@ import os.path
 import sys
 
 
-r"""
-omlish-pycharm-runhack.pth:
-  import sys; exec('\n'.join(['try:', '  import x.runhack', 'except ImportError:', '  pass', 'else:', '  x.runhack._run()']))
-"""  # noqa
+##
 
 
 _HAS_RUN = False
@@ -688,3 +685,42 @@ def _run() -> None:
             rel_path + '::test_lifecycles',  # whole file
         ]
         debug(f'{sys.argv=}')
+
+
+##
+
+
+_DEFAULT_PTH_FILE_NAME = 'omlish-pycharm-runhack.pth'
+_DEFAULT_PTH_MODULE_NAME = 'x.runhack'
+
+
+def _build_pth_file_src(module_name: str) -> str:
+    return (
+        'import sys; '
+        r"exec('\n'.join(["
+        "'try:', "
+        f"'  import {module_name}', "
+        "'except ImportError:', " ""
+        "'  pass', "
+        "'else:', "
+        f"'  {module_name}._run()'"
+        "]))"
+    )
+
+
+def _install_pth_file(
+        *,
+        file_name: str | None = _DEFAULT_PTH_FILE_NAME,
+        module_name: str | None = _DEFAULT_PTH_MODULE_NAME,
+) -> None:
+    import site
+
+    if os.path.isfile(file := os.path.join(site.getsitepackages()[0], file_name)):
+        return
+
+    with open(file, 'w') as f:
+        f.write(_build_pth_file_src(module_name))
+
+
+if __name__ == '__main__':
+    _install_pth_file()
