@@ -12,6 +12,7 @@ from ..formats import json
 def _tag_sort_key(s: str) -> tuple:
     l = []
     for p in s.split('.'):
+        v: ta.Any
         try:
             v = int(p)
         except ValueError:
@@ -43,24 +44,25 @@ def select_latest_tag(
 ) -> str:
     check.not_isinstance(tags, str)
 
-    tags_by_sfx: dict[str | None, set[tuple[str, str]]] = {}
+    tags_by_sfx: dict[str | None, set[tuple[tuple, str]]] = {}
     for t in tags:
         p, s = split_tag_suffix(t, suffix_delim)
-        tags_by_sfx.setdefault(s, set()).add((p, t))
+        tags_by_sfx.setdefault(s, set()).add((_tag_sort_key(p), t))
 
     if base is not None:
         bp, bs = split_tag_suffix(base, suffix_delim)
         if suffix is None:
             suffix = bs
-
-    ss = tags_by_sfx[suffix]
-    sl = sorted(ss, key=lambda t: _tag_sort_key(t[0]))
-
-    if base is not None:
-        breakpoint()
-        raise NotImplementedError
+        base_key = _tag_sort_key(bp)
     else:
-        return sl[-1][1]
+        base_key = None
+
+    sl = sorted(tags_by_sfx[suffix])
+
+    if base_key is not None:
+        sl = [(k, t) for k, t in sl if k[0] == base_key[0]]
+
+    return sl[-1][1]
 
 
 ##
@@ -69,7 +71,7 @@ def select_latest_tag(
 @dc.dataclass(frozen=True)
 class HubRepoInfo:
     repo: str
-    tags: ta.Mapping[str, ta.Any]
+    tags: ta.Sequence[str]
     manifests: ta.Mapping[str, ta.Mapping[str, ta.Any]]
 
 
@@ -126,10 +128,11 @@ def get_hub_repo_info(
 
     #
 
-    tags_dct = req_json(
+    tags_resp = req_json(
         f'{api_url}/{repo}/tags/list',
         headers=req_hdrs,
     )
+    tags_dct = tags_resp.get('tags', {})
 
     manis = {}
     for tag in tags:

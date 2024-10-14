@@ -24,4 +24,6 @@ from .helpers import (  # noqa
 from .hub import (  # noqa
     HubRepoInfo,
     get_hub_repo_info,
+    select_latest_tag,
+    split_tag_suffix,
 )
