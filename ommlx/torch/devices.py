@@ -27,7 +27,7 @@ def to(o: CanMoveToDeviceT, device: str | None) -> CanMoveToDeviceT:
     elif isinstance(o, torch.nn.Module):
         if device is not None:
             o.to(device)
-        return o  # type: ignore
+        return o
 
     else:
         raise TypeError(o)

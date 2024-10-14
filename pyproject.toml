@@ -103,10 +103,6 @@ show_traceback = true
 
 check_untyped_defs = true
 
-exclude = [
-    'omlish/dataclasses/tests/cpython/',
-]
-
 
 ##
 
@@ -135,10 +131,6 @@ line-length = 120
 indent-width = 4
 
 [tool.ruff.lint]
-exclude = [
-    'omlish/dataclasses/tests/cpython/*',
-]
-
 select = ['ALL']
 
 ignore = [
@@ -278,8 +270,6 @@ exclude = [
     '.git',
     '.idea',
     '.venv',
-    'omlish/antlr/_runtime',
-    'omlish/dataclasses/tests/cpython/',
 ]
 
 ignore = [
@@ -313,8 +303,6 @@ exclude = [
     '.git',
     '.idea',
     '.venv',
-    'omlish/antlr/_runtime',
-    'omlish/dataclasses/tests/cpython/',
 ]
 
 venvPath = '.'
