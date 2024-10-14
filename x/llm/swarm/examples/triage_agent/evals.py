@@ -6,6 +6,11 @@ from x.llm.swarm.examples.triage_agent.evals_util import BoolEvalResult
 from x.llm.swarm.examples.triage_agent.evals_util import evaluate_with_llm_bool
 from x.llm.swarm import Swarm
 
+from x.dp.utils import load_secrets
+
+
+load_secrets()
+
 
 client = Swarm()
 

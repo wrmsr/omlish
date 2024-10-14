@@ -3,6 +3,11 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
+from x.dp.utils import load_secrets
+
+
+load_secrets()
+
 
 __client = instructor.from_openai(OpenAI())
 
