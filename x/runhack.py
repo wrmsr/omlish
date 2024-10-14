@@ -2,6 +2,17 @@
 What this does:
  -
 
+Dimensions:
+ - is in pycharm? PYCHARM_HOSTED
+ - cwd IDE_PROJECT_ROOTS? should *always* be
+ - is in debugger? pydevd.py
+  - --file? --module?
+ - is test runner? --file _jb_pytest_runner.py
+  - --target? --path?
+ - is *not* in debugger?
+  - file? argv = ['/x/y.py']
+  - module? orig_argv = ['-m', module]
+
 bad argv = cwd=/x
   /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
   ...
