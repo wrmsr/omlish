@@ -205,6 +205,33 @@ class Cli(ap.Cli):
         print(dck.select_latest_tag(info.tags, base=base))
         return 0
 
+    @ap.command(
+        ap.arg('-f', '--file'),
+    )
+    def compose_image_updates(self) -> None:
+        if self.args.file:
+            yml_file = self.args.file
+        else:
+            yml_file = os.path.join('docker', 'compose.yml')
+
+        with open(yml_file) as f:
+            yml_src = f.read()
+
+        cfg_dct = yaml.safe_load(yml_src)
+        for svc_name, svc_dct in cfg_dct.get('services', {}).items():
+            if not (img := svc_dct.get('image')):
+                continue
+
+            repo, _, base = img.partition(':')
+            if (info := dck.get_hub_repo_info(repo)) is None:
+                continue
+
+            lt = dck.select_latest_tag(info.tags, base=base)
+            if f'{repo}:{lt}' == img:
+                continue
+
+            print(f'{svc_name}: {lt}')
+
 
 # @omlish-manifest
 _CLI_MODULE = CliModule('docker', __name__)

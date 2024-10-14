@@ -355,6 +355,10 @@ DOCKER_BASE_PORT=35220
 docker-ports: venv
 	${PYTHON} -m omdev.tools.dockertools reset-compose-ports -wq ${DOCKER_BASE_PORT}
 
+.PHONY: docker-updates
+docker-updates: venv
+	${PYTHON} -m omdev.tools.dockertools compose-image-updates
+
 
 ### CI
 
