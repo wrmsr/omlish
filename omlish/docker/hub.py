@@ -1,4 +1,5 @@
 import typing as ta
+import urllib.error
 import urllib.request
 
 from .. import check
@@ -81,7 +82,8 @@ def get_hub_repo_info(
         auth_url: str = 'https://auth.docker.io/',
         api_url: str = 'https://registry-1.docker.io/v2/',
         tags: ta.Iterable[str] | None = None,
-) -> HubRepoInfo:
+        handled_codes: ta.Container[int] | None = (401, 404),
+) -> HubRepoInfo | None:
     """
     https://stackoverflow.com/a/39376254
 
@@ -103,7 +105,7 @@ def get_hub_repo_info(
     if tags is not None:
         check.not_isinstance(tags, str)
     else:
-        tags = ['latest']
+        tags = []
 
     auth_url = auth_url.rstrip('/')
     api_url = api_url.rstrip('/')
@@ -128,10 +130,17 @@ def get_hub_repo_info(
 
     #
 
-    tags_resp = req_json(
-        f'{api_url}/{repo}/tags/list',
-        headers=req_hdrs,
-    )
+    try:
+        tags_resp = req_json(
+            f'{api_url}/{repo}/tags/list',
+            headers=req_hdrs,
+        )
+    except urllib.error.HTTPError as ue:
+        if ue.code in (handled_codes or ()):
+            return None
+        else:
+            raise
+
     tags_dct = tags_resp.get('tags', {})
 
     manis = {}
