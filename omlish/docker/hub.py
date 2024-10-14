@@ -1,6 +1,7 @@
 import typing as ta
 import urllib.request
 
+from .. import check
 from .. import dataclasses as dc
 from ..formats import json
 
@@ -9,7 +10,7 @@ from ..formats import json
 class HubRepoInfo:
     repo: str
     tags: ta.Mapping[str, ta.Any]
-    latest_manifests: ta.Mapping[str, ta.Any]
+    manifests: ta.Mapping[str, ta.Mapping[str, ta.Any]]
 
 
 def get_hub_repo_info(
@@ -17,6 +18,7 @@ def get_hub_repo_info(
         *,
         auth_url: str = 'https://auth.docker.io/',
         api_url: str = 'https://registry-1.docker.io/v2/',
+        tags: ta.Iterable[str] | None = None,
 ) -> HubRepoInfo:
     """
     https://stackoverflow.com/a/39376254
@@ -36,6 +38,10 @@ def get_hub_repo_info(
         -s "https://registry-1.docker.io/v2/${repo}/manifests/latest" \
     | jq .
     """
+    if tags is not None:
+        check.not_isinstance(tags, str)
+    else:
+        tags = ['latest']
 
     auth_url = auth_url.rstrip('/')
     api_url = api_url.rstrip('/')
@@ -60,16 +66,19 @@ def get_hub_repo_info(
         headers=req_hdrs,
     )
 
-    latest_mani_dct = req_json(
-        f'{api_url}/{repo}/manifests/latest',
-        headers={
-            **req_hdrs,
-            'Accept': 'application/vnd.docker.distribution.manifest.v2+json',
-        },
-    )
+    manis = {}
+    for tag in tags:
+        mani = req_json(
+            f'{api_url}/{repo}/manifests/latest',
+            headers={
+                **req_hdrs,
+                'Accept': 'application/vnd.docker.distribution.manifest.v2+json',
+            },
+        )
+        manis[tag] = mani
 
     return HubRepoInfo(
         repo,
         tags_dct,
-        latest_mani_dct,
+        manis,
     )
