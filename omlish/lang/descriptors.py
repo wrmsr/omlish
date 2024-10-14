@@ -97,15 +97,15 @@ def update_wrapper(
         assigned: ta.Iterable[str] = functools.WRAPPER_ASSIGNMENTS,
         updated: ta.Iterable[str] = functools.WRAPPER_UPDATES,
         *,
-        filter: ta.Iterable[str] | None = None,  # noqa
+        exclude: ta.Iterable[str] | None = None,
         getattr: ta.Callable = getattr,  # noqa
         setattr: ta.Callable = setattr,  # noqa
 ) -> T:
-    if filter:
-        if isinstance(filter, str):
-            filter = [filter]  # noqa
-        assigned = tuple(a for a in assigned if a not in filter)
-        updated = tuple(a for a in updated if a not in filter)
+    if exclude:
+        if isinstance(exclude, str):
+            exclude = [exclude]  # noqa
+        assigned = tuple(a for a in assigned if a not in exclude)
+        updated = tuple(a for a in updated if a not in exclude)
 
     for attr in assigned:
         try:
@@ -135,7 +135,7 @@ class _decorator_descriptor:  # noqa
     if not _DECORATOR_HANDLES_UNBOUND_METHODS:
         def __init__(self, wrapper, fn):
             self._wrapper, self._fn = wrapper, fn
-            update_wrapper(self, fn, filter='__dict__')
+            update_wrapper(self, fn, exclude='__dict__')
 
         def __get__(self, instance, owner=None):
             return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
@@ -144,7 +144,7 @@ class _decorator_descriptor:  # noqa
         def __init__(self, wrapper, fn):
             self._wrapper, self._fn = wrapper, fn
             self._md = _has_method_descriptor(fn)
-            update_wrapper(self, fn, filter='__dict__')
+            update_wrapper(self, fn, exclude='__dict__')
 
         def __get__(self, instance, owner=None):
             fn = self._fn.__get__(instance, owner)
@@ -174,7 +174,7 @@ class _decorator_descriptor:  # noqa
 class _decorator:  # noqa
     def __init__(self, wrapper):
         self._wrapper = wrapper
-        update_wrapper(self, wrapper, filter='__dict__')
+        update_wrapper(self, wrapper, exclude='__dict__')
 
     def __repr__(self):
         return f'{self.__class__.__name__}<{self._wrapper}>'

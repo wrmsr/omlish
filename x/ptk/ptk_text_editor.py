@@ -26,12 +26,15 @@ A simple example of a Notepad-like text editor.
 """
 import asyncio
 import datetime
+import sys
+import typing as ta
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.completion import PathCompleter
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 from prompt_toolkit.layout.containers import ConditionalContainer
 from prompt_toolkit.layout.containers import Float
 from prompt_toolkit.layout.containers import HSplit
@@ -183,6 +186,12 @@ def _(event):
     event.app.layout.focus(root_container.window)
 
 
+@bindings.add('c-\\')
+def _(event):
+    """Force exit."""
+    sys.exit(1)
+
+
 #
 # Handlers for menu items.
 #
@@ -323,7 +332,40 @@ def do_status_bar():
 #
 
 
-root_container = MenuContainer(
+def _resend_keypress(kb: KeyBindings, event: KeyPressEvent, new_key: str) -> None:
+    # TODO: KeyProcessor._process handles eager, prefixes, etc
+    bs = [b for b in kb.get_bindings_for_keys((new_key,)) if b.filter()]
+    bs[-1].call(event)
+
+
+class MyMenuContainer(MenuContainer):
+    def __init__(self, **kwargs: ta.Any) -> None:
+        super().__init__(**kwargs)
+
+        kb = self.control.key_bindings
+
+        @Condition
+        def in_menu() -> bool:
+            return len(self.selected_menu) > 0
+
+        @kb.add("c-f", filter=in_menu)
+        def _up_in_menu(event: KeyPressEvent) -> None:
+            _resend_keypress(kb, event, 'right')
+
+        @kb.add("c-b", filter=in_menu)
+        def _up_in_menu(event: KeyPressEvent) -> None:
+            _resend_keypress(kb, event, 'left')
+
+        @kb.add("c-p", filter=in_menu)
+        def _up_in_menu(event: KeyPressEvent) -> None:
+            _resend_keypress(kb, event, 'up')
+
+        @kb.add("c-n", filter=in_menu)
+        def _down_in_menu(event: KeyPressEvent) -> None:
+            _resend_keypress(kb, event, 'down')
+
+
+root_container = MyMenuContainer(
     body=body,
     menu_items=[
         MenuItem(
