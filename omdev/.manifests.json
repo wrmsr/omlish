@@ -123,7 +123,7 @@
     "module": ".tools.dockertools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/dockertools.py",
-    "line": 183,
+    "line": 236,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "docker",
