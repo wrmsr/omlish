@@ -6,6 +6,66 @@ from .. import dataclasses as dc
 from ..formats import json
 
 
+##
+
+
+def _tag_sort_key(s: str) -> tuple:
+    l = []
+    for p in s.split('.'):
+        try:
+            v = int(p)
+        except ValueError:
+            v = s
+        l.append((not isinstance(v, int), v))
+    return tuple(l)
+
+
+DEFAULT_TAG_SUFFIX_DELIM = '-+'
+
+
+def split_tag_suffix(
+        tag: str,
+        suffix_delim: ta.Iterable[str] = DEFAULT_TAG_SUFFIX_DELIM,
+) -> tuple[str, str | None]:
+    for d in suffix_delim:
+        if d in tag:
+            p, _, s = tag.partition(d)
+            return p, s
+    return tag, None
+
+
+def select_latest_tag(
+        tags: ta.Iterable[str],
+        *,
+        base: str | None = None,
+        suffix: str | None = None,
+        suffix_delim: ta.Iterable[str] = '-+',
+) -> str:
+    check.not_isinstance(tags, str)
+
+    tags_by_sfx: dict[str | None, set[tuple[str, str]]] = {}
+    for t in tags:
+        p, s = split_tag_suffix(t, suffix_delim)
+        tags_by_sfx.setdefault(s, set()).add((p, t))
+
+    if base is not None:
+        bp, bs = split_tag_suffix(base, suffix_delim)
+        if suffix is None:
+            suffix = bs
+
+    ss = tags_by_sfx[suffix]
+    sl = sorted(ss, key=lambda t: _tag_sort_key(t[0]))
+
+    if base is not None:
+        breakpoint()
+        raise NotImplementedError
+    else:
+        return sl[-1][1]
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class HubRepoInfo:
     repo: str
