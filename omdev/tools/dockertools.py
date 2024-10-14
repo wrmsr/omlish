@@ -190,6 +190,17 @@ class Cli(ap.Cli):
         info = dck.get_hub_repo_info(self.args.repo, tags=self.args.tags or None)
         print(json.dumps_pretty(msh.marshal(info)))
 
+    @ap.command(
+        ap.arg('image'),
+    )
+    def repo_latest_image(self) -> None:
+        if ':' in self.args.image:
+            repo, _, base = self.args.image.partition(':')
+        else:
+            repo, base = self.args.image, None
+        info = dck.get_hub_repo_info(repo)
+        print(dck.select_latest_tag(info.tags, base=base))
+
 
 # @omlish-manifest
 _CLI_MODULE = CliModule('docker', __name__)
