@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -12,7 +13,21 @@ P = ta.ParamSpec('P')
 
 
 @dc.dataclass(frozen=True)
-class BoolFn(ta.Callable[P, bool], lang.Final):
+class BoolFn(lang.Abstract, lang.Sealed, ta.Generic[P]):
+    @abc.abstractmethod
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        raise NotImplementedError
+
+    @classmethod
+    def of(cls, fn: ta.Callable[P, bool]) -> 'BoolFn[P]':
+        if isinstance(fn, BoolFn):
+            return fn
+        else:
+            return FnBoolFn(fn)
+
+
+@dc.dataclass(frozen=True)
+class FnBoolFn(BoolFn[P], lang.Final):
     fn: ta.Callable[P, bool]
 
     def __post_init__(self) -> None:
@@ -28,7 +43,7 @@ class BoolFn(ta.Callable[P, bool], lang.Final):
 
 
 def _main() -> None:
-    bfn = BoolFn(lambda x: x < 3)
+    bfn = BoolFn.of(lambda x: x < 3)
     assert bfn(2)
     assert not bfn(3)
 
