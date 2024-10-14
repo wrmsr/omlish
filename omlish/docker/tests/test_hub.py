@@ -28,3 +28,4 @@ def test_select_latest_tag():
     assert hub.select_latest_tag(tags) == '1.10'
     assert hub.select_latest_tag(tags, suffix='foo') == '1.2-foo'
     assert hub.select_latest_tag(tags, suffix='bar') == '2-bar'
+    assert hub.select_latest_tag(tags, base='1.2-bar') == '1.3-bar'
