@@ -10,8 +10,11 @@ import typing as ta
 
 from omlish import argparse as ap
 from omlish import check
+from omlish import docker as dck
 from omlish import lang
 from omlish import logs
+from omlish import marshal as msh
+from omlish.formats import json
 from omlish.formats import yaml
 
 from ..cli import CliModule
@@ -178,6 +181,14 @@ class Cli(ap.Cli):
         if self.args.write:
             with open(yml_file, 'w') as f:
                 f.write(new_src)
+
+    @ap.command(
+        ap.arg('repo'),
+        ap.arg('tags', nargs='*'),
+    )
+    def repo_info(self) -> None:
+        info = dck.get_hub_repo_info(self.args.repo, tags=self.args.tags or None)
+        print(json.dumps_pretty(msh.marshal(info)))
 
 
 # @omlish-manifest
