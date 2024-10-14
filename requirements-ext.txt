@@ -71,7 +71,7 @@ sympy==1.13.3
 
 wgpu==0.18.1
 
-hypothesis==6.114.1
+hypothesis==6.115.0
 
 hexdump==3.3
 
@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.6.4
+simsimd==5.7.0
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -104,7 +104,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.0.0
+accelerate==1.0.1
 
 pytorch-lightning==2.4.0
 
@@ -169,13 +169,13 @@ cloudflare==3.1.0
 
 selectolax==0.3.21
 
-soco==0.30.4
+soco==0.30.5
 
-sounddevice==0.5.0
+sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.40.6
-zigpy==0.67.0
+zigpy==0.68.1
 
 # python-openzwave
 zwave-js-server-python==0.58.1
@@ -231,7 +231,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.35
 
-langsmith==0.1.134
+langsmith==0.1.135
 
 tavily-python==0.5.0
 
