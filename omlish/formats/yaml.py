@@ -225,6 +225,14 @@ def load_all(stream, Loader):  # noqa
             yield loader.get_data()
 
 
+def safe_load(stream):  # noqa
+    return load(stream, yaml.SafeLoader)
+
+
+def safe_load_all(stream):  # noqa  # noqa
+    return load_all(stream, yaml.SafeLoader)
+
+
 def full_load(stream):  # noqa
     return load(stream, yaml.FullLoader)
 
