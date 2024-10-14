@@ -46,6 +46,9 @@ def get_hub_repo_info(
     auth_url = auth_url.rstrip('/')
     api_url = api_url.rstrip('/')
 
+    if repo.startswith('_/'):
+        repo = 'library' + repo[1:]
+
     #
 
     def req_json(url: str, **kwargs: ta.Any) -> ta.Any:
