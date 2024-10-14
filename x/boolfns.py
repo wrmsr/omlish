@@ -1,8 +1,8 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 
@@ -37,6 +37,47 @@ class FnBoolFn(BoolFn[P], lang.Final):
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> bool:
         return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class NotBoolFn(BoolFn[P], lang.Final):
+    child: BoolFn[P]
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.child, BoolFn)
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        return not self.child(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class AndBoolFn(BoolFn[P], lang.Final):
+    children: ta.Sequence[BoolFn[P]]
+
+    def __post_init__(self) -> None:
+        for c in self.children:
+            check.isinstance(c, BoolFn)
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        for c in self.children:
+            if not c(*args, **kwargs):
+                return False
+        return True
+
+
+@dc.dataclass(frozen=True)
+class OrBoolFn(BoolFn[P], lang.Final):
+    children: ta.Sequence[BoolFn[P]]
+
+    def __post_init__(self) -> None:
+        for c in self.children:
+            check.isinstance(c, BoolFn)
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        for c in self.children:
+            if c(*args, **kwargs):
+                return True
+        return False
 
 
 ##
