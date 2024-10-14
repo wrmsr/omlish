@@ -7,7 +7,7 @@ from .. import hub
 @pytest.mark.online
 def test_hub_image_version():
     repo = 'library/nginx'
-    info = check.not_none(hub.get_hub_repo_info(repo))
+    info = check.not_none(hub.get_hub_repo_info(repo, tags=['latest']))
     assert info.tags
     assert info.manifests
 

@@ -71,7 +71,7 @@ sympy==1.13.3
 
 wgpu==0.18.1
 
-hypothesis==6.115.0
+hypothesis==6.115.2
 
 hexdump==3.3
 
@@ -158,7 +158,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.39
+boto3>=1.35.40
 
 google-cloud-compute==1.19.2
 
@@ -229,7 +229,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.35
+langgraph==0.2.36
 
 langsmith==0.1.135
 
