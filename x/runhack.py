@@ -2,9 +2,17 @@
 What this does:
  -
 
+FileTarget
+ModuleTarget
+TestTarget
+
+PythonExe
+DebuggerExe
+
+
 Dimensions:
  - is in pycharm? PYCHARM_HOSTED
- - cwd IDE_PROJECT_ROOTS? should *always* be
+ - cwd IDE_PROJECT_ROOTS? should *always* be -
  - is in debugger? pydevd.py
   - --file? --module?
  - is test runner? --file _jb_pytest_runner.py
@@ -12,6 +20,8 @@ Dimensions:
  - is *not* in debugger?
   - file? argv = ['/x/y.py']
   - module? orig_argv = ['-m', module]
+
+/snap/pycharm-professional/current/plugins/python-ce/helpers/pydev
 
 bad argv = cwd=/x
   /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
@@ -55,6 +65,181 @@ import sys
 ##
 
 
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+##
+
+
+class RunSpec:
+    def __init__(
+            self,
+            *,
+            argv=None,  # type: list[str] | None
+            orig_argv=None,  # type: list[str] | None
+
+            cwd=None,  # type: str | None
+
+            library_roots=None,  # type: list[str] | None
+            path=None,  # type: list[str] | None
+            python_path=None,  # type: list[str] | None
+            ide_project_roots=None,  # type: list[str] | None
+            pycharm_hosted=None,  # type: bool | None
+
+            sys_path=None,  # type: list[str] | None
+    ) -> None:
+        super().__init__()
+
+        if argv is None:
+            argv = sys.argv
+        self._argv = list(argv)
+
+        if orig_argv is None:
+            orig_argv = sys.orig_argv
+        self._orig_argv = list(orig_argv)
+
+        if cwd is None:
+            cwd = os.getcwd()
+        self._cwd = cwd
+
+        if library_roots is None:
+            library_roots = os.environ.get('LIBRARY_ROOTS', '').split(os.pathsep)
+        self._library_roots = list(library_roots)
+
+        if path is None:
+            path = os.environ.get('PATH', '').split(os.pathsep)
+        self._path = list(path)
+
+        if python_path is None:
+            python_path = os.environ.get('PYTHONPATH', '').split(os.pathsep)
+        self._python_path = list(python_path)
+
+        if ide_project_roots is None:
+            ide_project_roots = os.environ.get('IDE_PROJECT_ROOTS', '').split(os.pathsep)
+        self._ide_project_roots = list(ide_project_roots)
+
+        if pycharm_hosted is None:
+            pycharm_hosted = 'PYCHARM_HOSTED' in os.environ
+        self._pycharm_hosted = pycharm_hosted
+
+        if sys_path is None:
+            sys_path = list(sys.path)
+        self._sys_path = sys_path
+
+    _SPEC_ATTRS = (
+        'argv',
+        'orig_argv',
+
+        'cwd',
+
+        'library_roots',
+        'path',
+        'python_path',
+        'ide_project_roots',
+        'pycharm_hosted',
+
+        'sys_path',
+    )
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {a: getattr(self, a) for a in self._SPEC_ATTRS}
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({", ".join(f"{k}={v!r}" for k, v in self.as_dict().items())})'
+
+    @property
+    def argv(self):  # type: () -> list[str]
+        return self._argv
+
+    @property
+    def orig_argv(self):  # type: () -> list[str]
+        return self._orig_argv
+
+    @property
+    def cwd(self):  # type: () -> str
+        return self._cwd
+
+    @property
+    def library_roots(self):  # type: () -> list[str]
+        return self._library_roots
+
+    @property
+    def path(self):  # type: () -> list[str]
+        return self._path
+
+    @property
+    def python_path(self):  # type: () -> list[str]
+        return self._python_path
+
+    @property
+    def ide_project_roots(self):  # type: () -> list[str]
+        return self._ide_project_roots
+
+    @property
+    def pycharm_hosted(self):  # type: () -> bool
+        return self._pycharm_hosted
+
+    @property
+    def sys_path(self):  # type: () -> list[str]
+        return self._sys_path
+
+
+##
+
+
+def _is_pycharm_dir(s: str) -> bool:
+    s = os.path.abspath(s)
+    if not os.path.isdir(s):
+        return False
+
+    ps = s.split(os.sep)
+
+    if sys.platform == 'darwin':
+        # /Applications/PyCharm.app/Contents/bin/pycharm.vmoptions
+        return ps[-1] == 'Contents' and os.path.isfile(os.path.join(s, 'bin', 'pycharm.vmoptions'))
+
+    if sys.platform == 'linux':
+        # /snap/pycharm-professional/current/bin/pycharm64.vmoptions
+        return os.path.isfile(os.path.join(s, 'bin', 'pycharm64.vmoptions'))
+
+    return False
+
+
+def _is_pycharm_file(given: str, expected: str) -> bool:
+    dgs = os.path.abspath(given).split(os.sep)
+    des = expected.split(os.sep)
+    return (
+            len(des) < len(dgs) and
+            dgs[-len(des):] == des and
+            _is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
+    )
+
+
+# class RunAssess:
+#     def __init__(self, spec: RunSpec) -> None:
+#         super().__init__()
+#         self._spec = spec
+#
+#     @cached_nullary
+#     def
+
+
+##
+
+
 _DEFAULT_ENABLED = True
 _DEFAULT_DEBUG = True
 
@@ -84,14 +269,8 @@ def _run() -> None:
 
     #
 
-    debug(f'{sys.argv=}')
-    debug(f'{sys.orig_argv=}')
-    debug(f'{os.getcwd()=}')
-    debug(f'{sorted(os.environ)=}')
-    debug(f'{os.environ.get("LIBRARY_ROOTS")=}')
-    debug(f'{os.environ.get("PATH")=}')
-    debug(f'{os.environ.get("PYTHONPATH")=}')
-    debug(f'{sys.path=}')
+    spec = RunSpec()
+    debug(repr(spec))
 
     # breakpoint()
 
