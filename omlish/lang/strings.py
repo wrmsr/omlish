@@ -14,7 +14,7 @@ def prefix_delimited(s: StrOrBytesT, p: StrOrBytesT, d: StrOrBytesT) -> StrOrByt
 
 
 def prefix_lines(s: StrOrBytesT, p: StrOrBytesT) -> StrOrBytesT:
-    return prefix_delimited(s, p, '\n' if isinstance(s, str) else b'\n')
+    return prefix_delimited(s, p, '\n' if isinstance(s, str) else b'\n')  # type: ignore
 
 
 def indent_lines(s: StrOrBytesT, num: StrOrBytesT) -> StrOrBytesT:

@@ -823,29 +823,30 @@ def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
 
 
 def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
-    if isinstance(ty, type) and abc.ABC in ty.__bases__:
-        impls = [  # type: ignore
-            PolymorphicObjMarshaler.Impl(
-                ity,
-                ity.__qualname__,
-                get_obj_marshaler(ity),
+    if isinstance(ty, type):
+        if abc.ABC in ty.__bases__:
+            impls = [  # type: ignore
+                PolymorphicObjMarshaler.Impl(
+                    ity,
+                    ity.__qualname__,
+                    get_obj_marshaler(ity),
+                )
+                for ity in deep_subclasses(ty)
+                if abc.ABC not in ity.__bases__
+            ]
+            return PolymorphicObjMarshaler(
+                {i.ty: i for i in impls},
+                {i.tag: i for i in impls},
             )
-            for ity in deep_subclasses(ty)
-            if abc.ABC not in ity.__bases__
-        ]
-        return PolymorphicObjMarshaler(
-            {i.ty: i for i in impls},
-            {i.tag: i for i in impls},
-        )
 
-    if isinstance(ty, type) and issubclass(ty, enum.Enum):
-        return EnumObjMarshaler(ty)
+        if issubclass(ty, enum.Enum):
+            return EnumObjMarshaler(ty)
 
-    if dc.is_dataclass(ty):
-        return DataclassObjMarshaler(
-            ty,
-            {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
-        )
+        if dc.is_dataclass(ty):
+            return DataclassObjMarshaler(
+                ty,
+                {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
+            )
 
     if is_generic_alias(ty):
         try:

@@ -1,3 +1,6 @@
+# type: ignore
+# ruff: noqa
+# flake8: noqa
 #from __future__ import annotations
 USING_STRINGS = False
 

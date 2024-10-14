@@ -13,7 +13,7 @@ class IndexedSeq(ta.Sequence[T]):
         super().__init__()
 
         self._lst = list(it)
-        self._idxs = (IdentityKeyDict if identity else dict)(map(reversed, enumerate(self._lst)))
+        self._idxs: ta.Mapping[T, int] = (IdentityKeyDict if identity else dict)((e, i) for i, e in enumerate(self._lst))  # noqa
         if len(self._idxs) != len(self._lst):
             raise ValueError(f'{len(self._idxs)} != {len(self._lst)}')
 
@@ -47,7 +47,7 @@ class IndexedSetSeq(ta.Sequence[ta.AbstractSet[T]]):
         super().__init__()
 
         self._lst = [(IdentitySet if identity else set)(e) for e in it]
-        self._idxs = (IdentityKeyDict if identity else dict)((e, i) for i, es in enumerate(self._lst) for e in es)
+        self._idxs: ta.Mapping[T, int] = (IdentityKeyDict if identity else dict)((e, i) for i, es in enumerate(self._lst) for e in es)  # noqa
         if len(self._idxs) != sum(map(len, self._lst)):
             raise ValueError(f'{len(self._idxs)} != {sum(map(len, self._lst))}')
 
