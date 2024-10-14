@@ -83,7 +83,7 @@ def _add_arguments(parser: argparse.ArgumentParser) -> None:
             else:
                 raise TypeError(fld)
 
-            parser.add_argument(aname, action=_OrderedArgsAction, **kw)
+            parser.add_argument(aname.replace('_', '-'), action=_OrderedArgsAction, **kw)
 
 
 def _process_arguments(args: ta.Any) -> ta.Sequence[Bootstrap.Config]:
