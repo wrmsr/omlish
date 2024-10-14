@@ -75,4 +75,4 @@ def test_triage_agent_calls_correct_function(query, function_name):
 )
 def test_conversation_is_successful(messages):
     result = conversation_was_successful(messages)
-    assert result == True
+    assert result

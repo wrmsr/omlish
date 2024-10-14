@@ -42,7 +42,7 @@ def _main() -> None:
 
     cmds = [
         'rm -rf .venv-install || true',
-        '~/.pyenv/versions/3.12.6/bin/python -mvenv .venv-install',
+        '~/.pyenv/versions/3.12.7/bin/python -mvenv .venv-install',
         '. .venv-install/bin/activate',
         'pip install uv',
         'uv pip install -r requirements-dev.txt',
