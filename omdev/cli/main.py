@@ -41,6 +41,7 @@ _CLI_FUNCS: ta.Sequence[CliFunc] = [
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--cli-pkg-root', action='append')
+    parser.add_argument('--cli-debug', action='store_true')
     parser.add_argument('cmd', nargs='?')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     return parser
@@ -132,23 +133,34 @@ def _select_cmd(args: ta.Any, cmds: ta.Mapping[str, CliCmd]) -> CliCmd | int:
 def _main() -> ta.Any:
     parser = _build_arg_parser()
     args = parser.parse_args()
-    cmds = _build_cmd_dct(args)
-    sel = _select_cmd(args, cmds)
 
-    match sel:
-        case int():
-            return sel
+    def inner():
+        cmds = _build_cmd_dct(args)
+        sel = _select_cmd(args, cmds)
 
-        case CliModule() as cm:
-            sys.argv = [args.cmd, *(args.args or ())]
-            runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
-            return 0
+        match sel:
+            case int():
+                return sel
 
-        case CliFunc() as cf:
-            return cf.fn(*(args.args or ()))
+            case CliModule() as cm:
+                sys.argv = [args.cmd, *(args.args or ())]
+                runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
+                return 0
 
-        case _:
-            raise TypeError(sel)
+            case CliFunc() as cf:
+                return cf.fn(*(args.args or ()))
+
+            case _:
+                raise TypeError(sel)
+
+    if args.cli_debug:
+        from omlish.diag.debug import debugging_on_exception
+
+        with debugging_on_exception():
+            return inner()
+
+    else:
+        return inner()
 
 
 if __name__ == '__main__':

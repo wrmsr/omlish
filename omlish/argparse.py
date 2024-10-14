@@ -70,7 +70,7 @@ def arg(*args, **kwargs) -> Arg:
 #
 
 
-CommandFn = ta.Callable[[], None]
+CommandFn = ta.Callable[[], int | None]
 
 
 @dc.dataclass(eq=False)
@@ -96,9 +96,9 @@ class Command:
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        return dc.replace(self, fn=self.fn.__get__(instance, owner))
+        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
 
-    def __call__(self, *args, **kwargs) -> None:
+    def __call__(self, *args, **kwargs) -> int | None:
         return self.fn(*args, **kwargs)
 
 
@@ -234,10 +234,10 @@ class Cli(metaclass=_CliMeta):
     def unknown_args(self) -> ta.Sequence[str]:
         return self._unknown_args
 
-    def _run_cmd(self, cmd: Command) -> None:
-        cmd.__get__(self, type(self))()
+    def _run_cmd(self, cmd: Command) -> int | None:
+        return cmd.__get__(self, type(self))()
 
-    def __call__(self) -> None:
+    def __call__(self) -> int | None:
         cmd = getattr(self.args, '_cmd', None)
 
         if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
@@ -249,6 +249,9 @@ class Cli(metaclass=_CliMeta):
 
         if cmd is None:
             self.get_parser().print_help()
-            return
+            return 0
 
-        self._run_cmd(cmd)
+        return self._run_cmd(cmd)
+
+    def call_and_exit(self) -> ta.NoReturn:
+        sys.exit(rc if isinstance(rc := self(), int) else 0)

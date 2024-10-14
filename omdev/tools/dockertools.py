@@ -198,7 +198,8 @@ class Cli(ap.Cli):
             repo, _, base = self.args.image.partition(':')
         else:
             repo, base = self.args.image, None
-        info = dck.get_hub_repo_info(repo)
+        if (info := dck.get_hub_repo_info(repo)) is None:
+            return
         print(dck.select_latest_tag(info.tags, base=base))
 
 
