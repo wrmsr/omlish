@@ -186,21 +186,24 @@ class Cli(ap.Cli):
         ap.arg('repo'),
         ap.arg('tags', nargs='*'),
     )
-    def repo_info(self) -> None:
-        info = dck.get_hub_repo_info(self.args.repo, tags=self.args.tags or None)
+    def repo_info(self) -> int:
+        if (info := dck.get_hub_repo_info(self.args.repo, tags=self.args.tags or None)) is None:
+            return 1
         print(json.dumps_pretty(msh.marshal(info)))
+        return 0
 
     @ap.command(
         ap.arg('image'),
     )
-    def repo_latest_image(self) -> None:
+    def repo_latest_image(self) -> int:
         if ':' in self.args.image:
             repo, _, base = self.args.image.partition(':')
         else:
             repo, base = self.args.image, None
         if (info := dck.get_hub_repo_info(repo)) is None:
-            return
+            return 1
         print(dck.select_latest_tag(info.tags, base=base))
+        return 0
 
 
 # @omlish-manifest
@@ -209,4 +212,4 @@ _CLI_MODULE = CliModule('docker', __name__)
 
 if __name__ == '__main__':
     logs.configure_standard_logging('INFO')
-    Cli()()
+    Cli().call_and_exit()
