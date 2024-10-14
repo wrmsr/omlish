@@ -1,4 +1,4 @@
-FROM python:3.12.6-bookworm AS omlish-ci-base
+FROM python:3.12.7-bookworm AS omlish-ci-base
 COPY docker/.timestamp /
 
 
