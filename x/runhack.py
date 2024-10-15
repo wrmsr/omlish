@@ -354,6 +354,7 @@ def parse_args(
         vs = None  # type: list[str] | None
         if isinstance(p, BoolParamDef):
             pass
+
         elif isinstance(p, StrParamDef):
             if v is None:
                 try:
@@ -361,14 +362,19 @@ def parse_args(
                 except StopIteration:
                     raise ArgParseError(k)
             vs = [v]
+
         elif isinstance(p, FinalParamDef):
-            raise NotImplementedError
+            vs = []
+            if v is not None:
+                vs.append(v)
+            vs.extend(it)
+
         else:
             raise TypeError(p)
 
         l.append(ParsedArg(p, vs))
 
-    return ParsedArgs(*l)
+    return ParsedArgs(l)
 
 
 ##
