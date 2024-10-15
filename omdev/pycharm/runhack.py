@@ -933,6 +933,8 @@ class ExecDecision(AsJson):
             target: Target,
             *,
             cwd=None,  # type: str | None
+            python_path=None,  # type: list[str] | None
+            sys_path=None,  # type: list[str] | None
             os_exec: bool = False,
     ) -> None:
         super().__init__()
@@ -942,6 +944,8 @@ class ExecDecision(AsJson):
         self._target = target
 
         self._cwd = cwd
+        self._python_path = python_path
+        self._sys_path = sys_path
         self._os_exec = os_exec
 
     @property
@@ -953,16 +957,33 @@ class ExecDecision(AsJson):
         return self._cwd
 
     @property
+    def python_path(self):  # type: () -> list[str] | None
+        return self._python_path
+
+    @property
+    def sys_path(self):  # type: () -> list[str] | None
+        return self._sys_path
+
+    @property
     def os_exec(self) -> bool:
         return self._os_exec
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'target', 'cwd', 'os_exec')
+        return _attr_repr(
+            self,
+            'target',
+            'cwd',
+            'python_path',
+            'sys_path',
+            'os_exec',
+        )
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
             'target': self._target.as_json(),
             'cwd': self._cwd,
+            'python_path': self._python_path,
+            'sys_path': self._sys_path,
             'os_exec': self._os_exec,
         }
 
@@ -1159,6 +1180,12 @@ def _run() -> None:
 
     if dec.cwd is not None:
         os.chdir(dec.cwd)
+
+    if dec.python_path is not None:
+        os.environ['PYTHONPATH'] = os.pathsep.join(dec.python_path)
+
+    if dec.sys_path is not None:
+        sys.path = dec.sys_path
 
     if dec.os_exec:
         new_exe = Exec(**{  # type: ignore
