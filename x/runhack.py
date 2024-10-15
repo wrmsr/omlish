@@ -419,6 +419,33 @@ def parse_args(
     return Args(params, l)
 
 
+#
+
+
+def render_arg(arg):  # type: (Arg) -> list[str]
+    if isinstance(arg, BoolArg):
+        return [f'--{arg.param.name}']
+
+    elif isinstance(arg, StrArg):
+        return [f'--{arg.param.name}', arg.value]
+
+    elif isinstance(arg, OptStrArg):
+        if arg.value is None:
+            return [f'--{arg.param.name}']
+        else:
+            return [f'--{arg.param.name}={arg.value}']
+
+    elif isinstance(arg, FinalArg):
+        return [f'--{arg.param.name}', *arg.values]
+
+    else:
+        raise TypeError(arg)
+
+
+def render_args(args):  # type: (list[Arg]) -> list[str]
+    return [ra for a in args for ra in render_arg(a)]
+
+
 ##
 
 
@@ -718,10 +745,10 @@ def parse_args_target(
 
 def render_target_args(tgt):  # type: (Target) -> list[str]
     if isinstance(tgt, FileTarget):
-        raise NotImplementedError
+        return [tgt.file, *tgt.argv]
 
     elif isinstance(tgt, ModuleTarget):
-        raise NotImplementedError
+        return ['-m', *tgt.argv]
 
     elif isinstance(tgt, DebuggerTarget):
         raise NotImplementedError
