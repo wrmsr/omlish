@@ -505,8 +505,28 @@ class DebuggerTarget(PycharmTarget):
 
 
 class TestRunnerTarget(PycharmTarget):
+    def __init__(
+            self,
+            args: Args,
+            *,
+            paths,  # type: list[str] | None
+            targets,  # type: list[str] | None
+    ) -> None:
+        super().__init__(args)
+
+        self._paths = paths
+        self._targets = targets
+
+    @property
+    def paths(self):  # type: () -> list[str] | None
+        return self._paths
+
+    @property
+    def targets(self):  # type: () -> list[str] | None
+        return self._targets
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'args')
+        return _attr_repr(self, 'args', 'paths', 'targets')
 
 
 #
