@@ -37,7 +37,7 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 10.4',
+            'pillow ~= 11.0',
         ],
 
         'tinygrad': [
