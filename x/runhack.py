@@ -515,7 +515,7 @@ class ModuleTarget(UserTarget):
     def as_dict(self):  # type: () -> dict[str, object]
         return {
             'module': self._module,
-            'argv': self._argv
+            'argv': self._argv,
         }
 
     def as_json(self):  # type: () -> dict[str, object]
@@ -1003,7 +1003,7 @@ class NewExecDecider:
         if self._debug_fn is not None:
             self._debug_fn(arg)
 
-    def _decide_file_target(self, tgt):  # type: (Target) -> NewExec | None:
+    def _decide_file_target(self, tgt):  # type: (Target) -> NewExec | None
         if not isinstance(tgt, FileTarget):
             return None
 
