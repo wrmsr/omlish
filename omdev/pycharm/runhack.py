@@ -1009,6 +1009,9 @@ class ExecDecider:
         if self._debug_fn is not None:
             self._debug_fn(arg)
 
+    def _filter_out_cwd(self, lst):  # type: (list[str]) -> list[str]
+        return [p for p in lst if p != self._env.cwd]
+
     def _decide_file_target(self, tgt):  # type: (Target) -> ExecDecision | None
         if not isinstance(tgt, FileTarget):
             return None
@@ -1061,6 +1064,8 @@ class ExecDecider:
                 'target': new_dt,
             }),
             cwd=self._root_dir,
+            python_path=self._filter_out_cwd(self._env.python_path),
+            sys_path=self._filter_out_cwd(self._env.sys_path),
         )
 
     def _decide_debugger_module_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
@@ -1084,6 +1089,8 @@ class ExecDecider:
                 'target': new_dt,
             }),
             cwd=self._root_dir,
+            python_path=self._filter_out_cwd(self._env.python_path),
+            sys_path=self._filter_out_cwd(self._env.sys_path),
         )
 
     def decide(self, tgt):  # type: (Target) -> ExecDecision | None
@@ -1094,6 +1101,7 @@ class ExecDecider:
             self._decide_debugger_module_target_not_in_root,
         ]:
             if (ne := fn(tgt)) is not None:
+                self._debug(f'{fn.__name__=}')
                 return ne
 
         return None
