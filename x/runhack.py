@@ -340,14 +340,23 @@ def _run() -> None:
 
     is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG', _DEFAULT_DEBUG))
 
-    def debug(*args, **kwargs):
-        if is_debug:
-            print(*args, **kwargs, file=sys.stderr)
+    def debug(arg):
+        if not is_debug:
+            return
+
+        if isinstance(arg, str):
+            s = arg
+        else:
+            import pprint
+
+            s = pprint.pformat(arg)
+
+        print(s, file=sys.stderr)
 
     #
 
     env = RunEnv()
-    debug(repr(spec))
+    debug(env.as_dict())
 
     # breakpoint()
 
