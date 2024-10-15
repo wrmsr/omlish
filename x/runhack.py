@@ -311,15 +311,29 @@ class ParsedArg:
 class ParsedArgs:
     def __init__(
             self,
+            params: ParamDefs,
             args,  # list[ParsedArg]
     ) -> None:
         super().__init__()
 
+        self._params = params
         self._args = args
+
+        self._arg_lists_by_name = {}  # type: dict[str, list[ParsedArg]]
+        for a in args:
+            self._arg_lists_by_name.setdefault(a.param.name, []).append(a)
+
+    @property
+    def params(self):  # type: () -> ParamDefs
+        return self._params
 
     @property
     def args(self):  # type: () -> list[ParsedArg]
         return self._args
+
+    @property
+    def arg_lists_by_name(self):  # type: () -> dict[str, list[ParsedArg]]
+        return self._arg_lists_by_name
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'args')
