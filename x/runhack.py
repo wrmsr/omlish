@@ -2,13 +2,6 @@
 What this does:
  -
 
-FileTarget
-ModuleTarget
-TestTarget
-
-PythonExe
-DebuggerExe
-
 
 Dimensions:
  - is in pycharm? PYCHARM_HOSTED
@@ -84,7 +77,7 @@ class cached_nullary:  # noqa
 ##
 
 
-class RunSpec:
+class RunEnv:
     def __init__(
             self,
             *,
@@ -228,8 +221,89 @@ def _is_pycharm_file(given: str, expected: str) -> bool:
     )
 
 
-# class RunAssess:
-#     def __init__(self, spec: RunSpec) -> None:
+#
+
+class Target:
+    pass
+
+
+class FileTarget(Target):
+    def __init__(self, file: str) -> None:
+        super().__init__()
+        self._file = file
+
+    @property
+    def file(self) -> str:
+        return self._file
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(file={self._file!r})'
+
+
+class ModuleTarget(Target):
+    def __init__(self, module: str) -> None:
+        super().__init__()
+        self._module = module
+
+    @property
+    def module(self) -> str:
+        return self._module
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(module={self._module!r})'
+
+
+class TestTarget(Target):
+    def __init__(
+            self,
+            targets=None,  # type: list[str] | None
+            paths=None,  # type: list[str] | None
+    ) -> None:
+        super().__init__()
+        self._targets = list(targets or [])
+        self._paths = list(paths or [])
+
+    @property
+    def targets(self):  # type: () -> list[str]
+        return self._targets
+
+    @property
+    def paths(self):  # type: () -> list[str]
+        return self._paths
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(targets={self._targets!r}, paths={self._paths!r})'
+
+
+#
+
+
+class Exe:
+    def __init__(self, exe: str) -> None:
+        super().__init__()
+        self._exe = exe
+
+    @property
+    def exe(self) -> str:
+        return self._exe
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(exe={self._exe!r})'
+
+
+class PythonExe(Exe):
+    pass
+
+
+class DebuggerExe(Exe):
+    pass
+
+
+#
+
+
+# class RunSpec[:
+#     def __init__(self, env: RunEnv) -> None:
 #         super().__init__()
 #         self._spec = spec
 #
@@ -269,7 +343,7 @@ def _run() -> None:
 
     #
 
-    spec = RunSpec()
+    env = RunEnv()
     debug(repr(spec))
 
     # breakpoint()
