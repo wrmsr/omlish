@@ -766,10 +766,11 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
             tgt.file,
             *render_args(tgt.args.args),
         ]
-        if isinstance(tgt, ModuleTarget):
-            l.extend(['--module', '--file', tgt.module, *tgt.argv])
+        dt = tgt.target
+        if isinstance(dt, ModuleTarget):
+            l.extend(['--module', '--file', dt.module, *dt.argv])
         else:
-            l.extend(render_target_args(tgt.target))
+            l.extend(['--file', *render_target_args(dt)])
         return l
 
     elif isinstance(tgt, TestRunnerTarget):
