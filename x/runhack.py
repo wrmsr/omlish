@@ -1007,7 +1007,7 @@ def _run() -> None:
     new_cwd = env.cwd
 
     if isinstance(tgt, FileTarget):
-        new_tgt = FileTarget(**{
+        new_tgt = FileTarget(**{  # type: ignore
             **tgt.as_dict(),
             'file': os.path.abspath(tgt.file),
         })
@@ -1016,7 +1016,7 @@ def _run() -> None:
     elif isinstance(tgt, ModuleTarget):
         if env.cwd != root_dir:
             rel_path = os.path.relpath(env.cwd, root_dir)
-            new_tgt = ModuleTarget(**{
+            new_tgt = ModuleTarget(**{  # type: ignore
                 **tgt.as_dict(),
                 'module': '.'.join([rel_path.replace(os.sep, '.'), tgt.module]),
             })
@@ -1033,7 +1033,7 @@ def _run() -> None:
     os.chdir(new_cwd)
 
     if reexec:
-        new_exe = Exec(**{
+        new_exe = Exec(**{  # type: ignore
             **exe.as_dict(),
             'target': new_tgt,
         })
