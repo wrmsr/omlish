@@ -723,10 +723,13 @@ def _run() -> None:
 
     #
 
+    # breakpoint()
+
     env = RunEnv()
     debug(env.as_dict())
 
-    # breakpoint()
+    tgt = parse_args_target(env.argv)
+    debug(tgt)
 
     #
 
