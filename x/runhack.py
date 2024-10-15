@@ -774,7 +774,18 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
         return l
 
     elif isinstance(tgt, TestRunnerTarget):
-        raise NotImplementedError
+        l = [
+            tgt.file,
+            *render_args(tgt.args.args),
+        ]
+        for t in tgt.tests:
+            if isinstance(t, PathTest):
+                l.extend(['--path', t.s])
+            elif isinstance(t, TargetTest):
+                l.extend(['--target', t.s])
+            else:
+                raise TypeError(t)
+        return l
 
     else:
         raise TypeError(tgt)
