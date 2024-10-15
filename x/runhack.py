@@ -378,7 +378,7 @@ def parse_args(
 
     it = iter(argv)
     for s in it:
-        if len(s) > 2 and s.startswith('--'):
+        if len(s) > 1 and s.startswith('--'):
             s = s[2:]
         else:
             raise ArgParseError(s, argv)
@@ -674,6 +674,8 @@ TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
         Param('path', StrArg),
         Param('offset', StrArg),
         Param('target', StrArg),
+
+        Param('', FinalArg),
     ]),
 )
 
@@ -776,7 +778,6 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
     elif isinstance(tgt, TestRunnerTarget):
         l = [
             tgt.file,
-            *render_args(tgt.args.args),
         ]
         for t in tgt.tests:
             if isinstance(t, PathTest):
@@ -785,6 +786,7 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
                 l.extend(['--target', t.s])
             else:
                 raise TypeError(t)
+        l.extend(render_args(tgt.args.args))
         return l
 
     else:

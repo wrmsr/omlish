@@ -75,9 +75,7 @@ class RunConfigs(lang.Namespace):
         ],
     })
 
-
     #
-
 
     DEBUG_FILE_NO_ARG = RunConfig(**{
         'argv': [
@@ -199,9 +197,7 @@ class RunConfigs(lang.Namespace):
         ],
     })
 
-
     #
-
 
     RUN_TEST_FILE = RunConfig(**{
         'argv': [
@@ -247,9 +243,7 @@ class RunConfigs(lang.Namespace):
         'cwd': 'ommlx',
     })
 
-
     #
-
 
     DEBUG_TEST_FILE = RunConfig(**{
         'argv': [
@@ -347,6 +341,44 @@ class RunConfigs(lang.Namespace):
             'minichain/tests/test_strings.py::test_transforms',
         ],
         'cwd': 'ommlx',
+    })
+
+    #
+
+    DEBUG_TEST_MODULE_EXTRA_ARG = RunConfig(**{
+        'argv': [
+            PYDEVD,
+            '--multiprocess',
+            '--qt-support=auto',
+            '--client',
+            '127.0.0.1',
+            '--port',
+            '56756',
+            '--file',
+            TEST_RUNNER,
+            '--path',
+            'ommlx/minichain/tests/test_strings.py',
+            '--',
+            '-v',
+        ],
+        'orig_argv': [
+            PYTHON,
+            '-X',
+            PYCACHE_PREFIX,
+            PYDEVD,
+            '--multiprocess',
+            '--qt-support=auto',
+            '--client',
+            '127.0.0.1',
+            '--port',
+            '56756',
+            '--file',
+            TEST_RUNNER,
+            '--path',
+            'ommlx/minichain/tests/test_strings.py',
+            '--',
+            '-v',
+        ],
     })
 
 
