@@ -95,12 +95,14 @@ import sys
 class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
+
         self._fn = fn
         self._value = self._missing = object()
 
     def __call__(self, *args, **kwargs):  # noqa
         if self._value is self._missing:
             self._value = self._fn()
+
         return self._value
 
     def __get__(self, instance, owner):  # noqa
@@ -239,6 +241,9 @@ class Param:
     ) -> None:
         super().__init__()
 
+        if not issubclass(cls, Arg):
+            raise TypeError(cls)
+
         self._name = name
         self._cls = cls
 
@@ -248,10 +253,10 @@ class Param:
 
     @property
     def cls(self):  # type: () -> type[Arg]
-        return self._name
+        return self._cls
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'name')
+        return _attr_repr(self, 'name', 'cls')
 
 
 class Params:
@@ -287,6 +292,9 @@ class Params:
 class Arg:
     def __init__(self, param: Param) -> None:
         super().__init__()
+
+        if not isinstance(param, Param):
+            raise TypeError(param)
 
         self._param = param
 
@@ -336,7 +344,7 @@ class Args:
     def __init__(
             self,
             params: Params,
-            args,  # list[Arg]
+            args,  # type: list[Arg]
     ) -> None:
         super().__init__()
 
@@ -576,7 +584,7 @@ TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
 )
 
 
-def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str]) -> ParsedArgs | None
+def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str]) -> Args | None
     if not argv:
         return None
 
@@ -590,7 +598,8 @@ def parse_args_target(
         argv,  # list[str]
 ) -> Target:
     if (pa := try_parse_entrypoint_args(DEBUGGER_ENTRYPOINT, argv)) is not None:
-        st = parse_args_target(pa.)
+        # st = parse_args_target(pa.)
+        raise NotImplementedError
 
     if (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
         raise NotImplementedError
