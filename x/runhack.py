@@ -425,6 +425,9 @@ class Target:
     pass
 
 
+#
+
+
 class UserTarget(Target):
     def __init__(
             self,
@@ -457,7 +460,7 @@ class FileTarget(UserTarget):
         return _attr_repr(self, 'file', 'argv')
 
 
-class ModuleTarget(Target):
+class ModuleTarget(UserTarget):
     def __init__(
             self,
             module: str,
@@ -473,6 +476,9 @@ class ModuleTarget(Target):
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'module', 'argv')
+
+
+#
 
 
 class PycharmTarget(Target):
@@ -504,29 +510,47 @@ class DebuggerTarget(PycharmTarget):
         return _attr_repr(self, 'args', 'target')
 
 
+class Test:
+    def __init__(self, s: str) -> None:
+        super().__init__()
+
+        if not isinstance(s, str):
+            raise TypeError(s)
+
+        self._s = s
+
+    @property
+    def s(self) -> str:
+        return self._s
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 's')
+
+
+class PathTest(Test):
+    pass
+
+
+class TargetTest(Test):
+    pass
+
+
 class TestRunnerTarget(PycharmTarget):
     def __init__(
             self,
             args: Args,
-            *,
-            paths,  # type: list[str] | None
-            targets,  # type: list[str] | None
+            tests,  # type: list[Test]
     ) -> None:
         super().__init__(args)
 
-        self._paths = paths
-        self._targets = targets
+        self._tests = tests
 
     @property
-    def paths(self):  # type: () -> list[str] | None
-        return self._paths
-
-    @property
-    def targets(self):  # type: () -> list[str] | None
-        return self._targets
+    def tests(self):  # type: () -> list[Test]
+        return self._tests
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'args', 'paths', 'targets')
+        return _attr_repr(self, 'args', 'tests')
 
 
 #
@@ -638,10 +662,24 @@ def parse_args_target(
             raise TypeError(fa)
 
         st = parse_args_target(fa.values)
-        return DebuggerTarget(pa.without('file'), st)
+        return DebuggerTarget(
+            pa.without('file'),
+            st,
+        )
 
     elif (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
-        return TestRunnerTarget(pa)
+        ts = []  # type: list[Test]
+        for a in pa.args:
+            if isinstance(a, StrArg):
+                if a.param.name == 'path':
+                    ts.append(PathTest(a.value))
+                elif a.param.name == 'target':
+                    ts.append(TargetTest(a.value))
+
+        return TestRunnerTarget(
+            pa.without('path', 'target'),
+            ts,
+        )
 
     elif argv[0] == '-m':
         return ModuleTarget(argv[1], argv[1:])
