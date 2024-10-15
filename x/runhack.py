@@ -108,6 +108,10 @@ class cached_nullary:  # noqa
         return bound
 
 
+def _attr_repr(obj, *atts):
+    return f'{obj.__class__.__name__}({", ".join(f"{a}={getattr(obj, a)!r}" for a in atts)})'
+
+
 ##
 
 
@@ -185,7 +189,7 @@ class RunEnv:
         return {a: getattr(self, a) for a in self._SPEC_ATTRS}
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({", ".join(f"{k}={v!r}" for k, v in self.as_dict().items())})'
+        return _attr_repr(self, *self._SPEC_ATTRS)
 
     @property
     def argv(self):  # type: () -> list[str]
@@ -227,6 +231,63 @@ class RunEnv:
 ##
 
 
+class ParamDef:
+    def __init__(self, name: str) -> None:
+        super().__init__()
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'name')
+
+
+class BoolParamDef(ParamDef):
+    pass
+
+
+class StrParamDef(ParamDef):
+    pass
+
+
+class ParsedArg:
+    def __init__(
+            self,
+            param: ParamDef,
+            arg=None,  # type: str | None
+    ) -> None:
+        super().__init__()
+
+        self._param = param
+        self._arg = arg
+
+    @property
+    def param(self) -> ParamDef:
+        return self._param
+
+    @property
+    def arg(self):  # type: () -> str | None
+        return self._arg
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'param', 'arg')
+
+
+class ParsedArgs:
+    pass
+
+
+def parse_args(
+        args,  # type: list[str]
+) -> ParsedArgs:
+    raise NotImplementedError
+
+
+##
+
+
 class Target:
     pass
 
@@ -241,7 +302,7 @@ class DebuggerTarget(Target):
         return self._target
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(target={self._target!r})'
+        return _attr_repr(self, 'target')
 
 
 class FileTarget(Target):
@@ -254,7 +315,7 @@ class FileTarget(Target):
         return self._file
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(file={self._file!r})'
+        return _attr_repr(self, 'file')
 
 
 class ModuleTarget(Target):
@@ -267,7 +328,7 @@ class ModuleTarget(Target):
         return self._module
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(module={self._module!r})'
+        return _attr_repr(self, 'module')
 
 
 class TestTarget(Target):
@@ -289,7 +350,7 @@ class TestTarget(Target):
         return self._paths
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(targets={self._targets!r}, paths={self._paths!r})'
+        return _attr_repr(self, 'targets', 'paths')
 
 
 ##
@@ -351,7 +412,7 @@ class RunSpec:
 ##
 
 
-_DEFAULT_ENABLED = True
+_DEFAULT_ENABLED = False
 _DEFAULT_DEBUG = True
 
 
@@ -363,12 +424,6 @@ def _run() -> None:
     if _HAS_RUN:
         return
     _HAS_RUN = True
-
-    #
-
-    is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', _DEFAULT_ENABLED))
-    if not is_enabled:
-        return
 
     #
 
@@ -393,6 +448,12 @@ def _run() -> None:
     debug(env.as_dict())
 
     # breakpoint()
+
+    #
+
+    is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', _DEFAULT_ENABLED))
+    if not is_enabled:
+        return
 
     #
 
