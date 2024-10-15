@@ -510,12 +510,20 @@ class ModuleTarget(UserTarget):
 
 
 class PycharmTarget(Target):
-    def __init__(self, args: Args) -> None:
+    def __init__(self, file: str, args: Args) -> None:
         super().__init__()
+
+        if not isinstance(file, str):
+            raise TypeError(file)
+        self._file = file
 
         if not isinstance(args, Args):
             raise TypeError(args)
         self._args = args
+
+    @property
+    def file(self) -> str:
+        return self._file
 
     @property
     def args(self) -> Args:
@@ -523,8 +531,8 @@ class PycharmTarget(Target):
 
 
 class DebuggerTarget(PycharmTarget):
-    def __init__(self, args: Args, target: Target) -> None:
-        super().__init__(args)
+    def __init__(self, file: str, args: Args, target: Target) -> None:
+        super().__init__(file, args)
 
         if isinstance(target, DebuggerTarget):
             raise TypeError(target)
@@ -535,7 +543,7 @@ class DebuggerTarget(PycharmTarget):
         return self._target
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'args', 'target')
+        return _attr_repr(self, 'file', 'args', 'target')
 
 
 class Test:
@@ -566,10 +574,11 @@ class TargetTest(Test):
 class TestRunnerTarget(PycharmTarget):
     def __init__(
             self,
+            file: str,
             args: Args,
             tests,  # type: list[Test]
     ) -> None:
-        super().__init__(args)
+        super().__init__(file, args)
 
         self._tests = tests
 
@@ -578,7 +587,7 @@ class TestRunnerTarget(PycharmTarget):
         return self._tests
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'args', 'tests')
+        return _attr_repr(self, 'file', 'args', 'tests')
 
 
 #
@@ -715,6 +724,7 @@ def parse_args_target(
             raise TypeError(st)
 
         return DebuggerTarget(
+            argv[0],
             pa.without('file', 'module'),
             st,
         )
@@ -729,6 +739,7 @@ def parse_args_target(
                     ts.append(TargetTest(a.value))
 
         return TestRunnerTarget(
+            argv[0],
             pa.without('path', 'target'),
             ts,
         )
@@ -751,7 +762,10 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
         return ['-m', *tgt.argv]
 
     elif isinstance(tgt, DebuggerTarget):
-        l = [*render_args(tgt.args.args)]  # type: list[str]
+        l = [  # type: list[str]
+            tgt.file,
+            *render_args(tgt.args.args),
+        ]
         if isinstance(tgt, ModuleTarget):
             l.extend(['--module', '--file', tgt.module, *tgt.argv])
         else:
