@@ -252,6 +252,39 @@ class StrParamDef(ParamDef):
     pass
 
 
+class FinalParamDef(ParamDef):
+    pass
+
+
+class ParamDefs:
+    def __init__(
+            self,
+            params,  # type: list[ParamDef]
+    ) -> None:
+        super().__init__()
+
+        self._params = params
+        self._params_by_name = {}  # type: dict[str, ParamDef]
+        for p in params:
+            if p.name in self._params_by_name:
+                raise KeyError(p.name)
+            self._params_by_name[p.name] = p
+
+    @property
+    def params(self):  # type: () -> list[ParamDef]
+        return self._params
+
+    @property
+    def params_by_name(self):  # type: () -> dict[str, ParamDef]
+        return self._params_by_name
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'params')
+
+
+#
+
+
 class ParsedArg:
     def __init__(
             self,
@@ -276,13 +309,34 @@ class ParsedArg:
 
 
 class ParsedArgs:
-    pass
+    def __init__(
+            self,
+            args,  # list[ParsedArg]
+    ) -> None:
+        super().__init__()
+
+        self._args = args
+
+    @property
+    def args(self):  # type: () -> list[ParsedArg]
+        return self._args
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'args')
+
+
+#
 
 
 def parse_args(
+        params: ParamDefs,
         args,  # type: list[str]
 ) -> ParsedArgs:
-    raise NotImplementedError
+    l = []  # type: list[ParsedArg]
+    i = 0
+    while i < len(args):
+        raise NotImplementedError
+    return ParsedArgs(*l)
 
 
 ##
