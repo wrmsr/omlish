@@ -48,38 +48,6 @@ bad argv = cwd=/x
 
 ==
 
-debug_opts:
-  arg:
-    port
-    vm_type
-    client
-
-    qt-support=.* (special)
-
-    file (last one)
-
-  bool:
-    server
-    DEBUG_RECORD_SOCKET_READS
-    multiproc
-    multiprocess
-    save-signatures
-    save-threading
-    save-asyncio
-    print-in-debugger-startup
-    cmd-line
-    module
-    help
-    DEBUG
-
-test_opts:
-  arg:
-    path
-    offset
-    target
-
-==
-
 TODO:
  - *** NOT JUST PYTEST - also just running, and running debugging
  - *** THIS GOES IN OMDEV lol ***
@@ -322,6 +290,24 @@ class StrArg(Arg):
         return _attr_repr(self, 'param', 'value')
 
 
+class OptStrArg(Arg):
+    def __init__(
+            self,
+            param: Param,
+            value,  # type: str | None
+    ) -> None:
+        super().__init__(param)
+
+        self._value = value
+
+    @property
+    def value(self):  # type: () -> str | None
+        return self._value
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'param', 'value')
+
+
 class FinalArg(Arg):
     def __init__(
             self,
@@ -415,6 +401,9 @@ def parse_args(
                 except StopIteration:
                     raise ArgParseError(s, argv)
             l.append(StrArg(p, v))
+
+        elif p.cls is OptStrArg:
+            l.append(OptStrArg(p, v))
 
         elif p.cls is FinalArg:
             vs = []  # type: list[str]
@@ -577,7 +566,7 @@ DEBUGGER_ENTRYPOINT = PycharmEntrypoint(
         Param('vm_type', StrArg),
         Param('client', StrArg),
 
-        Param('qt-support', StrArg),
+        Param('qt-support', OptStrArg),
 
         Param('file', FinalArg),
 
@@ -618,7 +607,7 @@ def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str])
 
 
 def parse_args_target(
-        argv,  # list[str]
+        argv,  # type: list[str]
 ) -> Target:
     if not argv:
         raise Exception
@@ -639,34 +628,6 @@ def parse_args_target(
 
     else:
         return FileTarget(argv[0], argv[1:])
-
-
-##
-
-
-class RunSpec:
-    def __init__(self, env: RunEnv) -> None:
-        super().__init__()
-        self._env = env
-
-    def _get_target(
-            self,
-            argv,  # type: list[str]
-    ) -> Target:
-        arg0 = argv[0]
-
-        if is_pycharm_file(arg0, 'plugins/python-ce/helpers/pydev/pydevd.py'):
-            raise NotImplementedError
-
-        elif is_pycharm_file(arg0, 'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'):
-            raise NotImplementedError
-
-        else:
-            raise NotImplementedError
-
-    @_cached_nullary
-    def target(self) -> Target:
-        return self._get_target(self._env.argv)
 
 
 ##
