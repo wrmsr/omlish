@@ -1025,6 +1025,35 @@ def _run() -> None:
             # !! Special case: can't set sys.orig_argv, and *not* in a debugger, so can os.exec
             reexec = True
 
+    elif isinstance(tgt, DebuggerTarget):
+        dt = tgt.target
+
+        if isinstance(dt, FileTarget) and dt.file.endswith('.py'):
+            af = os.path.abspath(dt.file)
+            rp = os.path.relpath(af, root_dir).split(os.path.sep)
+            mod = '.'.join([*rp[:-1], rp[-1][:-3]])
+            new_dt = ModuleTarget(
+                mod,
+                dt.argv,
+            )
+            new_tgt = DebuggerTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'target': new_dt,
+            })
+
+        elif isinstance(dt, ModuleTarget):
+            if env.cwd != root_dir:
+                rp = os.path.relpath(env.cwd, root_dir).split(os.path.sep)
+                mod = '.'.join([*rp, dt.module])
+                new_dt = ModuleTarget(
+                    mod,
+                    dt.argv,
+                )
+                new_tgt = DebuggerTarget(**{  # type: ignore
+                    **tgt.as_dict(),
+                    'target': new_dt,
+                })
+
     #
 
     debug(new_tgt.as_json())
