@@ -92,20 +92,27 @@ class RunEnv(AsJson):
             cwd = os.getcwd()
         self._cwd = cwd
 
+        def get_env_path_list(k):  # type: (str) -> list[str]
+            v = os.environ.get(k, '')
+            if v:
+                return v.split(os.pathsep)
+            else:
+                return []
+
         if library_roots is None:
-            library_roots = os.environ.get('LIBRARY_ROOTS', '').split(os.pathsep)
+            library_roots = get_env_path_list('LIBRARY_ROOTS')
         self._library_roots = list(library_roots)
 
         if path is None:
-            path = os.environ.get('PATH', '').split(os.pathsep)
+            path = get_env_path_list('PATH')
         self._path = list(path)
 
         if python_path is None:
-            python_path = os.environ.get('PYTHONPATH', '').split(os.pathsep)
+            python_path = get_env_path_list('PYTHONPATH')
         self._python_path = list(python_path)
 
         if ide_project_roots is None:
-            ide_project_roots = os.environ.get('IDE_PROJECT_ROOTS', '').split(os.pathsep)
+            ide_project_roots = get_env_path_list('IDE_PROJECT_ROOTS')
         self._ide_project_roots = list(ide_project_roots)
 
         if pycharm_hosted is None:
@@ -941,7 +948,7 @@ def _run() -> None:
         else:
             import pprint
 
-            s = pprint.pformat(arg)
+            s = pprint.pformat(arg, sort_dicts=False)
 
         print(s, file=sys.stderr)
 
@@ -960,10 +967,14 @@ def _run() -> None:
 
     #
 
-    if not env.pycharm_hosted or not env.ide_project_roots:
+    if not env.pycharm_hosted:
         return
 
-    root_dir = os.path.abspath(env.ide_project_roots[0])
+    if env.ide_project_roots:
+        root_dir = os.path.abspath(env.ide_project_roots[0])
+    else:
+        root_dir = os.path.abspath(env.sys_path[0])
+    debug(f'{root_dir=}')
     if not os.path.isfile(os.path.join(root_dir, 'pyproject.toml')):
         return
 
@@ -972,18 +983,30 @@ def _run() -> None:
 
     #
 
-    new_target = exe.target
+    tgt = exe.target
+    new_tgt = tgt  # type: Target
 
-    # if isinstance(new_target, FileTarget):
+    new_cwd = env.cwd
+
+    if isinstance(tgt, FileTarget):
+        new_tgt = FileTarget(**{
+            **tgt.as_dict(),
+            'file': os.path.abspath(tgt.file),
+        })
+        new_cwd = root_dir
 
     #
 
-    new_argv = render_target_args(new_target)
+    debug(new_tgt.as_json())
+
+    new_argv = render_target_args(new_tgt)
     debug(new_argv)
+    debug(f'{new_cwd=}')
 
     #
 
     sys.argv = new_argv
+    os.chdir(new_cwd)
 
 
 ##
