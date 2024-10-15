@@ -260,6 +260,39 @@ DEBUG_TEST_MODULE = RunConfig(**{
     'cwd': 'ommlx/minichain/tests',
 })
 
+DEBUG_TEST_SINGLE = RunConfig(**{
+    'argv': [
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55860',
+        '--file',
+        TEST_RUNNER,
+        '--target',
+        'minichain/tests/test_strings.py::test_transforms',
+    ],
+    'orig_argv': [
+        PYTHON,
+        '-X',
+        PYCACHE_PREFIX,
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55860',
+        '--file',
+        TEST_RUNNER,
+        '--target',
+        'minichain/tests/test_strings.py::test_transforms',
+    ],
+    'cwd': 'ommlx',
+})
+
 
 ##
 
