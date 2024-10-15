@@ -395,7 +395,7 @@ def test_params():
         print(json.dumps_pretty(rc.argv))
 
         exe = rh.parse_exec(rc.orig_argv)
-        print(json.dumps_pretty(exe.as_dict()))
+        print(json.dumps_pretty(exe.as_json()))
 
         oa = rh.render_target_args(exe.target)
         print(json.dumps_pretty(oa))

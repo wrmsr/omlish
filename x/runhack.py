@@ -53,7 +53,15 @@ class AsDict:
         raise TypeError
 
 
-class RunEnv(AsDict):
+class AsJson:
+    def as_json(self):  # type: () -> dict[str, object]
+        raise TypeError
+
+
+##
+
+
+class RunEnv(AsJson):
     def __init__(
             self,
             *,
@@ -123,7 +131,7 @@ class RunEnv(AsDict):
         'sys_path',
     )
 
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {a: getattr(self, a) for a in self._SPEC_ATTRS}
 
     def __repr__(self) -> str:
@@ -225,7 +233,7 @@ class Params:
 #
 
 
-class Arg(AsDict):
+class Arg(AsJson):
     def __init__(self, param: Param) -> None:
         super().__init__()
 
@@ -243,7 +251,7 @@ class BoolArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param')
 
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {self._param.name: True}
 
 
@@ -260,7 +268,7 @@ class StrArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'value')
 
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {self._param.name: self._value}
 
 
@@ -281,7 +289,7 @@ class OptStrArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'value')
 
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {self._param.name: self._value}
 
 
@@ -302,11 +310,11 @@ class FinalArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'values')
 
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {self._param.name: self._values}
 
 
-class Args(AsDict):
+class Args(AsJson):
     def __init__(
             self,
             params: Params,
@@ -342,8 +350,8 @@ class Args(AsDict):
     def __repr__(self) -> str:
         return _attr_repr(self, 'args')
 
-    def as_dict(self):  # type: () -> dict[str, object]
-        return {k: v for a in self._args for k, v in a.as_dict().items()}
+    def as_json(self):  # type: () -> dict[str, object]
+        return {k: v for a in self._args for k, v in a.as_json().items()}
 
 
 #
@@ -432,7 +440,7 @@ def render_args(args):  # type: (list[Arg]) -> list[str]
 ##
 
 
-class Target(AsDict):
+class Target(AsDict, AsJson):
     pass
 
 
@@ -473,8 +481,11 @@ class FileTarget(UserTarget):
     def as_dict(self):  # type: () -> dict[str, object]
         return {
             'file': self._file,
-            'argv': self._argv
+            'argv': self._argv,
         }
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return self.as_dict()
 
 
 class ModuleTarget(UserTarget):
@@ -499,6 +510,9 @@ class ModuleTarget(UserTarget):
             'module': self._module,
             'argv': self._argv
         }
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return self.as_dict()
 
 
 #
@@ -542,13 +556,20 @@ class DebuggerTarget(PycharmTarget):
 
     def as_dict(self):  # type: () -> dict[str, object]
         return {
+            'file': self._file,
+            'args': self._args,
+            'target': self._target,
+        }
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return {
             'debugger': self._file,
-            'args': self._args.as_dict(),
-            'target': self._target.as_dict(),
+            'args': self._args.as_json(),
+            'target': self._target.as_json(),
         }
 
 
-class Test(AsDict):
+class Test(AsJson):
     def __init__(self, s: str) -> None:
         super().__init__()
 
@@ -566,12 +587,12 @@ class Test(AsDict):
 
 
 class PathTest(Test):
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {'path': self._s}
 
 
 class TargetTest(Test):
-    def as_dict(self):  # type: () -> dict[str, object]
+    def as_json(self):  # type: () -> dict[str, object]
         return {'target': self._s}
 
 
@@ -595,9 +616,16 @@ class TestRunnerTarget(PycharmTarget):
 
     def as_dict(self):  # type: () -> dict[str, object]
         return {
+            'file': self._file,
+            'args': self._args,
+            'tests': self._tests,
+        }
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return {
             'test_runner': self._file,
-            'args': self._args.as_dict(),
-            'tests': [t.as_dict() for t in self._tests],
+            'args': self._args.as_json(),
+            'tests': [t.as_json() for t in self._tests],
         }
 
 
@@ -807,7 +835,7 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
 ##
 
 
-class Exec(AsDict):
+class Exec(AsDict, AsJson):
     def __init__(
             self,
             exe: str,
@@ -839,7 +867,14 @@ class Exec(AsDict):
         return {
             'exe': self._exe,
             'exe_args': self._exe_args,
-            'target': self._target.as_dict(),
+            'target': self._target,
+        }
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return {
+            'exe': self._exe,
+            'exe_args': self._exe_args,
+            'target': self._target.as_json(),
         }
 
 
@@ -915,7 +950,7 @@ def _run() -> None:
     # breakpoint()
 
     env = RunEnv()
-    debug(env.as_dict())
+    debug(env.as_json())
 
     #
 
@@ -933,11 +968,13 @@ def _run() -> None:
         return
 
     exe = parse_exec(env.orig_argv)
-    debug(exe.as_dict())
+    debug(exe.as_json())
 
     #
 
     new_target = exe.target
+
+    # if isinstance(new_target, FileTarget):
 
     #
 
