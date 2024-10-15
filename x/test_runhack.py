@@ -1,7 +1,6 @@
 from . import runhack as rh
 
 
-
 def test_params():
     for argv in [
         [
@@ -52,5 +51,5 @@ def test_params():
             'omlish/diag/tests/test_asts.py::test_check_equal',
         ],
     ]:
-        pa = rh.parse_args(DEBUGGER_PARAMS, argv[1:])
+        pa = rh.try_parse_entrypoint_args(rh.DEBUGGER_ENTRYPOINT, argv)
         print(pa)

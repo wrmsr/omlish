@@ -546,6 +546,13 @@ TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
 )
 
 
+def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str]) -> ParsedArgs | None
+    raise NotImplementedError
+
+
+##
+
+
 class RunSpec:
     def __init__(self, env: RunEnv) -> None:
         super().__init__()
