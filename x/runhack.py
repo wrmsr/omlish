@@ -939,6 +939,46 @@ def render_exec_args(exe):  # type: (Exec) -> list[str]
 ##
 
 
+class NewExec(AsJson):
+    def __init__(
+            self,
+            target: Target,
+            cwd: str,
+            *,
+            os_exec: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._target = target
+        self._cwd = cwd
+        self._os_exec = os_exec
+
+    @property
+    def target(self) -> Target:
+        return self._target
+
+    @property
+    def cwd(self) -> str:
+        return self._cwd
+
+    @property
+    def os_exec(self) -> bool:
+        return self._os_exec
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'target', 'cwd', 'os_exec')
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return {
+            'target': self._target.as_json(),
+            'cwd': self._cwd,
+            'os_exec': self._os_exec,
+        }
+
+
+##
+
+
 _DEFAULT_ENABLED = True
 _DEFAULT_DEBUG = True
 
