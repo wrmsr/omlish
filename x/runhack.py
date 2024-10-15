@@ -949,8 +949,14 @@ class NewExec(AsJson):
     ) -> None:
         super().__init__()
 
+        if not isinstance(target, Target):
+            raise TypeError(Target)
         self._target = target
+
+        if not isinstance(cwd, str):
+            raise TypeError(str)
         self._cwd = cwd
+
         self._os_exec = os_exec
 
     @property
@@ -993,71 +999,99 @@ class NewExecDecider:
 
         self._debug_fn = debug_fn
 
-        self._tgt = exe.target
-
     def _debug(self, arg):
         if self._debug_fn is not None:
             self._debug_fn(arg)
 
-    @_cached_nullary
-    def decide(self) -> NewExec:
-        new_tgt = self._tgt  # type: Target
-        new_cwd = self._env.cwd
-        os_exec = False
+    def _decide_file_target(self, tgt):  # type: (Target) -> NewExec | None:
+        if not isinstance(tgt, FileTarget):
+            return None
 
-        if isinstance(self._tgt, FileTarget):
-            new_tgt = FileTarget(**{  # type: ignore
-                **self._tgt.as_dict(),
-                'file': os.path.abspath(self._tgt.file),
-            })
-            new_cwd = self._root_dir
-
-        elif isinstance(self._tgt, ModuleTarget):
-            if self._env.cwd != self._root_dir:
-                rel_path = os.path.relpath(self._env.cwd, self._root_dir)
-                new_tgt = ModuleTarget(**{  # type: ignore
-                    **self._tgt.as_dict(),
-                    'module': '.'.join([rel_path.replace(os.sep, '.'), self._tgt.module]),
-                })
-                new_cwd = self._root_dir
-
-                # !! Special case: can't set sys.orig_argv, and *not* in a debugger, so can os.exec
-                os_exec = True
-
-        elif isinstance(self._tgt, DebuggerTarget):
-            dt = self._tgt.target
-
-            if isinstance(dt, FileTarget) and dt.file.endswith('.py'):
-                af = os.path.abspath(dt.file)
-                rp = os.path.relpath(af, self._root_dir).split(os.path.sep)
-                mod = '.'.join([*rp[:-1], rp[-1][:-3]])
-                new_dt = ModuleTarget(
-                    mod,
-                    dt.argv,
-                )
-                new_tgt = DebuggerTarget(**{  # type: ignore
-                    **self._tgt.as_dict(),
-                    'target': new_dt,
-                })
-
-            elif isinstance(dt, ModuleTarget):
-                if self._env.cwd != self._root_dir:
-                    rp = os.path.relpath(self._env.cwd, self._root_dir).split(os.path.sep)
-                    mod = '.'.join([*rp, dt.module])
-                    new_dt = ModuleTarget(
-                        mod,
-                        dt.argv,
-                    )
-                    new_tgt = DebuggerTarget(**{  # type: ignore
-                        **self._tgt.as_dict(),
-                        'target': new_dt,
-                    })
+        new_file = os.path.abspath(tgt.file)
 
         return NewExec(
-            new_tgt,
-            new_cwd,
-            os_exec=os_exec,
+            FileTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'file': new_file,
+            }),
+            self._root_dir,
         )
+
+    def _decide_module_target_not_in_root(self, tgt):  # type: (Target) -> NewExec | None
+        if not (isinstance(tgt, ModuleTarget) and self._env.cwd != self._root_dir):
+            return None
+
+        rel_path = os.path.relpath(self._env.cwd, self._root_dir)
+        new_mod = '.'.join([rel_path.replace(os.sep, '.'), tgt.module])  # noqa
+
+        return NewExec(
+            ModuleTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'module': new_mod,
+            }),
+            self._root_dir,
+            os_exec=True,
+        )
+
+    def _decide_debugger_file_target(self, tgt):  # type: (Target) -> NewExec | None
+        if not isinstance(tgt, DebuggerTarget):
+            return None
+
+        dt = tgt.target
+        if not (isinstance(dt, FileTarget) and dt.file.endswith('.py')):
+            return None
+
+        af = os.path.abspath(dt.file)
+        rp = os.path.relpath(af, self._root_dir).split(os.path.sep)
+        mod = '.'.join([*rp[:-1], rp[-1][:-3]])
+        new_dt = ModuleTarget(
+            mod,
+            dt.argv,
+        )
+
+        return NewExec(
+            DebuggerTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'target': new_dt,
+            }),
+            self._root_dir,
+        )
+
+    def _decide_debugger_module_target_not_in_root(self, tgt):  # type: (Target) -> NewExec | None
+        if not (isinstance(tgt, DebuggerTarget) and self._env.cwd != self._root_dir):
+            return None
+
+        dt = tgt.target
+        if not isinstance(dt, ModuleTarget):
+            return None
+
+        rp = os.path.relpath(self._env.cwd, self._root_dir).split(os.path.sep)
+        mod = '.'.join([*rp, dt.module])
+        new_dt = ModuleTarget(
+            mod,
+            dt.argv,
+        )
+
+        return NewExec(
+            DebuggerTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'target': new_dt,
+            }),
+            self._root_dir,
+        )
+
+    @_cached_nullary
+    def decide(self, tgt):  # type: (Target) -> NewExec | None
+        for fn in [
+            self._decide_file_target,
+            self._decide_module_target_not_in_root,
+            self._decide_debugger_file_target,
+            self._decide_debugger_module_target_not_in_root,
+        ]:
+            if (ne := fn(tgt)) is not None:
+                return ne
+
+        return None
 
 
 ##
