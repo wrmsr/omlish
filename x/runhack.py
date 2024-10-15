@@ -432,7 +432,7 @@ def render_args(args):  # type: (list[Arg]) -> list[str]
 ##
 
 
-class Target:
+class Target(AsDict):
     pass
 
 
@@ -470,6 +470,12 @@ class FileTarget(UserTarget):
     def __repr__(self) -> str:
         return _attr_repr(self, 'file', 'argv')
 
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {
+            'file': self._file,
+            'argv': self._argv
+        }
+
 
 class ModuleTarget(UserTarget):
     def __init__(
@@ -487,6 +493,12 @@ class ModuleTarget(UserTarget):
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'module', 'argv')
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {
+            'module': self._module,
+            'argv': self._argv
+        }
 
 
 #
@@ -528,8 +540,15 @@ class DebuggerTarget(PycharmTarget):
     def __repr__(self) -> str:
         return _attr_repr(self, 'file', 'args', 'target')
 
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {
+            'debugger': self._file,
+            'args': self._args.as_dict(),
+            'target': self._target.as_dict(),
+        }
 
-class Test:
+
+class Test(AsDict):
     def __init__(self, s: str) -> None:
         super().__init__()
 
@@ -547,11 +566,13 @@ class Test:
 
 
 class PathTest(Test):
-    pass
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {'path': self._s}
 
 
 class TargetTest(Test):
-    pass
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {'target': self._s}
 
 
 class TestRunnerTarget(PycharmTarget):
@@ -571,6 +592,13 @@ class TestRunnerTarget(PycharmTarget):
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'file', 'args', 'tests')
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {
+            'test_runner': self._file,
+            'args': self._args.as_dict(),
+            'tests': [t.as_dict() for t in self._tests],
+        }
 
 
 #
@@ -779,7 +807,7 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
 ##
 
 
-class Exec:
+class Exec(AsDict):
     def __init__(
             self,
             exe: str,
@@ -806,6 +834,13 @@ class Exec:
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'exe', 'exe_args', 'target')
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {
+            'exe': self._exe,
+            'exe_args': self._exe_args,
+            'target': self._target.as_dict(),
+        }
 
 
 def parse_exec(
