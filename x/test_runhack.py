@@ -26,7 +26,7 @@ PYCACHE_PREFIX = 'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyChar
 #
 
 
-RUN_FILE_NO_ARG_CFG = RunConfig(**{
+RUN_FILE_NO_ARG = RunConfig(**{
     'argv': [
         'x/js.py',
     ],
@@ -36,7 +36,7 @@ RUN_FILE_NO_ARG_CFG = RunConfig(**{
     ],
 })
 
-RUN_FILE_FOO_ARG_CFG = RunConfig(**{
+RUN_FILE_FOO_ARG = RunConfig(**{
     'argv': [
         'x/js.py',
         'foo',
@@ -48,7 +48,7 @@ RUN_FILE_FOO_ARG_CFG = RunConfig(**{
     ],
 })
 
-RUN_MODULE_NO_ARG_CFG = RunConfig(**{
+RUN_MODULE_NO_ARG = RunConfig(**{
     'argv': [
         '-m',
     ],
@@ -59,7 +59,7 @@ RUN_MODULE_NO_ARG_CFG = RunConfig(**{
     ],
 })
 
-RUN_MODULE_FOO_ARG_CFG = RunConfig(**{
+RUN_MODULE_FOO_ARG = RunConfig(**{
     'argv': [
         '-m',
         'foo',
@@ -194,6 +194,54 @@ DEBUG_MODULE_FOO_ARG = RunConfig(**{
         'x.js',
         'foo',
     ],
+})
+
+
+#
+
+
+RUN_TEST_FILE = RunConfig(**{
+    'argv': [
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+    'orig_argv': [
+        PYTHON,
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+    'cwd': 'ommlx',
+})
+
+RUN_TEST_MODULE = RunConfig(**{
+    'argv': [
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+    'orig_argv': [
+        PYTHON,
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+})
+
+RUN_TEST_SINGLE = RunConfig(**{
+    'argv': [
+        TEST_RUNNER,
+        '--target',
+        'minichain/tests/test_strings.py::test_transforms',
+    ],
+    'orig_argv': [
+        PYTHON,
+        TEST_RUNNER,
+        '--target',
+        'minichain/tests/test_strings.py::test_transforms',
+    ],
+    'cwd': 'ommlx',
 })
 
 
