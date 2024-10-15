@@ -400,7 +400,7 @@ def parse_args(
                 try:
                     v = next(it)
                 except StopIteration:
-                    raise ArgParseError(s, argv)
+                    raise ArgParseError(s, argv)  # noqa
             l.append(StrArg(p, v))
 
         elif p.cls is OptStrArg:
@@ -712,6 +712,10 @@ def parse_args_target(
         return FileTarget(argv[0], argv[1:])
 
 
+def render_target_args(tgt):  # type: (Target) -> list[str]
+    raise NotImplementedError
+
+
 ##
 
 
@@ -818,8 +822,8 @@ def _run() -> None:
     env = RunEnv()
     debug(env.as_dict())
 
-    # tgt = parse_args_target(env.argv)
-    # debug(tgt)
+    exe = parse_exec(env.orig_argv)
+    debug(exe)
 
     #
 
@@ -902,7 +906,7 @@ def _build_pth_file_src(module_name: str) -> str:
         r"exec('\n'.join(["
         "'try:', "
         f"'  import {module_name}', "
-        "'except ImportError:', " ""
+        "'except ImportError:', "
         "'  pass', "
         "'else:', "
         f"'  {module_name}._run()'"
