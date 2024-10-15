@@ -14,10 +14,14 @@ class RunConfig:
     cwd: str | None = None
 
 
-PYTHON = '/Users/spinlock/.pyenv/versions/3.12.7/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python'
+#
+
+
+PYTHON = '/Users/spinlock/.pyenv/versions/3.12.7/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python'  # noqa
 PYDEVD = '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py'
 TEST_RUNNER = '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'
 PYCACHE_PREFIX = 'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cpython-cache'
+
 
 #
 
@@ -67,6 +71,7 @@ RUN_MODULE_FOO_ARG_CFG = RunConfig(**{
         'foo',
     ],
 })
+
 
 #
 
