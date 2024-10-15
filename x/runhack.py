@@ -388,7 +388,7 @@ def parse_args(
 
         l.append(ParsedArg(p, vs))
 
-    return ParsedArgs(l)
+    return ParsedArgs(params, l)
 
 
 ##
