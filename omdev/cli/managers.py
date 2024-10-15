@@ -71,7 +71,7 @@ def _activate_path_hack() -> None:
         sys.meta_path.insert(0, _PathHackMetaFinder())
 
 
-_PATH_HACK_FILE_NAME = f'{"-".join(__name__.split("."))}-path-hack.pth'
+_PATH_HACK_FILE_NAME = f'{"-".join(__name__.split("."))}-pathhack.pth'
 
 
 def _install_path_hack_file() -> None:
