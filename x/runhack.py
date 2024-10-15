@@ -338,9 +338,8 @@ def parse_args(
 ) -> ParsedArgs:
     l = []  # type: list[ParsedArg]
 
-    i = 0
-    while i < len(argv):
-        s = argv[i]
+    it = iter(argv)
+    for s in it:
         if not s.startswith('--'):
             raise ArgParseError(s)
         s = s[2:]
@@ -351,7 +350,23 @@ def parse_args(
             k, v = s, None
 
         p = params.params_by_name[k]
-        raise NotImplementedError
+
+        vs = None  # type: list[str] | None
+        if isinstance(p, BoolParamDef):
+            pass
+        elif isinstance(p, StrParamDef):
+            if v is None:
+                try:
+                    v = next(it)
+                except StopIteration:
+                    raise ArgParseError(k)
+            vs = [v]
+        elif isinstance(p, FinalParamDef):
+            raise NotImplementedError
+        else:
+            raise TypeError(p)
+
+        l.append(ParsedArg(p, vs))
 
     return ParsedArgs(*l)
 
