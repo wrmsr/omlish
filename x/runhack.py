@@ -289,23 +289,23 @@ class ParsedArg:
     def __init__(
             self,
             param: ParamDef,
-            arg=None,  # type: str | None
+            values=None,  # type: list[str] | None
     ) -> None:
         super().__init__()
 
         self._param = param
-        self._arg = arg
+        self._values = values
 
     @property
     def param(self) -> ParamDef:
         return self._param
 
     @property
-    def arg(self):  # type: () -> str | None
-        return self._arg
+    def values(self):  # type: () -> list[str] | None
+        return self._values
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'param', 'arg')
+        return _attr_repr(self, 'param', 'values')
 
 
 class ParsedArgs:
@@ -328,14 +328,31 @@ class ParsedArgs:
 #
 
 
+class ArgParseError(Exception):
+    pass
+
+
 def parse_args(
         params: ParamDefs,
-        args,  # type: list[str]
+        argv,  # type: list[str]
 ) -> ParsedArgs:
     l = []  # type: list[ParsedArg]
+
     i = 0
-    while i < len(args):
+    while i < len(argv):
+        s = argv[i]
+        if not s.startswith('--'):
+            raise ArgParseError(s)
+        s = s[2:]
+
+        if '=' in s:
+            k, _, v = s.partition('=')
+        else:
+            k, v = s, None
+
+        p = params.params_by_name[k]
         raise NotImplementedError
+
     return ParsedArgs(*l)
 
 

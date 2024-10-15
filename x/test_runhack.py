@@ -45,5 +45,5 @@ def test_params():
             '/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py',
         ]
     ]:
-        pa = rh.parse_args(DEBUGGER_PARAMS, argv)
+        pa = rh.parse_args(DEBUGGER_PARAMS, argv[1:])
         print(pa)
