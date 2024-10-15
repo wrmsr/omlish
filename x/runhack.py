@@ -480,9 +480,20 @@ class ModuleTarget(Target):
         return _attr_repr(self, 'module', 'argv')
 
 
-class DebuggerTarget(Target):
-    def __init__(self, target: Target) -> None:
+class PycharmTarget(Target):
+    def __init__(self, args: Args) -> None:
         super().__init__()
+
+        self._args = args
+
+    @property
+    def args(self) -> Args:
+        return self._args
+
+
+class DebuggerTarget(Target):
+    def __init__(self, args: Args, target: Target) -> None:
+        super().__init__(args)
 
         if isinstance(target, DebuggerTarget):
             raise TypeError(target)
@@ -493,30 +504,12 @@ class DebuggerTarget(Target):
         return self._target
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'target')
+        return _attr_repr(self, 'args', 'target')
 
 
 class TestRunnerTarget(Target):
-    def __init__(
-            self,
-            targets=None,  # type: list[str] | None
-            paths=None,  # type: list[str] | None
-    ) -> None:
-        super().__init__()
-
-        self._targets = list(targets or [])
-        self._paths = list(paths or [])
-
-    @property
-    def targets(self):  # type: () -> list[str]
-        return self._targets
-
-    @property
-    def paths(self):  # type: () -> list[str]
-        return self._paths
-
     def __repr__(self) -> str:
-        return _attr_repr(self, 'targets', 'paths')
+        return _attr_repr(self, 'args')
 
 
 #
@@ -628,10 +621,10 @@ def parse_args_target(
             raise TypeError(fa)
 
         st = parse_args_target(fa.values)
-        raise NotImplementedError
+        return DebuggerTarget(pa, st)
 
     elif (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
-        raise NotImplementedError
+        return TestRunnerTarget(pa)
 
     elif argv[0] == '-m':
         return ModuleTarget(argv[1], argv[1:])
