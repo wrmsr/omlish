@@ -1166,6 +1166,8 @@ def _run() -> None:
     )
 
     new_exe = decider.decide()
+    if new_exe is None:
+        return
 
     #
 
