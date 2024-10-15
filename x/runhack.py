@@ -436,7 +436,7 @@ def render_arg(arg):  # type: (Arg) -> list[str]
             return [f'--{arg.param.name}={arg.value}']
 
     elif isinstance(arg, FinalArg):
-        return [f'--{arg.param.name}', *arg.values]
+        return [f'--{arg.param.name}', *arg.values]  # noqa
 
     else:
         raise TypeError(arg)
@@ -764,7 +764,7 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
         return ['-m', *tgt.argv]
 
     elif isinstance(tgt, DebuggerTarget):
-        l = [  # type: list[str]
+        l = [
             tgt.file,
             *render_args(tgt.args.args),
         ]
