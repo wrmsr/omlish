@@ -378,9 +378,12 @@ def parse_args(
 
     it = iter(argv)
     for s in it:
-        if not s.startswith('--'):
+        if len(s) > 2 and s.startswith('--'):
+            s = s[2:]
+        elif len(s) > 1 and s.startswith('-'):
+            pass
+        else:
             raise ArgParseError(s, argv)
-        s = s[2:]
 
         if '=' in s:
             k, _, v = s.partition('=')
