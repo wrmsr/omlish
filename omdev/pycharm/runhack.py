@@ -927,12 +927,12 @@ def render_exec_args(exe):  # type: (Exec) -> list[str]
 ##
 
 
-class NewExec(AsJson):
+class ExecDecision(AsJson):
     def __init__(
             self,
             target: Target,
-            cwd: str,
             *,
+            cwd=None,  # type: str | None
             os_exec: bool = False,
     ) -> None:
         super().__init__()
@@ -941,10 +941,7 @@ class NewExec(AsJson):
             raise TypeError(Target)
         self._target = target
 
-        if not isinstance(cwd, str):
-            raise TypeError(str)
         self._cwd = cwd
-
         self._os_exec = os_exec
 
     @property
@@ -952,7 +949,7 @@ class NewExec(AsJson):
         return self._target
 
     @property
-    def cwd(self) -> str:
+    def cwd(self):  # type: () -> str | None
         return self._cwd
 
     @property
@@ -970,7 +967,7 @@ class NewExec(AsJson):
         }
 
 
-class NewExecDecider:
+class ExecDecider:
     def __init__(
             self,
             env: RunEnv,
@@ -991,37 +988,37 @@ class NewExecDecider:
         if self._debug_fn is not None:
             self._debug_fn(arg)
 
-    def _decide_file_target(self, tgt):  # type: (Target) -> NewExec | None
+    def _decide_file_target(self, tgt):  # type: (Target) -> ExecDecision | None
         if not isinstance(tgt, FileTarget):
             return None
 
         new_file = os.path.abspath(tgt.file)
 
-        return NewExec(
+        return ExecDecision(
             FileTarget(**{  # type: ignore
                 **tgt.as_dict(),
                 'file': new_file,
             }),
-            self._root_dir,
+            cwd=self._root_dir,
         )
 
-    def _decide_module_target_not_in_root(self, tgt):  # type: (Target) -> NewExec | None
+    def _decide_module_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
         if not (isinstance(tgt, ModuleTarget) and self._env.cwd != self._root_dir):
             return None
 
         rel_path = os.path.relpath(self._env.cwd, self._root_dir)
         new_mod = '.'.join([rel_path.replace(os.sep, '.'), tgt.module])  # noqa
 
-        return NewExec(
+        return ExecDecision(
             ModuleTarget(**{  # type: ignore
                 **tgt.as_dict(),
                 'module': new_mod,
             }),
-            self._root_dir,
+            cwd=self._root_dir,
             os_exec=True,
         )
 
-    def _decide_debugger_file_target(self, tgt):  # type: (Target) -> NewExec | None
+    def _decide_debugger_file_target(self, tgt):  # type: (Target) -> ExecDecision | None
         if not isinstance(tgt, DebuggerTarget):
             return None
 
@@ -1037,15 +1034,15 @@ class NewExecDecider:
             dt.argv,
         )
 
-        return NewExec(
+        return ExecDecision(
             DebuggerTarget(**{  # type: ignore
                 **tgt.as_dict(),
                 'target': new_dt,
             }),
-            self._root_dir,
+            cwd=self._root_dir,
         )
 
-    def _decide_debugger_module_target_not_in_root(self, tgt):  # type: (Target) -> NewExec | None
+    def _decide_debugger_module_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
         if not (isinstance(tgt, DebuggerTarget) and self._env.cwd != self._root_dir):
             return None
 
@@ -1060,15 +1057,15 @@ class NewExecDecider:
             dt.argv,
         )
 
-        return NewExec(
+        return ExecDecision(
             DebuggerTarget(**{  # type: ignore
                 **tgt.as_dict(),
                 'target': new_dt,
             }),
-            self._root_dir,
+            cwd=self._root_dir,
         )
 
-    def decide(self, tgt):  # type: (Target) -> NewExec | None
+    def decide(self, tgt):  # type: (Target) -> ExecDecision | None
         for fn in [
             self._decide_file_target,
             self._decide_module_target_not_in_root,
@@ -1145,27 +1142,28 @@ def _run() -> None:
 
     #
 
-    decider = NewExecDecider(
+    decider = ExecDecider(
         env,
         exe,
         root_dir,
         debug_fn=debug,
     )
 
-    new_exe = decider.decide(exe.target)
-    if new_exe is None:
+    dec = decider.decide(exe.target)
+    if dec is None:
         return
 
     #
 
-    debug(new_exe.as_json())
+    debug(dec.as_json())
 
-    os.chdir(new_exe.cwd)
+    if dec.cwd is not None:
+        os.chdir(dec.cwd)
 
-    if new_exe.os_exec:
-        new_exe = Exec(**{
+    if dec.os_exec:
+        new_exe = Exec(**{  # type: ignore
             **exe.as_dict(),
-            'target': new_exe.target,
+            'target': dec.target,
         })
 
         reexec_argv = render_exec_args(new_exe)
@@ -1174,7 +1172,7 @@ def _run() -> None:
         os.execvp(reexec_argv[0], reexec_argv)
 
     else:
-        new_argv = render_target_args(new_exe.target)
+        new_argv = render_target_args(dec.target)
         debug(new_argv)
 
         sys.argv = new_argv

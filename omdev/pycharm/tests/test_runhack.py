@@ -29,56 +29,56 @@ PYCACHE_PREFIX = 'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyChar
 
 
 class RunConfigs(lang.Namespace):
-    RUN_FILE_NO_ARG = RunConfig(**{
-        'argv': [
+    RUN_FILE_NO_ARG = RunConfig(
+        argv=[
             'x/js.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             'python',
             'x/js.py',
         ],
-    })
+    )
 
-    RUN_FILE_FOO_ARG = RunConfig(**{
-        'argv': [
+    RUN_FILE_FOO_ARG = RunConfig(
+        argv=[
             'x/js.py',
             'foo',
         ],
-        'orig_argv': [
+        orig_argv=[
             'python',
             'x/js.py',
             'foo',
         ],
-    })
+    )
 
-    RUN_MODULE_NO_ARG = RunConfig(**{
-        'argv': [
+    RUN_MODULE_NO_ARG = RunConfig(
+        argv=[
             '-m',
         ],
-        'orig_argv': [
+        orig_argv=[
             'python',
             '-m',
             'x.js',
         ],
-    })
+    )
 
-    RUN_MODULE_FOO_ARG = RunConfig(**{
-        'argv': [
+    RUN_MODULE_FOO_ARG = RunConfig(
+        argv=[
             '-m',
             'foo',
         ],
-        'orig_argv': [
+        orig_argv=[
             'python',
             '-m',
             'x.js',
             'foo',
         ],
-    })
+    )
 
     #
 
-    DEBUG_FILE_NO_ARG = RunConfig(**{
-        'argv': [
+    DEBUG_FILE_NO_ARG = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -89,7 +89,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             'x/js.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -101,12 +101,12 @@ class RunConfigs(lang.Namespace):
             '--port',
             '55770',
             '--file',
-            'x/js.py'
+            'x/js.py',
         ],
-    })
+    )
 
-    DEBUG_FILE_FOO_ARG = RunConfig(**{
-        'argv': [
+    DEBUG_FILE_FOO_ARG = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -118,7 +118,7 @@ class RunConfigs(lang.Namespace):
             'x/js.py',
             'foo',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -133,10 +133,10 @@ class RunConfigs(lang.Namespace):
             'x/js.py',
             'foo',
         ],
-    })
+    )
 
-    DEBUG_MODULE_NO_ARG = RunConfig(**{
-        'argv': [
+    DEBUG_MODULE_NO_ARG = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -148,7 +148,7 @@ class RunConfigs(lang.Namespace):
             '--file',
             'x.js',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -163,10 +163,10 @@ class RunConfigs(lang.Namespace):
             '--file',
             'x.js',
         ],
-    })
+    )
 
-    DEBUG_MODULE_FOO_ARG = RunConfig(**{
-        'argv': [
+    DEBUG_MODULE_FOO_ARG = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -179,7 +179,7 @@ class RunConfigs(lang.Namespace):
             'x.js',
             'foo',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -195,58 +195,58 @@ class RunConfigs(lang.Namespace):
             'x.js',
             'foo',
         ],
-    })
+    )
 
     #
 
-    RUN_TEST_FILE = RunConfig(**{
-        'argv': [
+    RUN_TEST_FILE = RunConfig(
+        argv=[
             TEST_RUNNER,
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             TEST_RUNNER,
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-        'cwd': 'ommlx',
-    })
+        cwd='ommlx',
+    )
 
-    RUN_TEST_MODULE = RunConfig(**{
-        'argv': [
+    RUN_TEST_MODULE = RunConfig(
+        argv=[
             TEST_RUNNER,
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             TEST_RUNNER,
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-    })
+    )
 
-    RUN_TEST_SINGLE = RunConfig(**{
-        'argv': [
+    RUN_TEST_SINGLE = RunConfig(
+        argv=[
             TEST_RUNNER,
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             TEST_RUNNER,
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        'cwd': 'ommlx',
-    })
+        cwd='ommlx',
+    )
 
     #
 
-    DEBUG_TEST_FILE = RunConfig(**{
-        'argv': [
+    DEBUG_TEST_FILE = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -259,7 +259,7 @@ class RunConfigs(lang.Namespace):
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -275,10 +275,10 @@ class RunConfigs(lang.Namespace):
             '--path',
             'ommlx/minichain/tests/test_strings.py',
         ],
-    })
+    )
 
-    DEBUG_TEST_MODULE = RunConfig(**{
-        'argv': [
+    DEBUG_TEST_MODULE = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -291,7 +291,7 @@ class RunConfigs(lang.Namespace):
             '--path',
             'test_strings.py',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -307,11 +307,11 @@ class RunConfigs(lang.Namespace):
             '--path',
             'test_strings.py',
         ],
-        'cwd': 'ommlx/minichain/tests',
-    })
+        cwd='ommlx/minichain/tests',
+    )
 
-    DEBUG_TEST_SINGLE = RunConfig(**{
-        'argv': [
+    DEBUG_TEST_SINGLE = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -324,7 +324,7 @@ class RunConfigs(lang.Namespace):
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -340,13 +340,13 @@ class RunConfigs(lang.Namespace):
             '--target',
             'minichain/tests/test_strings.py::test_transforms',
         ],
-        'cwd': 'ommlx',
-    })
+        cwd='ommlx',
+    )
 
     #
 
-    DEBUG_TEST_MODULE_EXTRA_ARG = RunConfig(**{
-        'argv': [
+    DEBUG_TEST_MODULE_EXTRA_ARG = RunConfig(
+        argv=[
             PYDEVD,
             '--multiprocess',
             '--qt-support=auto',
@@ -361,7 +361,7 @@ class RunConfigs(lang.Namespace):
             '--',
             '-v',
         ],
-        'orig_argv': [
+        orig_argv=[
             PYTHON,
             '-X',
             PYCACHE_PREFIX,
@@ -379,7 +379,7 @@ class RunConfigs(lang.Namespace):
             '--',
             '-v',
         ],
-    })
+    )
 
 
 ##
