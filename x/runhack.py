@@ -430,9 +430,27 @@ class Target:
     pass
 
 
-class FileTarget(Target):
-    def __init__(self, file: str) -> None:
+class UserTarget(Target):
+    def __init__(
+            self,
+            argv,  # type: list[str]
+    ) -> None:
         super().__init__()
+
+        self._argv = argv
+
+    @property
+    def argv(self):  # type: () -> list[str]
+        return self._argv
+
+
+class FileTarget(UserTarget):
+    def __init__(
+            self,
+            file: str,
+            argv,  # type: list[str]
+    ) -> None:
+        super().__init__(argv)
 
         self._file = file
 
@@ -441,12 +459,16 @@ class FileTarget(Target):
         return self._file
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'file')
+        return _attr_repr(self, 'file', 'argv')
 
 
 class ModuleTarget(Target):
-    def __init__(self, module: str) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            module: str,
+            argv,  # type: list[str]
+    ) -> None:
+        super().__init__(argv)
 
         self._module = module
 
@@ -455,7 +477,7 @@ class ModuleTarget(Target):
         return self._module
 
     def __repr__(self) -> str:
-        return _attr_repr(self, 'module')
+        return _attr_repr(self, 'module', 'argv')
 
 
 class DebuggerTarget(Target):
@@ -597,14 +619,25 @@ def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str])
 def parse_args_target(
         argv,  # list[str]
 ) -> Target:
-    if (pa := try_parse_entrypoint_args(DEBUGGER_ENTRYPOINT, argv)) is not None:
-        # st = parse_args_target(pa.)
+    if not argv:
+        raise Exception
+
+    elif (pa := try_parse_entrypoint_args(DEBUGGER_ENTRYPOINT, argv)) is not None:
+        fa = pa.args[-1]
+        if not isinstance(fa, FinalArg):
+            raise TypeError(fa)
+
+        st = parse_args_target(fa.values)
         raise NotImplementedError
 
-    if (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
+    elif (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
         raise NotImplementedError
 
-    raise NotImplementedError
+    elif argv[0] == '-m':
+        return ModuleTarget(argv[1], argv[1:])
+
+    else:
+        return FileTarget(argv[0], argv[1:])
 
 
 ##
