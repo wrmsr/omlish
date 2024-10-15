@@ -311,7 +311,7 @@ class RunSpec:
 
     @cached_nullary
     def target(self) -> Target:
-        return self._get_target(self._env.argv[0])
+        return self._get_target(self._env.argv)
 
 
 ##
