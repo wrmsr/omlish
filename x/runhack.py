@@ -651,6 +651,17 @@ def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str])
     return parse_args(ep.params, argv[1:])
 
 
+def _make_module_target(
+        argv,  # type: list[str]
+) -> ModuleTarget:
+    if argv[0] == '-m':
+        return ModuleTarget(argv[1], argv[2:])
+    elif argv[0].startswith('-m'):
+        return ModuleTarget(argv[0][2:], argv[1:])
+    else:
+        raise ArgParseError(argv)
+
+
 def parse_args_target(
         argv,  # type: list[str]
 ) -> Target:
@@ -688,10 +699,7 @@ def parse_args_target(
         )
 
     elif argv[0].startswith('-m'):
-        if argv[0] == '-m':
-            return ModuleTarget(argv[2], argv[2:])
-        else:
-            return ModuleTarget(argv[1][2:], argv[1:])
+        return _make_module_target(argv)
 
     else:
         return FileTarget(argv[0], argv[1:])
@@ -751,10 +759,7 @@ def parse_exec(
     argv = [a, *it]
 
     if argv[0].startswith('-m'):
-        if argv[0] == '-m':
-            tgt = ModuleTarget(argv[2], argv[2:])
-        else:
-            tgt = ModuleTarget(argv[1][2:], argv[1:])
+        tgt = _make_module_target(argv)
 
     else:
         tgt = parse_args_target(argv)
