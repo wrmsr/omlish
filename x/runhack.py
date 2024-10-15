@@ -46,6 +46,40 @@ bad argv = cwd=/x
   --file
   /Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py
 
+==
+
+debug_opts:
+  arg:
+    port
+    vm_type
+    client
+
+    qt-support=.* (special)
+
+    file (last one)
+
+  bool:
+    server
+    DEBUG_RECORD_SOCKET_READS
+    multiproc
+    multiprocess
+    save-signatures
+    save-threading
+    save-asyncio
+    print-in-debugger-startup
+    cmd-line
+    module
+    help
+    DEBUG
+
+test_opts:
+  arg:
+    path
+    offset
+    target
+
+==
+
 TODO:
  - *** NOT JUST PYTEST - also just running, and running debugging
  - *** THIS GOES IN OMDEV lol ***
