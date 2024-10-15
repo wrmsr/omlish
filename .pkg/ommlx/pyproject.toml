@@ -36,7 +36,7 @@ all = [
     'datasets ~= 3.0',
     'llama-cpp-python ~= 0.3',
     'numpy >= 1.20',
-    'pillow ~= 10.4',
+    'pillow ~= 11.0',
     'tinygrad ~= 0.9',
     'torch ~= 2.4',
     'mwparserfromhell ~= 0.6',
@@ -60,7 +60,7 @@ numpy = [
     'numpy >= 1.20',
 ]
 pillow = [
-    'pillow ~= 10.4',
+    'pillow ~= 11.0',
 ]
 tinygrad = [
     'tinygrad ~= 0.9',

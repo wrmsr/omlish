@@ -16,7 +16,6 @@ V = ta.TypeVar('V')
 
 class SimpleMetaDict(dict):
     def update(self, m: ta.Mapping[K, V], **kwargs: V) -> None:  # type: ignore
-        breakpoint()
         for k, v in m.items():
             self[k] = v
         for k, v in kwargs.items():  # type: ignore
