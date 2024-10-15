@@ -193,38 +193,21 @@ class RunEnv:
 ##
 
 
-def _is_pycharm_dir(s: str) -> bool:
-    s = os.path.abspath(s)
-    if not os.path.isdir(s):
-        return False
-
-    ps = s.split(os.sep)
-
-    if sys.platform == 'darwin':
-        # /Applications/PyCharm.app/Contents/bin/pycharm.vmoptions
-        return ps[-1] == 'Contents' and os.path.isfile(os.path.join(s, 'bin', 'pycharm.vmoptions'))
-
-    if sys.platform == 'linux':
-        # /snap/pycharm-professional/current/bin/pycharm64.vmoptions
-        return os.path.isfile(os.path.join(s, 'bin', 'pycharm64.vmoptions'))
-
-    return False
-
-
-def _is_pycharm_file(given: str, expected: str) -> bool:
-    dgs = os.path.abspath(given).split(os.sep)
-    des = expected.split(os.sep)
-    return (
-            len(des) < len(dgs) and
-            dgs[-len(des):] == des and
-            _is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
-    )
-
-
-#
-
 class Target:
     pass
+
+
+class DebuggerTarget(Target):
+    def __init__(self, target: Target) -> None:
+        super().__init__()
+        self._target = target
+
+    @property
+    def target(self) -> Target:
+        return self._target
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(target={self._target!r})'
 
 
 class FileTarget(Target):
@@ -275,40 +258,60 @@ class TestTarget(Target):
         return f'{self.__class__.__name__}(targets={self._targets!r}, paths={self._paths!r})'
 
 
-#
+##
 
 
-class Exe:
-    def __init__(self, exe: str) -> None:
+def _is_pycharm_dir(s: str) -> bool:
+    s = os.path.abspath(s)
+    if not os.path.isdir(s):
+        return False
+
+    ps = s.split(os.sep)
+
+    if sys.platform == 'darwin':
+        # /Applications/PyCharm.app/Contents/bin/pycharm.vmoptions
+        return ps[-1] == 'Contents' and os.path.isfile(os.path.join(s, 'bin', 'pycharm.vmoptions'))
+
+    if sys.platform == 'linux':
+        # /snap/pycharm-professional/current/bin/pycharm64.vmoptions
+        return os.path.isfile(os.path.join(s, 'bin', 'pycharm64.vmoptions'))
+
+    return False
+
+
+def _is_pycharm_file(given: str, expected: str) -> bool:
+    dgs = os.path.abspath(given).split(os.sep)
+    des = expected.split(os.sep)
+    return (
+            len(des) < len(dgs) and
+            dgs[-len(des):] == des and
+            _is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
+    )
+
+
+class RunSpec:
+    def __init__(self, env: RunEnv) -> None:
         super().__init__()
-        self._exe = exe
+        self._env = env
 
-    @property
-    def exe(self) -> str:
-        return self._exe
+    def _get_target(
+            self,
+            argv,  # type: list[str]
+    ) -> Target:
+        arg0 = argv[0]
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(exe={self._exe!r})'
+        if _is_pycharm_file(arg0, 'plugins/python-ce/helpers/pydev/pydevd.py '):
+            raise NotImplementedError
 
+        elif _is_pycharm_file(arg0, 'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'):
+            raise NotImplementedError
 
-class PythonExe(Exe):
-    pass
+        else:
+            raise NotImplementedError
 
-
-class DebuggerExe(Exe):
-    pass
-
-
-#
-
-
-# class RunSpec[:
-#     def __init__(self, env: RunEnv) -> None:
-#         super().__init__()
-#         self._spec = spec
-#
-#     @cached_nullary
-#     def
+    @cached_nullary
+    def target(self) -> Target:
+        return self._get_target(self._env.argv[0])
 
 
 ##
