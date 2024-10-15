@@ -976,6 +976,90 @@ class NewExec(AsJson):
         }
 
 
+class NewExecDecider:
+    def __init__(
+            self,
+            env: RunEnv,
+            exe: Exec,
+            root_dir: str,
+            *,
+            debug_fn=None,
+    ) -> None:
+        super().__init__()
+
+        self._env = env
+        self._exe = exe
+        self._root_dir = root_dir
+
+        self._debug_fn = debug_fn
+
+        self._tgt = exe.target
+
+    def _debug(self, arg):
+        if self._debug_fn is not None:
+            self._debug_fn(arg)
+
+    @_cached_nullary
+    def decide(self) -> NewExec:
+        new_tgt = self._tgt  # type: Target
+        new_cwd = self._env.cwd
+        os_exec = False
+
+        if isinstance(self._tgt, FileTarget):
+            new_tgt = FileTarget(**{  # type: ignore
+                **self._tgt.as_dict(),
+                'file': os.path.abspath(self._tgt.file),
+            })
+            new_cwd = self._root_dir
+
+        elif isinstance(self._tgt, ModuleTarget):
+            if self._env.cwd != self._root_dir:
+                rel_path = os.path.relpath(self._env.cwd, self._root_dir)
+                new_tgt = ModuleTarget(**{  # type: ignore
+                    **self._tgt.as_dict(),
+                    'module': '.'.join([rel_path.replace(os.sep, '.'), self._tgt.module]),
+                })
+                new_cwd = self._root_dir
+
+                # !! Special case: can't set sys.orig_argv, and *not* in a debugger, so can os.exec
+                os_exec = True
+
+        elif isinstance(self._tgt, DebuggerTarget):
+            dt = self._tgt.target
+
+            if isinstance(dt, FileTarget) and dt.file.endswith('.py'):
+                af = os.path.abspath(dt.file)
+                rp = os.path.relpath(af, self._root_dir).split(os.path.sep)
+                mod = '.'.join([*rp[:-1], rp[-1][:-3]])
+                new_dt = ModuleTarget(
+                    mod,
+                    dt.argv,
+                )
+                new_tgt = DebuggerTarget(**{  # type: ignore
+                    **self._tgt.as_dict(),
+                    'target': new_dt,
+                })
+
+            elif isinstance(dt, ModuleTarget):
+                if self._env.cwd != self._root_dir:
+                    rp = os.path.relpath(self._env.cwd, self._root_dir).split(os.path.sep)
+                    mod = '.'.join([*rp, dt.module])
+                    new_dt = ModuleTarget(
+                        mod,
+                        dt.argv,
+                    )
+                    new_tgt = DebuggerTarget(**{  # type: ignore
+                        **self._tgt.as_dict(),
+                        'target': new_dt,
+                    })
+
+        return NewExec(
+            new_tgt,
+            new_cwd,
+            os_exec=os_exec,
+        )
+
+
 ##
 
 
@@ -1040,71 +1124,25 @@ def _run() -> None:
 
     #
 
-    tgt = exe.target
-    new_tgt = tgt  # type: Target
-    reexec = False
+    decider = NewExecDecider(
+        env,
+        exe,
+        root_dir,
+        debug_fn=debug,
+    )
 
-    new_cwd = env.cwd
-
-    if isinstance(tgt, FileTarget):
-        new_tgt = FileTarget(**{  # type: ignore
-            **tgt.as_dict(),
-            'file': os.path.abspath(tgt.file),
-        })
-        new_cwd = root_dir
-
-    elif isinstance(tgt, ModuleTarget):
-        if env.cwd != root_dir:
-            rel_path = os.path.relpath(env.cwd, root_dir)
-            new_tgt = ModuleTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'module': '.'.join([rel_path.replace(os.sep, '.'), tgt.module]),
-            })
-            new_cwd = root_dir
-
-            # !! Special case: can't set sys.orig_argv, and *not* in a debugger, so can os.exec
-            reexec = True
-
-    elif isinstance(tgt, DebuggerTarget):
-        dt = tgt.target
-
-        if isinstance(dt, FileTarget) and dt.file.endswith('.py'):
-            af = os.path.abspath(dt.file)
-            rp = os.path.relpath(af, root_dir).split(os.path.sep)
-            mod = '.'.join([*rp[:-1], rp[-1][:-3]])
-            new_dt = ModuleTarget(
-                mod,
-                dt.argv,
-            )
-            new_tgt = DebuggerTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'target': new_dt,
-            })
-
-        elif isinstance(dt, ModuleTarget):
-            if env.cwd != root_dir:
-                rp = os.path.relpath(env.cwd, root_dir).split(os.path.sep)
-                mod = '.'.join([*rp, dt.module])
-                new_dt = ModuleTarget(
-                    mod,
-                    dt.argv,
-                )
-                new_tgt = DebuggerTarget(**{  # type: ignore
-                    **tgt.as_dict(),
-                    'target': new_dt,
-                })
+    new_exe = decider.decide()
 
     #
 
-    debug(new_tgt.as_json())
+    debug(new_exe.as_json())
 
-    debug(f'{new_cwd=}')
-    os.chdir(new_cwd)
+    os.chdir(new_exe.cwd)
 
-    if reexec:
-        new_exe = Exec(**{  # type: ignore
+    if new_exe.os_exec:
+        new_exe = Exec(**{
             **exe.as_dict(),
-            'target': new_tgt,
+            'target': new_exe.target,
         })
 
         reexec_argv = render_exec_args(new_exe)
@@ -1113,7 +1151,7 @@ def _run() -> None:
         os.execvp(reexec_argv[0], reexec_argv)
 
     else:
-        new_argv = render_target_args(new_tgt)
+        new_argv = render_target_args(new_exe.target)
         debug(new_argv)
 
         sys.argv = new_argv
