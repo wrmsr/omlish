@@ -11,15 +11,38 @@ from . import runhack as rh
 class RunConfig:
     argv: ta.Sequence[str]
     orig_argv: ta.Sequence[str]
+    cwd: str | None = None
 
 
 PYTHON = '/Users/spinlock/.pyenv/versions/3.12.7/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python'
 PYDEVD = '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py'
+TEST_RUNNER = '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'
 PYCACHE_PREFIX = 'pycache_prefix=/Users/spinlock/Library/Caches/JetBrains/PyCharm2024.2/cpython-cache'
-
 
 #
 
+
+RUN_FILE_NO_ARG_CFG = RunConfig(**{
+    'argv': [
+        'x/js.py',
+    ],
+    'orig_argv': [
+        'python',
+        'x/js.py',
+    ],
+})
+
+RUN_FILE_FOO_ARG_CFG = RunConfig(**{
+    'argv': [
+        'x/js.py',
+        'foo',
+    ],
+    'orig_argv': [
+        'python',
+        'x/js.py',
+        'foo',
+    ],
+})
 
 RUN_MODULE_NO_ARG_CFG = RunConfig(**{
     'argv': [
@@ -44,29 +67,6 @@ RUN_MODULE_FOO_ARG_CFG = RunConfig(**{
         'foo',
     ],
 })
-
-RUN_FILE_NO_ARG_CFG = RunConfig(**{
-    'argv': [
-        'x/js.py',
-    ],
-    'orig_argv': [
-        'python',
-        'x/js.py',
-    ],
-})
-
-RUN_FILE_FOO_ARG_CFG = RunConfig(**{
-    'argv': [
-        'x/js.py',
-        'foo',
-    ],
-    'orig_argv': [
-        'python',
-        'x/js.py',
-        'foo',
-    ],
-})
-
 
 #
 
@@ -132,15 +132,15 @@ DEBUG_FILE_FOO_ARG = RunConfig(**{
 DEBUG_MODULE_NO_ARG = RunConfig(**{
     'argv': [
         PYDEVD,
-          '--module',
-          '--multiprocess',
-          '--qt-support=auto',
-          '--client',
-          '127.0.0.1',
-          '--port',
-          '55806',
-          '--file',
-          'x.js',
+        '--module',
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55806',
+        '--file',
+        'x.js',
     ],
     'orig_argv': [
         PYTHON,
@@ -189,6 +189,75 @@ DEBUG_MODULE_FOO_ARG = RunConfig(**{
         'x.js',
         'foo',
     ],
+})
+
+
+#
+
+
+DEBUG_TEST_FILE = RunConfig(**{
+    'argv': [
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55840',
+        '--file',
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+    'orig_argv': [
+        PYTHON,
+        '-X',
+        PYCACHE_PREFIX,
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55840',
+        '--file',
+        TEST_RUNNER,
+        '--path',
+        'ommlx/minichain/tests/test_strings.py',
+    ],
+})
+
+DEBUG_TEST_MODULE = RunConfig(**{
+    'argv': [
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55829',
+        '--file',
+        TEST_RUNNER,
+        '--path',
+        'test_strings.py',
+    ],
+    'orig_argv': [
+        PYTHON,
+        '-X',
+        PYCACHE_PREFIX,
+        PYDEVD,
+        '--multiprocess',
+        '--qt-support=auto',
+        '--client',
+        '127.0.0.1',
+        '--port',
+        '55829',
+        '--file',
+        TEST_RUNNER,
+        '--path',
+        'test_strings.py',
+    ],
+    'cwd': 'ommlx/minichain/tests',
 })
 
 
