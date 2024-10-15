@@ -663,8 +663,13 @@ def parse_args_target(
             raise TypeError(fa)
 
         st = parse_args_target(fa.values)
+        if not isinstance(st, FileTarget):
+            raise TypeError(st)
+        if 'module' in pa.arg_lists_by_name:
+            st = ModuleTarget(st.file, st.argv)
+
         return DebuggerTarget(
-            pa.without('file'),
+            pa.without('file', 'module'),
             st,
         )
 
@@ -743,7 +748,14 @@ def parse_exec(
     else:
         raise Exception(exe_argv)
 
-    print(a)
+    argv = [a, *it]
+
+    print(argv)
+    if argv[0].startswith('-m'):
+        if argv[0] == '-m':
+            ModuleTarget(argv[2], argv[2:])
+        else:
+            ModuleTarget(argv[1][2:], argv[1:])
 
     raise NotImplementedError
 
