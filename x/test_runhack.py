@@ -51,5 +51,5 @@ def test_params():
             'omlish/diag/tests/test_asts.py::test_check_equal',
         ],
     ]:
-        pa = rh.try_parse_entrypoint_args(rh.DEBUGGER_ENTRYPOINT, argv)
-        print(pa)
+        t = rh.parse_args_target(argv)
+        print(t)

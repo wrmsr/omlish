@@ -231,51 +231,50 @@ class RunEnv:
 ##
 
 
-class ParamDef:
-    def __init__(self, name: str) -> None:
+class Param:
+    def __init__(
+            self,
+            name: str,
+            cls,  # type: type[Arg]
+    ) -> None:
         super().__init__()
+
         self._name = name
+        self._cls = cls
 
     @property
     def name(self) -> str:
+        return self._name
+
+    @property
+    def cls(self):  # type: () -> type[Arg]
         return self._name
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'name')
 
 
-class BoolParamDef(ParamDef):
-    pass
-
-
-class StrParamDef(ParamDef):
-    pass
-
-
-class FinalParamDef(ParamDef):
-    pass
-
-
-class ParamDefs:
+class Params:
     def __init__(
             self,
-            params,  # type: list[ParamDef]
+            params,  # type: list[Param]
     ) -> None:
         super().__init__()
 
         self._params = params
-        self._params_by_name = {}  # type: dict[str, ParamDef]
+        self._params_by_name = {}  # type: dict[str, Param]
+
         for p in params:
             if p.name in self._params_by_name:
                 raise KeyError(p.name)
             self._params_by_name[p.name] = p
 
     @property
-    def params(self):  # type: () -> list[ParamDef]
+    def params(self):  # type: () -> list[Param]
         return self._params
 
     @property
-    def params_by_name(self):  # type: () -> dict[str, ParamDef]
+    def params_by_name(self):  # type: () -> dict[str, Param]
         return self._params_by_name
 
     def __repr__(self) -> str:
@@ -285,54 +284,79 @@ class ParamDefs:
 #
 
 
-class ParsedArg:
-    def __init__(
-            self,
-            param: ParamDef,
-            values=None,  # type: list[str] | None
-    ) -> None:
+class Arg:
+    def __init__(self, param: Param) -> None:
         super().__init__()
 
         self._param = param
+
+    @property
+    def param(self) -> Param:
+        return self._param
+
+
+class BoolArg(Arg):
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'param')
+
+
+class StrArg(Arg):
+    def __init__(self, param: Param, value: str) -> None:
+        super().__init__(param)
+
+        self._value = value
+
+    @property
+    def value(self) -> str:
+        return self._value
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'param', 'value')
+
+
+class FinalArg(Arg):
+    def __init__(
+            self,
+            param: Param,
+            values,  # type: list[str]
+    ) -> None:
+        super().__init__(param)
+
         self._values = values
 
     @property
-    def param(self) -> ParamDef:
-        return self._param
-
-    @property
-    def values(self):  # type: () -> list[str] | None
+    def values(self):  # type: () -> list[str]
         return self._values
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'values')
 
 
-class ParsedArgs:
+class Args:
     def __init__(
             self,
-            params: ParamDefs,
-            args,  # list[ParsedArg]
+            params: Params,
+            args,  # list[Arg]
     ) -> None:
         super().__init__()
 
         self._params = params
         self._args = args
 
-        self._arg_lists_by_name = {}  # type: dict[str, list[ParsedArg]]
+        self._arg_lists_by_name = {}  # type: dict[str, list[Arg]]
         for a in args:
             self._arg_lists_by_name.setdefault(a.param.name, []).append(a)
 
     @property
-    def params(self):  # type: () -> ParamDefs
+    def params(self):  # type: () -> Params
         return self._params
 
     @property
-    def args(self):  # type: () -> list[ParsedArg]
+    def args(self):  # type: () -> list[Arg]
         return self._args
 
     @property
-    def arg_lists_by_name(self):  # type: () -> dict[str, list[ParsedArg]]
+    def arg_lists_by_name(self):  # type: () -> dict[str, list[Arg]]
         return self._arg_lists_by_name
 
     def __repr__(self) -> str:
@@ -347,15 +371,15 @@ class ArgParseError(Exception):
 
 
 def parse_args(
-        params: ParamDefs,
+        params: Params,
         argv,  # type: list[str]
-) -> ParsedArgs:
-    l = []  # type: list[ParsedArg]
+) -> Args:
+    l = []  # type: list[Arg]
 
     it = iter(argv)
     for s in it:
         if not s.startswith('--'):
-            raise ArgParseError(s)
+            raise ArgParseError(s, argv)
         s = s[2:]
 
         if '=' in s:
@@ -365,30 +389,30 @@ def parse_args(
 
         p = params.params_by_name[k]
 
-        vs = None  # type: list[str] | None
-        if isinstance(p, BoolParamDef):
-            pass
+        if p.cls is BoolArg:
+            if v is not None:
+                raise ArgParseError(s, argv)
+            l.append(BoolArg(p))
 
-        elif isinstance(p, StrParamDef):
+        elif p.cls is StrArg:
             if v is None:
                 try:
                     v = next(it)
                 except StopIteration:
-                    raise ArgParseError(k)
-            vs = [v]
+                    raise ArgParseError(s, argv)
+            l.append(StrArg(p, v))
 
-        elif isinstance(p, FinalParamDef):
-            vs = []
+        elif p.cls is FinalArg:
+            vs = []  # type: list[str]
             if v is not None:
                 vs.append(v)
             vs.extend(it)
+            l.append(FinalArg(p, vs))
 
         else:
-            raise TypeError(p)
+            raise TypeError(p.cls)
 
-        l.append(ParsedArg(p, vs))
-
-    return ParsedArgs(params, l)
+    return Args(params, l)
 
 
 ##
@@ -401,6 +425,7 @@ class Target:
 class FileTarget(Target):
     def __init__(self, file: str) -> None:
         super().__init__()
+
         self._file = file
 
     @property
@@ -414,6 +439,7 @@ class FileTarget(Target):
 class ModuleTarget(Target):
     def __init__(self, module: str) -> None:
         super().__init__()
+
         self._module = module
 
     @property
@@ -427,6 +453,9 @@ class ModuleTarget(Target):
 class DebuggerTarget(Target):
     def __init__(self, target: Target) -> None:
         super().__init__()
+
+        if isinstance(target, DebuggerTarget):
+            raise TypeError(target)
         self._target = target
 
     @property
@@ -444,6 +473,7 @@ class TestRunnerTarget(Target):
             paths=None,  # type: list[str] | None
     ) -> None:
         super().__init__()
+
         self._targets = list(targets or [])
         self._paths = list(paths or [])
 
@@ -491,7 +521,7 @@ def is_pycharm_file(given: str, expected: str) -> bool:
 
 
 class PycharmEntrypoint:
-    def __init__(self, file: str, params: ParamDefs) -> None:
+    def __init__(self, file: str, params: Params) -> None:
         super().__init__()
 
         self._file = file
@@ -502,7 +532,7 @@ class PycharmEntrypoint:
         return self._file
 
     @property
-    def params(self) -> ParamDefs:
+    def params(self) -> Params:
         return self._params
 
     def __repr__(self) -> str:
@@ -511,37 +541,37 @@ class PycharmEntrypoint:
 
 DEBUGGER_ENTRYPOINT = PycharmEntrypoint(
     'plugins/python-ce/helpers/pydev/pydevd.py',
-    ParamDefs([
-        StrParamDef('port'),
-        StrParamDef('vm_type'),
-        StrParamDef('client'),
+    Params([
+        Param('port', StrArg),
+        Param('vm_type', StrArg),
+        Param('client', StrArg),
 
-        StrParamDef('qt-support'),
+        Param('qt-support', StrArg),
 
-        FinalParamDef('file'),
+        Param('file', FinalArg),
 
-        BoolParamDef('server'),
-        BoolParamDef('DEBUG_RECORD_SOCKET_READS'),
-        BoolParamDef('multiproc'),
-        BoolParamDef('multiprocess'),
-        BoolParamDef('save-signatures'),
-        BoolParamDef('save-threading'),
-        BoolParamDef('save-asyncio'),
-        BoolParamDef('print-in-debugger-startup'),
-        BoolParamDef('cmd-line'),
-        BoolParamDef('module'),
-        BoolParamDef('help'),
-        BoolParamDef('DEBUG'),
+        Param('server', BoolArg),
+        Param('DEBUG_RECORD_SOCKET_READS', BoolArg),
+        Param('multiproc', BoolArg),
+        Param('multiprocess', BoolArg),
+        Param('save-signatures', BoolArg),
+        Param('save-threading', BoolArg),
+        Param('save-asyncio', BoolArg),
+        Param('print-in-debugger-startup', BoolArg),
+        Param('cmd-line', BoolArg),
+        Param('module', BoolArg),
+        Param('help', BoolArg),
+        Param('DEBUG', BoolArg),
     ]),
 )
 
 
 TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
     'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
-    ParamDefs([
-        StrParamDef('path'),
-        StrParamDef('offset'),
-        StrParamDef('target'),
+    Params([
+        Param('path', StrArg),
+        Param('offset', StrArg),
+        Param('target', StrArg),
     ]),
 )
 
@@ -554,6 +584,18 @@ def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str])
         return None
 
     return parse_args(ep.params, argv[1:])
+
+
+def parse_args_target(
+        argv,  # list[str]
+) -> Target:
+    if (pa := try_parse_entrypoint_args(DEBUGGER_ENTRYPOINT, argv)) is not None:
+        st = parse_args_target(pa.)
+
+    if (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
+        raise NotImplementedError
+
+    raise NotImplementedError
 
 
 ##
