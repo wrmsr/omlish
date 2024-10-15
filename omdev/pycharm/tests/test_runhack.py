@@ -3,7 +3,7 @@ import dataclasses as dc
 from omlish import lang
 from omlish.formats import json
 
-from . import runhack as rh
+from .. import runhack as rh
 
 
 ##

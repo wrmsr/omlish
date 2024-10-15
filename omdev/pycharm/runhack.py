@@ -1,16 +1,9 @@
 """
-TODO:
- - *** NOT JUST PYTEST - also just running, and running debugging
- - *** THIS GOES IN OMDEV lol ***
-  - or..? pycharm already in core lol..
-
-==
-
 See:
  - https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
  - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pycharm/_jb_runner_tools.py
  - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pydev/_pydevd_bundle/pydevd_command_line_handling.py
-"""
+"""  # noqa
 import os.path
 import sys
 
@@ -657,9 +650,9 @@ def is_pycharm_file(given: str, expected: str) -> bool:
     dgs = os.path.abspath(given).split(os.sep)
     des = expected.split(os.sep)
     return (
-            len(des) < len(dgs) and
-            dgs[-len(des):] == des and
-            is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
+        len(des) < len(dgs) and
+        dgs[-len(des):] == des and
+        is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
     )
 
 
@@ -1190,8 +1183,8 @@ def _run() -> None:
 ##
 
 
-_DEFAULT_PTH_FILE_NAME = 'omlish-pycharm-runhack.pth'
-_DEFAULT_PTH_MODULE_NAME = 'x.runhack'
+_DEFAULT_PTH_FILE_NAME = f'{"-".join(__package__.split("."))}-runhack.pth'
+_DEFAULT_PTH_MODULE_NAME = __package__ + '.runhack'
 
 
 def _build_pth_file_src(module_name: str) -> str:
@@ -1212,15 +1205,44 @@ def _install_pth_file(
         *,
         file_name: str = _DEFAULT_PTH_FILE_NAME,
         module_name: str = _DEFAULT_PTH_MODULE_NAME,
+        dry_run: bool = False,
 ) -> None:
     import site
 
     if os.path.isfile(file := os.path.join(site.getsitepackages()[0], file_name)):
         return
 
-    with open(file, 'w') as f:
-        f.write(_build_pth_file_src(module_name))
+    src = _build_pth_file_src(module_name)
+
+    if dry_run:
+        print(file)
+        print()
+        print(src)
+
+    else:
+        with open(file, 'w') as f:
+            f.write(src)
 
 
 if __name__ == '__main__':
-    _install_pth_file()
+    def _main() -> None:
+        import argparse
+
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers()
+
+        def install_cmd(args):
+            _install_pth_file(dry_run=args.dry_run)
+
+        parser_install = subparsers.add_parser('install')
+        parser_install.add_argument('--dry-run', action='store_true')
+        parser_install.set_defaults(func=install_cmd)
+
+        args = parser.parse_args()
+        if not getattr(args, 'func', None):
+            parser.print_help()
+        else:
+            args.func(args)
+
+    _main()
