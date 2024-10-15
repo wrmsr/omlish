@@ -751,7 +751,12 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
         return ['-m', *tgt.argv]
 
     elif isinstance(tgt, DebuggerTarget):
-        raise NotImplementedError
+        l = [*render_args(tgt.args.args)]  # type: list[str]
+        if isinstance(tgt, ModuleTarget):
+            l.extend(['--module', '--file', tgt.module, *tgt.argv])
+        else:
+            l.extend(render_target_args(tgt.target))
+        return l
 
     elif isinstance(tgt, TestRunnerTarget):
         raise NotImplementedError
