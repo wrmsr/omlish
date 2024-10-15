@@ -1,7 +1,7 @@
 import dataclasses as dc
-import typing as ta
 
 from omlish import lang
+from omlish.formats import json
 
 from . import runhack as rh
 
@@ -140,13 +140,13 @@ class RunConfigs(lang.Namespace):
     DEBUG_MODULE_NO_ARG = RunConfig(**{
         'argv': [
             PYDEVD,
-            '--module',
             '--multiprocess',
             '--qt-support=auto',
             '--client',
             '127.0.0.1',
             '--port',
             '55806',
+            '--module',
             '--file',
             'x.js',
         ],
@@ -155,13 +155,13 @@ class RunConfigs(lang.Namespace):
             '-X',
             PYCACHE_PREFIX,
             PYDEVD,
-            '--module',
             '--multiprocess',
             '--qt-support=auto',
             '--client',
             '127.0.0.1',
             '--port',
             '55806',
+            '--module',
             '--file',
             'x.js',
         ],
@@ -170,13 +170,13 @@ class RunConfigs(lang.Namespace):
     DEBUG_MODULE_FOO_ARG = RunConfig(**{
         'argv': [
             PYDEVD,
-            '--module',
             '--multiprocess',
             '--qt-support=auto',
             '--client',
             '127.0.0.1',
             '--port',
             '55815',
+            '--module',
             '--file',
             'x.js',
             'foo',
@@ -186,13 +186,13 @@ class RunConfigs(lang.Namespace):
             '-X',
             PYCACHE_PREFIX,
             PYDEVD,
-            '--module',
             '--multiprocess',
             '--qt-support=auto',
             '--client',
             '127.0.0.1',
             '--port',
             '55815',
+            '--module',
             '--file',
             'x.js',
             'foo',
@@ -360,11 +360,12 @@ def test_params():
     for n, rc in RunConfigs:
         print(n)
         print(rc)
+        print(json.dumps_pretty(rc.argv))
 
         exe = rh.parse_exec(rc.orig_argv)
         print(exe)
 
         oa = rh.render_target_args(exe.target)
-        print(oa)
+        print(json.dumps_pretty(oa))
 
         print()
