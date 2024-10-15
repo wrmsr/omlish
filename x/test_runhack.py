@@ -9,8 +9,8 @@ from . import runhack as rh
 
 @dc.dataclass(frozen=True)
 class RunConfig:
-    argv: ta.Sequence[str]
-    orig_argv: ta.Sequence[str]
+    argv: list[str]
+    orig_argv: list[str]
     cwd: str | None = None
 
 
@@ -351,54 +351,24 @@ DEBUG_TEST_SINGLE = RunConfig(**{
 
 
 def test_params():
-    for argv in [
-        [
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
-            '--multiprocess',
-            '--qt-support=auto',
-            '--client',
-            '127.0.0.1',
-            '--port',
-            '64701',
-            '--file',
-            '/Users/spinlock/src/wrmsr/omlish/x/dp/dp20240312_llamafs/lfs.py',
-        ],
-        [
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
-            '--multiprocess',
-            '--client',
-            '127.0.0.1',
-            '--port',
-            '56431',
-            '--file',
-            '/Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py',
-        ],
-        [
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
-            '--multiprocess',
-            '--qt-support=auto',
-            '--client',
-            '127.0.0.1',
-            '--port',
-            '64722',
-            '--file',
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
-            '--path',
-            '/Users/spinlock/src/wrmsr/omlish/omlish/lifecycles/tests/test_lifecycles.py',
-        ],
-        [
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py',
-            '--multiprocess',
-            '--qt-support=auto',
-            '--client',
-            '127.0.0.1',
-            '--port',
-            '50791',
-            '--file',
-            '/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
-            '--target',
-            'omlish/diag/tests/test_asts.py::test_check_equal',
-        ],
+    for rc in [
+        RUN_FILE_NO_ARG,
+        RUN_FILE_FOO_ARG,
+        RUN_MODULE_NO_ARG,
+        RUN_MODULE_FOO_ARG,
+
+        DEBUG_FILE_NO_ARG,
+        DEBUG_FILE_FOO_ARG,
+        DEBUG_MODULE_NO_ARG,
+        DEBUG_MODULE_FOO_ARG,
+
+        RUN_TEST_FILE,
+        RUN_TEST_MODULE,
+        RUN_TEST_SINGLE,
+
+        DEBUG_TEST_FILE,
+        DEBUG_TEST_MODULE,
+        DEBUG_TEST_SINGLE,
     ]:
-        t = rh.parse_args_target(argv)
+        t = rh.parse_exec(rc.orig_argv)
         print(t)

@@ -724,7 +724,7 @@ class Exec:
         return _attr_repr(self, 'exe', 'exe_args', 'target')
 
 
-def parse_exe(
+def parse_exec(
         exe_argv,  # type: list[str]
 ) -> Exec:
     it = iter(exe_argv)
