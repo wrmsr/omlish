@@ -917,9 +917,6 @@ def _run() -> None:
     env = RunEnv()
     debug(env.as_dict())
 
-    exe = parse_exec(env.orig_argv)
-    debug(exe)
-
     #
 
     is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', _DEFAULT_ENABLED))
@@ -928,7 +925,23 @@ def _run() -> None:
 
     #
 
-    new_argv = render_target_args(exe.target)
+    if not env.pycharm_hosted or not env.ide_project_roots:
+        return
+
+    root_dir = os.path.abspath(env.ide_project_roots[0])
+    if not os.path.isfile(os.path.join(root_dir, 'pyproject.toml')):
+        return
+
+    exe = parse_exec(env.orig_argv)
+    debug(exe.as_dict())
+
+    #
+
+    new_target = exe.target
+
+    #
+
+    new_argv = render_target_args(new_target)
     debug(new_argv)
 
     #
