@@ -92,7 +92,7 @@ import sys
 ##
 
 
-class cached_nullary:  # noqa
+class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
         self._fn = fn
@@ -398,19 +398,6 @@ class Target:
     pass
 
 
-class DebuggerTarget(Target):
-    def __init__(self, target: Target) -> None:
-        super().__init__()
-        self._target = target
-
-    @property
-    def target(self) -> Target:
-        return self._target
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, 'target')
-
-
 class FileTarget(Target):
     def __init__(self, file: str) -> None:
         super().__init__()
@@ -437,7 +424,20 @@ class ModuleTarget(Target):
         return _attr_repr(self, 'module')
 
 
-class TestTarget(Target):
+class DebuggerTarget(Target):
+    def __init__(self, target: Target) -> None:
+        super().__init__()
+        self._target = target
+
+    @property
+    def target(self) -> Target:
+        return self._target
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'target')
+
+
+class TestRunnerTarget(Target):
     def __init__(
             self,
             targets=None,  # type: list[str] | None
@@ -459,10 +459,10 @@ class TestTarget(Target):
         return _attr_repr(self, 'targets', 'paths')
 
 
-##
+#
 
 
-def _is_pycharm_dir(s: str) -> bool:
+def is_pycharm_dir(s: str) -> bool:
     s = os.path.abspath(s)
     if not os.path.isdir(s):
         return False
@@ -480,14 +480,70 @@ def _is_pycharm_dir(s: str) -> bool:
     return False
 
 
-def _is_pycharm_file(given: str, expected: str) -> bool:
+def is_pycharm_file(given: str, expected: str) -> bool:
     dgs = os.path.abspath(given).split(os.sep)
     des = expected.split(os.sep)
     return (
             len(des) < len(dgs) and
             dgs[-len(des):] == des and
-            _is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
+            is_pycharm_dir(os.sep.join(dgs[:-len(des)]))
     )
+
+
+class PycharmEntrypoint:
+    def __init__(self, file: str, params: ParamDefs) -> None:
+        super().__init__()
+
+        self._file = file
+        self._params = params
+
+    @property
+    def file(self) -> str:
+        return self._file
+
+    @property
+    def params(self) -> ParamDefs:
+        return self._params
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'file', 'params')
+
+
+DEBUGGER_ENTRYPOINT = PycharmEntrypoint(
+    'plugins/python-ce/helpers/pydev/pydevd.py',
+    ParamDefs([
+        StrParamDef('port'),
+        StrParamDef('vm_type'),
+        StrParamDef('client'),
+
+        StrParamDef('qt-support'),
+
+        FinalParamDef('file'),
+
+        BoolParamDef('server'),
+        BoolParamDef('DEBUG_RECORD_SOCKET_READS'),
+        BoolParamDef('multiproc'),
+        BoolParamDef('multiprocess'),
+        BoolParamDef('save-signatures'),
+        BoolParamDef('save-threading'),
+        BoolParamDef('save-asyncio'),
+        BoolParamDef('print-in-debugger-startup'),
+        BoolParamDef('cmd-line'),
+        BoolParamDef('module'),
+        BoolParamDef('help'),
+        BoolParamDef('DEBUG'),
+    ]),
+)
+
+
+TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
+    'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py',
+    ParamDefs([
+        StrParamDef('path'),
+        StrParamDef('offset'),
+        StrParamDef('target'),
+    ]),
+)
 
 
 class RunSpec:
@@ -501,16 +557,16 @@ class RunSpec:
     ) -> Target:
         arg0 = argv[0]
 
-        if _is_pycharm_file(arg0, 'plugins/python-ce/helpers/pydev/pydevd.py '):
+        if is_pycharm_file(arg0, 'plugins/python-ce/helpers/pydev/pydevd.py'):
             raise NotImplementedError
 
-        elif _is_pycharm_file(arg0, 'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'):
+        elif is_pycharm_file(arg0, 'plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py'):
             raise NotImplementedError
 
         else:
             raise NotImplementedError
 
-    @cached_nullary
+    @_cached_nullary
     def target(self) -> Target:
         return self._get_target(self._env.argv)
 

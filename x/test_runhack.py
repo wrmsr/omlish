@@ -1,36 +1,6 @@
 from . import runhack as rh
 
 
-DEBUGGER_PARAMS = rh.ParamDefs([
-    rh.StrParamDef('port'),
-    rh.StrParamDef('vm_type'),
-    rh.StrParamDef('client'),
-
-    rh.StrParamDef('qt-support'),
-
-    rh.FinalParamDef('file'),
-
-    rh.BoolParamDef('server'),
-    rh.BoolParamDef('DEBUG_RECORD_SOCKET_READS'),
-    rh.BoolParamDef('multiproc'),
-    rh.BoolParamDef('multiprocess'),
-    rh.BoolParamDef('save-signatures'),
-    rh.BoolParamDef('save-threading'),
-    rh.BoolParamDef('save-asyncio'),
-    rh.BoolParamDef('print-in-debugger-startup'),
-    rh.BoolParamDef('cmd-line'),
-    rh.BoolParamDef('module'),
-    rh.BoolParamDef('help'),
-    rh.BoolParamDef('DEBUG'),
-])
-
-
-TEST_RUNNER_PARAMS = rh.ParamDefs([
-    rh.StrParamDef('path'),
-    rh.StrParamDef('offset'),
-    rh.StrParamDef('target'),
-])
-
 
 def test_params():
     for argv in [
