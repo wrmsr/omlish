@@ -1,4 +1,60 @@
+import dataclasses as dc
+import typing as ta
+
 from . import runhack as rh
+
+
+@dc.dataclass(frozen=True)
+class RunConfig:
+    argv: ta.Sequence[str]
+    orig_argv: ta.Sequence[str]
+
+
+RUN_MODULE_NO_ARG_CFG = RunConfig(**{
+    'argv': [
+        '-m',
+    ],
+    'orig_argv': [
+        'python',
+        '-m',
+        'x.js',
+    ],
+})
+
+RUN_MODULE_FOO_ARG_CFG = RunConfig(**{
+    'argv': [
+        '-m',
+        'foo',
+    ],
+    'orig_argv': [
+        'python',
+        '-m',
+        'x.js',
+        'foo',
+    ],
+})
+
+RUN_FILE_NO_ARG_CFG = RunConfig(**{
+    'argv': [
+        'x/js.py',
+    ],
+    'orig_argv': [
+        'python',
+        'x/js.py',
+    ],
+})
+
+RUN_FILE_FOO_ARG_CFG = RunConfig(**{
+    'argv': [
+        'x/js.py',
+        'foo',
+    ],
+    'orig_argv': [
+        'python',
+        'x/js.py',
+        'foo',
+    ],
+})
 
 
 def test_params():

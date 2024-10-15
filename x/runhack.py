@@ -727,6 +727,24 @@ class Exec:
 def parse_exe(
         exe_argv,  # type: list[str]
 ) -> Exec:
+    it = iter(exe_argv)
+    exe = next(it)
+
+    exe_args = []  # type: list[str]
+
+    for a in it:
+        if a.startswith('-X'):
+            if a == '-X':
+                exe_args.extend([a, next(it)])
+            else:
+                exe_args.append(a)
+        else:
+            break
+    else:
+        raise Exception(exe_argv)
+
+    print(a)
+
     raise NotImplementedError
 
 
@@ -770,8 +788,8 @@ def _run() -> None:
     env = RunEnv()
     debug(env.as_dict())
 
-    tgt = parse_args_target(env.argv)
-    debug(tgt)
+    # tgt = parse_args_target(env.argv)
+    # debug(tgt)
 
     #
 
