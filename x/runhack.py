@@ -713,8 +713,24 @@ def parse_args_target(
         return FileTarget(argv[0], argv[1:])
 
 
+#
+
+
 def render_target_args(tgt):  # type: (Target) -> list[str]
-    raise NotImplementedError
+    if isinstance(tgt, FileTarget):
+        raise NotImplementedError
+
+    elif isinstance(tgt, ModuleTarget):
+        raise NotImplementedError
+
+    elif isinstance(tgt, DebuggerTarget):
+        raise NotImplementedError
+
+    elif isinstance(tgt, TestRunnerTarget):
+        raise NotImplementedError
+
+    else:
+        raise TypeError(tgt)
 
 
 ##

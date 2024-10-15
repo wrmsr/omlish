@@ -354,7 +354,15 @@ class RunConfigs(lang.Namespace):
 
 
 def test_params():
+    print()
+
     rc: RunConfig
     for n, rc in RunConfigs:
-        t = rh.parse_exec(rc.orig_argv)
-        print(t)
+        print(n)
+        print(rc)
+
+        exe = rh.parse_exec(rc.orig_argv)
+        print(exe)
+
+        oa = rh.render_target_args(exe.target)
+        print(oa)
