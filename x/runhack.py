@@ -750,14 +750,20 @@ def parse_exec(
 
     argv = [a, *it]
 
-    print(argv)
     if argv[0].startswith('-m'):
         if argv[0] == '-m':
-            ModuleTarget(argv[2], argv[2:])
+            tgt = ModuleTarget(argv[2], argv[2:])
         else:
-            ModuleTarget(argv[1][2:], argv[1:])
+            tgt = ModuleTarget(argv[1][2:], argv[1:])
 
-    raise NotImplementedError
+    else:
+        tgt = parse_args_target(argv)
+
+    return Exec(
+        exe,
+        exe_args,
+        tgt,
+    )
 
 
 ##
