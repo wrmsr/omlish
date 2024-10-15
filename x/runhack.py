@@ -547,7 +547,13 @@ TEST_RUNNER_ENTRYPOINT = PycharmEntrypoint(
 
 
 def try_parse_entrypoint_args(ep, argv):  # type: (PycharmEntrypoint, list[str]) -> ParsedArgs | None
-    raise NotImplementedError
+    if not argv:
+        return None
+
+    if not is_pycharm_file(argv[0], ep.file):
+        return None
+
+    return parse_args(ep.params, argv[1:])
 
 
 ##
