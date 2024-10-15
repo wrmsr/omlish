@@ -367,6 +367,12 @@ class Args:
     def arg_lists_by_name(self):  # type: () -> dict[str, list[Arg]]
         return self._arg_lists_by_name
 
+    def without(self, *names: str) -> 'Args':
+        return Args(
+            self._params,
+            [a for a in self._args if a.param.name not in names],
+        )
+
     def __repr__(self) -> str:
         return _attr_repr(self, 'args')
 
@@ -484,6 +490,8 @@ class PycharmTarget(Target):
     def __init__(self, args: Args) -> None:
         super().__init__()
 
+        if not isinstance(args, Args):
+            raise TypeError(args)
         self._args = args
 
     @property
@@ -491,7 +499,7 @@ class PycharmTarget(Target):
         return self._args
 
 
-class DebuggerTarget(Target):
+class DebuggerTarget(PycharmTarget):
     def __init__(self, args: Args, target: Target) -> None:
         super().__init__(args)
 
@@ -507,7 +515,7 @@ class DebuggerTarget(Target):
         return _attr_repr(self, 'args', 'target')
 
 
-class TestRunnerTarget(Target):
+class TestRunnerTarget(PycharmTarget):
     def __repr__(self) -> str:
         return _attr_repr(self, 'args')
 
@@ -617,11 +625,11 @@ def parse_args_target(
 
     elif (pa := try_parse_entrypoint_args(DEBUGGER_ENTRYPOINT, argv)) is not None:
         fa = pa.args[-1]
-        if not isinstance(fa, FinalArg):
+        if not isinstance(fa, FinalArg) or fa.param.name != 'file':
             raise TypeError(fa)
 
         st = parse_args_target(fa.values)
-        return DebuggerTarget(pa, st)
+        return DebuggerTarget(pa.without('file'), st)
 
     elif (pa := try_parse_entrypoint_args(TEST_RUNNER_ENTRYPOINT, argv)) is not None:
         return TestRunnerTarget(pa)
