@@ -564,11 +564,12 @@ def is_pycharm_dir(s: str) -> bool:
 
     ps = s.split(os.sep)
 
-    if sys.platform == 'darwin':
+    plat = getattr(sys, 'platform')
+    if plat == 'darwin':
         # /Applications/PyCharm.app/Contents/bin/pycharm.vmoptions
         return ps[-1] == 'Contents' and os.path.isfile(os.path.join(s, 'bin', 'pycharm.vmoptions'))
 
-    if sys.platform == 'linux':
+    if plat == 'linux':
         # /snap/pycharm-professional/current/bin/pycharm64.vmoptions
         return os.path.isfile(os.path.join(s, 'bin', 'pycharm64.vmoptions'))
 
@@ -770,7 +771,7 @@ def parse_exec(
     argv = [a, *it]
 
     if argv[0].startswith('-m'):
-        tgt = _make_module_target(argv)
+        tgt = _make_module_target(argv)  # type: Target
 
     else:
         tgt = parse_args_target(argv)
@@ -916,8 +917,8 @@ def _build_pth_file_src(module_name: str) -> str:
 
 def _install_pth_file(
         *,
-        file_name: str | None = _DEFAULT_PTH_FILE_NAME,
-        module_name: str | None = _DEFAULT_PTH_MODULE_NAME,
+        file_name: str = _DEFAULT_PTH_FILE_NAME,
+        module_name: str = _DEFAULT_PTH_MODULE_NAME,
 ) -> None:
     import site
 
