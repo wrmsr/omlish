@@ -2,56 +2,19 @@
 What this does:
  -
 
-
-Dimensions:
- - is in pycharm? PYCHARM_HOSTED
- - cwd IDE_PROJECT_ROOTS? should *always* be -
- - is in debugger? pydevd.py
-  - --file? --module?
- - is test runner? --file _jb_pytest_runner.py
-  - --target? --path?
- - is *not* in debugger?
-  - file? argv = ['/x/y.py']
-  - module? orig_argv = ['-m', module]
-
-/snap/pycharm-professional/current/plugins/python-ce/helpers/pydev
-
-bad argv = cwd=/x
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
-  ...
-  --file
-  /x/y.py
-
-bad argv = cwd=/x
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
-  ...
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py
-  --path
-  /x/y.py
-
-good argv = cwd=/
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
-  ...
-  --file
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py
-  --target
-  omlish/diag/tests/test_asts.py::test_check_equal
-
-bad argv = cwd=/x
-  /x/y.py
-
-bad argv = cwd=/x
-  /Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/pydevd.py
-  ...
-  --file
-  /Users/spinlock/src/wrmsr/omlish/x/llm/cli/main.py
-
 ==
 
 TODO:
  - *** NOT JUST PYTEST - also just running, and running debugging
  - *** THIS GOES IN OMDEV lol ***
   - or..? pycharm already in core lol..
+
+==
+
+See:
+ - https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
+ - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pycharm/_jb_runner_tools.py
+ - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pydev/_pydevd_bundle/pydevd_command_line_handling.py
 """
 import os.path
 import sys
@@ -85,7 +48,12 @@ def _attr_repr(obj, *atts):
 ##
 
 
-class RunEnv:
+class AsDict:
+    def as_dict(self):  # type: () -> dict[str, object]
+        raise TypeError
+
+
+class RunEnv(AsDict):
     def __init__(
             self,
             *,
@@ -257,7 +225,7 @@ class Params:
 #
 
 
-class Arg:
+class Arg(AsDict):
     def __init__(self, param: Param) -> None:
         super().__init__()
 
@@ -275,6 +243,9 @@ class BoolArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param')
 
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {self._param.name: True}
+
 
 class StrArg(Arg):
     def __init__(self, param: Param, value: str) -> None:
@@ -288,6 +259,9 @@ class StrArg(Arg):
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'value')
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {self._param.name: self._value}
 
 
 class OptStrArg(Arg):
@@ -307,6 +281,9 @@ class OptStrArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'value')
 
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {self._param.name: self._value}
+
 
 class FinalArg(Arg):
     def __init__(
@@ -325,8 +302,11 @@ class FinalArg(Arg):
     def __repr__(self) -> str:
         return _attr_repr(self, 'param', 'values')
 
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {self._param.name: self._values}
 
-class Args:
+
+class Args(AsDict):
     def __init__(
             self,
             params: Params,
@@ -361,6 +341,9 @@ class Args:
 
     def __repr__(self) -> str:
         return _attr_repr(self, 'args')
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return {k: v for a in self._args for k, v in a.as_dict().items()}
 
 
 #
@@ -862,7 +845,7 @@ def parse_exec(
 ##
 
 
-_DEFAULT_ENABLED = False
+_DEFAULT_ENABLED = True
 _DEFAULT_DEBUG = True
 
 
@@ -910,64 +893,12 @@ def _run() -> None:
 
     #
 
-    if len(sys.argv) > 2 and sys.argv[-2] == '--path':
-        ide_roots = os.environ['IDE_PROJECT_ROOTS'].split(os.pathsep)
-        if len(ide_roots) != 1:
-            raise Exception(ide_roots)
-        root_dir = ide_roots[0]
-        debug(f'{root_dir=}')
+    new_argv = render_target_args(exe.target)
+    debug(new_argv)
 
-        os.chdir(root_dir)
-        debug(f'{os.getcwd()=}')
+    #
 
-        test_file = sys.argv[-1]
-        test_dir = os.path.dirname(test_file)
-        debug(f'{test_dir=}')
-
-        rel_path = os.path.relpath(test_file, root_dir)
-        debug(f'{rel_path=}')
-        if not rel_path.endswith('.py'):
-            raise Exception(rel_path)
-
-        pkg_dir = os.path.join(root_dir, rel_path.split(os.sep)[0])
-        debug(f'{pkg_dir=}')
-
-        def is_pkg_dir(p: str) -> bool:
-            return p == pkg_dir or p.startswith(pkg_dir + os.sep)
-
-        os.environ['PYTHONPATH'] = os.pathsep.join(
-            d
-            for d in os.environ['PYTHONPATH'].split(os.pathsep)
-            if not is_pkg_dir(d)
-        )
-        debug(f'{os.environ["PYTHONPATH"]=}')
-
-        sys.path = [
-            d
-            for d in sys.path
-            if not is_pkg_dir(d)
-        ]
-        debug(f'{sys.path=}')
-
-        # mod_name = rel_path.rpartition('.')[0].replace(os.sep, '.')
-
-        # TODO:
-        #  - don't touch any args after '--'
-        #  - otherwise, pairs of --path or --target
-        #  - it appears take a single path *OR* any number of targets
-
-        sys.argv[-2:] = [
-            '--target',
-
-            # Pytest: path_to_file.py::module_name::class_name::fun_name
-            # When file is launched in pytest it should be file.py: you can't provide it as bare module
-            # [t + ".py" if ":" not in t else t for t in joined_targets]
-
-            # rel_path + '::test_lifecycles',  # one test
-            # rel_path.rpartition('.')[0],  # whole file
-            rel_path + '::test_lifecycles',  # whole file
-        ]
-        debug(f'{sys.argv=}')
+    sys.argv = new_argv
 
 
 ##
