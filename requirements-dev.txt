@@ -69,7 +69,7 @@ json5==0.9.25
 psycopg2==2.9.9; python_version < "3.13"
 psycopg==3.2.3
 
-mysql-connector-python==9.0.0
+mysql-connector-python==9.1.0
 mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 
 ujson==5.10.0

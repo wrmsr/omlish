@@ -36,7 +36,7 @@ pandas==2.2.3
 pyarrow==17.0.0
 
 opencv-python==4.10.0.84
-pillow==10.4.0
+pillow==11.0.0
 
 sentencepiece==0.2.0
 tiktoken==0.8.0
@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.7.0
+simsimd==5.7.1
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -174,7 +174,7 @@ soco==0.30.5
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.40.6
+bellows==0.41.0
 zigpy==0.68.1
 
 # python-openzwave
@@ -201,7 +201,7 @@ cloudpickle==3.0.0
 
 openai==1.51.2
 
-trl==0.11.3
+trl==0.11.4
 tf-keras==2.17.0
 
 polars==1.9.0
@@ -229,7 +229,7 @@ langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.36
+langgraph==0.2.37
 
 langsmith==0.1.135
 
@@ -265,7 +265,7 @@ usearch==2.15.3
 
 ##
 
-llama-index-core==0.11.17
+llama-index-core==0.11.18
 
 unstructured==0.15.14
 

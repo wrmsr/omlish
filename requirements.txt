@@ -34,7 +34,7 @@ pg8000==1.31.2
 #> psycopg2==2.9.9
 #> psycopg==3.2.2
 
-#> mysql-connector-python==9.0.0
+#> mysql-connector-python==9.1.0
 #> mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 pymysql==1.1.1
 
