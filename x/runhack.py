@@ -674,10 +674,17 @@ def parse_args_target(
             raise TypeError(fa)
 
         st = parse_args_target(fa.values)
-        if not isinstance(st, FileTarget):
+
+        if isinstance(st, TestRunnerTarget):
+            if 'module' in pa.arg_lists_by_name:
+                raise ArgParseError(argv)
+
+        elif isinstance(st, FileTarget):
+            if 'module' in pa.arg_lists_by_name:
+                st = ModuleTarget(st.file, st.argv)
+
+        else:
             raise TypeError(st)
-        if 'module' in pa.arg_lists_by_name:
-            st = ModuleTarget(st.file, st.argv)
 
         return DebuggerTarget(
             pa.without('file', 'module'),
