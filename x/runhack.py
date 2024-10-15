@@ -919,6 +919,23 @@ def parse_exec(
     )
 
 
+def render_exec_args(exe):  # type: (Exec) -> list[str]
+    l = [
+        exe.exe,
+        *exe.exe_args,
+    ]
+
+    et = exe.target
+
+    if isinstance(et, ModuleTarget):
+        l.extend(['-m', et.module, *et.argv])
+
+    else:
+        l.extend(render_target_args(et))
+
+    return l
+
+
 ##
 
 
@@ -985,6 +1002,7 @@ def _run() -> None:
 
     tgt = exe.target
     new_tgt = tgt  # type: Target
+    reexec = False
 
     new_cwd = env.cwd
 
@@ -995,18 +1013,41 @@ def _run() -> None:
         })
         new_cwd = root_dir
 
+    elif isinstance(tgt, ModuleTarget):
+        if env.cwd != root_dir:
+            rel_path = os.path.relpath(env.cwd, root_dir)
+            new_tgt = ModuleTarget(**{
+                **tgt.as_dict(),
+                'module': '.'.join([rel_path.replace(os.sep, '.'), tgt.module]),
+            })
+            new_cwd = root_dir
+
+            # !! Special case: can't set sys.orig_argv, and *not* in a debugger, so can os.exec
+            reexec = True
+
     #
 
     debug(new_tgt.as_json())
 
-    new_argv = render_target_args(new_tgt)
-    debug(new_argv)
     debug(f'{new_cwd=}')
-
-    #
-
-    sys.argv = new_argv
     os.chdir(new_cwd)
+
+    if reexec:
+        new_exe = Exec(**{
+            **exe.as_dict(),
+            'target': new_tgt,
+        })
+
+        reexec_argv = render_exec_args(new_exe)
+        debug(f'{reexec_argv=}')
+
+        os.execvp(reexec_argv[0], reexec_argv)
+
+    else:
+        new_argv = render_target_args(new_tgt)
+        debug(new_argv)
+
+        sys.argv = new_argv
 
 
 ##
