@@ -380,8 +380,6 @@ def parse_args(
     for s in it:
         if len(s) > 2 and s.startswith('--'):
             s = s[2:]
-        elif len(s) > 1 and s.startswith('-'):
-            pass
         else:
             raise ArgParseError(s, argv)
 
@@ -684,11 +682,52 @@ def parse_args_target(
             ts,
         )
 
-    elif argv[0] == '-m':
-        return ModuleTarget(argv[1], argv[1:])
+    elif argv[0].startswith('-m'):
+        if argv[0] == '-m':
+            return ModuleTarget(argv[2], argv[2:])
+        else:
+            return ModuleTarget(argv[1][2:], argv[1:])
 
     else:
         return FileTarget(argv[0], argv[1:])
+
+
+##
+
+
+class Exec:
+    def __init__(
+            self,
+            exe: str,
+            exe_args,  # type: list[str]
+            target: Target,
+    ) -> None:
+        super().__init__()
+
+        self._exe = exe
+        self._exe_args = exe_args
+        self._target = target
+
+    @property
+    def exe(self) -> str:
+        return self._exe
+
+    @property
+    def exe_args(self):  # type: () -> list[str]
+        return self._exe_args
+
+    @property
+    def target(self) -> Target:
+        return self._target
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, 'exe', 'exe_args', 'target')
+
+
+def parse_exe(
+        exe_argv,  # type: list[str]
+) -> Exec:
+    raise NotImplementedError
 
 
 ##
