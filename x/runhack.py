@@ -1,9 +1,4 @@
 """
-What this does:
- -
-
-==
-
 TODO:
  - *** NOT JUST PYTEST - also just running, and running debugging
  - *** THIS GOES IN OMDEV lol ***
@@ -1080,7 +1075,6 @@ class NewExecDecider:
             self._root_dir,
         )
 
-    @_cached_nullary
     def decide(self, tgt):  # type: (Target) -> NewExec | None
         for fn in [
             self._decide_file_target,
@@ -1165,7 +1159,7 @@ def _run() -> None:
         debug_fn=debug,
     )
 
-    new_exe = decider.decide()
+    new_exe = decider.decide(exe.target)
     if new_exe is None:
         return
 
