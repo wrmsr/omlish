@@ -34,13 +34,13 @@ def _opt_dct_fld(k, v):
     return {k: v} if v else {}
 
 
-def _render_tool_spec(td: ToolSpec) -> ta.Any:
+def _render_tool_spec(ts: ToolSpec) -> 'openai.types.chat.ChatCompletionToolParam':
     return {
         'type': 'function',
         'function': {
-            'name': td.name,
+            'name': ts.name,
 
-            **_opt_dct_fld('description', td.desc),
+            **_opt_dct_fld('description', ts.desc),
 
             'parameters': {
                 'type': 'object',
@@ -49,10 +49,10 @@ def _render_tool_spec(td: ToolSpec) -> ta.Any:
                         'type': tp.dtype,
                         **_opt_dct_fld('description', tp.desc),
                     }
-                    for tp in td.params
+                    for tp in ts.params
                 },
 
-                'required': [tp.name for tp in td.params if tp.required],
+                'required': [tp.name for tp in ts.params if tp.required],
                 'additionalProperties': False,
             },
         },
@@ -84,21 +84,21 @@ class OpenaiChatModel(ChatModel):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = api_key
 
-    def _build_req_msg(self, m: Message) -> ta.Any:
+    def _build_req_msg(self, m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
         if isinstance(m, SystemMessage):
             return dict(
-                role=self.ROLES_MAP[type(m)],
+                role='system',
                 content=m.s,
             )
 
         elif isinstance(m, AiMessage):
             return dict(
-                role=self.ROLES_MAP[type(m)],
+                role='assistant',
                 content=m.s,
                 tool_calls=[
                     dict(
                         id=te.id,
-                        function=te.name,
+                        function=_render_tool_spec(te.tool),
                         type='function',
                     )
                     for te in m.tool_exec_requests or []
@@ -107,13 +107,13 @@ class OpenaiChatModel(ChatModel):
 
         elif isinstance(m, UserMessage):
             return dict(
-                role=self.ROLES_MAP[type(m)],
-                content=m.c,
+                role='user',
+                content=check.isinstance(m.c, str),
             )
 
         elif isinstance(m, ToolExecResultMessage):
             return dict(
-                role=self.ROLES_MAP[type(m)],
+                role='tool',
                 tool_call_id=m.id,
                 content=m.s,
             )
@@ -132,17 +132,21 @@ class OpenaiChatModel(ChatModel):
             max_tokens=1024,
         )
 
-        tools: list = []
+        tools_by_name: dict[str, ToolSpec] = {}
 
         for opt in request.options:
             if isinstance(opt, ScalarOption) and (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None:
                 kw[kwn] = opt.v
 
             elif isinstance(opt, Tool):
-                tools.append(_render_tool_spec(opt.spec))
+                if opt.spec.name in tools_by_name:
+                    raise NameError(opt.spec.name)
+                tools_by_name[opt.spec.name] = opt.spec
 
             else:
                 raise TypeError(opt)
+
+        tools = [_render_tool_spec(ts) for ts in tools_by_name.values()]
 
         with contextlib.closing(openai.OpenAI(
                 api_key=self._api_key,
@@ -161,7 +165,7 @@ class OpenaiChatModel(ChatModel):
                 **kw,
             )
 
-        response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # noqa
+        response: 'openai.types.chat.ChatCompletion' = raw_response  # noqa
         choice = check.single(response.choices)
 
         return ChatResponse(
@@ -170,7 +174,7 @@ class OpenaiChatModel(ChatModel):
                 tool_exec_requests=[
                     ToolExecRequest(
                         id=tc.id,
-                        name=tc.function.name,
+                        tool=tools_by_name[tc.function.name],
                         args=tc.function.arguments,
                     )
                     for tc in choice.message.tool_calls or []

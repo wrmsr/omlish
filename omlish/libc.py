@@ -1,4 +1,4 @@
-# ruff: noqa: ANN201, N801, N802
+# ruff: noqa: ANN201 N801 N802
 import ctypes as ct
 import errno
 import platform
