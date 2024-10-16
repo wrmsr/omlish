@@ -20,8 +20,12 @@ class StateTransition(ta.NamedTuple):
     to_state: str
 
 
+TransitionTableEntry: ta.TypeAlias = str | StateTransition | tuple[str | StateTransition, ...]
+TransitionTable: ta.TypeAlias = ta.Mapping[int | range | str, TransitionTableEntry]
+
+
 # Define the anywhere transitions
-ANYWHERE_TRANSITIONS = {
+ANYWHERE_TRANSITIONS: TransitionTable = {
     0x18: ('execute', StateTransition('GROUND')),
     0x1a: ('execute', StateTransition('GROUND')),
     range(0x80, 0x90): ('execute', StateTransition('GROUND')),
@@ -38,8 +42,9 @@ ANYWHERE_TRANSITIONS = {
     0x9b: StateTransition('CSI_ENTRY'),
 }
 
+
 # Global states dictionary
-STATES = {
+STATES: ta.Mapping[str, TransitionTable] = {
     # Define state transitions
     'GROUND': {
         range(0x18): 'execute',
@@ -208,7 +213,7 @@ actions_in_order = sorted(action_names) + ['error']
 states_in_order = sorted(STATES)
 
 # Expand the range-based data structures into fully expanded tables
-state_tables = {}
+state_tables: dict[str, ta.Sequence] = {}
 
 
 def _expand_ranges(dct):
