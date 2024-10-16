@@ -30,6 +30,10 @@ class Project(ProjectBase):
             'mypy ~= 1.11',
         ],
 
+        'prof': [
+            'gprof2dot ~= 2024.6',
+        ],
+
         'tokens': [
             'tokenize_rt ~= 6.0',
         ],
