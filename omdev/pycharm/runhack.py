@@ -1099,12 +1099,28 @@ class ExecDecider:
             sys_path=self._filter_out_cwd(self._env.sys_path),
         )
 
+    def _decide_debugger_test_runner_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
+        if not (isinstance(tgt, DebuggerTarget) and self._env.cwd != self._root_dir):
+            return None
+
+        dt = tgt.target
+        if not isinstance(dt, TestRunnerTarget):
+            return None
+
+        return ExecDecision(
+            tgt,
+            cwd=self._root_dir,
+            python_path=self._filter_out_cwd(self._env.python_path),
+            sys_path=self._filter_out_cwd(self._env.sys_path),
+        )
+
     def decide(self, tgt):  # type: (Target) -> ExecDecision | None
         for fn in [
             self._decide_file_target,
             self._decide_module_target_not_in_root,
             self._decide_debugger_file_target,
             self._decide_debugger_module_target_not_in_root,
+            self._decide_debugger_test_runner_target_not_in_root,
         ]:
             if (ne := fn(tgt)) is not None:
                 self._debug(f'{fn.__name__=}')
@@ -1135,9 +1151,12 @@ class HackRunner:
         if isinstance(arg, str):
             s = arg
         else:
-            import pprint
-
-            s = pprint.pformat(arg, sort_dicts=False)
+            try:
+                import pprint
+            except ImportError:
+                s = repr(arg)
+            else:
+                s = pprint.pformat(arg, sort_dicts=False)
 
         print(s, file=sys.stderr)
 
@@ -1243,8 +1262,8 @@ _HAS_RUN = False
 _BOOL_ENV_VAR_VALUES = {
     s: b
     for b, ss in [
-        (True, ['1', 'true']),
-        (False, ['0', 'false']),
+        (True, ['1', 'true', 't']),
+        (False, ['0', 'false', 'f']),
     ]
     for s in ss
 }
