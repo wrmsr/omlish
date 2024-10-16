@@ -198,61 +198,63 @@ STATES: ta.Mapping[str, TransitionTable] = {
     },
 }
 
-# Get the list of actions implicit in the tables
-action_names = {}
-for state, transitions in STATES.items():
-    for keys, actions in transitions.items():
-        if not isinstance(actions, tuple):
-            actions = [actions]
-        for action in actions:
-            if isinstance(action, str):
-                action_names[action] = 1
 
-# Establish an ordering to the states and actions
-actions_in_order = sorted(action_names) + ['error']
-states_in_order = sorted(STATES)
+ACTIONS_IN_ORDER = sorted(
+    action
+    for state, transitions in STATES.items()
+    for keys, actions in transitions.items()
+    for action in ([actions] if not isinstance(actions, tuple) else actions)
+    if isinstance(action, str)
+)
 
-# Expand the range-based data structures into fully expanded tables
-state_tables: dict[str, ta.Sequence] = {}
+STATES_IN_ORDER = sorted(STATES)
 
 
-def _expand_ranges(dct):
-    array = [None] * 256
-    for k, v in dct.items():
-        if isinstance(k, range):
-            for i in k:
-                array[i] = v
-        elif isinstance(k, int):
-            array[k] = v
-    return array
+def _build_state_tables() -> ta.Mapping[str, ta.Sequence]:
+    # Expand the range-based data structures into fully expanded tables
+    state_tables: dict[str, list] = {}
+
+    def expand_ranges(dct):
+        array = [None] * 256
+        for k, v in dct.items():
+            if isinstance(k, range):
+                for i in k:
+                    array[i] = v
+            elif isinstance(k, int):
+                array[k] = v
+        return array
+
+    for state, transitions in STATES.items():
+        state_tables[state] = expand_ranges(transitions)
+
+    # Seed all the states with the anywhere transitions
+    anywhere_transitions_expanded = expand_ranges(ANYWHERE_TRANSITIONS)
+
+    for state, transitions in state_tables.items():
+        for i, transition in enumerate(anywhere_transitions_expanded):
+            if transition is not None:
+                if transitions[i] is not None:
+                    raise ValueError(
+                        f'State {state} already had a transition defined for 0x{i:02x}, but that transition is also an '
+                        f'anywhere transition!',
+                    )
+                transitions[i] = transition
+
+    # For consistency, make all transitions lists of actions
+    for state, transitions in state_tables.items():
+        state_tables[state] = [t if isinstance(t, tuple) else [t] for t in transitions]
+
+    return state_tables
 
 
-for state, transitions in STATES.items():
-    state_tables[state] = _expand_ranges(transitions)
-
-# Seed all the states with the anywhere transitions
-anywhere_transitions_expanded = _expand_ranges(ANYWHERE_TRANSITIONS)
-
-for state, transitions in state_tables.items():
-    for i, transition in enumerate(anywhere_transitions_expanded):
-        if transition is not None:
-            if transitions[i] is not None:
-                raise ValueError(
-                    f'State {state} already had a transition defined for 0x{i:02x}, but that transition is also an '
-                    f'anywhere transition!',
-                )
-            transitions[i] = transition
-
-# For consistency, make all transitions lists of actions
-for state, transitions in state_tables.items():
-    state_tables[state] = [t if isinstance(t, tuple) else [t] for t in transitions]
+STATE_TABLES = _build_state_tables()
 
 
 ##
 
 
 def _check_table() -> None:
-    for state, transitions in state_tables.items():
+    for state, transitions in STATE_TABLES.items():
         for i, val in enumerate(transitions):
             if not val:
                 raise ValueError(f'No transition defined from state {state}, char 0x{i:02x}!')
@@ -273,21 +275,21 @@ def _generate_c() -> dict[str, str]:
     f = io.StringIO()
 
     f.write('typedef enum {\n')
-    for i, state in enumerate(states_in_order):
+    for i, state in enumerate(STATES_IN_ORDER):
         f.write(f'   VTPARSE_STATE_{state.upper()} = {i + 1},\n')
     f.write('} vtparse_state_t;\n\n')
 
     f.write('typedef enum {\n')
-    for i, action in enumerate(actions_in_order):
+    for i, action in enumerate(ACTIONS_IN_ORDER):
         f.write(f'   VTPARSE_ACTION_{action.upper()} = {i + 1},\n')
     f.write('} vtparse_action_t;\n\n')
 
     f.write('typedef unsigned char state_change_t;\n')
-    f.write(f'extern state_change_t STATE_TABLE[{len(states_in_order)}][256];\n')
-    f.write(f'extern vtparse_action_t ENTRY_ACTIONS[{len(states_in_order)}];\n')
-    f.write(f'extern vtparse_action_t EXIT_ACTIONS[{len(states_in_order)}];\n')
-    f.write(f'extern char *ACTION_NAMES[{len(actions_in_order) + 1}];\n')
-    f.write(f'extern char *STATE_NAMES[{len(states_in_order) + 1}];\n\n')
+    f.write(f'extern state_change_t STATE_TABLE[{len(STATES_IN_ORDER)}][256];\n')
+    f.write(f'extern vtparse_action_t ENTRY_ACTIONS[{len(STATES_IN_ORDER)}];\n')
+    f.write(f'extern vtparse_action_t EXIT_ACTIONS[{len(STATES_IN_ORDER)}];\n')
+    f.write(f'extern char *ACTION_NAMES[{len(ACTIONS_IN_ORDER) + 1}];\n')
+    f.write(f'extern char *STATE_NAMES[{len(STATES_IN_ORDER) + 1}];\n\n')
 
     out['vtparse_table.h'] = f.getvalue()
 
@@ -299,20 +301,20 @@ def _generate_c() -> dict[str, str]:
 
     f.write('char *ACTION_NAMES[] = {\n')
     f.write('   "<no action>",\n')
-    for action in actions_in_order:
+    for action in ACTIONS_IN_ORDER:
         f.write(f'   "{action.upper()}",\n')
     f.write('};\n\n')
 
     f.write('char *STATE_NAMES[] = {\n')
     f.write('   "<no state>",\n')
-    for state in states_in_order:
+    for state in STATES_IN_ORDER:
         f.write(f'   "{state}",\n')
     f.write('};\n\n')
 
-    f.write(f'state_change_t STATE_TABLE[{len(states_in_order)}][256] = {{\n')
-    for i, state in enumerate(states_in_order):
+    f.write(f'state_change_t STATE_TABLE[{len(STATES_IN_ORDER)}][256] = {{\n')
+    for i, state in enumerate(STATES_IN_ORDER):
         f.write(f'  {{  /* VTPARSE_STATE_{state.upper()} = {i} */\n')
-        for j, state_change in enumerate(state_tables[state]):
+        for j, state_change in enumerate(STATE_TABLES[state]):
             if not state_change:
                 f.write('    0,\n')
             else:
@@ -326,7 +328,7 @@ def _generate_c() -> dict[str, str]:
     f.write('};\n\n')
 
     f.write('vtparse_action_t ENTRY_ACTIONS[] = {\n')
-    for state in states_in_order:
+    for state in STATES_IN_ORDER:
         actions = STATES[state]
         if 'on_entry' in actions:
             f.write(f"   VTPARSE_ACTION_{actions['on_entry'].upper()}, /* {state} */\n")
@@ -335,7 +337,7 @@ def _generate_c() -> dict[str, str]:
     f.write('};\n\n')
 
     f.write('vtparse_action_t EXIT_ACTIONS[] = {\n')
-    for state in states_in_order:
+    for state in STATES_IN_ORDER:
         actions = STATES[state]
         if 'on_exit' in actions:
             f.write(f"   VTPARSE_ACTION_{actions['on_exit'].upper()}, /* {state} */\n")
