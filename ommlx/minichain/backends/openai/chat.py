@@ -130,7 +130,7 @@ class OpenaiChatModel(ChatModel):
                     for m in request.v
                 ],
                 top_p=1,
-                tools=tools,
+                tools=tools or None,
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
                 stream=False,
