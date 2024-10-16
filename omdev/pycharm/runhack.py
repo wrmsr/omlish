@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/pycharm/runhack.py | .venv/bin/python - install
 
