@@ -21,7 +21,7 @@ _DEFAULT_ENABLED = True
 
 _DEBUG_PREFIX = 'omlish-pycharm-runhack'
 
-_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join(globals().get("__package__", "omdev.pycharm").split(".")[1:])}-runhack.pth'
+_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join((globals().get("__package__") or "omdev.pycharm").split(".")[1:])}-runhack.pth'  # noqa
 
 
 ##
