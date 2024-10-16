@@ -187,7 +187,15 @@ class _CliMeta(type):
                     raise NotImplementedError
                 cparser = subparsers.add_parser(obj.name)
                 for arg in (obj.args or []):
-                    cparser.add_argument(*arg.args, **arg.kwargs)
+                    if (
+                            len(arg.args) == 1 and
+                            isinstance(arg.args[0], str) and
+                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                            'metavar' not in arg.kwargs
+                    ):
+                        cparser.add_argument(n.replace('-', '_'), **arg.kwargs, metavar=n)
+                    else:
+                        cparser.add_argument(*arg.args, **arg.kwargs)
                 cparser.set_defaults(_cmd=obj)
 
             elif isinstance(obj, Arg):

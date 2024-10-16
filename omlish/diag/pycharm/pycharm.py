@@ -4,14 +4,14 @@ import subprocess
 import sys
 import typing as ta
 
-from .. import check
-from .. import lang
+from ... import check
+from ... import lang
 
 
 if ta.TYPE_CHECKING:
-    docker = lang.proxy_import('..docker')
+    docker = lang.proxy_import('...docker')
 else:
-    from .. import docker
+    from ... import docker
 
 
 ##
@@ -136,14 +136,3 @@ def pycharm_remote_debugger_attach(
         stdoutToServer=True,
         stderrToServer=True,
     )
-
-
-# @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'pycharm',
-    'mod_name': __name__,
-}}
-
-
-if __name__ == '__main__':
-    print(get_pycharm_version())
