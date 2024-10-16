@@ -60,7 +60,7 @@ _default_venv:
 		ln -s .venvs/default .venv ; \
 	fi
 
-	.venv/bin/python3 -m omdev.pycharm.runhack install -e || true
+	.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
 
 	if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
 		${MAKE} tg ; \
