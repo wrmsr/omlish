@@ -48,5 +48,5 @@ class ToolSpec(lang.Final):
 @dc.dataclass(frozen=True)
 class ToolExecRequest(lang.Final):
     id: str
-    name: str
+    tool: ToolSpec
     args: str
