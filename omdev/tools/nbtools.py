@@ -1,10 +1,7 @@
-"""
-TODO:
- - black
-"""
 import io
 import json
 import os.path
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -22,6 +19,7 @@ class Cli(ap.Cli):
         ap.arg('-o', '--overwrite', action='store_true'),
         ap.arg('--no-header', action='store_true'),
         ap.arg('--keep-bangs', action='store_true'),
+        ap.arg('--black', action='store_true'),
     )
     def strip_code(self) -> None:
         out_file: str | None = None
@@ -94,13 +92,24 @@ class Cli(ap.Cli):
             out.write(src)
             out.write('\n')
 
+        out_src = out.getvalue()
+
+        if self.args.black:
+            proc = subprocess.run(
+                [sys.executable, '-m', 'black', '-'],
+                input=out_src.encode('utf-8'),
+                stdout=subprocess.PIPE,
+                check=True,
+            )
+            out_src = proc.stdout.decode('utf-8')
+
         if out_file is not None:
             with open(out_file, 'w') as f:
-                f.write(out.getvalue())
+                f.write(out_src)
             print(f'Wrote {out_file}')
 
         else:
-            sys.stdout.write(out.getvalue())
+            sys.stdout.write(out_src)
 
 
 # @omlish-manifest

@@ -75,7 +75,7 @@ def test_openai_tools(harness):
 
     chat.append(resp.v)
 
-    tr = check.single(resp.v.tool_exec_requests)
+    tr = check.single(check.not_none(resp.v.tool_exec_requests))
     assert tr.name == 'get_weather'
     assert json.loads(tr.args) == {'location': 'Seattle'}
 
