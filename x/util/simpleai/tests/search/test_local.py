@@ -1,7 +1,5 @@
 import unittest
 
-from simpleai.search.models import SearchNode
-
 from ...search.local import beam
 from ...search.local import beam_best_first
 from ...search.local import genetic
@@ -9,9 +7,10 @@ from ...search.local import hill_climbing
 from ...search.local import hill_climbing_random_restarts
 from ...search.local import hill_climbing_stochastic
 from ...search.local import simulated_annealing
-from .dummies import GOAL
+from ...search.models import SearchNode
 from .dummies import DummyGeneticProblem
 from .dummies import DummyProblem
+from .dummies import GOAL
 
 
 class TestLocalSearch(unittest.TestCase):

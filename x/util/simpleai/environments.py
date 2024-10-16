@@ -1,5 +1,3 @@
-
-
 class Environment:
 
     def __init__(self, agents, initial_state):

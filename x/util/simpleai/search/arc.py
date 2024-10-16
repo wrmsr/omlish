@@ -1,4 +1,4 @@
-from operator import itemgetter
+import operator
 
 from .csp import _call_constraint
 
@@ -6,7 +6,7 @@ from .csp import _call_constraint
 # The first 3 functions are exported for testing purposes.
 __all__ = ['all_arcs', 'revise', 'arc_consistency_3']
 
-fst = itemgetter(0)
+fst = operator.itemgetter(0)
 
 
 def revise(domains, arc, constraints):

@@ -1,22 +1,16 @@
+import collections
 import heapq
 import random
-from collections import deque
 
 
-try:
-    from itertools import izip
-except ImportError:
-    izip = zip
-
-
-class LifoList(deque):
+class LifoList(collections.deque):
     """List that pops from the end."""
 
     def sorted(self):
         return list(self)[::-1]
 
 
-class FifoList(deque):
+class FifoList(collections.deque):
     """List that pops from the beginning."""
 
     def pop(self):
@@ -71,7 +65,7 @@ class InverseTransformSampler:
             weights = [1 for x in weights]
         accumulated = 0
         self.probs = []
-        for w, x in izip(weights, objects):
+        for w, x in zip(weights, objects):
             p = w / tot
             accumulated += p
             self.probs.append(accumulated)

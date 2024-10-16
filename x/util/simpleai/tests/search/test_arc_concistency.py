@@ -1,12 +1,12 @@
+import operator
 import unittest
-from operator import itemgetter
 
 from ...search.arc import all_arcs
 from ...search.arc import arc_consistency_3
 from ...search.arc import revise
 
 
-first = itemgetter(0)
+first = operator.itemgetter(0)
 
 
 class TestAllArcs(unittest.TestCase):

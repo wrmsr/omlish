@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-
+import collections
 import math
-from collections import defaultdict
 
 import numpy
 
 
-class Counter(defaultdict):
+class Counter(collections.defaultdict):
     """
     Counter of examples. Counts the total of examples added
     and also the times that the target of that example appears.
@@ -39,7 +38,7 @@ class OnlineInformationGain:
     def __init__(self, attribute, target):
         self.attribute = attribute
         self.H = OnlineEntropy(target)
-        self.G = defaultdict(lambda: OnlineEntropy(target))
+        self.G = collections.defaultdict(lambda: OnlineEntropy(target))
 
     def add(self, example):
         self.H.add(example)
@@ -63,7 +62,7 @@ class OnlineInformationGain:
 
 class OnlineLogProbability:
     def __init__(self):
-        self.d = defaultdict(int)
+        self.d = collections.defaultdict(int)
         self._logtotal = None
 
     def add(self, x):

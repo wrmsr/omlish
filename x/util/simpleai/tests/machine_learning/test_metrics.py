@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-
 """
 Tests for metrics module in machine learning.
 """
-
 import unittest
 
 from ...machine_learning.metrics import Counter

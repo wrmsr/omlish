@@ -1,7 +1,6 @@
+import copy
+import itertools
 import random
-from copy import copy
-from copy import deepcopy
-from itertools import product
 
 from .utils import argmin
 
@@ -22,7 +21,7 @@ def backtrack(problem, variable_heuristic='', value_heuristic='', inference=True
     LEAST_CONSTRAINING_VALUE or blank for simple ordered choosing.
     """
     assignment = {}
-    domains = deepcopy(problem.domains)
+    domains = copy.deepcopy(problem.domains)
 
     if variable_heuristic == MOST_CONSTRAINED_VARIABLE:
         variable_chooser = _most_constrained_variable_chooser
@@ -87,7 +86,7 @@ def _find_conflicts(problem, assignment, variable=None, value=None):
     checking.
     """
     if variable is not None and value is not None:
-        assignment = deepcopy(assignment)
+        assignment = copy.deepcopy(assignment)
         assignment[variable] = value
 
     conflicts = []
@@ -114,7 +113,7 @@ def _least_constraining_values_sorter(problem, assignment, variable, domains):
 
     # the value that generates less conflicts
     def update_assignment(value):
-        new_assignment = deepcopy(assignment)
+        new_assignment = copy.deepcopy(assignment)
         new_assignment[variable] = value
         return new_assignment
 
@@ -142,13 +141,13 @@ def _backtracking(
     values = values_sorter(problem, assignment, variable, domains)
 
     for value in values:
-        new_assignment = deepcopy(assignment)
+        new_assignment = copy.deepcopy(assignment)
         new_assignment[variable] = value
 
         if not _count_conflicts(
             problem, new_assignment,
         ):  # TODO on aima also checks if using fc
-            new_domains = deepcopy(domains)
+            new_domains = copy.deepcopy(domains)
             new_domains[variable] = [value]
 
             if not inference or arc_consistency_3(new_domains, problem.constraints):
@@ -242,7 +241,7 @@ def convert_to_binary(variables, domains, constraints):
         return diff
 
     new_constraints = []
-    new_domains = copy(domains)
+    new_domains = copy.copy(domains)
     new_variables = list(variables)
     last = 0
 
@@ -255,7 +254,7 @@ def convert_to_binary(variables, domains, constraints):
         new_variables.append(hidden)
         last += 1
         new_domains[hidden] = [
-            t for t in product(*map(domains.get, vars_)) if const(vars_, t)
+            t for t in itertools.product(*map(domains.get, vars_)) if const(vars_, t)
         ]
         for var in vars_:
             new_constraints.append(((hidden, var), wdiff(vars_)))

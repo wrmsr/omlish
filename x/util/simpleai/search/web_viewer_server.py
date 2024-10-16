@@ -1,9 +1,6 @@
-
-
 import json
-from os import _exit
-from os import path
-from time import sleep
+import os.path
+import time
 
 from flask import Flask
 from flask import Response
@@ -11,7 +8,7 @@ from flask import send_file
 
 
 def run_server(viewer):
-    resources = path.join(path.dirname(path.realpath(__file__)), 'web_viewer_resources')
+    resources = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'web_viewer_resources')
 
     app = Flask(__name__, static_folder=resources, static_url_path='/static')
 
@@ -19,12 +16,12 @@ def run_server(viewer):
 
     @app.route('/')
     def index():
-        return send_file(path.join(resources, 'index.html'))
+        return send_file(os.path.join(resources, 'index.html'))
 
     @app.route('/graph')
     def graph():
         while viewer.creating_graph:
-            sleep(0.1)
+            time.sleep(0.1)
         return send_file(viewer.graph_path)
 
     @app.route('/control/<order>')
@@ -45,7 +42,7 @@ def run_server(viewer):
         def event_stream():
             announced = 0
             while True:
-                sleep(0.1)
+                time.sleep(0.1)
                 if len(viewer.events) > announced:
                     news_limit = len(viewer.events)
 
@@ -80,4 +77,4 @@ def run_server(viewer):
 
 
 def stop_server():
-    _exit(1)
+    os._exit(1)  # noqa

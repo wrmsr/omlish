@@ -1,5 +1,3 @@
-
-
 class SearchProblem:
     """Abstract base class to represent and manipulate the search space of a
     problem.

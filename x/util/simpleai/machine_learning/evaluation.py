@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Tools for evaluate the classification algorithms
 """

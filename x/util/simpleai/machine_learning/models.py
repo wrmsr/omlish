@@ -1,13 +1,8 @@
 #!/usr/bin/env python
-
 """
 Basic API for modeling a classification problem.
 """
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import cPickle as pickle
 
 
 class Classifier:

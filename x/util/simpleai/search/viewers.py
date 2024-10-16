@@ -1,10 +1,8 @@
-
-
+import os.path
 import sys
-from os import path
-from tempfile import mkdtemp
-from threading import Thread
-from time import sleep
+import tempfile
+import threading
+import time
 
 
 class Event:
@@ -281,8 +279,8 @@ class WebViewer(BaseViewer):
         self.creating_graph = False
         self.server_running = False
 
-        tmp_folder = mkdtemp(prefix='simpleai_web_server_')
-        self.graph_path = path.join(tmp_folder, 'graph.png')
+        tmp_folder = tempfile.mkdtemp(prefix='simpleai_web_server_')
+        self.graph_path = os.path.join(tmp_folder, 'graph.png')
 
     def event(self, name, *params):
         if name == 'started':
@@ -298,15 +296,15 @@ class WebViewer(BaseViewer):
             self.status = 'paused'
 
         while self.status == 'paused':
-            sleep(0.5)
+            time.sleep(0.5)
 
-        sleep(0.5)
+        time.sleep(0.5)
 
     def start_server(self):
         if not self.server_running:
-            from simpleai.search.web_viewer_server import run_server
+            from .web_viewer_server import run_server
 
-            t = Thread(target=run_server, args=[self])
+            t = threading.Thread(target=run_server, args=[self])
             t.daemon = True
             t.start()
 

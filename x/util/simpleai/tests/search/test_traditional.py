@@ -1,7 +1,5 @@
 import unittest
 
-from simpleai.search.viewers import BaseViewer
-
 from ...search.traditional import astar
 from ...search.traditional import breadth_first
 from ...search.traditional import depth_first
@@ -9,9 +7,10 @@ from ...search.traditional import greedy
 from ...search.traditional import iterative_limited_depth_first
 from ...search.traditional import limited_depth_first
 from ...search.traditional import uniform_cost
-from .dummies import GOAL
+from ...search.viewers import BaseViewer
 from .dummies import DummyGraphProblem
 from .dummies import DummyProblem
+from .dummies import GOAL
 
 
 class SampleViewer(BaseViewer):

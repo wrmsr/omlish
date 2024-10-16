@@ -1,10 +1,10 @@
+import operator
 import unittest
-from operator import itemgetter
 
 from ...search import convert_to_binary
 
 
-fst = itemgetter(0)
+fst = operator.itemgetter(0)
 
 
 class TestHiddenVariableRepr(unittest.TestCase):

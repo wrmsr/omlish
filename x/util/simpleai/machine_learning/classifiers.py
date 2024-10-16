@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Classifiers implemented:
  * Decision tree:      See http://en.wikipedia.org/wiki/Decision_tree_learning

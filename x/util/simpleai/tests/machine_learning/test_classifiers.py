@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-
 """
 Tests for dtree.
 """
-
+import collections
 import math
 import os
 import tempfile
 import unittest
-from collections import defaultdict
 
 import numpy as np
 
@@ -46,7 +44,7 @@ class BaseTestClassifier:
         self.target = self.problem.target
 
     def test_better_than_majority(self):
-        d = defaultdict(int)
+        d = collections.defaultdict(int)
         for example in self.corpus:
             d[self.target(example)] += 1
         majority = max(d, key=d.get)

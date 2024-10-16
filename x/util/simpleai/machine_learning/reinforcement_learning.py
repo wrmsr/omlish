@@ -1,10 +1,9 @@
+import cPickle as pickle
+import collections
 import math
-import pickle
 import random
-from collections import Counter
-from collections import defaultdict
 
-from simpleai.search.utils import argmax
+from ..search.utils import argmax
 
 
 try:
@@ -130,7 +129,7 @@ def inverse(n):
 
 
 def state_default():
-    return defaultdict(int)
+    return collections.defaultdict(int)
 
 
 class QLearner:
@@ -144,7 +143,7 @@ class QLearner:
         learning_rate=inverse,
     ):
 
-        self.Q = defaultdict(state_default)
+        self.Q = collections.defaultdict(state_default)
         self.problem = problem
         self.discount_factor = discount_factor
         self.temperature_function = temperature_function
@@ -154,7 +153,7 @@ class QLearner:
         self.last_state = None
         self.last_action = None
         self.last_reward = None
-        self.counter = defaultdict(Counter)
+        self.counter = collections.defaultdict(collections.Counter)
         self.trials = 0
 
     def set_reward(self, reward, terminal=False):
