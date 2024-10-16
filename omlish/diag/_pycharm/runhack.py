@@ -100,12 +100,17 @@ def _get_env_path_list(k):  # type: (str) -> list[str]
 ##
 
 
-class AsDict:
-    def as_dict(self):  # type: () -> dict[str, object]
-        raise TypeError
+class AttrsClass:
+    __attrs__ = ()  # type: tuple[str, ...]
+
+    def __repr__(self) -> str:
+        return _attr_repr(self, *self.__attrs__)
+
+    def attrs_dict(self):  # type: () -> dict[str, object]
+        return {a: getattr(self, a) for a in self.__attrs__}
 
     def replace(self, **kwargs):
-        return self.__class__(**{**self.as_dict(), **kwargs})
+        return self.__class__(**{**self.attrs_dict(), **kwargs})
 
 
 class AsJson:
@@ -116,7 +121,7 @@ class AsJson:
 ##
 
 
-class RunEnv(AsJson):
+class RunEnv(AttrsClass, AsJson):
     def __init__(
             self,
             *,
@@ -171,7 +176,7 @@ class RunEnv(AsJson):
             sys_path = list(sys.path)
         self._sys_path = sys_path
 
-    _ATTRS = (
+    __attrs__ = (
         'argv',
         'orig_argv',
 
@@ -185,12 +190,6 @@ class RunEnv(AsJson):
 
         'sys_path',
     )
-
-    def as_json(self):  # type: () -> dict[str, object]
-        return {a: getattr(self, a) for a in self._ATTRS}
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
 
     @property
     def argv(self):  # type: () -> list[str]
@@ -227,6 +226,9 @@ class RunEnv(AsJson):
     @property
     def sys_path(self):  # type: () -> list[str]
         return self._sys_path
+
+    def as_json(self):  # type: () -> dict[str, object]
+        return self.attrs_dict()
 
 
 ##
@@ -495,7 +497,7 @@ def render_args(args):  # type: (list[Arg]) -> list[str]
 ##
 
 
-class Target(AsDict, AsJson):
+class Target(AttrsClass, AsJson):
     pass
 
 
@@ -530,16 +532,10 @@ class FileTarget(UserTarget):
     def file(self) -> str:
         return self._file
 
-    _ATTRS = ('file', 'argv')
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
+    __attrs__ = ('file', 'argv')
 
     def as_json(self):  # type: () -> dict[str, object]
-        return self.as_dict()
+        return self.attrs_dict()
 
 
 class ModuleTarget(UserTarget):
@@ -556,16 +552,10 @@ class ModuleTarget(UserTarget):
     def module(self) -> str:
         return self._module
 
-    _ATTRS = ('module', 'argv')
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
+    __attrs__ = ('module', 'argv')
 
     def as_json(self):  # type: () -> dict[str, object]
-        return self.as_dict()
+        return self.attrs_dict()
 
 
 #
@@ -604,13 +594,7 @@ class DebuggerTarget(PycharmTarget):
     def target(self) -> Target:
         return self._target
 
-    _ATTRS = ('file', 'args', 'target')
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
+    __attrs__ = ('file', 'args', 'target')
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -662,13 +646,7 @@ class TestRunnerTarget(PycharmTarget):
     def tests(self):  # type: () -> list[Test]
         return self._tests
 
-    _ATTRS = ('file', 'args', 'tests')
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
+    __attrs__ = ('file', 'args', 'tests')
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -884,7 +862,7 @@ def render_target_args(tgt):  # type: (Target) -> list[str]
 ##
 
 
-class Exec(AsDict, AsJson):
+class Exec(AttrsClass, AsJson):
     def __init__(
             self,
             exe: str,
@@ -909,13 +887,7 @@ class Exec(AsDict, AsJson):
     def target(self) -> Target:
         return self._target
 
-    _ATTRS = ('exe', 'exe_args', 'target')
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
+    __attrs__ = ('exe', 'exe_args', 'target')
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -979,7 +951,7 @@ def render_exec_args(exe):  # type: (Exec) -> list[str]
 ##
 
 
-class ExecDecision(AsDict, AsJson):
+class ExecDecision(AttrsClass, AsJson):
     def __init__(
             self,
             target: Target,
@@ -1020,19 +992,13 @@ class ExecDecision(AsDict, AsJson):
     def os_exec(self) -> bool:
         return self._os_exec
 
-    _ATTRS = (
+    __attrs__ = (
         'target',
         'cwd',
         'python_path',
         'sys_path',
         'os_exec',
     )
-
-    def __repr__(self) -> str:
-        return _attr_repr(self, *self._ATTRS)
-
-    def as_dict(self):  # type: () -> dict[str, object]
-        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
