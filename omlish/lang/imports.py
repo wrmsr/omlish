@@ -12,7 +12,12 @@ from .cached import cached_function
 
 
 def can_import(name: str, package: str | None = None) -> bool:
-    return importlib.util.find_spec(name, package) is not None
+    try:
+        spec = importlib.util.find_spec(name, package)
+    except ImportError:
+        return False
+    else:
+        return spec is not None
 
 
 ##
