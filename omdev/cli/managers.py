@@ -50,5 +50,5 @@ def setup_install_manager(cli_pkg: str) -> None:
     if detect_install_manager(cli_pkg) is None:
         return
 
-    from .pathhack import _install_pth_file
+    from ._pathhack import _install_pth_file
     _install_pth_file()
