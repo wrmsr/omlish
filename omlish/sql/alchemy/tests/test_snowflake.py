@@ -6,6 +6,7 @@ from ....secrets.tests.harness import HarnessSecrets
 from ....testing import pytest as ptu
 
 
+@ptu.skip.if_cant_import('snowflake')
 @ptu.skip.if_cant_import('snowflake.sqlalchemy')
 @pytest.mark.online
 def test_snowflake(harness):
