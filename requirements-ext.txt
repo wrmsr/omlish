@@ -193,7 +193,7 @@ logbook==1.7.0.post0
 
 psutil==6.0.0
 
-mitogen==0.3.13
+mitogen==0.3.14
 
 cloudpickle==3.0.0
 

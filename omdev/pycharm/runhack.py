@@ -46,6 +46,9 @@ class AsDict:
     def as_dict(self):  # type: () -> dict[str, object]
         raise TypeError
 
+    def replace(self, **kwargs):
+        return self.__class__(**{**self.as_dict(), **kwargs})
+
 
 class AsJson:
     def as_json(self):  # type: () -> dict[str, object]
@@ -1025,10 +1028,9 @@ class ExecDecider:
         new_file = os.path.abspath(tgt.file)
 
         return ExecDecision(
-            FileTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'file': new_file,
-            }),
+            tgt.replace(
+                file=new_file,
+            ),
             cwd=self._root_dir,
         )
 
@@ -1040,10 +1042,9 @@ class ExecDecider:
         new_mod = '.'.join([rel_path.replace(os.sep, '.'), tgt.module])  # noqa
 
         return ExecDecision(
-            ModuleTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'module': new_mod,
-            }),
+            tgt.replace(
+                module=new_mod,
+            ),
             cwd=self._root_dir,
             os_exec=True,
         )
@@ -1065,10 +1066,9 @@ class ExecDecider:
         )
 
         return ExecDecision(
-            DebuggerTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'target': new_dt,
-            }),
+            tgt.replace(
+                target=new_dt,
+            ),
             cwd=self._root_dir,
             python_path=self._filter_out_cwd(self._env.python_path),
             sys_path=self._filter_out_cwd(self._env.sys_path),
@@ -1090,10 +1090,9 @@ class ExecDecider:
         )
 
         return ExecDecision(
-            DebuggerTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'target': new_dt,
-            }),
+            tgt.replace(
+                target=new_dt,
+            ),
             cwd=self._root_dir,
             python_path=self._filter_out_cwd(self._env.python_path),
             sys_path=self._filter_out_cwd(self._env.sys_path),
@@ -1123,16 +1122,14 @@ class ExecDecider:
 
         new_tests = [fix_test(t) for t in dt.tests]
 
-        new_dt = TestRunnerTarget(**{  # type: ignore
-            **dt.as_dict(),
-            'tests': new_tests,
-        })
+        new_dt = dt.replace(
+            tests=new_tests,
+        )
 
         return ExecDecision(
-            DebuggerTarget(**{  # type: ignore
-                **tgt.as_dict(),
-                'target': new_dt,
-            }),
+            tgt.replace(
+                target=new_dt,
+            ),
             cwd=self._root_dir,
             python_path=self._filter_out_cwd(self._env.python_path),
             sys_path=self._filter_out_cwd(self._env.sys_path),
@@ -1229,10 +1226,9 @@ class HackRunner:
             sys.path = dec.sys_path
 
         if dec.os_exec:
-            new_exe = Exec(**{
-                **self._exe().as_dict(),
-                'target': dec.target,
-            })
+            new_exe = self._exe().replace(
+                target=dec.target,
+            )
 
             reexec_argv = render_exec_args(new_exe)
             self._debug(f'{reexec_argv=}')
