@@ -1,7 +1,6 @@
-# coding=utf-8
 
 
-class DummyNode(object):
+class DummyNode:
     def __init__(self, value):
         self.value = value
 
@@ -12,7 +11,7 @@ class DummyNode(object):
 GOAL = 'iabcabc'
 
 
-class DummyProblem(object):
+class DummyProblem:
     def actions(self, state):
         return ['a', 'b', 'c'] if len(state) < len(GOAL) else []
 
@@ -28,8 +27,13 @@ class DummyProblem(object):
 
     def value(self, state):
         # correct actions
-        return sum(1 if state[i] == GOAL[i] else 0
-                   for i in range(min(len(GOAL), len(state)))) - 1
+        return (
+            sum(
+                1 if state[i] == GOAL[i] else 0
+                for i in range(min(len(GOAL), len(state)))
+            )
+            - 1
+        )
 
     def cost(self, state1, action, state2):
         return 1
@@ -38,7 +42,7 @@ class DummyProblem(object):
         return 'i'
 
 
-class DummyGeneticProblem(object):
+class DummyGeneticProblem:
     def value(self, state):
         return state + 1
 
@@ -52,14 +56,14 @@ class DummyGeneticProblem(object):
         return 4  # Please see http://xkcd.com/221/
 
 
-class DummyGraphProblem(object):
+class DummyGraphProblem:
 
     _map = {
-            'r': {'l': 16},
-            'l': {'s': 26, 'a': 10, 'r': 16},
-            'a': {'s': 15, 'l': 10},
-            's': {'l': 26, 'a': 15},
-            }
+        'r': {'l': 16},
+        'l': {'s': 26, 'a': 10, 'r': 16},
+        'a': {'s': 15, 'l': 10},
+        's': {'l': 26, 'a': 15},
+    }
 
     consistent = {'r': 0, 'l': 15, 'a': 25, 's': 30}
     inconsistent = {'r': 0, 'l': 10, 'a': 25, 's': 30}
@@ -78,7 +82,7 @@ class DummyGraphProblem(object):
         return list(self._map[state].keys())
 
     def result(self, state, action):
-        'returns the action because it indicates the next city'
+        "returns the action because it indicates the next city"
         return action
 
     def cost(self, state1, action, state2):

@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
 import unittest
-from simpleai.machine_learning.reinforcement_learning import boltzmann_exploration, make_at_least_n_times
 from collections import Counter
+
+from ...machine_learning.reinforcement_learning import boltzmann_exploration
+from ...machine_learning.reinforcement_learning import make_at_least_n_times
 
 
 class TestBoltzmann_exploration(unittest.TestCase):

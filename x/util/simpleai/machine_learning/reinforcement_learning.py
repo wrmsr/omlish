@@ -1,9 +1,12 @@
-# -*- coding: utf-8 -*-
-from collections import defaultdict, Counter
 import math
-import random
-from simpleai.search.utils import argmax
 import pickle
+import random
+from collections import Counter
+from collections import defaultdict
+
+from simpleai.search.utils import argmax
+
+
 try:
     import matplotlib.pyplot as plt
     import numpy
@@ -26,7 +29,7 @@ def make_at_least_n_times(optimistic_reward, min_n):
 
 
 def boltzmann_exploration(actions, utilities, temperature, action_counter):
-    '''returns an action with a probability depending on utilities and temperature'''
+    """returns an action with a probability depending on utilities and temperature"""
     utilities = [utilities[x] for x in actions]
     temperature = max(temperature, 0.01)
     _max = max(utilities)
@@ -34,7 +37,9 @@ def boltzmann_exploration(actions, utilities, temperature, action_counter):
     if _max == _min:
         return random.choice(actions)
 
-    utilities = [math.exp(((u - _min) / (_max - _min)) / temperature) for u in utilities]
+    utilities = [
+        math.exp(((u - _min) / (_max - _min)) / temperature) for u in utilities
+    ]
     probs = [u / sum(utilities) for u in utilities]
     i = 0
     tot = probs[i]
@@ -46,16 +51,18 @@ def boltzmann_exploration(actions, utilities, temperature, action_counter):
 
 
 def make_exponential_temperature(initial_temperature, alpha):
-    '''returns a function like initial / exp(n * alpha)'''
+    """returns a function like initial / exp(n * alpha)"""
+
     def _function(n):
         try:
             return initial_temperature / math.exp(n * alpha)
         except OverflowError:
             return 0.01
+
     return _function
 
 
-class PerformanceCounter(object):
+class PerformanceCounter:
 
     def __init__(self, learners, names=None):
         self.learners = learners
@@ -73,12 +80,17 @@ class PerformanceCounter(object):
         def set_reward(reward, terminal=False):
             if terminal:
                 if len(learner.accumulated_rewards) > 0:
-                    learner.accumulated_rewards.append(learner.accumulated_rewards[-1] + reward)
+                    learner.accumulated_rewards.append(
+                        learner.accumulated_rewards[-1] + reward,
+                    )
                 else:
                     learner.accumulated_rewards.append(reward)
                 learner.known_states.append(len(learner.Q))
-                learner.temperatures.append(learner.temperature_function(learner.trials))
+                learner.temperatures.append(
+                    learner.temperature_function(learner.trials),
+                )
             learner.old_set_reward(reward, terminal)
+
         learner.old_set_reward = learner.set_reward
         learner.set_reward = set_reward
 
@@ -98,16 +110,16 @@ class PerformanceCounter(object):
         plt.show()
 
 
-class RLProblem(object):
+class RLProblem:
 
     def actions(self, state):
-        '''Returns the actions available to perform from `state`.
-           The returned value is an iterable over actions.
-        '''
-        raise NotImplementedError()
+        """Returns the actions available to perform from `state`.
+        The returned value is an iterable over actions.
+        """
+        raise NotImplementedError
 
     def update_state(self, percept, agent):
-        'Override this method if you need to clean perception to a given agent'
+        "Override this method if you need to clean perception to a given agent"
         return percept
 
 
@@ -121,12 +133,16 @@ def state_default():
     return defaultdict(int)
 
 
-class QLearner(object):
+class QLearner:
 
-    def __init__(self, problem, temperature_function=inverse,
-                 discount_factor=1,
-                 exploration_function=boltzmann_exploration,
-                 learning_rate=inverse):
+    def __init__(
+        self,
+        problem,
+        temperature_function=inverse,
+        discount_factor=1,
+        exploration_function=boltzmann_exploration,
+        learning_rate=inverse,
+    ):
 
         self.Q = defaultdict(state_default)
         self.problem = problem
@@ -155,9 +171,12 @@ class QLearner(object):
         actions = self.problem.actions(state)
 
         if len(actions) > 0:
-            current_action = self.exploration_function(actions, self.Q[state],
-                                                       self.temperature_function(self.trials),
-                                                       self.counter[state])
+            current_action = self.exploration_function(
+                actions,
+                self.Q[state],
+                self.temperature_function(self.trials),
+                self.counter[state],
+            )
         else:
             current_action = None
 
@@ -187,7 +206,9 @@ class TDQLearner(QLearner):
 
     def update_rule(self, s, a, r, cs, ca):
         lr = self.learning_rate(self.counter[s][a])
-        self.Q[s][a] += lr * (r + self.discount_factor * max(self.Q[cs].values()) - self.Q[s][a])
+        self.Q[s][a] += lr * (
+            r + self.discount_factor * max(self.Q[cs].values()) - self.Q[s][a]
+        )
 
 
 class SARSALearner(QLearner):
@@ -195,4 +216,3 @@ class SARSALearner(QLearner):
     def update_rule(self, s, a, r, cs, ca):
         lr = self.learning_rate(self.counter[s][a])
         self.Q[s][a] += lr * (r + self.discount_factor * self.Q[cs][ca] - self.Q[s][a])
-

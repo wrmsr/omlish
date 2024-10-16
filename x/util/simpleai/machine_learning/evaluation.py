@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Tools for evaluate the classification algorithms
@@ -26,7 +25,7 @@ def precision(classifier, testset):
             hit += 1
         total += 1
     if total == 0:
-        raise ValueError("Empty testset!")
+        raise ValueError('Empty testset!')
     return hit / float(total)
 
 
@@ -39,7 +38,7 @@ def kfold(dataset, problem, method, k=10):
     """
 
     if k <= 1:
-        raise ValueError("k argument must be at least 2")
+        raise ValueError('k argument must be at least 2')
 
     dataset = list(dataset)
     random.shuffle(dataset)

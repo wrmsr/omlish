@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
 
-from __future__ import print_function
 
-from simpleai.machine_learning.reinforcement_learning import TDQLearner, \
-                                                             make_exponential_temperature, \
-                                                             PerformanceCounter, \
-                                                             RLProblem
-from simpleai.environments import RLEnvironment
 import threading
+
+from simpleai.environments import RLEnvironment
+from simpleai.machine_learning.reinforcement_learning import PerformanceCounter
+from simpleai.machine_learning.reinforcement_learning import RLProblem
+from simpleai.machine_learning.reinforcement_learning import TDQLearner
+from simpleai.machine_learning.reinforcement_learning import make_exponential_temperature
+
+
 try:
     from Tkinter import *
 except ImportError:
@@ -16,8 +17,7 @@ except ImportError:
 
 class PerpetualTimer(threading._Timer):
 
-    def __init__(self, interval, function, name=None, daemon=False,
-                    args=(), kwargs={}):
+    def __init__(self, interval, function, name=None, daemon=False, args=(), kwargs={}):
         super(PerpetualTimer, self).__init__(interval, function, args, kwargs)
         self.setName(name)
         self.setDaemon(daemon)
@@ -37,7 +37,7 @@ class PerpetualTimer(threading._Timer):
         egg.cook()
 
 
-class WumpusViewer(object):
+class WumpusViewer:
 
     def __init__(self, environment):
         self.environment = environment
@@ -51,28 +51,28 @@ class WumpusViewer(object):
             w.create_line(100 * x, 0, 100 * x, 400)
             w.create_line(0, 100 * x, 400, 100 * x)
 
-        #make holes
+        # make holes
         for x, y in environment.holes:
             w.create_oval(*self._coord(x, y), fill='red')
 
-        #make wumpus
+        # make wumpus
         x, y = environment.wumpus
         w.create_oval(*self._coord(x, y), fill='blue')
 
-        #make agent
+        # make agent
         x, y, have_gold = environment.state
         self.agent = w.create_oval(*self._coord(x, y), fill='green')
 
-        #make gold
+        # make gold
         x, y = environment.gold
         self.gold = w.create_oval(*self._coord(x, y), fill='yellow')
 
         frame = Frame(root)
         frame.pack()
 
-        self.start = Button(frame, text="Start", command=self.start)
+        self.start = Button(frame, text='Start', command=self.start)
         self.start.pack(side=LEFT)
-        self.stop = Button(frame, text="Stop", command=self.stop)
+        self.stop = Button(frame, text='Stop', command=self.stop)
         self.stop.pack(side=LEFT)
 
         root.mainloop()
@@ -103,7 +103,7 @@ class WumpusViewer(object):
         x, y, have_gold = state2
         if have_gold and self.gold:
             self.w.delete(self.gold)
-            self.w.itemconfig(self.agent, outline="yellow", width=6.0)
+            self.w.itemconfig(self.agent, outline='yellow', width=6.0)
         self.w.coords(self.agent, self._coord(x, y))
 
 
@@ -111,7 +111,12 @@ class WumpusEnvironment(RLEnvironment):
 
     def __init__(self, agent):
         super(RLEnvironment, self).__init__([agent], (1, 1, False))
-        self.action_dict = {'up': (0, 1), 'down': (0, -1), 'left': (-1, 0), 'rigth': (1, 0)}
+        self.action_dict = {
+            'up': (0, 1),
+            'down': (0, -1),
+            'left': (-1, 0),
+            'rigth': (1, 0),
+        }
         self.wumpus = (1, 3)
         self.holes = [(3, 1), (3, 3), (4, 4)]
         self.gold = (3, 4)
@@ -149,9 +154,11 @@ class WumpusProblem(RLProblem):
 
 
 if __name__ == '__main__':
-    agent = TDQLearner(WumpusProblem(),
-                       temperature_function=make_exponential_temperature(1000, 0.01),
-                       discount_factor=0.8)
+    agent = TDQLearner(
+        WumpusProblem(),
+        temperature_function=make_exponential_temperature(1000, 0.01),
+        discount_factor=0.8,
+    )
     game = WumpusEnvironment(agent)
 
     p = PerformanceCounter([agent], ['Q-learner Agent'])
@@ -162,5 +169,3 @@ if __name__ == '__main__':
 
     p.show_statistics()
     game.run(viewer=WumpusViewer(game))
-
-

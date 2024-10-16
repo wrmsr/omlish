@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 """
 Example for language classification from text using the es-en europarl
@@ -18,21 +17,22 @@ and then change the input files variable to point them... it'll be faster.
     See http://www.statmt.org/europarl/ for more information.
 """
 
-from __future__ import print_function
 
 # CHANGE INPUT FILES HERE:
-input_files = [("english", "europarl-v7.es-en.en"),
-               ("spanish", "europarl-v7.es-en.es")]
+input_files = [('english', 'europarl-v7.es-en.en'), ('spanish', 'europarl-v7.es-en.es')]
 
 
 import random
-from simpleai.machine_learning import DecisionTreeLearner_LargeData, \
-                                      ClassificationProblem, Attribute, \
-                                      precision, NaiveBayes
+
+from simpleai.machine_learning import Attribute
+from simpleai.machine_learning import ClassificationProblem
+from simpleai.machine_learning import DecisionTreeLearner_LargeData
+from simpleai.machine_learning import NaiveBayes
+from simpleai.machine_learning import precision
 from simpleai.machine_learning.classifiers import tree_to_str
 
 
-class Sentence(object):
+class Sentence:
     def __init__(self, language, text):
         self.language = language
         self.text = text
@@ -41,7 +41,7 @@ class Sentence(object):
 class LetterCount(Attribute):
     def __init__(self, letter):
         self.letter = letter
-        self.name = "Counts for letter {!r}".format(letter)
+        self.name = f'Counts for letter {letter!r}'
 
     def __call__(self, sentence):
         return sentence.text.count(self.letter)
@@ -51,7 +51,7 @@ class LanguageClassificationProblem(ClassificationProblem):
 
     def __init__(self):
         super(LanguageClassificationProblem, self).__init__()
-        for letter in "abcdefghijklmnopqrstuvwxyz":
+        for letter in 'abcdefghijklmnopqrstuvwxyz':
             attribute = LetterCount(letter)
             self.attributes.append(attribute)
 
@@ -59,13 +59,13 @@ class LanguageClassificationProblem(ClassificationProblem):
         return sentence.language
 
 
-class OnlineCorpusReader(object):
+class OnlineCorpusReader:
     def __init__(self, input_files, accept_criteria):
         self.input_files = input_files
         self.accept_criteria = accept_criteria
 
     def __iter__(self):
-        print("Iterating corpus from the start...")
+        print('Iterating corpus from the start...')
         i = 0
         for language, filename in self.input_files:
             for text in open(filename):
@@ -73,38 +73,38 @@ class OnlineCorpusReader(object):
                     yield Sentence(language, text.lower())
                 i += 1
                 if i % 10000 == 0:
-                    print("\tReaded {} examples".format(i))
+                    print(f'\tReaded {i} examples')
 
 
-print("Counting examples")
+print('Counting examples')
 # line count
 N = 0
 for _, filename in input_files:
     for _ in open(filename):
         N += 1
-print("Corpus has {} examples".format(N))
+print(f'Corpus has {N} examples')
 
 # Choose test set, either 10% or 10000 examples, whatever is less
 M = min(N / 10, 10000)
 testindexes = set(random.sample(range(N), M))
-print("Keeping {} examples for testing".format(M))
+print(f'Keeping {M} examples for testing')
 
 problem = LanguageClassificationProblem()
 train = OnlineCorpusReader(input_files, lambda i: i not in testindexes)
 test = OnlineCorpusReader(input_files, lambda i: i in testindexes)
 
 
-print("Training Naive Bayes...")
+print('Training Naive Bayes...')
 classifier = NaiveBayes(train, problem)
-print("Testing...")
+print('Testing...')
 p = precision(classifier, test)
-print("Precision Naive Bayes = {}".format(p))
+print(f'Precision Naive Bayes = {p}')
 
 
-print("Training Decision Tree (large data)...")
+print('Training Decision Tree (large data)...')
 classifier = DecisionTreeLearner_LargeData(train, problem, minsample=500)
-print("Final tree:")
+print('Final tree:')
 print(tree_to_str(classifier.root))
-print("Testing...")
+print('Testing...')
 p = precision(classifier, test)
-print("Precision Decision Tree = {}".format(p))
+print(f'Precision Decision Tree = {p}')

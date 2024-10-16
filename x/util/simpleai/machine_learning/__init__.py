@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
 
-from simpleai.machine_learning.models import ClassificationProblem, \
-                                             VectorDataClassificationProblem, \
-                                             Attribute, VectorIndexAttribute, \
-                                             is_attribute, \
-                                             Classifier
-from simpleai.machine_learning.classifiers import DecisionTreeLearner, \
-                                                  DecisionTreeLearner_Queued, \
-                                               DecisionTreeLearner_LargeData, \
-                                                  NaiveBayes, \
-                                                  KNearestNeighbors
-from simpleai.machine_learning.evaluation import precision, kfold
+from .classifiers import DecisionTreeLearner
+from .classifiers import DecisionTreeLearner_LargeData
+from .classifiers import DecisionTreeLearner_Queued
+from .classifiers import KNearestNeighbors
+from .classifiers import NaiveBayes
+from .evaluation import kfold
+from .evaluation import precision
+from .models import Attribute
+from .models import ClassificationProblem
+from .models import Classifier
+from .models import VectorDataClassificationProblem
+from .models import VectorIndexAttribute
+from .models import is_attribute

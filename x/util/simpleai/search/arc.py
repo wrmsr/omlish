@@ -1,7 +1,6 @@
-# coding: utf-8
 from operator import itemgetter
 
-from simpleai.search.csp import _call_constraint
+from .csp import _call_constraint
 
 
 # The first 3 functions are exported for testing purposes.
@@ -20,17 +19,20 @@ def revise(domains, arc, constraints):
     those constraints affecting X and Y.
     """
     x, y = arc
-    related_constraints = [(neighbors, constraint)
-                           for neighbors, constraint in constraints
-                           if set(arc) == set(neighbors)]
+    related_constraints = [
+        (neighbors, constraint)
+        for neighbors, constraint in constraints
+        if set(arc) == set(neighbors)
+    ]
 
     modified = False
 
     for neighbors, constraint in related_constraints:
         for x_value in domains[x]:
-            constraint_results = (_call_constraint({x: x_value, y: y_value},
-                                                   neighbors, constraint)
-                                  for y_value in domains[y])
+            constraint_results = (
+                _call_constraint({x: x_value, y: y_value}, neighbors, constraint)
+                for y_value in domains[y]
+            )
 
             if not any(constraint_results):
                 domains[x].remove(x_value)
@@ -69,6 +71,5 @@ def arc_consistency_3(domains, constraints):
         if revise(domains, (x, y), constraints):
             if len(domains[x]) == 0:
                 return False
-            pending_arcs = pending_arcs.union((x2, y2) for x2, y2 in arcs
-                                              if y2 == x)
+            pending_arcs = pending_arcs.union((x2, y2) for x2, y2 in arcs if y2 == x)
     return True

@@ -1,4 +1,4 @@
-'''
+"""
 8 puzzle problem, a smaller version of the fifteen puzzle:
 http://en.wikipedia.org/wiki/Fifteen_puzzle
 States are defined as string representations of the pieces on the puzzle.
@@ -18,21 +18,20 @@ will become (in lists):
  ['4', '5', '6'],
  ['7', '8', 'e']]
 
-'''
-
-from __future__ import print_function
-
-from simpleai.search import astar, SearchProblem
-from simpleai.search.viewers import WebViewer
+"""
 
 
-GOAL = '''1-2-3
+from simpleai.search import SearchProblem
+from simpleai.search import astar
+
+
+GOAL = """1-2-3
 4-5-6
-7-8-e'''
+7-8-e"""
 
-INITIAL = '''4-1-2
+INITIAL = """4-1-2
 7-e-3
-8-5-6'''
+8-5-6"""
 
 
 def list_to_string(list_):
@@ -44,8 +43,8 @@ def string_to_list(string_):
 
 
 def find_location(rows, element_to_find):
-    '''Find the location of a piece in the puzzle.
-       Returns a tuple: row, column'''
+    """Find the location of a piece in the puzzle.
+    Returns a tuple: row, column"""
     for ir, row in enumerate(rows):
         for ic, element in enumerate(row):
             if element == element_to_find:
@@ -62,7 +61,7 @@ for number in '12345678e':
 
 class EigthPuzzleProblem(SearchProblem):
     def actions(self, state):
-        '''Returns a list of the pieces we can move to the empty space.'''
+        """Returns a list of the pieces we can move to the empty space."""
         rows = string_to_list(state)
         row_e, col_e = find_location(rows, 'e')
 
@@ -79,9 +78,9 @@ class EigthPuzzleProblem(SearchProblem):
         return actions
 
     def result(self, state, action):
-        '''Return the resulting state after moving a piece to the empty space.
-           (the "action" parameter contains the piece to move)
-        '''
+        """Return the resulting state after moving a piece to the empty space.
+        (the "action" parameter contains the piece to move)
+        """
         rows = string_to_list(state)
         row_e, col_e = find_location(rows, 'e')
         row_n, col_n = find_location(rows, action)
@@ -91,19 +90,19 @@ class EigthPuzzleProblem(SearchProblem):
         return list_to_string(rows)
 
     def is_goal(self, state):
-        '''Returns true if a state is the goal state.'''
+        """Returns true if a state is the goal state."""
         return state == GOAL
 
     def cost(self, state1, action, state2):
-        '''Returns the cost of performing an action. No useful on this problem, i
-           but needed.
-        '''
+        """Returns the cost of performing an action. No useful on this problem, i
+        but needed.
+        """
         return 1
 
     def heuristic(self, state):
-        '''Returns an *estimation* of the distance from a state to the goal.
-           We are using the manhattan distance.
-        '''
+        """Returns an *estimation* of the distance from a state to the goal.
+        We are using the manhattan distance.
+        """
         rows = string_to_list(state)
 
         distance = 0
@@ -124,4 +123,3 @@ result = astar(EigthPuzzleProblem(INITIAL))
 for action, state in result.path():
     print('Move number', action)
     print(state)
-

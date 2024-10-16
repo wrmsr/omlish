@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 import math
-import numpy
 from collections import defaultdict
+
+import numpy
 
 
 class Counter(defaultdict):
@@ -31,11 +31,11 @@ class OnlineEntropy(Counter):
         s = 0.0
         for count in list(self.values()):
             p = count / float(self.total)
-            s += p * math.log(p, 2)
+            s += p * math.log2(p)
         return -s
 
 
-class OnlineInformationGain(object):
+class OnlineInformationGain:
     def __init__(self, attribute, target):
         self.attribute = attribute
         self.H = OnlineEntropy(target)
@@ -61,14 +61,14 @@ class OnlineInformationGain(object):
         return H1 - H2
 
 
-class OnlineLogProbability(object):
+class OnlineLogProbability:
     def __init__(self):
         self.d = defaultdict(int)
         self._logtotal = None
 
     def add(self, x):
         if self._logtotal is not None:
-            raise ValueError("OnlineLogProbability is frozen since first read")
+            raise ValueError('OnlineLogProbability is frozen since first read')
         self.d[x] += 1
 
     def __getitem__(self, x):

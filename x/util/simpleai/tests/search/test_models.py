@@ -1,17 +1,17 @@
-# coding=utf-8
 import unittest
-from tests.search.dummies import DummyProblem
-from simpleai.search.models import (SearchNode, SearchNodeCostOrdered,
-                                    SearchNodeValueOrdered,
-                                    SearchNodeHeuristicOrdered,
-                                    SearchNodeStarOrdered)
+
+from ...search.models import SearchNode
+from ...search.models import SearchNodeCostOrdered
+from ...search.models import SearchNodeHeuristicOrdered
+from ...search.models import SearchNodeStarOrdered
+from ...search.models import SearchNodeValueOrdered
+from .dummies import DummyProblem
 
 
 class TestSearchNode(unittest.TestCase):
     def setUp(self):
         self.problem = DummyProblem()
-        self.node = SearchNode(state='i',
-                               problem=self.problem)
+        self.node = SearchNode(state='i', problem=self.problem)
         self.childs = self.node.expand()
 
     def test_expand_creates_node_for_each_action(self):
@@ -81,4 +81,3 @@ class TestOrderedSearchNodeClasses(unittest.TestCase):
 
         self.assertTrue(n1 < n2)
         self.assertFalse(n2 < n1)
-

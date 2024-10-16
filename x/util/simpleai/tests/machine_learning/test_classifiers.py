@@ -1,38 +1,39 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Tests for dtree.
 """
 
-import os
 import math
+import os
 import tempfile
 import unittest
 from collections import defaultdict
 
 import numpy as np
 
-from simpleai.machine_learning import evaluation
-from simpleai.machine_learning.models import VectorDataClassificationProblem
-from simpleai.machine_learning.classifiers import DecisionTreeLearner, \
-    DecisionTreeLearner_Queued, DecisionTreeLearner_LargeData, NaiveBayes, \
-    KNearestNeighbors
+from ...machine_learning import evaluation
+from ...machine_learning.classifiers import DecisionTreeLearner
+from ...machine_learning.classifiers import DecisionTreeLearner_LargeData
+from ...machine_learning.classifiers import DecisionTreeLearner_Queued
+from ...machine_learning.classifiers import KNearestNeighbors
+from ...machine_learning.classifiers import NaiveBayes
+from ...machine_learning.models import VectorDataClassificationProblem
 
 
 def euclidean_vector_distance(x, y):
     return math.sqrt(sum([(a - b) ** 2 for a, b in zip(x, y)]))
 
 
-class BaseTestClassifier(object):
+class BaseTestClassifier:
     classifier = None
 
     def setup_dataset(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def setUp(self):
         if self.classifier is None:
-            raise NotImplementedError("Choose a classifier")
+            raise NotImplementedError('Choose a classifier')
         self.setup_dataset()
         N = int(len(self.corpus) / 10)
         self.test_set = []
@@ -50,7 +51,7 @@ class BaseTestClassifier(object):
             d[self.target(example)] += 1
         majority = max(d, key=d.get)
 
-        class MockClassifier(object):
+        class MockClassifier:
             target = self.target
 
             def classify(self, example):
@@ -70,8 +71,7 @@ class BaseTestClassifier(object):
         evaluation.precision(self.this, self.test_set)
 
     def test_handles_empty_dataset(self):
-        self.assertRaises(ValueError, self.classifier,
-                          [], self.problem)
+        self.assertRaises(ValueError, self.classifier, [], self.problem)
 
     def test_target_in_attributes(self):
         """
@@ -87,7 +87,7 @@ class BaseTestClassifier(object):
 
         # Bad values
         self.assertRaises(ValueError, self.this.save, None)
-        self.assertRaises(ValueError, self.this.save, "")
+        self.assertRaises(ValueError, self.this.save, '')
         self.assertRaises(ValueError, self.this.save, 42)
 
         # Save the values before saving the tree
@@ -101,8 +101,9 @@ class BaseTestClassifier(object):
 
         # The classification must remain equal after saving the dtree
         for test in self.test_set:
-            self.assertEqual(classification_values[tuple(test)],
-                             self.this.classify(test))
+            self.assertEqual(
+                classification_values[tuple(test)], self.this.classify(test),
+            )
 
     def test_load(self):
         _, tmp_filepath = tempfile.mkstemp()
@@ -118,12 +119,14 @@ class BaseTestClassifier(object):
 
         # The classification must remain equal after loading the dtree
         for test in self.test_set:
-            self.assertEqual(classification_values[tuple(test)],
-                             classifier.classify(test))
+            self.assertEqual(
+                classification_values[tuple(test)], classifier.classify(test),
+            )
 
     def test_leave_one_out(self):
-        fold = evaluation.kfold(self.corpus, self.problem,
-                                self.classifier, len(self.corpus))
+        fold = evaluation.kfold(
+            self.corpus, self.problem, self.classifier, len(self.corpus),
+        )
         self.assertNotEqual(fold, 0)
 
 
@@ -172,8 +175,8 @@ class BaseTestKNearestNeighbors(BaseTestClassifier):
     classifier = KNearestNeighbors
 
 
-class CorpusIris(object):
-    IRIS_PATH = os.path.join(os.path.dirname(__file__), "iris.txt")
+class CorpusIris:
+    IRIS_PATH = os.path.join(os.path.dirname(__file__), 'iris.txt')
 
     def setup_dataset(self):
         """
@@ -185,7 +188,7 @@ class CorpusIris(object):
         with open(self.IRIS_PATH) as filehandler:
             file_data = filehandler.read()
 
-        for line in file_data.split("\n"):
+        for line in file_data.split('\n'):
             line_data = [np.rint(float(x)) for x in line.split()]
             if line_data:
                 dataset.append(line_data)
@@ -196,7 +199,7 @@ class CorpusIris(object):
         self.problem = problem
 
 
-class CorpusXor(object):
+class CorpusXor:
     def setup_dataset(self):
         """
         Creates a corpus  with n k-bit examples of the parity problem:
@@ -217,24 +220,20 @@ class CorpusXor(object):
         self.problem = problem
 
 
-class CorpusPrimes(object):
+class CorpusPrimes:
     def setup_dataset(self):
         """
         Creates a corpus of primes. Returns the dataset,
         the attributes getter and the target getter.
         """
         size = 105  # Magic number, chosen to avoid an "error" that cannot be
-                    # patched in Dtree Pseudo (with modifing the pseudocode).
+        # patched in Dtree Pseudo (with modifing the pseudocode).
 
         dataset = []
         for i in range(size):
-            dataset.append([
-                i % 2 == 0,
-                i % 3 == 0,
-                i % 5 == 0,
-                i % 7 == 0,
-                self.isprime(i)
-            ])
+            dataset.append(
+                [i % 2 == 0, i % 3 == 0, i % 5 == 0, i % 7 == 0, self.isprime(i)],
+            )
 
         problem = VectorDataClassificationProblem(dataset, target_index=-1)
         problem.distance = euclidean_vector_distance
@@ -254,14 +253,14 @@ class CorpusPrimes(object):
         if not number & 1:
             return False
 
-        for i in range(3, int(number ** 0.5) + 1, 2):
+        for i in range(3, int(number**0.5) + 1, 2):
             if number % i == 0:
                 return False
         return True
 
 
 def create_tstcase(classifier, corpus):
-    name = "{}_{}".format(classifier.__name__, corpus.__name__)
+    name = f'{classifier.__name__}_{corpus.__name__}'
     bases = (corpus, classifier, unittest.TestCase)
     newclass = type(name, bases, {})
     globals()[name] = newclass
@@ -283,5 +282,7 @@ TestNaiveBayes_CorpusIris = create_tstcase(BaseTestNaiveBayes, CorpusIris)
 TestNaiveBayes_CorpusXor = create_tstcase(BaseTestNaiveBayes, CorpusXor)
 TestNaiveBayes_CorpusPrimes = create_tstcase(BaseTestNaiveBayes, CorpusPrimes)
 
-TestKNearestNeighbors_CorpusPrimes = create_tstcase(BaseTestKNearestNeighbors, CorpusPrimes)
+TestKNearestNeighbors_CorpusPrimes = create_tstcase(
+    BaseTestKNearestNeighbors, CorpusPrimes,
+)
 TestKNearestNeighbors_CorpusIris = create_tstcase(BaseTestKNearestNeighbors, CorpusIris)

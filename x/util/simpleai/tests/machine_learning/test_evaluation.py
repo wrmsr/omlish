@@ -1,15 +1,17 @@
-# -*- coding: utf-8 -*-
 
 import unittest
-from simpleai.machine_learning.evaluation import precision, kfold
-from simpleai.machine_learning import VectorDataClassificationProblem, \
-                                      Classifier
+
+from ...machine_learning import Classifier
+from ...machine_learning import VectorDataClassificationProblem
+from ...machine_learning.evaluation import kfold
+from ...machine_learning.evaluation import precision
 
 
 class MockClassifier(Classifier):
     """
     Classifies everything as the first item in the dataset.
     """
+
     def learn(self):
         pass
 

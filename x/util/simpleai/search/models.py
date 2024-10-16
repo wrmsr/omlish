@@ -1,54 +1,53 @@
-# coding=utf-8
 
 
-class SearchProblem(object):
-    '''Abstract base class to represent and manipulate the search space of a
-       problem.
-       In this class, the search space is meant to be represented implicitly as
-       a graph.
-       Each state corresponds with a problem state (ie, a valid configuration)
-       and each problem action (ie, a valid transformation to a configuracion)
-       corresponds with an edge.
+class SearchProblem:
+    """Abstract base class to represent and manipulate the search space of a
+    problem.
+    In this class, the search space is meant to be represented implicitly as
+    a graph.
+    Each state corresponds with a problem state (ie, a valid configuration)
+    and each problem action (ie, a valid transformation to a configuracion)
+    corresponds with an edge.
 
-       To use this class you should implement the methods required by the search
-       algorithm you will use.
-       '''
+    To use this class you should implement the methods required by the search
+    algorithm you will use.
+    """
 
     def __init__(self, initial_state=None):
         self.initial_state = initial_state
 
     def actions(self, state):
-        '''Returns the actions available to perform from `state`.
-           The returned value is an iterable over actions.
-           Actions are problem-specific and no assumption should be made about
-           them.
-        '''
+        """Returns the actions available to perform from `state`.
+        The returned value is an iterable over actions.
+        Actions are problem-specific and no assumption should be made about
+        them.
+        """
         raise NotImplementedError
 
     def result(self, state, action):
-        '''Returns the resulting state of applying `action` to `state`.'''
+        """Returns the resulting state of applying `action` to `state`."""
         raise NotImplementedError
 
     def cost(self, state, action, state2):
-        '''Returns the cost of applying `action` from `state` to `state2`.
-           The returned value is a number (integer or floating point).
-           By default this function returns `1`.
-        '''
+        """Returns the cost of applying `action` from `state` to `state2`.
+        The returned value is a number (integer or floating point).
+        By default this function returns `1`.
+        """
         return 1
 
     def is_goal(self, state):
-        '''Returns `True` if `state` is a goal state and `False` otherwise'''
+        """Returns `True` if `state` is a goal state and `False` otherwise"""
         raise NotImplementedError
 
     def value(self, state):
-        '''Returns the value of `state` as it is needed by optimization
-           problems.
-           Value is a number (integer or floating point).'''
+        """Returns the value of `state` as it is needed by optimization
+        problems.
+        Value is a number (integer or floating point)."""
         raise NotImplementedError
 
     def heuristic(self, state):
-        '''Returns an estimate of the cost remaining to reach the solution
-           from `state`.'''
+        """Returns an estimate of the cost remaining to reach the solution
+        from `state`."""
         return 0
 
     def crossover(self, state1, state2):
@@ -87,11 +86,10 @@ class SearchProblem(object):
         return str(action)
 
 
-class SearchNode(object):
-    '''Node of a search process.'''
+class SearchNode:
+    """Node of a search process."""
 
-    def __init__(self, state, parent=None, action=None, cost=0, problem=None,
-                 depth=0):
+    def __init__(self, state, parent=None, action=None, cost=0, problem=None, depth=0):
         self.state = state
         self.parent = parent
         self.action = action
@@ -100,24 +98,26 @@ class SearchNode(object):
         self.depth = depth
 
     def expand(self, local_search=False):
-        '''Create successors.'''
+        """Create successors."""
         new_nodes = []
         for action in self.problem.actions(self.state):
             new_state = self.problem.result(self.state, action)
-            cost = self.problem.cost(self.state,
-                                     action,
-                                     new_state)
+            cost = self.problem.cost(self.state, action, new_state)
             nodefactory = self.__class__
-            new_nodes.append(nodefactory(state=new_state,
-                                         parent=None if local_search else self,
-                                         problem=self.problem,
-                                         action=action,
-                                         cost=self.cost + cost,
-                                         depth=self.depth + 1))
+            new_nodes.append(
+                nodefactory(
+                    state=new_state,
+                    parent=None if local_search else self,
+                    problem=self.problem,
+                    action=action,
+                    cost=self.cost + cost,
+                    depth=self.depth + 1,
+                ),
+            )
         return new_nodes
 
     def path(self):
-        '''Path (list of nodes and actions) from root to this node.'''
+        """Path (list of nodes and actions) from root to this node."""
         node = self
         path = []
         while node:
@@ -138,13 +138,15 @@ class SearchNode(object):
         return 'Node <%s>' % self.state_representation().replace('\n', ' ')
 
     def __hash__(self):
-        return hash((
-            self.state,
-            self.parent,
-            self.action,
-            self.cost,
-            self.depth,
-        ))
+        return hash(
+            (
+                self.state,
+                self.parent,
+                self.action,
+                self.cost,
+                self.depth,
+            ),
+        )
 
 
 class SearchNodeCostOrdered(SearchNode):
@@ -177,18 +179,19 @@ class SearchNodeStarOrdered(SearchNodeHeuristicOrdered):
         return self.heuristic + self.cost < other.heuristic + other.cost
 
 
-class CspProblem(object):
+class CspProblem:
     def __init__(self, variables, domains, constraints):
         self.variables = variables
         self.domains = domains
         self.constraints = constraints
 
         # variable-based constraints dict
-        self.var_contraints = dict([(v, [constraint
-                                         for constraint in constraints
-                                         if v in constraint[0]])
-                                    for v in variables])
+        self.var_contraints = dict(
+            [
+                (v, [constraint for constraint in constraints if v in constraint[0]])
+                for v in variables
+            ],
+        )
 
         # calculate degree of each variable
-        self.var_degrees = dict([(v, len(self.var_contraints[v]))
-                                 for v in variables])
+        self.var_degrees = dict([(v, len(self.var_contraints[v])) for v in variables])

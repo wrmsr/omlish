@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 
 
-class Environment(object):
+class Environment:
 
     def __init__(self, agents, initial_state):
         self.agents = agents
@@ -29,7 +28,7 @@ class Environment(object):
 
     def do_action(self, state, action, agent):
         "Override this method to apply an action performed by an agent to a state and return a new state"
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def is_completed(self, state):
         "Override this method when the environment have terminal states"
@@ -48,8 +47,9 @@ class RLEnvironment(Environment):
     def step(self, viewer=None):
         super(RLEnvironment, self).step(viewer)
         for agent in self.agents:
-            agent.set_reward(self.reward(self.state, agent), self.is_completed(self.state))
+            agent.set_reward(
+                self.reward(self.state, agent), self.is_completed(self.state),
+            )
 
     def reward(self, state, agent):
-        raise NotImplementedError()
-
+        raise NotImplementedError

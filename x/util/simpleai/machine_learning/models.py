@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Basic API for modeling a classification problem.
@@ -11,7 +10,7 @@ except ImportError:
     import pickle
 
 
-class Classifier(object):
+class Classifier:
     """
     Base of all classifiers.
     This specifies the classifier API.
@@ -28,7 +27,7 @@ class Classifier(object):
         """
         Does the training. Returns nothing.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def attributes(self):
@@ -51,7 +50,7 @@ class Classifier(object):
         """
         Returns the classification for example.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def save(self, filepath):
         """
@@ -59,34 +58,34 @@ class Classifier(object):
         """
 
         if not filepath or not isinstance(filepath, str):
-            raise ValueError("Invalid filepath")
+            raise ValueError('Invalid filepath')
 
         # Removes dataset so is not saved in the pickle
         self.dataset = None
-        with open(filepath, "wb") as filehandler:
+        with open(filepath, 'wb') as filehandler:
             pickle.dump(self, filehandler)
 
     def distance(self, a, b):
         """
         Custom distance between `a` and `b`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @classmethod
     def load(cls, filepath):
         """
         Loads a pickled version of the classifier saved in `filepath`
         """
-        with open(filepath, "rb") as filehandler:
+        with open(filepath, 'rb') as filehandler:
             classifier = pickle.load(filehandler)
 
         if not isinstance(classifier, Classifier):
-            raise ValueError("Pickled object is not a Classifier")
+            raise ValueError('Pickled object is not a Classifier')
 
         return classifier
 
 
-class ClassificationProblem(object):
+class ClassificationProblem:
     """
     Abstract representation of a classification problem.
     It holds the attributes to be tested and defines them
@@ -107,7 +106,7 @@ class ClassificationProblem(object):
             attrs = []
         for name in dir(self):
             method = getattr(self, name)
-            if hasattr(method, "is_attribute"):
+            if hasattr(method, 'is_attribute'):
                 attr = Attribute(method, method.name)
                 attrs.append(attr)
         self.attributes = attrs
@@ -122,14 +121,15 @@ class ClassificationProblem(object):
         Given an example it returns the classification for that
         example.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __getstate__(self):
         # For pickle-ability of method objects
-        attributes = [a for a in self.attributes
-                      if not hasattr(a.function, "is_attribute")]
+        attributes = [
+            a for a in self.attributes if not hasattr(a.function, 'is_attribute')
+        ]
         d = dict(self.__dict__)
-        d["attributes"] = attributes
+        d['attributes'] = attributes
         return d
 
     def __setstate__(self, d):
@@ -156,19 +156,19 @@ class VectorDataClassificationProblem(ClassificationProblem):
         try:
             example = next(iter(dataset))
         except StopIteration:
-            raise ValueError("Dataset is empty")
+            raise ValueError('Dataset is empty')
 
         self.target_index = target_index
 
         N = len(example)
         if self.target_index < 0:  # Negative number allowed, counts in reverse
             self.target_index = N + self.target_index
-        if self.target_index < 0 or N <= self.target_index:
-            raise ValueError("Target index is out of range")
+        if self.target_index < 0 or self.target_index >= N:
+            raise ValueError('Target index is out of range')
         for i in range(N):
             if i == self.target_index:
                 continue
-            attribute = VectorIndexAttribute(i, "data at index {}".format(i))
+            attribute = VectorIndexAttribute(i, f'data at index {i}')
             self.attributes.append(attribute)
 
     def target(self, example):
@@ -179,7 +179,7 @@ class VectorDataClassificationProblem(ClassificationProblem):
         return example[self.target_index]
 
 
-class Attribute(object):
+class Attribute:
     """
     Abstract base of an attribute, a feature to be tested on the
     examples.
@@ -199,14 +199,14 @@ class Attribute(object):
         Returns a string with an explanation of
         why the attribute is being applied.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __call__(self, example):
         return self.function(example)
 
     def __str__(self):
         if self.name is None:
-            return "<undefined name>"
+            return '<undefined name>'
         return self.name
 
 
@@ -220,7 +220,7 @@ class VectorIndexAttribute(Attribute):
         self.n = n
 
     def reason(self, vector):
-        message = "{} is the {}-th element of the vector"
+        message = '{} is the {}-th element of the vector'
         return message.format(vector[self.n], self.n)
 
     def __call__(self, vector):

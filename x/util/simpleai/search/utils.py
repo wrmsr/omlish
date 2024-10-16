@@ -1,7 +1,8 @@
-# coding=utf-8
 import heapq
-from collections import deque
 import random
+from collections import deque
+
+
 try:
     from itertools import izip
 except ImportError:
@@ -9,14 +10,15 @@ except ImportError:
 
 
 class LifoList(deque):
-    '''List that pops from the end.'''
+    """List that pops from the end."""
 
     def sorted(self):
         return list(self)[::-1]
 
 
 class FifoList(deque):
-    '''List that pops from the beginning.'''
+    """List that pops from the beginning."""
+
     def pop(self):
         return super(FifoList, self).popleft()
 
@@ -24,7 +26,7 @@ class FifoList(deque):
         return list(self)
 
 
-class BoundedPriorityQueue(object):
+class BoundedPriorityQueue:
     def __init__(self, limit=None, *args):
         self.limit = limit
         self.queue = list()
@@ -59,7 +61,7 @@ class BoundedPriorityQueue(object):
         return heapq.nsmallest(len(self.queue), self.queue)
 
 
-class InverseTransformSampler(object):
+class InverseTransformSampler:
     def __init__(self, weights, objects):
         assert weights and objects and len(weights) == len(objects)
         self.objects = objects

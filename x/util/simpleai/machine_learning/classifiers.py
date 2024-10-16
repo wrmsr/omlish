@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Classifiers implemented:
@@ -8,11 +7,15 @@ Classifiers implemented:
  * K-Nearest Neighbor: See http://en.wikipedia.org/wiki/K-nearest_neighbor
 """
 
-import numpy
 from collections import defaultdict
-from simpleai.machine_learning.models import Classifier
-from simpleai.machine_learning.metrics import Counter, OnlineInformationGain, \
-                                              OnlineLogProbability
+
+import numpy
+
+from .metrics import Counter
+from .metrics import OnlineInformationGain
+from .metrics import OnlineLogProbability
+from .models import Classifier
+
 
 try:
     import cPickle as pickle
@@ -60,7 +63,7 @@ class DecisionTreeLearner(Classifier):
 
     def plurality_value(self, examples):
         if not examples:
-            raise ValueError("Dataset is empty")
+            raise ValueError('Dataset is empty')
         counter = Counter(self.target)
         for example in examples:
             counter.add(example)
@@ -95,9 +98,11 @@ class NaiveBayes(Classifier):
         # Frequency count of target classes
         self.C = OnlineLogProbability()
         # Frequency count of P(Fi|C):
-        self.Fi = defaultdict(lambda:  # For each class,
-                      defaultdict(lambda:  # For each attribute,
-                          OnlineLogProbability()))  # For each value, count it
+        self.Fi = defaultdict(
+            lambda: defaultdict(  # For each class,
+                lambda: OnlineLogProbability(),  # For each attribute,
+            ),
+        )  # For each value, count it
 
         for example in self.dataset:
             class_ = self.target(example)
@@ -106,7 +111,7 @@ class NaiveBayes(Classifier):
                 value = attribute(example)
                 self.Fi[class_][attribute].add(value)
         if not self.C:
-            raise ValueError("Dataset is empty")
+            raise ValueError('Dataset is empty')
 
         # Cripple defaultdict to a regular dict, so now it can rasie KeyError
         self.Fi.default_factory = None
@@ -114,8 +119,7 @@ class NaiveBayes(Classifier):
             d.default_factory = None
 
     def classify(self, example):
-        values = [(attribute, attribute(example))
-                  for attribute in self.attributes]
+        values = [(attribute, attribute(example)) for attribute in self.attributes]
         hypotheses = []
         for class_ in self.C:
             try:
@@ -130,10 +134,9 @@ class NaiveBayes(Classifier):
             Z = numpy.logaddexp.reduce([p for p, class_ in hypotheses])
             logprob = logprob - Z
         else:  # Something not at all seen in training, return best a priori
-            logprob, best = max((p, class_) for class_, p
-                                            in self.C.iteritems())
+            logprob, best = max((p, class_) for class_, p in self.C.iteritems())
         p = numpy.exp(logprob)
-        assert 0.0 <= p and p <= 1.0
+        assert p >= 0.0 and p <= 1.0
         return best, p
 
 
@@ -155,19 +158,20 @@ class KNearestNeighbors(Classifier):
         try:
             next(iter(self.dataset))
         except StopIteration:
-            raise ValueError("Empty dataset")
+            raise ValueError('Empty dataset')
         try:
             example = next(iter(self.dataset))
             self.problem.distance(example, example)
         except NotImplementedError:
-            message = "Classification problem not suitable for KNN. " \
-                      "A problem with a distance defined is needed."
+            message = (
+                'Classification problem not suitable for KNN. '
+                'A problem with a distance defined is needed.'
+            )
             raise ValueError(message)
 
     def classify(self, example):
-        distances = [(self.problem.distance(e, example), e)
-                     for e in self.dataset]
-        best = sorted(distances)[:self.k]
+        distances = [(self.problem.distance(e, example), e) for e in self.dataset]
+        best = sorted(distances)[: self.k]
 
         counter = Counter(self.problem.target)
         for _, example in best:
@@ -186,9 +190,9 @@ class KNearestNeighbors(Classifier):
         """
 
         if not filepath or not isinstance(filepath, str):
-            raise ValueError("Invalid filepath")
+            raise ValueError('Invalid filepath')
 
-        with open(filepath, "wb") as filehandler:
+        with open(filepath, 'wb') as filehandler:
             pickle.dump(self, filehandler)
 
 
@@ -221,24 +225,27 @@ def tree_to_str(root):
 
     xs = []
     for value, node, depth in iter_tree(root):
-        template = "{indent}"
+        template = '{indent}'
         if node is not root:
-            template += "case={value}\t"
+            template += 'case={value}\t'
         if node.attribute is None:
-            template += "result={result} -- P={prob:.2}"
+            template += 'result={result} -- P={prob:.2}'
         else:
-            template += "split by {split}:\t" +\
-                        "(partial result={result} -- P={prob:.2})"
-        line = template.format(indent="    " * depth,
-                               value=value,
-                               result=node.result[0],
-                               prob=node.result[1],
-                               split=str(node.attribute))
+            template += (
+                'split by {split}:\t' + '(partial result={result} -- P={prob:.2})'
+            )
+        line = template.format(
+            indent='    ' * depth,
+            value=value,
+            result=node.result[0],
+            prob=node.result[1],
+            split=str(node.attribute),
+        )
         xs.append(line)
-    return "\n".join(xs)
+    return '\n'.join(xs)
 
 
-class DecisionTreeNode(object):
+class DecisionTreeNode:
     """
     A node of a decision tree.
     """
@@ -269,7 +276,7 @@ class DecisionTreeNode(object):
         self.result = (majority, counts[majority] / float(total))
 
     def add_branch(self, value, branch=None):
-        assert not value in self.branches
+        assert value not in self.branches
         if branch is None:
             branch = self.__class__()
         self.branches[value] = branch
@@ -330,7 +337,7 @@ class DecisionTreeLearner_Queued(Classifier):
                 gain.add(example)
         winner = max(gains, key=lambda gain: gain.get_gain())
         if not winner.get_target_class_counts():
-            raise ValueError("Dataset is empty")
+            raise ValueError('Dataset is empty')
         return winner
 
     def _new_set_of_gain_counters(self):
@@ -338,8 +345,10 @@ class DecisionTreeLearner_Queued(Classifier):
         Creates a new set of OnlineInformationGain objects
         for each attribute.
         """
-        return [OnlineInformationGain(attribute, self.target)
-                for attribute in self.attributes]
+        return [
+            OnlineInformationGain(attribute, self.target)
+            for attribute in self.attributes
+        ]
 
     def _single_node_tree(self):
         c = Counter(self.target)
@@ -376,6 +385,7 @@ class DecisionTreeLearner_LargeData(DecisionTreeLearner_Queued):
     totally defeats the pourpose of having a large data version of the
     algorithm.
     """
+
     def __init__(self, dataset, problem, minsample=1):
         self.minsample = minsample
         super(DecisionTreeLearner_Queued, self).__init__(dataset, problem)
@@ -395,7 +405,7 @@ class DecisionTreeLearner_LargeData(DecisionTreeLearner_Queued):
                 for gain_counter in leaves[leaf]:
                     gain_counter.add(example)
             if leaf is None:
-                raise ValueError("Dataset is empty")
+                raise ValueError('Dataset is empty')
 
             old_leaves = leaves
             leaves = {}
@@ -404,8 +414,11 @@ class DecisionTreeLearner_LargeData(DecisionTreeLearner_Queued):
                 counts = winner.get_target_class_counts()
                 # WARNING not really sure why this needed to be change
                 # to >= from just >, fixing errors in python 3
-                branches = [(v, c) for v, c in winner.get_branches()
-                            if c.total >= self.minsample]
+                branches = [
+                    (v, c)
+                    for v, c in winner.get_branches()
+                    if c.total >= self.minsample
+                ]
 
                 # Base case exception
                 if leaf is self.root:
@@ -415,7 +428,7 @@ class DecisionTreeLearner_LargeData(DecisionTreeLearner_Queued):
                     continue  # No split when there's a single target class
                 if len(branches) <= 1:
                     continue  # No split when there's a single child branch
-                              # Or all branches are too small
+                    # Or all branches are too small
 
                 # Finally, go ahead and split
                 leaf.attribute = winner.attribute

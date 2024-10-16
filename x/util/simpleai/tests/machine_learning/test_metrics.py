@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Tests for metrics module in machine learning.
 """
 
 import unittest
-from simpleai.machine_learning.metrics import Counter, OnlineEntropy, \
-                                              OnlineLogProbability, \
-                                              OnlineInformationGain
+
+from ...machine_learning.metrics import Counter
+from ...machine_learning.metrics import OnlineEntropy
+from ...machine_learning.metrics import OnlineInformationGain
 
 
 class TestCounter(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestCounter(unittest.TestCase):
     def test_add_elements(self):
         counter = Counter(lambda x: None)
         for i in range(20):
-            counter.add("something")
+            counter.add('something')
         self.assertEqual(counter.total, 20)
 
     def test_target_values(self):

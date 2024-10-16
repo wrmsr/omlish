@@ -1,16 +1,16 @@
-# coding=utf-8
-from simpleai.search.utils import BoundedPriorityQueue, InverseTransformSampler
-from simpleai.search.models import SearchNodeValueOrdered
 import math
 import random
 
+from .models import SearchNodeValueOrdered
+from .utils import BoundedPriorityQueue
+from .utils import InverseTransformSampler
+
 
 def _all_expander(fringe, iteration, viewer):
-    '''
+    """
     Expander that expands all nodes on the fringe.
-    '''
-    expanded_neighbors = [node.expand(local_search=True)
-                          for node in fringe]
+    """
+    expanded_neighbors = [node.expand(local_search=True) for node in fringe]
 
     if viewer:
         viewer.event('expanded', list(fringe), expanded_neighbors)
@@ -19,7 +19,7 @@ def _all_expander(fringe, iteration, viewer):
 
 
 def beam(problem, beam_size=100, iterations_limit=0, viewer=None):
-    '''
+    """
     Beam search.
 
     beam_size is the size of the beam.
@@ -28,20 +28,22 @@ def beam(problem, beam_size=100, iterations_limit=0, viewer=None):
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, SearchProblem.value,
     and SearchProblem.generate_random_state.
-    '''
-    return _local_search(problem,
-                         _all_expander,
-                         iterations_limit=iterations_limit,
-                         fringe_size=beam_size,
-                         random_initial_states=True,
-                         stop_when_no_better=iterations_limit==0,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _all_expander,
+        iterations_limit=iterations_limit,
+        fringe_size=beam_size,
+        random_initial_states=True,
+        stop_when_no_better=iterations_limit == 0,
+        viewer=viewer,
+    )
 
 
 def _first_expander(fringe, iteration, viewer):
-    '''
+    """
     Expander that expands only the first node on the fringe.
-    '''
+    """
     current = fringe[0]
     neighbors = current.expand(local_search=True)
 
@@ -51,9 +53,8 @@ def _first_expander(fringe, iteration, viewer):
     fringe.extend(neighbors)
 
 
-
 def beam_best_first(problem, beam_size=100, iterations_limit=0, viewer=None):
-    '''
+    """
     Beam search best first.
 
     beam_size is the size of the beam.
@@ -62,18 +63,20 @@ def beam_best_first(problem, beam_size=100, iterations_limit=0, viewer=None):
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, and
     SearchProblem.value.
-    '''
-    return _local_search(problem,
-                         _first_expander,
-                         iterations_limit=iterations_limit,
-                         fringe_size=beam_size,
-                         random_initial_states=True,
-                         stop_when_no_better=iterations_limit==0,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _first_expander,
+        iterations_limit=iterations_limit,
+        fringe_size=beam_size,
+        random_initial_states=True,
+        stop_when_no_better=iterations_limit == 0,
+        viewer=viewer,
+    )
 
 
 def hill_climbing(problem, iterations_limit=0, viewer=None):
-    '''
+    """
     Hill climbing search.
 
     If iterations_limit is specified, the algorithm will end after that
@@ -81,27 +84,28 @@ def hill_climbing(problem, iterations_limit=0, viewer=None):
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, and
     SearchProblem.value.
-    '''
-    return _local_search(problem,
-                         _first_expander,
-                         iterations_limit=iterations_limit,
-                         fringe_size=1,
-                         stop_when_no_better=True,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _first_expander,
+        iterations_limit=iterations_limit,
+        fringe_size=1,
+        stop_when_no_better=True,
+        viewer=viewer,
+    )
 
 
 def _random_best_expander(fringe, iteration, viewer):
-    '''
+    """
     Expander that expands one randomly chosen nodes on the fringe that
     is better than the current (first) node.
-    '''
+    """
     current = fringe[0]
     neighbors = current.expand(local_search=True)
     if viewer:
         viewer.event('expanded', [current], [neighbors])
 
-    betters = [n for n in neighbors
-               if n.value > current.value]
+    betters = [n for n in neighbors if n.value > current.value]
     if betters:
         chosen = random.choice(betters)
         if viewer:
@@ -110,7 +114,7 @@ def _random_best_expander(fringe, iteration, viewer):
 
 
 def hill_climbing_stochastic(problem, iterations_limit=0, viewer=None):
-    '''
+    """
     Stochastic hill climbing.
 
     If iterations_limit is specified, the algorithm will end after that
@@ -118,17 +122,21 @@ def hill_climbing_stochastic(problem, iterations_limit=0, viewer=None):
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, and
     SearchProblem.value.
-    '''
-    return _local_search(problem,
-                         _random_best_expander,
-                         iterations_limit=iterations_limit,
-                         fringe_size=1,
-                         stop_when_no_better=iterations_limit==0,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _random_best_expander,
+        iterations_limit=iterations_limit,
+        fringe_size=1,
+        stop_when_no_better=iterations_limit == 0,
+        viewer=viewer,
+    )
 
 
-def hill_climbing_random_restarts(problem, restarts_limit, iterations_limit=0, viewer=None):
-    '''
+def hill_climbing_random_restarts(
+    problem, restarts_limit, iterations_limit=0, viewer=None,
+):
+    """
     Hill climbing with random restarts.
 
     restarts_limit specifies the number of times hill_climbing will be runned.
@@ -137,18 +145,20 @@ def hill_climbing_random_restarts(problem, restarts_limit, iterations_limit=0, v
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, SearchProblem.value,
     and SearchProblem.generate_random_state.
-    '''
+    """
     restarts = 0
     best = None
 
     while restarts < restarts_limit:
-        new = _local_search(problem,
-                            _first_expander,
-                            iterations_limit=iterations_limit,
-                            fringe_size=1,
-                            random_initial_states=True,
-                            stop_when_no_better=True,
-                            viewer=viewer)
+        new = _local_search(
+            problem,
+            _first_expander,
+            iterations_limit=iterations_limit,
+            fringe_size=1,
+            random_initial_states=True,
+            stop_when_no_better=True,
+            viewer=viewer,
+        )
 
         if not best or best.value < new.value:
             best = new
@@ -163,17 +173,18 @@ def hill_climbing_random_restarts(problem, restarts_limit, iterations_limit=0, v
 
 # Math literally copied from aima-python
 def _exp_schedule(iteration, k=20, lam=0.005, limit=100):
-    '''
+    """
     Possible scheduler for simulated_annealing, based on the aima example.
-    '''
+    """
     return k * math.exp(-lam * iteration)
 
 
 def _create_simulated_annealing_expander(schedule):
-    '''
+    """
     Creates an expander that has a random chance to choose a node that is worse
     than the current (first) node, but that chance decreases with time.
-    '''
+    """
+
     def _expander(fringe, iteration, viewer):
         T = schedule(iteration)
         current = fringe[0]
@@ -195,8 +206,10 @@ def _create_simulated_annealing_expander(schedule):
     return _expander
 
 
-def simulated_annealing(problem, schedule=_exp_schedule, iterations_limit=0, viewer=None):
-    '''
+def simulated_annealing(
+    problem, schedule=_exp_schedule, iterations_limit=0, viewer=None,
+):
+    """
     Simulated annealing.
 
     schedule is the scheduling function that decides the chance to choose worst
@@ -206,20 +219,23 @@ def simulated_annealing(problem, schedule=_exp_schedule, iterations_limit=0, vie
     better node than the current one.
     Requires: SearchProblem.actions, SearchProblem.result, and
     SearchProblem.value.
-    '''
-    return _local_search(problem,
-                         _create_simulated_annealing_expander(schedule),
-                         iterations_limit=iterations_limit,
-                         fringe_size=1,
-                         stop_when_no_better=iterations_limit==0,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _create_simulated_annealing_expander(schedule),
+        iterations_limit=iterations_limit,
+        fringe_size=1,
+        stop_when_no_better=iterations_limit == 0,
+        viewer=viewer,
+    )
 
 
 def _create_genetic_expander(problem, mutation_chance):
-    '''
+    """
     Creates an expander that expands the bests nodes of the population,
     crossing over them.
-    '''
+    """
+
     def _expander(fringe, iteration, viewer):
         fitness = [x.value for x in fringe]
         sampler = InverseTransformSampler(fitness, fringe)
@@ -238,7 +254,9 @@ def _create_genetic_expander(problem, mutation_chance):
                 child = problem.mutate(child)
                 action += '+mutation'
 
-            child_node = SearchNodeValueOrdered(state=child, problem=problem, action=action)
+            child_node = SearchNodeValueOrdered(
+                state=child, problem=problem, action=action,
+            )
             new_generation.append(child_node)
 
             expanded_nodes.append(node1)
@@ -256,9 +274,10 @@ def _create_genetic_expander(problem, mutation_chance):
     return _expander
 
 
-def genetic(problem, population_size=100, mutation_chance=0.1,
-            iterations_limit=0, viewer=None):
-    '''
+def genetic(
+    problem, population_size=100, mutation_chance=0.1, iterations_limit=0, viewer=None,
+):
+    """
     Genetic search.
 
     population_size specifies the size of the population (ORLY).
@@ -269,22 +288,30 @@ def genetic(problem, population_size=100, mutation_chance=0.1,
     better node than the current one.
     Requires: SearchProblem.generate_random_state, SearchProblem.crossover,
     SearchProblem.mutate and SearchProblem.value.
-    '''
-    return _local_search(problem,
-                         _create_genetic_expander(problem, mutation_chance),
-                         iterations_limit=iterations_limit,
-                         fringe_size=population_size,
-                         random_initial_states=True,
-                         stop_when_no_better=iterations_limit==0,
-                         viewer=viewer)
+    """
+    return _local_search(
+        problem,
+        _create_genetic_expander(problem, mutation_chance),
+        iterations_limit=iterations_limit,
+        fringe_size=population_size,
+        random_initial_states=True,
+        stop_when_no_better=iterations_limit == 0,
+        viewer=viewer,
+    )
 
 
-def _local_search(problem, fringe_expander, iterations_limit=0, fringe_size=1,
-                  random_initial_states=False, stop_when_no_better=True,
-                  viewer=None):
-    '''
+def _local_search(
+    problem,
+    fringe_expander,
+    iterations_limit=0,
+    fringe_size=1,
+    random_initial_states=False,
+    stop_when_no_better=True,
+    viewer=None,
+):
+    """
     Basic algorithm for all local search algorithms.
-    '''
+    """
     if viewer:
         viewer.event('started')
 
@@ -294,8 +321,9 @@ def _local_search(problem, fringe_expander, iterations_limit=0, fringe_size=1,
             s = problem.generate_random_state()
             fringe.append(SearchNodeValueOrdered(state=s, problem=problem))
     else:
-        fringe.append(SearchNodeValueOrdered(state=problem.initial_state,
-                                             problem=problem))
+        fringe.append(
+            SearchNodeValueOrdered(state=problem.initial_state, problem=problem),
+        )
 
     finish_reason = ''
     iteration = 0

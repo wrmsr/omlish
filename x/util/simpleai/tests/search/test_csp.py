@@ -1,12 +1,14 @@
-# coding=utf-8
 import unittest
-from simpleai.search.models import CspProblem
-from simpleai.search.csp import (_find_conflicts, _count_conflicts,
-                                 _most_constrained_variable_chooser,
-                                 _highest_degree_variable_chooser,
-                                 _least_constraining_values_sorter,
-                                 _min_conflicts_value, backtrack,
-                                 min_conflicts)
+
+from ...search.csp import _count_conflicts
+from ...search.csp import _find_conflicts
+from ...search.csp import _highest_degree_variable_chooser
+from ...search.csp import _least_constraining_values_sorter
+from ...search.csp import _min_conflicts_value
+from ...search.csp import _most_constrained_variable_chooser
+from ...search.csp import backtrack
+from ...search.csp import min_conflicts
+from ...search.models import CspProblem
 
 
 class TestCsp(unittest.TestCase):
@@ -43,17 +45,21 @@ class TestCsp(unittest.TestCase):
             (('A', 'B', 'C'), const_different),
             (('A', 'C'), const_one_bigger_other),
             (('A', 'C'), const_one_odd_one_even),
-            (('A',), const_not_1)
+            (('A',), const_not_1),
         ]
 
         self.problem = CspProblem(self.variables, self.domains, self.constraints)
 
     def test_most_constrained_variable_chooser(self):
-        variable = _most_constrained_variable_chooser(self.problem, self.variables, self.domains)
+        variable = _most_constrained_variable_chooser(
+            self.problem, self.variables, self.domains,
+        )
         self.assertEqual(variable, 'C')
 
     def test_highest_degree_variable_chooser(self):
-        variable = _highest_degree_variable_chooser(self.problem, self.variables, self.domains)
+        variable = _highest_degree_variable_chooser(
+            self.problem, self.variables, self.domains,
+        )
         self.assertEqual(variable, 'A')
 
     def test_find_conflicts(self):
@@ -78,7 +84,9 @@ class TestCsp(unittest.TestCase):
 
     def test_least_constraining_values_sorter(self):
         assignment = {'A': 1, 'B': 1}
-        values = _least_constraining_values_sorter(self.problem, assignment, 'C', self.domains)
+        values = _least_constraining_values_sorter(
+            self.problem, assignment, 'C', self.domains,
+        )
         self.assertEqual(values, [2, 1])
 
     def test_min_conflicts_value(self):

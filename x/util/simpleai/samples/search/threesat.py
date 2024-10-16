@@ -1,10 +1,11 @@
-from __future__ import print_function
-
-from time import time
 
 from copy import deepcopy
+from time import time
 
-from simpleai.search import backtrack, CspProblem, convert_to_binary
+from simpleai.search import CspProblem
+from simpleai.search import backtrack
+from simpleai.search import convert_to_binary
+
 
 variables = ('X1', 'X2', 'X3', 'X4', 'X5', 'X6')
 
@@ -25,7 +26,7 @@ problem = CspProblem(variables, original_domains, original_constraints)
 result = backtrack(problem)
 elapsed = time() - start
 print(result)
-print("Took %d seconds to finish using n-ary constraints" % elapsed)
+print('Took %d seconds to finish using n-ary constraints' % elapsed)
 
 
 start = time()
@@ -34,4 +35,4 @@ problem = CspProblem(variables, domains, constraints)
 result = backtrack(problem)
 elapsed = time() - start
 print(result)
-print("Took %d seconds to finish using binary constraints" % elapsed)
+print('Took %d seconds to finish using binary constraints' % elapsed)

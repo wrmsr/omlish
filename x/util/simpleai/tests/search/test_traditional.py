@@ -1,12 +1,17 @@
-# coding=utf-8
 import unittest
-from tests.search.dummies import DummyProblem, GOAL, DummyGraphProblem
-from simpleai.search.traditional import (breadth_first, depth_first,
-                                         limited_depth_first,
-                                         iterative_limited_depth_first,
-                                         uniform_cost, greedy, astar)
 
 from simpleai.search.viewers import BaseViewer
+
+from ...search.traditional import astar
+from ...search.traditional import breadth_first
+from ...search.traditional import depth_first
+from ...search.traditional import greedy
+from ...search.traditional import iterative_limited_depth_first
+from ...search.traditional import limited_depth_first
+from ...search.traditional import uniform_cost
+from .dummies import GOAL
+from .dummies import DummyGraphProblem
+from .dummies import DummyProblem
 
 
 class SampleViewer(BaseViewer):
@@ -20,11 +25,19 @@ class SampleViewer(BaseViewer):
         if name == 'new_iteration':
             expected = self.expected_fringes.pop(0)
             current = params[0]
-            if not all([cu.state == ex_state and cu.cost == ex_cost
-                        for cu, (ex_state, ex_cost) in zip(current, expected)]):
-                current = ' '.join(['<{x.state}, {x.cost}>'.format(x=x) for x in current])
-                expected = ' '.join(['<{x[0]}, {x[1]}>'.format(x=x) for x in expected])
-                raise Exception('''Fringe unexpected: {0}. Expected: {1}'''.format(current, expected))
+            if not all(
+                [
+                    cu.state == ex_state and cu.cost == ex_cost
+                    for cu, (ex_state, ex_cost) in zip(current, expected)
+                ],
+            ):
+                current = ' '.join(
+                    [f'<{x.state}, {x.cost}>' for x in current],
+                )
+                expected = ' '.join([f'<{x[0]}, {x[1]}>' for x in expected])
+                raise Exception(
+                    f"""Fringe unexpected: {current}. Expected: {expected}""",
+                )
 
 
 class TestSearch(unittest.TestCase):
@@ -69,7 +82,9 @@ class TestSearch(unittest.TestCase):
         self.assertEqual(result.state, self.graph_problem.goal)
 
     def test_astar_graph_doesnt_repeat_states_in_explore_set(self):
-        v = SampleViewer([[('s', 0)], [('l', 26), ('a', 15)], [('a', 15), ('r', 42)], [('r', 42)]])
+        v = SampleViewer(
+            [[('s', 0)], [('l', 26), ('a', 15)], [('a', 15), ('r', 42)], [('r', 42)]],
+        )
         self.graph_problem.heuristic_dict = DummyGraphProblem.inconsistent
         result = astar(self.graph_problem, graph_search=True, viewer=v)
         self.assertEqual(result.state, self.graph_problem.goal)
@@ -87,7 +102,13 @@ class TestSearch(unittest.TestCase):
         self.assertEqual(result.state, self.graph_problem.goal)
 
     def test_astar_tree_inadmissible_heuristic(self):
-        v = SampleViewer([[('s', 0)], [('l', 26), ('a', 15)], [('r', 42), ('a', 15), ('a', 36), ('s', 52)]])
+        v = SampleViewer(
+            [
+                [('s', 0)],
+                [('l', 26), ('a', 15)],
+                [('r', 42), ('a', 15), ('a', 36), ('s', 52)],
+            ],
+        )
         self.graph_problem.heuristic_dict = DummyGraphProblem.inadmissible
         result = astar(self.graph_problem, graph_search=False, viewer=v)
         self.assertEqual(result.state, self.graph_problem.goal)

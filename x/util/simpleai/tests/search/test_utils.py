@@ -1,7 +1,11 @@
-# coding=utf-8
 import unittest
-from tests.search.dummies import DummyNode
-from simpleai.search.utils import FifoList, BoundedPriorityQueue, LifoList, argmax, argmin
+
+from ...search.utils import BoundedPriorityQueue
+from ...search.utils import FifoList
+from ...search.utils import LifoList
+from ...search.utils import argmax
+from ...search.utils import argmin
+from .dummies import DummyNode
 
 
 def sorted_equals_pop(l):
@@ -119,5 +123,3 @@ class TestArgMin(unittest.TestCase):
 
     def test_empty_sequence(self):
         self.assertRaises(ValueError, argmin, [], lambda x: x)
-
-

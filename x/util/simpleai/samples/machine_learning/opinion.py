@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 """
 Opinion Mining example.
@@ -10,26 +9,26 @@ precisely http://www.cs.uic.edu/~liub/FBS/pros-cons.rar
 It should be placed in a folder called corpus in the same location of this file.
 """
 
-from __future__ import print_function
 
-import os
-import re
 import codecs
+import os
 import random
+import re
 
-from simpleai.machine_learning import precision
 from simpleai.machine_learning import Attribute
-from simpleai.machine_learning import NaiveBayes
 from simpleai.machine_learning import ClassificationProblem
+from simpleai.machine_learning import NaiveBayes
+from simpleai.machine_learning import precision
+
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-PRO_CORPUS_PATH = os.path.join(BASE_PATH, "corpus", "IntegratedPros.txt")
-CON_CORPUS_PATH = os.path.join(BASE_PATH, "corpus", "IntegratedCons.txt")
-STOPWORDS_PATH = os.path.join(BASE_PATH, "corpus", "stopwordsEN.txt")
-STOPWORDS = {s.strip() for s in codecs.open(STOPWORDS_PATH, encoding="utf-8")}
+PRO_CORPUS_PATH = os.path.join(BASE_PATH, 'corpus', 'IntegratedPros.txt')
+CON_CORPUS_PATH = os.path.join(BASE_PATH, 'corpus', 'IntegratedCons.txt')
+STOPWORDS_PATH = os.path.join(BASE_PATH, 'corpus', 'stopwordsEN.txt')
+STOPWORDS = {s.strip() for s in codecs.open(STOPWORDS_PATH, encoding='utf-8')}
 
 
-class Opinion(object):
+class Opinion:
     def __init__(self, text, category=None):
         self.text = text
         self.category = category
@@ -37,7 +36,7 @@ class Opinion(object):
 
 class WordIsPresent(Attribute):
     def __init__(self, word):
-        super(WordIsPresent, self).__init__(name="{} is present".format(word))
+        super(WordIsPresent, self).__init__(name=f'{word} is present')
         self.word = word
 
     def __call__(self, opinion):
@@ -45,15 +44,15 @@ class WordIsPresent(Attribute):
         return self.word in words
 
 
-class ProConsCorpus(object):
+class ProConsCorpus:
     def __init__(self, input_files, accept_criteria):
         self.input_files = input_files
         self.accept_criteria = accept_criteria
 
     def _clean_line(self, line):
-        line = re.sub("\<[\/]*Pros\>", "", line)
-        line = re.sub("\<[\/]*Cons\>", "", line)
-        line = re.sub("[;\":!\.,()]", "", line)
+        line = re.sub(r'\<[\/]*Pros\>', '', line)
+        line = re.sub(r'\<[\/]*Cons\>', '', line)
+        line = re.sub(r'[;":!\.,()]', '', line)
         line = line.strip()
         line = line.lower()
         return line
@@ -67,7 +66,7 @@ class ProConsCorpus(object):
                     yield Opinion(line, category)
                 i += 1
                 if i % 1000 == 0:
-                    print("\tReaded {} examples".format(i))
+                    print(f'\tReaded {i} examples')
 
 
 class OpinionProblem(ClassificationProblem):
@@ -89,8 +88,8 @@ class OpinionProblem(ClassificationProblem):
 
 def main():
     input_files = {
-        "pro": PRO_CORPUS_PATH,
-        "con": CON_CORPUS_PATH,
+        'pro': PRO_CORPUS_PATH,
+        'con': CON_CORPUS_PATH,
     }
 
     # line count
@@ -98,7 +97,7 @@ def main():
     for _, filename in list(input_files.items()):
         for _ in open(filename):
             N += 1
-    print("Corpus has {} examples".format(N))
+    print(f'Corpus has {N} examples')
 
     # Choose test set, either 10% or 10000 examples, whatever is less
     M = min(N / 10, 1000)
@@ -106,14 +105,15 @@ def main():
 
     corpus = ProConsCorpus(input_files, lambda i: i not in testindexes)
     test = ProConsCorpus(input_files, lambda i: i in testindexes)
-    print("Corpuses created")
+    print('Corpuses created')
 
     problem = OpinionProblem(corpus)
     classifier = NaiveBayes(corpus, problem)
-    print("Classifier created")
+    print('Classifier created')
 
     p = precision(classifier, test)
-    print("Precision = {}".format(p))
+    print(f'Precision = {p}')
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

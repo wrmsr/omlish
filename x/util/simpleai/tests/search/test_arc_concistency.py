@@ -1,9 +1,10 @@
-# coding=utf-8
 import unittest
-
 from operator import itemgetter
 
-from simpleai.search.arc import all_arcs, revise, arc_consistency_3
+from ...search.arc import all_arcs
+from ...search.arc import arc_consistency_3
+from ...search.arc import revise
+
 
 first = itemgetter(0)
 
@@ -17,8 +18,7 @@ class TestAllArcs(unittest.TestCase):
         constraints = [(('A', 'B'), self.constraint)]
 
         arcs_result = all_arcs(constraints)
-        arcs_expected = set([('A', 'B'),
-                             ('B', 'A')])
+        arcs_expected = set([('A', 'B'), ('B', 'A')])
 
         self.assertEqual(arcs_result, arcs_expected)
 
@@ -88,13 +88,13 @@ class TestAC3(unittest.TestCase):
         #    and re-revise ...
         # here A has no more values, ac3 returns a failure
 
-        domains = {'A': [1, 1],
-                   'B': [1, 2],
-                   'C': [2, 2]}
+        domains = {'A': [1, 1], 'B': [1, 2], 'C': [2, 2]}
         different = lambda variables, values: len(set(values)) == len(variables)
-        constraints = [(('A', 'B'), different),
-                       (('A', 'C'), different),
-                       (('B', 'C'), different)]
+        constraints = [
+            (('A', 'B'), different),
+            (('A', 'C'), different),
+            (('B', 'C'), different),
+        ]
 
         result = arc_consistency_3(domains, constraints)
 

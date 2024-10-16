@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
 
-from __future__ import print_function
 
-from simpleai.machine_learning.reinforcement_learning import TDQLearner, RLProblem, \
-                                                             make_exponential_temperature, \
-                                                             PerformanceCounter
 import random
+
 from simpleai.environments import RLEnvironment
+from simpleai.machine_learning.reinforcement_learning import PerformanceCounter
+from simpleai.machine_learning.reinforcement_learning import RLProblem
+from simpleai.machine_learning.reinforcement_learning import TDQLearner
+from simpleai.machine_learning.reinforcement_learning import make_exponential_temperature
 
 
 class TicTacToeProblem(RLProblem):
 
     def actions(self, state):
-        'actions are index where we can make a move'
+        "actions are index where we can make a move"
         actions = []
         for index, char in enumerate(state):
             if char == '_':
@@ -28,9 +28,11 @@ class TicTacToeProblem(RLProblem):
 class TicTacToePlayer(TDQLearner):
 
     def __init__(self, play_with):
-        super(TicTacToePlayer, self).__init__(TicTacToeProblem(),
-                                              temperature_function=make_exponential_temperature(1000000, 0.01),
-                                              discount_factor=0.4)
+        super(TicTacToePlayer, self).__init__(
+            TicTacToeProblem(),
+            temperature_function=make_exponential_temperature(1000000, 0.01),
+            discount_factor=0.4,
+        )
         self.play_with = play_with
         self.other_play_with = 'X' if play_with == 'O' else 'O'
 
@@ -48,7 +50,7 @@ class HumanPlayer(TicTacToePlayer):
             row = row.replace('_', ' ')
             s.append('|%d|' % i + '|'.join(list(row)) + '|')
             s.append('+-+-+-+-+')
-        print(('\n'.join(s)))
+        print('\n'.join(s))
         a = input('Make your move (r, c):')
         r, c = a
         return r * 3 + c
@@ -58,7 +60,9 @@ class RandomPlayer(TicTacToePlayer):
 
     def program(self, perception):
         try:
-            return random.choice(self.problem.actions(self.problem.update_state(perception, self)))
+            return random.choice(
+                self.problem.actions(self.problem.update_state(perception, self)),
+            )
         except:
             return None
 
@@ -71,17 +75,22 @@ class TicTacToeGame(RLEnvironment):
     def do_action(self, state, action, agent):
         if action is not None:
             s = state.replace('\n', '')
-            s = s[:action] + agent.play_with + s[action + 1:]
+            s = s[:action] + agent.play_with + s[action + 1 :]
             return '\n'.join([s[0:3], s[3:6], s[6:9]])
         return state
 
     def is_completed(self, state):
-        return not ('_' in state and all([self.reward(state, x) == 0 for x in self.agents]))
+        return not (
+            '_' in state and all([self.reward(state, x) == 0 for x in self.agents])
+        )
 
     def reward(self, state, agent):
         rows = state.split()
         columns = [''.join(x) for x in zip(*rows)]
-        diagonals = [rows[0][0] + rows[1][1] + rows[2][2], rows[0][2] + rows[1][1] + rows[2][0]]
+        diagonals = [
+            rows[0][0] + rows[1][1] + rows[2][2],
+            rows[0][2] + rows[1][1] + rows[2][0],
+        ]
         to_check = rows + columns + diagonals
         for x in to_check:
             if all([c == x[0] for c in x]) and x[0] != '_':

@@ -1,15 +1,13 @@
-# coding: utf-8
 
-from __future__ import print_function
 
-from os import path
 import sys
+from os import path
 from tempfile import mkdtemp
-from time import sleep
 from threading import Thread
+from time import sleep
 
 
-class Event(object):
+class Event:
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -18,7 +16,7 @@ class Event(object):
         return self.name
 
 
-CONSOLE_HELP_TEXT = '''After each step, a prompt will be shown.
+CONSOLE_HELP_TEXT = """After each step, a prompt will be shown.
 On the prompt, you can just press Enter to continue to the next step.
 But you can also have this commands:
 (write the command you want to use and then press Enter)
@@ -26,15 +24,15 @@ But you can also have this commands:
 * g PATH_TO_PNG_IMAGE: create png with graph of the current state.
 * e: run non-interactively to the end of the algorithm.
 * s: show statistics of the execution (max fringe size, visited nodes).
-* q: quit program.'''
+* q: quit program."""
 
 
-class BaseViewer(object):
+class BaseViewer:
     def __init__(self):
         self.successor_color = '#DD4814'
         self.fringe_color = '#20a0c0'
         self.solution_color = '#adeba8'
-        self.font_size = "11"
+        self.font_size = '11'
 
         self.last_event = None
         self.events = []
@@ -57,8 +55,7 @@ class BaseViewer(object):
         getattr(self, 'handle_' + name)(*params)
 
     def log_event(self, name, description):
-        self.last_event = Event(name=name,
-                                description=description)
+        self.last_event = Event(name=name, description=description)
         self.events.append(self.last_event)
 
     def handle_started(self):
@@ -120,7 +117,9 @@ class BaseViewer(object):
         self.log_event('no_more_runs', description)
 
     def create_graph(self, image_format, image_path):
-        from pydot import Dot, Edge, Node
+        from pydot import Dot
+        from pydot import Edge
+        from pydot import Node
 
         graph = Dot(graph_type='digraph')
 
@@ -128,8 +127,14 @@ class BaseViewer(object):
         graph_edges = {}
         done = set()
 
-        def add_node(node, expanded=False, chosen=False, in_fringe=False,
-                     in_successors=False, solution=False):
+        def add_node(
+            node,
+            expanded=False,
+            chosen=False,
+            in_fringe=False,
+            in_successors=False,
+            solution=False,
+        ):
             node_id = id(node)
             if node_id not in graph_nodes:
                 label = node.state_representation()
@@ -140,16 +145,18 @@ class BaseViewer(object):
                 if hasattr(node, 'value'):
                     label += '\nValue: %s' % node.value
 
-                new_g_node = Node(node_id,
-                                  label=label,
-                                  style='filled',
-                                  shape='circle',
-                                  fillcolor='#ffffff',
-                                  fontsize=self.font_size)
+                new_g_node = Node(
+                    node_id,
+                    label=label,
+                    style='filled',
+                    shape='circle',
+                    fillcolor='#ffffff',
+                    fontsize=self.font_size,
+                )
 
                 graph_nodes[node_id] = new_g_node
 
-            g_node =  graph_nodes[node_id]
+            g_node = graph_nodes[node_id]
 
             if expanded or chosen:
                 g_node.set_fillcolor(self.fringe_color)
@@ -172,10 +179,12 @@ class BaseViewer(object):
             g_node = add_node(node, in_successors=is_successor)
             g_parent_node = add_node(parent)
 
-            edge = Edge(g_parent_node,
-                        g_node,
-                        label=node.action_representation(),
-                        fontsize=self.font_size)
+            edge = Edge(
+                g_parent_node,
+                g_node,
+                label=node.action_representation(),
+                fontsize=self.font_size,
+            )
 
             if is_successor:
                 edge.set_color(self.successor_color)
@@ -191,13 +200,10 @@ class BaseViewer(object):
                 add_node(self.solution_node, solution=True)
 
         if self.last_event.name == 'expanded':
-            for node, successors in zip(self.last_expandeds,
-                                        self.last_successors):
+            for node, successors in zip(self.last_expandeds, self.last_successors):
                 add_node(node, expanded=True)
                 for successor_node in successors:
-                    add_edge_to_parent(successor_node,
-                                       is_successor=True,
-                                       parent=node)
+                    add_edge_to_parent(successor_node, is_successor=True, parent=node)
 
         for node in self.current_fringe:
             add_node(node, in_fringe=True)

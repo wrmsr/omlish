@@ -1,6 +1,8 @@
-from __future__ import print_function
 
-from simpleai.search import backtrack, CspProblem, convert_to_binary
+from simpleai.search import CspProblem
+from simpleai.search import backtrack
+from simpleai.search import convert_to_binary
+
 
 variables = ('A', 'B', 'C')
 
@@ -33,11 +35,12 @@ def const_one_odd_one_even(variables, values):
 def const_not_1(variables, values):
     return values[0] != 1
 
+
 constraints = [
     (('A', 'B', 'C'), const_different),
     (('A', 'C'), const_one_bigger_other),
     (('A', 'C'), const_one_odd_one_even),
-    (('A',), const_not_1)
+    (('A',), const_not_1),
 ]
 
 variables, domains, constraints = convert_to_binary(variables, domains, constraints)

@@ -1,13 +1,20 @@
-from __future__ import print_function
 
-from simpleai.search import CspProblem, backtrack, min_conflicts, MOST_CONSTRAINED_VARIABLE, HIGHEST_DEGREE_VARIABLE, LEAST_CONSTRAINING_VALUE
+from simpleai.search import HIGHEST_DEGREE_VARIABLE
+from simpleai.search import LEAST_CONSTRAINING_VALUE
+from simpleai.search import MOST_CONSTRAINED_VARIABLE
+from simpleai.search import CspProblem
+from simpleai.search import backtrack
+from simpleai.search import min_conflicts
+
 
 variables = ('WA', 'NT', 'SA', 'Q', 'NSW', 'V', 'T')
 
 domains = dict((v, ['red', 'green', 'blue']) for v in variables)
 
+
 def const_different(variables, values):
     return values[0] != values[1]  # expect the value of the neighbors to be different
+
 
 constraints = [
     (('WA', 'NT'), const_different),
@@ -27,6 +34,18 @@ print(backtrack(my_problem))
 print(backtrack(my_problem, variable_heuristic=MOST_CONSTRAINED_VARIABLE))
 print(backtrack(my_problem, variable_heuristic=HIGHEST_DEGREE_VARIABLE))
 print(backtrack(my_problem, value_heuristic=LEAST_CONSTRAINING_VALUE))
-print(backtrack(my_problem, variable_heuristic=MOST_CONSTRAINED_VARIABLE, value_heuristic=LEAST_CONSTRAINING_VALUE))
-print(backtrack(my_problem, variable_heuristic=HIGHEST_DEGREE_VARIABLE, value_heuristic=LEAST_CONSTRAINING_VALUE))
+print(
+    backtrack(
+        my_problem,
+        variable_heuristic=MOST_CONSTRAINED_VARIABLE,
+        value_heuristic=LEAST_CONSTRAINING_VALUE,
+    ),
+)
+print(
+    backtrack(
+        my_problem,
+        variable_heuristic=HIGHEST_DEGREE_VARIABLE,
+        value_heuristic=LEAST_CONSTRAINING_VALUE,
+    ),
+)
 print(min_conflicts(my_problem))

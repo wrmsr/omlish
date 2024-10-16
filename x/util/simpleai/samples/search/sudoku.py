@@ -1,9 +1,10 @@
-from __future__ import print_function
 
-from time import time
-from itertools import combinations
 from collections import OrderedDict
 from copy import deepcopy
+from itertools import combinations
+from time import time
+
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -13,9 +14,12 @@ try:
 except ImportError:
     from string import ascii_uppercase as uppercase
 
-from simpleai.search import CspProblem, backtrack, convert_to_binary
+from simpleai.search import CspProblem
+from simpleai.search import backtrack
+from simpleai.search import convert_to_binary
 
-variables = ["%s%d" % (i, j) for i in uppercase[:9] for j in range(1, 10)]
+
+variables = ['%s%d' % (i, j) for i in uppercase[:9] for j in range(1, 10)]
 
 domains = OrderedDict((v, list(range(1, 10))) for v in variables)
 
@@ -23,8 +27,8 @@ domains = OrderedDict((v, list(range(1, 10))) for v in variables)
 def const_different(variables, values):
     return values[0] != values[1]  # expect the value of the neighbors to be different
 
-sudoku = \
-"""
+
+sudoku = """
   3 2 6
 9  3 5  1
   18 64
@@ -38,7 +42,7 @@ sudoku = \
 
 
 def parsepuzzle(puzzle):
-    sudoku_lines = list(map(lambda s: s.rstrip("\n"), StringIO(puzzle).readlines()[1:]))
+    sudoku_lines = list(map(lambda s: s.rstrip('\n'), StringIO(puzzle).readlines()[1:]))
     domains = {}
 
     for k, i in enumerate(uppercase[:9]):
@@ -48,7 +52,7 @@ def parsepuzzle(puzzle):
                 continue
             val = line[j - 1]
             if val != ' ':
-                var = "%s%d" % (i, j)
+                var = '%s%d' % (i, j)
                 domains[var] = [int(val)]
 
     return domains
@@ -61,16 +65,16 @@ def mkconstraints():
     constraints = []
 
     for j in range(1, 10):
-        vars = ["%s%d" % (i, j) for i in uppercase[:9]]
+        vars = ['%s%d' % (i, j) for i in uppercase[:9]]
         constraints.extend((c, const_different) for c in combinations(vars, 2))
 
     for i in uppercase[:9]:
-        vars = ["%s%d" % (i, j) for j in range(1, 10)]
+        vars = ['%s%d' % (i, j) for j in range(1, 10)]
         constraints.extend((c, const_different) for c in combinations(vars, 2))
 
     for b0 in ['ABC', 'DEF', 'GHI']:
         for b1 in [[1, 2, 3], [4, 5, 6], [7, 8, 9]]:
-            vars = ["%s%d" % (i, j) for i in b0 for j in b1]
+            vars = ['%s%d' % (i, j) for i in b0 for j in b1]
             l = list((c, const_different) for c in combinations(vars, 2))
             constraints.extend(l)
 
@@ -85,16 +89,16 @@ def mknaryconstraints():
     constraints = []
 
     for j in range(1, 10):
-        vars_ = ["%s%d" % (i, j) for i in uppercase[:9]]
+        vars_ = ['%s%d' % (i, j) for i in uppercase[:9]]
         constraints.append((vars_, alldiff))
 
     for i in uppercase[:9]:
-        vars_ = ["%s%d" % (i, j) for j in range(1, 10)]
+        vars_ = ['%s%d' % (i, j) for j in range(1, 10)]
         constraints.append((vars_, alldiff))
 
     for b0 in ['ABC', 'DEF', 'GHI']:
         for b1 in [[1, 2, 3], [4, 5, 6], [7, 8, 9]]:
-            vars_ = ["%s%d" % (i, j) for i in b0 for j in b1]
+            vars_ = ['%s%d' % (i, j) for i in b0 for j in b1]
             constraints.append((vars_, alldiff))
 
     return constraints
@@ -102,7 +106,7 @@ def mknaryconstraints():
 
 def display_solution(sol):
     for i in uppercase[:9]:
-        print(" ".join([str(sol["%s%d" % (i, j)]) for j in range(1, 10)]))
+        print(' '.join([str(sol['%s%d' % (i, j)]) for j in range(1, 10)]))
 
 
 domains.update(parsepuzzle(sudoku))
@@ -115,18 +119,22 @@ my_problem = CspProblem(variables, domains0, constraints)
 sol = backtrack(my_problem)
 elapsed = time() - start
 display_solution(sol)
-print("Took %d seconds to finish using binary constraints" % elapsed)  # because of AC3 should be quick
+print(
+    'Took %d seconds to finish using binary constraints' % elapsed,
+)  # because of AC3 should be quick
 
 
 # -- N-ary constraints made binary using hidden variables --
 domains1 = deepcopy(domains)
 start = time()
-variables1, domains1, constraints = convert_to_binary(variables, domains1, mknaryconstraints())
+variables1, domains1, constraints = convert_to_binary(
+    variables, domains1, mknaryconstraints(),
+)
 my_problem = CspProblem(variables1, domains1, constraints)
 sol = backtrack(my_problem)
 elapsed = time() - start
 display_solution(sol)
-print("Took %d seconds to finish using binary constraints (hidden variables)" % elapsed)
+print('Took %d seconds to finish using binary constraints (hidden variables)' % elapsed)
 
 
 # -- N-ary constraints --
@@ -137,4 +145,4 @@ my_problem = CspProblem(variables, domains3, constraints)
 sol = backtrack(my_problem)
 elapsed = time() - start
 display_solution(sol)
-print("Took %d seconds to finish using n-ary constraints" % elapsed)
+print('Took %d seconds to finish using n-ary constraints' % elapsed)
