@@ -97,7 +97,7 @@ class OpenaiChatModel(ChatModel):
                         id=te.id,
                         function=dict(
                             arguments=te.args,
-                            name=te.tool.name,
+                            name=te.spec.name,
                         ),
                         type='function',
                     )
@@ -181,7 +181,7 @@ class OpenaiChatModel(ChatModel):
                 tool_exec_requests=[
                     ToolExecRequest(
                         id=tc.id,
-                        tool=tools_by_name[tc.function.name],
+                        spec=tools_by_name[tc.function.name],
                         args=tc.function.arguments,
                     )
                     for tc in choice.message.tool_calls or []
