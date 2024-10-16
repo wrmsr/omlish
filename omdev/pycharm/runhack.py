@@ -11,6 +11,24 @@ import sys
 ##
 
 
+ENABLED_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_ENABLED'
+DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
+
+
+#
+
+
+_DEFAULT_DEBUG = False
+_DEFAULT_ENABLED = True
+
+_DEBUG_PREFIX = 'omlish-pycharm-runhack'
+
+_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join(globals().get("__package__", "omdev.pycharm").split(".")[1:])}-runhack.pth'
+
+
+##
+
+
 class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
@@ -1186,9 +1204,6 @@ class ExecDecider:
 ##
 
 
-_DEBUG_PREFIX = 'omlish-pycharm-runhack'
-
-
 class HackRunner:
     def __init__(
             self,
@@ -1309,16 +1324,6 @@ class HackRunner:
 ##
 
 
-ENABLED_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_ENABLED'
-DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
-
-_DEFAULT_DEBUG = False
-_DEFAULT_ENABLED = True
-
-
-#
-
-
 _HAS_RUN = False
 
 
@@ -1337,9 +1342,6 @@ def _run() -> None:
 
 
 ##
-
-
-_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join(__package__.split(".")[1:])}-runhack.pth'
 
 
 def _build_pth_file_src(module_name: str) -> str:
