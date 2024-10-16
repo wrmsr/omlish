@@ -33,6 +33,12 @@ def _attr_repr(obj, *atts):
     return f'{obj.__class__.__name__}({", ".join(f"{a}={getattr(obj, a)!r}" for a in atts)})'
 
 
+def _check_not_none(obj):
+    if obj is None:
+        raise RuntimeError
+    return obj
+
+
 ##
 
 
@@ -1110,25 +1116,20 @@ class ExecDecider:
 ##
 
 
-_DEFAULT_ENABLED = True
-_DEFAULT_DEBUG = True
+class HackRunner:
+    def __init__(
+            self,
+            *,
+            is_debug: bool = False,
+            is_enabled: bool = False,
+    ) -> None:
+        super().__init__()
 
+        self._is_debug = is_debug
+        self._is_enabled = is_enabled
 
-_HAS_RUN = False
-
-
-def _run() -> None:
-    global _HAS_RUN
-    if _HAS_RUN:
-        return
-    _HAS_RUN = True
-
-    #
-
-    is_debug = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_DEBUG', _DEFAULT_DEBUG))
-
-    def debug(arg):
-        if not is_debug:
+    def _debug(self, arg):
+        if not self._is_debug:
             return
 
         if isinstance(arg, str):
@@ -1140,83 +1141,139 @@ def _run() -> None:
 
         print(s, file=sys.stderr)
 
-    #
+    @_cached_nullary
+    def _env(self) -> RunEnv:
+        return RunEnv()
 
-    # breakpoint()
+    @_cached_nullary
+    def _root_dir(self):  # type: () -> str | None
+        env = self._env()
 
-    env = RunEnv()
-    debug(env.as_json())
+        if env.ide_project_roots:
+            root_dir = os.path.abspath(env.ide_project_roots[0])
+        else:
+            root_dir = os.path.abspath(env.sys_path[0])
 
-    #
+        self._debug(f'{root_dir=}')
+        if not os.path.isfile(os.path.join(root_dir, 'pyproject.toml')):
+            return None
 
-    is_enabled = bool(os.environ.get('OMLISH_PYCHARM_RUNHACK_ENABLED', _DEFAULT_ENABLED))
-    if not is_enabled:
-        return
+        return root_dir
 
-    #
+    @_cached_nullary
+    def _exe(self) -> Exec:
+        exe = parse_exec(self._env().orig_argv)
+        self._debug(exe.as_json())
+        return exe
 
-    if not env.pycharm_hosted:
-        return
+    @_cached_nullary
+    def _decider(self) -> ExecDecider:
+        return ExecDecider(
+            self._env(),
+            self._exe(),
+            _check_not_none(self._root_dir()),
+            debug_fn=self._debug,
+        )
 
-    if env.ide_project_roots:
-        root_dir = os.path.abspath(env.ide_project_roots[0])
-    else:
-        root_dir = os.path.abspath(env.sys_path[0])
-    debug(f'{root_dir=}')
-    if not os.path.isfile(os.path.join(root_dir, 'pyproject.toml')):
-        return
+    def _apply(self, dec: ExecDecision) -> None:
+        if dec.cwd is not None:
+            os.chdir(dec.cwd)
 
-    exe = parse_exec(env.orig_argv)
-    debug(exe.as_json())
+        if dec.python_path is not None:
+            os.environ['PYTHONPATH'] = os.pathsep.join(dec.python_path)
 
-    #
+        if dec.sys_path is not None:
+            sys.path = dec.sys_path
 
-    decider = ExecDecider(
-        env,
-        exe,
-        root_dir,
-        debug_fn=debug,
-    )
+        if dec.os_exec:
+            new_exe = Exec(**{
+                **self._exe().as_dict(),
+                'target': dec.target,
+            })
 
-    dec = decider.decide(exe.target)
-    if dec is None:
-        return
+            reexec_argv = render_exec_args(new_exe)
+            self._debug(f'{reexec_argv=}')
 
-    #
+            os.execvp(reexec_argv[0], reexec_argv)
 
-    debug(dec.as_json())
+        else:
+            new_argv = render_target_args(dec.target)
+            self._debug(new_argv)
 
-    if dec.cwd is not None:
-        os.chdir(dec.cwd)
+            sys.argv = new_argv
 
-    if dec.python_path is not None:
-        os.environ['PYTHONPATH'] = os.pathsep.join(dec.python_path)
+    @_cached_nullary
+    def run(self) -> None:
+        # breakpoint()
 
-    if dec.sys_path is not None:
-        sys.path = dec.sys_path
+        env = self._env()
+        self._debug(env.as_json())
 
-    if dec.os_exec:
-        new_exe = Exec(**{  # type: ignore
-            **exe.as_dict(),
-            'target': dec.target,
-        })
+        if not self._is_enabled:
+            return
 
-        reexec_argv = render_exec_args(new_exe)
-        debug(f'{reexec_argv=}')
+        if not env.pycharm_hosted:
+            return
 
-        os.execvp(reexec_argv[0], reexec_argv)
+        exe = self._exe()
+        dec = self._decider().decide(exe.target)
+        if dec is None:
+            return
 
-    else:
-        new_argv = render_target_args(dec.target)
-        debug(new_argv)
-
-        sys.argv = new_argv
+        self._debug(dec.as_json())
+        self._apply(dec)
 
 
 ##
 
 
-_DEFAULT_PTH_FILE_NAME = f'{"-".join(__package__.split("."))}-runhack.pth'
+ENABLED_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_ENABLED'
+DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
+
+_DEFAULT_DEBUG = False
+_DEFAULT_ENABLED = True
+
+
+#
+
+
+_HAS_RUN = False
+
+
+_BOOL_ENV_VAR_VALUES = {
+    s: b
+    for b, ss in [
+        (True, ['1', 'true']),
+        (False, ['0', 'false']),
+    ]
+    for s in ss
+}
+
+
+def _get_opt_env_bool(n, d):  # type: (str | None, bool) -> bool
+    if n is None or n not in os.environ:
+        return d
+    return _BOOL_ENV_VAR_VALUES[os.environ[n]]
+
+
+def _run() -> None:
+    global _HAS_RUN
+    if _HAS_RUN:
+        return
+    _HAS_RUN = True
+
+    runner = HackRunner(
+        is_debug=_get_opt_env_bool(DEBUG_ENV_VAR, _DEFAULT_DEBUG),
+        is_enabled=_get_opt_env_bool(ENABLED_ENV_VAR, _DEFAULT_ENABLED),
+    )
+
+    runner.run()
+
+
+##
+
+
+_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join(__package__.split(".")[1:])}-runhack.pth'
 _DEFAULT_PTH_MODULE_NAME = __package__ + '.runhack'
 
 
