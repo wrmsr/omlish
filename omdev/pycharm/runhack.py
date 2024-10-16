@@ -36,6 +36,10 @@ def _attr_repr(obj, *atts):
     return f'{obj.__class__.__name__}({", ".join(f"{a}={getattr(obj, a)!r}" for a in atts)})'
 
 
+def _attr_dict(obj, *atts):
+    return {a: getattr(obj, a) for a in atts}
+
+
 #
 
 
@@ -505,14 +509,13 @@ class FileTarget(UserTarget):
     def file(self) -> str:
         return self._file
 
+    _ATTRS = ('file', 'argv')
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'file', 'argv')
+        return _attr_repr(self, *self._ATTRS)
 
     def as_dict(self):  # type: () -> dict[str, object]
-        return {
-            'file': self._file,
-            'argv': self._argv,
-        }
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return self.as_dict()
@@ -532,14 +535,13 @@ class ModuleTarget(UserTarget):
     def module(self) -> str:
         return self._module
 
+    _ATTRS = ('module', 'argv')
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'module', 'argv')
+        return _attr_repr(self, *self._ATTRS)
 
     def as_dict(self):  # type: () -> dict[str, object]
-        return {
-            'module': self._module,
-            'argv': self._argv,
-        }
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return self.as_dict()
@@ -581,15 +583,13 @@ class DebuggerTarget(PycharmTarget):
     def target(self) -> Target:
         return self._target
 
+    _ATTRS = ('file', 'args', 'target')
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'file', 'args', 'target')
+        return _attr_repr(self, *self._ATTRS)
 
     def as_dict(self):  # type: () -> dict[str, object]
-        return {
-            'file': self._file,
-            'args': self._args,
-            'target': self._target,
-        }
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -641,15 +641,13 @@ class TestRunnerTarget(PycharmTarget):
     def tests(self):  # type: () -> list[Test]
         return self._tests
 
+    _ATTRS = ('file', 'args', 'tests')
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'file', 'args', 'tests')
+        return _attr_repr(self, *self._ATTRS)
 
     def as_dict(self):  # type: () -> dict[str, object]
-        return {
-            'file': self._file,
-            'args': self._args,
-            'tests': self._tests,
-        }
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -890,15 +888,13 @@ class Exec(AsDict, AsJson):
     def target(self) -> Target:
         return self._target
 
+    _ATTRS = ('exe', 'exe_args', 'target')
+
     def __repr__(self) -> str:
-        return _attr_repr(self, 'exe', 'exe_args', 'target')
+        return _attr_repr(self, *self._ATTRS)
 
     def as_dict(self):  # type: () -> dict[str, object]
-        return {
-            'exe': self._exe,
-            'exe_args': self._exe_args,
-            'target': self._target,
-        }
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -962,7 +958,7 @@ def render_exec_args(exe):  # type: (Exec) -> list[str]
 ##
 
 
-class ExecDecision(AsJson):
+class ExecDecision(AsDict, AsJson):
     def __init__(
             self,
             target: Target,
@@ -1003,15 +999,19 @@ class ExecDecision(AsJson):
     def os_exec(self) -> bool:
         return self._os_exec
 
+    _ATTRS = (
+        'target',
+        'cwd',
+        'python_path',
+        'sys_path',
+        'os_exec',
+    )
+
     def __repr__(self) -> str:
-        return _attr_repr(
-            self,
-            'target',
-            'cwd',
-            'python_path',
-            'sys_path',
-            'os_exec',
-        )
+        return _attr_repr(self, *self._ATTRS)
+
+    def as_dict(self):  # type: () -> dict[str, object]
+        return _attr_dict(self, *self._ATTRS)
 
     def as_json(self):  # type: () -> dict[str, object]
         return {
@@ -1124,12 +1124,8 @@ class ExecDecider:
             sys_path=self._filter_out_cwd(self._env.sys_path),
         )
 
-    def _decide_debugger_test_runner_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
-        if not (isinstance(tgt, DebuggerTarget) and self._env.cwd != self._root_dir):
-            return None
-
-        dt = tgt.target
-        if not isinstance(dt, TestRunnerTarget):
+    def _decide_test_runner_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
+        if not (isinstance(tgt, TestRunnerTarget) and self._env.cwd != self._root_dir):
             return None
 
         def fix_test(t: Test) -> Test:
@@ -1146,19 +1142,29 @@ class ExecDecider:
             else:
                 raise TypeError(t)
 
-        new_tests = [fix_test(t) for t in dt.tests]
-
-        new_dt = dt.replace(
-            tests=new_tests,
-        )
+        new_tests = [fix_test(t) for t in tgt.tests]
 
         return ExecDecision(
             tgt.replace(
-                target=new_dt,
+                tests=new_tests,
             ),
             cwd=self._root_dir,
             python_path=self._filter_out_cwd(self._env.python_path),
             sys_path=self._filter_out_cwd(self._env.sys_path),
+        )
+
+    def _decide_debugger_test_runner_target_not_in_root(self, tgt):  # type: (Target) -> ExecDecision | None
+        if not isinstance(tgt, DebuggerTarget):
+            return None
+
+        ne = self._decide_test_runner_target_not_in_root(tgt.target)
+        if ne is None:
+            return None
+
+        return ne.replace(
+            target=tgt.replace(
+                target=ne.target,
+            ),
         )
 
     def decide(self, tgt):  # type: (Target) -> ExecDecision | None
@@ -1167,6 +1173,7 @@ class ExecDecider:
             self._decide_module_target_not_in_root,
             self._decide_debugger_file_target,
             self._decide_debugger_module_target_not_in_root,
+            self._decide_test_runner_target_not_in_root,
             self._decide_debugger_test_runner_target_not_in_root,
         ]:
             if (ne := fn(tgt)) is not None:
@@ -1205,7 +1212,7 @@ class HackRunner:
             else:
                 s = pprint.pformat(arg, sort_dicts=False)
 
-        print(s, file=sys.stderr)
+        print(f'pycharm-runhack: {s}', file=sys.stderr)
 
     @_cached_nullary
     def _env(self) -> RunEnv:
@@ -1215,16 +1222,17 @@ class HackRunner:
     def _root_dir(self):  # type: () -> str | None
         env = self._env()
 
-        if env.ide_project_roots:
-            root_dir = os.path.abspath(env.ide_project_roots[0])
-        else:
-            root_dir = os.path.abspath(env.sys_path[0])
+        for d in [
+            *env.ide_project_roots,
+            *(env.sys_path or []),
+        ]:
+            d = os.path.abspath(d)
+            if os.path.isfile(os.path.join(d, 'pyproject.toml')):
+                self._debug(f'root_dir={d!r}')
+                return d
 
-        self._debug(f'{root_dir=}')
-        if not os.path.isfile(os.path.join(root_dir, 'pyproject.toml')):
-            return None
-
-        return root_dir
+        self._debug(f'not root dir')
+        return None
 
     @_cached_nullary
     def _exe(self) -> Exec:
@@ -1275,14 +1283,20 @@ class HackRunner:
         self._debug(env.as_json())
 
         if not self._is_enabled:
+            self._debug('not enabled')
+            return
+
+        if not self._root_dir():
             return
 
         if not env.pycharm_hosted:
+            self._debug('not pycharm hosted')
             return
 
         exe = self._exe()
         dec = self._decider().decide(exe.target)
         if dec is None:
+            self._debug('no decision')
             return
 
         self._debug(dec.as_json())
@@ -1295,7 +1309,7 @@ class HackRunner:
 ENABLED_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_ENABLED'
 DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
 
-_DEFAULT_DEBUG = False
+_DEFAULT_DEBUG = True
 _DEFAULT_ENABLED = True
 
 
