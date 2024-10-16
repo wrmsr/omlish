@@ -12,6 +12,10 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        'black': [
+            'black ~= 24.10',
+        ],
+
         'c': [
             'pycparser ~= 2.22',
             'cffi ~= 1.17',
