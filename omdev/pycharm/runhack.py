@@ -29,14 +29,47 @@ class _cached_nullary:  # noqa
         return bound
 
 
+#
+
+
 def _attr_repr(obj, *atts):
     return f'{obj.__class__.__name__}({", ".join(f"{a}={getattr(obj, a)!r}" for a in atts)})'
+
+
+#
 
 
 def _check_not_none(obj):
     if obj is None:
         raise RuntimeError
     return obj
+
+
+#
+
+
+_BOOL_ENV_VAR_VALUES = {
+    s: b
+    for b, ss in [
+        (True, ['1', 'true', 't']),
+        (False, ['0', 'false', 'f']),
+    ]
+    for s in ss
+}
+
+
+def _get_opt_env_bool(n, d):  # type: (str | None, bool) -> bool
+    if n is None or n not in os.environ:
+        return d
+    return _BOOL_ENV_VAR_VALUES[os.environ[n]]
+
+
+def _get_env_path_list(k):  # type: (str) -> list[str]
+    v = os.environ.get(k, '')
+    if v:
+        return v.split(os.pathsep)
+    else:
+        return []
 
 
 ##
@@ -89,27 +122,20 @@ class RunEnv(AsJson):
             cwd = os.getcwd()
         self._cwd = cwd
 
-        def get_env_path_list(k):  # type: (str) -> list[str]
-            v = os.environ.get(k, '')
-            if v:
-                return v.split(os.pathsep)
-            else:
-                return []
-
         if library_roots is None:
-            library_roots = get_env_path_list('LIBRARY_ROOTS')
+            library_roots = _get_env_path_list('LIBRARY_ROOTS')
         self._library_roots = list(library_roots)
 
         if path is None:
-            path = get_env_path_list('PATH')
+            path = _get_env_path_list('PATH')
         self._path = list(path)
 
         if python_path is None:
-            python_path = get_env_path_list('PYTHONPATH')
+            python_path = _get_env_path_list('PYTHONPATH')
         self._python_path = list(python_path)
 
         if ide_project_roots is None:
-            ide_project_roots = get_env_path_list('IDE_PROJECT_ROOTS')
+            ide_project_roots = _get_env_path_list('IDE_PROJECT_ROOTS')
         self._ide_project_roots = list(ide_project_roots)
 
         if pycharm_hosted is None:
@@ -120,7 +146,7 @@ class RunEnv(AsJson):
             sys_path = list(sys.path)
         self._sys_path = sys_path
 
-    _SPEC_ATTRS = (
+    _ATTRS = (
         'argv',
         'orig_argv',
 
@@ -136,10 +162,10 @@ class RunEnv(AsJson):
     )
 
     def as_json(self):  # type: () -> dict[str, object]
-        return {a: getattr(self, a) for a in self._SPEC_ATTRS}
+        return {a: getattr(self, a) for a in self._ATTRS}
 
     def __repr__(self) -> str:
-        return _attr_repr(self, *self._SPEC_ATTRS)
+        return _attr_repr(self, *self._ATTRS)
 
     @property
     def argv(self):  # type: () -> list[str]
@@ -1106,7 +1132,7 @@ class ExecDecider:
         if not isinstance(dt, TestRunnerTarget):
             return None
 
-        def fix_test(t):
+        def fix_test(t: Test) -> Test:
             if isinstance(t, PathTest):
                 return PathTest(os.path.abspath(t.s))
 
@@ -1277,22 +1303,6 @@ _DEFAULT_ENABLED = True
 
 
 _HAS_RUN = False
-
-
-_BOOL_ENV_VAR_VALUES = {
-    s: b
-    for b, ss in [
-        (True, ['1', 'true', 't']),
-        (False, ['0', 'false', 'f']),
-    ]
-    for s in ss
-}
-
-
-def _get_opt_env_bool(n, d):  # type: (str | None, bool) -> bool
-    if n is None or n not in os.environ:
-        return d
-    return _BOOL_ENV_VAR_VALUES[os.environ[n]]
 
 
 def _run() -> None:
