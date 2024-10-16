@@ -1186,6 +1186,9 @@ class ExecDecider:
 ##
 
 
+_DEBUG_PREFIX = 'omlish-pycharm-runhack'
+
+
 class HackRunner:
     def __init__(
             self,
@@ -1212,7 +1215,7 @@ class HackRunner:
             else:
                 s = pprint.pformat(arg, sort_dicts=False)
 
-        print(f'pycharm-runhack: {s}', file=sys.stderr)
+        print(f'{_DEBUG_PREFIX}: {s}', file=sys.stderr)
 
     @_cached_nullary
     def _env(self) -> RunEnv:
@@ -1368,7 +1371,7 @@ def _install_pth_file(
     if not force and os.path.isfile(pth_file):
         return
 
-    if editable:
+    if not editable:
         if module_name is None:
             module_name = '_' + file_name.removesuffix('.pth').replace('-', '_')
 
@@ -1398,11 +1401,12 @@ def _install_pth_file(
             print(mod_src)
 
     else:
+        if mod_file is not None:
+            with open(mod_file, 'w') as f:
+                f.write(mod_src)  # type: ignore
+
         with open(pth_file, 'w') as f:
             f.write(pth_src)
-
-        with open(mod_file, 'w') as f:
-            f.write(mod_src)  # type: ignore
 
 
 if __name__ == '__main__':
