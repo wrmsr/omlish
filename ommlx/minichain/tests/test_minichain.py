@@ -7,8 +7,8 @@ from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import SystemMessage
-from ..chat import ToolParam
 from ..chat import Tool
+from ..chat import ToolParam
 from ..chat import ToolSpec
 from ..chat import UserMessage
 from ..generative import MaxTokens
