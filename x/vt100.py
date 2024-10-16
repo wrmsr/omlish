@@ -197,7 +197,7 @@ STATES = {
 action_names = {}
 for state, transitions in STATES.items():
     for keys, actions in transitions.items():
-        if not isinstance(actions, list):
+        if not isinstance(actions, tuple):
             actions = [actions]
         for action in actions:
             if isinstance(action, str):
@@ -243,7 +243,10 @@ for state, transitions in state_tables.items():
     state_tables[state] = [t if isinstance(t, tuple) else [t] for t in transitions]
 
 
-def _check_table():
+##
+
+
+def _check_table() -> None:
     for state, transitions in state_tables.items():
         for i, val in enumerate(transitions):
             if not val:
@@ -252,7 +255,7 @@ def _check_table():
     print('Tables had all necessary transitions defined.')
 
 
-def _pad(s, length):
+def _pad(s: str, length: int) -> str:
     return s + ' ' * (length - len(s))
 
 
