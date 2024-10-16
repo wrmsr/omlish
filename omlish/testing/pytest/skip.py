@@ -5,11 +5,11 @@ import typing as ta
 
 import pytest
 
-from ..testing import can_import
+from ... import lang
 
 
 def if_cant_import(module: str, *args, **kwargs):
-    return pytest.mark.skipif(not can_import(module, *args, **kwargs), reason=f'requires import {module}')
+    return pytest.mark.skipif(not lang.can_import(module, *args, **kwargs), reason=f'requires import {module}')
 
 
 def if_not_on_path(exe: str):

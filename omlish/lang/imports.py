@@ -22,13 +22,23 @@ def lazy_import(name: str, package: str | None = None) -> ta.Callable[[], ta.Any
     return cached_function(functools.partial(importlib.import_module, name, package=package))
 
 
-def proxy_import(name: str, package: str | None = None) -> types.ModuleType:
+def proxy_import(
+        name: str,
+        package: str | None = None,
+        extras: ta.Iterable[str] | None = None,
+) -> types.ModuleType:
+    if isinstance(extras, str):
+        raise TypeError(extras)
+
     omod = None
 
     def __getattr__(att):  # noqa
         nonlocal omod
         if omod is None:
             omod = importlib.import_module(name, package=package)
+            if extras:
+                for x in extras:
+                    importlib.import_module(f'{name}.{x}', package=package)
         return getattr(omod, att)
 
     lmod = types.ModuleType(name)
