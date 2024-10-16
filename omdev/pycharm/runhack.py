@@ -1107,8 +1107,32 @@ class ExecDecider:
         if not isinstance(dt, TestRunnerTarget):
             return None
 
+        def fix_test(t):
+            if isinstance(t, PathTest):
+                return PathTest(os.path.abspath(t.s))
+
+            elif isinstance(t, TargetTest):
+                if ':' in t.s:
+                    l, _, r = t.s.partition(':')
+                    return TargetTest(':'.join([os.path.abspath(l), r]))
+                else:
+                    return TargetTest(os.path.abspath(t.s))
+
+            else:
+                raise TypeError(t)
+
+        new_tests = [fix_test(t) for t in dt.tests]
+
+        new_dt = TestRunnerTarget(**{  # type: ignore
+            **dt.as_dict(),
+            'tests': new_tests,
+        })
+
         return ExecDecision(
-            tgt,
+            DebuggerTarget(**{  # type: ignore
+                **tgt.as_dict(),
+                'target': new_dt,
+            }),
             cwd=self._root_dir,
             python_path=self._filter_out_cwd(self._env.python_path),
             sys_path=self._filter_out_cwd(self._env.sys_path),
