@@ -11,7 +11,9 @@ from ..chat import ChatRequestOptions
 from ..chat import ChatResponse
 from ..chat import Message
 from ..chat import SystemMessage
+from ..chat import Tool
 from ..chat import ToolExecResultMessage
+from ..chat import ToolSpec
 from ..chat import UserMessage
 from ..generative import MaxTokens
 from ..generative import Temperature
@@ -60,6 +62,35 @@ class OpenaiPromptModel(PromptModel):
         return PromptResponse(v=response.choices[0].text)
 
 
+def _opt_dct_fld(k, v):
+    return {k: v} if v else {}
+
+
+def _render_tool_spec(td: ToolSpec) -> ta.Any:
+    return {
+        'type': 'function',
+        'function': {
+            'name': td.name,
+
+            **_opt_dct_fld('description', td.desc),
+
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    tp.name: {
+                        'type': tp.dtype,
+                        **_opt_dct_fld('description', tp.desc),
+                    }
+                    for tp in td.params
+                },
+
+                'required': [tp.name for tp in td.params if tp.required],
+                'additionalProperties': False,
+            },
+        },
+    }
+
+
 class OpenaiChatModel(ChatModel):
     DEFAULT_MODEL = 'gpt-4o'
 
@@ -106,9 +137,14 @@ class OpenaiChatModel(ChatModel):
             max_tokens=1024,
         )
 
+        tools: list = []
+
         for opt in request.options:
             if isinstance(opt, ScalarOption) and (kwn := self._OPTION_KWARG_NAMES_MAP.get(type(opt))) is not None:
                 kw[kwn] = opt.v
+
+            elif isinstance(opt, Tool):
+                tools.append(_render_tool_spec(opt.spec))
 
             else:
                 raise TypeError(opt)
@@ -126,6 +162,7 @@ class OpenaiChatModel(ChatModel):
                     for m in request.v
                 ],
                 top_p=1,
+                tools=tools,
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
                 stream=False,
@@ -133,8 +170,9 @@ class OpenaiChatModel(ChatModel):
             )
 
         response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # type: ignore  # noqa
+        choice = check.single(response.choices)
         return ChatResponse(
-            v=AiMessage(response.choices[0].message.content),
+            v=AiMessage(choice.message.content),
             usage=TokenUsage(
                 input=response.usage.prompt_tokens,
                 output=response.usage.completion_tokens,
