@@ -8,196 +8,194 @@ https://github.com/haberman/vtparse
 https://github.com/alacritty/vte/blob/master/src/ansi.rs
 https://crates.io/crates/vt100
 """
+import typing as ta
+
+
 ##
 # Original author: Joshua Haberman
 # https://github.com/haberman/vtparse/blob/198ea4382f824dbb3f0e5b5553a9eb3290764694/vtparse_tables.rb
 
 
-class StateTransition:
-    def __init__(self, to_state):
-        self.to_state = to_state
+class StateTransition(ta.NamedTuple):
+    to_state: str
 
-
-def transition_to(state):
-    return StateTransition(state)
-
-
-# Global states dictionary
-states = {}
 
 # Define the anywhere transitions
-anywhere_transitions = {
-    0x18: ('execute', transition_to('GROUND')),
-    0x1a: ('execute', transition_to('GROUND')),
-    range(0x80, 0x90): ('execute', transition_to('GROUND')),
-    range(0x91, 0x98): ('execute', transition_to('GROUND')),
-    0x99: ('execute', transition_to('GROUND')),
-    0x9a: ('execute', transition_to('GROUND')),
-    0x9c: transition_to('GROUND'),
-    0x1b: transition_to('ESCAPE'),
-    0x98: transition_to('SOS_PM_APC_STRING'),
-    0x9e: transition_to('SOS_PM_APC_STRING'),
-    0x9f: transition_to('SOS_PM_APC_STRING'),
-    0x90: transition_to('DCS_ENTRY'),
-    0x9d: transition_to('OSC_STRING'),
-    0x9b: transition_to('CSI_ENTRY'),
+ANYWHERE_TRANSITIONS = {
+    0x18: ('execute', StateTransition('GROUND')),
+    0x1a: ('execute', StateTransition('GROUND')),
+    range(0x80, 0x90): ('execute', StateTransition('GROUND')),
+    range(0x91, 0x98): ('execute', StateTransition('GROUND')),
+    0x99: ('execute', StateTransition('GROUND')),
+    0x9a: ('execute', StateTransition('GROUND')),
+    0x9c: StateTransition('GROUND'),
+    0x1b: StateTransition('ESCAPE'),
+    0x98: StateTransition('SOS_PM_APC_STRING'),
+    0x9e: StateTransition('SOS_PM_APC_STRING'),
+    0x9f: StateTransition('SOS_PM_APC_STRING'),
+    0x90: StateTransition('DCS_ENTRY'),
+    0x9d: StateTransition('OSC_STRING'),
+    0x9b: StateTransition('CSI_ENTRY'),
 }
 
-# Define state transitions
-states['GROUND'] = {
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    range(0x20, 0x80): 'print',
-}
+# Global states dictionary
+STATES = {
+    # Define state transitions
+    'GROUND': {
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        range(0x20, 0x80): 'print',
+    },
 
-states['ESCAPE'] = {
-    'on_entry': 'clear',
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    0x7f: 'ignore',
-    range(0x20, 0x30): ('collect', transition_to('ESCAPE_INTERMEDIATE')),
-    range(0x30, 0x50): ('esc_dispatch', transition_to('GROUND')),
-    range(0x51, 0x58): ('esc_dispatch', transition_to('GROUND')),
-    0x59: ('esc_dispatch', transition_to('GROUND')),
-    0x5a: ('esc_dispatch', transition_to('GROUND')),
-    0x5c: ('esc_dispatch', transition_to('GROUND')),
-    range(0x60, 0x7f): ('esc_dispatch', transition_to('GROUND')),
-    0x5b: transition_to('CSI_ENTRY'),
-    0x5d: transition_to('OSC_STRING'),
-    0x50: transition_to('DCS_ENTRY'),
-    0x58: transition_to('SOS_PM_APC_STRING'),
-    0x5e: transition_to('SOS_PM_APC_STRING'),
-    0x5f: transition_to('SOS_PM_APC_STRING'),
-}
+    'ESCAPE': {
+        'on_entry': 'clear',
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        0x7f: 'ignore',
+        range(0x20, 0x30): ('collect', StateTransition('ESCAPE_INTERMEDIATE')),
+        range(0x30, 0x50): ('esc_dispatch', StateTransition('GROUND')),
+        range(0x51, 0x58): ('esc_dispatch', StateTransition('GROUND')),
+        0x59: ('esc_dispatch', StateTransition('GROUND')),
+        0x5a: ('esc_dispatch', StateTransition('GROUND')),
+        0x5c: ('esc_dispatch', StateTransition('GROUND')),
+        range(0x60, 0x7f): ('esc_dispatch', StateTransition('GROUND')),
+        0x5b: StateTransition('CSI_ENTRY'),
+        0x5d: StateTransition('OSC_STRING'),
+        0x50: StateTransition('DCS_ENTRY'),
+        0x58: StateTransition('SOS_PM_APC_STRING'),
+        0x5e: StateTransition('SOS_PM_APC_STRING'),
+        0x5f: StateTransition('SOS_PM_APC_STRING'),
+    },
 
-states['ESCAPE_INTERMEDIATE'] = {
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    range(0x20, 0x30): 'collect',
-    0x7f: 'ignore',
-    range(0x30, 0x7f): ('esc_dispatch', transition_to('GROUND')),
-}
+    'ESCAPE_INTERMEDIATE': {
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        range(0x20, 0x30): 'collect',
+        0x7f: 'ignore',
+        range(0x30, 0x7f): ('esc_dispatch', StateTransition('GROUND')),
+    },
 
-states['CSI_ENTRY'] = {
-    'on_entry': 'clear',
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    0x7f: 'ignore',
-    range(0x20, 0x30): ('collect', transition_to('CSI_INTERMEDIATE')),
-    0x3a: transition_to('CSI_IGNORE'),
-    range(0x30, 0x3a): ('param', transition_to('CSI_PARAM')),
-    0x3b: ('param', transition_to('CSI_PARAM')),
-    range(0x3c, 0x40): ('collect', transition_to('CSI_PARAM')),
-    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
-}
+    'CSI_ENTRY': {
+        'on_entry': 'clear',
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        0x7f: 'ignore',
+        range(0x20, 0x30): ('collect', StateTransition('CSI_INTERMEDIATE')),
+        0x3a: StateTransition('CSI_IGNORE'),
+        range(0x30, 0x3a): ('param', StateTransition('CSI_PARAM')),
+        0x3b: ('param', StateTransition('CSI_PARAM')),
+        range(0x3c, 0x40): ('collect', StateTransition('CSI_PARAM')),
+        range(0x40, 0x7f): ('csi_dispatch', StateTransition('GROUND')),
+    },
 
-states['CSI_IGNORE'] = {
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    range(0x20, 0x40): 'ignore',
-    0x7f: 'ignore',
-    range(0x40, 0x7f): transition_to('GROUND'),
-}
+    'CSI_IGNORE': {
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        range(0x20, 0x40): 'ignore',
+        0x7f: 'ignore',
+        range(0x40, 0x7f): StateTransition('GROUND'),
+    },
 
-states['CSI_PARAM'] = {
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    range(0x30, 0x3a): 'param',
-    0x3b: 'param',
-    0x7f: 'ignore',
-    0x3a: transition_to('CSI_IGNORE'),
-    range(0x3c, 0x40): transition_to('CSI_IGNORE'),
-    range(0x20, 0x30): ('collect', transition_to('CSI_INTERMEDIATE')),
-    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
-}
+    'CSI_PARAM': {
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        range(0x30, 0x3a): 'param',
+        0x3b: 'param',
+        0x7f: 'ignore',
+        0x3a: StateTransition('CSI_IGNORE'),
+        range(0x3c, 0x40): StateTransition('CSI_IGNORE'),
+        range(0x20, 0x30): ('collect', StateTransition('CSI_INTERMEDIATE')),
+        range(0x40, 0x7f): ('csi_dispatch', StateTransition('GROUND')),
+    },
 
-states['CSI_INTERMEDIATE'] = {
-    range(0x18): 'execute',
-    0x19: 'execute',
-    range(0x1c, 0x20): 'execute',
-    range(0x20, 0x30): 'collect',
-    0x7f: 'ignore',
-    range(0x30, 0x40): transition_to('CSI_IGNORE'),
-    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
-}
+    'CSI_INTERMEDIATE': {
+        range(0x18): 'execute',
+        0x19: 'execute',
+        range(0x1c, 0x20): 'execute',
+        range(0x20, 0x30): 'collect',
+        0x7f: 'ignore',
+        range(0x30, 0x40): StateTransition('CSI_IGNORE'),
+        range(0x40, 0x7f): ('csi_dispatch', StateTransition('GROUND')),
+    },
 
-states['DCS_ENTRY'] = {
-    'on_entry': 'clear',
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x20): 'ignore',
-    0x7f: 'ignore',
-    0x3a: transition_to('DCS_IGNORE'),
-    range(0x20, 0x30): ('collect', transition_to('DCS_INTERMEDIATE')),
-    range(0x30, 0x3a): ('param', transition_to('DCS_PARAM')),
-    0x3b: ('param', transition_to('DCS_PARAM')),
-    range(0x3c, 0x40): ('collect', transition_to('DCS_PARAM')),
-    range(0x40, 0x7f): (transition_to('DCS_PASSTHROUGH')),
-}
+    'DCS_ENTRY': {
+        'on_entry': 'clear',
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x20): 'ignore',
+        0x7f: 'ignore',
+        0x3a: StateTransition('DCS_IGNORE'),
+        range(0x20, 0x30): ('collect', StateTransition('DCS_INTERMEDIATE')),
+        range(0x30, 0x3a): ('param', StateTransition('DCS_PARAM')),
+        0x3b: ('param', StateTransition('DCS_PARAM')),
+        range(0x3c, 0x40): ('collect', StateTransition('DCS_PARAM')),
+        range(0x40, 0x7f): (StateTransition('DCS_PASSTHROUGH')),
+    },
 
-states['DCS_INTERMEDIATE'] = {
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x20): 'ignore',
-    range(0x20, 0x30): 'collect',
-    0x7f: 'ignore',
-    range(0x30, 0x40): transition_to('DCS_IGNORE'),
-    range(0x40, 0x7f): transition_to('DCS_PASSTHROUGH'),
-}
+    'DCS_INTERMEDIATE': {
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x20): 'ignore',
+        range(0x20, 0x30): 'collect',
+        0x7f: 'ignore',
+        range(0x30, 0x40): StateTransition('DCS_IGNORE'),
+        range(0x40, 0x7f): StateTransition('DCS_PASSTHROUGH'),
+    },
 
-states['DCS_IGNORE'] = {
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x80): 'ignore',
-}
+    'DCS_IGNORE': {
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x80): 'ignore',
+    },
 
-states['DCS_PARAM'] = {
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x20): 'ignore',
-    range(0x30, 0x3a): 'param',
-    0x3b: 'param',
-    0x7f: 'ignore',
-    0x3a: transition_to('DCS_IGNORE'),
-    range(0x3c, 0x40): transition_to('DCS_IGNORE'),
-    range(0x20, 0x30): ('collect', transition_to('DCS_INTERMEDIATE')),
-    range(0x40, 0x7f): transition_to('DCS_PASSTHROUGH'),
-}
+    'DCS_PARAM': {
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x20): 'ignore',
+        range(0x30, 0x3a): 'param',
+        0x3b: 'param',
+        0x7f: 'ignore',
+        0x3a: StateTransition('DCS_IGNORE'),
+        range(0x3c, 0x40): StateTransition('DCS_IGNORE'),
+        range(0x20, 0x30): ('collect', StateTransition('DCS_INTERMEDIATE')),
+        range(0x40, 0x7f): StateTransition('DCS_PASSTHROUGH'),
+    },
 
-states['DCS_PASSTHROUGH'] = {
-    'on_entry': 'hook',
-    range(0x18): 'put',
-    0x19: 'put',
-    range(0x1c, 0x20): 'put',
-    range(0x20, 0x7f): 'put',
-    0x7f: 'ignore',
-    'on_exit': 'unhook',
-}
+    'DCS_PASSTHROUGH': {
+        'on_entry': 'hook',
+        range(0x18): 'put',
+        0x19: 'put',
+        range(0x1c, 0x20): 'put',
+        range(0x20, 0x7f): 'put',
+        0x7f: 'ignore',
+        'on_exit': 'unhook',
+    },
 
-states['SOS_PM_APC_STRING'] = {
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x80): 'ignore',
-}
+    'SOS_PM_APC_STRING': {
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x80): 'ignore',
+    },
 
-states['OSC_STRING'] = {
-    'on_entry': 'osc_start',
-    range(0x18): 'ignore',
-    0x19: 'ignore',
-    range(0x1c, 0x20): 'ignore',
-    range(0x20, 0x80): 'osc_put',
-    'on_exit': 'osc_end',
+    'OSC_STRING': {
+        'on_entry': 'osc_start',
+        range(0x18): 'ignore',
+        0x19: 'ignore',
+        range(0x1c, 0x20): 'ignore',
+        range(0x20, 0x80): 'osc_put',
+        'on_exit': 'osc_end',
+    },
 }
 
 # Get the list of actions implicit in the tables
 action_names = {}
-for state, transitions in states.items():
+for state, transitions in STATES.items():
     for keys, actions in transitions.items():
         if not isinstance(actions, list):
             actions = [actions]
@@ -206,16 +204,16 @@ for state, transitions in states.items():
                 action_names[action] = 1
 
 # Establish an ordering to the states and actions
-actions_in_order = sorted(action_names.keys()) + ['error']
-states_in_order = sorted(states.keys())
+actions_in_order = sorted(action_names) + ['error']
+states_in_order = sorted(STATES)
 
 # Expand the range-based data structures into fully expanded tables
 state_tables = {}
 
 
-def expand_ranges(hash_with_ranges_as_keys):
+def _expand_ranges(dct):
     array = [None] * 256
-    for k, v in hash_with_ranges_as_keys.items():
+    for k, v in dct.items():
         if isinstance(k, range):
             for i in k:
                 array[i] = v
@@ -224,11 +222,11 @@ def expand_ranges(hash_with_ranges_as_keys):
     return array
 
 
-for state, transitions in states.items():
-    state_tables[state] = expand_ranges(transitions)
+for state, transitions in STATES.items():
+    state_tables[state] = _expand_ranges(transitions)
 
 # Seed all the states with the anywhere transitions
-anywhere_transitions_expanded = expand_ranges(anywhere_transitions)
+anywhere_transitions_expanded = _expand_ranges(ANYWHERE_TRANSITIONS)
 
 for state, transitions in state_tables.items():
     for i, transition in enumerate(anywhere_transitions_expanded):
@@ -242,7 +240,7 @@ for state, transitions in state_tables.items():
 
 # For consistency, make all transitions lists of actions
 for state, transitions in state_tables.items():
-    state_tables[state] = [t if isinstance(t, list) else [t] for t in transitions]
+    state_tables[state] = [t if isinstance(t, tuple) else [t] for t in transitions]
 
 
 def _check_table():
@@ -321,7 +319,7 @@ def _generate_c() -> dict[str, str]:
 
     f.write('vtparse_action_t ENTRY_ACTIONS[] = {\n')
     for state in states_in_order:
-        actions = states[state]
+        actions = STATES[state]
         if 'on_entry' in actions:
             f.write(f"   VTPARSE_ACTION_{actions['on_entry'].upper()}, /* {state} */\n")
         else:
@@ -330,7 +328,7 @@ def _generate_c() -> dict[str, str]:
 
     f.write('vtparse_action_t EXIT_ACTIONS[] = {\n')
     for state in states_in_order:
-        actions = states[state]
+        actions = STATES[state]
         if 'on_exit' in actions:
             f.write(f"   VTPARSE_ACTION_{actions['on_exit'].upper()}, /* {state} */\n")
         else:
