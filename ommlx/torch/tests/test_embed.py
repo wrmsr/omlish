@@ -1,19 +1,9 @@
-import typing as ta
-
 import pytest
-
-from omlish import lang
-
-
-if ta.TYPE_CHECKING:
-    import torch.nn
-    import torch.nn.functional as F  # noqa
-else:
-    torch = lang.proxy_import('torch', extras=['nn'])
-    F = lang.proxy_import('torch.nn.functional')
+import torch.nn
+import torch.nn.functional as F  # noqa
 
 
-class SimpleGraphEmbeddingModel(torch.nn.Module):  # FIXME: lol
+class SimpleGraphEmbeddingModel(torch.nn.Module):
     def __init__(
             self,
             *,
