@@ -1206,7 +1206,7 @@ class HackRunner:
             s = arg
         else:
             try:
-                import pprint
+                import pprint  # noqa
             except ImportError:
                 s = repr(arg)
             else:
@@ -1337,7 +1337,6 @@ def _run() -> None:
 
 
 _DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join(__package__.split(".")[1:])}-runhack.pth'
-_DEFAULT_PTH_MODULE_NAME = __package__ + '.runhack'
 
 
 def _build_pth_file_src(module_name: str) -> str:
@@ -1357,24 +1356,53 @@ def _build_pth_file_src(module_name: str) -> str:
 def _install_pth_file(
         *,
         file_name: str = _DEFAULT_PTH_FILE_NAME,
-        module_name: str = _DEFAULT_PTH_MODULE_NAME,
+        module_name=None,  # type: str | None
         dry_run: bool = False,
+        editable: bool = False,
+        force: bool = False,
 ) -> None:
     import site
+    lib_dir = site.getsitepackages()[0]
 
-    if os.path.isfile(file := os.path.join(site.getsitepackages()[0], file_name)):
+    pth_file = os.path.join(lib_dir, file_name)
+    if not force and os.path.isfile(pth_file):
         return
 
-    src = _build_pth_file_src(module_name)
+    if editable:
+        if module_name is None:
+            module_name = '_' + file_name.removesuffix('.pth').replace('-', '_')
 
-    if dry_run:
-        print(file)
-        print()
-        print(src)
+        mod_file = os.path.join(lib_dir, module_name + '.py')
+        if not force and os.path.isfile(mod_file):
+            return
+
+        import inspect
+        mod_src = inspect.getsource(sys.modules[__name__])
 
     else:
-        with open(file, 'w') as f:
-            f.write(src)
+        if module_name is None:
+            module_name = __package__ + '.runhack'
+
+        mod_file = mod_src = None  # type: ignore
+
+    pth_src = _build_pth_file_src(module_name)
+
+    if dry_run:
+        print(f'{pth_file}:')
+        print(pth_src)
+
+        if mod_file is not None:
+            print()
+
+            print(f'{mod_file}:')
+            print(mod_src)
+
+    else:
+        with open(pth_file, 'w') as f:
+            f.write(pth_src)
+
+        with open(mod_file, 'w') as f:
+            f.write(mod_src)  # type: ignore
 
 
 if __name__ == '__main__':
@@ -1386,10 +1414,16 @@ if __name__ == '__main__':
         subparsers = parser.add_subparsers()
 
         def install_cmd(args):
-            _install_pth_file(dry_run=args.dry_run)
+            _install_pth_file(
+                dry_run=args.dry_run,
+                editable=args.editable,
+                force=args.force,
+            )
 
         parser_install = subparsers.add_parser('install')
         parser_install.add_argument('--dry-run', action='store_true')
+        parser_install.add_argument('-e', '--editable', action='store_true')
+        parser_install.add_argument('-f', '--force', action='store_true')
         parser_install.set_defaults(func=install_cmd)
 
         args = parser.parse_args()
