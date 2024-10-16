@@ -34,29 +34,26 @@ def _opt_dct_fld(k, v):
     return {k: v} if v else {}
 
 
-def _render_tool_spec(ts: ToolSpec) -> 'openai.types.chat.ChatCompletionToolParam':
-    return {
-        'type': 'function',
-        'function': {
-            'name': ts.name,
+def _render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
+    return dict(  # type: ignore
+        name=ts.name,
 
-            **_opt_dct_fld('description', ts.desc),
+        **_opt_dct_fld('description', ts.desc),
 
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    tp.name: {
-                        'type': tp.dtype,
-                        **_opt_dct_fld('description', tp.desc),
-                    }
-                    for tp in ts.params
-                },
-
-                'required': [tp.name for tp in ts.params if tp.required],
-                'additionalProperties': False,
+        parameters=dict(
+            type='object',
+            properties={
+                tp.name: {
+                    'type': tp.dtype,
+                    **_opt_dct_fld('description', tp.desc),
+                }
+                for tp in ts.params
             },
-        },
-    }
+
+            required=[tp.name for tp in ts.params if tp.required],
+            additionalProperties=False,
+        ),
+    )
 
 
 class OpenaiChatModel(ChatModel):
@@ -95,14 +92,17 @@ class OpenaiChatModel(ChatModel):
             return dict(
                 role='assistant',
                 content=m.s,
-                tool_calls=[
+                **(dict(tool_calls=[  # type: ignore
                     dict(
                         id=te.id,
-                        function=_render_tool_spec(te.tool),
+                        function=dict(
+                            arguments=te.args,
+                            name=te.tool.name,
+                        ),
                         type='function',
                     )
-                    for te in m.tool_exec_requests or []
-                ] or None,
+                    for te in m.tool_exec_requests
+                ]) if m.tool_exec_requests else {}),  # type: ignore
             )
 
         elif isinstance(m, UserMessage):
@@ -146,12 +146,18 @@ class OpenaiChatModel(ChatModel):
             else:
                 raise TypeError(opt)
 
-        tools = [_render_tool_spec(ts) for ts in tools_by_name.values()]
+        tools = [
+            dict(
+                type='function',
+                function=_render_tool_spec(ts),
+            )
+            for ts in tools_by_name.values()
+        ]
 
         with contextlib.closing(openai.OpenAI(
                 api_key=self._api_key,
         )) as client:
-            raw_response = client.chat.completions.create(  # type: ignore
+            raw_request = dict(
                 model=self._model,
                 messages=[
                     self._build_req_msg(m)
@@ -164,6 +170,7 @@ class OpenaiChatModel(ChatModel):
                 stream=False,
                 **kw,
             )
+            raw_response = client.chat.completions.create(**raw_request)
 
         response: 'openai.types.chat.ChatCompletion' = raw_response  # noqa
         choice = check.single(response.choices)
