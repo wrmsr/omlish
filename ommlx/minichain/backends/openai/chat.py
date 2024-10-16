@@ -147,21 +147,21 @@ class OpenaiChatModel(ChatModel):
         with contextlib.closing(openai.OpenAI(
                 api_key=self._api_key,
         )) as client:
-            raw_response = client.chat.completions.create(  # noqa
+            raw_response = client.chat.completions.create(  # type: ignore
                 model=self._model,
                 messages=[
                     self._build_req_msg(m)
                     for m in request.v
                 ],
                 top_p=1,
-                tools=tools or None,
+                **(dict(tools=tools) if tools else {}),
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
                 stream=False,
                 **kw,
             )
 
-        response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # type: ignore  # noqa
+        response: 'openai.types.chat.chat_completion.ChatCompletion' = raw_response  # noqa
         choice = check.single(response.choices)
 
         return ChatResponse(
