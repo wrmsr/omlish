@@ -195,6 +195,18 @@
     }
   },
   {
+    "module": ".tools.proftools",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/proftools.py",
+    "line": 50,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "prof",
+        "mod_name": "omdev.tools.proftools"
+      }
+    }
+  },
+  {
     "module": ".tools.sqlrepl",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/sqlrepl.py",
