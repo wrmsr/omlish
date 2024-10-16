@@ -29,7 +29,7 @@ def _activate_path_hack() -> None:
         sys.meta_path.insert(0, _PathHackMetaFinder())
 
 
-_PTH_FILE_NAME = f'{"-".join(__name__.split("."))}-pathhack.pth'
+_PTH_FILE_NAME = f'omlish-{"-".join(__package__.split(".")[1:])}-pathhack.pth'
 
 
 def _install_pth_file() -> None:
