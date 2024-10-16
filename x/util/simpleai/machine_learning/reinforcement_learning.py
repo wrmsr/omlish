@@ -1,6 +1,6 @@
-import cPickle as pickle
 import collections
 import math
+import pickle
 import random
 
 from ..search.utils import argmax

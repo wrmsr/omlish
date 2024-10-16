@@ -2,7 +2,7 @@
 """
 Basic API for modeling a classification problem.
 """
-import cPickle as pickle
+import pickle
 
 
 class Classifier:

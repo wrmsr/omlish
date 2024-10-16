@@ -5,8 +5,8 @@ Classifiers implemented:
  * Naive Bayes:        See http://en.wikipedia.org/wiki/Naive_Bayes_classifier
  * K-Nearest Neighbor: See http://en.wikipedia.org/wiki/K-nearest_neighbor
 """
-
-from collections import defaultdict
+import collections
+import pickle
 
 import numpy
 
@@ -14,12 +14,6 @@ from .metrics import Counter
 from .metrics import OnlineInformationGain
 from .metrics import OnlineLogProbability
 from .models import Classifier
-
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 class DecisionTreeLearner(Classifier):
@@ -97,8 +91,8 @@ class NaiveBayes(Classifier):
         # Frequency count of target classes
         self.C = OnlineLogProbability()
         # Frequency count of P(Fi|C):
-        self.Fi = defaultdict(
-            lambda: defaultdict(  # For each class,
+        self.Fi = collections.defaultdict(
+            lambda: collections.defaultdict(  # For each class,
                 lambda: OnlineLogProbability(),  # For each attribute,
             ),
         )  # For each value, count it
