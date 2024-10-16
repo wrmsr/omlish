@@ -1,7 +1,13 @@
 import typing as ta
 
-import torch.backends
-import torch.nn
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import torch.backends
+    import torch.nn
+else:
+    torch = lang.proxy_import('torch', extras=['backends', 'nn'])
 
 
 def get_best_device() -> str | None:
@@ -13,7 +19,7 @@ def get_best_device() -> str | None:
         return None
 
 
-CanMoveToDevice: ta.TypeAlias = torch.Tensor | torch.nn.Module
+CanMoveToDevice: ta.TypeAlias = ta.Union['torch.Tensor', 'torch.nn.Module']
 CanMoveToDeviceT = ta.TypeVar('CanMoveToDeviceT', bound=CanMoveToDevice)
 
 

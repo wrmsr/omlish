@@ -9,12 +9,12 @@ from omlish.testing import pytest as ptu
 
 
 if ta.TYPE_CHECKING:
-    import torchvision.datasets as tv_ds  # noqa
-    import torchvision.transforms as tv_tfm  # noqa
+    import torchvision as tv  # noqa
+    import torchvision.datasets  # noqa
+    import torchvision.transforms  # noqa
 
 else:
-    tv_ds = lang.proxy_import('torchvision.datasets')  # noqa
-    tv_tfm = lang.proxy_import('torchvision.transforms')  # noqa
+    tv = lang.proxy_import('torchvision', extras=['datasets', 'transforms'])  # noqa
 
 
 FASHION_MNIST_SPECS = {
@@ -37,16 +37,16 @@ def test_torch():
 
     # root = '.cache/torch_data'
 
-    # training_data = tv_ds.FashionMNIST(  # noqa
+    # training_data = tv.datasets.FashionMNIST(  # noqa
     #     root=root,
     #     train=True,
     #     download=True,
-    #     transform=tv_tfm.ToTensor(),
+    #     transform=tv.transforms.ToTensor(),
     # )
 
-    # test_data = tv_ds.FashionMNIST(  # noqa
+    # test_data = tv.transforms.FashionMNIST(  # noqa
     #     root=root,
     #     train=False,
     #     download=True,
-    #     transform=tv_tfm.ToTensor(),
+    #     transform=tv.transforms.ToTensor(),
     # )
