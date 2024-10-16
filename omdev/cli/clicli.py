@@ -25,6 +25,10 @@ class CliCli(ap.Cli):
     def print_revision(self) -> None:
         print(__about__.__revision__)
 
+    @ap.command(name='home')
+    def print_home(self) -> None:
+        print(sys.prefix)
+
     @ap.command(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
