@@ -1,7 +1,5 @@
-
-
-from simpleai.search import SearchProblem
-from simpleai.search import astar
+from ...search import SearchProblem
+from ...search import astar
 
 
 GOAL = 'HELLO WORLD'

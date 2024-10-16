@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Iris dataset classification example.
 
@@ -7,17 +6,15 @@ The iris dataset can be downloaded
 from here: http://archive.ics.uci.edu/ml/datasets/Iris
 It has to be placed in the corpus folder.
 """
-
-
 import math
 import os
 import random
 
-from simpleai.machine_learning import DecisionTreeLearner_Queued
-from simpleai.machine_learning import KNearestNeighbors
-from simpleai.machine_learning import NaiveBayes
-from simpleai.machine_learning import VectorDataClassificationProblem
-from simpleai.machine_learning import precision
+from ...machine_learning import DecisionTreeLearner_Queued
+from ...machine_learning import KNearestNeighbors
+from ...machine_learning import NaiveBayes
+from ...machine_learning import VectorDataClassificationProblem
+from ...machine_learning import precision
 
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

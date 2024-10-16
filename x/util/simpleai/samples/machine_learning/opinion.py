@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Opinion Mining example.
 More about opinion mining here: http://en.wikipedia.org/wiki/Sentiment_analysis
@@ -8,17 +7,15 @@ Dataset extracted from: http://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html
 precisely http://www.cs.uic.edu/~liub/FBS/pros-cons.rar
 It should be placed in a folder called corpus in the same location of this file.
 """
-
-
 import codecs
 import os
 import random
 import re
 
-from simpleai.machine_learning import Attribute
-from simpleai.machine_learning import ClassificationProblem
-from simpleai.machine_learning import NaiveBayes
-from simpleai.machine_learning import precision
+from ...machine_learning import Attribute
+from ...machine_learning import ClassificationProblem
+from ...machine_learning import NaiveBayes
+from ...machine_learning import precision
 
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

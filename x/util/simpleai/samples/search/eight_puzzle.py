@@ -19,10 +19,8 @@ will become (in lists):
  ['7', '8', 'e']]
 
 """
-
-
-from simpleai.search import SearchProblem
-from simpleai.search import astar
+from ...search import SearchProblem
+from ...search import astar
 
 
 GOAL = """1-2-3

@@ -1,12 +1,11 @@
-
 from copy import deepcopy
 from time import time
 
-from simpleai.search import LEAST_CONSTRAINING_VALUE
-from simpleai.search import MOST_CONSTRAINED_VARIABLE
-from simpleai.search import CspProblem
-from simpleai.search import backtrack
-from simpleai.search import convert_to_binary
+from ...search import LEAST_CONSTRAINING_VALUE
+from ...search import MOST_CONSTRAINED_VARIABLE
+from ...search import CspProblem
+from ...search import backtrack
+from ...search import convert_to_binary
 
 
 variables = ('F', 'T', 'U', 'W', 'R', 'O', 'C_10', 'C_100', 'C_1000')

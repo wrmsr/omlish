@@ -130,7 +130,7 @@ def _backtracking(
     """
     Internal recursive backtracking algorithm.
     """
-    from simpleai.search.arc import arc_consistency_3
+    from .arc import arc_consistency_3
 
     if len(assignment) == len(problem.variables):
         return assignment

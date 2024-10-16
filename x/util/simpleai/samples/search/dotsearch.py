@@ -2,7 +2,7 @@ import base64
 import tempfile
 
 from pygraphviz import AGraph
-from simpleai.search import SearchProblem
+from ...search import SearchProblem
 
 
 class BadInputGraph(Exception):

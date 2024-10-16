@@ -1,5 +1,5 @@
-
 assert __name__ == '__main__'
+
 import argparse
 
 from dotsearch import report
@@ -12,10 +12,10 @@ parser.add_argument('dotfile', action='store')
 cfg = parser.parse_args()
 
 
-from simpleai.search import astar
-from simpleai.search import beam
-from simpleai.search import breadth_first
-from simpleai.search import simulated_annealing
+from ...search import astar
+from ...search import beam
+from ...search import breadth_first
+from ...search import simulated_annealing
 
 
 print('Running algorithms and writting report.html...')

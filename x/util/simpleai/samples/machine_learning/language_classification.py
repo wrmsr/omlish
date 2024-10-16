@@ -1,4 +1,3 @@
-
 """
 Example for language classification from text using the es-en europarl
 corpus[0].
@@ -16,20 +15,18 @@ and then change the input files variable to point them... it'll be faster.
 [0] Download link: http://www.statmt.org/europarl/v7/es-en.tgz
     See http://www.statmt.org/europarl/ for more information.
 """
-
-
 # CHANGE INPUT FILES HERE:
 input_files = [('english', 'europarl-v7.es-en.en'), ('spanish', 'europarl-v7.es-en.es')]
 
 
 import random
 
-from simpleai.machine_learning import Attribute
-from simpleai.machine_learning import ClassificationProblem
-from simpleai.machine_learning import DecisionTreeLearner_LargeData
-from simpleai.machine_learning import NaiveBayes
-from simpleai.machine_learning import precision
-from simpleai.machine_learning.classifiers import tree_to_str
+from ...machine_learning import Attribute
+from ...machine_learning import ClassificationProblem
+from ...machine_learning import DecisionTreeLearner_LargeData
+from ...machine_learning import NaiveBayes
+from ...machine_learning import precision
+from ...machine_learning.classifiers import tree_to_str
 
 
 class Sentence:

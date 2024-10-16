@@ -1,7 +1,6 @@
-
-from simpleai.search import CspProblem
-from simpleai.search import backtrack
-from simpleai.search import convert_to_binary
+from ...search import CspProblem
+from ...search import backtrack
+from ...search import convert_to_binary
 
 
 variables = ('A', 'B', 'C')

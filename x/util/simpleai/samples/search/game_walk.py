@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-
-
 import math
 
-from simpleai.search import SearchProblem
-from simpleai.search import astar
+from ...search import SearchProblem
+from ...search import astar
 
 
 MAP = """

@@ -1,10 +1,9 @@
+import copy
+import time
 
-from copy import deepcopy
-from time import time
-
-from simpleai.search import CspProblem
-from simpleai.search import backtrack
-from simpleai.search import convert_to_binary
+from ...search import CspProblem
+from ...search import backtrack
+from ...search import convert_to_binary
 
 
 variables = ('X1', 'X2', 'X3', 'X4', 'X5', 'X6')
@@ -18,21 +17,21 @@ constraints = [
     (('X2', 'X5', 'X6'), lambda v, values: values[0] or values[1] or not values[2]),
 ]
 
-original_constraints = deepcopy(constraints)
-original_domains = deepcopy(domains)
+original_constraints = copy.deepcopy(constraints)
+original_domains = copy.deepcopy(domains)
 
-start = time()
+start = time.time()
 problem = CspProblem(variables, original_domains, original_constraints)
 result = backtrack(problem)
-elapsed = time() - start
+elapsed = time.time() - start
 print(result)
 print('Took %d seconds to finish using n-ary constraints' % elapsed)
 
 
-start = time()
+start = time.time()
 variables, domains, constraints = convert_to_binary(variables, domains, constraints)
 problem = CspProblem(variables, domains, constraints)
 result = backtrack(problem)
-elapsed = time() - start
+elapsed = time.time() - start
 print(result)
 print('Took %d seconds to finish using binary constraints' % elapsed)

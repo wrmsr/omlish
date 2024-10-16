@@ -1,12 +1,10 @@
-
-
 import threading
 
-from simpleai.environments import RLEnvironment
-from simpleai.machine_learning.reinforcement_learning import PerformanceCounter
-from simpleai.machine_learning.reinforcement_learning import RLProblem
-from simpleai.machine_learning.reinforcement_learning import TDQLearner
-from simpleai.machine_learning.reinforcement_learning import make_exponential_temperature
+from ...environments import RLEnvironment
+from ...machine_learning.reinforcement_learning import PerformanceCounter
+from ...machine_learning.reinforcement_learning import RLProblem
+from ...machine_learning.reinforcement_learning import TDQLearner
+from ...machine_learning.reinforcement_learning import make_exponential_temperature
 
 
 try:

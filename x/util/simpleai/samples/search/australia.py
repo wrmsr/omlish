@@ -1,10 +1,9 @@
-
-from simpleai.search import HIGHEST_DEGREE_VARIABLE
-from simpleai.search import LEAST_CONSTRAINING_VALUE
-from simpleai.search import MOST_CONSTRAINED_VARIABLE
-from simpleai.search import CspProblem
-from simpleai.search import backtrack
-from simpleai.search import min_conflicts
+from ...search import HIGHEST_DEGREE_VARIABLE
+from ...search import LEAST_CONSTRAINING_VALUE
+from ...search import MOST_CONSTRAINED_VARIABLE
+from ...search import CspProblem
+from ...search import backtrack
+from ...search import min_conflicts
 
 
 variables = ('WA', 'NT', 'SA', 'Q', 'NSW', 'V', 'T')
