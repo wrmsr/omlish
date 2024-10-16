@@ -87,7 +87,7 @@ def super_meta(
 ##
 
 
-def deep_subclasses(cls: type, *, concrete_only: bool = False) -> ta.Iterator[type]:
+def deep_subclasses(cls: type[T], *, concrete_only: bool = False) -> ta.Iterator[type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
     while todo:

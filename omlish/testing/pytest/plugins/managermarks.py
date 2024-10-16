@@ -37,7 +37,7 @@ class ManagerMarksPlugin:
     def mark_classes(self) -> ta.Mapping[str, type[ManagerMark]]:
         return {
             cls.__name__: cls
-            for cls in _deep_subclasses(ManagerMark)
+            for cls in lang.deep_subclasses(ManagerMark)  # type: ignore[type-abstract]
             if not lang.is_abstract_class(cls)
         }
 
