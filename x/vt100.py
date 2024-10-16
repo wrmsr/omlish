@@ -240,11 +240,11 @@ def _build_state_tables() -> ta.Mapping[str, ta.Sequence]:
                     )
                 transitions[i] = transition
 
-    # For consistency, make all transitions lists of actions
-    for state, transitions in state_tables.items():
-        state_tables[state] = [t if isinstance(t, tuple) else [t] for t in transitions]
-
-    return state_tables
+    # For consistency, make all transitions tuples of actions
+    return {
+        state: tuple(t if isinstance(t, tuple) else [t] for t in transitions)
+        for state, transitions in state_tables.items()
+    }
 
 
 STATE_TABLES = _build_state_tables()
