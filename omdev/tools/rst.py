@@ -5,6 +5,8 @@ import sys
 
 import docutils.core
 
+from ..cli import CliModule
+
 
 def rst2html(rst, report_level=None):
     kwargs = {
@@ -38,6 +40,10 @@ def _main() -> None:
     if warning:
         sys.stderr.write(warning)
     print(html)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('rst', __name__)
 
 
 if __name__ == '__main__':
