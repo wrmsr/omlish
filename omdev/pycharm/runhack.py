@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/pycharm/runhack.py | .venv/bin/python - install
+.venv/bin/python $(curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/pycharm/runhack.py -o $(mktemp) && echo "$_") install
 
 ==
 
@@ -1369,7 +1369,7 @@ def _install_pth_file(
         editable: bool = False,
         force: bool = False,
         verbose: bool = False,
-) -> None:
+) -> bool:
     import site
     lib_dir = site.getsitepackages()[0]
     verbose and print(f'{lib_dir=}')
@@ -1378,7 +1378,7 @@ def _install_pth_file(
     verbose and print(f'{pth_file=}')
     if not force and os.path.isfile(pth_file):
         verbose and print('pth_file exists, exiting')
-        return
+        return False
 
     if not editable:
         if module_name is None:
@@ -1389,7 +1389,7 @@ def _install_pth_file(
         verbose and print(f'{mod_file=}')
         if not force and os.path.isfile(mod_file):
             verbose and print('mod_file exists, exiting')
-            return
+            return False
 
         import inspect
         mod_src = inspect.getsource(sys.modules[__name__])
@@ -1414,6 +1414,8 @@ def _install_pth_file(
         with open(pth_file, 'w') as f:
             f.write(pth_src)
 
+    return True
+
 
 if __name__ == '__main__':
     def _main() -> None:
@@ -1428,12 +1430,14 @@ if __name__ == '__main__':
             if not is_venv and not args.no_venv:
                 raise RuntimeError('Refusing to run outside of venv')
 
-            _install_pth_file(
+            success = _install_pth_file(
                 dry_run=args.dry_run,
                 editable=args.editable,
                 force=args.force,
                 verbose=args.verbose,
             )
+
+            sys.exit(0 if success else 1)
 
         parser_install = subparsers.add_parser('install')
         parser_install.add_argument('--dry-run', action='store_true')
