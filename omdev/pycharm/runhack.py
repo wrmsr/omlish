@@ -1,4 +1,8 @@
 """
+curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/pycharm/runhack.py | .venv/bin/python - install
+
+==
+
 See:
  - https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
  - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pycharm/_jb_runner_tools.py
@@ -1363,20 +1367,27 @@ def _install_pth_file(
         dry_run: bool = False,
         editable: bool = False,
         force: bool = False,
+        verbose: bool = False,
 ) -> None:
     import site
     lib_dir = site.getsitepackages()[0]
+    verbose and print(f'{lib_dir=}')
 
     pth_file = os.path.join(lib_dir, file_name)
+    verbose and print(f'{pth_file=}')
     if not force and os.path.isfile(pth_file):
+        verbose and print('pth_file exists, exiting')
         return
 
     if not editable:
         if module_name is None:
             module_name = '_' + file_name.removesuffix('.pth').replace('-', '_')
+        verbose and print(f'{module_name=}')
 
         mod_file = os.path.join(lib_dir, module_name + '.py')
+        verbose and print(f'{mod_file=}')
         if not force and os.path.isfile(mod_file):
+            verbose and print('mod_file exists, exiting')
             return
 
         import inspect
@@ -1385,26 +1396,20 @@ def _install_pth_file(
     else:
         if module_name is None:
             module_name = __package__ + '.runhack'
+        verbose and print(f'{module_name=}')
 
         mod_file = mod_src = None  # type: ignore
 
     pth_src = _build_pth_file_src(module_name)
+    verbose and print(f'{pth_src=}')
 
-    if dry_run:
-        print(f'{pth_file}:')
-        print(pth_src)
-
+    if not dry_run:
         if mod_file is not None:
-            print()
-
-            print(f'{mod_file}:')
-            print(mod_src)
-
-    else:
-        if mod_file is not None:
+            verbose and print(f'writing {mod_file}')
             with open(mod_file, 'w') as f:
                 f.write(mod_src)  # type: ignore
 
+        verbose and print(f'writing {pth_file}')
         with open(pth_file, 'w') as f:
             f.write(pth_src)
 
@@ -1418,16 +1423,23 @@ if __name__ == '__main__':
         subparsers = parser.add_subparsers()
 
         def install_cmd(args):
+            is_venv = sys.prefix != sys.base_prefix
+            if not is_venv and not args.no_venv:
+                raise RuntimeError('Refusing to run outside of venv')
+
             _install_pth_file(
                 dry_run=args.dry_run,
                 editable=args.editable,
                 force=args.force,
+                verbose=args.verbose,
             )
 
         parser_install = subparsers.add_parser('install')
         parser_install.add_argument('--dry-run', action='store_true')
         parser_install.add_argument('-e', '--editable', action='store_true')
         parser_install.add_argument('-f', '--force', action='store_true')
+        parser_install.add_argument('-v', '--verbose', action='store_true')
+        parser_install.add_argument('--no-venv', action='store_true')
         parser_install.set_defaults(func=install_cmd)
 
         args = parser.parse_args()
