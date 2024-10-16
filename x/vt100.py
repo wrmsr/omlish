@@ -27,12 +27,12 @@ states = {}
 
 # Define the anywhere transitions
 anywhere_transitions = {
-    0x18: ['execute', transition_to('GROUND')],
-    0x1a: ['execute', transition_to('GROUND')],
-    range(0x80, 0x90): ['execute', transition_to('GROUND')],
-    range(0x91, 0x98): ['execute', transition_to('GROUND')],
-    0x99: ['execute', transition_to('GROUND')],
-    0x9a: ['execute', transition_to('GROUND')],
+    0x18: ('execute', transition_to('GROUND')),
+    0x1a: ('execute', transition_to('GROUND')),
+    range(0x80, 0x90): ('execute', transition_to('GROUND')),
+    range(0x91, 0x98): ('execute', transition_to('GROUND')),
+    0x99: ('execute', transition_to('GROUND')),
+    0x9a: ('execute', transition_to('GROUND')),
     0x9c: transition_to('GROUND'),
     0x1b: transition_to('ESCAPE'),
     0x98: transition_to('SOS_PM_APC_STRING'),
@@ -57,13 +57,13 @@ states['ESCAPE'] = {
     0x19: 'execute',
     range(0x1c, 0x20): 'execute',
     0x7f: 'ignore',
-    range(0x20, 0x30): ['collect', transition_to('ESCAPE_INTERMEDIATE')],
-    range(0x30, 0x50): ['esc_dispatch', transition_to('GROUND')],
-    range(0x51, 0x58): ['esc_dispatch', transition_to('GROUND')],
-    0x59: ['esc_dispatch', transition_to('GROUND')],
-    0x5a: ['esc_dispatch', transition_to('GROUND')],
-    0x5c: ['esc_dispatch', transition_to('GROUND')],
-    range(0x60, 0x7f): ['esc_dispatch', transition_to('GROUND')],
+    range(0x20, 0x30): ('collect', transition_to('ESCAPE_INTERMEDIATE')),
+    range(0x30, 0x50): ('esc_dispatch', transition_to('GROUND')),
+    range(0x51, 0x58): ('esc_dispatch', transition_to('GROUND')),
+    0x59: ('esc_dispatch', transition_to('GROUND')),
+    0x5a: ('esc_dispatch', transition_to('GROUND')),
+    0x5c: ('esc_dispatch', transition_to('GROUND')),
+    range(0x60, 0x7f): ('esc_dispatch', transition_to('GROUND')),
     0x5b: transition_to('CSI_ENTRY'),
     0x5d: transition_to('OSC_STRING'),
     0x50: transition_to('DCS_ENTRY'),
@@ -78,7 +78,7 @@ states['ESCAPE_INTERMEDIATE'] = {
     range(0x1c, 0x20): 'execute',
     range(0x20, 0x30): 'collect',
     0x7f: 'ignore',
-    range(0x30, 0x7f): ['esc_dispatch', transition_to('GROUND')],
+    range(0x30, 0x7f): ('esc_dispatch', transition_to('GROUND')),
 }
 
 states['CSI_ENTRY'] = {
@@ -87,12 +87,12 @@ states['CSI_ENTRY'] = {
     0x19: 'execute',
     range(0x1c, 0x20): 'execute',
     0x7f: 'ignore',
-    range(0x20, 0x30): ['collect', transition_to('CSI_INTERMEDIATE')],
+    range(0x20, 0x30): ('collect', transition_to('CSI_INTERMEDIATE')),
     0x3a: transition_to('CSI_IGNORE'),
-    range(0x30, 0x3a): ['param', transition_to('CSI_PARAM')],
-    0x3b: ['param', transition_to('CSI_PARAM')],
-    range(0x3c, 0x40): ['collect', transition_to('CSI_PARAM')],
-    range(0x40, 0x7f): ['csi_dispatch', transition_to('GROUND')],
+    range(0x30, 0x3a): ('param', transition_to('CSI_PARAM')),
+    0x3b: ('param', transition_to('CSI_PARAM')),
+    range(0x3c, 0x40): ('collect', transition_to('CSI_PARAM')),
+    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
 }
 
 states['CSI_IGNORE'] = {
@@ -113,8 +113,8 @@ states['CSI_PARAM'] = {
     0x7f: 'ignore',
     0x3a: transition_to('CSI_IGNORE'),
     range(0x3c, 0x40): transition_to('CSI_IGNORE'),
-    range(0x20, 0x30): ['collect', transition_to('CSI_INTERMEDIATE')],
-    range(0x40, 0x7f): ['csi_dispatch', transition_to('GROUND')],
+    range(0x20, 0x30): ('collect', transition_to('CSI_INTERMEDIATE')),
+    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
 }
 
 states['CSI_INTERMEDIATE'] = {
@@ -124,7 +124,7 @@ states['CSI_INTERMEDIATE'] = {
     range(0x20, 0x30): 'collect',
     0x7f: 'ignore',
     range(0x30, 0x40): transition_to('CSI_IGNORE'),
-    range(0x40, 0x7f): ['csi_dispatch', transition_to('GROUND')],
+    range(0x40, 0x7f): ('csi_dispatch', transition_to('GROUND')),
 }
 
 states['DCS_ENTRY'] = {
@@ -134,11 +134,11 @@ states['DCS_ENTRY'] = {
     range(0x1c, 0x20): 'ignore',
     0x7f: 'ignore',
     0x3a: transition_to('DCS_IGNORE'),
-    range(0x20, 0x30): ['collect', transition_to('DCS_INTERMEDIATE')],
-    range(0x30, 0x3a): ['param', transition_to('DCS_PARAM')],
-    0x3b: ['param', transition_to('DCS_PARAM')],
-    range(0x3c, 0x40): ['collect', transition_to('DCS_PARAM')],
-    range(0x40, 0x7f): [transition_to('DCS_PASSTHROUGH')],
+    range(0x20, 0x30): ('collect', transition_to('DCS_INTERMEDIATE')),
+    range(0x30, 0x3a): ('param', transition_to('DCS_PARAM')),
+    0x3b: ('param', transition_to('DCS_PARAM')),
+    range(0x3c, 0x40): ('collect', transition_to('DCS_PARAM')),
+    range(0x40, 0x7f): (transition_to('DCS_PASSTHROUGH')),
 }
 
 states['DCS_INTERMEDIATE'] = {
@@ -166,7 +166,7 @@ states['DCS_PARAM'] = {
     0x7f: 'ignore',
     0x3a: transition_to('DCS_IGNORE'),
     range(0x3c, 0x40): transition_to('DCS_IGNORE'),
-    range(0x20, 0x30): ['collect', transition_to('DCS_INTERMEDIATE')],
+    range(0x20, 0x30): ('collect', transition_to('DCS_INTERMEDIATE')),
     range(0x40, 0x7f): transition_to('DCS_PASSTHROUGH'),
 }
 
