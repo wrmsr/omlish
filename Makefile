@@ -51,12 +51,19 @@ venv:
 	${PYTHON} --version
 
 	if [ "${VENV}" == "default" ] ; then \
-		if [ ! -d .venv ] ; then \
-			ln -s .venvs/default .venv ; \
-		fi ; \
-		if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
-			${MAKE} tg ; \
-		fi ; \
+		${MAKE} _default_venv ; \
+	fi
+
+.PHONY: _default_venv
+_default_venv:
+	if [ ! -d .venv ] ; then \
+		ln -s .venvs/default .venv ; \
+	fi
+
+	.venv/bin/python3 -m omdev.pycharm.runhack install
+
+	if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
+		${MAKE} tg ; \
 	fi
 
 .PHONY: fresh-venv
