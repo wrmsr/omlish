@@ -1,5 +1,7 @@
 import pytest
 
+from omlish import check
+from omlish.formats import json
 from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.testing import pytest as ptu
 
@@ -8,6 +10,7 @@ from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
 from ..chat import SystemMessage
 from ..chat import Tool
+from ..chat import ToolExecResultMessage
 from ..chat import ToolParam
 from ..chat import ToolSpec
 from ..chat import UserMessage
@@ -55,11 +58,31 @@ def test_openai_tools(harness):
         desc='Gets the weather in the given location.',
     )
 
+    chat: list = [
+        SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
+        UserMessage('What is the weather in Seattle?'),
+    ]
+
     resp = llm(
-        [
-            SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
-            UserMessage('What is the weather in Seattle?'),
-        ],
+        chat,
+        Temperature(.1),
+        MaxTokens(64),
+        Tool(tool_spec),
+    )
+
+    print(resp)
+    assert resp.v
+
+    chat.append(resp.v)
+
+    tr = check.single(resp.v.tool_exec_requests)
+    assert tr.name == 'get_weather'
+    assert json.loads(tr.args) == {'location': 'Seattle'}
+
+    chat.append(ToolExecResultMessage(tr.id, tr.name, '"rain"'))
+
+    resp = llm(
+        chat,
         Temperature(.1),
         MaxTokens(64),
         Tool(tool_spec),

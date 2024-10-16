@@ -34,7 +34,7 @@ class AiMessage(Message, lang.Final):
 @dc.dataclass(frozen=True)
 class ToolExecResultMessage(Message, lang.Final):
     id: str
-    tool_name: str
+    name: str
     s: str
 
 

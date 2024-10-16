@@ -84,12 +84,39 @@ class OpenaiChatModel(ChatModel):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = api_key
 
-    def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, (SystemMessage, AiMessage)):
-            return m.s
+    def _build_req_msg(self, m: Message) -> ta.Any:
+        if isinstance(m, SystemMessage):
+            return dict(
+                role=self.ROLES_MAP[type(m)],
+                content=m.s,
+            )
+
+        elif isinstance(m, AiMessage):
+            return dict(
+                role=self.ROLES_MAP[type(m)],
+                content=m.s,
+                tool_calls=[
+                    dict(
+                        id=te.id,
+                        function=te.name,
+                        type='function',
+                    )
+                    for te in m.tool_exec_requests or []
+                ] or None,
+            )
 
         elif isinstance(m, UserMessage):
-            return check.isinstance(m.c, str)
+            return dict(
+                role=self.ROLES_MAP[type(m)],
+                content=m.c,
+            )
+
+        elif isinstance(m, ToolExecResultMessage):
+            return dict(
+                role=self.ROLES_MAP[type(m)],
+                tool_call_id=m.id,
+                content=m.s,
+            )
 
         else:
             raise TypeError(m)
@@ -123,10 +150,7 @@ class OpenaiChatModel(ChatModel):
             raw_response = client.chat.completions.create(  # noqa
                 model=self._model,
                 messages=[
-                    dict(  # type: ignore
-                        role=self.ROLES_MAP[type(m)],
-                        content=self._get_msg_content(m),
-                    )
+                    self._build_req_msg(m)
                     for m in request.v
                 ],
                 top_p=1,
