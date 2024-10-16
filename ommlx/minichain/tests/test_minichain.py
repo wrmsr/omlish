@@ -76,10 +76,10 @@ def test_openai_tools(harness):
     chat.append(resp.v)
 
     tr = check.single(check.not_none(resp.v.tool_exec_requests))
-    assert tr.tool.name == 'get_weather'
+    assert tr.spec.name == 'get_weather'
     assert json.loads(tr.args) == {'location': 'Seattle'}
 
-    chat.append(ToolExecResultMessage(tr.id, tr.tool.name, '"rain"'))
+    chat.append(ToolExecResultMessage(tr.id, tr.spec.name, '"rain"'))
 
     resp = llm(
         chat,
