@@ -71,8 +71,8 @@ class Cli(ap.Cli):
         print(self.get_antlr_jar_path())
 
     @ap.command(
-        ap.arg('base_path', metavar='base-path'),
-        ap.arg('--self-vendor', dest='self_vendor', action='store_true'),
+        ap.arg('base-path'),
+        ap.arg('--self-vendor', action='store_true'),
     )
     def gen(self) -> None:
         dns = _find_dirs(self.args.base_path, lambda dn: os.path.basename(dn) == '_antlr')

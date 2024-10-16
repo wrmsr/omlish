@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-.venv/bin/python $(curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/pycharm/runhack.py -o $(mktemp) && echo "$_") install
+.venv/bin/python $(curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omlish/diag/_pycharm/runhack.py -o $(mktemp) && echo "$_") install
 
 ==
 
@@ -21,12 +21,12 @@ DEBUG_ENV_VAR = 'OMLISH_PYCHARM_RUNHACK_DEBUG'
 
 #
 
+_DEFAULT_PTH_FILE_NAME = 'omlish-pycharm-runhack.pth'
+
 _DEFAULT_DEBUG = False
 _DEFAULT_ENABLED = True
 
 _DEBUG_PREFIX = 'omlish-pycharm-runhack'
-
-_DEFAULT_PTH_FILE_NAME = f'omlish-{"-".join((globals().get("__package__") or "omdev.pycharm").split(".")[1:])}-runhack.pth'  # noqa
 
 
 ##

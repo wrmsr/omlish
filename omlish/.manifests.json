@@ -24,14 +24,14 @@
     }
   },
   {
-    "module": ".diag.pycharm",
+    "module": ".diag.pycharm.cli",
     "attr": "_CLI_MODULE",
-    "file": "omlish/diag/pycharm.py",
-    "line": 141,
+    "file": "omlish/diag/pycharm/cli.py",
+    "line": 38,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": "pycharm",
-        "mod_name": "omlish.diag.pycharm"
+        "mod_name": "omlish.diag.pycharm.cli"
       }
     }
   },
