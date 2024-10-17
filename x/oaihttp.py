@@ -46,7 +46,6 @@ def _main() -> None:
 
     print(hu.request(
         'https://api.openai.com/v1/chat/completions',
-        'POST',
         headers={
             hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(key.reveal()),
             hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
@@ -60,6 +59,7 @@ def _main() -> None:
                 ),
             ],
         )),
+        check=True,
     ).data)
 
 
