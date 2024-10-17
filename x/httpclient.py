@@ -110,6 +110,12 @@ class HttpHeaders:
     def __bool__(self) -> bool:
         return bool(self._lst)
 
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    def __iter__(self) -> ta.Iterator[tuple[bytes, bytes]]:
+        return iter(self._lst)
+
     @ta.overload
     def __getitem__(self, item: StrOrBytes) -> ta.Sequence[StrOrBytes]:
         ...
@@ -130,6 +136,12 @@ class HttpHeaders:
         else:
             raise TypeError(item)
 
+    def keys(self) -> ta.Iterable[bytes]:
+        return self.multi_dct.keys()
+
+    def items(self) -> ta.Iterable[tuple[bytes, bytes]]:
+        return self._lst
+
 
 @dc.dataclass(frozen=True)
 class HttpRequest(lang.Final):
@@ -144,8 +156,8 @@ class HttpRequest(lang.Final):
     timeout: float | None = None
 
     @cached.property
-    def headers_(self) -> HttpHeaders:
-        return HttpHeaders(self.headers)
+    def headers_(self) -> HttpHeaders | None:
+        return HttpHeaders(self.headers) if self.headers is not None else None
 
 
 @dc.dataclass(frozen=True)
@@ -183,14 +195,14 @@ class UrllibHttpClient(HttpClient):
                     urllib.request.Request(
                         req.url,
                         method=req.method,
-                        headers=req.headers or {},
+                        headers=req.headers_ or {},
                         data=req.data,
                     ),
                     timeout=req.timeout,
             ) as resp:
                 return HttpResponse(
                     req=req,
-                    headers=dict(resp.headers.items()),
+                    headers=HttpHeaders(resp.headers.items()),
                     data=resp.read(),
                     underlying=resp,
                 )
@@ -204,13 +216,13 @@ class HttpxHttpClient(HttpClient):
             response = httpx.request(
                 method=req.method,
                 url=req.url,
-                headers=req.headers,
+                headers=req.headers_ or {},
                 content=req.data,
                 timeout=req.timeout,
             )
             return HttpResponse(
                 req=req,
-                headers=response.headers,
+                headers=HttpHeaders(response.headers.raw),
                 data=response.content,
                 underlying=response,
             )
@@ -224,7 +236,10 @@ def _main() -> None:
         HttpxHttpClient,
     ]:
         with cls() as cli:
-            resp = cli.request(HttpRequest('https://www.google.com'))
+            resp = cli.request(HttpRequest(
+                'https://www.google.com',
+                headers={'User-Agent': 'omlish'},
+            ))
             print(resp)
 
 
