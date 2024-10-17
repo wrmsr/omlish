@@ -131,12 +131,23 @@ class UrllibHttpClient(HttpClient):
             if isinstance(d, str):
                 d = d.encode(DEFAULT_ENCODING)
 
+        # urllib headers are dumb dicts [1], and keys *must* be strings or it will automatically add problematic default
+        # headers because it doesn't see string keys in its header dict [2]. frustratingly it has no problem accepting
+        # bytes keys though [3].
+        # [1]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/urllib/request.py#L319-L325  # noqa
+        # [2]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/urllib/request.py#L1276-L1279  # noqa
+        # [3]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/http/client.py#L1300-L1301  # noqa
+        h: dict[str, str] = {}
+        if hs := req.headers_:
+            for k, v in hs.strict_dct.items():
+                h[k.decode('ascii')] = v.decode('ascii')
+
         try:
             with urllib.request.urlopen(  # noqa
                     urllib.request.Request(  # noqa
                         req.url,
                         method=req.method_or_default,
-                        headers=req.headers_ or {},  # type: ignore
+                        headers=h,
                         data=d,
                     ),
                     timeout=req.timeout_s,
