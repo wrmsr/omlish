@@ -63,6 +63,8 @@ from omlish.formats import json
 def _main() -> None:
     key = load_secrets().get('openai_api_key')
 
+    url = 'https://api.openai.com/v1/chat/completions'
+
     dct = dict(
         model='gpt-4o-mini',
         messages=[
@@ -74,23 +76,22 @@ def _main() -> None:
     )
     data = json.dumps(dct).encode('utf-8')
 
+    headers = {
+        hu.consts.HEADER_CONTENT_TYPE.decode(): hu.consts.CONTENT_TYPE_JSON.decode(),
+        hu.consts.HEADER_AUTH.decode(): hu.consts.format_bearer_auth_header(key.reveal()),
+    }
+
     with urllib.request.urlopen(urllib.request.Request(
-            'https://api.openai.com/v1/chat/completions',
-            headers={
-                hu.consts.HEADER_CONTENT_TYPE.decode(): hu.consts.CONTENT_TYPE_JSON.decode(),
-                hu.consts.HEADER_AUTH.decode(): hu.consts.format_bearer_auth_header(key.reveal()),
-            },
+            url,
+            headers=headers,
             data=data,
         ),
     ) as resp:
         print(resp.read())
 
     print(hu.request(
-        'https://api.openai.com/v1/chat/completions',
-        headers={
-            hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(key.reveal()),
-            hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
-        },
+        url,
+        headers=headers,
         data=data,
     ).data)
 
