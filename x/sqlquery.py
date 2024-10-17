@@ -1,6 +1,7 @@
 import enum
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import dataclasses as dc
 
@@ -36,14 +37,13 @@ class Literal(Expr, lang.Final):
 #
 
 
-class MultiOp(enum.Enum):
-    AND = enum.auto()
-    OR = enum.auto()
+class UnaryOp(enum.Enum):
+    NOT = enum.auto()
 
 
-class Multi(Expr, lang.Final):
-    op: MultiOp
-    cs: ta.Sequence[Expr]
+class Unary(Expr, lang.Final):
+    op: UnaryOp
+    v: Expr
 
 
 #
@@ -62,17 +62,17 @@ class Binary(Expr, lang.Final):
     l: Expr
     r: Expr
 
-
 #
 
 
-class UnaryOp(enum.Enum):
-    NOT = enum.auto()
+class MultiOp(enum.Enum):
+    AND = enum.auto()
+    OR = enum.auto()
 
 
-class Unary(Expr, lang.Final):
-    op: UnaryOp
-    v: Expr
+class Multi(Expr, lang.Final):
+    op: MultiOp
+    es: ta.Sequence[Expr]
 
 
 ##
@@ -95,18 +95,18 @@ class Relation(Node, lang.Abstract):
 
 class Table(Relation, lang.Final):
     n: Ident
-    a: Ident | None = None
+    a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 class SelectItem(Node, lang.Final):
     v: Expr
-    a: Ident | None = None
+    a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 class Select(Stmt, lang.Final):
     its: ta.Sequence[SelectItem]
-    fr: Relation | None = None
-    wh: Expr | None = None
+    fr: Relation | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    wh: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 ##
@@ -115,6 +115,7 @@ class Select(Stmt, lang.Final):
 CanLiteral: ta.TypeAlias = Literal | Value
 CanExpr: ta.TypeAlias = Expr | CanLiteral
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
+CanRelation: ta.TypeAlias = Relation | Ident
 
 
 class Builder:
@@ -132,11 +133,59 @@ class Builder:
         else:
             return self.literal(o)
 
+    #
+
+    def unary(self, op: UnaryOp, v: CanExpr) -> Unary:
+        return Unary(op, self.expr(v))
+
+    def not_(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOp.NOT, v)
+
+    #
+
+    def binary(self, op: BinaryOp, *es: CanExpr) -> Expr:
+        check.not_empty(es)
+        l = self.expr(es[0])
+        for r in es[1:]:
+            l = Binary(op, l, self.expr(r))
+        return l
+
+    def add(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.ADD, *es)
+
+    def sub(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.SUB, *es)
+
+    #
+
+    def multi(self, op: MultiOp, *es: CanExpr) -> Expr:
+        check.not_empty(es)
+        if len(es) == 1:
+            return self.expr(es[0])
+        else:
+            return Multi(op, [self.expr(e) for e in es])
+
+    def and_(self, *es: CanExpr) -> Expr:
+        return self.multi(MultiOp.AND, *es)
+
+    def or_(self, *es: CanExpr) -> Expr:
+        return self.multi(MultiOp.OR, *es)
+
+    #
+
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
         else:
             return SelectItem(self.expr(o))
+
+    def relation(self, o: CanRelation) -> Relation:
+        if isinstance(o, Relation):
+            return o
+        elif isinstance(o, Ident):
+            return Relation(o)
+        else:
+            raise TypeError(o)
 
     def select(
             self,
@@ -146,6 +195,8 @@ class Builder:
     ) -> Select:
         return Select(
             [self.select_item(i) for i in its],
+            fr=self.relation(fr) if fr is not None else None,
+            wh=self.expr(wh) if wh is not None else None,
         )
 
 
