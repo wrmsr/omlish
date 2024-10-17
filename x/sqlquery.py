@@ -42,6 +42,10 @@ class IdentBuilder(Builder):
         else:
             raise TypeError(o)
 
+    @ta.final
+    def i(self, o: CanIdent) -> Ident:
+        return self.ident(o)
+
 
 #
 
@@ -50,19 +54,23 @@ class Name(Node, lang.Final):
     ps: ta.Sequence[Ident]
 
 
-CanName: ta.TypeAlias = Name | str | ta.Sequence[CanIdent]
+CanName: ta.TypeAlias = Name | CanIdent | ta.Sequence[CanIdent]
 
 
 class NameBuilder(IdentBuilder):
     def name(self, o: CanName) -> Name:
         if isinstance(o, Name):
             return o
-        elif isinstance(o, str):
+        elif isinstance(o, (Ident, str)):
             return Name([self.ident(o)])
         elif isinstance(o, ta.Sequence):
             return Name([self.ident(p) for p in o])
         else:
             raise TypeError(o)
+
+    @ta.final
+    def n(self, o: CanName) -> Name:
+        return self.name(o)
 
 
 ##
@@ -81,10 +89,10 @@ class NameExpr(Expr, lang.Final):
 
 
 CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | Name | CanLiteral
+CanExpr: ta.TypeAlias = Expr | CanName | CanLiteral
 
 
-class ExprBuilder(Builder):
+class ExprBuilder(NameBuilder):
     def literal(self, o: CanLiteral) -> Literal:
         if isinstance(o, Literal):
             return o
@@ -93,20 +101,32 @@ class ExprBuilder(Builder):
         else:
             return Literal(o)
 
+    @ta.final
+    def l(self, o: CanLiteral) -> Literal:  # noqa
+        return self.literal(o)
+
     def expr(self, o: CanExpr) -> Expr:
         if isinstance(o, Expr):
             return o
-        elif isinstance(o, Name):
-            return NameExpr(o)
+        elif isinstance(o, (Name, Ident)):
+            return NameExpr(self.name(o))
         else:
             return self.literal(o)
+
+    @ta.final
+    def e(self, o: CanExpr) -> Expr:
+        return self.expr(o)
 
 
 ##
 
 
-class UnaryOp(enum.Enum):
-    NOT = enum.auto()
+class UnaryOp(Node, lang.Final):
+    name: str
+
+
+class UnaryOps(lang.Namespace):
+    NOT = UnaryOp('not')
 
 
 class Unary(Expr, lang.Final):
@@ -119,18 +139,22 @@ class UnaryBuilder(ExprBuilder):
         return Unary(op, self.expr(v))
 
     def not_(self, v: CanExpr) -> Unary:
-        return self.unary(UnaryOp.NOT, v)
+        return self.unary(UnaryOps.NOT, v)
 
 
 ##
 
 
-class BinaryOp(enum.Enum):
-    ADD = enum.auto()
-    SUB = enum.auto()
+class BinaryOp(Node, lang.Final):
+    name: str
 
-    EQ = enum.auto()
-    NE = enum.auto()
+
+class BinaryOps(lang.Namespace):
+    ADD = BinaryOp('add')
+    SUB = BinaryOp('sub')
+
+    EQ = BinaryOp('eq')
+    NE = BinaryOp('ne')
 
 
 class Binary(Expr, lang.Final):
@@ -148,24 +172,28 @@ class BinaryBuilder(ExprBuilder):
         return l
 
     def add(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.ADD, *es)
+        return self.binary(BinaryOps.ADD, *es)
 
     def sub(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.SUB, *es)
+        return self.binary(BinaryOps.SUB, *es)
 
     def eq(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.EQ, *es)
+        return self.binary(BinaryOps.EQ, *es)
 
     def ne(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.NE, *es)
+        return self.binary(BinaryOps.NE, *es)
 
 
 ##
 
 
-class MultiOp(enum.Enum):
-    AND = enum.auto()
-    OR = enum.auto()
+class MultiOp(Node, lang.Final):
+    name: str
+
+
+class MultiOps(lang.Namespace):
+    AND = MultiOp('and')
+    OR = MultiOp('or')
 
 
 class Multi(Expr, lang.Final):
@@ -182,10 +210,10 @@ class MultiBuilder(ExprBuilder):
             return Multi(op, [self.expr(e) for e in es])
 
     def and_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOp.AND, *es)
+        return self.multi(MultiOps.AND, *es)
 
     def or_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOp.OR, *es)
+        return self.multi(MultiOps.OR, *es)
 
 
 ##
@@ -290,6 +318,7 @@ class StdBuilder(
     ExprBuilder,
 
     RelationBuilder,
+
     NameBuilder,
     IdentBuilder,
 
@@ -307,11 +336,12 @@ Q = StdBuilder()
 def _main() -> None:
     print(Q.select(
         [
-            Q.literal(1),
+            1,
         ],
         'foo',
         wh=Q.and_(
-            Q.eq(1, 2),
+            Q.eq(Q.i('foo'), 1),
+            Q.ne(Q.i('bar'), Q.add(Q.i('baz'), 2)),
         )
     ))
 
