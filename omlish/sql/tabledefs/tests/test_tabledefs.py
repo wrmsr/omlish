@@ -1,7 +1,6 @@
-from omlish import marshal as msh
-from omlish.formats import json
-
-from ..datatypes import String
+from .... import marshal as msh
+from ....formats import json
+from ..dtypes import String
 from ..elements import Column
 from ..elements import CreatedAtUpdatedAt
 from ..elements import Elements

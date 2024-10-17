@@ -1,7 +1,6 @@
-from omlish import lang
-from omlish import marshal as msh
-
-from .datatypes import Datatype
+from ... import lang
+from ... import marshal as msh
+from .dtypes import Dtype
 from .elements import Element
 
 
@@ -13,7 +12,7 @@ def _install_poly(cls: type) -> None:
 
 @lang.cached_function
 def _install_standard_marshalling() -> None:
-    _install_poly(Datatype)
+    _install_poly(Dtype)
     _install_poly(Element)
 
 

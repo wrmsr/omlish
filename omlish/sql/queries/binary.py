@@ -1,6 +1,5 @@
-from omlish import check
-from omlish import lang
-
+from ... import check
+from ... import lang
 from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr

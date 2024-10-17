@@ -17,6 +17,7 @@ POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
 Params = dc._DataclassParams  # type: ignore  # noqa
 
+
 """
 @dc.dataclass(frozen=True)
 class Params:

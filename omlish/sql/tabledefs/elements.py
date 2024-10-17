@@ -1,11 +1,10 @@
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-
-from .datatypes import Datatype
+from ... import check
+from ... import collections as col
+from ... import dataclasses as dc
+from ... import lang
+from .dtypes import Dtype
 
 
 ##
@@ -21,7 +20,7 @@ class Element(lang.Abstract, lang.Sealed):
 @dc.dataclass(frozen=True)
 class Column(Element, lang.Final):
     name: str
-    type: Datatype
+    type: Dtype
     nullable: bool = dc.field(default=False, kw_only=True)
     default: lang.Maybe[ta.Any] = dc.field(default=lang.empty(), kw_only=True)
 
@@ -78,7 +77,7 @@ class Elements(ta.Sequence[Element], lang.Final):
     def __iter__(self) -> ta.Iterator[Element]:
         return iter(self.lst)
 
-    def __getitem__(self, index: ta.Any) -> Element:
+    def __getitem__(self, index: ta.Any) -> Element:  # type: ignore[override]
         return self.lst[index]
 
     def __len__(self) -> int:

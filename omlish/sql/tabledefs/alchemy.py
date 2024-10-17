@@ -1,3 +1,7 @@
+"""
+TODO:
+ - move to sql/alchemy/tabledefs.py
+"""
 import typing as ta
 
 import sqlalchemy as sa
@@ -10,7 +14,7 @@ def build_sa_table(
         td: TableDef,
         *,
         metadata: sa.MetaData | None = None,
-        **kwargs: ta.Any
+        **kwargs: ta.Any,
 ) -> sa.Table:
     items: list[sa.sql.schema.SchemaItem] = []
 

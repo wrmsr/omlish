@@ -38,9 +38,8 @@ class User(BaseTable, lang.Final):
     name: str
 
 """
-from omlish import dataclasses as dc
-from omlish import lang
-
+from ... import dataclasses as dc
+from ... import lang
 from .elements import Elements
 
 

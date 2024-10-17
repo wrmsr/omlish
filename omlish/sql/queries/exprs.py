@@ -1,7 +1,6 @@
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .base import Node
 from .base import Value
 from .idents import Ident

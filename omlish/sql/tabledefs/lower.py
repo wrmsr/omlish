@@ -1,7 +1,6 @@
-from omlish import dataclasses as dc
-
-from .datatypes import Datetime
-from .datatypes import Integer
+from ... import dataclasses as dc
+from .dtypes import Datetime
+from .dtypes import Integer
 from .elements import Column
 from .elements import CreatedAt
 from .elements import CreatedAtUpdatedAt

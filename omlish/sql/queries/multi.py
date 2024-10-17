@@ -1,9 +1,8 @@
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
 from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr

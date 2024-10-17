@@ -207,14 +207,14 @@
     }
   },
   {
-    "module": ".tools.rst",
+    "module": ".tools.rsttool",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/rst.py",
-    "line": 45,
+    "file": "omdev/tools/rsttool.py",
+    "line": 55,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "rst",
-        "mod_name": "omdev.tools.rst"
+        "mod_name": "omdev.tools.rsttool"
       }
     }
   },
