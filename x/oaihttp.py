@@ -77,17 +77,22 @@ def _main() -> None:
     data = json.dumps(dct).encode('utf-8')
 
     headers = {
-        hu.consts.HEADER_CONTENT_TYPE.decode(): hu.consts.CONTENT_TYPE_JSON.decode(),
-        hu.consts.HEADER_AUTH.decode(): hu.consts.format_bearer_auth_header(key.reveal()),
+        hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
+        hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(key.reveal()),
     }
 
-    with urllib.request.urlopen(urllib.request.Request(
-            url,
-            headers=headers,
-            data=data,
-        ),
-    ) as resp:
-        print(resp.read())
+    for hs in [
+        {k.decode(): v.decode() for k, v in headers.items()},
+        {k.decode(): v for k, v in headers.items()},
+        headers,
+    ]:
+        with urllib.request.urlopen(urllib.request.Request(
+                url,
+                headers=hs,
+                data=data,
+            ),
+        ) as resp:
+            print(resp.read())
 
     print(hu.request(
         url,
