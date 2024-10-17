@@ -114,7 +114,7 @@ class Cli(ap.Cli):
             check.equal(pu.scheme, 'https')
             check.equal(pu.hostname, 'github.com')
             _, user, repo, *_ = pu.path.split('/')
-            gh_url = f'https://github.com/{user}/{repo}/compare/{base_rev}...{rev}'
+            gh_url = f'https://github.com/{user}/{repo}/compare/{base_rev}...{rev}#files_bucket'
             print(gh_url)
 
         else:
