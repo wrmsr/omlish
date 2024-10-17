@@ -1,7 +1,3 @@
-"""
-TODO:
- - case folded lol
-"""
 import typing as ta
 
 from .. import cached
@@ -13,9 +9,20 @@ StrOrBytes: ta.TypeAlias = str | bytes
 
 CanHttpHeaders: ta.TypeAlias = ta.Union[
     'HttpHeaders',
+
+    ta.Mapping[str, str],
+    ta.Mapping[str, ta.Sequence[str]],
+
+    ta.Mapping[bytes, bytes],
+    ta.Mapping[bytes, ta.Sequence[bytes]],
+
     ta.Mapping[StrOrBytes, StrOrBytes],
     ta.Mapping[StrOrBytes, ta.Sequence[StrOrBytes]],
+
     ta.Mapping[StrOrBytes, StrOrBytes | ta.Sequence[StrOrBytes]],
+
+    ta.Sequence[tuple[str, str]],
+    ta.Sequence[tuple[bytes, bytes]],
     ta.Sequence[tuple[StrOrBytes, StrOrBytes]],
 ]
 
@@ -82,6 +89,10 @@ class HttpHeaders:
 
     #
 
+    @property
+    def raw(self) -> ta.Sequence[tuple[bytes, bytes]]:
+        return self._lst
+
     @classmethod
     def _as_key(cls, o: StrOrBytes) -> bytes:
         return cls._as_bytes(o).lower()
@@ -134,7 +145,11 @@ class HttpHeaders:
         return iter(self._lst)
 
     @ta.overload
-    def __getitem__(self, item: StrOrBytes) -> ta.Sequence[StrOrBytes]:
+    def __getitem__(self, item: str) -> ta.Sequence[str]:
+        ...
+
+    @ta.overload
+    def __getitem__(self, item: bytes) -> ta.Sequence[bytes]:
         ...
 
     @ta.overload
@@ -148,7 +163,9 @@ class HttpHeaders:
     def __getitem__(self, item):
         if isinstance(item, (int, slice)):
             return self._lst[item]
-        elif isinstance(item, (str, bytes)):
+        elif isinstance(item, str):
+            return self.multi_str_dct[item.lower()]
+        elif isinstance(item, bytes):
             return self.multi_dct[self._as_key(item)]
         else:
             raise TypeError(item)
