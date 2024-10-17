@@ -19,11 +19,28 @@ class Node(dc.Data, lang.Abstract):
     pass
 
 
+class Builder(lang.Abstract):
+    pass
+
+
 ##
 
 
 class Ident(Node, lang.Final):
     s: str
+
+
+CanIdent: ta.TypeAlias = Ident | str
+
+
+class IdentBuilder(Builder):
+    def ident(self, o: CanIdent) -> Ident:
+        if isinstance(o, Ident):
+            return o
+        elif isinstance(o, str):
+            return Ident(o)
+        else:
+            raise TypeError(o)
 
 
 ##
@@ -33,15 +50,34 @@ class Expr(Node, lang.Abstract):
     pass
 
 
-#
-
-
 class Literal(Expr, lang.Final):
     v: Value
 
 
 class IdentExpr(Expr, lang.Final):
     i: Ident
+
+
+CanLiteral: ta.TypeAlias = Literal | Value
+CanExpr: ta.TypeAlias = Expr | Ident | CanLiteral
+
+
+class ExprBuilder(Builder):
+    def literal(self, o: CanLiteral) -> Literal:
+        if isinstance(o, Literal):
+            return o
+        elif isinstance(o, Node):
+            raise TypeError(o)
+        else:
+            return Literal(o)
+
+    def expr(self, o: CanExpr) -> Expr:
+        if isinstance(o, Expr):
+            return o
+        elif isinstance(o, Ident):
+            return IdentExpr(o)
+        else:
+            return self.literal(o)
 
 
 #
@@ -122,37 +158,11 @@ class Select(Stmt, lang.Final):
 ##
 
 
-CanIdent: ta.TypeAlias = Ident | str
-CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | Ident | CanLiteral
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 CanRelation: ta.TypeAlias = Relation | Ident
 
 
-class Builder:
-    def ident(self, o: CanIdent) -> Ident:
-        if isinstance(o, Ident):
-            return o
-        elif isinstance(o, str):
-            return Ident(o)
-        else:
-            raise TypeError(o)
-
-    def literal(self, o: CanLiteral) -> Literal:
-        if isinstance(o, Literal):
-            return o
-        elif isinstance(o, Node):
-            raise TypeError(o)
-        else:
-            return Literal(o)
-
-    def expr(self, o: CanExpr) -> Expr:
-        if isinstance(o, Expr):
-            return o
-        elif isinstance(o, Ident):
-            return IdentExpr(o)
-        else:
-            return self.literal(o)
+class StdBuilder:
 
     #
 
