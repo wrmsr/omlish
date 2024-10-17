@@ -59,7 +59,6 @@ def _main() -> None:
                 ),
             ],
         )),
-        check=True,
     ).data)
 
 
