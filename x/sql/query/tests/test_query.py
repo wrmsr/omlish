@@ -1,3 +1,6 @@
+from .. import Q
+
+
 def test_query():
     print(Q.select(
         [
