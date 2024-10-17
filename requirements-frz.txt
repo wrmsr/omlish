@@ -206,7 +206,7 @@ langdetect==1.0.9
 langgraph==0.2.38
 langgraph-checkpoint==2.0.1
 langgraph-sdk==0.1.33
-langsmith==0.1.135
+langsmith==0.1.136
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
