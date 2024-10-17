@@ -66,8 +66,8 @@ def _main() -> None:
     with urllib.request.urlopen(urllib.request.Request(
             'https://api.openai.com/v1/chat/completions',
             headers={
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {key.reveal()}',
+                hu.consts.HEADER_CONTENT_TYPE.decode(): hu.consts.CONTENT_TYPE_JSON.decode(),
+                hu.consts.HEADER_AUTH.decode(): hu.consts.format_bearer_auth_header(key.reveal()),
             },
             data="""{
                 "model": "gpt-4o-mini",
