@@ -1,9 +1,14 @@
-import argparse
+"""
+TODO:
+ - omdev/rst.py *and* rsttool.py, when we want extracted helpers
+"""
 import contextlib
 import io
 import sys
 
 import docutils.core
+
+from omlish import argparse as ap
 
 from ..cli import CliModule
 
@@ -25,21 +30,26 @@ def rst2html(rst, report_level=None):
         return html, warning
 
 
-def _main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', nargs='?')
-    args = parser.parse_args()
+class Cli(ap.Cli):
+    @ap.command(
+        ap.arg('input-file', nargs='?'),
+        ap.arg('--report-level', type=int),
+    )
+    def html(self) -> None:
+        if self.args.input_file is not None:
+            with open(self.args.input_file) as f:
+                src = f.read()
+        else:
+            src = sys.stdin.read()
 
-    if args.input:
-        with open(args.input) as f:
-            src = f.read()
-    else:
-        src = sys.stdin.read()
+        html, warning = rst2html(
+            src,
+            report_level=self.args.report_level,
+        )
 
-    html, warning = rst2html(src)
-    if warning:
-        sys.stderr.write(warning)
-    print(html)
+        if warning:
+            sys.stderr.write(warning)
+        print(html)
 
 
 # @omlish-manifest
@@ -47,4 +57,4 @@ _CLI_MODULE = CliModule('rst', __name__)
 
 
 if __name__ == '__main__':
-    _main()
+    Cli().call_and_exit()

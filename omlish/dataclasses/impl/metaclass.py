@@ -46,14 +46,14 @@ def confer_kwargs(
 
             if ck in (
                     'frozen',
-                    'generic_init',
                     'kw_only',
-                    'reorder',
             ):
                 confer_kwarg(out, ck, getattr(get_params(base), ck))
 
             elif ck in (
                     'cache_hash',
+                    'generic_init',
+                    'reorder',
             ):
                 confer_kwarg(out, ck, getattr(get_params_extras(base), ck))
 
