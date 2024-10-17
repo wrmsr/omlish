@@ -10,6 +10,8 @@ import urllib.error
 import urllib.request
 import typing as ta
 
+from omlish import cached
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -20,7 +22,29 @@ else:
     httpx = lang.proxy_import('httpx')
 
 
-HttpHeaders: ta.TypeAlias = ta.Mapping[str, str]
+StrOrBytes: ta.TypeAlias = str | bytes
+CanHttpHeaders: ta.TypeAlias = ta.Union[
+    'HttpHeaders',
+    ta.Mapping[StrOrBytes, StrOrBytes | ta.Sequence[StrOrBytes]],
+    ta.Sequence[tuple[StrOrBytes, StrOrBytes]],
+]
+
+
+class HttpHeaders:
+    def __init__(self, src: CanHttpHeaders) -> None:
+        super().__init__()
+
+        if isinstance(src, HttpHeaders):
+            check.is_(src, self)
+            return
+
+        raise NotImplementedError
+
+    def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
+        if isinstance(obj, HttpHeaders):
+            return obj
+
+        return super().__new__(cls)
 
 
 @dc.dataclass(frozen=True)
@@ -30,10 +54,14 @@ class HttpRequest(lang.Final):
 
     _: dc.KW_ONLY
 
-    headers: HttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
+    headers: CanHttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
     data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
     timeout: float | None = None
+
+    @cached.property
+    def headers_(self) -> HttpHeaders:
+        return HttpHeaders(self.headers)
 
 
 @dc.dataclass(frozen=True)
