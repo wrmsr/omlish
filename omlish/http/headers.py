@@ -38,7 +38,11 @@ class HttpHeaders:
             raise TypeError(src)
 
         elif isinstance(src, ta.Sequence):
-            for k, v in src:
+            for t in src:
+                if isinstance(t, (str, bytes)):
+                    raise TypeError(t)
+
+                k, v = t
                 lst.append((self._as_bytes(k), self._as_bytes(v)))
 
         else:

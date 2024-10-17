@@ -29,6 +29,7 @@ else:
 
 DEFAULT_ENCODING = 'utf-8'
 
+
 def is_success_status(status: int) -> bool:
     return 200 <= status < 300
 
@@ -82,7 +83,7 @@ class HttpResponse(lang.Final):
 
 class HttpClientError(Exception):
     @property
-    def cause(self) -> Exception | None:
+    def cause(self) -> BaseException | None:
         return self.__cause__
 
 
@@ -203,6 +204,8 @@ def request(
 
         timeout_s: float | None = None,
 
+        check: bool = False,
+
         **kwargs: ta.Any,
 ) -> HttpResponse:
     req = HttpRequest(
@@ -218,4 +221,8 @@ def request(
     )
 
     with client() as cli:
-        return cli.request(req)
+        return cli.request(
+            req,
+
+            check=check,
+        )
