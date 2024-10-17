@@ -19,4 +19,3 @@ class Node(dc.Frozen, lang.Abstract, cache_hash=True):
 
 class Builder(lang.Abstract):
     pass
-

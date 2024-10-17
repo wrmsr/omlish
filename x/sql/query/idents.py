@@ -28,4 +28,3 @@ class IdentBuilder(Builder):
     @ta.final
     def i(self, o: CanIdent) -> Ident:
         return self.ident(o)
-
