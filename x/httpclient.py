@@ -85,24 +85,40 @@ class HttpHeaders:
 
     #
 
+    @cached.function
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({{{", ".join(repr(k) for k in self.single_str_dct)}}})'
+
+    #
+
     @cached.property
     def multi_dct(self) -> ta.Mapping[bytes, ta.Sequence[bytes]]:
         return col.multi_map(self._lst)
 
     @cached.property
-    def dct(self) -> ta.Mapping[bytes, bytes]:
+    def single_dct(self) -> ta.Mapping[bytes, bytes]:
+        return {k: v[0] for k, v in self.multi_dct.items() if len(v) == 1}
+
+    @cached.property
+    def strict_dct(self) -> ta.Mapping[bytes, bytes]:
         return col.make_map(self._lst, strict=True)
+
+    #
 
     @cached.property
     def strs(self) -> ta.Sequence[tuple[str, str]]:
         return tuple((k.decode(self.ENCODING), v.decode(self.ENCODING)) for k, v in self._lst)
 
     @cached.property
-    def str_multi_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
+    def multi_str_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
         return col.multi_map(self.strs)
 
     @cached.property
-    def str_dct(self) -> ta.Mapping[str, str]:
+    def single_str_dct(self) -> ta.Mapping[str, str]:
+        return {k: v[0] for k, v in self.multi_str_dct.items() if len(v) == 1}
+
+    @cached.property
+    def strict_str_dct(self) -> ta.Mapping[str, str]:
         return col.make_map(self.strs, strict=True)
 
     #
