@@ -31,7 +31,7 @@ class HttpRequest(lang.Final):
     _: dc.KW_ONLY
 
     headers: CanHttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
-    data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+    data: bytes | str | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
     timeout_s: float | None = None
 
@@ -42,7 +42,7 @@ class HttpRequest(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class HttpResponse(lang.Final):
-    code: int
+    status: int
 
     headers: HttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
     data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
@@ -69,18 +69,23 @@ class HttpClient(lang.Abstract):
 
 class UrllibHttpClient(HttpClient):
     def request(self, req: HttpRequest) -> HttpResponse:
+        d: ta.Any
+        if (d := req.data) is not None:
+            if isinstance(d, str):
+                d = d.encode('utf-8')
+
         try:
             with urllib.request.urlopen(  # noqa
                     urllib.request.Request(  # noqa
                         req.url,
                         method=req.method,
                         headers=req.headers_ or {},  # type: ignore
-                        data=req.data,
+                        data=d,
                     ),
                     timeout=req.timeout_s,
             ) as resp:
                 return HttpResponse(
-                    code=resp.status,
+                    status=resp.status,
                     headers=HttpHeaders(resp.headers.items()),
                     data=resp.read(),
                     request=req,
@@ -101,7 +106,7 @@ class HttpxHttpClient(HttpClient):
                 timeout=req.timeout_s,
             )
             return HttpResponse(
-                code=response.status_code,
+                status=response.status_code,
                 headers=HttpHeaders(response.headers.raw),
                 data=response.content,
                 request=req,

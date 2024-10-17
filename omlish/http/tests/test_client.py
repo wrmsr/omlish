@@ -6,14 +6,15 @@ from ..client import UrllibHttpClient
 
 
 @pytest.mark.online
-def test_clients():
-    for cls in [
-        UrllibHttpClient,
-        HttpxHttpClient,
-    ]:
-        with cls() as cli:
-            resp = cli.request(HttpRequest(
-                'https://www.google.com',
-                headers={'User-Agent': 'omlish'},
-            ))
-            print(resp)
+@pytest.mark.parametrize('cls', [UrllibHttpClient, HttpxHttpClient])
+@pytest.mark.parametrize('data', [None, '{}', b'{}'])
+def test_clients(cls, data):
+    with cls() as cli:
+        resp = cli.request(HttpRequest(
+            'https://httpbun.org/',
+            'POST' if data is not None else 'GET',
+            headers={'User-Agent': 'omlish'},
+            data=data,
+        ))
+        print(resp)
+        assert resp.status == 200
