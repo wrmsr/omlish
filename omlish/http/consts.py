@@ -64,5 +64,9 @@ BEARER_AUTH_HEADER_PREFIX = b'Bearer '
 BASIC_AUTH_HEADER_PREFIX = b'Basic '
 
 
+def format_bearer_auth_header(token: str | bytes) -> bytes:
+    return BEARER_AUTH_HEADER_PREFIX + (token.encode('ascii') if isinstance(token, str) else token)
+
+
 def format_basic_auth_header(username: str, password: str) -> bytes:
     return BASIC_AUTH_HEADER_PREFIX + base64.b64encode(':'.join([username, password]).encode())

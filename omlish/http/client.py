@@ -1,5 +1,6 @@
 """
 TODO:
+ - check=False
  - return non-200 HttpResponses
  - async
  - stream
@@ -23,10 +24,22 @@ else:
     httpx = lang.proxy_import('httpx')
 
 
+##
+
+
+DEFAULT_ENCODING = 'utf-8'
+
+def is_success_status(status: int) -> bool:
+    return 200 <= status < 300
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class HttpRequest(lang.Final):
     url: str
-    method: str = 'GET'  # noqa
+    method: str | None = None  # noqa
 
     _: dc.KW_ONLY
 
@@ -34,6 +47,16 @@ class HttpRequest(lang.Final):
     data: bytes | str | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
     timeout_s: float | None = None
+
+    #
+
+    @property
+    def method_or_default(self) -> str:
+        if self.method is not None:
+            return self.method
+        if self.data is not None:
+            return 'POST'
+        return 'GET'
 
     @cached.property
     def headers_(self) -> HttpHeaders | None:
@@ -50,9 +73,22 @@ class HttpResponse(lang.Final):
     request: HttpRequest
     underlying: ta.Any = dc.field(default=None, repr=False)
 
+    #
+
+    @property
+    def is_success(self) -> bool:
+        return is_success_status(self.status)
+
 
 class HttpClientError(Exception):
-    pass
+    @property
+    def cause(self) -> Exception | None:
+        return self.__cause__
+
+
+@dc.dataclass(frozen=True)
+class HttpStatusError(HttpClientError):
+    response: HttpResponse
 
 
 class HttpClient(lang.Abstract):
@@ -62,23 +98,43 @@ class HttpClient(lang.Abstract):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+    def request(
+            self,
+            req: HttpRequest,
+            *,
+            check: bool = False,
+    ) -> HttpResponse:
+        resp = self._request(req)
+
+        if check and not resp.is_success:
+            if isinstance(resp.underlying, Exception):
+                cause = resp.underlying
+            else:
+                cause = None
+            raise HttpStatusError(resp) from cause
+
+        return resp
+
     @abc.abstractmethod
-    def request(self, req: HttpRequest) -> HttpResponse:
+    def _request(self, req: HttpRequest) -> HttpResponse:
         raise NotImplementedError
 
 
+##
+
+
 class UrllibHttpClient(HttpClient):
-    def request(self, req: HttpRequest) -> HttpResponse:
+    def _request(self, req: HttpRequest) -> HttpResponse:
         d: ta.Any
         if (d := req.data) is not None:
             if isinstance(d, str):
-                d = d.encode('utf-8')
+                d = d.encode(DEFAULT_ENCODING)
 
         try:
             with urllib.request.urlopen(  # noqa
                     urllib.request.Request(  # noqa
                         req.url,
-                        method=req.method,
+                        method=req.method_or_default,
                         headers=req.headers_ or {},  # type: ignore
                         data=d,
                     ),
@@ -91,20 +147,34 @@ class UrllibHttpClient(HttpClient):
                     request=req,
                     underlying=resp,
                 )
+
+        except urllib.error.HTTPError as e:
+            return HttpResponse(
+                status=e.code,
+                headers=HttpHeaders(e.headers.items()),
+                data=e.read(),
+                request=req,
+                underlying=e,
+            )
+
         except (urllib.error.URLError, http.client.HTTPException) as e:
             raise HttpClientError from e
 
 
+##
+
+
 class HttpxHttpClient(HttpClient):
-    def request(self, req: HttpRequest) -> HttpResponse:
+    def _request(self, req: HttpRequest) -> HttpResponse:
         try:
             response = httpx.request(
-                method=req.method,
+                method=req.method_or_default,
                 url=req.url,
                 headers=req.headers_ or None,  # type: ignore
                 content=req.data,
                 timeout=req.timeout_s,
             )
+
             return HttpResponse(
                 status=response.status_code,
                 headers=HttpHeaders(response.headers.raw),
@@ -112,8 +182,12 @@ class HttpxHttpClient(HttpClient):
                 request=req,
                 underlying=response,
             )
+
         except httpx.HTTPError as e:
             raise HttpClientError from e
+
+
+##
 
 
 def client() -> HttpClient:
@@ -122,10 +196,10 @@ def client() -> HttpClient:
 
 def request(
         url: str,
-        method: str = 'GET',
+        method: str | None = None,
         *,
         headers: CanHttpHeaders | None = None,
-        data: bytes | None = None,
+        data: bytes | str | None = None,
 
         timeout_s: float | None = None,
 

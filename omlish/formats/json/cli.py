@@ -13,6 +13,7 @@ from .render import JsonRenderer
 
 
 if ta.TYPE_CHECKING:
+    import ast
     import tomllib
 
     import yaml
@@ -21,6 +22,7 @@ if ta.TYPE_CHECKING:
     from .. import props
 
 else:
+    ast = lang.proxy_import('ast')
     tomllib = lang.proxy_import('tomllib')
 
     yaml = lang.proxy_import('yaml')
@@ -50,6 +52,7 @@ class Formats(enum.Enum):
     TOML = Format(['toml'], lambda f: tomllib.loads(f.read()))
     ENV = Format(['env', 'dotenv'], lambda f: dotenv.dotenv_values(stream=f))
     PROPS = Format(['properties', 'props'], lambda f: dict(props.Properties().load(f.read())))
+    PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
 
 
 FORMATS_BY_NAME: ta.Mapping[str, Format] = {
