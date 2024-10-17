@@ -4,9 +4,33 @@ import subprocess
 import urllib.parse
 
 from omlish import argparse as ap
+from omlish import check
 from omlish import logs
 
 from ..cli import CliModule
+
+
+def rev_parse(rev: str) -> str:
+    return subprocess.check_output(['git', 'rev-parse', rev]).decode().strip()
+
+
+def get_first_commit_of_day(rev: str) -> str | None:
+    commit_date = subprocess.check_output([
+        'git', 'show', '-s', '--format=%ci', rev,
+    ]).decode().strip().split(' ')[0]
+
+    first_commit = subprocess.check_output([
+        'git', 'rev-list', '--reverse', '--max-parents=1',
+        '--since', f'{commit_date} 00:00:00',
+        '--until', f'{commit_date} 23:59:59',
+        rev,
+    ]).decode().strip().splitlines()
+
+    # Return the first commit (if there is any)
+    if first_commit:
+        return first_commit[0]
+    else:
+        return None
 
 
 class Cli(ap.Cli):
@@ -69,6 +93,17 @@ class Cli(ap.Cli):
             ])
 
         print(out_dir)
+
+    @ap.command(
+        ap.arg('rev', default='HEAD'),
+        ap.arg('-g', '--github', action='store_true'),
+    )
+    def recap(self) -> None:
+        rev = rev_parse(self.args.rev)
+        first_rev = check.not_none(get_first_commit_of_day(rev))
+        base_rev = rev_parse(f'{first_rev}~1')
+
+        print(base_rev)
 
 
 # @omlish-manifest
