@@ -95,15 +95,30 @@ class Cli(ap.Cli):
         print(out_dir)
 
     @ap.command(
-        ap.arg('rev', default='HEAD'),
+        ap.arg('rev', nargs='?', default='HEAD'),
+        ap.arg('-d', '--diff', action='store_true'),
+        ap.arg('-s', '--diff-stat', action='store_true'),
         ap.arg('-g', '--github', action='store_true'),
     )
     def recap(self) -> None:
         rev = rev_parse(self.args.rev)
-        first_rev = check.not_none(get_first_commit_of_day(rev))
-        base_rev = rev_parse(f'{first_rev}~1')
+        day_rev = check.not_none(get_first_commit_of_day(rev))
+        base_rev = rev_parse(f'{day_rev}~1')
 
-        print(base_rev)
+        if self.args.diff or self.args.diff_stat:
+            os.execvp('git', ['git', 'diff', *(['--stat'] if self.args.diff_stat else []), base_rev, rev])
+
+        elif self.args.github:
+            rm_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin']).decode('utf-8').strip()
+            pu = urllib.parse.urlparse(rm_url)
+            check.equal(pu.scheme, 'https')
+            check.equal(pu.hostname, 'github.com')
+            _, user, repo, *_ = pu.path.split('/')
+            gh_url = f'https://github.com/{user}/{repo}/compare/{base_rev}...{rev}'
+            print(gh_url)
+
+        else:
+            print(base_rev)
 
 
 # @omlish-manifest
