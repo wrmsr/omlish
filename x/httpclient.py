@@ -12,6 +12,7 @@ import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -25,6 +26,8 @@ else:
 StrOrBytes: ta.TypeAlias = str | bytes
 CanHttpHeaders: ta.TypeAlias = ta.Union[
     'HttpHeaders',
+    ta.Mapping[StrOrBytes, StrOrBytes],
+    ta.Mapping[StrOrBytes, ta.Sequence[StrOrBytes]],
     ta.Mapping[StrOrBytes, StrOrBytes | ta.Sequence[StrOrBytes]],
     ta.Sequence[tuple[StrOrBytes, StrOrBytes]],
 ]
@@ -38,13 +41,94 @@ class HttpHeaders:
             check.is_(src, self)
             return
 
-        raise NotImplementedError
+        # TODO: optimized storage, 'use-whats-given'
+        lst: list[tuple[bytes, bytes]] = []
+        if isinstance(src, ta.Mapping):
+            for k, v in src.items():
+                if isinstance(v, (str, bytes)):
+                    lst.append((self._as_bytes(k), self._as_bytes(v)))
+                else:
+                    for e in v:
+                        lst.append((self._as_bytes(k), self._as_bytes(e)))
+
+        elif isinstance(src, (str, bytes)):
+            raise TypeError(src)
+
+        elif isinstance(src, ta.Sequence):
+            for k, v in src:
+                lst.append((self._as_bytes(k), self._as_bytes(v)))
+
+        else:
+            raise TypeError(src)
+
+        self._lst = lst
 
     def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
         if isinstance(obj, HttpHeaders):
             return obj
 
         return super().__new__(cls)
+
+    #
+
+    # https://github.com/pgjones/hypercorn/commit/13f385be7277f407a9a361c958820515e16e217e
+    ENCODING: ta.ClassVar[str] = 'latin1'
+
+    @classmethod
+    def _as_bytes(cls, o: StrOrBytes) -> bytes:
+        if isinstance(o, bytes):
+            return o
+        elif isinstance(o, str):
+            return o.encode(cls.ENCODING)
+        else:
+            raise TypeError(o)
+
+    #
+
+    @cached.property
+    def multi_dct(self) -> ta.Mapping[bytes, ta.Sequence[bytes]]:
+        return col.multi_map(self._lst)
+
+    @cached.property
+    def dct(self) -> ta.Mapping[bytes, bytes]:
+        return col.make_map(self._lst, strict=True)
+
+    @cached.property
+    def strs(self) -> ta.Sequence[tuple[str, str]]:
+        return tuple((k.decode(self.ENCODING), v.decode(self.ENCODING)) for k, v in self._lst)
+
+    @cached.property
+    def str_multi_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
+        return col.multi_map(self.strs)
+
+    @cached.property
+    def str_dct(self) -> ta.Mapping[str, str]:
+        return col.make_map(self.strs, strict=True)
+
+    #
+
+    def __bool__(self) -> bool:
+        return bool(self._lst)
+
+    @ta.overload
+    def __getitem__(self, item: StrOrBytes) -> ta.Sequence[StrOrBytes]:
+        ...
+
+    @ta.overload
+    def __getitem__(self, item: int) -> StrOrBytes:
+        ...
+
+    @ta.overload
+    def __getitem__(self, item: range) -> StrOrBytes:
+        ...
+
+    def __getitem__(self, item):
+        if isinstance(item, (int, range)):
+            return self._lst[item]
+        elif isinstance(item, (str, bytes)):
+            return self.multi_dct[self._as_bytes(item)]
+        else:
+            raise TypeError(item)
 
 
 @dc.dataclass(frozen=True)
