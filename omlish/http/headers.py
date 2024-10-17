@@ -1,3 +1,7 @@
+"""
+TODO:
+ - case folded lol
+"""
 import typing as ta
 
 from .. import cached
@@ -78,9 +82,19 @@ class HttpHeaders:
 
     #
 
+    @classmethod
+    def _as_key(cls, o: StrOrBytes) -> bytes:
+        return cls._as_bytes(o).lower()
+
+    @cached.property
+    def normalized(self) -> ta.Sequence[tuple[bytes, bytes]]:
+        return [(self._as_key(k), v) for k, v in self._lst]
+
+    #
+
     @cached.property
     def multi_dct(self) -> ta.Mapping[bytes, ta.Sequence[bytes]]:
-        return col.multi_map(self._lst)
+        return col.multi_map(self.normalized)
 
     @cached.property
     def single_dct(self) -> ta.Mapping[bytes, bytes]:
@@ -88,13 +102,13 @@ class HttpHeaders:
 
     @cached.property
     def strict_dct(self) -> ta.Mapping[bytes, bytes]:
-        return col.make_map(self._lst, strict=True)
+        return col.make_map(self.normalized, strict=True)
 
     #
 
     @cached.property
     def strs(self) -> ta.Sequence[tuple[str, str]]:
-        return tuple((k.decode(self.ENCODING), v.decode(self.ENCODING)) for k, v in self._lst)
+        return tuple((k.decode(self.ENCODING), v.decode(self.ENCODING)) for k, v in self.normalized)
 
     @cached.property
     def multi_str_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
@@ -135,7 +149,7 @@ class HttpHeaders:
         if isinstance(item, (int, slice)):
             return self._lst[item]
         elif isinstance(item, (str, bytes)):
-            return self.multi_dct[self._as_bytes(item)]
+            return self.multi_dct[self._as_key(item)]
         else:
             raise TypeError(item)
 
