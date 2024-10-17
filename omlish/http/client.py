@@ -1,5 +1,6 @@
 """
 TODO:
+ - return non-200 HttpResponses
  - async
  - stream
 """
@@ -32,22 +33,21 @@ class HttpRequest(lang.Final):
     headers: CanHttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
     data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
-    timeout: float | None = None
+    timeout_s: float | None = None
 
     @cached.property
     def headers_(self) -> HttpHeaders | None:
         return HttpHeaders(self.headers) if self.headers is not None else None
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class HttpResponse(lang.Final):
-    req: HttpRequest
-
-    _: dc.KW_ONLY
+    code: int
 
     headers: HttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
     data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
+    request: HttpRequest
     underlying: ta.Any = dc.field(default=None, repr=False)
 
 
@@ -77,12 +77,13 @@ class UrllibHttpClient(HttpClient):
                         headers=req.headers_ or {},  # type: ignore
                         data=req.data,
                     ),
-                    timeout=req.timeout,
+                    timeout=req.timeout_s,
             ) as resp:
                 return HttpResponse(
-                    req=req,
+                    code=resp.status,
                     headers=HttpHeaders(resp.headers.items()),
                     data=resp.read(),
+                    request=req,
                     underlying=resp,
                 )
         except (urllib.error.URLError, http.client.HTTPException) as e:
@@ -97,12 +98,13 @@ class HttpxHttpClient(HttpClient):
                 url=req.url,
                 headers=req.headers_ or None,  # type: ignore
                 content=req.data,
-                timeout=req.timeout,
+                timeout=req.timeout_s,
             )
             return HttpResponse(
-                req=req,
+                code=response.status_code,
                 headers=HttpHeaders(response.headers.raw),
                 data=response.content,
+                request=req,
                 underlying=response,
             )
         except httpx.HTTPError as e:
@@ -111,3 +113,30 @@ class HttpxHttpClient(HttpClient):
 
 def client() -> HttpClient:
     return UrllibHttpClient()
+
+
+def request(
+        url: str,
+        method: str = 'GET',
+        *,
+        headers: CanHttpHeaders | None = None,
+        data: bytes | None = None,
+
+        timeout_s: float | None = None,
+
+        **kwargs: ta.Any,
+) -> HttpResponse:
+    req = HttpRequest(
+        url,
+        method=method,
+
+        headers=headers,
+        data=data,
+
+        timeout_s=timeout_s,
+
+        **kwargs,
+    )
+
+    with client() as cli:
+        return cli.request(req)

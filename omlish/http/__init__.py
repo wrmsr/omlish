@@ -8,6 +8,7 @@ from .client import (  # noqa
     HttpxHttpClient,
     UrllibHttpClient,
     client,
+    request,
 )
 
 from .cookies import (  # noqa

@@ -1038,11 +1038,13 @@ class ExecDecider:
         if not isinstance(tgt, FileTarget):
             return None
 
-        new_file = os.path.abspath(tgt.file)
+        abs_file = os.path.abspath(tgt.file)
+        if os.path.commonpath([abs_file, self._root_dir]) != self._root_dir:
+            return None
 
         return ExecDecision(
             tgt.replace(
-                file=new_file,
+                file=abs_file,
             ),
             cwd=self._root_dir,
         )
@@ -1070,8 +1072,11 @@ class ExecDecider:
         if not (isinstance(dt, FileTarget) and dt.file.endswith('.py')):
             return None
 
-        af = os.path.abspath(dt.file)
-        rp = os.path.relpath(af, self._root_dir).split(os.path.sep)
+        abs_file = os.path.abspath(dt.file)
+        if os.path.commonpath([abs_file, self._root_dir]) != self._root_dir:
+            return None
+
+        rp = os.path.relpath(abs_file, self._root_dir).split(os.path.sep)
         mod = '.'.join([*rp[:-1], rp[-1][:-3]])
         new_dt = ModuleTarget(
             mod,
