@@ -462,3 +462,15 @@ def test_default_factory_coerce():
 
     assert C().x == 4
     assert C(3).x == 6
+
+
+def test_confer_cache_hash():
+    class A(dc.Frozen, lang.Abstract, cache_hash=True):
+        pass
+
+    assert dc.reflect(A).params_extras.cache_hash
+
+    class B(A, lang.Final):
+        pass
+
+    assert dc.reflect(B).params_extras.cache_hash
