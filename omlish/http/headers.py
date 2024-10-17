@@ -6,6 +6,7 @@ from .. import collections as col
 
 
 StrOrBytes: ta.TypeAlias = str | bytes
+
 CanHttpHeaders: ta.TypeAlias = ta.Union[
     'HttpHeaders',
     ta.Mapping[StrOrBytes, StrOrBytes],
