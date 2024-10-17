@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.22
+uv>=0.4.23
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -16,7 +16,7 @@ pytest-xdist==3.6.1
 
 flake8==7.1.1
 flake8-pyproject==1.2.3
-ruff==0.6.9
+ruff==0.7.0
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20240928  # @omlish-venv !13t

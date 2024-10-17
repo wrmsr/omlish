@@ -46,7 +46,7 @@ class Project(ProjectBase):
         ],
 
         'torch': [
-            'torch ~= 2.4',
+            'torch ~= 2.5',
         ],
 
         'wiki': [
