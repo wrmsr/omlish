@@ -1,6 +1,23 @@
 """
 https://github.com/chr15m/aish/blob/main/aish
 
+curl "https://api.openai.com/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -d '{
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": "Write a haiku that explains the concept of recursion."
+            }
+        ]
+    }'
+
 {
   "frequency_penalty": 0.0,
   "max_tokens": 64,
@@ -36,6 +53,8 @@ https://github.com/chr15m/aish/blob/main/aish
   "content-length": "197"
 }
 """
+import urllib.request
+
 from omdev.secrets import load_secrets
 from omlish import http as hu
 from omlish.formats import json
@@ -44,6 +63,29 @@ from omlish.formats import json
 def _main() -> None:
     key = load_secrets().get('openai_api_key')
 
+    with urllib.request.urlopen(urllib.request.Request(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {key.reveal()}',
+            },
+            data="""{
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant."
+                    },
+                    {
+                        "role": "user",
+                        "content": "Write a haiku that explains the concept of recursion."
+                    }
+                ]
+            }""".encode('utf-8'),
+        ),
+    ) as resp:
+        print(resp.read())
+
     print(hu.request(
         'https://api.openai.com/v1/chat/completions',
         headers={
@@ -51,7 +93,7 @@ def _main() -> None:
             hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
         },
         data=json.dumps(dict(
-            model='gpt-4o',
+            model='gpt-4o-mini',
             messages=[
                 dict(
                     role='user',
