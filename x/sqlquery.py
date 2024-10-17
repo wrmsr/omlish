@@ -80,7 +80,7 @@ class ExprBuilder(Builder):
             return self.literal(o)
 
 
-#
+##
 
 
 class UnaryOp(enum.Enum):
@@ -100,7 +100,7 @@ class UnaryBuilder(ExprBuilder):
         return self.unary(UnaryOp.NOT, v)
 
 
-#
+##
 
 
 class BinaryOp(enum.Enum):
@@ -138,7 +138,7 @@ class BinaryBuilder(ExprBuilder):
         return self.binary(BinaryOp.NE, *es)
 
 
-#
+##
 
 
 class MultiOp(enum.Enum):
@@ -188,7 +188,7 @@ class StmtBuilder(ExprBuilder):
             return ExprStmt(self.expr(o))
 
 
-#
+##
 
 
 class Relation(Node, lang.Abstract):
@@ -198,6 +198,20 @@ class Relation(Node, lang.Abstract):
 class Table(Relation, lang.Final):
     n: Ident
     a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
+
+
+CanRelation: ta.TypeAlias = Relation | CanIdent
+
+
+class RelationBuilder(IdentBuilder):
+    def relation(self, o: CanRelation) -> Relation:
+        if isinstance(o, Relation):
+            return o
+        else:
+            return Relation(self.ident(o))
+
+
+##
 
 
 class SelectItem(Node, lang.Final):
@@ -211,35 +225,15 @@ class Select(Stmt, lang.Final):
     wh: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
-##
-
-
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
-CanRelation: ta.TypeAlias = Relation | Ident
 
 
-class StdBuilder:
-
-    #
-    #
-
-    #
-
-    #
-
+class SelectBuilder(ExprBuilder):
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
         else:
             return SelectItem(self.expr(o))
-
-    def relation(self, o: CanRelation) -> Relation:
-        if isinstance(o, Relation):
-            return o
-        elif isinstance(o, Ident):
-            return Relation(o)
-        else:
-            raise TypeError(o)
 
     def select(
             self,
