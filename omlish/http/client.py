@@ -107,3 +107,7 @@ class HttpxHttpClient(HttpClient):
             )
         except httpx.HTTPError as e:
             raise HttpClientError from e
+
+
+def client() -> HttpClient:
+    return UrllibHttpClient()
