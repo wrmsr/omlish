@@ -1,9 +1,8 @@
-import enum
 import typing as ta
 
 from omlish import check
-from omlish import lang
 from omlish import dataclasses as dc
+from omlish import lang
 
 
 ##
@@ -15,7 +14,7 @@ Value: ta.TypeAlias = ta.Any
 ##
 
 
-class Node(dc.Data, lang.Abstract):
+class Node(dc.Frozen, lang.Abstract, cache_hash=True):
     pass
 
 
@@ -51,7 +50,7 @@ class IdentBuilder(Builder):
 
 
 class Name(Node, lang.Final):
-    ps: ta.Sequence[Ident]
+    ps: ta.Sequence[Ident] = dc.xfield(coerce=tuple)
 
 
 CanName: ta.TypeAlias = Name | CanIdent | ta.Sequence[CanIdent]
@@ -198,7 +197,7 @@ class MultiOps(lang.Namespace):
 
 class Multi(Expr, lang.Final):
     op: MultiOp
-    es: ta.Sequence[Expr]
+    es: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
 
 
 class MultiBuilder(ExprBuilder):
@@ -277,7 +276,7 @@ class SelectItem(Node, lang.Final):
 
 
 class Select(Stmt, lang.Final):
-    its: ta.Sequence[SelectItem]
+    its: ta.Sequence[SelectItem] = dc.xfield(coerce=tuple)
     fr: Relation | None = dc.xfield(None, repr_fn=dc.opt_repr)
     wh: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
@@ -334,6 +333,8 @@ Q = StdBuilder()
 
 
 def _main() -> None:
+    assert dc.reflect(Name).params_extras.cache_hash
+
     print(Q.select(
         [
             1,
