@@ -9,7 +9,6 @@ from omlish import dataclasses as dc
 ##
 
 
-Ident: ta.TypeAlias = str
 Value: ta.TypeAlias = ta.Any
 
 
@@ -18,6 +17,13 @@ Value: ta.TypeAlias = ta.Any
 
 class Node(dc.Data, lang.Abstract):
     pass
+
+
+##
+
+
+class Ident(Node, lang.Final):
+    s: str
 
 
 ##
@@ -32,6 +38,10 @@ class Expr(Node, lang.Abstract):
 
 class Literal(Expr, lang.Final):
     v: Value
+
+
+class IdentExpr(Expr, lang.Final):
+    i: Ident
 
 
 #
@@ -112,13 +122,22 @@ class Select(Stmt, lang.Final):
 ##
 
 
+CanIdent: ta.TypeAlias = Ident | str
 CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | CanLiteral
+CanExpr: ta.TypeAlias = Expr | Ident | CanLiteral
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 CanRelation: ta.TypeAlias = Relation | Ident
 
 
 class Builder:
+    def ident(self, o: CanIdent) -> Ident:
+        if isinstance(o, Ident):
+            return o
+        elif isinstance(o, str):
+            return Ident(o)
+        else:
+            raise TypeError(o)
+
     def literal(self, o: CanLiteral) -> Literal:
         if isinstance(o, Literal):
             return o
@@ -130,6 +149,8 @@ class Builder:
     def expr(self, o: CanExpr) -> Expr:
         if isinstance(o, Expr):
             return o
+        elif isinstance(o, Ident):
+            return IdentExpr(o)
         else:
             return self.literal(o)
 
@@ -155,6 +176,12 @@ class Builder:
 
     def sub(self, *es: CanExpr) -> Expr:
         return self.binary(BinaryOp.SUB, *es)
+
+    def eq(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.EQ, *es)
+
+    def ne(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.NE, *es)
 
     #
 
@@ -207,7 +234,14 @@ Q = Builder()
 
 
 def _main() -> None:
-    print(Q.select([Q.literal(1)]))
+    print(Q.select(
+        [
+            Q.literal(1),
+        ],
+        wh=Q.and_(
+            Q.eq(1, 2),
+        )
+    ))
 
 
 if __name__ == '__main__':
