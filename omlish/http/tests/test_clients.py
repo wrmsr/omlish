@@ -1,8 +1,8 @@
 import pytest
 
-from ..client import HttpRequest
-from ..client import HttpxHttpClient
-from ..client import UrllibHttpClient
+from ..clients import HttpRequest
+from ..clients import HttpxHttpClient
+from ..clients import UrllibHttpClient
 
 
 @pytest.mark.online

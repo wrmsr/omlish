@@ -1,6 +1,6 @@
 from . import consts  # noqa
 
-from .client import (  # noqa
+from .clients import (  # noqa
     HttpClient,
     HttpClientError,
     HttpRequest,

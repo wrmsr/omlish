@@ -1,4 +1,4 @@
-"""
+r"""
 https://github.com/chr15m/aish/blob/main/aish
 
 curl "https://api.openai.com/v1/chat/completions" \
@@ -33,25 +33,6 @@ curl "https://api.openai.com/v1/chat/completions" \
   "temperature": 0.1,
   "top_p": 1
 }
-
-{
-  "host": "api.openai.com",
-  "accept-encoding": "gzip, deflate",
-  "connection": "keep-alive",
-  "accept": "application/json",
-  "content-type": "application/json",
-  "user-agent": "OpenAI/Python 1.52.0",
-  "x-stainless-lang": "python",
-  "x-stainless-package-version": "1.52.0",
-  "x-stainless-os": "MacOS",
-  "x-stainless-arch": "arm64",
-  "x-stainless-runtime": "CPython",
-  "x-stainless-runtime-version": "3.12.7",
-  "authorization": "Bearer ...",
-  "x-stainless-async": "false",
-  "x-stainless-retry-count": "0",
-  "content-length": "197"
-}
 """
 import urllib.request
 
@@ -80,19 +61,6 @@ def _main() -> None:
         hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
         hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(key.reveal()),
     }
-
-    for hs in [
-        {k.decode(): v.decode() for k, v in headers.items()},
-        {k.decode(): v for k, v in headers.items()},
-        headers,
-    ]:
-        with urllib.request.urlopen(urllib.request.Request(
-                url,
-                headers=hs,
-                data=data,
-            ),
-        ) as resp:
-            print(resp.read())
 
     print(hu.request(
         url,
