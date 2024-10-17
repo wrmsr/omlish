@@ -43,6 +43,28 @@ class IdentBuilder(Builder):
             raise TypeError(o)
 
 
+#
+
+
+class Name(Node, lang.Final):
+    ps: ta.Sequence[Ident]
+
+
+CanName: ta.TypeAlias = Name | str | ta.Sequence[CanIdent]
+
+
+class NameBuilder(IdentBuilder):
+    def name(self, o: CanName) -> Name:
+        if isinstance(o, Name):
+            return o
+        elif isinstance(o, str):
+            return Name([self.ident(o)])
+        elif isinstance(o, ta.Sequence):
+            return Name([self.ident(p) for p in o])
+        else:
+            raise TypeError(o)
+
+
 ##
 
 
@@ -54,12 +76,12 @@ class Literal(Expr, lang.Final):
     v: Value
 
 
-class IdentExpr(Expr, lang.Final):
-    i: Ident
+class NameExpr(Expr, lang.Final):
+    n: Name
 
 
 CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | Ident | CanLiteral
+CanExpr: ta.TypeAlias = Expr | Name | CanLiteral
 
 
 class ExprBuilder(Builder):
@@ -74,8 +96,8 @@ class ExprBuilder(Builder):
     def expr(self, o: CanExpr) -> Expr:
         if isinstance(o, Expr):
             return o
-        elif isinstance(o, Ident):
-            return IdentExpr(o)
+        elif isinstance(o, Name):
+            return NameExpr(o)
         else:
             return self.literal(o)
 
@@ -196,19 +218,19 @@ class Relation(Node, lang.Abstract):
 
 
 class Table(Relation, lang.Final):
-    n: Ident
+    n: Name
     a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
-CanRelation: ta.TypeAlias = Relation | CanIdent
+CanRelation: ta.TypeAlias = Relation | CanName
 
 
-class RelationBuilder(IdentBuilder):
+class RelationBuilder(NameBuilder):
     def relation(self, o: CanRelation) -> Relation:
         if isinstance(o, Relation):
             return o
         else:
-            return Relation(self.ident(o))
+            return Relation(self.name(o))
 
 
 ##
@@ -228,7 +250,7 @@ class Select(Stmt, lang.Final):
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 
 
-class SelectBuilder(RelationBuilder, ExprBuilder):
+class SelectBuilder(ExprBuilder, RelationBuilder):
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
@@ -253,13 +275,17 @@ class SelectBuilder(RelationBuilder, ExprBuilder):
 
 class StdBuilder(
     SelectBuilder,
-    RelationBuilder,
     StmtBuilder,
+
     MultiBuilder,
     BinaryBuilder,
     UnaryBuilder,
     ExprBuilder,
+
+    RelationBuilder,
+    NameBuilder,
     IdentBuilder,
+
     Builder,
 ):
     pass
