@@ -135,7 +135,7 @@
     "module": ".tools.gittools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/gittools.py",
-    "line": 74,
+    "line": 124,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "git",
