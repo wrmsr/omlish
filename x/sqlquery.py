@@ -228,7 +228,7 @@ class Select(Stmt, lang.Final):
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
 
 
-class SelectBuilder(ExprBuilder):
+class SelectBuilder(RelationBuilder, ExprBuilder):
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
@@ -251,7 +251,24 @@ class SelectBuilder(ExprBuilder):
 ##
 
 
-Q = Builder()
+class StdBuilder(
+    SelectBuilder,
+    RelationBuilder,
+    StmtBuilder,
+    MultiBuilder,
+    BinaryBuilder,
+    UnaryBuilder,
+    ExprBuilder,
+    IdentBuilder,
+    Builder,
+):
+    pass
+
+
+##
+
+
+Q = StdBuilder()
 
 
 def _main() -> None:
