@@ -92,6 +92,14 @@ class Unary(Expr, lang.Final):
     v: Expr
 
 
+class UnaryBuilder(ExprBuilder):
+    def unary(self, op: UnaryOp, v: CanExpr) -> Unary:
+        return Unary(op, self.expr(v))
+
+    def not_(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOp.NOT, v)
+
+
 #
 
 
@@ -108,6 +116,28 @@ class Binary(Expr, lang.Final):
     l: Expr
     r: Expr
 
+
+class BinaryBuilder(ExprBuilder):
+    def binary(self, op: BinaryOp, *es: CanExpr) -> Expr:
+        check.not_empty(es)
+        l = self.expr(es[0])
+        for r in es[1:]:
+            l = Binary(op, l, self.expr(r))
+        return l
+
+    def add(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.ADD, *es)
+
+    def sub(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.SUB, *es)
+
+    def eq(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.EQ, *es)
+
+    def ne(self, *es: CanExpr) -> Expr:
+        return self.binary(BinaryOp.NE, *es)
+
+
 #
 
 
@@ -121,6 +151,21 @@ class Multi(Expr, lang.Final):
     es: ta.Sequence[Expr]
 
 
+class MultiBuilder(ExprBuilder):
+    def multi(self, op: MultiOp, *es: CanExpr) -> Expr:
+        check.not_empty(es)
+        if len(es) == 1:
+            return self.expr(es[0])
+        else:
+            return Multi(op, [self.expr(e) for e in es])
+
+    def and_(self, *es: CanExpr) -> Expr:
+        return self.multi(MultiOp.AND, *es)
+
+    def or_(self, *es: CanExpr) -> Expr:
+        return self.multi(MultiOp.OR, *es)
+
+
 ##
 
 
@@ -130,6 +175,17 @@ class Stmt(Node, lang.Abstract):
 
 class ExprStmt(Stmt, lang.Final):
     pass
+
+
+CanStmt: ta.TypeAlias = Stmt | CanExpr
+
+
+class StmtBuilder(ExprBuilder):
+    def stmt(self, o: CanStmt) -> Stmt:
+        if isinstance(o, Stmt):
+            return o
+        else:
+            return ExprStmt(self.expr(o))
 
 
 #
@@ -165,48 +221,9 @@ CanRelation: ta.TypeAlias = Relation | Ident
 class StdBuilder:
 
     #
-
-    def unary(self, op: UnaryOp, v: CanExpr) -> Unary:
-        return Unary(op, self.expr(v))
-
-    def not_(self, v: CanExpr) -> Unary:
-        return self.unary(UnaryOp.NOT, v)
-
     #
 
-    def binary(self, op: BinaryOp, *es: CanExpr) -> Expr:
-        check.not_empty(es)
-        l = self.expr(es[0])
-        for r in es[1:]:
-            l = Binary(op, l, self.expr(r))
-        return l
-
-    def add(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.ADD, *es)
-
-    def sub(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.SUB, *es)
-
-    def eq(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.EQ, *es)
-
-    def ne(self, *es: CanExpr) -> Expr:
-        return self.binary(BinaryOp.NE, *es)
-
     #
-
-    def multi(self, op: MultiOp, *es: CanExpr) -> Expr:
-        check.not_empty(es)
-        if len(es) == 1:
-            return self.expr(es[0])
-        else:
-            return Multi(op, [self.expr(e) for e in es])
-
-    def and_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOp.AND, *es)
-
-    def or_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOp.OR, *es)
 
     #
 
