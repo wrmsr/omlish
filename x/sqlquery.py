@@ -222,15 +222,22 @@ class Table(Relation, lang.Final):
     a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
-CanRelation: ta.TypeAlias = Relation | CanName
+CanTable: ta.TypeAlias = Table | CanName
+CanRelation: ta.TypeAlias = Relation | CanTable
 
 
 class RelationBuilder(NameBuilder):
+    def table(self, n: CanTable) -> Table:
+        if isinstance(n, Table):
+            return n
+        else:
+            return Table(self.name(n))
+
     def relation(self, o: CanRelation) -> Relation:
         if isinstance(o, Relation):
             return o
         else:
-            return Relation(self.name(o))
+            return self.table(o)
 
 
 ##
@@ -260,8 +267,8 @@ class SelectBuilder(ExprBuilder, RelationBuilder):
     def select(
             self,
             its: ta.Sequence[CanSelectItem],
-            fr: Relation | None = None,
-            wh: Expr | None = None,
+            fr: CanRelation | None = None,
+            wh: CanExpr | None = None,
     ) -> Select:
         return Select(
             [self.select_item(i) for i in its],
@@ -302,6 +309,7 @@ def _main() -> None:
         [
             Q.literal(1),
         ],
+        'foo',
         wh=Q.and_(
             Q.eq(1, 2),
         )
