@@ -1,6 +1,7 @@
 """
 TODO:
- - Enum
+ - Rewrite lol
+ - Enum - enforce Abstract or Final
 """
 import abc
 import collections
@@ -13,6 +14,7 @@ from .api import field  # noqa
 from .params import MetaclassParams
 from .params import get_metaclass_params
 from .params import get_params
+from .params import get_params_extras
 
 
 T = ta.TypeVar('T')
@@ -34,22 +36,35 @@ def confer_kwargs(
     for base in bases:
         if not dc.is_dataclass(base):
             continue
+
         if not (bmp := get_metaclass_params(base)).confer:
             continue
+
         for ck in bmp.confer:
             if ck in kwargs:
                 continue
+
             if ck in (
                     'frozen',
                     'generic_init',
                     'kw_only',
                     'reorder',
             ):
-                confer_kwarg(out, ck, get_params(base).frozen)
-            elif ck == 'confer':
-                confer_kwarg(out, 'confer', bmp.confer)
+                confer_kwarg(out, ck, getattr(get_params(base), ck))
+
+            elif ck in (
+                    'cache_hash',
+            ):
+                confer_kwarg(out, ck, getattr(get_params_extras(base), ck))
+
+            elif ck in (
+                    'confer',
+            ):
+                confer_kwarg(out, ck, getattr(bmp, ck))
+
             else:
                 raise KeyError(ck)
+
     return out
 
 
@@ -112,6 +127,7 @@ class Frozen(
     frozen=True,
     confer=frozenset([
         'frozen',
+        'cache_hash',
         'confer',
     ]),
 ):
@@ -124,6 +140,7 @@ class Box(
     generic_init=True,
     confer=frozenset([
         'frozen',
+        'cache_hash',
         'generic_init',
         'confer',
     ]),

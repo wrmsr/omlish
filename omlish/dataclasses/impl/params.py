@@ -1,5 +1,6 @@
 """
-Field:
+@dc.dataclass(frozen=True)
+class Field_:
     name: str | None = None
     type: Any = None
     default: Any | MISSING = MISSING
@@ -14,7 +15,8 @@ Field:
     _field_type: Any = None
 
 
-Params:
+@dc.dataclass(frozen=True)
+class Params_:
     init: bool = True
     repr: bool = True
     eq: bool = True
