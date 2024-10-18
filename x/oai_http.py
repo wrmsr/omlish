@@ -22,9 +22,10 @@ def _main() -> None:
                         content='Hi!',
                     ),
                 ],
+                stream=True,
             )).encode('utf-8'),
     )) as resp:
-        print(resp.read())
+        print(resp.read().decode('utf-8'))
 
 
 if __name__ == '__main__':
