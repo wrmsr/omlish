@@ -1,3 +1,8 @@
+"""
+TODO:
+ - case
+ - cast / ::
+"""
 import typing as ta
 
 from ... import lang

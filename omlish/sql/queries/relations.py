@@ -1,3 +1,8 @@
+"""
+TODO:
+ - join
+ - subquery
+"""
 import typing as ta
 
 from ... import dataclasses as dc
