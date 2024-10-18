@@ -1,3 +1,7 @@
+"""
+TODO:
+ - point validate / check exceptions to lambdas
+"""
 import dataclasses as dc
 import types
 import typing as ta
