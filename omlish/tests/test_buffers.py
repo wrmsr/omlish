@@ -2,12 +2,13 @@
 https://github.com/python-trio/trio/issues/796 :|
 
 TODO:
- - tell
- - peek
+ - diff on_full behavior depending on keep_delim
 """
 import dataclasses as dc
 import io
 import typing as ta
+
+from .. import check
 
 
 @dc.dataclass(frozen=True)
@@ -49,11 +50,31 @@ class DelimitingBuffer:
 
         self._buf: io.BytesIO | None = io.BytesIO()
 
+    @property
+    def is_closed(self):
+        return self._buf is None
+
+    def tell(self) -> int:
+        return self._buf.tell()
+
+    def peek(self) -> bytes:
+        return self._buf.getvalue()
+
     def _find_delim(self, data: bytes | bytearray, i: int) -> int | None:
         for d in self._delimiters:
             if (p := data.find(d, i)) >= 0:
                 return p
         return None
+
+    def _append_and_reset(self, chunk: bytes) -> bytes:
+        buf = check.not_none(self._buf)
+        if not buf.tell():
+            return chunk
+
+        buf.write(chunk)
+        ret = buf.getvalue()
+        buf.seek(0)
+        return ret
 
     def feed(self, data: bytes | bytearray) -> ta.Generator[bytes, None, None]:
         if (buf := self._buf) is None:
@@ -84,13 +105,7 @@ class DelimitingBuffer:
             if self._keep_ends:
                 p = n
 
-            c = data[i:p]
-            if buf.tell():
-                buf.write(c)
-                yield buf.getvalue()
-                buf.seek(0)
-            else:
-                yield c
+            yield self._append_and_reset(data[i:p])
 
             i = n
 
@@ -103,8 +118,8 @@ class DelimitingBuffer:
 
         while i < l:
             remaining_data_len = l - i
-            required_capacity = remaining_data_len + buf.tell()
-            if required_capacity < self._max_size:
+            remaining_buf_capacity = self._max_size - buf.tell()
+            if remaining_data_len <= remaining_buf_capacity:
                 buf.write(data[i:])
                 return
 
@@ -112,7 +127,11 @@ class DelimitingBuffer:
                 raise DelimitingBufferFullError(self)
 
             elif self._on_full == 'yield':
-                raise NotImplementedError
+                p = i + remaining_buf_capacity
+
+                yield self._append_and_reset(data[i:p])
+
+                i = p + 1
 
             else:
                 raise ValueError(f'Unknown on_full value: {self._on_full!r}')
@@ -134,4 +153,7 @@ def test_delimiting_buffer():
 
     assert run(b'line1\nline2\nline3\n') == [[b'line1', b'line2', b'line3']]
     assert run(b'line1 line2 line3', b'') == [[], [b'line1 line2 line3']]
+    assert run(b'12345678901234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
+    assert run(b'12345678901234567890', max_size=10, on_full='yield') == [[b'1234567890', b'1234567890']]
     assert run(b'1234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
+    assert run(b'1234567890', max_size=10, on_full='yield') == [[b'1234567890']]
