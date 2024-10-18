@@ -16,6 +16,8 @@ class UnaryOp(dc.Frozen, lang.Final, eq=False):
 
 class UnaryOps(lang.Namespace):
     NOT = UnaryOp('not', OpKind.CMP)
+    IS_NULL = UnaryOp('is_null', OpKind.CMP)
+    IS_NOT_NULL = UnaryOp('is_not_null', OpKind.CMP)
 
     POS = UnaryOp('pos', OpKind.ARITH)
     NEG = UnaryOp('neg', OpKind.ARITH)
@@ -34,6 +36,12 @@ class UnaryBuilder(ExprBuilder):
 
     def not_(self, v: CanExpr) -> Unary:
         return self.unary(UnaryOps.NOT, v)
+
+    def is_null(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOps.IS_NULL, v)
+
+    def is_not_null(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOps.IS_NOT_NULL, v)
 
     #
 
