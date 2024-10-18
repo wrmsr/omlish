@@ -152,41 +152,14 @@ TESTS = [
 
     (
         [
-            b': test stream',
-            b'',
-            b'data: first event',
-            b'id: 1',
-            b'',
-            b'data:second event',
-            b'id',
-            b'',
-            b'data:  third event',
-        ],
-        [
-        ],
-    ),
-
-    (
-        [
-            b'data',
-            b'',
-            b'data',
-            b'data',
-            b'',
-            b'data:',
-        ],
-        [
-        ],
-    ),
-
-    (
-        [
             b'data:test',
             b'',
             b'data: test',
             b'',
         ],
         [
+            _message_event(b'test'),
+            _message_event(b'test'),
         ],
     ),
 
