@@ -3,7 +3,7 @@ https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 """
 import typing as ta
 
-from omdev.cache import data as daca
+from omdev.cache import data as dcache
 from omlish import lang
 from omlish.testing import pytest as ptu
 
@@ -18,7 +18,7 @@ else:
 
 
 FASHION_MNIST_SPECS = {
-    file: daca.UrlSpec(
+    file: dcache.UrlSpec(
         f'https://ossci-datasets.s3.amazonaws.com/mnist/{file}',
     )
     for file, md5 in [  # noqa
@@ -33,7 +33,7 @@ FASHION_MNIST_SPECS = {
 @ptu.skip.if_cant_import('torchvision')
 def test_torch():
     for spec in FASHION_MNIST_SPECS.values():
-        print(daca.default().get(spec))
+        print(dcache.default().get(spec))
 
     # root = '.cache/torch_data'
 

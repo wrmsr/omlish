@@ -96,7 +96,7 @@ def _default_exception_factory(exc_cls: type[Exception], *args, **kwargs) -> Exc
 _EXCEPTION_FACTORY = _default_exception_factory
 
 
-class _Args:
+class _ArgsKwargs:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -106,7 +106,7 @@ def _raise(
         exception_type: type[Exception],
         default_message: str,
         message: Message,
-        ak: _Args = _Args(),
+        ak: _ArgsKwargs = _ArgsKwargs(),
         *,
         render_fmt: str | None = None,
 ) -> ta.NoReturn:
@@ -159,7 +159,7 @@ def isinstance(v: ta.Any, spec: type[T] | tuple, msg: Message = None) -> T:  # n
             TypeError,
             'Must be instance',
             msg,
-            _Args(v, spec),
+            _ArgsKwargs(v, spec),
             render_fmt='not isinstance(%s, %s)',
         )
 
@@ -179,7 +179,7 @@ def cast(v: ta.Any, cls: type[T], msg: Message = None) -> T:  # noqa
             TypeError,
             'Must be instance',
             msg,
-            _Args(v, cls),
+            _ArgsKwargs(v, cls),
         )
 
     return v
@@ -198,7 +198,7 @@ def not_isinstance(v: T, spec: ta.Any, msg: Message = None) -> T:  # noqa
             TypeError,
             'Must not be instance',
             msg,
-            _Args(v, spec),
+            _ArgsKwargs(v, spec),
             render_fmt='isinstance(%s, %s)',
         )
 
@@ -221,7 +221,7 @@ def issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noq
             TypeError,
             'Must be subclass',
             msg,
-            _Args(v, spec),
+            _ArgsKwargs(v, spec),
             render_fmt='not issubclass(%s, %s)',
         )
 
@@ -234,7 +234,7 @@ def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  #
             TypeError,
             'Must not be subclass',
             msg,
-            _Args(v, spec),
+            _ArgsKwargs(v, spec),
             render_fmt='issubclass(%s, %s)',
         )
 
@@ -250,7 +250,7 @@ def in_(v: T, c: ta.Container[T], msg: Message = None) -> T:
             ValueError,
             'Must be in',
             msg,
-            _Args(v, c),
+            _ArgsKwargs(v, c),
             render_fmt='%s not in %s',
         )
 
@@ -263,7 +263,7 @@ def not_in(v: T, c: ta.Container[T], msg: Message = None) -> T:
             ValueError,
             'Must not be in',
             msg,
-            _Args(v, c),
+            _ArgsKwargs(v, c),
             render_fmt='%s in %s',
         )
 
@@ -276,7 +276,7 @@ def empty(v: SizedT, msg: Message = None) -> SizedT:
             ValueError,
             'Must be empty',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -294,7 +294,7 @@ def iterempty(v: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
             ValueError,
             'Must be empty',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -307,7 +307,7 @@ def not_empty(v: SizedT, msg: Message = None) -> SizedT:
             ValueError,
             'Must not be empty',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -321,7 +321,7 @@ def unique(it: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
             ValueError,
             'Must be unique',
             msg,
-            _Args(it, dupes),
+            _ArgsKwargs(it, dupes),
         )
 
     return it
@@ -335,7 +335,7 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
             ValueError,
             'Must be single',
             message,
-            _Args(obj),
+            _ArgsKwargs(obj),
             render_fmt='%s',
         )
 
@@ -358,7 +358,7 @@ def opt_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
         ValueError,
         'Must be empty or single',
         message,
-        _Args(obj),
+        _ArgsKwargs(obj),
         render_fmt='%s',
     )
 
@@ -372,7 +372,7 @@ def none(v: ta.Any, msg: Message = None) -> None:
             ValueError,
             'Must be None',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -383,7 +383,7 @@ def not_none(v: T | None, msg: Message = None) -> T:
             ValueError,
             'Must not be None',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -399,7 +399,7 @@ def equal(v: T, o: ta.Any, msg: Message = None) -> T:
             ValueError,
             'Must be equal',
             msg,
-            _Args(v, o),
+            _ArgsKwargs(v, o),
             render_fmt='%s != %s',
         )
 
@@ -412,7 +412,7 @@ def is_(v: T, o: ta.Any, msg: Message = None) -> T:
             ValueError,
             'Must be the same',
             msg,
-            _Args(v, o),
+            _ArgsKwargs(v, o),
             render_fmt='%s is not %s',
         )
 
@@ -425,7 +425,7 @@ def is_not(v: T, o: ta.Any, msg: Message = None) -> T:
             ValueError,
             'Must not be the same',
             msg,
-            _Args(v, o),
+            _ArgsKwargs(v, o),
             render_fmt='%s is %s',
         )
 
@@ -438,7 +438,7 @@ def callable(v: T, msg: Message = None) -> T:  # noqa
             TypeError,
             'Must be callable',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -451,7 +451,7 @@ def non_empty_str(v: str | None, msg: Message = None) -> str:
             ValueError,
             'Must be non-empty str',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -464,7 +464,7 @@ def replacing(expected: ta.Any, old: ta.Any, new: T, msg: Message = None) -> T:
             ValueError,
             'Must be replacing',
             msg,
-            _Args(expected, old, new),
+            _ArgsKwargs(expected, old, new),
             render_fmt='%s -> %s -> %s',
         )
 
@@ -477,7 +477,7 @@ def replacing_none(old: ta.Any, new: T, msg: Message = None) -> T:
             ValueError,
             'Must be replacing None',
             msg,
-            _Args(old, new),
+            _ArgsKwargs(old, new),
             render_fmt='%s -> %s',
         )
 
@@ -493,7 +493,7 @@ def arg(v: bool, msg: Message = None) -> None:
             RuntimeError,
             'Argument condition not met',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
 
@@ -504,6 +504,6 @@ def state(v: bool, msg: Message = None) -> None:
             RuntimeError,
             'State condition not met',
             msg,
-            _Args(v),
+            _ArgsKwargs(v),
             render_fmt='%s',
         )
