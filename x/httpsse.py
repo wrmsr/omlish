@@ -2,6 +2,7 @@
 TODO:
  - end-of-line   = ( cr lf / cr / lf )
 """
+import functools
 import string
 import typing as ta
 
@@ -25,7 +26,7 @@ SseEventId: ta.TypeAlias = bytes
 class SseEvent(SseDecoderOutput, lang.Final):
     type: bytes
     data: bytes
-    last_id: SseEventId | None = None
+    last_id: SseEventId = dc.xfield(b'', repr_fn=dc.truthy_repr)
 
 
 _DIGIT_BYTES = string.digits.encode('ascii')
@@ -38,7 +39,7 @@ class SseDecoder:
         super().__init__()
 
         self._reset()
-        self._last_event_id: bytes | None = None
+        self._last_event_id = b''
         self._reconnection_time: int | None = None
 
     _event_type: bytes
@@ -84,72 +85,93 @@ class SseDecoder:
         return e
 
     def process_line(self, line: bytes) -> ta.Iterable[SseDecoderOutput]:
+        if b'\r' in line or b'\n' in line:
+            raise ValueError(line)
+
         if not line:
             yield self._dispatch_event()
 
-        elif line[0] == b':':
+        elif line[0] == b':'[0]:
             yield SseComment(line)
 
         elif (c := line.find(b':')) >= 0:
-            if len(line) > c + 1 and line[c + 1] == b' '[0]:
-                c += 1
-            self._process_field(line[:c - 1], line[c + 1:])
+            d = c + 1
+            if len(line) > d and line[d] == b' '[0]:
+                d += 1
+            self._process_field(line[:c], line[d:])
 
         else:
             self._process_field(line, b'')
 
 
+_message_event = functools.partial(SseEvent, b'message')
+
+
 TESTS = [
-    # [
-    #     b'data: YHOO',
-    #     b'data: +2',
-    #     b'data: 10',
-    #     b'',
-    # ],
-    # [
-    #     b': test stream',
-    #     b'',
-    #     b'data: first event',
-    #     b'id: 1',
-    #     b'',
-    #     b'data:second event',
-    #     b'id',
-    #     b'',
-    #     b'data:  third event',
-    # ],
-    # [
-    #     b'data',
-    #     b'',
-    #     b'data ',
-    #     b'data ',
-    #     b'',
-    #     b'data:',
-    # ],
-    # [
-    #     b': test stream',
-    #     b'',
-    #     b'data: first event',
-    #     b'id: 1',
-    #     b'',
-    #     b'data:second event',
-    #     b'id',
-    #     b'',
-    #     b'data:  third event',
-    # ],
-    # [
-    #     b'data',
-    #     b'',
-    #     b'data',
-    #     b'data',
-    #     b'',
-    #     b'data:',
-    # ],
-    # [
-    #     b'data:test',
-    #     b'',
-    #     b'data: test',
-    #     b'',
-    # ],
+    (
+        [
+            b'data: YHOO',
+            b'data: +2',
+            b'data: 10',
+            b'',
+        ],
+        [
+            _message_event(b'YHOO\n+2\n10'),
+        ],
+    ),
+    (
+        [
+            b': test stream',
+            # b'',  # FIXME: ???
+            b'data: first event',
+            b'id: 1',
+            b'',
+            b'data:second event',
+            b'id',
+            b'',
+            b'data:  third event',
+            b'',
+        ],
+        [
+            SseComment(b': test stream'),
+            _message_event(b'first event', last_id=b'1'),
+            _message_event(b'second event'),
+            _message_event(b' third event'),
+        ],
+    ),
+    [
+        b'data',
+        b'',
+        b'data ',
+        b'data ',
+        b'',
+        b'data:',
+    ],
+    [
+        b': test stream',
+        b'',
+        b'data: first event',
+        b'id: 1',
+        b'',
+        b'data:second event',
+        b'id',
+        b'',
+        b'data:  third event',
+    ],
+    [
+        b'data',
+        b'',
+        b'data',
+        b'data',
+        b'',
+        b'data:',
+    ],
+    [
+        b'data:test',
+        b'',
+        b'data: test',
+        b'',
+    ],
     [
         b'event: add',
         b'data: 73857293',
@@ -165,15 +187,16 @@ TESTS = [
 
 
 def _main() -> None:
-    for test in TESTS:
+    for test, expected in TESTS:
         dec = SseDecoder()
-        events = [
+        output = [
             event
             for line in test
             for event in dec.process_line(line)
         ]
-        print(events)
+        print(output)
         print()
+        assert output == expected
 
 
 if __name__ == '__main__':
