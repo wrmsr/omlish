@@ -22,9 +22,9 @@ class SelectItem(Node, lang.Final):
 
 
 class Select(Stmt, lang.Final):
-    its: ta.Sequence[SelectItem] = dc.xfield(coerce=tuple)
-    fr: Relation | None = dc.xfield(None, repr_fn=dc.opt_repr)
-    wh: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    items: ta.Sequence[SelectItem] = dc.xfield(coerce=tuple)
+    from_: Relation | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    where: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
@@ -39,12 +39,12 @@ class SelectBuilder(ExprBuilder, RelationBuilder):
 
     def select(
             self,
-            its: ta.Sequence[CanSelectItem],
-            fr: CanRelation | None = None,
-            wh: CanExpr | None = None,
+            items: ta.Sequence[CanSelectItem],
+            from_: CanRelation | None = None,
+            where: CanExpr | None = None,
     ) -> Select:
         return Select(
-            [self.select_item(i) for i in its],
-            fr=self.relation(fr) if fr is not None else None,
-            wh=self.expr(wh) if wh is not None else None,
+            [self.select_item(i) for i in items],
+            from_=self.relation(from_) if from_ is not None else None,
+            where=self.expr(where) if where is not None else None,
         )

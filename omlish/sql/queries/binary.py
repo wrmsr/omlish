@@ -1,6 +1,8 @@
+import enum
+
 from ... import check
+from ... import dataclasses as dc
 from ... import lang
-from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
@@ -9,16 +11,23 @@ from .exprs import ExprBuilder
 ##
 
 
-class BinaryOp(Node, lang.Final):
+class BinaryOpKind(enum.Enum):
+    ARITH = enum.auto()
+    BIT = enum.auto()
+    CMP = enum.auto()
+
+
+class BinaryOp(dc.Frozen, lang.Final, eq=False):
     name: str
+    kind: BinaryOpKind
 
 
 class BinaryOps(lang.Namespace):
-    ADD = BinaryOp('add')
-    SUB = BinaryOp('sub')
+    ADD = BinaryOp('add', BinaryOpKind.ARITH)
+    SUB = BinaryOp('sub', BinaryOpKind.ARITH)
 
-    EQ = BinaryOp('eq')
-    NE = BinaryOp('ne')
+    EQ = BinaryOp('eq', BinaryOpKind.CMP)
+    NE = BinaryOp('ne', BinaryOpKind.CMP)
 
 
 class Binary(Expr, lang.Final):

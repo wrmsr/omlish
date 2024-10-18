@@ -3,7 +3,6 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
@@ -12,7 +11,7 @@ from .exprs import ExprBuilder
 ##
 
 
-class MultiOp(Node, lang.Final):
+class MultiOp(dc.Frozen, lang.Final, eq=False):
     name: str
 
 
