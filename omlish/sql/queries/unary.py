@@ -17,6 +17,9 @@ class UnaryOp(dc.Frozen, lang.Final, eq=False):
 class UnaryOps(lang.Namespace):
     NOT = UnaryOp('not', OpKind.CMP)
 
+    POS = UnaryOp('pos', OpKind.ARITH)
+    NEG = UnaryOp('neg', OpKind.ARITH)
+
 
 class Unary(Expr, lang.Final):
     op: UnaryOp
@@ -27,5 +30,15 @@ class UnaryBuilder(ExprBuilder):
     def unary(self, op: UnaryOp, v: CanExpr) -> Unary:
         return Unary(op, self.expr(v))
 
+    #
+
     def not_(self, v: CanExpr) -> Unary:
         return self.unary(UnaryOps.NOT, v)
+
+    #
+
+    def pos(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOps.POS, v)
+
+    def neg(self, v: CanExpr) -> Unary:
+        return self.unary(UnaryOps.NEG, v)
