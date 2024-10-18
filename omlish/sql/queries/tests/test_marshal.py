@@ -1,7 +1,10 @@
 from .. import Q
+from .... import marshal as msh
+from ....formats import json
+from ..base import Node
 
 
-def test_query():
+def test_marshal():
     query = Q.select(
         [
             1,
@@ -13,4 +16,4 @@ def test_query():
         ),
     )
 
-    print(query)
+    print(json.dumps_pretty(msh.marshal(query, Node)))

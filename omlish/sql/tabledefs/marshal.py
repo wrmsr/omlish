@@ -10,10 +10,7 @@ def _install_poly(cls: type) -> None:
     msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
 
 
-@lang.cached_function
+@lang.static_init
 def _install_standard_marshalling() -> None:
     _install_poly(Dtype)
     _install_poly(Element)
-
-
-_install_standard_marshalling()
