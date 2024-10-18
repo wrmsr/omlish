@@ -63,9 +63,11 @@ class StandardRenderer(Renderer):
 
     @Renderer.render.register
     def render_binary(self, o: Binary) -> None:
+        self._out.write('(')
         self.render(o.l)
         self._out.write(f' {self.BINARY_OP_TO_STR[o.op]} ')
         self.render(o.r)
+        self._out.write(')')
 
     # exprs
 
