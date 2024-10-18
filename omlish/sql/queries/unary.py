@@ -3,6 +3,7 @@ from ... import lang
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
+from .ops import OpKind
 
 
 ##
@@ -10,10 +11,11 @@ from .exprs import ExprBuilder
 
 class UnaryOp(dc.Frozen, lang.Final, eq=False):
     name: str
+    kind: OpKind
 
 
 class UnaryOps(lang.Namespace):
-    NOT = UnaryOp('not')
+    NOT = UnaryOp('not', OpKind.CMP)
 
 
 class Unary(Expr, lang.Final):

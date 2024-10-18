@@ -1,3 +1,4 @@
+import enum
 import typing as ta
 
 from ... import check
@@ -11,30 +12,26 @@ from .exprs import ExprBuilder
 ##
 
 
-class MultiOp(dc.Frozen, lang.Final, eq=False):
-    name: str
-
-
-class MultiOps(lang.Namespace):
-    AND = MultiOp('and')
-    OR = MultiOp('or')
+class MultiKind(enum.Enum):
+    AND = enum.auto()
+    OR = enum.auto()
 
 
 class Multi(Expr, lang.Final):
-    op: MultiOp
+    k: MultiKind
     es: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
 
 
 class MultiBuilder(ExprBuilder):
-    def multi(self, op: MultiOp, *es: CanExpr) -> Expr:
+    def multi(self, k: MultiKind, *es: CanExpr) -> Expr:
         check.not_empty(es)
         if len(es) == 1:
             return self.expr(es[0])
         else:
-            return Multi(op, [self.expr(e) for e in es])
+            return Multi(k, [self.expr(e) for e in es])
 
     def and_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOps.AND, *es)
+        return self.multi(MultiKind.AND, *es)
 
     def or_(self, *es: CanExpr) -> Expr:
-        return self.multi(MultiOps.OR, *es)
+        return self.multi(MultiKind.OR, *es)
