@@ -29,14 +29,17 @@ from .idents import (  # noqa
 from .multi import (  # noqa
     Multi,
     MultiBuilder,
-    MultiOp,
-    MultiOps,
+    MultiKind,
 )
 
 from .names import (  # noqa
     CanName,
     Name,
     NameBuilder,
+)
+
+from .ops import (  # noqa
+    OpKind,
 )
 
 from .relations import (  # noqa
