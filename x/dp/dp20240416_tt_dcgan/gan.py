@@ -9,13 +9,13 @@ DCGAN Tutorial
 
 import os.path
 
-from omdev.cache import data as daca
+from omdev.cache import data as dcache
 
 
-dataroot = os.path.join(daca.default().get(daca.UrlSpec(
+dataroot = os.path.join(dcache.default().get(dcache.UrlSpec(
     'https://cseweb.ucsd.edu/~weijian/static/datasets/celeba/img_align_celeba.zip',
     # 'https://huggingface.co/datasets/HK83/Anime/resolve/main/img_align_celeba.zip',
-    actions=[daca.ExtractAction('img_align_celeba.zip')],
+    actions=[dcache.ExtractAction('img_align_celeba.zip')],
 )), 'img_align_celeba')
 
 

@@ -12,13 +12,14 @@ CanHttpHeaders: ta.TypeAlias = ta.Union[
 
     ta.Mapping[str, str],
     ta.Mapping[str, ta.Sequence[str]],
+    ta.Mapping[str, str | ta.Sequence[str]],
 
     ta.Mapping[bytes, bytes],
     ta.Mapping[bytes, ta.Sequence[bytes]],
+    ta.Mapping[bytes, bytes | ta.Sequence[bytes]],
 
     ta.Mapping[StrOrBytes, StrOrBytes],
     ta.Mapping[StrOrBytes, ta.Sequence[StrOrBytes]],
-
     ta.Mapping[StrOrBytes, StrOrBytes | ta.Sequence[StrOrBytes]],
 
     ta.Sequence[tuple[str, str]],
@@ -153,11 +154,11 @@ class HttpHeaders:
         ...
 
     @ta.overload
-    def __getitem__(self, item: int) -> StrOrBytes:
+    def __getitem__(self, item: int) -> tuple[StrOrBytes, StrOrBytes]:
         ...
 
     @ta.overload
-    def __getitem__(self, item: slice) -> ta.Sequence[StrOrBytes]:
+    def __getitem__(self, item: slice) -> ta.Sequence[tuple[StrOrBytes, StrOrBytes]]:
         ...
 
     def __getitem__(self, item):

@@ -1,17 +1,17 @@
 from omlish import cached
-from omdev.cache import data as dac
+from omdev.cache import data as dcache
 
 
-TEST_DATA_SPEC = dac.UrlSpec(
+TEST_DATA_SPEC = dcache.UrlSpec(
     'https://duckdb.org/data/iceberg_data.zip',
     headers={'User-Agent': 'Wget/1.24.5'},
-    actions=[dac.ExtractAction('iceberg_data.zip')],
+    actions=[dcache.ExtractAction('iceberg_data.zip')],
 )
 
 
 @cached.function(lock=True)
 def get_test_data_dir() -> str:
-    return dac.default().get(TEST_DATA_SPEC)
+    return dcache.default().get(TEST_DATA_SPEC)
 
 
 def _main():
