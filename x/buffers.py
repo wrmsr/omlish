@@ -51,25 +51,40 @@ class DelimitingBuffer:
                 yield buf.getvalue()
             return
 
+        l = len(data)
         i = 0
-        while i < len(data):
-            if (p := self._find_delim(data, i)) is not None:
-                if self._keep_ends:
-                    n = p
-                    p += 1
-                else:
-                    n = p + 1
-                c = data[i:p]
-                if buf.tell():
-                    buf.write(c)
-                    yield buf.getvalue()
-                    buf.seek(0)
-                else:
-                    yield c
-                i = n
+        while i < l:
+            if (p := self._find_delim(data, i)) is None:
+                break
 
+            if self._keep_ends:
+                n = p
+                p += 1
             else:
-                raise NotImplementedError
+                n = p + 1
+
+            c = data[i:p]
+            if buf.tell():
+                buf.write(c)
+                yield buf.getvalue()
+                buf.seek(0)
+            else:
+                yield c
+
+            i = n
+
+        if i >= l:
+            return
+
+        if self._max_size is None:
+            self._buf.write(data[i:])
+            return
+
+        while i < l:
+            r = l - i
+            raise NotImplementedError
+
+        raise NotImplementedError
 
 
 def test_delimiting_buffer():
