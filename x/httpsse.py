@@ -45,7 +45,6 @@ class SseDecoder:
     def _reset(self) -> None:
         self._event_type = None
         self._data = []
-        self._last_event_id = None
 
     def _process_field(self, name: bytes, value: bytes) -> None:
         if name == b'event':
@@ -63,12 +62,28 @@ class SseDecoder:
             if all(c in _DIGIT_BYTES for c in value):
                 self._reconnection_time = int(value)
 
-    def _dispatch_event(self) -> ta.Sequence[SseEvent]:
-        raise NotImplementedError
+    def _dispatch_event(self) -> SseEvent:
+        if self._data:
+            data = b''.join([
+                *(self._data[:-1] if len(self._data) > 1 else []),
+                (last[:-1] if (last := self._data[-1]).endswith(b'\n') else last),
+            ])
+        else:
+            data = b''
+
+        e = SseEvent(
+            type=self._event_type,
+            data=data,
+            last_id=self._last_event_id,
+        )
+
+        self._reset()
+
+        return e
 
     def process_line(self, line: bytes) -> ta.Iterable[SseDecoderOutput]:
         if not line:
-            yield from self._dispatch_event()
+            yield self._dispatch_event()
 
         elif line[0] == b':':
             yield SseComment(line)
@@ -82,39 +97,67 @@ class SseDecoder:
             self._process_field(line, b'')
 
 
-LINES = [
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" How"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" can"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" I"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" assist"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" you"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":" today"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{"content":"?"},"logprobs":null,"finish_reason":null}]}',
-    b'',
-    b'data: {"id":"chatcmpl-AJnDGfUrocOB37bgHotqdYxZVJjLp","object":"chat.completion.chunk","created":1729280770,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_e2bde53e6e","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}]}',
-    b'',
-    b'data: [DONE]',
-    b'',
-    b'',
+TESTS = [
+    [
+        b'data: YHOO',
+        b'data: +2',
+        b'data: 10',
+        b'',
+    ],
+    [
+        b': test stream',
+        b'',
+        b'data: first event',
+        b'id: 1',
+        b'',
+        b'data:second event',
+        b'id',
+        b'',
+        b'data:  third event',
+    ],
+    [
+        b'data',
+        b'',
+        b'data ',
+        b'data ',
+        b'',
+        b'data:',
+    ],
+    [
+        b': test stream',
+        b'',
+        b'data: first event',
+        b'id: 1',
+        b'',
+        b'data:second event',
+        b'id',
+        b'',
+        b'data:  third event',
+    ],
+    [
+        b'data',
+        b'',
+        b'data',
+        b'data',
+        b'',
+        b'data:',
+    ],
+    [
+        b'data:test',
+        b'',
+        b'data: test',
+        b'',
+    ],
 ]
 
 
 def _main() -> None:
-    dec = SseDecoder()
-    for line in LINES:
-        print(list(dec(line)))
+    for test in TESTS:
+        dec = SseDecoder()
+        for line in test:
+            for event in dec.process_line(line):
+                print(event)
+        print()
 
 
 if __name__ == '__main__':
