@@ -1,5 +1,8 @@
 import typing as ta
 
+from ... import cached
+from ... import check
+from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
@@ -14,21 +17,20 @@ from .unary import UnaryOps
 
 
 @dc.dataclass(frozen=True)
-class OpMarshaler(msh.Marshaler):
+class OpMarshalerUnmarshaler(msh.Marshaler, msh.Unmarshaler):
     ty: type
-    ns: type
+    ns: type[lang.Namespace]
+
+    @cached.property
+    @dc.init
+    def by_name(self) -> ta.Mapping[str, ta.Any]:
+        return col.make_map(((o.name, o) for _, o in self.ns), strict=True)
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        raise NotImplementedError
-
-
-@dc.dataclass(frozen=True)
-class OpUnmarshaler(msh.Unmarshaler):
-    ty: type
-    ns: type
+        return check.isinstance(o, self.ty).name  # type: ignore  # noqa
 
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
-        raise NotImplementedError
+        return self.by_name[check.isinstance(v, str)]
 
 
 @lang.static_init
@@ -37,8 +39,8 @@ def _install_standard_marshalling() -> None:
         (BinaryOp, BinaryOps),
         (UnaryOp, UnaryOps),
     ]:
-        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({ty: OpMarshaler(ty, ns)})]
-        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({ty: OpUnmarshaler(ty, ns)})]
+        msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.TypeMapMarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
+        msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.TypeMapUnmarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)})]
 
     for cls in [
         Expr,
