@@ -150,7 +150,10 @@ def test_delimiting_buffer():
         return out
 
     assert run(b'line1\nline2\nline3\n') == [[b'line1', b'line2', b'line3']]
+    assert run(b'line1\nline2\nline3\n', keep_ends=True) == [[b'line1\n', b'line2\n', b'line3\n']]
     assert run(b'line1 line2 line3', b'') == [[], [b'line1 line2 line3']]
+    assert run(b'line1\nline2', b'line2\nline3\n') == [[b'line1'], [b'line2line2', b'line3']]
+    assert run(b'line1\nline2', b'line2', b'line2\nline3\n') == [[b'line1'], [], [b'line2line2line2', b'line3']]
     assert run(b'12345678901234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
     assert run(b'12345678901234567890', b'', max_size=10, on_full='yield') == [[b'1234567890', b'1234567890'], []]
     assert run(b'1234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
