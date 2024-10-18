@@ -8,6 +8,9 @@ import typing as ta
 from .. import Q
 from .... import dispatch
 from .... import lang
+from ..binary import Binary
+from ..binary import BinaryOp
+from ..binary import BinaryOps
 from ..exprs import Literal
 from ..idents import Ident
 from ..multi import Multi
@@ -16,6 +19,9 @@ from ..names import Name
 from ..relations import Table
 from ..selects import Select
 from ..selects import SelectItem
+from ..unary import Unary
+from ..unary import UnaryOp
+from ..unary import UnaryOps
 
 
 class Renderer(lang.Abstract):
@@ -35,6 +41,31 @@ class Renderer(lang.Abstract):
 
 
 class StandardRenderer(Renderer):
+    # binary
+
+    BINARY_OP_TO_STR: ta.ClassVar[ta.Mapping[BinaryOp, str]] = {
+        BinaryOps.EQ: '=',
+        BinaryOps.NE: '!=',
+        BinaryOps.LT: '<',
+        BinaryOps.LE: '<=',
+        BinaryOps.GT: '>',
+        BinaryOps.GE: '>=',
+
+        BinaryOps.ADD: '+',
+        BinaryOps.SUB: '-',
+        BinaryOps.MUL: '*',
+        BinaryOps.DIV: '/',
+        BinaryOps.MOD: '%',
+
+        BinaryOps.CONCAT: '||',
+    }
+
+    @Renderer.render.register
+    def render_binary(self, o: Binary) -> None:
+        self.render(o.l)
+        self._out.write(f' {o.op.name} ')
+        self.render(o.r)
+
     # exprs
 
     @Renderer.render.register
@@ -49,14 +80,15 @@ class StandardRenderer(Renderer):
 
     # multis
 
+    MULTI_KIND_TO_STR: ta.ClassVar[ta.Mapping[MultiKind, str]] = {
+        MultiKind.AND: 'and',
+        MultiKind.OR: 'or',
+
+    }
+
     @Renderer.render.register
     def render_multi(self, o: Multi) -> None:
-        if o.k == MultiKind.AND:
-            d = ' and '
-        elif o.k == MultiKind.OR:
-            d = ' or '
-        else:
-            raise TypeError(o.k)
+        d = f' {self.MULTI_KIND_TO_STR[o.k]} '
         self._out.write('(')
         for i, e in enumerate(o.es):
             if i:
@@ -104,6 +136,24 @@ class StandardRenderer(Renderer):
         if o.where:
             self._out.write(' where ')
             self.render(o.where)
+
+    # unary
+
+    UNARY_OP_TO_STR: ta.ClassVar[ta.Mapping[UnaryOp, tuple[str, str]]] = {
+        UnaryOps.NOT: ('not ', ''),
+        UnaryOps.IS_NULL: ('',  'is null'),
+        UnaryOps.IS_NOT_NULL: ('', ' is not null'),
+
+        UnaryOps.POS: ('+', ''),
+        UnaryOps.NEG: ('-', ''),
+    }
+
+    @Renderer.render.register
+    def render_unary(self, o: Unary) -> None:
+        pfx, sfx = self.UNARY_OP_TO_STR[o.op]
+        self._out.write(pfx)
+        self.render(o.v)
+        self._out.write(sfx)
 
 
 def test_render():
