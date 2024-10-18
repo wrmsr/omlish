@@ -64,6 +64,8 @@ class ExprBuilder(NameBuilder):
     def l(self, o: CanLiteral) -> Literal:  # noqa
         return self.literal(o)
 
+    #
+
     def expr(self, o: CanExpr) -> Expr:
         if isinstance(o, Expr):
             return o
@@ -75,6 +77,8 @@ class ExprBuilder(NameBuilder):
     @ta.final
     def e(self, o: CanExpr) -> Expr:
         return self.expr(o)
+
+    #
 
     def param(self, n: str | None = None) -> Param:
         return Param(n)
