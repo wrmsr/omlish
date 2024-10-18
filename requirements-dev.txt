@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.23
+uv>=0.4.24
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -74,7 +74,7 @@ mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
 
 ujson==5.10.0
 
-markupsafe==3.0.1
+markupsafe==3.0.2
 
 redis==5.1.1
 
@@ -92,7 +92,7 @@ paramiko==3.5.0  # @omlish-venv !13t  # !! LGPL
 docutils==0.21.2
 
 mwparserfromhell==0.6.6
-wikitextparser==0.56.2  # !! GPL
+wikitextparser==0.56.3  # !! GPL
 
 executing==2.1.0
 asttokens==2.4.1
