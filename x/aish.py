@@ -198,3 +198,24 @@ else
   echo "${json}"
 fi
 """
+MESSAGES = [
+    {
+        "role": "system",
+        "content": "You are an AI shell-scripting expert called Aish.",
+    },
+    {
+        "role": "user",
+        "content": (
+            "Please write a one-liner for '${AISH_SHELL}' shell for performing the following task. "
+            "Assume you have access to all of the commonly available unix commands on a modern '${AISH_OS}' system. "
+            "You can separate multi-line commands with a semicolon or double ampersand but please put them on one "
+            "line. Respond without using markdown formatting. Please only return the exact bash one-liner command "
+            "without any superfluous words explaining it, and no formatting. Do NOT use backticks. Do not put "
+            "backticks around the one-liner. Code should be bare without any markdown formatting. IMPORTANT: If you "
+            "need to ask for clarification or provide any information other than a one-liner solution, please prefix "
+            "your response with the exact phrase AISH_FEEDBACK: in all caps, with a colon. If you are responding with "
+            "anything other than a shell script one-liner you MUST include AISH_FEEDBACK: (including the colon) as the "
+            "start of the response.\n\n Here is the task I would like you to carry out with the one-liner: '$request'"
+        ),
+    },
+]
