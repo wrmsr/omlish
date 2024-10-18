@@ -8,9 +8,23 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 
-@dc.dataclass(frozen=True)
-class SseEvent(lang.Abstract):
+class SseDecoderOutput(lang.Abstract):
     pass
+
+
+@dc.dataclass(frozen=True)
+class SseComment(SseDecoderOutput, lang.Final):
+    data: bytes
+
+
+SseEventId: ta.TypeAlias = str
+
+
+@dc.dataclass(frozen=True)
+class SseEvent(SseDecoderOutput, lang.Final):
+    type: bytes
+    data: bytes
+    last_id: SseEventId | None = None
 
 
 class SseDecoder:
@@ -18,11 +32,36 @@ class SseDecoder:
 
     def __init__(self) -> None:
         super().__init__()
+
+        self._event_type: bytes | None = None
         self._data: list[bytes] = []
         self._last_event_id: str | None = None
 
-    def __call__(self, e: bytes) -> ta.Iterable[SseEvent]:
+    def _reset(self) -> None:
+        self._event_type = None
+        self._data = []
+        self._last_event_id = None
+
+    def _process_field(self, name: bytes, value: bytes) -> None:
         raise NotImplementedError
+
+    def _dispatch_event(self) -> ta.Sequence[SseEvent]:
+        raise NotImplementedError
+
+    def process_line(self, line: bytes) -> ta.Iterable[SseDecoderOutput]:
+        if not line:
+            yield from self._dispatch_event()
+
+        elif line[0] == b':':
+            yield SseComment(line)
+
+        elif (c := line.find(b':')) >= 0:
+            if len(line) > c + 1 and line[c] == b' ':
+                c += 1
+            self._process_field(line[:c], line[c + 1:])
+
+        else:
+            self._process_field(line, b'')
 
 
 LINES = [
