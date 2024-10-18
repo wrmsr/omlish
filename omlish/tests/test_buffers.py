@@ -119,7 +119,14 @@ class DelimitingBuffer:
         while i < l:
             remaining_data_len = l - i
             remaining_buf_capacity = self._max_size - buf.tell()
-            if remaining_data_len <= remaining_buf_capacity:
+
+            # if remaining_data_len == remaining_buf_capacity and not self._keep_ends:
+            #     # If keep_ends is False then whatever is received next will necessarily exceed the buffer and yield so
+            #     # do it eagerly. If keep_ends is True then either
+            #     yield self._append_and_reset(data[i:])
+            #     return
+
+            if remaining_data_len < remaining_buf_capacity:
                 buf.write(data[i:])
                 return
 
