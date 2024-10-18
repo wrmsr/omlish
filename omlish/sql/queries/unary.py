@@ -1,5 +1,5 @@
+from ... import dataclasses as dc
 from ... import lang
-from .base import Node
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
@@ -8,7 +8,7 @@ from .exprs import ExprBuilder
 ##
 
 
-class UnaryOp(Node, lang.Final):
+class UnaryOp(dc.Frozen, lang.Final, eq=False):
     name: str
 
 

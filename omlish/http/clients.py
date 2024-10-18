@@ -133,7 +133,7 @@ class UrllibHttpClient(HttpClient):
 
         # urllib headers are dumb dicts [1], and keys *must* be strings or it will automatically add problematic default
         # headers because it doesn't see string keys in its header dict [2]. frustratingly it has no problem accepting
-        # bytes keys though [3].
+        # bytes values though [3].
         # [1]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/urllib/request.py#L319-L325  # noqa
         # [2]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/urllib/request.py#L1276-L1279  # noqa
         # [3]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/http/client.py#L1300-L1301  # noqa
