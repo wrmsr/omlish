@@ -11,6 +11,10 @@ from .binary import (  # noqa
     BinaryOps,
 )
 
+from .building import (  # noqa
+    StdBuilder,
+)
+
 from .exprs import (  # noqa
     CanExpr,
     CanLiteral,
@@ -50,15 +54,17 @@ from .relations import (  # noqa
     Table,
 )
 
+from .rendering import (  # noqa
+    Renderer,
+    StdRenderer,
+    render,
+)
+
 from .selects import (  # noqa
     CanRelation,
     Select,
     SelectBuilder,
     SelectItem,
-)
-
-from .std import (  # noqa
-    StdBuilder,
 )
 
 from .stmts import (  # noqa
