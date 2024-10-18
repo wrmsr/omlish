@@ -1,6 +1,6 @@
-from .. import Q
 from .... import marshal as msh
 from ....formats import json
+from .. import Q
 from ..base import Node
 
 
@@ -16,4 +16,8 @@ def test_marshal():
         ),
     )
 
-    print(json.dumps_pretty(msh.marshal(query, Node)))
+    j = json.dumps_pretty(msh.marshal(query, Node))
+    print(j)
+
+    u = msh.unmarshal(json.loads(j), Node)
+    assert u == query
