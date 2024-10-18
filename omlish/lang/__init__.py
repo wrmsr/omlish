@@ -140,6 +140,7 @@ from .iterables import (  # noqa
     flatmap,
     flatten,
     ilen,
+    interleave,
     itergen,
     peek,
     prodrange,
