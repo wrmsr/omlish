@@ -30,6 +30,21 @@ class CliCli(ap.Cli):
         print(sys.prefix)
 
     @ap.command(
+        ap.arg('args', nargs=ap.REMAINDER),
+        name='python',
+        accepts_unknown=True,
+    )
+    def python_cmd(self) -> None:
+        os.execvp(
+            sys.executable,
+            [
+                sys.executable,
+                *self.unknown_args,
+                *self.args.args,
+            ],
+        )
+
+    @ap.command(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
         ap.arg('extra_deps', nargs='*'),
