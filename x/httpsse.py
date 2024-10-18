@@ -2,6 +2,7 @@
 TODO:
  - end-of-line   = ( cr lf / cr / lf )
 """
+import string
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -17,7 +18,7 @@ class SseComment(SseDecoderOutput, lang.Final):
     data: bytes
 
 
-SseEventId: ta.TypeAlias = str
+SseEventId: ta.TypeAlias = bytes
 
 
 @dc.dataclass(frozen=True)
@@ -25,6 +26,9 @@ class SseEvent(SseDecoderOutput, lang.Final):
     type: bytes
     data: bytes
     last_id: SseEventId | None = None
+
+
+_DIGIT_BYTES = string.digits.encode('ascii')
 
 
 class SseDecoder:
@@ -35,7 +39,8 @@ class SseDecoder:
 
         self._event_type: bytes | None = None
         self._data: list[bytes] = []
-        self._last_event_id: str | None = None
+        self._last_event_id: bytes | None = None
+        self._reconnection_time: int | None = None
 
     def _reset(self) -> None:
         self._event_type = None
@@ -43,7 +48,20 @@ class SseDecoder:
         self._last_event_id = None
 
     def _process_field(self, name: bytes, value: bytes) -> None:
-        raise NotImplementedError
+        if name == b'event':
+            self._event_type = value
+
+        elif name == b'data':
+            self._data.append(value)
+            self._data.append(b'\n')
+
+        elif name == b'id':
+            if 0 not in value:
+                self._last_event_id = value
+
+        elif name == b'retry':
+            if all(c in _DIGIT_BYTES for c in value):
+                self._reconnection_time = int(value)
 
     def _dispatch_event(self) -> ta.Sequence[SseEvent]:
         raise NotImplementedError
