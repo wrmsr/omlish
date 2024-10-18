@@ -1,5 +1,6 @@
 """
 TODO:
+ - httpx catch
  - check=False
  - return non-200 HttpResponses
  - async
