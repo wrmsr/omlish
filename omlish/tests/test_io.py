@@ -1,6 +1,3 @@
-"""
-https://github.com/python-trio/trio/issues/796 :|
-"""
 import dataclasses as dc
 import io
 import typing as ta
@@ -13,19 +10,23 @@ class DelimitingBufferError(Exception):
     buffer: 'DelimitingBuffer'
 
 
-class DelimitingBufferClosedError(DelimitingBufferError):
+class ClosedDelimitingBufferError(DelimitingBufferError):
     pass
 
 
-class DelimitingBufferFullError(DelimitingBufferError):
+class FullDelimitingBufferError(DelimitingBufferError):
     pass
 
 
-class DelimitingBufferIncompleteError(DelimitingBufferError):
+class IncompleteDelimitingBufferError(DelimitingBufferError):
     pass
 
 
 class DelimitingBuffer:
+    """
+    https://github.com/python-trio/trio/issues/796 :|
+    """
+
     DEFAULT_DELIMITERS: bytes = b'\n'
 
     def __init__(
@@ -39,7 +40,7 @@ class DelimitingBuffer:
     ) -> None:
         super().__init__()
 
-        self._delimiters = frozenset(delimiters)
+        self._delimiters = frozenset(check.isinstance(d, int) for d in delimiters)
         self._keep_ends = keep_ends
         self._max_size = max_size
         self._on_full = on_full
@@ -48,20 +49,26 @@ class DelimitingBuffer:
         self._buf: io.BytesIO | None = io.BytesIO()
 
     @property
-    def is_closed(self):
+    def is_closed(self) -> bool:
         return self._buf is None
 
     def tell(self) -> int:
-        return self._buf.tell()
+        if (buf := self._buf) is None:
+            raise ClosedDelimitingBufferError(self)
+        return buf.tell()
 
     def peek(self) -> bytes:
-        return self._buf.getvalue()
+        if (buf := self._buf) is None:
+            raise ClosedDelimitingBufferError(self)
+        return buf.getvalue()
 
     def _find_delim(self, data: bytes | bytearray, i: int) -> int | None:
+        r = None  # type: int | None
         for d in self._delimiters:
             if (p := data.find(d, i)) >= 0:
-                return p
-        return None
+                if r is None or p < r:
+                    r = p
+        return r
 
     def _append_and_reset(self, chunk: bytes) -> bytes:
         buf = check.not_none(self._buf)
@@ -75,14 +82,14 @@ class DelimitingBuffer:
 
     def feed(self, data: bytes | bytearray) -> ta.Generator[bytes, None, None]:
         if (buf := self._buf) is None:
-            raise DelimitingBufferClosedError(self)
+            raise ClosedDelimitingBufferError(self)
 
         if not data:
             self._buf = None
 
             if buf.tell():
                 if self._on_incomplete == 'raise':
-                    raise DelimitingBufferIncompleteError(self)
+                    raise IncompleteDelimitingBufferError(self)
 
                 elif self._on_incomplete == 'yield':
                     yield buf.getvalue()
@@ -122,7 +129,7 @@ class DelimitingBuffer:
                 return
 
             if self._on_full == 'raise':
-                raise DelimitingBufferFullError(self)
+                raise FullDelimitingBufferError(self)
 
             elif self._on_full == 'yield':
                 p = i + remaining_buf_capacity
@@ -154,7 +161,12 @@ def test_delimiting_buffer():
     assert run(b'line1 line2 line3', b'') == [[], [b'line1 line2 line3']]
     assert run(b'line1\nline2', b'line2\nline3\n') == [[b'line1'], [b'line2line2', b'line3']]
     assert run(b'line1\nline2', b'line2', b'line2\nline3\n') == [[b'line1'], [], [b'line2line2line2', b'line3']]
-    assert run(b'12345678901234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
+    assert run(b'12345678901234567890', max_size=10, on_full='raise') == [[FullDelimitingBufferError]]
     assert run(b'12345678901234567890', b'', max_size=10, on_full='yield') == [[b'1234567890', b'1234567890'], []]
-    assert run(b'1234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
+    assert run(b'1234567890', max_size=10, on_full='raise') == [[FullDelimitingBufferError]]
     assert run(b'1234567890', max_size=10, on_full='yield') == [[b'1234567890']]
+    assert run(b'1234567890', b'', on_incomplete='yield') == [[], [b'1234567890']]
+    assert run(b'1234567890', b'', on_incomplete='raise') == [[], [IncompleteDelimitingBufferError]]
+    assert run(b'', b'', [[], [ClosedDelimitingBufferError]])
+    assert run(b'line1\nline2\rline3\n', delimiters=b'\r\n') == [[b'line1', b'line2', b'line3']]
+    assert run(b'line1\nline2\rline3\n', delimiters=b'\r\n', keep_ends=True) == [[b'line1\n', b'line2\r', b'line3\n']]  # noqa
