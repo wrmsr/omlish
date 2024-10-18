@@ -25,7 +25,7 @@ def _main() -> None:
                 stream=True,
             )).encode('utf-8'),
     )) as resp:
-        print(resp.read().decode('utf-8'))
+        print(repr(resp.read().split(b'\n')))
 
 
 if __name__ == '__main__':
