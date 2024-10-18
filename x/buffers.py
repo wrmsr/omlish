@@ -1,3 +1,8 @@
+"""
+TODO:
+ - tell
+ - peek
+"""
 import io
 import typing as ta
 
@@ -11,22 +16,30 @@ class BufferFullError(Exception):
 
 
 class DelimitingBuffer:
-    DEFAULT_DELIMITERS: ta.Sequence[bytes] = b'\n'
+    DEFAULT_DELIMITERS: bytes = b'\n'
 
     def __init__(
             self,
             delimiters: ta.Iterable[bytes] = DEFAULT_DELIMITERS,
             *,
+            keep_ends: bool = False,
             max_size: int | None = None,
             on_full: ta.Literal['raise', 'yield'] = 'raise',
     ) -> None:
         super().__init__()
 
         self._delimiters = frozenset(delimiters)
+        self._keep_ends = keep_ends
         self._max_size = max_size
         self._on_full = on_full
 
         self._buf: io.BytesIO | None = io.BytesIO()
+
+    def _find_delim(self, data: bytes | bytearray, i: int) -> int | None:
+        for d in self._delimiters:
+            if (p := data.find(d, i)) >= 0:
+                return p
+        return None
 
     def feed(self, data: bytes | bytearray) -> ta.Generator[bytes, None, None]:
         if (buf := self._buf) is None:
@@ -38,32 +51,92 @@ class DelimitingBuffer:
                 yield buf.getvalue()
             return
 
-        # for chunk in chunks:
-        #     if os.linesep not in chunk:
-        #         buf.write(chunk)
-        #     else:
-        #         line_chunks = chunk.splitlines()
-        #         buf.write(line_chunks[0])
-        #         yield buf.getvalue()
-        #         if buf.tell() > max_buf_size:
-        #             buf.close()
-        #             buf = Buf()
-        #         else:
-        #             buf.seek(0, 0)
-        #             buf.truncate()
-        #         if len(line_chunks) > 1:
-        #             for i in range(1, len(line_chunks) - 1):
-        #                 yield line_chunks[i]
-        #             buf.write(line_chunks[-1])
-        # if buf.tell() > 0:
-        #     yield buf.getvalue()
+        i = 0
+        while i < len(data):
+            if (p := self._find_delim(data, i)) is not None:
+                if self._keep_ends:
+                    n = p
+                    p += 1
+                else:
+                    n = p + 1
+                c = data[i:p]
+                if buf.tell():
+                    buf.write(c)
+                    yield buf.getvalue()
+                    buf.seek(0)
+                else:
+                    yield c
+                i = n
 
-        raise NotImplementedError
+            else:
+                raise NotImplementedError
 
 
-def _main() -> None:
-    assert list(DelimitingBuffer().feed(b'')) == []
+def test_delimiting_buffer():
+    # Test 1: Simple delimiter
+    print("Test 1: Simple delimiter")
+    buf = DelimitingBuffer()
+    data = b'line1\nline2\nline3\n'
+    outputs = list(buf.feed(data))
+    print(outputs)
+    # Expected: [b'line1\n', b'line2\n', b'line3\n']
+
+    # Test 2: No delimiter in data
+    print("\nTest 2: No delimiter in data")
+    buf = DelimitingBuffer()
+    data = b'line1 line2 line3'
+    outputs = list(buf.feed(data))
+    # Should be empty, as no delimiter yet
+    print(outputs)
+    # Now feed empty data to close the buffer
+    outputs += list(buf.feed(b''))
+    print(outputs)
+    # Expected: [b'line1 line2 line3']
+
+    # Test 3: max_size with on_full='raise'
+    print("\nTest 3: max_size with on_full='raise'")
+    buf = DelimitingBuffer(max_size=10, on_full='raise')
+    data = b'1234567890'
+    outputs = list(buf.feed(data))
+    print(outputs)
+    # Expected: []
+    try:
+        outputs += list(buf.feed(b'1'))
+    except BufferFullError:
+        print("BufferFullError raised as expected")
+    else:
+        print("BufferFullError was not raised")
+
+    # Test 4: max_size with on_full='yield'
+    print("\nTest 4: max_size with on_full='yield'")
+    buf = DelimitingBuffer(max_size=10, on_full='yield')
+    data = b'1234567890'
+    outputs = list(buf.feed(data))
+    print(outputs)
+    # Expected: []
+    outputs += list(buf.feed(b'1'))
+    print(outputs)
+    # Expected: [b'1234567890']
+
+    # Test 5: partial delimiter at buffer end
+    print("\nTest 5: Partial delimiter at buffer end")
+    buf = DelimitingBuffer(delimiters=[b'END'])
+    data = b'some data EN'
+    outputs = list(buf.feed(data))
+    print(outputs)
+    # Expected: []
+    outputs += list(buf.feed(b'D more data'))
+    print(outputs)
+    # Expected: [b'some data END']
+
+    # Test 6: Multiple delimiters
+    print("\nTest 6: Multiple delimiters")
+    buf = DelimitingBuffer(delimiters=[b'\n', b'END'])
+    data = b'line1\nline2ENDline3\n'
+    outputs = list(buf.feed(data))
+    print(outputs)
+    # Expected: [b'line1\n', b'line2END', b'line3\n']
 
 
-if __name__ == '__main__':
-    _main()
+# Run tests
+test_delimiting_buffer()
