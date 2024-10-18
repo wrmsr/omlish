@@ -22,6 +22,7 @@ from .exprs import (  # noqa
     ExprBuilder,
     Literal,
     NameExpr,
+    Param,
 )
 
 from .idents import (  # noqa
