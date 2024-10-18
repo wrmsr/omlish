@@ -148,15 +148,29 @@ TESTS = [
         b'data: test',
         b'',
     ],
+    [
+        b'event: add',
+        b'data: 73857293',
+        b'',
+        b'event: remove',
+        b'data: 2153',
+        b'',
+        b'event: add',
+        b'data: 113411',
+        b'',
+    ],
 ]
 
 
 def _main() -> None:
     for test in TESTS:
         dec = SseDecoder()
-        for line in test:
-            for event in dec.process_line(line):
-                print(event)
+        events = [
+            event
+            for line in test
+            for event in dec.process_line(line)
+        ]
+        print(events)
         print()
 
 
