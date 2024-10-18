@@ -19,7 +19,7 @@ class MultiKind(enum.Enum):
 
 class Multi(Expr, lang.Final):
     k: MultiKind
-    es: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
+    es: ta.Sequence[Expr] = dc.xfield(coerce=tuple, validate=lambda es: len(es) > 1)
 
 
 class MultiBuilder(ExprBuilder):

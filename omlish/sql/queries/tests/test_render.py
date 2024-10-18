@@ -10,6 +10,8 @@ from .... import dispatch
 from .... import lang
 from ..exprs import Literal
 from ..idents import Ident
+from ..multi import Multi
+from ..multi import MultiKind
 from ..names import Name
 from ..relations import Table
 from ..selects import Select
@@ -44,6 +46,23 @@ class StandardRenderer(Renderer):
     @Renderer.render.register
     def render_ident(self, o: Ident) -> None:
         self._out.write(f'"{o.s}"')
+
+    # multis
+
+    @Renderer.render.register
+    def render_multi(self, o: Multi) -> None:
+        if o.k == MultiKind.AND:
+            d = ' and '
+        elif o.k == MultiKind.OR:
+            d = ' or '
+        else:
+            raise TypeError(o.k)
+        self._out.write('(')
+        for i, e in enumerate(o.es):
+            if i:
+                self._out.write(d)
+            self.render(e)
+        self._out.write(')')
 
     # names
 
