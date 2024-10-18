@@ -2,7 +2,7 @@ import collections
 import os.path
 import typing as ta
 
-from omdev.cache import data as daca
+from omdev.cache import data as dcache
 from omlish import cached
 from omlish import dataclasses as dc
 from omlish.formats import json
@@ -17,7 +17,7 @@ class Movie:
     rat_10: str
 
 
-MOVIES_DATA = daca.GithubContentSpec(
+MOVIES_DATA = dcache.GithubContentSpec(
     'DOsinga/deep_learning_cookbook',
     '04f56a7fe11e16c19ec6269bc5a138efdcb522a7',
     ['data/wp_movies_10k.ndjson'],
@@ -30,7 +30,7 @@ def load_movies(cache_dir: str) -> ta.Sequence[Movie]:
     if not os.path.exists(cache_dir):
         os.mkdir(cache_dir)
 
-    data_file = daca.default().get(MOVIES_DATA)
+    data_file = dcache.default().get(MOVIES_DATA)
 
     with open(data_file) as f:
         for l in f:
