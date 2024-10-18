@@ -61,56 +61,20 @@ Security Note: This module runs programs with these names:
     - qdbus
 A malicious user could rename or add programs with these names, tricking
 Pyperclip into running them with whatever permissions the Python process has.
-
 """
-__version__ = '1.9.0'
-
 import base64
-import contextlib
-import ctypes
 import os
 import platform
 import subprocess
 import sys
-import time
 import warnings
-from ctypes import c_size_t
-from ctypes import c_wchar
-from ctypes import c_wchar_p
-from ctypes import get_errno
-from ctypes import sizeof
+import shutil
 
 
-_IS_RUNNING_PYTHON_2 = sys.version_info[0] == 2  # type: bool
+__version__ = '1.9.0'
 
-# For paste(): Python 3 uses str, Python 2 uses unicode.
-if _IS_RUNNING_PYTHON_2:
-    # mypy complains about `unicode` for Python 2, so we ignore the type error:
-    _PYTHON_STR_TYPE = unicode  # type: ignore
-else:
-    _PYTHON_STR_TYPE = str
 
-ENCODING = 'utf-8'  # type: str
-
-try:
-    # Use shutil.which() for Python 3+
-    from shutil import which
-
-    def _py3_executable_exists(name):  # type: (str) -> bool
-        return bool(which(name))
-
-    _executable_exists = _py3_executable_exists
-except ImportError:
-    # Use the "which" unix command for Python 2.7 and prior.
-    def _py2_executable_exists(name):  # type: (str) -> bool
-        return (
-            subprocess.call(
-                ['which', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            )
-            == 0
-        )
-
-    _executable_exists = _py2_executable_exists
+ENCODING = 'utf-8'
 
 
 # Exceptions
@@ -124,7 +88,7 @@ class PyperclipTimeoutException(PyperclipException):
 
 def init_osx_pbcopy_clipboard():
     def copy_osx_pbcopy(text):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         p = subprocess.Popen(['pbcopy', 'w'], stdin=subprocess.PIPE, close_fds=True)
         p.communicate(input=text.encode(ENCODING))
 
@@ -139,7 +103,7 @@ def init_osx_pbcopy_clipboard():
 def init_osx_pyobjc_clipboard():
     def copy_osx_pyobjc(text):
         """Copy string argument to clipboard"""
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         newStr = Foundation.NSString.stringWithString_(text).nsstring()
         newData = newStr.dataUsingEncoding_(Foundation.NSUTF8StringEncoding)
         board = AppKit.NSPasteboard.generalPasteboard()
@@ -170,13 +134,13 @@ def init_qt_clipboard():
         app = QApplication([])
 
     def copy_qt(text):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         cb = app.clipboard()
         cb.setText(text)
 
     def paste_qt():
         cb = app.clipboard()
-        return _PYTHON_STR_TYPE(cb.text())
+        return str(cb.text())
 
     return copy_qt, paste_qt
 
@@ -186,7 +150,7 @@ def init_xclip_clipboard():
     PRIMARY_SELECTION = 'p'
 
     def copy_xclip(text, primary=False):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         selection = DEFAULT_SELECTION
         if primary:
             selection = PRIMARY_SELECTION
@@ -217,7 +181,7 @@ def init_xsel_clipboard():
     PRIMARY_SELECTION = '-p'
 
     def copy_xsel(text, primary=False):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         selection_flag = DEFAULT_SELECTION
         if primary:
             selection_flag = PRIMARY_SELECTION
@@ -243,7 +207,7 @@ def init_wl_clipboard():
     PRIMARY_SELECTION = '-p'
 
     def copy_wl(text, primary=False):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         args = ['wl-copy']
         if primary:
             args.append(PRIMARY_SELECTION)
@@ -267,7 +231,7 @@ def init_wl_clipboard():
 
 def init_klipper_clipboard():
     def copy_klipper(text):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         p = subprocess.Popen(
             [
                 'qdbus',
@@ -305,7 +269,7 @@ def init_klipper_clipboard():
 
 def init_dev_clipboard_clipboard():
     def copy_dev_clipboard(text):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         if text == '':
             warnings.warn(
                 'Pyperclip cannot copy a blank string to the clipboard on Cygwin. This is effectively a no-op.',
@@ -337,22 +301,15 @@ def init_no_clipboard():
                 + additionalInfo,
             )
 
-        if _IS_RUNNING_PYTHON_2:
-
-            def __nonzero__(self):
-                return False
-
-        else:
-
-            def __bool__(self):
-                return False
+        def __bool__(self):
+            return False
 
     return ClipboardUnavailable(), ClipboardUnavailable()
 
 
 def init_wsl_clipboard():
     def copy_wsl(text):
-        text = _PYTHON_STR_TYPE(text)  # Converts non-str values to str.
+        text = str(text)  # Converts non-str values to str.
         p = subprocess.Popen(['clip.exe'], stdin=subprocess.PIPE, close_fds=True)
         p.communicate(input=text.encode('utf-16le'))
 
@@ -379,6 +336,10 @@ def init_wsl_clipboard():
             raise RuntimeError(f'Decoding error: {e}')
 
     return copy_wsl, paste_wsl
+
+
+def _executable_exists(name):  # type: (str) -> bool
+    return bool(shutil.which(name))
 
 
 # Automatic detection of clipboard mechanisms and importing is done in determine_clipboard():
