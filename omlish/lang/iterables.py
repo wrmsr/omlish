@@ -37,6 +37,13 @@ def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
     return v, itertools.chain(iter((v,)), it)
 
 
+def interleave(vs: ta.Iterable[T], d: T) -> ta.Iterable[T]:
+    for i, v in enumerate(vs):
+        if i:
+            yield d
+        yield v
+
+
 Rangeable: ta.TypeAlias = ta.Union[  # noqa
     int,
     tuple[int],

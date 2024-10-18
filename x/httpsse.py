@@ -55,7 +55,6 @@ class SseDecoder:
 
         elif name == b'data':
             self._data.append(value)
-            self._data.append(b'\n')
 
         elif name == b'id':
             if 0 not in value:
@@ -66,13 +65,7 @@ class SseDecoder:
                 self._reconnection_time = int(value)
 
     def _dispatch_event(self) -> SseEvent:
-        if self._data:
-            data = b''.join([
-                *(self._data[:-1] if len(self._data) > 1 else []),
-                (last[:-1] if (last := self._data[-1]).endswith(b'\n') else last),
-            ])
-        else:
-            data = b''
+        data = b''.join(lang.interleave(self._data, b'\n'))
 
         e = SseEvent(
             type=self._event_type,
@@ -108,6 +101,7 @@ _message_event = functools.partial(SseEvent, b'message')
 
 
 TESTS = [
+
     (
         [
             b'data: YHOO',
@@ -119,6 +113,7 @@ TESTS = [
             _message_event(b'YHOO\n+2\n10'),
         ],
     ),
+
     (
         [
             b': test stream',
@@ -139,55 +134,84 @@ TESTS = [
             _message_event(b' third event'),
         ],
     ),
-    [
-        b'data',
-        b'',
-        b'data ',
-        b'data ',
-        b'',
-        b'data:',
-    ],
-    [
-        b': test stream',
-        b'',
-        b'data: first event',
-        b'id: 1',
-        b'',
-        b'data:second event',
-        b'id',
-        b'',
-        b'data:  third event',
-    ],
-    [
-        b'data',
-        b'',
-        b'data',
-        b'data',
-        b'',
-        b'data:',
-    ],
-    [
-        b'data:test',
-        b'',
-        b'data: test',
-        b'',
-    ],
-    [
-        b'event: add',
-        b'data: 73857293',
-        b'',
-        b'event: remove',
-        b'data: 2153',
-        b'',
-        b'event: add',
-        b'data: 113411',
-        b'',
-    ],
+
+    (
+        [
+            b'data',
+            b'',
+            b'data',
+            b'data',
+            b'',
+            b'data:',
+        ],
+        [
+            _message_event(b''),
+            _message_event(b'\n'),
+        ],
+    ),
+
+    (
+        [
+            b': test stream',
+            b'',
+            b'data: first event',
+            b'id: 1',
+            b'',
+            b'data:second event',
+            b'id',
+            b'',
+            b'data:  third event',
+        ],
+        [
+        ],
+    ),
+
+    (
+        [
+            b'data',
+            b'',
+            b'data',
+            b'data',
+            b'',
+            b'data:',
+        ],
+        [
+        ],
+    ),
+
+    (
+        [
+            b'data:test',
+            b'',
+            b'data: test',
+            b'',
+        ],
+        [
+        ],
+    ),
+
+    (
+        [
+            b'event: add',
+            b'data: 73857293',
+            b'',
+            b'event: remove',
+            b'data: 2153',
+            b'',
+            b'event: add',
+            b'data: 113411',
+            b'',
+        ],
+        [
+        ],
+    ),
+
 ]
 
 
 def _main() -> None:
-    for test, expected in TESTS:
+    for i, (test, expected) in enumerate(TESTS):
+        print(i)
         dec = SseDecoder()
         output = [
             event
