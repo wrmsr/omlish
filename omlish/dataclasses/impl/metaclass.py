@@ -108,7 +108,11 @@ class DataMeta(abc.ABCMeta):
 
 
 # @ta.dataclass_transform(field_specifiers=(field,))  # FIXME: ctor
-class Data(metaclass=DataMeta):
+class Data(
+    eq=False,
+    order=False,
+    metaclass=DataMeta,
+):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -125,6 +129,8 @@ class Data(metaclass=DataMeta):
 class Frozen(
     Data,
     frozen=True,
+    eq=False,
+    order=False,
     confer=frozenset([
         'frozen',
         'cache_hash',
