@@ -1,4 +1,5 @@
 from .. import Q
+from ..exprs import Param
 
 
 def test_query():
@@ -14,3 +15,8 @@ def test_query():
     )
 
     print(query)
+
+
+def test_params():
+    print(repr(Param()))
+    print(repr(Param('foo')))

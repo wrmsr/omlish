@@ -28,7 +28,7 @@ class EnumMarshalerFactory(MarshalerFactory):
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         ty = check.isinstance(rty, type)
         check.state(issubclass(ty, enum.Enum))
-        return EnumMarshaler(ty)
+        return EnumMarshaler(ty)  # noqa
 
 
 @dc.dataclass(frozen=True)
