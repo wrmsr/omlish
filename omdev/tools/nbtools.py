@@ -1,3 +1,8 @@
+"""
+TODO:
+ - try to keep comments, option to strip em
+ - also trim ws on either side of blocks
+"""
 import io
 import json
 import os.path

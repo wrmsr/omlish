@@ -16,6 +16,7 @@ from .images import Image
 ##
 
 
+# TODO: This hack should be obsolete with 3.14 / PEP 649, but reflect needs to grow recursive type support.
 class MarshalContent(lang.NotInstantiable, lang.Final):
     pass
 
