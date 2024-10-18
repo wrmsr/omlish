@@ -14,7 +14,7 @@
 
 matplotlib==3.9.2
 
-huggingface-hub==0.25.2
+huggingface-hub==0.26.0
 evaluate==0.4.3
 datasets==3.0.1
 
@@ -87,7 +87,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.7.3
+simsimd==5.8.0
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -191,8 +191,6 @@ logbook==1.7.0.post0
 
 # tenacity==9.0.0
 
-psutil==6.0.0
-
 mitogen==0.3.14
 
 cloudpickle==3.0.0
@@ -224,7 +222,7 @@ langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
 # langchain-nomic==0.2.0
 langchain-ollama==0.2.0
-langchain-openai==0.2.2
+langchain-openai==0.2.3
 langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21

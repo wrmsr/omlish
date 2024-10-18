@@ -46,6 +46,14 @@ interp = '@13'
 inherits = ['_default']
 interp = '@13t'
 
+[tool.omlish.pyproject.venvs.'14']
+inherits = ['_default']
+interp = '@14'
+
+[tool.omlish.pyproject.venvs.'14t']
+inherits = ['_default']
+interp = '@14t'
+
 #
 
 [tool.omlish.pyproject.venvs._lite]
