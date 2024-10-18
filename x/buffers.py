@@ -58,10 +58,10 @@ class DelimitingBuffer:
                 break
 
             if self._keep_ends:
+                n = p + 1
+            else:
                 n = p
                 p += 1
-            else:
-                n = p + 1
 
             c = data[i:p]
             if buf.tell():
@@ -81,20 +81,28 @@ class DelimitingBuffer:
             return
 
         while i < l:
-            r = l - i
-            raise NotImplementedError
+            remaining_data_len = l - i
+            required_capacity = remaining_data_len + buf.tell()
+            if required_capacity < self._max_size:
+                buf.write(data[i:])
+                return
 
-        raise NotImplementedError
+            if self._on_full == 'raise':
+                raise BufferFullError
+
+            elif self._on_full == 'yield':
+                raise NotImplementedError
+
+            else:
+                raise ValueError(f'Unknown on_full value: {self._on_full!r}')
 
 
 def test_delimiting_buffer():
-    # Test 1: Simple delimiter
-    print("Test 1: Simple delimiter")
-    buf = DelimitingBuffer()
-    data = b'line1\nline2\nline3\n'
-    outputs = list(buf.feed(data))
-    print(outputs)
-    # Expected: [b'line1\n', b'line2\n', b'line3\n']
+    def run(*bs):
+        buf = DelimitingBuffer()
+        return [list(buf.feed(b)) for b in bs]
+
+    assert run(b'line1\nline2\nline3\n') == [[b'line1', b'line2', b'line3']]
 
     # Test 2: No delimiter in data
     print("\nTest 2: No delimiter in data")
