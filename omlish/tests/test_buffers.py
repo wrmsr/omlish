@@ -1,8 +1,5 @@
 """
 https://github.com/python-trio/trio/issues/796 :|
-
-TODO:
- - diff on_full behavior depending on keep_delim
 """
 import dataclasses as dc
 import io
@@ -120,12 +117,6 @@ class DelimitingBuffer:
             remaining_data_len = l - i
             remaining_buf_capacity = self._max_size - buf.tell()
 
-            # if remaining_data_len == remaining_buf_capacity and not self._keep_ends:
-            #     # If keep_ends is False then whatever is received next will necessarily exceed the buffer and yield so
-            #     # do it eagerly. If keep_ends is True then either
-            #     yield self._append_and_reset(data[i:])
-            #     return
-
             if remaining_data_len < remaining_buf_capacity:
                 buf.write(data[i:])
                 return
@@ -138,7 +129,7 @@ class DelimitingBuffer:
 
                 yield self._append_and_reset(data[i:p])
 
-                i = p + 1
+                i = p
 
             else:
                 raise ValueError(f'Unknown on_full value: {self._on_full!r}')
@@ -161,6 +152,6 @@ def test_delimiting_buffer():
     assert run(b'line1\nline2\nline3\n') == [[b'line1', b'line2', b'line3']]
     assert run(b'line1 line2 line3', b'') == [[], [b'line1 line2 line3']]
     assert run(b'12345678901234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
-    assert run(b'12345678901234567890', max_size=10, on_full='yield') == [[b'1234567890', b'1234567890']]
+    assert run(b'12345678901234567890', b'', max_size=10, on_full='yield') == [[b'1234567890', b'1234567890'], []]
     assert run(b'1234567890', max_size=10, on_full='raise') == [[DelimitingBufferFullError]]
     assert run(b'1234567890', max_size=10, on_full='yield') == [[b'1234567890']]
