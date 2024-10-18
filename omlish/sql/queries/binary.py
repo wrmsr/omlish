@@ -1,33 +1,26 @@
-import enum
-
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
+from .ops import OpKind
 
 
 ##
 
 
-class BinaryOpKind(enum.Enum):
-    ARITH = enum.auto()
-    BIT = enum.auto()
-    CMP = enum.auto()
-
-
 class BinaryOp(dc.Frozen, lang.Final, eq=False):
     name: str
-    kind: BinaryOpKind
+    kind: OpKind
 
 
 class BinaryOps(lang.Namespace):
-    ADD = BinaryOp('add', BinaryOpKind.ARITH)
-    SUB = BinaryOp('sub', BinaryOpKind.ARITH)
+    ADD = BinaryOp('add', OpKind.ARITH)
+    SUB = BinaryOp('sub', OpKind.ARITH)
 
-    EQ = BinaryOp('eq', BinaryOpKind.CMP)
-    NE = BinaryOp('ne', BinaryOpKind.CMP)
+    EQ = BinaryOp('eq', OpKind.CMP)
+    NE = BinaryOp('ne', OpKind.CMP)
 
 
 class Binary(Expr, lang.Final):
