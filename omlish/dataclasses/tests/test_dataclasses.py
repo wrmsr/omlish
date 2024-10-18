@@ -474,3 +474,24 @@ def test_confer_cache_hash():
         pass
 
     assert dc.reflect(B).params_extras.cache_hash
+
+
+def test_frozen_meta_hash():
+    class Foo(dc.Frozen, eq=False):
+        s: str
+
+    class Foos(lang.Namespace):
+        BAR = Foo('bar')
+        BAZ = Foo('baz')
+
+    assert Foos.BAR == Foos.BAR
+    assert Foos.BAR != Foos.BAZ
+
+    foo_to_str = {
+        Foos.BAR: 'bar!',
+        Foos.BAZ: 'baz!',
+    }
+
+    assert foo_to_str[Foos.BAR] == 'bar!'
+    assert foo_to_str[Foos.BAZ] == 'baz!'
+    assert Foo('abc') not in foo_to_str

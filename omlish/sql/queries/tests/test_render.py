@@ -12,6 +12,7 @@ from ..binary import Binary
 from ..binary import BinaryOp
 from ..binary import BinaryOps
 from ..exprs import Literal
+from ..exprs import NameExpr
 from ..idents import Ident
 from ..multi import Multi
 from ..multi import MultiKind
@@ -63,7 +64,7 @@ class StandardRenderer(Renderer):
     @Renderer.render.register
     def render_binary(self, o: Binary) -> None:
         self.render(o.l)
-        self._out.write(f' {o.op.name} ')
+        self._out.write(f' {self.BINARY_OP_TO_STR[o.op]} ')
         self.render(o.r)
 
     # exprs
@@ -71,6 +72,10 @@ class StandardRenderer(Renderer):
     @Renderer.render.register
     def render_literal(self, o: Literal) -> None:
         self._out.write(repr(o.v))
+
+    @Renderer.render.register
+    def render_name_expr(self, o: NameExpr) -> None:
+        self.render(o.n)
 
     # idents
 
@@ -168,4 +173,5 @@ def test_render():
         ),
     )
 
+    print(query)
     print(StandardRenderer.render_str(query))
