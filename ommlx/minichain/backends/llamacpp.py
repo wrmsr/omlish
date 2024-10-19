@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ..chat import AiChoice
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
@@ -89,4 +90,7 @@ class LlamacppChatModel(ChatModel):
             # stop=['\n'],
         )
 
-        return ChatResponse(v=AiMessage(output['choices'][0]['message']['content']))  # type: ignore
+        return ChatResponse(v=[
+            AiChoice(AiMessage(c['message']['content']))  # noqa
+            for c in output['choices']  # type: ignore
+        ])

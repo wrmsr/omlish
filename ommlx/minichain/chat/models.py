@@ -18,9 +18,20 @@ from .options import ChatRequestOptions
 ##
 
 
+@dc.dataclass(frozen=True)
+class AiChoice(lang.Final):
+    m: AiMessage
+
+
+AiChoices: ta.TypeAlias = ta.Sequence[AiChoice]
+
+
+##
+
+
 ChatInput: ta.TypeAlias = Chat
 ChatNew: ta.TypeAlias = ta.Any
-ChatOutput: ta.TypeAlias = AiMessage
+ChatOutput: ta.TypeAlias = AiChoices
 
 
 @dc.dataclass(frozen=True, kw_only=True)

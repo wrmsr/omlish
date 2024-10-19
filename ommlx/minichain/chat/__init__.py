@@ -22,6 +22,8 @@ from .messages import (  # noqa
 )
 
 from .models import (  # noqa
+    AiChoice,
+    AiChoices,
     ChatInput,
     ChatModel,
     ChatOutput,

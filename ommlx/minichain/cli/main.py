@@ -104,13 +104,13 @@ def _run_chat(
 
     mdl = CHAT_MODEL_BACKENDS[backend or DEFAULT_BACKEND]()
     response = mdl.invoke(ChatRequest.new(state.chat))
-    print(check.isinstance(response.v.s, str).strip())
+    print(check.isinstance(response.v[0].m.s, str).strip())
 
     chat = dc.replace(
         state,
         chat=[
             *state.chat,
-            response.v,
+            response.v[0].m,
         ],
     )
 

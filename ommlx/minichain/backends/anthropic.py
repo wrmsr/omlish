@@ -6,6 +6,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from ..chat import AiChoice
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
@@ -66,4 +67,6 @@ class AnthropicChatModel(ChatModel):
             max_tokens=max_tokens,
         )
 
-        return ChatResponse(v=AiMessage(response.content[0].text))  # type: ignore
+        return ChatResponse(v=[
+            AiChoice(AiMessage(response.content[0].text)),  # type: ignore
+        ])
