@@ -8,6 +8,7 @@ import urllib.request
 from omlish import check
 from omlish.formats import json
 
+from ..chat import AiChoice
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
@@ -72,4 +73,7 @@ class MistralChatModel(ChatModel):
 
         resp_dct = json.loads(resp_buf.decode('utf-8'))
 
-        return ChatResponse(v=AiMessage(resp_dct['choices'][0]['message']['content']))
+        return ChatResponse(v=[
+            AiChoice(AiMessage(c['message']['content']))
+            for c in resp_dct['choices']
+        ])

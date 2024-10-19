@@ -8,6 +8,7 @@ import urllib.request
 from omlish import check
 from omlish.formats import json
 
+from ..chat import AiChoice
 from ..chat import AiMessage
 from ..chat import ChatModel
 from ..chat import ChatRequest
@@ -73,4 +74,7 @@ class GoogleChatModel(ChatModel):
 
         resp_dct = json.loads(resp_buf.decode('utf-8'))
 
-        return ChatResponse(v=AiMessage(resp_dct['candidates'][0]['content']['parts'][0]['text']))
+        return ChatResponse(v=[
+            AiChoice(AiMessage(c['content']['parts'][0]['text']))
+            for c in resp_dct['candidates']
+        ])

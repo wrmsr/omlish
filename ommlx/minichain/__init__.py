@@ -10,6 +10,8 @@ from .chat import (  # noqa
     ToolExecResultMessage,
     UserMessage,
 
+    AiChoice,
+    AiChoices,
     ChatInput,
     ChatModel,
     ChatOutput,

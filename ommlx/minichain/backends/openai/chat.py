@@ -1,9 +1,23 @@
+"""
+TODO:
+ - defaults:
+   {
+     "frequency_penalty": 0.0,
+     "max_tokens": 64,
+     "messages": ...,
+     "model": "gpt-4o",
+     "presence_penalty": 0.0,
+     "temperature": 0.1,
+     "top_p": 1
+   }
+"""
 import contextlib
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
+from ...chat import AiChoice
 from ...chat import AiMessage
 from ...chat import ChatModel
 from ...chat import ChatRequest
@@ -173,20 +187,22 @@ class OpenaiChatModel(ChatModel):
             raw_response = client.chat.completions.create(**raw_request)
 
         response: 'openai.types.chat.ChatCompletion' = raw_response  # noqa
-        choice = check.single(response.choices)
 
         return ChatResponse(
-            v=AiMessage(
-                choice.message.content,
-                tool_exec_requests=[
-                    ToolExecRequest(
-                        id=tc.id,
-                        spec=tools_by_name[tc.function.name],
-                        args=tc.function.arguments,
-                    )
-                    for tc in choice.message.tool_calls or []
-                ],
-            ),
+            v=[
+                AiChoice(AiMessage(
+                    choice.message.content,
+                    tool_exec_requests=[
+                        ToolExecRequest(
+                            id=tc.id,
+                            spec=tools_by_name[tc.function.name],
+                            args=tc.function.arguments,
+                        )
+                        for tc in choice.message.tool_calls or []
+                    ],
+                ))
+                for choice in response.choices
+            ],
             usage=TokenUsage(
                 input=response.usage.prompt_tokens,
                 output=response.usage.completion_tokens,
