@@ -8,6 +8,7 @@ from omlish.testing import pytest as ptu
 from ..backends.llamacpp import LlamacppPromptModel
 from ..backends.openai import OpenaiChatModel
 from ..backends.transformers import TransformersPromptModel
+from ..chat import Message
 from ..chat import SystemMessage
 from ..chat import Tool
 from ..chat import ToolExecResultMessage
@@ -58,7 +59,7 @@ def test_openai_tools(harness):
         desc='Gets the weather in the given location.',
     )
 
-    chat: list = [
+    chat: list[Message] = [
         SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
         UserMessage('What is the weather in Seattle?'),
     ]
@@ -73,7 +74,7 @@ def test_openai_tools(harness):
     print(resp)
     assert resp.v
 
-    chat.append(resp.v)
+    chat.append(resp.v[0].m)
 
     tr = check.single(check.not_none(resp.v[0].m.tool_exec_requests))
     assert tr.spec.name == 'get_weather'
