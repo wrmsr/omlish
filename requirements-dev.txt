@@ -84,7 +84,7 @@ duckdb==1.1.2
 tokenize_rt==6.0.0
 
 pycparser==2.22
-cffi==1.17.0
+cffi==1.17.1
 pcpp==1.30
 
 paramiko==3.5.0  # @omlish-venv !13t  # !! LGPL
