@@ -1,5 +1,24 @@
+import dataclasses as dc
 import json
 import typing as ta
+
+
+@dc.dataclass(frozen=True)
+class Int:
+    min: int
+    max: int
+
+
+@dc.dataclass(frozen=True)
+class Float:
+    min: float
+    max: float
+
+
+@dc.dataclass(frozen=True)
+class String:
+    min_len: int
+    max_len: int
 
 
 def infer_structure(data, depth=0):
