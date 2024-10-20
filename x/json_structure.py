@@ -1,31 +1,88 @@
+import abc
 import dataclasses as dc
 import json
 import typing as ta
 
 
-@dc.dataclass(frozen=True)
-class Int:
+ValueT = ta.TypeVar('ValueT', bound='Value')
+
+
+@dc.dataclass()
+class Value(abc.ABC):
+    count: int
+
+    @ta.final
+    def merge(self, other: 'Value') -> 'Value':
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, other: ta.Self) -> None:
+        raise NotImplementedError
+
+
+@dc.dataclass()
+class Int(Value):
     min: int
     max: int
 
+    def update(self, other: 'Int') -> None:
+        self.min = min(self.min, other.min)
+        self.max = max(self.max, other.max)
 
-@dc.dataclass(frozen=True)
-class Float:
+
+@dc.dataclass()
+class Float(Value):
     min: float
     max: float
 
+    def update(self, other: 'Float') -> None:
+        self.min = min(self.min, other.min)
+        self.max = max(self.max, other.max)
 
-@dc.dataclass(frozen=True)
-class String:
+
+@dc.dataclass()
+class String(Value):
+    min_len: int
+    max_len: int
+
+    def update(self, other: 'String') -> None:
+        self.min_len = min(self.min_len, other.min_len)
+        self.max_len = max(self.max_len, other.max_len)
+
+
+@dc.dataclass()
+class Union(Value):
+    values: dict[type[Value], Value]
+
+    def __iter__(self) -> ta.Iterator[Value]:
+        return iter(self.values.values())
+
+    def __getitem__(self, cls: type[ValueT]) -> ValueT:
+        return self.values[cls]  # type: ignore
+
+    def update(self, other: 'Union') -> None:
+        for v in other:
+            try:
+                e = self[type(v)]
+            except KeyError:
+                self.values[type(v)] = c
+            else:
+                e.update(v)
+
+
+@dc.dataclass()
+class Array(Value):
+    item_type: Value
     min_len: int
     max_len: int
 
 
+@dc.dataclass()
+class Object(Value):
+    properties: ta.Mapping[str, Value]
+
+
 def infer_structure(data, depth=0):
-    """
-    Infers the structure of a JSON document.
-    """
-    indent = '  ' * depth
     if isinstance(data, dict):
         # Object detected
         structure = {}
