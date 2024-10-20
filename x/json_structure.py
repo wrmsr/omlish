@@ -85,17 +85,24 @@ class Union(Value):
     def __getitem__(self, cls: type[ValueT]) -> ValueT:
         return self.values[cls]  # type: ignore
 
-    def merge(self, other: 'Value') -> 'Value':
-        raise NotImplementedError
+    def merge(self, other: Value) -> Value:
+        if isinstance(other, Union):
+            self.merge(other)
+        else:
+            self._update_one(other)
+        return self
 
     def _update(self, other: 'Union') -> None:
         for v in other:
-            try:
-                e = self[type(v)]
-            except KeyError:
-                self.values[type(v)] = v
-            else:
-                e.update(v)
+            self._update_one(v)
+
+    def _update_one(self, v: Value) -> None:
+        try:
+            e = self[type(v)]
+        except KeyError:
+            self.values[type(v)] = v
+        else:
+            e.update(v)
 
 
 @dc.dataclass()
@@ -164,7 +171,7 @@ def analyze_value(v: ta.Any) -> Value:
 
 
 # Example Usage
-json_data = '''
+json_data = """
 {
     "name": "John Doe",
     "age": 30,
@@ -187,7 +194,7 @@ json_data = '''
     ],
     "hobbies": []
 }
-'''
+"""
 
 data = json.loads(json_data)
 structure = analyze_value(data)
