@@ -8,8 +8,8 @@ import sys
 
 from prompt_toolkit.lexers import PygmentsLexer
 
-from pypager.pager import Pager
-from pypager.source import FileSource
+from ..pager import Pager
+from ..source import FileSource
 
 __all__ = [
     "run",

@@ -3,11 +3,12 @@ import sys
 import prompt_toolkit
 from prompt_toolkit.formatted_text import HTML
 
-import pypager
+# from .__init__ import __version__
+__version__ = "3.0.1"
 
 python_version = sys.version_info
 ptk_version = prompt_toolkit.__version__
-pypager_version = pypager.__version__
+pypager_version = __version__
 
 
 HELP = (
