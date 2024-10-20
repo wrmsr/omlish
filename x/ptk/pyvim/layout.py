@@ -22,7 +22,7 @@ from .commands.lexer import create_command_lexer
 from .lexer import DocumentLexer
 from .welcome_message import WELCOME_MESSAGE_TOKENS, WELCOME_MESSAGE_HEIGHT, WELCOME_MESSAGE_WIDTH
 
-import pyvim.window_arrangement as window_arrangement
+from . import window_arrangement as window_arrangement
 from functools import partial
 
 import re

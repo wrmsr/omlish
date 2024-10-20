@@ -14,8 +14,8 @@ from __future__ import unicode_literals
 import docopt
 import os
 
-from pyvim.editor import Editor
-from pyvim.rc_file import run_rc_file
+from ..editor import Editor
+from ..rc_file import run_rc_file
 
 __all__ = (
     'run',

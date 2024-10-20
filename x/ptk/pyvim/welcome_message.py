@@ -5,11 +5,11 @@ from __future__ import unicode_literals
 from prompt_toolkit.formatted_text.utils import fragment_list_len
 
 import prompt_toolkit
-import pyvim
+from . import __version__
 import platform
 import sys
 version = sys.version_info
-pyvim_version = pyvim.__version__
+pyvim_version = __version__
 
 __all__ = (
     'WELCOME_MESSAGE_TOKENS',
