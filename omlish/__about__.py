@@ -97,7 +97,7 @@ class Project(ProjectBase):
 
             'aiomysql ~= 0.2',
             'aiosqlite ~= 0.20',
-            'asyncpg ~= 0.29; python_version < "3.13"',
+            'asyncpg ~= 0.30; python_version < "3.13"',
 
             'apsw ~= 3.46',
 
