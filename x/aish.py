@@ -30,98 +30,6 @@ Examples:
  - use imagemagick change the white background in screenshot.png to transparent
 """
 """
-# aish: AI shell completions
-# <https://github.com/chr15m/aish>
-
-# vi: ft=bash
-# Why no hash-bang?
-# It's so this script can be sourced under both bash and zsh.
-
-# Website: <https://mccormick.cx>
-# Donate:  <https://www.patreon.com/chr15m>
-# Donate:  <ko-fi.com/chr15m>
-
-# TODO:
-# - set up basic tests via github actions
-
-if [ "$1" = "" -o "$1" = "-h" ]
-then
-  echo "Usage: . aish QUERY"
-  echo
-  echo "QUERY:   tell the AI what you want"
-  echo "Example: '. aish a for loop going from 5 to 15'."
-  echo "Note:    You must include the . to source the script."
-  echo "         The result will be available from history with the up key."
-  echo
-  echo 'You an add variables to ~/.aish to configure it:'
-  echo 'OPENAI_API_KEY="sk-..."'
-  echo 'AISH_MODEL=gpt-4 # defaults to gpt-3.5-turbo (gpt-4 is recommended)'
-  echo 'AISH_URL=http... # defaults to https://api.openai.com - set to any OpenAI compatible API.'
-  echo ''
-  echo '- Create a new API key here: <https://platform.openai.com/api-keys>'
-  echo '- List the available models with `aish models`'
-  echo '- Requests will be logged to ~/.aish-log'
-  exit 0
-fi
-
-# source aish config file with overrides if it exists
-if [ -f ~/.aish ]
-then
-  . ~/.aish
-fi
-
-AISH_URL=${AISH_URL:-https://api.openai.com}
-
-# check if API key is set
-if [ -z "$OPENAI_API_KEY" ]
-then
-  echo "Error: OPENAI_API_KEY not set."
-  echo
-  echo "Get your key from <https://platform.openai.com/account/api-keys>."
-  echo "Put it in ~/.aish like this:"
-  echo "OPENAI_API_KEY=sk-..."
-  echo
-  return 1
-fi
-
-if [ "$1" = "models" ]
-then
-  echo "Fetching available model list from the API."
-  curl -s -H "Authorization: Bearer $OPENAI_API_KEY" ${AISH_URL}/v1/models | grep gpt- | cut -d'"' -f4 | sort -r
-  exit 0
-fi
-
-# test if user has sourced the script and notify them if not
-
-_throw_source_error () {
-  echo "Please source aish in a bash or zsh shell like this:"
-  echo ". aish ${@}"
-  # echo ${1}
-  exit 1
-}
-
-OS=`uname`
-OS="${OS//Darwin/Mac OSX}"
-
-case $BASH_VERSION in *.*)
-  SHELLNAME="bash"
-  ;;
-esac
-case $ZSH_VERSION  in *.*)
-  SHELLNAME="zsh"
-  ;;
-esac
-case "$VERSION" in *zsh*)
-  SHELLNAME="zsh"
-  ;;
-esac
-
-MODEL=${AISH_MODEL:-gpt-3.5-turbo}
-
-#echo "SHELLNAME: ${SHELLNAME}"
-#echo "OS: ${OS}"
-#echo "MODEL: ${MODEL}"
-
 if [ "${SHELLNAME}" != "zsh" ] && [ "$SHELLNAME" != "bash" ]
 then
   _throw_source_error "${@}"
@@ -198,24 +106,39 @@ else
   echo "${json}"
 fi
 """
-MESSAGES = [
-    {
-        "role": "system",
-        "content": "You are an AI shell-scripting expert called Aish.",
-    },
-    {
-        "role": "user",
-        "content": (
-            "Please write a one-liner for '${AISH_SHELL}' shell for performing the following task. "
-            "Assume you have access to all of the commonly available unix commands on a modern '${AISH_OS}' system. "
-            "You can separate multi-line commands with a semicolon or double ampersand but please put them on one "
-            "line. Respond without using markdown formatting. Please only return the exact bash one-liner command "
-            "without any superfluous words explaining it, and no formatting. Do NOT use backticks. Do not put "
-            "backticks around the one-liner. Code should be bare without any markdown formatting. IMPORTANT: If you "
-            "need to ask for clarification or provide any information other than a one-liner solution, please prefix "
-            "your response with the exact phrase AISH_FEEDBACK: in all caps, with a colon. If you are responding with "
-            "anything other than a shell script one-liner you MUST include AISH_FEEDBACK: (including the colon) as the "
-            "start of the response.\n\n Here is the task I would like you to carry out with the one-liner: '$request'"
-        ),
-    },
-]
+from omdev.secrets import load_secrets
+from ommlx import minichain as mc
+from ommlx.minichain.backends.openai import OpenaiChatModel
+
+
+def _main() -> None:
+    request = 'which process is running on port 8000'
+
+    system_prompt = 'You are an AI shell-scripting expert called Aish.'
+    user_template = (
+        "Please write a one-liner for '{shell}' shell for performing the following task. "
+        "Assume you have access to all of the commonly available unix commands on a modern '{os}' system. "
+        "You can separate multi-line commands with a semicolon or double ampersand but please put them on one "
+        "line. Respond without using markdown formatting. Please only return the exact bash one-liner command "
+        "without any superfluous words explaining it, and no formatting. Do NOT use backticks. Do not put "
+        "backticks around the one-liner. Code should be bare without any markdown formatting. IMPORTANT: If you "
+        "need to ask for clarification or provide any information other than a one-liner solution, please prefix "
+        "your response with the exact phrase AISH_FEEDBACK: in all caps, with a colon. If you are responding with "
+        "anything other than a shell script one-liner you MUST include AISH_FEEDBACK: (including the colon) as the "
+        "start of the response.\n\nHere is the task I would like you to carry out with the one-liner: '{request}'"
+    )
+
+    llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
+
+    print(llm([
+        mc.SystemMessage(system_prompt),
+        mc.UserMessage(user_template.format(
+            shell='zsh',
+            os='Mac OSX',
+            request=request,
+        )),
+    ]))
+
+
+if __name__ == '__main__':
+    _main()
