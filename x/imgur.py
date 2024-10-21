@@ -33,6 +33,7 @@ def _main() -> None:
     except urllib.error.HTTPError as e:
         print(repr(e))
         print(dict(e.headers))
+        print(e.read())
         raise
 
 
