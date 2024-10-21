@@ -81,6 +81,7 @@ class Subprocess:
     group = None  # ProcessGroup instance if process is in the group
 
     def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: ServerContext) -> None:
+        super().__init__()
         self.config = config
         self.group = group
         self.context = context
@@ -698,6 +699,7 @@ class Subprocess:
 @functools.total_ordering
 class ProcessGroup:
     def __init__(self, config: ProcessGroupConfig, context: ServerContext):
+        super().__init__()
         self.config = config
         self.context = context
         self.processes = {}
