@@ -35,7 +35,7 @@ pg8000==1.31.2
 #> psycopg==3.2.2
 
 #> mysql-connector-python==9.1.0
-#> mysqlclient==2.2.4; sys_platform == "darwin"  # brew install mysql pkg-config
+#> mysqlclient==2.2.5; sys_platform == "darwin"  # brew install mysql pkg-config
 pymysql==1.1.1
 
 # git+https://github.com/wrmsr/sqlean.py.git
