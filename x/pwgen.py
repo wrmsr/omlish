@@ -9,46 +9,41 @@ TODO:
  - move to omlish/secrets
  - argparse, CliCmd
 """
+import random
 import secrets
 import string
+import typing as ta
 
 
-class PasswordGenerator:
-    def __init__(self,
-                 length: int = 12,
-                 required_chars: str = "",
-                 permitted_chars: str = string.ascii_letters + string.digits + string.punctuation):
-        """
-        Initialize the password generator.
+CHAR_CLASSES: ta.Mapping[str, str] = {
+    'lower': string.ascii_lowercase,
+    'upper': string.ascii_uppercase,
+    'digit': string.digits,
+    'special': string.punctuation,
+}
 
-        :param length: The desired length of the password (default is 12).
-        :param required_chars: Characters that must be present in the password (default is none).
-        :param permitted_chars: Characters that can be used in the password (default is all letters, digits, punctuation).
-        """
-        self.length = length
-        self.required_chars = required_chars
-        self.permitted_chars = permitted_chars
 
-    def generate(self) -> str:
-        """
-        Generate a secure password based on the specified requirements.
+def generate_password(
+        char_classes: ta.Sequence[str],
+        length: int = 12,
+        *,
+        rand: random.Random | None = None,
+) -> str:
+    if rand is None:
+        rand = secrets.SystemRandom()
+    l: list[str] = []
+    for cc in char_classes:
+        l.append(rand.choice(cc))
+    cs = ''.join(char_classes)
+    while len(l) < length:
+        l.append(rand.choice(cs))
+    rand.shuffle(l)
+    return ''.join(l)
 
-        :return: A generated password as a string.
-        """
-        if len(self.required_chars) > self.length:
-            raise ValueError("Number of required characters exceeds password length.")
 
-        # Ensure all required characters are in the password
-        password_chars = list(self.required_chars)
+def _main() -> None:
+    print(generate_password(list(CHAR_CLASSES.values())))
 
-        # Calculate remaining length needed
-        remaining_length = self.length - len(password_chars)
 
-        # Add random permitted characters until the password reaches the desired length
-        for _ in range(remaining_length):
-            password_chars.append(secrets.choice(self.permitted_chars))
-
-        # Shuffle the characters to ensure randomness
-        secrets.SystemRandom().shuffle(password_chars)
-
-        return ''.join(password_chars)
+if __name__ == '__main__':
+    _main()
