@@ -4,6 +4,10 @@ import typing as ta
 from omlish.lite.check import check_not_none
 
 
+ProcessState = int  # ta.TypeAlias
+SupervisorState = int  # ta.TypeAlias
+
+
 ##
 
 
@@ -17,9 +21,6 @@ def _names_by_code(states: ta.Any) -> ta.Dict[int, str]:
 
 
 ##
-
-
-ProcessState = int  # ta.TypeAlias
 
 
 class ProcessStates:
@@ -61,9 +62,6 @@ def get_process_state_description(code: ProcessState) -> str:
 
 
 ##
-
-
-SupervisorState = int  # ta.TypeAlias
 
 
 class SupervisorStates:

@@ -1,3 +1,4 @@
+import abc
 import errno
 import logging
 import os
@@ -17,43 +18,61 @@ from .types import AbstractSubprocess
 log = logging.getLogger(__name__)
 
 
-class Dispatcher:
+class Dispatcher(abc.ABC):
 
     def __init__(self, process: AbstractSubprocess, channel: str, fd: int) -> None:
         super().__init__()
 
-        self.process = process  # process which "owns" this dispatcher
-        self.channel = channel  # 'stderr' or 'stdout'
-        self.fd = fd
-        self.closed = False  # True if close() has been called
+        self._process = process  # process which "owns" this dispatcher
+        self._channel = channel  # 'stderr' or 'stdout'
+        self._fd = fd
+        self._closed = False  # True if close() has been called
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} at {id(self)} for {self.process} ({self.channel})>'
+        return f'<{self.__class__.__name__} at {id(self)} for {self._process} ({self._channel})>'
 
-    def readable(self):
+    @property
+    def process(self) -> AbstractSubprocess:
+        return self._process
+
+    @property
+    def channel(self) -> str:
+        return self._channel
+
+    @property
+    def fd(self) -> int:
+        return self._fd
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
+    @abc.abstractmethod
+    def readable(self) -> bool:
         raise NotImplementedError
 
-    def writable(self):
+    @abc.abstractmethod
+    def writable(self) -> bool:
         raise NotImplementedError
 
-    def handle_read_event(self):
-        raise NotImplementedError
+    def handle_read_event(self) -> None:
+        raise TypeError
 
-    def handle_write_event(self):
-        raise NotImplementedError
+    def handle_write_event(self) -> None:
+        raise TypeError
 
-    def handle_error(self):
+    def handle_error(self) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
         log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
         self.close()
 
-    def close(self):
-        if not self.closed:
-            log.debug('fd %s closed, stopped monitoring %s', self.fd, self)
-            self.closed = True
+    def close(self) -> None:
+        if not self._closed:
+            log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
+            self._closed = True
 
-    def flush(self):
+    def flush(self) -> None:  # noqa
         pass
 
 
@@ -81,7 +100,7 @@ class OutputDispatcher(Dispatcher):
         super().__init__(process, event_type.channel, fd)
         self.event_type = event_type
 
-        self.lc: ProcessConfig.Log = getattr(process.config, self.channel)
+        self.lc: ProcessConfig.Log = getattr(process.config, self._channel)
 
         self._init_normal_log()
         self._init_capture_log()
@@ -94,18 +113,18 @@ class OutputDispatcher(Dispatcher):
         self.begin_token_data = (begin_token, len(begin_token))
         self.end_token_data = (end_token, len(end_token))
         self.main_log_level = logging.DEBUG
-        config = self.process.config
+        config = self._process.config
         self.log_to_main_log = process.context.config.loglevel <= self.main_log_level
         self.stdout_events_enabled = config.stdout.events_enabled
         self.stderr_events_enabled = config.stderr.events_enabled
 
-    def _init_normal_log(self):
+    def _init_normal_log(self) -> None:
         """
         Configure the "normal" (non-capture) log for this channel of this process. Sets self.normal_log if logging is
         enabled.
         """
-        config = self.process.config  # noqa
-        channel = self.channel  # noqa
+        config = self._process.config  # noqa
+        channel = self._channel  # noqa
 
         logfile = self.lc.file
         maxbytes = self.lc.maxbytes  # noqa
@@ -160,7 +179,7 @@ class OutputDispatcher(Dispatcher):
 
     def _log(self, data):
         if data:
-            if self.process.context.config.strip_ansi:
+            if self._process.context.config.strip_ansi:
                 data = strip_escapes(data)
             if self.child_log:
                 self.child_log.info(data)  # type: ignore
@@ -172,12 +191,12 @@ class OutputDispatcher(Dispatcher):
                         text = data.decode('utf-8')
                     except UnicodeDecodeError:
                         text = f'Undecodable: {data!r}'
-                log.log(self.main_log_level, '%r %s output:\n%s', self.process.config.name, self.channel, text)  # noqa
-            if self.channel == 'stdout':
+                log.log(self.main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+            if self._channel == 'stdout':
                 if self.stdout_events_enabled:
-                    notify_event(ProcessLogStdoutEvent(self.process, self.process.pid, data))
+                    notify_event(ProcessLogStdoutEvent(self._process, self._process.pid, data))
             elif self.stderr_events_enabled:
-                notify_event(ProcessLogStderrEvent(self.process, self.process.pid, data))
+                notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
         if self.capture_log is None:
@@ -225,9 +244,9 @@ class OutputDispatcher(Dispatcher):
                 for handler in self.capture_log.handlers:
                     handler.flush()
                 data = self.capture_log.getvalue()  # type: ignore
-                channel = self.channel
-                procname = self.process.config.name
-                event = self.event_type(self.process, self.process.pid, data)
+                channel = self._channel
+                procname = self._process.config.name
+                event = self.event_type(self._process, self._process.pid, data)
                 notify_event(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
@@ -236,16 +255,16 @@ class OutputDispatcher(Dispatcher):
                     handler.reopen()  # type: ignore
                 self.child_log = self.normal_log
 
-    def writable(self):
+    def writable(self) -> bool:
         return False
 
-    def readable(self):
-        if self.closed:
+    def readable(self) -> bool:
+        if self._closed:
             return False
         return True
 
     def handle_read_event(self):
-        data = readfd(self.fd)
+        data = readfd(self._fd)
         self.output_buffer += data
         self.record_output()
         if not data:
@@ -260,17 +279,17 @@ class InputDispatcher(Dispatcher):
         super().__init__(process, channel, fd)
         self.input_buffer = b''
 
-    def writable(self):
-        if self.input_buffer and not self.closed:
+    def writable(self) -> bool:
+        if self.input_buffer and not self._closed:
             return True
         return False
 
-    def readable(self):
+    def readable(self) -> bool:
         return False
 
     def flush(self):
         # other code depends on this raising EPIPE if the pipe is closed
-        sent = os.write(self.fd, as_bytes(self.input_buffer))
+        sent = os.write(self._fd, as_bytes(self.input_buffer))
         self.input_buffer = self.input_buffer[sent:]
 
     def handle_write_event(self):

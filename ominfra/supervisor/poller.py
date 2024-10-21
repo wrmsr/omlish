@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import errno
 import logging
 import select
@@ -8,33 +9,38 @@ import typing as ta
 log = logging.getLogger(__name__)
 
 
-class BasePoller:
+class BasePoller(abc.ABC):
 
     def __init__(self) -> None:
         super().__init__()
 
+    @abc.abstractmethod
     def register_readable(self, fd: int) -> None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def register_writable(self, fd: int) -> None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def unregister_readable(self, fd: int) -> None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def unregister_writable(self, fd: int) -> None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         raise NotImplementedError
 
-    def before_daemonize(self) -> None:
+    def before_daemonize(self) -> None:  # noqa
         pass
 
-    def after_daemonize(self) -> None:
+    def after_daemonize(self) -> None:  # noqa
         pass
 
-    def close(self) -> None:
+    def close(self) -> None:  # noqa
         pass
 
 
@@ -144,7 +150,7 @@ class PollPoller(BasePoller):
         return False
 
 
-class KQueuePoller(BasePoller):
+class KqueuePoller(BasePoller):
     max_events = 1000
 
     def __init__(self) -> None:
@@ -219,7 +225,7 @@ class KQueuePoller(BasePoller):
 
 Poller: ta.Type[BasePoller]
 if hasattr(select, 'kqueue'):
-    Poller = KQueuePoller
+    Poller = KqueuePoller
 elif hasattr(select, 'poll'):
     Poller = PollPoller
 else:
