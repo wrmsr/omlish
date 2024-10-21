@@ -195,7 +195,7 @@ class _ImmediateDominanceComputer(ta.Generic[V]):
     def __init__(self, dfs: _Dfs[V]) -> None:
         super().__init__()
 
-        self._dfs: _Dfs[V] = check.isinstance(dfs, _Dfs)  # type: ignore
+        self._dfs: _Dfs[V] = check.isinstance(dfs, _Dfs)
 
         self._ancestor: dict[V, V] = {}
         self._semi = dict(self._dfs.semi)

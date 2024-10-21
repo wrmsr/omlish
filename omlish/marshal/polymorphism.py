@@ -183,8 +183,8 @@ class WrapperPolymorphismUnmarshaler(Unmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = check.isinstance(v, collections.abc.Mapping)
         [(tag, iv)] = ma.items()
-        u = self.m[tag]  # type: ignore
-        return u.unmarshal(ctx, iv)  # type: ignore
+        u = self.m[tag]
+        return u.unmarshal(ctx, iv)
 
 
 @dc.dataclass(frozen=True)
@@ -194,8 +194,8 @@ class FieldPolymorphismUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = dict(check.isinstance(v, collections.abc.Mapping))
-        tag = ma.pop(self.tf)  # type: ignore
-        u = self.m[tag]  # type: ignore
+        tag = ma.pop(self.tf)
+        u = self.m[tag]
         return u.unmarshal(ctx, ma)
 
 

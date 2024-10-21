@@ -167,7 +167,7 @@ class ObjectMarshaler(Marshaler):
 
             if fi.options.embed:
                 for ek, ev in check.isinstance(mv, collections.abc.Mapping).items():
-                    ret[mn + check.non_empty_str(ek)] = ev  # type: ignore
+                    ret[mn + check.non_empty_str(ek)] = ev
 
             else:
                 ret[mn] = mv

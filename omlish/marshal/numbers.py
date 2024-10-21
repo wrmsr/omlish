@@ -18,7 +18,7 @@ class ComplexMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         real, imag = check.isinstance(v, list)
-        return complex(real, imag)  # type: ignore
+        return complex(real, imag)
 
 
 class DecimalMarshalerUnmarshaler(Marshaler, Unmarshaler):
@@ -35,7 +35,7 @@ class FractionMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         num, denom = check.isinstance(v, list)
-        return fractions.Fraction(num, denom)  # type: ignore
+        return fractions.Fraction(num, denom)
 
 
 NUMBERS_MARSHALER_FACTORY = TypeMapMarshalerFactory({

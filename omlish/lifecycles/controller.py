@@ -55,7 +55,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
         return self._state
 
     def add_listener(self, listener: LifecycleListener[LifecycleT]) -> 'LifecycleController':
-        self._listeners.append(check.isinstance(listener, LifecycleListener))  # type: ignore
+        self._listeners.append(check.isinstance(listener, LifecycleListener))
         return self
 
     def _advance(

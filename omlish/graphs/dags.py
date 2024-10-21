@@ -80,7 +80,7 @@ class Subdag(ta.Generic[U]):
     ) -> None:
         super().__init__()
 
-        self._dag: Dag[U] = check.isinstance(dag, Dag)  # type: ignore
+        self._dag: Dag[U] = check.isinstance(dag, Dag)
         self._targets = set(targets)
         self._ignored = set(ignored or []) - self._targets
 
