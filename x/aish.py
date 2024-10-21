@@ -2,6 +2,11 @@
 TODO:
  - log
  - check BASH_VERSION/ZSH_VERSION, sys.platform
+
+==
+
+eval `om aish ...`
+. <(om aish ...)
 """
 # Copyright © 2023 Chris McCormick
 #
@@ -35,6 +40,7 @@ Examples:
  - use imagemagick change the white background in screenshot.png to transparent
 """
 import argparse
+import subprocess
 import getpass
 import os
 import pwd
