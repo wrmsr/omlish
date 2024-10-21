@@ -17,6 +17,7 @@ from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
+from .dispatchers import Dispatcher
 from .events import TICK_EVENTS
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
@@ -25,6 +26,7 @@ from .events import SupervisorStoppingEvent
 from .events import clear_events
 from .events import notify_event
 from .process import ProcessGroup
+from .process import Subprocess
 from .states import SupervisorState
 from .states import SupervisorStates
 from .states import get_process_state_description
@@ -39,9 +41,9 @@ class Supervisor:
         super().__init__()
 
         self._context = context
-        self._ticks: dict = {}
-        self._process_groups: dict = {}  # map of process group name to process group object
-        self._stop_groups: ta.Optional[ta.List] = None  # list used for priority ordered shutdown
+        self._ticks: ta.Dict[int, float] = {}
+        self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
+        self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
         self._stopping = False  # set after we detect that we are handling a stop request
         self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
 
@@ -106,31 +108,36 @@ class Supervisor:
 
         return added, changed, removed
 
-    def add_process_group(self, config):
+    def add_process_group(self, config: ProcessGroupConfig) -> bool:
         name = config.name
-        if name not in self._process_groups:
-            group = self._process_groups[name] = ProcessGroup(config, self._context)
-            group.after_setuid()
-            notify_event(ProcessGroupAddedEvent(name))
-            return True
-        return False
+        if name in self._process_groups:
+            return False
 
-    def remove_process_group(self, name):
+        group = self._process_groups[name] = ProcessGroup(config, self._context)
+        group.after_setuid()
+
+        notify_event(ProcessGroupAddedEvent(name))
+        return True
+
+    def remove_process_group(self, name: str) -> bool:
         if self._process_groups[name].get_unstopped_processes():
             return False
+
         self._process_groups[name].before_remove()
+
         del self._process_groups[name]
+
         notify_event(ProcessGroupRemovedEvent(name))
         return True
 
-    def get_process_map(self):
+    def get_process_map(self) -> ta.Dict[int, Dispatcher]:
         process_map = {}
         for group in self._process_groups.values():
             process_map.update(group.get_dispatchers())
         return process_map
 
-    def shutdown_report(self):
-        unstopped = []
+    def shutdown_report(self) -> ta.List[Subprocess]:
+        unstopped: ta.List[Subprocess] = []
 
         for group in self._process_groups.values():
             unstopped.extend(group.get_unstopped_processes())
@@ -146,14 +153,15 @@ class Supervisor:
                 for proc in unstopped:
                     state = get_process_state_description(proc.get_state())
                     log.debug('%s state: %s', proc.config.name, state)
+
         return unstopped
 
-    def _ordered_stop_groups_phase_1(self):
+    def _ordered_stop_groups_phase_1(self) -> None:
         if self._stop_groups:
             # stop the last group (the one with the "highest" priority)
             self._stop_groups[-1].stop_all()
 
-    def _ordered_stop_groups_phase_2(self):
+    def _ordered_stop_groups_phase_2(self) -> None:
         # after phase 1 we've transitioned and reaped, let's see if we can remove the group we stopped from the
         # stop_groups queue.
         if self._stop_groups:
@@ -164,11 +172,11 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
-    def runforever(self):
+    def runforever(self) -> None:
         notify_event(SupervisorRunningEvent())
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
 
-        while 1:
+        while True:
             combined_map = {}
             combined_map.update(self.get_process_map())
 
