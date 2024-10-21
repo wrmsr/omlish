@@ -1,7 +1,6 @@
 import errno
 import logging
 import os
-import typing as ta
 
 from .compat import as_bytes
 from .compat import compact_traceback
@@ -12,10 +11,7 @@ from .configs import ProcessConfig
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify_event
-
-
-if ta.TYPE_CHECKING:
-    from .process import Subprocess
+from .types import AbstractSubprocess
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +19,7 @@ log = logging.getLogger(__name__)
 
 class Dispatcher:
 
-    def __init__(self, process: 'Subprocess', channel: str, fd: int) -> None:
+    def __init__(self, process: AbstractSubprocess, channel: str, fd: int) -> None:
         super().__init__()
 
         self.process = process  # process which "owns" this dispatcher
@@ -76,7 +72,7 @@ class OutputDispatcher(Dispatcher):
     capture_mode = False  # are we capturing process event data
     output_buffer = b''  # data waiting to be logged
 
-    def __init__(self, process: 'Subprocess', event_type, fd):
+    def __init__(self, process: AbstractSubprocess, event_type, fd):
         """
         Initialize the dispatcher.
 
@@ -117,7 +113,7 @@ class OutputDispatcher(Dispatcher):
         to_syslog = self.lc.syslog
 
         if logfile or to_syslog:
-            self.normal_log = logging.getLogger(__name__)  # type: ignore
+            self.normal_log = logging.getLogger(__name__)
 
         # if logfile:
         #     loggers.handle_file(
@@ -167,7 +163,7 @@ class OutputDispatcher(Dispatcher):
             if self.process.context.config.strip_ansi:
                 data = strip_escapes(data)
             if self.child_log:
-                self.child_log.info(data)
+                self.child_log.info(data)  # type: ignore
             if self.log_to_main_log:
                 if not isinstance(data, bytes):
                     text = data
