@@ -117,7 +117,7 @@ class OutputDispatcher(Dispatcher):
         to_syslog = self.lc.syslog
 
         if logfile or to_syslog:
-            self.normal_log = logging.getLogger(__name__)
+            self.normal_log = logging.getLogger(__name__)  # type: ignore
 
         # if logfile:
         #     loggers.handle_file(
@@ -153,14 +153,14 @@ class OutputDispatcher(Dispatcher):
         for log in (self.normal_log, self.capture_log):
             if log is not None:
                 for handler in log.handlers:
-                    handler.remove()
-                    handler.reopen()
+                    handler.remove()  # type: ignore
+                    handler.reopen()  # type: ignore
 
     def reopen_logs(self):
         for log in (self.normal_log, self.capture_log):
             if log is not None:
                 for handler in log.handlers:
-                    handler.reopen()
+                    handler.reopen()  # type: ignore
 
     def _log(self, data):
         if data:
@@ -176,10 +176,7 @@ class OutputDispatcher(Dispatcher):
                         text = data.decode('utf-8')
                     except UnicodeDecodeError:
                         text = f'Undecodable: {data!r}'
-                msg = '%(name)r %(channel)s output:\n%(data)s'
-                log.log(
-                    self.main_log_level, msg, name=self.process.config.name,
-                    channel=self.channel, data=text)
+                log.log(self.main_log_level, '%r %s output:\n%s', self.process.config.name, self.channel, text)  # noqa
             if self.channel == 'stdout':
                 if self.stdout_events_enabled:
                     notify_event(ProcessLogStdoutEvent(self.process, self.process.pid, data))
@@ -217,7 +214,7 @@ class OutputDispatcher(Dispatcher):
         else:
             self._log(before)
             self.toggle_capture_mode()
-            self.output_buffer = after
+            self.output_buffer = after  # type: ignore
 
         if after:
             self.record_output()
@@ -231,17 +228,16 @@ class OutputDispatcher(Dispatcher):
             else:
                 for handler in self.capture_log.handlers:
                     handler.flush()
-                data = self.capture_log.getvalue()
+                data = self.capture_log.getvalue()  # type: ignore
                 channel = self.channel
                 procname = self.process.config.name
                 event = self.event_type(self.process, self.process.pid, data)
                 notify_event(event)
 
-                msg = '%(procname)r %(channel)s emitted a comm event'
-                log.debug(msg, procname=procname, channel=channel)
+                log.debug('%r %s emitted a comm event', procname, channel)
                 for handler in self.capture_log.handlers:
-                    handler.remove()
-                    handler.reopen()
+                    handler.remove()  # type: ignore
+                    handler.reopen()  # type: ignore
                 self.child_log = self.normal_log
 
     def writable(self):
