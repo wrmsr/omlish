@@ -34,18 +34,6 @@ Examples:
  - use ffmpeg to shrink an mp4 file's size
  - use imagemagick change the white background in screenshot.png to transparent
 """
-"""
-if [ "${SHELLNAME}" = "zsh" ]; then
-  print -s "${result}"
-fi
-
-if [ "${SHELLNAME}" = "bash" ] ; then
-  set -o history
-  shopt -s histappend
-  history -s "${result}"
-  history -w
-fi
-"""
 import argparse
 import getpass
 import os
@@ -89,8 +77,11 @@ def _main() -> None:
     parser.add_argument('request', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    request = ' '.join(args.request)
-    print(request)
+    #
+
+    request = ' '.join(args.request).strip()
+    if not request:
+        parser.print_help()
 
     if (os_name := args.os) is None:
         os_name = _detect_os()
@@ -98,7 +89,11 @@ def _main() -> None:
     if (shell_name := args.shell) is None:
         shell_name = _detect_shell()
 
+    #
+
     system_prompt = 'You are an AI shell-scripting expert called Aish.'
+
+    feedback_pfx = 'AISH_FEEDBACK'
 
     user_template = (
         "Please write a one-liner for '{shell_name}' shell for performing the following task. "
@@ -119,9 +114,9 @@ def _main() -> None:
         "Code should be bare without any markdown formatting. "
 
         "IMPORTANT: If you need to ask for clarification or provide any information other than a one-liner solution, "
-        "please prefix your response with the exact phrase AISH_FEEDBACK: in all caps, with a colon. "
+        "please prefix your response with the exact phrase {feedback_pfx}: in all caps, with a colon. "
 
-        "If you are responding with anything other than a shell script one-liner you MUST include AISH_FEEDBACK: "
+        "If you are responding with anything other than a shell script one-liner you MUST include {feedback_pfx}: "
         "(including the colon) as the start of the response."
 
         "\n\n"
@@ -129,7 +124,9 @@ def _main() -> None:
         "Here is the task I would like you to carry out with the one-liner: '{request}'"
     )
 
-    llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key').reveal())
+    #
+
+    llm = OpenaiChatModel(api_key=load_secrets().get('openai_api_key'))
 
     resp = llm([
         mc.SystemMessage(system_prompt),
@@ -137,10 +134,28 @@ def _main() -> None:
             shell_name=shell_name,
             os_name=os_name,
             request=args.request,
+            feedback_pfx=feedback_pfx,
         )),
     ])
 
-    print(check.single(resp.v).m.s)
+    out = check.single(resp.v).m.s
+
+    #
+
+    """
+    if [ "${SHELLNAME}" = "zsh" ]; then
+      print -s "${result}"
+    fi
+
+    if [ "${SHELLNAME}" = "bash" ] ; then
+      set -o history
+      shopt -s histappend
+      history -s "${result}"
+      history -w
+    fi
+    """
+
+    print(out)
 
 
 if __name__ == '__main__':
