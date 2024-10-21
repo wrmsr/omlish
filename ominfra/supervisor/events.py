@@ -1,29 +1,35 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 from .compat import as_string
 from .states import get_process_state_description
 
 
-callbacks = []
+class EventCallbacks:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._callbacks: ta.List[ta.Tuple[type, ta.Callable]] = []
+
+    def subscribe(self, type, callback):  # noqa
+        self._callbacks.append((type, callback))
+
+    def unsubscribe(self, type, callback):  # noqa
+        self._callbacks.remove((type, callback))
+
+    def notify(self, event):
+        for type, callback in self._callbacks:  # noqa
+            if isinstance(event, type):
+                callback(event)
+
+    def clear(self):
+        self._callbacks[:] = []
 
 
-def subscribe(type, callback):  # noqa
-    callbacks.append((type, callback))
+EVENT_CALLBACKS = EventCallbacks()
 
-
-def unsubscribe(type, callback):  # noqa
-    callbacks.remove((type, callback))
-
-
-def notify_event(event):
-    for type, callback in callbacks:  # noqa
-        if isinstance(event, type):
-            callback(event)
-
-
-def clear_events():
-    callbacks[:] = []
+notify_event = EVENT_CALLBACKS.notify
+clear_events = EVENT_CALLBACKS.clear
 
 
 class Event:
