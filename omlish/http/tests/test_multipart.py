@@ -10,7 +10,7 @@ def test_multipart():
             b'foo.jpeg',
             headers=[(b'Content-Type', b'image/jpeg')],
         ),
-    ])
+    ], boundary=b'----WebKitFormBoundary7MA4YWxkTrZu0gW')
 
     assert me.content() == (
         b'------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n'
