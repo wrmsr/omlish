@@ -1,4 +1,24 @@
 """
+https://planspace.org/2013/01/13/upload-images-to-your-imgur-account/
+
+https://api.imgur.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&response_type=pin
+
+curl \
+  -X POST \
+  -F "client_id=YOUR_CLIENT_ID" \
+  -F "client_secret=YOUR_CLIENT_SECRET" \
+  -F "grant_type=pin" \
+  -F "pin=YOUR_PIN" \
+  https://api.imgur.com/oauth2/token
+
+curl \
+  -X POST \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -F "image=@PATH_TO_YOUR_IMAGE_FILE" \
+  https://api.imgur.com/3/upload
+
+==
+
 https://stackoverflow.com/questions/64395410/how-can-i-upload-an-image-to-my-account-in-imgur-com-with-curl
 
 curl -X POST -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -F "image=@PATH_TO_YOUR_IMAGE_FILE" https://api.imgur.com/3/upload
@@ -15,7 +35,7 @@ from omdev.secrets import load_secrets
 
 
 def _main() -> None:
-    key = load_secrets().get('imgur_client_secret')
+    key = load_secrets().get('imgur_client_access_token')
 
     file = os.path.join(os.path.dirname(__file__), '..', 'ommlx', 'tests', 'test.jpg')
     with open(file, 'rb') as f:
