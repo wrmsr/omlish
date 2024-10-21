@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
-# !@omlish-amalg _amalg.py
+# @omlish-amalg _supervisor.py
 import logging
 import signal
 import time
