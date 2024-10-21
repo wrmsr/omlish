@@ -1,3 +1,8 @@
+"""
+TODO:
+ - log
+ - check BASH_VERSION/ZSH_VERSION, sys.platform
+"""
 # Copyright © 2023 Chris McCormick
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -30,56 +35,23 @@ Examples:
  - use imagemagick change the white background in screenshot.png to transparent
 """
 """
-if [ "${SHELLNAME}" = "bash" ]
-then
-  (return 0 2>/dev/null) && sourced=1 || sourced=0
-  if [ $sourced -eq 0 ]; then
-    _throw_source_error "${@}"
-  fi
+if [ "${SHELLNAME}" = "zsh" ]; then
+  print -s "${result}"
 fi
 
-if [ "${SHELLNAME}" = "zsh" ]
-then
-  if [[ "${ZSH_EVAL_CONTEXT}" = "toplevel" ]]
-  then
-    _throw_source_error "${@}"
-  fi
-  if ! (( zsh_eval_context[(I)file] )); then
-    _throw_source_error "${@}"
-  fi
-fi
-
-...
-
-if `echo "${json}" | grep -q '"content": '`
-then
-  now=`date "+%Y-%m-%dT%H:%M:%S%:z"`
-  echo "$now ${request}" >> ~/.aish-log
-  result=`echo "${json}" | grep '"content": "' | sed -nr 's/"content": "(.*)"/\1/p' | sed -e 's/^[ \t]*//' | sed -e 's/\\\"/"/g'`
-  if [ "${result#AISH_FEEDBACK: }" != "$result" ]
-  then
-    echo "${result#AISH_FEEDBACK: }"
-  else
-    echo "Hit Enter to add this command to history or ctrl-C to abort:"
-    echo -n "$ ${result}"
-    read -r _
-    if [ "${SHELLNAME}" = "zsh" ]
-    then
-      print -s "${result}"
-    fi
-    if [ "${SHELLNAME}" = "bash" ]
-    then
-      set -o history
-      shopt -s histappend
-      history -s "${result}"
-      history -w
-    fi
-    echo "Press the up arrow to access the solution."
-  fi
-else
-  echo "${json}"
+if [ "${SHELLNAME}" = "bash" ] ; then
+  set -o history
+  shopt -s histappend
+  history -s "${result}"
+  history -w
 fi
 """
+import argparse
+import getpass
+import os
+import pwd
+import sys
+
 from omdev.secrets import load_secrets
 from omlish import check
 from ommlx import minichain as mc
@@ -87,14 +59,43 @@ from ommlx.minichain.backends.openai import OpenaiChatModel
 
 
 def _main() -> None:
-    request = 'which process is running on port 8000'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--os', nargs='?')
+    parser.add_argument('--shell', nargs='?')
+    parser.add_argument('request', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+
+    request = ' '.join(args.request)
+    print(request)
+
+    if (os_name := args.os) is None:
+        os_name = {
+            'linux': 'Linux',
+            'darwin': 'Mac OSX',
+        }[sys.platform]
+
+    if (shell_name := args.shell) is None:
+        if 'BASH_VERSION' in os.environ:
+            shell_name = 'bash'
+        elif 'ZSH_VERSION' in os.environ:
+            shell_name = 'zsh'
+        else:
+            if not (sh_exe := os.environ.get('SHELL')):
+                sh_exe = pwd.getpwnam(getpass.getuser()).pw_shell
+            sh_exe = sh_exe.split('/')[-1]
+            if sh_exe == 'bash':
+                shell_name = 'bash'
+            elif sh_exe == 'zsh':
+                shell_name = 'zsh'
+            else:
+                raise RuntimeError("Can't get shell name")
 
     system_prompt = 'You are an AI shell-scripting expert called Aish.'
 
     user_template = (
-        "Please write a one-liner for '{shell}' shell for performing the following task. "
+        "Please write a one-liner for '{shell_name}' shell for performing the following task. "
         
-        "Assume you have access to all of the commonly available unix commands on a modern '{os}' system. "
+        "Assume you have access to all of the commonly available unix commands on a modern '{os_name}' system. "
         
         "You can separate multi-line commands with a semicolon or double ampersand but please put them on one line. "
         
@@ -125,9 +126,9 @@ def _main() -> None:
     resp = llm([
         mc.SystemMessage(system_prompt),
         mc.UserMessage(user_template.format(
-            shell='zsh',
-            os='Mac OSX',
-            request=request,
+            shell_name=shell_name,
+            os_name=os_name,
+            request=args.request,
         )),
     ])
 
