@@ -46,7 +46,7 @@ class ServerContext:
 
         self.config = config
 
-        self.pid_history: dict[int, Subprocess] = {}
+        self.pid_history: ta.Dict[int, Subprocess] = {}
         self.state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
@@ -336,7 +336,7 @@ def make_pipes(stderr=True) -> ta.Mapping[str, int]:
     read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
     """
 
-    pipes: dict[str, ta.Optional[int]] = {
+    pipes: ta.Dict[str, ta.Optional[int]] = {
         'child_stdin': None,
         'stdin': None,
         'stdout': None,
