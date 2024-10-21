@@ -26,16 +26,14 @@ from .exceptions import NotFoundError
 from .poller import Poller
 from .states import SupervisorState
 from .states import SupervisorStates
-
-
-if ta.TYPE_CHECKING:
-    from .process import Subprocess
+from .types import AbstractServerContext
+from .types import AbstractSubprocess
 
 
 log = logging.getLogger(__name__)
 
 
-class ServerContext:
+class ServerContext(AbstractServerContext):
     first = False
     test = False
 
@@ -44,10 +42,10 @@ class ServerContext:
     def __init__(self, config: ServerConfig) -> None:
         super().__init__()
 
-        self.config = config
+        self._config = config
 
-        self.pid_history: ta.Dict[int, Subprocess] = {}
-        self.state: SupervisorState = SupervisorStates.RUNNING
+        self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
+        self._state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
 
@@ -62,6 +60,21 @@ class ServerContext:
             self.gid = None
 
         self.unlink_pidfile = False
+
+    @property
+    def config(self) -> ServerConfig:
+        return self._config
+
+    @property
+    def state(self) -> SupervisorState:
+        return self._state
+
+    def set_state(self, state: SupervisorState) -> None:
+        self._state = state
+
+    @property
+    def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
+        return self._pid_history
 
     uid: ta.Optional[int]
     gid: ta.Optional[int]

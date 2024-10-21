@@ -50,18 +50,20 @@ from .states import ProcessState
 from .states import ProcessStates
 from .states import SupervisorStates
 from .states import get_process_state_description
+from .types import AbstractServerContext
+from .types import AbstractSubprocess
 
 
 log = logging.getLogger(__name__)
 
 
 @functools.total_ordering
-class Subprocess:
+class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
 
     # Initial state; overridden by instance variables
 
-    pid = 0  # Subprocess pid; 0 when not running
+    # pid = 0  # Subprocess pid; 0 when not running
     # config = None  # ProcessConfig instance
     # state = None  # process state code
     listener_state = None  # listener state code (if we're an event listener)
@@ -80,14 +82,27 @@ class Subprocess:
     spawn_err = None  # error message attached by spawn() if any
     group = None  # ProcessGroup instance if process is in the group
 
-    def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: ServerContext) -> None:
+    def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: AbstractServerContext) -> None:
         super().__init__()
-        self.config = config
+        self._config = config
         self.group = group
-        self.context = context
+        self._context = context
         self._dispatchers: dict = {}
         self._pipes: dict = {}
         self.state = ProcessStates.STOPPED
+        self._pid = 0
+
+    @property
+    def pid(self) -> int:
+        return self._pid
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._config
+
+    @property
+    def context(self) -> AbstractServerContext:
+        return self._context
 
     def remove_logs(self) -> None:
         for dispatcher in self._dispatchers.values():
@@ -295,7 +310,7 @@ class Subprocess:
 
     def _spawn_as_parent(self, pid: int) -> int:
         # Parent
-        self.pid = pid
+        self._pid = pid
         close_child_pipes(self._pipes)
         log.info('spawned: \'%s\' with pid %s', as_string(self.config.name), pid)
         self.spawn_err = None
@@ -596,7 +611,7 @@ class Subprocess:
                 self.change_state(ProcessStates.EXITED, expected=False)
                 log.warning('exited: %s (%s)', processname, msg + '; not expected')
 
-        self.pid = 0
+        self._pid = 0
         close_parent_pipes(self._pipes)
         self._pipes = {}
         self._dispatchers = {}
@@ -687,13 +702,14 @@ class Subprocess:
 
     def create_auto_child_logs(self):
         # temporary logfiles which are erased at start time
-        get_autoname = self.context.get_auto_child_log_name  # noqa
-        sid = self.context.config.identifier  # noqa
-        name = self.config.name  # noqa
+        # get_autoname = self.context.get_auto_child_log_name  # noqa
+        # sid = self.context.config.identifier  # noqa
+        # name = self.config.name  # noqa
         # if self.stdout_logfile is Automatic:
         #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
         # if self.stderr_logfile is Automatic:
         #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
+        pass
 
 
 @functools.total_ordering
