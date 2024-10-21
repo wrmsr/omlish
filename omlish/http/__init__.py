@@ -40,3 +40,9 @@ from .json import (  # noqa
     json_dumps,
     json_loads,
 )
+
+from .multipart import (  # noqa
+    MultipartData,
+    MultipartEncoder,
+    MultipartField,
+)
