@@ -250,7 +250,7 @@ mycli==1.27.2
 mypy==1.12.1
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
-mysqlclient==2.2.4
+mysqlclient==2.2.5
 namex==0.0.8
 nbclient==0.10.0
 nbconvert==7.16.4
