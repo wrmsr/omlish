@@ -2,7 +2,7 @@
 from prompt_toolkit.application import Application
 from prompt_toolkit.layout import Layout
 
-from ptterm import Terminal
+from .. import Terminal
 
 
 def main():

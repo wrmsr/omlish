@@ -7,7 +7,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.styles import Style
 
-from ptterm import Terminal
+from .. import Terminal
 
 
 def main():
