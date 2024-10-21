@@ -123,7 +123,7 @@ class SuffixMultiplier:
         for k in d:
             if self._keysz is None:
                 self._keysz = len(k)
-            elif self._keysz != len(k):
+            elif self._keysz != len(k):  # type: ignore
                 raise ValueError(k)
 
     def __call__(self, v: ta.Union[str, int]) -> int:
@@ -131,8 +131,8 @@ class SuffixMultiplier:
             return v
         v = v.lower()
         for s, m in self._d.items():
-            if v[-self._keysz:] == s:
-                return int(v[:-self._keysz]) * m
+            if v[-self._keysz:] == s:  # type: ignore
+                return int(v[:-self._keysz]) * m  # type: ignore
         return int(v) * self._default
 
 
@@ -151,10 +151,10 @@ def signal_number(value: ta.Union[int, str]) -> int:
     try:
         num = int(value)
     except (ValueError, TypeError):
-        name = value.strip().upper()
+        name = value.strip().upper()  # type: ignore
         if not name.startswith('SIG'):
             name = f'SIG{name}'
-        num = getattr(signal, name, None)
+        num = getattr(signal, name, None)  # type: ignore
         if num is None:
             raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
     if num not in SIGNUMS:

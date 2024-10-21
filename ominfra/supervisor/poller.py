@@ -113,7 +113,7 @@ class PollPoller(BasePoller):
             self._poller.register(fd, self._READ)
 
     def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
-        fds = self._poll_fds(timeout)
+        fds = self._poll_fds(timeout)  # type: ignore
         readables, writables = [], []
         for fd, eventmask in fds:
             if self._ignore_invalid(fd, eventmask):
@@ -150,7 +150,7 @@ class KQueuePoller(BasePoller):
     def __init__(self) -> None:
         super().__init__()
 
-        self._kqueue = select.kqueue()
+        self._kqueue: ta.Optional[ta.Any] = select.kqueue()
         self._readables: set[int] = set()
         self._writables: set[int] = set()
 
@@ -176,7 +176,7 @@ class KQueuePoller(BasePoller):
 
     def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
         try:
-            self._kqueue.control([kevent], 0)
+            self._kqueue.control([kevent], 0)  # type: ignore
         except OSError as error:
             if error.errno == errno.EBADF:
                 log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
@@ -184,10 +184,10 @@ class KQueuePoller(BasePoller):
                 raise
 
     def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
-        readables, writables = [], []
+        readables, writables = [], []  # type: ignore
 
         try:
-            kevents = self._kqueue.control(None, self.max_events, timeout)
+            kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
         except OSError as error:
             if error.errno == errno.EINTR:
                 log.debug('EINTR encountered in poll')
@@ -213,10 +213,11 @@ class KQueuePoller(BasePoller):
             self.register_writable(fd)
 
     def close(self) -> None:
-        self._kqueue.close()
+        self._kqueue.close()  # type: ignore
         self._kqueue = None
 
 
+Poller: ta.Type[BasePoller]
 if hasattr(select, 'kqueue'):
     Poller = KQueuePoller
 elif hasattr(select, 'poll'):

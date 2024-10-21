@@ -77,7 +77,7 @@ def decode_wait_status(sts: int) -> tuple[int, str]:
         if hasattr(os, 'WCOREDUMP'):
             iscore = os.WCOREDUMP(sts)
         else:
-            iscore = sts & 0x80
+            iscore = bool(sts & 0x80)
         if iscore:
             msg += ' (core dumped)'
         return -1, msg

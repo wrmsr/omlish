@@ -1,3 +1,6 @@
+# ruff: noqa: UP007
+import typing as ta
+
 from .compat import as_string
 from .states import get_process_state_description
 
@@ -29,7 +32,7 @@ class Event:
 
 class ProcessLogEvent(Event):
     """Abstract"""
-    channel = None
+    channel: ta.Optional[str] = None
 
     def __init__(self, process, pid, data):
         self.process = process
@@ -45,9 +48,13 @@ class ProcessLogEvent(Event):
         except UnicodeDecodeError:
             data = f'Undecodable: {self.data!r}'
         fmt = as_string('processname:%s groupname:%s pid:%s channel:%s\n%s')
-        result = fmt % (as_string(self.process.config.name),
-                        as_string(groupname), self.pid,
-                        as_string(self.channel), data)
+        result = fmt % (
+            as_string(self.process.config.name),
+            as_string(groupname),
+            self.pid,
+            as_string(self.channel),  # type: ignore
+            data,
+        )
         return result
 
 
