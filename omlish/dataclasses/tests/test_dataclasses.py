@@ -48,8 +48,12 @@ def test_validate_coerce():
     print(Bar(4))
     print(Bar('4'))  # type: ignore
 
-    with pytest.raises(dc.ValidationError):
+    try:
         Bar(11)
+    except dc.ValidationError as ve:
+        pass
+    else:
+        raise Exception('should raise')  # noqa
 
 
 def test_validate_init():
