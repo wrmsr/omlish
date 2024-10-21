@@ -41,6 +41,7 @@ class ProcessLogEvent(Event):
     channel: ta.Optional[str] = None
 
     def __init__(self, process, pid, data):
+        super().__init__()
         self.process = process
         self.pid = pid
         self.data = data
@@ -79,6 +80,7 @@ class ProcessCommunicationEvent(Event):
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
 
     def __init__(self, process, pid, data):
+        super().__init__()
         self.process = process
         self.pid = pid
         self.data = data
@@ -104,6 +106,7 @@ class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
 
 class RemoteCommunicationEvent(Event):
     def __init__(self, type, data):  # noqa
+        super().__init__()
         self.type = type
         self.data = data
 
@@ -128,6 +131,7 @@ class SupervisorStoppingEvent(SupervisorStateChangeEvent):
 
 class EventRejectedEvent:  # purposely does not subclass Event
     def __init__(self, process, event):
+        super().__init__()
         self.process = process
         self.event = event
 
@@ -138,6 +142,7 @@ class ProcessStateEvent(Event):
     to = None
 
     def __init__(self, process, from_state, expected=True):
+        super().__init__()
         self.process = process
         self.from_state = from_state
         self.expected = expected
@@ -205,6 +210,7 @@ class ProcessStateStoppedEvent(ProcessStateEvent):
 
 class ProcessGroupEvent(Event):
     def __init__(self, group):
+        super().__init__()
         self.group = group
 
     def payload(self):
@@ -223,6 +229,7 @@ class TickEvent(Event):
     """ Abstract """
 
     def __init__(self, when, supervisord):
+        super().__init__()
         self.when = when
         self.supervisord = supervisord
 
