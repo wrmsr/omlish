@@ -1,3 +1,7 @@
+"""
+TODO:
+ - handle secrets (but they're strs..)
+"""
 import typing as ta
 
 from .. import cached

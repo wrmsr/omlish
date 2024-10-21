@@ -50,7 +50,7 @@ def test_validate_coerce():
 
     try:
         Bar(11)
-    except dc.ValidationError as ve:
+    except dc.ValidationError as ve:  # noqa
         pass
     else:
         raise Exception('should raise')  # noqa
