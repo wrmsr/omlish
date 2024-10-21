@@ -122,7 +122,7 @@ class Subprocess:
         dispatcher.input_buffer += chars
         dispatcher.flush()  # this must raise EPIPE if the pipe is closed
 
-    def _get_execv_args(self) -> tuple[str, ta.Sequence[str]]:
+    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
         """
         Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
         ProcessError if not
@@ -276,11 +276,11 @@ class Subprocess:
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
+    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
         use_stderr = not self.config.redirect_stderr
         p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
-        dispatchers: dict[int, Dispatcher] = {}
+        dispatchers: ta.Dict[int, Dispatcher] = {}
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
@@ -743,10 +743,10 @@ class ProcessGroup:
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self) -> list[Subprocess]:
+    def get_unstopped_processes(self) -> ta.List[Subprocess]:
         return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
 
-    def get_dispatchers(self) -> dict[int, Dispatcher]:
+    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
         dispatchers = {}
         for process in self.processes.values():
             dispatchers.update(process._dispatchers)  # noqa

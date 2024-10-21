@@ -1,3 +1,4 @@
+# ruff: noqa: UP006
 import typing as ta
 
 from omlish.lite.check import check_not_none
@@ -6,7 +7,7 @@ from omlish.lite.check import check_not_none
 ##
 
 
-def _names_by_code(states: ta.Any) -> dict[int, str]:
+def _names_by_code(states: ta.Any) -> ta.Dict[int, str]:
     d = {}
     for name in states.__dict__:
         if not name.startswith('__'):
@@ -18,7 +19,7 @@ def _names_by_code(states: ta.Any) -> dict[int, str]:
 ##
 
 
-ProcessState: ta.TypeAlias = int
+ProcessState = int  # ta.TypeAlias
 
 
 class ProcessStates:
@@ -62,7 +63,7 @@ def get_process_state_description(code: ProcessState) -> str:
 ##
 
 
-SupervisorState: ta.TypeAlias = int
+SupervisorState = int  # ta.TypeAlias
 
 
 class SupervisorStates:

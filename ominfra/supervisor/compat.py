@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import errno
 import os
 import signal
@@ -25,7 +25,12 @@ def as_string(s: ta.Union[str, bytes], encoding='utf8') -> str:
         return s.decode(encoding)
 
 
-def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], BaseException, types.TracebackType]:
+def compact_traceback() -> ta.Tuple[
+    ta.Tuple[str, str, int],
+    ta.Type[BaseException],
+    BaseException,
+    types.TracebackType,
+]:
     t, v, tb = sys.exc_info()
     tbinfo = []
     if not tb:
@@ -60,7 +65,7 @@ class ExitNow(Exception):  # noqa
 ##
 
 
-def decode_wait_status(sts: int) -> tuple[int, str]:
+def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
     """
     Decode the status returned by wait() or waitpid().
 
@@ -96,7 +101,7 @@ def signame(sig: int) -> str:
     return _signames.get(sig) or 'signal %d' % sig
 
 
-def _init_signames() -> dict[int, str]:
+def _init_signames() -> ta.Dict[int, str]:
     d = {}
     for k, v in signal.__dict__.items():
         k_startswith = getattr(k, 'startswith', None)
@@ -110,7 +115,7 @@ def _init_signames() -> dict[int, str]:
 class SignalReceiver:
     def __init__(self) -> None:
         super().__init__()
-        self._signals_recvd: list[int] = []
+        self._signals_recvd: ta.List[int] = []
 
     def receive(self, sig: int, frame: ta.Any) -> None:
         if sig not in self._signals_recvd:

@@ -1,1 +1,1 @@
-# this is a package
+# @omlish-lite
