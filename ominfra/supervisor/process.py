@@ -84,8 +84,8 @@ class Subprocess:
         self.config = config
         self.group = group
         self.context = context
-        self._dispatchers = {}
-        self._pipes = {}
+        self._dispatchers: dict = {}
+        self._pipes: dict = {}
         self.state = ProcessStates.STOPPED
 
     def remove_logs(self) -> None:
@@ -159,7 +159,7 @@ class Subprocess:
             if st is None:
                 filename = program
             else:
-                filename = found
+                filename = found  # type: ignore
 
         # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
         # options method call here only to service unit tests
@@ -167,7 +167,7 @@ class Subprocess:
 
         return filename, commandargs
 
-    event_map: ta.ClassVar[ta.Mapping[ProcessStates, ProcessStateEvent]] = {
+    event_map: ta.ClassVar[ta.Mapping[int, ta.Type[ProcessStateEvent]]] = {
         ProcessStates.BACKOFF: ProcessStateBackoffEvent,
         ProcessStates.FATAL: ProcessStateFatalEvent,
         ProcessStates.UNKNOWN: ProcessStateUnknownEvent,
@@ -240,7 +240,7 @@ class Subprocess:
             return None
 
         try:
-            self._dispatchers, self._pipes = self._make_dispatchers()
+            self._dispatchers, self._pipes = self._make_dispatchers()  # type: ignore
         except OSError as why:
             code = why.args[0]
             if code == errno.EMFILE:

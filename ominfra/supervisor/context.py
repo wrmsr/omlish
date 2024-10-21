@@ -63,6 +63,9 @@ class ServerContext:
 
         self.unlink_pidfile = False
 
+    uid: ta.Optional[int]
+    gid: ta.Optional[int]
+
     ##
 
     def set_signals(self) -> None:
@@ -75,7 +78,7 @@ class ServerContext:
             signal.SIGUSR2,
         )
 
-    def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optonal[int]]:
+    def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
         # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
@@ -154,19 +157,26 @@ class ServerContext:
             msg = limit['msg']
             name = limit['name']
 
-            soft, hard = resource.getrlimit(res)
+            soft, hard = resource.getrlimit(res)  # type: ignore
 
-            if (soft < min_limit) and (soft != -1):  # -1 means unlimited
-                if (hard < min_limit) and (hard != -1):
+            # -1 means unlimited
+            if soft < min_limit and soft != -1:  # type: ignore
+                if hard < min_limit and hard != -1:  # type: ignore
                     # setrlimit should increase the hard limit if we are root, if not then setrlimit raises and we print
                     # usage
-                    hard = min_limit
+                    hard = min_limit  # type: ignore
 
                 try:
-                    resource.setrlimit(res, (min_limit, hard))
+                    resource.setrlimit(res, (min_limit, hard))  # type: ignore
                     log.info('Increased %s limit to %s', name, min_limit)
                 except (resource.error, ValueError):
-                    raise RuntimeError(msg % locals())  # noqa  # FIXME:
+                    raise RuntimeError(msg % dict(  # type: ignore  # noqa
+                        min_limit=min_limit,
+                        res=res,
+                        name=name,
+                        soft=soft,
+                        hard=hard,
+                    ))
 
     def cleanup(self) -> None:
         if self.unlink_pidfile:
@@ -231,10 +241,9 @@ class ServerContext:
                 log.critical("can't chdir into %r: %s", self.config.directory, err)
             else:
                 log.info('set current directory: %r', self.config.directory)
-        dn = os.open('/dev/null')
-        os.dup2(0, dn)
-        os.dup2(1, dn)
-        os.dup2(2, dn)
+        os.dup2(0, os.open('/dev/null', os.O_RDONLY))
+        os.dup2(1, os.open('/dev/null', os.O_WRONLY))
+        os.dup2(2, os.open('/dev/null', os.O_WRONLY))
         os.setsid()
         os.umask(self.config.umask)
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
@@ -265,7 +274,7 @@ class ServerContext:
             log.info('supervisord started with pid %s', pid)
 
 
-def drop_privileges(user: ta.Union[int, str]) -> ta.Optional[str]:
+def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     """
     Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
     and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
@@ -279,7 +288,7 @@ def drop_privileges(user: ta.Union[int, str]) -> ta.Optional[str]:
         uid = int(user)
     except ValueError:
         try:
-            pwrec = pwd.getpwnam(user)
+            pwrec = pwd.getpwnam(user)  # type: ignore
         except KeyError:
             return f"Can't find username {user!r}"
         uid = pwrec[2]
@@ -327,7 +336,7 @@ def make_pipes(stderr=True) -> ta.Mapping[str, int]:
     read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
     """
 
-    pipes = {
+    pipes: dict[str, ta.Optional[int]] = {
         'child_stdin': None,
         'stdin': None,
         'stdout': None,
@@ -347,7 +356,7 @@ def make_pipes(stderr=True) -> ta.Mapping[str, int]:
             if fd is not None:
                 flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
                 fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-        return pipes
+        return pipes  # type: ignore
     except OSError:
         for fd in pipes.values():
             if fd is not None:
