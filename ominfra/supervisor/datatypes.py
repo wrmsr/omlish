@@ -1,8 +1,10 @@
+# ruff: noqa: UP007
 import grp
 import logging
 import os
 import pwd
 import signal
+import typing as ta
 
 
 class Automatic:
@@ -73,7 +75,7 @@ def gid_for_uid(uid: int) -> int:
     return pwrec[3]
 
 
-def octal_type(arg: str | int) -> int:
+def octal_type(arg: ta.Union[str, int]) -> int:
     if isinstance(arg, int):
         return arg
     try:
@@ -100,7 +102,7 @@ def existing_dirpath(v: str) -> str:
     raise ValueError(f'The directory named as part of the path {v} does not exist')
 
 
-def logging_level(value: str | int) -> int:
+def logging_level(value: ta.Union[str, int]) -> int:
     if isinstance(value, int):
         return value
     s = str(value).lower()
@@ -124,7 +126,7 @@ class SuffixMultiplier:
             elif self._keysz != len(k):
                 raise ValueError(k)
 
-    def __call__(self, v: str | int) -> int:
+    def __call__(self, v: ta.Union[str, int]) -> int:
         if isinstance(v, int):
             return v
         v = v.lower()
@@ -145,7 +147,7 @@ byte_size = SuffixMultiplier({
 SIGNUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
 
 
-def signal_number(value: int | str) -> int:
+def signal_number(value: ta.Union[int, str]) -> int:
     try:
         num = int(value)
     except (ValueError, TypeError):

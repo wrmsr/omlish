@@ -1,5 +1,7 @@
 import typing as ta
 
+from omlish.lite.check import check_not_none
+
 
 ##
 
@@ -54,7 +56,7 @@ _process_states_by_code = _names_by_code(ProcessStates)
 
 
 def get_process_state_description(code: ProcessState) -> str:
-    return _process_states_by_code.get(code)
+    return check_not_none(_process_states_by_code.get(code))
 
 
 ##
@@ -74,4 +76,4 @@ _supervisor_states_by_code = _names_by_code(SupervisorStates)
 
 
 def get_supervisor_state_description(code: SupervisorState) -> str:
-    return _supervisor_states_by_code.get(code)
+    return check_not_none(_supervisor_states_by_code.get(code))

@@ -1,6 +1,8 @@
+# ruff: noqa: UP006 UP007
 import errno
 import logging
 import select
+import typing as ta
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +25,7 @@ class BasePoller:
     def unregister_writable(self, fd: int) -> None:
         raise NotImplementedError
 
-    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         raise NotImplementedError
 
     def before_daemonize(self) -> None:
@@ -41,8 +43,8 @@ class SelectPoller(BasePoller):
     def __init__(self) -> None:
         super().__init__()
 
-        self._readables: set[int] = set()
-        self._writables: set[int] = set()
+        self._readables: ta.Set[int] = set()
+        self._writables: ta.Set[int] = set()
 
     def register_readable(self, fd: int) -> None:
         self._readables.add(fd)
@@ -60,7 +62,7 @@ class SelectPoller(BasePoller):
         self._readables.clear()
         self._writables.clear()
 
-    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         try:
             r, w, x = select.select(
                 self._readables,
@@ -110,7 +112,7 @@ class PollPoller(BasePoller):
         if fd in self._readables:
             self._poller.register(fd, self._READ)
 
-    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         fds = self._poll_fds(timeout)
         readables, writables = [], []
         for fd, eventmask in fds:
@@ -122,7 +124,7 @@ class PollPoller(BasePoller):
                 writables.append(fd)
         return readables, writables
 
-    def _poll_fds(self, timeout: float) -> list[tuple[int, int]]:
+    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[int, int]]:
         try:
             return self._poller.poll(timeout * 1000)
         except OSError as err:
@@ -181,7 +183,7 @@ class KQueuePoller(BasePoller):
             else:
                 raise
 
-    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         readables, writables = [], []
 
         try:

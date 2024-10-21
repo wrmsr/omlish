@@ -8,6 +8,7 @@ import logging
 import signal
 import time
 
+from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 
 from .compat import ExitNow
@@ -35,8 +36,8 @@ log = logging.getLogger(__name__)
 
 class Supervisor:
     stopping = False  # set after we detect that we are handling a stop request
-    last_shutdown_report = 0  # throttle for delayed process error reports at stop
-    process_groups = None  # map of process group name to process group object
+    last_shutdown_report = 0.  # throttle for delayed process error reports at stop
+    process_groups: dict  # map of process group name to process group object
     stop_groups = None  # list used for priority ordered shutdown
 
     def __init__(self, context: ServerContext) -> None:
@@ -44,7 +45,7 @@ class Supervisor:
 
         self.context = context
         self.process_groups = {}
-        self.ticks = {}
+        self.ticks: dict = {}
 
     def main(self):
         if not self.context.first:
@@ -68,7 +69,7 @@ class Supervisor:
         self.stop_groups = None  # clear
         clear_events()
         try:
-            for config in self.context.config.groups:
+            for config in self.context.config.groups or []:
                 self.add_process_group(config)
             self.context.set_signals()
             if not self.context.config.nodaemon and self.context.first:
@@ -80,7 +81,7 @@ class Supervisor:
             self.context.cleanup()
 
     def diff_to_active(self):
-        new = self.context.config.groups
+        new = self.context.config.groups or []
         cur = [group.config for group in self.process_groups.values()]
 
         curdict = dict(zip([cfg.name for cfg in cur], cur))
@@ -138,14 +139,14 @@ class Supervisor:
     def ordered_stop_groups_phase_1(self):
         if self.stop_groups:
             # stop the last group (the one with the "highest" priority)
-            self.stop_groups[-1].stop_all()
+            self.stop_groups[-1].stop_all()  # type: ignore
 
     def ordered_stop_groups_phase_2(self):
         # after phase 1 we've transitioned and reaped, let's see if we can remove the group we stopped from the
         # stop_groups queue.
         if self.stop_groups:
             # pop the last group (the one with the "highest" priority)
-            group = self.stop_groups.pop()
+            group = self.stop_groups.pop()  # type: ignore
             if group.get_unstopped_processes():
                 # if any processes in the group aren't yet in a stopped state, we're not yet done shutting this group
                 # down, so push it back on to the end of the stop group queue
@@ -187,7 +188,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        log.debug('read event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        log.debug('read event caused by %r', dispatcher)
                         dispatcher.handle_read_event()
                         if not dispatcher.readable():
                             self.context.poller.unregister_readable(fd)
@@ -208,7 +209,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        log.debug('write event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        log.debug('write event caused by %r', dispatcher)
                         dispatcher.handle_write_event()
                         if not dispatcher.writable():
                             self.context.poller.unregister_writable(fd)
@@ -242,7 +243,7 @@ class Supervisor:
             # now won't be None in unit tests
             now = time.time()
         for event in TICK_EVENTS:
-            period = event.period
+            period = event.period  # type: ignore
             last_tick = self.ticks.get(period)
             if last_tick is None:
                 # we just started up
@@ -259,10 +260,10 @@ class Supervisor:
         if pid:
             process = self.context.pid_history.get(pid, None)
             if process is None:
-                _, msg = decode_wait_status(sts)
+                _, msg = decode_wait_status(check_not_none(sts))
                 log.info('reaped unknown pid %s (%s)', pid, msg)
             else:
-                process.finish(sts)
+                process.finish(check_not_none(sts))
                 del self.context.pid_history[pid]
             if not once:
                 # keep reaping until no more kids to reap, but don't recurse infinitely
@@ -292,7 +293,7 @@ class Supervisor:
                     group.reopen_logs()
 
             else:
-                log.debug('received %s indicating nothing',  signame(sig))
+                log.debug('received %s indicating nothing', signame(sig))
 
     def get_state(self):
         return self.context.state
