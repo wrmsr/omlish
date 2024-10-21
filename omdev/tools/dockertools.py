@@ -123,17 +123,17 @@ class Cli(ap.Cli):
 
             services = check.isinstance(
                 check.single(
-                    v.value  # type: ignore
+                    v.value
                     for k, v in root.items()
-                    if k.value == 'services'  # type: ignore
+                    if k.value == 'services'
                 ),
                 ta.Mapping,
             )
             for name_w, cfg_w in services.items():
-                name = check.isinstance(name_w.value, str)  # type: ignore
-                cfg = check.isinstance(cfg_w.value, ta.Mapping)  # type: ignore
+                name = check.isinstance(name_w.value, str)
+                cfg = check.isinstance(cfg_w.value, ta.Mapping)
 
-                ports = check.opt_single(v.value for k, v in cfg.items() if k.value == 'ports')  # type: ignore
+                ports = check.opt_single(v.value for k, v in cfg.items() if k.value == 'ports')
                 if not ports:
                     continue
 

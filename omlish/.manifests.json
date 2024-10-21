@@ -48,6 +48,18 @@
     }
   },
   {
+    "module": ".secrets.pwgen",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/secrets/pwgen.py",
+    "line": 75,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "pwgen",
+        "mod_name": "omlish.secrets.pwgen"
+      }
+    }
+  },
+  {
     "module": ".specs.jmespath.__main__",
     "attr": "_CLI_MODULE",
     "file": "omlish/specs/jmespath/__main__.py",
