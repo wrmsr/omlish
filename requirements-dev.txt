@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1; python_version < "3.13"
 wheel>=0.44.0
 
-uv>=0.4.24
+uv>=0.4.25
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -100,3 +100,8 @@ asttokens==2.4.1
 numpy>=1.20
 
 prompt_toolkit>=3.0.0
+
+huggingface-hub==0.26.1
+datasets==3.0.1
+
+sentence_transformers==3.2.1
