@@ -1,3 +1,6 @@
+"""
+https://datatracker.ietf.org/doc/html/rfc7578
+"""
 import dataclasses as dc
 import io
 import typing as ta
