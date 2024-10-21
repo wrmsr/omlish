@@ -162,6 +162,7 @@ from .objects import (  # noqa
     build_mro_dict,
     can_weakref,
     deep_subclasses,
+    dir_dict,
     new_type,
     opt_repr,
     super_meta,

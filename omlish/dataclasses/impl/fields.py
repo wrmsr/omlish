@@ -8,6 +8,7 @@ import typing as ta
 
 from ... import check as check_
 from ... import lang
+from .exceptions import FieldValidationError
 from .internals import FIELDS_ATTR
 from .internals import FieldType
 from .internals import is_classvar
@@ -24,6 +25,23 @@ else:
 
 
 MISSING = dc.MISSING
+
+
+##
+
+
+def raise_field_validation_error(
+        obj: ta.Any,
+        field: str,
+        fn: ta.Callable,
+        value: ta.Any,
+):
+    raise FieldValidationError(
+        obj,
+        field,
+        fn,
+        value,
+    )
 
 
 ##
@@ -193,7 +211,10 @@ def field_init(
     if fx.validate is not None:
         cn = f'__dataclass_validate__{f.name}__'
         locals[cn] = fx.validate
-        lines.append(f'if not {cn}({value}): raise __dataclass_FieldValidationError__({f.name})')
+        lines.append(
+            f'if not {cn}({value}): '
+            f'__dataclass_raise_field_validation_error__({self_name}, {f.name!r}, {cn}, {value})',
+        )
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'

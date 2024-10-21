@@ -3,11 +3,11 @@ import inspect
 import typing as ta
 
 from ... import lang
-from .exceptions import FieldValidationError
 from .exceptions import ValidationError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
+from .fields import raise_field_validation_error
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
 from .internals import FieldType
@@ -101,7 +101,7 @@ class InitBuilder:
             '__dataclass_builtins_isinstance__': isinstance,
             '__dataclass_builtins_TypeError__': TypeError,
             '__dataclass_ValidationError__': ValidationError,
-            '__dataclass_FieldValidationError__': FieldValidationError,
+            '__dataclass_raise_field_validation_error__': raise_field_validation_error,
         })
 
         body_lines: list[str] = []

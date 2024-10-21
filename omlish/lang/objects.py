@@ -129,6 +129,13 @@ def build_mro_dict(
     return dct
 
 
+def dir_dict(o: ta.Any) -> dict[str, ta.Any]:
+    return {
+        a: getattr(o, a)
+        for a in dir(o)
+    }
+
+
 ##
 
 
