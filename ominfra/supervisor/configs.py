@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import dataclasses as dc
 import logging
 import signal
@@ -13,10 +14,10 @@ from .datatypes import octal_type
 
 @dc.dataclass(frozen=True)
 class ServerConfig:
-    user: str | None = None
+    user: ta.Optional[str] = None
     nodaemon: bool = False
     umask: int = 0o22
-    directory: str | None = None
+    directory: ta.Optional[str] = None
     logfile: str = 'supervisord.log'
     logfile_maxbytes: int = 50 * 1024 * 1024
     logfile_backups: int = 10
@@ -30,18 +31,18 @@ class ServerConfig:
     strip_ansi: bool = False
     silent: bool = False
 
-    groups: ta.Sequence['ProcessGroupConfig'] | None = None
+    groups: ta.Optional[ta.Sequence['ProcessGroupConfig']] = None
 
     @classmethod
     def new(
             cls,
-            umask: int | str = 0o22,
-            directory: str | None = None,
+            umask: ta.Union[int, str] = 0o22,
+            directory: ta.Optional[str] = None,
             logfile: str = 'supervisord.log',
-            logfile_maxbytes: int | str = 50 * 1024 * 1024,
-            loglevel: int | str = logging.INFO,
+            logfile_maxbytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            loglevel: ta.Union[int, str] = logging.INFO,
             pidfile: str = 'supervisord.pid',
-            child_logdir: str | None = None,
+            child_logdir: ta.Optional[str] = None,
             **kwargs: ta.Any,
     ) -> 'ServerConfig':
         return cls(
@@ -62,7 +63,7 @@ class ProcessGroupConfig:
 
     priority: int = 999
 
-    processes: ta.Sequence['ProcessConfig'] | None = None
+    processes: ta.Optional[ta.Sequence['ProcessConfig']] = None
 
 
 @dc.dataclass(frozen=True)
@@ -70,9 +71,9 @@ class ProcessConfig:
     name: str
     command: str
 
-    uid: int | None = None
-    directory: str | None = None
-    umask: int | None = None
+    uid: ta.Optional[int] = None
+    directory: ta.Optional[str] = None
+    umask: ta.Optional[int] = None
     priority: int = 999
 
     autostart: bool = True
@@ -86,12 +87,12 @@ class ProcessConfig:
 
     @dc.dataclass(frozen=True)
     class Log:
-        file: str | None = None
-        capture_maxbytes: int | None = None
+        file: ta.Optional[str] = None
+        capture_maxbytes: ta.Optional[int] = None
         events_enabled: bool = False
         syslog: bool = False
-        backups: int | None = None
-        maxbytes: int | None = None
+        backups: ta.Optional[int] = None
+        maxbytes: ta.Optional[int] = None
 
     stdout: Log = Log()
     stderr: Log = Log()
@@ -106,4 +107,4 @@ class ProcessConfig:
 
     redirect_stderr: bool = False
 
-    environment: ta.Mapping[str, str] | None = None
+    environment: ta.Optional[ta.Mapping[str, str]] = None

@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import errno
 import os
 import signal
@@ -10,14 +11,14 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def as_bytes(s: str | bytes, encoding: str = 'utf8') -> bytes:
+def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
     else:
         return s.encode(encoding)
 
 
-def as_string(s: str | bytes, encoding='utf8') -> str:
+def as_string(s: ta.Union[str, bytes], encoding='utf8') -> str:
     if isinstance(s, str):
         return s
     else:
@@ -42,10 +43,10 @@ def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], Base
 
     file, function, line = tbinfo[-1]
     info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
-    return (file, function, line), t, v, info
+    return (file, function, line), t, v, info  # type: ignore
 
 
-def find_prefix_at_end(haystack: T, needle: T) -> int:
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
         l -= 1
@@ -85,7 +86,7 @@ def decode_wait_status(sts: int) -> tuple[int, str]:
         return -1, msg
 
 
-_signames: ta.Mapping[int, str] | None = None
+_signames: ta.Optional[ta.Mapping[int, str]] = None
 
 
 def signame(sig: int) -> str:
@@ -119,7 +120,7 @@ class SignalReceiver:
         for sig in sigs:
             signal.signal(sig, self.receive)
 
-    def get_signal(self) -> int | None:
+    def get_signal(self) -> ta.Optional[int]:
         if self._signals_recvd:
             sig = self._signals_recvd.pop(0)
         else:

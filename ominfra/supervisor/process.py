@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import errno
 import functools
 import logging
@@ -29,6 +30,7 @@ from .dispatchers import Dispatcher
 from .dispatchers import InputDispatcher
 from .dispatchers import OutputDispatcher
 from .events import EventRejectedEvent
+from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
 from .events import ProcessStateBackoffEvent
@@ -60,14 +62,14 @@ class Subprocess:
     # Initial state; overridden by instance variables
 
     pid = 0  # Subprocess pid; 0 when not running
-    config = None  # ProcessConfig instance
-    state = None  # process state code
+    # config = None  # ProcessConfig instance
+    # state = None  # process state code
     listener_state = None  # listener state code (if we're an event listener)
     event = None  # event currently being processed (if we're an event listener)
-    laststart = 0  # Last time the subprocess was started; 0 if never
-    laststop = 0  # Last time the subprocess was stopped; 0 if never
-    last_stop_report = 0  # Last time "waiting for x to stop" logged, to throttle
-    delay = 0  # If nonzero, delay starting or killing until this time
+    laststart = 0.  # Last time the subprocess was started; 0 if never
+    laststop = 0.  # Last time the subprocess was stopped; 0 if never
+    last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
+    delay = 0.  # If nonzero, delay starting or killing until this time
     administrative_stop = False  # true if process has been stopped by an admin
     system_stop = False  # true if process has been stopped by the system
     killing = False  # true if we are trying to kill this process
@@ -105,7 +107,7 @@ class Subprocess:
             if dispatcher.writable():
                 dispatcher.handle_write_event()
 
-    def write(self, chars: bytes | str) -> None:
+    def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self.killing:
             raise OSError(errno.EPIPE, 'Process already closed')
 
@@ -205,7 +207,7 @@ class Subprocess:
         self.spawn_err = msg
         log.info('spawn_err: %s', msg)
 
-    def spawn(self) -> int | None:
+    def spawn(self) -> ta.Optional[int]:
         processname = as_string(self.config.name)
 
         if self.pid:
@@ -271,13 +273,15 @@ class Subprocess:
             return self._spawn_as_parent(pid)
 
         else:
-            return self._spawn_as_child(filename, argv)
+            self._spawn_as_child(filename, argv)
+            return None
 
     def _make_dispatchers(self) -> tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
         use_stderr = not self.config.redirect_stderr
         p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers: dict[int, Dispatcher] = {}
+        etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
             dispatchers[stdout_fd] = OutputDispatcher(self, etype, stdout_fd)
@@ -351,7 +355,7 @@ class Subprocess:
             try:
                 if self.config.umask is not None:
                     os.umask(self.config.umask)
-                os.execve(filename, argv, env)
+                os.execve(filename, list(argv), env)
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = f"couldn't exec {argv[0]}: {code}\n"
@@ -390,7 +394,7 @@ class Subprocess:
             if self.delay > 0 and test_time < (self.delay - self.backoff):
                 self.delay = test_time + self.backoff
 
-    def stop(self) -> str | None:
+    def stop(self) -> ta.Optional[str]:
         self.administrative_stop = True
         self.last_stop_report = 0
         return self.kill(self.config.stopsignal)
@@ -413,7 +417,7 @@ class Subprocess:
         self._check_in_state(ProcessStates.BACKOFF)
         self.change_state(ProcessStates.FATAL)
 
-    def kill(self, sig: int) -> str | None:
+    def kill(self, sig: int) -> ta.Optional[str]:
         """
         Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
         kill it.
@@ -432,6 +436,7 @@ class Subprocess:
             self.change_state(ProcessStates.STOPPED)
             return None
 
+        args: tuple
         if not self.pid:
             fmt, args = "attempted to kill %s with sig %s but it wasn't running", (processname, signame(sig))
             log.debug(fmt, *args)
@@ -482,7 +487,7 @@ class Subprocess:
 
         return None
 
-    def signal(self, sig: int) -> str | None:
+    def signal(self, sig: int) -> ta.Optional[str]:
         """
         Send a signal to the subprocess, without intending to kill it.
 
@@ -490,8 +495,9 @@ class Subprocess:
         running.
         """
         processname = as_string(self.config.name)
+        args: tuple
         if not self.pid:
-            fmt, args = "attempted to send %s sig %s but it wasn't running",  (processname, signame(sig))
+            fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, signame(sig))
             log.debug(fmt, *args)
             return fmt % args
 
@@ -598,10 +604,10 @@ class Subprocess:
         # system that this event was rejected so it can be processed again.
         if self.event is not None:
             # Note: this should only be true if we were in the BUSY state when finish() was called.
-            notify_event(EventRejectedEvent(self, self.event))
+            notify_event(EventRejectedEvent(self, self.event))  # type: ignore
             self.event = None
 
-    def set_uid(self) -> str | None:
+    def set_uid(self) -> ta.Optional[str]:
         if self.config.uid is None:
             return None
         msg = drop_privileges(self.config.uid)
@@ -636,7 +642,7 @@ class Subprocess:
                     if self.config.autorestart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
-                    elif self.exitstatus not in self.config.exitcodes:
+                    elif self.exitstatus not in self.config.exitcodes:  # type: ignore
                         # EXITED -> STARTING
                         self.spawn()
 
@@ -695,7 +701,7 @@ class ProcessGroup:
         self.config = config
         self.context = context
         self.processes = {}
-        for pconfig in self.config.processes:
+        for pconfig in self.config.processes or []:
             process = Subprocess(pconfig, self, self.context)
             self.processes[pconfig.name] = process
 
