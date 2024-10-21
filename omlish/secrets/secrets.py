@@ -36,6 +36,15 @@ class Secret(lang.NotPicklable, lang.Sensitive, lang.Final):
         self._key = key
         setattr(self, self._VALUE_ATTR, lambda: value)
 
+    @classmethod
+    def of(cls, src: ta.Union['Secret', str], *, key: str | None = None) -> ta.Union['Secret', str]:
+        if isinstance(src, Secret):
+            return src
+        elif isinstance(src, str):
+            return cls(key=key, value=src)
+        else:
+            raise TypeError(src)
+
     def __repr__(self) -> str:
         return f'Secret<{self._key or ""}>'
 

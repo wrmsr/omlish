@@ -16,6 +16,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish.secrets import Secret
 
 from ...chat import AiChoice
 from ...chat import AiMessage
@@ -89,11 +90,11 @@ class OpenaiChatModel(ChatModel):
             self,
             *,
             model: str | None = None,
-            api_key: str | None = None,
+            api_key: Secret | str | None = None,
     ) -> None:
         super().__init__()
         self._model = model or self.DEFAULT_MODEL
-        self._api_key = api_key
+        self._api_key = Secret.of(api_key)
 
     def _build_req_msg(self, m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
         if isinstance(m, SystemMessage):
@@ -169,7 +170,7 @@ class OpenaiChatModel(ChatModel):
         ]
 
         with contextlib.closing(openai.OpenAI(
-                api_key=self._api_key,
+                api_key=self._api_key.reveal(),
         )) as client:
             raw_request = dict(
                 model=self._model,
