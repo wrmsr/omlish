@@ -58,6 +58,30 @@ from ommlx import minichain as mc
 from ommlx.minichain.backends.openai import OpenaiChatModel
 
 
+def _detect_os() -> str:
+    return {
+        'linux': 'Linux',
+        'darwin': 'Mac OSX',
+    }[sys.platform]
+
+
+def _detect_shell() -> str:
+    if 'BASH_VERSION' in os.environ:
+        return 'bash'
+    elif 'ZSH_VERSION' in os.environ:
+        return 'zsh'
+
+    if not (sh_exe := os.environ.get('SHELL')):
+        sh_exe = pwd.getpwnam(getpass.getuser()).pw_shell
+    sh_exe = sh_exe.split('/')[-1]
+    if sh_exe == 'bash':
+        return 'bash'
+    elif sh_exe == 'zsh':
+        return 'zsh'
+    else:
+        raise RuntimeError("Can't get shell name")
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--os', nargs='?')
@@ -69,26 +93,10 @@ def _main() -> None:
     print(request)
 
     if (os_name := args.os) is None:
-        os_name = {
-            'linux': 'Linux',
-            'darwin': 'Mac OSX',
-        }[sys.platform]
+        os_name = _detect_os()
 
     if (shell_name := args.shell) is None:
-        if 'BASH_VERSION' in os.environ:
-            shell_name = 'bash'
-        elif 'ZSH_VERSION' in os.environ:
-            shell_name = 'zsh'
-        else:
-            if not (sh_exe := os.environ.get('SHELL')):
-                sh_exe = pwd.getpwnam(getpass.getuser()).pw_shell
-            sh_exe = sh_exe.split('/')[-1]
-            if sh_exe == 'bash':
-                shell_name = 'bash'
-            elif sh_exe == 'zsh':
-                shell_name = 'zsh'
-            else:
-                raise RuntimeError("Can't get shell name")
+        shell_name = _detect_shell()
 
     system_prompt = 'You are an AI shell-scripting expert called Aish.'
 
