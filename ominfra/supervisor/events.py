@@ -5,16 +5,16 @@ from .states import get_process_state_description
 callbacks = []
 
 
-def subscribe(type, callback):
+def subscribe(type, callback):  # noqa
     callbacks.append((type, callback))
 
 
-def unsubscribe(type, callback):
+def unsubscribe(type, callback):  # noqa
     callbacks.remove((type, callback))
 
 
 def notify_event(event):
-    for type, callback in callbacks:
+    for type, callback in callbacks:  # noqa
         if isinstance(event, type):
             callback(event)
 
@@ -43,7 +43,7 @@ class ProcessLogEvent(Event):
         try:
             data = as_string(self.data)
         except UnicodeDecodeError:
-            data = 'Undecodable: %r' % self.data
+            data = f'Undecodable: {self.data!r}'
         fmt = as_string('processname:%s groupname:%s pid:%s channel:%s\n%s')
         result = fmt % (as_string(self.process.config.name),
                         as_string(groupname), self.pid,
@@ -77,12 +77,8 @@ class ProcessCommunicationEvent(Event):
         try:
             data = as_string(self.data)
         except UnicodeDecodeError:
-            data = 'Undecodable: %r' % self.data
-        return 'processname:%s groupname:%s pid:%s\n%s' % (
-            self.process.config.name,
-            groupname,
-            self.pid,
-            data)
+            data = f'Undecodable: {self.data!r}'
+        return f'processname:{self.process.config.name} groupname:{groupname} pid:{self.pid}\n{data}'
 
 
 class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
@@ -94,12 +90,12 @@ class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
 
 
 class RemoteCommunicationEvent(Event):
-    def __init__(self, type, data):
+    def __init__(self, type, data):  # noqa
         self.type = type
         self.data = data
 
     def payload(self):
-        return 'type:%s\n%s' % (self.type, self.data)
+        return f'type:{self.type}\n{self.data}'
 
 
 class SupervisorStateChangeEvent(Event):
@@ -140,13 +136,13 @@ class ProcessStateEvent(Event):
         groupname = ''
         if self.process.group is not None:
             groupname = self.process.group.config.name
-        L = [
+        l = [
             ('processname', self.process.config.name),
             ('groupname', groupname),
             ('from_state', get_process_state_description(self.from_state)),
         ]
-        L.extend(self.extra_values)
-        s = ' '.join(['%s:%s' % (name, val) for (name, val) in L])
+        l.extend(self.extra_values)
+        s = ' '.join([f'{name}:{val}' for name, val in l])
         return s
 
     def get_extra_values(self):
@@ -199,7 +195,7 @@ class ProcessGroupEvent(Event):
         self.group = group
 
     def payload(self):
-        return 'groupname:%s\n' % self.group
+        return f'groupname:{self.group}\n'
 
 
 class ProcessGroupAddedEvent(ProcessGroupEvent):
@@ -218,7 +214,7 @@ class TickEvent(Event):
         self.supervisord = supervisord
 
     def payload(self):
-        return 'when:%s' % self.when
+        return f'when:{self.when}'
 
 
 class Tick5Event(TickEvent):
@@ -281,6 +277,7 @@ def get_event_name_by_type(requested):
     for name, typ in EventTypes.__dict__.items():
         if typ is requested:
             return name
+    return None
 
 
 def register(name, event):

@@ -11,9 +11,6 @@ import stat
 import typing as ta
 import warnings
 
-from .poller import Poller
-from .states import SupervisorState
-from .states import SupervisorStates
 from .compat import SignalReceiver
 from .compat import close_fd
 from .compat import mktempfile
@@ -22,9 +19,12 @@ from .compat import try_unlink
 from .configs import ServerConfig
 from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
-from .exceptions import NoPermission
-from .exceptions import NotExecutable
-from .exceptions import NotFound
+from .exceptions import NoPermissionError
+from .exceptions import NotExecutableError
+from .exceptions import NotFoundError
+from .poller import Poller
+from .states import SupervisorState
+from .states import SupervisorStates
 
 
 if ta.TYPE_CHECKING:
@@ -45,7 +45,7 @@ class ServerContext:
 
         self.config = config
 
-        self.pid_history: dict[int, 'Subprocess'] = {}
+        self.pid_history: dict[int, Subprocess] = {}
         self.state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
@@ -80,13 +80,13 @@ class ServerContext:
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
         # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
         # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-        # laying around.
+        # lying around.
         try:
             pid, sts = os.waitpid(-1, os.WNOHANG)
         except OSError as exc:
             code = exc.args[0]
             if code not in (errno.ECHILD, errno.EINTR):
-                log.critical('waitpid error %r; a process may not be cleaned up properly' % code)
+                log.critical('waitpid error %r; a process may not be cleaned up properly', code)
             if code == errno.EINTR:
                 log.debug('EINTR during reap')
             pid, sts = None, None
@@ -102,12 +102,12 @@ class ServerContext:
                 warnings.warn(
                     'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
                     'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
-                    'this message.'
+                    'this message.',
                 )
         else:
             msg = drop_privileges(self.uid)
             if msg is None:
-                log.info('Set uid to user %s succeeded' % self.uid)
+                log.info('Set uid to user %s succeeded', self.uid)
             else:  # failed to drop privileges
                 raise RuntimeError(msg)
 
@@ -116,7 +116,9 @@ class ServerContext:
         Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
         the process via usage() if any rlimits could not be set.
         """
+
         limits = []
+
         if hasattr(resource, 'RLIMIT_NOFILE'):
             limits.append({
                 'msg': (
@@ -130,6 +132,7 @@ class ServerContext:
                 'resource': resource.RLIMIT_NOFILE,
                 'name': 'RLIMIT_NOFILE',
             })
+
         if hasattr(resource, 'RLIMIT_NPROC'):
             limits.append({
                 'msg': (
@@ -149,7 +152,6 @@ class ServerContext:
             res = limit['resource']
             msg = limit['msg']
             name = limit['name']
-            name = name  # name is used below by locals()
 
             soft, hard = resource.getrlimit(res)
 
@@ -161,9 +163,9 @@ class ServerContext:
 
                 try:
                     resource.setrlimit(res, (min_limit, hard))
-                    log.info('Increased %(name)s limit to %(min_limit)s' % locals())
+                    log.info('Increased %s limit to %s', name, min_limit)
                 except (resource.error, ValueError):
-                    raise RuntimeError(msg % locals())
+                    raise RuntimeError(msg % locals())  # noqa  # FIXME:
 
     def cleanup(self) -> None:
         if self.unlink_pidfile:
@@ -178,7 +180,7 @@ class ServerContext:
     def clear_auto_child_logdir(self) -> None:
         # must be called after realize()
         child_logdir = self.config.child_logdir
-        fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.config.identifier)
+        fnre = re.compile(rf'.+?---{self.config.identifier}-\S+\.log\.?\d{{0,4}}')
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
@@ -191,7 +193,7 @@ class ServerContext:
                 try:
                     os.remove(pathname)
                 except OSError:
-                    log.warning('Failed to clean up %r' % pathname)
+                    log.warning('Failed to clean up %r', pathname)
 
     def daemonize(self) -> None:
         self.poller.before_daemonize()
@@ -225,9 +227,9 @@ class ServerContext:
             try:
                 os.chdir(self.config.directory)
             except OSError as err:
-                log.critical("can't chdir into %r: %s" % (self.config.directory, err))
+                log.critical("can't chdir into %r: %s", self.config.directory, err)
             else:
-                log.info('set current directory: %r' % (self.config.directory),)
+                log.info('set current directory: %r', self.config.directory)
         dn = os.open('/dev/null')
         os.dup2(0, dn)
         os.dup2(1, dn)
@@ -239,7 +241,7 @@ class ServerContext:
         # again after the setsid() call, for obscure SVR4 reasons.
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-        prefix = '%s-%s---%s-' % (name, channel, identifier)
+        prefix = f'{name}-{channel}---{identifier}-'
         logfile = mktempfile(
             suffix='.log',
             prefix=prefix,
@@ -254,12 +256,12 @@ class ServerContext:
         pid = os.getpid()
         try:
             with open(self.config.pidfile, 'w') as f:
-                f.write('%s\n' % pid)
+                f.write(f'{pid}\n')
         except OSError:
-            log.critical('could not write pidfile %s' % (self.config.pidfile,))
+            log.critical('could not write pidfile %s', self.config.pidfile)
         else:
             self.unlink_pidfile = True
-            log.info('supervisord started with pid %s' % pid)
+            log.info('supervisord started with pid %s', pid)
 
 
 def drop_privileges(user: int | str) -> str | None:
@@ -278,13 +280,13 @@ def drop_privileges(user: int | str) -> str | None:
         try:
             pwrec = pwd.getpwnam(user)
         except KeyError:
-            return "Can't find username %r" % user
+            return f"Can't find username {user!r}"
         uid = pwrec[2]
     else:
         try:
             pwrec = pwd.getpwuid(uid)
         except KeyError:
-            return "Can't find uid %r" % uid
+            return f"Can't find uid {uid!r}"
 
     current_uid = os.getuid()
 
@@ -315,6 +317,7 @@ def drop_privileges(user: int | str) -> str | None:
     except OSError:
         return 'Could not set group id of effective user'
     os.setuid(uid)
+    return None
 
 
 def make_pipes(stderr=True) -> ta.Mapping[str, int]:
@@ -367,13 +370,13 @@ def close_child_pipes(pipes: ta.Mapping[str, int]) -> None:
 
 def check_execv_args(filename, argv, st) -> None:
     if st is None:
-        raise NotFound("can't find command %r" % filename)
+        raise NotFoundError(f"can't find command {filename!r}")
 
     elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutable('command at %r is a directory' % filename)
+        raise NotExecutableError(f'command at {filename!r} is a directory')
 
     elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutable('command at %r is not executable' % filename)
+        raise NotExecutableError(f'command at {filename!r} is not executable')
 
     elif not os.access(filename, os.X_OK):
-        raise NoPermission('no permission to run command %r' % filename)
+        raise NoPermissionError(f'no permission to run command {filename!r}')

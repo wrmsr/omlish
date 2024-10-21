@@ -42,7 +42,7 @@ class ServerConfig:
             loglevel: int | str = logging.INFO,
             pidfile: str = 'supervisord.pid',
             child_logdir: str | None = None,
-            **kwargs: ta.Any
+            **kwargs: ta.Any,
     ) -> 'ServerConfig':
         return cls(
             umask=octal_type(umask),
@@ -51,7 +51,7 @@ class ServerConfig:
             logfile_maxbytes=byte_size(logfile_maxbytes),
             loglevel=logging_level(loglevel),
             pidfile=existing_dirpath(pidfile),
-            child_logdir=tempfile.gettempdir() if not child_logdir else child_logdir,
+            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
             **kwargs,
         )
 

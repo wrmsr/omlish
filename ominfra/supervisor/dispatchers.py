@@ -32,7 +32,7 @@ class Dispatcher:
         self.closed = False  # True if close() has been called
 
     def __repr__(self) -> str:
-        return '<%s at %s for %s (%s)>' % (self.__class__.__name__, id(self), self.process, self.channel)
+        return f'<{self.__class__.__name__} at {id(self)} for {self.process} ({self.channel})>'
 
     def readable(self):
         raise NotImplementedError
@@ -49,14 +49,12 @@ class Dispatcher:
     def handle_error(self):
         nil, t, v, tbinfo = compact_traceback()
 
-        log.critical(
-            'uncaptured python exception, closing channel %s (%s:%s %s)' % (repr(self), t, v, tbinfo),
-        )
+        log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
         self.close()
 
     def close(self):
         if not self.closed:
-            log.debug('fd %s closed, stopped monitoring %s' % (self.fd, self))
+            log.debug('fd %s closed, stopped monitoring %s', self.fd, self)
             self.closed = True
 
     def flush(self):
@@ -110,12 +108,12 @@ class OutputDispatcher(Dispatcher):
         Configure the "normal" (non-capture) log for this channel of this process. Sets self.normal_log if logging is
         enabled.
         """
-        config = self.process.config
-        channel = self.channel
+        config = self.process.config  # noqa
+        channel = self.channel  # noqa
 
         logfile = self.lc.file
-        maxbytes = self.lc.maxbytes
-        backups = self.lc.backups
+        maxbytes = self.lc.maxbytes  # noqa
+        backups = self.lc.backups  # noqa
         to_syslog = self.lc.syslog
 
         if logfile or to_syslog:
@@ -177,7 +175,7 @@ class OutputDispatcher(Dispatcher):
                     try:
                         text = data.decode('utf-8')
                     except UnicodeDecodeError:
-                        text = 'Undecodable: %r' % data
+                        text = f'Undecodable: {data!r}'
                 msg = '%(name)r %(channel)s output:\n%(data)s'
                 log.log(
                     self.main_log_level, msg, name=self.process.config.name,

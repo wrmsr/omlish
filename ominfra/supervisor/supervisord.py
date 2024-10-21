@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-amalg _amalg.py
+# !@omlish-amalg _amalg.py
 """
 TODO:
  - amalg or not? only use om.logs and dc's
@@ -8,7 +8,7 @@ import logging
 import signal
 import time
 
-from omdev.amalg.std.logs import configure_standard_logging
+from omlish.lite.logs import configure_standard_logging
 
 from .compat import ExitNow
 from .compat import as_string
@@ -18,11 +18,11 @@ from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
+from .events import TICK_EVENTS
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
-from .events import TICK_EVENTS
 from .events import clear_events
 from .events import notify_event
 from .process import ProcessGroup
@@ -128,12 +128,11 @@ class Supervisor:
             if now > (self.last_shutdown_report + 3):  # every 3 secs
                 names = [as_string(p.config.name) for p in unstopped]
                 namestr = ', '.join(names)
-                log.info('waiting for %s to die' % namestr)
+                log.info('waiting for %s to die', namestr)
                 self.last_shutdown_report = now
                 for proc in unstopped:
                     state = get_process_state_description(proc.get_state())
-                    log.debug(
-                        '%s state: %s' % (proc.config.name, state))
+                    log.debug('%s state: %s', proc.config.name, state)
         return unstopped
 
     def ordered_stop_groups_phase_1(self):
@@ -194,15 +193,15 @@ class Supervisor:
                             self.context.poller.unregister_readable(fd)
                     except ExitNow:
                         raise
-                    except:
+                    except Exception:  # noqa
                         combined_map[fd].handle_error()
                 else:
                     # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
                     # time, which may cause 100% cpu usage
-                    log.debug('unexpected read event from fd %r' % fd)
+                    log.debug('unexpected read event from fd %r', fd)
                     try:
                         self.context.poller.unregister_readable(fd)
-                    except:
+                    except Exception:  # noqa
                         pass
 
             for fd in w:
@@ -215,13 +214,13 @@ class Supervisor:
                             self.context.poller.unregister_writable(fd)
                     except ExitNow:
                         raise
-                    except:
+                    except Exception:  # noqa
                         combined_map[fd].handle_error()
                 else:
-                    log.debug('unexpected write event from fd %r' % fd)
+                    log.debug('unexpected write event from fd %r', fd)
                     try:
                         self.context.poller.unregister_writable(fd)
-                    except:
+                    except Exception:  # noqa
                         pass
 
             for group in pgroups:
@@ -238,7 +237,7 @@ class Supervisor:
                 break
 
     def tick(self, now=None):
-        """ Send one or more 'tick' events when the timeslice related to the period for the event type rolls over """
+        """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
         if now is None:
             # now won't be None in unit tests
             now = time.time()
@@ -261,7 +260,7 @@ class Supervisor:
             process = self.context.pid_history.get(pid, None)
             if process is None:
                 _, msg = decode_wait_status(sts)
-                log.info('reaped unknown pid %s (%s)' % (pid, msg))
+                log.info('reaped unknown pid %s (%s)', pid, msg)
             else:
                 process.finish(sts)
                 del self.context.pid_history[pid]
@@ -273,27 +272,27 @@ class Supervisor:
         sig = self.context.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                log.warning('received %s indicating exit request' % signame(sig))
+                log.warning('received %s indicating exit request', signame(sig))
                 self.context.state = SupervisorStates.SHUTDOWN
 
             elif sig == signal.SIGHUP:
                 if self.context.state == SupervisorStates.SHUTDOWN:
-                    log.warning('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
+                    log.warning('ignored %s indicating restart request (shutdown in progress)', signame(sig))  # noqa
                 else:
-                    log.warning('received %s indicating restart request' % signame(sig))  # noqa
+                    log.warning('received %s indicating restart request', signame(sig))  # noqa
                     self.context.state = SupervisorStates.RESTARTING
 
             elif sig == signal.SIGCHLD:
-                log.debug('received %s indicating a child quit' % signame(sig))
+                log.debug('received %s indicating a child quit', signame(sig))
 
             elif sig == signal.SIGUSR2:
-                log.info('received %s indicating log reopen request' % signame(sig))
+                log.info('received %s indicating log reopen request', signame(sig))
                 # self.context.reopen_logs()
                 for group in self.process_groups.values():
                     group.reopen_logs()
 
             else:
-                log.debug('received %s indicating nothing' % signame(sig))
+                log.debug('received %s indicating nothing',  signame(sig))
 
     def get_state(self):
         return self.context.state

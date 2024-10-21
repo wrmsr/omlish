@@ -41,7 +41,7 @@ def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], Base
     del tb
 
     file, function, line = tbinfo[-1]
-    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])
+    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
     return (file, function, line), t, v, info
 
 
@@ -52,7 +52,7 @@ def find_prefix_at_end(haystack: T, needle: T) -> int:
     return l
 
 
-class ExitNow(Exception):
+class ExitNow(Exception):  # noqa
     pass
 
 
@@ -68,11 +68,11 @@ def decode_wait_status(sts: int) -> tuple[int, str]:
     """
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
-        msg = 'exit status %s' % es
+        msg = f'exit status {es}'
         return es, msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
-        msg = 'terminated by %s' % signame(sig)
+        msg = f'terminated by {signame(sig)}'
         if hasattr(os, 'WCOREDUMP'):
             iscore = os.WCOREDUMP(sts)
         else:
@@ -81,7 +81,7 @@ def decode_wait_status(sts: int) -> tuple[int, str]:
             msg += ' (core dumped)'
         return -1, msg
     else:
-        msg = 'unknown termination cause 0x%04x' % sts
+        msg = 'unknown termination cause 0x%04x' % sts  # noqa
         return -1, msg
 
 
@@ -153,10 +153,7 @@ def close_fd(fd: int) -> bool:
     return True
 
 
-def mktempfile(suffix: str, prefix: str, dir: str) -> str:
-    # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
-    # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
-    os._urandomfd = None
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
     fd, filename = tempfile.mkstemp(suffix, prefix, dir)
     os.close(fd)
     return filename
@@ -189,8 +186,8 @@ def strip_escapes(s):
     result = b''
     show = 1
     i = 0
-    L = len(s)
-    while i < L:
+    l = len(s)
+    while i < l:
         if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
             show = 1
         elif show:

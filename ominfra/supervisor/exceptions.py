@@ -1,21 +1,21 @@
-class ProcessException(Exception):
+class ProcessError(Exception):
     """ Specialized exceptions used when attempting to start a process """
 
 
-class BadCommand(ProcessException):
+class BadCommandError(ProcessError):
     """ Indicates the command could not be parsed properly. """
 
 
-class NotExecutable(ProcessException):
+class NotExecutableError(ProcessError):
     """ Indicates that the filespec cannot be executed because its path
     resolves to a file which is not executable, or which is a directory. """
 
 
-class NotFound(ProcessException):
+class NotFoundError(ProcessError):
     """ Indicates that the filespec cannot be executed because it could not be found """
 
 
-class NoPermission(ProcessException):
+class NoPermissionError(ProcessError):
     """
     Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
     filesystem permission to execute the file.

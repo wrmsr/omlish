@@ -41,13 +41,13 @@ def name_to_uid(name: str) -> int:
         try:
             pwdrec = pwd.getpwnam(name)
         except KeyError:
-            raise ValueError('Invalid user name %s' % name)
+            raise ValueError(f'Invalid user name {name}')  # noqa
         uid = pwdrec[2]
     else:
         try:
             pwd.getpwuid(uid)  # check if uid is valid
         except KeyError:
-            raise ValueError('Invalid user id %s' % name)
+            raise ValueError(f'Invalid user id {name}')  # noqa
     return uid
 
 
@@ -58,13 +58,13 @@ def name_to_gid(name: str) -> int:
         try:
             grprec = grp.getgrnam(name)
         except KeyError:
-            raise ValueError('Invalid group name %s' % name)
+            raise ValueError(f'Invalid group name {name}')  # noqa
         gid = grprec[2]
     else:
         try:
             grp.getgrgid(gid)  # check if gid is valid
         except KeyError:
-            raise ValueError('Invalid group id %s' % name)
+            raise ValueError(f'Invalid group id {name}')  # noqa
     return gid
 
 
@@ -79,25 +79,25 @@ def octal_type(arg: str | int) -> int:
     try:
         return int(arg, 8)
     except (TypeError, ValueError):
-        raise ValueError('%s can not be converted to an octal type' % arg)
+        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
 
 
 def existing_directory(v: str) -> str:
     nv = os.path.expanduser(v)
     if os.path.isdir(nv):
         return nv
-    raise ValueError('%s is not an existing directory' % v)
+    raise ValueError(f'{v} is not an existing directory')
 
 
 def existing_dirpath(v: str) -> str:
     nv = os.path.expanduser(v)
-    dir = os.path.dirname(nv)
+    dir = os.path.dirname(nv)  # noqa
     if not dir:
         # relative pathname with no directory component
         return nv
     if os.path.isdir(dir):
         return nv
-    raise ValueError('The directory named as part of the path %s does not exist' % v)
+    raise ValueError(f'The directory named as part of the path {v} does not exist')
 
 
 def logging_level(value: str | int) -> int:
@@ -106,7 +106,7 @@ def logging_level(value: str | int) -> int:
     s = str(value).lower()
     level = logging.getLevelNamesMapping().get(s.upper())
     if level is None:
-        raise ValueError('bad logging level name %r' % value)
+        raise ValueError(f'bad logging level name {value!r}')
     return level
 
 
@@ -118,12 +118,11 @@ class SuffixMultiplier:
         self._default = default
         # all keys must be the same size
         self._keysz = None
-        for k in d.keys():
+        for k in d:
             if self._keysz is None:
                 self._keysz = len(k)
-            else:
-                if self._keysz != len(k):
-                    raise ValueError(k)
+            elif self._keysz != len(k):
+                raise ValueError(k)
 
     def __call__(self, v: str | int) -> int:
         if isinstance(v, int):
@@ -152,12 +151,12 @@ def signal_number(value: int | str) -> int:
     except (ValueError, TypeError):
         name = value.strip().upper()
         if not name.startswith('SIG'):
-            name = 'SIG' + name
+            name = f'SIG{name}'
         num = getattr(signal, name, None)
         if num is None:
-            raise ValueError('value %r is not a valid signal name' % value)
+            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
     if num not in SIGNUMS:
-        raise ValueError('value %r is not a valid signal number' % value)
+        raise ValueError(f'value {value!r} is not a valid signal number')
     return num
 
 

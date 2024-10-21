@@ -177,7 +177,7 @@ class KQueuePoller(BasePoller):
             self._kqueue.control([kevent], 0)
         except OSError as error:
             if error.errno == errno.EBADF:
-                log.debug('EBADF encountered in kqueue. Invalid file descriptor %s' % fd)
+                log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
             else:
                 raise
 
