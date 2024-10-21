@@ -9,6 +9,7 @@ TODO:
  - move to omlish/secrets
  - argparse, CliCmd
 """
+import argparse
 import random
 import secrets
 import string
@@ -23,9 +24,13 @@ CHAR_CLASSES: ta.Mapping[str, str] = {
 }
 
 
+ALL_CHAR_CLASSES = tuple(CHAR_CLASSES.values())
+DEFAULT_LENGTH = 16
+
+
 def generate_password(
-        char_classes: ta.Sequence[str],
-        length: int = 12,
+        char_classes: ta.Sequence[str] = ALL_CHAR_CLASSES,
+        length: int = DEFAULT_LENGTH,
         *,
         rand: random.Random | None = None,
 ) -> str:
@@ -35,6 +40,8 @@ def generate_password(
     for cc in char_classes:
         l.append(rand.choice(cc))
     cs = ''.join(char_classes)
+    if not cs:
+        raise ValueError(cs)
     while len(l) < length:
         l.append(rand.choice(cs))
     rand.shuffle(l)
@@ -42,7 +49,27 @@ def generate_password(
 
 
 def _main() -> None:
-    print(generate_password(list(CHAR_CLASSES.values())))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('length', type=int, nargs='?', default=DEFAULT_LENGTH)
+    for cc in CHAR_CLASSES:
+        parser.add_argument(f'-{cc[0]}', f'--{cc}', action='store_true')
+    args = parser.parse_args()
+
+    cs = {
+        cc
+        for cc in CHAR_CLASSES
+        if getattr(args, cc) is not None
+    }
+    if cs:
+        ccs = tuple(CHAR_CLASSES[cc] for cc in cs)
+    else:
+        ccs = ALL_CHAR_CLASSES
+
+    pw = generate_password(
+        ccs,
+        args.length,
+    )
+    print(pw)
 
 
 if __name__ == '__main__':
