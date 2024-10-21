@@ -94,7 +94,7 @@ class OpenaiChatModel(ChatModel):
     ) -> None:
         super().__init__()
         self._model = model or self.DEFAULT_MODEL
-        self._api_key = Secret.of(api_key)
+        self._api_key = Secret.of(api_key) if api_key is not None else None
 
     def _build_req_msg(self, m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
         if isinstance(m, SystemMessage):
@@ -170,7 +170,7 @@ class OpenaiChatModel(ChatModel):
         ]
 
         with contextlib.closing(openai.OpenAI(
-                api_key=self._api_key.reveal(),
+                api_key=Secret.of(self._api_key).reveal() if self._api_key is not None else None,
         )) as client:
             raw_request = dict(
                 model=self._model,

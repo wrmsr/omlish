@@ -1,5 +1,5 @@
-from ..multipart import MultipartField
 from ..multipart import MultipartEncoder
+from ..multipart import MultipartField
 
 
 def test_multipart():

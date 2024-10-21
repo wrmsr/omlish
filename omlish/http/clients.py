@@ -203,8 +203,12 @@ class HttpxHttpClient(HttpClient):
 ##
 
 
-def client() -> HttpClient:
+def _default_client() -> HttpClient:
     return UrllibHttpClient()
+
+
+def client() -> HttpClient:
+    return _default_client()
 
 
 def request(
@@ -217,6 +221,8 @@ def request(
         timeout_s: float | None = None,
 
         check: bool = False,
+
+        client: HttpClient | None = None,
 
         **kwargs: ta.Any,
 ) -> HttpResponse:
@@ -232,9 +238,16 @@ def request(
         **kwargs,
     )
 
-    with client() as cli:
+    def do(cli: HttpClient) -> HttpResponse:
         return cli.request(
             req,
 
             check=check,
         )
+
+    if client is not None:
+        return do(client)
+
+    else:
+        with _default_client() as cli:
+            return do(cli)
