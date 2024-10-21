@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import errno
 import fcntl
 import grp
@@ -74,7 +75,7 @@ class ServerContext:
             signal.SIGUSR2,
         )
 
-    def waitpid(self) -> tuple[int | None, int | None]:
+    def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optonal[int]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
         # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
@@ -249,7 +250,7 @@ class ServerContext:
         )
         return logfile
 
-    def get_signal(self) -> int | None:
+    def get_signal(self) -> ta.Optional[int]:
         return self.signal_receiver.get_signal()
 
     def write_pidfile(self) -> None:
@@ -264,7 +265,7 @@ class ServerContext:
             log.info('supervisord started with pid %s', pid)
 
 
-def drop_privileges(user: int | str) -> str | None:
+def drop_privileges(user: ta.Union[int, str]) -> ta.Optional[str]:
     """
     Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
     and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
