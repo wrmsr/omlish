@@ -304,14 +304,14 @@ class Supervisor:
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
             log.warning('received %s indicating exit request', signame(sig))
-            self._context.state = SupervisorStates.SHUTDOWN
+            self._context.set_state(SupervisorStates.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
             if self._context.state == SupervisorStates.SHUTDOWN:
                 log.warning('ignored %s indicating restart request (shutdown in progress)', signame(sig))  # noqa
             else:
                 log.warning('received %s indicating restart request', signame(sig))  # noqa
-                self._context.state = SupervisorStates.RESTARTING
+                self._context.set_state(SupervisorStates.RESTARTING)
 
         elif sig == signal.SIGCHLD:
             log.debug('received %s indicating a child quit', signame(sig))
