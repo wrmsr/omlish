@@ -4,6 +4,7 @@ https://datatracker.ietf.org/doc/html/rfc7578
 import dataclasses as dc
 import io
 import typing as ta
+import uuid
 
 from .. import cached
 
@@ -28,7 +29,7 @@ class MultipartEncoder:
     ) -> None:
         super().__init__()
         self._fields = fields
-        self._boundary = boundary or b'----WebKitFormBoundary7MA4YWxkTrZu0gW'
+        self._boundary = boundary or (b'----WebKitFormBoundary-' + uuid.uuid4().hex.encode('ascii'))
 
     class _Line(ta.NamedTuple):
         data: MultipartData
