@@ -118,7 +118,7 @@ class NodeWrappingConstructorMixin:
         yield omap
         uomap = next(gen)
         lang.exhaust(gen)
-        for key, value in uomap:  # type: ignore
+        for key, value in uomap:
             omap.append(NodeWrapped((key, value), node))
 
     def construct_yaml_omap(self, node):

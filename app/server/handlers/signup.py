@@ -8,7 +8,7 @@ from omlish.http.asgi import finish_response
 from omlish.http.asgi import read_form_body
 from omlish.http.asgi import redirect_response
 from omlish.http.asgi import start_response
-from omlish.secrets.passwords import generate_password_hash
+from omlish.secrets.pwhash import generate_password_hash
 from omserv.apps.base import url_for
 from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route

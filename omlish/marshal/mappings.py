@@ -53,7 +53,7 @@ class MappingUnmarshaler(Unmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Mapping:
         dct: dict = {}
         for mk, mv in check.isinstance(v, collections.abc.Mapping).items():
-            dct[self.ke.unmarshal(ctx, mk)] = self.ve.unmarshal(ctx, mv)  # type: ignore
+            dct[self.ke.unmarshal(ctx, mk)] = self.ve.unmarshal(ctx, mv)
         return self.ctor(dct)
 
 

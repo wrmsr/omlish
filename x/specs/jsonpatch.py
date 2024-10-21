@@ -1,3 +1,11 @@
+"""
+See:
+ - https://jsonpatch.com/
+ - https://datatracker.ietf.org/doc/html/rfc6902/
+
+TODO:
+ - https://zuplo.com/blog/2024/10/11/what-is-json-merge-patch
+"""
 import copy
 
 
