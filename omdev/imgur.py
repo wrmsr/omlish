@@ -85,15 +85,15 @@ def upload_image(
             file_data,
             b'image',
             file_name.encode(),
-            headers=[(b'Content-Type', b'application/octet-stream')],
+            headers=[(hu.consts.HEADER_CONTENT_TYPE, hu.consts.CONTENT_TYPE_BYTES)],
         ),
     ])
 
     resp = hu.request(
         url,
         headers={
-            'Authorization': f'Bearer {Secret.of(auth_key).reveal()}',
-            'Content-Type': me.content_type().decode(),
+            hu.consts.HEADER_AUTH: hu.consts.format_bearer_auth_header(Secret.of(auth_key).reveal()),
+            hu.consts.HEADER_CONTENT_TYPE: me.content_type().decode(),
         },
         data=me.content(),
         check=True,
