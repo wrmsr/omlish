@@ -61,7 +61,7 @@ psutil==6.1.0
 ## json
 
 #> ujson==5.10.0
-orjson==3.10.9
+orjson==3.10.10
 
 ## pickle
 

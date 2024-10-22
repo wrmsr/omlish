@@ -81,7 +81,7 @@ redis==5.1.1
 sqlean.py==3.45.1; python_version < "3.13"
 duckdb==1.1.2
 
-tokenize_rt==6.0.0
+tokenize_rt==6.1.0
 
 pycparser==2.22
 cffi==1.17.1
