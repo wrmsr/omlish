@@ -24,7 +24,7 @@ from .dataclasses import AwsDataclass
 @dc.dataclass(frozen=True)
 class AwsLogEvent(AwsDataclass):
     message: str
-    timestamp: int
+    timestamp: int  # milliseconds UTC
 
 
 @dc.dataclass(frozen=True)
