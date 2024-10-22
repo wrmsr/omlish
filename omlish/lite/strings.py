@@ -1,5 +1,10 @@
-def camel_case(name: str) -> str:
-    return ''.join(map(str.capitalize, name.split('_')))  # noqa
+def camel_case(name: str, lower: bool = False) -> str:
+    if not name:
+        return ''
+    s = ''.join(map(str.capitalize, name.split('_')))  # noqa
+    if lower:
+        s = s[0].lower() + s[1:]
+    return s
 
 
 def snake_case(name: str) -> str:
