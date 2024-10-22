@@ -3,8 +3,8 @@ import sys
 import codecs
 from unittest import TestCase
 
-import simplejson as json
-from simplejson.compat import b
+from ... import simplejson as json
+from ..compat import b
 
 class TestUnicode(TestCase):
     def test_encoding1(self):

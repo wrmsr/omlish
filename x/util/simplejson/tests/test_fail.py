@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase
 
-import simplejson as json
+from ... import simplejson as json
 
 # 2007-10-05
 JSONDOCS = [

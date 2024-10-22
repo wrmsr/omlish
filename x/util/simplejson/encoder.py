@@ -1,9 +1,7 @@
 """Implementation of JSONEncoder"""
-
-# Do not import Decimal directly to avoid reload issues
 import decimal
+import operator
 import re
-from operator import itemgetter
 
 
 def _import_speedups():
@@ -486,7 +484,7 @@ def _make_iterencode(
     if _item_sort_key and not callable(_item_sort_key):
         raise TypeError('item_sort_key must be None or callable')
     elif _sort_keys and not _item_sort_key:
-        _item_sort_key = itemgetter(0)
+        _item_sort_key = operator.itemgetter(0)
 
     if _int_as_string_bitcount is not None and (
         _int_as_string_bitcount <= 0

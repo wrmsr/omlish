@@ -1,7 +1,7 @@
 from unittest import TestCase
 import textwrap
 
-import simplejson as json
+from ... import simplejson as json
 import io
 
 class TestIndent(TestCase):

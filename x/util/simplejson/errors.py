@@ -1,5 +1,5 @@
-"""Error classes used by simplejson
-"""
+"""Error classes used by simplejson"""
+
 
 __all__ = ['JSONDecodeError']
 

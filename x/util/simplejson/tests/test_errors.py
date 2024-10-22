@@ -1,8 +1,8 @@
 import sys, pickle
 from unittest import TestCase
 
-import simplejson as json
-from simplejson.compat import b
+from ... import simplejson as json
+from ..compat import b
 
 class TestErrors(TestCase):
     def test_string_keys_error(self):

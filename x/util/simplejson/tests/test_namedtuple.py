@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import unittest
-import simplejson as json
+from ... import simplejson as json
 import io
 
 try:

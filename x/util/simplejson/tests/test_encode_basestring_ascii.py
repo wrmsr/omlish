@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-import simplejson.encoder
-from simplejson.compat import b
+from .. import encoder
+from ..compat import b
 
 CASES = [
     (u'/\\"\ucafe\ubabe\uab98\ufcde\ubcda\uef4a\x08\x0c\n\r\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?', '"/\\\\\\"\\ucafe\\ubabe\\uab98\\ufcde\\ubcda\\uef4a\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"'),
@@ -24,12 +24,12 @@ CASES = [
 
 class TestEncodeBaseStringAscii(TestCase):
     def test_py_encode_basestring_ascii(self):
-        self._test_encode_basestring_ascii(simplejson.encoder.py_encode_basestring_ascii)
+        self._test_encode_basestring_ascii(encoder.py_encode_basestring_ascii)
 
     def test_c_encode_basestring_ascii(self):
-        if not simplejson.encoder.c_encode_basestring_ascii:
+        if not encoder.c_encode_basestring_ascii:
             return
-        self._test_encode_basestring_ascii(simplejson.encoder.c_encode_basestring_ascii)
+        self._test_encode_basestring_ascii(encoder.c_encode_basestring_ascii)
 
     def _test_encode_basestring_ascii(self, encode_basestring_ascii):
         fname = encode_basestring_ascii.__name__

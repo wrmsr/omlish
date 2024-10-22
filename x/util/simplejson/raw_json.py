@@ -1,5 +1,4 @@
-"""Implementation of RawJSON
-"""
+"""Implementation of RawJSON"""
 
 
 class RawJSON:

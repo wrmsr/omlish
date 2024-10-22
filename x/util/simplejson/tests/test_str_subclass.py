@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import simplejson
+from ... import simplejson as json
 
 # Tests for issue demonstrated in https://github.com/simplejson/simplejson/issues/144
 class WonkyTextSubclass(str):

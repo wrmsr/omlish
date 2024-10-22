@@ -1,7 +1,7 @@
 from unittest import TestCase
 import io
-from simplejson.compat import b
-import simplejson as json
+from ..compat import b
+from ... import simplejson as json
 
 class MisbehavingTextSubtype(str):
     def __str__(self):

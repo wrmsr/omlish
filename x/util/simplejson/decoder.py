@@ -1,6 +1,4 @@
-"""Implementation of JSONDecoder
-"""
-
+"""Implementation of JSONDecoder"""
 import re
 import struct
 import sys

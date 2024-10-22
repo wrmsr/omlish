@@ -1,6 +1,4 @@
-"""JSON token scanner
-"""
-
+"""JSON token scanner"""
 import re
 
 from .errors import JSONDecodeError

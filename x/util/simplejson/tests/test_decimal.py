@@ -1,10 +1,10 @@
 import decimal
-from decimal import Decimal
 from unittest import TestCase
 import io
 from importlib import reload as reload_module
 
-import simplejson as json
+from ... import simplejson as json
+
 
 class TestDecimal(TestCase):
     NUMS = "1.0", "10.00", "1.1", "1234567890.1234567890", "500"

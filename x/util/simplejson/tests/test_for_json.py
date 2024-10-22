@@ -1,5 +1,5 @@
 import unittest
-import simplejson as json
+from ... import simplejson as json
 
 
 class ForJson(object):

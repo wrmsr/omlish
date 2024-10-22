@@ -3,9 +3,9 @@ import decimal
 from unittest import TestCase
 
 import sys
-import simplejson as json
+from ... import simplejson as json
 import io
-from simplejson.compat import b
+from ..compat import b
 
 class MisbehavingBytesSubtype(bytes):
     def decode(self, encoding=None):

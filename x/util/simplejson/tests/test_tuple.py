@@ -1,7 +1,7 @@
 import unittest
 
 import io
-import simplejson as json
+from ... import simplejson as json
 
 class TestTuples(unittest.TestCase):
     def test_tuple_array_dumps(self):

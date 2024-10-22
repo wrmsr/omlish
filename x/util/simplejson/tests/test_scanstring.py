@@ -1,9 +1,10 @@
 import sys
 from unittest import TestCase
 
-import simplejson as json
-import simplejson.decoder
-from simplejson.compat import b
+from ... import simplejson as json
+
+from .. import decoder
+from ..compat import b
 
 class TestScanString(TestCase):
     # The bytes type is intentionally not used in most of these tests
@@ -15,14 +16,14 @@ class TestScanString(TestCase):
     # entirely different code paths for parsing bytes and str.
     #
     def test_py_scanstring(self):
-        self._test_scanstring(simplejson.decoder.py_scanstring)
+        self._test_scanstring(decoder.py_scanstring)
 
     def test_c_scanstring(self):
-        if not simplejson.decoder.c_scanstring:
+        if not decoder.c_scanstring:
             return
-        self._test_scanstring(simplejson.decoder.c_scanstring)
+        self._test_scanstring(decoder.c_scanstring)
 
-        self.assertTrue(isinstance(simplejson.decoder.c_scanstring('""', 0)[0], str))
+        self.assertTrue(isinstance(decoder.c_scanstring('""', 0)[0], str))
 
     def _test_scanstring(self, scanstring):
         if sys.maxunicode == 65535:

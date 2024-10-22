@@ -1,4 +1,5 @@
-r"""Command-line tool to validate and pretty-print JSON
+r"""
+Command-line tool to validate and pretty-print JSON
 
 Usage::
 
@@ -8,12 +9,10 @@ Usage::
     }
     $ echo '{ 1.2:3.4}' | python -m simplejson.tool
     Expecting property name: line 1 column 2 (char 2)
-
 """
-
 import sys
 
-import simplejson as json
+from . import __init__ as json
 
 
 def main():
