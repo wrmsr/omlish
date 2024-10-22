@@ -15,8 +15,6 @@ from omlish.formats import json
 
 
 def _main() -> None:
-    secrets = load_secrets()
-
     payload = AwsPutLogEventsRequest(
         log_group_name='omlish',
         log_stream_name='test',
@@ -30,34 +28,45 @@ def _main() -> None:
 
     body = json.dumps_compact(payload.to_aws()).encode('utf-8')
 
-    amz_target = 'Logs_20140328.PutLogEvents'
     url = 'https://logs.us-west-1.amazonaws.com/'
 
-    creds = V4AwsSigner.Credentials(
-        secrets.get('aws_access_key_id').reveal(),
-        secrets.get('aws_secret_access_key').reveal(),
-
-    )
+    headers = {
+        'X-Amz-Target': ['Logs_20140328.PutLogEvents'],
+        'Content-Type': ['application/x-amz-json-1.1'],
+    }
 
     region_name = 'us-west-1'
+    service_name = 'logs'
 
     #
 
     req = V4AwsSigner.Request(
         method='POST',
         url=url,
-        headers={
-            'User-Agent': ['Botocore/1.35.6 ua/2.0 os/macos#21.6.0 md/arch#arm64 lang/python#3.12.5 md/pyimpl#CPython'],
-            'Content-Type': ['application/x-amz-json-1.1'],
-            'X-Amz-Target': [amz_target],
-        },
+        headers=headers,
         payload=body,
     )
 
     #
 
-    sign_hdrs = V4AwsSigner(creds, region_name, 'logs').sign(req, sign_payload=False)
-    req = dc.replace(req, headers={**req.headers, **sign_hdrs})
+    secrets = load_secrets()
+
+    creds = V4AwsSigner.Credentials(
+        secrets.get('aws_access_key_id').reveal(),
+        secrets.get('aws_secret_access_key').reveal(),
+    )
+
+    #
+
+    sig_headers = V4AwsSigner(
+        creds,
+        region_name,
+        service_name,
+    ).sign(
+        req,
+        sign_payload=False,
+    )
+    req = dc.replace(req, headers={**req.headers, **sig_headers})
 
     resp = httpx.post(
         req.url,
