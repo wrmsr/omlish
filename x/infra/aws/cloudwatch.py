@@ -1,10 +1,13 @@
 import boto3
 import datetime
 
+from omlish import logs
 from omdev.secrets import load_secrets
 
 
 def _main() -> None:
+    logs.configure_standard_logging('DEBUG')
+
     secrets = load_secrets()
 
     # Initialize a session using Amazon CloudWatch
