@@ -41,11 +41,6 @@ _CLI_FUNCS: ta.Sequence[CliFunc] = [
 ##
 
 
-@dc.dataclass(frozen=True)
-class CliMulti(CliCmd):
-    children: ta.Mapping[str, CliCmd]
-
-
 StrTuple: ta.TypeAlias = tuple[str, ...]
 RecStrMap: ta.TypeAlias = ta.Mapping[str, ta.Union[str, 'RecStrMap']]
 
@@ -176,11 +171,6 @@ def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
                 sdct[r] = cc
             else:
                 dct[cn] = cc
-
-    for mn, md in mdct.items():
-        if mn in dct:
-            raise NameError(mn)
-        dct[mn] = CliMulti(mn, md)
 
     return dct
 
