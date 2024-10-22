@@ -90,6 +90,12 @@ class ThreadWorker:
             stop_event = threading.Event()
         self._stop_event = stop_event
 
+    def start(self) -> None:
+        pass
+
+    def stop(self) -> None:
+        pass
+
 
 class JournalctlTailerWorker(ThreadWorker):
     def __init__(
