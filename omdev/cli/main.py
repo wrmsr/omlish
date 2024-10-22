@@ -1,10 +1,12 @@
 """
 TODO:
+ - py/foo - root command 'py'
  - cache ldr.discover() somehow if in uvx/pipx - very slow
   - <venv-root>/.omdev-cli-manifest-cache.json - {pkg_name: manifests_json}
  - allow manually specifying manifest packages
 """
 import argparse
+import dataclasses as dc
 import os
 import runpy
 import sys
@@ -33,6 +35,14 @@ def _post_install(cli_pkg: str) -> None:
 _CLI_FUNCS: ta.Sequence[CliFunc] = [
     CliFunc('_post_install', _post_install),
 ]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CliMulti(CliCmd):
+    children: ta.Mapping[str, CliCmd]
 
 
 ##
