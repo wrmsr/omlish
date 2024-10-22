@@ -38,3 +38,15 @@ def check_non_empty_str(v: ta.Optional[str]) -> str:
 def check_state(v: bool, msg: str = 'Illegal state') -> None:
     if not v:
         raise ValueError(msg)
+
+
+def check_equal(l: T, r: T) -> T:
+    if l != r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_not_equal(l: T, r: T) -> T:
+    if l == r:
+        raise ValueError(l, r)
+    return l
