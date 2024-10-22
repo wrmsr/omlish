@@ -47,6 +47,7 @@ class CliMulti(CliCmd):
 
 
 StrTuple: ta.TypeAlias = tuple[str, ...]
+RecStrMap: ta.TypeAlias = ta.Mapping[str, ta.Union[str, 'RecStrMap']]
 
 
 class CliCmdSet:
@@ -74,7 +75,7 @@ class CliCmdSet:
         if isinstance(cmd.cmd_name, str) and cmd.cmd_name[0] == '_':
             help_path = None
 
-        if isinstance(cmd, CliFunc):
+        elif isinstance(cmd, CliFunc):
             help_path = ('-', *exec_paths[0])
 
         elif isinstance(cmd, CliModule):
@@ -93,6 +94,28 @@ class CliCmdSet:
     @cached_nullary
     def entries(self) -> ta.Sequence[Entry]:
         return [self._make_entry(c) for c in self._cmds]
+
+    @cached_nullary
+    def help_tree(self) -> RecStrMap:
+        d: dict = {}
+        for e in self.entries():
+            if not e.help_path:
+                continue
+
+            c = d
+            for p in e.help_path[:-1]:
+                n = c.setdefault(p, {})
+                if not isinstance(n, dict):
+                    raise NameError(e)
+                c = n
+
+            h = e.help_path[-1]
+            if h in c:
+                raise NameError(e)
+
+            c[h] = repr(e)
+
+        return d
 
 
 ##
@@ -135,8 +158,7 @@ def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
 
     ccs.extend(_CLI_FUNCS)
 
-    es = CliCmdSet(ccs).entries()
-    print(es)
+    print(CliCmdSet(ccs).help_tree())
 
     #
 
