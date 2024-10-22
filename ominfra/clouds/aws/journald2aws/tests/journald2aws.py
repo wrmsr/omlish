@@ -7,7 +7,7 @@ from omdev.secrets import load_secrets
 from ominfra.clouds.aws.auth import AwsSigner
 from ominfra.clouds.aws.logs import AwsPutLogEventsResponse
 
-from .aws import AwsLogMessagePoster
+from ...logs import AwsLogMessagePoster
 
 
 ##
