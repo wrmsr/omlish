@@ -1,29 +1,10 @@
-"""
-TODO:
- - drop-until-end
-"""
+# ruff: noqa: UP007
 import dataclasses as dc
 import io
 import typing as ta
 
-from . import check
-
-
-@dc.dataclass(frozen=True)
-class DelimitingBufferError(Exception):
-    buffer: 'DelimitingBuffer'
-
-
-class ClosedDelimitingBufferError(DelimitingBufferError):
-    pass
-
-
-class FullDelimitingBufferError(DelimitingBufferError):
-    pass
-
-
-class IncompleteDelimitingBufferError(DelimitingBufferError):
-    pass
+from .check import check_isinstance
+from .check import check_not_none
 
 
 class DelimitingBuffer:
@@ -31,8 +12,16 @@ class DelimitingBuffer:
     https://github.com/python-trio/trio/issues/796 :|
     """
 
-    class Incomplete(ta.NamedTuple):
-        b: bytes
+    #
+
+    @dc.dataclass(frozen=True)
+    class Error(Exception):
+        buffer: 'DelimitingBuffer'
+
+    class ClosedError(Error):
+        pass
+
+    #
 
     DEFAULT_DELIMITERS: bytes = b'\n'
 
@@ -41,19 +30,17 @@ class DelimitingBuffer:
             delimiters: ta.Iterable[int] = DEFAULT_DELIMITERS,
             *,
             keep_ends: bool = False,
-            max_size: int | None = None,
-            on_full: ta.Literal['raise', 'yield'] = 'raise',
-            on_incomplete: ta.Literal['raise', 'yield'] = 'yield',
+            max_size: ta.Optional[int] = None,
     ) -> None:
         super().__init__()
 
-        self._delimiters = frozenset(check.isinstance(d, int) for d in delimiters)
+        self._delimiters = frozenset(check_isinstance(d, int) for d in delimiters)
         self._keep_ends = keep_ends
         self._max_size = max_size
-        self._on_full = on_full
-        self._on_incomplete = on_incomplete
 
-        self._buf: io.BytesIO | None = io.BytesIO()
+        self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
+
+    #
 
     @property
     def is_closed(self) -> bool:
@@ -61,15 +48,15 @@ class DelimitingBuffer:
 
     def tell(self) -> int:
         if (buf := self._buf) is None:
-            raise ClosedDelimitingBufferError(self)
+            raise self.ClosedError(self)
         return buf.tell()
 
     def peek(self) -> bytes:
         if (buf := self._buf) is None:
-            raise ClosedDelimitingBufferError(self)
+            raise self.ClosedError(self)
         return buf.getvalue()
 
-    def _find_delim(self, data: bytes | bytearray, i: int) -> int | None:
+    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[int]:
         r = None  # type: int | None
         for d in self._delimiters:
             if (p := data.find(d, i)) >= 0:
@@ -78,7 +65,7 @@ class DelimitingBuffer:
         return r
 
     def _append_and_reset(self, chunk: bytes) -> bytes:
-        buf = check.not_none(self._buf)
+        buf = check_not_none(self._buf)
         if not buf.tell():
             return chunk
 
@@ -87,22 +74,18 @@ class DelimitingBuffer:
         buf.seek(0)
         return ret
 
-    def feed(self, data: bytes | bytearray) -> ta.Generator[bytes, None, None]:
+    class Incomplete(ta.NamedTuple):
+        b: bytes
+
+    def feed(self, data: ta.Union[bytes, bytearray]) -> ta.Generator[ta.Union[bytes, Incomplete], None, None]:
         if (buf := self._buf) is None:
-            raise ClosedDelimitingBufferError(self)
+            raise self.ClosedError(self)
 
         if not data:
             self._buf = None
 
             if buf.tell():
-                if self._on_incomplete == 'raise':
-                    raise IncompleteDelimitingBufferError(self)
-
-                elif self._on_incomplete == 'yield':
-                    yield buf.getvalue()
-
-                else:
-                    raise ValueError(f'Unknown on_incomplete value: {self._on_incomplete!r}')
+                yield self.Incomplete(buf.getvalue())
 
             return
 
@@ -135,15 +118,6 @@ class DelimitingBuffer:
                 buf.write(data[i:])
                 return
 
-            if self._on_full == 'raise':
-                raise FullDelimitingBufferError(self)
-
-            elif self._on_full == 'yield':
-                p = i + remaining_buf_capacity
-
-                yield self._append_and_reset(data[i:p])
-
-                i = p
-
-            else:
-                raise ValueError(f'Unknown on_full value: {self._on_full!r}')
+            p = i + remaining_buf_capacity
+            yield self.Incomplete(self._append_and_reset(data[i:p]))
+            i = p
