@@ -1,3 +1,5 @@
+# @omlish-lite
+# ruff: noqa: UP007
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
  - The maximum batch size is 1,048,576 bytes. This size is calculated as the sum of all event messages in UTF-8, plus 26
@@ -45,4 +47,4 @@ class AwsPutLogEventsResponse(AwsDataclass):
     next_sequence_token: ta.Optional[str] = None
     rejected_log_events_info: ta.Optional[AwsRejectedLogEventsInfo] = None
 
-    raw: AwsDataclass.Raw = None
+    raw: ta.Optional[AwsDataclass.Raw] = None
