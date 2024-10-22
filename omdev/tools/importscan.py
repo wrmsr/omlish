@@ -164,7 +164,7 @@ def run(
 
 
 # @omlish-manifest
-_CLI_MODULE = CliModule('importscan', __name__)
+_CLI_MODULE = CliModule('py/importscan', __name__)
 
 
 def _main() -> None:

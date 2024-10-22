@@ -162,7 +162,7 @@
     "line": 166,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "importscan",
+        "cmd_name": "py/importscan",
         "mod_name": "omdev.tools.importscan"
       }
     }
@@ -174,7 +174,7 @@
     "line": 148,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "mkrelimp",
+        "cmd_name": "py/mkrelimp",
         "mod_name": "omdev.tools.mkrelimp"
       }
     }

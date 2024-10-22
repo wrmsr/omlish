@@ -13,6 +13,7 @@ import sys
 import typing as ta
 
 from omlish import check
+from omlish.lite.cached import cached_nullary
 
 from ..manifests.load import ManifestLoader
 from .types import CliCmd
@@ -43,6 +44,55 @@ _CLI_FUNCS: ta.Sequence[CliFunc] = [
 @dc.dataclass(frozen=True)
 class CliMulti(CliCmd):
     children: ta.Mapping[str, CliCmd]
+
+
+StrTuple: ta.TypeAlias = tuple[str, ...]
+
+
+class CliCmdSet:
+    def __init__(self, cmds: ta.Iterable[CliCmd]) -> None:
+        super().__init__()
+
+        self._cmds = list(cmds)
+
+    @dc.dataclass(frozen=True)
+    class Entry:
+        cmd: CliCmd
+
+        exec_paths: ta.Sequence[StrTuple]  # len > 1, len([0]) > 1
+        help_path: StrTuple | None
+
+    def _make_entry(self, cmd: CliCmd) -> Entry:
+        help_path: StrTuple | None
+
+        if isinstance(cmd.cmd_name, str):
+            ns = [cmd.cmd_name]
+        else:
+            ns = cmd.cmd_name
+        exec_paths = [tuple(n.split('/')) for n in ns]
+
+        if isinstance(cmd.cmd_name, str) and cmd.cmd_name[0] == '_':
+            help_path = None
+
+        if isinstance(cmd, CliFunc):
+            help_path = ('-', *exec_paths[0])
+
+        elif isinstance(cmd, CliModule):
+            help_path = (cmd.mod_name.partition('.')[0], *exec_paths[0])
+
+        else:
+            raise TypeError(cmd)
+
+        return CliCmdSet.Entry(
+            cmd,
+
+            exec_paths=exec_paths,
+            help_path=help_path,
+        )
+
+    @cached_nullary
+    def entries(self) -> ta.Sequence[Entry]:
+        return [self._make_entry(c) for c in self._cmds]
 
 
 ##
@@ -85,12 +135,30 @@ def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
 
     ccs.extend(_CLI_FUNCS)
 
+    es = CliCmdSet(ccs).entries()
+    print(es)
+
+    #
+
     dct: dict[str, CliCmd] = {}
+    mdct: dict[str, dict[str, CliCmd]] = {}
     for cc in ccs:
         for cn in [cc.cmd_name] if isinstance(cc.cmd_name, str) else cc.cmd_name:
             if cn in dct:
                 raise NameError(cc)
-            dct[cn] = cc
+            if '/' in cn:
+                l, r = cn.split('/')
+                sdct = mdct.setdefault(l, {})
+                if r in sdct:
+                    raise NameError(cc)
+                sdct[r] = cc
+            else:
+                dct[cn] = cc
+
+    for mn, md in mdct.items():
+        if mn in dct:
+            raise NameError(mn)
+        dct[mn] = CliMulti(mn, md)
 
     return dct
 
