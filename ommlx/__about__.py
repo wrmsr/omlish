@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            'anthropic ~= 0.34',
+            'anthropic ~= 0.37',
 
             'openai ~= 1.51',
 
