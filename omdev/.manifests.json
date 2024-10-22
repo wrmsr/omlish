@@ -102,7 +102,7 @@
     "line": 11,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "execrss",
+        "cmd_name": "py/execrss",
         "mod_name": "omdev.scripts.execrss"
       }
     }
@@ -114,7 +114,7 @@
     "line": 7,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "exectime",
+        "cmd_name": "py/exectime",
         "mod_name": "omdev.scripts.exectime"
       }
     }
@@ -126,7 +126,7 @@
     "line": 481,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "importtrace",
+        "cmd_name": "py/importtrace",
         "mod_name": "omdev.scripts.importtrace"
       }
     }

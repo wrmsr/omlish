@@ -480,7 +480,7 @@ class SqliteWriter:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'importtrace',
+    'cmd_name': 'py/importtrace',
     'mod_name': __name__,
 }}
 
