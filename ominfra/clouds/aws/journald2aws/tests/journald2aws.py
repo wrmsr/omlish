@@ -29,6 +29,7 @@ class Journald2AwsConfig:
     aws_flush_interval_s: float = 1.
 """
 import abc
+import argparse
 import dataclasses as dc
 import fcntl
 import json
@@ -39,6 +40,7 @@ import sys
 import threading
 import time
 import typing as ta
+import urllib.request
 
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
@@ -96,24 +98,37 @@ class JournalctlTailerWorker(ThreadWorker):
     def __init__(
             self,
             output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
+            *,
+            cmd_override: ta.Optional[ta.Sequence[str]] = None,
+            shell_wrap: bool = False,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
+
         self._output = output
+        self._cmd_override = cmd_override
+        self._shell_wrap = shell_wrap
 
         self._mb = JournalctlMessageBuilder()
 
         self._proc: ta.Optional[subprocess.Popen] = None
 
     def _run(self) -> None:
+        if self._cmd_override is not None:
+            cmd = self._cmd_override
+        else:
+            cmd = [
+                'journalctl',
+                '-o', 'json',
+                '--show-cursor',
+                '-f',
+            ]
+
+        if self._shell_wrap:
+            cmd = subprocess_shell_wrap_exec(*cmd)
+
         self._proc = subprocess.Popen(
-            subprocess_shell_wrap_exec(
-                sys.executable,
-                os.path.join(os.path.dirname(__file__), 'genmessages.py'),
-                '--sleep-n', '2',
-                '--sleep-s', '.5',
-                '1000000',
-            ),
+            cmd,
             stdout=subprocess.PIPE,
         )
 
@@ -144,25 +159,54 @@ class JournalctlTailerWorker(ThreadWorker):
 
 
 def _main() -> None:
-    do_post = False
-    # do_post = True
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--message', nargs='?')
+    parser.add_argument('--post', action='store_true')
+    args = parser.parse_args()
 
-    configure_standard_logging('INFO')
+    #
 
-    secrets = __import__('omdev.secrets').secrets.load_secrets()
+    configure_standard_logging('DEBUG')
+
+    #
+
+    if 'AWS_ACCESS_KEY_ID' in os.environ:
+        credentials = AwsSigner.Credentials(
+            os.environ['AWS_ACCESS_KEY_ID'],
+            os.environ['AWS_SECRET_ACCESS_KEY'],
+        )
+    else:
+        secrets = __import__('omdev.secrets').secrets.load_secrets()
+        credentials = AwsSigner.Credentials(
+            secrets.get('aws_access_key_id').reveal(),
+            secrets.get('aws_secret_access_key').reveal(),
+        )
 
     mp = AwsLogMessagePoster(
         log_group_name='omlish',
         log_stream_name='test',
         region_name='us-west-1',
-        credentials=AwsSigner.Credentials(
-            secrets.get('aws_access_key_id').reveal(),
-            secrets.get('aws_secret_access_key').reveal(),
-        ),
+        credentials=credentials,
     )
 
+    #
+
     q = queue.Queue()  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
-    jtw = JournalctlTailerWorker(q)
+    jtw = JournalctlTailerWorker(
+        q,
+        cmd_override=[
+            sys.executable,
+            os.path.join(os.path.dirname(__file__), 'genmessages.py'),
+            '--sleep-n', '2',
+            '--sleep-s', '.5',
+            *(['--message', args.message] if args.message else []),
+            '1000000',
+        ],
+        shell_wrap=True,
+    )
+
+    #
+
     jtw.start()
     while True:
         msgs = q.get()
@@ -178,15 +222,14 @@ def _main() -> None:
         ) for m in msgs])
         print(post)
 
-        if do_post:
-            resp = __import__('httpx').post(
-                post.url,
-                headers=post.headers,
-                follow_redirects=True,
-                content=post.data,
-            )
-
-            response = AwsPutLogEventsResponse.from_aws(resp.json())
+        if args.post:
+            with urllib.request.urlopen(urllib.request.Request(  # noqa
+                    post.url,
+                    method='POST',
+                    headers=dict(post.headers),
+                    data=post.data,
+            )) as resp:
+                response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
             print(response)
 
 
