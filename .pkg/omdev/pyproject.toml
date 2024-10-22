@@ -34,7 +34,7 @@ all = [
     'docutils ~= 0.21',
     'mypy ~= 1.11',
     'gprof2dot ~= 2024.6',
-    'tokenize_rt ~= 6.0',
+    'tokenize_rt ~= 6.1',
     'wheel ~= 0.44',
 ]
 black = [
@@ -55,7 +55,7 @@ prof = [
     'gprof2dot ~= 2024.6',
 ]
 tokens = [
-    'tokenize_rt ~= 6.0',
+    'tokenize_rt ~= 6.1',
 ]
 wheel = [
     'wheel ~= 0.44',

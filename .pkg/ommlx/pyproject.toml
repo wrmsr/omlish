@@ -28,7 +28,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'anthropic ~= 0.34',
+    'anthropic ~= 0.37',
     'openai ~= 1.51',
     'sentence_transformers ~= 3.2',
     'transformers ~= 4.45',
@@ -44,7 +44,7 @@ all = [
     'lxml ~= 5.3; python_version < "3.13"',
 ]
 backends = [
-    'anthropic ~= 0.34',
+    'anthropic ~= 0.37',
     'openai ~= 1.51',
     'sentence_transformers ~= 3.2',
     'transformers ~= 4.45',

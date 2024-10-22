@@ -1,10 +1,10 @@
 # ruff: noqa: UP007
-import dataclasses as dc
 import io
 import typing as ta
 
 from .check import check_isinstance
 from .check import check_not_none
+from .strings import attr_repr
 
 
 class DelimitingBuffer:
@@ -14,9 +14,13 @@ class DelimitingBuffer:
 
     #
 
-    @dc.dataclass(frozen=True)
     class Error(Exception):
-        buffer: 'DelimitingBuffer'
+        def __init__(self, buffer: 'DelimitingBuffer') -> None:
+            super().__init__(buffer)
+            self.buffer = buffer
+
+        def __repr__(self) -> str:
+            return attr_repr(self, 'buffer')
 
     class ClosedError(Error):
         pass

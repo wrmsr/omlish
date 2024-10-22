@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
+# @omlish-amalg ./_journald2aws.py
 # @omlish-lite
 """
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
@@ -38,14 +40,14 @@ import threading
 import time
 import typing as ta
 
-from ominfra.clouds.aws.auth import AwsSigner
-from ominfra.clouds.aws.logs import AwsPutLogEventsResponse
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_shell_wrap_exec
 
+from ...auth import AwsSigner
 from ...logs import AwsLogMessagePoster
+from ...logs import AwsPutLogEventsResponse
 from ..journald import JournalctlMessage  # noqa
 from ..journald import JournalctlMessageBuilder
 
