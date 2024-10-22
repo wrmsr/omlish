@@ -14,6 +14,7 @@ journalctl:
 
 https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
 """
+import abc
 import dataclasses as dc
 import fcntl
 import os.path
@@ -51,7 +52,7 @@ class JournalctlMessageBuilder:
         raw: bytes
         dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
         cursor: ta.Optional[str] = None
-        ts: ta.Optional[int] = None  # microseconds UTC
+        ts_us: ta.Optional[int] = None  # microseconds UTC
 
     _cursor_field = '__CURSOR'
     _timestamp_field = '_SOURCE_REALTIME_TIMESTAMP'
@@ -87,7 +88,7 @@ class JournalctlMessageBuilder:
             raw=raw,
             dct=dct,
             cursor=cursor,
-            ts=ts,
+            ts_us=ts,
         )
 
     def feed(self, data: bytes) -> ta.Sequence[Message]:
@@ -97,7 +98,7 @@ class JournalctlMessageBuilder:
         return ret
 
 
-class ThreadWorker:
+class ThreadWorker(abc.ABC):
     def __init__(
             self,
             *,
