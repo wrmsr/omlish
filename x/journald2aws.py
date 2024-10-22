@@ -34,6 +34,9 @@ from omlish.lite.strings import camel_case
 
 
 class AwsDataclass:
+    class Raw(dict):
+        pass
+
     class _AwsField(ta.NamedTuple):
         d_name: str
         a_name: str
@@ -60,6 +63,9 @@ class AwsDataclass:
             dc_cls = None
 
             c = f.type
+            if c is AwsDataclass.Raw:
+                continue
+
             if is_optional_alias(c):
                 is_opt = True
                 c = get_optional_alias_arg(c)
@@ -100,6 +106,19 @@ class AwsDataclass:
         except KeyError:
             pass
 
+        for df in dc.fields(cls):  # noqa
+            c = df.type
+
+            if is_optional_alias(c):
+                c = get_optional_alias_arg(c)
+
+            if c is AwsDataclass.Raw:
+                rf = df.name
+                break
+
+        else:
+            rf = None
+
         fs = [
             (f, f.dc_cls._get_aws_converters() if f.dc_cls is not None else None)
             for f in cls._get_aws_fields()
@@ -131,6 +150,8 @@ class AwsDataclass:
                     else:
                         x = cs.a2d(x)
                 dct[f.d_name] = x
+            if rf is not None:
+                dct[rf] = cls.Raw(v)
             return cls(**dct)
 
         ret = cls._aws_converters = AwsDataclass._AwsConverters(d2a, a2d)
@@ -142,6 +163,9 @@ class AwsDataclass:
     @classmethod
     def from_aws(cls, v: ta.Mapping[str, ta.Any]) -> 'AwsDataclass':
         return cls._get_aws_converters().a2d(v)
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -189,45 +213,45 @@ def _main() -> None:
 
     print(AwsPutLogEventsRequest.from_aws(payload))
 
-    # body = json.dumps_compact(payload).encode('utf-8')
+    body = json.dumps_compact(payload).encode('utf-8')
+
+    amz_target = 'Logs_20140328.PutLogEvents'
+    url = 'https://logs.us-west-1.amazonaws.com/'
+
+    creds = V4AwsSigner.Credentials(
+        secrets.get('aws_access_key_id').reveal(),
+        secrets.get('aws_secret_access_key').reveal(),
+
+    )
+
+    region_name = 'us-west-1'
+
     #
-    # amz_target = 'Logs_20140328.PutLogEvents'
-    # url = 'https://logs.us-west-1.amazonaws.com/'
+
+    req = V4AwsSigner.Request(
+        method='POST',
+        url=url,
+        headers={
+            'User-Agent': ['Botocore/1.35.6 ua/2.0 os/macos#21.6.0 md/arch#arm64 lang/python#3.12.5 md/pyimpl#CPython'],
+            'Content-Type': ['application/x-amz-json-1.1'],
+            'X-Amz-Target': [amz_target],
+        },
+        payload=body,
+    )
+
     #
-    # creds = V4AwsSigner.Credentials(
-    #     secrets.get('aws_access_key_id').reveal(),
-    #     secrets.get('aws_secret_access_key').reveal(),
-    #
-    # )
-    #
-    # region_name = 'us-west-1'
-    #
-    # #
-    #
-    # req = V4AwsSigner.Request(
-    #     method='POST',
-    #     url=url,
-    #     headers={
-    #         'User-Agent': ['Botocore/1.35.6 ua/2.0 os/macos#21.6.0 md/arch#arm64 lang/python#3.12.5 md/pyimpl#CPython'],
-    #         'Content-Type': ['application/x-amz-json-1.1'],
-    #         'X-Amz-Target': [amz_target],
-    #     },
-    #     payload=body,
-    # )
-    #
-    # #
-    #
-    # sign_hdrs = V4AwsSigner(creds, region_name, 'logs').sign(req, sign_payload=False)
-    # req = dc.replace(req, headers={**req.headers, **sign_hdrs})
-    #
-    # resp = httpx.post(
-    #     req.url,
-    #     headers=[(k, v) for k, vs in req.headers.items() for v in vs],
-    #     follow_redirects=True,
-    #     content=req.payload,
-    # )
-    #
-    # print((resp, resp.content))
+
+    sign_hdrs = V4AwsSigner(creds, region_name, 'logs').sign(req, sign_payload=False)
+    req = dc.replace(req, headers={**req.headers, **sign_hdrs})
+
+    resp = httpx.post(
+        req.url,
+        headers=[(k, v) for k, vs in req.headers.items() for v in vs],
+        follow_redirects=True,
+        content=req.payload,
+    )
+
+    print((resp, resp.content))
 
 
 if __name__ == '__main__':
