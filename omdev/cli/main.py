@@ -143,8 +143,13 @@ class CliCmdSet:
 
         return d
 
-    def select_cmd(self, args: ta.Sequence[str]) -> tuple[CliCmd, ta.Sequence[str]] | None:
+    class SelectedCmd(ta.NamedTuple):
+        cmd: CliCmd
+        args: ta.Sequence[str]
+
+    def select_cmd(self, args: ta.Sequence[str]) -> SelectedCmd | None:
         check.not_isinstance(args, str)
+
         raise NotImplementedError
 
 
@@ -160,7 +165,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
+def _build_cmd_set(args: ta.Any) -> CliCmdSet:
     ldr = ManifestLoader.from_entry_point(globals())
 
     pkgs: list[str] = []
@@ -192,74 +197,35 @@ def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
 
     #
 
-    ccs = CliCmdSet(lst)
-
-    print(ccs.help_tree())
-    print(ccs.exec_tree())
-
-    breakpoint()
-
-    #
-
-    dct: dict[str, CliCmd] = {}
-    mdct: dict[str, dict[str, CliCmd]] = {}
-    for cc in ccs:
-        for cn in [cc.cmd_name] if isinstance(cc.cmd_name, str) else cc.cmd_name:
-            if cn in dct:
-                raise NameError(cc)
-            if '/' in cn:
-                l, r = cn.split('/')
-                sdct = mdct.setdefault(l, {})
-                if r in sdct:
-                    raise NameError(cc)
-                sdct[r] = cc
-            else:
-                dct[cn] = cc
-
-    return dct
+    return CliCmdSet(lst)
 
 
-def _select_cmd(args: ta.Any, cmds: ta.Mapping[str, CliCmd]) -> CliCmd | int:
-    cmd = args.cmd
-    if cmd and cmd in cmds:
-        return cmds[cmd]
+def _select_cmd(args: ta.Any, cmds: CliCmdSet) -> CliCmdSet.SelectedCmd | int:
+    if args.cmd and (sel_tup := cmds.select_cmd([args.cmd, *args.args])) is not None:
+        return sel_tup
 
     def print_err(*args, **kwargs):  # noqa
         print(*args, **kwargs, file=sys.stderr)
 
-    if cmd:
-        print_err(f'Invalid command: {cmd}\n')
+    if args.cmd:
+        print_err(f'Invalid command: {args.cmd}\n')
         rc = 1
     else:
         rc = 0
 
-    mset = set()
-    mdct: dict = {}
-    for cc in cmds.values():
-        if id(cc) in mset:
-            continue
-        mset.add(id(cc))
-        if isinstance(cc.cmd_name, str) and cc.cmd_name[0] == '_':
-            continue
-        if isinstance(cc, CliFunc):
-            mdct.setdefault('-', []).append(cc)
-        elif isinstance(cc, CliModule):
-            mdct.setdefault(cc.mod_name.partition('.')[0], []).append(cc)
-        else:
-            raise TypeError(cc)
-
     print_err('Subcommands:\n')
-    for m, l in sorted(mdct.items(), key=lambda t: (t[0] == '-', t[0])):
-        print_err(f'  {m}')
-        for cc in sorted(l, key=lambda c: c.primary_name):
-            if isinstance(cc.cmd_name, str):
-                print_err(f'    {cc.cmd_name}')
+
+    def rec(d, pfx=''):
+        for k, v in sorted(d.items(), key=lambda t: t[0]):
+            if isinstance(v, str):
+                print_err(pfx + v)
             else:
-                print_err(
-                    f'    {cc.cmd_name[0]}'
-                    f'{(" (" + ", ".join(cc.cmd_name[1:]) + ")") if len(cc.cmd_name) > 1 else ""}',
-                )
-        print_err()
+                print_err(pfx + k)
+                rec(v, pfx + '  ')
+            if not pfx:
+                print_err('')
+
+    rec(cmds.help_tree())
 
     return rc
 
@@ -269,23 +235,23 @@ def _main() -> ta.Any:
     args = parser.parse_args()
 
     def inner():
-        cmds = _build_cmd_dct(args)
+        cmds = _build_cmd_set(args)
         sel = _select_cmd(args, cmds)
 
-        match sel:
-            case int():
-                return sel
+        if isinstance(sel, int):
+            return sel
 
-            case CliModule() as cm:
-                sys.argv = [args.cmd, *(args.args or ())]
-                runpy._run_module_as_main(cm.mod_name)  # type: ignore  # noqa
-                return 0
+        cmd = sel.cmd
+        if isinstance(cmd, CliModule):
+            sys.argv = [args.cmd, *(sel.args or ())]
+            runpy._run_module_as_main(cmd.mod_name)  # type: ignore  # noqa
+            return 0
 
-            case CliFunc() as cf:
-                return cf.fn(*(args.args or ()))
+        elif isinstance(cmd, CliFunc):
+            return cmd.fn(*(sel.args or ()))
 
-            case _:
-                raise TypeError(sel)
+        else:
+            raise TypeError(cmd)
 
     if args.cli_debug:
         from omlish.diag.debug import debugging_on_exception
