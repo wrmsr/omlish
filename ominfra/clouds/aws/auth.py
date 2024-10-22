@@ -9,6 +9,7 @@ TODO:
   - boto / s3transfer upload_fileobj doesn't stream either lol - eagerly calcs Content-MD5
  - sts tokens
  - !! fix canonical_qs - sort params
+ - secrets
 """
 import dataclasses as dc
 import datetime
