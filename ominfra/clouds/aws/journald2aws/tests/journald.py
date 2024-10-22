@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 """
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
@@ -27,6 +28,7 @@ import typing as ta
 
 from omlish.formats import json
 from omlish.lite.check import check_isinstance
+from omlish.lite.check import check_not_none
 from omlish.lite.io import DelimitingBuffer
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
@@ -94,7 +96,7 @@ class JournalctlMessageBuilder:
     def feed(self, data: bytes) -> ta.Sequence[Message]:
         ret: ta.List[JournalctlMessageBuilder.Message] = []
         for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))
+            ret.append(self._make_message(check_isinstance(line, bytes)))  # type: ignore
         return ret
 
 
@@ -148,13 +150,15 @@ class JournalctlTailerWorker(ThreadWorker):
             stdout=subprocess.PIPE,
         )
 
-        fd = proc.stdout.fileno()
+        stdout = check_not_none(proc.stdout)
+
+        fd = stdout.fileno()
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
         while True:
-            while proc.stdout.readable():
-                buf = proc.stdout.read(53)
+            while stdout.readable():
+                buf = stdout.read(53)
                 if not buf:
                     log.debug('Empty read')
                     break
@@ -174,7 +178,7 @@ class JournalctlTailerWorker(ThreadWorker):
 def _main() -> None:
     configure_standard_logging('INFO')
 
-    q = queue.Queue()
+    q = queue.Queue()  # type: queue.Queue
     jtw = JournalctlTailerWorker(q)
     jtw.start()
     while True:
