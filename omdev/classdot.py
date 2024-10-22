@@ -60,7 +60,7 @@ def _main() -> None:
 
 
 # @omlish-manifest
-_CLI_MODULE = CliModule('classdot', __name__)
+_CLI_MODULE = CliModule('py/classdot', __name__)
 
 
 if __name__ == '__main__':
