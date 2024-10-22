@@ -53,6 +53,7 @@ def _main() -> None:
         req.url,
         headers=[(k, v) for k, vs in req.headers.items() for v in vs],
         follow_redirects=True,
+        content=req.payload,
     )
 
     print((resp, resp.content))

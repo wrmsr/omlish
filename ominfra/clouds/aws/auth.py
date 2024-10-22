@@ -88,6 +88,7 @@ _EMPTY_SHA256 = _sha256(b'')
 _ISO8601 = '%Y%m%dT%H%M%SZ'
 
 _SIGNED_HEADERS_BLACKLIST = frozenset([
+    'authorization',
     'expect',
     'user-agent',
     'x-amzn-trace-id',
