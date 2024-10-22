@@ -203,6 +203,19 @@ class AwsPutLogEventsResponse(AwsDataclass):
 def _main() -> None:
     secrets = load_secrets()
 
+    dpayload = AwsPutLogEventsRequest(
+        log_group_name='omlish',
+        log_stream_name='test',
+        log_events=[
+            AwsLogEvent(
+                timestamp=int(time.time() * 1000.),
+                message='Test log message 100',
+            ),
+        ],
+    )
+
+    print(dpayload.to_aws())
+
     payload = {
         "logGroupName": "omlish",
         "logStreamName": "test",
