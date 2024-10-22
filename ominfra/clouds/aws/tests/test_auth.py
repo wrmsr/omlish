@@ -4,13 +4,13 @@ from .. import auth
 
 
 def test_auth():
-    creds = auth.Credentials(
+    creds = auth.AwsSigner.Credentials(
         'BARFBARFBARFBARFBARF',
         'BARFBARFBARFBARFBARFBARFBARFBARFBARFBARF',
     )
 
     region_name = 'us-west-1'
-    utcnow = datetime.datetime.strptime('20240827T194946Z', auth._ISO8601)  # noqa
+    utcnow = datetime.datetime.strptime('20240827T194946Z', auth.AwsSigner.ISO8601)  # noqa
 
     user_agent = 'Botocore/1.35.6 ua/2.0 os/macos#21.6.0 md/arch#arm64 lang/python#3.12.5 md/pyimpl#CPython'
 
@@ -19,7 +19,7 @@ def test_auth():
         region_name,
         'ec2',
     ).sign(
-        auth.Request(
+        auth.AwsSigner.Request(
             method='POST',
             url=f'https://ec2.{region_name}.amazonaws.com/',
             headers={
@@ -50,7 +50,7 @@ def test_auth():
         region_name,
         's3',
     ).sign(
-        auth.Request(
+        auth.AwsSigner.Request(
             method='GET',
             url=f'https://s3.{region_name}.amazonaws.com/?max-buckets=123',
             headers={
