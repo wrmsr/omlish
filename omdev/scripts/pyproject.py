@@ -1908,6 +1908,23 @@ def check_state(v: bool, msg: str = 'Illegal state') -> None:
         raise ValueError(msg)
 
 
+def check_equal(l: T, r: T) -> T:
+    if l != r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_not_equal(l: T, r: T) -> T:
+    if l == r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_single(vs: ta.Iterable[T]) -> T:
+    [v] = vs
+    return v
+
+
 ########################################
 # ../../../omlish/lite/json.py
 
@@ -1990,8 +2007,13 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 # ../../../omlish/lite/strings.py
 
 
-def camel_case(name: str) -> str:
-    return ''.join(map(str.capitalize, name.split('_')))  # noqa
+def camel_case(name: str, lower: bool = False) -> str:
+    if not name:
+        return ''
+    s = ''.join(map(str.capitalize, name.split('_')))  # noqa
+    if lower:
+        s = s[0].lower() + s[1:]
+    return s
 
 
 def snake_case(name: str) -> str:
@@ -2015,6 +2037,10 @@ def is_sunder(name: str) -> bool:
         name[-2:-1] != '_' and
         len(name) > 2
     )
+
+
+def attr_repr(obj: ta.Any, *attrs: str) -> str:
+    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
 
 
 ########################################

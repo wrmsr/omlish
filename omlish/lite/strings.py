@@ -1,3 +1,6 @@
+import typing as ta
+
+
 def camel_case(name: str, lower: bool = False) -> str:
     if not name:
         return ''
@@ -28,3 +31,7 @@ def is_sunder(name: str) -> bool:
         name[-2:-1] != '_' and
         len(name) > 2
     )
+
+
+def attr_repr(obj: ta.Any, *attrs: str) -> str:
+    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
