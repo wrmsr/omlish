@@ -65,7 +65,7 @@ class CliCmdSet:
         if isinstance(cmd.cmd_name, str):
             ns = [cmd.cmd_name]
         else:
-            ns = cmd.cmd_name
+            ns = list(cmd.cmd_name)
         exec_paths = [tuple(n.split('/')) for n in ns]
 
         if isinstance(cmd.cmd_name, str) and cmd.cmd_name[0] == '_':
@@ -100,12 +100,12 @@ class CliCmdSet:
                 for p in ep[:-1]:
                     n = c.setdefault(p, {})
                     if not isinstance(n, dict):
-                        raise NameError(e)
+                        raise NameError(e)  # noqa
                     c = n
 
                 h = ep[-1]
                 if h in c:
-                    raise NameError(e)
+                    raise NameError(e)  # noqa
 
                 c[h] = e.cmd
 
@@ -122,7 +122,7 @@ class CliCmdSet:
             for p in e.help_path[:-1]:
                 n = c.setdefault(p, {})
                 if not isinstance(n, dict):
-                    raise NameError(e)
+                    raise NameError(e)  # noqa
                 c = n
 
             h = e.help_path[-1]
@@ -147,10 +147,28 @@ class CliCmdSet:
         cmd: CliCmd
         args: ta.Sequence[str]
 
-    def select_cmd(self, args: ta.Sequence[str]) -> SelectedCmd | None:
+    class InvalidCmd(ta.NamedTuple):
+        path: ta.Sequence[str]
+
+    def select_cmd(self, args: ta.Sequence[str]) -> SelectedCmd | InvalidCmd:
         check.not_isinstance(args, str)
 
-        raise NotImplementedError
+        d = self.exec_tree()
+        for i in range(len(args)):
+            n = args[i]
+            if n not in d:
+                return CliCmdSet.InvalidCmd(args[:i + 1])
+
+            c = d[n]
+
+            if isinstance(c, CliCmd):
+                return CliCmdSet.SelectedCmd(c, args[i + 1:])
+            elif isinstance(c, ta.Mapping):
+                d = c
+            else:
+                raise TypeError(c)
+
+        return CliCmdSet.InvalidCmd([])
 
 
 ##
@@ -201,14 +219,17 @@ def _build_cmd_set(args: ta.Any) -> CliCmdSet:
 
 
 def _select_cmd(args: ta.Any, cmds: CliCmdSet) -> CliCmdSet.SelectedCmd | int:
-    if args.cmd and (sel_tup := cmds.select_cmd([args.cmd, *args.args])) is not None:
-        return sel_tup
-
     def print_err(*args, **kwargs):  # noqa
         print(*args, **kwargs, file=sys.stderr)
 
     if args.cmd:
-        print_err(f'Invalid command: {args.cmd}\n')
+        sel_cmd = cmds.select_cmd([args.cmd, *args.args])
+        if isinstance(sel_cmd, CliCmdSet.SelectedCmd):
+            return sel_cmd
+        elif isinstance(sel_cmd, CliCmdSet.InvalidCmd):
+            print_err(f'Invalid command: {" ".join(sel_cmd.path)}\n')
+        else:
+            raise TypeError(sel_cmd)
         rc = 1
     else:
         rc = 0

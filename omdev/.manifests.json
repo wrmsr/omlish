@@ -30,7 +30,7 @@
     "line": 62,
     "value": {
       "$.cli.types.CliModule": {
-        "cmd_name": "classdot",
+        "cmd_name": "py/classdot",
         "mod_name": "omdev.classdot"
       }
     }
