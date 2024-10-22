@@ -10,7 +10,7 @@ def _get_rss() -> int:
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'execrss',
+    'cmd_name': 'py/execrss',
     'mod_name': __name__,
 }}
 

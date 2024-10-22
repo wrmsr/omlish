@@ -6,7 +6,7 @@ import time
 
 # @omlish-manifest
 _CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'exectime',
+    'cmd_name': 'py/exectime',
     'mod_name': __name__,
 }}
 
