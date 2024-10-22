@@ -1,7 +1,9 @@
+# ruff: noqa: UP007
 import abc
 import errno
 import logging
 import os
+import typing as ta
 
 from .compat import as_bytes
 from .compat import compact_traceback
@@ -85,12 +87,6 @@ class OutputDispatcher(Dispatcher):
     - route the output to the appropriate log handlers as specified in the config.
     """
 
-    child_log = None  # the current logger (normal_log or capture_log)
-    normal_log = None  # the "normal" (non-capture) logger
-    capture_log = None  # the logger used while we're in capture_mode
-    capture_mode = False  # are we capturing process event data
-    output_buffer = b''  # data waiting to be logged
-
     def __init__(self, process: AbstractSubprocess, event_type, fd):
         """
         Initialize the dispatcher.
@@ -105,7 +101,10 @@ class OutputDispatcher(Dispatcher):
         self._init_normal_log()
         self._init_capture_log()
 
-        self.child_log = self.normal_log
+        self._child_log = self._normal_log
+
+        self._capture_mode = False  # are we capturing process event data
+        self._output_buffer = b''  # data waiting to be logged
 
         # all code below is purely for minor speedups
         begin_token = self.event_type.BEGIN_TOKEN
@@ -117,6 +116,10 @@ class OutputDispatcher(Dispatcher):
         self.log_to_main_log = process.context.config.loglevel <= self.main_log_level
         self.stdout_events_enabled = config.stdout.events_enabled
         self.stderr_events_enabled = config.stderr.events_enabled
+
+    _child_log: ta.Optional[logging.Logger]  # the current logger (normal_log or capture_log)
+    _normal_log: ta.Optional[logging.Logger]  # the "normal" (non-capture) logger
+    _capture_log: ta.Optional[logging.Logger]  # the logger used while we're in capture_mode
 
     def _init_normal_log(self) -> None:
         """
@@ -132,7 +135,7 @@ class OutputDispatcher(Dispatcher):
         to_syslog = self.lc.syslog
 
         if logfile or to_syslog:
-            self.normal_log = logging.getLogger(__name__)
+            self._normal_log = logging.getLogger(__name__)
 
         # if logfile:
         #     loggers.handle_file(
@@ -157,22 +160,22 @@ class OutputDispatcher(Dispatcher):
         """
         capture_maxbytes = self.lc.capture_maxbytes
         if capture_maxbytes:
-            self.capture_log = logging.getLogger(__name__)
+            self._capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
-            #     self.capture_log,
+            #     self._capture_log,
             #     fmt='%(message)s',
             #     maxbytes=capture_maxbytes,
             # )
 
     def remove_logs(self):
-        for log in (self.normal_log, self.capture_log):
+        for log in (self._normal_log, self._capture_log):
             if log is not None:
                 for handler in log.handlers:
                     handler.remove()  # type: ignore
                     handler.reopen()  # type: ignore
 
     def reopen_logs(self):
-        for log in (self.normal_log, self.capture_log):
+        for log in (self._normal_log, self._capture_log):
             if log is not None:
                 for handler in log.handlers:
                     handler.reopen()  # type: ignore
@@ -181,8 +184,8 @@ class OutputDispatcher(Dispatcher):
         if data:
             if self._process.context.config.strip_ansi:
                 data = strip_escapes(data)
-            if self.child_log:
-                self.child_log.info(data)  # type: ignore
+            if self._child_log:
+                self._child_log.info(data)
             if self.log_to_main_log:
                 if not isinstance(data, bytes):
                     text = data
@@ -199,23 +202,23 @@ class OutputDispatcher(Dispatcher):
                 notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
-        if self.capture_log is None:
+        if self._capture_log is None:
             # shortcut trying to find capture data
-            data = self.output_buffer
-            self.output_buffer = b''
+            data = self._output_buffer
+            self._output_buffer = b''
             self._log(data)
             return
 
-        if self.capture_mode:
+        if self._capture_mode:
             token, tokenlen = self.end_token_data
         else:
             token, tokenlen = self.begin_token_data
 
-        if len(self.output_buffer) <= tokenlen:
+        if len(self._output_buffer) <= tokenlen:
             return  # not enough data
 
-        data = self.output_buffer
-        self.output_buffer = b''
+        data = self._output_buffer
+        self._output_buffer = b''
 
         try:
             before, after = data.split(token, 1)
@@ -223,37 +226,37 @@ class OutputDispatcher(Dispatcher):
             after = None
             index = find_prefix_at_end(data, token)
             if index:
-                self.output_buffer = self.output_buffer + data[-index:]
+                self._output_buffer = self._output_buffer + data[-index:]
                 data = data[:-index]
             self._log(data)
         else:
             self._log(before)
             self.toggle_capture_mode()
-            self.output_buffer = after  # type: ignore
+            self._output_buffer = after  # type: ignore
 
         if after:
             self.record_output()
 
     def toggle_capture_mode(self):
-        self.capture_mode = not self.capture_mode
+        self._capture_mode = not self._capture_mode
 
-        if self.capture_log is not None:
-            if self.capture_mode:
-                self.child_log = self.capture_log
+        if self._capture_log is not None:
+            if self._capture_mode:
+                self._child_log = self._capture_log
             else:
-                for handler in self.capture_log.handlers:
+                for handler in self._capture_log.handlers:
                     handler.flush()
-                data = self.capture_log.getvalue()  # type: ignore
+                data = self._capture_log.getvalue()  # type: ignore
                 channel = self._channel
                 procname = self._process.config.name
                 event = self.event_type(self._process, self._process.pid, data)
                 notify_event(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
-                for handler in self.capture_log.handlers:
+                for handler in self._capture_log.handlers:
                     handler.remove()  # type: ignore
                     handler.reopen()  # type: ignore
-                self.child_log = self.normal_log
+                self._child_log = self._normal_log
 
     def writable(self) -> bool:
         return False
@@ -265,7 +268,7 @@ class OutputDispatcher(Dispatcher):
 
     def handle_read_event(self) -> None:
         data = readfd(self._fd)
-        self.output_buffer += data
+        self._output_buffer += data
         self.record_output()
         if not data:
             # if we get no data back from the pipe, it means that the child process has ended.  See
