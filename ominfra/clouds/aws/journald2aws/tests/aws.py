@@ -1,7 +1,7 @@
 """
 TODO:
  - max_items
- - max_bytes
+ - max_bytes - manually build body
  - flush_interval
  - !! sort by timestamp
 """
@@ -37,7 +37,7 @@ class AwsLogMessagePoster:
             log_stream_name: str,
             region_name: str,
             credentials: AwsSigner.Credentials,
-            *,
+
             url: ta.Optional[str] = None,
             service_name: str = DEFAULT_SERVICE_NAME,
             headers: ta.Optional[ta.Mapping[str, str]] = None,
@@ -56,7 +56,7 @@ class AwsLogMessagePoster:
             headers = self.DEFAULT_HEADERS
         if extra_headers is not None:
             headers = {**headers, **extra_headers}
-        self._headers = headers
+        self._headers = {k: [v] for k, v in headers.items()}
 
         self._signer = V4AwsSigner(
             credentials,
