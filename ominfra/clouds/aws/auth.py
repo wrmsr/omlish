@@ -25,87 +25,10 @@ from omlish.lite.check import check_non_empty_str
 ##
 
 
-HttpMap = ta.Mapping[str, ta.Sequence[str]]  # ta.TypeAlias
-
-
-def make_http_map(*kvs: ta.Tuple[str, str]) -> HttpMap:
-    out: dict[str, list[str]] = {}
-    for k, v in kvs:
-        out.setdefault(k, []).append(v)
-    return out
-
-
-#
-
-@dc.dataclass(frozen=True)
-class Credentials:
-    access_key: str
-    secret_key: str = dc.field(repr=False)
-
-
-@dc.dataclass(frozen=True)
-class Request:
-    method: str
-    url: str
-    headers: HttpMap = dc.field(default_factory=dict)
-    payload: bytes = b''
-
-
-##
-
-
-def _host_from_url(url: str) -> str:
-    url_parts = urllib.parse.urlsplit(url)
-    host = check_non_empty_str(url_parts.hostname)
-    default_ports = {
-        'http': 80,
-        'https': 443,
-    }
-    if url_parts.port is not None:
-        if url_parts.port != default_ports.get(url_parts.scheme):
-            host = '%s:%d' % (host, url_parts.port)
-    return host
-
-
-def _as_bytes(data: ta.Union[str, bytes]) -> bytes:
-    return data if isinstance(data, bytes) else data.encode('utf-8')
-
-
-def _sha256(data: ta.Union[str, bytes]) -> str:
-    return hashlib.sha256(_as_bytes(data)).hexdigest()
-
-
-def _sha256_sign(key: bytes, msg: ta.Union[str, bytes]) -> bytes:
-    return hmac.new(key, _as_bytes(msg), hashlib.sha256).digest()
-
-
-def _sha256_sign_hex(key: bytes, msg: ta.Union[str, bytes]) -> str:
-    return hmac.new(key, _as_bytes(msg), hashlib.sha256).hexdigest()
-
-
-_EMPTY_SHA256 = _sha256(b'')
-
-_ISO8601 = '%Y%m%dT%H%M%SZ'
-
-_SIGNED_HEADERS_BLACKLIST = frozenset([
-    'authorization',
-    'expect',
-    'user-agent',
-    'x-amzn-trace-id',
-])
-
-
-def _lower_case_http_map(d: HttpMap) -> HttpMap:
-    o: dict[str, list[str]] = {}
-    for k, vs in d.items():
-        o.setdefault(k.lower(), []).extend(vs)
-    return o
-
-
-class V4AwsSigner:
+class AwsSigner:
     def __init__(
             self,
-            creds: Credentials,
+            creds: 'AwsSigner.Credentials',
             region_name: str,
             service_name: str,
     ) -> None:
@@ -113,6 +36,75 @@ class V4AwsSigner:
         self._creds = creds
         self._region_name = region_name
         self._service_name = service_name
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Credentials:
+        access_key: str
+        secret_key: str = dc.field(repr=False)
+
+    @dc.dataclass(frozen=True)
+    class Request:
+        method: str
+        url: str
+        headers: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
+        payload: bytes = b''
+
+    #
+
+    ISO8601 = '%Y%m%dT%H%M%SZ'
+
+    #
+
+    @staticmethod
+    def _host_from_url(url: str) -> str:
+        url_parts = urllib.parse.urlsplit(url)
+        host = check_non_empty_str(url_parts.hostname)
+        default_ports = {
+            'http': 80,
+            'https': 443,
+        }
+        if url_parts.port is not None:
+            if url_parts.port != default_ports.get(url_parts.scheme):
+                host = '%s:%d' % (host, url_parts.port)
+        return host
+
+    @staticmethod
+    def _lower_case_http_map(d: ta.Mapping[str, ta.Sequence[str]]) -> ta.Mapping[str, ta.Sequence[str]]:
+        o: dict[str, list[str]] = {}
+        for k, vs in d.items():
+            o.setdefault(k.lower(), []).extend(vs)
+        return o
+
+    #
+
+    @staticmethod
+    def _as_bytes(data: ta.Union[str, bytes]) -> bytes:
+        return data if isinstance(data, bytes) else data.encode('utf-8')
+
+    @staticmethod
+    def _sha256(data: ta.Union[str, bytes]) -> str:
+        return hashlib.sha256(AwsSigner._as_bytes(data)).hexdigest()
+
+    @staticmethod
+    def _sha256_sign(key: bytes, msg: ta.Union[str, bytes]) -> bytes:
+        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).digest()
+
+    @staticmethod
+    def _sha256_sign_hex(key: bytes, msg: ta.Union[str, bytes]) -> str:
+        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).hexdigest()
+
+    _EMPTY_SHA256: str
+
+    #
+
+    _SIGNED_HEADERS_BLACKLIST = frozenset([
+        'authorization',
+        'expect',
+        'user-agent',
+        'x-amzn-trace-id',
+    ])
 
     def _validate_request(self, req: Request) -> None:
         check_non_empty_str(req.method)
@@ -122,20 +114,28 @@ class V4AwsSigner:
             for v in vs:
                 check_equal(v.strip(), v)
 
+
+AwsSigner._EMPTY_SHA256 = AwsSigner._sha256(b'')  # noqa
+
+
+##
+
+
+class V4AwsSigner(AwsSigner):
     def sign(
             self,
-            req: Request,
+            req: AwsSigner.Request,
             *,
             sign_payload: bool = False,
             utcnow: ta.Optional[datetime.datetime] = None,
-    ) -> HttpMap:
+    ) -> ta.Mapping[str, ta.Sequence[str]]:
         self._validate_request(req)
 
         #
 
         if utcnow is None:
             utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-        req_dt = utcnow.strftime(_ISO8601)
+        req_dt = utcnow.strftime(self.ISO8601)
 
         #
 
@@ -145,18 +145,18 @@ class V4AwsSigner:
 
         #
 
-        headers_to_sign = {
-            k: v
-            for k, v in _lower_case_http_map(req.headers).items()
-            if k not in _SIGNED_HEADERS_BLACKLIST
+        headers_to_sign: ta.Dict[str, ta.List[str]] = {
+            k: list(v)
+            for k, v in self._lower_case_http_map(req.headers).items()
+            if k not in self._SIGNED_HEADERS_BLACKLIST
         }
 
         if 'host' not in headers_to_sign:
-            headers_to_sign['host'] = [_host_from_url(req.url)]
+            headers_to_sign['host'] = [self._host_from_url(req.url)]
 
         headers_to_sign['x-amz-date'] = [req_dt]
 
-        hashed_payload = _sha256(req.payload) if req.payload else _EMPTY_SHA256
+        hashed_payload = self._sha256(req.payload) if req.payload else self._EMPTY_SHA256
         if sign_payload:
             headers_to_sign['x-amz-content-sha256'] = [hashed_payload]
 
@@ -188,7 +188,7 @@ class V4AwsSigner:
             'aws4_request',
         ]
         scope = '/'.join(scope_parts)
-        hashed_canon_req = _sha256(canon_req)
+        hashed_canon_req = self._sha256(canon_req)
         string_to_sign = '\n'.join([
             algorithm,
             req_dt,
@@ -199,11 +199,11 @@ class V4AwsSigner:
         #
 
         key = self._creds.secret_key
-        key_date = _sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
-        key_region = _sha256_sign(key_date, self._region_name)
-        key_service = _sha256_sign(key_region, self._service_name)
-        key_signing = _sha256_sign(key_service, 'aws4_request')
-        sig = _sha256_sign_hex(key_signing, string_to_sign)
+        key_date = self._sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
+        key_region = self._sha256_sign(key_date, self._region_name)
+        key_service = self._sha256_sign(key_region, self._service_name)
+        key_signing = self._sha256_sign(key_service, 'aws4_request')
+        sig = self._sha256_sign_hex(key_signing, string_to_sign)
 
         #
 
