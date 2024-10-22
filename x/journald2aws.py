@@ -30,6 +30,30 @@ from omlish.lite.strings import camel_case
 
 
 class AwsDataclass:
+    class _AwsField(ta.NamedTuple):
+        d: str
+        a: str
+
+    _aws_fields: ta.ClassVar[ta.Sequence[_AwsField]] = None
+
+    @classmethod
+    def _get_aws_fields(cls) -> ta.Sequence[_AwsField]:
+        try:
+            return cls.__dict__['_aws_fields']
+        except KeyError:
+            pass
+
+        fs = []
+        for f in dc.fields(cls):  # noqa
+            d = f.name
+            a = camel_case(d, lower=True)
+            fs.append(AwsDataclass._AwsField(d, a))
+
+        cls._aws_fields = fs
+        return fs
+
+    #
+
     class _AwsConverters(ta.NamedTuple):
         d2a: ta.Callable
         a2d: ta.Callable
@@ -43,28 +67,22 @@ class AwsDataclass:
         except KeyError:
             pass
 
-        d2a_lst = []
-        a2d_lst = []
-        for f in dc.fields(cls):  # noqa
-            d = f.name
-            a = camel_case(d, lower=True)
-
-            d2a_lst.append((a, d))
-            a2d_lst.append((d, a))
+        fs = cls._get_aws_fields()
 
         def d2a(o):
             dct = {}
-            for a, d in d2a_lst:
-                x = getattr(o, d)
-                dct[a] = x
+            for f in fs:
+                x = getattr(o, f.d)
+                if x is not None:
+                    dct[f.a] = x
             return dct
 
         def a2d(v):
             dct = {}
-            for d, a in a2d_lst:
-                x = v.get(a)
+            for f in fs:
+                x = v.get(f.a)
                 if x is not None:
-                    dct[d] = x
+                    dct[f.d] = x
             return cls(**dct)
 
         ret = cls._aws_converters = AwsDataclass._AwsConverters(d2a, a2d)
