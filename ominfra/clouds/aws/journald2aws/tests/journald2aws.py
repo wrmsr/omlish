@@ -1,24 +1,5 @@
-"""
-https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
-
-journalctl:
-  -o json
-  --show-cursor
-
-  --since "2012-10-30 18:17:16"
-  --until "2012-10-30 18:17:16"
-
-  --after-cursor <cursor>
-
-==
-
-https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
-"""
 import dataclasses as dc
-import queue
-import threading
 import time
-import typing as ta
 
 import httpx
 
@@ -28,83 +9,6 @@ from ominfra.clouds.aws.logs import AwsLogEvent
 from ominfra.clouds.aws.logs import AwsPutLogEventsRequest
 from ominfra.clouds.aws.logs import AwsPutLogEventsResponse
 from omlish.formats import json
-from omlish.lite.check import check_isinstance
-from omlish.lite.io import DelimitingBuffer
-
-
-##
-
-
-@dc.dataclass
-class JournalctlOpts:
-    after_cursor: ta.Optional[str] = None
-
-    since: ta.Optional[str] = None
-    until: ta.Optional[str] = None
-
-
-class JournalctlMessageBuilder:
-    def __init__(
-            self,
-            opts: JournalctlOpts,
-    ) -> None:
-        super().__init__()
-
-        self._opts = opts
-        self._buf = DelimitingBuffer(b'\n')
-
-    @dc.dataclass(frozen=True)
-    class Message:
-        raw: bytes
-        dct: ta.Mapping[str, ta.Any]
-        cursor: str
-
-    def _make_message(self, raw: bytes) -> Message:
-        dct = json.loads(raw.decode('utf-8', 'replace'))
-        try:
-            cursor = dct['__CURSOR']
-        except KeyError:
-            raise Exception(f'No cursor present: {raw!r}')
-        return JournalctlMessageBuilder.Message(
-            raw=raw,
-            dct=dct,
-            cursor=cursor,
-        )
-
-    def feed(self, data: bytes) -> ta.Sequence[Message]:
-        ret: ta.List[JournalctlMessageBuilder.Message] = []
-        for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))
-        return ret
-
-
-class ThreadWorker:
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-    def start(self) -> None:
-        pass
-
-    def stop(self) -> None:
-        pass
-
-
-class JournalctlTailerWorker(ThreadWorker):
-    def __init__(
-            self,
-            output: queue.Queue,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-        self._output = output
 
 
 ##
