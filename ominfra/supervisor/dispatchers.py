@@ -153,7 +153,7 @@ class OutputDispatcher(Dispatcher):
         #         fmt=config.name + ' %(message)s',
         #     )
 
-    def _init_capture_log(self):
+    def _init_capture_log(self) -> None:
         """
         Configure the capture log for this process.  This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
