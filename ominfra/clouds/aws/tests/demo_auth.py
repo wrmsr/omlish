@@ -9,10 +9,10 @@ from .. import auth
 
 
 def demo_ec2(
-        creds: auth.Credentials,
+        creds: auth.AwsSigner.Credentials,
         region_name: str,
 ) -> None:
-    req = auth.Request(
+    req = auth.AwsSigner.Request(
         method='POST',
         url=f'https://ec2.{region_name}.amazonaws.com/',
         headers={
@@ -42,10 +42,10 @@ def demo_ec2(
 
 
 def demo_s3(
-        creds: auth.Credentials,
+        creds: auth.AwsSigner.Credentials,
         region_name: str,
 ) -> None:
-    req = auth.Request(
+    req = auth.AwsSigner.Request(
         method='GET',
         url=f'https://s3.{region_name}.amazonaws.com/?max-buckets=123',
         headers={
@@ -76,7 +76,7 @@ def _main() -> None:
     cred_cfg = {k.lower(): v for k, v in config.items('default')}
 
     region_name = 'us-west-1'
-    creds = auth.Credentials(
+    creds = auth.AwsSigner.Credentials(
         cred_cfg['aws_access_key_id'],
         cred_cfg['aws_secret_access_key'],
     )
