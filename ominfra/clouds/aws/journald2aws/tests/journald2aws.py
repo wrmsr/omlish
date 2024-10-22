@@ -54,7 +54,7 @@ from ..journald import JournalctlMessage  # noqa
 from ..journald import JournalctlMessageBuilder
 
 
-@dc.dataclass
+@dc.dataclass(frozen=True)
 class JournalctlOpts:
     after_cursor: ta.Optional[str] = None
 
