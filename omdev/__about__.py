@@ -35,7 +35,7 @@ class Project(ProjectBase):
         ],
 
         'tokens': [
-            'tokenize_rt ~= 6.0',
+            'tokenize_rt ~= 6.1',
         ],
 
         'wheel': [

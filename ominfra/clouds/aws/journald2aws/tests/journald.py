@@ -165,7 +165,7 @@ class JournalctlTailerWorker(ThreadWorker):
 
                 log.debug('Read buffer: %r', buf)
                 for msg in self._mb.feed(buf):
-                    print(msg)
+                    self._output.put(msg)
 
             if proc.poll() is not None:
                 log.debug('Process terminated')
