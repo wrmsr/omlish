@@ -110,11 +110,19 @@ class ThreadWorker(abc.ABC):
             stop_event = threading.Event()
         self._stop_event = stop_event
 
+        self._thread: ta.Optional[threading.Thread] = None
+
     def start(self) -> None:
-        pass
+        thr = threading.Thread(target=self._run)
+        self._thread = thr
+        thr.start()
+
+    @abc.abstractmethod
+    def _run(self) -> None:
+        raise NotImplementedError
 
     def stop(self) -> None:
-        pass
+        raise NotImplementedError
 
 
 class JournalctlTailerWorker(ThreadWorker):
@@ -126,43 +134,52 @@ class JournalctlTailerWorker(ThreadWorker):
         super().__init__(**kwargs)
         self._output = output
 
+        self._mb = JournalctlMessageBuilder()
+
+    def _run(self) -> None:
+        proc = subprocess.Popen(
+            subprocess_shell_wrap_exec(
+                sys.executable,
+                os.path.join(os.path.dirname(__file__), 'genmessages.py'),
+                '--sleep-n', '2',
+                '--sleep-s', '.5',
+                '1000000',
+            ),
+            stdout=subprocess.PIPE,
+        )
+
+        fd = proc.stdout.fileno()
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+        while True:
+            while proc.stdout.readable():
+                buf = proc.stdout.read(53)
+                if not buf:
+                    log.debug('Empty read')
+                    break
+
+                log.debug('Read buffer: %r', buf)
+                for msg in self._mb.feed(buf):
+                    print(msg)
+
+            if proc.poll() is not None:
+                log.debug('Process terminated')
+                break
+
+            log.debug('Not readable')
+            time.sleep(1)
+
 
 def _main() -> None:
     configure_standard_logging('INFO')
 
-    proc = subprocess.Popen(
-        subprocess_shell_wrap_exec(
-            sys.executable,
-            os.path.join(os.path.dirname(__file__), 'genmessages.py'),
-            '--sleep-n', '2',
-            '--sleep-s', '.5',
-        ),
-        stdout=subprocess.PIPE,
-    )
-
-    fd = proc.stdout.fileno()
-    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-    mb = JournalctlMessageBuilder()
-
+    q = queue.Queue()
+    jtw = JournalctlTailerWorker(q)
+    jtw.start()
     while True:
-        while proc.stdout.readable():
-            buf = proc.stdout.read(53)
-            if not buf:
-                log.debug('Empty read')
-                break
-
-            log.debug('Read buffer: %r', buf)
-            for msg in mb.feed(buf):
-                print(msg)
-
-        if proc.poll() is not None:
-            log.debug('Process terminated')
-            break
-
-        log.debug('Not readable')
-        time.sleep(1)
+        m = q.get()
+        print(m)
 
 
 if __name__ == '__main__':
