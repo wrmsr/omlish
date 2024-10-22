@@ -1,7 +1,10 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
 """
 https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
 
 TODO:
+ - amalg - all helpers on class
  - https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html
   - boto / s3transfer upload_fileobj doesn't stream either lol - eagerly calcs Content-MD5
  - sts tokens
@@ -14,17 +17,17 @@ import hmac
 import typing as ta
 import urllib.parse
 
-from omlish import check
-from omlish import lang
+from omlish.lite.check import check_equal
+from omlish.lite.check import check_non_empty_str
 
 
 ##
 
 
-HttpMap: ta.TypeAlias = ta.Mapping[str, ta.Sequence[str]]
+HttpMap = ta.Mapping[str, ta.Sequence[str]]  # ta.TypeAlias
 
 
-def make_http_map(*kvs: tuple[str, str]) -> HttpMap:
+def make_http_map(*kvs: ta.Tuple[str, str]) -> HttpMap:
     out: dict[str, list[str]] = {}
     for k, v in kvs:
         out.setdefault(k, []).append(v)
@@ -52,7 +55,7 @@ class Request:
 
 def _host_from_url(url: str) -> str:
     url_parts = urllib.parse.urlsplit(url)
-    host = check.non_empty_str(url_parts.hostname)
+    host = check_non_empty_str(url_parts.hostname)
     default_ports = {
         'http': 80,
         'https': 443,
@@ -63,19 +66,19 @@ def _host_from_url(url: str) -> str:
     return host
 
 
-def _as_bytes(data: str | bytes) -> bytes:
+def _as_bytes(data: ta.Union[str, bytes]) -> bytes:
     return data if isinstance(data, bytes) else data.encode('utf-8')
 
 
-def _sha256(data: str | bytes) -> str:
+def _sha256(data: ta.Union[str, bytes]) -> str:
     return hashlib.sha256(_as_bytes(data)).hexdigest()
 
 
-def _sha256_sign(key: bytes, msg: str | bytes) -> bytes:
+def _sha256_sign(key: bytes, msg: ta.Union[str, bytes]) -> bytes:
     return hmac.new(key, _as_bytes(msg), hashlib.sha256).digest()
 
 
-def _sha256_sign_hex(key: bytes, msg: str | bytes) -> str:
+def _sha256_sign_hex(key: bytes, msg: ta.Union[str, bytes]) -> str:
     return hmac.new(key, _as_bytes(msg), hashlib.sha256).hexdigest()
 
 
@@ -110,26 +113,26 @@ class V4AwsSigner:
         self._service_name = service_name
 
     def _validate_request(self, req: Request) -> None:
-        check.non_empty_str(req.method)
-        check.equal(req.method.upper(), req.method)
+        check_non_empty_str(req.method)
+        check_equal(req.method.upper(), req.method)
         for k, vs in req.headers.items():
-            check.equal(k.strip(), k)
+            check_equal(k.strip(), k)
             for v in vs:
-                check.equal(v.strip(), v)
+                check_equal(v.strip(), v)
 
     def sign(
             self,
             req: Request,
             *,
             sign_payload: bool = False,
-            utcnow: datetime.datetime | None = None,
+            utcnow: ta.Optional[datetime.datetime] = None,
     ) -> HttpMap:
         self._validate_request(req)
 
         #
 
         if utcnow is None:
-            utcnow = lang.utcnow()
+            utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
         req_dt = utcnow.strftime(_ISO8601)
 
         #
