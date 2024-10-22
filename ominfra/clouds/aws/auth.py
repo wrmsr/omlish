@@ -20,6 +20,7 @@ import urllib.parse
 
 from omlish.lite.check import check_equal
 from omlish.lite.check import check_non_empty_str
+from omlish.lite.check import check_not_isinstance
 
 
 ##
@@ -72,9 +73,9 @@ class AwsSigner:
 
     @staticmethod
     def _lower_case_http_map(d: ta.Mapping[str, ta.Sequence[str]]) -> ta.Mapping[str, ta.Sequence[str]]:
-        o: dict[str, list[str]] = {}
+        o: ta.Dict[str, ta.List[str]] = {}
         for k, vs in d.items():
-            o.setdefault(k.lower(), []).extend(vs)
+            o.setdefault(k.lower(), []).extend(check_not_isinstance(vs, str))
         return o
 
     #
