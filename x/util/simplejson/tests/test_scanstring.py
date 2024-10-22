@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import simplejson as json
 import simplejson.decoder
-from simplejson.compat import b, PY3
+from simplejson.compat import b
 
 class TestScanString(TestCase):
     # The bytes type is intentionally not used in most of these tests
@@ -154,8 +154,6 @@ class TestScanString(TestCase):
 
         def assertScan(given, expect, test_utf8=True):
             givens = [given]
-            if not PY3 and test_utf8:
-                givens.append(given.encode('utf8'))
             for given in givens:
                 (res, count) = scanstring(given, 1, None, True)
                 self.assertEqual(len(given), count)

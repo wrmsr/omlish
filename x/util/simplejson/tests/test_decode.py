@@ -4,9 +4,10 @@ from unittest import TestCase
 
 import sys
 import simplejson as json
-from simplejson.compat import StringIO, b, binary_type
+import io
+from simplejson.compat import b
 
-class MisbehavingBytesSubtype(binary_type):
+class MisbehavingBytesSubtype(bytes):
     def decode(self, encoding=None):
         return "bad decode"
     def __str__(self):
@@ -50,7 +51,7 @@ class TestDecode(TestCase):
              ("qrt", 5), ("pad", 6), ("hoy", 7)]
         self.assertEqual(json.loads(s), eval(s))
         self.assertEqual(json.loads(s, object_pairs_hook=lambda x: x), p)
-        self.assertEqual(json.load(StringIO(s),
+        self.assertEqual(json.load(io.StringIO(s),
                                    object_pairs_hook=lambda x: x), p)
         od = json.loads(s, object_pairs_hook=dict)
         self.assertEqual(od, dict(p))

@@ -1,5 +1,5 @@
 import unittest
-from simplejson.compat import StringIO
+import io
 
 import simplejson as json
 
@@ -7,7 +7,7 @@ def iter_dumps(obj, **kw):
     return ''.join(json.JSONEncoder(**kw).iterencode(obj))
 
 def sio_dump(obj, **kw):
-    sio = StringIO()
+    sio = io.StringIO()
     json.dumps(obj, **kw)
     return sio.getvalue()
 

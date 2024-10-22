@@ -1,6 +1,6 @@
 import unittest
 
-from simplejson.compat import StringIO
+import io
 import simplejson as json
 
 class TestTuples(unittest.TestCase):
@@ -24,23 +24,23 @@ class TestTuples(unittest.TestCase):
         t = (1, 2, 3)
         expect = json.dumps(list(t))
         # Default is True
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(t, sio)
         self.assertEqual(expect, sio.getvalue())
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(t, sio, tuple_as_array=True)
         self.assertEqual(expect, sio.getvalue())
-        self.assertRaises(TypeError, json.dump, t, StringIO(),
+        self.assertRaises(TypeError, json.dump, t, io.StringIO(),
                           tuple_as_array=False)
         # Ensure that the "default" does not get called
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(t, sio, default=repr)
         self.assertEqual(expect, sio.getvalue())
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(t, sio, tuple_as_array=True, default=repr)
         self.assertEqual(expect, sio.getvalue())
         # Ensure that the "default" gets called
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(t, sio, tuple_as_array=False, default=repr)
         self.assertEqual(
             json.dumps(repr(t)),

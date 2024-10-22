@@ -2,7 +2,7 @@ from unittest import TestCase
 import textwrap
 
 import simplejson as json
-from simplejson.compat import StringIO
+import io
 
 class TestIndent(TestCase):
     def test_indent(self):
@@ -59,7 +59,7 @@ class TestIndent(TestCase):
             d1 = json.dumps(h, indent=indent)
             self.assertEqual(d1, expected)
 
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(h, sio, indent=indent)
             self.assertEqual(sio.getvalue(), expected)
 

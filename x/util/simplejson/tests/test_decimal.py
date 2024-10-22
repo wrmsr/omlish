@@ -1,21 +1,22 @@
 import decimal
 from decimal import Decimal
 from unittest import TestCase
-from simplejson.compat import StringIO, reload_module
+import io
+from importlib import reload as reload_module
 
 import simplejson as json
 
 class TestDecimal(TestCase):
     NUMS = "1.0", "10.00", "1.1", "1234567890.1234567890", "500"
     def dumps(self, obj, **kw):
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(obj, sio, **kw)
         res = json.dumps(obj, **kw)
         self.assertEqual(res, sio.getvalue())
         return res
 
     def loads(self, s, **kw):
-        sio = StringIO(s)
+        sio = io.StringIO(s)
         res = json.loads(s, **kw)
         self.assertEqual(res, json.load(sio, **kw))
         return res
@@ -52,12 +53,12 @@ class TestDecimal(TestCase):
         self.assertRaises(TypeError, json.dumps, d, use_decimal=False)
         self.assertEqual('1.1', json.dumps(d))
         self.assertEqual('1.1', json.dumps(d, use_decimal=True))
-        self.assertRaises(TypeError, json.dump, d, StringIO(),
+        self.assertRaises(TypeError, json.dump, d, io.StringIO(),
                           use_decimal=False)
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(d, sio)
         self.assertEqual('1.1', sio.getvalue())
-        sio = StringIO()
+        sio = io.StringIO()
         json.dump(d, sio, use_decimal=True)
         self.assertEqual('1.1', sio.getvalue())
 

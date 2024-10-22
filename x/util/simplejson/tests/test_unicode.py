@@ -1,9 +1,10 @@
+import io
 import sys
 import codecs
 from unittest import TestCase
 
 import simplejson as json
-from simplejson.compat import unichr, text_type, b, BytesIO
+from simplejson.compat import b
 
 class TestUnicode(TestCase):
     def test_encoding1(self):
@@ -53,7 +54,7 @@ class TestUnicode(TestCase):
 
     def test_unicode_decode(self):
         for i in range(0, 0xd7ff):
-            u = unichr(i)
+            u = chr(i)
             #s = '"\\u{0:04x}"'.format(i)
             s = '"\\u%04x"' % (i,)
             self.assertEqual(json.loads(s), u)
@@ -79,16 +80,16 @@ class TestUnicode(TestCase):
             {'a': u'\xe9'})
 
     def test_unicode_preservation(self):
-        self.assertEqual(type(json.loads(u'""')), text_type)
-        self.assertEqual(type(json.loads(u'"a"')), text_type)
-        self.assertEqual(type(json.loads(u'["a"]')[0]), text_type)
+        self.assertEqual(type(json.loads(u'""')), str)
+        self.assertEqual(type(json.loads(u'"a"')), str)
+        self.assertEqual(type(json.loads(u'["a"]')[0]), str)
 
     def test_ensure_ascii_false_returns_unicode(self):
         # http://code.google.com/p/simplejson/issues/detail?id=48
-        self.assertEqual(type(json.dumps([], ensure_ascii=False)), text_type)
-        self.assertEqual(type(json.dumps(0, ensure_ascii=False)), text_type)
-        self.assertEqual(type(json.dumps({}, ensure_ascii=False)), text_type)
-        self.assertEqual(type(json.dumps("", ensure_ascii=False)), text_type)
+        self.assertEqual(type(json.dumps([], ensure_ascii=False)), str)
+        self.assertEqual(type(json.dumps(0, ensure_ascii=False)), str)
+        self.assertEqual(type(json.dumps({}, ensure_ascii=False)), str)
+        self.assertEqual(type(json.dumps("", ensure_ascii=False)), str)
 
     def test_ensure_ascii_false_bytestring_encoding(self):
         # http://code.google.com/p/simplejson/issues/detail?id=48
@@ -137,7 +138,7 @@ class TestUnicode(TestCase):
 
     def test_ensure_ascii_still_works(self):
         # in the ascii range, ensure that everything is the same
-        for c in map(unichr, range(0, 127)):
+        for c in map(chr, range(0, 127)):
             self.assertEqual(
                 json.dumps(c, ensure_ascii=False),
                 json.dumps(c))
@@ -149,6 +150,6 @@ class TestUnicode(TestCase):
     def test_strip_bom(self):
         content = u"\u3053\u3093\u306b\u3061\u308f"
         json_doc = codecs.BOM_UTF8 + b(json.dumps(content))
-        self.assertEqual(json.load(BytesIO(json_doc)), content)
+        self.assertEqual(json.load(io.BytesIO(json_doc)), content)
         for doc in json_doc, json_doc.decode('utf8'):
             self.assertEqual(json.loads(doc), content)

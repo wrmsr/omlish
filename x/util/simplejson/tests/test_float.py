@@ -1,6 +1,5 @@
 import math
 from unittest import TestCase
-from simplejson.compat import long_type, text_type
 import simplejson as json
 from simplejson.decoder import NaN, PosInf, NegInf
 
@@ -28,11 +27,11 @@ class TestFloat(TestCase):
                     math.pi**-100, 3.1]:
             self.assertEqual(float(json.dumps(num)), num)
             self.assertEqual(json.loads(json.dumps(num)), num)
-            self.assertEqual(json.loads(text_type(json.dumps(num))), num)
+            self.assertEqual(json.loads(str(json.dumps(num))), num)
 
     def test_ints(self):
-        for num in [1, long_type(1), 1<<32, 1<<64]:
+        for num in [1, int(1), 1<<32, 1<<64]:
             self.assertEqual(json.dumps(num), str(num))
             self.assertEqual(int(json.dumps(num)), num)
             self.assertEqual(json.loads(json.dumps(num)), num)
-            self.assertEqual(json.loads(text_type(json.dumps(num))), num)
+            self.assertEqual(json.loads(str(json.dumps(num))), num)

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 import simplejson as json
-from simplejson.compat import StringIO
+import io
 
 try:
     from unittest import mock
@@ -79,18 +79,18 @@ class TestNamedTuple(unittest.TestCase):
     def test_namedtuple_dump(self):
         for v in [Value(1), Point(1, 2), DuckValue(1), DuckPoint(1, 2)]:
             d = v._asdict()
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(v, sio)
             self.assertEqual(d, json.loads(sio.getvalue()))
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(v, sio, namedtuple_as_object=True)
             self.assertEqual(
                 d,
                 json.loads(sio.getvalue()))
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(v, sio, tuple_as_array=False)
             self.assertEqual(d, json.loads(sio.getvalue()))
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(v, sio, namedtuple_as_object=True,
                       tuple_as_array=False)
             self.assertEqual(
@@ -100,12 +100,12 @@ class TestNamedTuple(unittest.TestCase):
     def test_namedtuple_dump_false(self):
         for v in [Value(1), Point(1, 2)]:
             l = list(v)
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(v, sio, namedtuple_as_object=False)
             self.assertEqual(
                 l,
                 json.loads(sio.getvalue()))
-            self.assertRaises(TypeError, json.dump, v, StringIO(),
+            self.assertRaises(TypeError, json.dump, v, io.StringIO(),
                 tuple_as_array=False, namedtuple_as_object=False)
 
     def test_asdict_not_callable_dump(self):
@@ -114,10 +114,10 @@ class TestNamedTuple(unittest.TestCase):
                 TypeError,
                 json.dump,
                 f(DeadDuck()),
-                StringIO(),
+                io.StringIO(),
                 namedtuple_as_object=True
             )
-            sio = StringIO()
+            sio = io.StringIO()
             json.dump(f(DeadDict()), sio, namedtuple_as_object=True)
             self.assertEqual(
                 json.dumps(f({})),
@@ -126,7 +126,7 @@ class TestNamedTuple(unittest.TestCase):
                 TypeError,
                 json.dump,
                 f(Value),
-                StringIO(),
+                io.StringIO(),
                 namedtuple_as_object=True
             )
 

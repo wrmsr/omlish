@@ -1,5 +1,6 @@
 """Error classes used by simplejson
 """
+
 __all__ = ['JSONDecodeError']
 
 
@@ -14,7 +15,7 @@ def linecol(doc, pos):
 
 def errmsg(msg, doc, pos, end=None):
     lineno, colno = linecol(doc, pos)
-    msg = msg.replace('%r', repr(doc[pos:pos + 1]))
+    msg = msg.replace('%r', repr(doc[pos : pos + 1]))
     if end is None:
         fmt = '%s: line %d column %d (char %d)'
         return fmt % (msg, lineno, colno, pos)
@@ -36,6 +37,7 @@ class JSONDecodeError(ValueError):
     endcolno: The column corresponding to end (may be None)
 
     """
+
     # Note that this exception is used from _speedups
     def __init__(self, msg, doc, pos, end=None):
         ValueError.__init__(self, errmsg(msg, doc, pos, end=end))
