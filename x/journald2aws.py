@@ -194,7 +194,7 @@ class AwsPutLogEventsResponse(AwsDataclass):
     next_sequence_token: ta.Optional[str] = None
     rejected_log_events_info: ta.Optional[AwsRejectedLogEventsInfo] = None
 
-    raw: ta.Any = None
+    raw: AwsDataclass.Raw = None
 
 
 ##
@@ -212,6 +212,9 @@ def _main() -> None:
     }
 
     print(AwsPutLogEventsRequest.from_aws(payload))
+
+    rpayload = {"nextSequenceToken": "123123123123"}
+    print(AwsPutLogEventsResponse.from_aws(rpayload))
 
     body = json.dumps_compact(payload).encode('utf-8')
 
