@@ -2,6 +2,7 @@ import unittest
 
 from ... import simplejson as json
 
+
 class TestEncodeForHTML(unittest.TestCase):
 
     def setUp(self):
@@ -13,26 +14,25 @@ class TestEncodeForHTML(unittest.TestCase):
         self.assertEqual(r'"\u0026"', self.encoder.encode('&'))
         self.assertEqual(r'"\u003c"', self.encoder.encode('<'))
         self.assertEqual(r'"\u003e"', self.encoder.encode('>'))
-        self.assertEqual(r'"\u2028"', self.encoder.encode(u'\u2028'))
+        self.assertEqual(r'"\u2028"', self.encoder.encode('\u2028'))
 
     def test_non_ascii_basic_encode(self):
         self.assertEqual(r'"\u0026"', self.non_ascii_encoder.encode('&'))
         self.assertEqual(r'"\u003c"', self.non_ascii_encoder.encode('<'))
         self.assertEqual(r'"\u003e"', self.non_ascii_encoder.encode('>'))
-        self.assertEqual(r'"\u2028"', self.non_ascii_encoder.encode(u'\u2028'))
+        self.assertEqual(r'"\u2028"', self.non_ascii_encoder.encode('\u2028'))
 
     def test_basic_roundtrip(self):
         for char in '&<>':
-            self.assertEqual(
-                char, self.decoder.decode(
-                    self.encoder.encode(char)))
+            self.assertEqual(char, self.decoder.decode(self.encoder.encode(char)))
 
     def test_prevent_script_breakout(self):
         bad_string = '</script><script>alert("gotcha")</script>'
         self.assertEqual(
             r'"\u003c/script\u003e\u003cscript\u003e'
             r'alert(\"gotcha\")\u003c/script\u003e"',
-            self.encoder.encode(bad_string))
+            self.encoder.encode(bad_string),
+        )
         self.assertEqual(
-            bad_string, self.decoder.decode(
-                self.encoder.encode(bad_string)))
+            bad_string, self.decoder.decode(self.encoder.encode(bad_string)),
+        )

@@ -1,8 +1,10 @@
-import sys, pickle
+import pickle
+import sys
 from unittest import TestCase
 
 from ... import simplejson as json
 from ..compat import b
+
 
 class TestErrors(TestCase):
     def test_string_keys_error(self):
@@ -13,8 +15,9 @@ class TestErrors(TestCase):
             err = sys.exc_info()[1]
         else:
             self.fail('Expected TypeError')
-        self.assertEqual(str(err),
-                'keys must be str, int, float, bool or None, not tuple')
+        self.assertEqual(
+            str(err), 'keys must be str, int, float, bool or None, not tuple',
+        )
 
     def test_not_serializable(self):
         try:
@@ -23,8 +26,7 @@ class TestErrors(TestCase):
             err = sys.exc_info()[1]
         else:
             self.fail('Expected TypeError')
-        self.assertEqual(str(err),
-                'Object of type module is not JSON serializable')
+        self.assertEqual(str(err), 'Object of type module is not JSON serializable')
 
     def test_decode_error(self):
         err = None

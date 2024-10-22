@@ -1,10 +1,13 @@
 from unittest import TestCase
+
 from ... import simplejson as json
 
+
 # from http://json.org/JSON_checker/test/pass2.json
-JSON = r'''
+JSON = r"""
 [[[[[[[[[[[[[[[[[[["Not too deep"]]]]]]]]]]]]]]]]]]]
-'''
+"""
+
 
 class TestPass2(TestCase):
     def test_parse(self):

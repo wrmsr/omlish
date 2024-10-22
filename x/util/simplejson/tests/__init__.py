@@ -1,7 +1,6 @@
-from __future__ import absolute_import
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 
 class NoExtensionTestSuite(unittest.TestSuite):
@@ -16,16 +15,16 @@ class NoExtensionTestSuite(unittest.TestSuite):
 
 class TestMissingSpeedups(unittest.TestCase):
     def runTest(self):
-        if hasattr(sys, "pypy_translation_info"):
+        if hasattr(sys, 'pypy_translation_info'):
             "PyPy doesn't need speedups! :)"
-        elif hasattr(self, "skipTest"):
-            self.skipTest("_speedups.so is missing!")
+        elif hasattr(self, 'skipTest'):
+            self.skipTest('_speedups.so is missing!')
 
 
 def additional_tests(suite=None, project_dir=None):
     import simplejson
-    import simplejson.encoder
     import simplejson.decoder
+    import simplejson.encoder
 
     if suite is None:
         suite = unittest.TestSuite()
@@ -41,8 +40,8 @@ def additional_tests(suite=None, project_dir=None):
     if project_dir is not None:
         suite.addTest(
             doctest.DocFileSuite(
-                os.path.join(project_dir, "index.rst"), module_relative=False
-            )
+                os.path.join(project_dir, 'index.rst'), module_relative=False,
+            ),
         )
     return suite
 
@@ -50,9 +49,9 @@ def additional_tests(suite=None, project_dir=None):
 def all_tests_suite(project_dir=None):
     def get_suite():
         suite_names = [
-            "simplejson.tests.%s" % (os.path.splitext(f)[0],)
+            'simplejson.tests.%s' % (os.path.splitext(f)[0],)
             for f in os.listdir(os.path.dirname(__file__))
-            if f.startswith("test_") and f.endswith(".py")
+            if f.startswith('test_') and f.endswith('.py')
         ]
         return additional_tests(
             suite=unittest.TestLoader().loadTestsFromNames(suite_names),
@@ -69,23 +68,23 @@ def all_tests_suite(project_dir=None):
             [
                 suite,
                 NoExtensionTestSuite([get_suite()]),
-            ]
+            ],
         )
     return suite
 
 
 def main(project_dir=None):
-    runner = unittest.TextTestRunner(verbosity=1 + sys.argv.count("-v"))
+    runner = unittest.TextTestRunner(verbosity=1 + sys.argv.count('-v'))
     suite = all_tests_suite(project_dir=project_dir)
     raise SystemExit(not runner.run(suite).wasSuccessful())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import os
     import sys
 
     project_dir = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     )
     sys.path.insert(0, project_dir)
     main(project_dir=project_dir)

@@ -1,13 +1,14 @@
 import decimal
-from unittest import TestCase
 import io
 from importlib import reload as reload_module
+from unittest import TestCase
 
 from ... import simplejson as json
 
 
 class TestDecimal(TestCase):
-    NUMS = "1.0", "10.00", "1.1", "1234567890.1234567890", "500"
+    NUMS = '1.0', '10.00', '1.1', '1234567890.1234567890', '500'
+
     def dumps(self, obj, **kw):
         sio = io.StringIO()
         json.dump(obj, sio, **kw)
@@ -33,9 +34,9 @@ class TestDecimal(TestCase):
         for d in map(Decimal, self.NUMS):
             v = {d: d}
             self.assertEqual(
-                self.loads(
-                    self.dumps(v, use_decimal=True), parse_float=Decimal),
-                {str(d): d})
+                self.loads(self.dumps(v, use_decimal=True), parse_float=Decimal),
+                {str(d): d},
+            )
 
     def test_decimal_roundtrip(self):
         for d in map(Decimal, self.NUMS):
@@ -43,9 +44,8 @@ class TestDecimal(TestCase):
             # should still compare equal.
             for v in [d, [d], {'': d}]:
                 self.assertEqual(
-                    self.loads(
-                        self.dumps(v, use_decimal=True), parse_float=Decimal),
-                    v)
+                    self.loads(self.dumps(v, use_decimal=True), parse_float=Decimal), v,
+                )
 
     def test_decimal_defaults(self):
         d = Decimal('1.1')
@@ -53,8 +53,7 @@ class TestDecimal(TestCase):
         self.assertRaises(TypeError, json.dumps, d, use_decimal=False)
         self.assertEqual('1.1', json.dumps(d))
         self.assertEqual('1.1', json.dumps(d, use_decimal=True))
-        self.assertRaises(TypeError, json.dump, d, io.StringIO(),
-                          use_decimal=False)
+        self.assertRaises(TypeError, json.dump, d, io.StringIO(), use_decimal=False)
         sio = io.StringIO()
         json.dump(d, sio)
         self.assertEqual('1.1', sio.getvalue())
@@ -68,5 +67,6 @@ class TestDecimal(TestCase):
         global Decimal
         Decimal = reload_module(decimal).Decimal
         import simplejson.encoder
+
         simplejson.encoder.Decimal = Decimal
         self.test_decimal_roundtrip()

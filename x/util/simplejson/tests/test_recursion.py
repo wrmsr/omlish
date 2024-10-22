@@ -2,12 +2,14 @@ from unittest import TestCase
 
 from ... import simplejson as json
 
+
 class JSONTestObject:
     pass
 
 
 class RecursiveJSONEncoder(json.JSONEncoder):
     recurse = False
+
     def default(self, o):
         if o is JSONTestObject:
             if self.recurse:
@@ -43,7 +45,7 @@ class TestRecursion(TestCase):
 
     def test_dictrecursion(self):
         x = {}
-        x["test"] = x
+        x['test'] = x
         try:
             json.dumps(x)
         except ValueError:
@@ -51,7 +53,7 @@ class TestRecursion(TestCase):
         else:
             self.fail("didn't raise ValueError on dict recursion")
         x = {}
-        y = {"a": x, "b": x}
+        y = {'a': x, 'b': x}
         # ensure that the marker is cleared
         json.dumps(y)
 

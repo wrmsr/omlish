@@ -1,16 +1,25 @@
-from unittest import TestCase
+import io
 import textwrap
+from unittest import TestCase
 
 from ... import simplejson as json
-import io
+
 
 class TestIndent(TestCase):
     def test_indent(self):
-        h = [['blorpie'], ['whoops'], [], 'd-shtaeou', 'd-nthiouh',
-             'i-vhbjkhnth',
-             {'nifty': 87}, {'field': 'yes', 'morefield': False} ]
+        h = [
+            ['blorpie'],
+            ['whoops'],
+            [],
+            'd-shtaeou',
+            'd-nthiouh',
+            'i-vhbjkhnth',
+            {'nifty': 87},
+            {'field': 'yes', 'morefield': False},
+        ]
 
-        expect = textwrap.dedent("""\
+        expect = textwrap.dedent(
+            """\
         [
         \t[
         \t\t"blorpie"
@@ -29,8 +38,8 @@ class TestIndent(TestCase):
         \t\t"field": "yes",
         \t\t"morefield": false
         \t}
-        ]""")
-
+        ]""",
+        )
 
         d1 = json.dumps(h)
         d2 = json.dumps(h, indent='\t', sort_keys=True, separators=(',', ': '))
@@ -55,6 +64,7 @@ class TestIndent(TestCase):
 
     def test_indent0(self):
         h = {3: 1}
+
         def check(indent, expected):
             d1 = json.dumps(h, indent=indent)
             self.assertEqual(d1, expected)
@@ -69,18 +79,14 @@ class TestIndent(TestCase):
         check(None, '{"3": 1}')
 
     def test_separators(self):
-        lst = [1,2,3,4]
+        lst = [1, 2, 3, 4]
         expect = '[\n1,\n2,\n3,\n4\n]'
         expect_spaces = '[\n1, \n2, \n3, \n4\n]'
         # Ensure that separators still works
         self.assertEqual(
-            expect_spaces,
-            json.dumps(lst, indent=0, separators=(', ', ': ')))
+            expect_spaces, json.dumps(lst, indent=0, separators=(', ', ': ')),
+        )
         # Force the new defaults
-        self.assertEqual(
-            expect,
-            json.dumps(lst, indent=0, separators=(',', ': ')))
+        self.assertEqual(expect, json.dumps(lst, indent=0, separators=(',', ': ')))
         # Added in 2.1.4
-        self.assertEqual(
-            expect,
-            json.dumps(lst, indent=0))
+        self.assertEqual(expect, json.dumps(lst, indent=0))
