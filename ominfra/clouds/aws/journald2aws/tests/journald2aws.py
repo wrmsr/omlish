@@ -14,6 +14,18 @@ from omlish.formats import json
 ##
 
 
+@dc.dataclass(frozen=True)
+class Journald2AwsConfig:
+    log_group_name: str
+    log_stream_name: str
+
+    aws_batch_size: int = 1_000
+    aws_flush_interval_s: float = 1.
+
+
+##
+
+
 def _main() -> None:
     payload = AwsPutLogEventsRequest(
         log_group_name='omlish',
