@@ -2,7 +2,7 @@
 Python is insistent on prepending sys.path with an empty string (translating to the current working directory), which
 leads to problems when using the cli in directories containing python packages (such as within this very source tree).
 This can't be done in cli main as the code frequently spawns other sys.executable processes which wouldn't know to do
-that, so a .pth file hack is used. Cleaning sys.path solely there is also insufficient as that code runs before thej
+that, so a .pth file hack is used. Cleaning sys.path solely there is also insufficient as that code runs before the
 problematic empty string is added, so a sys.meta_path hook is prepended.
 
 See:
