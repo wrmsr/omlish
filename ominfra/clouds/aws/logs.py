@@ -16,8 +16,8 @@ https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogE
  - The maximum number of log events in a batch is 10,000.
 """
 import dataclasses as dc
-import typing as ta
 import json
+import typing as ta
 
 from omlish.lite.check import check_non_empty_str
 from omlish.lite.check import check_single
