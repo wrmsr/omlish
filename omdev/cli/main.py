@@ -43,6 +43,7 @@ _CLI_FUNCS: ta.Sequence[CliFunc] = [
 
 StrTuple: ta.TypeAlias = tuple[str, ...]
 RecStrMap: ta.TypeAlias = ta.Mapping[str, ta.Union[str, 'RecStrMap']]
+RecCmdMap: ta.TypeAlias = ta.Mapping[str, ta.Union[CliCmd, 'RecCmdMap']]
 
 
 class CliCmdSet:
@@ -91,6 +92,26 @@ class CliCmdSet:
         return [self._make_entry(c) for c in self._cmds]
 
     @cached_nullary
+    def exec_tree(self) -> RecCmdMap:
+        d: dict = {}
+        for e in self.entries():
+            for ep in e.exec_paths:
+                c = d
+                for p in ep[:-1]:
+                    n = c.setdefault(p, {})
+                    if not isinstance(n, dict):
+                        raise NameError(e)
+                    c = n
+
+                h = ep[-1]
+                if h in c:
+                    raise NameError(e)
+
+                c[h] = e.cmd
+
+        return d
+
+    @cached_nullary
     def help_tree(self) -> RecStrMap:
         d: dict = {}
         for e in self.entries():
@@ -108,9 +129,23 @@ class CliCmdSet:
             if h in c:
                 raise NameError(e)
 
-            c[h] = repr(e)
+            if isinstance(e.cmd.cmd_name, str):
+                l = [e.cmd.cmd_name]
+            else:
+                l = list(e.cmd.cmd_name)
+
+            s = (
+                f'{l[0].split("/")[-1]}'
+                f'{(" (" + ", ".join(l[1:]) + ")") if len(l) > 1 else ""}'
+            )
+
+            c[h] = s
 
         return d
+
+    def select_cmd(self, args: ta.Sequence[str]) -> tuple[CliCmd, ta.Sequence[str]] | None:
+        check.not_isinstance(args, str)
+        raise NotImplementedError
 
 
 ##
@@ -126,8 +161,6 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 
 
 def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
-    ccs: list[CliCmd] = []
-
     ldr = ManifestLoader.from_entry_point(globals())
 
     pkgs: list[str] = []
@@ -148,12 +181,23 @@ def _build_cmd_dct(args: ta.Any) -> ta.Mapping[str, CliCmd]:
         if not pkgs:
             scan_pkg_root(os.getcwd())
 
+    #
+
+    lst: list[CliCmd] = []
+
     for m in ldr.load(*pkgs, only=[CliModule]):
-        ccs.append(check.isinstance(m.value, CliModule))
+        lst.append(check.isinstance(m.value, CliModule))
 
-    ccs.extend(_CLI_FUNCS)
+    lst.extend(_CLI_FUNCS)
 
-    print(CliCmdSet(ccs).help_tree())
+    #
+
+    ccs = CliCmdSet(lst)
+
+    print(ccs.help_tree())
+    print(ccs.exec_tree())
+
+    breakpoint()
 
     #
 
