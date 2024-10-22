@@ -2170,7 +2170,7 @@ class OutputDispatcher(Dispatcher):
             return False
         return True
 
-    def handle_read_event(self):
+    def handle_read_event(self) -> None:
         data = readfd(self._fd)
         self.output_buffer += data
         self.record_output()
@@ -2182,30 +2182,30 @@ class OutputDispatcher(Dispatcher):
 
 class InputDispatcher(Dispatcher):
 
-    def __init__(self, process, channel, fd):
+    def __init__(self, process: AbstractSubprocess, channel: str, fd: int) -> None:
         super().__init__(process, channel, fd)
-        self.input_buffer = b''
+        self._input_buffer = b''
 
     def writable(self) -> bool:
-        if self.input_buffer and not self._closed:
+        if self._input_buffer and not self._closed:
             return True
         return False
 
     def readable(self) -> bool:
         return False
 
-    def flush(self):
+    def flush(self) -> None:
         # other code depends on this raising EPIPE if the pipe is closed
-        sent = os.write(self._fd, as_bytes(self.input_buffer))
-        self.input_buffer = self.input_buffer[sent:]
+        sent = os.write(self._fd, as_bytes(self._input_buffer))
+        self._input_buffer = self._input_buffer[sent:]
 
-    def handle_write_event(self):
-        if self.input_buffer:
+    def handle_write_event(self) -> None:
+        if self._input_buffer:
             try:
                 self.flush()
             except OSError as why:
                 if why.args[0] == errno.EPIPE:
-                    self.input_buffer = b''
+                    self._input_buffer = b''
                     self.close()
                 else:
                     raise
