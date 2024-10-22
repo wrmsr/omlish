@@ -24,9 +24,10 @@ import httpx
 from omdev.secrets import load_secrets
 from ominfra.clouds.aws.auth import V4AwsSigner
 from omlish.formats import json
+from omlish.lite.cached import cached_nullary
+from omlish.lite.reflect import get_optional_alias_arg
 from omlish.lite.reflect import is_generic_alias
 from omlish.lite.reflect import is_optional_alias
-from omlish.lite.reflect import get_optional_alias_arg
 from omlish.lite.strings import camel_case
 
 
@@ -37,24 +38,46 @@ class AwsDataclass:
     class Raw(dict):
         pass
 
-    class _AwsField(ta.NamedTuple):
+    #
+
+    _aws_meta: ta.ClassVar[ta.Optional['AwsDataclassMeta']] = None
+
+    @classmethod
+    def _get_aws_meta(cls) -> 'AwsDataclassMeta':
+        try:
+            return cls.__dict__['_aws_meta']
+        except KeyError:
+            pass
+        ret = cls._aws_meta = AwsDataclassMeta(cls)
+        return ret
+
+    #
+
+    def to_aws(self) -> ta.Mapping[str, ta.Any]:
+        return self._get_aws_meta().converters().d2a(self)
+
+    @classmethod
+    def from_aws(cls, v: ta.Mapping[str, ta.Any]) -> 'AwsDataclass':
+        return cls._get_aws_meta().converters().a2d(v)
+
+
+@dc.dataclass(frozen=True)
+class AwsDataclassMeta:
+    cls: ta.Type['AwsDataclass']
+
+    #
+
+    class Field(ta.NamedTuple):
         d_name: str
         a_name: str
         is_opt: bool
         is_seq: bool
         dc_cls: ta.Optional[ta.Type['AwsDataclass']]
 
-    _aws_fields: ta.ClassVar[ta.Sequence[_AwsField]] = None
-
-    @classmethod
-    def _get_aws_fields(cls) -> ta.Sequence[_AwsField]:
-        try:
-            return cls.__dict__['_aws_fields']
-        except KeyError:
-            pass
-
+    @cached_nullary
+    def fields(self) -> ta.Sequence[Field]:
         fs = []
-        for f in dc.fields(cls):  # noqa
+        for f in dc.fields(self.cls):  # noqa
             d_name = f.name
             a_name = camel_case(d_name, lower=True)
 
@@ -80,7 +103,7 @@ class AwsDataclass:
             if isinstance(c, type) and issubclass(c, AwsDataclass):
                 dc_cls = c
 
-            fs.append(AwsDataclass._AwsField(
+            fs.append(AwsDataclassMeta.Field(
                 d_name=d_name,
                 a_name=a_name,
                 is_opt=is_opt,
@@ -88,25 +111,17 @@ class AwsDataclass:
                 dc_cls=dc_cls,
             ))
 
-        cls._aws_fields = fs
         return fs
 
     #
 
-    class _AwsConverters(ta.NamedTuple):
+    class Converters(ta.NamedTuple):
         d2a: ta.Callable
         a2d: ta.Callable
 
-    _aws_converters: ta.ClassVar[ta.Optional[_AwsConverters]] = None
-
-    @classmethod
-    def _get_aws_converters(cls) -> _AwsConverters:
-        try:
-            return cls.__dict__['_aws_converters']
-        except KeyError:
-            pass
-
-        for df in dc.fields(cls):  # noqa
+    @cached_nullary
+    def converters(self) -> Converters:
+        for df in dc.fields(self.cls):  # noqa
             c = df.type
 
             if is_optional_alias(c):
@@ -120,8 +135,8 @@ class AwsDataclass:
             rf = None
 
         fs = [
-            (f, f.dc_cls._get_aws_converters() if f.dc_cls is not None else None)
-            for f in cls._get_aws_fields()
+            (f, f.dc_cls._get_aws_meta().converters() if f.dc_cls is not None else None)  # noqa
+            for f in self.fields()
         ]
 
         def d2a(o):
@@ -151,18 +166,10 @@ class AwsDataclass:
                         x = cs.a2d(x)
                 dct[f.d_name] = x
             if rf is not None:
-                dct[rf] = cls.Raw(v)
-            return cls(**dct)
+                dct[rf] = self.cls.Raw(v)
+            return self.cls(**dct)
 
-        ret = cls._aws_converters = AwsDataclass._AwsConverters(d2a, a2d)
-        return ret
-
-    def to_aws(self) -> ta.Mapping[str, ta.Any]:
-        return self._get_aws_converters().d2a(self)
-
-    @classmethod
-    def from_aws(cls, v: ta.Mapping[str, ta.Any]) -> 'AwsDataclass':
-        return cls._get_aws_converters().a2d(v)
+        return AwsDataclassMeta.Converters(d2a, a2d)
 
 
 ##
