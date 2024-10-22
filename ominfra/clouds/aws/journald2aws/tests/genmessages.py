@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import json
 import time
 import uuid
@@ -20,6 +21,7 @@ def _main() -> None:
             'MESSAGE': f'message {i}',
             'MESSAGE_ID': uuid.uuid4().hex,
             '__CURSOR': f'cursor:{i}',
+            '_SOURCE_REALTIME_TIMESTAMP': str(int(datetime.datetime.now(tz=datetime.UTC).timestamp() * 1_000_000)),
         }
         print(json.dumps(dct, indent=None, separators=(',', ':')))
 
