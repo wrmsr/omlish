@@ -13,6 +13,7 @@ https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogE
  - Each log event can be no larger than 256 KB.
  - The maximum number of log events in a batch is 10,000.
 """
+import collections.abc
 import dataclasses as dc
 import operator
 import time
@@ -23,6 +24,9 @@ import httpx
 from omdev.secrets import load_secrets
 from ominfra.clouds.aws.auth import V4AwsSigner
 from omlish.formats import json
+from omlish.lite.reflect import is_generic_alias
+from omlish.lite.reflect import is_optional_alias
+from omlish.lite.reflect import get_optional_alias_arg
 from omlish.lite.strings import camel_case
 
 
@@ -31,8 +35,11 @@ from omlish.lite.strings import camel_case
 
 class AwsDataclass:
     class _AwsField(ta.NamedTuple):
-        d: str
-        a: str
+        d_name: str
+        a_name: str
+        is_opt: bool
+        is_seq: bool
+        dc_cls: ta.Optional[ta.Type['AwsDataclass']]
 
     _aws_fields: ta.ClassVar[ta.Sequence[_AwsField]] = None
 
@@ -45,9 +52,35 @@ class AwsDataclass:
 
         fs = []
         for f in dc.fields(cls):  # noqa
-            d = f.name
-            a = camel_case(d, lower=True)
-            fs.append(AwsDataclass._AwsField(d, a))
+            d_name = f.name
+            a_name = camel_case(d_name, lower=True)
+
+            is_opt = False
+            is_seq = False
+            dc_cls = None
+
+            c = f.type
+            if is_optional_alias(c):
+                is_opt = True
+                c = get_optional_alias_arg(c)
+
+            if is_generic_alias(c) and ta.get_origin(c) is collections.abc.Sequence:
+                is_seq = True
+                [c] = ta.get_args(c)
+
+            if is_generic_alias(c):
+                raise TypeError(c)
+
+            if isinstance(c, type) and issubclass(c, AwsDataclass):
+                dc_cls = c
+
+            fs.append(AwsDataclass._AwsField(
+                d_name=d_name,
+                a_name=a_name,
+                is_opt=is_opt,
+                is_seq=is_seq,
+                dc_cls=dc_cls,
+            ))
 
         cls._aws_fields = fs
         return fs
@@ -67,22 +100,37 @@ class AwsDataclass:
         except KeyError:
             pass
 
-        fs = cls._get_aws_fields()
+        fs = [
+            (f, f.dc_cls._get_aws_converters() if f.dc_cls is not None else None)
+            for f in cls._get_aws_fields()
+        ]
 
         def d2a(o):
             dct = {}
-            for f in fs:
-                x = getattr(o, f.d)
-                if x is not None:
-                    dct[f.a] = x
+            for f, cs in fs:
+                x = getattr(o, f.d_name)
+                if x is None:
+                    continue
+                if cs is not None:
+                    if f.is_seq:
+                        x = list(map(cs.d2a, x))
+                    else:
+                        x = cs.d2a(x)
+                dct[f.a_name] = x
             return dct
 
         def a2d(v):
             dct = {}
-            for f in fs:
-                x = v.get(f.a)
-                if x is not None:
-                    dct[f.d] = x
+            for f, cs in fs:
+                x = v.get(f.a_name)
+                if x is None:
+                    continue
+                if cs is not None:
+                    if f.is_seq:
+                        x = list(map(cs.a2d, x))
+                    else:
+                        x = cs.a2d(x)
+                dct[f.d_name] = x
             return cls(**dct)
 
         ret = cls._aws_converters = AwsDataclass._AwsConverters(d2a, a2d)
@@ -106,7 +154,7 @@ class AwsLogEvent(AwsDataclass):
 class AwsPutLogEventsRequest(AwsDataclass):
     log_group_name: str
     log_stream_name: str
-    log_events: ta.List[AwsLogEvent]
+    log_events: ta.Sequence[AwsLogEvent]
     sequence_token: ta.Optional[str] = None
 
 
