@@ -1,3 +1,7 @@
+"""
+TODO:
+ - drop-until-end
+"""
 import dataclasses as dc
 import io
 import typing as ta
@@ -26,6 +30,9 @@ class DelimitingBuffer:
     """
     https://github.com/python-trio/trio/issues/796 :|
     """
+
+    class Incomplete(ta.NamedTuple):
+        b: bytes
 
     DEFAULT_DELIMITERS: bytes = b'\n'
 
