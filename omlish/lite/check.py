@@ -50,3 +50,8 @@ def check_not_equal(l: T, r: T) -> T:
     if l == r:
         raise ValueError(l, r)
     return l
+
+
+def check_single(vs: ta.Iterable[T]) -> T:
+    [v] = vs
+    return v
