@@ -1190,6 +1190,18 @@ class HackRunner:
         self._is_debug = is_debug
         self._is_enabled = is_enabled
 
+    @_cached_nullary
+    def _debug_formatter(self):
+        try:
+            import pprint  # noqa
+        except ImportError:
+            return repr
+
+        def df(arg):
+            return pprint.pformat(arg, sort_dicts=False)
+
+        return df
+
     def _debug(self, arg):
         if not self._is_debug:
             return
@@ -1197,12 +1209,7 @@ class HackRunner:
         if isinstance(arg, str):
             s = arg
         else:
-            try:
-                import pprint  # noqa
-            except ImportError:
-                s = repr(arg)
-            else:
-                s = pprint.pformat(arg, sort_dicts=False)
+            s = self._debug_formatter()(arg)
 
         print(f'{_DEBUG_PREFIX}: {s}', file=sys.stderr)
 
@@ -1343,23 +1350,23 @@ def _install_pth_file(
 ) -> bool:
     import site
     lib_dir = site.getsitepackages()[0]
-    verbose and print(f'{lib_dir=}')
+    verbose and print(f'{lib_dir=}', file=sys.stderr)
 
     pth_file = os.path.join(lib_dir, file_name)
-    verbose and print(f'{pth_file=}')
+    verbose and print(f'{pth_file=}', file=sys.stderr)
     if not force and os.path.isfile(pth_file):
-        verbose and print('pth_file exists, exiting')
+        verbose and print('pth_file exists, exiting', file=sys.stderr)
         return False
 
     if not editable:
         if module_name is None:
             module_name = '_' + file_name.removesuffix('.pth').replace('-', '_')
-        verbose and print(f'{module_name=}')
+        verbose and print(f'{module_name=}', file=sys.stderr)
 
         mod_file = os.path.join(lib_dir, module_name + '.py')
-        verbose and print(f'{mod_file=}')
+        verbose and print(f'{mod_file=}', file=sys.stderr)
         if not force and os.path.isfile(mod_file):
-            verbose and print('mod_file exists, exiting')
+            verbose and print('mod_file exists, exiting', file=sys.stderr)
             return False
 
         import inspect
@@ -1368,20 +1375,20 @@ def _install_pth_file(
     else:
         if module_name is None:
             module_name = __package__ + '.runhack'
-        verbose and print(f'{module_name=}')
+        verbose and print(f'{module_name=}', file=sys.stderr)
 
         mod_file = mod_src = None  # type: ignore
 
     pth_src = _build_pth_file_src(module_name)
-    verbose and print(f'{pth_src=}')
+    verbose and print(f'{pth_src=}', file=sys.stderr)
 
     if not dry_run:
         if mod_file is not None:
-            verbose and print(f'writing {mod_file}')
+            verbose and print(f'writing {mod_file}', file=sys.stderr)
             with open(mod_file, 'w') as f:
                 f.write(mod_src)  # type: ignore
 
-        verbose and print(f'writing {pth_file}')
+        verbose and print(f'writing {pth_file}', file=sys.stderr)
         with open(pth_file, 'w') as f:
             f.write(pth_src)
 
