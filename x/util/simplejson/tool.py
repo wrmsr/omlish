@@ -29,7 +29,7 @@ def main():
     with infile:
         try:
             obj = json.load(infile,
-                            object_pairs_hook=json.OrderedDict,
+                            object_pairs_hook=dict,
                             use_decimal=True)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])

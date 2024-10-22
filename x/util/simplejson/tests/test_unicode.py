@@ -64,14 +64,14 @@ class TestUnicode(TestCase):
              (u"qrt", 5), (u"pad", 6), (u"hoy", 7)]
         self.assertEqual(json.loads(s), eval(s))
         self.assertEqual(json.loads(s, object_pairs_hook=lambda x: x), p)
-        od = json.loads(s, object_pairs_hook=json.OrderedDict)
-        self.assertEqual(od, json.OrderedDict(p))
-        self.assertEqual(type(od), json.OrderedDict)
+        od = json.loads(s, object_pairs_hook=dict)
+        self.assertEqual(od, dict(p))
+        self.assertEqual(type(od), dict)
         # the object_pairs_hook takes priority over the object_hook
         self.assertEqual(json.loads(s,
-                                    object_pairs_hook=json.OrderedDict,
+                                    object_pairs_hook=dict,
                                     object_hook=lambda x: None),
-                         json.OrderedDict(p))
+                         dict(p))
 
 
     def test_default_encoding(self):

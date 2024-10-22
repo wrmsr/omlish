@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import re
 import sys
 import struct
-from .compat import PY3, unichr
+from .compat import unichr
 from .scanner import make_scanner, JSONDecodeError
 
 def _import_c_scanstring():
@@ -73,7 +73,7 @@ def scan_four_digit_hex(s, end, _m=re.compile(r'^[0-9a-fA-F]{4}$').match):
 
 def py_scanstring(s, end, encoding=None, strict=True,
         _b=BACKSLASH, _m=STRINGCHUNK.match, _join=u''.join,
-        _PY3=PY3, _maxunicode=sys.maxunicode,
+        _maxunicode=sys.maxunicode,
         _scan_four_digit_hex=scan_four_digit_hex):
     """Scan the string s for a JSON string. End is the index of the
     character in s after the quote that started the JSON string.
@@ -98,8 +98,6 @@ def py_scanstring(s, end, encoding=None, strict=True,
         content, terminator = chunk.groups()
         # Content is contains zero or more unescaped string characters
         if content:
-            if not _PY3 and not isinstance(content, unicode):
-                content = unicode(content, encoding)
             _append(content)
         # Terminator is the end of string, a literal control character,
         # or a backslash denoting that an escape sequence follows
@@ -376,12 +374,12 @@ class JSONDecoder(object):
         self.memo = {}
         self.scan_once = make_scanner(self)
 
-    def decode(self, s, _w=WHITESPACE.match, _PY3=PY3):
+    def decode(self, s, _w=WHITESPACE.match):
         """Return the Python representation of ``s`` (a ``str`` or ``unicode``
         instance containing a JSON document)
 
         """
-        if _PY3 and isinstance(s, bytes):
+        if isinstance(s, bytes):
             s = str(s, self.encoding)
         obj, end = self.raw_decode(s)
         end = _w(s, end).end()
@@ -389,7 +387,7 @@ class JSONDecoder(object):
             raise JSONDecodeError("Extra data", s, end, len(s))
         return obj
 
-    def raw_decode(self, s, idx=0, _w=WHITESPACE.match, _PY3=PY3):
+    def raw_decode(self, s, idx=0, _w=WHITESPACE.match):
         """Decode a JSON document from ``s`` (a ``str`` or ``unicode``
         beginning with a JSON document) and return a 2-tuple of the Python
         representation and the index in ``s`` where the document ended.
@@ -404,7 +402,7 @@ class JSONDecoder(object):
             # Ensure that raw_decode bails on negative indexes, the regex
             # would otherwise mask this behavior. #98
             raise JSONDecodeError('Expecting value', s, idx)
-        if _PY3 and not isinstance(s, str):
+        if not isinstance(s, str):
             raise TypeError("Input string must be text, not bytes")
         # strip UTF-8 bom
         if len(s) > idx:

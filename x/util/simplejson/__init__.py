@@ -122,7 +122,7 @@ __version__ = '3.19.3'
 __all__ = [
     'dump', 'dumps', 'load', 'loads',
     'JSONDecoder', 'JSONDecodeError', 'JSONEncoder',
-    'OrderedDict', 'simple_first', 'RawJSON'
+    'simple_first', 'RawJSON'
 ]
 
 __author__ = 'Bob Ippolito <bob@redivi.com>'
@@ -133,14 +133,6 @@ from .errors import JSONDecodeError
 from .raw_json import RawJSON
 from .decoder import JSONDecoder
 from .encoder import JSONEncoder, JSONEncoderForHTML
-def _import_OrderedDict():
-    import collections
-    try:
-        return collections.OrderedDict
-    except AttributeError:
-        from . import ordered_dict
-        return ordered_dict.OrderedDict
-OrderedDict = _import_OrderedDict()
 
 def _import_c_make_encoder():
     try:

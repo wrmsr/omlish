@@ -5,7 +5,6 @@ from unittest import TestCase
 import sys
 import simplejson as json
 from simplejson.compat import StringIO, b, binary_type
-from simplejson import OrderedDict
 
 class MisbehavingBytesSubtype(binary_type):
     def decode(self, encoding=None):
@@ -53,14 +52,14 @@ class TestDecode(TestCase):
         self.assertEqual(json.loads(s, object_pairs_hook=lambda x: x), p)
         self.assertEqual(json.load(StringIO(s),
                                    object_pairs_hook=lambda x: x), p)
-        od = json.loads(s, object_pairs_hook=OrderedDict)
-        self.assertEqual(od, OrderedDict(p))
-        self.assertEqual(type(od), OrderedDict)
+        od = json.loads(s, object_pairs_hook=dict)
+        self.assertEqual(od, dict(p))
+        self.assertEqual(type(od), dict)
         # the object_pairs_hook takes priority over the object_hook
         self.assertEqual(json.loads(s,
-                                    object_pairs_hook=OrderedDict,
+                                    object_pairs_hook=dict,
                                     object_hook=lambda x: None),
-                         OrderedDict(p))
+                         dict(p))
 
     def check_keys_reuse(self, source, loads):
         rval = loads(source)

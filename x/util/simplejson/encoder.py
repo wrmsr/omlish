@@ -5,7 +5,7 @@ import re
 from operator import itemgetter
 # Do not import Decimal directly to avoid reload issues
 import decimal
-from .compat import binary_type, text_type, string_types, integer_types, PY3
+from .compat import binary_type, text_type, string_types, integer_types
 def _import_speedups():
     try:
         from . import _speedups
@@ -36,55 +36,31 @@ del i
 
 FLOAT_REPR = repr
 
-def encode_basestring(s, _PY3=PY3, _q=u'"'):
+def encode_basestring(s, _q=u'"'):
     """Return a JSON representation of a Python string
 
     """
-    if _PY3:
-        if isinstance(s, bytes):
-            s = str(s, 'utf-8')
-        elif type(s) is not str:
-            # convert an str subclass instance to exact str
-            # raise a TypeError otherwise
-            s = str.__str__(s)
-    else:
-        if isinstance(s, str) and HAS_UTF8.search(s) is not None:
-            s = unicode(s, 'utf-8')
-        elif type(s) not in (str, unicode):
-            # convert an str subclass instance to exact str
-            # convert a unicode subclass instance to exact unicode
-            # raise a TypeError otherwise
-            if isinstance(s, str):
-                s = str.__str__(s)
-            else:
-                s = unicode.__getnewargs__(s)[0]
+    if isinstance(s, bytes):
+        s = str(s, 'utf-8')
+    elif type(s) is not str:
+        # convert an str subclass instance to exact str
+        # raise a TypeError otherwise
+        s = str.__str__(s)
     def replace(match):
         return ESCAPE_DCT[match.group(0)]
     return _q + ESCAPE.sub(replace, s) + _q
 
 
-def py_encode_basestring_ascii(s, _PY3=PY3):
+def py_encode_basestring_ascii(s):
     """Return an ASCII-only JSON representation of a Python string
 
     """
-    if _PY3:
-        if isinstance(s, bytes):
-            s = str(s, 'utf-8')
-        elif type(s) is not str:
-            # convert an str subclass instance to exact str
-            # raise a TypeError otherwise
-            s = str.__str__(s)
-    else:
-        if isinstance(s, str) and HAS_UTF8.search(s) is not None:
-            s = unicode(s, 'utf-8')
-        elif type(s) not in (str, unicode):
-            # convert an str subclass instance to exact str
-            # convert a unicode subclass instance to exact unicode
-            # raise a TypeError otherwise
-            if isinstance(s, str):
-                s = str.__str__(s)
-            else:
-                s = unicode.__getnewargs__(s)[0]
+    if isinstance(s, bytes):
+        s = str(s, 'utf-8')
+    elif type(s) is not str:
+        # convert an str subclass instance to exact str
+        # raise a TypeError otherwise
+        s = str.__str__(s)
     def replace(match):
         s = match.group(0)
         try:
@@ -425,7 +401,6 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
         _encoding,_for_json,
         _iterable_as_array,
         ## HACK: hand-optimized bytecode; turn globals into locals
-        _PY3=PY3,
         ValueError=ValueError,
         string_types=string_types,
         Decimal=None,
@@ -504,7 +479,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 buf = separator
             if isinstance(value, string_types):
                 yield buf + _encoder(value)
-            elif _PY3 and isinstance(value, bytes) and _encoding is not None:
+            elif isinstance(value, bytes) and _encoding is not None:
                 yield buf + _encoder(value)
             elif isinstance(value, RawJSON):
                 yield buf + value.encoded_json
@@ -557,7 +532,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
     def _stringify_key(key):
         if isinstance(key, string_types): # pragma: no cover
             pass
-        elif _PY3 and isinstance(key, bytes) and _encoding is not None:
+        elif isinstance(key, bytes) and _encoding is not None:
             key = str(key, _encoding)
         elif isinstance(key, float):
             key = _floatstr(key)
@@ -600,10 +575,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             newline_indent = None
             item_separator = _item_separator
         first = True
-        if _PY3:
-            iteritems = dct.items()
-        else:
-            iteritems = dct.iteritems()
+        iteritems = dct.items()
         if _item_sort_key:
             items = []
             for k, v in dct.items():
@@ -629,7 +601,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             yield _key_separator
             if isinstance(value, string_types):
                 yield _encoder(value)
-            elif _PY3 and isinstance(value, bytes) and _encoding is not None:
+            elif isinstance(value, bytes) and _encoding is not None:
                 yield _encoder(value)
             elif isinstance(value, RawJSON):
                 yield value.encoded_json
@@ -677,7 +649,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
     def _iterencode(o, _current_indent_level):
         if isinstance(o, string_types):
             yield _encoder(o)
-        elif _PY3 and isinstance(o, bytes) and _encoding is not None:
+        elif isinstance(o, bytes) and _encoding is not None:
             yield _encoder(o)
         elif isinstance(o, RawJSON):
             yield o.encoded_json

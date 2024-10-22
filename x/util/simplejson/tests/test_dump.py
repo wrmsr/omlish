@@ -85,7 +85,7 @@ class TestDump(TestCase):
     def test_ordered_dict(self):
         # http://bugs.python.org/issue6105
         items = [('one', 1), ('two', 2), ('three', 3), ('four', 4), ('five', 5)]
-        s = json.dumps(json.OrderedDict(items))
+        s = json.dumps(dict(items))
         self.assertEqual(
             s,
             '{"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}')
