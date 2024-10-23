@@ -49,7 +49,7 @@ def format_size(size):
 
 
 # A simple prompt-toolkit app that mimics ncdu
-class NCDUApp:
+class NcduApp:
     def __init__(self, root_path: str):
         self.root_path = root_path
         self.current_path = root_path
@@ -133,5 +133,5 @@ if __name__ == '__main__':
     root_directory = (
         '.'  # Start at current directory, modify this to set a different root
     )
-    ncdu_app = NCDUApp(root_directory)
+    ncdu_app = NcduApp(root_directory)
     ncdu_app.run()
