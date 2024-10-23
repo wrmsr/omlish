@@ -2,7 +2,7 @@
 Tiny pre-commit
 
 TODO:
- - ! manifests
+ - define new prechecks with manifests
  - global config
  - global analyses - FilesWithShebang
  - shebang files have no relative imports
@@ -31,6 +31,7 @@ from .base import Precheck
 from .base import PrecheckContext
 from .git import GitBlacklistPrecheck
 from .lite import LitePython8Precheck
+from .manifests import ManifestsPrecheck
 from .scripts import ScriptDepsPrecheck
 
 
@@ -52,6 +53,7 @@ def _check_cmd(args) -> None:
         GitBlacklistPrecheck(ctx),
         ScriptDepsPrecheck(ctx),
         LitePython8Precheck(ctx),
+        ManifestsPrecheck(ctx),
     ]
 
     async def run() -> list[Precheck.Violation]:
@@ -81,16 +83,18 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_check = subparsers.add_parser('check')
     parser_check.add_argument('roots', nargs='+')
+    parser_check.add_argument('-v', '--verbose', action='store_true')
     parser_check.set_defaults(func=_check_cmd)
 
     return parser
 
 
 def _main(argv: ta.Sequence[str] | None = None) -> None:
-    logs.configure_standard_logging('INFO')
-
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    logs.configure_standard_logging('DEBUG' if args.verbose else 'INFO')
+
     if not getattr(args, 'func', None):
         parser.print_help()
     else:
