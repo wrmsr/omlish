@@ -85,6 +85,13 @@ def translate_brace_python(
     return ret.getvalue()
 
 
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'bracepy',
+    'mod_name': __name__,
+}}
+
+
 if __name__ == '__main__':
     def _main(argv=None) -> None:
         import argparse
