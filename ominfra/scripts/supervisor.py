@@ -674,7 +674,10 @@ else:
 
 
 Poller: ta.Type[BasePoller]
-if hasattr(select, 'kqueue') and KqueuePoller is not None:
+if (
+        sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
+        hasattr(select, 'kqueue') and KqueuePoller is not None
+):
     Poller = KqueuePoller
 elif hasattr(select, 'poll'):
     Poller = PollPoller
