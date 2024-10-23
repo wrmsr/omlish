@@ -24,6 +24,7 @@ Targets:
  - supervisor?
 """
 import argparse
+import ast
 import dataclasses as dc
 import io
 import logging
@@ -297,7 +298,11 @@ def make_src_file(
     tys: list[Typing] = []
     ctls: list[Tokens] = []
 
-    for line in cls:
+    i = 0
+    while i < len(cls):
+        line = cls[i]
+        i += 1
+
         if (imp := make_import(
                 line,
                 src_path=path,
@@ -310,6 +315,31 @@ def make_src_file(
                 src_path=path,
         )) is not None:
             tys.append(ty)
+
+        elif (
+                line and
+                (ft := line[0]).name == 'COMMENT' and
+                ft.src.startswith('# @omlish-manifest')
+        ):
+            mls = [line]
+            while True:
+                mls.append(cls[i])
+                i += 1
+
+                msrc = tks.join_lines(mls).strip()
+                try:
+                    node = ast.parse(msrc)
+                except SyntaxError:
+                    continue
+
+                mmod = check.isinstance(node, ast.Module)
+                check.isinstance(check.single(mmod.body), ast.Assign)
+                break
+
+            ctls.extend([
+                [trt.Token('COMMENT', '# ' + tks.join_toks(ml))]
+                for ml in mls
+            ])
 
         else:
             ctls.append(line)

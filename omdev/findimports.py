@@ -78,11 +78,17 @@ def get_import_deps(imps: set[str]) -> set[str]:
     return {i for i in eimps if whichmod(i) != 'builtin'}
 
 
-def _main() -> None:
-    imps = find_imports(*sys.argv[1:])
-    deps = get_import_deps(imps)
-    print(chr(10).join(sorted(deps)))
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'py/findimports',
+    'mod_name': __name__,
+}}
 
 
 if __name__ == '__main__':
+    def _main() -> None:
+        imps = find_imports(*sys.argv[1:])
+        deps = get_import_deps(imps)
+        print(chr(10).join(sorted(deps)))
+
     _main()
