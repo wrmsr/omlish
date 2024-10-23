@@ -10,6 +10,7 @@ import typing as ta
 
 from omdev import findmagic
 from omlish import cached
+from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .base import Precheck
 from .base import PrecheckContext
@@ -69,10 +70,12 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         vs: list[Precheck.Violation] = []
 
         proc = await asyncio.create_subprocess_exec(
-            '.venvs/8/bin/python',
-            '-c',
-            self._load_file_module_payload(),
-            fp,
+            *subprocess_maybe_shell_wrap_exec(
+                '.venvs/8/bin/python',
+                '-c',
+                self._load_file_module_payload(),
+                fp,
+            ),
             stderr=subprocess.PIPE,
         )
 
@@ -90,9 +93,11 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         log.debug('%s: loading module %s', self.__class__.__name__, mod)
 
         proc = await asyncio.create_subprocess_exec(
-            '.venvs/8/bin/python',
-            '-c',
-            f'import {mod}',
+            *subprocess_maybe_shell_wrap_exec(
+                '.venvs/8/bin/python',
+                '-c',
+                f'import {mod}',
+            ),
             stderr=subprocess.PIPE,
         )
 
