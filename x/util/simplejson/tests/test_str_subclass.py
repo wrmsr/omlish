@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from ... import simplejson as json
+
 
 # Tests for issue demonstrated in https://github.com/simplejson/simplejson/issues/144
 class WonkyTextSubclass(str):
@@ -11,12 +13,12 @@ class TestStrSubclass(TestCase):
     def test_dump_load(self):
         for s in ['', '"hello"', 'text', '\u005c']:
             self.assertEqual(
-                s, simplejson.loads(simplejson.dumps(WonkyTextSubclass(s))),
+                s, json.loads(json.dumps(WonkyTextSubclass(s))),
             )
 
             self.assertEqual(
                 s,
-                simplejson.loads(
-                    simplejson.dumps(WonkyTextSubclass(s), ensure_ascii=False),
+                json.loads(
+                    json.dumps(WonkyTextSubclass(s), ensure_ascii=False),
                 ),
             )

@@ -12,7 +12,8 @@ Usage::
 """
 import sys
 
-from . import __init__ as json
+from . import load
+from . import dump
 
 
 def main():
@@ -29,11 +30,11 @@ def main():
         raise SystemExit(sys.argv[0] + ' [infile [outfile]]')
     with infile:
         try:
-            obj = json.load(infile, object_pairs_hook=dict, use_decimal=True)
+            obj = load(infile, object_pairs_hook=dict, use_decimal=True)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
     with outfile:
-        json.dump(obj, outfile, sort_keys=True, indent='    ', use_decimal=True)
+        dump(obj, outfile, sort_keys=True, indent='    ', use_decimal=True)
         outfile.write('\n')
 
 

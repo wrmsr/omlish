@@ -65,11 +65,12 @@ class TestTool(unittest.TestCase):
     )
 
     def runTool(self, args=None, data=None):
-        argv = [sys.executable, '-m', 'simplejson.tool']
+        argv = [sys.executable, '-m', 'x.util.simplejson.tool']
         if args:
             argv.extend(args)
+        from omlish.lite.subprocesses import subprocess_shell_wrap_exec
         proc = subprocess.Popen(
-            argv, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+            subprocess_shell_wrap_exec(*argv), stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
         )
         out, err = proc.communicate(data)
         self.assertEqual(strip_python_stderr(err), b'')
