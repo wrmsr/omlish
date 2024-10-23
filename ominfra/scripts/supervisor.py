@@ -596,81 +596,85 @@ class PollPoller(BasePoller):
         return False
 
 
-class KqueuePoller(BasePoller):
-    max_events = 1000
+if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
+    class KqueuePoller(BasePoller):
+        max_events = 1000
 
-    def __init__(self) -> None:
-        super().__init__()
+        def __init__(self) -> None:
+            super().__init__()
 
-        self._kqueue: ta.Optional[ta.Any] = select.kqueue()
-        self._readables: set[int] = set()
-        self._writables: set[int] = set()
+            self._kqueue: ta.Optional[ta.Any] = select.kqueue()
+            self._readables: set[int] = set()
+            self._writables: set[int] = set()
 
-    def register_readable(self, fd: int) -> None:
-        self._readables.add(fd)
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
-        self._kqueue_control(fd, kevent)
+        def register_readable(self, fd: int) -> None:
+            self._readables.add(fd)
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
+            self._kqueue_control(fd, kevent)
 
-    def register_writable(self, fd: int) -> None:
-        self._writables.add(fd)
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
-        self._kqueue_control(fd, kevent)
+        def register_writable(self, fd: int) -> None:
+            self._writables.add(fd)
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
+            self._kqueue_control(fd, kevent)
 
-    def unregister_readable(self, fd: int) -> None:
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-        self._readables.discard(fd)
-        self._kqueue_control(fd, kevent)
+        def unregister_readable(self, fd: int) -> None:
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
+            self._readables.discard(fd)
+            self._kqueue_control(fd, kevent)
 
-    def unregister_writable(self, fd: int) -> None:
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-        self._writables.discard(fd)
-        self._kqueue_control(fd, kevent)
+        def unregister_writable(self, fd: int) -> None:
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
+            self._writables.discard(fd)
+            self._kqueue_control(fd, kevent)
 
-    def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
-        try:
-            self._kqueue.control([kevent], 0)  # type: ignore
-        except OSError as error:
-            if error.errno == errno.EBADF:
-                log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
-            else:
+        def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
+            try:
+                self._kqueue.control([kevent], 0)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EBADF:
+                    log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
+                else:
+                    raise
+
+        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+            readables, writables = [], []  # type: ignore
+
+            try:
+                kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EINTR:
+                    log.debug('EINTR encountered in poll')
+                    return readables, writables
                 raise
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
-        readables, writables = [], []  # type: ignore
+            for kevent in kevents:
+                if kevent.filter == select.KQ_FILTER_READ:
+                    readables.append(kevent.ident)
+                if kevent.filter == select.KQ_FILTER_WRITE:
+                    writables.append(kevent.ident)
 
-        try:
-            kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
-        except OSError as error:
-            if error.errno == errno.EINTR:
-                log.debug('EINTR encountered in poll')
-                return readables, writables
-            raise
+            return readables, writables
 
-        for kevent in kevents:
-            if kevent.filter == select.KQ_FILTER_READ:
-                readables.append(kevent.ident)
-            if kevent.filter == select.KQ_FILTER_WRITE:
-                writables.append(kevent.ident)
+        def before_daemonize(self) -> None:
+            self.close()
 
-        return readables, writables
+        def after_daemonize(self) -> None:
+            self._kqueue = select.kqueue()
+            for fd in self._readables:
+                self.register_readable(fd)
+            for fd in self._writables:
+                self.register_writable(fd)
 
-    def before_daemonize(self) -> None:
-        self.close()
+        def close(self) -> None:
+            self._kqueue.close()  # type: ignore
+            self._kqueue = None
 
-    def after_daemonize(self) -> None:
-        self._kqueue = select.kqueue()
-        for fd in self._readables:
-            self.register_readable(fd)
-        for fd in self._writables:
-            self.register_writable(fd)
-
-    def close(self) -> None:
-        self._kqueue.close()  # type: ignore
-        self._kqueue = None
+else:
+    KqueuePoller = None
 
 
 Poller: ta.Type[BasePoller]
-if hasattr(select, 'kqueue'):
+if hasattr(select, 'kqueue') and KqueuePoller is not None:
     Poller = KqueuePoller
 elif hasattr(select, 'poll'):
     Poller = PollPoller
