@@ -17,7 +17,8 @@ class TestTuples(unittest.TestCase):
         self.assertEqual(expect, json.dumps(t, tuple_as_array=True, default=repr))
         # Ensure that the "default" gets called
         self.assertEqual(
-            json.dumps(repr(t)), json.dumps(t, tuple_as_array=False, default=repr),
+            json.dumps(repr(t)),
+            json.dumps(t, tuple_as_array=False, default=repr),
         )
 
     def test_tuple_array_dump(self):

@@ -84,7 +84,8 @@ class TestIndent(TestCase):
         expect_spaces = '[\n1, \n2, \n3, \n4\n]'
         # Ensure that separators still works
         self.assertEqual(
-            expect_spaces, json.dumps(lst, indent=0, separators=(', ', ': ')),
+            expect_spaces,
+            json.dumps(lst, indent=0, separators=(', ', ': ')),
         )
         # Force the new defaults
         self.assertEqual(expect, json.dumps(lst, indent=0, separators=(',', ': ')))

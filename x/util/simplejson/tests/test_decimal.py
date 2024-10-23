@@ -1,6 +1,5 @@
 import decimal
 import io
-from importlib import reload as reload_module
 from unittest import TestCase
 
 from ... import simplejson as json
@@ -28,13 +27,17 @@ class TestDecimal(TestCase):
 
     def test_decimal_decode(self):
         for s in self.NUMS:
-            self.assertEqual(self.loads(s, parse_float=decimal.Decimal), decimal.Decimal(s))
+            self.assertEqual(
+                self.loads(s, parse_float=decimal.Decimal), decimal.Decimal(s),
+            )
 
     def test_stringify_key(self):
         for d in map(decimal.Decimal, self.NUMS):
             v = {d: d}
             self.assertEqual(
-                self.loads(self.dumps(v, use_decimal=True), parse_float=decimal.Decimal),
+                self.loads(
+                    self.dumps(v, use_decimal=True), parse_float=decimal.Decimal,
+                ),
                 {str(d): d},
             )
 
@@ -44,7 +47,10 @@ class TestDecimal(TestCase):
             # should still compare equal.
             for v in [d, [d], {'': d}]:
                 self.assertEqual(
-                    self.loads(self.dumps(v, use_decimal=True), parse_float=decimal.Decimal), v,
+                    self.loads(
+                        self.dumps(v, use_decimal=True), parse_float=decimal.Decimal,
+                    ),
+                    v,
                 )
 
     def test_decimal_defaults(self):

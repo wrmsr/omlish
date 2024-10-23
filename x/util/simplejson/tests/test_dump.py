@@ -2,7 +2,7 @@ import io
 from unittest import TestCase
 
 from ... import simplejson as json
-from ..compat import b
+from .compat import b
 
 
 class MisbehavingTextSubtype(str):
@@ -56,7 +56,8 @@ class TestDump(TestCase):
         for k, expect in items:
             self.assertEqual(json.loads(json.dumps({k: expect})), {expect: expect})
             self.assertEqual(
-                json.loads(json.dumps({k: expect}, sort_keys=True)), {expect: expect},
+                json.loads(json.dumps({k: expect}, sort_keys=True)),
+                {expect: expect},
             )
         self.assertRaises(TypeError, json.dumps, {json: 1})
         for v in [{}, {'other': 1}, {b('derp'): 1, 'herp': 2}]:
@@ -65,7 +66,8 @@ class TestDump(TestCase):
                 v0[json] = 1
                 v1 = dict((as_text_type(key), val) for (key, val) in v.items())
                 self.assertEqual(
-                    json.loads(json.dumps(v0, skipkeys=True, sort_keys=sort_keys)), v1,
+                    json.loads(json.dumps(v0, skipkeys=True, sort_keys=sort_keys)),
+                    v1,
                 )
                 self.assertEqual(
                     json.loads(
@@ -88,7 +90,8 @@ class TestDump(TestCase):
         )
         self.assertEqual(
             json.dumps(
-                {2: 3.0, 4.0: 5, False: 1, 6: True, '7': 0}, sort_keys=True,
+                {2: 3.0, 4.0: 5, False: 1, 6: True, '7': 0},
+                sort_keys=True,
             ),
             '{"2": 3.0, "4.0": 5, "6": true, "7": 0, "false": 1}',
         )
@@ -161,17 +164,20 @@ class TestDump(TestCase):
         self.assertEqual(json.dumps(MisbehavingTextSubtype(text)), json.dumps(text))
         self.assertEqual(json.dumps([MisbehavingTextSubtype(text)]), json.dumps([text]))
         self.assertEqual(
-            json.dumps({MisbehavingTextSubtype(text): 42}), json.dumps({text: 42}),
+            json.dumps({MisbehavingTextSubtype(text): 42}),
+            json.dumps({text: 42}),
         )
 
     def test_misbehaving_bytes_subtype(self):
         data = b('this is some data \xe2\x82\xac')
         self.assertEqual(json.dumps(MisbehavingBytesSubtype(data)), json.dumps(data))
         self.assertEqual(
-            json.dumps([MisbehavingBytesSubtype(data)]), json.dumps([data]),
+            json.dumps([MisbehavingBytesSubtype(data)]),
+            json.dumps([data]),
         )
         self.assertEqual(
-            json.dumps({MisbehavingBytesSubtype(data): 42}), json.dumps({data: 42}),
+            json.dumps({MisbehavingBytesSubtype(data): 42}),
+            json.dumps({data: 42}),
         )
 
     def test_bytes_toplevel(self):
@@ -202,10 +208,12 @@ class TestDump(TestCase):
         self.assertEqual(json.dumps({b('\xe2\x82\xac'): 42}), r'{"\u20ac": 42}')
         self.assertRaises(UnicodeDecodeError, json.dumps, {b('\xa4'): 42})
         self.assertEqual(
-            json.dumps({b('\xa4'): 42}, encoding='iso-8859-1'), r'{"\u00a4": 42}',
+            json.dumps({b('\xa4'): 42}, encoding='iso-8859-1'),
+            r'{"\u00a4": 42}',
         )
         self.assertEqual(
-            json.dumps({b('\xa4'): 42}, encoding='iso-8859-15'), r'{"\u20ac": 42}',
+            json.dumps({b('\xa4'): 42}, encoding='iso-8859-15'),
+            r'{"\u20ac": 42}',
         )
         self.assertRaises(TypeError, json.dumps, {b('\xe2\x82\xac'): 42}, encoding=None)
         self.assertRaises(TypeError, json.dumps, {b('\xa4'): 42}, encoding=None)
@@ -217,5 +225,6 @@ class TestDump(TestCase):
             default=decode_iso_8859_15,
         )
         self.assertEqual(
-            json.dumps({b('\xa4'): 42}, encoding=None, skipkeys=True), r'{}',
+            json.dumps({b('\xa4'): 42}, encoding=None, skipkeys=True),
+            r'{}',
         )

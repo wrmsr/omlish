@@ -18,7 +18,7 @@ except ImportError:
         import re
 
         def strip_python_stderr(stderr):
-            return re.sub(br'\[\d+ refs\]\r?\n?$', b'', stderr).strip()
+            return re.sub(rb'\[\d+ refs\]\r?\n?$', b'', stderr).strip()
 
 
 def open_temp_file():
@@ -69,8 +69,12 @@ class TestTool(unittest.TestCase):
         if args:
             argv.extend(args)
         from omlish.lite.subprocesses import subprocess_shell_wrap_exec
+
         proc = subprocess.Popen(
-            subprocess_shell_wrap_exec(*argv), stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+            subprocess_shell_wrap_exec(*argv),
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
         )
         out, err = proc.communicate(data)
         self.assertEqual(strip_python_stderr(err), b'')
@@ -79,7 +83,8 @@ class TestTool(unittest.TestCase):
 
     def test_stdin_stdout(self):
         self.assertEqual(
-            self.runTool(data=self.data.encode()), self.expect.splitlines(),
+            self.runTool(data=self.data.encode()),
+            self.expect.splitlines(),
         )
 
     def test_infile_stdout(self):
@@ -104,7 +109,8 @@ class TestTool(unittest.TestCase):
                 self.assertEqual(self.runTool(args=[infile_name, outfile_name]), [])
                 with open(outfile_name, 'rb') as f:
                     self.assertEqual(
-                        f.read().decode('utf8').splitlines(), self.expect.splitlines(),
+                        f.read().decode('utf8').splitlines(),
+                        self.expect.splitlines(),
                     )
             finally:
                 os.unlink(outfile_name)

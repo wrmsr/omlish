@@ -23,10 +23,12 @@ class TestRawJson(unittest.TestCase):
 
     def test_list(self):
         self.assertEqual(
-            json.dumps([dct2]), json.dumps([json.RawJSON(json.dumps(dct2))]),
+            json.dumps([dct2]),
+            json.dumps([json.RawJSON(json.dumps(dct2))]),
         )
         self.assertEqual(
-            [dct2], json.loads(json.dumps([json.RawJSON(json.dumps(dct2))])),
+            [dct2],
+            json.loads(json.dumps([json.RawJSON(json.dumps(dct2))])),
         )
 
     def test_direct(self):

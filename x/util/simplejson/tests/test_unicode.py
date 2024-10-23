@@ -4,7 +4,7 @@ import sys
 from unittest import TestCase
 
 from ... import simplejson as json
-from ..compat import b
+from .compat import b
 
 
 class TestUnicode(TestCase):
@@ -78,7 +78,8 @@ class TestUnicode(TestCase):
         self.assertEqual(type(od), dict)
         # the object_pairs_hook takes priority over the object_hook
         self.assertEqual(
-            json.loads(s, object_pairs_hook=dict, object_hook=lambda x: None), dict(p),
+            json.loads(s, object_pairs_hook=dict, object_hook=lambda x: None),
+            dict(p),
         )
 
     def test_default_encoding(self):

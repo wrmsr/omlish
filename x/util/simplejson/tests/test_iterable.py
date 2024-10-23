@@ -24,14 +24,20 @@ class TestIterable(unittest.TestCase):
                     # Default is False
                     self.assertRaises(TypeError, dumps, iter(l), **opts)
                     self.assertRaises(
-                        TypeError, dumps, iter(l), iterable_as_array=False, **opts,
+                        TypeError,
+                        dumps,
+                        iter(l),
+                        iterable_as_array=False,
+                        **opts,
                     )
                     self.assertEqual(
-                        expect, dumps(iter(l), iterable_as_array=True, **opts),
+                        expect,
+                        dumps(iter(l), iterable_as_array=True, **opts),
                     )
                     # Ensure that the "default" gets called
                     self.assertEqual(
-                        default_expect, dumps(iter(l), default=sum, **opts),
+                        default_expect,
+                        dumps(iter(l), default=sum, **opts),
                     )
                     self.assertEqual(
                         default_expect,

@@ -3,7 +3,7 @@ import sys
 from unittest import TestCase
 
 from ... import simplejson as json
-from ..compat import b
+from .compat import b
 
 
 class TestErrors(TestCase):
@@ -16,7 +16,8 @@ class TestErrors(TestCase):
         else:
             self.fail('Expected TypeError')
         self.assertEqual(
-            str(err), 'keys must be str, int, float, bool or None, not tuple',
+            str(err),
+            'keys must be str, int, float, bool or None, not tuple',
         )
 
     def test_not_serializable(self):

@@ -45,7 +45,8 @@ class TestForJson(unittest.TestCase):
 
     def test_for_json_encodes_object_nested_in_list_within_dict(self):
         self.assertRoundTrip(
-            {'list': [0, ForJson(), 2, 3]}, {'list': [0, ForJson().for_json(), 2, 3]},
+            {'list': [0, ForJson(), 2, 3]},
+            {'list': [0, ForJson().for_json(), 2, 3]},
         )
 
     def test_for_json_encodes_object_nested_within_object(self):
@@ -56,7 +57,8 @@ class TestForJson(unittest.TestCase):
 
     def test_for_json_encodes_list_within_object(self):
         self.assertRoundTrip(
-            {'nested': ForJsonList()}, {'nested': ForJsonList().for_json()},
+            {'nested': ForJsonList()},
+            {'nested': ForJsonList().for_json()},
         )
 
     def test_for_json_encodes_dict_subclass(self):

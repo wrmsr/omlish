@@ -11,7 +11,8 @@ class TestFloat(TestCase):
     def test_degenerates_allow(self):
         for inf in (PosInf, NegInf):
             self.assertEqual(
-                json.loads(json.dumps(inf, allow_nan=True), allow_nan=True), inf,
+                json.loads(json.dumps(inf, allow_nan=True), allow_nan=True),
+                inf,
             )
         # Python 2.5 doesn't have math.isnan
         nan = json.loads(json.dumps(NaN, allow_nan=True), allow_nan=True)

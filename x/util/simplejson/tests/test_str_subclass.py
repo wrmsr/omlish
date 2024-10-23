@@ -13,7 +13,8 @@ class TestStrSubclass(TestCase):
     def test_dump_load(self):
         for s in ['', '"hello"', 'text', '\u005c']:
             self.assertEqual(
-                s, json.loads(json.dumps(WonkyTextSubclass(s))),
+                s,
+                json.loads(json.dumps(WonkyTextSubclass(s))),
             )
 
             self.assertEqual(

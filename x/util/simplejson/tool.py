@@ -10,10 +10,11 @@ Usage::
     $ echo '{ 1.2:3.4}' | python -m simplejson.tool
     Expecting property name: line 1 column 2 (char 2)
 """
+
 import sys
 
-from . import load
 from . import dump
+from . import load
 
 
 def main():

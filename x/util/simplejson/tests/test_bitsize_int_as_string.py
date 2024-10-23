@@ -41,7 +41,8 @@ class TestBitSizeIntAsString(TestCase):
             expect = [expect, expect]
             self.assertEqual(val, json.loads(json.dumps(val)))
             self.assertEqual(
-                expect, json.loads(json.dumps(val, int_as_string_bitcount=31)),
+                expect,
+                json.loads(json.dumps(val, int_as_string_bitcount=31)),
             )
 
     def test_dicts(self):
@@ -50,7 +51,8 @@ class TestBitSizeIntAsString(TestCase):
             expect = {'k': expect}
             self.assertEqual(val, json.loads(json.dumps(val)))
             self.assertEqual(
-                expect, json.loads(json.dumps(val, int_as_string_bitcount=31)),
+                expect,
+                json.loads(json.dumps(val, int_as_string_bitcount=31)),
             )
 
     def test_dict_keys(self):
@@ -59,5 +61,6 @@ class TestBitSizeIntAsString(TestCase):
             val = {val: 'value'}
             self.assertEqual(expect, json.loads(json.dumps(val)))
             self.assertEqual(
-                expect, json.loads(json.dumps(val, int_as_string_bitcount=31)),
+                expect,
+                json.loads(json.dumps(val, int_as_string_bitcount=31)),
             )

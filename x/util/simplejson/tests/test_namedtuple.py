@@ -133,19 +133,30 @@ class TestNamedTuple(unittest.TestCase):
             json.dump(f(DeadDict()), sio, namedtuple_as_object=True)
             self.assertEqual(json.dumps(f({})), sio.getvalue())
             self.assertRaises(
-                TypeError, json.dump, f(Value), io.StringIO(), namedtuple_as_object=True,
+                TypeError,
+                json.dump,
+                f(Value),
+                io.StringIO(),
+                namedtuple_as_object=True,
             )
 
     def test_asdict_not_callable_dumps(self):
         for f in CONSTRUCTORS:
             self.assertRaises(
-                TypeError, json.dumps, f(DeadDuck()), namedtuple_as_object=True,
+                TypeError,
+                json.dumps,
+                f(DeadDuck()),
+                namedtuple_as_object=True,
             )
             self.assertRaises(
-                TypeError, json.dumps, f(Value), namedtuple_as_object=True,
+                TypeError,
+                json.dumps,
+                f(Value),
+                namedtuple_as_object=True,
             )
             self.assertEqual(
-                json.dumps(f({})), json.dumps(f(DeadDict()), namedtuple_as_object=True),
+                json.dumps(f({})),
+                json.dumps(f(DeadDict()), namedtuple_as_object=True),
             )
 
     def test_asdict_unbound_method_dumps(self):

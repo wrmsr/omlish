@@ -34,5 +34,6 @@ class TestEncodeForHTML(unittest.TestCase):
             self.encoder.encode(bad_string),
         )
         self.assertEqual(
-            bad_string, self.decoder.decode(self.encoder.encode(bad_string)),
+            bad_string,
+            self.decoder.decode(self.encoder.encode(bad_string)),
         )

@@ -1,19 +1,8 @@
 """Implementation of JSONEncoder"""
+
 import decimal
 import operator
 import re
-
-
-def _import_speedups():
-    try:
-        from . import _speedups
-
-        return _speedups.encode_basestring_ascii, _speedups.make_encoder
-    except ImportError:
-        return None, None
-
-
-c_encode_basestring_ascii, c_make_encoder = _import_speedups()
 
 from .decoder import PosInf
 from .raw_json import RawJSON
@@ -83,7 +72,7 @@ def py_encode_basestring_ascii(s):
     return '"' + str(ESCAPE_ASCII.sub(replace, s)) + '"'
 
 
-encode_basestring_ascii = c_encode_basestring_ascii or py_encode_basestring_ascii
+encode_basestring_ascii = py_encode_basestring_ascii
 
 
 class JSONEncoder:
@@ -360,50 +349,26 @@ class JSONEncoder:
         int_as_string_bitcount = (
             53 if self.bigint_as_string else self.int_as_string_bitcount
         )
-        if c_make_encoder is not None and self.indent is None:
-            _iterencode = c_make_encoder(
-                markers,
-                self.default,
-                _encoder,
-                self.indent,
-                self.key_separator,
-                self.item_separator,
-                self.sort_keys,
-                self.skipkeys,
-                self.allow_nan,
-                key_memo,
-                self.use_decimal,
-                self.namedtuple_as_object,
-                self.tuple_as_array,
-                int_as_string_bitcount,
-                self.item_sort_key,
-                self.encoding,
-                self.for_json,
-                self.ignore_nan,
-                decimal.Decimal,
-                self.iterable_as_array,
-            )
-        else:
-            _iterencode = _make_iterencode(
-                markers,
-                self.default,
-                _encoder,
-                self.indent,
-                floatstr,
-                self.key_separator,
-                self.item_separator,
-                self.sort_keys,
-                self.skipkeys,
-                self.use_decimal,
-                self.namedtuple_as_object,
-                self.tuple_as_array,
-                int_as_string_bitcount,
-                self.item_sort_key,
-                self.encoding,
-                self.for_json,
-                self.iterable_as_array,
-                Decimal=decimal.Decimal,
-            )
+        _iterencode = _make_iterencode(
+            markers,
+            self.default,
+            _encoder,
+            self.indent,
+            floatstr,
+            self.key_separator,
+            self.item_separator,
+            self.sort_keys,
+            self.skipkeys,
+            self.use_decimal,
+            self.namedtuple_as_object,
+            self.tuple_as_array,
+            int_as_string_bitcount,
+            self.item_sort_key,
+            self.encoding,
+            self.for_json,
+            self.iterable_as_array,
+            Decimal=decimal.Decimal,
+        )
         try:
             return _iterencode(o, 0)
         finally:

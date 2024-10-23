@@ -45,5 +45,6 @@ class TestItemSortKey(TestCase):
         # https://github.com/simplejson/simplejson/issues/173
         a = {'a': 1, 'b': 0}
         self.assertEqual(
-            '{"b": 0, "a": 1}', json.dumps(a, item_sort_key=lambda kv: kv[1]),
+            '{"b": 0, "a": 1}',
+            json.dumps(a, item_sort_key=lambda kv: kv[1]),
         )

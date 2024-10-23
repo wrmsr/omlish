@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from ... import simplejson as json
 from .. import encoder
-from ..compat import b
+from .compat import b
 
 
 CASES = [
@@ -40,11 +40,6 @@ CASES = [
 class TestEncodeBaseStringAscii(TestCase):
     def test_py_encode_basestring_ascii(self):
         self._test_encode_basestring_ascii(encoder.py_encode_basestring_ascii)
-
-    def test_c_encode_basestring_ascii(self):
-        if not encoder.c_encode_basestring_ascii:
-            return
-        self._test_encode_basestring_ascii(encoder.c_encode_basestring_ascii)
 
     def _test_encode_basestring_ascii(self, encode_basestring_ascii):
         fname = encode_basestring_ascii.__name__

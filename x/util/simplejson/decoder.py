@@ -1,4 +1,5 @@
 """Implementation of JSONDecoder"""
+
 import re
 import struct
 import sys
@@ -6,17 +7,6 @@ import sys
 from .scanner import JSONDecodeError
 from .scanner import make_scanner
 
-
-def _import_c_scanstring():
-    try:
-        from ._speedups import scanstring
-
-        return scanstring
-    except ImportError:
-        return None
-
-
-c_scanstring = _import_c_scanstring()
 
 # NOTE (3.1.0): JSONDecodeError may still be imported from this module for
 # compatibility, but it was never in the __all__
@@ -165,7 +155,7 @@ def py_scanstring(
 
 
 # Use speedup if available
-scanstring = c_scanstring or py_scanstring
+scanstring = py_scanstring
 
 WHITESPACE = re.compile(r'[ \t\n\r]*', FLAGS)
 WHITESPACE_STR = ' \t\n\r'
@@ -207,7 +197,9 @@ def JSONObject(
             return pairs, end + 1
         elif nextchar != '"':
             raise JSONDecodeError(
-                "Expecting property name enclosed in double quotes or '}'", s, end,
+                "Expecting property name enclosed in double quotes or '}'",
+                s,
+                end,
             )
     end += 1
     while True:
@@ -262,7 +254,9 @@ def JSONObject(
         end += 1
         if nextchar != '"':
             raise JSONDecodeError(
-                'Expecting property name enclosed in double quotes', s, end - 1,
+                'Expecting property name enclosed in double quotes',
+                s,
+                end - 1,
             )
 
     if object_pairs_hook is not None:

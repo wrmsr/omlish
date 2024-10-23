@@ -4,7 +4,7 @@ import sys
 from unittest import TestCase
 
 from ... import simplejson as json
-from ..compat import b
+from .compat import b
 
 
 class MisbehavingBytesSubtype(bytes):
@@ -68,7 +68,8 @@ class TestDecode(TestCase):
         self.assertEqual(type(od), dict)
         # the object_pairs_hook takes priority over the object_hook
         self.assertEqual(
-            json.loads(s, object_pairs_hook=dict, object_hook=lambda x: None), dict(p),
+            json.loads(s, object_pairs_hook=dict, object_hook=lambda x: None),
+            dict(p),
         )
 
     def check_keys_reuse(self, source, loads):
@@ -96,7 +97,8 @@ class TestDecode(TestCase):
         self.assertEqual(({'a': {}}, 9), cls().raw_decode('{"a": {}}'))
         # http://code.google.com/p/simplejson/issues/detail?id=85
         self.assertEqual(
-            ({'a': {}}, 9), cls(object_pairs_hook=dict).raw_decode('{"a": {}}'),
+            ({'a': {}}, 9),
+            cls(object_pairs_hook=dict).raw_decode('{"a": {}}'),
         )
         # https://github.com/simplejson/simplejson/pull/38
         self.assertEqual(({'a': {}}, 11), cls().raw_decode(' \n{"a": {}}'))
