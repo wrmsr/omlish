@@ -16,6 +16,7 @@ def test_delimiting_buffer():
         return out
 
     assert run(b'line1\nline2\nline3\n') == [[b'line1', b'line2', b'line3']]
+    assert run(b'12', b'345\n2', b'34\n') == [[], [b'12345'], [b'234']]
     assert run(b'line1\nline2\nline3\n', keep_ends=True) == [[b'line1\n', b'line2\n', b'line3\n']]
     assert run(b'line1 line2 line3', b'') == [[], [Db.Incomplete(b'line1 line2 line3')]]
     assert run(b'line1\nline2', b'line2\nline3\n') == [[b'line1'], [b'line2line2', b'line3']]
