@@ -60,8 +60,7 @@ def py_make_scanner(context):
         elif nextchar == 'f' and string[idx : idx + 5] == 'false':
             return False, idx + 5
 
-        m = match_number(string, idx)
-        if m is not None:
+        if (m := match_number(string, idx)) is not None:
             integer, frac, exp = m.groups()
             if frac or exp:
                 res = parse_float(integer + (frac or '') + (exp or ''))

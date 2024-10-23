@@ -1,27 +1,22 @@
 """Implementation of JSONDecoder"""
-
 import re
-import struct
 import sys
 
 from .scanner import JSONDecodeError
 from .scanner import make_scanner
 
 
-# NOTE (3.1.0): JSONDecodeError may still be imported from this module for
-# compatibility, but it was never in the __all__
+# NOTE (3.1.0): JSONDecodeError may still be imported from this module for compatibility, but it was never in the
+# __all__
 __all__ = ['JSONDecoder']
+
 
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 
 
 def _floatconstants():
-    if sys.version_info < (2, 6):
-        _BYTES = '7FF80000000000007FF0000000000000'.decode('hex')
-        nan, inf = struct.unpack('>dd', _BYTES)
-    else:
-        nan = float('nan')
-        inf = float('inf')
+    nan = float('nan')
+    inf = float('inf')
     return nan, inf, -inf
 
 
@@ -49,8 +44,8 @@ DEFAULT_ENCODING = 'utf-8'
 
 if hasattr(sys, 'get_int_max_str_digits'):
     bounded_int = int
-else:
 
+else:
     def bounded_int(s, INT_MAX_STR_DIGITS=4300):
         """Backport of the integer string length conversion limitation
 
