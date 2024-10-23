@@ -1,7 +1,7 @@
 """
 TODO:
  - separate build from cli
- - parallelize & sort
+ - verify classes instantiate
 
 See (entry_points):
  - https://github.com/pytest-dev/pluggy/blob/main/src/pluggy/_manager.py#L405
