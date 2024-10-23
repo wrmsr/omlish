@@ -481,11 +481,13 @@ def _make_iterencode(
         if not lst:
             yield '[]'
             return
+
         if markers is not None:
             markerid = id(lst)
             if markerid in markers:
                 raise ValueError('Circular reference detected')
             markers[markerid] = lst
+
         buf = '['
         if _indent is not None:
             _current_indent_level += 1
@@ -495,37 +497,51 @@ def _make_iterencode(
         else:
             newline_indent = None
             separator = _item_separator
+
         first = True
         for value in lst:
             if first:
                 first = False
             else:
                 buf = separator
+
             if isinstance(value, string_types):
                 yield buf + _encoder(value)
+
             elif isinstance(value, bytes) and _encoding is not None:
                 yield buf + _encoder(value)
+
             elif isinstance(value, RawJSON):
                 yield buf + value.encoded_json
+
             elif value is None:
                 yield buf + 'null'
+
             elif value is True:
                 yield buf + 'true'
+
             elif value is False:
                 yield buf + 'false'
+
             elif isinstance(value, integer_types):
                 yield buf + _encode_int(value)
+
             elif isinstance(value, float):
                 yield buf + _floatstr(value)
+
             elif _use_decimal and isinstance(value, Decimal):
                 yield buf + str(value)
+
             else:
                 yield buf
+
                 for_json = _for_json and call_method(value, 'for_json')
                 if for_json:
                     chunks = _iterencode(for_json[0], _current_indent_level)
+
                 elif isinstance(value, list):
                     chunks = _iterencode_list(value, _current_indent_level)
+
                 else:
                     _asdict = _namedtuple_as_object and call_method(value, '_asdict')
                     if _asdict:
@@ -535,65 +551,85 @@ def _make_iterencode(
                                 '_asdict() must return a dict, not %s'
                                 % (type(dct).__name__,),
                             )
+
                         chunks = _iterencode_dict(dct, _current_indent_level)
+
                     elif _tuple_as_array and isinstance(value, tuple):
                         chunks = _iterencode_list(value, _current_indent_level)
+
                     elif isinstance(value, dict):
                         chunks = _iterencode_dict(value, _current_indent_level)
+
                     else:
                         chunks = _iterencode(value, _current_indent_level)
+
                 for chunk in chunks:
                     yield chunk
         if first:
             # iterable_as_array misses the fast path at the top
             yield '[]'
+
         else:
             if newline_indent is not None:
                 _current_indent_level -= 1
                 yield '\n' + (_indent * _current_indent_level)
             yield ']'
+
         if markers is not None:
             del markers[markerid]
 
     def _stringify_key(key):
         if isinstance(key, string_types):  # pragma: no cover
             pass
+
         elif isinstance(key, bytes) and _encoding is not None:
             key = str(key, _encoding)
+
         elif isinstance(key, float):
             key = _floatstr(key)
+
         elif key is True:
             key = 'true'
+
         elif key is False:
             key = 'false'
+
         elif key is None:
             key = 'null'
+
         elif isinstance(key, integer_types):
             if type(key) not in integer_types:
                 # See #118, do not trust custom str/repr
                 key = int(key)
             key = str(key)
+
         elif _use_decimal and isinstance(key, Decimal):
             key = str(key)
+
         elif _skipkeys:
             key = None
+
         else:
             raise TypeError(
                 'keys must be str, int, float, bool or None, '
                 'not %s' % key.__class__.__name__,
             )
+
         return key
 
     def _iterencode_dict(dct, _current_indent_level):
         if not dct:
             yield '{}'
             return
+
         if markers is not None:
             markerid = id(dct)
             if markerid in markers:
                 raise ValueError('Circular reference detected')
             markers[markerid] = dct
+
         yield '{'
+
         if _indent is not None:
             _current_indent_level += 1
             newline_indent = '\n' + (_indent * _current_indent_level)
@@ -602,7 +638,9 @@ def _make_iterencode(
         else:
             newline_indent = None
             item_separator = _item_separator
+
         first = True
+
         iteritems = dct.items()
         if _item_sort_key:
             items = []
@@ -613,44 +651,61 @@ def _make_iterencode(
                         continue
                 items.append((k, v))
             items.sort(key=_item_sort_key)
+
         else:
             items = iteritems
+
         for key, value in items:
             if not (_item_sort_key or isinstance(key, string_types)):
                 key = _stringify_key(key)
                 if key is None:
                     # _skipkeys must be True
                     continue
+
             if first:
                 first = False
             else:
                 yield item_separator
+
             yield _encoder(key)
+
             yield _key_separator
+
             if isinstance(value, string_types):
                 yield _encoder(value)
+
             elif isinstance(value, bytes) and _encoding is not None:
                 yield _encoder(value)
+
             elif isinstance(value, RawJSON):
                 yield value.encoded_json
+
             elif value is None:
                 yield 'null'
+
             elif value is True:
                 yield 'true'
+
             elif value is False:
                 yield 'false'
+
             elif isinstance(value, integer_types):
                 yield _encode_int(value)
+
             elif isinstance(value, float):
                 yield _floatstr(value)
+
             elif _use_decimal and isinstance(value, Decimal):
                 yield str(value)
+
             else:
                 for_json = _for_json and call_method(value, 'for_json')
                 if for_json:
                     chunks = _iterencode(for_json[0], _current_indent_level)
+
                 elif isinstance(value, list):
                     chunks = _iterencode_list(value, _current_indent_level)
+
                 else:
                     _asdict = _namedtuple_as_object and call_method(value, '_asdict')
                     if _asdict:
@@ -660,47 +715,65 @@ def _make_iterencode(
                                 '_asdict() must return a dict, not %s'
                                 % (type(dct).__name__,),
                             )
+
                         chunks = _iterencode_dict(dct, _current_indent_level)
+
                     elif _tuple_as_array and isinstance(value, tuple):
                         chunks = _iterencode_list(value, _current_indent_level)
+
                     elif isinstance(value, dict):
                         chunks = _iterencode_dict(value, _current_indent_level)
+
                     else:
                         chunks = _iterencode(value, _current_indent_level)
+
                 for chunk in chunks:
                     yield chunk
+
         if newline_indent is not None:
             _current_indent_level -= 1
             yield '\n' + (_indent * _current_indent_level)
+
         yield '}'
+
         if markers is not None:
             del markers[markerid]
 
     def _iterencode(o, _current_indent_level):
         if isinstance(o, string_types):
             yield _encoder(o)
+
         elif isinstance(o, bytes) and _encoding is not None:
             yield _encoder(o)
+
         elif isinstance(o, RawJSON):
             yield o.encoded_json
+
         elif o is None:
             yield 'null'
+
         elif o is True:
             yield 'true'
+
         elif o is False:
             yield 'false'
+
         elif isinstance(o, integer_types):
             yield _encode_int(o)
+
         elif isinstance(o, float):
             yield _floatstr(o)
+
         else:
             for_json = _for_json and call_method(o, 'for_json')
             if for_json:
                 for chunk in _iterencode(for_json[0], _current_indent_level):
                     yield chunk
+
             elif isinstance(o, list):
                 for chunk in _iterencode_list(o, _current_indent_level):
                     yield chunk
+
             else:
                 _asdict = _namedtuple_as_object and call_method(o, '_asdict')
                 if _asdict:
@@ -710,16 +783,20 @@ def _make_iterencode(
                             '_asdict() must return a dict, not %s'
                             % (type(dct).__name__,),
                         )
+
                     for chunk in _iterencode_dict(dct, _current_indent_level):
                         yield chunk
+
                 elif _tuple_as_array and isinstance(o, tuple):
                     for chunk in _iterencode_list(o, _current_indent_level):
                         yield chunk
                 elif isinstance(o, dict):
                     for chunk in _iterencode_dict(o, _current_indent_level):
                         yield chunk
+
                 elif _use_decimal and isinstance(o, Decimal):
                     yield str(o)
+
                 else:
                     while _iterable_as_array:
                         # Markers are not checked here because it is valid for
@@ -728,17 +805,22 @@ def _make_iterencode(
                             o = iter(o)
                         except TypeError:
                             break
+
                         for chunk in _iterencode_list(o, _current_indent_level):
                             yield chunk
+
                         return
+
                     if markers is not None:
                         markerid = id(o)
                         if markerid in markers:
                             raise ValueError('Circular reference detected')
                         markers[markerid] = o
+
                     o = _default(o)
                     for chunk in _iterencode(o, _current_indent_level):
                         yield chunk
+
                     if markers is not None:
                         del markers[markerid]
 

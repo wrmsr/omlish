@@ -36,6 +36,7 @@ def py_make_scanner(context):
 
         if nextchar == '"':
             return parse_string(string, idx + 1, encoding, strict)
+
         elif nextchar == '{':
             return parse_object(
                 (string, idx + 1),
@@ -46,12 +47,16 @@ def py_make_scanner(context):
                 object_pairs_hook,
                 memo,
             )
+
         elif nextchar == '[':
             return parse_array((string, idx + 1), _scan_once)
+
         elif nextchar == 'n' and string[idx : idx + 4] == 'null':
             return None, idx + 4
+
         elif nextchar == 't' and string[idx : idx + 4] == 'true':
             return True, idx + 4
+
         elif nextchar == 'f' and string[idx : idx + 5] == 'false':
             return False, idx + 5
 
@@ -63,14 +68,16 @@ def py_make_scanner(context):
             else:
                 res = parse_int(integer)
             return res, m.end()
+
         elif parse_constant and nextchar == 'N' and string[idx : idx + 3] == 'NaN':
             return parse_constant('NaN'), idx + 3
+
         elif parse_constant and nextchar == 'I' and string[idx : idx + 8] == 'Infinity':
             return parse_constant('Infinity'), idx + 8
-        elif (
-            parse_constant and nextchar == '-' and string[idx : idx + 9] == '-Infinity'
-        ):
+
+        elif parse_constant and nextchar == '-' and string[idx : idx + 9] == '-Infinity':
             return parse_constant('-Infinity'), idx + 9
+
         else:
             raise JSONDecodeError(errmsg, string, idx)
 
@@ -80,6 +87,7 @@ def py_make_scanner(context):
             # this would work for *some* negative string indices due
             # to the behavior of __getitem__ for strings. #98
             raise JSONDecodeError('Expecting value', string, idx)
+
         try:
             return _scan_once(string, idx)
         finally:
