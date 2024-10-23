@@ -122,6 +122,7 @@ class JournalctlTailerWorker(ThreadWorker):
                 '-o', 'json',
                 '--show-cursor',
                 '-f',
+                '--since', 'today',
             ]
 
         if self._shell_wrap:
@@ -162,6 +163,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--post', action='store_true')
+    parser.add_argument('--real', action='store_true')
     args = parser.parse_args()
 
     #
@@ -194,14 +196,14 @@ def _main() -> None:
     q = queue.Queue()  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
     jtw = JournalctlTailerWorker(
         q,
-        cmd_override=[
+        **(dict(cmd_override=[
             sys.executable,
             os.path.join(os.path.dirname(__file__), 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
             '1000000',
-        ],
+        ]) if not args.real else {}),
         shell_wrap=True,
     )
 

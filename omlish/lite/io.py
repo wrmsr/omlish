@@ -76,6 +76,7 @@ class DelimitingBuffer:
         buf.write(chunk)
         ret = buf.getvalue()
         buf.seek(0)
+        buf.truncate()
         return ret
 
     class Incomplete(ta.NamedTuple):
