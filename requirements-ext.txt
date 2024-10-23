@@ -69,7 +69,7 @@ sympy~=1.13.1  # FIXME: torch :|
 
 wgpu==0.18.1
 
-hypothesis==6.115.3
+hypothesis==6.115.4
 
 hexdump==3.3
 
@@ -156,7 +156,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.46
+boto3>=1.35.47
 
 google-cloud-compute==1.19.2
 google-api-python-client==2.149.0
@@ -264,7 +264,7 @@ usearch==2.15.3
 
 llama-index-core==0.11.19
 
-unstructured==0.16.0
+unstructured==0.16.1
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
