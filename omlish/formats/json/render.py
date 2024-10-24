@@ -1,3 +1,7 @@
+"""
+TODO:
+ - genmachine...
+"""
 import enum
 import io
 import json
