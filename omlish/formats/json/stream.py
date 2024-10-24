@@ -218,13 +218,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
         self._buf.truncate()
         return raw
 
+    def _raise(self, msg: str) -> ta.NoReturn:
+        raise JsonLexError(msg, self._ofs, self._line, self._col)
+
     def _do_main(self):
         while True:
-            try:
-                c = yield None
-            except GeneratorExit:
-                break
-            self._char_in(c)
+            c = self._char_in((yield None))  # noqa
 
             if c.isspace():
                 continue
@@ -237,18 +236,23 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 return self._do_string()
 
             if c.isdigit() or c == '-':
-                return self._do_number()
+                return self._do_number(c)
 
             if c in 'tfnIN':
-                return self._do_const()
+                return self._do_const(c)
 
-            raise JsonLexError(f'Unexpected cacter: {c}', ofs, line, col)
+            self._raise(f'Unexpected cacter: {c}')
 
     def _do_string(self):
         self._buf.write('"')
+
         last = None
         while True:
-            c = get_next_c()
+            try:
+                c = self._char_in((yield None))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
             self._buf.write(c)
             if c == '"' and last != '\\':
                 break
@@ -257,19 +261,21 @@ class JsonStreamLexer(GenMachine[str, Token]):
         raw = self._flip_buf()
         sv = raw[1:-1].replace(r'\"', '"')
         yield self._make_tok('STRING', sv, raw)
-        continue
 
-    def _do_number(self):
+        return self._do_main()
+
+    def _do_number(self, c: str):
         self._buf.write(c)
+
         while True:
             try:
-                c = get_next_c()
-                if c.isdigit() or c in '.eE+-':
-                    self._buf.write(c)
-                else:
-                    break
-            except ValueError:
+                c = self._char_in((yield None))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
+            if not (c.isdigit() or c in '.eE+-'):
                 break
+            self._buf.write(c)
 
         raw = self._flip_buf()
         if not NUMBER_PAT.fullmatch(raw):
@@ -279,26 +285,32 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             tk, tv = CONST_TOKENS[raw]
             yield self._make_tok(tk, tv, raw)
-            continue
+
+            return self._do_main()
 
         nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
         yield self._make_tok('NUMBER', nv, raw)
 
         if c not in PUNCTUATION_TOKENS and not c.isspace():
-            raise JsonLexError(f'Unexpected cacter after number: {c}', ofs, line, col)
+            self._raise(f'Unexpected cacter after number: {c}')
 
-        continue
+        return self._do_main()
 
-    def _const_tokens(self):
+    def _do_const(self, c):
         raw = c
         while True:
-            raw += get_next_c()
+            try:
+                raw += self._char_in((yield None))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
             if raw in CONST_TOKENS:
                 break
 
-            if len(raw) > 8:  # None of the keywords are longer than 8 cacters
-                raise JsonLexError(f'Invalid literal: {raw}', ofs, line, col)
+            if len(raw) > 8:  # None of the keywords are longer than 8 characters
+                self._raise(f'Invalid literal: {raw}')
 
         tk, tv = CONST_TOKENS[raw]
         yield self._make_tok(tk, tv, raw)
-        continue
+
+        return self._do_main()
