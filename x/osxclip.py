@@ -94,6 +94,37 @@ def CFSTR(string):
 kPasteboardClipboard = CFSTR('com.apple.pasteboard.clipboard')
 
 
+def cfstring_to_string(cf_string):
+    """Convert a CFStringRef to a Python string."""
+
+    if not cf_string:
+        return ""
+
+    # Define kCFStringEncodingUTF8 (the correct encoding constant for UTF-8)
+    kCFStringEncodingUTF8 = 0x08000100
+
+    # Calculate the maximum buffer size needed for the string
+    length = cf.CFStringGetLength(cf_string)
+    max_size = cf.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
+
+    # Create a buffer to hold the C string
+    buffer = ct.create_string_buffer(max_size)
+
+    # Attempt to convert CFStringRef to a C string
+    success = cf.CFStringGetCString(
+        cf_string,
+        buffer,
+        max_size,
+        kCFStringEncodingUTF8
+    )
+
+    # If conversion fails, return an empty string
+    if not success:
+        return ""
+
+    return buffer.value.decode('utf-8')
+
+
 ##
 
 
@@ -135,9 +166,8 @@ def get_clipboard_data():
                     # Strictly check if the flavor is a CFStringRef
                     if cf.CFGetTypeID(data_type) == cf.CFStringGetTypeID():
                         data_type_str = cfstring_to_string(data_type)
-                        print(f"Data type: {data_type_str}")
                     else:
-                        print("Data type is not a CFStringRef, skipping.")
+                        data_type_str = None
 
                     # Retrieve data of this type
                     data = CFDataRef()
@@ -147,11 +177,10 @@ def get_clipboard_data():
                             # Handle the binary data (e.g., images, files, etc.)
                             data_size = cf.CFDataGetLength(data)
                             data_ptr = cf.CFDataGetBytePtr(data)
+                            data_bytes = ct.string_at(data_ptr, data_size)
 
                             # Save to a file for testing
-                            with open("clipboard_output.bin", "wb") as f:
-                                f.write(ct.string_at(data_ptr, data_size))
-                                print(f"Data saved to clipboard_output.bin (size: {data_size} bytes)")
+                            print(f'Data (type: {data_type_str}, size: {data_size}): {data_bytes!r}')
 
                     finally:
                         cf.CFRelease(data)
@@ -161,36 +190,6 @@ def get_clipboard_data():
 
     finally:
         cf.CFRelease(pasteboard)
-
-
-def cfstring_to_string(cf_string):
-    """Convert a CFStringRef to a Python string."""
-    if not cf_string:
-        return ""
-
-    # Define kCFStringEncodingUTF8 (the correct encoding constant for UTF-8)
-    kCFStringEncodingUTF8 = 0x08000100
-
-    # Calculate the maximum buffer size needed for the string
-    length = cf.CFStringGetLength(cf_string)
-    max_size = cf.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
-
-    # Create a buffer to hold the C string
-    buffer = ct.create_string_buffer(max_size)
-
-    # Attempt to convert CFStringRef to a C string
-    success = cf.CFStringGetCString(
-        cf_string,
-        buffer,
-        max_size,
-        kCFStringEncodingUTF8
-    )
-
-    # If conversion fails, return an empty string
-    if not success:
-        return ""
-
-    return buffer.value.decode('utf-8')
 
 
 if __name__ == "__main__":
