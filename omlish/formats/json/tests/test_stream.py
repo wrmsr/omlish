@@ -1,3 +1,4 @@
+from .... import lang
 from ..stream import JsonStreamLexer
 
 
@@ -12,6 +13,7 @@ def test_stream():
         '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
         '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
         '{"name": "John", "active": "\\"hi", "foo": null}',
+        lang.get_relative_resources('.', globals=globals())['stress.json'].read_text(),
         # json.dumps(big_obj),
         # json.dumps(big_obj, indent=2),
     ]:
