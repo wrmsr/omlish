@@ -1,3 +1,9 @@
+# TODO:
+# - build-deps:
+#  - --force-reinstall --ignore-installed ?
+#  - PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" ./python -muv pip install mysqlclient
+#  - BERKELEYDB_DIR=$(brew --prefix "berkeley-db@4") ./python -muv pip install bsddb
+
 SHELL:=/bin/bash
 
 
