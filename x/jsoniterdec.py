@@ -82,7 +82,7 @@ BACKSLASH = {
 
 memo = {}
 
-def scanstring(
+def parse_string(
         s,
         end,
         strict=True,
@@ -210,7 +210,7 @@ def parse_object(
 
     end += 1
     while True:
-        key, end = scanstring(s, end, strict)
+        key, end = parse_string(s, end, strict)
         key = memo_get(key, key)
 
         # To skip some function call overhead we optimize the fast paths where the JSON key separator is ": " or just
@@ -381,50 +381,14 @@ def scan_once(string, idx):
 ##
 
 
-print(scan_once("""{
-  "user": {
-    "id": 12345,
-    "username": "john_doe",
-    "email": "john.doe@example.com",
-    "created_at": "2024-10-18T10:00:00Z",
-    "profile": {
-      "first_name": "John",
-      "last_name": "Doe",
-      "age": 30,
-      "location": {
-        "city": "New York",
-        "state": "NY",
-        "country": "USA"
-      },
-      "bio": "Software developer and technology enthusiast."
-    },
-    "preferences": {
-      "theme": "dark",
-      "notifications": {
-        "email": true,
-        "sms": false,
-        "push": true
-      },
-      "language": "en",
-      "timezone": "America/New_York"
-    },
-    "recent_activities": [
-      {
-        "activity_type": "login",
-        "timestamp": "2024-10-17T09:30:00Z",
-        "ip_address": "192.168.1.1"
-      },
-      {
-        "activity_type": "post_created",
-        "timestamp": "2024-10-16T15:45:00Z",
-        "post_id": 67890,
-        "content": "Hello, world! This is my first post."
-      },
-      {
-        "activity_type": "profile_update",
-        "timestamp": "2024-10-15T12:00:00Z",
-        "updated_fields": ["bio", "location"]
-      }
-    ]
-  }
-}""", 0))
+def _main() -> None:
+    import json
+    import yaml
+    with open('x/llm/openai/api.yaml') as f:
+        json_input = json.dumps(yaml.safe_load(f))
+
+    print(scan_once(json_input, 0))
+
+
+if __name__ == '__main__':
+    _main()

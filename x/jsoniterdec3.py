@@ -99,7 +99,13 @@ def json_lexer(char_iter: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
 
 if __name__ == "__main__":
-    json_input = '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}'
+    # json_input = '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}'
+
+    import json
+    import yaml
+    with open('x/llm/openai/api.yaml') as f:
+        json_input = json.dumps(yaml.safe_load(f))
+
     char_iter = iter(json_input)
 
     try:

@@ -76,8 +76,13 @@ def json_lexer(json_string: str) -> ta.Generator[Token, None, None]:
 
 
 if __name__ == "__main__":
-    json_string = """{"name": "John Doe", "age": 30, "is_active": true, "hobbies": ["reading", "gaming"], "balance": 1234.56, "spouse": null}"""
+    # json_input = """{"name": "John Doe", "age": 30, "is_active": true, "hobbies": ["reading", "gaming"], "balance": 1234.56, "spouse": null}"""
+
+    import json
+    import yaml
+    with open('x/llm/openai/api.yaml') as f:
+        json_input = json.dumps(yaml.safe_load(f))
 
     # Tokenize the JSON string
-    for token in json_lexer(json_string):
+    for token in json_lexer(json_input):
         print(token)
