@@ -123,12 +123,12 @@ def get_clipboard_data():
         for j in range(type_count):
             data_type = CFArrayGetValueAtIndex(data_types, j)
 
-            # Check if the flavor is a CFString
+            # Strictly check if the flavor is a CFStringRef
             if CFGetTypeID(data_type) == CFStringGetTypeID():
                 data_type_str = cfstring_to_string(data_type)
                 print(f"Data type: {data_type_str}")
             else:
-                print("Data type is not a CFString")
+                print("Data type is not a CFStringRef, skipping.")
 
             # Retrieve data of this type
             data = CFDataRef()
@@ -155,9 +155,14 @@ def cfstring_to_string(cf_string):
     if not cf_string:
         return ""
 
-    buffer = ctypes.create_unicode_buffer(256)
-    core_foundation.CFStringGetCString(cf_string, buffer, len(buffer), 0)
-    return buffer.value
+    # Calculate buffer size
+    buffer_size = core_foundation.CFStringGetMaximumSizeForEncoding(core_foundation.CFStringGetLength(cf_string),
+                                                                    0x08000100) + 1
+    buffer = ctypes.create_string_buffer(buffer_size)
+
+    # Convert CFStringRef to CString
+    core_foundation.CFStringGetCString(cf_string, buffer, buffer_size, 0x08000100)
+    return buffer.value.decode('utf-8')
 
 
 if __name__ == "__main__":
