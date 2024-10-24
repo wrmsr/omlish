@@ -1,5 +1,6 @@
 from .... import lang
 from ..stream import JsonStreamLexer
+from ..stream import JsonStreamValueBuilder
 
 
 def test_stream():
@@ -18,8 +19,11 @@ def test_stream():
         # json.dumps(big_obj, indent=2),
     ]:
         with JsonStreamLexer() as lex:
-            for c in s:
-                for t in lex(c):
-                    print(t)
+            with JsonStreamValueBuilder() as vb:
+                for c in s:
+                    for t in lex(c):
+                        print(t)
+                        for v in vb(t):
+                            print(v)
 
         print()
