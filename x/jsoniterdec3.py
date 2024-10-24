@@ -26,7 +26,10 @@ class Token(ta.NamedTuple):
     kind: TokenKind
     value: TokenValue
     string: str
-    offset: int
+
+    ofs: int
+    line: int
+    col: int
 
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
@@ -58,8 +61,8 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
         except StopIteration:
             raise ValueError('Unexpected end of JSON input.')  # noqa
 
-        nonlocal offset
-        offset += 1
+        nonlocal ofs
+        ofs += 1
         return c
 
     buffer = io.StringIO()
@@ -70,13 +73,21 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
         buffer.truncate()
         return raw
 
-    offset = 0
+    ofs = 0
+    line = 0
+    col = 0
     while True:
         try:
             char = next(it)
         except StopIteration:
             break
-        offset += 1
+        ofs += 1
+
+        if char == '\n':
+            line += 1
+            col = 0
+        else:
+            col += 1
 
         if char.isspace():
             continue
@@ -86,7 +97,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 PUNCTUATION_TOKENS[char],
                 char,
                 char,
-                offset,
+                ofs,
+                line,
+                col,
             )
             continue
 
@@ -105,7 +118,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 'STRING',
                 raw[1:-1].replace(r'\"', '"'),
                 raw,
-                offset,
+                ofs,
+                line,
+                col,
             )
             continue
 
@@ -132,7 +147,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                     tk,
                     tv,
                     raw,
-                    offset
+                    ofs,
+                    line,
+                    col,
                 )
                 continue
 
@@ -140,7 +157,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 'NUMBER',
                 float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw),
                 raw,
-                offset,
+                ofs,
+                line,
+                col,
             )
 
             if char not in PUNCTUATION_TOKENS and not char.isspace():
@@ -163,7 +182,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 tk,
                 tv,
                 raw,
-                offset,
+                ofs,
+                line,
+                col,
             )
             continue
 
