@@ -1,7 +1,15 @@
 import ctypes as ct
 import ctypes.util
 import dataclasses as dc
+import sys
 import typing as ta
+
+
+##
+
+
+if getattr(sys, 'platform') != 'darwin':
+    raise OSError(sys.platform)
 
 
 ##
@@ -132,7 +140,7 @@ class OsxClipboardItem:
 
 def get_osx_clipboard_data(
         *,
-        types: ta.Container[str] | None = None,
+        types: ta.Container[str | None] | None = None,
         strict: bool = False,
         types_only: bool = False,
 ) -> list[OsxClipboardItem]:
@@ -167,6 +175,9 @@ def get_osx_clipboard_data(
                         data_type_str = cfstring_to_string(data_type)
                     else:
                         data_type_str = None
+
+                    if types is not None and data_type_str not in types:
+                        continue
 
                     if types_only:
                         lst.append(OsxClipboardItem(
@@ -205,6 +216,13 @@ def get_osx_clipboard_data(
     return lst
 
 
-if __name__ == '__main__':
+##
+
+
+def _main() -> None:
     for i in get_osx_clipboard_data():
         print(i)
+
+
+if __name__ == '__main__':
+    _main()
