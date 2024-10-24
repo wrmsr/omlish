@@ -6,6 +6,7 @@ import typing as ta
 TokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
+    'SPECIAL_NUMBER',
     'BOOLEAN',
     'NULL',
     'LBRACE',
@@ -31,7 +32,11 @@ PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
     ':': 'COLON',
 }
 
-SPECIAL_NUMBER_TOKENS: ta.AbstractSet[str] = {'NaN', 'Infinity', '-Infinity'}
+SPECIAL_NUMBER_TOKENS: ta.Mapping[str, float] = {s: float(s) for s in [
+    'NaN',
+    'Infinity',
+    '-Infinity',
+]}
 
 
 # Function to yield tokens
@@ -101,15 +106,14 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
             continue
 
-        # Handle true, false, and null
-        if char in 'tfn':
+        if char in 'tfnIN':
             buffer = char
             while True:
                 buffer += get_next_char()
-                if buffer in ('true', 'false', 'null'):
+                if buffer in ('true', 'false', 'null') or buffer in SPECIAL_NUMBER_TOKENS:
                     break
 
-                if len(buffer) > 5:  # None of the keywords are longer than 5 characters
+                if len(buffer) > 8:  # None of the keywords are longer than 8 characters
                     raise ValueError(f'Invalid literal: {buffer}')
 
             if buffer == 'true':
@@ -120,6 +124,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
             elif buffer == 'null':
                 yield ('NULL', None)
+
+            elif buffer in SPECIAL_NUMBER_TOKENS:
+                yield ('SPECIAL_NUMBER', SPECIAL_NUMBER_TOKENS[buffer])
 
             continue
 
@@ -135,7 +142,8 @@ def _main() -> None:
 
     for s in [
         '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
-        # '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true}',
+        '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
+        # '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
         big_json_input,
     ]:
         for token in json_lexer(iter(s)):
