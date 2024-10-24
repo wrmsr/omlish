@@ -6,9 +6,11 @@ import typing as ta
 TokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
+
     'SPECIAL_NUMBER',
     'BOOLEAN',
     'NULL',
+
     'LBRACE',
     'RBRACE',
     'LBRACKET',
@@ -19,24 +21,26 @@ TokenKind: ta.TypeAlias = ta.Literal[
 
 Token: ta.TypeAlias = tuple[TokenKind, str | float | int | None]
 
-# Regex patterns for different JSON tokens
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
-# Define token constants
-PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
-    '{': 'LBRACE',
-    '}': 'RBRACE',
-    '[': 'LBRACKET',
-    ']': 'RBRACKET',
-    ',': 'COMMA',
-    ':': 'COLON',
+PUNCTUATION_TOKENS: ta.Mapping[str, Token] = {
+    '{': ('LBRACE', '{'),
+    '}': ('RBRACE', '}'),
+    '[': ('LBRACKET', '['),
+    ']': ('RBRACKET', ']'),
+    ',': ('COMMA', ','),
+    ':': ('COLON', ':'),
 }
 
-SPECIAL_NUMBER_TOKENS: ta.Mapping[str, float] = {s: float(s) for s in [
-    'NaN',
-    'Infinity',
-    '-Infinity',
-]}
+STATIC_TOKENS: ta.Mapping[str, Token] = {
+    'NaN': ('SPECIAL_NUMBER', float('nan')),
+    'Infinity': ('SPECIAL_NUMBER', float('inf')),
+    '-Infinity': ('SPECIAL_NUMBER', float('-inf')),
+
+    'true': ('BOOLEAN', True),
+    'false': ('BOOLEAN', False),
+    'null': ('NULL', None),
+}
 
 
 # Function to yield tokens
@@ -110,24 +114,13 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             buffer = char
             while True:
                 buffer += get_next_char()
-                if buffer in ('true', 'false', 'null') or buffer in SPECIAL_NUMBER_TOKENS:
+                if buffer in STATIC_TOKENS:
                     break
 
                 if len(buffer) > 8:  # None of the keywords are longer than 8 characters
                     raise ValueError(f'Invalid literal: {buffer}')
 
-            if buffer == 'true':
-                yield ('BOOLEAN', True)
-
-            elif buffer == 'false':
-                yield ('BOOLEAN', False)
-
-            elif buffer == 'null':
-                yield ('NULL', None)
-
-            elif buffer in SPECIAL_NUMBER_TOKENS:
-                yield ('SPECIAL_NUMBER', SPECIAL_NUMBER_TOKENS[buffer])
-
+            yield STATIC_TOKENS[buffer]
             continue
 
         # If we reach here, we found an unexpected character
