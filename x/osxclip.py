@@ -6,19 +6,25 @@ import ctypes.util
 core_foundation = ctypes.cdll.LoadLibrary(ctypes.util.find_library('CoreFoundation'))
 application_services = ctypes.cdll.LoadLibrary(ctypes.util.find_library('ApplicationServices'))
 
-# Constants
-kPasteboardClipboard = ctypes.c_void_p.in_dll(application_services, 'kPasteboardClipboard')
-
-# CoreFoundation Data Types
-CFIndex = ctypes.c_long
+# CoreFoundation data types
 CFStringRef = ctypes.c_void_p
-CFDataRef = ctypes.c_void_p
-CFArrayRef = ctypes.c_void_p
 PasteboardRef = ctypes.c_void_p
+CFIndex = ctypes.c_long
+CFArrayRef = ctypes.c_void_p
+CFDataRef = ctypes.c_void_p
 PasteboardItemID = ctypes.c_ulong
-
-# OSStatus is represented as an integer
 OSStatus = ctypes.c_int32
+
+
+# Define CFSTR to create CFStringRef constants
+def CFSTR(string):
+    core_foundation.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32]
+    core_foundation.CFStringCreateWithCString.restype = CFStringRef
+    return core_foundation.CFStringCreateWithCString(None, string.encode('utf-8'), 0)
+
+
+# Define kPasteboardClipboard
+kPasteboardClipboard = CFSTR("com.apple.pasteboard.clipboard")
 
 # Function prototypes
 
@@ -136,8 +142,7 @@ def cfstring_to_string(cf_string):
     if not cf_string:
         return ""
 
-    length = core_foundation.CFStringGetLength(cf_string)
-    buffer = ctypes.create_unicode_buffer(length)
+    buffer = ctypes.create_unicode_buffer(256)
     core_foundation.CFStringGetCString(cf_string, buffer, len(buffer), 0)
     return buffer.value
 
