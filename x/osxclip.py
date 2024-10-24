@@ -150,9 +150,20 @@ def get_clipboard_data():
     CFRelease(pasteboard)
 
 
+# Define CFStringEncoding as an unsigned 32-bit integer
+CFStringEncoding = ctypes.c_uint32
+
 # Correctly set the argument and return types for CFStringGetCString
 core_foundation.CFStringGetCString.argtypes = [CFStringRef, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
 core_foundation.CFStringGetCString.restype = ctypes.c_bool
+
+# Set the argument and return types for CFStringGetLength
+core_foundation.CFStringGetLength.argtypes = [CFStringRef]
+core_foundation.CFStringGetLength.restype = CFIndex
+
+# Set the argument and return types for CFStringGetMaximumSizeForEncoding
+core_foundation.CFStringGetMaximumSizeForEncoding.argtypes = [CFIndex, CFStringEncoding]
+core_foundation.CFStringGetMaximumSizeForEncoding.restype = CFIndex
 
 
 def cfstring_to_string(cf_string):
