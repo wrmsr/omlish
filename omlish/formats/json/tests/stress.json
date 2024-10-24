@@ -1,0 +1,207 @@
+{
+    "user": {
+        "id": 12345,
+        "username": "测试用户",
+        "email": "example@example.com",
+        "profile": {
+            "name": {
+                "first": "John",
+                "last": "Doe"
+            },
+            "age": 30,
+            "languages": [
+                "English",
+                "Español",
+                "中文",
+                "日本語",
+                "한국어"
+            ],
+            "location": {
+                "country": "🇺🇸",
+                "city": "New York",
+                "coordinates": {
+                    "latitude": 40.7128,
+                    "longitude": -74.0060
+                }
+            },
+            "bio": "Software developer with an interest in AI 🤖 and data science.",
+            "preferences": {
+                "theme": "dark",
+                "notifications": {
+                    "email": true,
+                    "sms": false,
+                    "push": {
+                        "enabled": true,
+                        "frequency": "daily"
+                    }
+                },
+                "languages": {
+                    "primary": "en",
+                    "secondary": ["es", "zh"]
+                }
+            }
+        },
+        "recent_activities": [
+            {
+                "type": "login",
+                "timestamp": "2024-10-18T12:34:56Z",
+                "ip_address": "192.168.1.1",
+                "device": {
+                    "type": "mobile",
+                    "os": "iOS",
+                    "version": "15.0.1"
+                }
+            },
+            {
+                "type": "post",
+                "timestamp": "2024-10-17T08:45:12Z",
+                "content": "Exploring the wonders of JSON parsing! 🌍✨",
+                "likes": 42,
+                "comments": [
+                    {
+                        "user": "JaneDoe",
+                        "content": "Great post! 👍",
+                        "timestamp": "2024-10-17T09:00:00Z"
+                    },
+                    {
+                        "user": "DevUser123",
+                        "content": "JSON is truly fascinating!",
+                        "timestamp": "2024-10-17T09:05:00Z",
+                        "reactions": {
+                            "like": 2,
+                            "love": 1,
+                            "laugh": 0,
+                            "wow": 0,
+                            "sad": 0,
+                            "angry": 0
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "profile_update",
+                "timestamp": "2024-10-16T14:20:00Z",
+                "fields_changed": ["bio", "location"],
+                "changes": {
+                    "bio": {
+                        "old": "Loves coding.",
+                        "new": "Software developer with an interest in AI 🤖 and data science."
+                    },
+                    "location": {
+                        "old": {
+                            "country": "🇨🇦",
+                            "city": "Toronto"
+                        },
+                        "new": {
+                            "country": "🇺🇸",
+                            "city": "New York"
+                        }
+                    }
+                }
+            }
+        ],
+        "settings": {
+            "privacy": {
+                "profile_visible": true,
+                "activity_status": false,
+                "share_location": false
+            },
+            "display": {
+                "font_size": "medium",
+                "color_scheme": {
+                    "background": "#000000",
+                    "text": "#FFFFFF",
+                    "link": "#1E90FF"
+                },
+                "emoji_support": true
+            },
+            "data_usage": {
+                "wifi_only": false,
+                "data_saver": {
+                    "enabled": true,
+                    "level": 2,
+                    "details": [
+                        "Limit background processes",
+                        "Reduce image quality"
+                    ]
+                },
+                "sync_frequency": "hourly"
+            }
+        },
+        "transactions": [
+            {
+                "id": "txn_001",
+                "amount": 199.99,
+                "currency": "USD",
+                "timestamp": "2024-10-15T10:15:30Z",
+                "details": {
+                    "items": [
+                        {
+                            "name": "Laptop",
+                            "quantity": 1,
+                            "price": 199.99
+                        }
+                    ],
+                    "shipping": {
+                        "method": "Express",
+                        "cost": 20.00,
+                        "estimated_delivery": "2024-10-20"
+                    }
+                }
+            },
+            {
+                "id": "txn_002",
+                "amount": 15.49,
+                "currency": "USD",
+                "timestamp": "2024-10-15T12:34:00Z",
+                "details": {
+                    "items": [
+                        {
+                            "name": "E-book",
+                            "quantity": 1,
+                            "price": 15.49
+                        }
+                    ],
+                    "shipping": null
+                }
+            }
+        ],
+        "misc": {
+            "favorites": {
+                "colors": ["#FF5733", "#33FF57", "#3357FF"],
+                "quotes": [
+                    "To be or not to be, that is the question.",
+                    "All that glitters is not gold.",
+                    "The quick brown fox jumps over the lazy dog."
+                ],
+                "numbers": [1, 2, 3, 4.5, 6.789]
+            },
+            "complex_nested_array": [
+                [
+                    {"key": "value1"},
+                    {"key": "value2"}
+                ],
+                [
+                    [1, 2, 3],
+                    [4, 5, 6]
+                ],
+                "String in array",
+                true,
+                null,
+                12345
+            ]
+        }
+    },
+    "escapes": {
+        "message": "Hello, world! \u4f60\u597d\u4e16\u754c\uff01",
+        "emoji": "Smile: \ud83d\ude00, Thumbs up: \ud83d\udc4d",
+        "quote": "He said, \"Life is 10% what happens to us and 90% how we react to it.\"",
+        "miscellaneous": {
+            "currency": "\u20ac",
+            "symbols": "\u2602 \u2603 \u2665 \u2600",
+            "arabic": "\u0627\u0644\u0633\u0644\u0627\u0645",
+            "japanese": "\u3053\u3093\u306b\u3061\u306f",
+            "emojis": "\ud83c\udf0d \ud83d\ude80 \ud83d\udc36"
+        }
+    }
+}
