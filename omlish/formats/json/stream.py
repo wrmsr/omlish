@@ -216,3 +216,37 @@ class JsonStreamLexer(GenMachine[str, Token]):
         yield self._make_tok(tk, tv, raw)
 
         return self._do_main()
+
+
+class JsonStreamValueBuilder:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._stack: list[
+            tuple[ta.Literal['object'], list[tuple[str, ta.Any]]] |
+            tuple[ta.Literal['pair'], str] |
+            tuple[ta.Literal['array'], list[ta.Any]]
+        ] = []
+
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    class Error(Exception):
+        pass
+
+    class IncompleteValueError(Error):
+        pass
+
+    class UnexpectedTokenError(Error):
+        pass
+
+    def close(self) -> None:
+        if self._stack:
+            raise self.IncompleteValueError
+
+    def __call__(self, tokens: ta.Sequence[Token]) -> ta.Generator[ta.Any, None, None]:
+        for tok in tokens:
+            raise NotImplementedError
