@@ -27,16 +27,13 @@ import sys
 allow_nan = False
 strict = True
 
+
 ##
+
 
 JSONDecodeError = json.JSONDecodeError
 
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
-
-NUMBER_RE = re.compile(
-    r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
-    (re.VERBOSE | re.MULTILINE | re.DOTALL),
-)
 
 
 def _floatconstants():
@@ -58,10 +55,12 @@ parse_constant = (allow_nan and _CONSTANTS.__getitem__ or None)
 
 def scan_four_digit_hex(s, end, _m=re.compile(r'^[0-9a-fA-F]{4}$').match):
     """Scan a four digit hex number from s[end:end + 4]"""
+
     msg = 'Invalid \\uXXXX escape sequence'
     esc = s[end: end + 4]
     if not _m(esc):
         raise JSONDecodeError(msg, s, end - 2)
+
     try:
         return int(esc, 16), end + 4
     except ValueError:
@@ -69,6 +68,7 @@ def scan_four_digit_hex(s, end, _m=re.compile(r'^[0-9a-fA-F]{4}$').match):
 
 
 STRINGCHUNK = re.compile(r'(.*?)(["\\\x00-\x1f])', FLAGS)
+
 BACKSLASH = {
     '"': '"',
     '\\': '\\',
@@ -84,7 +84,7 @@ DEFAULT_ENCODING = 'utf-8'
 
 memo = {}
 
-def py_scanstring(
+def scanstring(
         s,
         end,
         strict=True,
@@ -146,6 +146,7 @@ def py_scanstring(
         else:
             # Unicode escape sequence
             uni, end = _scan_four_digit_hex(s, end + 1)
+
             # Check for surrogate pair on UCS-4 systems Note that this will join high/low surrogate pairs but will also
             # pass unpaired surrogates through
             if (
@@ -166,9 +167,10 @@ def py_scanstring(
     return _join(chunks), end
 
 
-# Use speedup if available
-scanstring = py_scanstring
-parse_string = scanstring
+NUMBER_RE = re.compile(
+    r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
+    (re.VERBOSE | re.MULTILINE | re.DOTALL),
+)
 
 match_number = NUMBER_RE.match
 
@@ -187,34 +189,34 @@ def parse_object(
         _ws=WHITESPACE_STR,
 ):
     (s, end) = state
+
     # Backwards compatibility
     memo_get = memo.setdefault
+
     pairs = []
-    # Use a slice to prevent IndexError from being raised, the following
-    # check will raise a more specific ValueError if the string is empty
+    # Use a slice to prevent IndexError from being raised, the following check will raise a more specific ValueError if
+    # the string is empty
     nextchar = s[end: end + 1]
     # Normally we expect nextchar == '"'
     if nextchar != '"':
         if nextchar in _ws:
             end = _w(s, end).end()
             nextchar = s[end: end + 1]
+
         # Trivial empty object
         if nextchar == '}':
             pairs = {}
             return pairs, end + 1
         elif nextchar != '"':
-            raise JSONDecodeError(
-                "Expecting property name enclosed in double quotes or '}'",
-                s,
-                end,
-            )
+            raise JSONDecodeError("Expecting property name enclosed in double quotes or '}'", s, end )
+
     end += 1
     while True:
         key, end = scanstring(s, end, strict)
         key = memo_get(key, key)
 
-        # To skip some function call overhead we optimize the fast paths where
-        # the JSON key separator is ": " or just ":".
+        # To skip some function call overhead we optimize the fast paths where the JSON key separator is ": " or just
+        # ":".
         if s[end: end + 1] != ':':
             end = _w(s, end).end()
             if s[end: end + 1] != ':':
@@ -260,11 +262,7 @@ def parse_object(
 
         end += 1
         if nextchar != '"':
-            raise JSONDecodeError(
-                'Expecting property name enclosed in double quotes',
-                s,
-                end - 1,
-            )
+            raise JSONDecodeError('Expecting property name enclosed in double quotes', s, end - 1)
 
     pairs = dict(pairs)
     return pairs, end
@@ -277,25 +275,32 @@ def parse_array(
         _ws=WHITESPACE_STR,
 ):
     (s, end) = state
+
     values = []
+
     nextchar = s[end: end + 1]
     if nextchar in _ws:
         end = _w(s, end + 1).end()
         nextchar = s[end: end + 1]
+
     # Look-ahead for trivial empty array
     if nextchar == ']':
         return values, end + 1
     elif nextchar == '':
         raise JSONDecodeError("Expecting value or ']'", s, end)
+
     _append = values.append
     while True:
         value, end = scan_once(s, end)
         _append(value)
+
         nextchar = s[end: end + 1]
         if nextchar in _ws:
             end = _w(s, end + 1).end()
             nextchar = s[end: end + 1]
+
         end += 1
+
         if nextchar == ']':
             break
         elif nextchar != ',':
