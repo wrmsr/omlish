@@ -136,7 +136,7 @@ def _main() -> None:
     for s in [
         '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
         '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
-        # '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
+        '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
         big_json_input,
     ]:
         for token in json_lexer(iter(s)):
