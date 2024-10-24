@@ -80,8 +80,6 @@ BACKSLASH = {
     't': '\t',
 }
 
-DEFAULT_ENCODING = 'utf-8'
-
 memo = {}
 
 def scanstring(
