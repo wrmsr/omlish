@@ -238,9 +238,15 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
     def __init__(self) -> None:
         super().__init__(self._do_value())
 
-        self._stack = []
+        self._stack: list[
+            tuple[ta.Literal['object'], JsonStreamObject] |
+            tuple[ta.Literal['pair'], str] |
+            tuple[ta.Literal['array'], list]
+        ] = []
 
-    def _emit_value(self, v: ta.Any):
+    #
+
+    def _emit_value(self, v):
         if not self._stack:
             return ((v,), None)
 
@@ -265,6 +271,8 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
         else:
             raise NotImplementedError
 
+    #
+
     def _do_value(self):
         tok = yield None
 
@@ -280,7 +288,9 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             return self._do_array()
 
         else:
-            raise NotImplementedError
+            raise self.StateError
+
+    #
 
     def _do_object(self):
         self._stack.append(('object', JsonStreamObject()))
@@ -290,7 +300,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError
+            raise self.StateError from None
 
         if tok.kind == 'STRING':
             k = tok.value
@@ -298,20 +308,21 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             try:
                 tok = yield None
             except GeneratorExit:
-                raise self.StateError
+                raise self.StateError from None
             if tok.kind != 'COLON':
                 raise self.StateError
 
             self._stack.append(('pair', k))
             return self._do_value()
 
-        raise NotImplementedError
+        else:
+            raise self.StateError
 
     def _do_after_pair(self):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError
+            raise self.StateError from None
 
         if tok.kind == 'COMMA':
             return self._do_object_body()
@@ -329,7 +340,9 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             return r
 
         else:
-            raise NotImplementedError
+            raise self.StateError
+
+    #
 
     def _do_array(self):
         self._stack.append(('array', []))
@@ -339,7 +352,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError
+            raise self.StateError from None
 
         if tok.kind == 'COMMA':
             return self._do_value()
@@ -357,4 +370,4 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             return r
 
         else:
-            raise NotImplementedError
+            raise self.StateError
