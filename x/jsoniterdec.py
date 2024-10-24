@@ -25,7 +25,6 @@ import sys
 
 
 allow_nan = False
-encoding = 'utf-8'
 strict = True
 
 ##
@@ -83,11 +82,11 @@ BACKSLASH = {
 
 DEFAULT_ENCODING = 'utf-8'
 
+memo = {}
 
 def py_scanstring(
         s,
         end,
-        encoding=None,
         strict=True,
         _b=BACKSLASH,  # noqa
         _m=STRINGCHUNK.match,
@@ -95,31 +94,31 @@ def py_scanstring(
         _maxunicode=sys.maxunicode,
         _scan_four_digit_hex=scan_four_digit_hex,
 ):
-    """Scan the string s for a JSON string. End is the index of the
-    character in s after the quote that started the JSON string.
-    Unescapes all valid JSON string escape sequences and raises ValueError
-    on attempt to decode an invalid string. If strict is False then literal
-    control characters are allowed in the string.
+    """
+    Scan the string s for a JSON string. End is the index of the character in s after the quote that started the JSON
+    string. Unescapes all valid JSON string escape sequences and raises ValueError on attempt to decode an invalid
+    string. If strict is False then literal control characters are allowed in the string.
 
-    Returns a tuple of the decoded string and the index of the character in s
-    after the end quote."""
-    if encoding is None:
-        encoding = DEFAULT_ENCODING
+    Returns a tuple of the decoded string and the index of the character in s after the end quote.
+    """
+
     chunks = []
     _append = chunks.append
     begin = end - 1
-    while 1:
+    while True:
         chunk = _m(s, end)
         if chunk is None:
             raise JSONDecodeError('Unterminated string starting at', s, begin)
+
         prev_end = end
         end = chunk.end()
         content, terminator = chunk.groups()
         # Content is contains zero or more unescaped string characters
         if content:
             _append(content)
-        # Terminator is the end of string, a literal control character,
-        # or a backslash denoting that an escape sequence follows
+
+        # Terminator is the end of string, a literal control character, or a backslash denoting that an escape sequence
+        # follows
         if terminator == '"':
             break
         elif terminator != '\\':
@@ -129,10 +128,12 @@ def py_scanstring(
             else:
                 _append(terminator)
                 continue
+
         try:
             esc = s[end]
         except IndexError:
             raise JSONDecodeError('Unterminated string starting at', s, begin)
+
         # If not a unicode escape sequence, must be in the lookup table
         if esc != 'u':
             try:
@@ -141,24 +142,27 @@ def py_scanstring(
                 msg = 'Invalid \\X escape sequence %r'
                 raise JSONDecodeError(msg, s, end)
             end += 1
+
         else:
             # Unicode escape sequence
             uni, end = _scan_four_digit_hex(s, end + 1)
-            # Check for surrogate pair on UCS-4 systems
-            # Note that this will join high/low surrogate pairs
-            # but will also pass unpaired surrogates through
+            # Check for surrogate pair on UCS-4 systems Note that this will join high/low surrogate pairs but will also
+            # pass unpaired surrogates through
             if (
-                    _maxunicode > 65535
-                    and uni & 0xFC00 == 0xD800
-                    and s[end: end + 2] == '\\u'
+                    _maxunicode > 65535 and
+                    uni & 0xFC00 == 0xD800 and
+                    s[end: end + 2] == '\\u'
             ):
                 uni2, end2 = _scan_four_digit_hex(s, end + 2)
                 if uni2 & 0xFC00 == 0xDC00:
                     uni = 0x10000 + (((uni - 0xD800) << 10) | (uni2 - 0xDC00))
                     end = end2
+
             char = chr(uni)
+
         # Append the unescaped character
         _append(char)
+
     return _join(chunks), end
 
 
@@ -175,19 +179,15 @@ WHITESPACE = re.compile(r'[ \t\n\r]*', FLAGS)
 WHITESPACE_STR = ' \t\n\r'
 
 
-def JSONObject(
+def parse_object(
         state,
-        encoding,
         strict,
         scan_once,
-        memo=None,
         _w=WHITESPACE.match,
         _ws=WHITESPACE_STR,
 ):
     (s, end) = state
     # Backwards compatibility
-    if memo is None:
-        memo = {}
     memo_get = memo.setdefault
     pairs = []
     # Use a slice to prevent IndexError from being raised, the following
@@ -210,7 +210,7 @@ def JSONObject(
             )
     end += 1
     while True:
-        key, end = scanstring(s, end, encoding, strict)
+        key, end = scanstring(s, end, strict)
         key = memo_get(key, key)
 
         # To skip some function call overhead we optimize the fast paths where
@@ -270,7 +270,12 @@ def JSONObject(
     return pairs, end
 
 
-def JSONArray(state, scan_once, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
+def parse_array(
+        state,
+        scan_once,
+        _w=WHITESPACE.match,
+        _ws=WHITESPACE_STR,
+):
     (s, end) = state
     values = []
     nextchar = s[end: end + 1]
@@ -307,11 +312,7 @@ def JSONArray(state, scan_once, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
     return values, end
 
 
-parse_object = JSONObject
-parse_array = JSONArray
-
-
-def _scan_once(string: str, idx: int, memo):
+def _scan_once(string: str, idx: int):
     errmsg = 'Expecting value'
     try:
         nextchar = string[idx]
@@ -319,15 +320,13 @@ def _scan_once(string: str, idx: int, memo):
         raise JSONDecodeError(errmsg, string, idx)
 
     if nextchar == '"':
-        return parse_string(string, idx + 1, encoding, strict)
+        return parse_string(string, idx + 1, strict)
 
     elif nextchar == '{':
         return parse_object(
             (string, idx + 1),
-            encoding,
             strict,
             _scan_once,
-            memo,
         )
 
     elif nextchar == '[':
@@ -371,13 +370,15 @@ def scan_once(string, idx):
 
     memo = {}
     try:
-        return _scan_once(string, idx, memo)
+        return _scan_once(string, idx)
     finally:
         memo.clear()
 
 
-print(scan_once("""
-{
+##
+
+
+print(scan_once("""{
   "user": {
     "id": 12345,
     "username": "john_doe",
@@ -423,5 +424,4 @@ print(scan_once("""
       }
     ]
   }
-}
-""", 0))
+}""", 0))
