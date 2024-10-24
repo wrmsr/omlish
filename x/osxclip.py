@@ -1,5 +1,7 @@
 import ctypes as ct
 import ctypes.util
+import dataclasses as dc
+import typing as ta
 
 
 ##
@@ -91,36 +93,20 @@ def CFSTR(string):
     return cf.CFStringCreateWithCString(None, string.encode('utf-8'), 0)
 
 
+kCFStringEncodingUTF8 = 0x08000100
 kPasteboardClipboard = CFSTR('com.apple.pasteboard.clipboard')
 
 
 def cfstring_to_string(cf_string):
-    """Convert a CFStringRef to a Python string."""
-
     if not cf_string:
-        return ""
+        return ''
 
-    # Define kCFStringEncodingUTF8 (the correct encoding constant for UTF-8)
-    kCFStringEncodingUTF8 = 0x08000100
-
-    # Calculate the maximum buffer size needed for the string
     length = cf.CFStringGetLength(cf_string)
     max_size = cf.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
-
-    # Create a buffer to hold the C string
     buffer = ct.create_string_buffer(max_size)
 
-    # Attempt to convert CFStringRef to a C string
-    success = cf.CFStringGetCString(
-        cf_string,
-        buffer,
-        max_size,
-        kCFStringEncodingUTF8
-    )
-
-    # If conversion fails, return an empty string
-    if not success:
-        return ""
+    if success := cf.CFStringGetCString(cf_string, buffer, max_size, kCFStringEncodingUTF8):  # noqa
+        return ''
 
     return buffer.value.decode('utf-8')
 
@@ -128,59 +114,84 @@ def cfstring_to_string(cf_string):
 ##
 
 
-def get_clipboard_data():
-    # Create the pasteboard reference
+class OsxClipboardError(Exception):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class StatusOsxClipboardError(OsxClipboardError):
+    fn: str
+    status: int
+
+
+@dc.dataclass(frozen=True)
+class OsxClipboardItem:
+    type: str | None
+    data: bytes | None
+
+
+def get_osx_clipboard_data(
+        *,
+        types: ta.Container[str] | None = None,
+        strict: bool = False,
+        types_only: bool = False,
+) -> list[OsxClipboardItem]:
+    lst: list[OsxClipboardItem] = []
+
     pasteboard = PasteboardRef()
-    status = aps.PasteboardCreate(kPasteboardClipboard, ct.byref(pasteboard))
-    if status != 0:
-        print("Failed to access the clipboard")
-        return
+    if status := aps.PasteboardCreate(kPasteboardClipboard, ct.byref(pasteboard)):
+        raise StatusOsxClipboardError('PasteboardCreate', status)
 
     try:
-        # Get the number of items in the clipboard
         item_count = ct.c_ulong(0)
-        status = aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count))
-        if status != 0 or item_count.value == 0:
-            print("No items on the clipboard")
-            return
+        if status := aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count)):
+            raise StatusOsxClipboardError('PasteboardGetItemCount', status)
 
-        # Iterate over each item in the clipboard
         for i in range(1, item_count.value + 1):
             item_id = PasteboardItemID()
-            status = aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id))
-            if status != 0:
-                continue
+            if status := aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id)):
+                raise StatusOsxClipboardError('PasteboardGetItemIdentifier', status)
 
-            # Get available data types for the current item
             data_types = CFArrayRef()
-            status = aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types))
-            if status != 0 or not data_types:
+            if status := aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types)):
+                raise StatusOsxClipboardError('PasteboardCopyItemFlavors', status)
+            if not data_types:
                 continue
 
             try:
-                # Iterate through data types to find supported ones
                 type_count = cf.CFArrayGetCount(data_types)
                 for j in range(type_count):
                     data_type = cf.CFArrayGetValueAtIndex(data_types, j)
 
-                    # Strictly check if the flavor is a CFStringRef
                     if cf.CFGetTypeID(data_type) == cf.CFStringGetTypeID():
                         data_type_str = cfstring_to_string(data_type)
                     else:
                         data_type_str = None
 
-                    # Retrieve data of this type
-                    data = CFDataRef()
-                    try:
-                        status = aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data))
-                        if status == 0 and data:
-                            # Handle the binary data (e.g., images, files, etc.)
-                            data_size = cf.CFDataGetLength(data)
-                            data_ptr = cf.CFDataGetBytePtr(data)
-                            data_bytes = ct.string_at(data_ptr, data_size)
+                    if types_only:
+                        lst.append(OsxClipboardItem(
+                            type=data_type_str,
+                            data=None,
+                        ))
+                        continue
 
-                            # Save to a file for testing
-                            print(f'Data (type: {data_type_str}, size: {data_size}): {data_bytes!r}')
+                    data = CFDataRef()
+                    if status := aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data)):
+                        if not strict:
+                            continue
+                        raise StatusOsxClipboardError('PasteboardCopyItemFlavorData', status)
+                    if not data:
+                        continue
+
+                    try:
+                        data_size = cf.CFDataGetLength(data)
+                        data_ptr = cf.CFDataGetBytePtr(data)
+                        data_bytes = ct.string_at(data_ptr, data_size)
+
+                        lst.append(OsxClipboardItem(
+                            type=data_type_str,
+                            data=data_bytes,
+                        ))
 
                     finally:
                         cf.CFRelease(data)
@@ -191,6 +202,9 @@ def get_clipboard_data():
     finally:
         cf.CFRelease(pasteboard)
 
+    return lst
 
-if __name__ == "__main__":
-    get_clipboard_data()
+
+if __name__ == '__main__':
+    for i in get_osx_clipboard_data():
+        print(i)
