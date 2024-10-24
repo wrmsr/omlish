@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build>=1.2.2
-twine>=5.1.1; python_version < "3.13"
+twine>=5.1.1
 wheel>=0.44.0
 
 uv>=0.4.26
@@ -16,7 +16,7 @@ pytest-xdist==3.6.1
 
 flake8==7.1.1
 flake8-pyproject==1.2.3
-ruff==0.7.0
+ruff==0.7.1
 
 docutils-stubs==0.0.22
 types-paramiko==3.5.0.20240928  # @omlish-venv !13t
@@ -66,7 +66,7 @@ json5==0.9.25
 
 ##
 
-psycopg2==2.9.10; python_version < "3.13"
+psycopg2==2.9.10
 psycopg==3.2.3
 
 mysql-connector-python==9.1.0
@@ -76,7 +76,7 @@ ujson==5.10.0
 
 markupsafe==3.0.2
 
-redis==5.1.1
+redis==5.2.0
 
 sqlean.py==3.45.1; python_version < "3.13"
 duckdb==1.1.2
@@ -105,3 +105,7 @@ huggingface-hub==0.26.1
 datasets==3.0.2
 
 sentence_transformers==3.2.1
+
+snowflake-connector-python[secure-local-storage]==3.12.3
+snowflake-sqlalchemy==1.6.1
+
