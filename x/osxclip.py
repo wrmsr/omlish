@@ -3,7 +3,12 @@ import ctypes.util
 
 
 ##
+# CoreFoundation
 
+
+cf = ct.cdll.LoadLibrary(ct.util.find_library('CoreFoundation'))
+
+#
 
 CFArrayRef = ct.c_void_p
 CFDataRef = ct.c_void_p
@@ -12,17 +17,54 @@ CFStringEncoding = ct.c_uint32
 CFStringRef = ct.c_void_p
 CFTypeID = ct.c_ulong
 
+#
+
+cf.CFArrayGetCount.argtypes = [CFArrayRef]
+cf.CFArrayGetCount.restype = CFIndex
+
+cf.CFArrayGetValueAtIndex.argtypes = [CFArrayRef, CFIndex]
+cf.CFArrayGetValueAtIndex.restype = CFStringRef
+
+cf.CFDataGetBytePtr.argtypes = [CFDataRef]
+cf.CFDataGetBytePtr.restype = ct.POINTER(ct.c_uint8)
+
+cf.CFDataGetLength.argtypes = [CFDataRef]
+cf.CFDataGetLength.restype = CFIndex
+
+cf.CFGetTypeID.argtypes = [ct.c_void_p]
+cf.CFGetTypeID.restype = CFTypeID
+
+cf.CFRelease.argtypes = [ct.c_void_p]
+cf.CFRelease.restype = None
+
+cf.CFStringCreateWithCString.argtypes = [ct.c_void_p, ct.c_char_p, ct.c_int32]
+cf.CFStringCreateWithCString.restype = CFStringRef
+
+cf.CFStringGetCString.argtypes = [CFStringRef, ct.c_char_p, ct.c_long, ct.c_uint32]
+cf.CFStringGetCString.restype = ct.c_bool
+
+cf.CFStringGetLength.argtypes = [CFStringRef]
+cf.CFStringGetLength.restype = CFIndex
+
+cf.CFStringGetMaximumSizeForEncoding.argtypes = [CFIndex, CFStringEncoding]
+cf.CFStringGetMaximumSizeForEncoding.restype = CFIndex
+
+cf.CFStringGetTypeID.argtypes = []
+cf.CFStringGetTypeID.restype = CFTypeID
+
+
+##
+# ApplicationServices
+
+
+aps = ct.cdll.LoadLibrary(ct.util.find_library('ApplicationServices'))
+
+#
+
 OSStatus = ct.c_int32
 
 PasteboardItemID = ct.c_ulong
 PasteboardRef = ct.c_void_p
-
-
-##
-
-
-cf = ct.cdll.LoadLibrary(ct.util.find_library('CoreFoundation'))
-aps = ct.cdll.LoadLibrary(ct.util.find_library('ApplicationServices'))
 
 #
 
@@ -40,41 +82,6 @@ aps.PasteboardGetItemCount.restype = OSStatus
 
 aps.PasteboardGetItemIdentifier.argtypes = [PasteboardRef, ct.c_ulong, ct.POINTER(PasteboardItemID)]
 aps.PasteboardGetItemIdentifier.restype = OSStatus
-
-#
-
-cf.CFArrayGetCount.argtypes = [CFArrayRef]
-cf.CFArrayGetCount.restype = CFIndex
-
-cf.CFGetTypeID.argtypes = [ct.c_void_p]
-cf.CFGetTypeID.restype = CFTypeID
-
-# cf.CFGetTypeID.argtypes = []
-cf.CFStringGetTypeID.restype = CFTypeID
-
-cf.CFStringCreateWithCString.argtypes = [ct.c_void_p, ct.c_char_p, ct.c_int32]
-cf.CFStringCreateWithCString.restype = CFStringRef
-
-cf.CFArrayGetValueAtIndex.argtypes = [CFArrayRef, CFIndex]
-cf.CFArrayGetValueAtIndex.restype = CFStringRef
-
-cf.CFDataGetLength.argtypes = [CFDataRef]
-cf.CFDataGetLength.restype = CFIndex
-
-cf.CFDataGetBytePtr.argtypes = [CFDataRef]
-cf.CFDataGetBytePtr.restype = ct.POINTER(ct.c_uint8)
-
-cf.CFRelease.argtypes = [ct.c_void_p]
-cf.CFRelease.restype = None
-
-cf.CFStringGetCString.argtypes = [CFStringRef, ct.c_char_p, ct.c_long, ct.c_uint32]
-cf.CFStringGetCString.restype = ct.c_bool
-
-cf.CFStringGetLength.argtypes = [CFStringRef]
-cf.CFStringGetLength.restype = CFIndex
-
-cf.CFStringGetMaximumSizeForEncoding.argtypes = [CFIndex, CFStringEncoding]
-cf.CFStringGetMaximumSizeForEncoding.restype = CFIndex
 
 
 ##
