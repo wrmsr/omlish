@@ -163,7 +163,7 @@ def _main() -> None:
         if args.stream:
             with JsonStreamLexer() as lex:
                 with JsonStreamValueBuilder() as vb:
-                    for buf in in_file.read(65536):
+                    for buf in in_file.read(args.stream_buffer_size):
                         for c in buf:
                             for t in lex(c):
                                 for v in vb(t):
