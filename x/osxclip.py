@@ -155,15 +155,29 @@ def cfstring_to_string(cf_string):
     if not cf_string:
         return ""
 
-    # Calculate buffer size
-    buffer_size = core_foundation.CFStringGetMaximumSizeForEncoding(core_foundation.CFStringGetLength(cf_string),
-                                                                    0x08000100) + 1
-    buffer = ctypes.create_string_buffer(buffer_size)
+    # Define kCFStringEncodingUTF8 (the correct encoding constant for UTF-8)
+    kCFStringEncodingUTF8 = 0x08000100
 
-    # Convert CFStringRef to CString
-    core_foundation.CFStringGetCString(cf_string, buffer, buffer_size, 0x08000100)
+    # Calculate the maximum buffer size needed for the string
+    length = core_foundation.CFStringGetLength(cf_string)
+    max_size = core_foundation.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
+
+    # Create a buffer to hold the C string
+    buffer = ctypes.create_string_buffer(max_size)
+
+    # Attempt to convert CFStringRef to a C string
+    success = core_foundation.CFStringGetCString(
+        cf_string,
+        buffer,
+        max_size,
+        kCFStringEncodingUTF8
+    )
+
+    # If conversion fails, return an empty string
+    if not success:
+        return ""
+
     return buffer.value.decode('utf-8')
-
 
 if __name__ == "__main__":
     get_clipboard_data()
