@@ -27,4 +27,3 @@ def test_stream():
                     print(t)
 
         print()
-
