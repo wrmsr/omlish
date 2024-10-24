@@ -1,106 +1,107 @@
-import ctypes
+import ctypes as ct
 import ctypes.util
 
 
-# Load the required frameworks
-core_foundation = ctypes.cdll.LoadLibrary(ctypes.util.find_library('CoreFoundation'))
-application_services = ctypes.cdll.LoadLibrary(ctypes.util.find_library('ApplicationServices'))
-
-# CoreFoundation data types
-CFStringRef = ctypes.c_void_p
-CFTypeID = ctypes.c_ulong
-PasteboardRef = ctypes.c_void_p
-CFIndex = ctypes.c_long
-CFArrayRef = ctypes.c_void_p
-CFDataRef = ctypes.c_void_p
-PasteboardItemID = ctypes.c_ulong
-OSStatus = ctypes.c_int32
+##
 
 
-# Define CFSTR to create CFStringRef constants
+CFArrayRef = ct.c_void_p
+CFDataRef = ct.c_void_p
+CFIndex = ct.c_long
+CFStringEncoding = ct.c_uint32
+CFStringRef = ct.c_void_p
+CFTypeID = ct.c_ulong
+
+OSStatus = ct.c_int32
+
+PasteboardItemID = ct.c_ulong
+PasteboardRef = ct.c_void_p
+
+
+##
+
+
+cf = ct.cdll.LoadLibrary(ct.util.find_library('CoreFoundation'))
+aps = ct.cdll.LoadLibrary(ct.util.find_library('ApplicationServices'))
+
+#
+
+aps.PasteboardCopyItemFlavorData.argtypes = [PasteboardRef, PasteboardItemID, CFStringRef, ct.POINTER(CFDataRef)]
+aps.PasteboardCopyItemFlavorData.restype = OSStatus
+
+aps.PasteboardCopyItemFlavors.argtypes = [PasteboardRef, PasteboardItemID, ct.POINTER(CFArrayRef)]
+aps.PasteboardCopyItemFlavors.restype = OSStatus
+
+aps.PasteboardCreate.argtypes = [CFStringRef, ct.POINTER(PasteboardRef)]
+aps.PasteboardCreate.restype = OSStatus
+
+aps.PasteboardGetItemCount.argtypes = [PasteboardRef, ct.POINTER(ct.c_ulong)]
+aps.PasteboardGetItemCount.restype = OSStatus
+
+aps.PasteboardGetItemIdentifier.argtypes = [PasteboardRef, ct.c_ulong, ct.POINTER(PasteboardItemID)]
+aps.PasteboardGetItemIdentifier.restype = OSStatus
+
+#
+
+cf.CFArrayGetCount.argtypes = [CFArrayRef]
+cf.CFArrayGetCount.restype = CFIndex
+
+cf.CFGetTypeID.argtypes = [ct.c_void_p]
+cf.CFGetTypeID.restype = CFTypeID
+
+# cf.CFGetTypeID.argtypes = []
+cf.CFStringGetTypeID.restype = CFTypeID
+
+cf.CFStringCreateWithCString.argtypes = [ct.c_void_p, ct.c_char_p, ct.c_int32]
+cf.CFStringCreateWithCString.restype = CFStringRef
+
+cf.CFArrayGetValueAtIndex.argtypes = [CFArrayRef, CFIndex]
+cf.CFArrayGetValueAtIndex.restype = CFStringRef
+
+cf.CFDataGetLength.argtypes = [CFDataRef]
+cf.CFDataGetLength.restype = CFIndex
+
+cf.CFDataGetBytePtr.argtypes = [CFDataRef]
+cf.CFDataGetBytePtr.restype = ct.POINTER(ct.c_uint8)
+
+cf.CFRelease.argtypes = [ct.c_void_p]
+cf.CFRelease.restype = None
+
+cf.CFStringGetCString.argtypes = [CFStringRef, ct.c_char_p, ct.c_long, ct.c_uint32]
+cf.CFStringGetCString.restype = ct.c_bool
+
+cf.CFStringGetLength.argtypes = [CFStringRef]
+cf.CFStringGetLength.restype = CFIndex
+
+cf.CFStringGetMaximumSizeForEncoding.argtypes = [CFIndex, CFStringEncoding]
+cf.CFStringGetMaximumSizeForEncoding.restype = CFIndex
+
+
+##
+
+
 def CFSTR(string):
-    core_foundation.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32]
-    core_foundation.CFStringCreateWithCString.restype = CFStringRef
-    return core_foundation.CFStringCreateWithCString(None, string.encode('utf-8'), 0)
+    return cf.CFStringCreateWithCString(None, string.encode('utf-8'), 0)
 
 
-# Define kPasteboardClipboard
-kPasteboardClipboard = CFSTR("com.apple.pasteboard.clipboard")
+kPasteboardClipboard = CFSTR('com.apple.pasteboard.clipboard')
 
-# Function prototypes
 
-# OSStatus PasteboardCreate(CFStringRef, PasteboardRef*)
-PasteboardCreate = application_services.PasteboardCreate
-PasteboardCreate.argtypes = [CFStringRef, ctypes.POINTER(PasteboardRef)]
-PasteboardCreate.restype = OSStatus
-
-# OSStatus PasteboardGetItemCount(PasteboardRef, ItemCount*)
-PasteboardGetItemCount = application_services.PasteboardGetItemCount
-PasteboardGetItemCount.argtypes = [PasteboardRef, ctypes.POINTER(ctypes.c_ulong)]
-PasteboardGetItemCount.restype = OSStatus
-
-# OSStatus PasteboardGetItemIdentifier(PasteboardRef, ItemIndex, PasteboardItemID*)
-PasteboardGetItemIdentifier = application_services.PasteboardGetItemIdentifier
-PasteboardGetItemIdentifier.argtypes = [PasteboardRef, ctypes.c_ulong, ctypes.POINTER(PasteboardItemID)]
-PasteboardGetItemIdentifier.restype = OSStatus
-
-# OSStatus PasteboardCopyItemFlavors(PasteboardRef, PasteboardItemID, CFArrayRef*)
-PasteboardCopyItemFlavors = application_services.PasteboardCopyItemFlavors
-PasteboardCopyItemFlavors.argtypes = [PasteboardRef, PasteboardItemID, ctypes.POINTER(CFArrayRef)]
-PasteboardCopyItemFlavors.restype = OSStatus
-
-# OSStatus PasteboardCopyItemFlavorData(PasteboardRef, PasteboardItemID, CFStringRef, CFDataRef*)
-PasteboardCopyItemFlavorData = application_services.PasteboardCopyItemFlavorData
-PasteboardCopyItemFlavorData.argtypes = [PasteboardRef, PasteboardItemID, CFStringRef, ctypes.POINTER(CFDataRef)]
-PasteboardCopyItemFlavorData.restype = OSStatus
-
-# CFIndex CFArrayGetCount(CFArrayRef)
-CFArrayGetCount = core_foundation.CFArrayGetCount
-CFArrayGetCount.argtypes = [CFArrayRef]
-CFArrayGetCount.restype = CFIndex
-
-# CFTypeID CFGetTypeID(CFTypeRef)
-CFGetTypeID = core_foundation.CFGetTypeID
-CFGetTypeID.argtypes = [ctypes.c_void_p]
-CFGetTypeID.restype = CFTypeID
-
-# CFTypeID CFStringGetTypeID(void)
-CFStringGetTypeID = core_foundation.CFStringGetTypeID
-CFStringGetTypeID.restype = CFTypeID
-
-# CFStringRef CFArrayGetValueAtIndex(CFArrayRef, CFIndex)
-CFArrayGetValueAtIndex = core_foundation.CFArrayGetValueAtIndex
-CFArrayGetValueAtIndex.argtypes = [CFArrayRef, CFIndex]
-CFArrayGetValueAtIndex.restype = CFStringRef
-
-# CFIndex CFDataGetLength(CFDataRef)
-CFDataGetLength = core_foundation.CFDataGetLength
-CFDataGetLength.argtypes = [CFDataRef]
-CFDataGetLength.restype = CFIndex
-
-# const UInt8 *CFDataGetBytePtr(CFDataRef)
-CFDataGetBytePtr = core_foundation.CFDataGetBytePtr
-CFDataGetBytePtr.argtypes = [CFDataRef]
-CFDataGetBytePtr.restype = ctypes.POINTER(ctypes.c_uint8)
-
-# CFRelease
-CFRelease = core_foundation.CFRelease
-CFRelease.argtypes = [ctypes.c_void_p]
-CFRelease.restype = None
+##
 
 
 def get_clipboard_data():
     # Create the pasteboard reference
     pasteboard = PasteboardRef()
-    status = PasteboardCreate(kPasteboardClipboard, ctypes.byref(pasteboard))
+    status = aps.PasteboardCreate(kPasteboardClipboard, ct.byref(pasteboard))
 
     if status != 0:
         print("Failed to access the clipboard")
         return
 
     # Get the number of items in the clipboard
-    item_count = ctypes.c_ulong(0)
-    status = PasteboardGetItemCount(pasteboard, ctypes.byref(item_count))
+    item_count = ct.c_ulong(0)
+    status = aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count))
     if status != 0 or item_count.value == 0:
         print("No items on the clipboard")
         return
@@ -108,23 +109,23 @@ def get_clipboard_data():
     # Iterate over each item in the clipboard
     for i in range(1, item_count.value + 1):
         item_id = PasteboardItemID()
-        status = PasteboardGetItemIdentifier(pasteboard, i, ctypes.byref(item_id))
+        status = aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id))
         if status != 0:
             continue
 
         # Get available data types for the current item
         data_types = CFArrayRef()
-        status = PasteboardCopyItemFlavors(pasteboard, item_id, ctypes.byref(data_types))
+        status = aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types))
         if status != 0 or not data_types:
             continue
 
         # Iterate through data types to find supported ones
-        type_count = CFArrayGetCount(data_types)
+        type_count = cf.CFArrayGetCount(data_types)
         for j in range(type_count):
-            data_type = CFArrayGetValueAtIndex(data_types, j)
+            data_type = cf.CFArrayGetValueAtIndex(data_types, j)
 
             # Strictly check if the flavor is a CFStringRef
-            if CFGetTypeID(data_type) == CFStringGetTypeID():
+            if cf.CFGetTypeID(data_type) == cf.CFStringGetTypeID():
                 data_type_str = cfstring_to_string(data_type)
                 print(f"Data type: {data_type_str}")
             else:
@@ -132,38 +133,23 @@ def get_clipboard_data():
 
             # Retrieve data of this type
             data = CFDataRef()
-            status = PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ctypes.byref(data))
+            status = aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data))
             if status == 0 and data:
                 # Handle the binary data (e.g., images, files, etc.)
-                data_size = CFDataGetLength(data)
-                data_ptr = CFDataGetBytePtr(data)
+                data_size = cf.CFDataGetLength(data)
+                data_ptr = cf.CFDataGetBytePtr(data)
 
                 # Save to a file for testing
                 with open("clipboard_output.bin", "wb") as f:
-                    f.write(ctypes.string_at(data_ptr, data_size))
+                    f.write(ct.string_at(data_ptr, data_size))
                     print(f"Data saved to clipboard_output.bin (size: {data_size} bytes)")
 
-                CFRelease(data)
+                cf.CFRelease(data)
 
-        CFRelease(data_types)
+        cf.CFRelease(data_types)
 
-    CFRelease(pasteboard)
+    cf.CFRelease(pasteboard)
 
-
-# Define CFStringEncoding as an unsigned 32-bit integer
-CFStringEncoding = ctypes.c_uint32
-
-# Correctly set the argument and return types for CFStringGetCString
-core_foundation.CFStringGetCString.argtypes = [CFStringRef, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
-core_foundation.CFStringGetCString.restype = ctypes.c_bool
-
-# Set the argument and return types for CFStringGetLength
-core_foundation.CFStringGetLength.argtypes = [CFStringRef]
-core_foundation.CFStringGetLength.restype = CFIndex
-
-# Set the argument and return types for CFStringGetMaximumSizeForEncoding
-core_foundation.CFStringGetMaximumSizeForEncoding.argtypes = [CFIndex, CFStringEncoding]
-core_foundation.CFStringGetMaximumSizeForEncoding.restype = CFIndex
 
 
 def cfstring_to_string(cf_string):
@@ -175,14 +161,14 @@ def cfstring_to_string(cf_string):
     kCFStringEncodingUTF8 = 0x08000100
 
     # Calculate the maximum buffer size needed for the string
-    length = core_foundation.CFStringGetLength(cf_string)
-    max_size = core_foundation.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
+    length = cf.CFStringGetLength(cf_string)
+    max_size = cf.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
 
     # Create a buffer to hold the C string
-    buffer = ctypes.create_string_buffer(max_size)
+    buffer = ct.create_string_buffer(max_size)
 
     # Attempt to convert CFStringRef to a C string
-    success = core_foundation.CFStringGetCString(
+    success = cf.CFStringGetCString(
         cf_string,
         buffer,
         max_size,
