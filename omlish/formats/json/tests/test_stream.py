@@ -23,7 +23,7 @@ def test_stream():
                 for c in s:
                     for t in lex(c):
                         print(t)
-                        for v in vb(t):
+                        for v in vb([t]):
                             print(v)
 
         print()

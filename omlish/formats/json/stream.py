@@ -4,17 +4,20 @@ import json
 import re
 import typing as ta
 
+from ... import check
 from ...genmachine import GenMachine
 
 
-TokenKind: ta.TypeAlias = ta.Literal[
+ValueTokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
 
     'SPECIAL_NUMBER',
     'BOOLEAN',
     'NULL',
+]
 
+ControlTokenKind: ta.TypeAlias = ta.Literal[
     'LBRACE',
     'RBRACE',
     'LBRACKET',
@@ -22,6 +25,8 @@ TokenKind: ta.TypeAlias = ta.Literal[
     'COMMA',
     'COLON',
 ]
+
+TokenKind: ta.TypeAlias = ValueTokenKind | ControlTokenKind
 
 TokenValue: ta.TypeAlias = str | float | int | None
 
@@ -35,11 +40,15 @@ class Token(ta.NamedTuple):
     line: int
     col: int
 
+    def __iter__(self):
+        raise TypeError
+
 
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
+VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
 
-PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
+CONTROL_TOKENS: ta.Mapping[str, TokenKind] = {
     '{': 'LBRACE',
     '}': 'RBRACE',
     '[': 'LBRACKET',
@@ -124,8 +133,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if c.isspace():
                 continue
 
-            if c in PUNCTUATION_TOKENS:
-                yield self._make_tok(PUNCTUATION_TOKENS[c], c, c)
+            if c in CONTROL_TOKENS:
+                yield self._make_tok(CONTROL_TOKENS[c], c, c)
                 continue
 
             if c == '"':
@@ -193,7 +202,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
         yield self._make_tok('NUMBER', nv, raw)
 
-        if c not in PUNCTUATION_TOKENS and not c.isspace():
+        if c not in CONTROL_TOKENS and not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
 
         return self._do_main()
@@ -222,6 +231,7 @@ class JsonStreamValueBuilder:
     def __init__(self) -> None:
         super().__init__()
 
+        self._expect: TokenKind | None = None
         self._stack: list[
             tuple[ta.Literal['object'], list[tuple[str, ta.Any]]] |
             tuple[ta.Literal['pair'], str] |
@@ -244,9 +254,59 @@ class JsonStreamValueBuilder:
         pass
 
     def close(self) -> None:
-        if self._stack:
-            raise self.IncompleteValueError
+        # if self._stack:
+        #     raise self.IncompleteValueError
+        pass
 
     def __call__(self, tokens: ta.Sequence[Token]) -> ta.Generator[ta.Any, None, None]:
         for tok in tokens:
-            raise NotImplementedError
+            if self._expect is not None:
+                if tok.kind != self._expect:
+                    raise self.UnexpectedTokenError(tok, self._expect)
+                self._expect = None
+                continue
+
+            if not self._stack:
+                if tok.kind == 'LBRACE':
+                    self._stack.append(('object', []))
+                    continue
+
+                else:
+                    raise NotImplementedError
+
+            tt, tv = self._stack[-1]
+            if tt == 'object':
+                if tok.kind == 'STRING':
+                    self._stack.append(('pair', tok.value))
+                    self._expect = 'COLON'
+                    continue
+
+                elif tok.kind == 'COMMA':
+                    if not tv:
+                        raise self.UnexpectedTokenError
+
+                else:
+                    raise NotImplementedError
+
+            elif tt == 'pair':
+                if tok.kind in VALUE_TOKEN_KINDS:
+                    k, v = tv, tok.value
+                    self._stack.pop()
+                    tt, tv = self._stack[-1]
+                    if tt == 'object':
+                        tv.append((k, v))
+
+                    else:
+                        raise self.UnexpectedTokenError
+
+                else:
+                    raise NotImplementedError
+
+            elif tt == 'array':
+                raise NotImplementedError
+
+            else:
+                raise TypeError(tt)
+
+        return
+        yield  # noqa
