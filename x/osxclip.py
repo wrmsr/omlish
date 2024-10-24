@@ -8,6 +8,7 @@ application_services = ctypes.cdll.LoadLibrary(ctypes.util.find_library('Applica
 
 # CoreFoundation data types
 CFStringRef = ctypes.c_void_p
+CFTypeID = ctypes.c_ulong
 PasteboardRef = ctypes.c_void_p
 CFIndex = ctypes.c_long
 CFArrayRef = ctypes.c_void_p
@@ -57,6 +58,15 @@ PasteboardCopyItemFlavorData.restype = OSStatus
 CFArrayGetCount = core_foundation.CFArrayGetCount
 CFArrayGetCount.argtypes = [CFArrayRef]
 CFArrayGetCount.restype = CFIndex
+
+# CFTypeID CFGetTypeID(CFTypeRef)
+CFGetTypeID = core_foundation.CFGetTypeID
+CFGetTypeID.argtypes = [ctypes.c_void_p]
+CFGetTypeID.restype = CFTypeID
+
+# CFTypeID CFStringGetTypeID(void)
+CFStringGetTypeID = core_foundation.CFStringGetTypeID
+CFStringGetTypeID.restype = CFTypeID
 
 # CFStringRef CFArrayGetValueAtIndex(CFArrayRef, CFIndex)
 CFArrayGetValueAtIndex = core_foundation.CFArrayGetValueAtIndex
@@ -113,9 +123,12 @@ def get_clipboard_data():
         for j in range(type_count):
             data_type = CFArrayGetValueAtIndex(data_types, j)
 
-            # Convert CFStringRef to Python string for display
-            data_type_str = cfstring_to_string(data_type)
-            print(f"Data type: {data_type_str}")
+            # Check if the flavor is a CFString
+            if CFGetTypeID(data_type) == CFStringGetTypeID():
+                data_type_str = cfstring_to_string(data_type)
+                print(f"Data type: {data_type_str}")
+            else:
+                print("Data type is not a CFString")
 
             # Retrieve data of this type
             data = CFDataRef()
