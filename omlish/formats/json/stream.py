@@ -234,7 +234,7 @@ class JsonStreamValueBuilder:
         self._expect: TokenKind | None = None
         self._stack: list[
             tuple[ta.Literal['object'], list[tuple[str, ta.Any]]] |
-            tuple[ta.Literal['pair'], str] |
+            tuple[ta.Literal['pair'], str | None] |
             tuple[ta.Literal['array'], list[ta.Any]]
         ] = []
 
@@ -284,23 +284,36 @@ class JsonStreamValueBuilder:
                 elif tok.kind == 'COMMA':
                     if not tv:
                         raise self.UnexpectedTokenError
+                    self._stack.append(('pair', None))
+                    continue
 
                 else:
                     raise NotImplementedError
 
             elif tt == 'pair':
-                if tok.kind in VALUE_TOKEN_KINDS:
-                    k, v = tv, tok.value
-                    self._stack.pop()
-                    tt, tv = self._stack[-1]
-                    if tt == 'object':
-                        tv.append((k, v))
+                if tv is not None:
+                    if tok.kind in VALUE_TOKEN_KINDS:
+                        self._stack.pop()
+                        tt2, tv2 = self._stack[-1]
+                        if tt2 == 'object':
+                            tv2.append((tv, tok.value))
+                            continue
+
+                        else:
+                            raise self.UnexpectedTokenError
+
+                    else:
+                        raise NotImplementedError
+
+                else:
+                    if tok.kind == 'STRING':
+                        self._stack.pop()
+                        self._stack.append(('pair', tok.value))
+                        self._expect = 'COLON'
+                        continue
 
                     else:
                         raise self.UnexpectedTokenError
-
-                else:
-                    raise NotImplementedError
 
             elif tt == 'array':
                 raise NotImplementedError
