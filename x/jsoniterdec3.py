@@ -19,7 +19,13 @@ TokenKind: ta.TypeAlias = ta.Literal[
     'COLON',
 ]
 
-Token: ta.TypeAlias = tuple[TokenKind, str | float | int | None]
+TokenValue: ta.TypeAlias = str | float | int | None
+
+class Token(ta.NamedTuple):
+    kind: TokenKind
+    value: TokenValue
+    string: str
+    offset: int
 
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
@@ -53,18 +59,18 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
         except StopIteration:
             raise ValueError('Unexpected end of JSON input.')  # noqa
 
-        nonlocal pos
-        pos += 1
+        nonlocal offset
+        offset += 1
         return c
 
     buffer: str
-    pos = 0
+    offset = 0
     while True:
         try:
             char = next(it)
         except StopIteration:
             break
-        pos += 1
+        offset += 1
 
         # Skip whitespace characters
         if char.isspace():
@@ -72,7 +78,12 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
         # Handle punctuation tokens
         if char in PUNCTUATION_TOKENS:
-            yield (PUNCTUATION_TOKENS[char], char)
+            yield Token(
+                PUNCTUATION_TOKENS[char],
+                char,
+                char,
+                offset,
+            )
             continue
 
         # Handle string tokens
@@ -84,7 +95,12 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 if char == '"' and not buffer.endswith(r'\"'):
                     break
 
-            yield ('STRING', buffer[1:-1].replace(r'\"', '"'))
+            yield Token(
+                'STRING',
+                buffer[1:-1].replace(r'\"', '"'),
+                buffer,
+                offset,
+            )
             continue
 
         # Handle number tokens
@@ -105,10 +121,21 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 if buffer != '-Infinity':
                     raise ValueError(f'Invalid number format: {buffer}')
 
-                yield STATIC_TOKENS[buffer]
+                tk, tv = STATIC_TOKENS[buffer]
+                yield Token(
+                    tk,
+                    tv,
+                    buffer,
+                    offset
+                )
                 continue
 
-            yield ('NUMBER', float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer))
+            yield Token(
+                'NUMBER',
+                float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer),
+                buffer,
+                offset,
+            )
 
             if char not in PUNCTUATION_TOKENS and not char.isspace():
                 raise ValueError(f'Unexpected character after number: {char}')
@@ -125,7 +152,13 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 if len(buffer) > 8:  # None of the keywords are longer than 8 characters
                     raise ValueError(f'Invalid literal: {buffer}')
 
-            yield STATIC_TOKENS[buffer]
+            tk, tv = STATIC_TOKENS[buffer]
+            yield Token(
+                tk,
+                tv,
+                buffer,
+                offset,
+            )
             continue
 
         # If we reach here, we found an unexpected character
