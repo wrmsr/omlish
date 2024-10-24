@@ -229,7 +229,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 continue
 
             if c in PUNCTUATION_TOKENS:
-                yield self._make_tok(PUNCTUATION_TOKENS[c], c, c)
+                yield (self._make_tok(PUNCTUATION_TOKENS[c], c, c),)
                 continue
 
             if c == '"':
@@ -260,7 +260,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         raw = self._flip_buf()
         sv = raw[1:-1].replace(r'\"', '"')
-        yield self._make_tok('STRING', sv, raw)
+        yield (self._make_tok('STRING', sv, raw),)
 
         return self._do_main()
 
@@ -279,8 +279,10 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         raw = self._flip_buf()
         if not NUMBER_PAT.fullmatch(raw):
+            raw += c
             try:
-                raw += c + ''.join(self._char_in((yield None)) for _ in range(7))  # noqa
+                for _ in range(7):
+                    raw += self._char_in((yield None))  # noqa
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
@@ -288,12 +290,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid number format: {raw}')
 
             tk, tv = CONST_TOKENS[raw]
-            yield self._make_tok(tk, tv, raw)
+            yield (self._make_tok(tk, tv, raw),)
 
             return self._do_main()
 
         nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
-        yield self._make_tok('NUMBER', nv, raw)
+        yield (self._make_tok('NUMBER', nv, raw),)
 
         if c not in PUNCTUATION_TOKENS and not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
@@ -315,6 +317,6 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid literal: {raw}')
 
         tk, tv = CONST_TOKENS[raw]
-        yield self._make_tok(tk, tv, raw)
+        yield (self._make_tok(tk, tv, raw),)
 
         return self._do_main()
