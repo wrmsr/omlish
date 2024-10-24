@@ -142,6 +142,7 @@ def _main() -> None:
     with contextlib.ExitStack() as es:
         if args.file is None:
             in_file = sys.stdin
+
         else:
             in_file = es.enter_context(open(args.file))
 
@@ -163,7 +164,7 @@ def _main() -> None:
         if args.stream:
             with JsonStreamLexer() as lex:
                 with JsonStreamValueBuilder() as vb:
-                    for buf in in_file.read(args.stream_buffer_size):
+                    while buf := in_file.read(args.stream_buffer_size):
                         for c in buf:
                             for t in lex(c):
                                 for v in vb(t):
