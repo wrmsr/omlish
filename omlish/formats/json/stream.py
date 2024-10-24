@@ -235,13 +235,19 @@ class JsonStreamObject(list):
 
 
 class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            yield_object_lists: bool = False,
+    ) -> None:
         super().__init__(self._do_value())
 
+        self._yield_object_lists = yield_object_lists
+
         self._stack: list[
-            tuple[ta.Literal['object'], JsonStreamObject] |
-            tuple[ta.Literal['pair'], str] |
-            tuple[ta.Literal['array'], list]
+            tuple[ta.Literal['OBJECT'], JsonStreamObject] |
+            tuple[ta.Literal['PAIR'], str] |
+            tuple[ta.Literal['ARRAY'], list]
         ] = []
 
     #
@@ -251,25 +257,25 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             return ((v,), None)
 
         tt, tv = self._stack[-1]
-        if tt == 'pair':
+        if tt == 'PAIR':
             self._stack.pop()
             if not self._stack:
                 raise self.StateError
 
             tt2, tv2 = self._stack[-1]
-            if tt2 == 'object':
+            if tt2 == 'OBJECT':
                 tv2.append((tv, v))  # type: ignore
                 return ((), self._do_after_pair())
 
             else:
-                raise NotImplementedError
+                raise self.StateError
 
-        elif tt == 'array':
+        elif tt == 'ARRAY':
             tv.append(v)  # type: ignore
             return ((), self._do_after_element())
 
         else:
-            raise NotImplementedError
+            raise self.StateError
 
     #
 
@@ -293,7 +299,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
     #
 
     def _do_object(self):
-        self._stack.append(('object', JsonStreamObject()))
+        self._stack.append(('OBJECT', JsonStreamObject()))
         return self._do_object_body()
 
     def _do_object_body(self):
@@ -312,7 +318,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             if tok.kind != 'COLON':
                 raise self.StateError
 
-            self._stack.append(('pair', k))
+            self._stack.append(('PAIR', k))
             return self._do_value()
 
         else:
@@ -331,11 +337,15 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
             if not self._stack:
                 raise self.StateError
 
+            tv: ta.Any
             tt, tv = self._stack.pop()
-            if tt != 'object':
+            if tt != 'OBJECT':
                 raise self.StateError
 
-            y, r = self._emit_value(('object', tv))
+            if not self._yield_object_lists:
+                tv = dict(tv)
+
+            y, r = self._emit_value(tv)
             yield y
             return r
 
@@ -345,7 +355,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
     #
 
     def _do_array(self):
-        self._stack.append(('array', []))
+        self._stack.append(('ARRAY', []))
         return self._do_value()
 
     def _do_after_element(self):
@@ -362,10 +372,10 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
                 raise self.StateError
 
             tt, tv = self._stack.pop()
-            if tt != 'array':
+            if tt != 'ARRAY':
                 raise self.StateError
 
-            y, r = self._emit_value(('array', tv))
+            y, r = self._emit_value(tv)
             yield y
             return r
 
