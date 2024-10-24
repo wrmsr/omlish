@@ -241,7 +241,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if c in 'tfnIN':
                 return self._do_const(c)
 
-            self._raise(f'Unexpected cacter: {c}')
+            self._raise(f'Unexpected character: {c}')
 
     def _do_string(self):
         self._buf.write('"')
@@ -279,9 +279,13 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         raw = self._flip_buf()
         if not NUMBER_PAT.fullmatch(raw):
-            raw += c + ''.join(get_next_c() for _ in range(7))
+            try:
+                raw += c + ''.join(self._char_in((yield None)) for _ in range(7))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
             if raw != '-Infinity':
-                raise JsonLexError(f'Invalid number format: {raw}', ofs, line, col)
+                self._raise(f'Invalid number format: {raw}')
 
             tk, tv = CONST_TOKENS[raw]
             yield self._make_tok(tk, tv, raw)
@@ -292,11 +296,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
         yield self._make_tok('NUMBER', nv, raw)
 
         if c not in PUNCTUATION_TOKENS and not c.isspace():
-            self._raise(f'Unexpected cacter after number: {c}')
+            self._raise(f'Unexpected character after number: {c}')
 
         return self._do_main()
 
-    def _do_const(self, c):
+    def _do_const(self, c: str):
         raw = c
         while True:
             try:
