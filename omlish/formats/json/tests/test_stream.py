@@ -1,3 +1,4 @@
+from ..stream import JsonStreamLexer
 from ..stream import json_stream_lex
 
 
@@ -17,3 +18,13 @@ def test_stream():
     ]:
         for token in json_stream_lex(iter(s)):
             print(token)
+
+        print()
+
+        with JsonStreamLexer() as lex:
+            for c in s:
+                for t in lex(c):
+                    print(t)
+
+        print()
+
