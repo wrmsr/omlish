@@ -3,6 +3,8 @@ import io
 import re
 import typing as ta
 
+from ...genmachine import GenMachine
+
 
 TokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
@@ -26,7 +28,7 @@ TokenValue: ta.TypeAlias = str | float | int | None
 class Token(ta.NamedTuple):
     kind: TokenKind
     value: TokenValue
-    string: str
+    raw: str
 
     ofs: int
     line: int
@@ -45,7 +47,7 @@ PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
     ':': 'COLON',
 }
 
-STATIC_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
+CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
     'NaN': ('SPECIAL_NUMBER', float('nan')),
     'Infinity': ('SPECIAL_NUMBER', float('inf')),
     '-Infinity': ('SPECIAL_NUMBER', float('-inf')),
@@ -142,7 +144,7 @@ def json_stream_lex(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 if raw != '-Infinity':
                     raise JsonLexError(f'Invalid number format: {raw}', ofs, line, col)
 
-                tk, tv = STATIC_TOKENS[raw]
+                tk, tv = CONST_TOKENS[raw]
                 yield Token(tk, tv, raw, ofs, line, col)
                 continue
 
@@ -158,14 +160,145 @@ def json_stream_lex(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             raw = char
             while True:
                 raw += get_next_char()
-                if raw in STATIC_TOKENS:
+                if raw in CONST_TOKENS:
                     break
 
                 if len(raw) > 8:  # None of the keywords are longer than 8 characters
                     raise JsonLexError(f'Invalid literal: {raw}', ofs, line, col)
 
-            tk, tv = STATIC_TOKENS[raw]
+            tk, tv = CONST_TOKENS[raw]
             yield Token(tk, tv, raw, ofs, line, col)
             continue
 
         raise JsonLexError(f'Unexpected character: {char}', ofs, line, col)
+
+
+class JsonStreamLexer(GenMachine[str, Token]):
+    def __init__(self) -> None:
+        self._ofs = 0
+        self._line = 0
+        self._col = 0
+
+        self._buf = io.StringIO()
+
+        super().__init__(self._do_main())
+
+    def _char_in(self, c: str) -> str:
+        if len(c) != 1:
+            raise ValueError(c)
+
+        self._ofs += 1
+
+        if c == '\n':
+            self._line += 1
+            self._col = 0
+        else:
+            self._col += 1
+
+        return c
+
+    def _make_tok(
+            self,
+            kind: TokenKind,
+            value: TokenValue,
+            raw: str,
+    ) -> Token:
+        return Token(
+            kind,
+            value,
+            raw,
+            self._ofs,
+            self._line,
+            self._col,
+        )
+
+    def _flip_buf(self) -> str:
+        raw = self._buf.getvalue()
+        self._buf.seek(0)
+        self._buf.truncate()
+        return raw
+
+    def _do_main(self):
+        while True:
+            try:
+                c = yield None
+            except GeneratorExit:
+                break
+            self._char_in(c)
+
+            if c.isspace():
+                continue
+
+            if c in PUNCTUATION_TOKENS:
+                yield self._make_tok(PUNCTUATION_TOKENS[c], c, c)
+                continue
+
+            if c == '"':
+                return self._do_string()
+
+            if c.isdigit() or c == '-':
+                return self._do_number()
+
+            if c in 'tfnIN':
+                return self._do_const()
+
+            raise JsonLexError(f'Unexpected cacter: {c}', ofs, line, col)
+
+    def _do_string(self):
+        self._buf.write('"')
+        last = None
+        while True:
+            c = get_next_c()
+            self._buf.write(c)
+            if c == '"' and last != '\\':
+                break
+            last = c
+
+        raw = self._flip_buf()
+        sv = raw[1:-1].replace(r'\"', '"')
+        yield self._make_tok('STRING', sv, raw)
+        continue
+
+    def _do_number(self):
+        self._buf.write(c)
+        while True:
+            try:
+                c = get_next_c()
+                if c.isdigit() or c in '.eE+-':
+                    self._buf.write(c)
+                else:
+                    break
+            except ValueError:
+                break
+
+        raw = self._flip_buf()
+        if not NUMBER_PAT.fullmatch(raw):
+            raw += c + ''.join(get_next_c() for _ in range(7))
+            if raw != '-Infinity':
+                raise JsonLexError(f'Invalid number format: {raw}', ofs, line, col)
+
+            tk, tv = CONST_TOKENS[raw]
+            yield self._make_tok(tk, tv, raw)
+            continue
+
+        nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
+        yield self._make_tok('NUMBER', nv, raw)
+
+        if c not in PUNCTUATION_TOKENS and not c.isspace():
+            raise JsonLexError(f'Unexpected cacter after number: {c}', ofs, line, col)
+
+        continue
+
+    def _const_tokens(self):
+        raw = c
+        while True:
+            raw += get_next_c()
+            if raw in CONST_TOKENS:
+                break
+
+            if len(raw) > 8:  # None of the keywords are longer than 8 cacters
+                raise JsonLexError(f'Invalid literal: {raw}', ofs, line, col)
+
+        tk, tv = CONST_TOKENS[raw]
+        yield self._make_tok(tk, tv, raw)
+        continue
