@@ -23,17 +23,16 @@ Token: ta.TypeAlias = tuple[TokenKind, str | float | int | None]
 
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
-PUNCTUATION_TOKENS: ta.Mapping[str, Token] = {
-    '{': ('LBRACE', '{'),
-    '}': ('RBRACE', '}'),
-    '[': ('LBRACKET', '['),
-    ']': ('RBRACKET', ']'),
-    ',': ('COMMA', ','),
-    ':': ('COLON', ':'),
+PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
+    '{': 'LBRACE',
+    '}': 'RBRACE',
+    '[': 'LBRACKET',
+    ']': 'RBRACKET',
+    ',': 'COMMA',
+    ':': 'COLON',
 }
 
-
-STATIC_TOKENS: ta.Mapping[str, Token] = {
+STATIC_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
     'NaN': ('SPECIAL_NUMBER', float('nan')),
     'Infinity': ('SPECIAL_NUMBER', float('inf')),
     '-Infinity': ('SPECIAL_NUMBER', float('-inf')),
@@ -73,7 +72,7 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
         # Handle punctuation tokens
         if char in PUNCTUATION_TOKENS:
-            yield PUNCTUATION_TOKENS[char]
+            yield (PUNCTUATION_TOKENS[char], char)
             continue
 
         # Handle string tokens
