@@ -61,7 +61,7 @@ def test_machine():
         next(iter(fm('huh')))
 
 
-class AbMachine(GenMachine[str, str]):
+class AbMachine(GenMachine[str, int]):
     def __init__(self) -> None:
         super().__init__(self._a())
 
@@ -73,15 +73,26 @@ class AbMachine(GenMachine[str, str]):
             return self._b()
 
     def _b(self):
+        n = 0
         while True:
-            s = yield None
+            try:
+                s = yield None
+            except GeneratorExit:
+                raise GenMachine.StateError from None
             if s == 'a':
+                yield (n,)
                 return self._a()
             if s != 'b':
                 raise GenMachine.StateError
+            n += 1
 
 
 def test_close():
     m = AbMachine()
-    for s in 'abbba':
-        list(m(s))
+    assert list(m('a')) == []
+    assert list(m('b')) == []
+    assert list(m('b')) == []
+    assert list(m('a')) == [2]
+    assert list(m('a')) == []
+    with pytest.raises(GenMachine.StateError):
+        m.close()
