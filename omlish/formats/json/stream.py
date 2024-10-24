@@ -1,5 +1,6 @@
 import dataclasses as dc
 import io
+import json
 import re
 import typing as ta
 
@@ -154,7 +155,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             last = c
 
         raw = self._flip_buf()
-        sv = raw[1:-1].replace(r'\"', '"')
+        sv = json.loads(raw)
         yield self._make_tok('STRING', sv, raw)
 
         return self._do_main()

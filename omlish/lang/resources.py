@@ -1,13 +1,18 @@
+import dataclasses as dc
 import functools
 import importlib.resources
 import os.path
 import typing as ta
 
 
-class RelativeResource(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class RelativeResource:
     name: str
     is_file: bool
     read_bytes: ta.Callable[[], bytes]
+
+    def read_text(self, encoding: str = 'utf-8') -> str:
+        return self.read_bytes().decode(encoding)
 
 
 def get_relative_resources(
