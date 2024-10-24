@@ -70,14 +70,21 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file', nargs='?')
+
+    parser.add_argument('--stream', action='store_true')
+    parser.add_argument('--stream-buffer-size', type=int, default=0x1000)
+
     parser.add_argument('-f', '--format')
+
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
-    parser.add_argument('--stream', action='store_true')
     parser.add_argument('-s', '--sort-keys', action='store_true')
+
     parser.add_argument('-c', '--color', action='store_true')
+
     parser.add_argument('-l', '--less', action='store_true')
+
     args = parser.parse_args()
 
     #
@@ -127,26 +134,8 @@ def _main() -> None:
         fmt_name = 'json'
     fmt = FORMATS_BY_NAME[fmt_name]
 
-    #
-
     if args.stream:
-        check.arg(not args.less)
-
-        with contextlib.ExitStack() as es:
-            if args.file is None:
-                in_file = sys.stdin
-            else:
-                in_file = es.enter_context(open(args.file))
-
-            with JsonStreamLexer() as lex:
-                with JsonStreamValueBuilder() as vb:
-                    for buf in in_file.read(65536):
-                        for c in buf:
-                            for t in lex(c):
-                                for v in vb(t):
-                                    print(render_one(v))
-
-        return
+        check.arg(fmt is Formats.JSON.value)
 
     #
 
@@ -156,22 +145,37 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file))
 
-        data = fmt.load(in_file)
+        if args.less:
+            less = subprocess.Popen(
+                [
+                    'less',
+                    *(['-R'] if args.color else []),
+                ],
+                stdin=subprocess.PIPE,
+                encoding='utf-8',
+            )
+            out = check.not_none(less.stdin)
 
-    out = render_one(data)
+        else:
+            out = sys.stdout
+            less = None
 
-    if args.less:
-        subprocess.run(
-            [
-                'less',
-                *(['-R'] if args.color else []),
-            ],
-            input=out.encode(),
-            check=True,
-        )
+        if args.stream:
+            with JsonStreamLexer() as lex:
+                with JsonStreamValueBuilder() as vb:
+                    for buf in in_file.read(65536):
+                        for c in buf:
+                            for t in lex(c):
+                                for v in vb(t):
+                                    print(render_one(v), file=out)
 
-    else:
-        print(out)
+        else:
+            v = fmt.load(in_file)
+            print(render_one(v), file=out)
+
+        if less is not None:
+            out.close()
+            less.wait()
 
 
 if __name__ == '__main__':
