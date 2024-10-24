@@ -202,7 +202,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
         nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
         yield self._make_tok('NUMBER', nv, raw)
 
-        if c not in CONTROL_TOKENS and not c.isspace():
+        if c in CONTROL_TOKENS:
+            yield self._make_tok(CONTROL_TOKENS[c], c, c)
+        elif not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
 
         return self._do_main()
@@ -227,99 +229,132 @@ class JsonStreamLexer(GenMachine[str, Token]):
         return self._do_main()
 
 
-class JsonStreamValueBuilder:
+class JsonStreamObject(list):
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({super().__repr__()})'
+
+
+class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(self._do_value())
 
-        self._expect: TokenKind | None = None
-        self._stack: list[
-            tuple[ta.Literal['object'], list[tuple[str, ta.Any]]] |
-            tuple[ta.Literal['pair'], str | None] |
-            tuple[ta.Literal['array'], list[ta.Any]]
-        ] = []
+        self._stack = []
 
-    def __enter__(self) -> ta.Self:
-        return self
+    def _emit_value(self, v: ta.Any):
+        if not self._stack:
+            return ((v,), None)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    class Error(Exception):
-        pass
-
-    class IncompleteValueError(Error):
-        pass
-
-    class UnexpectedTokenError(Error):
-        pass
-
-    def close(self) -> None:
-        # if self._stack:
-        #     raise self.IncompleteValueError
-        pass
-
-    def __call__(self, tokens: ta.Sequence[Token]) -> ta.Generator[ta.Any, None, None]:
-        for tok in tokens:
-            if self._expect is not None:
-                if tok.kind != self._expect:
-                    raise self.UnexpectedTokenError(tok, self._expect)
-                self._expect = None
-                continue
-
+        tt, tv = self._stack[-1]
+        if tt == 'pair':
+            self._stack.pop()
             if not self._stack:
-                if tok.kind == 'LBRACE':
-                    self._stack.append(('object', []))
-                    continue
+                raise self.StateError
 
-                else:
-                    raise NotImplementedError
-
-            tt, tv = self._stack[-1]
-            if tt == 'object':
-                if tok.kind == 'STRING':
-                    self._stack.append(('pair', tok.value))
-                    self._expect = 'COLON'
-                    continue
-
-                elif tok.kind == 'COMMA':
-                    if not tv:
-                        raise self.UnexpectedTokenError
-                    self._stack.append(('pair', None))
-                    continue
-
-                else:
-                    raise NotImplementedError
-
-            elif tt == 'pair':
-                if tv is not None:
-                    if tok.kind in VALUE_TOKEN_KINDS:
-                        self._stack.pop()
-                        tt2, tv2 = self._stack[-1]
-                        if tt2 == 'object':
-                            tv2.append((tv, tok.value))
-                            continue
-
-                        else:
-                            raise self.UnexpectedTokenError
-
-                    else:
-                        raise NotImplementedError
-
-                else:
-                    if tok.kind == 'STRING':
-                        self._stack.pop()
-                        self._stack.append(('pair', tok.value))
-                        self._expect = 'COLON'
-                        continue
-
-                    else:
-                        raise self.UnexpectedTokenError
-
-            elif tt == 'array':
-                raise NotImplementedError
+            tt2, tv2 = self._stack[-1]
+            if tt2 == 'object':
+                tv2.append((tv, v))
+                return ((), self._do_after_pair())
 
             else:
-                raise TypeError(tt)
+                raise NotImplementedError
 
-        return
-        yield  # noqa
+        elif tt == 'array':
+            tv.append(v)
+            return ((), self._do_after_element())
+
+        else:
+            raise NotImplementedError
+
+    def _do_value(self):
+        tok = yield None
+
+        if tok.kind in VALUE_TOKEN_KINDS:
+            y, r = self._emit_value(tok.value)
+            yield y
+            return r
+
+        elif tok.kind == 'LBRACE':
+            return self._do_object()
+
+        elif tok.kind == 'LBRACKET':
+            return self._do_array()
+
+        else:
+            raise NotImplementedError
+
+    def _do_object(self):
+        self._stack.append(('object', JsonStreamObject()))
+        return self._do_object_body()
+
+    def _do_object_body(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError
+
+        if tok.kind == 'STRING':
+            k = tok.value
+
+            try:
+                tok = yield None
+            except GeneratorExit:
+                raise self.StateError
+            if tok.kind != 'COLON':
+                raise self.StateError
+
+            self._stack.append(('pair', k))
+            return self._do_value()
+
+        raise NotImplementedError
+
+    def _do_after_pair(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError
+
+        if tok.kind == 'COMMA':
+            return self._do_object_body()
+
+        elif tok.kind == 'RBRACE':
+            if not self._stack:
+                raise self.StateError
+
+            tt, tv = self._stack.pop()
+            if tt != 'object':
+                raise self.StateError
+
+            y, r = self._emit_value(('object', tv))
+            yield y
+            return r
+
+        else:
+            raise NotImplementedError
+
+    def _do_array(self):
+        self._stack.append(('array', []))
+        return self._do_value()
+
+    def _do_after_element(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError
+
+        if tok.kind == 'COMMA':
+            return self._do_value()
+
+        elif tok.kind == 'RBRACKET':
+            if not self._stack:
+                raise self.StateError
+
+            tt, tv = self._stack.pop()
+            if tt != 'array':
+                raise self.StateError
+
+            y, r = self._emit_value(('array', tv))
+            yield y
+            return r
+
+        else:
+            raise NotImplementedError
