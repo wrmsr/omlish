@@ -1,8 +1,11 @@
+# ruff: noqa: N802 N816
 import ctypes as ct
 import ctypes.util
 import dataclasses as dc
 import sys
 import typing as ta
+
+from omlish import check
 
 
 ##
@@ -15,8 +18,7 @@ if getattr(sys, 'platform') != 'darwin':
 ##
 # CoreFoundation
 
-
-cf = ct.cdll.LoadLibrary(ct.util.find_library('CoreFoundation'))
+cf = ct.cdll.LoadLibrary(check.not_none(ct.util.find_library('CoreFoundation')))
 
 #
 
@@ -66,8 +68,7 @@ cf.CFStringGetTypeID.restype = CFTypeID
 ##
 # ApplicationServices
 
-
-aps = ct.cdll.LoadLibrary(ct.util.find_library('ApplicationServices'))
+aps = ct.cdll.LoadLibrary(check.not_none(ct.util.find_library('ApplicationServices')))
 
 #
 
@@ -105,7 +106,7 @@ kCFStringEncodingUTF8 = 0x08000100
 kPasteboardClipboard = CFSTR('com.apple.pasteboard.clipboard')
 
 
-def cfstring_to_string(cf_string):
+def cfstring_to_string(cf_string: CFStringRef) -> str:
     if not cf_string:
         return ''
 
