@@ -4,7 +4,6 @@ import pytest
 
 from .. import check
 from ..genmachine import GenMachine
-from ..genmachine import IllegalStateError
 
 
 StrGenerator: ta.TypeAlias = ta.Generator[ta.Iterable[str] | None, str, ta.Optional['StrGenerator']]
@@ -58,5 +57,31 @@ def test_machine():
 
     assert check.iterempty(fm('$'))
     assert fm.state is None
-    with pytest.raises(IllegalStateError):  # type: ignore
+    with pytest.raises(GenMachine.ClosedError):  # type: ignore
         next(iter(fm('huh')))
+
+
+class AbMachine(GenMachine[str, str]):
+    def __init__(self) -> None:
+        super().__init__(self._a())
+
+    def _a(self):
+        while True:
+            s = yield None
+            if s != 'a':
+                raise GenMachine.StateError
+            return self._b()
+
+    def _b(self):
+        while True:
+            s = yield None
+            if s == 'a':
+                return self._a()
+            if s != 'b':
+                raise GenMachine.StateError
+
+
+def test_close():
+    m = AbMachine()
+    for s in 'abbba':
+        list(m(s))
