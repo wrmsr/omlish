@@ -52,8 +52,6 @@ STATIC_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
 # Function to yield tokens
 def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
     def get_next_char() -> str:
-        """Get the next character from the iterator, or raise an error if exhausted."""
-
         try:
             c = next(it)
         except StopIteration:
@@ -72,11 +70,9 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             break
         offset += 1
 
-        # Skip whitespace characters
         if char.isspace():
             continue
 
-        # Handle punctuation tokens
         if char in PUNCTUATION_TOKENS:
             yield Token(
                 PUNCTUATION_TOKENS[char],
@@ -86,14 +82,15 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             )
             continue
 
-        # Handle string tokens
         if char == '"':
             buffer = char
+            last = None
             while True:
                 char = get_next_char()
                 buffer += char
-                if char == '"' and not buffer.endswith(r'\"'):
+                if char == '"' and last != '\\':
                     break
+                last = char
 
             yield Token(
                 'STRING',
@@ -103,7 +100,6 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             )
             continue
 
-        # Handle number tokens
         if char.isdigit() or char == '-':
             buffer = char
             while True:
