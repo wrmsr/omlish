@@ -1,3 +1,4 @@
+import io
 import re
 import typing as ta
 
@@ -61,7 +62,14 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
         offset += 1
         return c
 
-    buffer: str
+    buffer = io.StringIO()
+
+    def flip_buffer() -> str:
+        raw = buffer.getvalue()
+        buffer.seek(0)
+        buffer.truncate()
+        return raw
+
     offset = 0
     while True:
         try:
@@ -83,53 +91,55 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             continue
 
         if char == '"':
-            buffer = char
+            buffer.write(char)
             last = None
             while True:
                 char = get_next_char()
-                buffer += char
+                buffer.write(char)
                 if char == '"' and last != '\\':
                     break
                 last = char
 
+            raw = flip_buffer()
             yield Token(
                 'STRING',
-                buffer[1:-1].replace(r'\"', '"'),
-                buffer,
+                raw[1:-1].replace(r'\"', '"'),
+                raw,
                 offset,
             )
             continue
 
         if char.isdigit() or char == '-':
-            buffer = char
+            buffer.write(char)
             while True:
                 try:
                     char = get_next_char()
                     if char.isdigit() or char in '.eE+-':
-                        buffer += char
+                        buffer.write(char)
                     else:
                         break
                 except ValueError:
                     break
 
-            if not NUMBER_PAT.fullmatch(buffer):
-                buffer += char + ''.join(get_next_char() for _ in range(7))
-                if buffer != '-Infinity':
-                    raise ValueError(f'Invalid number format: {buffer}')
+            raw = flip_buffer()
+            if not NUMBER_PAT.fullmatch(raw):
+                raw += char + ''.join(get_next_char() for _ in range(7))
+                if raw != '-Infinity':
+                    raise ValueError(f'Invalid number format: {raw}')
 
-                tk, tv = STATIC_TOKENS[buffer]
+                tk, tv = STATIC_TOKENS[raw]
                 yield Token(
                     tk,
                     tv,
-                    buffer,
+                    raw,
                     offset
                 )
                 continue
 
             yield Token(
                 'NUMBER',
-                float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer),
-                buffer,
+                float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw),
+                raw,
                 offset,
             )
 
@@ -139,20 +149,20 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             continue
 
         if char in 'tfnIN':
-            buffer = char
+            raw = char
             while True:
-                buffer += get_next_char()
-                if buffer in STATIC_TOKENS:
+                raw += get_next_char()
+                if raw in STATIC_TOKENS:
                     break
 
-                if len(buffer) > 8:  # None of the keywords are longer than 8 characters
-                    raise ValueError(f'Invalid literal: {buffer}')
+                if len(raw) > 8:  # None of the keywords are longer than 8 characters
+                    raise ValueError(f'Invalid literal: {raw}')
 
-            tk, tv = STATIC_TOKENS[buffer]
+            tk, tv = STATIC_TOKENS[raw]
             yield Token(
                 tk,
                 tv,
-                buffer,
+                raw,
                 offset,
             )
             continue
@@ -168,11 +178,11 @@ def _main() -> None:
         big_json_input = json.dumps(yaml.safe_load(f))
 
     for s in [
-        # '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
-        # '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
-        # '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
+        '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
+        '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
+        '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
         '{"name": "John", "active": "\\"hi", "foo": null}',
-        # big_json_input,
+        big_json_input,
     ]:
         for token in json_lexer(iter(s)):
             print(token)
