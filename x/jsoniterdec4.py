@@ -1,61 +1,42 @@
 import re
-import typing as ta
-
+from typing import Generator, Tuple, Union, Iterator
 
 # Define token types
-TokenKind: ta.TypeAlias = ta.Literal[
-    'STRING',
-    'NUMBER',
-    'BOOLEAN',
-    'NULL',
-    'LBRACE',
-    'RBRACE',
-    'LBRACKET',
-    'RBRACKET',
-    'COMMA',
-    'COLON',
-]
-
-Token: ta.TypeAlias = tuple[TokenKind, str | float | int | None]
+Token = Tuple[str, Union[str, float, int, None]]
+TokenType = str
 
 # Regex patterns for different JSON tokens
-NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
+STRING_REGEX = re.compile(r'"(?:\\.|[^"\\])*"')
+NUMBER_REGEX = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
 # Define token constants
-PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
+PUNCTUATION_TOKENS = {
     '{': 'LBRACE',
     '}': 'RBRACE',
     '[': 'LBRACKET',
     ']': 'RBRACKET',
     ',': 'COMMA',
-    ':': 'COLON',
+    ':': 'COLON'
 }
 
-SPECIAL_NUMBER_TOKENS: ta.AbstractSet[str] = {'NaN', 'Infinity', '-Infinity'}
-
+SPECIAL_NUMBER_TOKENS = {'NaN', 'Infinity', '-Infinity'}
 
 # Function to yield tokens
-def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
+def json_lexer(char_iter: Iterator[str]) -> Generator[Token, None, None]:
+    buffer = ""
+
     def get_next_char() -> str:
         """Get the next character from the iterator, or raise an error if exhausted."""
-
         try:
-            c = next(it)
+            return next(char_iter)
         except StopIteration:
-            raise ValueError('Unexpected end of JSON input.')  # noqa
+            raise ValueError("Unexpected end of JSON input.")
 
-        nonlocal pos
-        pos += 1
-        return c
-
-    buffer: str
-    pos = 0
     while True:
         try:
-            char = next(it)
+            char = next(char_iter)
         except StopIteration:
             break
-        pos += 1
 
         # Skip whitespace characters
         if char.isspace():
@@ -74,32 +55,47 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 buffer += char
                 if char == '"' and not buffer.endswith(r'\"'):
                     break
-
             yield ('STRING', buffer[1:-1].replace(r'\"', '"'))
             continue
 
-        # Handle number tokens
-        if char.isdigit() or char == '-':
+        # Handle number tokens (including NaN, Infinity, -Infinity)
+        if char.isdigit() or char in '-nI':
             buffer = char
             while True:
                 try:
                     char = get_next_char()
                     if char.isdigit() or char in '.eE+-':
                         buffer += char
-                    else:
+                    elif buffer in SPECIAL_NUMBER_TOKENS:
                         break
+                    else:
+                        if char.isalpha():
+                            buffer += char
+                        else:
+                            break
                 except ValueError:
                     break
 
-            if not NUMBER_PAT.fullmatch(buffer):
-                raise ValueError(f'Invalid number format: {buffer}')
+            # Match special numbers: NaN, Infinity, -Infinity
+            if buffer in SPECIAL_NUMBER_TOKENS:
+                yield ('NUMBER', float(buffer))
+                if char not in PUNCTUATION_TOKENS and not char.isspace():
+                    raise ValueError(f"Unexpected character after special number: {char}")
+                continue
 
-            yield ('NUMBER', float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer))
+            # Match regular numbers
+            if NUMBER_REGEX.fullmatch(buffer):
+                yield ('NUMBER', float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer))
+                if char not in PUNCTUATION_TOKENS and not char.isspace():
+                    raise ValueError(f"Unexpected character after number: {char}")
+                continue
 
-            if char not in PUNCTUATION_TOKENS and not char.isspace():
-                raise ValueError(f'Unexpected character after number: {char}')
+            # If "null" was incorrectly detected as a number, ignore that and proceed
+            if buffer == 'null':
+                yield ('NULL', None)
+                continue
 
-            continue
+            raise ValueError(f"Invalid number format: {buffer}")
 
         # Handle true, false, and null
         if char in 'tfn':
@@ -108,25 +104,19 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 buffer += get_next_char()
                 if buffer in ('true', 'false', 'null'):
                     break
-
                 if len(buffer) > 5:  # None of the keywords are longer than 5 characters
-                    raise ValueError(f'Invalid literal: {buffer}')
+                    raise ValueError(f"Invalid literal: {buffer}")
 
             if buffer == 'true':
                 yield ('BOOLEAN', True)
-
             elif buffer == 'false':
                 yield ('BOOLEAN', False)
-
             elif buffer == 'null':
                 yield ('NULL', None)
-
             continue
 
         # If we reach here, we found an unexpected character
-        raise ValueError(f'Unexpected character: {char}')
-
-
+        raise ValueError(f"Unexpected character: {char}")
 def _main() -> None:
     import json
     import yaml
@@ -135,11 +125,14 @@ def _main() -> None:
 
     for s in [
         '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
-        # '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true}',
+        '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true}',
         big_json_input,
     ]:
-        for token in json_lexer(iter(s)):
-            print(token)
+        try:
+            for token in json_lexer(iter(s)):
+                print(token)
+        except ValueError as e:
+            print(f'Error: {e}')
 
 
 if __name__ == '__main__':
