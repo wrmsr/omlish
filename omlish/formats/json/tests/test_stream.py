@@ -20,10 +20,12 @@ def test_stream():
     ]:
         with JsonStreamLexer() as lex:
             with JsonStreamValueBuilder() as vb:
+                h = []
                 for c in s:
                     for t in lex(c):
                         print(t)
-                        for v in vb([t]):
+                        h.append(t)
+                        for v in vb(t):
                             print(v)
 
         print()
