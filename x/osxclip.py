@@ -101,62 +101,66 @@ def get_clipboard_data():
     # Create the pasteboard reference
     pasteboard = PasteboardRef()
     status = aps.PasteboardCreate(kPasteboardClipboard, ct.byref(pasteboard))
-
     if status != 0:
         print("Failed to access the clipboard")
         return
 
-    # Get the number of items in the clipboard
-    item_count = ct.c_ulong(0)
-    status = aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count))
-    if status != 0 or item_count.value == 0:
-        print("No items on the clipboard")
-        return
+    try:
+        # Get the number of items in the clipboard
+        item_count = ct.c_ulong(0)
+        status = aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count))
+        if status != 0 or item_count.value == 0:
+            print("No items on the clipboard")
+            return
 
-    # Iterate over each item in the clipboard
-    for i in range(1, item_count.value + 1):
-        item_id = PasteboardItemID()
-        status = aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id))
-        if status != 0:
-            continue
+        # Iterate over each item in the clipboard
+        for i in range(1, item_count.value + 1):
+            item_id = PasteboardItemID()
+            status = aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id))
+            if status != 0:
+                continue
 
-        # Get available data types for the current item
-        data_types = CFArrayRef()
-        status = aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types))
-        if status != 0 or not data_types:
-            continue
+            # Get available data types for the current item
+            data_types = CFArrayRef()
+            status = aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types))
+            if status != 0 or not data_types:
+                continue
 
-        # Iterate through data types to find supported ones
-        type_count = cf.CFArrayGetCount(data_types)
-        for j in range(type_count):
-            data_type = cf.CFArrayGetValueAtIndex(data_types, j)
+            try:
+                # Iterate through data types to find supported ones
+                type_count = cf.CFArrayGetCount(data_types)
+                for j in range(type_count):
+                    data_type = cf.CFArrayGetValueAtIndex(data_types, j)
 
-            # Strictly check if the flavor is a CFStringRef
-            if cf.CFGetTypeID(data_type) == cf.CFStringGetTypeID():
-                data_type_str = cfstring_to_string(data_type)
-                print(f"Data type: {data_type_str}")
-            else:
-                print("Data type is not a CFStringRef, skipping.")
+                    # Strictly check if the flavor is a CFStringRef
+                    if cf.CFGetTypeID(data_type) == cf.CFStringGetTypeID():
+                        data_type_str = cfstring_to_string(data_type)
+                        print(f"Data type: {data_type_str}")
+                    else:
+                        print("Data type is not a CFStringRef, skipping.")
 
-            # Retrieve data of this type
-            data = CFDataRef()
-            status = aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data))
-            if status == 0 and data:
-                # Handle the binary data (e.g., images, files, etc.)
-                data_size = cf.CFDataGetLength(data)
-                data_ptr = cf.CFDataGetBytePtr(data)
+                    # Retrieve data of this type
+                    data = CFDataRef()
+                    try:
+                        status = aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data))
+                        if status == 0 and data:
+                            # Handle the binary data (e.g., images, files, etc.)
+                            data_size = cf.CFDataGetLength(data)
+                            data_ptr = cf.CFDataGetBytePtr(data)
 
-                # Save to a file for testing
-                with open("clipboard_output.bin", "wb") as f:
-                    f.write(ct.string_at(data_ptr, data_size))
-                    print(f"Data saved to clipboard_output.bin (size: {data_size} bytes)")
+                            # Save to a file for testing
+                            with open("clipboard_output.bin", "wb") as f:
+                                f.write(ct.string_at(data_ptr, data_size))
+                                print(f"Data saved to clipboard_output.bin (size: {data_size} bytes)")
 
-                cf.CFRelease(data)
+                    finally:
+                        cf.CFRelease(data)
 
-        cf.CFRelease(data_types)
+            finally:
+                cf.CFRelease(data_types)
 
-    cf.CFRelease(pasteboard)
-
+    finally:
+        cf.CFRelease(pasteboard)
 
 
 def cfstring_to_string(cf_string):
