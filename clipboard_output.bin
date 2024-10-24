@@ -1,4 +1,0 @@
-
-# Correctly set the argument and return types for CFStringGetCString
-core_foundation.CFStringGetCString.argtypes = [CFStringRef, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
-core_foundation.CFStringGetCString.restype = ctypes.c_bool
