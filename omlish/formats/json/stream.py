@@ -258,14 +258,14 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
 
             tt2, tv2 = self._stack[-1]
             if tt2 == 'object':
-                tv2.append((tv, v))
+                tv2.append((tv, v))  # type: ignore
                 return ((), self._do_after_pair())
 
             else:
                 raise NotImplementedError
 
         elif tt == 'array':
-            tv.append(v)
+            tv.append(v)  # type: ignore
             return ((), self._do_after_element())
 
         else:
