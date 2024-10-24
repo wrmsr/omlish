@@ -67,112 +67,6 @@ class JsonLexError(Exception):
     col: int
 
 
-def json_stream_lex(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
-    ofs = 0
-    line = 0
-    col = 0
-
-    def get_next_char() -> str:
-        nonlocal ofs
-
-        try:
-            c = next(it)
-        except StopIteration:
-            raise JsonLexError('Unexpected end of JSON input.', ofs, line, col) from None
-
-        ofs += 1
-        return c
-
-    buffer = io.StringIO()
-
-    def flip_buffer() -> str:
-        raw = buffer.getvalue()
-        buffer.seek(0)
-        buffer.truncate()
-        return raw
-
-    while True:
-        try:
-            char = next(it)
-        except StopIteration:
-            break
-        ofs += 1
-
-        if char == '\n':
-            line += 1
-            col = 0
-        else:
-            col += 1
-
-        if char.isspace():
-            continue
-
-        if char in PUNCTUATION_TOKENS:
-            yield Token(PUNCTUATION_TOKENS[char], char, char, ofs, line, col)
-            continue
-
-        if char == '"':
-            buffer.write(char)
-            last = None
-            while True:
-                char = get_next_char()
-                buffer.write(char)
-                if char == '"' and last != '\\':
-                    break
-                last = char
-
-            raw = flip_buffer()
-            sv = raw[1:-1].replace(r'\"', '"')
-            yield Token('STRING', sv, raw, ofs, line, col)
-            continue
-
-        if char.isdigit() or char == '-':
-            buffer.write(char)
-            while True:
-                try:
-                    char = get_next_char()
-                    if char.isdigit() or char in '.eE+-':
-                        buffer.write(char)
-                    else:
-                        break
-                except ValueError:
-                    break
-
-            raw = flip_buffer()
-            if not NUMBER_PAT.fullmatch(raw):
-                raw += char + ''.join(get_next_char() for _ in range(7))
-                if raw != '-Infinity':
-                    raise JsonLexError(f'Invalid number format: {raw}', ofs, line, col)
-
-                tk, tv = CONST_TOKENS[raw]
-                yield Token(tk, tv, raw, ofs, line, col)
-                continue
-
-            nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
-            yield Token('NUMBER', nv, raw, ofs, line, col)
-
-            if char not in PUNCTUATION_TOKENS and not char.isspace():
-                raise JsonLexError(f'Unexpected character after number: {char}', ofs, line, col)
-
-            continue
-
-        if char in 'tfnIN':
-            raw = char
-            while True:
-                raw += get_next_char()
-                if raw in CONST_TOKENS:
-                    break
-
-                if len(raw) > 8:  # None of the keywords are longer than 8 characters
-                    raise JsonLexError(f'Invalid literal: {raw}', ofs, line, col)
-
-            tk, tv = CONST_TOKENS[raw]
-            yield Token(tk, tv, raw, ofs, line, col)
-            continue
-
-        raise JsonLexError(f'Unexpected character: {char}', ofs, line, col)
-
-
 class JsonStreamLexer(GenMachine[str, Token]):
     def __init__(self) -> None:
         self._ofs = 0
@@ -202,8 +96,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
             kind: TokenKind,
             value: TokenValue,
             raw: str,
-    ) -> Token:
-        return Token(
+    ) -> ta.Sequence[Token]:
+        tok = Token(
             kind,
             value,
             raw,
@@ -211,6 +105,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self._line,
             self._col,
         )
+        return (tok,)
 
     def _flip_buf(self) -> str:
         raw = self._buf.getvalue()
@@ -229,7 +124,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 continue
 
             if c in PUNCTUATION_TOKENS:
-                yield (self._make_tok(PUNCTUATION_TOKENS[c], c, c),)
+                yield self._make_tok(PUNCTUATION_TOKENS[c], c, c)
                 continue
 
             if c == '"':
@@ -260,7 +155,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         raw = self._flip_buf()
         sv = raw[1:-1].replace(r'\"', '"')
-        yield (self._make_tok('STRING', sv, raw),)
+        yield self._make_tok('STRING', sv, raw)
 
         return self._do_main()
 
@@ -290,12 +185,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid number format: {raw}')
 
             tk, tv = CONST_TOKENS[raw]
-            yield (self._make_tok(tk, tv, raw),)
+            yield self._make_tok(tk, tv, raw)
 
             return self._do_main()
 
         nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
-        yield (self._make_tok('NUMBER', nv, raw),)
+        yield self._make_tok('NUMBER', nv, raw)
 
         if c not in PUNCTUATION_TOKENS and not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
@@ -317,6 +212,6 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid literal: {raw}')
 
         tk, tv = CONST_TOKENS[raw]
-        yield (self._make_tok(tk, tv, raw),)
+        yield self._make_tok(tk, tv, raw)
 
         return self._do_main()
