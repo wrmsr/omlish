@@ -150,6 +150,11 @@ def get_clipboard_data():
     CFRelease(pasteboard)
 
 
+# Correctly set the argument and return types for CFStringGetCString
+core_foundation.CFStringGetCString.argtypes = [CFStringRef, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
+core_foundation.CFStringGetCString.restype = ctypes.c_bool
+
+
 def cfstring_to_string(cf_string):
     """Convert a CFStringRef to a Python string."""
     if not cf_string:
