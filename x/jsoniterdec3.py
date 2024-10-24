@@ -72,7 +72,7 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
 
         # Handle punctuation tokens
         if char in PUNCTUATION_TOKENS:
-            yield (PUNCTUATION_TOKENS[char], char)
+            yield PUNCTUATION_TOKENS[char]
             continue
 
         # Handle string tokens
