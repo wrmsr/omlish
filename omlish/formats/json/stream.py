@@ -254,7 +254,7 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
 
     def _emit_value(self, v):
         if not self._stack:
-            return ((v,), None)
+            return ((v,), self._do_value())
 
         tt, tv = self._stack[-1]
         if tt == 'PAIR':
@@ -280,7 +280,13 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
     #
 
     def _do_value(self):
-        tok = yield None
+        try:
+            tok = yield None
+        except GeneratorExit:
+            if self._stack:
+                raise self.StateError from None
+            else:
+                raise
 
         if tok.kind in VALUE_TOKEN_KINDS:
             y, r = self._emit_value(tok.value)

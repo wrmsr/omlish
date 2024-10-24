@@ -7,9 +7,12 @@ import subprocess
 import sys
 import typing as ta
 
+from ... import check
 from ... import lang
 from ... import term
 from .render import JsonRenderer
+from .stream import JsonStreamLexer
+from .stream import JsonStreamValueBuilder
 
 
 if ta.TYPE_CHECKING:
@@ -71,10 +74,13 @@ def _main() -> None:
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
+    parser.add_argument('--stream', action='store_true')
     parser.add_argument('-s', '--sort-keys', action='store_true')
     parser.add_argument('-c', '--color', action='store_true')
     parser.add_argument('-l', '--less', action='store_true')
     args = parser.parse_args()
+
+    #
 
     separators = None
     if args.compact:
@@ -89,6 +95,28 @@ def _main() -> None:
         except ValueError:
             indent = args.indent
 
+    kw: dict[str, ta.Any] = dict(
+        indent=indent,
+        separators=separators,
+        sort_keys=args.sort_keys,
+    )
+
+    def render_one(v: ta.Any) -> str:
+        if args.color:
+            return JsonRenderer.render_str(
+                v,
+                **kw,
+                style=term_color,
+            )
+
+        else:
+            return json.dumps(
+                v,
+                **kw,
+            )
+
+    #
+
     fmt_name = args.format
     if fmt_name is None:
         if args.file is not None:
@@ -99,6 +127,29 @@ def _main() -> None:
         fmt_name = 'json'
     fmt = FORMATS_BY_NAME[fmt_name]
 
+    #
+
+    if args.stream:
+        check.arg(not args.less)
+
+        with contextlib.ExitStack() as es:
+            if args.file is None:
+                in_file = sys.stdin
+            else:
+                in_file = es.enter_context(open(args.file))
+
+            with JsonStreamLexer() as lex:
+                with JsonStreamValueBuilder() as vb:
+                    for buf in in_file.read(65536):
+                        for c in buf:
+                            for t in lex(c):
+                                for v in vb(t):
+                                    print(render_one(v))
+
+        return
+
+    #
+
     with contextlib.ExitStack() as es:
         if args.file is None:
             in_file = sys.stdin
@@ -107,24 +158,7 @@ def _main() -> None:
 
         data = fmt.load(in_file)
 
-    kw: dict[str, ta.Any] = dict(
-        indent=indent,
-        separators=separators,
-        sort_keys=args.sort_keys,
-    )
-
-    if args.color:
-        out = JsonRenderer.render_str(
-            data,
-            **kw,
-            style=term_color,
-        )
-
-    else:
-        out = json.dumps(
-            data,
-            **kw,
-        )
+    out = render_one(data)
 
     if args.less:
         subprocess.run(
