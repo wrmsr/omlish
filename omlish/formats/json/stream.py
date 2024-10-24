@@ -1,9 +1,9 @@
+import dataclasses as dc
 import io
 import re
 import typing as ta
 
 
-# Define token types
 TokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
@@ -22,6 +22,7 @@ TokenKind: ta.TypeAlias = ta.Literal[
 
 TokenValue: ta.TypeAlias = str | float | int | None
 
+
 class Token(ta.NamedTuple):
     kind: TokenKind
     value: TokenValue
@@ -31,7 +32,9 @@ class Token(ta.NamedTuple):
     line: int
     col: int
 
+
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
+
 
 PUNCTUATION_TOKENS: ta.Mapping[str, TokenKind] = {
     '{': 'LBRACE',
@@ -53,15 +56,28 @@ STATIC_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
 }
 
 
-# Function to yield tokens
-def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
+@dc.dataclass(frozen=True)
+class JsonLexError(Exception):
+    message: str
+
+    ofs: int
+    line: int
+    col: int
+
+
+def json_stream_lex(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
+    ofs = 0
+    line = 0
+    col = 0
+
     def get_next_char() -> str:
+        nonlocal ofs
+
         try:
             c = next(it)
         except StopIteration:
-            raise ValueError('Unexpected end of JSON input.')  # noqa
+            raise JsonLexError('Unexpected end of JSON input.', ofs, line, col) from None
 
-        nonlocal ofs
         ofs += 1
         return c
 
@@ -73,9 +89,6 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
         buffer.truncate()
         return raw
 
-    ofs = 0
-    line = 0
-    col = 0
     while True:
         try:
             char = next(it)
@@ -93,14 +106,7 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             continue
 
         if char in PUNCTUATION_TOKENS:
-            yield Token(
-                PUNCTUATION_TOKENS[char],
-                char,
-                char,
-                ofs,
-                line,
-                col,
-            )
+            yield Token(PUNCTUATION_TOKENS[char], char, char, ofs, line, col)
             continue
 
         if char == '"':
@@ -114,14 +120,8 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                 last = char
 
             raw = flip_buffer()
-            yield Token(
-                'STRING',
-                raw[1:-1].replace(r'\"', '"'),
-                raw,
-                ofs,
-                line,
-                col,
-            )
+            sv = raw[1:-1].replace(r'\"', '"')
+            yield Token('STRING', sv, raw, ofs, line, col)
             continue
 
         if char.isdigit() or char == '-':
@@ -140,30 +140,17 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
             if not NUMBER_PAT.fullmatch(raw):
                 raw += char + ''.join(get_next_char() for _ in range(7))
                 if raw != '-Infinity':
-                    raise ValueError(f'Invalid number format: {raw}')
+                    raise JsonLexError(f'Invalid number format: {raw}', ofs, line, col)
 
                 tk, tv = STATIC_TOKENS[raw]
-                yield Token(
-                    tk,
-                    tv,
-                    raw,
-                    ofs,
-                    line,
-                    col,
-                )
+                yield Token(tk, tv, raw, ofs, line, col)
                 continue
 
-            yield Token(
-                'NUMBER',
-                float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw),
-                raw,
-                ofs,
-                line,
-                col,
-            )
+            nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
+            yield Token('NUMBER', nv, raw, ofs, line, col)
 
             if char not in PUNCTUATION_TOKENS and not char.isspace():
-                raise ValueError(f'Unexpected character after number: {char}')
+                raise JsonLexError(f'Unexpected character after number: {char}', ofs, line, col)
 
             continue
 
@@ -175,39 +162,10 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                     break
 
                 if len(raw) > 8:  # None of the keywords are longer than 8 characters
-                    raise ValueError(f'Invalid literal: {raw}')
+                    raise JsonLexError(f'Invalid literal: {raw}', ofs, line, col)
 
             tk, tv = STATIC_TOKENS[raw]
-            yield Token(
-                tk,
-                tv,
-                raw,
-                ofs,
-                line,
-                col,
-            )
+            yield Token(tk, tv, raw, ofs, line, col)
             continue
 
-        # If we reach here, we found an unexpected character
-        raise ValueError(f'Unexpected character: {char}')
-
-
-def _main() -> None:
-    import json
-    import yaml
-    with open('x/llm/openai/api.yaml') as f:
-        big_json_input = json.dumps(yaml.safe_load(f))
-
-    for s in [
-        '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
-        '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
-        '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
-        '{"name": "John", "active": "\\"hi", "foo": null}',
-        big_json_input,
-    ]:
-        for token in json_lexer(iter(s)):
-            print(token)
-
-
-if __name__ == '__main__':
-    _main()
+        raise JsonLexError(f'Unexpected character: {char}', ofs, line, col)
