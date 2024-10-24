@@ -32,6 +32,7 @@ PUNCTUATION_TOKENS: ta.Mapping[str, Token] = {
     ':': ('COLON', ':'),
 }
 
+
 STATIC_TOKENS: ta.Mapping[str, Token] = {
     'NaN': ('SPECIAL_NUMBER', float('nan')),
     'Infinity': ('SPECIAL_NUMBER', float('inf')),
@@ -101,7 +102,12 @@ def json_lexer(it: ta.Iterator[str]) -> ta.Generator[Token, None, None]:
                     break
 
             if not NUMBER_PAT.fullmatch(buffer):
-                raise ValueError(f'Invalid number format: {buffer}')
+                buffer += char + ''.join(get_next_char() for _ in range(7))
+                if buffer != '-Infinity':
+                    raise ValueError(f'Invalid number format: {buffer}')
+
+                yield STATIC_TOKENS[buffer]
+                continue
 
             yield ('NUMBER', float(buffer) if '.' in buffer or 'e' in buffer or 'E' in buffer else int(buffer))
 
