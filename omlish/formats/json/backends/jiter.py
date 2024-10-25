@@ -1,5 +1,5 @@
 """
-def from_json(
+from_json(
     json_data: bytes,
     /,
     *,
