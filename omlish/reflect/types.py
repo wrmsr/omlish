@@ -107,6 +107,10 @@ def get_orig_class(obj: ta.Any) -> ta.Any:
     return obj.__orig_class__  # noqa
 
 
+def get_newtype_supertype(obj: ta.Any) -> ta.Any:
+    return obj.__supertype__
+
+
 ##
 
 
@@ -164,6 +168,7 @@ class Generic:
 @dc.dataclass(frozen=True)
 class NewType:
     obj: ta.Any
+    ty: Type
 
 
 @dc.dataclass(frozen=True)
@@ -243,7 +248,7 @@ class Reflector:
             return Union(frozenset(self.type(a) for a in ta.get_args(obj)))
 
         if isinstance(obj, ta.NewType):  # noqa
-            return NewType(obj)
+            return NewType(obj, get_newtype_supertype(obj))
 
         if (
                 is_simple_generic_alias_type(oty) or
