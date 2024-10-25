@@ -5,7 +5,7 @@ from .models import Model
 from .models import Request
 from .models import Response
 from .strings import transform_strings
-from .wrappers import WrapperModel
+from .wrappers import WrapperService
 
 
 ##
@@ -39,7 +39,7 @@ class DictTemplater(Templater):
 ##
 
 
-class TemplatingModel(WrapperModel):
+class TemplatingService(WrapperService):
     def __init__(self, underlying: Model, templater: Templater) -> None:
         super().__init__(underlying)
         self._templater = templater

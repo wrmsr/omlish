@@ -3,12 +3,12 @@ import typing as ta
 from omlish import lang
 
 from ..generative import GenerativeRequestOption
-from ..models import Option
-from ..models import RequestOption
+from ..models import ModelRequestOption
+from ..options import Option
 
 
 class ChatRequestOption(Option, lang.Abstract):
     pass
 
 
-ChatRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption | ChatRequestOption
+ChatRequestOptions: ta.TypeAlias = ModelRequestOption | GenerativeRequestOption | ChatRequestOption

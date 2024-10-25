@@ -61,14 +61,13 @@ class ModelRequest(
     ],
     lang.Abstract,
 ):
-    @dc.validate
-    def _validate_v(self) -> bool:
-        return isinstance(self.v, str)
+    pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ModelResponse(Response[ModelOutputT], lang.Abstract):
-    pass
+    usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 class Model(
@@ -81,5 +80,5 @@ class Model(
     lang.Abstract,
 ):
     @abc.abstractmethod
-    def invoke(self, request: ModelRequest) -> ModelResponse:
+    def invoke(self, request: ModelRequestT) -> ModelResponseT:
         raise NotImplementedError

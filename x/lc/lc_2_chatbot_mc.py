@@ -6,7 +6,7 @@ from ommlx.minichain.chat import SystemMessage
 from ommlx.minichain.chat import UserMessage
 from ommlx.minichain.strings import transform_strings
 from ommlx.minichain.templates import DictTemplater
-from ommlx.minichain.templates import TemplatingModel
+from ommlx.minichain.templates import TemplatingService
 
 from x.lc.utils import load_secrets
 

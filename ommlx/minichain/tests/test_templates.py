@@ -8,7 +8,7 @@ from ..generative import MaxTokens
 from ..generative import Temperature
 from ..prompts import PromptModel
 from ..templates import DictTemplater
-from ..templates import TemplatingModel
+from ..templates import TemplatingService
 
 
 def test_templates():
@@ -16,9 +16,9 @@ def test_templates():
 
 
 @ptu.skip.if_cant_import('openai')
-def test_templating_model(harness):
+def test_templating_service(harness):
     llm: PromptModel = OpenaiPromptModel(api_key=harness[HarnessSecrets].get_or_skip('openai_api_key').reveal())
-    llm = ta.cast(PromptModel, TemplatingModel(llm, DictTemplater(dict(what='water'))))
+    llm = ta.cast(PromptModel, TemplatingService(llm, DictTemplater(dict(what='water'))))
 
     resp = llm(
         'Is {what} dry?',
