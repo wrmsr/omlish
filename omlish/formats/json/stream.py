@@ -453,11 +453,47 @@ def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None
 
 class JsonStreamParser(GenMachine[Token, ta.Any]):
     def __init__(self) -> None:
-        super().__init__(self._do_main())
+        self._stack: list[ta.Literal['OBJECT', 'ARRAY']] = []
 
-    def _do_main(self):
-        tok = yield None
-        raise NotImplementedError
+        super().__init__(self._do_value())
+
+    def _do_value(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            if self._stack:
+                raise self.StateError from None
+            else:
+                raise
+
+        if tok.kind == 'LBRACE':
+            self._stack.append('OBJECT')
+            yield (BeginObject,)
+            return self._do_object_body()
+
+        else:
+            raise NotImplementedError
+
+    def _do_object_body(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError from None
+
+        if tok.kind == 'STRING':
+            yield (Key(tok.value),)
+
+            try:
+                tok = yield None
+            except GeneratorExit:
+                raise self.StateError from None
+            if tok.kind != 'COLON':
+                raise self.StateError
+
+            raise NotImplementedError
+
+        else:
+            raise NotImplementedError
 
 
 class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
