@@ -34,7 +34,7 @@ def test_stream():
 
 
 def test_parse():
-    for s in TEST_DOCS:
+    for i, s in enumerate(TEST_DOCS):  # noqa
         obj = json.loads(s)
 
         vs = []

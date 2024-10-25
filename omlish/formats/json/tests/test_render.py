@@ -20,7 +20,7 @@ def test_render(
         separators,
         sort_keys,
 ):
-    for s in TEST_DOCS:
+    for i, s in enumerate(TEST_DOCS):  # noqa
         obj = json.loads(s)
         kw = dict(
             indent=indent,

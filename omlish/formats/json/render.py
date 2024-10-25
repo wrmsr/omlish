@@ -156,13 +156,30 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
         self._builder: JsonObjectBuilder | None = None
 
-    def _render(self, e: JsonStreamParserEvent) -> None:
-        # if self._opts.style is not None:
-        #     pre, post = self._opts.style(o, state)
-        #     self._write(pre)
-        # else:
-        #     post = None
+    def _render_value(
+            self,
+            o: ta.Any,
+            state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
+    ) -> None:
+        if self._opts.style is not None:
+            pre, post = self._opts.style(o, state)
+            self._write(pre)
+        else:
+            post = None
 
+        if o is None or isinstance(o, bool):
+            self._write(self._literals[o])
+
+        elif isinstance(o, (str, int, float)):
+            self._write(json.dumps(o))
+
+        else:
+            raise TypeError(o)
+
+        if post:
+            self._write(post)
+
+    def _render(self, e: JsonStreamParserEvent) -> None:
         if e != EndArray and self._stack and (tt := self._stack[-1])[0] == 'ARRAY':
             if tt[1]:
                 self._write(self._comma)
@@ -170,11 +187,10 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
             self._stack[-1] = ('ARRAY', tt[1] + 1)
 
-        if e is None or isinstance(e, bool):
-            self._write(self._literals[e])
+        #
 
-        elif isinstance(e, (str, int, float)):
-            self._write(json.dumps(e))
+        if e is None or isinstance(e, (str, int, float, bool)):
+            self._render_value(e)
 
         #
 
