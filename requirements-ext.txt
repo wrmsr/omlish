@@ -36,9 +36,6 @@ pyarrow==17.0.0
 opencv-python==4.10.0.84
 pillow==11.0.0
 
-sentencepiece==0.2.0
-tiktoken==0.8.0
-transformers==4.46.0
 
 ##
 
