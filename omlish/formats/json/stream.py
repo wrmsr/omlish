@@ -318,7 +318,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     #
 
-    def _emit_value(self, v):
+    def _emit_event(self, v):
         if not self._stack:
             return ((v,), self._do_value())
 
@@ -353,29 +353,22 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
                 raise
 
         if tok.kind in VALUE_TOKEN_KINDS:
-            y, r = self._emit_value(tok.value)
+            y, r = self._emit_event(tok.value)
             yield y
             return r
 
         elif tok.kind == 'LBRACE':
-            y, r = self._do_object()
+            y, r = self._emit_begin_object()
             yield y
             return r
 
         elif tok.kind == 'LBRACKET':
-            y, r = self._do_array()
+            y, r = self._emit_begin_array()
             yield y
             return r
 
         elif tok.kind == 'RBRACKET':
-            if not self._stack:
-                raise self.StateError
-
-            tt = self._stack.pop()
-            if tt != 'ARRAY':
-                raise self.StateError
-
-            y, r = self._emit_value(EndArray)
+            y, r = self._emit_end_array()
             yield y
             return r
 
@@ -384,9 +377,19 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     #
 
-    def _do_object(self):
+    def _emit_begin_object(self):
         self._stack.append('OBJECT')
         return ((BeginObject,), self._do_object_body())
+
+    def _emit_end_object(self):
+        if not self._stack:
+            raise self.StateError
+
+        tt = self._stack.pop()
+        if tt != 'OBJECT':
+            raise self.StateError
+
+        return self._emit_event(EndObject)
 
     def _do_object_body(self):
         try:
@@ -409,14 +412,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return self._do_value()
 
         elif tok.kind == 'RBRACE':
-            if not self._stack:
-                raise self.StateError
-
-            tt = self._stack.pop()
-            if tt != 'OBJECT':
-                raise self.StateError
-
-            y, r = self._emit_value(EndObject)
+            y, r = self._emit_end_object()
             yield y
             return r
 
@@ -433,14 +429,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return self._do_object_body()
 
         elif tok.kind == 'RBRACE':
-            if not self._stack:
-                raise self.StateError
-
-            tt = self._stack.pop()
-            if tt != 'OBJECT':
-                raise self.StateError
-
-            y, r = self._emit_value(EndObject)
+            y, r = self._emit_end_object()
             yield y
             return r
 
@@ -449,9 +438,19 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     #
 
-    def _do_array(self):
+    def _emit_begin_array(self):
         self._stack.append('ARRAY')
         return ((BeginArray,), self._do_value())
+
+    def _emit_end_array(self):
+        if not self._stack:
+            raise self.StateError
+
+        tt = self._stack.pop()
+        if tt != 'ARRAY':
+            raise self.StateError
+
+        return self._emit_event(EndArray)
 
     def _do_after_element(self):
         try:
@@ -463,14 +462,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return self._do_value()
 
         elif tok.kind == 'RBRACKET':
-            if not self._stack:
-                raise self.StateError
-
-            tt = self._stack.pop()
-            if tt != 'ARRAY':
-                raise self.StateError
-
-            y, r = self._emit_value(EndArray)
+            y, r = self._emit_end_array()
             yield y
             return r
 
