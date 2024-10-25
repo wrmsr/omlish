@@ -69,7 +69,7 @@ class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
             rb
             for b in rfl.get_orig_bases(cls)
             if isinstance(rb := rfl.type_(b), rfl.Generic)
-            and rb.cls is Service
+            and (rb.cls is Service or rb.cls.__name__ == 'Model')  # FIXME: lol
         ]
         if not service_bases:
             return
