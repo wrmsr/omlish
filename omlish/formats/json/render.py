@@ -158,6 +158,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
                 self._write(self._comma)
             self._write_indent()
 
+            self._stack[-1] = ('ARRAY', tt[1] + 1)
+
         if e is None or isinstance(e, bool):
             self._write(self._literals[e])
 
