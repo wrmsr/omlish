@@ -77,7 +77,7 @@ def _main() -> None:
     parser.add_argument('file', nargs='?')
 
     parser.add_argument('--stream', action='store_true')
-    parser.add_argument('--stream-buffer-size', type=int, default=0x1000)
+    parser.add_argument('--stream-buffer-size', type=int, default=0x4000)
 
     parser.add_argument('-f', '--format')
 
