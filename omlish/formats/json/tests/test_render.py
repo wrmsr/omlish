@@ -6,6 +6,7 @@ from .... import lang
 from ..render import JsonRenderer
 from ..render import StreamJsonRenderer
 from ..stream import yield_parser_events
+from .helpers import TEST_DOCS
 
 
 DOC = lang.get_relative_resources('.', globals=globals())['stress.json'].read_text()
@@ -19,26 +20,7 @@ def test_render(
         separators,
         sort_keys,
 ):
-    for s in [
-        'null',
-
-        '1',
-        '1.2',
-
-        '"a"',
-
-        '[]',
-        '[1]',
-        '[1, 2]',
-
-        '{}',
-        '{"a": 1}',
-        '{"a": 1, "b": 2}',
-
-        '{"a": {"b": [{"c": 1}, [{"d": 2}]]}}',
-
-        DOC,
-    ]:
+    for s in TEST_DOCS:
         obj = json.loads(s)
         kw = dict(
             indent=indent,
