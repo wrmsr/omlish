@@ -7,8 +7,16 @@ import io
 import json
 import typing as ta
 
+from ... import lang
+from .stream import BeginArray
+from .stream import BeginObject
+from .stream import EndArray
+from .stream import EndObject
+from .stream import JsonStreamParserEvent
+from .stream import Key
 
-class JsonRenderer:
+
+class AbstractJsonRenderer(lang.Abstract):
     class State(enum.Enum):
         VALUE = enum.auto()
         KEY = enum.auto()
@@ -58,7 +66,13 @@ class JsonRenderer:
             if self._level:
                 self._write(self._indent * self._level)
 
-    def _render(self, o: ta.Any, state: State = State.VALUE) -> None:
+
+class JsonRenderer(AbstractJsonRenderer):
+    def _render(
+            self,
+            o: ta.Any,
+            state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
+    ) -> None:
         if self._style is not None:
             pre, post = self._style(o, state)
             self._write(pre)
@@ -116,3 +130,81 @@ class JsonRenderer:
         out = io.StringIO()
         cls(out, **kwargs).render(o)
         return out.getvalue()
+
+
+class StreamJsonRenderer(AbstractJsonRenderer):
+    def __init__(
+            self,
+            out: ta.TextIO,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(out, **kwargs)
+
+        self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
+
+    def render(self, e: JsonStreamParserEvent) -> None:
+        # if self._style is not None:
+        #     pre, post = self._style(o, state)
+        #     self._write(pre)
+        # else:
+        #     post = None
+
+        if e != EndArray and self._stack and (tt := self._stack[-1])[0] == 'ARRAY':
+            if tt[1]:
+                self._write(self._comma)
+            self._write_indent()
+
+        if e is None or isinstance(e, bool):
+            self._write(self._literals[e])
+
+        elif isinstance(e, (str, int, float)):
+            self._write(json.dumps(e))
+
+        #
+
+        elif e is BeginObject:
+            self._stack.append(('OBJECT', 0))
+            self._write('{')
+            self._level += 1
+
+        elif isinstance(e, Key):
+            if not self._stack or (tt := self._stack.pop())[0] != 'OBJECT':
+                raise Exception
+
+            if tt[1]:
+                self._write(self._comma)
+            self._write_indent()
+            self._write(json.dumps(e.key))
+            self._write(self._colon)
+
+            self._stack.append(('OBJECT', tt[1] + 1))
+
+        elif e is EndObject:
+            if not self._stack or (tt := self._stack.pop())[0] != 'OBJECT':
+                raise Exception
+
+            self._level -= 1
+            if tt[1]:
+                self._write_indent()
+            self._write('}')
+
+        #
+
+        elif e is BeginArray:
+            self._stack.append(('ARRAY', 0))
+            self._write('[')
+            self._level += 1
+
+        elif e is EndArray:
+            if not self._stack or (tt := self._stack.pop())[0] != 'ARRAY':
+                raise Exception
+
+            self._level -= 1
+            if tt[1]:
+                self._write_indent()
+            self._write(']')
+
+        #
+
+        else:
+            raise TypeError(e)
