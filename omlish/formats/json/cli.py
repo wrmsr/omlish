@@ -1,3 +1,8 @@
+"""
+TODO:
+ - xml - [{"att", {"el", {"cdata", ...
+ - csv - dict if headers, array if not
+"""
 import argparse
 import codecs
 import contextlib
@@ -77,6 +82,7 @@ def _main() -> None:
     parser.add_argument('file', nargs='?')
 
     parser.add_argument('--stream', action='store_true')
+    parser.add_argument('--stream-build', action='store_true')
     parser.add_argument('--stream-buffer-size', type=int, default=0x4000)
 
     parser.add_argument('-f', '--format')
@@ -182,15 +188,20 @@ def _main() -> None:
             with contextlib.ExitStack() as es2:
                 lex = es2.enter_context(JsonStreamLexer())
                 parse = es2.enter_context(JsonStreamParser())
-                # build = es2.enter_context(JsonObjectBuilder())
 
-                renderer = StreamJsonRenderer(
-                    out,
-                    StreamJsonRenderer.Options(
-                        **kw,
-                        style=term_color if args.color else None,
-                    ),
-                )
+                if args.stream_build:
+                    build = es2.enter_context(JsonObjectBuilder())
+                    renderer = None
+
+                else:
+                    renderer = StreamJsonRenderer(
+                        out,
+                        StreamJsonRenderer.Options(
+                            **kw,
+                            style=term_color if args.color else None,
+                        ),
+                    )
+                    build = None
 
                 while True:
                     buf = os.read(fd, args.stream_buffer_size)
@@ -200,11 +211,14 @@ def _main() -> None:
                         for c in s:
                             for t in lex(c):
                                 for e in parse(t):
-                                    renderer.render((e,))
+                                    if renderer is not None:
+                                        renderer.render((e,))
+
+                                    if build is not None:
+                                        for v in build(e):
+                                            print(render_one(v), file=out)
+
                                     n += 1
-                                    # for v in build(e):
-                                    #     print(render_one(v), file=out)
-                                    #     n += 1
 
                         if n:
                             out.flush()

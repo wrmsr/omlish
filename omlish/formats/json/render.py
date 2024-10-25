@@ -11,6 +11,10 @@ from ... import lang
 I = ta.TypeVar('I')
 
 
+class JsonRendererOut(ta.Protocol):
+    def write(self, s: str) -> ta.Any: ...
+
+
 class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
     class State(enum.Enum):
         VALUE = enum.auto()
@@ -25,7 +29,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
 
     def __init__(
             self,
-            out: ta.TextIO,
+            out: JsonRendererOut,
             opts: Options = Options(),
     ) -> None:
         super().__init__()

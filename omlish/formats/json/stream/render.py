@@ -2,6 +2,7 @@ import json
 import typing as ta
 
 from ..render import AbstractJsonRenderer
+from ..render import JsonRendererOut
 from .build import JsonObjectBuilder
 from .parse import BeginArray
 from .parse import BeginObject
@@ -17,7 +18,7 @@ from .parse import Key
 class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]]):
     def __init__(
             self,
-            out: ta.TextIO,
+            out: JsonRendererOut,
             opts: AbstractJsonRenderer.Options = AbstractJsonRenderer.Options(),
     ) -> None:
         if opts.sort_keys:
