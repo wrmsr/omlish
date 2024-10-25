@@ -451,6 +451,15 @@ def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None
         raise TypeError(obj)
 
 
+class JsonStreamParser(GenMachine[Token, ta.Any]):
+    def __init__(self) -> None:
+        super().__init__(self._do_main())
+
+    def _do_main(self):
+        tok = yield None
+        raise NotImplementedError
+
+
 class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
     def __init__(
             self,
@@ -460,9 +469,9 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
         self._stack: list[JsonStreamObject | list | Key] = []
         self._yield_object_lists = yield_object_lists
 
-        super().__init__(self._do_value())
+        super().__init__(self._do())
 
-    def _do_value(self):
+    def _do(self):
         stk = self._stack
 
         def emit_value(v):
