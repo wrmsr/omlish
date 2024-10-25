@@ -109,5 +109,12 @@ def _main() -> None:
                         ns = next_sleep()
 
 
+# @omlish-manifest
+_CLI_MODULE = {'$omdev.cli.types.CliModule': {
+    'cmd_name': 'slowcat',
+    'mod_name': __name__,
+}}
+
+
 if __name__ == '__main__':
     _main()
