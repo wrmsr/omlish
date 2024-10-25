@@ -3,7 +3,6 @@
 # flake8: noqa
 # from dataclasses import *
 # import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
-
 from ....dataclasses import *
 from .... import dataclasses
 
@@ -3760,6 +3759,24 @@ class TestSlots(unittest.TestCase):
         self.assertEqual(A.__slots__, ())
         self.assertEqual(A().__dict__, {})
         A()
+
+    def test_dataclass_slot_dict_ctype(self):
+        try:
+            import _testcapi
+        except ImportError:
+            self.skipTest('no _testcapi')
+
+        @dataclass(slots=True)
+        class HasDictOffset(_testcapi.HeapCTypeWithDict):
+            __dict__: dict = {}
+        self.assertNotEqual(_testcapi.HeapCTypeWithDict.__dictoffset__, 0)
+        self.assertEqual(HasDictOffset.__slots__, ())
+
+        @dataclass(slots=True)
+        class DoesNotHaveDictOffset(_testcapi.HeapCTypeWithWeakref):
+            __dict__: dict = {}
+        self.assertEqual(_testcapi.HeapCTypeWithWeakref.__dictoffset__, 0)
+        self.assertEqual(DoesNotHaveDictOffset.__slots__, ('__dict__',))
 
     def test_slots_with_wrong_init_subclass(self):
         # TODO: This test is for a kinda-buggy behavior.

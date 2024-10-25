@@ -146,7 +146,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.48
+boto3>=1.35.49
 
 google-cloud-compute==1.20.0
 google-api-python-client==2.149.0
@@ -202,7 +202,7 @@ customtkinter==5.2.2
 ##
 
 langchain==0.3.4
-langchain-core==0.3.12
+langchain-core==0.3.13
 
 langchain-anthropic==0.2.3
 langchain-community==0.3.3
@@ -254,7 +254,7 @@ usearch==2.15.3
 
 llama-index-core==0.11.20
 
-unstructured==0.16.2
+unstructured==0.16.3
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
