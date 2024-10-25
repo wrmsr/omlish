@@ -7,6 +7,10 @@ from .images import (  # noqa
     Image,
 )
 
+from .placeholders import (  # noqa
+    Placeholder,
+)
+
 
 ##
 
