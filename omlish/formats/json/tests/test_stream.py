@@ -93,8 +93,12 @@ def test_parse2():
             with JsonStreamParser() as parse:
                 with JsonObjectBuilder() as build:
                     for c in s:
+                        if not c.isspace():
+                            print(c)
                         for t in lex(c):
+                            print(t)
                             for e in parse(t):
+                                print(e)
                                 for v in build(e):
                                     print(v)
                                     vs.append(v)
