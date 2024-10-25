@@ -5,6 +5,10 @@ import os
 import random
 import sys
 import time
+import typing as ta
+
+
+T = ta.TypeVar('T')
 
 
 DEFAULT_SLEEP_N = 128
@@ -27,21 +31,18 @@ def _main() -> None:
 
     #
 
-    if sleep_s_arg := args.sleep_s:
-        if '-' in sleep_s_arg:
-            raise NotImplementedError
+    def parse_range(s: str, d: T) -> tuple[T, T]:
+        if not s:
+            return d, d
+        elif '-' in s:
+            l, r = map(type(d), s.split('-'))
+            return l, r
         else:
-            sleep_s_min = sleep_s_max = float(sleep_s_arg)
-    else:
-        sleep_s_min = sleep_s_max = DEFAULT_SLEEP_S
+            l = r = type(d)(s)  # type: ignore
+            return l, r
 
-    if sleep_n_arg := args.sleep_n:
-        if '-' in sleep_n_arg:
-            raise NotImplementedError
-        else:
-            sleep_n_min = sleep_n_max = int(sleep_n_arg)
-    else:
-        sleep_n_min = sleep_n_max = DEFAULT_SLEEP_N
+    sleep_s_min, sleep_s_max = parse_range(args.sleep_s, DEFAULT_SLEEP_S)
+    sleep_n_min, sleep_n_max = parse_range(args.sleep_n, DEFAULT_SLEEP_N)
 
     #
 
