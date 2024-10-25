@@ -481,7 +481,12 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
             else:
                 raise self.StateError
 
-        raise NotImplementedError
+        elif isinstance(tv, list):
+            tv.append(v)  # type: ignore
+            return ((), self._do_after_element())
+
+        else:
+            raise self.StateError
 
     def _do_value(self):
         try:
@@ -499,6 +504,9 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
 
         elif e is BeginObject:
             return self._do_object()
+
+        elif e is BeginArray:
+            return self._do_array()
 
         else:
             raise NotImplementedError
@@ -548,3 +556,32 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
         else:
             raise self.StateError
 
+    def _do_array(self):
+        self._stack.append([])
+        return self._do_value()
+
+    def _do_after_element(self):
+        try:
+            e = yield None
+        except GeneratorExit:
+            raise self.StateError from None
+
+        if isinstance(e, SCALAR_VALUE_TYPES):
+            y, r = self._emit_value(e)
+            yield y
+            return r
+
+        elif e is EndArray:
+            if not self._stack:
+                raise self.StateError
+
+            tv = self._stack.pop()
+            if not isinstance(tv, list):
+                raise self.StateError
+
+            y, r = self._emit_value(tv)
+            yield y
+            return r
+
+        else:
+            raise NotImplementedError
