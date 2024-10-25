@@ -5,6 +5,8 @@ from .... import check
 from .... import lang
 from ..stream import JsonStreamLexer
 from ..stream import JsonStreamValueBuilder
+from ..stream import JsonObjectBuilder
+from ..stream import yield_parser_events
 
 
 def assert_json_eq(l, r):
@@ -65,3 +67,10 @@ def test_stream():
         v = check.single(vs)
         x = json.loads(s)
         assert_json_eq(v, x)
+
+
+def test_parse():
+    obj = json.loads(lang.get_relative_resources('.', globals=globals())['stress.json'].read_text())
+
+    for e in yield_parser_events(obj):
+        print(e)
