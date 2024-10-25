@@ -2,25 +2,33 @@ import typing as ta
 
 from omlish import lang
 
-from .models import Model
-from .models import Option
-from .models import Request
-from .models import Response
+from .services import Option
+from .services import Request
+from .services import Response
+from .services import Service
 
 
 RequestT = ta.TypeVar('RequestT', bound='Request')
 ResponseT = ta.TypeVar('ResponseT', bound='Response')
-NewRequestT = ta.TypeVar('NewRequestT')
+NewT = ta.TypeVar('NewT')
 OptionT = ta.TypeVar('OptionT', bound='Option')
 
 
-class WrapperModel(Model[RequestT, OptionT, NewRequestT, ResponseT], lang.Abstract):
-    def __init__(self, underlying: Model) -> None:
+class WrapperService(
+    Service[
+        RequestT,
+        OptionT,
+        NewT,
+        ResponseT,
+    ],
+    lang.Abstract,
+):
+    def __init__(self, underlying: Service) -> None:
         super().__init__()
         self._underlying = underlying
 
     @property
-    def underlying(self) -> Model[RequestT, OptionT, NewRequestT, ResponseT]:
+    def underlying(self) -> Service[RequestT, OptionT, NewT, ResponseT]:
         return self._underlying
 
     @property
