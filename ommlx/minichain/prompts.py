@@ -10,6 +10,7 @@ from .models import Model
 from .models import ModelRequest
 from .models import ModelRequestOption
 from .models import ModelResponse
+from .services import RequestOption
 
 
 ##
@@ -19,7 +20,7 @@ PromptInput: ta.TypeAlias = str
 PromptNew: ta.TypeAlias = str
 PromptOutput: ta.TypeAlias = str
 
-PromptRequestOptions: ta.TypeAlias = ModelRequestOption | GenerativeRequestOption
+PromptRequestOptions: ta.TypeAlias = RequestOption | ModelRequestOption | GenerativeRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)

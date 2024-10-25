@@ -13,7 +13,7 @@ from .services import Service
 
 
 ModelInputT = ta.TypeVar('ModelInputT')
-ModelRequestOptionsT = ta.TypeVar('ModelRequestOptionsT', bound='ModelRequestOptions')
+ModelOptionT = ta.TypeVar('ModelOptionT', bound='Option')
 ModelNewT = ta.TypeVar('ModelNewT')
 ModelOutputT = ta.TypeVar('ModelOutputT')
 
@@ -56,7 +56,7 @@ ModelRequestOptions: ta.TypeAlias = RequestOption | ModelRequestOption
 class ModelRequest(
     Request[
         ModelInputT,
-        ModelRequestOptionsT,
+        ModelOptionT,
         ModelNewT,
     ],
     lang.Abstract,
@@ -73,7 +73,7 @@ class ModelResponse(Response[ModelOutputT], lang.Abstract):
 class Model(
     Service[
         ModelRequestT,
-        ModelRequestOptionsT,
+        ModelOptionT,
         ModelNewT,
         ModelResponseT,
     ],
