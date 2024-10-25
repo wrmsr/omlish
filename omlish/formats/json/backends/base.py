@@ -18,7 +18,7 @@ class Backend(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def loads(self, s: str, **kwargs: ta.Any) -> ta.Any:
+    def loads(self, s: str | bytes | bytearray, **kwargs: ta.Any) -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod

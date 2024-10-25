@@ -6,6 +6,7 @@ import dataclasses as dc
 import typing as ta
 
 from .... import lang
+from .base import Backend
 
 
 if ta.TYPE_CHECKING:
@@ -70,3 +71,9 @@ class Options:
 class DumpOpts:
     default: ta.Callable[[ta.Any], ta.Any] | None = None
     option: Options = Options()
+
+
+##
+
+
+ORJSON_BACKEND: Backend = None

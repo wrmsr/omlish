@@ -8,12 +8,17 @@ import dataclasses as dc
 import typing as ta
 
 from .... import lang
+from ..consts import PRETTY_INDENT
+from .base import Backend
 
 
 if ta.TYPE_CHECKING:
     import ujson as uj
 else:
     uj = lang.proxy_import('ujson')
+
+
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -31,3 +36,39 @@ class DumpOpts:
     reject_bytes: bool = True
     default: ta.Callable[[ta.Any], ta.Any] | None = None  # should return a serializable version of obj or raise TypeError  # noqa
     separators: tuple[str, str] | None = None
+
+
+##
+
+
+class UjsonBackend(Backend):
+    def dump(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        uj.dump(obj, fp, **kwargs)
+
+    def dumps(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return uj.dumps(obj, **kwargs)
+
+    def load(self, fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        return uj.load(fp, **kwargs)
+
+    def loads(self, s: str | bytes | bytearray, **kwargs: ta.Any) -> ta.Any:
+        return uj.loads(s, **kwargs)
+
+    def dump_pretty(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        uj.dump(obj, fp, indent=PRETTY_INDENT, **kwargs)
+
+    def dumps_pretty(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return uj.dumps(obj, indent=PRETTY_INDENT, **kwargs)
+
+    def dump_compact(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        uj.dump(obj, fp, **kwargs)
+
+    def dumps_compact(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return uj.dumps(obj, **kwargs)
+
+
+UJSON_BACKEND: UjsonBackend | None
+if lang.can_import('ujson'):
+    UJSON_BACKEND = UjsonBackend()
+else:
+    UJSON_BACKEND = None
