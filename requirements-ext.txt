@@ -44,7 +44,6 @@ transformers==4.46.0
 
 torch==2.5.0
 torchinfo==1.8.0
-torchtext==0.18.0; python_version < "3.12" and sys_platform == "darwin"
 torchvision==0.20.0
 
 portalocker==2.8.2
@@ -129,21 +128,12 @@ nltk==3.9.1
 
 ### problematic
 
-# keras==2.15.0; python_version < "3.12"
-# tensorflow>=2.15.1; python_version < "3.12"  # tensorflow 2.16.1 depends on keras>=3.0.0
-# tensorboard==2.15.2; python_version < "3.12"
+# keras; python_version > "3.12"
+tensorflow
+tensorboard
 
-# onnx==1.15.0; python_version < "3.12"
-# onnx2torch==1.5.13; python_version < "3.12"
-
-#
-
-keras; python_version > "3.12"
-tensorflow; python_version >= "3.12"
-tensorboard; python_version >= "3.12"
-
-onnx; python_version >= "3.12"
-onnx2torch; python_version >= "3.12"
+onnx
+onnx2torch
 
 ###
 
@@ -156,7 +146,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.47
+boto3>=1.35.48
 
 google-cloud-compute==1.19.2
 google-api-python-client==2.149.0
@@ -262,7 +252,7 @@ usearch==2.15.3
 
 ##
 
-llama-index-core==0.11.19
+llama-index-core==0.11.20
 
 unstructured==0.16.2
 

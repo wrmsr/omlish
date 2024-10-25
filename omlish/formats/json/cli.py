@@ -5,6 +5,7 @@ import dataclasses as dc
 import enum
 import io
 import json
+import os
 import subprocess
 import sys
 import typing as ta
@@ -174,7 +175,8 @@ def _main() -> None:
 
         if args.stream:
             def bytes_gen():
-                while bytes_chunk := in_file.read(args.stream_buffer_size):
+                fd = in_file.fileno()
+                while bytes_chunk := os.read(fd, args.stream_buffer_size):
                     yield bytes_chunk
 
             with contextlib.ExitStack() as es2:
@@ -182,11 +184,14 @@ def _main() -> None:
                 vb = es2.enter_context(JsonStreamValueBuilder())
                 it = es2.enter_context(contextlib.closing(codecs.iterdecode(bytes_gen(), 'utf-8')))
                 for s in it:
+                    n = 0
                     for c in s:
                         for t in lex(c):
                             for v in vb(t):
                                 print(render_one(v), file=out)
-                                out.flush()
+                                n += 1
+                    if n:
+                        out.flush()
 
         else:
             with io.TextIOWrapper(in_file) as tw:
