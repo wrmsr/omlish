@@ -45,21 +45,25 @@ def test_stream():
         '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
         '{"name": "John", "age": NaN, "score": Infinity, "active": true, "foo": null}',
         '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
-        '{"name": "John", "active": "\\"hi", "foo": null}',
+        '{"name": "John", "active": "\\"hi", "foo": null, "empty_array": [], "empty_object": {}, "aaa": 2}',
         lang.get_relative_resources('.', globals=globals())['stress.json'].read_text(),
         json.dumps(big_obj),
         json.dumps(big_obj, indent=2),
     ]:
+        ts = []
+        es = []
         vs = []
         with JsonStreamLexer() as lex:
             with JsonStreamParser() as parse:
                 with JsonObjectBuilder() as build:
                     for c in s:
                         for t in lex(c):
+                            ts.append(t)
                             for e in parse(t):
+                                es.append(e)
                                 for v in build(e):
-                                    print(v)
                                     vs.append(v)
+                                    print(v)
 
         print()
 
