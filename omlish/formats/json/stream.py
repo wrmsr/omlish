@@ -457,131 +457,93 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
             *,
             yield_object_lists: bool = False,
     ) -> None:
-        super().__init__(self._do_value())
-
+        self._stack: list[JsonStreamObject | list | Key] = []
         self._yield_object_lists = yield_object_lists
 
-        self._stack: list[JsonStreamObject | list | Key] = []
-
-    def _emit_value(self, v):
-        if not self._stack:
-            return ((v,), self._do_value())
-
-        tv = self._stack[-1]
-        if isinstance(tv, Key):
-            self._stack.pop()
-            if not self._stack:
-                raise self.StateError
-
-            tv2 = self._stack[-1]
-            if isinstance(tv2, JsonStreamObject):
-                tv2.append((tv, v))  # type: ignore
-                return ((), self._do_after_pair())
-
-            else:
-                raise self.StateError
-
-        elif isinstance(tv, list):
-            tv.append(v)  # type: ignore
-            return ((), self._do_after_element())
-
-        else:
-            raise self.StateError
+        super().__init__(self._do_value())
 
     def _do_value(self):
-        try:
-            e = yield None
-        except GeneratorExit:
-            if self._stack:
-                raise self.StateError from None
+        stk = self._stack
+
+        def emit_value(v):
+            if not stk:
+                return (v,)
+
+            tv = stk[-1]
+            if isinstance(tv, Key):
+                stk.pop()
+                if not stk:
+                    raise self.StateError
+
+                tv2 = stk[-1]
+                if not isinstance(tv2, JsonStreamObject):
+                    raise self.StateError
+
+                tv2.append((tv.key, v))  # type: ignore
+                return ()
+
+            elif isinstance(tv, list):
+                tv.append(v)
+                return ()
+
             else:
-                raise
-
-        if isinstance(e, SCALAR_VALUE_TYPES):
-            y, r = self._emit_value(e)
-            yield y
-            return r
-
-        elif e is BeginObject:
-            return self._do_object()
-
-        elif e is BeginArray:
-            return self._do_array()
-
-        else:
-            raise NotImplementedError
-
-    def _do_object(self):
-        self._stack.append(JsonStreamObject())
-        return self._do_object_body()
-
-    def _do_object_body(self):
-        try:
-            e = yield None
-        except GeneratorExit:
-            raise self.StateError from None
-
-        if isinstance(e, Key):
-            self._stack.append(e)
-            return self._do_value()
-
-        else:
-            raise self.StateError
-
-    def _do_after_pair(self):
-        try:
-            e = yield None
-        except GeneratorExit:
-            raise self.StateError from None
-
-        if isinstance(e, Key):
-            self._stack.append(e)
-            return self._do_value()
-
-        elif e is EndObject:
-            if not self._stack:
                 raise self.StateError
 
-            tv = self._stack.pop()
-            if not isinstance(tv, JsonStreamObject):
-                raise self.StateError
+        while True:
+            try:
+                e = yield None
+            except GeneratorExit:
+                if stk:
+                    raise self.StateError from None
+                else:
+                    raise
 
-            if not self._yield_object_lists:
-                tv = dict(tv)
+            #
 
-            y, r = self._emit_value(tv)
-            yield y
-            return r
+            if isinstance(e, SCALAR_VALUE_TYPES):
+                if t := emit_value(e):
+                    yield t
+                continue
 
-        else:
-            raise self.StateError
+            #
 
-    def _do_array(self):
-        self._stack.append([])
-        return self._do_value()
+            elif e is BeginObject:
+                stk.append(JsonStreamObject())
+                continue
 
-    def _do_after_element(self):
-        try:
-            e = yield None
-        except GeneratorExit:
-            raise self.StateError from None
+            elif isinstance(e, Key):
+                if not stk or not isinstance(stk[-1], JsonStreamObject):
+                    raise self.StateError
 
-        if isinstance(e, SCALAR_VALUE_TYPES):
-            y, r = self._emit_value(e)
-            yield y
-            return r
+                stk.append(e)
+                continue
 
-        elif e is EndArray:
-            if not self._stack:
-                raise self.StateError
+            elif e is EndObject:
+                if not stk or not isinstance(tv := stk.pop(), JsonStreamObject):
+                    raise self.StateError
 
-            tv = self._stack.pop()
-            if not isinstance(tv, list):
-                raise self.StateError
+                if not self._yield_object_lists:
+                    tv = dict(tv)
 
-            y, r = self._emit_value(tv)
-            yield y
-            return r
+                if t := emit_value(tv):
+                    yield t
+                continue
 
-        else:
-            raise NotImplementedError
+            #
+
+            elif e is BeginArray:
+                stk.append([])
+                continue
+
+            elif e is EndArray:
+                if not stk or not isinstance(tv := stk.pop(), list):
+                    raise self.StateError
+
+                if t := emit_value(tv):
+                    yield t
+                continue
+
+            #
+
+            else:
+                raise NotImplementedError
