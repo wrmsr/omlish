@@ -14,8 +14,9 @@ from ... import check
 from ... import lang
 from ... import term
 from .render import JsonRenderer
+from .stream import JsonObjectBuilder
 from .stream import JsonStreamLexer
-from .stream import JsonStreamValueBuilder
+from .stream import JsonStreamParser
 
 
 if ta.TYPE_CHECKING:
@@ -179,7 +180,8 @@ def _main() -> None:
 
             with contextlib.ExitStack() as es2:
                 lex = es2.enter_context(JsonStreamLexer())
-                vb = es2.enter_context(JsonStreamValueBuilder())
+                parse = es2.enter_context(JsonStreamParser())
+                build = es2.enter_context(JsonObjectBuilder())
 
                 while True:
                     buf = os.read(fd, args.stream_buffer_size)
@@ -188,9 +190,10 @@ def _main() -> None:
                         n = 0
                         for c in s:
                             for t in lex(c):
-                                for v in vb(t):
-                                    print(render_one(v), file=out)
-                                    n += 1
+                                for e in parse(t):
+                                    for v in build(e):
+                                        print(render_one(v), file=out)
+                                        n += 1
 
                         if n:
                             out.flush()
