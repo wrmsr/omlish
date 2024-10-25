@@ -1,4 +1,5 @@
 import abc
+import dataclasses as dc
 import enum
 import io
 import json
@@ -9,6 +10,7 @@ from .stream import BeginArray
 from .stream import BeginObject
 from .stream import EndArray
 from .stream import EndObject
+from .stream import JsonObjectBuilder
 from .stream import JsonStreamParserEvent
 from .stream import Key
 
@@ -21,32 +23,36 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         VALUE = enum.auto()
         KEY = enum.auto()
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Options:
+        indent: int | str | None = None
+        separators: tuple[str, str] | None = None
+        sort_keys: bool = False
+        style: ta.Callable[[ta.Any, 'AbstractJsonRenderer.State'], tuple[str, str]] | None = None
+
     def __init__(
             self,
             out: ta.TextIO,
-            *,
-            indent: int | str | None = None,
-            separators: tuple[str, str] | None = None,
-            sort_keys: bool = False,
-            style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
+            opts: Options = Options(),
     ) -> None:
         super().__init__()
 
         self._out = out
-        if isinstance(indent, (str, int)):
-            self._indent = (' ' * indent) if isinstance(indent, int) else indent
+        self._opts = opts
+
+        separators = opts.separators
+        if isinstance(opts.indent, (str, int)):
+            self._indent = (' ' * opts.indent) if isinstance(opts.indent, int) else opts.indent
             self._endl = '\n'
             if separators is None:
                 separators = (',', ': ')
-        elif indent is None:
+        elif opts.indent is None:
             self._indent = self._endl = ''
             if separators is None:
                 separators = (', ', ': ')
         else:
-            raise TypeError(indent)
+            raise TypeError(opts.indent)
         self._comma, self._colon = separators
-        self._sort_keys = sort_keys
-        self._style = style
 
         self._level = 0
 
@@ -73,7 +79,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
     @classmethod
     def render_str(cls, i: I, **kwargs: ta.Any) -> str:
         out = io.StringIO()
-        cls(out, **kwargs).render(i)
+        cls(out, cls.Options(**kwargs)).render(i)
         return out.getvalue()
 
 
@@ -83,8 +89,8 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
     ) -> None:
-        if self._style is not None:
-            pre, post = self._style(o, state)
+        if self._opts.style is not None:
+            pre, post = self._opts.style(o, state)
             self._write(pre)
         else:
             post = None
@@ -99,7 +105,7 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             self._write('{')
             self._level += 1
             items = list(o.items())
-            if self._sort_keys:
+            if self._opts.sort_keys:
                 items.sort(key=lambda t: t[0])
             for i, (k, v) in enumerate(items):
                 if i:
@@ -140,15 +146,19 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
     def __init__(
             self,
             out: ta.TextIO,
-            **kwargs: ta.Any,
+            opts: AbstractJsonRenderer.Options = AbstractJsonRenderer.Options(),
     ) -> None:
-        super().__init__(out, **kwargs)
+        if opts.sort_keys:
+            raise TypeError('Not yet implemented')
+
+        super().__init__(out, opts)
 
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
+        self._builder: JsonObjectBuilder | None = None
 
     def _render(self, e: JsonStreamParserEvent) -> None:
-        # if self._style is not None:
-        #     pre, post = self._style(o, state)
+        # if self._opts.style is not None:
+        #     pre, post = self._opts.style(o, state)
         #     self._write(pre)
         # else:
         #     post = None
