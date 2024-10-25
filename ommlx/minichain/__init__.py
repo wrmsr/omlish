@@ -42,10 +42,6 @@ from .models import (  # noqa
 
     RequestOption,
 
-    RequestContextItem,
-    RequestContext,
-    EMPTY_REQUEST_CONTEXT,
-
     Model,
     Request,
     Response,
