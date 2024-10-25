@@ -36,6 +36,16 @@ from .content import (  # noqa
 )
 
 from .models import (  # noqa
+    FinishReason,
+
+    TokenUsage,
+
+    RequestOption,
+
+    RequestContextItem,
+    RequestContext,
+    EMPTY_REQUEST_CONTEXT,
+
     Model,
     Request,
     Response,

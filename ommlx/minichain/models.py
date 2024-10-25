@@ -3,6 +3,7 @@ import enum
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import reflect as rfl
@@ -44,11 +45,27 @@ class RequestOption(Option, lang.Abstract):
     pass
 
 
+##
+
+
+class RequestContextItem(lang.Abstract):
+    pass
+
+
+RequestContext: ta.TypeAlias = col.TypeMap[RequestContextItem]
+
+EMPTY_REQUEST_CONTEXT: RequestContext = col.TypeMap()
+
+
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
     v: T
 
     options: Options[OptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
+    context: RequestContext = dc.field(default=EMPTY_REQUEST_CONTEXT)
 
     @classmethod
     def new(
