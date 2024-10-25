@@ -14,9 +14,9 @@ from ... import check
 from ... import lang
 from ... import term
 from .render import JsonRenderer
-from .stream import JsonObjectBuilder
-from .stream import JsonStreamLexer
-from .stream import JsonStreamParser
+from .stream.build import JsonObjectBuilder
+from .stream.lex import JsonStreamLexer
+from .stream.parse import JsonStreamParser
 
 
 if ta.TYPE_CHECKING:
