@@ -1,6 +1,6 @@
 """
 TODO:
- - csv - dict if headers, array if not
+ - options lol - csv header, newline, etc
 """
 import dataclasses as dc
 import enum
@@ -12,6 +12,7 @@ from .... import lang
 
 if ta.TYPE_CHECKING:
     import ast
+    import csv
     import tomllib
 
     import yaml
@@ -22,6 +23,7 @@ if ta.TYPE_CHECKING:
 
 else:
     ast = lang.proxy_import('ast')
+    csv = lang.proxy_import('csv')
     tomllib = lang.proxy_import('tomllib')
 
     yaml = lang.proxy_import('yaml')
@@ -48,6 +50,10 @@ class Formats(enum.Enum):
     PROPS = Format(['properties', 'props'], lambda f: dict(props.Properties().load(f.read())))
     PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
     XML = Format(['xml'], lambda f: xml.build_simple_element(xml.parse_tree(f.read()).getroot()).as_dict())
+    CSV = Format(['csv'], lambda f: list(csv.DictReader(f)))
+    TSV = Format(['tsv'], lambda f: list(csv.DictReader(f, delimiter='\t')))
+    FLAT_CSV = Format(['fcsv'], lambda f: list(csv.reader(f)))
+    FLAT_TSV = Format(['ftsv'], lambda f: list(csv.reader(f, delimiter='\t')))
 
 
 FORMATS_BY_NAME: ta.Mapping[str, Format] = {

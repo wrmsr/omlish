@@ -60,4 +60,4 @@ def build_simple_element(element: 'ET.Element') -> SimpleElement:
 
 
 def parse_tree(s: str) -> 'ET.ElementTree':
-    return ET.ElementTree(ET.fromstring(s))  # noqa
+    return ET.ElementTree(ET.fromstring(s.strip()))  # noqa
