@@ -88,11 +88,21 @@ class AbMachine(GenMachine[str, int]):
 
 
 def test_close():
+    ios = [
+        ('a', []),
+        ('b', []),
+        ('b', []),
+        ('a', [2]),
+        ('a', []),
+    ]
+
     m = AbMachine()
-    assert list(m('a')) == []
-    assert list(m('b')) == []
-    assert list(m('b')) == []
-    assert list(m('a')) == [2]
-    assert list(m('a')) == []
+    for i, o in ios:
+        assert list(m(i)) == o
     with pytest.raises(GenMachine.StateError):
         m.close()
+
+    with pytest.raises(GenMachine.StateError):
+        with AbMachine() as m:
+            for i, o in ios:
+                assert list(m(i)) == o
