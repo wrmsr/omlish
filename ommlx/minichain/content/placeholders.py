@@ -4,8 +4,8 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .content import ExtendedContent
 from ..models import RequestContextItem
+from .content import ExtendedContent
 
 
 ##
