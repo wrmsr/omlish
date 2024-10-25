@@ -36,10 +36,10 @@ def assert_json_eq(l, r):
 
 
 def test_stream():
-    # import json
-    # import yaml
-    # with open('x/llm/openai/api.yaml') as f:
-    #     big_obj = yaml.safe_load(f)
+    import json
+    import yaml
+    with open('x/llm/openai/api.yaml') as f:
+        big_obj = yaml.safe_load(f)
 
     for s in [
         '{"name": "John", "age": 30, "active": true, "scores": [85, 90, 88], "address": null}',
@@ -47,8 +47,8 @@ def test_stream():
         '{"name": "John", "age": NaN, "score": Infinity, "loss": -Infinity, "active": true, "foo": null}',
         '{"name": "John", "active": "\\"hi", "foo": null}',
         lang.get_relative_resources('.', globals=globals())['stress.json'].read_text(),
-        # json.dumps(big_obj),
-        # json.dumps(big_obj, indent=2),
+        json.dumps(big_obj),
+        json.dumps(big_obj, indent=2),
     ]:
         vs = []
         with JsonStreamLexer() as lex:
