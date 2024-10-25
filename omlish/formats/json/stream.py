@@ -1,3 +1,8 @@
+"""
+TODO:
+ - max buf size
+ - max recursion depth
+"""
 import dataclasses as dc
 import io
 import json
@@ -35,7 +40,7 @@ ScalarValue: ta.TypeAlias = str | float | int | None
 class Token(ta.NamedTuple):
     kind: TokenKind
     value: ScalarValue
-    raw: str
+    raw: str | None
 
     ofs: int
     line: int
@@ -84,7 +89,13 @@ class JsonLexError(Exception):
 
 
 class JsonStreamLexer(GenMachine[str, Token]):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            include_raw: bool = False,
+    ) -> None:
+        self._include_raw = include_raw
+
         self._ofs = 0
         self._line = 0
         self._col = 0
@@ -116,7 +127,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         tok = Token(
             kind,
             value,
-            raw,
+            raw if self._include_raw else None,
             self._ofs,
             self._line,
             self._col,
@@ -205,7 +216,10 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             return self._do_main()
 
-        nv = float(raw) if '.' in raw or 'e' in raw or 'E' in raw else int(raw)
+        if '.' in raw or 'e' in raw or 'E' in raw:
+            nv = float(raw)
+        else:
+            nv = int(raw)
         yield self._make_tok('NUMBER', nv, raw)
 
         if c in CONTROL_TOKENS:
@@ -451,11 +465,38 @@ def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None
         raise TypeError(obj)
 
 
-class JsonStreamParser(GenMachine[Token, ta.Any]):
+class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
     def __init__(self) -> None:
-        self._stack: list[ta.Literal['OBJECT', 'ARRAY']] = []
-
         super().__init__(self._do_value())
+
+        self._stack: list[ta.Literal['OBJECT', 'KEY', 'ARRAY']] = []
+
+    #
+
+    def _emit_value(self, v):
+        if not self._stack:
+            return ((v,), self._do_value())
+
+        tt = self._stack[-1]
+        if tt == 'KEY':
+            self._stack.pop()
+            if not self._stack:
+                raise self.StateError
+
+            tt2 = self._stack[-1]
+            if tt2 == 'OBJECT':
+                return ((v,), self._do_after_pair())
+
+            else:
+                raise self.StateError
+
+        elif tt == 'ARRAY':
+            return ((v,), self._do_after_element())
+
+        else:
+            raise self.StateError
+
+    #
 
     def _do_value(self):
         try:
@@ -466,13 +507,29 @@ class JsonStreamParser(GenMachine[Token, ta.Any]):
             else:
                 raise
 
-        if tok.kind == 'LBRACE':
-            self._stack.append('OBJECT')
-            yield (BeginObject,)
-            return self._do_object_body()
+        if tok.kind in VALUE_TOKEN_KINDS:
+            y, r = self._emit_value(tok.value)
+            yield y
+            return r
+
+        elif tok.kind == 'LBRACE':
+            y, r = self._do_object()
+            yield y
+            return r
+
+        elif tok.kind == 'LBRACKET':
+            y, r = self._do_array()
+            yield y
+            return r
 
         else:
-            raise NotImplementedError
+            raise self.StateError
+
+    #
+
+    def _do_object(self):
+        self._stack.append('OBJECT')
+        return ((BeginObject,), self._do_object_body())
 
     def _do_object_body(self):
         try:
@@ -481,7 +538,7 @@ class JsonStreamParser(GenMachine[Token, ta.Any]):
             raise self.StateError from None
 
         if tok.kind == 'STRING':
-            yield (Key(tok.value),)
+            k = tok.value
 
             try:
                 tok = yield None
@@ -490,10 +547,66 @@ class JsonStreamParser(GenMachine[Token, ta.Any]):
             if tok.kind != 'COLON':
                 raise self.StateError
 
-            raise NotImplementedError
+            yield (Key(k),)
+            self._stack.append('KEY')
+            return self._do_value()
 
         else:
-            raise NotImplementedError
+            raise self.StateError
+
+    def _do_after_pair(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError from None
+
+        if tok.kind == 'COMMA':
+            return self._do_object_body()
+
+        elif tok.kind == 'RBRACE':
+            if not self._stack:
+                raise self.StateError
+
+            tt = self._stack.pop()
+            if tt != 'OBJECT':
+                raise self.StateError
+
+            y, r = self._emit_value(EndObject)
+            yield y
+            return r
+
+        else:
+            raise self.StateError
+
+    #
+
+    def _do_array(self):
+        self._stack.append('ARRAY')
+        return ((BeginArray,), self._do_value())
+
+    def _do_after_element(self):
+        try:
+            tok = yield None
+        except GeneratorExit:
+            raise self.StateError from None
+
+        if tok.kind == 'COMMA':
+            return self._do_value()
+
+        elif tok.kind == 'RBRACKET':
+            if not self._stack:
+                raise self.StateError
+
+            tt = self._stack.pop()
+            if tt != 'ARRAY':
+                raise self.StateError
+
+            y, r = self._emit_value(EndArray)
+            yield y
+            return r
+
+        else:
+            raise self.StateError
 
 
 class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
