@@ -14,6 +14,9 @@ from ... import lang
 from ...genmachine import GenMachine
 
 
+##
+
+
 ValueTokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
@@ -22,6 +25,8 @@ ValueTokenKind: ta.TypeAlias = ta.Literal[
     'BOOLEAN',
     'NULL',
 ]
+
+VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
 
 ControlTokenKind: ta.TypeAlias = ta.Literal[
     'LBRACE',
@@ -34,7 +39,17 @@ ControlTokenKind: ta.TypeAlias = ta.Literal[
 
 TokenKind: ta.TypeAlias = ValueTokenKind | ControlTokenKind
 
+#
+
 ScalarValue: ta.TypeAlias = str | float | int | None
+
+SCALAR_VALUE_TYPES: tuple[type, ...] = tuple(
+    check.isinstance(e, type) if e is not None else type(None)
+    for e in ta.get_args(ScalarValue)
+)
+
+
+##
 
 
 class Token(ta.NamedTuple):
@@ -51,13 +66,6 @@ class Token(ta.NamedTuple):
 
 
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
-
-VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
-
-SCALAR_VALUE_TYPES: tuple[type, ...] = tuple(
-    check.isinstance(e, type) if e is not None else type(None)
-    for e in ta.get_args(ScalarValue)
-)
 
 CONTROL_TOKENS: ta.Mapping[str, TokenKind] = {
     '{': 'LBRACE',
@@ -77,6 +85,9 @@ CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
     'false': ('BOOLEAN', False),
     'null': ('NULL', None),
 }
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -569,4 +580,4 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
             #
 
             else:
-                raise NotImplementedError
+                raise TypeError(e)

@@ -25,9 +25,18 @@ class GenMachine(ta.Generic[I, O]):
     `None` to terminate.
     """
 
-    def __init__(self, initial: MachineGen) -> None:
+    def __init__(self, initial: MachineGen | None = None) -> None:
         super().__init__()
+
+        if initial is None:
+            initial = self._initial_state()
+            if initial is None:
+                raise TypeError('No initial state')
+
         self._advance(initial)
+
+    def _initial_state(self) -> MachineGen | None:
+        return None
 
     _gen: MachineGen | None
 
