@@ -1,6 +1,7 @@
 """
 TODO:
  - feed_iter helper
+ - accept yielding outputs on transitions, *except* on initial state - add test
 
 See:
  - https://github.com/pytransitions/transitions
@@ -84,6 +85,7 @@ class GenMachine(ta.Generic[I, O]):
 
     def _advance(self, gen: MachineGen) -> None:
         self._gen = gen
+
         if (n := next(self._gen)) is not None:  # noqa
             raise GenMachine.ClosedError
 

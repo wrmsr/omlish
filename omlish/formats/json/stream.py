@@ -2,6 +2,7 @@
 TODO:
  - max buf size
  - max recursion depth
+ - mark start pos of tokens, currently returning end
 """
 import dataclasses as dc
 import io
@@ -116,7 +117,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         super().__init__(self._do_main())
 
     def _char_in(self, c: str) -> str:
-        if len(c) != 1:
+        if c and len(c) != 1:
             raise ValueError(c)
 
         self._ofs += 1
@@ -158,6 +159,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
         while True:
             c = self._char_in((yield None))  # noqa
 
+            if not c:
+                return None
+
             if c.isspace():
                 continue
 
@@ -186,6 +190,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
+            if not c:
+                raise NotImplementedError
+
             self._buf.write(c)
             if c == '"' and last != '\\':
                 break
@@ -206,12 +213,23 @@ class JsonStreamLexer(GenMachine[str, Token]):
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
+            if not c:
+                break
+
             if not (c.isdigit() or c in '.eE+-'):
                 break
             self._buf.write(c)
 
         raw = self._flip_buf()
+
+        #
+
         if not NUMBER_PAT.fullmatch(raw):
+            # Can only be -Infinity
+
+            if not c:
+                self._raise('Unexpected end of input')
+
             raw += c
             try:
                 for _ in range(7):
@@ -227,14 +245,22 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             return self._do_main()
 
+        #
+
         if '.' in raw or 'e' in raw or 'E' in raw:
             nv = float(raw)
         else:
             nv = int(raw)
         yield self._make_tok('NUMBER', nv, raw)
 
+        #
+
+        if not c:
+            return None
+
         if c in CONTROL_TOKENS:
             yield self._make_tok(CONTROL_TOKENS[c], c, c)
+
         elif not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
 
