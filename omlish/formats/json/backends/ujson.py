@@ -7,6 +7,14 @@ dumps(obj: ta.Any, **DumpOpts) -> None
 import dataclasses as dc
 import typing as ta
 
+from .... import lang
+
+
+if ta.TYPE_CHECKING:
+    import ujson as uj
+else:
+    uj = lang.proxy_import('ujson')
+
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DumpOpts:
