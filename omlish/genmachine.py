@@ -57,7 +57,8 @@ class GenMachine(ta.Generic[I, O]):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        if exc_type is None:
+            self.close()
 
     #
 
