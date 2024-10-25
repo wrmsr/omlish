@@ -6,7 +6,10 @@ kinds:
  - attribute
  - text
 """
+import typing as ta
 import xml.etree.ElementTree as ET
+
+from omlish import dataclasses as dc
 
 
 DOC = """
@@ -35,29 +38,37 @@ DOC = """
 """
 
 
+@dc.dataclass(frozen=True)
+class SimpleElement:
+    tag: str
+    attributes: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
+    body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
+
+
 def _main() -> None:
     tree = ET.ElementTree(ET.fromstring(DOC.strip()))
 
-    # def rec(node, pfx=''):
-    #     print(f"{pfx}Element: {node.tag}")
-    #     cpfx = pfx + '  '
-    #     for name, value in node.attrib.items():
-    #         print(f"{cpfx}  Attribute: {name} = {value}")
-    #     for child in node:
-    #         rec(child, cpfx)
-
-    def recursive_process(element):
-        lst = []
+    def recursive_process(element) -> SimpleElement:
+        atts = {}
         for name, value in element.attrib.items():
-            lst.append({'attribute': {name: value}})
-        if element.text and element.text.strip():
-            lst.append({'text': element.text.strip()})
+            atts[name] = value
+
+        body: list[SimpleElement | str] = []
+
+        if element.text and (s := element.text.strip()):
+            body.append(s)
+
         for child in element:
-            child_lst = recursive_process(child)
-            lst.append({'element': {child.tag: child_lst}})
-            if child.tail and (tail_s := child.tail.strip()):
-                lst.append({'text': tail_s})
-        return lst
+            body.append(recursive_process(child))
+
+            if child.tail and (s := child.tail.strip()):
+                body.append(s)
+
+        return SimpleElement(
+            element.tag,
+            atts,
+            body,
+        )
 
     print(recursive_process(tree.getroot()))
 
