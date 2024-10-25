@@ -23,6 +23,19 @@ from .utils import set_new_attribute
 MISSING = dc.MISSING
 
 
+##
+
+
+def raise_validation_error(
+        obj: ta.Any,
+        fn: ta.Callable,
+) -> ta.NoReturn:
+    raise ValidationError(obj, fn)
+
+
+##
+
+
 class InitFields(ta.NamedTuple):
     all: ta.Sequence[dc.Field]
     ordered: ta.Sequence[dc.Field]
@@ -55,6 +68,9 @@ def init_param(f: dc.Field) -> str:
     elif f.default_factory is not MISSING:
         default = ' = __dataclass_HAS_DEFAULT_FACTORY__'
     return f'{f.name}: __dataclass_type_{f.name}__{default}'  # noqa
+
+
+##
 
 
 class InitBuilder:
@@ -100,7 +116,7 @@ class InitBuilder:
             '__dataclass_builtins_object__': object,
             '__dataclass_builtins_isinstance__': isinstance,
             '__dataclass_builtins_TypeError__': TypeError,
-            '__dataclass_ValidationError__': ValidationError,
+            '__dataclass_raise_validation_error__': raise_validation_error,
             '__dataclass_raise_field_validation_error__': raise_field_validation_error,
         })
 
@@ -128,7 +144,7 @@ class InitBuilder:
             locals[cn] = fn
             csig = inspect.signature(fn)
             cas = ', '.join(p.name for p in csig.parameters.values())
-            body_lines.append(f'if not {cn}({cas}): raise __dataclass_ValidationError__')
+            body_lines.append(f'if not {cn}({cas}): __dataclass_raise_validation_error__({self._self_name}, {cn})')
 
         inits = self._info.merged_metadata.get(Init, [])
         mro_dct = lang.build_mro_dict(self._info.cls)

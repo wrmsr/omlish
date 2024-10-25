@@ -35,7 +35,7 @@ def raise_field_validation_error(
         field: str,
         fn: ta.Callable,
         value: ta.Any,
-):
+) -> ta.NoReturn:
     raise FieldValidationError(
         obj,
         field,
