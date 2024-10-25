@@ -17,6 +17,7 @@ from .render import JsonRenderer
 from .stream.build import JsonObjectBuilder
 from .stream.lex import JsonStreamLexer
 from .stream.parse import JsonStreamParser
+from .stream.render import StreamJsonRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -181,7 +182,15 @@ def _main() -> None:
             with contextlib.ExitStack() as es2:
                 lex = es2.enter_context(JsonStreamLexer())
                 parse = es2.enter_context(JsonStreamParser())
-                build = es2.enter_context(JsonObjectBuilder())
+                # build = es2.enter_context(JsonObjectBuilder())
+
+                renderer = StreamJsonRenderer(
+                    out,
+                    StreamJsonRenderer.Options(
+                        **kw,
+                        style=term_color if args.color else None,
+                    ),
+                )
 
                 while True:
                     buf = os.read(fd, args.stream_buffer_size)
@@ -191,15 +200,19 @@ def _main() -> None:
                         for c in s:
                             for t in lex(c):
                                 for e in parse(t):
-                                    for v in build(e):
-                                        print(render_one(v), file=out)
-                                        n += 1
+                                    renderer.render((e,))
+                                    n += 1
+                                    # for v in build(e):
+                                    #     print(render_one(v), file=out)
+                                    #     n += 1
 
                         if n:
                             out.flush()
 
                     if not buf:
                         break
+
+                out.write('\n')
 
         else:
             with io.TextIOWrapper(in_file) as tw:
