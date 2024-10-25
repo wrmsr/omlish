@@ -174,24 +174,29 @@ def _main() -> None:
         #
 
         if args.stream:
-            def bytes_gen():
-                fd = in_file.fileno()
-                while bytes_chunk := os.read(fd, args.stream_buffer_size):
-                    yield bytes_chunk
+            fd = in_file.fileno()
+            decoder = codecs.getincrementaldecoder('utf-8')()
 
             with contextlib.ExitStack() as es2:
                 lex = es2.enter_context(JsonStreamLexer())
                 vb = es2.enter_context(JsonStreamValueBuilder())
-                it = es2.enter_context(contextlib.closing(codecs.iterdecode(bytes_gen(), 'utf-8')))
-                for s in it:
-                    n = 0
-                    for c in s:
-                        for t in lex(c):
-                            for v in vb(t):
-                                print(render_one(v), file=out)
-                                n += 1
-                    if n:
-                        out.flush()
+
+                while True:
+                    buf = os.read(fd, args.stream_buffer_size)
+
+                    for s in decoder.decode(buf, not buf):
+                        n = 0
+                        for c in s:
+                            for t in lex(c):
+                                for v in vb(t):
+                                    print(render_one(v), file=out)
+                                    n += 1
+
+                        if n:
+                            out.flush()
+
+                    if not buf:
+                        break
 
         else:
             with io.TextIOWrapper(in_file) as tw:
