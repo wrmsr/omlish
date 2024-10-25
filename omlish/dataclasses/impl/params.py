@@ -12,6 +12,9 @@ class Field_:
     metadata: Metadata | None = None
     kw_only: bool | MISSING = MISSING
 
+    if sys.version_info >= (3, 13):
+        doc: str | None = None
+
     _field_type: Any = None
 
 
