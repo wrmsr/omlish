@@ -7,9 +7,18 @@ kinds:
  - text
 """
 import typing as ta
-import xml.etree.ElementTree as ET
 
 from omlish import dataclasses as dc
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import xml.etree.ElementTree as ET
+else:
+    ET = lang.proxy_import('xml.etree.ElementTree')
+
+
+##
 
 
 DOC = """
@@ -45,32 +54,33 @@ class SimpleElement:
     body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
 
 
+def build_simple_element(element: 'ET.Element') -> SimpleElement:
+    atts = {}
+    for name, value in element.attrib.items():
+        atts[name] = value
+
+    body: list[SimpleElement | str] = []
+
+    if element.text and (s := element.text.strip()):
+        body.append(s)
+
+    for child in element:
+        body.append(build_simple_element(child))
+
+        if child.tail and (s := child.tail.strip()):
+            body.append(s)
+
+    return SimpleElement(
+        element.tag,
+        atts,
+        body,
+    )
+
+
 def _main() -> None:
     tree = ET.ElementTree(ET.fromstring(DOC.strip()))
 
-    def recursive_process(element) -> SimpleElement:
-        atts = {}
-        for name, value in element.attrib.items():
-            atts[name] = value
-
-        body: list[SimpleElement | str] = []
-
-        if element.text and (s := element.text.strip()):
-            body.append(s)
-
-        for child in element:
-            body.append(recursive_process(child))
-
-            if child.tail and (s := child.tail.strip()):
-                body.append(s)
-
-        return SimpleElement(
-            element.tag,
-            atts,
-            body,
-        )
-
-    print(recursive_process(tree.getroot()))
+    print(build_simple_element(tree.getroot()))
 
     # for elem in root.iter():
     #     print(f"Element: {elem.tag}")
