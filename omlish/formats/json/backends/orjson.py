@@ -1,6 +1,10 @@
 """
-def loads(obj: str | bytes | bytearray | memoryview) -> ta.Any | oj.JSONDEcodeError
-def dumps(obj: ta.Any, **DumpOpts) -> bytes
+loads(obj: str | bytes | bytearray | memoryview) -> ta.Any | oj.JSONDEcodeError
+dumps(
+    obj: ta.Any,
+    default: ta.Callable[[ta.Any], Ata.ny] | None = ...,
+    option: int | None = ...,
+) -> bytes
 """
 import dataclasses as dc
 import typing as ta
@@ -13,6 +17,9 @@ if ta.TYPE_CHECKING:
     import orjson as oj
 else:
     oj = lang.proxy_import('orjson')
+
+
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -76,4 +83,34 @@ class DumpOpts:
 ##
 
 
-ORJSON_BACKEND: Backend = None
+class OrjsonBackend(Backend):
+    def dump(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        fp.write(self.dumps(obj, **kwargs))
+
+    def dumps(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return oj.dumps(obj, **kwargs).decode('utf-8')
+
+    def load(self, fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        return oj.loads(fp.read(), **kwargs)
+
+    def loads(self, s: str | bytes | bytearray, **kwargs: ta.Any) -> ta.Any:
+        return oj.loads(s, **kwargs)
+
+    def dump_pretty(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        fp.write(self.dumps_pretty(obj, **kwargs))
+
+    def dumps_pretty(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return self.dumps(obj, option=kwargs.pop('option', 0) | oj.OPT_INDENT_2, **kwargs)
+
+    def dump_compact(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        return self.dump(obj, fp, **kwargs)
+
+    def dumps_compact(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return self.dumps(obj, **kwargs)
+
+
+ORJSON_BACKEND: OrjsonBackend | None
+if lang.can_import('orjson'):
+    ORJSON_BACKEND = OrjsonBackend()
+else:
+    ORJSON_BACKEND = None
