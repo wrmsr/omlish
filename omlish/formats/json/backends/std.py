@@ -8,6 +8,10 @@ import dataclasses as dc
 import json
 import typing as ta
 
+from ..consts import COMPACT_KWARGS
+from ..consts import PRETTY_KWARGS
+from .base import Backend
+
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DumpOpts:
@@ -35,3 +39,29 @@ class LoadOpts:
 
     # called with the result of any object literal decoded with an ordered list of pairs, by default dict  # noqa
     object_pairs_hook: ta.Callable[[list[tuple[str, ta.Any]]], ta.Any] | None = None
+
+
+class StdBackend(Backend):
+    def dump(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        json.dump(obj, fp, **kwargs)
+
+    def dumps(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return json.dumps(obj, **kwargs)
+
+    def load(self, fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        return json.load(fp, **kwargs)
+
+    def loads(self, s: str, **kwargs: ta.Any) -> ta.Any:
+        return json.loads(s, **kwargs)
+
+    def dump_pretty(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        json.dump(obj, fp, **PRETTY_KWARGS, **kwargs)
+
+    def dumps_pretty(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return json.dumps(obj, **PRETTY_KWARGS, **kwargs)
+
+    def dump_compact(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
+        json.dump(obj, fp, **COMPACT_KWARGS, **kwargs)
+
+    def dumps_compact(self, obj: ta.Any, **kwargs: ta.Any) -> str:
+        return json.dumps(obj, **COMPACT_KWARGS, **kwargs)
