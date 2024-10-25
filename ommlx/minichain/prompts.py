@@ -7,9 +7,9 @@ from omlish import lang
 from .generative import Generative
 from .generative import GenerativeRequestOption
 from .models import Model
-from .models import Request
-from .models import RequestOption
-from .models import Response
+from .models import ModelRequest
+from .models import ModelRequestOption
+from .models import ModelResponse
 
 
 ##
@@ -19,12 +19,12 @@ PromptInput: ta.TypeAlias = str
 PromptNew: ta.TypeAlias = str
 PromptOutput: ta.TypeAlias = str
 
-PromptRequestOptions: ta.TypeAlias = RequestOption | GenerativeRequestOption
+PromptRequestOptions: ta.TypeAlias = ModelRequestOption | GenerativeRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class PromptRequest(
-    Request[
+    ModelRequest[
         PromptInput,
         PromptRequestOptions,
         PromptNew,
@@ -37,7 +37,7 @@ class PromptRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class PromptResponse(Response[PromptOutput], lang.Final):
+class PromptResponse(ModelResponse[PromptOutput], lang.Final):
     pass
 
 

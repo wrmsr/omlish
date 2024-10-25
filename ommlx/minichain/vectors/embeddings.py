@@ -6,9 +6,9 @@ from omlish import lang
 
 from ..content import Content
 from ..models import Model
-from ..models import Request
-from ..models import RequestOption
-from ..models import Response
+from ..models import ModelRequest
+from ..models import ModelRequestOption
+from ..models import ModelResponse
 from .vectors import Vector
 
 
@@ -19,12 +19,12 @@ EmbeddingInput: ta.TypeAlias = Content
 EmbeddingNew: ta.TypeAlias = ta.Any
 EmbeddingOutput: ta.TypeAlias = Vector
 
-EmbeddingRequestOptions: ta.TypeAlias = RequestOption
+EmbeddingRequestOptions: ta.TypeAlias = ModelRequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class EmbeddingRequest(
-    Request[
+    ModelRequest[
         EmbeddingInput,
         EmbeddingRequestOptions,
         EmbeddingNew,
@@ -35,7 +35,7 @@ class EmbeddingRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class EmbeddingResponse(Response[EmbeddingOutput], lang.Final):
+class EmbeddingResponse(ModelResponse[EmbeddingOutput], lang.Final):
     pass
 
 

@@ -7,8 +7,8 @@ from omlish import lang
 
 from ..generative import Generative
 from ..models import Model
-from ..models import Request
-from ..models import Response
+from ..models import ModelRequest
+from ..models import ModelResponse
 from .messages import AiMessage
 from .messages import Chat
 from .messages import Message
@@ -36,7 +36,7 @@ ChatOutput: ta.TypeAlias = AiChoices
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ChatRequest(
-    Request[
+    ModelRequest[
         ChatInput,
         ChatRequestOptions,
         ChatNew,
@@ -53,7 +53,7 @@ class ChatRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ChatResponse(Response[ChatOutput], lang.Final):
+class ChatResponse(ModelResponse[ChatOutput], lang.Final):
     pass
 
 
