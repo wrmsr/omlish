@@ -5,8 +5,12 @@ from .consts import (  # noqa
     PRETTY_KWARGS,
 )
 
-from .json import (  # noqa
+from .encoding import (  # noqa
+    decodes,
     detect_encoding,
+)
+
+from .json import (  # noqa
     dump,
     dump_compact,
     dump_pretty,
