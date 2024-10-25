@@ -72,5 +72,7 @@ def test_stream():
 def test_parse():
     obj = json.loads(lang.get_relative_resources('.', globals=globals())['stress.json'].read_text())
 
-    for e in yield_parser_events(obj):
-        print(e)
+    with JsonObjectBuilder() as job:
+        for e in yield_parser_events(obj):
+            for v in job(e):
+                print(v)
