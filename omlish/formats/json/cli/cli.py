@@ -1,13 +1,6 @@
-"""
-TODO:
- - xml - [{"att", {"el", {"cdata", ...
- - csv - dict if headers, array if not
-"""
 import argparse
 import codecs
 import contextlib
-import dataclasses as dc
-import enum
 import io
 import json
 import os
@@ -15,33 +8,16 @@ import subprocess
 import sys
 import typing as ta
 
-from ... import check
-from ... import lang
-from ... import term
-from .render import JsonRenderer
-from .stream.build import JsonObjectBuilder
-from .stream.lex import JsonStreamLexer
-from .stream.parse import JsonStreamParser
-from .stream.render import StreamJsonRenderer
-
-
-if ta.TYPE_CHECKING:
-    import ast
-    import tomllib
-
-    import yaml
-
-    from .. import dotenv
-    from .. import props
-
-else:
-    ast = lang.proxy_import('ast')
-    tomllib = lang.proxy_import('tomllib')
-
-    yaml = lang.proxy_import('yaml')
-
-    dotenv = lang.proxy_import('..dotenv', __package__)
-    props = lang.proxy_import('..props', __package__)
+from .... import check
+from .... import lang
+from .... import term
+from ..render import JsonRenderer
+from ..stream.build import JsonObjectBuilder
+from ..stream.lex import JsonStreamLexer
+from ..stream.parse import JsonStreamParser
+from ..stream.render import StreamJsonRenderer
+from .formats import FORMATS_BY_NAME
+from .formats import Formats
 
 
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
@@ -51,29 +27,6 @@ def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
         return term.SGR(term.SGRs.FG.GREEN), term.SGR(term.SGRs.RESET)
     else:
         return '', ''
-
-
-@dc.dataclass(frozen=True)
-class Format:
-    names: ta.Sequence[str]
-    load: ta.Callable[[ta.TextIO], ta.Any]
-
-
-class Formats(enum.Enum):
-    JSON = Format(['json'], json.load)
-    YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
-    TOML = Format(['toml'], lambda f: tomllib.loads(f.read()))
-    ENV = Format(['env', 'dotenv'], lambda f: dotenv.dotenv_values(stream=f))
-    PROPS = Format(['properties', 'props'], lambda f: dict(props.Properties().load(f.read())))
-    PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
-
-
-FORMATS_BY_NAME: ta.Mapping[str, Format] = {
-    n: f
-    for e in Formats
-    for f in [e.value]
-    for n in f.names
-}
 
 
 def _main() -> None:

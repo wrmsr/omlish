@@ -23,10 +23,10 @@ def _main() -> None:
 
     parser.add_argument('-b', '--buffer-size', type=int, default=0x4000)
 
-    parser.add_argument('--initial-sleep')
+    parser.add_argument('-i', '--initial-sleep')
 
-    parser.add_argument('--sleep-n')
-    parser.add_argument('--sleep-s')
+    parser.add_argument('-n', '--sleep-n')
+    parser.add_argument('-s', '--sleep-s')
 
     args = parser.parse_args()
 
