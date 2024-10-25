@@ -77,7 +77,9 @@ def test_partial_generics():
 
 def test_newtype():
     Username = ta.NewType('Username', str)  # noqa
-    print(rfl.type_(Username))
+    rty = rfl.type_(Username)
+    assert isinstance(rty, rfl.NewType)
+    assert rty.ty is str
 
 
 def test_callable():
