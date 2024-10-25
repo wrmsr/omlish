@@ -111,7 +111,7 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
                 if i:
                     self._write(self._comma)
                 self._write_indent()
-                self._render(k, JsonRenderer.State.KEY)
+                self._render(k, AbstractJsonRenderer.State.KEY)
                 self._write(self._colon)
                 self._render(v)
             self._level -= 1
@@ -206,7 +206,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             if tt[1]:
                 self._write(self._comma)
             self._write_indent()
-            self._write(json.dumps(e.key))
+            self._render_value(e.key, AbstractJsonRenderer.State.KEY)
             self._write(self._colon)
 
             self._stack.append(('OBJECT', tt[1] + 1))
