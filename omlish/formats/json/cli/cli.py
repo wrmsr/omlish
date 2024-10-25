@@ -1,7 +1,3 @@
-"""
-TODO:
- - jmespath
-"""
 import argparse
 import codecs
 import contextlib
@@ -24,6 +20,15 @@ from .formats import FORMATS_BY_NAME
 from .formats import Formats
 
 
+if ta.TYPE_CHECKING:
+    from ....specs import jmespath
+else:
+    jmespath = lang.proxy_import('....specs.jmespath', __package__)
+
+
+##
+
+
 def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
     if state is JsonRenderer.State.KEY:
         return term.SGR(term.SGRs.FG.BRIGHT_BLUE), term.SGR(term.SGRs.RESET)
@@ -43,6 +48,8 @@ def _main() -> None:
     parser.add_argument('--stream-buffer-size', type=int, default=0x4000)
 
     parser.add_argument('-f', '--format')
+
+    parser.add_argument('-x', '--jmespath-expr')
 
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
@@ -76,7 +83,15 @@ def _main() -> None:
         sort_keys=args.sort_keys,
     )
 
+    if args.jmespath_expr is not None:
+        jp_expr = jmespath.compile(args.jmespath_expr)
+    else:
+        jp_expr = None
+
     def render_one(v: ta.Any) -> str:
+        if jp_expr is not None:
+            v = jp_expr.search(v)
+
         if args.color:
             return JsonRenderer.render_str(
                 v,
