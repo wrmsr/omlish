@@ -12,6 +12,7 @@ from .chat import ToolExecResultMessage
 from .chat import UserMessage
 from .content import Content
 from .content import Image
+from .content import Placeholder
 from .models import Request
 
 
@@ -46,6 +47,10 @@ class StringTransform:
 
     @apply.register
     def apply_image(self, s: Image) -> Image:
+        return s
+
+    @apply.register
+    def apply_placeholder(self, s: Placeholder) -> Placeholder:
         return s
 
     #
