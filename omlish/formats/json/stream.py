@@ -367,6 +367,18 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             yield y
             return r
 
+        elif tok.kind == 'RBRACKET':
+            if not self._stack:
+                raise self.StateError
+
+            tt = self._stack.pop()
+            if tt != 'ARRAY':
+                raise self.StateError
+
+            y, r = self._emit_value(EndArray)
+            yield y
+            return r
+
         else:
             raise self.StateError
 
@@ -395,6 +407,18 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             yield (Key(k),)
             self._stack.append('KEY')
             return self._do_value()
+
+        elif tok.kind == 'RBRACE':
+            if not self._stack:
+                raise self.StateError
+
+            tt = self._stack.pop()
+            if tt != 'OBJECT':
+                raise self.StateError
+
+            y, r = self._emit_value(EndObject)
+            yield y
+            return r
 
         else:
             raise self.StateError
