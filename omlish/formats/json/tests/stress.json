@@ -203,5 +203,9 @@
             "japanese": "\u3053\u3093\u306b\u3061\u306f",
             "emojis": "\ud83c\udf0d \ud83d\ude80 \ud83d\udc36"
         }
+    },
+    "empties": {
+        "array": [],
+        "object": {}
     }
 }
