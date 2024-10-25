@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.35.48
-botocore==1.35.48
+boto3==1.35.49
+botocore==1.35.49
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -124,7 +124,7 @@ google-api-core==2.21.0
 google-api-python-client==2.149.0
 google-auth==2.35.0
 google-auth-httplib2==0.2.0
-google-cloud-compute==1.19.2
+google-cloud-compute==1.20.0
 google-pasta==0.2.0
 googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
@@ -159,7 +159,7 @@ importlib_resources==6.4.5
 iniconfig==2.0.0
 instructor==1.5.2
 ipykernel==6.29.4
-ipython==8.28.0
+ipython==8.29.0
 ipywidgets==8.1.2
 isodate==0.7.2
 isoduration==20.11.0
@@ -197,7 +197,7 @@ langchain==0.3.4
 langchain-anthropic==0.2.3
 langchain-chroma==0.1.4
 langchain-community==0.3.3
-langchain-core==0.3.12
+langchain-core==0.3.13
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
@@ -209,7 +209,7 @@ langcodes==3.4.1
 langdetect==1.0.9
 langgraph==0.2.39
 langgraph-checkpoint==2.0.2
-langgraph-sdk==0.1.33
+langgraph-sdk==0.1.34
 langsmith==0.1.137
 language_data==1.2.0
 lazy_loader==0.4
@@ -301,7 +301,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@004143422fbd6b129028bb27bbd45512e580f5a7
+peft @ git+https://github.com/huggingface/peft.git@28a5ba1127cb4a72bbd322bf988da8ee5e784a87
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -435,7 +435,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.36
 sqlean.py==3.45.1
-sqlglot==25.27.0
+sqlglot==25.28.0
 sqlite-vec==0.1.3
 sqlparse==0.4.4
 srsly==2.4.8
@@ -487,7 +487,7 @@ tyro==0.8.14
 tzdata==2024.2
 tzlocal==5.2
 ujson==5.10.0
-unstructured==0.16.2
+unstructured==0.16.3
 unstructured-client==0.25.9
 uri-template==1.3.0
 uritemplate==4.1.1
@@ -495,7 +495,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.15.3
-uv==0.4.26
+uv==0.4.27
 uvicorn==0.32.0
 uvloop==0.21.0
 voluptuous==0.15.2
@@ -507,7 +507,7 @@ webcolors==24.8.0
 webencodings==0.5.1
 websocket-client==1.8.0
 websockets==13.1
-Werkzeug==3.0.4
+Werkzeug==3.0.6
 wgpu==0.18.1
 wheel==0.44.0
 widgetsnbextension==4.0.13
@@ -520,4 +520,4 @@ xxhash==3.5.0
 yarl==1.16.0
 zigpy==0.69.0
 zipp==3.20.2
-zwave-js-server-python==0.58.1
+zwave-js-server-python==0.59.0
