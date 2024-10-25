@@ -6,7 +6,6 @@ from .... import lang
 from ..stream import JsonObjectBuilder
 from ..stream import JsonStreamLexer
 from ..stream import JsonStreamParser
-from ..stream import JsonStreamValueBuilder
 from ..stream import yield_parser_events
 
 
@@ -53,15 +52,14 @@ def test_stream():
     ]:
         vs = []
         with JsonStreamLexer() as lex:
-            with JsonStreamValueBuilder() as vb:
-                h = []
-                for c in s:
-                    for t in lex(c):
-                        print(t)
-                        h.append(t)
-                        for v in vb(t):
-                            print(v)
-                            vs.append(v)
+            with JsonStreamParser() as parse:
+                with JsonObjectBuilder() as build:
+                    for c in s:
+                        for t in lex(c):
+                            for e in parse(t):
+                                for v in build(e):
+                                    print(v)
+                                    vs.append(v)
 
         print()
 
@@ -82,27 +80,3 @@ def test_parse():
 
     v = check.single(vs)
     assert_json_eq(v, obj)
-
-
-def test_parse2():
-    for s in [
-        lang.get_relative_resources('.', globals=globals())['stress.json'].read_text(),
-    ]:
-        vs = []
-        with JsonStreamLexer() as lex:
-            with JsonStreamParser() as parse:
-                with JsonObjectBuilder() as build:
-                    for c in s:
-                        if not c.isspace():
-                            print(c)
-                        for t in lex(c):
-                            print(t)
-                            for e in parse(t):
-                                print(e)
-                                for v in build(e):
-                                    print(v)
-                                    vs.append(v)
-
-        v = check.single(vs)
-        x = json.loads(s)
-        assert_json_eq(v, x)

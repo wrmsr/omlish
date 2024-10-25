@@ -54,7 +54,7 @@ NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
 VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
 
-SCALAR_VALUE_TYPES: type[type, ...] = tuple(
+SCALAR_VALUE_TYPES: tuple[type, ...] = tuple(
     check.isinstance(e, type) if e is not None else type(None)
     for e in ta.get_args(ScalarValue)
 )
@@ -254,161 +254,6 @@ class JsonStreamObject(list):
         return f'{self.__class__.__name__}({super().__repr__()})'
 
 
-class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
-    def __init__(
-            self,
-            *,
-            yield_object_lists: bool = False,
-    ) -> None:
-        super().__init__(self._do_value())
-
-        self._yield_object_lists = yield_object_lists
-
-        self._stack: list[
-            tuple[ta.Literal['OBJECT'], JsonStreamObject] |
-            tuple[ta.Literal['KEY'], str] |
-            tuple[ta.Literal['ARRAY'], list]
-        ] = []
-
-    #
-
-    def _emit_value(self, v):
-        if not self._stack:
-            return ((v,), self._do_value())
-
-        tt, tv = self._stack[-1]
-        if tt == 'KEY':
-            self._stack.pop()
-            if not self._stack:
-                raise self.StateError
-
-            tt2, tv2 = self._stack[-1]
-            if tt2 == 'OBJECT':
-                tv2.append((tv, v))  # type: ignore
-                return ((), self._do_after_pair())
-
-            else:
-                raise self.StateError
-
-        elif tt == 'ARRAY':
-            tv.append(v)  # type: ignore
-            return ((), self._do_after_element())
-
-        else:
-            raise self.StateError
-
-    #
-
-    def _do_value(self):
-        try:
-            tok = yield None
-        except GeneratorExit:
-            if self._stack:
-                raise self.StateError from None
-            else:
-                raise
-
-        if tok.kind in VALUE_TOKEN_KINDS:
-            y, r = self._emit_value(tok.value)
-            yield y
-            return r
-
-        elif tok.kind == 'LBRACE':
-            return self._do_object()
-
-        elif tok.kind == 'LBRACKET':
-            return self._do_array()
-
-        else:
-            raise self.StateError
-
-    #
-
-    def _do_object(self):
-        self._stack.append(('OBJECT', JsonStreamObject()))
-        return self._do_object_body()
-
-    def _do_object_body(self):
-        try:
-            tok = yield None
-        except GeneratorExit:
-            raise self.StateError from None
-
-        if tok.kind == 'STRING':
-            k = tok.value
-
-            try:
-                tok = yield None
-            except GeneratorExit:
-                raise self.StateError from None
-            if tok.kind != 'COLON':
-                raise self.StateError
-
-            self._stack.append(('KEY', k))
-            return self._do_value()
-
-        else:
-            raise self.StateError
-
-    def _do_after_pair(self):
-        try:
-            tok = yield None
-        except GeneratorExit:
-            raise self.StateError from None
-
-        if tok.kind == 'COMMA':
-            return self._do_object_body()
-
-        elif tok.kind == 'RBRACE':
-            if not self._stack:
-                raise self.StateError
-
-            tv: ta.Any
-            tt, tv = self._stack.pop()
-            if tt != 'OBJECT':
-                raise self.StateError
-
-            if not self._yield_object_lists:
-                tv = dict(tv)
-
-            y, r = self._emit_value(tv)
-            yield y
-            return r
-
-        else:
-            raise self.StateError
-
-    #
-
-    def _do_array(self):
-        self._stack.append(('ARRAY', []))
-        return self._do_value()
-
-    def _do_after_element(self):
-        try:
-            tok = yield None
-        except GeneratorExit:
-            raise self.StateError from None
-
-        if tok.kind == 'COMMA':
-            return self._do_value()
-
-        elif tok.kind == 'RBRACKET':
-            if not self._stack:
-                raise self.StateError
-
-            tt, tv = self._stack.pop()
-            if tt != 'ARRAY':
-                raise self.StateError
-
-            y, r = self._emit_value(tv)
-            yield y
-            return r
-
-        else:
-            raise self.StateError
-
-
 ##
 
 
@@ -446,7 +291,7 @@ JsonStreamParserEvent: ta.TypeAlias = ta.Union[  # noqa
 
 def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None, None]:
     if isinstance(obj, SCALAR_VALUE_TYPES):
-        yield obj
+        yield obj  # type: ignore
 
     elif isinstance(obj, ta.Mapping):
         yield BeginObject
@@ -609,6 +454,9 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             raise self.StateError
 
 
+##
+
+
 class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
     def __init__(
             self,
@@ -637,7 +485,7 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
                 if not isinstance(tv2, JsonStreamObject):
                     raise self.StateError
 
-                tv2.append((tv.key, v))  # type: ignore
+                tv2.append((tv.key, v))
                 return ()
 
             elif isinstance(tv, list):
@@ -677,6 +525,7 @@ class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
                 continue
 
             elif e is EndObject:
+                tv: ta.Any
                 if not stk or not isinstance(tv := stk.pop(), JsonStreamObject):
                     raise self.StateError
 

@@ -102,7 +102,7 @@ def test_close():
     with pytest.raises(GenMachine.StateError):
         m.close()
 
-    with pytest.raises(GenMachine.StateError):
+    with pytest.raises(GenMachine.StateError):  # noqa
         with AbMachine() as m:
             for i, o in ios:
                 assert list(m(i)) == o
