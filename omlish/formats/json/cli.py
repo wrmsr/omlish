@@ -1,7 +1,9 @@
 import argparse
+import codecs
 import contextlib
 import dataclasses as dc
 import enum
+import io
 import json
 import subprocess
 import sys
@@ -141,10 +143,12 @@ def _main() -> None:
 
     with contextlib.ExitStack() as es:
         if args.file is None:
-            in_file = sys.stdin
+            in_file = sys.stdin.buffer
 
         else:
-            in_file = es.enter_context(open(args.file))
+            in_file = es.enter_context(open(args.file, 'rb'))
+
+        #
 
         if args.less:
             less = subprocess.Popen(
@@ -157,26 +161,37 @@ def _main() -> None:
             )
             out = check.not_none(less.stdin)
 
+            def close_less():
+                out.close()
+                less.wait()
+
+            es.enter_context(lang.defer(close_less))  # noqa
+
         else:
             out = sys.stdout
-            less = None
+
+        #
 
         if args.stream:
-            with JsonStreamLexer() as lex:
-                with JsonStreamValueBuilder() as vb:
-                    while buf := in_file.read(args.stream_buffer_size):
-                        for c in buf:
-                            for t in lex(c):
-                                for v in vb(t):
-                                    print(render_one(v), file=out)
+            def bytes_gen():
+                while bytes_chunk := in_file.read(args.stream_buffer_size):
+                    yield bytes_chunk
+
+            with contextlib.ExitStack() as es2:
+                lex = es2.enter_context(JsonStreamLexer())
+                vb = es2.enter_context(JsonStreamValueBuilder())
+                it = es2.enter_context(contextlib.closing(codecs.iterdecode(bytes_gen(), 'utf-8')))
+                for s in it:
+                    for c in s:
+                        for t in lex(c):
+                            for v in vb(t):
+                                print(render_one(v), file=out)
+                                out.flush()
 
         else:
-            v = fmt.load(in_file)
+            with io.TextIOWrapper(in_file) as tw:
+                v = fmt.load(tw)
             print(render_one(v), file=out)
-
-        if less is not None:
-            out.close()
-            less.wait()
 
 
 if __name__ == '__main__':
