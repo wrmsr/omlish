@@ -1,7 +1,4 @@
-"""
-TODO:
- - genmachine...
-"""
+import abc
 import enum
 import io
 import json
@@ -16,7 +13,10 @@ from .stream import JsonStreamParserEvent
 from .stream import Key
 
 
-class AbstractJsonRenderer(lang.Abstract):
+I = ta.TypeVar('I')
+
+
+class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
     class State(enum.Enum):
         VALUE = enum.auto()
         KEY = enum.auto()
@@ -66,8 +66,18 @@ class AbstractJsonRenderer(lang.Abstract):
             if self._level:
                 self._write(self._indent * self._level)
 
+    @abc.abstractmethod
+    def render(self, i: I) -> None:
+        raise NotImplementedError
 
-class JsonRenderer(AbstractJsonRenderer):
+    @classmethod
+    def render_str(cls, i: I, **kwargs: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out, **kwargs).render(i)
+        return out.getvalue()
+
+
+class JsonRenderer(AbstractJsonRenderer[ta.Any]):
     def _render(
             self,
             o: ta.Any,
@@ -125,14 +135,8 @@ class JsonRenderer(AbstractJsonRenderer):
     def render(self, o: ta.Any) -> None:
         self._render(o)
 
-    @classmethod
-    def render_str(cls, o: ta.Any, **kwargs: ta.Any) -> str:
-        out = io.StringIO()
-        cls(out, **kwargs).render(o)
-        return out.getvalue()
 
-
-class StreamJsonRenderer(AbstractJsonRenderer):
+class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]]):
     def __init__(
             self,
             out: ta.TextIO,
@@ -142,7 +146,7 @@ class StreamJsonRenderer(AbstractJsonRenderer):
 
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
 
-    def render(self, e: JsonStreamParserEvent) -> None:
+    def _render(self, e: JsonStreamParserEvent) -> None:
         # if self._style is not None:
         #     pre, post = self._style(o, state)
         #     self._write(pre)
@@ -208,3 +212,7 @@ class StreamJsonRenderer(AbstractJsonRenderer):
 
         else:
             raise TypeError(e)
+
+    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> None:
+        for e in events:
+            self._render(e)

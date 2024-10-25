@@ -3,6 +3,8 @@ import json
 import pytest
 
 from ..render import JsonRenderer
+from ..render import StreamJsonRenderer
+from ..stream import yield_parser_events
 
 
 DOC = """
@@ -66,6 +68,10 @@ def test_render(
         separators=separators,
         sort_keys=sort_keys,
     )
-    l = JsonRenderer.render_str(obj, **kw)
     r = json.dumps(obj, **kw)
+
+    l = JsonRenderer.render_str(obj, **kw)
+    assert l == r
+
+    l = StreamJsonRenderer.render_str(yield_parser_events(obj), **kw)
     assert l == r
