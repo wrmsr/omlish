@@ -105,7 +105,7 @@ snowflake-connector-python[secure-local-storage]==3.12.3; python_version < "3.13
 snowflake-sqlalchemy==1.6.1; python_version < "3.13"
 
 huggingface-hub==0.26.1
-datasets==3.0.2
+datasets==3.0.2; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
