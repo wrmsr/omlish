@@ -168,6 +168,18 @@
     }
   },
   {
+    "module": ".scripts.slowcat",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/scripts/slowcat.py",
+    "line": 112,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "slowcat",
+        "mod_name": "omdev.scripts.slowcat"
+      }
+    }
+  },
+  {
     "module": ".tools.dockertools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/dockertools.py",
