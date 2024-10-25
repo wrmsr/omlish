@@ -1,12 +1,12 @@
 import json
 
-from .... import check
-from ..stream import JsonObjectBuilder
-from ..stream import JsonStreamLexer
-from ..stream import JsonStreamParser
-from ..stream import yield_parser_events
-from .helpers import TEST_DOCS
-from .helpers import assert_json_eq
+from ..... import check
+from ...tests.helpers import TEST_DOCS
+from ...tests.helpers import assert_json_eq
+from ..build import JsonObjectBuilder
+from ..lex import JsonStreamLexer
+from ..parse import JsonStreamParser
+from ..parse import yield_parser_events
 
 
 def test_stream():
