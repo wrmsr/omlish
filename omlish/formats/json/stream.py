@@ -5,6 +5,7 @@ import re
 import typing as ta
 
 from ... import check
+from ... import lang
 from ...genmachine import GenMachine
 
 
@@ -28,12 +29,12 @@ ControlTokenKind: ta.TypeAlias = ta.Literal[
 
 TokenKind: ta.TypeAlias = ValueTokenKind | ControlTokenKind
 
-TokenValue: ta.TypeAlias = str | float | int | None
+ScalarValue: ta.TypeAlias = str | float | int | None
 
 
 class Token(ta.NamedTuple):
     kind: TokenKind
-    value: TokenValue
+    value: ScalarValue
     raw: str
 
     ofs: int
@@ -47,6 +48,11 @@ class Token(ta.NamedTuple):
 NUMBER_PAT = re.compile(r'-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?')
 
 VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
+
+SCALAR_VALUE_TYPES: type[type, ...] = tuple(
+    check.isinstance(e, type) if e is not None else type(None)
+    for e in ta.get_args(ScalarValue)
+)
 
 CONTROL_TOKENS: ta.Mapping[str, TokenKind] = {
     '{': 'LBRACE',
@@ -104,7 +110,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
     def _make_tok(
             self,
             kind: TokenKind,
-            value: TokenValue,
+            value: ScalarValue,
             raw: str,
     ) -> ta.Sequence[Token]:
         tok = Token(
@@ -387,3 +393,95 @@ class JsonStreamValueBuilder(GenMachine[Token, ta.Any]):
 
         else:
             raise self.StateError
+
+
+##
+
+
+class BeginObject(lang.Marker):
+    pass
+
+
+class Key(ta.NamedTuple):
+    key: str
+
+
+class EndObject(lang.Marker):
+    pass
+
+
+class BeginArray(lang.Marker):
+    pass
+
+
+class EndArray(lang.Marker):
+    pass
+
+
+JsonStreamParserEvent: ta.TypeAlias = ta.Union[  # noqa
+    type[BeginObject],
+    Key,
+    type[EndObject],
+
+    type[BeginArray],
+    type[EndArray],
+
+    ScalarValue,
+]
+
+
+def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None, None]:
+    if isinstance(obj, SCALAR_VALUE_TYPES):
+        yield obj
+
+    elif isinstance(obj, ta.Mapping):
+        yield BeginObject
+        for k, v in obj.items():
+            yield Key(k)
+            yield from yield_parser_events(v)
+        yield EndObject
+
+    elif isinstance(obj, ta.Sequence):
+        yield BeginArray
+        for v in obj:
+            yield from yield_parser_events(v)
+        yield EndArray
+
+    else:
+        raise TypeError(obj)
+
+
+class JsonObjectBuilder(GenMachine[JsonStreamParserEvent, ta.Any]):
+    def __init__(
+            self,
+            *,
+            yield_object_lists: bool = False,
+    ) -> None:
+        super().__init__(self._do_value())
+
+        self._yield_object_lists = yield_object_lists
+
+        self._stack: list[JsonStreamObject | list] = []
+
+    def _emit_value(self, v):
+        if not self._stack:
+            return ((v,), self._do_value())
+
+        raise NotImplementedError
+
+    def _do_value(self):
+        try:
+            e = yield None
+        except GeneratorExit:
+            if self._stack:
+                raise self.StateError from None
+            else:
+                raise
+
+        if isinstance(e, SCALAR_VALUE_TYPES):
+            y, r = self._emit_value(e)
+            yield y
+            return r
+
+        else:
+            raise NotImplementedError
