@@ -13,6 +13,9 @@ from ..consts import PRETTY_KWARGS
 from .base import Backend
 
 
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class DumpOpts:
     cls: type[json.JSONEncoder] | None = None
@@ -41,6 +44,9 @@ class LoadOpts:
     object_pairs_hook: ta.Callable[[list[tuple[str, ta.Any]]], ta.Any] | None = None
 
 
+##
+
+
 class StdBackend(Backend):
     def dump(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
         json.dump(obj, fp, **kwargs)
@@ -51,7 +57,7 @@ class StdBackend(Backend):
     def load(self, fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
         return json.load(fp, **kwargs)
 
-    def loads(self, s: str, **kwargs: ta.Any) -> ta.Any:
+    def loads(self, s: str | bytes | bytearray, **kwargs: ta.Any) -> ta.Any:
         return json.loads(s, **kwargs)
 
     def dump_pretty(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
@@ -65,3 +71,6 @@ class StdBackend(Backend):
 
     def dumps_compact(self, obj: ta.Any, **kwargs: ta.Any) -> str:
         return json.dumps(obj, **COMPACT_KWARGS, **kwargs)
+
+
+STD_BACKEND = StdBackend()
