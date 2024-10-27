@@ -16,7 +16,7 @@ class Project(ProjectBase):
         'ssh': [
             'paramiko ~= 3.5',  # !! LGPL
 
-            'asyncssh ~= 2.17; python_version < "3.13"',  # cffi
+            'asyncssh ~= 2.18; python_version < "3.13"',  # cffi
         ],
     }
 
