@@ -78,7 +78,7 @@ markupsafe==3.0.2
 
 redis==5.2.0
 
-sqlean.py==3.47.0; python_version < "3.13"
+sqlean.py==3.47.0
 duckdb==1.1.2
 
 tokenize_rt==6.1.0
