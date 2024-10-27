@@ -54,21 +54,21 @@ srcs:
 
 .PHONY: venv
 venv:
-	${PYTHON} --version
+	@${PYTHON} --version
 
-	if [ "${VENV}" == "default" ] ; then \
+	@if [ "${VENV}" == "default" ] ; then \
 		${MAKE} _default_venv ; \
 	fi
 
 .PHONY: _default_venv
 _default_venv:
-	if [ ! -d .venv ] ; then \
+	@if [ ! -d .venv ] ; then \
 		ln -s .venvs/default .venv ; \
 	fi
 
-	.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
+	@.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
 
-	if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
+	@if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
 		${MAKE} tg ; \
 	fi
 
