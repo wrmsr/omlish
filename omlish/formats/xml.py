@@ -21,13 +21,13 @@ else:
 @dc.dataclass(frozen=True)
 class SimpleElement:
     tag: str
-    attributes: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
+    attrs: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
     body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
 
     def as_dict(self) -> dict[str, ta.Any]:
         dct: dict[str, ta.Any] = {'tag': self.tag}
-        if self.attributes:
-            dct['attributes'] = self.attributes
+        if self.attrs:
+            dct['attrs'] = self.attrs
         if self.body:
             dct['body'] = [
                 c.as_dict() if isinstance(c, SimpleElement) else c
