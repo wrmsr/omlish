@@ -21,7 +21,7 @@ from prompt_toolkit.contrib.regular_languages.completion import GrammarCompleter
 from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import fragment_list_to_text, to_formatted_text
 
-from ptpython.utils import get_jedi_script_from_document
+from .utils import get_jedi_script_from_document
 
 if TYPE_CHECKING:
     import jedi.api.classes

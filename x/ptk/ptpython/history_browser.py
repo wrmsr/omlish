@@ -53,7 +53,7 @@ from prompt_toolkit.widgets.toolbars import ArgToolbar, SearchToolbar
 from pygments.lexers import Python3Lexer as PythonLexer
 from pygments.lexers import RstLexer
 
-from ptpython.layout import get_inputmode_fragments
+from .layout import get_inputmode_fragments
 
 from .utils import if_mousedown
 

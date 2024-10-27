@@ -26,9 +26,9 @@ Options:
 from __future__ import unicode_literals, absolute_import
 
 from prompt_toolkit.output import ColorDepth
-from pymux.main import Pymux
-from pymux.client import create_client, list_clients
-from pymux.utils import daemonize
+from ..main import Pymux
+from ..client import create_client, list_clients
+from ..utils import daemonize
 
 import docopt
 import getpass

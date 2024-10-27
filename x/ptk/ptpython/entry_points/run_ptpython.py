@@ -37,7 +37,7 @@ import appdirs
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.shortcuts import print_formatted_text
 
-from ptpython.repl import PythonRepl, embed, enable_deprecation_warnings, run_config
+from ..repl import PythonRepl, embed, enable_deprecation_warnings, run_config
 
 try:
     from importlib import metadata  # type: ignore
@@ -94,7 +94,7 @@ def create_parser() -> _Parser:
         "-V",
         "--version",
         action="version",
-        version=metadata.version("ptpython"),
+        version='?', # metadata.version("ptpython"),
     )
     parser.add_argument("args", nargs="*", help="Script and arguments")
     return parser

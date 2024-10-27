@@ -9,14 +9,14 @@ from prompt_toolkit.application.current import get_app
 from prompt_toolkit.document import Document
 from prompt_toolkit.key_binding.vi_state import InputMode
 
-from pymux.arrangement import LayoutTypes
-from pymux.commands.aliases import ALIASES
-from pymux.commands.utils import wrap_argument
-from pymux.format import format_pymux_string
-from pymux.key_mappings import pymux_key_to_prompt_toolkit_key_sequence, prompt_toolkit_key_to_vt100_key
-from pymux.layout import focus_right, focus_left, focus_up, focus_down
-from pymux.log import logger
-from pymux.options import SetOptionError
+from ..arrangement import LayoutTypes
+from ..commands.aliases import ALIASES
+from ..commands.utils import wrap_argument
+from ..format import format_pymux_string
+from ..key_mappings import pymux_key_to_prompt_toolkit_key_sequence, prompt_toolkit_key_to_vt100_key
+from ..layout import focus_right, focus_left, focus_up, focus_down
+from ..log import logger
+from ..options import SetOptionError
 
 __all__ = (
     'call_command_handler',

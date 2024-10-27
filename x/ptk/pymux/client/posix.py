@@ -6,7 +6,7 @@ from prompt_toolkit.input.vt100 import raw_mode, cooked_mode
 from prompt_toolkit.output.vt100 import _get_size, Vt100_Output
 from prompt_toolkit.output import ColorDepth
 
-from pymux.utils import nonblocking
+from ..utils import nonblocking
 
 import getpass
 import glob

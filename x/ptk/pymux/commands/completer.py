@@ -7,8 +7,8 @@ from .aliases import ALIASES
 from .commands import COMMANDS_TO_HANDLERS, get_option_flags_for_command
 from .utils import wrap_argument
 
-from pymux.arrangement import LayoutTypes
-from pymux.key_mappings import PYMUX_TO_PROMPT_TOOLKIT_KEYS
+from ..arrangement import LayoutTypes
+from ..key_mappings import PYMUX_TO_PROMPT_TOOLKIT_KEYS
 
 from functools import partial
 

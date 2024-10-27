@@ -35,7 +35,7 @@ from prompt_toolkit.lexers import PygmentsLexer, SimpleLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers import BashLexer, PythonLexer
 
-from ptpython.prompt_style import PromptStyle
+from .prompt_style import PromptStyle
 
 from .completer import PythonCompleter
 from .python_input import PythonInput

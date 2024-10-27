@@ -17,8 +17,8 @@ from prompt_toolkit.data_structures import Size
 from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output.vt100 import Vt100_Output
 
-from ptpython.python_input import _GetNamespace, _Namespace
-from ptpython.repl import PythonRepl
+from ..python_input import _GetNamespace, _Namespace
+from ..repl import PythonRepl
 
 __all__ = ["ReplSSHServerSession"]
 
