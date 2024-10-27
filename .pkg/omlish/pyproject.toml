@@ -51,7 +51,7 @@ all = [
     'aiosqlite ~= 0.20',
     'asyncpg ~= 0.30',
     'apsw ~= 3.46',
-    'sqlean.py ~= 3.45; python_version < "3.13"',
+    'sqlean.py ~= 3.45',
     'duckdb ~= 1.1',
     'pytest ~= 8.0',
     'anyio ~= 4.6',
@@ -106,7 +106,7 @@ sqldrivers = [
     'aiosqlite ~= 0.20',
     'asyncpg ~= 0.30',
     'apsw ~= 3.46',
-    'sqlean.py ~= 3.45; python_version < "3.13"',
+    'sqlean.py ~= 3.45',
     'duckdb ~= 1.1',
 ]
 testing = [

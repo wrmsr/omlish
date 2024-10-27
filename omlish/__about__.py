@@ -101,7 +101,7 @@ class Project(ProjectBase):
 
             'apsw ~= 3.46',
 
-            'sqlean.py ~= 3.45; python_version < "3.13"',
+            'sqlean.py ~= 3.45',
 
             'duckdb ~= 1.1',
         ],
