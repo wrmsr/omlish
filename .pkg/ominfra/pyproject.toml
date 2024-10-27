@@ -29,11 +29,11 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'paramiko ~= 3.5',
-    'asyncssh ~= 2.17; python_version < "3.13"',
+    'asyncssh ~= 2.18; python_version < "3.13"',
 ]
 ssh = [
     'paramiko ~= 3.5',
-    'asyncssh ~= 2.17; python_version < "3.13"',
+    'asyncssh ~= 2.18; python_version < "3.13"',
 ]
 
 [project.entry-points]
