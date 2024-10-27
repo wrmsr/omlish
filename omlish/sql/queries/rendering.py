@@ -27,6 +27,8 @@ from .binary import BinaryOps
 from .exprs import Literal
 from .exprs import NameExpr
 from .idents import Ident
+from .inserts import Insert
+from .inserts import Values
 from .multi import Multi
 from .multi import MultiKind
 from .names import Name
@@ -97,6 +99,29 @@ class StdRenderer(Renderer):
     @Renderer.render.register
     def render_ident(self, o: Ident) -> None:
         self._out.write(f'"{o.s}"')
+
+    # inserts
+
+    @Renderer.render.register
+    def render_values(self, o: Values) -> None:
+        self._out.write('values (')
+        for i, v in enumerate(o.vs):
+            if i:
+                self._out.write(', ')
+            self.render(v)
+        self._out.write(')')
+
+    @Renderer.render.register
+    def render_insert(self, o: Insert) -> None:
+        self._out.write('insert into ')
+        self.render(o.into)
+        self._out.write(' (')
+        for i, c in enumerate(o.columns):
+            if i:
+                self._out.write(', ')
+            self.render(c)
+        self._out.write(') ')
+        self.render(o.data)
 
     # multis
 
