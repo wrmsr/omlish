@@ -21,8 +21,8 @@ from omlish.secrets import Secret
 from ...chat import AiChoice
 from ...chat import AiMessage
 from ...chat import ChatModel
+from ...chat import ChatOptions
 from ...chat import ChatRequest
-from ...chat import ChatRequestOptions
 from ...chat import ChatResponse
 from ...chat import Message
 from ...chat import SystemMessage
@@ -84,7 +84,7 @@ class OpenaiChatModel(ChatModel):
         ToolExecResultMessage: 'tool',
     }
 
-    DEFAULT_OPTIONS: ta.ClassVar[Options[ChatRequestOptions]] = Options(
+    DEFAULT_OPTIONS: ta.ClassVar[Options[ChatOptions]] = Options(
         Temperature(0.),
         MaxTokens(1024),
     )

@@ -6,8 +6,8 @@ from omlish import lang
 
 from ..content import Content
 from ..models import Model
+from ..models import ModelOption
 from ..models import ModelRequest
-from ..models import ModelRequestOption
 from ..models import ModelResponse
 from .vectors import Vector
 
@@ -19,14 +19,14 @@ EmbeddingInput: ta.TypeAlias = Content
 EmbeddingNew: ta.TypeAlias = ta.Any
 EmbeddingOutput: ta.TypeAlias = Vector
 
-EmbeddingRequestOptions: ta.TypeAlias = ModelRequestOption
+EmbeddingOptions: ta.TypeAlias = ModelOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class EmbeddingRequest(
     ModelRequest[
         EmbeddingInput,
-        EmbeddingRequestOptions,
+        EmbeddingOptions,
         EmbeddingNew,
     ],
     lang.Final,
@@ -42,7 +42,7 @@ class EmbeddingResponse(ModelResponse[EmbeddingOutput], lang.Final):
 class EmbeddingModel(
     Model[
         EmbeddingRequest,
-        EmbeddingRequestOptions,
+        EmbeddingOptions,
         EmbeddingNew,
         EmbeddingResponse,
     ],

@@ -32,8 +32,8 @@ from .models import (  # noqa
 )
 
 from .options import (  # noqa
-    ChatRequestOption,
-    ChatRequestOptions,
+    ChatOption,
+    ChatOptions,
 )
 
 from .tools import (  # noqa
