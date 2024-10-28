@@ -6,14 +6,14 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..chat import AiChoice
-from ..chat import AiMessage
-from ..chat import ChatModel
-from ..chat import ChatRequest
-from ..chat import ChatResponse
-from ..chat import Message
-from ..chat import SystemMessage
-from ..chat import UserMessage
+from ...chat import AiChoice
+from ...chat import AiMessage
+from ...chat import ChatModel
+from ...chat import ChatRequest
+from ...chat import ChatResponse
+from ...chat import Message
+from ...chat import SystemMessage
+from ...chat import UserMessage
 
 
 if ta.TYPE_CHECKING:
