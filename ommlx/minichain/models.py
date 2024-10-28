@@ -6,10 +6,10 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .options import Option
-from .services import Request
-from .services import RequestOption
-from .services import Response
 from .services import Service
+from .services import ServiceOption
+from .services import ServiceRequest
+from .services import ServiceResponse
 
 
 ModelInputT = ta.TypeVar('ModelInputT')
@@ -42,19 +42,19 @@ class TokenUsage(lang.Final):
 ##
 
 
-class ModelRequestOption(Option, lang.Abstract):
+class ModelOption(Option, lang.Abstract):
     pass
 
 
 ##
 
 
-ModelRequestOptions: ta.TypeAlias = RequestOption | ModelRequestOption
+ModelOptions: ta.TypeAlias = ServiceOption | ModelOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ModelRequest(
-    Request[
+    ServiceRequest[
         ModelInputT,
         ModelOptionT,
         ModelNewT,
@@ -65,7 +65,7 @@ class ModelRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ModelResponse(Response[ModelOutputT], lang.Abstract):
+class ModelResponse(ServiceResponse[ModelOutputT], lang.Abstract):
     usage: TokenUsage | None = dc.xfield(None, repr_fn=dc.opt_repr)
     reason: FinishReason | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
