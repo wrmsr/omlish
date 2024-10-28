@@ -50,21 +50,19 @@ class Impl:
     alts: ta.AbstractSet[str] = frozenset()
 
 
-class Polymorphism:
+class Impls(ta.Sequence[Impl]):
     def __init__(
             self,
-            ty: type,
-            impls: ta.Iterable[Impl],
+            lst: ta.Iterable[Impl],
     ) -> None:
         super().__init__()
-        self._ty = ty
-        self._impls = list(impls)
+        self._lst = list(lst)
 
         by_ty: dict[type, Impl] = {}
         by_tag: dict[str, Impl] = {}
-        for i in self._impls:
-            if not issubclass(i.ty, ty) or i.ty in by_ty:
-                raise TypeError(i.ty, ty)
+        for i in self._lst:
+            if i.ty in by_ty:
+                raise TypeError(i.ty)
             if i.tag in by_tag:
                 raise NameError(i.tag)
             for a in i.alts:
@@ -77,13 +75,20 @@ class Polymorphism:
         self._by_ty = by_ty
         self._by_tag = by_tag
 
-    @property
-    def ty(self) -> type:
-        return self._ty
+    def __iter__(self) -> ta.Iterator[Impl]:
+        return iter(self._lst)
 
-    @property
-    def impls(self) -> ta.Sequence[Impl]:
-        return self._impls
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    @ta.overload
+    def __getitem__(self, index: int) -> Impl: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice) -> ta.Sequence[Impl]: ...
+
+    def __getitem__(self, index):
+        return self._lst[index]
 
     @property
     def by_ty(self) -> ta.Mapping[type, Impl]:
@@ -92,6 +97,29 @@ class Polymorphism:
     @property
     def by_tag(self) -> ta.Mapping[str, Impl]:
         return self._by_tag
+
+
+class Polymorphism:
+    def __init__(
+            self,
+            ty: type,
+            impls: ta.Iterable[Impl],
+    ) -> None:
+        super().__init__()
+        self._ty = ty
+        self._impls = Impls(impls)
+
+        for i in self._impls:
+            if not issubclass(i.ty, ty):
+                raise TypeError(i.ty, ty)
+
+    @property
+    def ty(self) -> type:
+        return self._ty
+
+    @property
+    def impls(self) -> Impls:
+        return self._impls
 
 
 def polymorphism_from_subclasses(
@@ -151,6 +179,23 @@ class FieldPolymorphismMarshaler(Marshaler):
         return {self.tf: tag, **m.marshal(ctx, o)}  # type: ignore
 
 
+def make_polymorphism_marshaler(
+        impls: Impls,
+        tt: TypeTagging,
+        ctx: MarshalContext,
+) -> Marshaler:
+    m = {
+        i.ty: (i.tag, ctx.make(i.ty))
+        for i in impls
+    }
+    if isinstance(tt, WrapperTypeTagging):
+        return WrapperPolymorphismMarshaler(m)
+    elif isinstance(tt, FieldTypeTagging):
+        return FieldPolymorphismMarshaler(m, tt.field)
+    else:
+        raise TypeError(tt)
+
+
 @dc.dataclass(frozen=True)
 class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
@@ -161,16 +206,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         check.is_(rty, self.p.ty)
-        m = {
-            i.ty: (i.tag, ctx.make(i.ty))
-            for i in self.p.impls
-        }
-        if isinstance(self.tt, WrapperTypeTagging):
-            return WrapperPolymorphismMarshaler(m)
-        elif isinstance(self.tt, FieldTypeTagging):
-            return FieldPolymorphismMarshaler(m, self.tt.field)
-        else:
-            raise TypeError(self.tt)
+        return make_polymorphism_marshaler(self.p.impls, self.tt, ctx)
 
 
 ##
@@ -199,6 +235,25 @@ class FieldPolymorphismUnmarshaler(Unmarshaler):
         return u.unmarshal(ctx, ma)
 
 
+def make_polymorphism_unmarshaler(
+        impls: Impls,
+        tt: TypeTagging,
+        ctx: UnmarshalContext,
+) -> Unmarshaler:
+    m = {
+        t: u
+        for i in impls
+        for u in [ctx.make(i.ty)]
+        for t in [i.tag, *i.alts]
+    }
+    if isinstance(tt, WrapperTypeTagging):
+        return WrapperPolymorphismUnmarshaler(m)
+    elif isinstance(tt, FieldTypeTagging):
+        return FieldPolymorphismUnmarshaler(m, tt.field)
+    else:
+        raise TypeError(tt)
+
+
 @dc.dataclass(frozen=True)
 class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
@@ -209,15 +264,4 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         check.is_(rty, self.p.ty)
-        m = {
-            t: u
-            for i in self.p.impls
-            for u in [ctx.make(i.ty)]
-            for t in [i.tag, *i.alts]
-        }
-        if isinstance(self.tt, WrapperTypeTagging):
-            return WrapperPolymorphismUnmarshaler(m)
-        elif isinstance(self.tt, FieldTypeTagging):
-            return FieldPolymorphismUnmarshaler(m, self.tt.field)
-        else:
-            raise TypeError(self.tt)
+        return make_polymorphism_unmarshaler(self.p.impls, self.tt, ctx)
