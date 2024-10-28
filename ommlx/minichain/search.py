@@ -4,11 +4,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .generative import Generative
-from .services import Request
-from .services import RequestOption
-from .services import Response
 from .services import Service
+from .services import ServiceOption
+from .services import ServiceRequest
+from .services import ServiceResponse
 
 
 ##
@@ -35,14 +34,14 @@ SearchInput: ta.TypeAlias = str
 SearchNew: ta.TypeAlias = str
 SearchOutput: ta.TypeAlias = SearchHits
 
-SearchRequestOptions: ta.TypeAlias = RequestOption
+SearchOptions: ta.TypeAlias = ServiceOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SearchRequest(
-    Request[
+    ServiceRequest[
         SearchInput,
-        SearchRequestOptions,
+        SearchOptions,
         SearchNew,
     ],
     lang.Final,
@@ -53,18 +52,17 @@ class SearchRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class SearchResponse(Response[SearchOutput], lang.Final):
+class SearchResponse(ServiceResponse[SearchOutput], lang.Final):
     pass
 
 
 class SearchService(
     Service[
         SearchRequest,
-        SearchRequestOptions,
+        SearchOptions,
         SearchNew,
         SearchResponse,
     ],
-    Generative,
     lang.Abstract,
 ):
     @abc.abstractmethod
