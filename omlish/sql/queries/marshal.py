@@ -11,8 +11,10 @@ from .base import Node
 from .binary import BinaryOp
 from .binary import BinaryOps
 from .exprs import Expr
+from .inserts import Values
 from .multi import MultiKind
 from .relations import Relation
+from .selects import Select
 from .stmts import Stmt
 from .unary import UnaryOp
 from .unary import UnaryOps
@@ -72,3 +74,10 @@ def _install_standard_marshalling() -> None:
         p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
         msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismMarshalerFactory(p)]
         msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnmarshalerFactory(p)]
+
+    insert_data_impls = msh.Impls([
+        msh.Impl(Values, 'values'),
+        msh.Impl(Select, 'select'),
+    ])
+    msh.STANDARD_MARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnionMarshalerFactory(insert_data_impls)]
+    msh.STANDARD_UNMARSHALER_FACTORIES[0:0] = [msh.PolymorphismUnionUnmarshalerFactory(insert_data_impls)]
