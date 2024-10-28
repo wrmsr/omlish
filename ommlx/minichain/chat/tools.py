@@ -5,7 +5,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .options import ChatRequestOption
+from .options import ChatOption
 
 
 ToolDtype: ta.TypeAlias = str
@@ -15,7 +15,7 @@ ToolDtype: ta.TypeAlias = str
 
 
 @dc.dataclass(frozen=True)
-class Tool(ChatRequestOption, lang.Final):
+class Tool(ChatOption, lang.Final):
     spec: 'ToolSpec'
 
 
