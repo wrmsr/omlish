@@ -52,14 +52,18 @@ SCALAR_VALUE_TYPES: tuple[type, ...] = tuple(
 ##
 
 
+class Position(ta.NamedTuple):
+    ofs: int
+    line: int
+    col: int
+
+
 class Token(ta.NamedTuple):
     kind: TokenKind
     value: ScalarValue
     raw: str | None
 
-    ofs: int
-    line: int
-    col: int
+    pos: Position
 
     def __iter__(self):
         raise TypeError
@@ -94,9 +98,7 @@ CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
 class JsonLexError(Exception):
     message: str
 
-    ofs: int
-    line: int
-    col: int
+    pos: Position
 
 
 class JsonStreamLexer(GenMachine[str, Token]):
@@ -114,6 +116,14 @@ class JsonStreamLexer(GenMachine[str, Token]):
         self._buf = io.StringIO()
 
         super().__init__(self._do_main())
+
+    @property
+    def pos(self) -> Position:
+        return Position(
+            self._ofs,
+            self._line,
+            self._col,
+        )
 
     def _char_in(self, c: str) -> str:
         if c and len(c) != 1:
@@ -139,9 +149,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             kind,
             value,
             raw if self._include_raw else None,
-            self._ofs,
-            self._line,
-            self._col,
+            self.pos,
         )
         return (tok,)
 
@@ -152,7 +160,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         return raw
 
     def _raise(self, msg: str) -> ta.NoReturn:
-        raise JsonLexError(msg, self._ofs, self._line, self._col)
+        raise JsonLexError(msg, self.pos)
 
     def _do_main(self):
         while True:
