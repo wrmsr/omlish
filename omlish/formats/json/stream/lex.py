@@ -110,7 +110,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         self._include_raw = include_raw
 
         self._ofs = 0
-        self._line = 0
+        self._line = 1
         self._col = 0
 
         self._buf = io.StringIO()
@@ -144,12 +144,13 @@ class JsonStreamLexer(GenMachine[str, Token]):
             kind: TokenKind,
             value: ScalarValue,
             raw: str,
+            pos: Position,
     ) -> ta.Sequence[Token]:
         tok = Token(
             kind,
             value,
             raw if self._include_raw else None,
-            self.pos,
+            pos,
         )
         return (tok,)
 
@@ -173,7 +174,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 continue
 
             if c in CONTROL_TOKENS:
-                yield self._make_tok(CONTROL_TOKENS[c], c, c)
+                yield self._make_tok(CONTROL_TOKENS[c], c, c, self.pos)
                 continue
 
             if c == '"':
@@ -188,7 +189,10 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self._raise(f'Unexpected character: {c}')
 
     def _do_string(self):
+        check.state(self._buf.tell() == 0)
         self._buf.write('"')
+
+        pos = self.pos
 
         last = None
         while True:
@@ -207,12 +211,15 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         raw = self._flip_buf()
         sv = json.loads(raw)
-        yield self._make_tok('STRING', sv, raw)
+        yield self._make_tok('STRING', sv, raw, pos)
 
         return self._do_main()
 
     def _do_number(self, c: str):
+        check.state(self._buf.tell() == 0)
         self._buf.write(c)
+
+        pos = self.pos
 
         while True:
             try:
@@ -248,7 +255,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid number format: {raw}')
 
             tk, tv = CONST_TOKENS[raw]
-            yield self._make_tok(tk, tv, raw)
+            yield self._make_tok(tk, tv, raw, pos)
 
             return self._do_main()
 
@@ -258,7 +265,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             nv = float(raw)
         else:
             nv = int(raw)
-        yield self._make_tok('NUMBER', nv, raw)
+        yield self._make_tok('NUMBER', nv, raw, pos)
 
         #
 
@@ -266,7 +273,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             return None
 
         if c in CONTROL_TOKENS:
-            yield self._make_tok(CONTROL_TOKENS[c], c, c)
+            yield self._make_tok(CONTROL_TOKENS[c], c, c, pos)
 
         elif not c.isspace():
             self._raise(f'Unexpected character after number: {c}')
@@ -274,6 +281,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         return self._do_main()
 
     def _do_const(self, c: str):
+        pos = self.pos
         raw = c
         while True:
             try:
@@ -288,6 +296,6 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Invalid literal: {raw}')
 
         tk, tv = CONST_TOKENS[raw]
-        yield self._make_tok(tk, tv, raw)
+        yield self._make_tok(tk, tv, raw, pos)
 
         return self._do_main()

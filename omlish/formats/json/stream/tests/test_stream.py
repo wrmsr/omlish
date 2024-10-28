@@ -10,6 +10,8 @@ from ..parse import yield_parser_events
 
 
 def test_stream():
+    verbose = False
+
     for i, s in enumerate(TEST_DOCS):  # noqa
         ts = []
         es = []
@@ -18,9 +20,12 @@ def test_stream():
             with JsonStreamParser() as parse:
                 with JsonObjectBuilder() as build:
                     for c in [*s, '']:
+                        verbose and print(c)
                         for t in lex(c):
+                            verbose and print(t)
                             ts.append(t)
                             for e in parse(t):
+                                verbose and print(e)
                                 es.append(e)
                                 for v in build(e):
                                     vs.append(v)
