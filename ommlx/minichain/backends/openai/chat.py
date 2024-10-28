@@ -72,7 +72,10 @@ def _render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
 
 
 class OpenaiChatModel(ChatModel):
-    DEFAULT_MODEL = 'gpt-4o'
+    DEFAULT_MODEL: ta.ClassVar[str] = (
+        # 'gpt-4o'
+        'gpt-4o-mini'
+    )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
