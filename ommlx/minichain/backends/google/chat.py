@@ -8,14 +8,14 @@ import urllib.request
 from omlish import check
 from omlish.formats import json
 
-from ..chat import AiChoice
-from ..chat import AiMessage
-from ..chat import ChatModel
-from ..chat import ChatRequest
-from ..chat import ChatResponse
-from ..chat import Message
-from ..chat import SystemMessage
-from ..chat import UserMessage
+from ...chat import AiChoice
+from ...chat import AiMessage
+from ...chat import ChatModel
+from ...chat import ChatRequest
+from ...chat import ChatResponse
+from ...chat import Message
+from ...chat import SystemMessage
+from ...chat import UserMessage
 
 
 class GoogleChatModel(ChatModel):
