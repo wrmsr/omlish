@@ -100,7 +100,7 @@ execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
 faiss-cpu==1.9.0
-fastapi==0.115.3
+fastapi==0.115.4
 fastjsonschema==2.20.0
 filelock==3.16.1
 filetype==1.2.0
@@ -120,7 +120,7 @@ gast==0.6.0
 geopandas==1.0.1
 gitdb==4.0.11
 GitPython==3.1.43
-google-api-core==2.21.0
+google-api-core==2.22.0
 google-api-python-client==2.149.0
 google-auth==2.35.0
 google-auth-httplib2==0.2.0
@@ -147,7 +147,7 @@ httplib2==0.22.0
 httptools==0.6.4
 httpx==0.27.2
 httpx-sse==0.4.0
-huggingface-hub==0.26.1
+huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
 hypothesis==6.115.5
@@ -202,7 +202,7 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
 langchain-ollama==0.2.0
-langchain-openai==0.2.3
+langchain-openai==0.2.4
 langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langcodes==3.4.1
@@ -239,7 +239,7 @@ matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 mistune==3.0.2
-mitogen==0.3.14
+mitogen==0.3.15
 ml-dtypes==0.4.1
 mmh3==5.0.1
 monotonic==1.6
@@ -301,7 +301,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@28a5ba1127cb4a72bbd322bf988da8ee5e784a87
+peft @ git+https://github.com/huggingface/peft.git@b3176eff49574057d91445e23a0d2f50706f05de
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -332,7 +332,7 @@ pure-pcapy3==1.0.1
 pure_eval==0.2.3
 py-cpuinfo==9.0.0
 pyaes==1.6.1
-pyarrow==17.0.0
+pyarrow==18.0.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycodestyle==2.12.1
@@ -353,7 +353,7 @@ pyobjc-framework-Metal==10.3.1
 pyogrio==0.10.0
 pyOpenSSL==24.2.1
 pyparsing==2.4.7
-pypdf==5.0.1
+pypdf==5.1.0
 pyperclip==1.9.0
 PyPika==0.48.9
 pyproj==3.7.0
@@ -416,7 +416,7 @@ setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.9.0
+simsimd==5.9.2
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -466,7 +466,7 @@ torchmetrics==1.5.1
 torchsummary==1.5.1
 torchvision==0.20.0
 tornado==6.4.1
-tqdm==4.66.5
+tqdm==4.66.6
 traitlets==5.14.3
 transformers==4.46.0
 tree-sitter==0.23.2
