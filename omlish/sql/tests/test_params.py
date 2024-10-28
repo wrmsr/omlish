@@ -1,6 +1,7 @@
 from ... import lang
-from ..params import NumericParamsPreparer
 from ..params import LinearParamsPreparer
+from ..params import NamedParamsPreparer
+from ..params import NumericParamsPreparer
 
 
 def test_linear():
@@ -34,4 +35,20 @@ def test_numeric():
         'foo',
         2,
         'bar',
+    )
+
+
+def test_named():
+    pp = NamedParamsPreparer(NamedParamsPreparer.render_named)
+    assert pp.add(1) == ':_0'
+    assert pp.add('foo') == ':foo'
+    assert pp.add(1) == ':_0'
+    assert pp.add(2) == ':_1'
+    assert pp.add('foo') == ':foo'
+    assert pp.add('bar') == ':bar'
+    assert pp.prepare() == lang.Args(
+        _0=1,
+        foo='foo',
+        _1=2,
+        bar='bar',
     )
