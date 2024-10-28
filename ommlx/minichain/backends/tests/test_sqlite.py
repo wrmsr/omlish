@@ -19,5 +19,5 @@ def test_sqlite():
     store.index(VectorIndexed(2, Vector([1., 0., 0.])))
 
     for sim in Similarity:
-        hits = store.search(VectorSearch(Vector([0., .1, 0.]), similarity=sim))
+        hits = store.search(VectorSearch(Vector([0., .1, 0.])), similarity=sim)
         print(hits)

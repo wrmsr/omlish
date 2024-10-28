@@ -4,6 +4,7 @@ import typing as ta
 from omlish import lang
 from omlish.testing import pytest as ptu
 
+from ..vectors import Similarity
 from ..vectors import Vector
 from ..vectors import VectorHit
 from ..vectors import VectorHits
@@ -33,7 +34,12 @@ class SimpleVectorStore(VectorStore):
     def index(self, doc: VectorIndexed) -> None:
         self._docs.append(doc)
 
-    def search(self, search: VectorSearch) -> VectorHits:
+    def search(
+            self,
+            search: VectorSearch,
+            *,
+            similarity: Similarity | None = None,  # FIXME
+    ) -> VectorHits:
         nsv = l2_norm(search.vec)
         h: list[tuple[float, int]] = []
         for i, doc in enumerate(self._docs):

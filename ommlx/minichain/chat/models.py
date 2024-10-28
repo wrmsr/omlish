@@ -12,7 +12,7 @@ from ..models import ModelResponse
 from .messages import AiMessage
 from .messages import Chat
 from .messages import Message
-from .options import ChatRequestOptions
+from .options import ChatOptions
 
 
 ##
@@ -38,7 +38,7 @@ ChatOutput: ta.TypeAlias = AiChoices
 class ChatRequest(
     ModelRequest[
         ChatInput,
-        ChatRequestOptions,
+        ChatOptions,
         ChatNew,
     ],
     lang.Final,
@@ -60,7 +60,7 @@ class ChatResponse(ModelResponse[ChatOutput], lang.Final):
 class ChatModel(
     Model[
         ChatRequest,
-        ChatRequestOptions,
+        ChatOptions,
         ChatNew,
         ChatResponse,
     ],

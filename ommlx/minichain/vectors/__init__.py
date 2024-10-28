@@ -1,17 +1,20 @@
 from .embeddings import (  # noqa
     EmbeddingModel,
+    EmbeddingOptions,
     EmbeddingOutput,
     EmbeddingRequest,
-    EmbeddingRequestOptions,
     EmbeddingResponse,
 )
 
-from .stores import (  # noqa
+from .index import (  # noqa
+    VectorIndexed,
+    VectorIndexService,
+)
+
+from .search import (  # noqa
     VectorHit,
     VectorHits,
-    VectorIndexed,
     VectorSearch,
-    VectorStore,
 )
 
 from .similarity import (  # noqa
@@ -25,4 +28,8 @@ from .similarity import (  # noqa
 from .vectors import (  # noqa
     Vector,
     Vectorable,
+)
+
+from .stores import (  # noqa
+    VectorStore,
 )

@@ -7,12 +7,13 @@ import sqlite3
 from omlish import lang
 
 from ..vectors import CALC_NP_SIMILARITIES_FUNCS
+from ..vectors import Similarity
 from ..vectors import Vector
 from ..vectors import VectorHit
 from ..vectors import VectorHits
 from ..vectors import VectorIndexed
 from ..vectors import VectorSearch
-from ..vectors.stores import VectorStore
+from ..vectors import VectorStore
 
 
 class SqliteVectorStore(VectorStore):
@@ -42,9 +43,14 @@ class SqliteVectorStore(VectorStore):
             (doc.v, doc.vec.bytes()),
         )
 
-    def search(self, search: VectorSearch) -> VectorHits:
+    def search(
+            self,
+            search: VectorSearch,
+            *,
+            similarity: Similarity | None = None,
+    ) -> VectorHits:
         snp = search.vec.np()
-        npfn = CALC_NP_SIMILARITIES_FUNCS[search.similarity]
+        npfn = CALC_NP_SIMILARITIES_FUNCS[similarity or Similarity.DOT]
 
         def calc_score(binary):
             rnp = Vector(binary).np()

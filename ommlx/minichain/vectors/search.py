@@ -5,10 +5,10 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..options import Option
-from ..services import Request
-from ..services import RequestOption
-from ..services import Response
 from ..services import Service
+from ..services import ServiceOption
+from ..services import ServiceRequest
+from ..services import ServiceResponse
 from .similarity import Similarity
 from .vectors import Vector
 
@@ -55,14 +55,14 @@ VectorSearchInput: ta.TypeAlias = VectorSearch
 VectorSearchNew: ta.TypeAlias = str
 VectorSearchOutput: ta.TypeAlias = str
 
-VectorSearchRequestOptions: ta.TypeAlias = RequestOption | VectorSearchOption
+VectorSearchOptions: ta.TypeAlias = ServiceOption | VectorSearchOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class VectorSearchRequest(
-    Request[
+    ServiceRequest[
         VectorSearchInput,
-        VectorSearchRequestOptions,
+        VectorSearchOptions,
         VectorSearchNew,
     ],
     lang.Final,
@@ -73,14 +73,14 @@ class VectorSearchRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class VectorSearchResponse(Response[VectorSearchOutput], lang.Final):
+class VectorSearchResponse(ServiceResponse[VectorSearchOutput], lang.Final):
     pass
 
 
-class VectorSearchModel(
+class VectorSearchService(
     Service[
         VectorSearchRequest,
-        VectorSearchRequestOptions,
+        VectorSearchOptions,
         VectorSearchNew,
         VectorSearchResponse,
     ],

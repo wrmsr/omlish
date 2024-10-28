@@ -3,13 +3,13 @@ from omlish import lang
 
 from ..json import JsonSchema
 from ..options import UniqueOption
-from .options import ChatRequestOption
+from .options import ChatOption
 
 
 ##
 
 
-class ResponseFormat(ChatRequestOption, UniqueOption, lang.Abstract, lang.Sealed):
+class ResponseFormat(ChatOption, UniqueOption, lang.Abstract, lang.Sealed):
     pass
 
 

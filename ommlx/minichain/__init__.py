@@ -18,8 +18,8 @@ from .chat import (  # noqa
     ChatRequest,
     ChatResponse,
 
-    ChatRequestOption,
-    ChatRequestOptions,
+    ChatOption,
+    ChatOptions,
 
     Tool,
     ToolDtype,
@@ -42,7 +42,7 @@ from .models import (  # noqa
 
     Model,
     ModelRequest,
-    ModelRequestOption,
+    ModelOption,
     ModelResponse,
 )
 
@@ -60,7 +60,7 @@ from .prompts import (  # noqa
     PromptNew,
     PromptOutput,
     PromptRequest,
-    PromptRequestOptions,
+    PromptOptions,
     PromptResponse,
 )
 
