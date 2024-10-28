@@ -2,24 +2,24 @@ import typing as ta
 
 from omlish import lang
 
-from .services import Option
-from .services import Request
-from .services import Response
+from .options import Option
 from .services import Service
+from .services import ServiceRequest
+from .services import ServiceResponse
 
 
-RequestT = ta.TypeVar('RequestT', bound='Request')
-ResponseT = ta.TypeVar('ResponseT', bound='Response')
-NewT = ta.TypeVar('NewT')
-OptionT = ta.TypeVar('OptionT', bound='Option')
+ServiceRequestT = ta.TypeVar('ServiceRequestT', bound='ServiceRequest')
+ServiceOptionT = ta.TypeVar('ServiceOptionT', bound='Option')
+ServiceNewT = ta.TypeVar('ServiceNewT')
+ServiceResponseT = ta.TypeVar('ServiceResponseT', bound='ServiceResponse')
 
 
 class WrapperService(
     Service[
-        RequestT,
-        OptionT,
-        NewT,
-        ResponseT,
+        ServiceRequestT,
+        ServiceOptionT,
+        ServiceNewT,
+        ServiceResponseT,
     ],
     lang.Abstract,
 ):
@@ -28,11 +28,11 @@ class WrapperService(
         self._underlying = underlying
 
     @property
-    def underlying(self) -> Service[RequestT, OptionT, NewT, ResponseT]:
+    def underlying(self) -> Service[ServiceRequestT, ServiceOptionT, ServiceNewT, ServiceResponseT]:
         return self._underlying
 
     @property
-    def request_cls(self) -> type[Request]:  # type: ignore[override]
+    def request_cls(self) -> type[ServiceRequest]:  # type: ignore[override]
         return self._underlying.request_cls
 
     @property
@@ -40,12 +40,12 @@ class WrapperService(
         return self._underlying.option_cls_set
 
     @property
-    def new_request_cls(self) -> ta.Any:
-        return self._underlying.new_request_cls
+    def new_cls(self) -> ta.Any:
+        return self._underlying.new_cls
 
     @property
-    def response_cls(self) -> type[Response]:  # type: ignore[override]
+    def response_cls(self) -> type[ServiceResponse]:  # type: ignore[override]
         return self._underlying.response_cls
 
-    def invoke(self, request: RequestT) -> ResponseT:
+    def invoke(self, request: ServiceRequestT) -> ServiceResponseT:
         return self._underlying.invoke(request)

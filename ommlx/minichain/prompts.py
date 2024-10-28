@@ -5,12 +5,12 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .generative import Generative
-from .generative import GenerativeRequestOption
+from .generative import GenerativeOption
 from .models import Model
+from .models import ModelOption
 from .models import ModelRequest
-from .models import ModelRequestOption
 from .models import ModelResponse
-from .services import RequestOption
+from .services import ServiceOption
 
 
 ##
@@ -20,14 +20,14 @@ PromptInput: ta.TypeAlias = str
 PromptNew: ta.TypeAlias = str
 PromptOutput: ta.TypeAlias = str
 
-PromptRequestOptions: ta.TypeAlias = RequestOption | ModelRequestOption | GenerativeRequestOption
+PromptOptions: ta.TypeAlias = ServiceOption | ModelOption | GenerativeOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class PromptRequest(
     ModelRequest[
         PromptInput,
-        PromptRequestOptions,
+        PromptOptions,
         PromptNew,
     ],
     lang.Final,
@@ -45,7 +45,7 @@ class PromptResponse(ModelResponse[PromptOutput], lang.Final):
 class PromptModel(
     Model[
         PromptRequest,
-        PromptRequestOptions,
+        PromptOptions,
         PromptNew,
         PromptResponse,
     ],

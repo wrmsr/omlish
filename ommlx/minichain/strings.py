@@ -13,7 +13,7 @@ from .chat import UserMessage
 from .content import Content
 from .content import Image
 from .content import Placeholder
-from .models import Request
+from .services import ServiceRequest
 
 
 StringTransformable = ta.Union[  # noqa
@@ -21,7 +21,7 @@ StringTransformable = ta.Union[  # noqa
     ta.Sequence['StringTransformable'],
     Content,
     Message,
-    Request,
+    ServiceRequest,
 ]
 
 StringTransformableT = ta.TypeVar('StringTransformableT', bound=StringTransformable)
@@ -74,7 +74,7 @@ class StringTransform:
     #
 
     @apply.register
-    def apply_request(self, s: Request) -> Request:
+    def apply_service_request(self, s: ServiceRequest) -> ServiceRequest:
         return dc.replace(s, v=self.apply(s.v))
 
 

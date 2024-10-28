@@ -15,17 +15,17 @@ class Generative(lang.Abstract):
 ##
 
 
-class GenerativeRequestOption(Option, lang.Abstract):
+class GenerativeOption(Option, lang.Abstract):
     pass
 
 
-class TopK(GenerativeRequestOption, UniqueOption, ScalarOption[int], lang.Final):
+class TopK(GenerativeOption, UniqueOption, ScalarOption[int], lang.Final):
     pass
 
 
-class Temperature(GenerativeRequestOption, UniqueOption, ScalarOption[float], lang.Final):
+class Temperature(GenerativeOption, UniqueOption, ScalarOption[float], lang.Final):
     pass
 
 
-class MaxTokens(GenerativeRequestOption, UniqueOption, ScalarOption[int], lang.Final):
+class MaxTokens(GenerativeOption, UniqueOption, ScalarOption[int], lang.Final):
     pass

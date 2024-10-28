@@ -12,16 +12,16 @@ from .options import Options
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
-RequestT = ta.TypeVar('RequestT', bound='Request')
-OptionT = ta.TypeVar('OptionT', bound='Option')
-NewT = ta.TypeVar('NewT')
-ResponseT = ta.TypeVar('ResponseT', bound='Response')
+ServiceRequestT = ta.TypeVar('ServiceRequestT', bound='ServiceRequest')
+ServiceOptionT = ta.TypeVar('ServiceOptionT', bound='Option')
+ServiceNewT = ta.TypeVar('ServiceNewT')
+ServiceResponseT = ta.TypeVar('ServiceResponseT', bound='ServiceResponse')
 
 
 ##
 
 
-class RequestOption(Option, lang.Abstract):
+class ServiceOption(Option, lang.Abstract):
     pass
 
 
@@ -29,16 +29,16 @@ class RequestOption(Option, lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
+class ServiceRequest(lang.Abstract, ta.Generic[T, ServiceOptionT, ServiceNewT]):
     v: T
 
-    options: Options[OptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
+    options: Options[ServiceOptionT] = dc.xfield(Options(), repr_fn=dc.truthy_repr)
 
     @classmethod
     def new(
             cls,
-            v: NewT,
-            *options: OptionT,
+            v: ServiceNewT,
+            *options: ServiceOptionT,
             **kwargs: ta.Any,
     ) -> ta.Self:
         return cls(
@@ -49,15 +49,15 @@ class Request(lang.Abstract, ta.Generic[T, OptionT, NewT]):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Response(lang.Abstract, ta.Generic[T]):
+class ServiceResponse(lang.Abstract, ta.Generic[T]):
     v: T
 
 
-class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
-    request_cls: type[Request]
+class Service(lang.Abstract, ta.Generic[ServiceRequestT, ServiceOptionT, ServiceNewT, ServiceResponseT]):
+    request_cls: type[ServiceRequest]
     option_cls_set: frozenset[type[Option]]
-    new_request_cls: ta.Any
-    response_cls: type[Response]
+    new_cls: ta.Any
+    response_cls: type[ServiceResponse]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -82,7 +82,7 @@ class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
             a for a in (
                 'request_cls',
                 'option_cls_set',
-                'new_request_cls',
+                'new_cls',
                 'response_cls',
             ) if hasattr(cls, a)
         )
@@ -91,11 +91,11 @@ class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
                 raise AttributeError('Must set all service attrs if any set')
             return
 
-        request_ann, option_ann, new_request_ann, response_ann = service_base.args
+        request_ann, option_ann, new_ann, response_ann = service_base.args
 
-        request_cls: type[Request] = check.issubclass(check.isinstance(request_ann, type), Request)  # noqa
-        response_cls: type[Response] = check.issubclass(check.isinstance(response_ann, type), Response)  # noqa
-        new_request_cls: ta.Any = new_request_ann
+        request_cls: type[ServiceRequest] = check.issubclass(check.isinstance(request_ann, type), ServiceRequest)  # noqa
+        response_cls: type[ServiceResponse] = check.issubclass(check.isinstance(response_ann, type), ServiceResponse)  # noqa
+        new_cls: ta.Any = new_ann
 
         option_cls_set: frozenset[type[Option]]
         if isinstance(option_ann, rfl.Union):
@@ -105,31 +105,31 @@ class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
 
         cls.request_cls = request_cls
         cls.option_cls_set = option_cls_set
-        cls.new_request_cls = new_request_cls
+        cls.new_cls = new_cls
         cls.response_cls = response_cls
 
     @abc.abstractmethod
-    def invoke(self, request: RequestT) -> ResponseT:
+    def invoke(self, request: ServiceRequestT) -> ServiceResponseT:
         raise NotImplementedError
 
     @ta.final
     def invoke_new(
             self,
-            v: NewT,
-            *options: OptionT,
+            v: ServiceNewT,
+            *options: ServiceOptionT,
             **kwargs: ta.Any,
-    ) -> ResponseT:
+    ) -> ServiceResponseT:
         request = self.request_cls.new(
             v,
             *options,
             **kwargs,
         )
-        return self.invoke(ta.cast(RequestT, request))
+        return self.invoke(ta.cast(ServiceRequestT, request))
 
     def __call__(
             self,
-            v: NewT,
-            *options: OptionT,
+            v: ServiceNewT,
+            *options: ServiceOptionT,
             **kwargs: ta.Any,
-    ) -> ResponseT:
+    ) -> ServiceResponseT:
         return self.invoke_new(v, *options, **kwargs)

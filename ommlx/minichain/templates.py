@@ -1,9 +1,9 @@
 import abc
 import typing as ta
 
-from .models import Model
-from .models import Request
-from .models import Response
+from .services import Service
+from .services import ServiceRequest
+from .services import ServiceResponse
 from .strings import transform_strings
 from .wrappers import WrapperService
 
@@ -40,10 +40,10 @@ class DictTemplater(Templater):
 
 
 class TemplatingService(WrapperService):
-    def __init__(self, underlying: Model, templater: Templater) -> None:
+    def __init__(self, underlying: Service, templater: Templater) -> None:
         super().__init__(underlying)
         self._templater = templater
 
-    def invoke(self, request: Request) -> Response:
+    def invoke(self, request: ServiceRequest) -> ServiceResponse:
         out_request = transform_strings(self._templater.apply, request)
         return super().invoke(out_request)

@@ -40,11 +40,10 @@ from .models import (  # noqa
 
     TokenUsage,
 
-    RequestOption,
-
     Model,
-    Request,
-    Response,
+    ModelRequest,
+    ModelRequestOption,
+    ModelResponse,
 )
 
 from .options import (  # noqa
@@ -63,4 +62,11 @@ from .prompts import (  # noqa
     PromptRequest,
     PromptRequestOptions,
     PromptResponse,
+)
+
+from .services import (  # noqa
+    Service,
+    ServiceOption,
+    ServiceRequest,
+    ServiceResponse,
 )
