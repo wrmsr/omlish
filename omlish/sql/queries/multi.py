@@ -28,7 +28,7 @@ class MultiBuilder(ExprBuilder):
         if len(es) == 1:
             return self.expr(es[0])
         else:
-            return Multi(k, [self.expr(e) for e in es])
+            return Multi(k, tuple(self.expr(e) for e in es))
 
     def and_(self, *es: CanExpr) -> Expr:
         return self.multi(MultiKind.AND, *es)

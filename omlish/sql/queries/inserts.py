@@ -35,7 +35,7 @@ class InsertBuilder(ExprBuilder, RelationBuilder):
         if isinstance(vs, Values):
             return vs
         else:
-            return Values([self.expr(v) for v in vs])
+            return Values(tuple(self.expr(v) for v in vs))
 
     def insert(
             self,
@@ -44,7 +44,7 @@ class InsertBuilder(ExprBuilder, RelationBuilder):
             data: Select | Values | ta.Sequence[CanExpr],
     ) -> Insert:
         return Insert(
-            columns=[self.ident(c) for c in columns],
+            columns=tuple(self.ident(c) for c in columns),
             into=self.relation(into),
             data=data if isinstance(data, Select) else self.values(data),
         )

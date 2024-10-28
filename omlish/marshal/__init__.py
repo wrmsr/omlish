@@ -77,9 +77,12 @@ from .objects import (  # noqa
 
 from .polymorphism import (  # noqa
     Impl,
+    Impls,
     Polymorphism,
     PolymorphismMarshalerFactory,
     PolymorphismUnmarshalerFactory,
+    make_polymorphism_marshaler,
+    make_polymorphism_unmarshaler,
     polymorphism_from_subclasses,
 )
 
@@ -101,6 +104,8 @@ from .standard import (  # noqa
 
 from .unions import (  # noqa
     PRIMITIVE_UNION_TYPES,
+    PolymorphismUnionMarshalerFactory,
+    PolymorphismUnionUnmarshalerFactory,
     PrimitiveUnionMarshaler,
     PrimitiveUnionMarshalerFactory,
     PrimitiveUnionUnmarshaler,
