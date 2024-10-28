@@ -1,11 +1,17 @@
 import os.path
+import typing as ta
 
-import yaml
-
+from omlish import lang
 from omlish import secrets as sec
 
 
-SECRETS_FILE = os.getenv('SECRETS_FILE', '~/Dropbox/.dotfiles/secrets.yml')
+if ta.TYPE_CHECKING:
+    import yaml
+else:
+    yaml = lang.proxy_import('yaml')
+
+
+SECRETS_FILE = os.getenv('SECRETS_FILE', '~/.omlish/secrets.yml')
 
 
 def load_secrets() -> sec.Secrets:
