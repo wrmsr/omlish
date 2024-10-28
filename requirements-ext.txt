@@ -31,7 +31,7 @@ pyobjc-framework-metal==10.3.1; sys_platform == "darwin"
 ##
 
 pandas==2.2.3
-pyarrow==17.0.0
+pyarrow==18.0.0
 
 opencv-python==4.10.0.84
 pillow==11.0.0
@@ -81,7 +81,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.9.0
+simsimd==5.9.2
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -177,7 +177,7 @@ logbook==1.8.0
 
 # tenacity==9.0.0
 
-mitogen==0.3.14
+mitogen==0.3.15
 
 cloudpickle==3.0.0
 
@@ -208,7 +208,7 @@ langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
 # langchain-nomic==0.2.0
 langchain-ollama==0.2.0
-langchain-openai==0.2.3
+langchain-openai==0.2.4
 langchain-text-splitters==0.3.0
 
 langchainhub==0.1.21
@@ -241,7 +241,7 @@ tantivy==0.22
 
 neo4j==5.25.0
 
-pypdf==5.0.1
+pypdf==5.1.0
 
 fparser==0.1.4
 
