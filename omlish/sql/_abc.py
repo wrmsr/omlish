@@ -1,20 +1,20 @@
 import typing as ta
 
 
-DBAPITypeCode: ta.TypeAlias = ta.Any | None
+DbapiTypeCode: ta.TypeAlias = ta.Any | None
 
-DBAPIColumnDescription: ta.TypeAlias = tuple[
-    str,
-    DBAPITypeCode,
-    int | None,
-    int | None,
-    int | None,
-    int | None,
-    bool | None,
+DbapiColumnDescription: ta.TypeAlias = tuple[
+    str,  # name
+    DbapiTypeCode,  # type_code
+    int | None,  # display_size
+    int | None,  # internal_size
+    int | None,  # precision
+    int | None,  # scale
+    bool | None,  # null_ok
 ]
 
 
-class DBAPIConnection(ta.Protocol):
+class DbapiConnection(ta.Protocol):
     def close(self) -> object: ...
 
     def commit(self) -> object: ...
@@ -22,12 +22,12 @@ class DBAPIConnection(ta.Protocol):
     # optional:
     # def rollback(self) -> ta.Any: ...
 
-    def cursor(self) -> 'DBAPICursor': ...
+    def cursor(self) -> 'DbapiCursor': ...
 
 
-class DBAPICursor(ta.Protocol):
+class DbapiCursor(ta.Protocol):
     @property
-    def description(self) -> ta.Sequence[DBAPIColumnDescription] | None: ...
+    def description(self) -> ta.Sequence[DbapiColumnDescription] | None: ...
 
     @property
     def rowcount(self) -> int: ...
@@ -60,6 +60,6 @@ class DBAPICursor(ta.Protocol):
 
     arraysize: int
 
-    def setinputsizes(self, sizes: ta.Sequence[DBAPITypeCode | int | None]) -> object: ...
+    def setinputsizes(self, sizes: ta.Sequence[DbapiTypeCode | int | None]) -> object: ...
 
     def setoutputsize(self, size: int, column: int = ...) -> object: ...
