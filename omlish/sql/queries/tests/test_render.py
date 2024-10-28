@@ -19,6 +19,8 @@ def test_render():
             'some_table',
             [123, 'abc'],
         ),
+        Q.select([Q.p('foo'), Q.p(), Q.p('bar'), Q.p('foo')]),
     ]:
         print(query)
         print(render(query))
+        print()
