@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - refuse to marshal anon params
+"""
 import enum
 import typing as ta
 

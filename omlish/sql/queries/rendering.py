@@ -15,17 +15,21 @@ def needs_parens(self, e: Expr) -> bool:
     else:
         raise TypeError(e)
 """
+import dataclasses as dc
 import io
 import typing as ta
 
 from ... import dispatch
 from ... import lang
+from ..params import ParamStyle
+from ..params import make_params_preparer
 from .base import Node
 from .binary import Binary
 from .binary import BinaryOp
 from .binary import BinaryOps
 from .exprs import Literal
 from .exprs import NameExpr
+from .exprs import Param
 from .idents import Ident
 from .inserts import Insert
 from .inserts import Values
@@ -40,20 +44,40 @@ from .unary import UnaryOp
 from .unary import UnaryOps
 
 
+@dc.dataclass(frozen=True)
+class RenderedQuery(lang.Final):
+    s: str
+    args: lang.Args
+
+
 class Renderer(lang.Abstract):
-    def __init__(self, out: ta.TextIO) -> None:
+    def __init__(
+            self,
+            out: ta.TextIO,
+            *,
+            param_style: ParamStyle | None = None,
+    ) -> None:
         super().__init__()
         self._out = out
+        self._param_style = param_style if param_style is not None else self.default_param_style
+
+        self._params_preparer = make_params_preparer(self._param_style)
+
+    default_param_style: ta.ClassVar[ParamStyle] = ParamStyle.PYFORMAT
+
+    def args(self) -> lang.Args:
+        return self._params_preparer.prepare()
 
     @dispatch.method
-    def render(self, o: ta.Any) -> None:
+    def render(self, o: ta.Any) -> str:
         raise TypeError(o)
 
     @classmethod
-    def render_str(cls, o: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> str:
+    def render_str(cls, o: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> RenderedQuery:
         out = io.StringIO()
-        cls(out, *args, **kwargs).render(o)
-        return out.getvalue()
+        pp = cls(out, *args, **kwargs)
+        pp.render(o)
+        return RenderedQuery(out.getvalue(), pp.args())
 
 
 class StdRenderer(Renderer):
@@ -93,6 +117,10 @@ class StdRenderer(Renderer):
     @Renderer.render.register
     def render_name_expr(self, o: NameExpr) -> None:
         self.render(o.n)
+
+    @Renderer.render.register
+    def render_param(self, o: Param) -> None:
+        self._out.write(self._params_preparer.add(o.n if o.n is not None else id(o)))
 
     # idents
 
@@ -201,5 +229,5 @@ class StdRenderer(Renderer):
         self._out.write(sfx)
 
 
-def render(n: Node, **kwargs: ta.Any) -> str:
+def render(n: Node, **kwargs: ta.Any) -> RenderedQuery:
     return StdRenderer.render_str(n, **kwargs)
