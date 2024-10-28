@@ -5,10 +5,27 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .generative import Generative
-from .models import Model
-from .models import ModelRequest
-from .models import ModelResponse
+from .services import Request
 from .services import RequestOption
+from .services import Response
+from .services import Service
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class SearchHit(lang.Final):
+    title: str | None
+    link: str | None
+    snippet: str | None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class SearchHits(lang.Final):
+    l: ta.Sequence[SearchHit]
+
+    total_results: int | None = None
 
 
 ##
@@ -16,14 +33,14 @@ from .services import RequestOption
 
 SearchInput: ta.TypeAlias = str
 SearchNew: ta.TypeAlias = str
-SearchOutput: ta.TypeAlias = str
+SearchOutput: ta.TypeAlias = SearchHits
 
 SearchRequestOptions: ta.TypeAlias = RequestOption
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SearchRequest(
-    ModelRequest[
+    Request[
         SearchInput,
         SearchRequestOptions,
         SearchNew,
@@ -36,24 +53,12 @@ class SearchRequest(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class SearchHit(lang.Final):
-    title: str
-    link: str
-    snippet: str | None
+class SearchResponse(Response[SearchOutput], lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class SearchHits(lang.Final):
-    l: ta.Sequence[SearchHit]
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class SearchResponse(ModelResponse[SearchOutput], lang.Final):
-    hits: SearchHits
-
-
-class SearchModel(
-    Model[
+class SearchService(
+    Service[
         SearchRequest,
         SearchRequestOptions,
         SearchNew,
