@@ -69,6 +69,10 @@ class DbapiDriver:
 
 
 class DbapiDrivers(lang.Namespace):
+
+    ##
+    # sqlite
+
     SQLITE3 = DbapiDriver(
         name='sqlite3',
         dialect=DbapiDialect.SQLITE,
@@ -88,7 +92,8 @@ class DbapiDrivers(lang.Namespace):
         param_style=ParamStyle.QMARK,
     )
 
-    #
+    ##
+    # mysql
 
     PYMYSQL = DbapiDriver(
         name='pymysql',
@@ -112,7 +117,8 @@ class DbapiDrivers(lang.Namespace):
         module_name='MySQLdb',
     )
 
-    #
+    ##
+    # postgres
 
     PG8000 = DbapiDriver(
         name='pg8000',
@@ -132,7 +138,8 @@ class DbapiDrivers(lang.Namespace):
         param_style=ParamStyle.PYFORMAT,
     )
 
-    #
+    ##
+    # snowflake
 
     SNOWFLAKE = DbapiDriver(
         name='snowflake',
