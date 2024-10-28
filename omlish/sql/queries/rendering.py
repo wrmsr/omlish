@@ -201,5 +201,5 @@ class StdRenderer(Renderer):
         self._out.write(sfx)
 
 
-def render(n: Node) -> str:
-    return StdRenderer.render_str(n)
+def render(n: Node, **kwargs: ta.Any) -> str:
+    return StdRenderer.render_str(n, **kwargs)
