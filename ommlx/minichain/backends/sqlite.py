@@ -7,11 +7,11 @@ import sqlite3
 from omlish import lang
 
 from ..vectors import CALC_NP_SIMILARITIES_FUNCS
-from ..vectors import Hit
-from ..vectors import Hits
-from ..vectors import Indexed
-from ..vectors import Search
 from ..vectors import Vector
+from ..vectors import VectorHit
+from ..vectors import VectorHits
+from ..vectors import VectorIndexed
+from ..vectors import VectorSearch
 from ..vectors.stores import VectorStore
 
 
@@ -36,13 +36,13 @@ class SqliteVectorStore(VectorStore):
             ')',
         ]))
 
-    def index(self, doc: Indexed) -> None:
+    def index(self, doc: VectorIndexed) -> None:
         self._db.execute(
             f'insert into {self._table_name} (v, vec) values (?, ?)',  # noqa
             (doc.v, doc.vec.bytes()),
         )
 
-    def search(self, search: Search) -> Hits:
+    def search(self, search: VectorSearch) -> VectorHits:
         snp = search.vec.np()
         npfn = CALC_NP_SIMILARITIES_FUNCS[search.similarity]
 
@@ -63,8 +63,8 @@ class SqliteVectorStore(VectorStore):
 
             ret = []
             for row in rows:
-                ret.append(Hit(row[0], row[1]))
-            return Hits(ret)
+                ret.append(VectorHit(row[0], row[1]))
+            return VectorHits(ret)
 
         finally:
             self._db.create_function(udf_name, 0, lang.void)

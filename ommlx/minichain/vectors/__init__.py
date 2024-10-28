@@ -7,10 +7,10 @@ from .embeddings import (  # noqa
 )
 
 from .stores import (  # noqa
-    Hit,
-    Hits,
-    Indexed,
-    Search,
+    VectorHit,
+    VectorHits,
+    VectorIndexed,
+    VectorSearch,
     VectorStore,
 )
 

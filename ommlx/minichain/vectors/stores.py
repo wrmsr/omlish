@@ -12,13 +12,13 @@ from .vectors import Vector
 
 
 @dc.dataclass(frozen=True)
-class Indexed(lang.Final):
+class VectorIndexed(lang.Final):
     v: ta.Any
     vec: Vector
 
 
 @dc.dataclass(frozen=True)
-class Search(lang.Final):
+class VectorSearch(lang.Final):
     vec: Vector
 
     _: dc.KW_ONLY
@@ -28,21 +28,21 @@ class Search(lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class Hit(lang.Final):
+class VectorHit(lang.Final):
     v: ta.Any
     score: float
 
 
 @dc.dataclass(frozen=True)
-class Hits(lang.Final):
-    l: ta.Sequence[Hit]
+class VectorHits(lang.Final):
+    l: ta.Sequence[VectorHit]
 
 
 class VectorStore(lang.Abstract):
     @abc.abstractmethod
-    def index(self, doc: Indexed) -> None:
+    def index(self, doc: VectorIndexed) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def search(self, search: Search) -> Hits:
+    def search(self, search: VectorSearch) -> VectorHits:
         raise NotImplementedError

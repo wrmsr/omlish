@@ -2,10 +2,10 @@ import sqlite3
 
 from omlish.testing import pytest as ptu
 
-from ...vectors import Indexed
-from ...vectors import Search
 from ...vectors import Similarity
 from ...vectors import Vector
+from ...vectors import VectorIndexed
+from ...vectors import VectorSearch
 from ..sqlite import SqliteVectorStore
 
 
@@ -14,10 +14,10 @@ def test_sqlite():
     db = sqlite3.connect(':memory:')
     store = SqliteVectorStore(db, 'foo')  # noqa
 
-    store.index(Indexed(0, Vector([0., 0., 1.])))
-    store.index(Indexed(1, Vector([0., 1., 0.])))
-    store.index(Indexed(2, Vector([1., 0., 0.])))
+    store.index(VectorIndexed(0, Vector([0., 0., 1.])))
+    store.index(VectorIndexed(1, Vector([0., 1., 0.])))
+    store.index(VectorIndexed(2, Vector([1., 0., 0.])))
 
     for sim in Similarity:
-        hits = store.search(Search(Vector([0., .1, 0.]), similarity=sim))
+        hits = store.search(VectorSearch(Vector([0., .1, 0.]), similarity=sim))
         print(hits)

@@ -1,6 +1,9 @@
 """
 TODO:
  - end-of-line   = ( cr lf / cr / lf )
+
+See:
+ - https://github.com/florimondmanca/httpx-sse/blob/master/src/httpx_sse/_decoders.py
 """
 import string
 import typing as ta
