@@ -65,11 +65,13 @@ class Service(lang.Abstract, ta.Generic[RequestT, OptionT, NewT, ResponseT]):
         if lang.is_abstract_class(cls):
             return
 
+        gmro = rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(cls)
+
         service_bases = [
             rb
-            for b in rfl.get_orig_bases(cls)
-            if isinstance(rb := rfl.type_(b), rfl.Generic)
-            and (rb.cls is Service or rb.cls.__name__ == 'Model')  # FIXME: lol
+            for rb in gmro
+            if isinstance(rb, rfl.Generic)
+            and rb.cls is Service
         ]
         if not service_bases:
             return
