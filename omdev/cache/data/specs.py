@@ -1,4 +1,5 @@
 import hashlib
+import json
 import operator
 import typing as ta
 import urllib.parse
@@ -9,7 +10,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats import json as jf
 
 from .actions import Action
 from .consts import SERIALIZATION_VERSION
@@ -26,7 +27,7 @@ class Spec(lang.Abstract, lang.Sealed):
 
     @cached.property
     def json(self) -> str:
-        return json.dumps_compact(msh.marshal(self, Spec), sort_keys=True)
+        return json.dumps(msh.marshal(self, Spec), **jf.COMPACT_KWARGS, sort_keys=True)
 
     @cached.property
     def digest(self) -> str:
