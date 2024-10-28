@@ -29,6 +29,20 @@ class ParamsPreparer(lang.Abstract):
         raise NotImplementedError
 
 
+class LinearParamsPreparer(ParamsPreparer, lang.Final):
+    def __init__(self, placeholder: str) -> None:
+        super().__init__()
+        self._placeholder = placeholder
+        self._args: list[ParamKey] = []
+
+    def add(self, k: ParamKey) -> str:
+        self._args.append(k)
+        return self._placeholder
+
+    def prepare(self) -> lang.Args:
+        return lang.Args(*self._args)
+
+
 class NumericParamsPreparer(ParamsPreparer, lang.Final):
     def __init__(self) -> None:
         super().__init__()
@@ -59,7 +73,3 @@ class NumericParamsPreparer(ParamsPreparer, lang.Final):
 
     def prepare(self) -> lang.Args:
         return lang.Args(*self._args)
-
-
-class ReusableParamsPreparer(ParamsPreparer, lang.Abstract):  # noqa
-    pass
