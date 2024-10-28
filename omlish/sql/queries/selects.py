@@ -44,7 +44,7 @@ class SelectBuilder(ExprBuilder, RelationBuilder):
             where: CanExpr | None = None,
     ) -> Select:
         return Select(
-            [self.select_item(i) for i in items],
+            tuple(self.select_item(i) for i in items),
             from_=self.relation(from_) if from_ is not None else None,
             where=self.expr(where) if where is not None else None,
         )

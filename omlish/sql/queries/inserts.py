@@ -18,11 +18,11 @@ from .stmts import Stmt
 
 
 class Values(dc.Frozen, lang.Final):
-    vs: ta.Sequence[Expr]
+    vs: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
 
 
 class Insert(Stmt, lang.Final):
-    columns: ta.Sequence[Ident]
+    columns: ta.Sequence[Ident] = dc.xfield(coerce=tuple)
     into: Relation
     data: Values | Select
 
