@@ -3,9 +3,9 @@ https://docs.mistral.ai/getting-started/models/
 """
 import os
 import typing as ta
-import urllib.request
 
 from omlish import check
+from omlish import http
 from omlish.formats import json
 
 from ..chat import AiChoice
@@ -59,19 +59,18 @@ class MistralChatModel(ChatModel):
             ],
         }
 
-        with urllib.request.urlopen(urllib.request.Request(  # noqa
-                'https://api.mistral.ai/v1/chat/completions',
-                headers={
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': f'Bearer {key}',
-                },
-                data=json.dumps_compact(req_dct).encode('utf-8'),
-                method='POST',
-        )) as resp:
-            resp_buf = resp.read()
+        resp = http.request(
+            'https://api.mistral.ai/v1/chat/completions',
+            method='POST',
+            data=json.dumps_compact(req_dct).encode('utf-8'),
+            headers={
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {key}',
+            },
+        )
 
-        resp_dct = json.loads(resp_buf.decode('utf-8'))
+        resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
         return ChatResponse(v=[
             AiChoice(AiMessage(c['message']['content']))

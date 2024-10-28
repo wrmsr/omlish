@@ -3,9 +3,9 @@ https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
 """
 import os
 import typing as ta
-import urllib.request
 
 from omlish import check
+from omlish import http
 from omlish.formats import json
 
 from ...chat import AiChoice
@@ -64,15 +64,14 @@ class GoogleChatModel(ChatModel):
             ],
         }
 
-        with urllib.request.urlopen(urllib.request.Request(  # noqa
-                f'{self.BASE_URL.rstrip("/")}/{self.model}:generateContent?key={key}',
-                headers={'Content-Type': 'application/json'},
-                data=json.dumps_compact(req_dct).encode('utf-8'),
-                method='POST',
-        )) as resp:
-            resp_buf = resp.read()
+        resp = http.request(
+            f'{self.BASE_URL.rstrip("/")}/{self.model}:generateContent?key={key}',
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps_compact(req_dct).encode('utf-8'),
+            method='POST',
+        )
 
-        resp_dct = json.loads(resp_buf.decode('utf-8'))
+        resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
         return ChatResponse(v=[
             AiChoice(AiMessage(c['content']['parts'][0]['text']))
