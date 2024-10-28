@@ -5,10 +5,10 @@ https://google.aip.dev/127
 """
 import typing as ta
 import urllib.parse
-import urllib.request
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import http
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json
@@ -83,10 +83,10 @@ class CseSearchService(SearchService):
             cx=check.non_empty_str(self._cse_id),
             q=request.v,
         ))
-        with urllib.request.urlopen(
-                f'https://www.googleapis.com/customsearch/v1?{qs}',
-        ) as resp:
-            out = resp.read()
+        resp = http.request(
+            f'https://www.googleapis.com/customsearch/v1?{qs}',
+        )
+        out = check.not_none(resp.data)
 
         dct = json.loads(out.decode('utf-8'))
         res = msh.unmarshal(dct, CseSearchResponse)
