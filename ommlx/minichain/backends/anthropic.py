@@ -23,7 +23,10 @@ else:
 
 
 class AnthropicChatModel(ChatModel):
-    model: ta.ClassVar[str] = 'claude-3-opus-20240229'
+    model: ta.ClassVar[str] = (
+        'claude-3-5-sonnet-20241022'
+        # 'claude-3-opus-20240229'
+    )
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -55,18 +58,26 @@ class AnthropicChatModel(ChatModel):
             api_key=self._api_key,
         )
 
-        response = client.messages.create(
-            model=self.model,
-            messages=[  # noqa
-                dict(
-                    role=self.ROLES_MAP[type(m)],  # type: ignore
+        messages = []
+        system: str | None = None
+        for i, m in enumerate(request.v):
+            if isinstance(m, SystemMessage):
+                if i != 0 or system is not None:
+                    raise Exception('Only supports one system message and must be first')
+                system = self._get_msg_content(m)
+            else:
+                messages.append(dict(
+                    role=self.ROLES_MAP[type(m)],  # noqa
                     content=check.isinstance(self._get_msg_content(m), str),
-                )
-                for m in request.v
-            ],
+                ))
+
+        response = client.messages.create(  # noqa
+            model=self.model,
+            **(dict(system=system) if system is not None else {}),
+            messages=messages,  # type: ignore
             max_tokens=max_tokens,
         )
 
         return ChatResponse(v=[
-            AiChoice(AiMessage(response.content[0].text)),  # type: ignore
+            AiChoice(AiMessage(response.content[0].text)),  # noqa
         ])
