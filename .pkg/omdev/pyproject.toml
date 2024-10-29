@@ -35,7 +35,7 @@ all = [
     'mypy ~= 1.11',
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
-    'tokenize_rt ~= 6.1',
+    'tokenize-rt ~= 6.1',
     'wheel ~= 0.44',
 ]
 black = [
@@ -59,7 +59,7 @@ prompttoolkit = [
     'prompt-toolkit ~= 3.0',
 ]
 tokens = [
-    'tokenize_rt ~= 6.1',
+    'tokenize-rt ~= 6.1',
 ]
 wheel = [
     'wheel ~= 0.44',
