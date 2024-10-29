@@ -1,5 +1,4 @@
 import abc
-import dataclasses as dc
 import enum
 import io
 import json
@@ -20,35 +19,32 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         VALUE = enum.auto()
         KEY = enum.auto()
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class Options:
-        indent: int | str | None = None
-        separators: tuple[str, str] | None = None
-        sort_keys: bool = False
-        style: ta.Callable[[ta.Any, 'AbstractJsonRenderer.State'], tuple[str, str]] | None = None
-
     def __init__(
             self,
             out: JsonRendererOut,
-            opts: Options = Options(),
+            *,
+            indent: int | str | None = None,
+            separators: tuple[str, str] | None = None,
+            sort_keys: bool = False,
+            style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
     ) -> None:
         super().__init__()
 
         self._out = out
-        self._opts = opts
+        self._sort_keys = sort_keys
+        self._style = style
 
-        separators = opts.separators
-        if isinstance(opts.indent, (str, int)):
-            self._indent = (' ' * opts.indent) if isinstance(opts.indent, int) else opts.indent
+        if isinstance(indent, (str, int)):
+            self._indent = (' ' * indent) if isinstance(indent, int) else indent
             self._endl = '\n'
             if separators is None:
                 separators = (',', ': ')
-        elif opts.indent is None:
+        elif indent is None:
             self._indent = self._endl = ''
             if separators is None:
                 separators = (', ', ': ')
         else:
-            raise TypeError(opts.indent)
+            raise TypeError(indent)
         self._comma, self._colon = separators
 
         self._level = 0
@@ -76,7 +72,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
     @classmethod
     def render_str(cls, i: I, **kwargs: ta.Any) -> str:
         out = io.StringIO()
-        cls(out, cls.Options(**kwargs)).render(i)
+        cls(out, **kwargs).render(i)
         return out.getvalue()
 
 
@@ -86,8 +82,8 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
     ) -> None:
-        if self._opts.style is not None:
-            pre, post = self._opts.style(o, state)
+        if self._style is not None:
+            pre, post = self._style(o, state)
             self._write(pre)
         else:
             post = None
@@ -102,7 +98,7 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             self._write('{')
             self._level += 1
             items = list(o.items())
-            if self._opts.sort_keys:
+            if self._sort_keys:
                 items.sort(key=lambda t: t[0])
             for i, (k, v) in enumerate(items):
                 if i:

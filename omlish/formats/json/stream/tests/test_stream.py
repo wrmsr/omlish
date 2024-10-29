@@ -7,6 +7,7 @@ from ..build import JsonObjectBuilder
 from ..lex import JsonStreamLexer
 from ..parse import JsonStreamParser
 from ..parse import yield_parser_events
+from ..render import StreamJsonRenderer
 
 
 def test_stream():
@@ -51,3 +52,18 @@ def test_parse():
 
         v = check.single(vs)
         assert_json_eq(v, obj)
+
+
+def test_delimit():
+    s = """"abc""def"{"a":{"b":[]}}[1]"""
+
+    with JsonStreamLexer() as lex:
+        with JsonStreamParser() as parse:
+            r = StreamJsonRenderer.render_str((
+                e
+                for c in s
+                for t in lex(c)
+                for e in parse(t)
+            ), delimit='\n')
+
+    print(r)
