@@ -49,7 +49,7 @@ def _opt_dct_fld(k, v):
     return {k: v} if v else {}
 
 
-def _render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
+def render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
     return dict(  # type: ignore
         name=ts.name,
 
@@ -69,6 +69,47 @@ def _render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
             additionalProperties=False,
         ),
     )
+
+
+def build_request_message(m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
+    if isinstance(m, SystemMessage):
+        return dict(
+            role='system',
+            content=m.s,
+        )
+
+    elif isinstance(m, AiMessage):
+        return dict(
+            role='assistant',
+            content=m.s,
+            **(dict(tool_calls=[  # type: ignore
+                dict(
+                    id=te.id,
+                    function=dict(
+                        arguments=te.args,
+                        name=te.spec.name,
+                    ),
+                    type='function',
+                )
+                for te in m.tool_exec_requests
+            ]) if m.tool_exec_requests else {}),  # type: ignore
+        )
+
+    elif isinstance(m, UserMessage):
+        return dict(
+            role='user',
+            content=check.isinstance(m.c, str),
+        )
+
+    elif isinstance(m, ToolExecResultMessage):
+        return dict(
+            role='tool',
+            tool_call_id=m.id,
+            content=m.s,
+        )
+
+    else:
+        raise TypeError(m)
 
 
 class OpenaiChatModel(ChatModel):
@@ -99,46 +140,6 @@ class OpenaiChatModel(ChatModel):
         self._model = model or self.DEFAULT_MODEL
         self._api_key = Secret.of(api_key) if api_key is not None else None
 
-    def _build_req_msg(self, m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
-        if isinstance(m, SystemMessage):
-            return dict(
-                role='system',
-                content=m.s,
-            )
-
-        elif isinstance(m, AiMessage):
-            return dict(
-                role='assistant',
-                content=m.s,
-                **(dict(tool_calls=[  # type: ignore
-                    dict(
-                        id=te.id,
-                        function=dict(
-                            arguments=te.args,
-                            name=te.spec.name,
-                        ),
-                        type='function',
-                    )
-                    for te in m.tool_exec_requests
-                ]) if m.tool_exec_requests else {}),  # type: ignore
-            )
-
-        elif isinstance(m, UserMessage):
-            return dict(
-                role='user',
-                content=check.isinstance(m.c, str),
-            )
-
-        elif isinstance(m, ToolExecResultMessage):
-            return dict(
-                role='tool',
-                tool_call_id=m.id,
-                content=m.s,
-            )
-
-        else:
-            raise TypeError(m)
-
     _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[ScalarOption], str] = {
         Temperature: 'temperature',
         MaxTokens: 'max_tokens',
@@ -167,7 +168,7 @@ class OpenaiChatModel(ChatModel):
         tools = [
             dict(
                 type='function',
-                function=_render_tool_spec(ts),
+                function=render_tool_spec(ts),
             )
             for ts in tools_by_name.values()
         ]
@@ -178,7 +179,7 @@ class OpenaiChatModel(ChatModel):
             raw_request = dict(
                 model=self._model,
                 messages=[
-                    self._build_req_msg(m)
+                    build_request_message(m)
                     for m in request.v
                 ],
                 top_p=1,
