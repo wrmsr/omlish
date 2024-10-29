@@ -1,0 +1,28 @@
+{
+  "nodaemon": true,
+  "groups": [
+    {
+      "name": "default",
+      "processes": [
+        {
+          "name": "sleep",
+          "command": "sleep 600",
+          "stdout": {
+            "file": "/dev/fd/1",
+            "maxbytes": 0
+          },
+          "redirect_stderr": true
+        },
+        {
+          "name": "ls",
+          "command": "ls -al",
+          "stdout": {
+            "file": "/dev/fd/1",
+            "maxbytes": 0
+          },
+          "redirect_stderr": true
+        }
+      ]
+    }
+  ]
+}

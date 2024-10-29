@@ -117,9 +117,9 @@ class OutputDispatcher(Dispatcher):
         self.stdout_events_enabled = config.stdout.events_enabled
         self.stderr_events_enabled = config.stderr.events_enabled
 
-    _child_log: ta.Optional[logging.Logger]  # the current logger (normal_log or capture_log)
-    _normal_log: ta.Optional[logging.Logger]  # the "normal" (non-capture) logger
-    _capture_log: ta.Optional[logging.Logger]  # the logger used while we're in capture_mode
+    _child_log: ta.Optional[logging.Logger] = None  # the current logger (normal_log or capture_log)
+    _normal_log: ta.Optional[logging.Logger] = None  # the "normal" (non-capture) logger
+    _capture_log: ta.Optional[logging.Logger] = None  # the logger used while we're in capture_mode
 
     def _init_normal_log(self) -> None:
         """
