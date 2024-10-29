@@ -94,7 +94,7 @@ CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class JsonLexError(Exception):
     message: str
 
