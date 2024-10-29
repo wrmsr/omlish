@@ -31,6 +31,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         super().__init__(out, **kwargs)
 
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
+        self._need_delimit = False
 
     def _render_value(
             self,
@@ -56,6 +57,10 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             self._write(post)
 
     def _render(self, e: JsonStreamParserEvent) -> None:
+        if self._need_delimit:
+            self._write(self._delimiter)
+            self._need_delimit = False
+
         if e != EndArray and self._stack and (tt := self._stack[-1])[0] == 'ARRAY':
             if tt[1]:
                 self._write(self._comma)
@@ -67,6 +72,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
         if e is None or isinstance(e, (str, int, float, bool)):
             self._render_value(e)
+            if not self._stack:
+                self._need_delimit = True
 
         #
 
@@ -95,6 +102,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             if tt[1]:
                 self._write_indent()
             self._write('}')
+            if not self._stack:
+                self._need_delimit = True
 
         #
 
@@ -111,6 +120,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             if tt[1]:
                 self._write_indent()
             self._write(']')
+            if not self._stack:
+                self._need_delimit = True
 
         #
 
