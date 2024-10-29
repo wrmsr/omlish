@@ -168,10 +168,9 @@ def _main() -> None:
                 else:
                     renderer = StreamJsonRenderer(
                         out,
-                        StreamJsonRenderer.Options(
-                            **kw,
-                            style=term_color if args.color else None,
-                        ),
+                        style=term_color if args.color else None,
+                        delimiter='\n',
+                        **kw,
                     )
                     build = None
 

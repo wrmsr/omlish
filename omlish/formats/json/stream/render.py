@@ -3,7 +3,6 @@ import typing as ta
 
 from ..render import AbstractJsonRenderer
 from ..render import JsonRendererOut
-from .build import JsonObjectBuilder
 from .parse import BeginArray
 from .parse import BeginObject
 from .parse import EndArray
@@ -19,23 +18,27 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
     def __init__(
             self,
             out: JsonRendererOut,
-            opts: AbstractJsonRenderer.Options = AbstractJsonRenderer.Options(),
+            *,
+            delimiter: str = '',
+            sort_keys: bool = False,
+            **kwargs: ta.Any,
     ) -> None:
-        if opts.sort_keys:
+        if sort_keys:
             raise TypeError('Not yet implemented')
 
-        super().__init__(out, opts)
+        self._delimiter = delimiter
+
+        super().__init__(out, **kwargs)
 
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
-        self._builder: JsonObjectBuilder | None = None
 
     def _render_value(
             self,
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
     ) -> None:
-        if self._opts.style is not None:
-            pre, post = self._opts.style(o, state)
+        if self._style is not None:
+            pre, post = self._style(o, state)
             self._write(pre)
         else:
             post = None
