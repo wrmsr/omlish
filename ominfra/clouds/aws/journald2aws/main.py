@@ -245,7 +245,7 @@ class JournalctlToAws:
             feed_msgs = []
             for m in msgs:
                 feed_msgs.append(mp.Message(
-                    message=json.dumps(m.dct),
+                    message=json.dumps(m.dct, sort_keys=True),
                     ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
                 ))
 
