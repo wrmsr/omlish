@@ -5,6 +5,12 @@
 # @omlish-amalg-output ../clouds/aws/journald2aws/main.py
 # ruff: noqa: N802 UP006 UP007 UP036
 """
+TODO:
+ - create log group
+ - log stats - chunk sizes etc
+
+==
+
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
 journalctl:

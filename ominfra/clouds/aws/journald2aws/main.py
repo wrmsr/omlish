@@ -2,6 +2,12 @@
 # ruff: noqa: UP007
 # @omlish-amalg ../../../scripts/journald2aws.py
 """
+TODO:
+ - create log group
+ - log stats - chunk sizes etc
+
+==
+
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
 journalctl:
