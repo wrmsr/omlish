@@ -187,8 +187,9 @@ ANSI_ESCAPE_BEGIN = b'\x1b['
 ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
 
 
-def strip_escapes(s):
+def strip_escapes(s: bytes) -> bytes:
     """Remove all ANSI color escapes from the given string."""
+
     result = b''
     show = 1
     i = 0
