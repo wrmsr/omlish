@@ -1,7 +1,10 @@
 # ruff: noqa: UP007
 import abc
 import threading
+import time
 import typing as ta
+
+from omlish.lite.logs import log
 
 
 class ThreadWorker(abc.ABC):
@@ -18,7 +21,29 @@ class ThreadWorker(abc.ABC):
 
         self._thread: ta.Optional[threading.Thread] = None
 
-    _sleep_s: float = .5
+        self._last_heartbeat: ta.Optional[float] = None
+
+    #
+
+    def should_stop(self) -> bool:
+        return self._stop_event.is_set()
+
+    #
+
+    @property
+    def last_heartbeat(self) -> ta.Optional[float]:
+        return self._last_heartbeat
+
+    def _heartbeat(self) -> bool:
+        self._last_heartbeat = time.time()
+
+        if self.should_stop():
+            log.info('Stopping: %s', self)
+            return False
+
+        return True
+
+    #
 
     def is_alive(self) -> bool:
         return (thr := self._thread) is not None and thr.is_alive()

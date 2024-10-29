@@ -131,6 +131,7 @@ class JournalctlToAws:
 
         if not (cf := self._config.cursor_file):
             return None
+        cf = os.path.expanduser(cf)
 
         try:
             with open(cf) as f:
@@ -143,6 +144,7 @@ class JournalctlToAws:
 
         if not (cf := self._config.cursor_file):
             return
+        cf = os.path.expanduser(cf)
 
         log.info('Writing cursor file %s : %s', cf, cursor)
         with open(ncf := cf + '.next', 'w') as f:
@@ -176,10 +178,22 @@ class JournalctlToAws:
 
     @cached_nullary
     def _journalctl_tailer_worker(self) -> JournalctlTailerWorker:
+        ac: ta.Optional[str] = self._config.journalctl_after_cursor
+        if ac is None:
+            ac = self._read_cursor_file()
+        if ac is not None:
+            log.info('Starting from cursor %s', ac)
+
+        if (since := self._config.journalctl_since):
+            log.info('Starting since %s', since)
+
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
+
+            since=since,
+            after_cursor=ac,
+
             cmd=self._config.journalctl_cmd,
-            after_cursor=self._read_cursor_file(),
             shell_wrap=is_debugger_attached(),
         )
 
@@ -201,9 +215,9 @@ class JournalctlToAws:
                 break
 
             msgs: ta.Sequence[JournalctlMessage] = q.get()
-            print(msgs)
+            log.debug('%r', msgs)
 
-            cur_cursor: ta.Optional[str]
+            cur_cursor: ta.Optional[str] = None
             for m in reversed(msgs):
                 if m.cursor is not None:
                     cur_cursor = m.cursor
@@ -217,7 +231,7 @@ class JournalctlToAws:
                 message=json.dumps(m.dct),
                 ts_ms=int(time.time() * 1000.),
             ) for m in msgs])
-            print(post)
+            log.debug('%r', post)
 
             if not self._config.dry_run:
                 with urllib.request.urlopen(urllib.request.Request(  # noqa
@@ -227,7 +241,7 @@ class JournalctlToAws:
                         data=post.data,
                 )) as resp:
                     response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                print(response)
+                log.debug('%r', response)
 
             if cur_cursor is not None:
                 self._write_cursor_file(cur_cursor)
@@ -238,7 +252,10 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--config-file')
+    parser.add_argument('-v', '--verbose', action='store_true')
 
+    parser.add_argument('--after-cursor', nargs='?')
+    parser.add_argument('--since', nargs='?')
     parser.add_argument('--dry-run', action='store_true')
 
     parser.add_argument('--message', nargs='?')
@@ -248,7 +265,7 @@ def _main() -> None:
 
     #
 
-    configure_standard_logging('DEBUG')
+    configure_standard_logging('DEBUG' if args.verbose else 'INFO')
 
     #
 
@@ -277,10 +294,12 @@ def _main() -> None:
             *(['--message', args.message] if args.message else []),
             '100000',
         ])
+
     #
 
-    if args.dry_run:
-        config = dc.replace(config, dry_run=True)
+    for a in ['after_cursor', 'since', 'dry_run']:
+        if (pa := getattr(args, a)):
+            config = dc.replace(config, **{a: pa})
 
     #
 

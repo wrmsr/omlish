@@ -6,6 +6,7 @@ import subprocess
 import time
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_shell_wrap_exec
@@ -22,25 +23,36 @@ class JournalctlTailerWorker(ThreadWorker):
             self,
             output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
             *,
-            cmd: ta.Optional[ta.Sequence[str]] = None,
             since: ta.Optional[str] = None,
             after_cursor: ta.Optional[str] = None,
+
+            cmd: ta.Optional[ta.Sequence[str]] = None,
             shell_wrap: bool = False,
+
+            read_size: int = 0x4000,
+            sleep_s: float = 1.,
+
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self._output = output
-        self._cmd = cmd or self.DEFAULT_CMD
+
         self._since = since
         self._after_cursor = after_cursor
+
+        self._cmd = cmd or self.DEFAULT_CMD
         self._shell_wrap = shell_wrap
+
+        self._read_size = read_size
+        self._sleep_s = sleep_s
 
         self._mb = JournalctlMessageBuilder()
 
         self._proc: ta.Optional[subprocess.Popen] = None
 
-    def _run(self) -> None:
+    @cached_nullary
+    def _full_cmd(self) -> ta.Sequence[str]:
         cmd = [
             *self._cmd,
             '--output', 'json',
@@ -57,8 +69,11 @@ class JournalctlTailerWorker(ThreadWorker):
         if self._shell_wrap:
             cmd = list(subprocess_shell_wrap_exec(*cmd))
 
+        return cmd
+
+    def _run(self) -> None:
         with subprocess.Popen(
-            cmd,
+            self._full_cmd(),
             stdout=subprocess.PIPE,
         ) as self._proc:
             stdout = check_not_none(self._proc.stdout)
@@ -68,20 +83,26 @@ class JournalctlTailerWorker(ThreadWorker):
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
             while True:
+                if not self._heartbeat():
+                    break
+
                 while stdout.readable():
-                    buf = stdout.read(53)
-                    if not buf:
-                        log.debug('Empty read')
+                    if not self._heartbeat():
                         break
 
-                    log.debug('Read buffer: %r', buf)
+                    buf = stdout.read(self._read_size)
+                    if not buf:
+                        log.debug('Journalctl empty read')
+                        break
+
+                    log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
                     if msgs:
                         self._output.put(msgs)
 
                 if self._proc.poll() is not None:
-                    log.debug('Process terminated')
+                    log.critical('Journalctl process terminated')
                     break
 
-                log.debug('Not readable')
-                time.sleep(1)
+                log.debug('Journalctl readable')
+                time.sleep(self._sleep_s)
