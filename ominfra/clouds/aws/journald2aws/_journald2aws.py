@@ -1816,9 +1816,9 @@ class JournalctlTailerWorker(ThreadWorker):
     def _run(self) -> None:
         cmd: ta.Sequence[str] = [
             *self._cmd,
-            '-o', 'json',
+            '--output', 'json',
             '--show-cursor',
-            '-f',
+            '--follow',
             '--since', 'today',
         ]
 
@@ -1967,7 +1967,7 @@ def _main() -> None:
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--post', action='store_true')
     parser.add_argument('--real', action='store_true')
-    parser.add_argument('--config-json-file')
+    parser.add_argument('--config-file')
     args = parser.parse_args()
 
     #
@@ -1977,8 +1977,8 @@ def _main() -> None:
     #
 
     config: JournalctlToAws.Config
-    if args.config_json_file:
-        with open(args.config_json_file) as cf:
+    if args.config_file:
+        with open(os.path.expanduser(args.config_file)) as cf:
             config_dct = json.load(cf)
         config = unmarshal_obj(config_dct, JournalctlToAws.Config)
     else:
@@ -1995,7 +1995,7 @@ def _main() -> None:
     if not args.real:
         config = dc.replace(config, journalctl_cmd=[
             sys.executable,
-            os.path.join(os.path.dirname(__file__), 'tests', 'genmessages.py'),
+            os.path.join(os.path.dirname(__file__), 'journald', 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
