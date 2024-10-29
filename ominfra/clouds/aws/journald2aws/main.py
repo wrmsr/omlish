@@ -34,6 +34,7 @@ class Journald2AwsConfig:
     aws_flush_interval_s: float = 1.
 """
 import argparse
+import contextlib
 import dataclasses as dc
 import json
 import os.path
@@ -48,6 +49,8 @@ from omlish.lite.check import check_non_empty_str
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
+from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.pidfile import Pidfile
 from omlish.lite.runtime import is_debugger_attached
 
 from ..auth import AwsSigner
@@ -68,15 +71,17 @@ class JournalctlOpts:
 class JournalctlToAws:
     @dc.dataclass(frozen=True)
     class Config:
+        pidfile: ta.Optional[str] = None
+
         aws_log_group_name: str = 'omlish'
         aws_log_stream_name: ta.Optional[str] = None
 
-        aws_access_key: ta.Optional[str] = None
-        aws_secret_key: ta.Optional[str] = dc.field(default=None, repr=False)
+        aws_access_key_id: ta.Optional[str] = None
+        aws_secret_access_key: ta.Optional[str] = dc.field(default=None, repr=False)
 
         aws_region_name: str = 'us-west-1'
 
-        journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
+        journalctl_cmd: ta.Optional[ta.Sequence[str]] = None
 
         dry_run: bool = False
 
@@ -84,11 +89,13 @@ class JournalctlToAws:
         super().__init__()
         self._config = config
 
+    #
+
     @cached_nullary
     def _aws_credentials(self) -> AwsSigner.Credentials:
         return AwsSigner.Credentials(
-            access_key=check_non_empty_str(self._config.aws_access_key),
-            secret_key=check_non_empty_str(self._config.aws_secret_key),
+            access_key_id=check_non_empty_str(self._config.aws_access_key_id),
+            secret_access_key=check_non_empty_str(self._config.aws_secret_access_key),
         )
 
     @cached_nullary
@@ -100,6 +107,8 @@ class JournalctlToAws:
             credentials=check_not_none(self._aws_credentials()),
         )
 
+    #
+
     @cached_nullary
     def _journalctl_message_queue(self):  # type: () -> queue.Queue[ta.Sequence[JournalctlMessage]]
         return queue.Queue()
@@ -108,40 +117,49 @@ class JournalctlToAws:
     def _journalctl_tailer_worker(self) -> JournalctlTailerWorker:
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
-            cmd_override=self._config.journalctl_cmd_override,
+            cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
         )
 
+    #
+
     def run(self) -> None:
-        q = self._journalctl_message_queue()
-        jtw = self._journalctl_tailer_worker()
-        mp = self._aws_log_message_poster()
+        with contextlib.ExitStack() as es:
+            if self._config.pidfile is not None:
+                pfp = os.path.expanduser(self._config.pidfile)
+                log.info('Opening pidfile %s', pfp)
+                pf = es.enter_context(Pidfile(pfp))
+                pf.write()
 
-        jtw.start()
+            q = self._journalctl_message_queue()
+            jtw = self._journalctl_tailer_worker()
+            mp = self._aws_log_message_poster()
 
-        while True:
-            msgs = q.get()
-            print(msgs)
+            jtw.start()
 
-            if not msgs:
-                log.warning('Empty queue chunk')
-                continue
+            while True:
+                msgs = q.get()
+                print(msgs)
 
-            [post] = mp.feed([mp.Message(
-                message=json.dumps(m.dct),
-                ts_ms=int(time.time() * 1000.),
-            ) for m in msgs])
-            print(post)
+                if not msgs:
+                    log.warning('Empty queue chunk')
+                    continue
 
-            if not self._config.dry_run:
-                with urllib.request.urlopen(urllib.request.Request(  # noqa
-                        post.url,
-                        method='POST',
-                        headers=dict(post.headers),
-                        data=post.data,
-                )) as resp:
-                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                print(response)
+                [post] = mp.feed([mp.Message(
+                    message=json.dumps(m.dct),
+                    ts_ms=int(time.time() * 1000.),
+                ) for m in msgs])
+                print(post)
+
+                if not self._config.dry_run:
+                    with urllib.request.urlopen(urllib.request.Request(  # noqa
+                            post.url,
+                            method='POST',
+                            headers=dict(post.headers),
+                            data=post.data,
+                    )) as resp:
+                        response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
+                    print(response)
 
 
 def _main() -> None:
@@ -149,7 +167,7 @@ def _main() -> None:
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--post', action='store_true')
     parser.add_argument('--real', action='store_true')
-    parser.add_argument('--config-json-file')
+    parser.add_argument('--config-file')
     args = parser.parse_args()
 
     #
@@ -158,57 +176,39 @@ def _main() -> None:
 
     #
 
-    config: ta.Optional[ta.Mapping[str, ta.Any]] = None
-    if args.config_json_file:
-        with open(args.config_json_file) as cf:
-            config = json.load(cf)
+    config: JournalctlToAws.Config
+    if args.config_file:
+        with open(os.path.expanduser(args.config_file)) as cf:
+            config_dct = json.load(cf)
+        config = unmarshal_obj(config_dct, JournalctlToAws.Config)
+    else:
+        config = JournalctlToAws.Config()
 
     #
 
-    credentials: ta.Optional[AwsSigner.Credentials] = None
-
-    if credentials is None and config is not None and 'aws_access_key_id' in config:
-        credentials = AwsSigner.Credentials(
-            config['aws_access_key_id'],
-            config['aws_secret_access_key'],
-        )
-    if credentials is None and 'AWS_ACCESS_KEY_ID' in os.environ:
-        credentials = AwsSigner.Credentials(
-            os.environ['AWS_ACCESS_KEY_ID'],
-            os.environ['AWS_SECRET_ACCESS_KEY'],
-        )
-    if credentials is None:
-        secrets = __import__('omdev.secrets').secrets.load_secrets()
-        credentials = AwsSigner.Credentials(
-            secrets.get('aws_access_key_id').reveal(),
-            secrets.get('aws_secret_access_key').reveal(),
-        )
-
-    if credentials is None:
-        raise Exception('No credentials found')
+    for k in ['aws_access_key_id', 'aws_secret_access_key']:
+        if not getattr(config, k) and k.upper() in os.environ:
+            config = dc.replace(config, **{k: os.environ.get(k.upper())})  # type: ignore
 
     #
 
-    journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
     if not args.real:
-        journalctl_cmd_override = [
+        config = dc.replace(config, journalctl_cmd=[
             sys.executable,
-            os.path.join(os.path.dirname(__file__), 'tests', 'genmessages.py'),
+            os.path.join(os.path.dirname(__file__), 'journald', 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
             '1000000',
-        ]
+        ])
+    #
+
+    if args.post is not None:
+        config = dc.replace(config, dry_run=not args.post)
 
     #
 
-    jta = JournalctlToAws(JournalctlToAws.Config(
-        aws_log_stream_name='test',
-        aws_access_key=credentials.access_key,
-        aws_secret_key=credentials.secret_key,
-        journalctl_cmd_override=journalctl_cmd_override,
-        dry_run=not args.post,
-    ))
+    jta = JournalctlToAws(config)
     jta.run()
 
 

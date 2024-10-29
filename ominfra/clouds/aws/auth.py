@@ -41,8 +41,8 @@ class AwsSigner:
 
     @dc.dataclass(frozen=True)
     class Credentials:
-        access_key: str
-        secret_key: str = dc.field(repr=False)
+        access_key_id: str
+        secret_access_key: str = dc.field(repr=False)
 
     @dc.dataclass(frozen=True)
     class Request:
@@ -198,7 +198,7 @@ class V4AwsSigner(AwsSigner):
 
         #
 
-        key = self._creds.secret_key
+        key = self._creds.secret_access_key
         key_date = self._sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
         key_region = self._sha256_sign(key_date, self._region_name)
         key_service = self._sha256_sign(key_region, self._service_name)
@@ -208,7 +208,7 @@ class V4AwsSigner(AwsSigner):
         #
 
         cred_scope = '/'.join([
-            self._creds.access_key,
+            self._creds.access_key_id,
             *scope_parts,
         ])
         auth = f'{algorithm} ' + ', '.join([
