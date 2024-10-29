@@ -1,3 +1,8 @@
+"""
+TODO:
+ - -I/-Ogz, lz4, etc - fnpairs
+ - read from http
+"""
 import argparse
 import codecs
 import contextlib
@@ -11,6 +16,7 @@ import typing as ta
 from .... import check
 from .... import lang
 from .... import term
+from ....lite.io import DelimitingBuffer
 from ..render import JsonRenderer
 from ..stream.build import JsonObjectBuilder
 from ..stream.lex import JsonStreamLexer
@@ -45,7 +51,10 @@ def _main() -> None:
 
     parser.add_argument('--stream', action='store_true')
     parser.add_argument('--stream-build', action='store_true')
-    parser.add_argument('--stream-buffer-size', type=int, default=0x4000)
+
+    parser.add_argument('-l', '--lines', action='store_true')
+
+    parser.add_argument('--read-buffer-size', type=int, default=0x4000)
 
     parser.add_argument('-f', '--format')
 
@@ -58,7 +67,7 @@ def _main() -> None:
 
     parser.add_argument('-c', '--color', action='store_true')
 
-    parser.add_argument('-l', '--less', action='store_true')
+    parser.add_argument('-L', '--less', action='store_true')
 
     args = parser.parse_args()
 
@@ -175,7 +184,7 @@ def _main() -> None:
                     build = None
 
                 while True:
-                    buf = os.read(fd, args.stream_buffer_size)
+                    buf = os.read(fd, args.read_buffer_size)
 
                     for s in decoder.decode(buf, not buf):
                         n = 0
@@ -199,6 +208,16 @@ def _main() -> None:
 
                 if renderer is not None:
                     out.write('\n')
+
+        elif args.lines:
+            fd = in_file.fileno()
+            db = DelimitingBuffer()
+
+            while buf := os.read(fd, args.read_buffer_size):
+                for chunk in db.feed(buf):
+                    s = check.isinstance(chunk, bytes).decode('utf-8')
+                    v = fmt.load(io.StringIO(s))
+                    print(render_one(v), file=out)
 
         else:
             with io.TextIOWrapper(in_file) as tw:

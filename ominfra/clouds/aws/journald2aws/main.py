@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# ruff: noqa: UP006 UP007
+# ruff: noqa: UP007
 # @omlish-amalg ./_journald2aws.py
-# @omlish-lite
 """
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
@@ -28,16 +27,12 @@ class Journald2AwsConfig:
     aws_batch_size: int = 1_000
     aws_flush_interval_s: float = 1.
 """
-import abc
 import argparse
 import dataclasses as dc
-import fcntl
 import json
 import os.path
 import queue
-import subprocess
 import sys
-import threading
 import time
 import typing as ta
 import urllib.request
@@ -48,13 +43,12 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 from omlish.lite.runtime import is_debugger_attached
-from omlish.lite.subprocesses import subprocess_shell_wrap_exec
 
-from ...auth import AwsSigner
-from ...logs import AwsLogMessagePoster
-from ...logs import AwsPutLogEventsResponse
-from ..journald import JournalctlMessage  # noqa
-from ..journald import JournalctlMessageBuilder
+from ..auth import AwsSigner
+from ..logs import AwsLogMessagePoster
+from ..logs import AwsPutLogEventsResponse
+from .journald.messages import JournalctlMessage  # noqa
+from .journald.tailer import JournalctlTailerWorker
 
 
 @dc.dataclass(frozen=True)
@@ -63,103 +57,6 @@ class JournalctlOpts:
 
     since: ta.Optional[str] = None
     until: ta.Optional[str] = None
-
-
-class ThreadWorker(abc.ABC):
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-        self._thread: ta.Optional[threading.Thread] = None
-
-    _sleep_s: float = .5
-
-    def start(self) -> None:
-        thr = threading.Thread(target=self._run)
-        self._thread = thr
-        thr.start()
-
-    @abc.abstractmethod
-    def _run(self) -> None:
-        raise NotImplementedError
-
-    def stop(self) -> None:
-        raise NotImplementedError
-
-    def cleanup(self) -> None:  # noqa
-        pass
-
-
-class JournalctlTailerWorker(ThreadWorker):
-    def __init__(
-            self,
-            output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
-            *,
-            cmd_override: ta.Optional[ta.Sequence[str]] = None,
-            shell_wrap: bool = False,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self._output = output
-        self._cmd_override = cmd_override
-        self._shell_wrap = shell_wrap
-
-        self._mb = JournalctlMessageBuilder()
-
-        self._proc: ta.Optional[subprocess.Popen] = None
-
-    def _run(self) -> None:
-        if self._cmd_override is not None:
-            cmd = self._cmd_override
-        else:
-            cmd = [
-                'journalctl',
-                '-o', 'json',
-                '--show-cursor',
-                '-f',
-                '--since', 'today',
-            ]
-
-        if self._shell_wrap:
-            cmd = subprocess_shell_wrap_exec(*cmd)
-
-        self._proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-        )
-
-        stdout = check_not_none(self._proc.stdout)
-
-        fd = stdout.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-        while True:
-            while stdout.readable():
-                buf = stdout.read(53)
-                if not buf:
-                    log.debug('Empty read')
-                    break
-
-                log.debug('Read buffer: %r', buf)
-                msgs = self._mb.feed(buf)
-                if msgs:
-                    self._output.put(msgs)
-
-            if self._proc.poll() is not None:
-                log.debug('Process terminated')
-                break
-
-            log.debug('Not readable')
-            time.sleep(1)
 
 
 class JournalctlToAws:

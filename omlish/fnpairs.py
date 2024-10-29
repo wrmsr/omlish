@@ -3,11 +3,10 @@ TODO:
  - objects
   - csv
   - csvloader
-  - cbor
-  - alt json backends
  - wrapped (wait for usecase)
- - streams
+ - streams / incremental
   - fileobj -> fileobj?
+ - swap zstandard for zstd
 
 Compression choice:
  - lzma if-available minimal-space

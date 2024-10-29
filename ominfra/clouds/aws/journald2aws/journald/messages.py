@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-# @omlish-lite
 import dataclasses as dc
 import json
 import typing as ta
