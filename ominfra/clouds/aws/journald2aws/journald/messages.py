@@ -23,7 +23,31 @@ class JournalctlMessageBuilder:
         self._buf = DelimitingBuffer(b'\n')
 
     _cursor_field = '__CURSOR'
-    _timestamp_field = '_SOURCE_REALTIME_TIMESTAMP'
+
+    _timestamp_fields: ta.Sequence[str] = [
+        '_SOURCE_REALTIME_TIMESTAMP',
+        '__REALTIME_TIMESTAMP',
+    ]
+
+    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
+        for fld in self._timestamp_fields:
+            if (tsv := dct.get(fld)) is None:
+                continue
+
+            if isinstance(tsv, str):
+                try:
+                    return int(tsv)
+                except ValueError:
+                    try:
+                        return int(float(tsv))
+                    except ValueError:
+                        log.exception('Failed to parse timestamp: %r', tsv)
+
+            elif isinstance(tsv, (int, float)):
+                return int(tsv)
+
+        log.error('Invalid timestamp: %r', dct)
+        return None
 
     def _make_message(self, raw: bytes) -> JournalctlMessage:
         dct = None
@@ -37,20 +61,7 @@ class JournalctlMessageBuilder:
 
         else:
             cursor = dct.get(self._cursor_field)
-
-            if tsv := dct.get(self._timestamp_field):
-                if isinstance(tsv, str):
-                    try:
-                        ts = int(tsv)
-                    except ValueError:
-                        try:
-                            ts = int(float(tsv))
-                        except ValueError:
-                            log.exception('Failed to parse timestamp: %r', tsv)
-                elif isinstance(tsv, (int, float)):
-                    ts = int(tsv)
-                else:
-                    log.exception('Invalid timestamp: %r', tsv)
+            ts = self._get_message_timestamp(dct)
 
         return JournalctlMessage(
             raw=raw,

@@ -1440,7 +1440,31 @@ class JournalctlMessageBuilder:
         self._buf = DelimitingBuffer(b'\n')
 
     _cursor_field = '__CURSOR'
-    _timestamp_field = '_SOURCE_REALTIME_TIMESTAMP'
+
+    _timestamp_fields: ta.Sequence[str] = [
+        '_SOURCE_REALTIME_TIMESTAMP',
+        '__REALTIME_TIMESTAMP',
+    ]
+
+    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
+        for fld in self._timestamp_fields:
+            if (tsv := dct.get(fld)) is None:
+                continue
+
+            if isinstance(tsv, str):
+                try:
+                    return int(tsv)
+                except ValueError:
+                    try:
+                        return int(float(tsv))
+                    except ValueError:
+                        log.exception('Failed to parse timestamp: %r', tsv)
+
+            elif isinstance(tsv, (int, float)):
+                return int(tsv)
+
+        log.error('Invalid timestamp: %r', dct)
+        return None
 
     def _make_message(self, raw: bytes) -> JournalctlMessage:
         dct = None
@@ -1454,20 +1478,7 @@ class JournalctlMessageBuilder:
 
         else:
             cursor = dct.get(self._cursor_field)
-
-            if tsv := dct.get(self._timestamp_field):
-                if isinstance(tsv, str):
-                    try:
-                        ts = int(tsv)
-                    except ValueError:
-                        try:
-                            ts = int(float(tsv))
-                        except ValueError:
-                            log.exception('Failed to parse timestamp: %r', tsv)
-                elif isinstance(tsv, (int, float)):
-                    ts = int(tsv)
-                else:
-                    log.exception('Invalid timestamp: %r', tsv)
+            ts = self._get_message_timestamp(dct)
 
         return JournalctlMessage(
             raw=raw,
@@ -1485,6 +1496,10 @@ class JournalctlMessageBuilder:
 
 ########################################
 # ../threadworker.py
+"""
+TODO:
+ - implement stop lol
+"""
 
 
 class ThreadWorker(abc.ABC):
@@ -1539,9 +1554,6 @@ class ThreadWorker(abc.ABC):
 
     def stop(self) -> None:
         raise NotImplementedError
-
-    def cleanup(self) -> None:  # noqa
-        pass
 
 
 ########################################
@@ -1604,6 +1616,7 @@ class AwsLogMessagePoster:
      - max_items
      - max_bytes - manually build body
      - flush_interval
+     - split sorted chunks if span over 24h
     """
 
     DEFAULT_URL = 'https://logs.{region_name}.amazonaws.com/'  # noqa
@@ -1886,25 +1899,32 @@ class JournalctlTailerWorker(ThreadWorker):
 
             while True:
                 if not self._heartbeat():
-                    break
+                    return
 
                 while stdout.readable():
                     if not self._heartbeat():
-                        break
+                        return
 
                     buf = stdout.read(self._read_size)
                     if not buf:
                         log.debug('Journalctl empty read')
-                        break
+                        return
 
                     log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
                     if msgs:
-                        self._output.put(msgs)
+                        while True:
+                            try:
+                                self._output.put(msgs, timeout=1.)
+                            except queue.Full:
+                                if not self._heartbeat():
+                                    return
+                            else:
+                                break
 
                 if self._proc.poll() is not None:
                     log.critical('Journalctl process terminated')
-                    break
+                    return
 
                 log.debug('Journalctl readable')
                 time.sleep(self._sleep_s)
@@ -2038,14 +2058,17 @@ class JournalctlToAws:
 
     @cached_nullary
     def _journalctl_tailer_worker(self) -> JournalctlTailerWorker:
-        ac: ta.Optional[str] = self._config.journalctl_after_cursor
-        if ac is None:
-            ac = self._read_cursor_file()
-        if ac is not None:
-            log.info('Starting from cursor %s', ac)
+        ac: ta.Optional[str] = None
 
         if (since := self._config.journalctl_since):
             log.info('Starting since %s', since)
+
+        else:
+            ac = self._config.journalctl_after_cursor
+            if ac is None:
+                ac = self._read_cursor_file()
+            if ac is not None:
+                log.info('Starting from cursor %s', ac)
 
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
@@ -2062,9 +2085,9 @@ class JournalctlToAws:
     def run(self) -> None:
         self._ensure_locked()
 
-        q = self._journalctl_message_queue()
-        jtw = self._journalctl_tailer_worker()
-        mp = self._aws_log_message_poster()
+        q = self._journalctl_message_queue()  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
+        jtw = self._journalctl_tailer_worker()  # type: JournalctlTailerWorker
+        mp = self._aws_log_message_poster()  # type: AwsLogMessagePoster
 
         jtw.start()
 
@@ -2074,7 +2097,13 @@ class JournalctlToAws:
                 log.critical('Journalctl tailer worker died')
                 break
 
-            msgs: ta.Sequence[JournalctlMessage] = q.get()
+            try:
+                msgs: ta.Sequence[JournalctlMessage] = q.get(timeout=1.)
+            except queue.Empty:
+                msgs = []
+            if not msgs:
+                continue
+
             log.debug('%r', msgs)
 
             cur_cursor: ta.Optional[str] = None
@@ -2087,10 +2116,14 @@ class JournalctlToAws:
                 log.warning('Empty queue chunk')
                 continue
 
-            [post] = mp.feed([mp.Message(
-                message=json.dumps(m.dct),
-                ts_ms=int(time.time() * 1000.),
-            ) for m in msgs])
+            feed_msgs = []
+            for m in msgs:
+                feed_msgs.append(mp.Message(
+                    message=json.dumps(m.dct),
+                    ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
+                ))
+
+            [post] = mp.feed(feed_msgs)
             log.debug('%r', post)
 
             if not self._config.dry_run:
@@ -2157,9 +2190,13 @@ def _main() -> None:
 
     #
 
-    for a in ['after_cursor', 'since', 'dry_run']:
-        if (pa := getattr(args, a)):
-            config = dc.replace(config, **{a: pa})
+    for ca, pa in [
+        ('journalctl_after_cursor', 'after_cursor'),
+        ('journalctl_since', 'since'),
+        ('dry_run', 'dry_run'),
+    ]:
+        if (av := getattr(args, pa)):
+            config = dc.replace(config, **{ca: av})
 
     #
 

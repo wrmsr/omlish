@@ -68,6 +68,7 @@ class AwsLogMessagePoster:
      - max_items
      - max_bytes - manually build body
      - flush_interval
+     - split sorted chunks if span over 24h
     """
 
     DEFAULT_URL = 'https://logs.{region_name}.amazonaws.com/'  # noqa

@@ -1,4 +1,8 @@
 # ruff: noqa: UP007
+"""
+TODO:
+ - implement stop lol
+"""
 import abc
 import threading
 import time
@@ -59,6 +63,3 @@ class ThreadWorker(abc.ABC):
 
     def stop(self) -> None:
         raise NotImplementedError
-
-    def cleanup(self) -> None:  # noqa
-        pass
