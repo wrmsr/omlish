@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import json
+import re
 import sys
 import time
 import uuid
@@ -12,9 +13,17 @@ def _main() -> None:
     parser.add_argument('--message', default='message {i}', nargs='?')
     parser.add_argument('--sleep-s', type=float, nargs='?')
     parser.add_argument('--sleep-n', type=int, nargs='?')
+    parser.add_argument('--after-cursor', nargs='?')
     args = parser.parse_args()
 
-    for i in range(args.n):
+    if (ac := args.after_cursor) is not None:
+        if not (m := re.fullmatch(r'cursor:(?P<n>\d+)', ac)):
+            raise ValueError(ac)
+        start = int(m.groupdict()['n'])
+    else:
+        start = 0
+
+    for i in range(start, args.n):
         if args.sleep_s:
             if not args.sleep_n or (i and i % args.sleep_n == 0):
                 time.sleep(args.sleep_s)
