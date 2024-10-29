@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP007
-# @omlish-amalg ./_journald2aws.py
+# @omlish-amalg ../../../scripts/journald2aws.py
 """
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
