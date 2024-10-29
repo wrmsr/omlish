@@ -1,12 +1,6 @@
 import os
 
-from prompt_toolkit import Application
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout import Layout
-from prompt_toolkit.layout.containers import Window
-from prompt_toolkit.styles import Style
-from prompt_toolkit.widgets import Frame
-from prompt_toolkit.widgets import TextArea
+from . import prompttoolkit as ptk
 
 
 # import humanize
@@ -56,11 +50,11 @@ class NcduApp:
         self.entries = scan_directory(root_path)
         self.cursor = 0
 
-        self.text_area = TextArea(focusable=True)
+        self.text_area = ptk.TextArea(focusable=True)
         self.update_display()
 
         # Set up key bindings
-        self.kb = KeyBindings()
+        self.kb = ptk.KeyBindings()
         self.kb.add('q')(self.exit_app)
         self.kb.add('up')(self.move_up)
         self.kb.add('down')(self.move_down)
@@ -68,14 +62,14 @@ class NcduApp:
         self.kb.add('backspace')(self.go_back)
 
         # Layout and Application
-        self.layout = Layout(Frame(self.text_area))
-        self.style = Style.from_dict(
+        self.layout = ptk.Layout(ptk.Frame(self.text_area))
+        self.style = ptk.Style.from_dict(
             {
                 'frame': 'bg:#008800 bold',
                 'text-area': 'bg:#000000 fg:#ffffff',
             },
         )
-        self.app = Application(
+        self.app = ptk.Application(
             layout=self.layout,
             key_bindings=self.kb,
             style=self.style,
