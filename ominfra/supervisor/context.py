@@ -114,6 +114,7 @@ class ServerContext(AbstractServerContext):
         Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
         process via usage() if privileges could not be dropped.
         """
+
         if self.uid is None:
             if os.getuid() == 0:
                 warnings.warn(
@@ -293,6 +294,7 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
     dropped.
     """
+
     if user is None:
         return 'No user specified to setuid to!'
 

@@ -143,6 +143,7 @@ class Subprocess(AbstractSubprocess):
         Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
         ProcessError if not
         """
+
         try:
             commandargs = shlex.split(self.config.command)
         except ValueError as e:
@@ -526,8 +527,12 @@ class Subprocess(AbstractSubprocess):
                 os.kill(self.pid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
-                    log.debug('unable to signal %s (pid %s), it probably just now exited '
-                              'on its own: %s', processname, self.pid, str(exc))
+                    log.debug(
+                        'unable to signal %s (pid %s), it probably just now exited on its own: %s',
+                        processname,
+                        self.pid,
+                        str(exc),
+                    )
                     # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
                     # processing.
                     return None
@@ -543,6 +548,7 @@ class Subprocess(AbstractSubprocess):
 
     def finish(self, sts: int) -> None:
         """ The process was reaped and we need to report and manage its state """
+
         self.drain()
 
         es, msg = decode_wait_status(sts)
@@ -559,9 +565,11 @@ class Subprocess(AbstractSubprocess):
         else:
             too_quickly = False
             log.warning(
-                "process '%s' (%s) laststart time is in the future, don't "
-                "know how long process was running so assuming it did "
-                "not exit too quickly", processname, self.pid)
+                "process '%s' (%s) laststart time is in the future, don't know how long process was running so "
+                "assuming it did not exit too quickly",
+                processname,
+                self.pid,
+            )
 
         exit_expected = es in self.config.exitcodes
 
@@ -658,7 +666,7 @@ class Subprocess(AbstractSubprocess):
                     if self.config.autorestart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
-                    elif self.exitstatus not in self.config.exitcodes:  # type: ignore
+                    elif self.exitstatus not in self.config.exitcodes:
                         # EXITED -> STARTING
                         self.spawn()
 
