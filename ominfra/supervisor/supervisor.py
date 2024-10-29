@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
 # @omlish-amalg ../scripts/supervisor.py
+import json
 import logging
 import signal
 import time
@@ -8,6 +9,7 @@ import typing as ta
 
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
+from omlish.lite.marshal import unmarshal_obj
 
 from .compat import ExitNow
 from .compat import as_string
@@ -331,39 +333,24 @@ def timeslice(period, when):
 
 
 def main(args=None, test=False):
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_file', metavar='config-file')
+    args = parser.parse_args()
+
     configure_standard_logging('INFO')
+
+    if not (cf := args.config_file):
+        raise RuntimeError('No config file specified')
 
     # if we hup, restart by making a new Supervisor()
     first = True
     while True:
-        config = ServerConfig.new(
-            nodaemon=True,
-            groups=[
-                ProcessGroupConfig(
-                    name='default',
-                    processes=[
-                        ProcessConfig(
-                            name='sleep',
-                            command='sleep 600',
-                            stdout=ProcessConfig.Log(
-                                file='/dev/fd/1',
-                                maxbytes=0,
-                            ),
-                            redirect_stderr=True,
-                        ),
-                        ProcessConfig(
-                            name='ls',
-                            command='ls -al',
-                            stdout=ProcessConfig.Log(
-                                file='/dev/fd/1',
-                                maxbytes=0,
-                            ),
-                            redirect_stderr=True,
-                        ),
-                    ],
-                ),
-            ],
-        )
+        with open(cf) as f:
+            config_src = f.read()
+        config_dct = json.loads(config_src)
+        config = unmarshal_obj(config_dct, ServerConfig)
 
         context = ServerContext(
             config,
