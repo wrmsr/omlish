@@ -2,6 +2,7 @@
 """
 TODO:
  - implement stop lol
+ - collective heartbeat monitoring - ThreadWorkerGroups
 """
 import abc
 import threading
