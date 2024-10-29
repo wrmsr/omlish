@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omlish-amalg-output main.py
+# @omlish-amalg-output ../clouds/aws/journald2aws/main.py
 # ruff: noqa: N802 UP006 UP007 UP036
 """
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
