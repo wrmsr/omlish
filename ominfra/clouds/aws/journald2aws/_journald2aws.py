@@ -80,45 +80,6 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# ../threadworker.py
-
-
-class ThreadWorker(abc.ABC):
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-        self._thread: ta.Optional[threading.Thread] = None
-
-    _sleep_s: float = .5
-
-    def is_alive(self) -> bool:
-        return (thr := self._thread) is not None and thr.is_alive()
-
-    def start(self) -> None:
-        thr = threading.Thread(target=self._run)
-        self._thread = thr
-        thr.start()
-
-    @abc.abstractmethod
-    def _run(self) -> None:
-        raise NotImplementedError
-
-    def stop(self) -> None:
-        raise NotImplementedError
-
-    def cleanup(self) -> None:  # noqa
-        pass
-
-
-########################################
 # ../../../../../omlish/lite/cached.py
 
 
@@ -1517,6 +1478,67 @@ class JournalctlMessageBuilder:
 
 
 ########################################
+# ../threadworker.py
+
+
+class ThreadWorker(abc.ABC):
+    def __init__(
+            self,
+            *,
+            stop_event: ta.Optional[threading.Event] = None,
+    ) -> None:
+        super().__init__()
+
+        if stop_event is None:
+            stop_event = threading.Event()
+        self._stop_event = stop_event
+
+        self._thread: ta.Optional[threading.Thread] = None
+
+        self._last_heartbeat: ta.Optional[float] = None
+
+    #
+
+    def should_stop(self) -> bool:
+        return self._stop_event.is_set()
+
+    #
+
+    @property
+    def last_heartbeat(self) -> ta.Optional[float]:
+        return self._last_heartbeat
+
+    def _heartbeat(self) -> bool:
+        self._last_heartbeat = time.time()
+
+        if self.should_stop():
+            log.info('Stopping: %s', self)
+            return False
+
+        return True
+
+    #
+
+    def is_alive(self) -> bool:
+        return (thr := self._thread) is not None and thr.is_alive()
+
+    def start(self) -> None:
+        thr = threading.Thread(target=self._run)
+        self._thread = thr
+        thr.start()
+
+    @abc.abstractmethod
+    def _run(self) -> None:
+        raise NotImplementedError
+
+    def stop(self) -> None:
+        raise NotImplementedError
+
+    def cleanup(self) -> None:  # noqa
+        pass
+
+
+########################################
 # ../../logs.py
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
@@ -1798,25 +1820,36 @@ class JournalctlTailerWorker(ThreadWorker):
             self,
             output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
             *,
-            cmd: ta.Optional[ta.Sequence[str]] = None,
             since: ta.Optional[str] = None,
             after_cursor: ta.Optional[str] = None,
+
+            cmd: ta.Optional[ta.Sequence[str]] = None,
             shell_wrap: bool = False,
+
+            read_size: int = 0x4000,
+            sleep_s: float = 1.,
+
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self._output = output
-        self._cmd = cmd or self.DEFAULT_CMD
+
         self._since = since
         self._after_cursor = after_cursor
+
+        self._cmd = cmd or self.DEFAULT_CMD
         self._shell_wrap = shell_wrap
+
+        self._read_size = read_size
+        self._sleep_s = sleep_s
 
         self._mb = JournalctlMessageBuilder()
 
         self._proc: ta.Optional[subprocess.Popen] = None
 
-    def _run(self) -> None:
+    @cached_nullary
+    def _full_cmd(self) -> ta.Sequence[str]:
         cmd = [
             *self._cmd,
             '--output', 'json',
@@ -1833,8 +1866,11 @@ class JournalctlTailerWorker(ThreadWorker):
         if self._shell_wrap:
             cmd = list(subprocess_shell_wrap_exec(*cmd))
 
+        return cmd
+
+    def _run(self) -> None:
         with subprocess.Popen(
-            cmd,
+            self._full_cmd(),
             stdout=subprocess.PIPE,
         ) as self._proc:
             stdout = check_not_none(self._proc.stdout)
@@ -1844,23 +1880,29 @@ class JournalctlTailerWorker(ThreadWorker):
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
             while True:
+                if not self._heartbeat():
+                    break
+
                 while stdout.readable():
-                    buf = stdout.read(53)
-                    if not buf:
-                        log.debug('Empty read')
+                    if not self._heartbeat():
                         break
 
-                    log.debug('Read buffer: %r', buf)
+                    buf = stdout.read(self._read_size)
+                    if not buf:
+                        log.debug('Journalctl empty read')
+                        break
+
+                    log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
                     if msgs:
                         self._output.put(msgs)
 
                 if self._proc.poll() is not None:
-                    log.debug('Process terminated')
+                    log.critical('Journalctl process terminated')
                     break
 
-                log.debug('Not readable')
-                time.sleep(1)
+                log.debug('Journalctl readable')
+                time.sleep(self._sleep_s)
 
 
 ########################################
@@ -1944,15 +1986,20 @@ class JournalctlToAws:
 
         if not (cf := self._config.cursor_file):
             return None
+        cf = os.path.expanduser(cf)
 
-        with open(cf) as f:
-            return f.read().strip()
+        try:
+            with open(cf) as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return None
 
     def _write_cursor_file(self, cursor: str) -> None:
         self._ensure_locked()
 
         if not (cf := self._config.cursor_file):
             return
+        cf = os.path.expanduser(cf)
 
         log.info('Writing cursor file %s : %s', cf, cursor)
         with open(ncf := cf + '.next', 'w') as f:
@@ -1986,10 +2033,22 @@ class JournalctlToAws:
 
     @cached_nullary
     def _journalctl_tailer_worker(self) -> JournalctlTailerWorker:
+        ac: ta.Optional[str] = self._config.journalctl_after_cursor
+        if ac is None:
+            ac = self._read_cursor_file()
+        if ac is not None:
+            log.info('Starting from cursor %s', ac)
+
+        if (since := self._config.journalctl_since):
+            log.info('Starting since %s', since)
+
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
+
+            since=since,
+            after_cursor=ac,
+
             cmd=self._config.journalctl_cmd,
-            after_cursor=self._read_cursor_file(),
             shell_wrap=is_debugger_attached(),
         )
 
@@ -2011,9 +2070,9 @@ class JournalctlToAws:
                 break
 
             msgs: ta.Sequence[JournalctlMessage] = q.get()
-            print(msgs)
+            log.debug('%r', msgs)
 
-            cur_cursor: ta.Optional[str]
+            cur_cursor: ta.Optional[str] = None
             for m in reversed(msgs):
                 if m.cursor is not None:
                     cur_cursor = m.cursor
@@ -2027,7 +2086,7 @@ class JournalctlToAws:
                 message=json.dumps(m.dct),
                 ts_ms=int(time.time() * 1000.),
             ) for m in msgs])
-            print(post)
+            log.debug('%r', post)
 
             if not self._config.dry_run:
                 with urllib.request.urlopen(urllib.request.Request(  # noqa
@@ -2037,7 +2096,7 @@ class JournalctlToAws:
                         data=post.data,
                 )) as resp:
                     response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                print(response)
+                log.debug('%r', response)
 
             if cur_cursor is not None:
                 self._write_cursor_file(cur_cursor)
@@ -2048,7 +2107,10 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--config-file')
+    parser.add_argument('-v', '--verbose', action='store_true')
 
+    parser.add_argument('--after-cursor', nargs='?')
+    parser.add_argument('--since', nargs='?')
     parser.add_argument('--dry-run', action='store_true')
 
     parser.add_argument('--message', nargs='?')
@@ -2058,7 +2120,7 @@ def _main() -> None:
 
     #
 
-    configure_standard_logging('DEBUG')
+    configure_standard_logging('DEBUG' if args.verbose else 'INFO')
 
     #
 
@@ -2087,10 +2149,12 @@ def _main() -> None:
             *(['--message', args.message] if args.message else []),
             '100000',
         ])
+
     #
 
-    if args.dry_run:
-        config = dc.replace(config, dry_run=True)
+    for a in ['after_cursor', 'since', 'dry_run']:
+        if (pa := getattr(args, a)):
+            config = dc.replace(config, **{a: pa})
 
     #
 
