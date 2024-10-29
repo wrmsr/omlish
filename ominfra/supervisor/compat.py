@@ -32,9 +32,10 @@ def compact_traceback() -> ta.Tuple[
     types.TracebackType,
 ]:
     t, v, tb = sys.exc_info()
-    tbinfo = []
     if not tb:
         raise RuntimeError('No traceback')
+
+    tbinfo = []
     while tb:
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,
@@ -72,6 +73,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
     Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
     signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
     """
+
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
         msg = f'exit status {es}'
@@ -171,6 +173,7 @@ def real_exit(code: int) -> None:
 
 def get_path() -> ta.Sequence[str]:
     """Return a list corresponding to $PATH, or a default."""
+
     path = ['/bin', '/usr/bin', '/usr/local/bin']
     if 'PATH' in os.environ:
         p = os.environ['PATH']

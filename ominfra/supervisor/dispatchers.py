@@ -93,7 +93,9 @@ class OutputDispatcher(Dispatcher):
 
         `event_type` should be one of ProcessLogStdoutEvent or ProcessLogStderrEvent
         """
+
         super().__init__(process, event_type.channel, fd)
+
         self.event_type = event_type
 
         self.lc: ProcessConfig.Log = getattr(process.config, self._channel)
@@ -107,15 +109,19 @@ class OutputDispatcher(Dispatcher):
         self._output_buffer = b''  # data waiting to be logged
 
         # all code below is purely for minor speedups
+
         begin_token = self.event_type.BEGIN_TOKEN
         end_token = self.event_type.END_TOKEN
-        self.begin_token_data = (begin_token, len(begin_token))
-        self.end_token_data = (end_token, len(end_token))
-        self.main_log_level = logging.DEBUG
+        self._begin_token_data = (begin_token, len(begin_token))
+        self._end_token_data = (end_token, len(end_token))
+
+        self._main_log_level = logging.DEBUG
+
+        self._log_to_main_log = process.context.config.loglevel <= self._main_log_level
+
         config = self._process.config
-        self.log_to_main_log = process.context.config.loglevel <= self.main_log_level
-        self.stdout_events_enabled = config.stdout.events_enabled
-        self.stderr_events_enabled = config.stderr.events_enabled
+        self._stdout_events_enabled = config.stdout.events_enabled
+        self._stderr_events_enabled = config.stderr.events_enabled
 
     _child_log: ta.Optional[logging.Logger] = None  # the current logger (normal_log or capture_log)
     _normal_log: ta.Optional[logging.Logger] = None  # the "normal" (non-capture) logger
@@ -126,6 +132,7 @@ class OutputDispatcher(Dispatcher):
         Configure the "normal" (non-capture) log for this channel of this process. Sets self.normal_log if logging is
         enabled.
         """
+
         config = self._process.config  # noqa
         channel = self._channel  # noqa
 
@@ -146,7 +153,7 @@ class OutputDispatcher(Dispatcher):
         #         maxbytes=maxbytes,
         #         backups=backups,
         #     )
-        #
+
         # if to_syslog:
         #     loggers.handle_syslog(
         #         self.normal_log,
@@ -158,6 +165,7 @@ class OutputDispatcher(Dispatcher):
         Configure the capture log for this process.  This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
         """
+
         capture_maxbytes = self.lc.capture_maxbytes
         if capture_maxbytes:
             self._capture_log = logging.getLogger(__name__)
@@ -184,9 +192,11 @@ class OutputDispatcher(Dispatcher):
         if data:
             if self._process.context.config.strip_ansi:
                 data = strip_escapes(data)
+
             if self._child_log:
                 self._child_log.info(data)
-            if self.log_to_main_log:
+
+            if self._log_to_main_log:
                 if not isinstance(data, bytes):
                     text = data
                 else:
@@ -194,11 +204,13 @@ class OutputDispatcher(Dispatcher):
                         text = data.decode('utf-8')
                     except UnicodeDecodeError:
                         text = f'Undecodable: {data!r}'
-                log.log(self.main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+                log.log(self._main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+
             if self._channel == 'stdout':
-                if self.stdout_events_enabled:
+                if self._stdout_events_enabled:
                     notify_event(ProcessLogStdoutEvent(self._process, self._process.pid, data))
-            elif self.stderr_events_enabled:
+
+            elif self._stderr_events_enabled:
                 notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
@@ -210,9 +222,9 @@ class OutputDispatcher(Dispatcher):
             return
 
         if self._capture_mode:
-            token, tokenlen = self.end_token_data
+            token, tokenlen = self._end_token_data
         else:
-            token, tokenlen = self.begin_token_data
+            token, tokenlen = self._begin_token_data
 
         if len(self._output_buffer) <= tokenlen:
             return  # not enough data

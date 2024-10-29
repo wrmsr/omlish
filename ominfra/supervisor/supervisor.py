@@ -15,7 +15,6 @@ from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
 from .compat import signame
-from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
@@ -350,7 +349,7 @@ def main(args=None, test=False):
         with open(cf) as f:
             config_src = f.read()
         config_dct = json.loads(config_src)
-        config = unmarshal_obj(config_dct, ServerConfig)
+        config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
 
         context = ServerContext(
             config,

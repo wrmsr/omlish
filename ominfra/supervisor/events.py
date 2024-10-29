@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import typing as ta
 
 from .compat import as_string
@@ -32,12 +33,11 @@ notify_event = EVENT_CALLBACKS.notify
 clear_events = EVENT_CALLBACKS.clear
 
 
-class Event:
+class Event(abc.ABC):  # noqa
     """Abstract event type """
 
 
-class ProcessLogEvent(Event):
-    """Abstract"""
+class ProcessLogEvent(Event, abc.ABC):
     channel: ta.Optional[str] = None
 
     def __init__(self, process, pid, data):
@@ -54,8 +54,8 @@ class ProcessLogEvent(Event):
             data = as_string(self.data)
         except UnicodeDecodeError:
             data = f'Undecodable: {self.data!r}'
-        fmt = as_string('processname:%s groupname:%s pid:%s channel:%s\n%s')
-        result = fmt % (
+
+        result = 'processname:%s groupname:%s pid:%s channel:%s\n%s' % (  # noqa
             as_string(self.process.config.name),
             as_string(groupname),
             self.pid,
@@ -73,8 +73,7 @@ class ProcessLogStderrEvent(ProcessLogEvent):
     channel = 'stderr'
 
 
-class ProcessCommunicationEvent(Event):
-    """ Abstract """
+class ProcessCommunicationEvent(Event, abc.ABC):
     # event mode tokens
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
