@@ -197,7 +197,8 @@ def _main() -> None:
                     if not buf:
                         break
 
-                out.write('\n')
+                if renderer is not None:
+                    out.write('\n')
 
         else:
             with io.TextIOWrapper(in_file) as tw:

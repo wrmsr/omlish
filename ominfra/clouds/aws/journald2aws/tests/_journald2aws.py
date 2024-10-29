@@ -1486,7 +1486,9 @@ class JournalctlToAws:
         aws_log_group_name: str = 'omlish'
         aws_log_stream_name: ta.Optional[str] = None
 
-        aws_credentials: ta.Optional[AwsSigner.Credentials] = None
+        aws_access_key: ta.Optional[str] = None
+        aws_secret_key: ta.Optional[str] = dc.field(default=None, repr=False)
+
         aws_region_name: str = 'us-west-1'
 
         journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
@@ -1498,12 +1500,19 @@ class JournalctlToAws:
         self._config = config
 
     @cached_nullary
+    def _aws_credentials(self) -> AwsSigner.Credentials:
+        return AwsSigner.Credentials(
+            access_key=check_non_empty_str(self._config.aws_access_key),
+            secret_key=check_non_empty_str(self._config.aws_secret_key),
+        )
+
+    @cached_nullary
     def _aws_log_message_poster(self) -> AwsLogMessagePoster:
         return AwsLogMessagePoster(
             log_group_name=self._config.aws_log_group_name,
             log_stream_name=check_non_empty_str(self._config.aws_log_stream_name),
             region_name=self._config.aws_region_name,
-            credentials=check_not_none(self._config.aws_credentials),
+            credentials=check_not_none(self._aws_credentials()),
         )
 
     @cached_nullary
@@ -1590,6 +1599,9 @@ def _main() -> None:
             secrets.get('aws_secret_access_key').reveal(),
         )
 
+    if credentials is None:
+        raise Exception('No credentials found')
+
     #
 
     journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
@@ -1607,7 +1619,8 @@ def _main() -> None:
 
     jta = JournalctlToAws(JournalctlToAws.Config(
         aws_log_stream_name='test',
-        aws_credentials=credentials,
+        aws_access_key=credentials.access_key,
+        aws_secret_key=credentials.secret_key,
         journalctl_cmd_override=journalctl_cmd_override,
         dry_run=not args.post,
     ))

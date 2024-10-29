@@ -64,6 +64,6 @@ def test_delimit():
                 for c in s
                 for t in lex(c)
                 for e in parse(t)
-            ), delimit='\n')
+            ), delimiter='\n')
 
     print(r)
