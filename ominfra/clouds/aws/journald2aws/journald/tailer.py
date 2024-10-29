@@ -16,18 +16,20 @@ from .messages import JournalctlMessageBuilder
 
 
 class JournalctlTailerWorker(ThreadWorker):
+    DEFAULT_CMD: ta.ClassVar[ta.Sequence[str]] = ['journalctl']
+
     def __init__(
             self,
             output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
             *,
-            cmd_override: ta.Optional[ta.Sequence[str]] = None,
+            cmd: ta.Optional[ta.Sequence[str]] = None,
             shell_wrap: bool = False,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self._output = output
-        self._cmd_override = cmd_override
+        self._cmd = cmd or self.DEFAULT_CMD
         self._shell_wrap = shell_wrap
 
         self._mb = JournalctlMessageBuilder()
@@ -35,16 +37,13 @@ class JournalctlTailerWorker(ThreadWorker):
         self._proc: ta.Optional[subprocess.Popen] = None
 
     def _run(self) -> None:
-        if self._cmd_override is not None:
-            cmd = self._cmd_override
-        else:
-            cmd = [
-                'journalctl',
-                '-o', 'json',
-                '--show-cursor',
-                '-f',
-                '--since', 'today',
-            ]
+        cmd: ta.Sequence[str] = [
+            *self._cmd,
+            '-o', 'json',
+            '--show-cursor',
+            '-f',
+            '--since', 'today',
+        ]
 
         if self._shell_wrap:
             cmd = subprocess_shell_wrap_exec(*cmd)

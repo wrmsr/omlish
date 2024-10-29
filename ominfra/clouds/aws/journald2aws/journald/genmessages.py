@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# @omlish-script
 import argparse
 import datetime
 import json
@@ -9,11 +11,14 @@ import uuid
 
 def _main() -> None:
     parser = argparse.ArgumentParser()
+
     parser.add_argument('n', type=int, default=10, nargs='?')
     parser.add_argument('--message', default='message {i}', nargs='?')
     parser.add_argument('--sleep-s', type=float, nargs='?')
     parser.add_argument('--sleep-n', type=int, nargs='?')
+
     parser.add_argument('--after-cursor', nargs='?')
+
     args = parser.parse_args()
 
     if (ac := args.after_cursor) is not None:

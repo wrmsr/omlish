@@ -22,14 +22,14 @@ from .base import SimpleBootstrap
 if ta.TYPE_CHECKING:
     from .. import libc
     from .. import logs
-    from .. import os as osu
     from ..formats import dotenv
+    from ..lite import pidfile
 
 else:
     libc = lang.proxy_import('..libc', __package__)
     logs = lang.proxy_import('..logs', __package__)
-    osu = lang.proxy_import('..os', __package__)
     dotenv = lang.proxy_import('..formats.dotenv', __package__)
+    pidfile = lang.proxy_import('..lite.pidfile', __package__)
 
 
 ##
@@ -317,7 +317,7 @@ class PidfileBootstrap(ContextBootstrap['PidfileBootstrap.Config']):
             yield
             return
 
-        with osu.Pidfile(self._config.path) as pf:
+        with pidfile.Pidfile(self._config.path) as pf:
             pf.write()
             yield
 
