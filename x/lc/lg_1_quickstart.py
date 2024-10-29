@@ -7,7 +7,7 @@ from langchain_anthropic import ChatAnthropic
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
-from dp.utils import load_secrets
+from .utils import load_secrets
 
 
 def _main() -> None:
