@@ -20,6 +20,9 @@ class ThreadWorker(abc.ABC):
 
     _sleep_s: float = .5
 
+    def is_alive(self) -> bool:
+        return (thr := self._thread) is not None and thr.is_alive()
+
     def start(self) -> None:
         thr = threading.Thread(target=self._run)
         self._thread = thr
