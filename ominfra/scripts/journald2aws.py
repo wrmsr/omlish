@@ -1499,6 +1499,7 @@ class JournalctlMessageBuilder:
 """
 TODO:
  - implement stop lol
+ - collective heartbeat monitoring - ThreadWorkerGroups
 """
 
 
