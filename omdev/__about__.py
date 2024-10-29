@@ -34,6 +34,10 @@ class Project(ProjectBase):
             'gprof2dot ~= 2024.6',
         ],
 
+        'prompttoolkit': [
+            'prompt-toolkit ~= 3.0',
+        ],
+
         'tokens': [
             'tokenize_rt ~= 6.1',
         ],

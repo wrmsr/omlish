@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish.lite.strings import format_num_bytes
 
-from . import prompttoolkit as ptk
+from ... import prompttoolkit as ptk
 
 
 def get_directory_size(path: str) -> int:
@@ -71,12 +71,14 @@ class NcduApp:
             'text-area': 'bg:#000000 fg:#ffffff',
         })
 
-        self._app = ptk.Application(
+        self._app: ptk.Application = ptk.Application(
             layout=self._layout,
             key_bindings=self._kb,
             style=self._style,
             full_screen=True,
         )
+
+    #
 
     def update_display(self) -> None:
         display_text = f'Current Directory: {self._current_path}\n\n'
@@ -85,17 +87,19 @@ class NcduApp:
             display_text += f'{indicator} {e.name:<40} {format_num_bytes(e.size):>10}\n'
         self._text_area.text = display_text
 
-    def move_up(self, event) -> None:
+    #
+
+    def move_up(self, event: ptk.KeyPressEvent) -> None:
         if self._cursor > 0:
             self._cursor -= 1
             self.update_display()
 
-    def move_down(self, event) -> None:
+    def move_down(self, event: ptk.KeyPressEvent) -> None:
         if self._cursor < len(self._entries) - 1:
             self._cursor += 1
             self.update_display()
 
-    def enter_directory(self, event) -> None:
+    def enter_directory(self, event: ptk.KeyPressEvent) -> None:
         selected_entry = self._entries[self._cursor]
         if selected_entry.type == 'dir':
             self._current_path = os.path.join(self._current_path, selected_entry.name[:-1])
@@ -103,15 +107,17 @@ class NcduApp:
             self._cursor = 0
             self.update_display()
 
-    def go_back(self, event) -> None:
+    def go_back(self, event: ptk.KeyPressEvent) -> None:
         if self._current_path != self._root_path:
             self._current_path = os.path.dirname(self._current_path)
             self._entries = scan_directory(self._current_path)
             self._cursor = 0
             self.update_display()
 
-    def exit_app(self, event) -> None:
+    def exit_app(self, event: ptk.KeyPressEvent) -> None:
         event.app.exit()
+
+    #
 
     def run(self) -> None:
         self._app.run()

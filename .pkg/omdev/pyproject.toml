@@ -34,6 +34,7 @@ all = [
     'docutils ~= 0.21',
     'mypy ~= 1.11',
     'gprof2dot ~= 2024.6',
+    'prompt-toolkit ~= 3.0',
     'tokenize_rt ~= 6.1',
     'wheel ~= 0.44',
 ]
@@ -53,6 +54,9 @@ mypy = [
 ]
 prof = [
     'gprof2dot ~= 2024.6',
+]
+prompttoolkit = [
+    'prompt-toolkit ~= 3.0',
 ]
 tokens = [
     'tokenize_rt ~= 6.1',
