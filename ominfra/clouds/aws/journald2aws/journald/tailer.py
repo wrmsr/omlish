@@ -39,9 +39,9 @@ class JournalctlTailerWorker(ThreadWorker):
     def _run(self) -> None:
         cmd: ta.Sequence[str] = [
             *self._cmd,
-            '-o', 'json',
+            '--output', 'json',
             '--show-cursor',
-            '-f',
+            '--follow',
             '--since', 'today',
         ]
 

@@ -17,7 +17,11 @@ def _main() -> None:
     parser.add_argument('--sleep-s', type=float, nargs='?')
     parser.add_argument('--sleep-n', type=int, nargs='?')
 
+    parser.add_argument('--output', nargs='?')
+    parser.add_argument('--follow', action='store_true')
+    parser.add_argument('--show-cursor', action='store_true')
     parser.add_argument('--after-cursor', nargs='?')
+    parser.add_argument('--since', nargs='?')
 
     args = parser.parse_args()
 
