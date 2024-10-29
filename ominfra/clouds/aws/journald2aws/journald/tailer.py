@@ -93,7 +93,7 @@ class JournalctlTailerWorker(ThreadWorker):
                     buf = stdout.read(self._read_size)
                     if not buf:
                         log.debug('Journalctl empty read')
-                        continue
+                        break
 
                     log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
