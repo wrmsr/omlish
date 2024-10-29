@@ -54,11 +54,11 @@ FORMAT_NUM_BYTES_SUFFIXES: ta.Sequence[str] = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'
 
 def format_num_bytes(num_bytes: int) -> str:
     for i, suffix in enumerate(FORMAT_NUM_BYTES_SUFFIXES):
-        value = num_bytes / 1024**i
-        if num_bytes < 1024**(i + 1):
+        value = num_bytes / 1024 ** i
+        if num_bytes < 1024 ** (i + 1):
             if value.is_integer():
                 return f'{int(value)}{suffix}'
             else:
                 return f'{value:.2f}{suffix}'
 
-    return f'{num_bytes / 1024**(len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+    return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
