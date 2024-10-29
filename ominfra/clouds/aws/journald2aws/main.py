@@ -53,11 +53,11 @@ from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.pidfile import Pidfile
 from omlish.lite.runtime import is_debugger_attached
 
+from ....journald.messages import JournalctlMessage  # noqa
+from ....journald.tailer import JournalctlTailerWorker
 from ..auth import AwsSigner
 from ..logs import AwsLogMessagePoster
 from ..logs import AwsPutLogEventsResponse
-from .journald.messages import JournalctlMessage  # noqa
-from .journald.tailer import JournalctlTailerWorker
 
 
 @dc.dataclass(frozen=True)
