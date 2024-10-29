@@ -10,7 +10,7 @@ class ProjectBase:
     authors = [{'name': 'wrmsr'}]
     urls = {'source': 'https://github.com/wrmsr/omlish'}
     license = {'text': 'BSD-3-Clause'}
-    requires_python = '~=3.12'
+    requires_python = '>=3.12'
 
     version = __version__
 

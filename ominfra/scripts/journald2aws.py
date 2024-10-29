@@ -1604,7 +1604,6 @@ class AwsLogMessagePoster:
      - max_items
      - max_bytes - manually build body
      - flush_interval
-     - !! sort by timestamp
     """
 
     DEFAULT_URL = 'https://logs.{region_name}.amazonaws.com/'  # noqa
@@ -1677,7 +1676,7 @@ class AwsLogMessagePoster:
                     message=m.message,
                     timestamp=m.ts_ms,
                 )
-                for m in messages
+                for m in sorted(messages, key=lambda m: m.ts_ms)
             ],
         )
 
