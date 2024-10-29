@@ -41,17 +41,19 @@ class Pidfile:
         except OSError:
             return False
 
-    def write(self, pid: ta.Optional[int] = None) -> None:
+    def ensure_locked(self) -> None:
         if not self.try_lock():
             raise RuntimeError('Could not get lock')
+
+    def write(self, pid: ta.Optional[int] = None) -> None:
+        self.ensure_locked()
         if pid is None:
             pid = os.getpid()
         self._f.write(f'{pid}\n')
         self._f.flush()
 
     def clear(self) -> None:
-        if not self.try_lock():
-            raise RuntimeError('Could not get lock')
+        self.ensure_locked()
         self._f.seek(0)
         self._f.truncate()
 
@@ -63,4 +65,4 @@ class Pidfile:
 
     def kill(self, sig: int = signal.SIGTERM) -> None:
         pid = self.read()
-        os.kill(pid, sig)  # Still racy
+        os.kill(pid, sig)  # FIXME: Still racy
