@@ -84,25 +84,32 @@ class JournalctlTailerWorker(ThreadWorker):
 
             while True:
                 if not self._heartbeat():
-                    break
+                    return
 
                 while stdout.readable():
                     if not self._heartbeat():
-                        break
+                        return
 
                     buf = stdout.read(self._read_size)
                     if not buf:
                         log.debug('Journalctl empty read')
-                        break
+                        return
 
                     log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
                     if msgs:
-                        self._output.put(msgs)
+                        while True:
+                            try:
+                                self._output.put(msgs, timeout=1.)
+                            except queue.Full:
+                                if not self._heartbeat():
+                                    return
+                            else:
+                                break
 
                 if self._proc.poll() is not None:
                     log.critical('Journalctl process terminated')
-                    break
+                    return
 
                 log.debug('Journalctl readable')
                 time.sleep(self._sleep_s)
