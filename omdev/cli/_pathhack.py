@@ -7,20 +7,33 @@ problematic empty string is added, so a sys.meta_path hook is prepended.
 
 See:
   https://github.com/python/cpython/blob/da1e5526aee674bb33c17a498aa3781587b9850c/Python/sysmodule.c#L3939
+  https://github.com/python/cpython/blob/db0a1b8c1291bf1aa9e016e43bc2f7ed0acf83bd/Modules/getpath.py
+  https://github.com/python/cpython/blob/db0a1b8c1291bf1aa9e016e43bc2f7ed0acf83bd/Modules/getpath.c
+  https://github.com/python/cpython/blob/db0a1b8c1291bf1aa9e016e43bc2f7ed0acf83bd/Doc/library/sys_path_init.rst
 """
 import os.path
 import site
 import sys
 
 
-def _remove_empty_from_sys_path() -> None:
-    while '' in sys.path:
-        sys.path.remove('')
-
-
 class _PathHackMetaFinder:
+    def __init__(
+            self,
+            removed_paths=None,  # type: list[str] | None
+    ) -> None:
+        super().__init__()
+        if removed_paths is None:
+            removed_paths = ['', '.', os.getcwd()]
+        self._removed_paths = removed_paths
+        self.remove_paths()
+
+    def remove_paths(self) -> None:
+        for p in self._removed_paths:
+            while p in sys.path:
+                sys.path.remove(p)
+
     def find_spec(self, fullname, path, target=None):
-        _remove_empty_from_sys_path()
+        self.remove_paths()
         return None  # noqa
 
 
