@@ -82,6 +82,8 @@ thread_name
 """
 import ctypes as ct
 
+import pytest
+
 from omlish import libc
 
 
@@ -98,10 +100,13 @@ SD_JOURNAL_APPEND = 1
 SD_JOURNAL_INVALIDATE = 2
 
 
-def _main():
-    lib = ct.CDLL('libsystemd.so.0')
+def test_write():
+    try:
+        lib = ct.CDLL('libsystemd.so.0')
+    except OSError:
+        pytest.skip('Failed to find libsystemd')
 
-    lib.sd_journal_sendv = lib['sd_journal_sendv']
+    lib.sd_journal_sendv = lib['sd_journal_sendv']  # type: ignore
     lib.sd_journal_sendv.restype = ct.c_int
     lib.sd_journal_sendv.argtypes = [ct.POINTER(libc.iovec), ct.c_int]
 
@@ -112,7 +117,7 @@ def _main():
         'baz': 'qux',
     }
 
-    msgs = [('%s=%s\0' % (k.upper(), v)).encode() for k, v in items.items()]
+    msgs = [('%s=%s\0' % (k.upper(), v)).encode() for k, v in items.items()]  # noqa
 
     vec = (libc.iovec * len(msgs))()
     cl = (ct.c_char_p * len(msgs))()  # noqa
@@ -121,7 +126,3 @@ def _main():
         vec[i].iov_len = len(msgs[i]) - 1
 
     print(lib.sd_journal_sendv(vec, len(msgs)))
-
-
-if __name__ == '__main__':
-    _main()

@@ -1,4 +1,5 @@
 # ruff: noqa: UP007
+# @omlish-lite
 """
 TODO:
  - implement stop lol
