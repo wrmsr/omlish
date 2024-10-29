@@ -2,12 +2,6 @@
 # ruff: noqa: UP007
 # @omlish-amalg ./_journald2aws.py
 """
-TODO:
- - cursorfile
- - lockfile
-
-==
-
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
 journalctl:
@@ -71,7 +65,11 @@ class JournalctlOpts:
 class JournalctlToAws:
     @dc.dataclass(frozen=True)
     class Config:
-        pidfile: ta.Optional[str] = None
+        pid_file: ta.Optional[str] = None
+
+        cursor_file: ta.Optional[str] = None
+
+        #
 
         aws_log_group_name: str = 'omlish'
         aws_log_stream_name: ta.Optional[str] = None
@@ -81,13 +79,76 @@ class JournalctlToAws:
 
         aws_region_name: str = 'us-west-1'
 
+        #
+
         journalctl_cmd: ta.Optional[ta.Sequence[str]] = None
+
+        journalctl_after_cursor: ta.Optional[str] = None
+        journalctl_since: ta.Optional[str] = None
+
+        #
 
         dry_run: bool = False
 
     def __init__(self, config: Config) -> None:
         super().__init__()
         self._config = config
+
+    #
+
+    _es: contextlib.ExitStack
+
+    def __enter__(self) -> 'JournalctlToAws':
+        self._es = contextlib.ExitStack().__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self._es.__exit__(exc_type, exc_val, exc_tb)
+
+    #
+
+    @cached_nullary
+    def _pidfile(self) -> ta.Optional[Pidfile]:
+        if self._config.pid_file is None:
+            return None
+
+        pfp = os.path.expanduser(self._config.pid_file)
+
+        log.info('Opening pidfile %s', pfp)
+
+        pf = self._es.enter_context(Pidfile(pfp))
+        pf.write()
+        return pf
+
+    def _ensure_locked(self) -> None:
+        if (pf := self._pidfile()) is not None:
+            pf.ensure_locked()
+
+    #
+
+    def _read_cursor_file(self) -> ta.Optional[str]:
+        self._ensure_locked()
+
+        if not (cf := self._config.cursor_file):
+            return None
+
+        try:
+            with open(cf) as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return None
+
+    def _write_cursor_file(self, cursor: str) -> None:
+        self._ensure_locked()
+
+        if not (cf := self._config.cursor_file):
+            return
+
+        log.info('Writing cursor file %s : %s', cf, cursor)
+        with open(ncf := cf + '.next', 'w') as f:
+            f.write(cursor)
+
+        os.rename(ncf, cf)
 
     #
 
@@ -118,52 +179,59 @@ class JournalctlToAws:
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
             cmd=self._config.journalctl_cmd,
+            after_cursor=self._read_cursor_file(),
             shell_wrap=is_debugger_attached(),
         )
 
     #
 
     def run(self) -> None:
-        with contextlib.ExitStack() as es:
-            if self._config.pidfile is not None:
-                pfp = os.path.expanduser(self._config.pidfile)
-                log.info('Opening pidfile %s', pfp)
-                pf = es.enter_context(Pidfile(pfp))
-                pf.write()
+        self._ensure_locked()
 
-            q = self._journalctl_message_queue()
-            jtw = self._journalctl_tailer_worker()
-            mp = self._aws_log_message_poster()
+        q = self._journalctl_message_queue()
+        jtw = self._journalctl_tailer_worker()
+        mp = self._aws_log_message_poster()
 
-            jtw.start()
+        jtw.start()
 
-            while True:
-                if not jtw.is_alive():
-                    log.critical('Journalctl tailer worker died')
+        last_cursor: ta.Optional[str] = None  # noqa
+        while True:
+            if not jtw.is_alive():
+                log.critical('Journalctl tailer worker died')
+                break
+
+            msgs: ta.Sequence[JournalctlMessage] = q.get()
+            print(msgs)
+
+            cur_cursor: ta.Optional[str]
+            for m in reversed(msgs):
+                if m.cursor is not None:
+                    cur_cursor = m.cursor
                     break
 
-                msgs = q.get()
-                print(msgs)
+            if not msgs:
+                log.warning('Empty queue chunk')
+                continue
 
-                if not msgs:
-                    log.warning('Empty queue chunk')
-                    continue
+            [post] = mp.feed([mp.Message(
+                message=json.dumps(m.dct),
+                ts_ms=int(time.time() * 1000.),
+            ) for m in msgs])
+            print(post)
 
-                [post] = mp.feed([mp.Message(
-                    message=json.dumps(m.dct),
-                    ts_ms=int(time.time() * 1000.),
-                ) for m in msgs])
-                print(post)
+            if not self._config.dry_run:
+                with urllib.request.urlopen(urllib.request.Request(  # noqa
+                        post.url,
+                        method='POST',
+                        headers=dict(post.headers),
+                        data=post.data,
+                )) as resp:
+                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
+                print(response)
 
-                if not self._config.dry_run:
-                    with urllib.request.urlopen(urllib.request.Request(  # noqa
-                            post.url,
-                            method='POST',
-                            headers=dict(post.headers),
-                            data=post.data,
-                    )) as resp:
-                        response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                    print(response)
+            if cur_cursor is not None:
+                self._write_cursor_file(cur_cursor)
+                last_cursor = cur_cursor  # noqa
 
 
 def _main() -> None:
@@ -216,8 +284,8 @@ def _main() -> None:
 
     #
 
-    jta = JournalctlToAws(config)
-    jta.run()
+    with JournalctlToAws(config) as jta:
+        jta.run()
 
 
 if __name__ == '__main__':
