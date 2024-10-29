@@ -2,6 +2,12 @@
 # ruff: noqa: UP007
 # @omlish-amalg ./_journald2aws.py
 """
+TODO:
+ - cursorfile
+ - lockfile
+
+==
+
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
 journalctl:
@@ -187,7 +193,7 @@ def _main() -> None:
     if not args.real:
         journalctl_cmd_override = [
             sys.executable,
-            os.path.join(os.path.dirname(__file__), 'genmessages.py'),
+            os.path.join(os.path.dirname(__file__), 'tests', 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
