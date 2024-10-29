@@ -1422,142 +1422,6 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../journald/messages.py
-
-
-@dc.dataclass(frozen=True)
-class JournalctlMessage:
-    raw: bytes
-    dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
-    cursor: ta.Optional[str] = None
-    ts_us: ta.Optional[int] = None  # microseconds UTC
-
-
-class JournalctlMessageBuilder:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._buf = DelimitingBuffer(b'\n')
-
-    _cursor_field = '__CURSOR'
-
-    _timestamp_fields: ta.Sequence[str] = [
-        '_SOURCE_REALTIME_TIMESTAMP',
-        '__REALTIME_TIMESTAMP',
-    ]
-
-    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
-        for fld in self._timestamp_fields:
-            if (tsv := dct.get(fld)) is None:
-                continue
-
-            if isinstance(tsv, str):
-                try:
-                    return int(tsv)
-                except ValueError:
-                    try:
-                        return int(float(tsv))
-                    except ValueError:
-                        log.exception('Failed to parse timestamp: %r', tsv)
-
-            elif isinstance(tsv, (int, float)):
-                return int(tsv)
-
-        log.error('Invalid timestamp: %r', dct)
-        return None
-
-    def _make_message(self, raw: bytes) -> JournalctlMessage:
-        dct = None
-        cursor = None
-        ts = None
-
-        try:
-            dct = json.loads(raw.decode('utf-8', 'replace'))
-        except Exception:  # noqa
-            log.exception('Failed to parse raw message: %r', raw)
-
-        else:
-            cursor = dct.get(self._cursor_field)
-            ts = self._get_message_timestamp(dct)
-
-        return JournalctlMessage(
-            raw=raw,
-            dct=dct,
-            cursor=cursor,
-            ts_us=ts,
-        )
-
-    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
-        ret: ta.List[JournalctlMessage] = []
-        for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))  # type: ignore
-        return ret
-
-
-########################################
-# ../threadworker.py
-"""
-TODO:
- - implement stop lol
- - collective heartbeat monitoring - ThreadWorkerGroups
-"""
-
-
-class ThreadWorker(abc.ABC):
-    def __init__(
-            self,
-            *,
-            stop_event: ta.Optional[threading.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        if stop_event is None:
-            stop_event = threading.Event()
-        self._stop_event = stop_event
-
-        self._thread: ta.Optional[threading.Thread] = None
-
-        self._last_heartbeat: ta.Optional[float] = None
-
-    #
-
-    def should_stop(self) -> bool:
-        return self._stop_event.is_set()
-
-    #
-
-    @property
-    def last_heartbeat(self) -> ta.Optional[float]:
-        return self._last_heartbeat
-
-    def _heartbeat(self) -> bool:
-        self._last_heartbeat = time.time()
-
-        if self.should_stop():
-            log.info('Stopping: %s', self)
-            return False
-
-        return True
-
-    #
-
-    def is_alive(self) -> bool:
-        return (thr := self._thread) is not None and thr.is_alive()
-
-    def start(self) -> None:
-        thr = threading.Thread(target=self._run)
-        self._thread = thr
-        thr.start()
-
-    @abc.abstractmethod
-    def _run(self) -> None:
-        raise NotImplementedError
-
-    def stop(self) -> None:
-        raise NotImplementedError
-
-
-########################################
 # ../../logs.py
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
@@ -1723,6 +1587,142 @@ class AwsLogMessagePoster:
 
 
 ########################################
+# ../../../../journald/messages.py
+
+
+@dc.dataclass(frozen=True)
+class JournalctlMessage:
+    raw: bytes
+    dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
+    cursor: ta.Optional[str] = None
+    ts_us: ta.Optional[int] = None  # microseconds UTC
+
+
+class JournalctlMessageBuilder:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._buf = DelimitingBuffer(b'\n')
+
+    _cursor_field = '__CURSOR'
+
+    _timestamp_fields: ta.Sequence[str] = [
+        '_SOURCE_REALTIME_TIMESTAMP',
+        '__REALTIME_TIMESTAMP',
+    ]
+
+    def _get_message_timestamp(self, dct: ta.Mapping[str, ta.Any]) -> ta.Optional[int]:
+        for fld in self._timestamp_fields:
+            if (tsv := dct.get(fld)) is None:
+                continue
+
+            if isinstance(tsv, str):
+                try:
+                    return int(tsv)
+                except ValueError:
+                    try:
+                        return int(float(tsv))
+                    except ValueError:
+                        log.exception('Failed to parse timestamp: %r', tsv)
+
+            elif isinstance(tsv, (int, float)):
+                return int(tsv)
+
+        log.error('Invalid timestamp: %r', dct)
+        return None
+
+    def _make_message(self, raw: bytes) -> JournalctlMessage:
+        dct = None
+        cursor = None
+        ts = None
+
+        try:
+            dct = json.loads(raw.decode('utf-8', 'replace'))
+        except Exception:  # noqa
+            log.exception('Failed to parse raw message: %r', raw)
+
+        else:
+            cursor = dct.get(self._cursor_field)
+            ts = self._get_message_timestamp(dct)
+
+        return JournalctlMessage(
+            raw=raw,
+            dct=dct,
+            cursor=cursor,
+            ts_us=ts,
+        )
+
+    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
+        ret: ta.List[JournalctlMessage] = []
+        for line in self._buf.feed(data):
+            ret.append(self._make_message(check_isinstance(line, bytes)))  # type: ignore
+        return ret
+
+
+########################################
+# ../../../../threadworker.py
+"""
+TODO:
+ - implement stop lol
+ - collective heartbeat monitoring - ThreadWorkerGroups
+"""
+
+
+class ThreadWorker(abc.ABC):
+    def __init__(
+            self,
+            *,
+            stop_event: ta.Optional[threading.Event] = None,
+    ) -> None:
+        super().__init__()
+
+        if stop_event is None:
+            stop_event = threading.Event()
+        self._stop_event = stop_event
+
+        self._thread: ta.Optional[threading.Thread] = None
+
+        self._last_heartbeat: ta.Optional[float] = None
+
+    #
+
+    def should_stop(self) -> bool:
+        return self._stop_event.is_set()
+
+    #
+
+    @property
+    def last_heartbeat(self) -> ta.Optional[float]:
+        return self._last_heartbeat
+
+    def _heartbeat(self) -> bool:
+        self._last_heartbeat = time.time()
+
+        if self.should_stop():
+            log.info('Stopping: %s', self)
+            return False
+
+        return True
+
+    #
+
+    def is_alive(self) -> bool:
+        return (thr := self._thread) is not None and thr.is_alive()
+
+    def start(self) -> None:
+        thr = threading.Thread(target=self._run)
+        self._thread = thr
+        thr.start()
+
+    @abc.abstractmethod
+    def _run(self) -> None:
+        raise NotImplementedError
+
+    def stop(self) -> None:
+        raise NotImplementedError
+
+
+########################################
 # ../../../../../omlish/lite/subprocesses.py
 
 
@@ -1829,7 +1829,7 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 
 ########################################
-# ../journald/tailer.py
+# ../../../../journald/tailer.py
 
 
 class JournalctlTailerWorker(ThreadWorker):
