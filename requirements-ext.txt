@@ -39,9 +39,9 @@ pillow==11.0.0
 
 ##
 
-torch==2.5.0
+torch==2.5.1
 torchinfo==1.8.0
-torchvision==0.20.0
+torchvision==0.20.1
 
 portalocker==2.8.2
 
@@ -81,7 +81,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.9.4
+simsimd==5.9.5
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.50
+boto3>=1.35.51
 
 google-cloud-compute==1.20.0
 google-api-python-client==2.149.0

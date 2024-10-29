@@ -33,10 +33,10 @@ beautifulsoup4==4.12.3
 bellows==0.42.0
 bitsandbytes==0.42.0
 black==24.10.0
-bleach==6.1.0
+bleach==6.2.0
 blis==0.7.11
-boto3==1.35.50
-botocore==1.35.50
+boto3==1.35.51
+botocore==1.35.51
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -49,7 +49,7 @@ cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.0
 chroma-hnswlib==0.7.6
-chromadb==0.5.15
+chromadb==0.5.16
 cli_helpers==2.3.1
 click==8.1.7
 click-log==0.4.0
@@ -130,7 +130,7 @@ googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
 gpt4all==2.8.2
 greenlet==3.1.1
-grpcio==1.67.0
+grpcio==1.67.1
 grpcio-status==1.62.3
 guppy3==3.1.4.post1
 Gutenberg==0.8.2
@@ -301,7 +301,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@b3176eff49574057d91445e23a0d2f50706f05de
+peft @ git+https://github.com/huggingface/peft.git@214345ee4787b04636947af50ffb2f869c11613b
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -362,7 +362,7 @@ pyserial==3.5
 pyserial-asyncio==0.6
 pytest==8.3.3
 pytest-asyncio==0.24.0
-pytest-benchmark==4.0.0
+pytest-benchmark==5.0.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.3.1
@@ -411,12 +411,12 @@ Send2Trash==1.8.3
 sentence-transformers==3.2.1
 sentencepiece==0.2.0
 setproctitle==1.3.3
-setuptools==75.2.0
+setuptools==75.3.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.9.2
+simsimd==5.9.5
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -460,15 +460,15 @@ tinycss2==1.4.0
 tokenize_rt==6.1.0
 tokenizers==0.20.1
 tomlkit==0.13.2
-torch==2.5.0
+torch==2.5.1
 torchinfo==1.8.0
 torchmetrics==1.5.1
 torchsummary==1.5.1
-torchvision==0.20.0
+torchvision==0.20.1
 tornado==6.4.1
 tqdm==4.66.6
 traitlets==5.14.3
-transformers==4.46.0
+transformers==4.46.1
 tree-sitter==0.23.2
 tree-sitter-python==0.23.2
 trio==0.27.0
