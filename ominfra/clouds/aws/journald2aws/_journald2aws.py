@@ -5,6 +5,12 @@
 # @omlish-amalg-output main.py
 # ruff: noqa: N802 UP006 UP007 UP036
 """
+TODO:
+ - cursorfile
+ - lockfile
+
+==
+
 https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
 
 journalctl:
@@ -32,11 +38,15 @@ class Journald2AwsConfig:
 """
 import abc
 import argparse
+import base64
 import collections.abc
 import contextlib
 import dataclasses as dc
 import datetime
+import decimal
+import enum
 import fcntl
+import fractions
 import functools
 import hashlib
 import hmac
@@ -48,6 +58,7 @@ import os
 import os.path
 import queue
 import shlex
+import signal
 import subprocess
 import sys
 import threading
@@ -55,6 +66,8 @@ import time
 import typing as ta
 import urllib.parse
 import urllib.request
+import uuid
+import weakref  # noqa
 
 
 ########################################
@@ -217,6 +230,71 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
+# ../../../../../omlish/lite/pidfile.py
+
+
+class Pidfile:
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self._path = path
+
+    _f: ta.TextIO
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._path!r})'
+
+    def __enter__(self) -> 'Pidfile':
+        fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
+        try:
+            os.set_inheritable(fd, True)
+            f = os.fdopen(fd, 'r+')
+        except Exception:
+            try:
+                os.close(fd)
+            except Exception:  # noqa
+                pass
+            raise
+        self._f = f
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._f is not None:
+            self._f.close()
+            del self._f
+
+    def try_lock(self) -> bool:
+        try:
+            fcntl.flock(self._f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except OSError:
+            return False
+
+    def write(self, pid: ta.Optional[int] = None) -> None:
+        if not self.try_lock():
+            raise RuntimeError('Could not get lock')
+        if pid is None:
+            pid = os.getpid()
+        self._f.write(f'{pid}\n')
+        self._f.flush()
+
+    def clear(self) -> None:
+        if not self.try_lock():
+            raise RuntimeError('Could not get lock')
+        self._f.seek(0)
+        self._f.truncate()
+
+    def read(self) -> int:
+        if self.try_lock():
+            raise RuntimeError('Got lock')
+        self._f.seek(0)
+        return int(self._f.read())
+
+    def kill(self, sig: int = signal.SIGTERM) -> None:
+        pid = self.read()
+        os.kill(pid, sig)  # Still racy
+
+
+########################################
 # ../../../../../omlish/lite/reflect.py
 
 
@@ -336,8 +414,8 @@ class AwsSigner:
 
     @dc.dataclass(frozen=True)
     class Credentials:
-        access_key: str
-        secret_key: str = dc.field(repr=False)
+        access_key_id: str
+        secret_access_key: str = dc.field(repr=False)
 
     @dc.dataclass(frozen=True)
     class Request:
@@ -493,7 +571,7 @@ class V4AwsSigner(AwsSigner):
 
         #
 
-        key = self._creds.secret_key
+        key = self._creds.secret_access_key
         key_date = self._sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
         key_region = self._sha256_sign(key_date, self._region_name)
         key_service = self._sha256_sign(key_region, self._service_name)
@@ -503,7 +581,7 @@ class V4AwsSigner(AwsSigner):
         #
 
         cred_scope = '/'.join([
-            self._creds.access_key,
+            self._creds.access_key_id,
             *scope_parts,
         ])
         auth = f'{algorithm} ' + ', '.join([
@@ -1057,6 +1135,309 @@ def configure_standard_logging(
 
 
 ########################################
+# ../../../../../omlish/lite/marshal.py
+"""
+TODO:
+ - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
+ - nonstrict toggle
+"""
+
+
+##
+
+
+class ObjMarshaler(abc.ABC):
+    @abc.abstractmethod
+    def marshal(self, o: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+
+class NopObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+
+@dc.dataclass()
+class ProxyObjMarshaler(ObjMarshaler):
+    m: ta.Optional[ObjMarshaler] = None
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return check_not_none(self.m).marshal(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return check_not_none(self.m).unmarshal(o)
+
+
+@dc.dataclass(frozen=True)
+class CastObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(o)
+
+
+class DynamicObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return marshal_obj(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+
+@dc.dataclass(frozen=True)
+class Base64ObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return base64.b64encode(o).decode('ascii')
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(base64.b64decode(o))
+
+
+@dc.dataclass(frozen=True)
+class EnumObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o.name
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty.__members__[o]  # type: ignore
+
+
+@dc.dataclass(frozen=True)
+class OptionalObjMarshaler(ObjMarshaler):
+    item: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        if o is None:
+            return None
+        return self.item.marshal(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        if o is None:
+            return None
+        return self.item.unmarshal(o)
+
+
+@dc.dataclass(frozen=True)
+class MappingObjMarshaler(ObjMarshaler):
+    ty: type
+    km: ObjMarshaler
+    vm: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return {self.km.marshal(k): self.vm.marshal(v) for k, v in o.items()}
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty((self.km.unmarshal(k), self.vm.unmarshal(v)) for k, v in o.items())
+
+
+@dc.dataclass(frozen=True)
+class IterableObjMarshaler(ObjMarshaler):
+    ty: type
+    item: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return [self.item.marshal(e) for e in o]
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(self.item.unmarshal(e) for e in o)
+
+
+@dc.dataclass(frozen=True)
+class DataclassObjMarshaler(ObjMarshaler):
+    ty: type
+    fs: ta.Mapping[str, ObjMarshaler]
+    nonstrict: bool = False
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items() if self.nonstrict or k in self.fs})
+
+
+@dc.dataclass(frozen=True)
+class PolymorphicObjMarshaler(ObjMarshaler):
+    class Impl(ta.NamedTuple):
+        ty: type
+        tag: str
+        m: ObjMarshaler
+
+    impls_by_ty: ta.Mapping[type, Impl]
+    impls_by_tag: ta.Mapping[str, Impl]
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        impl = self.impls_by_ty[type(o)]
+        return {impl.tag: impl.m.marshal(o)}
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        [(t, v)] = o.items()
+        impl = self.impls_by_tag[t]
+        return impl.m.unmarshal(v)
+
+
+@dc.dataclass(frozen=True)
+class DatetimeObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o.isoformat()
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty.fromisoformat(o)  # type: ignore
+
+
+class DecimalObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return str(check_isinstance(o, decimal.Decimal))
+
+    def unmarshal(self, v: ta.Any) -> ta.Any:
+        return decimal.Decimal(check_isinstance(v, str))
+
+
+class FractionObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        fr = check_isinstance(o, fractions.Fraction)
+        return [fr.numerator, fr.denominator]
+
+    def unmarshal(self, v: ta.Any) -> ta.Any:
+        num, denom = check_isinstance(v, list)
+        return fractions.Fraction(num, denom)
+
+
+class UuidObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return str(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return uuid.UUID(o)
+
+
+_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
+    **{t: NopObjMarshaler() for t in (type(None),)},
+    **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
+    **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
+    **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
+    **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
+
+    ta.Any: DynamicObjMarshaler(),
+
+    **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
+    decimal.Decimal: DecimalObjMarshaler(),
+    fractions.Fraction: FractionObjMarshaler(),
+    uuid.UUID: UuidObjMarshaler(),
+}
+
+_OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
+    **{t: t for t in (dict,)},
+    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},
+}
+
+_OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
+    **{t: t for t in (list, tuple, set, frozenset)},
+    collections.abc.Set: frozenset,
+    collections.abc.MutableSet: set,
+    collections.abc.Sequence: tuple,
+    collections.abc.MutableSequence: list,
+}
+
+
+def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
+    if ty in _OBJ_MARSHALERS:
+        raise KeyError(ty)
+    _OBJ_MARSHALERS[ty] = m
+
+
+def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
+    if isinstance(ty, type):
+        if abc.ABC in ty.__bases__:
+            impls = [  # type: ignore
+                PolymorphicObjMarshaler.Impl(
+                    ity,
+                    ity.__qualname__,
+                    get_obj_marshaler(ity),
+                )
+                for ity in deep_subclasses(ty)
+                if abc.ABC not in ity.__bases__
+            ]
+            return PolymorphicObjMarshaler(
+                {i.ty: i for i in impls},
+                {i.tag: i for i in impls},
+            )
+
+        if issubclass(ty, enum.Enum):
+            return EnumObjMarshaler(ty)
+
+        if dc.is_dataclass(ty):
+            return DataclassObjMarshaler(
+                ty,
+                {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
+            )
+
+    if is_generic_alias(ty):
+        try:
+            mt = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES[ta.get_origin(ty)]
+        except KeyError:
+            pass
+        else:
+            k, v = ta.get_args(ty)
+            return MappingObjMarshaler(mt, get_obj_marshaler(k), get_obj_marshaler(v))
+
+        try:
+            st = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES[ta.get_origin(ty)]
+        except KeyError:
+            pass
+        else:
+            [e] = ta.get_args(ty)
+            return IterableObjMarshaler(st, get_obj_marshaler(e))
+
+        if is_union_alias(ty):
+            return OptionalObjMarshaler(get_obj_marshaler(get_optional_alias_arg(ty)))
+
+    raise TypeError(ty)
+
+
+def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
+    try:
+        return _OBJ_MARSHALERS[ty]
+    except KeyError:
+        pass
+
+    p = ProxyObjMarshaler()
+    _OBJ_MARSHALERS[ty] = p
+    try:
+        m = _make_obj_marshaler(ty)
+    except Exception:
+        del _OBJ_MARSHALERS[ty]
+        raise
+    else:
+        p.m = m
+        _OBJ_MARSHALERS[ty] = m
+        return m
+
+
+def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
+    return get_obj_marshaler(ty if ty is not None else type(o)).marshal(o)
+
+
+def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
+    return get_obj_marshaler(ty).unmarshal(o)
+
+
+########################################
 # ../../../../../omlish/lite/runtime.py
 
 
@@ -1412,18 +1793,20 @@ def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
 
 
 class JournalctlTailerWorker(ThreadWorker):
+    DEFAULT_CMD: ta.ClassVar[ta.Sequence[str]] = ['journalctl']
+
     def __init__(
             self,
             output,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
             *,
-            cmd_override: ta.Optional[ta.Sequence[str]] = None,
+            cmd: ta.Optional[ta.Sequence[str]] = None,
             shell_wrap: bool = False,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self._output = output
-        self._cmd_override = cmd_override
+        self._cmd = cmd or self.DEFAULT_CMD
         self._shell_wrap = shell_wrap
 
         self._mb = JournalctlMessageBuilder()
@@ -1431,16 +1814,13 @@ class JournalctlTailerWorker(ThreadWorker):
         self._proc: ta.Optional[subprocess.Popen] = None
 
     def _run(self) -> None:
-        if self._cmd_override is not None:
-            cmd = self._cmd_override
-        else:
-            cmd = [
-                'journalctl',
-                '-o', 'json',
-                '--show-cursor',
-                '-f',
-                '--since', 'today',
-            ]
+        cmd: ta.Sequence[str] = [
+            *self._cmd,
+            '-o', 'json',
+            '--show-cursor',
+            '-f',
+            '--since', 'today',
+        ]
 
         if self._shell_wrap:
             cmd = subprocess_shell_wrap_exec(*cmd)
@@ -1491,15 +1871,17 @@ class JournalctlOpts:
 class JournalctlToAws:
     @dc.dataclass(frozen=True)
     class Config:
+        pidfile: ta.Optional[str] = None
+
         aws_log_group_name: str = 'omlish'
         aws_log_stream_name: ta.Optional[str] = None
 
-        aws_access_key: ta.Optional[str] = None
-        aws_secret_key: ta.Optional[str] = dc.field(default=None, repr=False)
+        aws_access_key_id: ta.Optional[str] = None
+        aws_secret_access_key: ta.Optional[str] = dc.field(default=None, repr=False)
 
         aws_region_name: str = 'us-west-1'
 
-        journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
+        journalctl_cmd: ta.Optional[ta.Sequence[str]] = None
 
         dry_run: bool = False
 
@@ -1507,11 +1889,13 @@ class JournalctlToAws:
         super().__init__()
         self._config = config
 
+    #
+
     @cached_nullary
     def _aws_credentials(self) -> AwsSigner.Credentials:
         return AwsSigner.Credentials(
-            access_key=check_non_empty_str(self._config.aws_access_key),
-            secret_key=check_non_empty_str(self._config.aws_secret_key),
+            access_key_id=check_non_empty_str(self._config.aws_access_key_id),
+            secret_access_key=check_non_empty_str(self._config.aws_secret_access_key),
         )
 
     @cached_nullary
@@ -1523,6 +1907,8 @@ class JournalctlToAws:
             credentials=check_not_none(self._aws_credentials()),
         )
 
+    #
+
     @cached_nullary
     def _journalctl_message_queue(self):  # type: () -> queue.Queue[ta.Sequence[JournalctlMessage]]
         return queue.Queue()
@@ -1531,40 +1917,49 @@ class JournalctlToAws:
     def _journalctl_tailer_worker(self) -> JournalctlTailerWorker:
         return JournalctlTailerWorker(
             self._journalctl_message_queue(),
-            cmd_override=self._config.journalctl_cmd_override,
+            cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
         )
 
+    #
+
     def run(self) -> None:
-        q = self._journalctl_message_queue()
-        jtw = self._journalctl_tailer_worker()
-        mp = self._aws_log_message_poster()
+        with contextlib.ExitStack() as es:
+            if self._config.pidfile is not None:
+                pfp = os.path.expanduser(self._config.pidfile)
+                log.info('Opening pidfile %s', pfp)
+                pf = es.enter_context(Pidfile(pfp))
+                pf.write()
 
-        jtw.start()
+            q = self._journalctl_message_queue()
+            jtw = self._journalctl_tailer_worker()
+            mp = self._aws_log_message_poster()
 
-        while True:
-            msgs = q.get()
-            print(msgs)
+            jtw.start()
 
-            if not msgs:
-                log.warning('Empty queue chunk')
-                continue
+            while True:
+                msgs = q.get()
+                print(msgs)
 
-            [post] = mp.feed([mp.Message(
-                message=json.dumps(m.dct),
-                ts_ms=int(time.time() * 1000.),
-            ) for m in msgs])
-            print(post)
+                if not msgs:
+                    log.warning('Empty queue chunk')
+                    continue
 
-            if not self._config.dry_run:
-                with urllib.request.urlopen(urllib.request.Request(  # noqa
-                        post.url,
-                        method='POST',
-                        headers=dict(post.headers),
-                        data=post.data,
-                )) as resp:
-                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                print(response)
+                [post] = mp.feed([mp.Message(
+                    message=json.dumps(m.dct),
+                    ts_ms=int(time.time() * 1000.),
+                ) for m in msgs])
+                print(post)
+
+                if not self._config.dry_run:
+                    with urllib.request.urlopen(urllib.request.Request(  # noqa
+                            post.url,
+                            method='POST',
+                            headers=dict(post.headers),
+                            data=post.data,
+                    )) as resp:
+                        response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
+                    print(response)
 
 
 def _main() -> None:
@@ -1581,57 +1976,39 @@ def _main() -> None:
 
     #
 
-    config: ta.Optional[ta.Mapping[str, ta.Any]] = None
+    config: JournalctlToAws.Config
     if args.config_json_file:
         with open(args.config_json_file) as cf:
-            config = json.load(cf)
+            config_dct = json.load(cf)
+        config = unmarshal_obj(config_dct, JournalctlToAws.Config)
+    else:
+        config = JournalctlToAws.Config()
 
     #
 
-    credentials: ta.Optional[AwsSigner.Credentials] = None
-
-    if credentials is None and config is not None and 'aws_access_key_id' in config:
-        credentials = AwsSigner.Credentials(
-            config['aws_access_key_id'],
-            config['aws_secret_access_key'],
-        )
-    if credentials is None and 'AWS_ACCESS_KEY_ID' in os.environ:
-        credentials = AwsSigner.Credentials(
-            os.environ['AWS_ACCESS_KEY_ID'],
-            os.environ['AWS_SECRET_ACCESS_KEY'],
-        )
-    if credentials is None:
-        secrets = __import__('omdev.secrets').secrets.load_secrets()
-        credentials = AwsSigner.Credentials(
-            secrets.get('aws_access_key_id').reveal(),
-            secrets.get('aws_secret_access_key').reveal(),
-        )
-
-    if credentials is None:
-        raise Exception('No credentials found')
+    for k in ['aws_access_key_id', 'aws_secret_access_key']:
+        if not getattr(config, k) and k.upper() in os.environ:
+            config = dc.replace(config, **{k: os.environ.get(k.upper())})  # type: ignore
 
     #
 
-    journalctl_cmd_override: ta.Optional[ta.Sequence[str]] = None
     if not args.real:
-        journalctl_cmd_override = [
+        config = dc.replace(config, journalctl_cmd=[
             sys.executable,
-            os.path.join(os.path.dirname(__file__), 'genmessages.py'),
+            os.path.join(os.path.dirname(__file__), 'tests', 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
             '1000000',
-        ]
+        ])
+    #
+
+    if args.post is not None:
+        config = dc.replace(config, dry_run=not args.post)
 
     #
 
-    jta = JournalctlToAws(JournalctlToAws.Config(
-        aws_log_stream_name='test',
-        aws_access_key=credentials.access_key,
-        aws_secret_key=credentials.secret_key,
-        journalctl_cmd_override=journalctl_cmd_override,
-        dry_run=not args.post,
-    ))
+    jta = JournalctlToAws(config)
     jta.run()
 
 
