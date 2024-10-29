@@ -22,12 +22,17 @@ import heapq
 import itertools
 import typing as ta
 
-import wikitextparser as wtp
-
 from omlish import cached
+from omlish import lang
 
 
-WikiText: ta.TypeAlias = wtp.WikiText
+if ta.TYPE_CHECKING:
+    import wikitextparser as wtp
+else:
+    wtp = lang.proxy_import('wikitextparser')
+
+
+WikiText: ta.TypeAlias = 'wtp.WikiText'
 
 
 ##
@@ -35,7 +40,7 @@ WikiText: ta.TypeAlias = wtp.WikiText
 
 @dc.dataclass(frozen=True)
 class WtpNode:
-    wiki: wtp.WikiText
+    wiki: 'wtp.WikiText'
     children: list[ta.Union['WtpNode', str]] = dc.field(default_factory=list)
 
     @cached.property

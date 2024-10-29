@@ -8,14 +8,21 @@ import abc
 import operator
 import typing as ta
 
-import mwparserfromhell as mfh
-import mwparserfromhell.nodes as mfn
-
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish import marshal as msh
 
 
-Wikicode: ta.TypeAlias = mfh.wikicode.Wikicode
+if ta.TYPE_CHECKING:
+    import mwparserfromhell as mfh
+    import mwparserfromhell.nodes as mfn
+
+else:
+    mfh = lang.proxy_import('mwparserfromhell')
+    mfn = lang.proxy_import('mwparserfromhell.nodes')
+
+
+Wikicode: ta.TypeAlias = 'mfh.wikicode.Wikicode'
 
 
 ##
@@ -173,7 +180,7 @@ def traverse_node(root: Node) -> ta.Iterator[tuple[ta.Sequence[tuple[Node, str]]
 
 
 class NodeBuilder:
-    def build_parameter(self, n: mfn.extras.Parameter) -> Parameter:
+    def build_parameter(self, n: 'mfn.extras.Parameter') -> Parameter:
         if not isinstance(n, mfn.extras.Parameter):
             raise TypeError(n)
 
@@ -182,7 +189,7 @@ class NodeBuilder:
             self.build_content(n.value),
         )
 
-    def build_attribute(self, n: mfn.extras.Attribute) -> Attribute:
+    def build_attribute(self, n: 'mfn.extras.Attribute') -> Attribute:
         if not isinstance(n, mfn.extras.Attribute):
             raise TypeError(n)
 
@@ -191,7 +198,7 @@ class NodeBuilder:
             self.build_content(n.value),
         )
 
-    def build_content_node(self, n: mfn.Node) -> ContentNode:
+    def build_content_node(self, n: 'mfn.Node') -> ContentNode:
         if isinstance(n, mfn.Comment):
             return Comment(n.contents)
 
@@ -242,11 +249,11 @@ class NodeBuilder:
         else:
             raise TypeError(n)
 
-    def build_content(self, w: Wikicode | ta.Iterable[mfn.Node] | None) -> Content:
+    def build_content(self, w: Wikicode | ta.Iterable['mfn.Node'] | None) -> Content:
         if w is None:
             return ()
 
-        elif isinstance(w, Wikicode):  # type: ignore
+        elif isinstance(w, mfh.wikicode.Wikicode):
             return [self.build_content_node(c) for c in w.nodes]
 
         elif isinstance(w, ta.Iterable):
@@ -259,7 +266,19 @@ class NodeBuilder:
 ##
 
 
-parse = mfh.parse
+def parse(
+        value: ta.Any,
+        context: int = 0,
+        *,
+        skip_style_tags: bool = False,
+        **kwargs: ta.Any,
+) -> Wikicode:
+    return mfh.parse(
+        value,
+        context,
+        skip_style_tags=skip_style_tags,
+        **kwargs,
+    )
 
 
 def parse_doc(s: str) -> Doc:

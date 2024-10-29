@@ -78,7 +78,7 @@ markupsafe==3.0.2
 
 redis==5.2.0
 
-sqlean.py==3.47.0
+sqlean.py==3.47.0  # @omlish-venv !13t
 duckdb==1.1.2
 
 tokenize-rt==6.1.0
@@ -91,7 +91,7 @@ paramiko==3.5.0  # @omlish-venv !13t  # !! LGPL
 
 docutils==0.21.2
 
-mwparserfromhell==0.6.6
+mwparserfromhell==0.6.6  # @omlish-venv !13t
 wikitextparser==0.56.3  # !! GPL
 
 executing==2.1.0
