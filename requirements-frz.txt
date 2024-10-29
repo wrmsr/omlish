@@ -416,7 +416,7 @@ setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.9.5
+simsimd==5.9.6
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -494,7 +494,7 @@ uritemplate==4.1.1
 urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
-usearch==2.15.3
+usearch==2.16.0
 uv==0.4.28
 uvicorn==0.32.0
 uvloop==0.21.0
