@@ -4,7 +4,7 @@
 """
 TODO:
  - create log group
- - log stats - chunk sizes etc
+ - log stats - chunk sizes, byte count, num calls, etc
 
 ==
 
