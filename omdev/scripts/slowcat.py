@@ -92,6 +92,10 @@ def _main() -> None:
             while buf := os.read(fd, args.buffer_size):
                 p = 0
                 while p < len(buf):
+                    if ns < n:
+                        do_sleep()
+                        ns = next_sleep()
+
                     c = ns - n
                     r = len(buf) - p
                     if r >= c:

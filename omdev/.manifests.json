@@ -171,7 +171,7 @@
     "module": ".scripts.slowcat",
     "attr": "_CLI_MODULE",
     "file": "omdev/scripts/slowcat.py",
-    "line": 113,
+    "line": 117,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "slowcat",
