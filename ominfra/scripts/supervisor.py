@@ -83,9 +83,10 @@ def compact_traceback() -> ta.Tuple[
     types.TracebackType,
 ]:
     t, v, tb = sys.exc_info()
-    tbinfo = []
     if not tb:
         raise RuntimeError('No traceback')
+
+    tbinfo = []
     while tb:
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,
@@ -123,6 +124,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
     Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
     signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
     """
+
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
         msg = f'exit status {es}'
@@ -222,6 +224,7 @@ def real_exit(code: int) -> None:
 
 def get_path() -> ta.Sequence[str]:
     """Return a list corresponding to $PATH, or a default."""
+
     path = ['/bin', '/usr/bin', '/usr/local/bin']
     if 'PATH' in os.environ:
         p = os.environ['PATH']
@@ -408,15 +411,19 @@ SIGNUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
 def signal_number(value: ta.Union[int, str]) -> int:
     try:
         num = int(value)
+
     except (ValueError, TypeError):
         name = value.strip().upper()  # type: ignore
         if not name.startswith('SIG'):
             name = f'SIG{name}'
+
         num = getattr(signal, name, None)  # type: ignore
         if num is None:
             raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+
     if num not in SIGNUMS:
         raise ValueError(f'value {value!r} is not a valid signal number')
+
     return num
 
 
@@ -1605,12 +1612,11 @@ notify_event = EVENT_CALLBACKS.notify
 clear_events = EVENT_CALLBACKS.clear
 
 
-class Event:
+class Event(abc.ABC):  # noqa
     """Abstract event type """
 
 
-class ProcessLogEvent(Event):
-    """Abstract"""
+class ProcessLogEvent(Event, abc.ABC):
     channel: ta.Optional[str] = None
 
     def __init__(self, process, pid, data):
@@ -1627,8 +1633,8 @@ class ProcessLogEvent(Event):
             data = as_string(self.data)
         except UnicodeDecodeError:
             data = f'Undecodable: {self.data!r}'
-        fmt = as_string('processname:%s groupname:%s pid:%s channel:%s\n%s')
-        result = fmt % (
+
+        result = 'processname:%s groupname:%s pid:%s channel:%s\n%s' % (  # noqa
             as_string(self.process.config.name),
             as_string(groupname),
             self.pid,
@@ -1646,8 +1652,7 @@ class ProcessLogStderrEvent(ProcessLogEvent):
     channel = 'stderr'
 
 
-class ProcessCommunicationEvent(Event):
-    """ Abstract """
+class ProcessCommunicationEvent(Event, abc.ABC):
     # event mode tokens
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
@@ -2011,6 +2016,7 @@ class ServerContext(AbstractServerContext):
         Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
         process via usage() if privileges could not be dropped.
         """
+
         if self.uid is None:
             if os.getuid() == 0:
                 warnings.warn(
@@ -2190,6 +2196,7 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
     dropped.
     """
+
     if user is None:
         return 'No user specified to setuid to!'
 
@@ -2382,7 +2389,9 @@ class OutputDispatcher(Dispatcher):
 
         `event_type` should be one of ProcessLogStdoutEvent or ProcessLogStderrEvent
         """
+
         super().__init__(process, event_type.channel, fd)
+
         self.event_type = event_type
 
         self.lc: ProcessConfig.Log = getattr(process.config, self._channel)
@@ -2396,15 +2405,19 @@ class OutputDispatcher(Dispatcher):
         self._output_buffer = b''  # data waiting to be logged
 
         # all code below is purely for minor speedups
+
         begin_token = self.event_type.BEGIN_TOKEN
         end_token = self.event_type.END_TOKEN
-        self.begin_token_data = (begin_token, len(begin_token))
-        self.end_token_data = (end_token, len(end_token))
-        self.main_log_level = logging.DEBUG
+        self._begin_token_data = (begin_token, len(begin_token))
+        self._end_token_data = (end_token, len(end_token))
+
+        self._main_log_level = logging.DEBUG
+
+        self._log_to_main_log = process.context.config.loglevel <= self._main_log_level
+
         config = self._process.config
-        self.log_to_main_log = process.context.config.loglevel <= self.main_log_level
-        self.stdout_events_enabled = config.stdout.events_enabled
-        self.stderr_events_enabled = config.stderr.events_enabled
+        self._stdout_events_enabled = config.stdout.events_enabled
+        self._stderr_events_enabled = config.stderr.events_enabled
 
     _child_log: ta.Optional[logging.Logger] = None  # the current logger (normal_log or capture_log)
     _normal_log: ta.Optional[logging.Logger] = None  # the "normal" (non-capture) logger
@@ -2415,6 +2428,7 @@ class OutputDispatcher(Dispatcher):
         Configure the "normal" (non-capture) log for this channel of this process. Sets self.normal_log if logging is
         enabled.
         """
+
         config = self._process.config  # noqa
         channel = self._channel  # noqa
 
@@ -2435,7 +2449,7 @@ class OutputDispatcher(Dispatcher):
         #         maxbytes=maxbytes,
         #         backups=backups,
         #     )
-        #
+
         # if to_syslog:
         #     loggers.handle_syslog(
         #         self.normal_log,
@@ -2447,6 +2461,7 @@ class OutputDispatcher(Dispatcher):
         Configure the capture log for this process.  This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
         """
+
         capture_maxbytes = self.lc.capture_maxbytes
         if capture_maxbytes:
             self._capture_log = logging.getLogger(__name__)
@@ -2473,9 +2488,11 @@ class OutputDispatcher(Dispatcher):
         if data:
             if self._process.context.config.strip_ansi:
                 data = strip_escapes(data)
+
             if self._child_log:
                 self._child_log.info(data)
-            if self.log_to_main_log:
+
+            if self._log_to_main_log:
                 if not isinstance(data, bytes):
                     text = data
                 else:
@@ -2483,11 +2500,13 @@ class OutputDispatcher(Dispatcher):
                         text = data.decode('utf-8')
                     except UnicodeDecodeError:
                         text = f'Undecodable: {data!r}'
-                log.log(self.main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+                log.log(self._main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+
             if self._channel == 'stdout':
-                if self.stdout_events_enabled:
+                if self._stdout_events_enabled:
                     notify_event(ProcessLogStdoutEvent(self._process, self._process.pid, data))
-            elif self.stderr_events_enabled:
+
+            elif self._stderr_events_enabled:
                 notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
@@ -2499,9 +2518,9 @@ class OutputDispatcher(Dispatcher):
             return
 
         if self._capture_mode:
-            token, tokenlen = self.end_token_data
+            token, tokenlen = self._end_token_data
         else:
-            token, tokenlen = self.begin_token_data
+            token, tokenlen = self._begin_token_data
 
         if len(self._output_buffer) <= tokenlen:
             return  # not enough data
@@ -2689,6 +2708,7 @@ class Subprocess(AbstractSubprocess):
         Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
         ProcessError if not
         """
+
         try:
             commandargs = shlex.split(self.config.command)
         except ValueError as e:
@@ -3072,8 +3092,12 @@ class Subprocess(AbstractSubprocess):
                 os.kill(self.pid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
-                    log.debug('unable to signal %s (pid %s), it probably just now exited '
-                              'on its own: %s', processname, self.pid, str(exc))
+                    log.debug(
+                        'unable to signal %s (pid %s), it probably just now exited on its own: %s',
+                        processname,
+                        self.pid,
+                        str(exc),
+                    )
                     # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
                     # processing.
                     return None
@@ -3089,6 +3113,7 @@ class Subprocess(AbstractSubprocess):
 
     def finish(self, sts: int) -> None:
         """ The process was reaped and we need to report and manage its state """
+
         self.drain()
 
         es, msg = decode_wait_status(sts)
@@ -3105,9 +3130,11 @@ class Subprocess(AbstractSubprocess):
         else:
             too_quickly = False
             log.warning(
-                "process '%s' (%s) laststart time is in the future, don't "
-                "know how long process was running so assuming it did "
-                "not exit too quickly", processname, self.pid)
+                "process '%s' (%s) laststart time is in the future, don't know how long process was running so "
+                "assuming it did not exit too quickly",
+                processname,
+                self.pid,
+            )
 
         exit_expected = es in self.config.exitcodes
 
@@ -3204,7 +3231,7 @@ class Subprocess(AbstractSubprocess):
                     if self.config.autorestart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
-                    elif self.exitstatus not in self.config.exitcodes:  # type: ignore
+                    elif self.exitstatus not in self.config.exitcodes:
                         # EXITED -> STARTING
                         self.spawn()
 
@@ -3648,7 +3675,7 @@ def main(args=None, test=False):
         with open(cf) as f:
             config_src = f.read()
         config_dct = json.loads(config_src)
-        config = unmarshal_obj(config_dct, ServerConfig)
+        config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
 
         context = ServerContext(
             config,
