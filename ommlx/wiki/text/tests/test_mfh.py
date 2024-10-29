@@ -3,11 +3,13 @@ https://github.com/WillKoehrsen/wikipedia-data-science/blob/master/notebooks/Dow
 """
 from omlish import marshal as msh
 from omlish.formats import json
+from omlish.testing import pytest as ptu
 
 from .. import mfh
 from .data import WIKI_FILES
 
 
+@ptu.skip.if_cant_import('mwparserfromhell')
 def test_dom():
     print()
 

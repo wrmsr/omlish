@@ -307,7 +307,7 @@ def _main() -> None:
     if not args.real:
         config = dc.replace(config, journalctl_cmd=[
             sys.executable,
-            os.path.join(os.path.dirname(__file__), 'journald', 'genmessages.py'),
+            os.path.join(os.path.dirname(__file__), '..', '..', '..', 'journald', 'genmessages.py'),
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
