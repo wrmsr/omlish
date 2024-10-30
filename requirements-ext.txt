@@ -65,7 +65,7 @@ sympy~=1.13.1  # FIXME: torch :|
 
 wgpu==0.18.1
 
-hypothesis==6.115.5
+hypothesis==6.115.6
 
 hexdump==3.3
 
@@ -161,7 +161,7 @@ sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.42.0
-zigpy==0.70.0
+zigpy==0.71.0
 
 # python-openzwave
 zwave-js-server-python==0.59.0
@@ -198,7 +198,7 @@ customtkinter==5.2.2
 
 ##
 
-langchain==0.3.4
+langchain==0.3.5
 langchain-core==0.3.13
 
 langchain-anthropic==0.2.3
@@ -209,7 +209,7 @@ langchain-mistralai==0.2.0
 # langchain-nomic==0.2.0
 langchain-ollama==0.2.0
 langchain-openai==0.2.4
-langchain-text-splitters==0.3.0
+langchain-text-splitters==0.3.1
 
 langchainhub==0.1.21
 
@@ -277,3 +277,5 @@ jiter>=0.5.0
 ##
 
 instructor~=1.5.2  # FIXME: INSTRUCTOR.
+
+docopt==0.6.2
