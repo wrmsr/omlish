@@ -29,6 +29,10 @@ import itertools
 import os
 import re
 import sys
+import types
+import typing as ta
+
+from omlish import check
 
 
 RESULT_VAR_NAME = "__result"
@@ -37,9 +41,14 @@ STRING_ESCAPE = 'unicode_escape'
 
 
 # Store the last expression, if present, into variable var_name.
-def save_last_expression(tree, var_name=RESULT_VAR_NAME):
+def save_last_expression(
+        tree: ast.Module,
+        var_name: str = RESULT_VAR_NAME,
+) -> ast.Module:
     body = tree.body
-    node = body[-1] if len(body) else None
+
+    node: ast.AST | None = body[-1] if len(body) else None
+
     body.insert(
         0,
         ast.Assign(
@@ -52,7 +61,8 @@ def save_last_expression(tree, var_name=RESULT_VAR_NAME):
             value=ast.Constant(None),
         ),
     )
-    if node and isinstance(node, ast.Expr):
+
+    if node is not None and isinstance(node, ast.Expr):
         body[-1] = ast.copy_location(
             ast.Assign(
                 targets=[
@@ -63,17 +73,23 @@ def save_last_expression(tree, var_name=RESULT_VAR_NAME):
                 ],
                 value=node.value,
             ),
-            node,
+            node,  # noqa
         )
+
     return ast.fix_missing_locations(tree)
 
 
-def compile_command(text):
-    tree = save_last_expression(compile(text, 'EXPR', 'exec', flags=ast.PyCF_ONLY_AST))
+def compile_command(text: str) -> types.CodeType:
+    mod = check.isinstance(compile(text, 'EXPR', 'exec', flags=ast.PyCF_ONLY_AST), ast.Module)
+    tree = save_last_expression(mod)
     return compile(tree, 'EXPR', 'exec')
 
 
-def eval_in_context(codeobj, context, var_name=RESULT_VAR_NAME):
+def eval_in_context(
+        codeobj: types.CodeType,
+        context: 'Context',
+        var_name: str = RESULT_VAR_NAME,
+) -> ta.Any:
     exec(codeobj, globals(), context)
     return context.pop(var_name, None)
 
@@ -83,12 +99,14 @@ class Action:
 
     def __init__(
             self,
-            pattern=None,
-            cmd='l',
-            have_end_statement=False,
-            negate=False,
-            strict=False,
-    ):
+            pattern: str | None = None,
+            cmd: str = 'l',
+            have_end_statement: bool = False,
+            negate: bool = False,
+            strict: bool = False,
+    ) -> None:
+        super().__init__()
+
         self.delim = None
         self.odelim = ' '
         self.negate = negate
@@ -98,7 +116,7 @@ class Action:
         self._compile(have_end_statement)
 
     @classmethod
-    def from_options(cls, options, arg):
+    def from_options(cls, options: ta.Any, arg: str) -> 'Action':
         negate, pattern, cmd = Action._parse_command(arg)
         return cls(
             pattern=pattern,
@@ -108,7 +126,7 @@ class Action:
             strict=options.strict,
         )
 
-    def _compile(self, have_end_statement):
+    def _compile(self, have_end_statement: bool) -> None:
         if not self.cmd:
             if have_end_statement:
                 self.cmd = 't += line'
@@ -116,7 +134,7 @@ class Action:
                 self.cmd = 'l'
         self._codeobj = compile_command(self.cmd)
 
-    def apply(self, context, line):
+    def apply(self, context: 'Context', line: str) -> ta.Any:
         """
         Apply action to line.
 
@@ -134,7 +152,7 @@ class Action:
                 return None
             raise
 
-    def _match(self, line):
+    def _match(self, line: str) -> ta.Any:
         if self.pattern is None:
             return self.negate
         match = self.pattern.search(line)
@@ -144,7 +162,7 @@ class Action:
             return ()
 
     @staticmethod
-    def _parse_command(arg):
+    def _parse_command(arg: str) -> tuple[bool, str | None, str]:
         match = re.match(r'(?ms)(?:(!)?/((?:\\.|[^/])+)/)?(.*)', arg)
         negate, pattern, cmd = match.groups()
         cmd = cmd.strip()
@@ -153,15 +171,28 @@ class Action:
 
 
 class Context(dict):
-    def apply(self, numz, line, headers=None):
+    def apply(
+            self,
+            numz: int,
+            line: str,
+            headers: ta.Sequence[str] | None = None,
+    ) -> None:
         l = line.rstrip()
         f = l.split(self.delim)
         self.update(line=line, l=l, n=numz + 1, f=f, nf=len(f))
         if headers:
             self.update(itertools.zip_longest(headers, f))
 
+    delim: str | None
+    odelim: str
+    line_separator: str
+
     @classmethod
-    def from_options(cls, options, modules):
+    def from_options(
+            cls,
+            options: ta.Any,
+            modules: ta.Sequence[str],
+    ) -> 'Context':
         self = cls()
         self['t'] = ''
         self['m'] = ()
@@ -184,14 +215,14 @@ class Context(dict):
 
 
 def process(
-        context,
-        input,
-        output,
-        begin_statement,
-        actions,
-        end_statement,
-        strict,
-        header,
+        context: Context,
+        input: ta.TextIO,
+        output: ta.TextIO,
+        begin_statement: str | None,
+        actions: ta.Sequence[Action],
+        end_statement: str | None,
+        strict: bool,
+        header: bool,
 ):
     """Process a stream."""
 
@@ -232,7 +263,7 @@ def process(
         sys.stdout = old_stdout
 
 
-def parse_commandline(argv):
+def parse_commandline(argv: ta.Sequence[str]) -> tuple[ta.Any, ta.Sequence[str]]:
     parser = argparse.ArgumentParser()
     # parser.set_usage(__doc__.strip())
     parser.add_argument(
@@ -303,7 +334,11 @@ def parse_commandline(argv):
 
 
 # For integration tests.
-def run(argv, input, output):
+def run(
+        argv: ta.Sequence[str],
+        input: ta.TextIO,
+        output: ta.TextIO,
+) -> None:
     options, args = parse_commandline(argv)
 
     try:
@@ -321,14 +356,24 @@ def run(argv, input, output):
         if not actions:
             actions = [Action.from_options(options, '')]
 
-        process(context, input, output, options.begin, actions, options.end, options.strict, options.header)
+        process(
+            context,
+            input,
+            output,
+            options.begin,
+            actions,
+            options.end,
+            options.strict,
+            options.header,
+        )
+
     finally:
         if options.in_place:
             output.close()
             input.close()
 
 
-def main():
+def main() -> None:
     try:
         run(sys.argv, sys.stdin, sys.stdout)
     except EnvironmentError as e:
