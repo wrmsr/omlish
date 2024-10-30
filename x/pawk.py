@@ -37,7 +37,8 @@ Breaking this down:
 1. `-B 'd={}'` is a begin statement initializing a dictionary, executed once before processing begins.
 2. `-E 'json.dumps(d)'` is an end statement expression, producing the JSON representation of the dictionary `d`.
 3. `!/^#/` tells pawk to match any line *not* beginning with `#`.
-4. `d[f[1]] = f[0]` adds a dictionary entry where the key is the second field in the line (the first hostname) and the value is the first field (the IP address).
+4. `d[f[1]] = f[0]` adds a dictionary entry where the key is the second field in the line (the first hostname) and the
+    value is the first field (the IP address).
 
 And another example showing how to bzip2-compress + base64-encode a file:
 
@@ -45,7 +46,8 @@ And another example showing how to bzip2-compress + base64-encode a file:
 
 ### AWK example translations
 
-Most basic AWK constructs are available. You can find more idiomatic examples below in the example section, but here are a bunch of awk commands and their equivalent pawk commands to get started with:
+Most basic AWK constructs are available. You can find more idiomatic examples below in the example section, but here are
+a bunch of awk commands and their equivalent pawk commands to get started with:
 
 Print lines matching a pattern:
 
@@ -89,7 +91,8 @@ But if that doesn't work, just download the `pawk.py`, make it executable, and p
 
 ## Expression evaluation
 
-PAWK evaluates a Python expression or statement against each line in stdin. The following variables are available in local context:
+PAWK evaluates a Python expression or statement against each line in stdin. The following variables are available in
+local context:
 
 - `line` - Current line text, including newline.
 - `l` - Current line text, excluding newline.
@@ -103,7 +106,8 @@ In the context of the `-E` block:
 
 - `t` - The entire input text up to the current cursor position.
 
-If the flag `-H, --header` is provided, each field in the first row of the input will be treated as field variable names in subsequent rows. The header is not output. For example, given the input:
+If the flag `-H, --header` is provided, each field in the first row of the input will be treated as field variable names
+in subsequent rows. The header is not output. For example, given the input:
 
 ```
 count name
@@ -128,7 +132,8 @@ bob is 12
 fred is 34
 ```
 
-Module references will be automatically imported if possible. Additionally, the `--import <module>[,<module>,...]` flag can be used to import symbols from a set of modules into the evaluation context.
+Module references will be automatically imported if possible. Additionally, the `--import <module>[,<module>,...]` flag
+can be used to import symbols from a set of modules into the evaluation context.
 
 eg. `--import os.path` will import all symbols from `os.path`, such as `os.path.isfile()`, into the context.
 
@@ -145,7 +150,8 @@ The type of the evaluated expression determines how output is displayed:
 
 ### Start/end blocks
 
-The rules are the same as for line actions with one difference.  Because there is no "line" that corresponds to them, an expression returning True is ignored.
+The rules are the same as for line actions with one difference.  Because there is no "line" that corresponds to them, an
+expression returning True is ignored.
 
     $ echo -ne 'foo\nbar' | pawk -E t
     foo
@@ -207,7 +213,9 @@ Short-flag version:
 
 ### Whole-file processing
 
-If you do not provide a line expression, but do provide an end statement, pawk will accumulate each line, and the entire file's text will be available in the end statement as `t`. This is useful for operations on entire files, like the following example of converting a file from markdown to HTML:
+If you do not provide a line expression, but do provide an end statement, pawk will accumulate each line, and the entire
+file's text will be available in the end statement as `t`. This is useful for operations on entire files, like the
+following example of converting a file from markdown to HTML:
 
     cat README.md | \
         pawk --end 'markdown.markdown(t)'
@@ -216,20 +224,17 @@ Short-flag version:
 
     cat README.md | pawk -E 'markdown.markdown(t)'
 """
+import argparse
 import ast
 import codecs
 import inspect
-import optparse
+import itertools
 import os
 import re
 import sys
 
 
-__version__ = '0.8.0'
-
 RESULT_VAR_NAME = "__result"
-
-from itertools import zip_longest
 
 STRING_ESCAPE = 'unicode_escape'
 
@@ -238,11 +243,31 @@ STRING_ESCAPE = 'unicode_escape'
 def save_last_expression(tree, var_name=RESULT_VAR_NAME):
     body = tree.body
     node = body[-1] if len(body) else None
-    body.insert(0, ast.Assign(targets=[ast.Name(id=var_name, ctx=ast.Store())],
-                              value=ast.Constant(None)))
+    body.insert(
+        0,
+        ast.Assign(
+            targets=[
+                ast.Name(
+                    id=var_name,
+                    ctx=ast.Store(),
+                ),
+            ],
+            value=ast.Constant(None),
+        ),
+    )
     if node and isinstance(node, ast.Expr):
-        body[-1] = ast.copy_location(ast.Assign(
-            targets=[ast.Name(id=var_name, ctx=ast.Store())], value=node.value), node)
+        body[-1] = ast.copy_location(
+            ast.Assign(
+                targets=[
+                    ast.Name(
+                        id=var_name,
+                        ctx=ast.Store(),
+                    ),
+                ],
+                value=node.value,
+            ),
+            node,
+        )
     return ast.fix_missing_locations(tree)
 
 
@@ -256,10 +281,17 @@ def eval_in_context(codeobj, context, var_name=RESULT_VAR_NAME):
     return context.pop(var_name, None)
 
 
-class Action(object):
+class Action:
     """Represents a single action to be applied to each line."""
 
-    def __init__(self, pattern=None, cmd='l', have_end_statement=False, negate=False, strict=False):
+    def __init__(
+            self,
+            pattern=None,
+            cmd='l',
+            have_end_statement=False,
+            negate=False,
+            strict=False,
+    ):
         self.delim = None
         self.odelim = ' '
         self.negate = negate
@@ -271,8 +303,13 @@ class Action(object):
     @classmethod
     def from_options(cls, options, arg):
         negate, pattern, cmd = Action._parse_command(arg)
-        return cls(pattern=pattern, cmd=cmd, have_end_statement=(options.end is not None), negate=negate,
-                   strict=options.strict)
+        return cls(
+            pattern=pattern,
+            cmd=cmd,
+            have_end_statement=(options.end is not None),
+            negate=negate,
+            strict=options.strict,
+        )
 
     def _compile(self, have_end_statement):
         if not self.cmd:
@@ -283,17 +320,19 @@ class Action(object):
         self._codeobj = compile_command(self.cmd)
 
     def apply(self, context, line):
-        """Apply action to line.
+        """
+        Apply action to line.
 
         :return: Line text or None.
         """
+
         match = self._match(line)
         if match is None:
             return None
         context['m'] = match
         try:
             return eval_in_context(self._codeobj, context)
-        except:
+        except Exception:
             if not self.strict:
                 return None
             raise
@@ -322,7 +361,7 @@ class Context(dict):
         f = l.split(self.delim)
         self.update(line=line, l=l, n=numz + 1, f=f, nf=len(f))
         if headers:
-            self.update(zip_longest(headers, f))
+            self.update(itertools.zip_longest(headers, f))
 
     @classmethod
     def from_options(cls, options, modules):
@@ -342,13 +381,23 @@ class Context(dict):
             try:
                 key = m.split('.')[0]
                 self[key] = __import__(m)
-            except:
+            except Exception:
                 pass
         return self
 
 
-def process(context, input, output, begin_statement, actions, end_statement, strict, header):
+def process(
+        context,
+        input,
+        output,
+        begin_statement,
+        actions,
+        end_statement,
+        strict,
+        header,
+):
     """Process a stream."""
+
     # Override "print"
     old_stdout = sys.stdout
     sys.stdout = output
@@ -387,19 +436,73 @@ def process(context, input, output, begin_statement, actions, end_statement, str
 
 
 def parse_commandline(argv):
-    parser = optparse.OptionParser(version=__version__)
-    parser.set_usage(__doc__.strip())
-    parser.add_option('-I', '--in_place', dest='in_place', help='modify given input file in-place', metavar='<filename>')
-    parser.add_option('-i', '--import', dest='imports', help='comma-separated list of modules to "from x import *" from', metavar='<modules>')
-    parser.add_option('-F', dest='delim', help='input delimiter', metavar='<delim>', default=None)
-    parser.add_option('-O', dest='delim_out', help='output delimiter', metavar='<delim>', default=' ')
-    parser.add_option('-L', dest='line_separator', help='output line separator', metavar='<delim>', default='\n')
-    parser.add_option('-B', '--begin', help='begin statement', metavar='<statement>')
-    parser.add_option('-E', '--end', help='end statement', metavar='<statement>')
-    parser.add_option('-s', '--statement', action='store_true', help='DEPRECATED. retained for backward compatibility')
-    parser.add_option('-H', '--header', action='store_true', help='use first row as field variable names in subsequent rows')
-    parser.add_option('--strict', action='store_true', help='abort on exceptions')
-    return parser.parse_args(argv[1:])
+    parser = argparse.ArgumentParser()
+    # parser.set_usage(__doc__.strip())
+    parser.add_argument(
+        '-I',
+        '--in_place',
+        dest='in_place',
+        help='modify given input file in-place',
+        metavar='<filename>',
+    )
+    parser.add_argument(
+        '-i',
+        '--import',
+        dest='imports',
+        help='comma-separated list of modules to "from x import *" from',
+        metavar='<modules>',
+    )
+    parser.add_argument(
+        '-F',
+        dest='delim',
+        help='input delimiter',
+        metavar='<delim>',
+        default=None,
+    )
+    parser.add_argument(
+        '-O',
+        dest='delim_out',
+        help='output delimiter',
+        metavar='<delim>',
+        default=' ',
+    )
+    parser.add_argument(
+        '-L',
+        dest='line_separator',
+        help='output line separator',
+        metavar='<delim>',
+        default='\n',
+    )
+    parser.add_argument(
+        '-B',
+        '--begin',
+        help='begin statement',
+        metavar='<statement>',
+    )
+    parser.add_argument(
+        '-E',
+        '--end',
+        help='end statement',
+        metavar='<statement>',
+    )
+    parser.add_argument(
+        '-s',
+        '--statement',
+        action='store_true',
+        help='DEPRECATED. retained for backward compatibility',
+    )
+    parser.add_argument(
+        '-H',
+        '--header',
+        action='store_true',
+        help='use first row as field variable names in subsequent rows',
+    )
+    parser.add_argument(
+        '--strict',
+        action='store_true',
+        help='abort on exceptions',
+    )
+    return parser.parse_known_args(argv[1:])
 
 
 # For integration tests.
@@ -444,8 +547,7 @@ if __name__ == '__main__':
     main()
 
 
-"""
-
+r"""
 TEST_INPUT_LS = r'''
 total 72
 -rw-r-----  1 alec  staff    18 Feb  9 11:52 MANIFEST.in
