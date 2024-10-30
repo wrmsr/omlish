@@ -32,6 +32,7 @@ all = [
     'cffi ~= 1.17',
     'pcpp ~= 1.30',
     'docutils ~= 0.21',
+    'markdown ~= 3.7',
     'mypy ~= 1.11',
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
@@ -46,8 +47,9 @@ c = [
     'cffi ~= 1.17',
     'pcpp ~= 1.30',
 ]
-docutils = [
+doc = [
     'docutils ~= 0.21',
+    'markdown ~= 3.7',
 ]
 mypy = [
     'mypy ~= 1.11',

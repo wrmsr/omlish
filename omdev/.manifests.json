@@ -204,6 +204,18 @@
     }
   },
   {
+    "module": ".tools.doctools",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/doctools.py",
+    "line": 77,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "doc",
+        "mod_name": "omdev.tools.doctools"
+      }
+    }
+  },
+  {
     "module": ".tools.gittools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/gittools.py",
@@ -255,6 +267,18 @@
     }
   },
   {
+    "module": ".tools.pawk.pawk",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/pawk/pawk.py",
+    "line": 388,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "pawk",
+        "mod_name": "omdev.tools.pawk.pawk"
+      }
+    }
+  },
+  {
     "module": ".tools.piptools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/piptools.py",
@@ -275,18 +299,6 @@
       "$.cli.types.CliModule": {
         "cmd_name": "prof",
         "mod_name": "omdev.tools.proftools"
-      }
-    }
-  },
-  {
-    "module": ".tools.rsttool",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/rsttool.py",
-    "line": 55,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "rst",
-        "mod_name": "omdev.tools.rsttool"
       }
     }
   },
