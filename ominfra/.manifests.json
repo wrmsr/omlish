@@ -15,7 +15,7 @@
     "module": ".tailscale.cli",
     "attr": "_CLI_MODULE",
     "file": "ominfra/tailscale/cli.py",
-    "line": 110,
+    "line": 118,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": [

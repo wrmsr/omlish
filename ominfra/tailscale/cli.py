@@ -6,6 +6,7 @@ import typing as ta
 from omdev.cli import CliModule
 from omlish import argparse as ap
 from omlish import cached
+from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
@@ -14,6 +15,9 @@ from omlish.formats import json
 
 
 ##
+
+
+_IP_V4_PAT = re.compile(r'\d{1,3}(\.\d{1,3}){3}')
 
 
 @dc.dataclass(frozen=True)
@@ -26,6 +30,10 @@ class CliNode:
     tailscale_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='TailscaleIPs')
     allowed_ips: ta.Sequence[str] | None = dc.xfield(None) | msh.update_field_metadata(name='AllowedPs')
     tags: ta.Sequence[str] | None = None
+
+    @property
+    def ipv4s(self) -> ta.Sequence[str]:
+        return [i for i in self.tailscale_ips or () if _IP_V4_PAT.fullmatch(i)]
 
     x: ta.Mapping[str, ta.Any] | None = None
 
@@ -54,9 +62,6 @@ class CliStatus:
 
 
 ##
-
-
-_IP_V4_PAT = re.compile(r'\d{1,3}(\.\d{1,3}){3}')
 
 
 class Cli(ap.Cli):
@@ -92,19 +97,22 @@ class Cli(ap.Cli):
             out = status
         print(json.dumps_pretty(msh.marshal(out)))
 
+    @ap.command()
+    def ips(self) -> None:
+        print(json.dumps_pretty({
+            hn: node.ipv4s
+            for hn, node in self.status().nodes_by_host_name.items()
+        }))
+
     @ap.command(
         ap.arg('name', nargs='?'),
     )
     def ip(self) -> None:
         status = self.status()
-        ip_lists_by_hostname = {
-            hn: [i for i in node.tailscale_ips or () if _IP_V4_PAT.fullmatch(i)]
-            for hn, node in status.nodes_by_host_name.items()
-        }
         if self.args.name:
-            print(ip_lists_by_hostname[self.args.name][0])
+            print(status.nodes_by_host_name[self.args.name].ipv4s[0])
         else:
-            print(json.dumps_pretty(ip_lists_by_hostname))
+            print(check.not_none(status.self).ipv4s[0])
 
 
 # @omlish-manifest
