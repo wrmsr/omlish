@@ -207,7 +207,7 @@
     "module": ".tools.doctools",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/doctools.py",
-    "line": 77,
+    "line": 103,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "doc",
@@ -270,7 +270,7 @@
     "module": ".tools.pawk.pawk",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pawk/pawk.py",
-    "line": 388,
+    "line": 390,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pawk",
