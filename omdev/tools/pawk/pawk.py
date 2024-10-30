@@ -241,6 +241,7 @@ def process(
             result = when_true
         elif isinstance(result, (list, tuple)):
             result = context.odelim.join(map(str, result))
+
         if result is not None and result is not False:
             result = str(result)
             if not result.endswith(context.line_separator):
@@ -264,6 +265,7 @@ def process(
 
         if end_statement:
             write_result(eval_in_context(compile_command(end_statement), context))
+
     finally:
         sys.stdout = old_stdout
 

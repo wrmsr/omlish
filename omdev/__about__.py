@@ -18,12 +18,14 @@ class Project(ProjectBase):
 
         'c': [
             'pycparser ~= 2.22',
-            'cffi ~= 1.17',
             'pcpp ~= 1.30',
+
+            'cffi ~= 1.17',
         ],
 
         'doc': [
             'docutils ~= 0.21',
+
             'markdown ~= 3.7',
         ],
 
