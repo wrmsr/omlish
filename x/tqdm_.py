@@ -11,7 +11,7 @@ T = ta.TypeVar('T')
 class ProgressBar:
     def __init__(
             self,
-            total: int,
+            total: int | None = None,
             *,
             length: int = 40,
             interval: float = .2,
@@ -36,17 +36,28 @@ class ProgressBar:
 
     def render_str(self) -> str:
         iter_per_sec = self._i / self._elapsed if self._elapsed > 0 else 0
-        remaining = (self._total - self._i) / iter_per_sec if iter_per_sec > 0 else 0
 
-        done = int(self._length * self._i / self._total)
-        bar = f'[{"█" * done}{"." * (self._length - done)}]'
-        info = (
-            f'{self._i}/{self._total} | '
-            f'{iter_per_sec:.2f} it/s | '
-            f'{self._elapsed:.2f}s elapsed | '
-            f'{remaining:.2f}s left'
-        )
+        if self._total is not None:
+            remaining = (self._total - self._i) / iter_per_sec if iter_per_sec > 0 else 0
+            done = int(self._length * self._i / self._total)
 
+            bar = f'[{"█" * done}{"." * (self._length - done)}]'
+            info_parts = [
+                f'{self._i}/{self._total}',
+                f'{iter_per_sec:.2f} it/s',
+                f'{self._elapsed:.2f}s elapsed',
+                f'{remaining:.2f}s left',
+            ]
+
+        else:
+            bar = f'[{"-" * self._length}]'
+            info_parts = [
+                f'{self._i}',
+                f'{iter_per_sec:.2f} it/s',
+                f'{self._elapsed:.2f}s elapsed',
+            ]
+
+        info = ' | '.join(info_parts)
         return f'{bar} {info}'
 
     def print(
