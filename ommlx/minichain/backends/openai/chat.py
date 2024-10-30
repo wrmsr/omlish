@@ -11,11 +11,12 @@ TODO:
      "top_p": 1
    }
 """
-import contextlib
+import os
 import typing as ta
 
 from omlish import check
-from omlish import lang
+from omlish import http
+from omlish.formats import json
 from omlish.secrets import Secret
 
 from ...chat import AiChoice
@@ -38,19 +39,12 @@ from ...options import Options
 from ...options import ScalarOption
 
 
-if ta.TYPE_CHECKING:
-    import openai
-    import openai.types.chat
-else:
-    openai = lang.proxy_import('openai')
-
-
 def _opt_dct_fld(k, v):
     return {k: v} if v else {}
 
 
-def render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
-    return dict(  # type: ignore
+def render_tool_spec(ts: ToolSpec) -> ta.Mapping[str, ta.Any]:
+    return dict(
         name=ts.name,
 
         **_opt_dct_fld('description', ts.desc),
@@ -71,7 +65,7 @@ def render_tool_spec(ts: ToolSpec) -> 'openai.types.FunctionDefinition':
     )
 
 
-def build_request_message(m: Message) -> 'openai.types.chat.ChatCompletionMessageParam':
+def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
     if isinstance(m, SystemMessage):
         return dict(
             role='system',
@@ -82,7 +76,7 @@ def build_request_message(m: Message) -> 'openai.types.chat.ChatCompletionMessag
         return dict(
             role='assistant',
             content=m.s,
-            **(dict(tool_calls=[  # type: ignore
+            **(dict(tool_calls=[
                 dict(
                     id=te.id,
                     function=dict(
@@ -92,7 +86,7 @@ def build_request_message(m: Message) -> 'openai.types.chat.ChatCompletionMessag
                     type='function',
                 )
                 for te in m.tool_exec_requests
-            ]) if m.tool_exec_requests else {}),  # type: ignore
+            ]) if m.tool_exec_requests else {}),
         )
 
     elif isinstance(m, UserMessage):
@@ -138,7 +132,7 @@ class OpenaiChatModel(ChatModel):
     ) -> None:
         super().__init__()
         self._model = model or self.DEFAULT_MODEL
-        self._api_key = Secret.of(api_key) if api_key is not None else None
+        self._api_key = Secret.of(api_key if api_key is not None else os.environ['OPENAI_API_KEY'])
 
     _OPTION_KWARG_NAMES_MAP: ta.Mapping[type[ScalarOption], str] = {
         Temperature: 'temperature',
@@ -173,44 +167,49 @@ class OpenaiChatModel(ChatModel):
             for ts in tools_by_name.values()
         ]
 
-        with contextlib.closing(openai.OpenAI(
-                api_key=Secret.of(self._api_key).reveal() if self._api_key is not None else None,
-        )) as client:
-            raw_request = dict(
-                model=self._model,
-                messages=[
-                    build_request_message(m)
-                    for m in request.v
-                ],
-                top_p=1,
-                **(dict(tools=tools) if tools else {}),
-                frequency_penalty=0.0,
-                presence_penalty=0.0,
-                stream=False,
-                **kw,
-            )
-            raw_response = client.chat.completions.create(**raw_request)
+        raw_request = dict(
+            model=self._model,
+            messages=[
+                build_request_message(m)
+                for m in request.v
+            ],
+            top_p=1,
+            **(dict(tools=tools) if tools else {}),
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stream=False,
+            **kw,
+        )
 
-        response: 'openai.types.chat.ChatCompletion' = raw_response  # noqa
+        raw_response = http.request(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
+                http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
+            },
+            data=json.dumps(raw_request).encode('utf-8'),
+        )
+
+        response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
         return ChatResponse(
             v=[
                 AiChoice(AiMessage(
-                    choice.message.content,
+                    choice['message']['content'],
                     tool_exec_requests=[
                         ToolExecRequest(
                             id=tc.id,
                             spec=tools_by_name[tc.function.name],
                             args=tc.function.arguments,
                         )
-                        for tc in choice.message.tool_calls or []
+                        for tc in choice['message'].get('tool_calls', [])
                     ],
                 ))
-                for choice in response.choices
+                for choice in response['choices']
             ],
             usage=TokenUsage(
-                input=response.usage.prompt_tokens,
-                output=response.usage.completion_tokens,
-                total=response.usage.total_tokens,
-            ) if response.usage is not None else None,
+                input=response['usage']['prompt_tokens'],
+                output=response['usage']['completion_tokens'],
+                total=response['usage']['total_tokens'],
+            ) if response.get('usage') is not None else None,
         )
