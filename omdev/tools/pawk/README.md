@@ -1,3 +1,7 @@
+[From alecthomas/pawk](https://github.com/alecthomas/pawk/blob/d60f78399e8a01857ebd73415a00e7eb424043ab/pawk.py)
+
+---
+
 PAWK - A Python line processor (like AWK)
 
 PAWK aims to bring the full power of Python to AWK-like line-processing.
@@ -40,7 +44,7 @@ Field slicing and dicing (here pawk wins because of Python's array slicing):
     ls -l / | awk '/etc/ {print $5, $6, $7, $8, $9}'
     ls -l / | pawk '/etc/ f[4:]'
 
-Begin and end end actions (in this case, summing the sizes of all files):
+Begin and end actions (in this case, summing the sizes of all files):
 
     ls -l | awk 'BEGIN {c = 0} {c += $5} END {print c}'
     ls -l | pawk -B 'c = 0' -E 'c' 'c += int(f[4])'
@@ -54,16 +58,6 @@ Matching a single field (any filename with "t" in it):
 
     ls -l | awk '$NF ~/t/'
     ls -l | pawk '"t" in f[-1]'
-
-## Installation
-
-It should be as simple as:
-
-```
-pip install pawk
-```
-
-But if that doesn't work, just download the `pawk.py`, make it executable, and place it somewhere in your path.
 
 ## Expression evaluation
 

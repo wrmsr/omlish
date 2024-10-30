@@ -22,8 +22,9 @@ class Project(ProjectBase):
             'pcpp ~= 1.30',
         ],
 
-        'docutils': [
+        'doc': [
             'docutils ~= 0.21',
+            'markdown ~= 3.7',
         ],
 
         'mypy': [

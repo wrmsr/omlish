@@ -5,12 +5,20 @@ TODO:
 import contextlib
 import io
 import sys
-
-import docutils.core
+import typing as ta
 
 from omlish import argparse as ap
+from omlish import lang
 
 from ..cli import CliModule
+
+
+if ta.TYPE_CHECKING:
+    import docutils.core
+    import markdown
+else:
+    docutils = lang.proxy_import('docutils', extras=['core'])
+    markdown = lang.proxy_import('markdown')
 
 
 def rst2html(rst, report_level=None):
@@ -35,7 +43,7 @@ class Cli(ap.Cli):
         ap.arg('input-file', nargs='?'),
         ap.arg('--report-level', type=int),
     )
-    def html(self) -> None:
+    def rst(self) -> None:
         if self.args.input_file is not None:
             with open(self.args.input_file) as f:
                 src = f.read()
@@ -51,9 +59,23 @@ class Cli(ap.Cli):
             sys.stderr.write(warning)
         print(html)
 
+    @ap.command(
+        ap.arg('input-file', nargs='?'),
+    )
+    def md(self):
+        if self.args.input_file is not None:
+            with open(self.args.input_file) as f:
+                src = f.read()
+        else:
+            src = sys.stdin.read()
+
+        html = markdown.markdown(src)
+
+        print(html)
+
 
 # @omlish-manifest
-_CLI_MODULE = CliModule('rst', __name__)
+_CLI_MODULE = CliModule('doc', __name__)
 
 
 if __name__ == '__main__':

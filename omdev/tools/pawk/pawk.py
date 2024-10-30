@@ -35,6 +35,8 @@ import typing as ta
 
 from omlish import check
 
+from ...cli import CliModule
+
 
 RESULT_VAR_NAME = '__result'
 
@@ -381,6 +383,10 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt:
         sys.exit(1)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('pawk', __name__)
 
 
 if __name__ == '__main__':
