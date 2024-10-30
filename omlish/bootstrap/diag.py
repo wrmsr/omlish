@@ -169,17 +169,12 @@ class TimebombBootstrap(ContextBootstrap['TimebombBootstrap.Config']):
 class PycharmBootstrap(SimpleBootstrap['PycharmBootstrap.Config']):
     @dc.dataclass(frozen=True)
     class Config(Bootstrap.Config):
-        debug_host: ta.Optional[str] = None
-        debug_port: ta.Optional[int] = None
-        version: ta.Optional[str] = None
+        debug: ta.Optional[str] = None
 
     def run(self) -> None:
-        if self._config.debug_port is not None:
-            diagpc.pycharm_remote_debugger_attach(
-                self._config.debug_host,
-                self._config.debug_port,
-                version=self._config.version,
-            )
+        if self._config.debug is not None:
+            prd = diagpc.PycharmRemoteDebugger.parse(self._config.debug)
+            diagpc.pycharm_remote_debugger_attach(prd)
 
 
 ##
