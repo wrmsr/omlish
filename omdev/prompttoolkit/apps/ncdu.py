@@ -49,7 +49,10 @@ class NcduApp:
 
         self._root_path = root_path
         self._current_path = root_path
-        self._entries = scan_directory(root_path)
+
+        self._entries_by_path: dict[str, list[Entry]] = {}
+        self._entries = self._get_entries(root_path)
+
         self._cursor = 0
 
         self._text_area = ptk.TextArea(focusable=True)
@@ -78,6 +81,14 @@ class NcduApp:
             full_screen=True,
         )
 
+    def _get_entries(self, path: str) -> list[Entry]:
+        try:
+            return self._entries_by_path[path]
+        except KeyError:
+            pass
+        entries = self._entries_by_path[path] = scan_directory(path)
+        return entries
+
     #
 
     def update_display(self) -> None:
@@ -103,14 +114,14 @@ class NcduApp:
         selected_entry = self._entries[self._cursor]
         if selected_entry.type == 'dir':
             self._current_path = os.path.join(self._current_path, selected_entry.name[:-1])
-            self._entries = scan_directory(self._current_path)
+            self._entries = self._get_entries(self._current_path)
             self._cursor = 0
             self.update_display()
 
     def go_back(self, event: ptk.KeyPressEvent) -> None:
         if self._current_path != self._root_path:
             self._current_path = os.path.dirname(self._current_path)
-            self._entries = scan_directory(self._current_path)
+            self._entries = self._get_entries(self._current_path)
             self._cursor = 0
             self.update_display()
 
