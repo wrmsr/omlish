@@ -1,3 +1,7 @@
+"""
+TODO:
+ - reuse dir sizes lol
+"""
 import dataclasses as dc
 import os
 import typing as ta
