@@ -93,12 +93,18 @@ class Cli(ap.Cli):
         print(json.dumps_pretty(msh.marshal(out)))
 
     @ap.command(
-        ap.arg('name'),
+        ap.arg('name', nargs='?'),
     )
     def ip(self) -> None:
-        node = self.status().nodes_by_host_name[self.args.name]
-        ips = [i for i in node.tailscale_ips or () if _IP_V4_PAT.fullmatch(i)]
-        print(ips[0])
+        status = self.status()
+        ip_lists_by_hostname = {
+            hn: [i for i in node.tailscale_ips or () if _IP_V4_PAT.fullmatch(i)]
+            for hn, node in status.nodes_by_host_name.items()
+        }
+        if self.args.name:
+            print(ip_lists_by_hostname[self.args.name][0])
+        else:
+            print(json.dumps_pretty(ip_lists_by_hostname))
 
 
 # @omlish-manifest
