@@ -1,5 +1,7 @@
+import dataclasses as dc
 import os.path
 import plistlib
+import re
 import subprocess
 import sys
 import typing as ta
@@ -106,12 +108,33 @@ def _import_pydevd_pycharm(*, version: str | None = None) -> ta.Any:
     return pydevd_pycharm
 
 
-def pycharm_remote_debugger_attach(
-        host: str | None,
-        port: int,
-        *,
-        version: str | None = None,
-) -> None:
+@dc.dataclass(frozen=True)
+class PycharmRemoteDebugger:
+    host: str | None
+    port: int
+    version: str | None = None
+
+    def __str__(self) -> str:
+        return ''.join([
+            f'@{self.version}:' if self.version is not None else '',
+            f'{self.host}:' if self.host is not None else '',
+            str(self.port),
+        ])
+
+    @classmethod
+    def parse(cls, s: str) -> 'PycharmRemoteDebugger':
+        if (m := re.fullmatch(r'(@(?P<version>[^:]+):)?((?P<host>[^:]+):)?(?P<port>\d+)', s)) is None:
+            raise ValueError(s)
+        gd = m.groupdict()
+        return cls(
+            host=gd.get('host'),
+            port=int(gd['port']),
+            version=gd.get('version'),
+        )
+
+
+def pycharm_remote_debugger_attach(prd: PycharmRemoteDebugger) -> None:
+    host = prd.host
     if host is None:
         if (
                 sys.platform == 'linux' and
@@ -122,6 +145,7 @@ def pycharm_remote_debugger_attach(
         else:
             host = 'localhost'
 
+    version = prd.version
     if version is None and host in ('localhost', '127.0.0.1'):
         version = get_pycharm_version()
 
@@ -132,7 +156,7 @@ def pycharm_remote_debugger_attach(
 
     pydevd_pycharm.settrace(
         host,
-        port=port,
+        port=prd.port,
         stdoutToServer=True,
         stderrToServer=True,
     )
