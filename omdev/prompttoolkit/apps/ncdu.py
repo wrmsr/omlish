@@ -55,7 +55,11 @@ class NcduApp:
 
         self._cursor = 0
 
-        self._text_area = ptk.TextArea(focusable=True)
+        self._text_area = ptk.TextArea(
+            read_only=True,
+        )
+        self._text_area.window.always_hide_cursor = ptk.to_filter(True)
+
         self.update_display()
 
         self._kb = ptk.KeyBindings()
