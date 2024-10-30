@@ -30,7 +30,7 @@ Here are some quick examples to show some of the advantages of pawk over AWK.
 
 The first example transforms `/etc/hosts` into a JSON map of host to IP:
 
-	cat /etc/hosts | pawk -B 'd={}' -E 'json.dumps(d)' '!/^#/ d[f[1]] = f[0]'
+    cat /etc/hosts | pawk -B 'd={}' -E 'json.dumps(d)' '!/^#/ d[f[1]] = f[0]'
 
 Breaking this down:
 
@@ -41,7 +41,7 @@ Breaking this down:
 
 And another example showing how to bzip2-compress + base64-encode a file:
 
-	cat pawk.py | pawk -E 'base64.encodestring(bz2.compress(t))'
+    cat pawk.py | pawk -E 'base64.encodestring(bz2.compress(t))'
 
 ### AWK example translations
 
@@ -49,33 +49,33 @@ Most basic AWK constructs are available. You can find more idiomatic examples be
 
 Print lines matching a pattern:
 
-	ls -l / | awk '/etc/'
-	ls -l / | pawk '/etc/'
+    ls -l / | awk '/etc/'
+    ls -l / | pawk '/etc/'
 
 Print lines *not* matching a pattern:
 
-	ls -l / | awk '!/etc/'
-	ls -l / | pawk '!/etc/'
+    ls -l / | awk '!/etc/'
+    ls -l / | pawk '!/etc/'
 
 Field slicing and dicing (here pawk wins because of Python's array slicing):
 
-	ls -l / | awk '/etc/ {print $5, $6, $7, $8, $9}'
-	ls -l / | pawk '/etc/ f[4:]'
+    ls -l / | awk '/etc/ {print $5, $6, $7, $8, $9}'
+    ls -l / | pawk '/etc/ f[4:]'
 
 Begin and end end actions (in this case, summing the sizes of all files):
 
-	ls -l | awk 'BEGIN {c = 0} {c += $5} END {print c}'
-	ls -l | pawk -B 'c = 0' -E 'c' 'c += int(f[4])'
+    ls -l | awk 'BEGIN {c = 0} {c += $5} END {print c}'
+    ls -l | pawk -B 'c = 0' -E 'c' 'c += int(f[4])'
 
 Print files where a field matches a numeric expression (in this case where files are > 1024 bytes):
 
-	ls -l | awk '$5 > 1024'
-	ls -l | pawk 'int(f[4]) > 1024'
+    ls -l | awk '$5 > 1024'
+    ls -l | pawk 'int(f[4]) > 1024'
 
 Matching a single field (any filename with "t" in it):
 
-	ls -l | awk '$NF ~/t/'
-	ls -l | pawk '"t" in f[-1]'
+    ls -l | awk '$NF ~/t/'
+    ls -l | pawk '"t" in f[-1]'
 
 ## Installation
 
@@ -147,7 +147,7 @@ The type of the evaluated expression determines how output is displayed:
 
 The rules are the same as for line actions with one difference.  Because there is no "line" that corresponds to them, an expression returning True is ignored.
 
-	$ echo -ne 'foo\nbar' | pawk -E t
+    $ echo -ne 'foo\nbar' | pawk -E t
     foo
     bar
 
@@ -188,33 +188,33 @@ Options:
 
 Print the name and size of every file from stdin:
 
-	find . -type f | pawk 'f[0], os.stat(f[0]).st_size'
+    find . -type f | pawk 'f[0], os.stat(f[0]).st_size'
 
 > **Note:** this example also shows how pawk automatically imports referenced modules, in this case `os`.
 
 Print the sum size of all files from stdin:
 
-	find . -type f | \
-		pawk \
-			--begin 'c=0' \
-			--end c \
-			'c += os.stat(f[0]).st_size'
+    find . -type f | \
+        pawk \
+            --begin 'c=0' \
+            --end c \
+            'c += os.stat(f[0]).st_size'
 
 Short-flag version:
 
-	find . -type f | pawk -B c=0 -E c 'c += os.stat(f[0]).st_size'
+    find . -type f | pawk -B c=0 -E c 'c += os.stat(f[0]).st_size'
 
 
 ### Whole-file processing
 
 If you do not provide a line expression, but do provide an end statement, pawk will accumulate each line, and the entire file's text will be available in the end statement as `t`. This is useful for operations on entire files, like the following example of converting a file from markdown to HTML:
 
-	cat README.md | \
-		pawk --end 'markdown.markdown(t)'
+    cat README.md | \
+        pawk --end 'markdown.markdown(t)'
 
 Short-flag version:
 
-	cat README.md | pawk -E 'markdown.markdown(t)'
+    cat README.md | pawk -E 'markdown.markdown(t)'
 """
 import ast
 import codecs
@@ -229,31 +229,9 @@ __version__ = '0.8.0'
 
 RESULT_VAR_NAME = "__result"
 
-if sys.version_info[0] > 2:
-    from itertools import zip_longest
+from itertools import zip_longest
 
-    try:
-        exec_ = __builtins__['exec']
-    except TypeError:
-        exec_ = getattr(__builtins__, 'exec')
-    STRING_ESCAPE = 'unicode_escape'
-else:
-    from itertools import izip_longest as zip_longest
-
-
-    def exec_(_code_, _globs_=None, _locs_=None):
-        if _globs_ is None:
-            frame = sys._getframe(1)
-            _globs_ = frame.f_globals
-            if _locs_ is None:
-                _locs_ = frame.f_locals
-            del frame
-        elif _locs_ is None:
-            _locs_ = _globs_
-        exec("""exec _code_ in _globs_, _locs_""")
-
-
-    STRING_ESCAPE = 'string_escape'
+STRING_ESCAPE = 'unicode_escape'
 
 
 # Store the last expression, if present, into variable var_name.
@@ -274,7 +252,7 @@ def compile_command(text):
 
 
 def eval_in_context(codeobj, context, var_name=RESULT_VAR_NAME):
-    exec_(codeobj, globals(), context)
+    exec(codeobj, globals(), context)
     return context.pop(var_name, None)
 
 
