@@ -198,9 +198,9 @@ class OpenaiChatModel(ChatModel):
                     choice['message']['content'],
                     tool_exec_requests=[
                         ToolExecRequest(
-                            id=tc.id,
-                            spec=tools_by_name[tc.function.name],
-                            args=tc.function.arguments,
+                            id=tc['id'],
+                            spec=tools_by_name[tc['function']['name']],
+                            args=tc['function']['arguments'],
                         )
                         for tc in choice['message'].get('tool_calls', [])
                     ],
