@@ -1,5 +1,10 @@
-r"""
-TEST_INPUT_LS = r'''
+import io
+
+from ..pawk import Action
+from ..pawk import run
+
+
+TEST_INPUT_LS = r"""
 total 72
 -rw-r-----  1 alec  staff    18 Feb  9 11:52 MANIFEST.in
 -rw-r-----@ 1 alec  staff  3491 Feb 10 11:08 README.md
@@ -9,17 +14,18 @@ drwxr-x---  6 alec  staff   204 Feb  9 21:09 pawk.egg-info/
 -rw-r-----  1 alec  staff  5045 Feb 10 11:37 pawk.py
 -rw-r--r--  1 alec  staff   521 Feb 10 04:56 pawk_test.py
 -rw-r-----  1 alec  staff   468 Feb 10 04:42 setup.py
-'''
+"""
 
-TEST_INPUT_CSV_WITH_EMPTY_FIELD = r'''
+TEST_INPUT_CSV_WITH_EMPTY_FIELD = r"""
 model,color,price
 A01,,100
 B03,blue,200
-'''
+"""
+
 
 def run_integration_test(input, args):
-    input = StringIO(input.strip())
-    output = StringIO()
+    input = io.StringIO(input.strip())
+    output = io.StringIO()
     run(['pawk'] + args, input, output)
     return output.getvalue().strip()
 
@@ -75,4 +81,3 @@ def test_integration_csv_empty_fields():
     assert out.splitlines() == ['price', '100', '200']
     out = run_integration_test(TEST_INPUT_CSV_WITH_EMPTY_FIELD, ['-F,', 'f[1]'])
     assert out.splitlines() == ['color', '', 'blue']
-"""
