@@ -6,7 +6,7 @@ import tqdm
 def _main() -> None:
     for i in tqdm.tqdm(range(10000)):
         time.sleep(.0001)
-        print(i)
+        # print(i)
 
 
 if __name__ == '__main__':
