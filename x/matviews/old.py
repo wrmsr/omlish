@@ -15,6 +15,11 @@ class Node(dc.Frozen, lang.Abstract):
     pass
 
 
+class Filter(Node, lang.Final):
+    src: Node
+    fn: ta.Callable[[Row], bool]
+
+
 class Scan(Node, lang.Final):
     table: str
     columns: ta.Sequence[str] | None = None
@@ -36,6 +41,13 @@ class Driver:
     @dispatch.method
     def drive(self, n: Node) -> ta.Iterable[Row]:
         raise TypeError(n)
+
+    @drive.register
+    def drive_filter(self, n: Filter) -> ta.Iterable[Row]:
+        src = self.drive(n.src)
+        for r in src:
+            if n.fn(r):
+                yield r
 
     @drive.register
     def drive_scan(self, n: Scan) -> ta.Iterable[Row]:
@@ -64,6 +76,7 @@ def _main() -> None:
         {'x': 4, 'y': 5},
     ]
     x: Node = Scan('foo', ['y'])
+    x = Filter(x, lambda r: r['y'] != 3)
     d = Driver(tables={'foo': foo_rows})
     o = list(d.drive(x))
     print(o)
