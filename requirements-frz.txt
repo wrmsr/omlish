@@ -85,6 +85,7 @@ dirtyjson==1.0.8
 discord.py==2.4.0
 diskcache==5.6.3
 distro==1.9.0
+docopt==0.6.2
 docstring-to-markdown==0.15
 docstring_parser==0.16
 docutils==0.21.2
@@ -150,7 +151,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.115.5
+hypothesis==6.115.6
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.0
@@ -193,7 +194,7 @@ keras==3.6.0
 keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
-langchain==0.3.4
+langchain==0.3.5
 langchain-anthropic==0.2.3
 langchain-chroma==0.1.4
 langchain-community==0.3.3
@@ -203,7 +204,7 @@ langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
 langchain-ollama==0.2.0
 langchain-openai==0.2.4
-langchain-text-splitters==0.3.0
+langchain-text-splitters==0.3.1
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
@@ -362,7 +363,7 @@ pyserial==3.5
 pyserial-asyncio==0.6
 pytest==8.3.3
 pytest-asyncio==0.24.0
-pytest-benchmark==5.0.0
+pytest-benchmark==5.0.1
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.3.1
@@ -518,6 +519,6 @@ wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
 yarl==1.17.0
-zigpy==0.70.0
+zigpy==0.71.0
 zipp==3.20.2
 zwave-js-server-python==0.59.0

@@ -8,7 +8,7 @@ import typing as ta
 
 from omlish.lite.strings import format_num_bytes
 
-from ... import prompttoolkit as ptk
+from ... import ptk
 from ...cli import CliModule
 
 

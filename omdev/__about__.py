@@ -34,7 +34,7 @@ class Project(ProjectBase):
             'gprof2dot ~= 2024.6',
         ],
 
-        'prompttoolkit': [
+        'ptk': [
             'prompt-toolkit ~= 3.0',
         ],
 
