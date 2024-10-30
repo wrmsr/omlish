@@ -120,6 +120,18 @@
     }
   },
   {
+    "module": ".prompttoolkit.apps.ncdu",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/prompttoolkit/apps/ncdu.py",
+    "line": 155,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "ptk/ncdu",
+        "mod_name": "omdev.prompttoolkit.apps.ncdu"
+      }
+    }
+  },
+  {
     "module": ".pyproject.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/pyproject/__main__.py",
