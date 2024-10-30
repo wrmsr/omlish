@@ -1,10 +1,10 @@
 from prompt_toolkit import Application
-from prompt_toolkit.layout import Layout, HSplit, VSplit
-from prompt_toolkit.widgets import TextArea, Label
+from prompt_toolkit.layout import Layout, HSplit
+from prompt_toolkit.widgets import TextArea
 from prompt_toolkit.key_binding import KeyBindings
 
 # Read-only text area
-log_area = TextArea(style='class:log-area', read_only=True, scrollbar=True)
+log_area = TextArea(style='class:log-area', scrollbar=True, focusable=False)
 
 # Input field at the bottom
 input_field = TextArea(height=1, prompt='> ', multiline=False)
@@ -28,7 +28,14 @@ def exit_app(event):
     event.app.exit()
 
 # Create the application
-app = Application(layout=layout, key_bindings=bindings, full_screen=True)
+app = Application(
+    layout=layout,
+    key_bindings=bindings,
+    full_screen=True
+)
+
+# Set initial focus to the input field
+layout.focus(input_field)
 
 # Run the application
 app.run()
