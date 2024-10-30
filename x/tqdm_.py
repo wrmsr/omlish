@@ -34,7 +34,11 @@ class ProgressBar:
         self._elapsed = 0.
         self._last_print = 0.
 
-    def render_str(self) -> str:
+    def render(
+            self,
+            *,
+            complete: bool = False,
+    ) -> str:
         iter_per_sec = self._i / self._elapsed if self._elapsed > 0 else 0
 
         if self._total is not None:
@@ -50,7 +54,7 @@ class ProgressBar:
             ]
 
         else:
-            bar = f'[{"-" * self._length}]'
+            bar = f'[{("█" if complete else "?") * self._length}]'
             info_parts = [
                 f'{self._i}',
                 f'{iter_per_sec:.2f} it/s',
@@ -64,11 +68,12 @@ class ProgressBar:
             self,
             *,
             now: float | None = None,
+            **kwargs: ta.Any,
     ) -> None:
         if now is None:
             now = time.time()
 
-        line = self.render_str()
+        line = self.render(**kwargs)
         self._out.write(f'\033[2K\033[G{line}')
         self._out.flush()
 
@@ -93,7 +98,7 @@ class ProgressBar:
 
 
 def progress_bar(
-        seq: ta.Sequence[T],
+        seq: ta.Iterable[T],
         *,
         no_tty_check: bool = False,
         total: int | None = None,
@@ -104,7 +109,8 @@ def progress_bar(
         return
 
     if total is None:
-        total = len(seq)
+        if isinstance(seq, ta.Sized):
+            total = len(seq)
 
     pb = ProgressBar(
         total=total,
@@ -115,7 +121,7 @@ def progress_bar(
         pb.update()
         yield item
 
-    pb.print()
+    pb.print(complete=True)
     sys.stdout.write('\n')
 
 
@@ -126,8 +132,10 @@ def _main() -> None:
 
     ##
 
-    # Example usage
     for i in progress_bar(range(10000)):
+        time.sleep(0.0001)
+
+    for i in progress_bar(iter(range(10000))):
         time.sleep(0.0001)
 
 
