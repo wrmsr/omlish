@@ -192,38 +192,38 @@
     }
   },
   {
-    "module": ".tools.dockertools",
+    "module": ".tools.doc",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/dockertools.py",
-    "line": 236,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "docker",
-        "mod_name": "omdev.tools.dockertools"
-      }
-    }
-  },
-  {
-    "module": ".tools.doctools",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/tools/doctools.py",
+    "file": "omdev/tools/doc.py",
     "line": 103,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "doc",
-        "mod_name": "omdev.tools.doctools"
+        "mod_name": "omdev.tools.doc"
       }
     }
   },
   {
-    "module": ".tools.gittools",
+    "module": ".tools.docker",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/gittools.py",
+    "file": "omdev/tools/docker.py",
+    "line": 236,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "docker",
+        "mod_name": "omdev.tools.docker"
+      }
+    }
+  },
+  {
+    "module": ".tools.git",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/git.py",
     "line": 124,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "git",
-        "mod_name": "omdev.tools.gittools"
+        "mod_name": "omdev.tools.git"
       }
     }
   },
@@ -252,9 +252,9 @@
     }
   },
   {
-    "module": ".tools.nbtools",
+    "module": ".tools.notebook",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/nbtools.py",
+    "file": "omdev/tools/notebook.py",
     "line": 120,
     "value": {
       "$.cli.types.CliModule": {
@@ -262,7 +262,7 @@
           "notebook",
           "nb"
         ],
-        "mod_name": "omdev.tools.nbtools"
+        "mod_name": "omdev.tools.notebook"
       }
     }
   },
@@ -279,26 +279,26 @@
     }
   },
   {
-    "module": ".tools.piptools",
+    "module": ".tools.pip",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/piptools.py",
+    "file": "omdev/tools/pip.py",
     "line": 88,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
-        "mod_name": "omdev.tools.piptools"
+        "mod_name": "omdev.tools.pip"
       }
     }
   },
   {
-    "module": ".tools.proftools",
+    "module": ".tools.prof",
     "attr": "_CLI_MODULE",
-    "file": "omdev/tools/proftools.py",
+    "file": "omdev/tools/prof.py",
     "line": 50,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "prof",
-        "mod_name": "omdev.tools.proftools"
+        "mod_name": "omdev.tools.prof"
       }
     }
   },
