@@ -1,4 +1,3 @@
-import shutil
 import sys
 import time
 import typing as ta
@@ -9,6 +8,106 @@ import tqdm
 T = ta.TypeVar('T')
 
 
+class ProgressBar:
+    def __init__(
+            self,
+            total: int,
+            *,
+            length: int = 40,
+            interval: float = .2,
+            start_time: float | None = None,
+            out: ta.TextIO | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._total = total
+        self._length = length
+        self._interval = interval
+        if start_time is None:
+            start_time = time.time()
+        self._start_time = start_time
+        if out is None:
+            out = sys.stdout
+        self._out = out
+
+        self._i = 0
+        self._elapsed = 0.
+        self._last_print = 0.
+
+    def render_str(self) -> str:
+        iter_per_sec = self._i / self._elapsed if self._elapsed > 0 else 0
+        remaining = (self._total - self._i) / iter_per_sec if iter_per_sec > 0 else 0
+
+        done = int(self._length * self._i / self._total)
+        bar = f'[{"█" * done}{"." * (self._length - done)}]'
+        info = (
+            f'{self._i}/{self._total} | '
+            f'{iter_per_sec:.2f} it/s | '
+            f'{self._elapsed:.2f}s elapsed | '
+            f'{remaining:.2f}s left'
+        )
+
+        return f'{bar} {info}'
+
+    def print(
+            self,
+            *,
+            now: float | None = None,
+    ) -> None:
+        if now is None:
+            now = time.time()
+
+        line = self.render_str()
+        self._out.write(f'\033[2K\033[G{line}')
+        self._out.flush()
+
+        self._last_print = now
+
+    def update(
+            self,
+            n: int = 1,
+            *,
+            now: float | None = None,
+            silent: bool = False,
+    ) -> None:
+        if now is None:
+            now = time.time()
+
+        self._i += n
+        self._elapsed = now - self._start_time
+
+        if not silent:
+            if now - self._last_print >= self._interval:
+                self.print(now=now)
+
+
+def progress_bar(
+        seq: ta.Sequence[T],
+        *,
+        no_tty_check: bool = False,
+        total: int | None = None,
+        **kwargs: ta.Any,
+) -> ta.Generator[T, None, None]:
+    if not no_tty_check and not sys.stdout.isatty():
+        yield from seq
+        return
+
+    if total is None:
+        total = len(seq)
+
+    pb = ProgressBar(
+        total=total,
+        **kwargs,
+    )
+
+    for item in seq:
+        pb.update()
+        yield item
+
+    pb.print()
+    sys.stdout.write('\n')
+
+
 def _main() -> None:
     # for i in tqdm.tqdm(range(10000)):
     #     time.sleep(.0001)
@@ -16,138 +115,9 @@ def _main() -> None:
 
     ##
 
-    # def progressbar(iterable, total=None, length=40):
-    #     if total is None:
-    #         total = len(iterable)
-    #     for i, item in enumerate(iterable, start=1):
-    #         done = int(length * i / total)
-    #         bar = f"[{'█' * done}{'.' * (length - done)}] {i}/{total}"
-    #         sys.stdout.write(f'\033[2K\033[G{bar}')  # Clear line and move cursor to start
-    #         sys.stdout.flush()
-    #         yield item
-    #     sys.stdout.write('\n')
-    #
-    # # Example usage
-    # for i in progressbar(range(10000)):
-    #     time.sleep(0.0001)
-
-    ##
-
-    def progressbar(
-            iterable: ta.Sequence[T],
-            *,
-            total: int | None = None,
-            length: int = 40,
-            interval: float = .2,
-            no_tty_check: bool = False,
-    ) -> ta.Generator[T, None, None]:
-        if not no_tty_check and not sys.stdout.isatty():
-            yield from iterable
-            return
-
-        if total is None:
-            total = len(iterable)
-
-        start_time = time.time()
-        last_render = 0.
-
-        def render() -> None:
-            iter_per_sec = i / elapsed if elapsed > 0 else 0
-            remaining = (total - i) / iter_per_sec if iter_per_sec > 0 else 0
-
-            done = int(length * i / total)
-            bar = f"[{'█' * done}{'.' * (length - done)}]"
-            info = f" {i}/{total} | {iter_per_sec:.2f} it/s | {elapsed:.2f}s elapsed | {remaining:.2f}s left"
-
-            sys.stdout.write(f'\033[2K\033[G{bar}{info}')
-            sys.stdout.flush()
-
-            nonlocal last_render
-            last_render = now
-
-        for i, item in enumerate(iterable, start=1):
-            now = time.time()
-            elapsed = now - start_time
-            if not i or (now - last_render) >= interval:
-                render()
-
-            yield item
-
-        render()
-
-        sys.stdout.write('\n')
-
     # Example usage
-    for i in progressbar(range(10000)):
+    for i in progress_bar(range(10000)):
         time.sleep(0.0001)
-
-    ##
-
-    # def progressbar(iterable, total=None, length=None):
-    #     if total is None:
-    #         total = len(iterable)
-    #     if length is None:
-    #         term_width = shutil.get_terminal_size((80, 20)).columns
-    #         length = term_width - 40  # Reserve space for additional info
-    #         length = max(10, length)  # Ensure minimum length
-    #
-    #     start_time = time.time()
-    #
-    #     for i, item in enumerate(iterable, start=1):
-    #         elapsed = time.time() - start_time
-    #         iter_per_sec = i / elapsed if elapsed > 0 else 0
-    #         remaining = (total - i) / iter_per_sec if iter_per_sec > 0 else 0
-    #
-    #         done = int(length * i / total)
-    #         bar = f"[{'█' * done}{'.' * (length - done)}]"
-    #         info = f"{i}/{total} | {iter_per_sec:.2f} it/s | {elapsed:.2f}s elapsed | {remaining:.2f}s left"
-    #
-    #         # Align the info to the right of the terminal width
-    #         output = f"{bar} {info}".ljust(term_width)
-    #
-    #         sys.stdout.write(f'\033[2K\033[G{output}')
-    #         sys.stdout.flush()
-    #         yield item
-    #
-    #     sys.stdout.write('\n')
-    #
-    # # Example usage
-    # for i in progressbar(range(10000)):
-    #     time.sleep(0.0001)
-
-    ##
-
-    # def progressbar(iterable, total=None, length=None):
-    #     if total is None:
-    #         total = len(iterable)
-    #     if length is None:
-    #         term_width = shutil.get_terminal_size((80, 20)).columns
-    #         length = term_width - 40  # Reserve space for additional info
-    #         length = max(10, length)  # Ensure a minimum length
-    #
-    #     start_time = time.time()
-    #
-    #     for i, item in enumerate(iterable, start=1):
-    #         elapsed = time.time() - start_time
-    #         iter_per_sec = i / elapsed if elapsed > 0 else 0
-    #         remaining = (total - i) / iter_per_sec if iter_per_sec > 0 else 0
-    #
-    #         done = int(length * i / total)
-    #         bar = f"[{'█' * done}{'.' * (length - done)}]"
-    #         info = f"{i}/{total} | {iter_per_sec:.2f} it/s | {elapsed:.2f}s elapsed | {remaining:.2f}s left"
-    #
-    #         # Create the complete line and right-align the info part
-    #         line = f"{bar} {info}".ljust(term_width)
-    #
-    #         sys.stdout.write(f'\033[2K\033[G{line}')  # Clear line and move to start
-    #         sys.stdout.flush()
-    #         yield item
-    #
-    #     sys.stdout.write('\n')
-    #
-    # # Example usage
-    # for i in progressbar(range(10000)):
-    #     time.sleep(0.0001)
 
 
 if __name__ == '__main__':
