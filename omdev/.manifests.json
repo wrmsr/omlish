@@ -123,7 +123,7 @@
     "module": ".prompttoolkit.apps.ncdu",
     "attr": "_CLI_MODULE",
     "file": "omdev/prompttoolkit/apps/ncdu.py",
-    "line": 155,
+    "line": 157,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "ptk/ncdu",
