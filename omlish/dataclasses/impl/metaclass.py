@@ -135,6 +135,7 @@ class Frozen(
         'frozen',
         'cache_hash',
         'confer',
+        'reorder',
     ]),
 ):
     pass
