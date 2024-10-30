@@ -15,6 +15,7 @@ def accept_text(buff):
     log_area.buffer.insert_text(text + '\n')
     input_field.text = ''
 
+
 input_field.accept_handler = accept_text
 
 # Layout with HSplit for vertical stacking
@@ -26,6 +27,16 @@ bindings = KeyBindings()
 @bindings.add('c-c')
 def exit_app(event):
     event.app.exit()
+
+# Page Up: Scroll up the log area
+@bindings.add('pageup')
+def page_up(event):
+    log_area.buffer.cursor_up(count=10)
+
+# Page Down: Scroll down the log area
+@bindings.add('pagedown')
+def page_down(event):
+    log_area.buffer.cursor_down(count=10)
 
 # Create the application
 app = Application(
