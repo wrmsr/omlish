@@ -59,8 +59,7 @@ class IrcSimpleClient:
         self.send_cmd(cmd, channel)
 
 
-@pytest.mark.skip()
-def test_irc():
+def run_irc():
     username = 'omnibus_irc_test'
     channel = '#test'
 
@@ -122,5 +121,10 @@ def test_irc():
         response_thread.start()
 
 
+@pytest.mark.skip()
+def test_irc():
+    run_irc()
+
+
 if __name__ == '__main__':
-    test_irc()
+    run_irc()

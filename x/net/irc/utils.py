@@ -3,7 +3,7 @@ import collections
 import re
 import typing as ta
 
-from ... import check
+from omlish import check
 
 
 def normalize_whitespace(s: str, remove_newline: bool = True) -> str:
