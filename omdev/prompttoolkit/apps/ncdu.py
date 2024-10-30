@@ -5,6 +5,7 @@ import typing as ta
 from omlish.lite.strings import format_num_bytes
 
 from ... import prompttoolkit as ptk
+from ...cli import CliModule
 
 
 def get_directory_size(path: str) -> int:
@@ -142,13 +143,15 @@ def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument('dir', default='.', nargs='?')
-
     args = parser.parse_args()
 
     ncdu_app = NcduApp(args.dir)
     ncdu_app.run()
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('ptk/ncdu', __name__)
 
 
 if __name__ == '__main__':
