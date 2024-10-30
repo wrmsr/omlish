@@ -23,15 +23,15 @@ B03,blue,200
 """
 
 
-def run_integration_test(input, args):
-    input = io.StringIO(input.strip())
+def run_integration_test(input, args):  # noqa
+    input = io.StringIO(input.strip())  # noqa
     output = io.StringIO()
-    run(['pawk'] + args, input, output)
+    run(['pawk', *args], input, output)
     return output.getvalue().strip()
 
 
 def test_action_parse():
-    negate, pattern, cmd = Action()._parse_command(r'/(\w+)/ l')
+    negate, pattern, cmd = Action()._parse_command(r'/(\w+)/ l')  # noqa
     assert pattern == r'(\w+)'
     assert cmd == 'l'
     assert negate is False
@@ -39,15 +39,15 @@ def test_action_parse():
 
 def test_action_match():
     action = Action(r'(\w+) \w+')
-    groups = action._match('test case')
+    groups = action._match('test case')  # noqa
     assert groups == ('test',)
 
 
 def test_action_match_negate():
     action = Action(r'(\w+) \w+', negate=True)
-    groups = action._match('test case')
+    groups = action._match('test case')  # noqa
     assert groups is None
-    groups = action._match('test')
+    groups = action._match('test')  # noqa
     assert groups == ()
 
 

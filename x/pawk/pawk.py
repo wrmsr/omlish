@@ -24,6 +24,7 @@ http://code.activestate.com/recipes/437932/.
 import argparse
 import ast
 import codecs
+import contextlib
 import inspect
 import itertools
 import os
@@ -35,7 +36,7 @@ import typing as ta
 from omlish import check
 
 
-RESULT_VAR_NAME = "__result"
+RESULT_VAR_NAME = '__result'
 
 STRING_ESCAPE = 'unicode_escape'
 
@@ -147,7 +148,7 @@ class Action:
         context['m'] = match
         try:
             return eval_in_context(self._codeobj, context)
-        except Exception:
+        except Exception:  # noqa
             if not self.strict:
                 return None
             raise
@@ -160,11 +161,13 @@ class Action:
             return None if self.negate else match.groups()
         elif self.negate:
             return ()
+        else:
+            return None
 
     @staticmethod
     def _parse_command(arg: str) -> tuple[bool, str | None, str]:
         match = re.match(r'(?ms)(?:(!)?/((?:\\.|[^/])+)/)?(.*)', arg)
-        negate, pattern, cmd = match.groups()
+        negate, pattern, cmd = check.not_none(match).groups()
         cmd = cmd.strip()
         negate = bool(negate)
         return negate, pattern, cmd
@@ -198,8 +201,8 @@ class Context(dict):
         self['m'] = ()
         if options.imports:
             for imp in options.imports.split(','):
-                m = __import__(imp.strip(), fromlist=['.'])
-                self.update((k, v) for k, v in inspect.getmembers(m) if k[0] != '_')
+                mod = __import__(imp.strip(), fromlist=['.'])
+                self.update((k, v) for k, v in inspect.getmembers(mod) if k[0] != '_')
 
         self.delim = codecs.decode(options.delim, STRING_ESCAPE) if options.delim else None
         self.odelim = codecs.decode(options.delim_out, STRING_ESCAPE)
@@ -209,14 +212,14 @@ class Context(dict):
             try:
                 key = m.split('.')[0]
                 self[key] = __import__(m)
-            except Exception:
+            except Exception:  # noqa
                 pass
         return self
 
 
 def process(
         context: Context,
-        input: ta.TextIO,
+        input: ta.TextIO,  # noqa
         output: ta.TextIO,
         begin_statement: str | None,
         actions: ta.Sequence[Action],
@@ -336,16 +339,16 @@ def parse_commandline(argv: ta.Sequence[str]) -> tuple[ta.Any, ta.Sequence[str]]
 # For integration tests.
 def run(
         argv: ta.Sequence[str],
-        input: ta.TextIO,
+        input: ta.TextIO,  # noqa
         output: ta.TextIO,
 ) -> None:
     options, args = parse_commandline(argv)
 
-    try:
+    with contextlib.ExitStack() as es:
         if options.in_place:
             os.rename(options.in_place, options.in_place + '~')
-            input = open(options.in_place + '~')
-            output = open(options.in_place, 'w')
+            input = es.enter_context(open(options.in_place + '~'))  # noqa
+            output = es.enter_context(open(options.in_place, 'w'))
 
         # Auto-import. This is not smart.
         all_text = ' '.join([(options.begin or ''), ' '.join(args), (options.end or '')])
@@ -367,16 +370,11 @@ def run(
             options.header,
         )
 
-    finally:
-        if options.in_place:
-            output.close()
-            input.close()
-
 
 def main() -> None:
     try:
         run(sys.argv, sys.stdin, sys.stdout)
-    except EnvironmentError as e:
+    except OSError as e:
         # Workaround for close failed in file object destructor: sys.excepthook is missing lost sys.stderr
         # http://stackoverflow.com/questions/7955138/addressing-sys-excepthook-error-in-bash-script
         sys.stderr.write(str(e) + '\n')
