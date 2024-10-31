@@ -222,13 +222,13 @@ def split_text(
 
     separator = separators[-1]
     new_separators: ta.Sequence[str] = []
-    for i, _s in enumerate(separators):
-        sep = _s if is_separator_regex else re.escape(_s)
-        if not _s:
-            separator = _s
+    for i, s in enumerate(separators):
+        sep = s if is_separator_regex else re.escape(s)
+        if not s:
+            separator = s
             break
         if re.search(sep, text):
-            separator = _s
+            separator = s
             new_separators = separators[i + 1:]
             break
 
