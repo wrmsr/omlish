@@ -458,7 +458,6 @@ threadpoolctl==3.5.0
 tifffile==2024.9.20
 tiktoken==0.8.0
 tinycss2==1.4.0
--e git+https://github.com/tinygrad/tinygrad@0739895b4d05439db93e2e9a226a44a628a28ead#egg=tinygrad&subdirectory=../../tinygrad
 tokenize_rt==6.1.0
 tokenizers==0.20.1
 tomlkit==0.13.2
