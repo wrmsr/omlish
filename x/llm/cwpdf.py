@@ -30,6 +30,7 @@ import typing as ta
 import uuid
 
 from omlish import lang
+from omlish import term
 
 
 if ta.TYPE_CHECKING:
@@ -398,6 +399,9 @@ def _main() -> None:
                 for page_number, page in enumerate(pdf_reader.pages)
             ]
 
+    docs = _docs()
+    print(f'{len(docs)} docs loaded')
+
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.splits.pkl'))
     def _splits() -> list[Doc]:
         return [
@@ -405,13 +409,15 @@ def _main() -> None:
                 split,
                 id=str(uuid.uuid4()),
             )
-            for split in RecursiveTextSplitter().split_docs(_docs())
+            for split in RecursiveTextSplitter().split_docs(docs)
         ]
 
     splits = _splits()
+    print(f'{len(splits)} splits built')
 
     ##
 
+    print('Loading embedding model')
     with contextlib.closing(llama_cpp.Llama(
         embedding=True,
         model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
@@ -420,16 +426,18 @@ def _main() -> None:
         n_ctx=2048,
         n_gpu_layers=0,
     )) as model:
+        print('Embedding model loaded')
+
         ##
 
-        embed_instruction: str = 'passage: '
+        embed_instruction = 'passage: '
         normalize = False
         truncate = True
 
         @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
         def _embeddings() -> list[list[float]]:
             embeddings = []
-            for split in splits:
+            for split in term.progress_bar(splits):
                 embedding = model.embed(
                     f'{embed_instruction}{split.content}',
                     normalize,
@@ -439,8 +447,7 @@ def _main() -> None:
             return embeddings
 
         embeddings = _embeddings()
-
-        print(embeddings)
+        print(f'{len(embeddings)} embeddings built')
 
         ##
 
