@@ -81,7 +81,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.9.6
+simsimd==5.9.9
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.51
+boto3>=1.35.52
 
 google-cloud-compute==1.20.0
 google-api-python-client==2.149.0
@@ -183,7 +183,7 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.52.2
+openai==1.53.0
 
 trl==0.11.4
 tf-keras==2.17.0
@@ -198,11 +198,11 @@ customtkinter==5.2.2
 
 ##
 
-langchain==0.3.5
-langchain-core==0.3.13
+langchain==0.3.6
+langchain-core==0.3.14
 
 langchain-anthropic==0.2.3
-langchain-community==0.3.3
+langchain-community==0.3.4
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
@@ -213,9 +213,9 @@ langchain-text-splitters==0.3.1
 
 langchainhub==0.1.21
 
-langgraph==0.2.39
+langgraph==0.2.41
 
-langsmith==0.1.137
+langsmith==0.1.138
 
 tavily-python==0.5.0
 

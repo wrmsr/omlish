@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.51
-botocore==1.35.51
+boto3==1.35.52
+botocore==1.35.52
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -194,11 +194,11 @@ keras==3.6.0
 keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
-langchain==0.3.5
+langchain==0.3.6
 langchain-anthropic==0.2.3
 langchain-chroma==0.1.4
-langchain-community==0.3.3
-langchain-core==0.3.13
+langchain-community==0.3.4
+langchain-core==0.3.14
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
 langchain-mistralai==0.2.0
@@ -208,10 +208,10 @@ langchain-text-splitters==0.3.1
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.39
+langgraph==0.2.41
 langgraph-checkpoint==2.0.2
 langgraph-sdk==0.1.35
-langsmith==0.1.137
+langsmith==0.1.138
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -277,7 +277,7 @@ ollama==0.3.3
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.52.2
+openai==1.53.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.27.0
 opentelemetry-exporter-otlp-proto-common==1.27.0
@@ -302,7 +302,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@214345ee4787b04636947af50ffb2f869c11613b
+peft @ git+https://github.com/huggingface/peft.git@8eeae0a63f28a80ef42b6bfc977c34ffc0b650ff
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -363,7 +363,7 @@ pyserial==3.5
 pyserial-asyncio==0.6
 pytest==8.3.3
 pytest-asyncio==0.24.0
-pytest-benchmark==5.0.1
+pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.3.1
@@ -417,7 +417,7 @@ setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 shtab==1.7.1
-simsimd==5.9.6
+simsimd==5.9.9
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -458,6 +458,7 @@ threadpoolctl==3.5.0
 tifffile==2024.9.20
 tiktoken==0.8.0
 tinycss2==1.4.0
+-e git+https://github.com/tinygrad/tinygrad@0739895b4d05439db93e2e9a226a44a628a28ead#egg=tinygrad&subdirectory=../../tinygrad
 tokenize_rt==6.1.0
 tokenizers==0.20.1
 tomlkit==0.13.2
@@ -477,6 +478,7 @@ trio_asyncio==0.15.0
 trl==0.11.4
 twine==5.1.1
 typer==0.12.5
+types-Markdown==3.7.0.20240822
 types-paramiko==3.5.0.20240928
 types-python-dateutil==2.9.0.20241003
 types-PyYAML==6.0.12.20240917
@@ -496,7 +498,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.0
-uv==0.4.28
+uv==0.4.29
 uvicorn==0.32.0
 uvloop==0.21.0
 voluptuous==0.15.2
@@ -518,7 +520,8 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
-yarl==1.17.0
+yarl==1.17.1
 zigpy==0.71.0
 zipp==3.20.2
+zstandard==0.23.0
 zwave-js-server-python==0.59.0
