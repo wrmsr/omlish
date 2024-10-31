@@ -6,8 +6,8 @@ import typing as ta
 from .magic import Magic
 from .prepare import MagicPrepareError
 from .prepare import py_compile_magic_preparer
-from .styles import MagicStyle
 from .styles import PY_MAGIC_STYLE
+from .styles import MagicStyle
 
 
 ##
