@@ -72,18 +72,6 @@
     }
   },
   {
-    "module": ".findmagic",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/findmagic.py",
-    "line": 65,
-    "value": {
-      "$.cli.types.CliModule": {
-        "cmd_name": "py/findmagic",
-        "mod_name": "omdev.findmagic"
-      }
-    }
-  },
-  {
     "module": ".imgur",
     "attr": "_FOO_CLI_MODULE",
     "file": "omdev/imgur.py",
@@ -104,6 +92,18 @@
       "$.cli.types.CliModule": {
         "cmd_name": "interp",
         "mod_name": "omdev.interp.__main__"
+      }
+    }
+  },
+  {
+    "module": ".magic.find",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/magic/find.py",
+    "line": 230,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "py/findmagic",
+        "mod_name": "omdev.magic.find"
       }
     }
   },

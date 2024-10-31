@@ -40,7 +40,7 @@ from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_check_call
 
 from ..cexts.magic import CextMagic
-from ..findmagic import find_magic
+from ..magic.find import find_magic_files
 from ..revisions import GitRevisionAdder
 from ..toml.writer import TomlWriter
 
@@ -403,10 +403,10 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
     @cached_nullary
     def find_cext_srcs(self) -> ta.Sequence[str]:
-        return sorted(find_magic(
+        return sorted(find_magic_files(
+            CextMagic.STYLE,
             [self._dir_name],
-            [CextMagic.MAGIC_COMMENT],
-            CextMagic.FILE_EXTENSIONS,
+            keys=[CextMagic.KEY],
         ))
 
     #
