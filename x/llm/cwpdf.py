@@ -222,13 +222,13 @@ def split_text(
 
     separator = separators[-1]
     new_separators: ta.Sequence[str] = []
-    for i, s in enumerate(separators):
-        sep = s if is_separator_regex else re.escape(s)
-        if not s:
-            separator = s
+    for i, _s in enumerate(separators):
+        sep = _s if is_separator_regex else re.escape(_s)
+        if not _s:
+            separator = _s
             break
         if re.search(sep, text):
-            separator = s
+            separator = _s
             new_separators = separators[i + 1:]
             break
 
@@ -239,33 +239,33 @@ def split_text(
         keep_separator=keep_separator,
     )
 
+    # Now go merging things, recursively splitting longer texts.
     good_splits = []
     sep = '' if keep_separator else separator
     for s in splits:
-        if length_function(s) >= chunk_size:
+        if length_function(s) < chunk_size:
             good_splits.append(s)
 
-        elif good_splits:
-            merged_text = merge_splits(
-                good_splits,
-                separator=sep,
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                length_function=length_function,
-                strip_whitespace=strip_whitespace,
-            )
-            final_chunks.extend(merged_text)
-            good_splits = []
-
-        elif not new_separators:
-            final_chunks.append(s)
-
         else:
-            other_info = split_text(
-                s,
-                separators=new_separators,
-            )
-            final_chunks.extend(other_info)
+            if good_splits:
+                merged_text = merge_splits(
+                    good_splits,
+                    separator=sep,
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
+                    length_function=length_function,
+                    strip_whitespace=strip_whitespace,
+                )
+                final_chunks.extend(merged_text)
+                good_splits = []
+            if not new_separators:
+                final_chunks.append(s)
+            else:
+                other_info = split_text(
+                    s,
+                    separators=new_separators,
+                )
+                final_chunks.extend(other_info)
 
     if good_splits:
         merged_text = merge_splits(
