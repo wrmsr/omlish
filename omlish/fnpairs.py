@@ -38,7 +38,7 @@ if ta.TYPE_CHECKING:
     import lz4.frame as _lz4_frame
     import snappy as _snappy
     import yaml as _yaml
-    import zstd as _zstd
+    import zstandard as _zstandard
 
 else:
     _bz2 = lang.proxy_import('bz2')
@@ -55,7 +55,7 @@ else:
     _lz4_frame = lang.proxy_import('lz4.frame')
     _snappy = lang.proxy_import('snappy')
     _yaml = lang.proxy_import('yaml')
-    _zstd = lang.proxy_import('zstd')
+    _zstandard = lang.proxy_import('zstandard')
 
 
 ##
@@ -356,10 +356,10 @@ class Snappy(Compression):
 @_register_extension('zstd')
 class Zstd(Compression):
     def forward(self, f: bytes) -> bytes:
-        return _zstd.compress(f)
+        return _zstandard.compress(f)
 
     def backward(self, t: bytes) -> bytes:
-        return _zstd.decompress(t)
+        return _zstandard.decompress(t)
 
 
 ##
