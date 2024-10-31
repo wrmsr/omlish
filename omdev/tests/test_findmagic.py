@@ -170,17 +170,17 @@ def find_magic(
                 )
                 break
 
-            if (
-                    block_prefix_suffix is not None and
-                    start_line.startswith(block_prefix_suffix[0] + magic_key_prefix)
-            ):
-                raise NotImplementedError
-
             if magic is None:
                 raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
             out.append(magic)
             start = end + 1
+
+        elif (
+                block_prefix_suffix is not None and
+                start_line.startswith(block_prefix_suffix[0] + magic_key_prefix)
+        ):
+            raise NotImplementedError
 
         else:
             start += 1
