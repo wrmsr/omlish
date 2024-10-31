@@ -1,3 +1,7 @@
+"""
+TODO:
+ - ccache
+"""
 # MIT License
 #
 # Copyright (c) LangChain, Inc.
@@ -16,14 +20,23 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import abc
+import contextlib
 import dataclasses as dc
-import io
 import os.path
+import pickle
 import re
 import typing as ta
 
-import numpy as np
-import pypdf
+from omlish import lang
+
+
+if ta.TYPE_CHECKING:
+    import numpy as np
+    import pypdf
+
+else:
+    np = lang.proxy_import('numpy')
+    pypdf = lang.proxy_import('pypdf')
 
 
 ##
@@ -38,7 +51,7 @@ class Doc:
 ##
 
 
-def extract_text_from_page(page: pypdf.PageObject) -> str:
+def extract_text_from_page(page: 'pypdf.PageObject') -> str:
     return page.extract_text(
         extraction_mode='plain',
     )
@@ -71,7 +84,7 @@ PDF_FILTER_WITHOUT_LOSS = {
 
 
 def extract_from_images_with_rapidocr(
-        images: ta.Sequence[ta.Iterable[np.ndarray] | bytes],
+        images: ta.Sequence[ta.Iterable['np.ndarray'] | bytes],
 ) -> str:
     from rapidocr_onnxruntime import RapidOCR
 
@@ -86,8 +99,8 @@ def extract_from_images_with_rapidocr(
     return text
 
 
-def extract_images_from_page(page: pypdf.PageObject) -> str:
-    if '/XObject' not in page['/Resources'].keys():  # type: ignore
+def extract_images_from_page(page: 'pypdf.PageObject') -> str:
+    if '/XObject' not in page['/Resources'].keys():  # type: ignore  # noqa
         return ''
 
     xobj = page['/Resources']['/XObject'].get_object()  # type: ignore
@@ -142,11 +155,10 @@ def split_text_with_regex(
     if len(lst) % 2 == 0:
         splits += lst[-1:]
 
-    splits = (
-        (splits + [lst[-1]])
-        if keep_separator == 'end'
-        else ([lst[0]] + splits)
-    )
+    if keep_separator == 'end':
+        splits = [*splits, lst[-1]]
+    else:
+        splits = [lst[0], *splits]
 
     return [s for s in splits if s]
 
@@ -336,23 +348,36 @@ class RecursiveTextSplitter(TextSplitter):
 
 def _main() -> None:
     pdf_file = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
-    pdf_reader = pypdf.PdfReader(pdf_file)
 
     extract_images = False
 
-    docs = [
-        Doc(
-            content=' '.join([
-                extract_text_from_page(page),
-                *([extract_images_from_page(page)] if extract_images else []),
-            ]),
-            metadata={
-                'source': pdf_file,
-                'page': page_number
-            },
-        )
-        for page_number, page in enumerate(pdf_reader.pages)
-    ]
+    docs: list[Doc]
+    docs_pkl_file = os.path.join(
+        os.path.dirname(__file__),
+        os.path.basename(pdf_file) + '.docs.pkl',
+    )
+    if not os.path.exists(docs_pkl_file):
+        with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
+            docs = [
+                Doc(
+                    content=' '.join([
+                        extract_text_from_page(page),
+                        *([extract_images_from_page(page)] if extract_images else []),
+                    ]),
+                    metadata={
+                        'source': pdf_file,
+                        'page': page_number,
+                    },
+                )
+                for page_number, page in enumerate(pdf_reader.pages)
+            ]
+
+            with open(docs_pkl_file, 'wb') as f:
+                pickle.dump(docs, f)
+
+    else:
+        with open(docs_pkl_file, 'rb') as f:
+            docs = pickle.load(f)  # noqa
 
     splits = RecursiveTextSplitter().split_docs(docs)
 
