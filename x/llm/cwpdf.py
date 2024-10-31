@@ -239,33 +239,34 @@ def split_text(
         keep_separator=keep_separator,
     )
 
-    # Now go merging things, recursively splitting longer texts.
     good_splits = []
     sep = '' if keep_separator else separator
     for s in splits:
         if length_function(s) < chunk_size:
             good_splits.append(s)
+            continue
+
+        if good_splits:
+            merged_text = merge_splits(
+                good_splits,
+                separator=sep,
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                length_function=length_function,
+                strip_whitespace=strip_whitespace,
+            )
+            final_chunks.extend(merged_text)
+            good_splits = []
+
+        if not new_separators:
+            final_chunks.append(s)
 
         else:
-            if good_splits:
-                merged_text = merge_splits(
-                    good_splits,
-                    separator=sep,
-                    chunk_size=chunk_size,
-                    chunk_overlap=chunk_overlap,
-                    length_function=length_function,
-                    strip_whitespace=strip_whitespace,
-                )
-                final_chunks.extend(merged_text)
-                good_splits = []
-            if not new_separators:
-                final_chunks.append(s)
-            else:
-                other_info = split_text(
-                    s,
-                    separators=new_separators,
-                )
-                final_chunks.extend(other_info)
+            other_info = split_text(
+                s,
+                separators=new_separators,
+            )
+            final_chunks.extend(other_info)
 
     if good_splits:
         merged_text = merge_splits(
