@@ -37,6 +37,13 @@ from .frozen import (  # noqa
     frozenlist,
 )
 
+from .hasheq import (  # noqa
+    HashEq,
+    HashEqMap,
+    HashEq_,
+    hash_eq,
+)
+
 from .identity import (  # noqa
     IdentityKeyDict,
     IdentitySet,
