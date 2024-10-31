@@ -7,6 +7,7 @@ import typing as ta
 from .magic import Magic
 from .prepare import MagicPrepareError
 from .prepare import py_compile_magic_preparer
+from .styles import C_MAGIC_STYLE
 from .styles import PY_MAGIC_STYLE
 from .styles import MagicStyle
 
@@ -175,11 +176,16 @@ def find_magic(
 def find_magic_files(
         style: MagicStyle,
         roots: ta.Sequence[str],
+        *,
+        keys: ta.Optional[ta.Iterable[str]] = None,
 ) -> ta.Iterator[str]:
     if isinstance(roots, str):
         raise TypeError(roots)
 
-    pat = compile_magic_style_pat(style)
+    pat = compile_magic_style_pat(
+        style,
+        keys=keys,
+    )
 
     for root in roots:
         for dp, dns, fns in os.walk(root):  # noqa
@@ -204,8 +210,9 @@ def find_magic_py_modules(
         roots: ta.Sequence[str],
         *,
         style: MagicStyle = PY_MAGIC_STYLE,
+        **kwargs: ta.Any,
 ) -> ta.Iterator[str]:
-    for fp in find_magic_files(style, roots):
+    for fp in find_magic_files(style, roots, **kwargs):
         dp = os.path.dirname(fp)
         fn = os.path.basename(fp)
 
@@ -220,23 +227,42 @@ def find_magic_py_modules(
 ##
 
 
-# if __name__ == '__main__':
-#     def _main(argv=None) -> None:
-#         import argparse
-#
-#         arg_parser = argparse.ArgumentParser()
-#         arg_parser.add_argument('--ext', '-x', dest='exts', action='append')
-#         arg_parser.add_argument('--magic', '-m', dest='magics', action='append')
-#         arg_parser.add_argument('--py', action='store_true')
-#         arg_parser.add_argument('roots', nargs='*')
-#         args = arg_parser.parse_args(argv)
-#
-#         for out in find_magic_files(
-#                 roots=args.roots,
-#                 magics=args.magics,
-#                 exts=args.exts,
-#                 py=args.py,
-#         ):
-#             print(out)
-#
-#     _main()
+# # @omlish-manifest
+# _CLI_MODULE = {'$omdev.cli.types.CliModule': {
+#     'cmd_name': 'py/findmagic',
+#     'mod_name': __name__,
+# }}
+
+
+if __name__ == '__main__':
+    def _main(argv=None) -> None:
+        import argparse
+
+        arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument('--style', '-s', default='py')
+        arg_parser.add_argument('--key', '-k', dest='keys', action='append')
+        arg_parser.add_argument('--modules', action='store_true')
+        arg_parser.add_argument('roots', nargs='*')
+        args = arg_parser.parse_args(argv)
+
+        style = {
+            'py': PY_MAGIC_STYLE,
+            'c': C_MAGIC_STYLE,
+        }[args.style]
+
+        kw: dict = dict(
+            roots=args.roots,
+            style=style,
+            keys=args.keys,
+        )
+
+        fn: ta.Callable
+        if args.modules:
+            fn = find_magic_py_modules
+        else:
+            fn = find_magic_files
+
+        for out in fn(**kw):
+            print(out)
+
+    _main()
