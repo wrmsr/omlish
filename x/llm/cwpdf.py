@@ -29,6 +29,7 @@ import re
 import typing as ta
 import uuid
 
+from omlish import check
 from omlish import lang
 from omlish import term
 
@@ -459,6 +460,16 @@ def _main() -> None:
             name='cwpdf',
             embedding_function=None,
         )
+
+        chroma_collection.upsert(
+            ids=[check.not_none(d.id) for d in splits],
+            embeddings=embeddings,
+            documents=[d.content for d in splits],
+            metadatas=[check.not_none(d.metadata) for d in splits],
+        )
+        print(f'{len(splits)} embeddings upserted to chroma')
+
+        print(chroma_collection)
 
 
 if __name__ == '__main__':
