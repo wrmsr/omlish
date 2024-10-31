@@ -31,7 +31,7 @@ all = [
     'trio-asyncio ~= 0.15',
     'lz4 ~= 4.3',
     'python-snappy ~= 0.7',
-    'zstd ~= 1.5',
+    'zstandard ~= 0.23',
     'asttokens ~= 2.4',
     'executing ~= 2.1',
     'psutil ~= 6.0',
@@ -72,7 +72,7 @@ async = [
 compress = [
     'lz4 ~= 4.3',
     'python-snappy ~= 0.7',
-    'zstd ~= 1.5',
+    'zstandard ~= 0.23',
 ]
 diag = [
     'asttokens ~= 2.4',
