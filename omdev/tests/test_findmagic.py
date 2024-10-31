@@ -184,11 +184,11 @@ def find_magic(
                 end += 1
                 continue
 
-            magic =Magic(
+            magic = Magic(
                 key=key,
                 file=file,
-                start_line=start,
-                end_line=end,
+                start_line=start + 1,
+                end_line=end + 1,
                 raw=block_src,
                 prepared=prepared,
             )
@@ -198,7 +198,7 @@ def find_magic(
             raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
         out.append(magic)
-        start += 1
+        start = end + 1
 
     return out
 
