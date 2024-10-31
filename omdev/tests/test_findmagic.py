@@ -18,82 +18,8 @@ class Magic:
     file: str | None
     start_line: int
     end_line: int
-    raw: str
+    body: str
     prepared: ta.Any  # ast.AST | json.Value
-
-
-PY_TEST_FILE = """
-# %omlish-magic-test
-
-# %omlish-magic-test
-"bar"
-
-# %omlish-magic-test
-bar
-
-# %omlish-magic-test "foo"
-
-# %omlish-magic-test "foo"
-"bar"
-
-efg
-# %omlish-magic-test "foo"
-bar
-
-# %omlish-magic-2-test "foo"
-"bar"
-
-# %omlish-magic-test "foo"
-# %omlish-magic-test "bar"
-
-# %omlish-magic-test "foo", "bar"
-
-# %omlish-magic-test {"foo": 1, "bar": 2}
-
-# %omlish-magic-test {
-#     "foo": 1,
-#     "bar": 2,
-# }
-}
-"""
-
-
-C_TEST_FILE = """
-// @omlish-magic-test
-
-// @omlish-magic-test "foo"
-// @omlish-magic-test "bar"
-abcd
-
-efg
-// @omlish-magic-test {
-//     "foo": 1,
-//     "bar": 2,
-// }
-foo
-
-/* @omlish-magic-test */
-
-/* @omlish-magic-test "foo" */
-/* @omlish-magic-test "foo"
-*/
-
-/* @omlish-magic-test "bar" */
-bar */
-
-/* @omlish-magic-test {
-    "foo": 1,
-    "bar": 2,
-} */
-bar }
-
-/* @omlish-magic-test {
-    "foo": 1,
-    "bar": 2,
-}
-*/
-bar }
-"""
 
 
 def chop_magic_lines(
@@ -230,7 +156,7 @@ def find_magic(
                 file=file,
                 start_line=start + 1,
                 end_line=end + 1,
-                raw=block_src,
+                body=block_src,
                 prepared=prepared,
             )
             break
@@ -243,19 +169,282 @@ def find_magic(
 
     return out
 
+##
+
+
+PY_TEST_FILE = """
+# %omlish-magic-test
+
+# %omlish-magic-test
+"bar"
+
+# %omlish-magic-test
+bar
+
+# %omlish-magic-test "foo"
+
+# %omlish-magic-test "foo"
+"bar"
+
+efg
+# %omlish-magic-test "foo"
+bar
+
+# %omlish-magic-2-test "foo"
+"bar"
+
+# %omlish-magic-test "foo"
+# %omlish-magic-test "bar"
+
+# %omlish-magic-test "foo", "bar"
+
+# %omlish-magic-test {"foo": 1, "bar": 2}
+
+# %omlish-magic-test {
+#     "foo": 1,
+#     "bar": 2
+# }
+}
+"""
+
+PY_EXPECTED_MAGICS = [
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=2,
+        end_line=2,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=4,
+        end_line=4,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=7,
+        end_line=7,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=10,
+        end_line=10,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=12,
+        end_line=12,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=16,
+        end_line=16,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-2-test',
+        file=None,
+        start_line=19,
+        end_line=19,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=22,
+        end_line=22,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=23,
+        end_line=23,
+        body='"bar"\n',
+        prepared='bar',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=25,
+        end_line=25,
+        body='"foo", "bar"\n',
+        prepared=('foo', 'bar'),
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=27,
+        end_line=27,
+        body='{"foo": 1, "bar": 2}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=29,
+        end_line=32,
+        body='{\n    "foo": 1,\n    "bar": 2\n}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+]
+
+
+C_TEST_FILE = """
+// @omlish-magic-test
+
+// @omlish-magic-test "foo"
+// @omlish-magic-test "bar"
+abcd
+
+efg
+// @omlish-magic-test {
+//     "foo": 1,
+//     "bar": 2
+// }
+foo
+
+/* @omlish-magic-test */
+
+/* @omlish-magic-test "foo" */
+/* @omlish-magic-test "foo"
+*/
+
+/* @omlish-magic-test "bar" */
+bar */
+
+/* @omlish-magic-test {
+    "foo": 1,
+    "bar": 2
+} */
+bar }
+
+/* @omlish-magic-test {
+    "foo": 1,
+    "bar": 2
+}
+*/
+bar }
+"""
+
+C_EXPECTED_MAGICS = [
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=2,
+        end_line=2,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=4,
+        end_line=4,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=5,
+        end_line=5,
+        body='"bar"\n',
+        prepared='bar',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=9,
+        end_line=12,
+        body='{\n    "foo": 1,\n    "bar": 2\n}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=15,
+        end_line=15,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=17,
+        end_line=17,
+        body='"foo" ',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=18,
+        end_line=18,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=21,
+        end_line=21,
+        body='"bar" ',
+        prepared='bar',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=24,
+        end_line=27,
+        body='{\n    "foo": 1,\n    "bar": 2\n} ',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=30,
+        end_line=33,
+        body='{\n    "foo": 1,\n    "bar": 2\n}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+]
+
 
 def test_multiline_magic():
-    print()
-
-    for test_file, kw in [
-        (PY_TEST_FILE.replace('%', '@'), dict(line_prefix='# ')),
-        (C_TEST_FILE, dict(line_prefix='// ', block_prefix_suffix=('/* ', '*/'))),
+    for test_file, expected_magics, kw in [
+        (
+                PY_TEST_FILE.replace('%', '@'),
+                PY_EXPECTED_MAGICS,
+                dict(line_prefix='# '),
+        ),
+        (
+                C_TEST_FILE,
+                C_EXPECTED_MAGICS,
+                dict(line_prefix='// ', block_prefix_suffix=('/* ', '*/')),
+        ),
     ]:
         magics = find_magic(
             test_file.splitlines(keepends=True),
+            preparer=py_eval_magic_preparer,
             **kw,
         )
 
-        for m in magics:
-            print(m)
-        print()
+        assert magics == expected_magics
