@@ -491,7 +491,7 @@ def _main() -> None:
             n_results=k,
         )
 
-        docs_and_scores = [
+        result_docs_and_scores = [
             (
                 Doc(
                     content=results['documents'][0][i],
@@ -503,7 +503,7 @@ def _main() -> None:
             for i in range(len(results['documents'][0]))
         ]
 
-        print(docs_and_scores)
+        print(result_docs_and_scores)
 
 
 if __name__ == '__main__':
