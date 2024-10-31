@@ -72,3 +72,16 @@ def is_abstract_class(obj: ta.Any) -> bool:
 
 def is_abstract(obj: ta.Any) -> bool:
     return is_abstract_method(obj) or is_abstract_class(obj)
+
+
+def unabstract_class(
+        impls: ta.Iterable[tuple[str, ta.Any]],
+) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        for name, impl in impls:
+            if isinstance(impl, str):
+                impl = getattr(cls, impl)
+            setattr(cls, name, impl)
+        setattr(cls, '__abstractmethods__', frozenset())
+        return cls
+    return inner

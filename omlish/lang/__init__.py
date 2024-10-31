@@ -31,6 +31,7 @@ from .classes import (  # noqa
     is_abstract_method,
     make_abstract,
     no_bool,
+    unabstract_class,
     virtual_check,
 )
 

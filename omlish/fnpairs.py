@@ -92,6 +92,10 @@ class FnPair(ta.Generic[F, T], abc.ABC):
 ##
 
 
+@lang.unabstract_class([
+    ('forward', '_forward'),
+    ('backward', 'backward'),
+])
 @dc.dataclass(frozen=True)
 class Simple(FnPair[F, T]):
     forward: ta.Callable[[F], T]  # type: ignore
@@ -102,12 +106,6 @@ class Simple(FnPair[F, T]):
 
     def _backward(self, t: T) -> F:
         return self.backward(t)
-
-
-# HACK: ABC workaround. Our dataclasses handle this with `override=True` but we don't want to dep that in here.
-Simple.forward = Simple._forward  # type: ignore  # noqa
-Simple.backward = Simple._backward  # type: ignore  # noqa
-Simple.__abstractmethods__ = frozenset()  # noqa
 
 
 of = Simple
