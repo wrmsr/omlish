@@ -20,7 +20,8 @@ def llama_log_callback(
         user_data: ct.c_void_p,
 ) -> None:
     log_level = lcl.GGML_LOG_LEVEL_TO_LOGGING_LEVEL[level] if level != 5 else lcl._last_log_level  # noqa
-    lcl.logger.log(log_level, text.decode('utf-8').rstrip())
+    if (ts := text.decode('utf-8').rstrip()) != '.' and ts.strip():  # it tends to just output dots lol
+        lcl.logger.log(log_level, ts)
     lcl._last_log_level = log_level  # noqa
 
 

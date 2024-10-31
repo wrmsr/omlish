@@ -47,7 +47,7 @@ class Project(ProjectBase):
 
             'python-snappy ~= 0.7',
 
-            'zstd ~= 1.5',
+            'zstandard ~= 0.23',
         ],
 
         'diag': [
