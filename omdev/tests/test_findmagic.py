@@ -13,9 +13,6 @@ import typing as ta
 ##
 
 
-MAGIC_KEY_PREFIX = '@omlish-'
-
-
 @dc.dataclass(frozen=True)
 class Magic:
     key: str
@@ -33,10 +30,16 @@ class Magic:
 ##
 
 
+MAGIC_KEY_PREFIX = '@omlish-'
+
+
 @dc.dataclass(frozen=True)
 class MagicStyle:
     name: str
-    exts: frozenset[str]
+
+    exts: frozenset[str] = frozenset()
+
+    key_prefix: str = MAGIC_KEY_PREFIX
 
     line_prefix: str | None = None
     block_prefix_suffix: tuple[str, str] | None = None
@@ -57,17 +60,13 @@ C_MAGIC_STYLE = MagicStyle(
 )
 
 
-def compile_magic_style_pat(
-        style: MagicStyle,
-        *,
-        key_prefix: str = MAGIC_KEY_PREFIX,
-) -> re.Pattern:
+def compile_magic_style_pat(style: MagicStyle) -> re.Pattern:
     ms: list[str] = []
 
     if style.line_prefix is not None:
-        ms.append(style.line_prefix + key_prefix)
+        ms.append(style.line_prefix + style.key_prefix)
     if style.block_prefix_suffix is not None:
-        ms.append(style.block_prefix_suffix[0] + key_prefix)
+        ms.append(style.block_prefix_suffix[0] + style.key_prefix)
 
     if not ms:
         raise Exception('No prefixes')
@@ -154,12 +153,10 @@ def json_magic_preparer(src: str) -> ta.Any:
 
 
 def find_magic(
+        style: MagicStyle,
         lines: ta.Sequence[str],
         *,
         file: str | None = None,
-        magic_key_prefix: str = MAGIC_KEY_PREFIX,
-        line_prefix: str | None = None,
-        block_prefix_suffix: tuple[str, str] | None = None,
         preparer: ta.Callable[[str], ta.Any] = py_compile_magic_preparer,
 ) -> list[Magic]:
     out: list[Magic] = []
@@ -170,25 +167,25 @@ def find_magic(
 
         chopper: ta.Callable[[ta.Iterable[str]], list[str] | None]
         if (
-                line_prefix is not None and
-                start_line.startswith(line_prefix + magic_key_prefix)
+                style.line_prefix is not None and
+                start_line.startswith(style.line_prefix + style.key_prefix)
         ):
-            key = start_line[len(line_prefix):].split()[0]
+            key = start_line[len(style.line_prefix):].split()[0]
             chopper = functools.partial(
                 chop_magic_lines,
                 key,
-                line_prefix,
+                style.line_prefix,
             )
 
         elif (
-                block_prefix_suffix is not None and
-                start_line.startswith(block_prefix_suffix[0] + magic_key_prefix)
+                style.block_prefix_suffix is not None and
+                start_line.startswith(style.block_prefix_suffix[0] + style.key_prefix)
         ):
-            key = start_line[len(block_prefix_suffix[0]):].split()[0]
+            key = start_line[len(style.block_prefix_suffix[0]):].split()[0]
             chopper = functools.partial(
                 chop_magic_block,
                 key,
-                *block_prefix_suffix,
+                *style.block_prefix_suffix,
             )
 
         else:
@@ -504,9 +501,8 @@ def test_multiline_magic():
         ),
     ]:
         kw: dict = dict(
+            style=magic_style,
             lines=test_file.splitlines(keepends=True),
-            line_prefix=magic_style.line_prefix,
-            block_prefix_suffix=magic_style.block_prefix_suffix,
         )
 
         magics = find_magic(
@@ -615,8 +611,8 @@ PY_JSON_EXPECTED_MAGICS = [
 
 def test_multiline_magic_json():
     magics = find_magic(
+        style=PY_MAGIC_STYLE,
         lines=PY_JSON_TEST_FILE.replace('%', '@').splitlines(keepends=True),
-        line_prefix=PY_MAGIC_STYLE.line_prefix,
         preparer=json_magic_preparer,
     )
     assert magics == PY_JSON_EXPECTED_MAGICS
