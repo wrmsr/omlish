@@ -6,6 +6,7 @@ TODO:
 import dataclasses as dc
 import functools
 import json
+import re
 import typing as ta
 
 
@@ -27,6 +28,56 @@ class Magic:
     body: str
 
     prepared: ta.Any  # ast.AST | json.Value
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MagicStyle:
+    name: str
+    exts: frozenset[str]
+
+    line_prefix: str | None = None
+    block_prefix_suffix: tuple[str, str] | None = None
+
+
+PY_MAGIC_STYLE = MagicStyle(
+    name='py',
+    exts=frozenset(['py']),
+    line_prefix='# ',
+)
+
+
+C_MAGIC_STYLE = MagicStyle(
+    name='c',
+    exts=frozenset(['c', 'cc', 'cpp']),
+    line_prefix='// ',
+    block_prefix_suffix=('/* ', '*/'),
+)
+
+
+def compile_magic_style_pat(
+        style: MagicStyle,
+        *,
+        key_prefix: str = MAGIC_KEY_PREFIX,
+) -> re.Pattern:
+    ms: list[str] = []
+
+    if style.line_prefix is not None:
+        ms.append(style.line_prefix + key_prefix)
+    if style.block_prefix_suffix is not None:
+        ms.append(style.block_prefix_suffix[0] + key_prefix)
+
+    if not ms:
+        raise Exception('No prefixes')
+
+    p = '|'.join('(' + re.escape(m) + r'\S*)' for m in ms)
+    s = '^(' + p + r')($|(\s.*))'
+    return re.compile(s)
+
+
+##
 
 
 def chop_magic_lines(
@@ -71,7 +122,7 @@ def chop_magic_block(
     return out
 
 
-MagicPreparer: ta.TypeAlias = ta.Callable[[str], ta.Any]
+##
 
 
 class MagicPrepareError(Exception):
@@ -99,6 +150,9 @@ def json_magic_preparer(src: str) -> ta.Any:
     return prepared
 
 
+##
+
+
 def find_magic(
         lines: ta.Sequence[str],
         *,
@@ -106,7 +160,7 @@ def find_magic(
         magic_key_prefix: str = MAGIC_KEY_PREFIX,
         line_prefix: str | None = None,
         block_prefix_suffix: tuple[str, str] | None = None,
-        preparer: MagicPreparer = py_compile_magic_preparer,
+        preparer: ta.Callable[[str], ta.Any] = py_compile_magic_preparer,
 ) -> list[Magic]:
     out: list[Magic] = []
 
@@ -177,31 +231,7 @@ def find_magic(
     return out
 
 
-@dc.dataclass(frozen=True)
-class MagicStyle:
-    name: str
-    exts: frozenset[str]
-
-    line_prefix: str | None = None
-    block_prefix_suffix: tuple[str, str] | None = None
-
-
-PY_MAGIC_STYLE = MagicStyle(
-    name='py',
-    exts=frozenset(['py']),
-    line_prefix='# ',
-)
-
-
-C_MAGIC_STYLE = MagicStyle(
-    name='c',
-    exts=frozenset(['c', 'cc', 'cpp']),
-    line_prefix='// ',
-    block_prefix_suffix=('/* ', '*/'),
-)
-
-
-##
+###
 
 
 PY_TEST_FILE = """
@@ -590,3 +620,38 @@ def test_multiline_magic_json():
         preparer=json_magic_preparer,
     )
     assert magics == PY_JSON_EXPECTED_MAGICS
+
+
+##
+
+
+def test_py_pat():
+    p = compile_magic_style_pat(PY_MAGIC_STYLE)
+
+    assert p.match('# @omlish-foo')
+    assert p.match('# @omlish-foo ')
+    assert p.match('# @omlish-foo {')
+
+    assert not p.match('@omlish-foo')
+    assert not p.match('# @xmlish-foo')
+    assert not p.match('# omlish-foo')
+
+
+def test_c_pat():
+    p = compile_magic_style_pat(C_MAGIC_STYLE)
+
+    assert p.match('// @omlish-foo')
+    assert p.match('// @omlish-foo ')
+    assert p.match('// @omlish-foo {')
+
+    assert not p.match('@omlish-foo')
+    assert not p.match('// @xmlish-foo')
+    assert not p.match('// omlish-foo')
+
+    assert p.match('/* @omlish-foo')
+    assert p.match('/* @omlish-foo ')
+    assert p.match('/* @omlish-foo {')
+
+    assert not p.match('@omlish-foo')
+    assert not p.match('/* @xmlish-foo')
+    assert not p.match('/* omlish-foo')
