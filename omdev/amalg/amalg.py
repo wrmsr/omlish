@@ -41,7 +41,7 @@ from omlish import lang
 from omlish import logs
 from omlish.lite.runtime import REQUIRED_PYTHON_VERSION
 
-from .. import findmagic
+from .. import magic
 from .. import tokens as tks
 
 
@@ -94,11 +94,14 @@ def strip_main_lines(cls: ta.Sequence[Tokens]) -> list[Tokens]:
 
 
 STRIPPED_HEADER_MAGICS = [
-    '# @omlish-lite',
-    '# @omlish-script',
+    '@omlish-lite',
+    '@omlish-script',
 ]
 
-STRIPPED_HEADER_PATS = [findmagic.compile_magic_pat(m) for m in STRIPPED_HEADER_MAGICS]
+STRIPPED_HEADER_PAT = magic.compile_magic_style_pat(
+    magic.PY_MAGIC_STYLE,
+    keys=STRIPPED_HEADER_MAGICS,
+)
 
 
 def strip_header_lines(hls: ta.Sequence[Tokens]) -> list[Tokens]:
@@ -107,7 +110,7 @@ def strip_header_lines(hls: ta.Sequence[Tokens]) -> list[Tokens]:
     out = []
     for l in hls:
         ls = tks.join_toks(l)
-        if not any(p.fullmatch(ls) for p in STRIPPED_HEADER_PATS):
+        if not STRIPPED_HEADER_PAT.fullmatch(ls):
             out.append(l)
     return out
 
