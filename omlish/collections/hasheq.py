@@ -60,7 +60,7 @@ class hash_eq(HashEq[K], lang.NotInstantiable, lang.Final):  # noqa
         raise TypeError
 
 
-class HashEqMap(ta.Mapping[K, V]):
+class HashEqMap(ta.MutableMapping[K, V]):
     class _Node(ta.NamedTuple, ta.Generic[K2, V2]):
         k: K2
         v: V2
@@ -70,6 +70,7 @@ class HashEqMap(ta.Mapping[K, V]):
         super().__init__()
 
         self._hash_eq = hash_eq
+
         self._dct: dict[int, list[HashEqMap._Node[K, V]]] = {}
         self._len = 0
 
@@ -78,6 +79,10 @@ class HashEqMap(ta.Mapping[K, V]):
 
     def __len__(self) -> int:
         return self._len
+
+    def clear(self) -> None:
+        self._dct.clear()
+        self._len = 0
 
     def __contains__(self, k: K) -> bool:  # type: ignore[override]
         h = self._hash_eq.hash(k)

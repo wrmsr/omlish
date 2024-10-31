@@ -69,7 +69,7 @@ class Renderer(lang.Abstract):
         return self._params_preparer.prepare()
 
     @dispatch.method
-    def render(self, o: ta.Any) -> str:
+    def render(self, o: ta.Any) -> None:
         raise TypeError(o)
 
     @classmethod

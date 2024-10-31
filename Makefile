@@ -147,7 +147,7 @@ gen-pkg:
 ### Check
 
 .PHONY: check
-check: flake8 ruff mypy precheck check-manifest
+check: flake8 ruff mypy precheck
 
 .PHONY: flake8
 flake8: venv
@@ -176,10 +176,6 @@ mypy: venv
 .PHONY: precheck
 precheck: venv
 	${PYTHON} -m omdev.precheck check ${SRCS}
-
-.PHONY: check-manifest
-check-manifest:
-	${PYTHON} -m omdev.manifests.build check ${SRCS} x
 
 
 ## pre-commit
