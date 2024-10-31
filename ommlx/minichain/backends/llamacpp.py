@@ -82,7 +82,7 @@ class LlamacppChatModel(ChatModel):
             raise TypeError(m)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        # lcu.install_logging_hook()
+        lcu.install_logging_hook()
 
         with contextlib.ExitStack() as es:
             llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
