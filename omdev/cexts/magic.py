@@ -1,7 +1,7 @@
 # @omlish-lite
+from ..magic.styles import C_MAGIC_STYLE
+
 
 class CextMagic:
-    MAGIC = '@omlish-cext'
-    MAGIC_COMMENT = f'// {MAGIC}'
-
-    FILE_EXTENSIONS = ('c', 'cc', 'cpp')
+    KEY = '@omlish-cext'
+    STYLE = C_MAGIC_STYLE
