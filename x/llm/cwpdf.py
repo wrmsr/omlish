@@ -486,7 +486,24 @@ def _main() -> None:
             truncate,
         )
 
-        print(chroma_collection)
+        results = chroma_collection.query(
+            query_embeddings=[query_embedding],
+            n_results=k,
+        )
+
+        docs_and_scores = [
+            (
+                Doc(
+                    content=results['documents'][0][i],
+                    metadata=results['metadatas'][0][i] or {},
+                    id=results['ids'][0][i],
+                ),
+                results['distances'][0][i],
+            )
+            for i in range(len(results['documents'][0]))
+        ]
+
+        print(docs_and_scores)
 
 
 if __name__ == '__main__':
