@@ -5,6 +5,7 @@ TODO:
 """
 import dataclasses as dc
 import functools
+import json
 import typing as ta
 
 
@@ -124,25 +125,44 @@ def chop_magic_block(
         if not i:
             if not line.startswith(prefix + magic_key):
                 return None
-            out.append(line[len(prefix) + len(magic_key) + 1:])
+            s = line[len(prefix) + len(magic_key) + 1:]
+            if s.rstrip().endswith(suffix):
+                out.append(s.rstrip()[:-len(suffix)])
+                break
+            out.append(s)
         elif line.rstrip().endswith(suffix):
             out.append(line.rstrip()[:-len(suffix)])
             break
         else:
             out.append(line)
-    else:
-        return None
     return out
 
 
-MagicPreparer: ta.TypeAlias = ta.Callable[[str], ta.Any | None]
+MagicPreparer: ta.TypeAlias = ta.Callable[[str], ta.Any]
 
 
-def py_magic_preparer(src: str) -> ta.Any | None:
+class MagicPrepareError(Exception):
+    pass
+
+
+def py_compile_magic_preparer(src: str) -> ta.Any:
     try:
-        prepared = compile(src, '<magic>', 'eval')
+        prepared = compile(f'({src})', '<magic>', 'eval')
     except SyntaxError:
-        return None
+        raise MagicPrepareError
+    return prepared
+
+
+def py_eval_magic_preparer(src: str) -> ta.Any:
+    code = py_compile_magic_preparer(src)
+    return eval(code)  # noqa
+
+
+def json_magic_preparer(src: str) -> ta.Any:
+    try:
+        prepared = json.loads()
+    except json.JSONDecodeError:
+        raise MagicPrepareError
     return prepared
 
 
@@ -153,7 +173,7 @@ def find_magic(
         magic_key_prefix: str = MAGIC_KEY_PREFIX,
         line_prefix: str | None = None,
         block_prefix_suffix: tuple[str, str] | None = None,
-        preparer: MagicPreparer = py_magic_preparer,
+        preparer: MagicPreparer = py_compile_magic_preparer,
 ) -> list[Magic]:
     out: list[Magic] = []
 
@@ -161,6 +181,7 @@ def find_magic(
     while start < len(lines):
         start_line = lines[start]
 
+        chopper: ta.Callable[[ta.Iterable[str]], list[str] | None]
         if (
                 line_prefix is not None and
                 start_line.startswith(line_prefix + magic_key_prefix)
@@ -194,10 +215,15 @@ def find_magic(
             if block_lines is None:
                 raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
-            block_src = ''.join(['(', *block_lines, ')'])
-            if (prepared := preparer(block_src)) is None:
-                end += 1
-                continue
+            block_src = ''.join(block_lines)
+            if not block_src:
+                prepared = None
+            else:
+                try:
+                    prepared = preparer(block_src)
+                except MagicPrepareError:
+                    end += 1
+                    continue
 
             magic = Magic(
                 key=key,
@@ -229,4 +255,7 @@ def test_multiline_magic():
             test_file.splitlines(keepends=True),
             **kw,
         )
-        print(magics)
+
+        for m in magics:
+            print(m)
+        print()
