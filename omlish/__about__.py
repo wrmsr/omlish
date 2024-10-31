@@ -67,7 +67,7 @@ class Project(ProjectBase):
 
             'cbor2 ~= 5.6',
 
-            'cloudpickle ~= 3.0',
+            'cloudpickle ~= 3.1',
         ],
 
         'http': [
