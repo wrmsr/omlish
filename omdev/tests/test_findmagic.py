@@ -9,16 +9,23 @@ import json
 import typing as ta
 
 
+##
+
+
 MAGIC_KEY_PREFIX = '@omlish-'
 
 
 @dc.dataclass(frozen=True)
 class Magic:
     key: str
+
     file: str | None
+
     start_line: int
     end_line: int
+
     body: str
+
     prepared: ta.Any  # ast.AST | json.Value
 
 
@@ -75,7 +82,7 @@ def py_compile_magic_preparer(src: str) -> ta.Any:
     try:
         prepared = compile(f'({src})', '<magic>', 'eval')
     except SyntaxError:
-        raise MagicPrepareError
+        raise MagicPrepareError  # noqa
     return prepared
 
 
@@ -86,9 +93,9 @@ def py_eval_magic_preparer(src: str) -> ta.Any:
 
 def json_magic_preparer(src: str) -> ta.Any:
     try:
-        prepared = json.loads()
+        prepared = json.loads(src)
     except json.JSONDecodeError:
-        raise MagicPrepareError
+        raise MagicPrepareError  # noqa
     return prepared
 
 
@@ -168,6 +175,31 @@ def find_magic(
         start = end + 1
 
     return out
+
+
+@dc.dataclass(frozen=True)
+class MagicStyle:
+    name: str
+    exts: frozenset[str]
+
+    line_prefix: str | None = None
+    block_prefix_suffix: tuple[str, str] | None = None
+
+
+PY_MAGIC_STYLE = MagicStyle(
+    name='py',
+    exts=frozenset(['py']),
+    line_prefix='# ',
+)
+
+
+C_MAGIC_STYLE = MagicStyle(
+    name='c',
+    exts=frozenset(['c', 'cc', 'cpp']),
+    line_prefix='// ',
+    block_prefix_suffix=('/* ', '*/'),
+)
+
 
 ##
 
@@ -429,22 +461,132 @@ C_EXPECTED_MAGICS = [
 
 
 def test_multiline_magic():
-    for test_file, expected_magics, kw in [
+    for test_file, expected_magics, magic_style in [
         (
-                PY_TEST_FILE.replace('%', '@'),
-                PY_EXPECTED_MAGICS,
-                dict(line_prefix='# '),
+            PY_TEST_FILE.replace('%', '@'),
+            PY_EXPECTED_MAGICS,
+            PY_MAGIC_STYLE,
         ),
         (
-                C_TEST_FILE,
-                C_EXPECTED_MAGICS,
-                dict(line_prefix='// ', block_prefix_suffix=('/* ', '*/')),
+            C_TEST_FILE,
+            C_EXPECTED_MAGICS,
+            C_MAGIC_STYLE,
         ),
     ]:
+        kw: dict = dict(
+            lines=test_file.splitlines(keepends=True),
+            line_prefix=magic_style.line_prefix,
+            block_prefix_suffix=magic_style.block_prefix_suffix,
+        )
+
         magics = find_magic(
-            test_file.splitlines(keepends=True),
-            preparer=py_eval_magic_preparer,
             **kw,
+            preparer=py_eval_magic_preparer,
         )
 
         assert magics == expected_magics
+
+
+##
+
+
+PY_JSON_TEST_FILE = """
+# %omlish-magic-test
+bar
+
+# %omlish-magic-test "foo"
+
+# %omlish-magic-test "foo"
+"bar"
+
+efg
+# %omlish-magic-test "foo"
+bar
+
+# %omlish-magic-test "foo"
+# %omlish-magic-test "bar"
+
+# %omlish-magic-test {"foo": 1, "bar": 2}
+
+# %omlish-magic-test {
+#     "foo": 1,
+#     "bar": 2
+# }
+}
+"""
+
+PY_JSON_EXPECTED_MAGICS = [
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=2,
+        end_line=2,
+        body='',
+        prepared=None,
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=5,
+        end_line=5,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=7,
+        end_line=7,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=11,
+        end_line=11,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=14,
+        end_line=14,
+        body='"foo"\n',
+        prepared='foo',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=15,
+        end_line=15,
+        body='"bar"\n',
+        prepared='bar',
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=17,
+        end_line=17,
+        body='{"foo": 1, "bar": 2}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+    Magic(
+        key='@omlish-magic-test',
+        file=None,
+        start_line=19,
+        end_line=22,
+        body='{\n    "foo": 1,\n    "bar": 2\n}\n',
+        prepared={'foo': 1, 'bar': 2},
+    ),
+]
+
+
+def test_multiline_magic_json():
+    magics = find_magic(
+        lines=PY_JSON_TEST_FILE.replace('%', '@').splitlines(keepends=True),
+        line_prefix=PY_MAGIC_STYLE.line_prefix,
+        preparer=json_magic_preparer,
+    )
+    assert magics == PY_JSON_EXPECTED_MAGICS
