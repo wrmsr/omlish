@@ -3,8 +3,8 @@ import os
 import stat
 import typing as ta
 
-from omdev import findimports
-from omdev import findmagic
+from .. import findimports
+from .. import magic
 
 from .base import Precheck
 from .base import PrecheckContext
@@ -22,10 +22,10 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
         super().__init__(context, config)
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
-        for fp in findmagic.find_magic(
+        for fp in magic.find_magic_files(
+                magic.PY_MAGIC_STYLE,
                 self._context.src_roots,
-                ['# @omlish-script'],
-                ['py'],
+                keys=['@omlish-script'],
         ):
             if not (stat.S_IXUSR & os.stat(fp).st_mode):
                 yield Precheck.Violation(self, f'script {fp} is not executable')

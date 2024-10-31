@@ -6,7 +6,7 @@ import re
 import typing as ta
 
 
-def compile_magic_pat(m: str) -> re.Pattern:
+def _compile_magic_pat(m: str) -> re.Pattern:
     return re.compile('^' + re.escape(m) + r'($|(\s.*))')
 
 
@@ -29,7 +29,7 @@ def find_magic(
     if not exts:
         raise Exception('Must specify extensions')
 
-    pats = [compile_magic_pat(m) for m in magics]
+    pats = [_compile_magic_pat(m) for m in magics]
 
     for root in roots:
         for dp, dns, fns in os.walk(root):  # noqa
