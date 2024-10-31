@@ -6,6 +6,7 @@ TODO:
 import dataclasses as dc
 import functools
 import json
+import os.path
 import re
 import typing as ta
 
@@ -226,6 +227,37 @@ def find_magic(
         start = end + 1
 
     return out
+
+
+##
+
+
+def find_magic_files(
+        style: MagicStyle,
+        roots: ta.Sequence[str],
+) -> ta.Iterator[str]:
+    if isinstance(roots, str):
+        raise TypeError(roots)
+
+    pat = compile_magic_style_pat(style)
+
+    for root in roots:
+        for dp, dns, fns in os.walk(root):  # noqa
+            for fn in fns:
+                if not any(fn.endswith(f'.{x}') for x in style.exts):
+                    continue
+
+                fp = os.path.join(dp, fn)
+                try:
+                    with open(fp) as f:
+                        src = f.read()
+                except UnicodeDecodeError:
+                    continue
+
+                if not any(pat.fullmatch(l) for l in src.splitlines()):
+                    continue
+
+                yield fp
 
 
 ###
