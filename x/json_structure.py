@@ -1,3 +1,8 @@
+"""
+TODO:
+ - detect shared structures of object field values when used as a dict - heuristic?
+ - add 'Value.all', optional
+"""
 import abc
 import dataclasses as dc
 import json
