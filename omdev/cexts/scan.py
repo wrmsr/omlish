@@ -15,7 +15,7 @@ def scan_one(
         input_path: str,
         **kwargs: ta.Any,
 ) -> None:
-    if not any(input_path.endswith('.' + fx) for fx in CextMagic.FILE_EXTENSIONS):
+    if not any(input_path.endswith('.' + fx) for fx in CextMagic.STYLE.exts):
         return
 
     with open(input_path, 'rb') as f:
@@ -26,9 +26,9 @@ def scan_one(
     except UnicodeDecodeError:
         return
 
-    sls = [l for l in src.splitlines() if l.startswith(CextMagic.MAGIC_COMMENT)]
+    sls = [l for l in src.splitlines() if l.startswith('// ' + CextMagic.KEY)]  # FIXME
     for sl in sls:
-        sas = sl[len(CextMagic.MAGIC_COMMENT):].split()  # noqa
+        sas = sl[len(CextMagic.KEY) + 3:].split()  # noqa
 
         log.info('Found ext: %s', input_path)
 

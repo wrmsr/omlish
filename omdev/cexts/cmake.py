@@ -37,7 +37,7 @@ from omlish import lang
 from omlish import logs
 
 from .. import cmake
-from .. import findmagic
+from .. import magic
 from ..cli import CliModule
 from .magic import CextMagic
 
@@ -137,10 +137,10 @@ class CmakeProjectGen:
                 out.append(e)
             elif os.path.isdir(e):
                 out.extend(
-                    findmagic.find_magic(
+                    magic.find_magic_files(
+                        CextMagic.STYLE,
                         [e],
-                        [CextMagic.MAGIC_COMMENT],
-                        CextMagic.FILE_EXTENSIONS,
+                        keys=[CextMagic.KEY],
                     ),
                 )
             else:

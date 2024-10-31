@@ -60,32 +60,3 @@ def find_magic(
                 else:
                     out = fp
                 yield out
-
-
-# @omlish-manifest
-_CLI_MODULE = {'$omdev.cli.types.CliModule': {
-    'cmd_name': 'py/findmagic',
-    'mod_name': __name__,
-}}
-
-
-if __name__ == '__main__':
-    def _main(argv=None) -> None:
-        import argparse
-
-        arg_parser = argparse.ArgumentParser()
-        arg_parser.add_argument('--ext', '-x', dest='exts', action='append')
-        arg_parser.add_argument('--magic', '-m', dest='magics', action='append')
-        arg_parser.add_argument('--py', action='store_true')
-        arg_parser.add_argument('roots', nargs='*')
-        args = arg_parser.parse_args(argv)
-
-        for out in find_magic(
-            roots=args.roots,
-            magics=args.magics,
-            exts=args.exts,
-            py=args.py,
-        ):
-            print(out)
-
-    _main()
