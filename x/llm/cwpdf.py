@@ -86,7 +86,7 @@ def extract_from_images_with_rapidocr(
 
 
 def extract_images_from_page(page: pypdf.PageObject) -> str:
-    if '/XObject' not in page['/Resources'].keys():  # noqa
+    if '/XObject' not in page['/Resources'].keys():  # type: ignore
         return ''
 
     xobj = page['/Resources']['/XObject'].get_object()  # type: ignore
@@ -209,8 +209,8 @@ def merge_splits(
 
 def split_text(
         text: str,
-        separators: list[str],
         *,
+        separators: ta.Sequence[str] = ("\n\n", "\n", " ", ""),
         is_separator_regex: bool = False,
         keep_separator: bool = True,
         chunk_size: int = 1000,
@@ -221,7 +221,7 @@ def split_text(
     final_chunks = []
 
     separator = separators[-1]
-    new_separators = []
+    new_separators: ta.Sequence[str] = []
     for i, _s in enumerate(separators):
         sep = _s if is_separator_regex else re.escape(_s)
         if not _s:
@@ -229,7 +229,7 @@ def split_text(
             break
         if re.search(sep, text):
             separator = _s
-            new_separators = separators[i + 1 :]
+            new_separators = separators[i + 1:]
             break
 
     sep = separator if is_separator_regex else re.escape(separator)
@@ -260,10 +260,20 @@ def split_text(
             if not new_separators:
                 final_chunks.append(s)
             else:
-                other_info = split_text(s, new_separators)
+                other_info = split_text(
+                    s,
+                    separators=new_separators,
+                )
                 final_chunks.extend(other_info)
     if good_splits:
-        merged_text = merge_splits(good_splits, sep)
+        merged_text = merge_splits(
+            good_splits,
+            separator=sep,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            length_function=length_function,
+            strip_whitespace=strip_whitespace,
+        )
         final_chunks.extend(merged_text)
     return final_chunks
 
@@ -289,13 +299,17 @@ def split_documents(
                 chunk_overlap=chunk_overlap,
                 **kwargs,
         ):
-            metadata = dict(metadatas[i])
+            metadata: dict = dict(metadatas[i] or {})
             if add_start_index:
                 offset = index + previous_chunk_len - chunk_overlap
                 index = text.find(chunk, max(0, offset))
                 metadata['start_index'] = index
                 previous_chunk_len = len(chunk)
-            new_doc = Doc(page_content=chunk, metadata=metadata)
+
+            new_doc = Doc(
+                content=chunk,
+                metadata=metadata,
+            )
             out.append(new_doc)
 
     return out
@@ -324,8 +338,9 @@ def _main() -> None:
         for page_number, page in enumerate(pdf_reader.pages)
     ]
 
-    for doc in docs:
-        print(doc)
+    splits = split_documents(docs)
+
+    print(splits)
 
 
 if __name__ == '__main__':
