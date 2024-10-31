@@ -4,6 +4,7 @@ TODO:
  - syntax modes: json, py
 """
 import dataclasses as dc
+import functools
 import typing as ta
 
 
@@ -100,15 +101,37 @@ def chop_magic_lines(
         lines: ta.Iterable[str],
 ) -> list[str] | None:
     out: list[str] = []
-    for i, l in enumerate(lines):
+    for i, line in enumerate(lines):
         if not i:
-            if not l.startswith(prefix + magic_key):
+            if not line.startswith(prefix + magic_key):
                 return None
-            out.append(l[len(prefix) + len(magic_key) + 1:])
+            out.append(line[len(prefix) + len(magic_key) + 1:])
         else:
-            if not l.startswith(prefix):
+            if not line.startswith(prefix):
                 return None
-            out.append(l[len(prefix):])
+            out.append(line[len(prefix):])
+    return out
+
+
+def chop_magic_block(
+        magic_key: str,
+        prefix: str,
+        suffix: str,
+        lines: ta.Iterable[str],
+) -> list[str] | None:
+    out: list[str] = []
+    for i, line in enumerate(lines):
+        if not i:
+            if not line.startswith(prefix + magic_key):
+                return None
+            out.append(line[len(prefix) + len(magic_key) + 1:])
+        elif line.rstrip().endswith(suffix):
+            out.append(line.rstrip()[:-len(suffix)])
+            break
+        else:
+            out.append(line)
+    else:
+        return None
     return out
 
 
@@ -143,47 +166,54 @@ def find_magic(
                 start_line.startswith(line_prefix + magic_key_prefix)
         ):
             key = start_line[len(line_prefix):].split()[0]
-
-            end = start
-            magic: Magic | None = None
-            while end < len(lines):
-                block_lines = chop_magic_lines(
-                    key,
-                    line_prefix,
-                    lines[start:end + 1],
-                )
-                if block_lines is None:
-                    raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
-
-                block_src = ''.join(['(', *block_lines, ')'])
-                if (prepared := preparer(block_src)) is None:
-                    end += 1
-                    continue
-
-                magic = Magic(
-                    key=key,
-                    file=file,
-                    start_line=start + 1,
-                    end_line=end + 1,
-                    raw=block_src,
-                    prepared=prepared,
-                )
-                break
-
-            if magic is None:
-                raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
-
-            out.append(magic)
-            start = end + 1
+            chopper = functools.partial(
+                chop_magic_lines,
+                key,
+                line_prefix,
+            )
 
         elif (
                 block_prefix_suffix is not None and
                 start_line.startswith(block_prefix_suffix[0] + magic_key_prefix)
         ):
-            raise NotImplementedError
+            key = start_line[len(block_prefix_suffix[0]):].split()[0]
+            chopper = functools.partial(
+                chop_magic_block,
+                key,
+                *block_prefix_suffix,
+            )
 
         else:
             start += 1
+            continue
+
+        end = start
+        magic: Magic | None = None
+        while end < len(lines):
+            block_lines = chopper(lines[start:end + 1])
+            if block_lines is None:
+                raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
+
+            block_src = ''.join(['(', *block_lines, ')'])
+            if (prepared := preparer(block_src)) is None:
+                end += 1
+                continue
+
+            magic = Magic(
+                key=key,
+                file=file,
+                start_line=start + 1,
+                end_line=end + 1,
+                raw=block_src,
+                prepared=prepared,
+            )
+            break
+
+        if magic is None:
+            raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
+
+        out.append(magic)
+        start = end + 1
 
     return out
 
