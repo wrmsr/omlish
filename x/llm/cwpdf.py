@@ -461,13 +461,30 @@ def _main() -> None:
             embedding_function=None,
         )
 
-        chroma_collection.upsert(
-            ids=[check.not_none(d.id) for d in splits],
-            embeddings=embeddings,
-            documents=[d.content for d in splits],
-            metadatas=[check.not_none(d.metadata) for d in splits],
+        @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
+        def _chroma_upserts() -> int:
+            chroma_collection.upsert(
+                ids=[check.not_none(d.id) for d in splits],
+                embeddings=embeddings,
+                documents=[d.content for d in splits],
+                metadatas=[check.not_none(d.metadata) for d in splits],
+            )
+            return len(splits)
+
+        print(f'{_chroma_upserts()} embeddings upserted to chroma')
+
+        ##
+
+        query = 'What are the risks the business faces according to this document?'
+        k = 4
+
+        query_instruction = 'query: '
+
+        query_embedding = model.embed(
+            f'{query_instruction}{query}',
+            normalize,
+            truncate,
         )
-        print(f'{len(splits)} embeddings upserted to chroma')
 
         print(chroma_collection)
 
