@@ -13,7 +13,7 @@ MAGIC_KEY_PREFIX = '@omlish-'
 @dc.dataclass(frozen=True)
 class Magic:
     key: str
-    file: str
+    file: str | None
     start_line: int
     end_line: int
     raw: str
@@ -76,12 +76,21 @@ foo
 /* @omlish-magic-test "foo"
 */
 
-@omlish-magic-test "bar"
+/* @omlish-magic-test "bar" */
+bar */
 
-@omlish-magic-test {
+/* @omlish-magic-test {
+    "foo": 1,
+    "bar": 2,
+} */
+bar }
+
+/* @omlish-magic-test {
     "foo": 1,
     "bar": 2,
 }
+*/
+bar }
 """
 
 
@@ -104,55 +113,61 @@ def chop_magic_lines(
 
 
 def find_magic(
-        magic_key_prefix: str,
-        line_prefix: str,
         lines: ta.Sequence[str],
-        file: str,
+        *,
+        file: str | None = None,
+        magic_key_prefix: str = MAGIC_KEY_PREFIX,
+        line_prefix: str | None = None,
+        block_prefix_suffix: tuple[str, str] | None = None,
 ) -> list[Magic]:
     out: list[Magic] = []
 
     start = 0
     while start < len(lines):
         start_line = lines[start]
-        if not start_line.startswith(line_prefix + magic_key_prefix):
-            start += 1
-            continue
 
-        key = start_line[len(line_prefix):].split()[0]
+        if (
+                line_prefix is not None and
+                start_line.startswith(line_prefix + magic_key_prefix)
+        ):
+            key = start_line[len(line_prefix):].split()[0]
 
-        end = start
-        magic: Magic | None = None
-        while end < len(lines):
-            block_lines = chop_magic_lines(
-                key,
-                line_prefix,
-                lines[start:end + 1],
-            )
-            if block_lines is None:
+            end = start
+            magic: Magic | None = None
+            while end < len(lines):
+                block_lines = chop_magic_lines(
+                    key,
+                    line_prefix,
+                    lines[start:end + 1],
+                )
+                if block_lines is None:
+                    raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
+
+                block_src = ''.join(['(', *block_lines, ')'])
+                try:
+                    prepared = compile(block_src, '<magic>', 'eval')
+                except SyntaxError:
+                    end += 1
+                    continue
+
+                magic = Magic(
+                    key=key,
+                    file=file,
+                    start_line=start + 1,
+                    end_line=end + 1,
+                    raw=block_src,
+                    prepared=prepared,
+                )
+                break
+
+            if magic is None:
                 raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
-            block_src = ''.join(['(', *block_lines, ')'])
-            try:
-                prepared = compile(block_src, '<magic>', 'eval')
-            except SyntaxError:
-                end += 1
-                continue
+            out.append(magic)
+            start = end + 1
 
-            magic = Magic(
-                key=key,
-                file=file,
-                start_line=start + 1,
-                end_line=end + 1,
-                raw=block_src,
-                prepared=prepared,
-            )
-            break
-
-        if magic is None:
-            raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
-
-        out.append(magic)
-        start = end + 1
+        else:
+            start += 1
 
     return out
 
@@ -166,9 +181,7 @@ def test_multiline_magic():
         # (C_BLOCK_TESTS, '/* ', ''),
     ]:
         magics = find_magic(
-            MAGIC_KEY_PREFIX,
-            line_prefix,
             test_file.splitlines(keepends=True),
-            'test-file',
+            line_prefix=line_prefix,
         )
         print(magics)
