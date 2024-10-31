@@ -22,21 +22,30 @@ TODO:
 import abc
 import contextlib
 import dataclasses as dc
+import functools
 import os.path
 import pickle
 import re
 import typing as ta
+import uuid
 
 from omlish import lang
 
 
 if ta.TYPE_CHECKING:
+    import chromadb
+    import llama_cpp
     import numpy as np
     import pypdf
 
 else:
+    chromadb = lang.proxy_import('chromadb')
+    llama_cpp = lang.proxy_import('llama_cpp')
     np = lang.proxy_import('numpy')
     pypdf = lang.proxy_import('pypdf')
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -346,19 +355,35 @@ class RecursiveTextSplitter(TextSplitter):
 ##
 
 
+def _pkl_cache(pkl_file: str) -> ta.Callable[[ta.Callable[[], T]], ta.Callable[[], T]]:
+    def outer(fn):
+        @functools.wraps(fn)
+        def inner():
+            if not os.path.exists(pkl_file):
+                v = fn()
+                with open(pkl_file, 'wb') as f:
+                    pickle.dump(v, f)
+                return v
+            else:
+                with open(pkl_file, 'rb') as f:
+                    return pickle.load(f)  # noqa
+        return inner
+    return outer
+
+
 def _main() -> None:
     pdf_file = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
 
     extract_images = False
 
-    docs: list[Doc]
-    docs_pkl_file = os.path.join(
-        os.path.dirname(__file__),
-        os.path.basename(pdf_file) + '.docs.pkl',
-    )
-    if not os.path.exists(docs_pkl_file):
+    self_dir = os.path.dirname(__file__)
+
+    ##
+
+    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.docs.pkl'))
+    def _docs() -> list[Doc]:
         with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
-            docs = [
+            return [
                 Doc(
                     content=' '.join([
                         extract_text_from_page(page),
@@ -372,16 +397,48 @@ def _main() -> None:
                 for page_number, page in enumerate(pdf_reader.pages)
             ]
 
-            with open(docs_pkl_file, 'wb') as f:
-                pickle.dump(docs, f)
-
-    else:
-        with open(docs_pkl_file, 'rb') as f:
-            docs = pickle.load(f)  # noqa
+    docs = _docs()
 
     splits = RecursiveTextSplitter().split_docs(docs)
 
-    print(splits)
+    ##
+
+    with contextlib.closing(llama_cpp.Llama(
+        embedding=True,
+        model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
+        verbose=False,
+        chat_format=None,
+        n_ctx=2048,
+        n_gpu_layers=0,
+    )) as model:
+        texts = [doc.content for doc in docs]
+        metadatas = [doc.metadata for doc in docs]
+
+        chroma_settings = chromadb.config.Settings(is_persistent=True)
+        chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
+        chroma_client = chromadb.Client(chroma_settings)
+
+        chroma_collection = chroma_client.get_or_create_collection(
+            name='cwpdf',
+            embedding_function=None,
+        )
+
+        ids = [str(uuid.uuid4()) for _ in texts]
+
+        embed_instruction: str = 'passage: '
+        normalize = False
+        truncate = True
+
+        embeddings = []
+        for text in texts:
+            embedding = model.embed(
+                f'{embed_instruction}{text}',
+                normalize,
+                truncate,
+            )
+            embeddings.append(embedding)
+
+        print(embeddings)
 
 
 if __name__ == '__main__':
