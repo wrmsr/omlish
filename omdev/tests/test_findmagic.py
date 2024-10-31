@@ -112,6 +112,17 @@ def chop_magic_lines(
     return out
 
 
+MagicPreparer: ta.TypeAlias = ta.Callable[[str], ta.Any | None]
+
+
+def py_magic_preparer(src: str) -> ta.Any | None:
+    try:
+        prepared = compile(src, '<magic>', 'eval')
+    except SyntaxError:
+        return None
+    return prepared
+
+
 def find_magic(
         lines: ta.Sequence[str],
         *,
@@ -119,6 +130,7 @@ def find_magic(
         magic_key_prefix: str = MAGIC_KEY_PREFIX,
         line_prefix: str | None = None,
         block_prefix_suffix: tuple[str, str] | None = None,
+        preparer: MagicPreparer = py_magic_preparer,
 ) -> list[Magic]:
     out: list[Magic] = []
 
@@ -144,9 +156,7 @@ def find_magic(
                     raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
 
                 block_src = ''.join(['(', *block_lines, ')'])
-                try:
-                    prepared = compile(block_src, '<magic>', 'eval')
-                except SyntaxError:
+                if (prepared := preparer(block_src)) is None:
                     end += 1
                     continue
 
@@ -159,6 +169,12 @@ def find_magic(
                     prepared=prepared,
                 )
                 break
+
+            if (
+                    block_prefix_suffix is not None and
+                    start_line.startswith(block_prefix_suffix[0] + magic_key_prefix)
+            ):
+                raise NotImplementedError
 
             if magic is None:
                 raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
@@ -175,13 +191,12 @@ def find_magic(
 def test_multiline_magic():
     print()
 
-    for test_file, line_prefix in [
-        (PY_TEST_FILE.replace('%', '@'), '# '),
-        # (C_LINE_TESTS, '// ', '// '),
-        # (C_BLOCK_TESTS, '/* ', ''),
+    for test_file, kw in [
+        (PY_TEST_FILE.replace('%', '@'), dict(line_prefix='# ')),
+        (C_TEST_FILE, dict(line_prefix='// ', block_prefix_suffix=('/* ', '*/'))),
     ]:
         magics = find_magic(
             test_file.splitlines(keepends=True),
-            line_prefix=line_prefix,
+            **kw,
         )
         print(magics)
