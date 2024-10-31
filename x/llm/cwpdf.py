@@ -165,158 +165,150 @@ def join_docs(
         return text
 
 
-def merge_splits(
-        splits: ta.Iterable[str],
-        *,
-        separator: str,
-        chunk_size: int,
-        chunk_overlap: int,
-        length_function: ta.Callable[[str], int],
-        strip_whitespace: bool,
-) -> list[str]:
-    separator_len = length_function(separator)
+class RecursiveTextSplitter:
+    def __init__(
+            self,
+            *,
+            separators: ta.Sequence[str] = ('\n\n', '\n', ' ', ''),
+            is_separator_regex: bool = False,
+            keep_separator: bool = True,
+            chunk_size: int = 1000,
+            chunk_overlap: int = 200,
+            length_function: ta.Callable[[str], int] = len,
+            strip_whitespace: bool = True,
+    ) -> None:
+        super().__init__()
 
-    docs = []
-    current_doc: list[str] = []
-    total = 0
-    for d in splits:
-        l = length_function(d)
-        if total + l + (separator_len if len(current_doc) > 0 else 0) > chunk_size:
-            if total > chunk_size:
-                raise Exception(f'Created a chunk of size {total}, which is longer than the specified {chunk_size}')
+        self._separators = separators
+        self._is_separator_regex = is_separator_regex
+        self._keep_separator = keep_separator
+        self._chunk_size = chunk_size
+        self._chunk_overlap = chunk_overlap
+        self._length_function = length_function
+        self._strip_whitespace = strip_whitespace
 
-            if len(current_doc) > 0:
-                doc = join_docs(current_doc, separator)
-                if doc is not None:
-                    docs.append(doc)
+    def merge_splits(
+            self,
+            splits: ta.Iterable[str],
+            separator: str,
+    ) -> list[str]:
+        separator_len = self._length_function(separator)
 
-                while (
-                        total > chunk_overlap or
-                        (total + l + (separator_len if len(current_doc) > 0 else 0) > chunk_size and total > 0)
-                ):
-                    total -= length_function(current_doc[0]) + (separator_len if len(current_doc) > 1 else 0)
-                    current_doc = current_doc[1:]
+        docs = []
+        current_doc: list[str] = []
+        total = 0
+        for d in splits:
+            l = self._length_function(d)
+            if total + l + (separator_len if len(current_doc) > 0 else 0) > self._chunk_size:
+                if total > self._chunk_size:
+                    raise Exception(f'Created a chunk of size {total}, which is longer than the specified {self._chunk_size}')  # noqa
 
-        current_doc.append(d)
-        total += l + (separator_len if len(current_doc) > 1 else 0)
+                if len(current_doc) > 0:
+                    doc = join_docs(current_doc, separator)
+                    if doc is not None:
+                        docs.append(doc)
 
-    doc = join_docs(current_doc, separator)
-    if doc is not None:
-        docs.append(doc)
+                    while (
+                            total > self._chunk_overlap or
+                            (total + l + (separator_len if len(current_doc) > 0 else 0) > self._chunk_size and total > 0)  # noqa
+                    ):
+                        total -= self._length_function(current_doc[0]) + (separator_len if len(current_doc) > 1 else 0)
+                        current_doc = current_doc[1:]
 
-    return docs
+            current_doc.append(d)
+            total += l + (separator_len if len(current_doc) > 1 else 0)
 
+        doc = join_docs(current_doc, separator)
+        if doc is not None:
+            docs.append(doc)
 
-def split_text(
-        text: str,
-        *,
-        separators: ta.Sequence[str] = ("\n\n", "\n", " ", ""),
-        is_separator_regex: bool = False,
-        keep_separator: bool = True,
-        chunk_size: int = 1000,
-        chunk_overlap: int = 200,
-        length_function: ta.Callable[[str], int] = len,
-        strip_whitespace: bool = True,
-) -> list[str]:
-    final_chunks = []
+        return docs
 
-    separator = separators[-1]
-    new_separators: ta.Sequence[str] = []
-    for i, _s in enumerate(separators):
-        sep = _s if is_separator_regex else re.escape(_s)
-        if not _s:
-            separator = _s
-            break
-        if re.search(sep, text):
-            separator = _s
-            new_separators = separators[i + 1:]
-            break
+    def split_text(
+            self,
+            text: str,
+            *,
+            separators: ta.Sequence[str] | None = None,
+    ) -> list[str]:
+        if separators is None:
+            separators = self._separators
 
-    sep = separator if is_separator_regex else re.escape(separator)
-    splits = split_text_with_regex(
-        text,
-        sep,
-        keep_separator=keep_separator,
-    )
+        final_chunks = []
 
-    good_splits = []
-    sep = '' if keep_separator else separator
-    for s in splits:
-        if length_function(s) < chunk_size:
-            good_splits.append(s)
-            continue
+        separator = separators[-1]
+        new_separators: ta.Sequence[str] = []
+        for i, _s in enumerate(separators):
+            sep = _s if self._is_separator_regex else re.escape(_s)
+            if not _s:
+                separator = _s
+                break
+            if re.search(sep, text):
+                separator = _s
+                new_separators = separators[i + 1:]
+                break
+
+        sep = separator if self._is_separator_regex else re.escape(separator)
+        splits = split_text_with_regex(
+            text,
+            sep,
+            keep_separator=self._keep_separator,
+        )
+
+        good_splits = []
+        sep = '' if self._keep_separator else separator
+        for s in splits:
+            if self._length_function(s) < self._chunk_size:
+                good_splits.append(s)
+                continue
+
+            if good_splits:
+                merged_text = self.merge_splits(good_splits, sep)
+                final_chunks.extend(merged_text)
+                good_splits = []
+
+            if not new_separators:
+                final_chunks.append(s)
+
+            else:
+                other_info = self.split_text(s, separators=new_separators)
+                final_chunks.extend(other_info)
 
         if good_splits:
-            merged_text = merge_splits(
-                good_splits,
-                separator=sep,
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                length_function=length_function,
-                strip_whitespace=strip_whitespace,
-            )
+            merged_text = self.merge_splits(good_splits, sep)
             final_chunks.extend(merged_text)
-            good_splits = []
 
-        if not new_separators:
-            final_chunks.append(s)
+        return final_chunks
 
-        else:
-            other_info = split_text(
-                s,
-                separators=new_separators,
-            )
-            final_chunks.extend(other_info)
+    def split_docs(
+            self,
+            docs: ta.Iterable[Doc],
+            *,
+            add_start_index: bool = False,
+    ) -> list[Doc]:
+        texts, metadatas = [], []
+        for doc in docs:
+            texts.append(doc.content)
+            metadatas.append(doc.metadata)
 
-    if good_splits:
-        merged_text = merge_splits(
-            good_splits,
-            separator=sep,
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            length_function=length_function,
-            strip_whitespace=strip_whitespace,
-        )
-        final_chunks.extend(merged_text)
+        out = []
+        for i, text in enumerate(texts):
+            index = 0
+            previous_chunk_len = 0
+            for chunk in self.split_text(text):
+                metadata: dict = dict(metadatas[i] or {})
 
-    return final_chunks
+                if add_start_index:
+                    offset = index + previous_chunk_len - self._chunk_overlap
+                    index = text.find(chunk, max(0, offset))
+                    metadata['start_index'] = index
+                    previous_chunk_len = len(chunk)
 
+                out.append(Doc(
+                    content=chunk,
+                    metadata=metadata,
+                ))
 
-def split_documents(
-        documents: ta.Iterable[Doc],
-        *,
-        add_start_index: bool = False,
-        chunk_overlap: int = 200,
-        **kwargs: ta.Any,
-) -> list[Doc]:
-    texts, metadatas = [], []
-    for doc in documents:
-        texts.append(doc.content)
-        metadatas.append(doc.metadata)
-
-    out = []
-    for i, text in enumerate(texts):
-        index = 0
-        previous_chunk_len = 0
-        for chunk in split_text(
-                text,
-                chunk_overlap=chunk_overlap,
-                **kwargs,
-        ):
-            metadata: dict = dict(metadatas[i] or {})
-
-            if add_start_index:
-                offset = index + previous_chunk_len - chunk_overlap
-                index = text.find(chunk, max(0, offset))
-                metadata['start_index'] = index
-                previous_chunk_len = len(chunk)
-
-            out.append(Doc(
-                content=chunk,
-                metadata=metadata,
-            ))
-
-    return out
+        return out
 
 
 ##
@@ -342,7 +334,7 @@ def _main() -> None:
         for page_number, page in enumerate(pdf_reader.pages)
     ]
 
-    splits = split_documents(docs)
+    splits = RecursiveTextSplitter().split_docs(docs)
 
     print(splits)
 
