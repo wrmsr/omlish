@@ -1,3 +1,4 @@
+import contextlib
 import os.path
 import typing as ta
 
@@ -20,8 +21,13 @@ from ..prompts import PromptResponse
 
 if ta.TYPE_CHECKING:
     import llama_cpp
+
+    from ... import llamacpp as lcu
+
 else:
     llama_cpp = lang.proxy_import('llama_cpp')
+
+    lcu = lang.proxy_import('...llamacpp', __package__)
 
 
 class LlamacppPromptModel(PromptModel):
@@ -34,6 +40,8 @@ class LlamacppPromptModel(PromptModel):
     )
 
     def invoke(self, request: PromptRequest) -> PromptResponse:
+        lcu.install_logging_hook()
+
         llm = llama_cpp.Llama(
             model_path=self.model_path,
         )
@@ -74,23 +82,26 @@ class LlamacppChatModel(ChatModel):
             raise TypeError(m)
 
     def invoke(self, request: ChatRequest) -> ChatResponse:
-        llm = llama_cpp.Llama(
-            model_path=self.model_path,
-        )
+        # lcu.install_logging_hook()
 
-        output = llm.create_chat_completion(
-            messages=[  # noqa
-                dict(  # type: ignore
-                    role=self.ROLES_MAP[type(m)],
-                    content=self._get_msg_content(m),
-                )
-                for m in request.v
-            ],
-            max_tokens=1024,
-            # stop=['\n'],
-        )
+        with contextlib.ExitStack() as es:
+            llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
+                model_path=self.model_path,
+            )))
 
-        return ChatResponse(v=[
-            AiChoice(AiMessage(c['message']['content']))  # noqa
-            for c in output['choices']  # type: ignore
-        ])
+            output = llm.create_chat_completion(
+                messages=[  # noqa
+                    dict(  # type: ignore
+                        role=self.ROLES_MAP[type(m)],
+                        content=self._get_msg_content(m),
+                    )
+                    for m in request.v
+                ],
+                max_tokens=1024,
+                # stop=['\n'],
+            )
+
+            return ChatResponse(v=[
+                AiChoice(AiMessage(c['message']['content']))  # noqa
+                for c in output['choices']  # type: ignore
+            ])
