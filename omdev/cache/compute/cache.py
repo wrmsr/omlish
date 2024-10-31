@@ -3,6 +3,7 @@ TODO:
  - filesystem OPTIONAL
  - also postgres + (s3?) blobstore
  - locking
+ - alt codecs? json?
 
 ==
 
