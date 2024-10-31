@@ -15,6 +15,7 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import abc
 import dataclasses as dc
 import io
 import os.path
@@ -165,13 +166,10 @@ def join_docs(
         return text
 
 
-class RecursiveTextSplitter:
+class TextSplitter:
     def __init__(
             self,
             *,
-            separators: ta.Sequence[str] = ('\n\n', '\n', ' ', ''),
-            is_separator_regex: bool = False,
-            keep_separator: bool = True,
             chunk_size: int = 1000,
             chunk_overlap: int = 200,
             length_function: ta.Callable[[str], int] = len,
@@ -179,9 +177,6 @@ class RecursiveTextSplitter:
     ) -> None:
         super().__init__()
 
-        self._separators = separators
-        self._is_separator_regex = is_separator_regex
-        self._keep_separator = keep_separator
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
         self._length_function = length_function
@@ -223,6 +218,62 @@ class RecursiveTextSplitter:
             docs.append(doc)
 
         return docs
+
+    @abc.abstractmethod
+    def split_text(
+            self,
+            text: str,
+            *,
+            separators: ta.Sequence[str] | None = None,
+    ) -> list[str]:
+        raise NotImplementedError
+
+    def split_docs(
+            self,
+            docs: ta.Iterable[Doc],
+            *,
+            add_start_index: bool = False,
+    ) -> list[Doc]:
+        texts, metadatas = [], []
+        for doc in docs:
+            texts.append(doc.content)
+            metadatas.append(doc.metadata)
+
+        out = []
+        for i, text in enumerate(texts):
+            index = 0
+            previous_chunk_len = 0
+            for chunk in self.split_text(text):
+                metadata: dict = dict(metadatas[i] or {})
+
+                if add_start_index:
+                    offset = index + previous_chunk_len - self._chunk_overlap
+                    index = text.find(chunk, max(0, offset))
+                    metadata['start_index'] = index
+                    previous_chunk_len = len(chunk)
+
+                out.append(Doc(
+                    content=chunk,
+                    metadata=metadata,
+                ))
+
+        return out
+
+
+class RecursiveTextSplitter(TextSplitter):
+    def __init__(
+            self,
+            *,
+            separators: ta.Sequence[str] = ('\n\n', '\n', ' ', ''),
+            is_separator_regex: bool = False,
+            keep_separator: bool = True,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._separators = separators
+        self._is_separator_regex = is_separator_regex
+        self._keep_separator = keep_separator
 
     def split_text(
             self,
@@ -278,37 +329,6 @@ class RecursiveTextSplitter:
             final_chunks.extend(merged_text)
 
         return final_chunks
-
-    def split_docs(
-            self,
-            docs: ta.Iterable[Doc],
-            *,
-            add_start_index: bool = False,
-    ) -> list[Doc]:
-        texts, metadatas = [], []
-        for doc in docs:
-            texts.append(doc.content)
-            metadatas.append(doc.metadata)
-
-        out = []
-        for i, text in enumerate(texts):
-            index = 0
-            previous_chunk_len = 0
-            for chunk in self.split_text(text):
-                metadata: dict = dict(metadatas[i] or {})
-
-                if add_start_index:
-                    offset = index + previous_chunk_len - self._chunk_overlap
-                    index = text.find(chunk, max(0, offset))
-                    metadata['start_index'] = index
-                    previous_chunk_len = len(chunk)
-
-                out.append(Doc(
-                    content=chunk,
-                    metadata=metadata,
-                ))
-
-        return out
 
 
 ##
