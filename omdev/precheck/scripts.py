@@ -5,7 +5,6 @@ import typing as ta
 
 from .. import findimports
 from .. import magic
-
 from .base import Precheck
 from .base import PrecheckContext
 
