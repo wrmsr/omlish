@@ -7,6 +7,12 @@ def pytest_addhooks(pluginmanager):
 
     ptp.depskip.register(
         pluginmanager,
+        [r'ommlx/llamacpp/.*\.py'],
+        [r'llama_cpp(\..*)?'],
+    )
+
+    ptp.depskip.register(
+        pluginmanager,
         [r'ommlx/torch/.*\.py'],
         [r'torch(\..*)?'],
     )
