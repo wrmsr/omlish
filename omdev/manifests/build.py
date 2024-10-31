@@ -32,7 +32,7 @@ from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
-from .. import findmagic
+from .. import magic
 from .load import ManifestLoader
 from .types import Manifest
 from .types import ManifestOrigin
@@ -44,7 +44,7 @@ T = ta.TypeVar('T')
 ##
 
 
-MANIFEST_MAGIC = '# @omlish-manifest'
+MANIFEST_MAGIC_KEY = '@omlish-manifest'
 
 _MANIFEST_GLOBAL_PAT = re.compile(r'^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=.*')
 
@@ -148,7 +148,7 @@ class ManifestBuilder:
         origins: ta.List[ManifestOrigin] = []
         lines = src.splitlines(keepends=True)
         for i, l in enumerate(lines):
-            if l.startswith(MANIFEST_MAGIC):
+            if l.startswith('# ' + MANIFEST_MAGIC_KEY):
                 if (m := _MANIFEST_GLOBAL_PAT.match(nl := lines[i + 1])) is None:
                     raise Exception(nl)
 
@@ -235,10 +235,10 @@ class ManifestBuilder:
         if not os.path.isdir(pkg_dir) or not os.path.isfile(os.path.join(pkg_dir, '__init__.py')):
             raise Exception(pkg_dir)
 
-        files = sorted(findmagic.find_magic(
+        files = sorted(magic.find_magic_files(
+            magic.PY_MAGIC_STYLE,
             [pkg_dir],
-            [MANIFEST_MAGIC],
-            ['py'],
+            keys=[MANIFEST_MAGIC_KEY],
         ))
         manifests: ta.List[Manifest] = list(itertools.chain.from_iterable(await asyncio.gather(*[
             self._spawn(
