@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import functools
 import os.path
 import re
@@ -13,19 +14,34 @@ from .styles import MagicStyle
 ##
 
 
-def compile_magic_style_pat(style: MagicStyle) -> re.Pattern:
-    ms: list[str] = []
-
+def compile_magic_style_pat(
+        style: MagicStyle,
+        *,
+        keys: ta.Optional[ta.Iterable[str]] = None,
+) -> re.Pattern:
+    ps: ta.List[str] = []
     if style.line_prefix is not None:
-        ms.append(style.line_prefix + style.key_prefix)
+        ps.append(style.line_prefix)
     if style.block_prefix_suffix is not None:
-        ms.append(style.block_prefix_suffix[0] + style.key_prefix)
-
-    if not ms:
+        ps.append(style.block_prefix_suffix[0])
+    if not ps:
         raise Exception('No prefixes')
 
-    p = '|'.join('(' + re.escape(m) + r'\S*)' for m in ms)
-    s = '^(' + p + r')($|(\s.*))'
+    ms: ta.List[str] = []
+    if keys is not None:
+        if isinstance(keys, str):
+            raise TypeError(keys)
+        for k in keys:
+            if not k.startswith(style.key_prefix):
+                raise Exception(f'Key does not start with prefix: {k!r} {style.key_prefix!r}')
+            ms.extend([re.escape(p + k) for p in ps])
+    else:
+        ms = [re.escape(p + style.key_prefix) + r'\S*' for p in ps]
+    if not ms:
+        raise Exception('No matchers')
+
+    b = '|'.join(f'({m})' for m in ms)
+    s = '^(' + b + r')($|(\s.*))'
     return re.compile(s)
 
 
@@ -36,8 +52,8 @@ def chop_magic_lines(
         magic_key: str,
         prefix: str,
         lines: ta.Iterable[str],
-) -> list[str] | None:
-    out: list[str] = []
+) -> ta.Optional[ta.List[str]]:
+    out: ta.List[str] = []
     for i, line in enumerate(lines):
         if not i:
             if not line.startswith(prefix + magic_key):
@@ -55,8 +71,8 @@ def chop_magic_block(
         prefix: str,
         suffix: str,
         lines: ta.Iterable[str],
-) -> list[str] | None:
-    out: list[str] = []
+) -> ta.Optional[ta.List[str]]:
+    out: ta.List[str] = []
     for i, line in enumerate(lines):
         if not i:
             if not line.startswith(prefix + magic_key):
@@ -81,16 +97,16 @@ def find_magic(
         style: MagicStyle,
         lines: ta.Sequence[str],
         *,
-        file: str | None = None,
+        file: ta.Optional[str] = None,
         preparer: ta.Callable[[str], ta.Any] = py_compile_magic_preparer,
-) -> list[Magic]:
-    out: list[Magic] = []
+) -> ta.List[Magic]:
+    out: ta.List[Magic] = []
 
     start = 0
     while start < len(lines):
         start_line = lines[start]
 
-        chopper: ta.Callable[[ta.Iterable[str]], list[str] | None]
+        chopper: ta.Callable[[ta.Iterable[str]], ta.Optional[ta.List[str]]]
         if (
                 style.line_prefix is not None and
                 start_line.startswith(style.line_prefix + style.key_prefix)
@@ -118,7 +134,7 @@ def find_magic(
             continue
 
         end = start
-        magic: Magic | None = None
+        magic: ta.Optional[Magic] = None
         while end < len(lines):
             block_lines = chopper(lines[start:end + 1])
             if block_lines is None:
@@ -199,3 +215,28 @@ def find_magic_py_modules(
             yield fp[:-3].replace(os.sep, '.')
         else:
             yield fp
+
+
+##
+
+
+# if __name__ == '__main__':
+#     def _main(argv=None) -> None:
+#         import argparse
+#
+#         arg_parser = argparse.ArgumentParser()
+#         arg_parser.add_argument('--ext', '-x', dest='exts', action='append')
+#         arg_parser.add_argument('--magic', '-m', dest='magics', action='append')
+#         arg_parser.add_argument('--py', action='store_true')
+#         arg_parser.add_argument('roots', nargs='*')
+#         args = arg_parser.parse_args(argv)
+#
+#         for out in find_magic_files(
+#                 roots=args.roots,
+#                 magics=args.magics,
+#                 exts=args.exts,
+#                 py=args.py,
+#         ):
+#             print(out)
+#
+#     _main()
