@@ -20,7 +20,7 @@ asn1crypto==1.5.1
 asttokens==2.4.1
 astunparse==1.6.3
 async-lru==2.0.4
-async-timeout==4.0.3
+async-timeout==5.0.0
 asyncpg==0.30.0
 asyncssh==2.18.0
 attrs==24.2.0
@@ -72,7 +72,7 @@ cymem==2.0.8
 Cython==3.0.11
 darkdetect==0.8.0
 dataclasses-json==0.6.7
-datasets==3.0.2
+datasets==3.1.0
 dateparser==1.2.0
 debugpy==1.8.7
 decorator==5.1.1
@@ -122,10 +122,10 @@ geopandas==1.0.1
 gitdb==4.0.11
 GitPython==3.1.43
 google-api-core==2.22.0
-google-api-python-client==2.149.0
+google-api-python-client==2.151.0
 google-auth==2.35.0
 google-auth-httplib2==0.2.0
-google-cloud-compute==1.20.0
+google-cloud-compute==1.20.1
 google-pasta==0.2.0
 googleapis-common-protos==1.65.0
 gprof2dot==2024.6.6
@@ -208,7 +208,7 @@ langchain-text-splitters==0.3.1
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.41
+langgraph==0.2.42
 langgraph-checkpoint==2.0.2
 langgraph-sdk==0.1.35
 langsmith==0.1.138
@@ -397,7 +397,7 @@ rfc3339-validator==0.1.4
 rfc3986==2.0.0
 rfc3986-validator==0.1.1
 rich==13.9.3
-rpds-py==0.20.0
+rpds-py==0.20.1
 rsa==4.9
 rubicon-objc==0.4.9
 ruff==0.7.1
@@ -509,7 +509,7 @@ webcolors==24.8.0
 webencodings==0.5.1
 websocket-client==1.8.0
 websockets==13.1
-Werkzeug==3.0.6
+Werkzeug==3.1.0
 wgpu==0.18.1
 wheel==0.44.0
 widgetsnbextension==4.0.13

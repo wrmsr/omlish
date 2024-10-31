@@ -31,7 +31,7 @@ all = [
     'sentence-transformers ~= 3.2',
     'transformers ~= 4.45',
     'huggingface-hub ~= 0.25',
-    'datasets ~= 3.0',
+    'datasets ~= 3.1',
     'llama-cpp-python ~= 0.3',
     'numpy >= 1.20',
     'pillow ~= 11.0',
@@ -47,7 +47,7 @@ backends = [
 ]
 huggingface = [
     'huggingface-hub ~= 0.25',
-    'datasets ~= 3.0',
+    'datasets ~= 3.1',
 ]
 llamacpp = [
     'llama-cpp-python ~= 0.3',
