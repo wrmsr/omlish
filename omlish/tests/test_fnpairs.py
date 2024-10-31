@@ -62,7 +62,7 @@ def test_compression_snappy() -> None:
     _test_compression(fpa.Snappy)
 
 
-@ptu.skip.if_cant_import('zstd')
+@ptu.skip.if_cant_import('zstandard')
 def test_compression_zstd() -> None:
     _test_compression(fpa.Zstd)
 
