@@ -4,6 +4,7 @@ from .abstract import (  # noqa
     is_abstract_class,
     is_abstract_method,
     make_abstract,
+    unabstract_class,
 )
 
 from .restrict import (  # noqa
