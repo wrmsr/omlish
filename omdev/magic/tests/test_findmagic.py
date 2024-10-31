@@ -415,6 +415,22 @@ class TestMagicPats(unittest.TestCase):
         assert not p.match('# @xmlish-foo')
         assert not p.match('# omlish-foo')
 
+    def test_py_keys_pat(self):
+        p = compile_magic_style_pat(PY_MAGIC_STYLE, keys=['@omlish-foo', '@omlish-bar'])
+
+        assert p.match('# @omlish-foo')
+        assert p.match('# @omlish-foo ')
+        assert p.match('# @omlish-foo {')
+        assert p.match('# @omlish-bar')
+
+        assert not p.match('@omlish-foo')
+        assert not p.match('# @xmlish-foo')
+        assert not p.match('# omlish-foo')
+
+        assert not p.match('@omlish-foo2')
+        assert not p.match('# @xmlish-foo2')
+        assert not p.match('# omlish-foo2')
+
     def test_c_pat(self):
         p = compile_magic_style_pat(C_MAGIC_STYLE)
 

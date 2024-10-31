@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import dataclasses as dc
 import typing as ta
 
@@ -6,7 +7,7 @@ import typing as ta
 class Magic:
     key: str
 
-    file: str | None
+    file: ta.Optional[str]
 
     start_line: int
     end_line: int
