@@ -8,10 +8,19 @@ KEEP THE SPACE SHUTTLE FLYING.
 
 TODO:
  - reuse greenlet if nested somehow?
+ - test cancel
 
 See:
- - https://greenback.readthedocs.io/en/latest/
-"""
+ - https://github.com/sqlalchemy/sqlalchemy/blob/21ea01eebe0350ad1185c7288dca61f363ebd2fe/lib/sqlalchemy/util/concurrency.py
+   - ( https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef )
+   - Baked into sqlalchemy and hard-bound to asyncio.
+ - https://github.com/oremanj/greenback/blob/ca69b023a9b7b58b715f3b1d78fc116e788a2c9f/greenback/_impl.py
+   - ( https://gist.github.com/oremanj/f18ef3e55b9487c2e93eee42232583f2 )
+   - Similar to this, but does horrible things with ctypes and is hard-bound to greenlet.
+ - https://github.com/fastapi/asyncer/blob/2a4b8ef2540ec687af13d3f361c4ed0cf0cb624d/asyncer/_main.py
+ - https://github.com/django/asgiref/blob/05ae3eee3fae4005ae4cfb0bb22d281725fabade/asgiref/sync.py
+   - Both are much heavier weight and hard-bound to threads.
+"""  # noqa
 import functools  # noqa
 import itertools
 import sys  # noqa
