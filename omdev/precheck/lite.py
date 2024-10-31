@@ -8,10 +8,10 @@ import subprocess
 import textwrap
 import typing as ta
 
-from omdev import findmagic
 from omlish import cached
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
+from .. import magic
 from .base import Precheck
 from .base import PrecheckContext
 
@@ -121,10 +121,10 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         return vs
 
     async def run(self) -> ta.AsyncGenerator[Precheck.Violation, None]:
-        for fp in findmagic.find_magic(
+        for fp in magic.find_magic_files(
+                magic.PY_MAGIC_STYLE,
                 self._context.src_roots,
-                ['# @omlish-lite'],
-                ['py'],
+                keys=['@omlish-lite'],
         ):
             with open(fp) as f:  # noqa  # FIXME
                 src = f.read()
