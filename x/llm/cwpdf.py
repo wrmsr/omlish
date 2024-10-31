@@ -55,6 +55,7 @@ T = ta.TypeVar('T')
 class Doc:
     content: str
     metadata: ta.Mapping[str, ta.Any] | None = None
+    id: str | None = None
 
 
 ##
@@ -397,9 +398,17 @@ def _main() -> None:
                 for page_number, page in enumerate(pdf_reader.pages)
             ]
 
-    docs = _docs()
+    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.splits.pkl'))
+    def _splits() -> list[Doc]:
+        return [
+            dc.replace(
+                split,
+                id=str(uuid.uuid4()),
+            )
+            for split in RecursiveTextSplitter().split_docs(_docs())
+        ]
 
-    splits = RecursiveTextSplitter().split_docs(docs)
+    splits = _splits()
 
     ##
 
@@ -411,34 +420,38 @@ def _main() -> None:
         n_ctx=2048,
         n_gpu_layers=0,
     )) as model:
-        texts = [doc.content for doc in docs]
-        metadatas = [doc.metadata for doc in docs]
-
-        chroma_settings = chromadb.config.Settings(is_persistent=True)
-        chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
-        chroma_client = chromadb.Client(chroma_settings)
-
-        chroma_collection = chroma_client.get_or_create_collection(
-            name='cwpdf',
-            embedding_function=None,
-        )
-
-        ids = [str(uuid.uuid4()) for _ in texts]
+        ##
 
         embed_instruction: str = 'passage: '
         normalize = False
         truncate = True
 
-        embeddings = []
-        for text in texts:
-            embedding = model.embed(
-                f'{embed_instruction}{text}',
-                normalize,
-                truncate,
-            )
-            embeddings.append(embedding)
+        @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
+        def _embeddings() -> list[list[float]]:
+            embeddings = []
+            for split in splits:
+                embedding = model.embed(
+                    f'{embed_instruction}{split.content}',
+                    normalize,
+                    truncate,
+                )
+                embeddings.append(embedding)
+            return embeddings
+
+        embeddings = _embeddings()
 
         print(embeddings)
+
+        ##
+
+        chroma_settings = chromadb.config.Settings(is_persistent=True)
+        chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
+        chroma_client = chromadb.Client(chroma_settings)
+
+        chroma_collection = chroma_client.get_or_create_collection(  # noqa
+            name='cwpdf',
+            embedding_function=None,
+        )
 
 
 if __name__ == '__main__':
