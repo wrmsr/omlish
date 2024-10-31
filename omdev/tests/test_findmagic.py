@@ -3,7 +3,56 @@ TODO:
  - comment modes: #, //, /* */
  - syntax modes: json, py
 """
+import dataclasses as dc
 import typing as ta
+
+
+MAGIC_KEY_PREFIX = '@omlish-'
+
+
+@dc.dataclass(frozen=True)
+class Magic:
+    key: str
+    file: str
+    start_line: int
+    end_line: int
+    raw: str
+    prepared: ta.Any  # ast.AST | json.Value
+
+
+PY_TEST_FILE = """
+# %omlish-magic-test
+
+# %omlish-magic-test
+"bar"
+
+# %omlish-magic-test
+bar
+
+# %omlish-magic-test "foo"
+
+# %omlish-magic-test "foo"
+"bar"
+
+# %omlish-magic-test "foo"
+bar
+
+# %omlish-magic-2-test "foo"
+"bar"
+
+# %omlish-magic-test "foo"
+# %omlish-magic-test "bar"
+
+# %omlish-magic-test "foo", "bar"
+
+# %omlish-magic-test {"foo": 1, "bar": 2}
+
+# %omlish-magic-test {
+#     "foo": 1,',
+#     "bar": 2',
+# }
+}
+"""
 
 
 TEST_MAGIC = '@omlish-magic-test'
@@ -79,8 +128,8 @@ C_BLOCK_TESTS = [
 ]
 
 
-def unmagic_lines(
-        magic: str,
+def chop_magic_block(
+        magic_key: str,
         first_prefix: str,
         rest_prefix: str,
         lines: ta.Iterable[str],
@@ -88,13 +137,60 @@ def unmagic_lines(
     out: list[str] = []
     for i, l in enumerate(lines):
         if not i:
-            if not l.startswith(first_prefix + magic):
+            if not l.startswith(first_prefix + magic_key):
                 return None
-            out.append(l[len(first_prefix) + len(magic) + 1:])
+            out.append(l[len(first_prefix) + len(magic_key) + 1:])
         else:
             if not l.startswith(rest_prefix):
                 return None
             out.append(l[len(rest_prefix):])
+    return out
+
+
+def find_magic(
+        magic_key_prefix: str,
+        first_prefix: str,
+        rest_prefix: str,
+        lines: ta.Sequence[str],
+        file: str,
+) -> list[Magic]:
+    out: list[Magic] = []
+
+    start = 0
+    while start < len(lines):
+        start_line = lines[start]
+        if not start_line.startswith(first_prefix + magic_key_prefix):
+            start += 1
+            continue
+
+        key = start_line[len(first_prefix):].split()[0]
+
+        end = start
+        while end < len(lines):
+            block_lines = chop_magic_block(
+                key,
+                first_prefix,
+                rest_prefix,
+                lines[start:end + 1],
+            )
+            if block_lines is None:
+                raise Exception(f'Failed to find magic block terminator : {file=} {start=} {end=}')
+
+            block_src = ''.join(['(', *block_lines, ')'])
+            try:
+                prepared = compile(block_src, '<magic>', 'eval')
+            except SyntaxError:
+                continue
+
+            out.append(Magic(
+                key=key,
+                file=file,
+                start_line=start,
+                end_line=end,
+                raw=block_src,
+                prepared=prepared,
+            ))
+
     return out
 
 
