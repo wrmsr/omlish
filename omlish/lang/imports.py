@@ -237,3 +237,87 @@ def _trigger_conditional_imports(package: str) -> None:
     _REGISTERED_CONDITIONAL_IMPORTS[package] = None
     for tn in tns:
         __import__(tn)
+
+
+##
+
+
+class NamePackage(ta.NamedTuple):
+    name: str
+    package: str
+
+
+class _ProxyInit:
+    def __init__(
+            self,
+            name_package: NamePackage,
+            *,
+            globals: ta.MutableMapping[str, ta.Any] | None = None,  # noqa
+            update_globals: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._name_package = name_package
+        self._globals = globals
+        self._update_globals = update_globals
+
+        self._pkgs_by_attr: dict[str, str] = {}
+        self._mods_by_pkgs: dict[str, ta.Any] = {}
+
+    @property
+    def name_package(self) -> NamePackage:
+        return self._name_package
+
+    def add(self, package: str, attrs: ta.Iterable[str]) -> None:
+        if isinstance(attrs, str):
+            raise TypeError(attrs)
+        for attr in attrs:
+            self._pkgs_by_attr[attr] = package
+
+    def get(self, attr: str) -> ta.Any:
+        try:
+            pkg = self._pkgs_by_attr[attr]
+        except KeyError:
+            raise AttributeError(attr)  # noqa
+
+        try:
+            mod = self._mods_by_pkgs[pkg]
+        except KeyError:
+            mod = importlib.import_module(pkg, package=self.name_package.package)
+
+        val = getattr(mod, attr)
+
+        if self._update_globals and self._globals is not None:
+            self._globals[attr] = val
+
+        return val
+
+
+def proxy_init(
+        globals: ta.MutableMapping[str, ta.Any],  # noqa
+        package: str,
+        attrs: ta.Iterable[str],
+) -> None:
+    if isinstance(attrs, str):
+        raise TypeError(attrs)
+
+    init_name_package = NamePackage(
+        globals['__name__'],
+        globals['__package__'],
+    )
+
+    pi: _ProxyInit
+    try:
+        pi = globals['__proxy_init__']
+    except KeyError:
+        pi = _ProxyInit(
+            init_name_package,
+            globals=globals,
+        )
+        globals['__proxy_init__'] = pi
+        globals['__getattr__'] = pi.get
+    else:
+        if pi.name_package != init_name_package:
+            raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
+
+    pi.add(package, attrs)
