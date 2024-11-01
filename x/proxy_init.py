@@ -59,6 +59,13 @@ class _ProxyInit:
         except KeyError:
             mod = importlib.import_module(pkg, package=self.name_package.package)
 
+        val = getattr(mod, attr)
+
+        if self._update_globals and self._globals is not None:
+            self._globals[attr] = val
+
+        return val
+
 
 def proxy_init(
         globals: ta.MutableMapping[str, ta.Any],  # noqa
