@@ -542,7 +542,28 @@ def _main() -> None:
 
         retrieved_docs = get_relevant_documents(query)
 
-        print(retrieved_docs)
+        context = '\n\n'.join(d.doc.content for d in retrieved_docs)
+
+        system_prompt = (
+            'You are a QA assistant. Based on the following context, answer the question using bullet points and '
+            'include necessary data.\n\n'
+            f'Context:\n{context}'
+        )
+
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': query},
+        ]
+
+        response = chat_model.create_chat_completion(
+            messages,
+            max_tokens=2048,
+            temperature=0.7,
+            top_k=50,
+            top_p=1.0,
+        )
+
+        print(response)
 
 
 if __name__ == '__main__':
