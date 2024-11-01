@@ -21,6 +21,7 @@ from .chromadb import chroma_collection
 from .chromadb import get_relevant_docs
 from .docs import Doc
 from .models.chat import generate_question_answer
+from .models.decision import classify_user_intent
 from .models.embedding import embed
 from .models.embedding import embedding_model
 from .output import print_and_join
@@ -116,10 +117,16 @@ def _main() -> None:
     ##
 
     query = 'What is this pdf about?'
+    print(classify_user_intent(query))
 
     relevant_docs = get_relevant_docs(query)
     response_chunks = generate_question_answer(query, [d.doc for d in relevant_docs])
     response = print_and_join(response_chunks)  # noqa
+
+    ##
+
+    query = 'Generate a pie chart of north american revenue in fiscal year 2023.'
+    print(classify_user_intent(query))
 
 
 def main() -> None:

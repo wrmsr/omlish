@@ -43,9 +43,12 @@ def generate_question_answer(
     context = '\n\n'.join(d.content for d in relevant_docs)
 
     system_prompt = (
-        'You are a QA assistant. Based on the following context, answer the question using bullet points and '
-        'include necessary data.\n\n'
-        f'Context:\n{context}'
+        'You are a QA assistant. Based on the following context, answer the question using bullet points and include '
+        'necessary data.'
+        '\n\n'
+        'Context:'
+        '\n'
+        f'{context}'
     )
 
     messages = [
