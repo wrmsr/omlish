@@ -456,9 +456,11 @@ def _main() -> None:
 
         ##
 
+        print('Creating chroma client')
         chroma_settings = chromadb.config.Settings(is_persistent=True)
         chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
         chroma_client = chromadb.Client(chroma_settings)
+        print('Chroma client created')
 
         chroma_collection = chroma_client.get_or_create_collection(  # noqa
             name='cwpdf',
@@ -508,10 +510,6 @@ def _main() -> None:
                 for i in range(len(results['documents'][0]))
             ]
 
-        print(get_relevant_documents(
-            'What are the risks the business faces according to this document?',
-        ))
-
         ##
 
         print('Loading chat model')
@@ -541,6 +539,10 @@ def _main() -> None:
         ##
 
         query = 'What is this pdf?'
+
+        retrieved_docs = get_relevant_documents(query)
+
+        print(retrieved_docs)
 
 
 if __name__ == '__main__':
