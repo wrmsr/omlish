@@ -51,7 +51,7 @@ class CliCli(ap.Cli):
     )
     def reinstall(self) -> None:
         mod_name = globals()['__spec__'].name
-        tool_name = '.'.join([mod_name.partition('.')[0], 'tools', 'piptools'])
+        tool_name = '.'.join([mod_name.partition('.')[0], 'tools', 'pip'])
 
         out = subprocess.check_output([
             sys.executable,
