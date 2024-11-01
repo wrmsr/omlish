@@ -320,9 +320,13 @@ def progress_bar(
         *,
         no_tty_check: bool = False,
         total: int | None = None,
+        out: ta.TextIO | None = None,
         **kwargs: ta.Any,
 ) -> ta.Generator[T, None, None]:
-    if not no_tty_check and not sys.stdout.isatty():
+    if out is None:
+        out = sys.stdout
+
+    if not no_tty_check and not out.isatty():
         yield from seq
         return
 
@@ -332,6 +336,7 @@ def progress_bar(
 
     pb = ProgressBar(
         total=total,
+        out=out,
         **kwargs,
     )
 
@@ -340,7 +345,7 @@ def progress_bar(
         yield item
 
     pb.print(complete=True)
-    sys.stdout.write('\n')
+    out.write('\n')
 
 
 ##
