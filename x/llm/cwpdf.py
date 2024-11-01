@@ -561,9 +561,26 @@ def _main() -> None:
             temperature=0.7,
             top_k=50,
             top_p=1.0,
+            stream=True,
         )
 
-        print(response)
+        line_len = 100
+        x = 0
+        for chunk in response:
+            s = chunk['choices'][0]['delta'].get('content', '')
+            for ln, l in enumerate(s.split('\n')):
+                if ln:
+                    print()
+                    x = 0
+                for wn, w in enumerate(s.split(' ')):
+                    if wn:
+                        print(' ', end='')
+                    if (len(w) + x) > line_len:
+                        print()
+                        x = 0
+                    print(w, end='')
+                    x += len(w)
+        print()
 
 
 if __name__ == '__main__':
