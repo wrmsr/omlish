@@ -8,6 +8,7 @@ from omlish import lang
 
 from ..docs import Doc
 from ..vars import exit_stack
+from ..vars import use_gpu
 
 
 if ta.TYPE_CHECKING:
@@ -28,6 +29,7 @@ def chat_model() -> 'llama_cpp.Llama':
         model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
         chat_format='llama-3',
         n_ctx=2048,
+        n_gpu_layers=-1 if use_gpu else 0,
         verbose=False,
     )))
     log.info('Chat model loaded')

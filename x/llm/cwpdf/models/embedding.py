@@ -6,6 +6,7 @@ import typing as ta
 from omlish import lang
 
 from ..vars import exit_stack
+from ..vars import use_gpu
 
 
 if ta.TYPE_CHECKING:
@@ -27,6 +28,7 @@ def embedding_model() -> 'llama_cpp.Llama':
         model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
         embedding=True,
         n_ctx=2048,
+        n_gpu_layers=-1 if use_gpu else 0,
         verbose=False,
     )))
     log.info('Embedding model loaded')
