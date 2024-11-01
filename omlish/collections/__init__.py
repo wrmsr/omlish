@@ -100,10 +100,12 @@ from .sorted import (  # noqa
 
 if _ta.TYPE_CHECKING:
     from .treapmap import (  # noqa
+        TreapMap,
         new_treap_map,
     )
 else:
     _lang.proxy_init(globals(), '.treapmap', [
+        'TreapMap',
         'new_treap_map',
     ])
 
