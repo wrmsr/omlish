@@ -59,9 +59,9 @@ T = ta.TypeVar('T')
 
 log = logging.getLogger(__name__)
 
-EXIT_STACK: contextvars.ContextVar[contextlib.ExitStack] = contextvars.ContextVar('exit_stack')
+exit_stack: contextvars.ContextVar[contextlib.ExitStack] = contextvars.ContextVar('exit_stack')
 
-SELF_DIR = os.path.dirname(__file__)
+data_dir: contextvars.ContextVar[str] = contextvars.ContextVar('data_dir')
 
 
 ##
@@ -375,7 +375,7 @@ class RecursiveTextSplitter(TextSplitter):
 @lang.cached_function
 def embedding_model() -> 'llama_cpp.Llama':
     log.info('Loading embedding model')
-    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+    ret = exit_stack.get().enter_context(contextlib.closing(llama_cpp.Llama(
         model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
         embedding=True,
         n_ctx=2048,
@@ -411,7 +411,7 @@ def embed(
 
 def chat_model() -> 'llama_cpp.Llama':
     log.info('Loading chat model')
-    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+    ret = exit_stack.get().enter_context(contextlib.closing(llama_cpp.Llama(
         model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
         chat_format='llama-3',
         n_ctx=2048,
@@ -458,7 +458,7 @@ def query_information(query: str) -> str:
 
 def decision_model() -> 'llama_cpp.Llama':
     log.info('Loading decision model')
-    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+    ret = exit_stack.get().enter_context(contextlib.closing(llama_cpp.Llama(
         model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
         chat_format=None,
         n_ctx=2048,
@@ -476,7 +476,7 @@ def chroma_client() -> 'chromadb.ClientAPI':
     log.info('Creating chroma client')
     chroma_settings = chromadb.config.Settings(is_persistent=True)
     chroma_settings.anonymized_telemetry = False
-    chroma_settings.persist_directory = os.path.join(SELF_DIR, 'chroma_db')
+    chroma_settings.persist_directory = os.path.join(data_dir.get(), 'chroma_db')
     ret = chromadb.Client(chroma_settings)
     log.info('Chroma client created')
     return ret
@@ -585,7 +585,7 @@ def _main() -> None:
 
     ##
 
-    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.docs.pkl'))
+    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.docs.pkl'))
     def docs() -> list[Doc]:
         log.info('Loading docs')
         with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
@@ -605,7 +605,7 @@ def _main() -> None:
         log.info('%d docs loaded', len(ret))
         return ret
 
-    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.splits.pkl'))
+    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.splits.pkl'))
     def splits() -> list[Doc]:
         log.info('Building splits')
         ret = [
@@ -620,7 +620,7 @@ def _main() -> None:
 
     ##
 
-    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.embeddings.pkl'))
+    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.embeddings.pkl'))
     def embeddings() -> list[list[float]]:
         log.info('Building embeddings')
         ret = []
@@ -631,7 +631,7 @@ def _main() -> None:
 
     ##
 
-    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
+    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
     def chroma_upserts() -> int:
         lst = splits()
         chroma_collection().upsert(
@@ -652,8 +652,9 @@ def _main() -> None:
 
 def main() -> None:
     with contextlib.ExitStack() as es:
-        with lang.context_var_setting(EXIT_STACK, es):
-            _main()
+        es.enter_context(lang.context_var_setting(exit_stack, es))  # noqa
+        es.enter_context(lang.context_var_setting(data_dir, os.path.join(os.path.dirname(__file__), 'data')))  # noqa
+        _main()
 
 
 if __name__ == '__main__':
