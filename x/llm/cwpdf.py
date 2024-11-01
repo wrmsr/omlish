@@ -460,8 +460,6 @@ def _main(es: contextlib.ExitStack) -> None:
         print('Embedding model loaded')
         return ret
 
-    ##
-
     def embed(
             s: str,
             mode: ta.Literal['embed', 'query'],
@@ -520,8 +518,6 @@ def _main(es: contextlib.ExitStack) -> None:
         )
         return len(lst)
 
-    print(f'{chroma_upserts()} embeddings upserted to chroma')
-
     ##
 
     def get_relevant_documents(
@@ -560,25 +556,6 @@ def _main(es: contextlib.ExitStack) -> None:
         print('Chat model loaded')
         return ret
 
-    # chat_model_chat_format = chat_model().metadata.get('tokenizer.chat_template', None)
-
-    ##
-
-    def decision_model() -> 'llama_cpp.Llama':
-        print('Loading decision model')
-        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
-            model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
-            chat_format=None,
-            n_ctx=2048,
-            verbose=False,
-        )))
-        print('Decision model loaded')
-        return ret
-
-    # decision_model_chat_format = decision_model.metadata.get('tokenizer.chat_template', None)
-
-    ##
-
     def query_information(query: str) -> str:
         retrieved_docs = get_relevant_documents(query)
 
@@ -608,8 +585,25 @@ def _main(es: contextlib.ExitStack) -> None:
             for p in response_stream
         )
 
-        response = print_and_join(response_chunks)
+        response = print_and_join(response_chunks)  # noqa
         return response
+
+    ##
+
+    def decision_model() -> 'llama_cpp.Llama':
+        print('Loading decision model')
+        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
+            model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
+            chat_format=None,
+            n_ctx=2048,
+            verbose=False,
+        )))
+        print('Decision model loaded')
+        return ret
+
+    ##
+
+    print(f'{chroma_upserts()} embeddings upserted to chroma')
 
     query_information('What is this pdf?')
 
