@@ -123,47 +123,47 @@ def cfstring_to_string(cf_string: CFStringRef) -> str:
 ##
 
 
-class OsxClipboardError(Exception):
+class DarwinClipboardError(Exception):
     pass
 
 
 @dc.dataclass(frozen=True)
-class StatusOsxClipboardError(OsxClipboardError):
+class StatusDarwinClipboardError(DarwinClipboardError):
     fn: str
     status: int
 
 
 @dc.dataclass(frozen=True)
-class OsxClipboardItem:
+class DarwinClipboardItem:
     type: str | None
     data: bytes | None
 
 
-def get_osx_clipboard_data(
+def get_darwin_clipboard_data(
         *,
         types: ta.Container[str | None] | None = None,
         strict: bool = False,
         types_only: bool = False,
-) -> list[OsxClipboardItem]:
-    lst: list[OsxClipboardItem] = []
+) -> list[DarwinClipboardItem]:
+    lst: list[DarwinClipboardItem] = []
 
     pasteboard = PasteboardRef()
     if status := aps.PasteboardCreate(kPasteboardClipboard, ct.byref(pasteboard)):
-        raise StatusOsxClipboardError('PasteboardCreate', status)
+        raise StatusDarwinClipboardError('PasteboardCreate', status)
 
     try:
         item_count = ct.c_ulong(0)
         if status := aps.PasteboardGetItemCount(pasteboard, ct.byref(item_count)):
-            raise StatusOsxClipboardError('PasteboardGetItemCount', status)
+            raise StatusDarwinClipboardError('PasteboardGetItemCount', status)
 
         for i in range(1, item_count.value + 1):
             item_id = PasteboardItemID()
             if status := aps.PasteboardGetItemIdentifier(pasteboard, i, ct.byref(item_id)):
-                raise StatusOsxClipboardError('PasteboardGetItemIdentifier', status)
+                raise StatusDarwinClipboardError('PasteboardGetItemIdentifier', status)
 
             data_types = CFArrayRef()
             if status := aps.PasteboardCopyItemFlavors(pasteboard, item_id, ct.byref(data_types)):
-                raise StatusOsxClipboardError('PasteboardCopyItemFlavors', status)
+                raise StatusDarwinClipboardError('PasteboardCopyItemFlavors', status)
             if not data_types:
                 continue
 
@@ -181,7 +181,7 @@ def get_osx_clipboard_data(
                         continue
 
                     if types_only:
-                        lst.append(OsxClipboardItem(
+                        lst.append(DarwinClipboardItem(
                             type=data_type_str,
                             data=None,
                         ))
@@ -191,7 +191,7 @@ def get_osx_clipboard_data(
                     if status := aps.PasteboardCopyItemFlavorData(pasteboard, item_id, data_type, ct.byref(data)):
                         if not strict:
                             continue
-                        raise StatusOsxClipboardError('PasteboardCopyItemFlavorData', status)
+                        raise StatusDarwinClipboardError('PasteboardCopyItemFlavorData', status)
                     if not data:
                         continue
 
@@ -200,7 +200,7 @@ def get_osx_clipboard_data(
                         data_ptr = cf.CFDataGetBytePtr(data)
                         data_bytes = ct.string_at(data_ptr, data_size)
 
-                        lst.append(OsxClipboardItem(
+                        lst.append(DarwinClipboardItem(
                             type=data_type_str,
                             data=data_bytes,
                         ))
@@ -221,7 +221,7 @@ def get_osx_clipboard_data(
 
 
 def _main() -> None:
-    for i in get_osx_clipboard_data():
+    for i in get_darwin_clipboard_data():
         print(i)
 
 
