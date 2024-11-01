@@ -10,30 +10,37 @@ else:
         'SkipListDict',
     ])
 """
+import importlib
 import typing as ta
 
 from omlish import lang
 
 
+class NamePackage(ta.NamedTuple):
+    name: str
+    package: str
+
+
 class _ProxyInit:
     def __init__(
             self,
-            name: str,
+            name_package: NamePackage,
             *,
             globals: ta.MutableMapping[str, ta.Any] | None = None,  # noqa
             update_globals: bool = False,
     ) -> None:
         super().__init__()
 
-        self._name = name
+        self._name_package = name_package
         self._globals = globals
         self._update_globals = update_globals
 
         self._pkgs_by_attr: dict[str, str] = {}
+        self._mods_by_pkgs: dict[str, ta.Any] = {}
 
     @property
-    def name(self) -> str:
-        return self._name
+    def name_package(self) -> NamePackage:
+        return self._name_package
 
     def add(self, package, attrs: ta.Iterable[str]) -> None:
         if isinstance(attrs, str):
@@ -42,7 +49,15 @@ class _ProxyInit:
             self._pkgs_by_attr[attr] = package
 
     def get(self, attr: str) -> ta.Any:
-        return 'barf'
+        try:
+            pkg = self._pkgs_by_attr[attr]
+        except KeyError:
+            raise AttributeError(attr)
+
+        try:
+            mod = self._mods_by_pkgs[pkg]
+        except KeyError:
+            mod = importlib.import_module(name, package=package)
 
 
 def proxy_init(
@@ -53,21 +68,24 @@ def proxy_init(
     if isinstance(attrs, str):
         raise TypeError(attrs)
 
-    init_name = globals['__name__']
+    init_name_package = NamePackage(
+        globals['__name__'],
+        globals['__package__'],
+    )
 
     pi: _ProxyInit
     try:
         pi = globals['__proxy_init__']
     except KeyError:
         pi = _ProxyInit(
-            init_name,
+            init_name_package,
             globals=globals,
         )
         globals['__proxy_init__'] = pi
         globals['__getattr__'] = pi.get
     else:
-        if pi.name != init_name:
-            raise Exception(f'Wrong init name: {pi.name=} != {init_name=}')
+        if pi.name_package != init_name_package:
+            raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
 
 
 def _main() -> None:
