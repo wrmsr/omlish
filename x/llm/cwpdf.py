@@ -397,26 +397,29 @@ def print_and_join(
             default_line_len = shutil.get_terminal_size().columns
         line_len = default_line_len
 
+    def write(c: str) -> None:
+        print(c, end='', flush=True)
+
     x = 0
     lst = []
     for s in it:
         lst.append(s)
         for ln, l in enumerate(s.split('\n')):
             if ln:
-                print()
+                write('\n')
                 x = 0
 
             for wn, w in enumerate(l.split(' ')):
                 if line_len is not None and (len(w) + (1 if wn else 0) + x) > line_len:
-                    print()
+                    write('\n')
                     x = 0
                 elif wn:
-                    print(' ', end='')
+                    write(' ')
 
-                print(w, end='')
+                write(w)
                 x += len(w) + 1
 
-    print()
+    write('\n')
     return ''.join(lst)
 
 
