@@ -65,7 +65,7 @@ sympy~=1.13.1  # FIXME: torch :|
 
 wgpu==0.18.1
 
-hypothesis==6.115.6
+hypothesis==6.116.0
 
 hexdump==3.3
 
@@ -98,7 +98,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.0.1
+accelerate==1.1.0
 
 pytorch-lightning==2.4.0
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.52
+boto3>=1.35.53
 
 google-api-python-client==2.151.0
 google-cloud-compute==1.20.1
@@ -183,7 +183,7 @@ mitogen==0.3.15
 
 openai==1.53.0
 
-trl==0.11.4
+trl==0.12.0
 tf-keras==2.17.0
 
 polars==1.12.0
@@ -197,28 +197,29 @@ customtkinter==5.2.2
 ##
 
 langchain==0.3.6
-langchain-core==0.3.14
+langchain-core==0.3.15
 
-langchain-anthropic==0.2.3
+langchain-anthropic==0.2.4
 langchain-community==0.3.4
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
-langchain-mistralai==0.2.0
+langchain-mistralai==0.2.1
 # langchain-nomic==0.2.0
 langchain-ollama==0.2.0
-langchain-openai==0.2.4
+langchain-openai==0.2.5
 langchain-text-splitters==0.3.1
 
 langchainhub==0.1.21
 
-langgraph==0.2.42
+langgraph==0.2.43
 
-langsmith==0.1.138
+langsmith==0.1.139
 
 tavily-python==0.5.0
 
 gpt4all==2.8.2
 
+chromadb==0.5.17
 langchain-chroma==0.1.4
 
 ##
@@ -237,7 +238,7 @@ faiss-cpu==1.9.0
 
 tantivy==0.22
 
-neo4j==5.25.0
+neo4j==5.26.0
 
 pypdf==5.1.0
 
@@ -247,9 +248,9 @@ usearch==2.16.0
 
 ##
 
-llama-index-core==0.11.20
+llama-index-core==0.11.21
 
-unstructured==0.16.3
+unstructured==0.16.4
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -258,7 +259,7 @@ libtmux==0.37.0
 
 sqlite-vec==0.1.3
 
-anthropic==0.37.1
+anthropic==0.38.0
 
 apsw==3.46.1.0
 

@@ -1,5 +1,5 @@
 absl-py==2.1.0
-accelerate==1.0.1
+accelerate==1.1.0
 aiohappyeyeballs==2.4.3
 aiohttp==3.10.10
 aiomysql==0.2.0
@@ -7,7 +7,7 @@ aiosignal==1.3.1
 aiosqlite==0.20.0
 alembic==1.13.3
 annotated-types==0.7.0
-anthropic==0.37.1
+anthropic==0.38.0
 anyio==4.6.2.post1
 appdirs==1.4.4
 appnope==0.1.4
@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.52
-botocore==1.35.52
+boto3==1.35.53
+botocore==1.35.53
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -49,7 +49,7 @@ cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.0
 chroma-hnswlib==0.7.6
-chromadb==0.5.16
+chromadb==0.5.17
 cli_helpers==2.3.1
 click==8.1.7
 click-log==0.4.0
@@ -151,7 +151,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.115.6
+hypothesis==6.116.0
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.0
@@ -195,15 +195,15 @@ keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
 langchain==0.3.6
-langchain-anthropic==0.2.3
+langchain-anthropic==0.2.4
 langchain-chroma==0.1.4
 langchain-community==0.3.4
-langchain-core==0.3.14
+langchain-core==0.3.15
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.2
-langchain-mistralai==0.2.0
+langchain-mistralai==0.2.1
 langchain-ollama==0.2.0
-langchain-openai==0.2.4
+langchain-openai==0.2.5
 langchain-text-splitters==0.3.1
 langchainhub==0.1.21
 langcodes==3.4.1
@@ -211,7 +211,7 @@ langdetect==1.0.9
 langgraph==0.2.42
 langgraph-checkpoint==2.0.2
 langgraph-sdk==0.1.35
-langsmith==0.1.138
+langsmith==0.1.139
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -219,7 +219,7 @@ librosa==0.10.2.post1
 libtmux==0.37.0
 lightning-utilities==0.11.8
 litecli==1.12.3
-llama-index-core==0.11.20
+llama-index-core==0.11.21
 llama_cpp_python==0.3.1
 llvmlite==0.43.0
 Logbook==1.8.0
@@ -234,7 +234,7 @@ marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
-marshmallow==3.23.0
+marshmallow==3.23.1
 matplotlib==3.9.2
 matplotlib-inline==0.1.7
 mccabe==0.7.0
@@ -260,7 +260,7 @@ namex==0.0.8
 nbclient==0.10.0
 nbconvert==7.16.4
 nbformat==5.10.4
-neo4j==5.25.0
+neo4j==5.26.0
 nest-asyncio==1.6.0
 networkx==3.4.2
 nevergrad==1.0.5
@@ -302,7 +302,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@8eeae0a63f28a80ef42b6bfc977c34ffc0b650ff
+peft @ git+https://github.com/huggingface/peft.git@b5b902368d2a7f349783a96d9d3c686ea0ca3a05
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -340,7 +340,7 @@ pyclipper==1.3.0.post6
 pycodestyle==2.12.1
 pycparser==2.22
 pydantic==2.9.2
-pydantic-settings==2.6.0
+pydantic-settings==2.6.1
 pydantic_core==2.23.4
 pyflakes==3.2.0
 pygls==1.3.1
@@ -398,11 +398,11 @@ requests-toolbelt==1.0.0
 rfc3339-validator==0.1.4
 rfc3986==2.0.0
 rfc3986-validator==0.1.1
-rich==13.9.3
+rich==13.9.4
 rpds-py==0.20.1
 rsa==4.9
 rubicon-objc==0.4.9
-ruff==0.7.1
+ruff==0.7.2
 s3transfer==0.10.3
 safetensors==0.4.5
 scikit-image==0.24.0
@@ -418,7 +418,6 @@ setuptools==75.3.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
-shtab==1.7.1
 simsimd==5.9.9
 six==1.16.0
 smart-open==7.0.5
@@ -476,7 +475,7 @@ tree-sitter==0.23.2
 tree-sitter-python==0.23.2
 trio==0.27.0
 trio_asyncio==0.15.0
-trl==0.11.4
+trl==0.12.0
 twine==5.1.1
 typer==0.12.5
 types-Markdown==3.7.0.20240822
@@ -487,11 +486,10 @@ types-requests==2.32.0.20241016
 types-ujson==5.10.0.20240515
 typing-inspect==0.9.0
 typing_extensions==4.12.2
-tyro==0.8.14
 tzdata==2024.2
 tzlocal==5.2
 ujson==5.10.0
-unstructured==0.16.3
+unstructured==0.16.4
 unstructured-client==0.25.9
 uri-template==1.3.0
 uritemplate==4.1.1
@@ -511,7 +509,7 @@ webcolors==24.8.0
 webencodings==0.5.1
 websocket-client==1.8.0
 websockets==13.1
-Werkzeug==3.1.0
+Werkzeug==3.1.1
 wgpu==0.18.1
 wheel==0.44.0
 widgetsnbextension==4.0.13
