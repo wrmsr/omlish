@@ -3,6 +3,7 @@ import logging
 import os.path
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from ..docs import Doc
@@ -33,7 +34,7 @@ def chat_model() -> 'llama_cpp.Llama':
     return ret
 
 
-def query_information(
+def generate_question_answer(
         query: str,
         relevant_docs: ta.Iterable[Doc],
 ) -> ta.Iterator[str]:

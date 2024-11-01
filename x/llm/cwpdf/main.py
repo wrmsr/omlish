@@ -16,31 +16,22 @@ from omlish import lang
 from omlish import logs
 from omlish import term
 
+from .chromadb import chroma_collection
+from .chromadb import get_relevant_docs
 from .docs import Doc
+from .models.chat import generate_question_answer
+from .models.embedding import embed
+from .output import print_and_join
 from .pdfs import build_pdf_docs
-
-
-if ta.TYPE_CHECKING:
-    import pypdf
-
-else:
-    chromadb = lang.proxy_import('chromadb')
-    llama_cpp = lang.proxy_import('llama_cpp')
-    np = lang.proxy_import('numpy')
-    pypdf = lang.proxy_import('pypdf')
+from .splitting import RecursiveTextSplitter
+from .vars import data_dir
+from .vars import exit_stack
 
 
 T = ta.TypeVar('T')
 
 
-##
-
-
 log = logging.getLogger(__name__)
-
-
-##
-
 
 
 ##
@@ -115,13 +106,15 @@ def _main() -> None:
 
     ##
 
-    retrieved_docs = get_relevant_documents(query)
-    response = print_and_join(response_chunks)  # noqa
-
     num_upserts = chroma_upserts()
     log.info('%d embeddings upserted to chroma', num_upserts)
 
-    query_information('What is this pdf about?')
+    ##
+
+    query = 'What is this pdf about?'
+    relevant_docs = get_relevant_docs(query)
+    response_chunks = generate_question_answer(query, [d.doc for d in relevant_docs])
+    response = print_and_join(response_chunks)  # noqa
 
 
 def main() -> None:

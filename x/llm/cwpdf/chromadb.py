@@ -1,15 +1,22 @@
+import logging
 import os.path
 import typing as ta
 
 from omlish import lang
 
 from .docs import Doc
+from .docs import DocAndScore
+from .models.embedding import embed
+from .vars import data_dir
 
 
 if ta.TYPE_CHECKING:
     import chromadb
 else:
     chromadb = lang.proxy_import('chromadb')
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -37,7 +44,7 @@ def chroma_collection() -> 'chromadb.Collection':
 ##
 
 
-def get_relevant_documents(
+def get_relevant_docs(
         query: str,
         k: int = 4,
 ) -> list[DocAndScore]:
@@ -59,4 +66,3 @@ def get_relevant_documents(
         )
         for i in range(len(results['documents'][0]))
     ]
-

@@ -19,6 +19,8 @@ import abc
 import re
 import typing as ta
 
+from .docs import Doc
+
 
 ##
 
@@ -231,4 +233,3 @@ class RecursiveTextSplitter(TextSplitter):
             final_chunks.extend(merged_text)
 
         return final_chunks
-
