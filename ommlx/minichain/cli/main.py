@@ -193,7 +193,7 @@ def _main() -> None:
         content = Image(pimg.open(check.non_empty_str(check.single(args.prompt))))
 
     else:
-        prompt = check.single(args.prompt)
+        prompt = ' '.join(args.prompt)
 
         if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
             stdin_data = sys.stdin.read()

@@ -87,6 +87,7 @@ class LlamacppChatModel(ChatModel):
         with contextlib.ExitStack() as es:
             llm = es.enter_context(contextlib.closing(llama_cpp.Llama(
                 model_path=self.model_path,
+                verbose=False,
             )))
 
             output = llm.create_chat_completion(
