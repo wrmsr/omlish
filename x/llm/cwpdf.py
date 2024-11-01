@@ -573,7 +573,7 @@ def _main(es: contextlib.ExitStack) -> None:
         ]
 
         response_stream = chat_model().create_chat_completion(
-            messages,
+            messages,  # type: ignore
             max_tokens=2048,
             temperature=0.7,
             top_k=50,
@@ -581,7 +581,7 @@ def _main(es: contextlib.ExitStack) -> None:
             stream=True,
         )
         response_chunks = (
-            p['choices'][0]['delta'].get('content', '')
+            check.isinstance(p['choices'][0]['delta'].get('content', ''), str)  # type: ignore
             for p in response_stream
         )
 
