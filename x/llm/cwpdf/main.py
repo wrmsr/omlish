@@ -21,6 +21,7 @@ from .chromadb import get_relevant_docs
 from .docs import Doc
 from .models.chat import generate_question_answer
 from .models.embedding import embed
+from .models.embedding import embedding_model
 from .output import print_and_join
 from .pdfs import build_pdf_docs
 from .splitting import RecursiveTextSplitter
@@ -58,16 +59,19 @@ def _main() -> None:
 
     logs.configure_standard_logging('INFO')
 
+    if not os.path.exists(dd := data_dir.get()):
+        os.makedirs(dd)
+
     ##
 
-    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.docs.pkl'))
+    @_pkl_cache(os.path.join(dd, os.path.basename(pdf_file) + '.docs.pkl'))
     def docs() -> list[Doc]:
         log.info('Building docs')
         ret = build_pdf_docs(pdf_file)
         log.info('%d docs built', len(ret))
         return ret
 
-    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.splits.pkl'))
+    @_pkl_cache(os.path.join(dd, os.path.basename(pdf_file) + '.splits.pkl'))
     def splits() -> list[Doc]:
         log.info('Building splits')
         ret = [
@@ -82,20 +86,24 @@ def _main() -> None:
 
     ##
 
-    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.embeddings.pkl'))
+    @_pkl_cache(os.path.join(dd, os.path.basename(pdf_file) + '.embeddings.pkl'))
     def embeddings() -> list[list[float]]:
+        lst = splits()
+        embedding_model()
+
         log.info('Building embeddings')
         ret = []
-        for split in term.progress_bar(splits()):
+        for split in term.progress_bar(lst):
             ret.append(embed(split.content, 'embed'))
         log.info('%d embeddings built', len(ret))
         return ret
 
     ##
 
-    @_pkl_cache(os.path.join(data_dir.get(), os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
+    @_pkl_cache(os.path.join(dd, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
     def chroma_upserts() -> int:
         lst = splits()
+
         chroma_collection().upsert(
             ids=[check.not_none(d.id) for d in lst],
             embeddings=embeddings(),
