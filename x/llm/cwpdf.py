@@ -54,10 +54,14 @@ else:
 T = ta.TypeVar('T')
 
 
+##
+
+
 log = logging.getLogger(__name__)
 
-
 EXIT_STACK: contextvars.ContextVar[contextlib.ExitStack] = contextvars.ContextVar('exit_stack')
+
+SELF_DIR = os.path.dirname(__file__)
 
 
 ##
@@ -368,6 +372,156 @@ class RecursiveTextSplitter(TextSplitter):
 ##
 
 
+@lang.cached_function
+def embedding_model() -> 'llama_cpp.Llama':
+    log.info('Loading embedding model')
+    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+        model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
+        embedding=True,
+        n_ctx=2048,
+        verbose=False,
+    )))
+    log.info('Embedding model loaded')
+    return ret
+
+
+def embed(
+        s: str,
+        mode: ta.Literal['embed', 'query'],
+        *,
+        embed_instruction: str = 'passage: ',
+        query_instruction: str = 'query: ',
+        normalize: bool = False,
+        truncate: bool = True,
+) -> list[float]:
+    inst = {
+        'embed': embed_instruction,
+        'query': query_instruction,
+    }[mode]
+
+    return embedding_model().embed(
+        f'{inst}{s}',
+        normalize,
+        truncate,
+    )
+
+
+##
+
+
+def chat_model() -> 'llama_cpp.Llama':
+    log.info('Loading chat model')
+    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+        model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
+        chat_format='llama-3',
+        n_ctx=2048,
+        verbose=False,
+    )))
+    log.info('Chat model loaded')
+    return ret
+
+def query_information(query: str) -> str:
+    retrieved_docs = get_relevant_documents(query)
+
+    context = '\n\n'.join(d.doc.content for d in retrieved_docs)
+
+    system_prompt = (
+        'You are a QA assistant. Based on the following context, answer the question using bullet points and '
+        'include necessary data.\n\n'
+        f'Context:\n{context}'
+    )
+
+    messages = [
+        {'role': 'system', 'content': system_prompt},
+        {'role': 'user', 'content': query},
+    ]
+
+    response_stream = chat_model().create_chat_completion(
+        messages,  # type: ignore
+        max_tokens=2048,
+        temperature=0.7,
+        top_k=50,
+        top_p=1.0,
+        stream=True,
+    )
+    response_chunks = (
+        check.isinstance(p['choices'][0]['delta'].get('content', ''), str)  # type: ignore
+        for p in response_stream
+    )
+
+    response = print_and_join(response_chunks)  # noqa
+    return response
+
+
+##
+
+
+def decision_model() -> 'llama_cpp.Llama':
+    log.info('Loading decision model')
+    ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
+        model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
+        chat_format=None,
+        n_ctx=2048,
+        verbose=False,
+    )))
+    log.info('Decision model loaded')
+    return ret
+
+
+##
+
+
+@lang.cached_function
+def chroma_client() -> 'chromadb.ClientAPI':
+    log.info('Creating chroma client')
+    chroma_settings = chromadb.config.Settings(is_persistent=True)
+    chroma_settings.anonymized_telemetry = False
+    chroma_settings.persist_directory = os.path.join(SELF_DIR, 'chroma_db')
+    ret = chromadb.Client(chroma_settings)
+    log.info('Chroma client created')
+    return ret
+
+
+@lang.cached_function
+def chroma_collection() -> 'chromadb.Collection':
+    return chroma_client().get_or_create_collection(  # noqa
+        name='cwpdf',
+        embedding_function=None,
+    )
+
+
+class DocAndScore(ta.NamedTuple):
+    doc: Doc
+    score: float
+
+
+def get_relevant_documents(
+        query: str,
+        k: int = 4,
+) -> list[DocAndScore]:
+    query_embedding = embed(query, 'query')
+
+    results = chroma_collection().query(
+        query_embeddings=[query_embedding],
+        n_results=k,
+    )
+
+    return [
+        DocAndScore(
+            Doc(
+                content=results['documents'][0][i],
+                metadata=results['metadatas'][0][i] or {},
+                id=results['ids'][0][i],
+            ),
+            results['distances'][0][i],
+        )
+        for i in range(len(results['documents'][0]))
+    ]
+
+
+##
+
+
 def _pkl_cache(pkl_file: str) -> ta.Callable[[ta.Callable[[], T]], ta.Callable[[], T]]:
     def outer(fn):
         @functools.wraps(fn)
@@ -382,11 +536,6 @@ def _pkl_cache(pkl_file: str) -> ta.Callable[[ta.Callable[[], T]], ta.Callable[[
                     return pickle.load(f)  # noqa
         return inner
     return outer
-
-
-class DocAndScore(ta.NamedTuple):
-    doc: Doc
-    score: float
 
 
 def print_and_join(
@@ -432,13 +581,11 @@ def _main() -> None:
 
     extract_images = False
 
-    self_dir = os.path.dirname(__file__)
-
     logs.configure_standard_logging('INFO')
 
     ##
 
-    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.docs.pkl'))
+    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.docs.pkl'))
     def docs() -> list[Doc]:
         log.info('Loading docs')
         with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
@@ -458,7 +605,7 @@ def _main() -> None:
         log.info('%d docs loaded', len(ret))
         return ret
 
-    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.splits.pkl'))
+    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.splits.pkl'))
     def splits() -> list[Doc]:
         log.info('Building splits')
         ret = [
@@ -473,39 +620,7 @@ def _main() -> None:
 
     ##
 
-    @lang.cached_function
-    def embedding_model() -> 'llama_cpp.Llama':
-        log.info('Loading embedding model')
-        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
-            model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
-            embedding=True,
-            n_ctx=2048,
-            verbose=False,
-        )))
-        log.info('Embedding model loaded')
-        return ret
-
-    def embed(
-            s: str,
-            mode: ta.Literal['embed', 'query'],
-            *,
-            embed_instruction: str = 'passage: ',
-            query_instruction: str = 'query: ',
-            normalize: bool = False,
-            truncate: bool = True,
-    ) -> list[float]:
-        inst = {
-            'embed': embed_instruction,
-            'query': query_instruction,
-        }[mode]
-
-        return embedding_model().embed(
-            f'{inst}{s}',
-            normalize,
-            truncate,
-        )
-
-    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
+    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.embeddings.pkl'))
     def embeddings() -> list[list[float]]:
         log.info('Building embeddings')
         ret = []
@@ -516,116 +631,16 @@ def _main() -> None:
 
     ##
 
-    @lang.cached_function
-    def chroma_client() -> 'chromadb.ClientAPI':
-        log.info('Creating chroma client')
-        chroma_settings = chromadb.config.Settings(is_persistent=True)
-        chroma_settings.anonymized_telemetry = False
-        chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
-        ret = chromadb.Client(chroma_settings)
-        log.info('Chroma client created')
-        return ret
-
-    @lang.cached_function
-    def chroma_collection() -> 'chromadb.Collection':
-        return chroma_client().get_or_create_collection(  # noqa
-            name='cwpdf',
-            embedding_function=None,
-        )
-
-    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
+    @_pkl_cache(os.path.join(SELF_DIR, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
     def chroma_upserts() -> int:
         lst = splits()
-        chroma_collection.upsert(
+        chroma_collection().upsert(
             ids=[check.not_none(d.id) for d in lst],
             embeddings=embeddings(),
             documents=[d.content for d in lst],
             metadatas=[check.not_none(d.metadata) for d in lst],
         )
         return len(lst)
-
-    ##
-
-    def get_relevant_documents(
-            query: str,
-            k: int = 4,
-    ) -> list[DocAndScore]:
-        query_embedding = embed(query, 'query')
-
-        results = chroma_collection().query(
-            query_embeddings=[query_embedding],
-            n_results=k,
-        )
-
-        return [
-            DocAndScore(
-                Doc(
-                    content=results['documents'][0][i],
-                    metadata=results['metadatas'][0][i] or {},
-                    id=results['ids'][0][i],
-                ),
-                results['distances'][0][i],
-            )
-            for i in range(len(results['documents'][0]))
-        ]
-
-    ##
-
-    def chat_model() -> 'llama_cpp.Llama':
-        log.info('Loading chat model')
-        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
-            model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
-            chat_format='llama-3',
-            n_ctx=2048,
-            verbose=False,
-        )))
-        log.info('Chat model loaded')
-        return ret
-
-    def query_information(query: str) -> str:
-        retrieved_docs = get_relevant_documents(query)
-
-        context = '\n\n'.join(d.doc.content for d in retrieved_docs)
-
-        system_prompt = (
-            'You are a QA assistant. Based on the following context, answer the question using bullet points and '
-            'include necessary data.\n\n'
-            f'Context:\n{context}'
-        )
-
-        messages = [
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': query},
-        ]
-
-        response_stream = chat_model().create_chat_completion(
-            messages,  # type: ignore
-            max_tokens=2048,
-            temperature=0.7,
-            top_k=50,
-            top_p=1.0,
-            stream=True,
-        )
-        response_chunks = (
-            check.isinstance(p['choices'][0]['delta'].get('content', ''), str)  # type: ignore
-            for p in response_stream
-        )
-
-        response = print_and_join(response_chunks)  # noqa
-        return response
-
-    ##
-
-    def decision_model() -> 'llama_cpp.Llama':
-        log.info('Loading decision model')
-        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
-            model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
-            chat_format=None,
-            n_ctx=2048,
-            verbose=False,
-        )))
-        log.info('Decision model loaded')
-        return ret
 
     ##
 
