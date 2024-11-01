@@ -572,7 +572,7 @@ def _main() -> None:
                 if ln:
                     print()
                     x = 0
-                for wn, w in enumerate(s.split(' ')):
+                for wn, w in enumerate(l.split(' ')):
                     if wn:
                         print(' ', end='')
                     if (len(w) + x) > line_len:
