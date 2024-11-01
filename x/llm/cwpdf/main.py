@@ -116,6 +116,7 @@ def _main() -> None:
     ##
 
     query = 'What is this pdf about?'
+
     relevant_docs = get_relevant_docs(query)
     response_chunks = generate_question_answer(query, [d.doc for d in relevant_docs])
     response = print_and_join(response_chunks)  # noqa
