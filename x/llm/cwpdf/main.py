@@ -101,7 +101,9 @@ def chroma_upserts() -> int:
 
 
 def _main() -> None:
-    pf = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
+    # pf = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
+    pf = os.path.expanduser('~/Downloads/NVIDIAAn.pdf')
+
     exit_stack.get().enter_context(lang.context_var_setting(pdf_file, pf))  # noqa
 
     logs.configure_standard_logging('INFO')
@@ -116,7 +118,12 @@ def _main() -> None:
 
     ##
 
-    query = 'What is this pdf about?'
+    query = (
+        "<pdf> Please provide NVIDIA's Q2 Fiscal 2025 financial metrics for:\n"
+        '1. Total quarterly revenue\n'
+        '2. Data Center segment revenue'
+    )
+
     print(classify_user_intent(query))
 
     relevant_docs = get_relevant_docs(query)
@@ -125,7 +132,7 @@ def _main() -> None:
 
     ##
 
-    query = 'Generate a pie chart of north american revenue in fiscal year 2023.'
+    query = 'Generate a pie chart of that data.'
     print(classify_user_intent(query))
 
 
