@@ -379,7 +379,32 @@ class DocAndScore(ta.NamedTuple):
     score: float
 
 
-def _main() -> None:
+def print_and_join(
+        it: ta.Iterable[str],
+        *,
+        line_len: int = 100,
+) -> str:
+    x = 0
+    lst = []
+    for s in it:
+        lst.append(s)
+        for ln, l in enumerate(s.split('\n')):
+            if ln:
+                print()
+                x = 0
+            for wn, w in enumerate(l.split(' ')):
+                if wn:
+                    print(' ', end='')
+                if (len(w) + x) > line_len:
+                    print()
+                    x = 0
+                print(w, end='')
+                x += len(w)
+    print()
+    return ''.join(lst)
+
+
+def _main(es: contextlib.ExitStack) -> None:
     pdf_file = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
 
     extract_images = False
@@ -389,9 +414,10 @@ def _main() -> None:
     ##
 
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.docs.pkl'))
-    def _docs() -> list[Doc]:
+    def docs() -> list[Doc]:
+        print('Loading docs')
         with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
-            return [
+            ret = [
                 Doc(
                     content=' '.join([
                         extract_text_from_page(page),
@@ -404,142 +430,156 @@ def _main() -> None:
                 )
                 for page_number, page in enumerate(pdf_reader.pages)
             ]
-
-    docs = _docs()
-    print(f'{len(docs)} docs loaded')
+        print(f'{len(ret)} docs loaded')
+        return ret
 
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.splits.pkl'))
-    def _splits() -> list[Doc]:
-        return [
+    def splits() -> list[Doc]:
+        print('Building splits')
+        ret = [
             dc.replace(
                 split,
                 id=str(uuid.uuid4()),
             )
-            for split in RecursiveTextSplitter().split_docs(docs)
+            for split in RecursiveTextSplitter().split_docs(docs())
         ]
-
-    splits = _splits()
-    print(f'{len(splits)} splits built')
+        print(f'{len(ret)} splits built')
+        return ret
 
     ##
 
-    with contextlib.ExitStack() as es:
+    @lang.cached_function
+    def embedding_model() -> 'llama_cpp.Llama':
         print('Loading embedding model')
-        embedding_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
             embedding=True,
             n_ctx=2048,
             verbose=False,
         )))
         print('Embedding model loaded')
+        return ret
 
-        ##
+    ##
 
-        embed_instruction = 'passage: '
-        normalize = False
-        truncate = True
+    def embed(
+            s: str,
+            mode: ta.Literal['embed', 'query'],
+            *,
+            embed_instruction: str = 'passage: ',
+            query_instruction: str = 'query: ',
+            normalize: bool = False,
+            truncate: bool = True,
+    ) -> list[float]:
+        inst = {
+            'embed': embed_instruction,
+            'query': query_instruction,
+        }[mode]
 
-        @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
-        def _embeddings() -> list[list[float]]:
-            embeddings = []
-            for split in term.progress_bar(splits):
-                embedding = embedding_model.embed(
-                    f'{embed_instruction}{split.content}',
-                    normalize,
-                    truncate,
-                )
-                embeddings.append(embedding)
-            return embeddings
+        return embedding_model().embed(
+            f'{inst}{s}',
+            normalize,
+            truncate,
+        )
 
-        embeddings = _embeddings()
-        print(f'{len(embeddings)} embeddings built')
+    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
+    def embeddings() -> list[list[float]]:
+        print(f'Building embeddings')
+        ret = []
+        for split in term.progress_bar(splits()):
+            ret.append(embed(split.content, 'embed'))
+        print(f'{len(ret)} embeddings built')
+        return ret
 
-        ##
+    ##
 
+    @lang.cached_function
+    def chroma_client() -> 'chromadb.ClientAPI':
         print('Creating chroma client')
         chroma_settings = chromadb.config.Settings(is_persistent=True)
         chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
-        chroma_client = chromadb.Client(chroma_settings)
+        ret = chromadb.Client(chroma_settings)
         print('Chroma client created')
+        return ret
 
-        chroma_collection = chroma_client.get_or_create_collection(  # noqa
+    @lang.cached_function
+    def chroma_collection() -> 'chromadb.Collection':
+        return chroma_client().get_or_create_collection(  # noqa
             name='cwpdf',
             embedding_function=None,
         )
 
-        @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
-        def _chroma_upserts() -> int:
-            chroma_collection.upsert(
-                ids=[check.not_none(d.id) for d in splits],
-                embeddings=embeddings,
-                documents=[d.content for d in splits],
-                metadatas=[check.not_none(d.metadata) for d in splits],
+    @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.chroma-upserts.pkl'))
+    def chroma_upserts() -> int:
+        lst = splits()
+        chroma_collection.upsert(
+            ids=[check.not_none(d.id) for d in lst],
+            embeddings=embeddings(),
+            documents=[d.content for d in lst],
+            metadatas=[check.not_none(d.metadata) for d in lst],
+        )
+        return len(lst)
+
+    print(f'{chroma_upserts()} embeddings upserted to chroma')
+
+    ##
+
+    def get_relevant_documents(
+            query: str,
+            k: int = 4,
+    ) -> list[DocAndScore]:
+        query_embedding = embed(query, 'query')
+
+        results = chroma_collection().query(
+            query_embeddings=[query_embedding],
+            n_results=k,
+        )
+
+        return [
+            DocAndScore(
+                Doc(
+                    content=results['documents'][0][i],
+                    metadata=results['metadatas'][0][i] or {},
+                    id=results['ids'][0][i],
+                ),
+                results['distances'][0][i],
             )
-            return len(splits)
+            for i in range(len(results['documents'][0]))
+        ]
 
-        print(f'{_chroma_upserts()} embeddings upserted to chroma')
+    ##
 
-        ##
-
-        def get_relevant_documents(
-                query: str,
-                k: int = 4,
-                *,
-                query_instruction = 'query: '
-        ) -> list[DocAndScore]:
-            query_embedding = embedding_model.embed(
-                f'{query_instruction}{query}',
-                normalize,
-                truncate,
-            )
-
-            results = chroma_collection.query(
-                query_embeddings=[query_embedding],
-                n_results=k,
-            )
-
-            return [
-                DocAndScore(
-                    Doc(
-                        content=results['documents'][0][i],
-                        metadata=results['metadatas'][0][i] or {},
-                        id=results['ids'][0][i],
-                    ),
-                    results['distances'][0][i],
-                )
-                for i in range(len(results['documents'][0]))
-            ]
-
-        ##
-
+    def chat_model() -> 'llama_cpp.Llama':
         print('Loading chat model')
-        chat_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
             chat_format='llama-3',
             n_ctx=2048,
             verbose=False,
         )))
         print('Chat model loaded')
+        return ret
 
-        chat_model_chat_format = chat_model.metadata.get('tokenizer.chat_template', None)
+    # chat_model_chat_format = chat_model().metadata.get('tokenizer.chat_template', None)
 
-        ##
+    ##
 
+    def decision_model() -> 'llama_cpp.Llama':
         print('Loading decision model')
-        decision_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
             chat_format=None,
             n_ctx=2048,
             verbose=False,
         )))
         print('Decision model loaded')
+        return ret
 
-        decision_model_chat_format = decision_model.metadata.get('tokenizer.chat_template', None)
+    # decision_model_chat_format = decision_model.metadata.get('tokenizer.chat_template', None)
 
-        ##
+    ##
 
-        query = 'What is this pdf?'
-
+    def query_information(query: str) -> str:
         retrieved_docs = get_relevant_documents(query)
 
         context = '\n\n'.join(d.doc.content for d in retrieved_docs)
@@ -555,7 +595,7 @@ def _main() -> None:
             {'role': 'user', 'content': query},
         ]
 
-        response = chat_model.create_chat_completion(
+        response_stream = chat_model().create_chat_completion(
             messages,
             max_tokens=2048,
             temperature=0.7,
@@ -563,25 +603,17 @@ def _main() -> None:
             top_p=1.0,
             stream=True,
         )
+        response_chunks = (
+            p['choices'][0]['delta'].get('content', '')
+            for p in response_stream
+        )
 
-        line_len = 100
-        x = 0
-        for chunk in response:
-            s = chunk['choices'][0]['delta'].get('content', '')
-            for ln, l in enumerate(s.split('\n')):
-                if ln:
-                    print()
-                    x = 0
-                for wn, w in enumerate(l.split(' ')):
-                    if wn:
-                        print(' ', end='')
-                    if (len(w) + x) > line_len:
-                        print()
-                        x = 0
-                    print(w, end='')
-                    x += len(w)
-        print()
+        response = print_and_join(response_chunks)
+        return response
+
+    query_information('What is this pdf?')
 
 
 if __name__ == '__main__':
-    _main()
+    with contextlib.ExitStack() as es:
+        _main(es)
