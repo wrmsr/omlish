@@ -127,6 +127,7 @@ from .imports import (  # noqa
     import_module_attr,
     lazy_import,
     proxy_import,
+    proxy_init,
     resolve_import_name,
     try_import,
     yield_import_all,
