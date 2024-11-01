@@ -45,6 +45,7 @@ def proxy_init(
     except KeyError:
         pi = _ProxyInit(init_package)
         globals['__proxy_init__'] = pi
+        globals['__getattr__'] = pi.get
     else:
         if pi.package != init_package:
             raise Exception('Wrong init package')
