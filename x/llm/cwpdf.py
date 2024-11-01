@@ -418,15 +418,14 @@ def _main() -> None:
 
     ##
 
-    print('Loading embedding model')
-    with contextlib.closing(llama_cpp.Llama(
-        embedding=True,
-        model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
-        verbose=False,
-        chat_format=None,
-        n_ctx=2048,
-        n_gpu_layers=0,
-    )) as model:
+    with contextlib.ExitStack() as es:
+        print('Loading embedding model')
+        embedding_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+            model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
+            embedding=True,
+            n_ctx=2048,
+            verbose=False,
+        )))
         print('Embedding model loaded')
 
         ##
@@ -439,7 +438,7 @@ def _main() -> None:
         def _embeddings() -> list[list[float]]:
             embeddings = []
             for split in term.progress_bar(splits):
-                embedding = model.embed(
+                embedding = embedding_model.embed(
                     f'{embed_instruction}{split.content}',
                     normalize,
                     truncate,
@@ -480,7 +479,7 @@ def _main() -> None:
 
         query_instruction = 'query: '
 
-        query_embedding = model.embed(
+        query_embedding = embedding_model.embed(
             f'{query_instruction}{query}',
             normalize,
             truncate,
@@ -504,6 +503,34 @@ def _main() -> None:
         ]
 
         print(result_docs_and_scores)
+
+        ##
+
+        print('Loading chat model')
+        chat_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+            model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
+            chat_format='llama-3',
+            n_ctx=2048,
+            verbose=False,
+        )))
+        print('Chat model loaded')
+
+        chat_model_chat_format = chat_model.metadata.get('tokenizer.chat_template', None)
+
+        ##
+
+        print('Loading decision model')
+        decision_model = es.enter_context(contextlib.closing(llama_cpp.Llama(
+            model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
+            chat_format=None,
+            n_ctx=2048,
+            verbose=False,
+        )))
+        print('Decision model loaded')
+
+        decision_model_chat_format = decision_model.metadata.get('tokenizer.chat_template', None)
+
+        ##
 
 
 if __name__ == '__main__':
