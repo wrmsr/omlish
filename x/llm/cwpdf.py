@@ -374,6 +374,11 @@ def _pkl_cache(pkl_file: str) -> ta.Callable[[ta.Callable[[], T]], ta.Callable[[
     return outer
 
 
+class DocAndScore(ta.NamedTuple):
+    doc: Doc
+    score: float
+
+
 def _main() -> None:
     pdf_file = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
 
@@ -474,35 +479,38 @@ def _main() -> None:
 
         ##
 
-        query = 'What are the risks the business faces according to this document?'
-        k = 4
-
-        query_instruction = 'query: '
-
-        query_embedding = embedding_model.embed(
-            f'{query_instruction}{query}',
-            normalize,
-            truncate,
-        )
-
-        results = chroma_collection.query(
-            query_embeddings=[query_embedding],
-            n_results=k,
-        )
-
-        result_docs_and_scores = [
-            (
-                Doc(
-                    content=results['documents'][0][i],
-                    metadata=results['metadatas'][0][i] or {},
-                    id=results['ids'][0][i],
-                ),
-                results['distances'][0][i],
+        def get_relevant_documents(
+                query: str,
+                k: int = 4,
+                *,
+                query_instruction = 'query: '
+        ) -> list[DocAndScore]:
+            query_embedding = embedding_model.embed(
+                f'{query_instruction}{query}',
+                normalize,
+                truncate,
             )
-            for i in range(len(results['documents'][0]))
-        ]
 
-        print(result_docs_and_scores)
+            results = chroma_collection.query(
+                query_embeddings=[query_embedding],
+                n_results=k,
+            )
+
+            return [
+                DocAndScore(
+                    Doc(
+                        content=results['documents'][0][i],
+                        metadata=results['metadatas'][0][i] or {},
+                        id=results['ids'][0][i],
+                    ),
+                    results['distances'][0][i],
+                )
+                for i in range(len(results['documents'][0]))
+            ]
+
+        print(get_relevant_documents(
+            'What are the risks the business faces according to this document?',
+        ))
 
         ##
 
@@ -531,6 +539,8 @@ def _main() -> None:
         decision_model_chat_format = decision_model.metadata.get('tokenizer.chat_template', None)
 
         ##
+
+        query = 'What is this pdf?'
 
 
 if __name__ == '__main__':
