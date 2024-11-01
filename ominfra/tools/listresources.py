@@ -146,7 +146,12 @@ def get_gcp_servers() -> list[GcpServer]:
     out: list[GcpServer] = []
     for zone, response in instance_client.aggregated_list(request=request):
         for instance in (response.instances or []):
-            ip = check.single([ac.nat_i_p for ni in instance.network_interfaces for ac in ni.access_configs if ac.nat_i_p])  # noqa
+            ip = check.single([
+                ac.nat_i_p
+                for ni in instance.network_interfaces
+                for ac in ni.access_configs
+                if ac.nat_i_p
+            ])
             out.append(GcpServer(
                 host=ip,
                 id=instance.name,
