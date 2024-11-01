@@ -8,6 +8,7 @@ import functools
 import logging
 import os.path
 import pickle
+import sys
 import typing as ta
 import uuid
 
@@ -93,7 +94,7 @@ def _main() -> None:
 
         log.info('Building embeddings')
         ret = []
-        for split in term.progress_bar(lst):
+        for split in term.progress_bar(lst, out=sys.stderr):
             ret.append(embed(split.content, 'embed'))
         log.info('%d embeddings built', len(ret))
         return ret
