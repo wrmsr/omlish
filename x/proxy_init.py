@@ -42,7 +42,7 @@ class _ProxyInit:
     def name_package(self) -> NamePackage:
         return self._name_package
 
-    def add(self, package, attrs: ta.Iterable[str]) -> None:
+    def add(self, package: str, attrs: ta.Iterable[str]) -> None:
         if isinstance(attrs, str):
             raise TypeError(attrs)
         for attr in attrs:
@@ -57,7 +57,7 @@ class _ProxyInit:
         try:
             mod = self._mods_by_pkgs[pkg]
         except KeyError:
-            mod = importlib.import_module(name, package=package)
+            mod = importlib.import_module(pkg, package=self.name_package.package)
 
 
 def proxy_init(
@@ -86,6 +86,8 @@ def proxy_init(
     else:
         if pi.name_package != init_name_package:
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
+
+    pi.add(package, attrs)
 
 
 def _main() -> None:
