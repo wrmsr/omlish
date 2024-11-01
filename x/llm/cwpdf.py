@@ -26,6 +26,7 @@ import functools
 import os.path
 import pickle
 import re
+import shutil
 import typing as ta
 import uuid
 
@@ -382,8 +383,14 @@ class DocAndScore(ta.NamedTuple):
 def print_and_join(
         it: ta.Iterable[str],
         *,
-        line_len: int = 100,
+        line_len: int | None = None,
+        default_line_len: int = 100,
 ) -> str:
+    if line_len is None:
+        if default_line_len is None:
+            # default_line_len = shutil.get_terminal_size().columns
+            raise NotImplementedError
+        line_len = default_line_len
     x = 0
     lst = []
     for s in it:
@@ -393,13 +400,13 @@ def print_and_join(
                 print()
                 x = 0
             for wn, w in enumerate(l.split(' ')):
-                if wn:
-                    print(' ', end='')
-                if (len(w) + x) > line_len:
+                if (len(w) + (1 if wn else 0) + x) > line_len:
                     print()
                     x = 0
+                elif wn:
+                    print(' ', end='')
                 print(w, end='')
-                x += len(w)
+                x += len(w) + 1
     print()
     return ''.join(lst)
 
@@ -605,7 +612,7 @@ def _main(es: contextlib.ExitStack) -> None:
 
     print(f'{chroma_upserts()} embeddings upserted to chroma')
 
-    query_information('What is this pdf?')
+    query_information('What is this pdf about?')
 
 
 if __name__ == '__main__':
