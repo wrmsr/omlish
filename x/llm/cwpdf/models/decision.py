@@ -68,6 +68,6 @@ def classify_user_intent(query: str) -> UserIntent | None:
         stop=['<nexa_end>'],
     )
 
-    raw_intent = output['choices'][0]['text'].strip()  # noqa
+    raw_intent = output['choices'][0]['text'].strip()  # type: ignore
 
     return _USER_INTENT_MAP.get(raw_intent)
