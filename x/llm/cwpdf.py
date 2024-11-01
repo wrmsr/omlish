@@ -21,6 +21,7 @@ TODO:
 # SOFTWARE.
 import abc
 import contextlib
+import contextvars
 import dataclasses as dc
 import functools
 import logging
@@ -54,6 +55,9 @@ T = ta.TypeVar('T')
 
 
 log = logging.getLogger(__name__)
+
+
+EXIT_STACK: contextvars.ContextVar[contextlib.ExitStack] = contextvars.ContextVar('exit_stack')
 
 
 ##
@@ -423,7 +427,7 @@ def print_and_join(
     return ''.join(lst)
 
 
-def _main(es: contextlib.ExitStack) -> None:
+def _main() -> None:
     pdf_file = os.path.expanduser('~/Downloads/nke-10k-2023.pdf')
 
     extract_images = False
@@ -472,7 +476,7 @@ def _main(es: contextlib.ExitStack) -> None:
     @lang.cached_function
     def embedding_model() -> 'llama_cpp.Llama':
         log.info('Loading embedding model')
-        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
             embedding=True,
             n_ctx=2048,
@@ -569,7 +573,7 @@ def _main(es: contextlib.ExitStack) -> None:
 
     def chat_model() -> 'llama_cpp.Llama':
         log.info('Loading chat model')
-        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
             chat_format='llama-3',
             n_ctx=2048,
@@ -614,7 +618,7 @@ def _main(es: contextlib.ExitStack) -> None:
 
     def decision_model() -> 'llama_cpp.Llama':
         log.info('Loading decision model')
-        ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
+        ret = EXIT_STACK.get().enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
             chat_format=None,
             n_ctx=2048,
@@ -633,4 +637,5 @@ def _main(es: contextlib.ExitStack) -> None:
 
 if __name__ == '__main__':
     with contextlib.ExitStack() as es:
-        _main(es)
+        with lang.context_var_setting(EXIT_STACK, es):
+            _main()
