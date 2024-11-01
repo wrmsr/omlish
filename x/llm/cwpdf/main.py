@@ -650,7 +650,11 @@ def _main() -> None:
     query_information('What is this pdf about?')
 
 
-if __name__ == '__main__':
+def main() -> None:
     with contextlib.ExitStack() as es:
         with lang.context_var_setting(EXIT_STACK, es):
             _main()
+
+
+if __name__ == '__main__':
+    _main()
