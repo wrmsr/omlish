@@ -1,3 +1,9 @@
+# ruff: noqa: I001
+import typing as _ta
+
+from .. import lang as _lang
+
+
 from .coerce import (  # noqa
     abs_set,
     abs_set_of,
@@ -74,10 +80,16 @@ from .persistent import (  # noqa
     PersistentMap,
 )
 
-from .skiplist import (  # noqa
-    SkipList,
-    SkipListDict,
-)
+if _ta.TYPE_CHECKING:
+    from .skiplist import (  # noqa
+        SkipList,
+        SkipListDict,
+    )
+else:
+    _lang.proxy_init(globals(), '.skiplist', [
+        'SkipList',
+        'SkipListDict',
+    ])
 
 from .sorted import (  # noqa
     SortedCollection,
@@ -86,9 +98,14 @@ from .sorted import (  # noqa
     SortedMutableMapping,
 )
 
-from .treapmap import (  # noqa
-    new_treap_map,
-)
+if _ta.TYPE_CHECKING:
+    from .treapmap import (  # noqa
+        new_treap_map,
+    )
+else:
+    _lang.proxy_init(globals(), '.treapmap', [
+        'new_treap_map',
+    ])
 
 from .unmodifiable import (  # noqa
     Unmodifiable,
