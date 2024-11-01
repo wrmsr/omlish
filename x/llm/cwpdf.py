@@ -23,6 +23,7 @@ import abc
 import contextlib
 import dataclasses as dc
 import functools
+import logging
 import os.path
 import pickle
 import re
@@ -32,6 +33,7 @@ import uuid
 
 from omlish import check
 from omlish import lang
+from omlish import logs
 from omlish import term
 
 
@@ -49,6 +51,9 @@ else:
 
 
 T = ta.TypeVar('T')
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -384,13 +389,14 @@ def print_and_join(
         it: ta.Iterable[str],
         *,
         line_len: int | None = None,
-        default_line_len: int = 100,
+        default_to_tty: bool = True,
+        default_line_len: int | None = 100,
 ) -> str:
     if line_len is None:
-        if default_line_len is None:
-            # default_line_len = shutil.get_terminal_size().columns
-            raise NotImplementedError
+        if default_to_tty and os.isatty(1):
+            default_line_len = shutil.get_terminal_size().columns
         line_len = default_line_len
+
     x = 0
     lst = []
     for s in it:
@@ -399,14 +405,17 @@ def print_and_join(
             if ln:
                 print()
                 x = 0
+
             for wn, w in enumerate(l.split(' ')):
-                if (len(w) + (1 if wn else 0) + x) > line_len:
+                if line_len is not None and (len(w) + (1 if wn else 0) + x) > line_len:
                     print()
                     x = 0
                 elif wn:
                     print(' ', end='')
+
                 print(w, end='')
                 x += len(w) + 1
+
     print()
     return ''.join(lst)
 
@@ -418,11 +427,13 @@ def _main(es: contextlib.ExitStack) -> None:
 
     self_dir = os.path.dirname(__file__)
 
+    logs.configure_standard_logging('INFO')
+
     ##
 
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.docs.pkl'))
     def docs() -> list[Doc]:
-        print('Loading docs')
+        log.info('Loading docs')
         with contextlib.closing(pypdf.PdfReader(pdf_file)) as pdf_reader:
             ret = [
                 Doc(
@@ -437,12 +448,12 @@ def _main(es: contextlib.ExitStack) -> None:
                 )
                 for page_number, page in enumerate(pdf_reader.pages)
             ]
-        print(f'{len(ret)} docs loaded')
+        log.info('%d docs loaded', len(ret))
         return ret
 
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.splits.pkl'))
     def splits() -> list[Doc]:
-        print('Building splits')
+        log.info('Building splits')
         ret = [
             dc.replace(
                 split,
@@ -450,21 +461,21 @@ def _main(es: contextlib.ExitStack) -> None:
             )
             for split in RecursiveTextSplitter().split_docs(docs())
         ]
-        print(f'{len(ret)} splits built')
+        log.info('%d splits built', len(ret))
         return ret
 
     ##
 
     @lang.cached_function
     def embedding_model() -> 'llama_cpp.Llama':
-        print('Loading embedding model')
+        log.info('Loading embedding model')
         ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/nomic-embed-text-v1.5/fp16.gguf'),
             embedding=True,
             n_ctx=2048,
             verbose=False,
         )))
-        print('Embedding model loaded')
+        log.info('Embedding model loaded')
         return ret
 
     def embed(
@@ -489,22 +500,23 @@ def _main(es: contextlib.ExitStack) -> None:
 
     @_pkl_cache(os.path.join(self_dir, os.path.basename(pdf_file) + '.embeddings.pkl'))
     def embeddings() -> list[list[float]]:
-        print(f'Building embeddings')
+        log.info('Building embeddings')
         ret = []
         for split in term.progress_bar(splits()):
             ret.append(embed(split.content, 'embed'))
-        print(f'{len(ret)} embeddings built')
+        log.info('%d embeddings built', len(ret))
         return ret
 
     ##
 
     @lang.cached_function
     def chroma_client() -> 'chromadb.ClientAPI':
-        print('Creating chroma client')
+        log.info('Creating chroma client')
         chroma_settings = chromadb.config.Settings(is_persistent=True)
+        chroma_settings.anonymized_telemetry = False
         chroma_settings.persist_directory = os.path.join(self_dir, 'chroma_db')
         ret = chromadb.Client(chroma_settings)
-        print('Chroma client created')
+        log.info('Chroma client created')
         return ret
 
     @lang.cached_function
@@ -553,14 +565,14 @@ def _main(es: contextlib.ExitStack) -> None:
     ##
 
     def chat_model() -> 'llama_cpp.Llama':
-        print('Loading chat model')
+        log.info('Loading chat model')
         ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/official/Llama3.2-3B-Instruct/q4_0.gguf'),
             chat_format='llama-3',
             n_ctx=2048,
             verbose=False,
         )))
-        print('Chat model loaded')
+        log.info('Chat model loaded')
         return ret
 
     def query_information(query: str) -> str:
@@ -598,19 +610,20 @@ def _main(es: contextlib.ExitStack) -> None:
     ##
 
     def decision_model() -> 'llama_cpp.Llama':
-        print('Loading decision model')
+        log.info('Loading decision model')
         ret = es.enter_context(contextlib.closing(llama_cpp.Llama(
             model_path=os.path.expanduser('~/.cache/nexa/hub/DavidHandsome/Octopus-v2-PDF/gguf-q4_K_M/q4_K_M.gguf'),
             chat_format=None,
             n_ctx=2048,
             verbose=False,
         )))
-        print('Decision model loaded')
+        log.info('Decision model loaded')
         return ret
 
     ##
 
-    print(f'{chroma_upserts()} embeddings upserted to chroma')
+    num_upserts = chroma_upserts()
+    log.info('%d embeddings upserted to chroma', num_upserts)
 
     query_information('What is this pdf about?')
 
