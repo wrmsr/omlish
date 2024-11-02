@@ -73,8 +73,10 @@ class NcduApp:
             self._kb.add(k)(self.move_up)
         for k in ['down', 'n']:
             self._kb.add(k)(self.move_down)
-        self._kb.add('enter')(self.enter_directory)
-        self._kb.add('backspace')(self.go_back)
+        for k in ['right', 'enter']:
+            self._kb.add(k)(self.enter_directory)
+        for k in ['left', 'backspace']:
+            self._kb.add(k)(self.go_back)
 
         self._layout = ptk.Layout(ptk.Frame(self._text_area))
 
