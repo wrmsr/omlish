@@ -21,86 +21,50 @@ https://github.com/golang/go/blob/03103a54d830ee14187aac7720e42000927a6ce9/src/t
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-// Copyright 2011 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+# state represents the state of an execution. It's not part of thetemplate so that multiple executions of the same
+# template can execute in parallel.
+@dc.dataclass()
+class State:
+    tmpl:  Template
+    wr: ta.TextIO
+    node:  Node  # current node, for errors
+    vars:  list[Variable]  # push-down stack of variable values.
+    depth: int  # the height of the stack of executing templates.
 
-package template
 
-import (
-    "errors"
-    "fmt"
-    "internal/fmtsort"
-    "io"
-    "reflect"
-    "runtime"
-    "strings"
-    "text/template/parse"
-)
-
-// maxExecDepth specifies the maximum stack depth of templates within
-// templates. This limit is only practically reached by accidentally
-// recursive template invocations. This limit allows us to return
-// an error instead of triggering a stack overflow.
-var maxExecDepth = initMaxExecDepth()
-
-func initMaxExecDepth() int {
-    if runtime.GOARCH == "wasm" {
-        return 1000
-    }
-    return 100000
-}
-
-// state represents the state of an execution. It's not part of the
-// template so that multiple executions of the same template
-// can execute in parallel.
-type state struct {
-    tmpl  *Template
-    wr    io.Writer
-    node  parse.Node // current node, for errors
-    vars  []variable // push-down stack of variable values.
-    depth int        // the height of the stack of executing templates.
-}
-
-// variable holds the dynamic value of a variable such as $, $x etc.
-type variable struct {
+# variable holds the dynamic value of a variable such as $, $x etc.
+@dc.dataclass()
+class Variable:
     name  string
     value reflect.Value
-}
 
-// push pushes a new variable on the stack.
-func (s *state) push(name string, value reflect.Value) {
-    s.vars = append(s.vars, variable{name, value})
-}
+    # push pushes a new variable on the stack.
+    def push(self, name: str, value: ta.Any) -> None:
+        self.vars.append(Variable(name, value))
 
-// mark returns the length of the variable stack.
-func (s *state) mark() int {
-    return len(s.vars)
-}
+    # mark returns the length of the variable stack.
+    def mark(self) -> int:
+        return len(self.vars)
 
-// pop pops the variable stack up to the mark.
-func (s *state) pop(mark int) {
-    s.vars = s.vars[0:mark]
-}
+    # pop pops the variable stack up to the mark.
+    def pop(self, mark: int) -> None:
+        self.vars = self.vars[:mark]
 
-// setVar overwrites the last declared variable with the given name.
-// Used by variable assignments.
-func (s *state) setVar(name string, value reflect.Value) {
-    for i := s.mark() - 1; i >= 0; i-- {
-        if s.vars[i].name == name {
-            s.vars[i].value = value
-            return
-        }
-    }
-    s.errorf("undefined variable: %s", name)
-}
+    # setVar overwrites the last declared variable with the given name.
+    # Used by variable assignments.
+    def set_var(self, name: str, value: ta.Any) -> None:
+        for i := s.mark() - 1; i >= 0; i-- {
+            if s.vars[i].name == name {
+                s.vars[i].value = value
+                return
+        s.errorf("undefined variable: %s", name)
 
-// setTopVar overwrites the top-nth variable on the stack. Used by range iterations.
+# setTopVar overwrites the top-nth variable on the stack. Used by range iterations.
 func (s *state) setTopVar(n int, value reflect.Value) {
     s.vars[len(s.vars)-n].value = value
 }
 
-// varValue returns the value of the named variable.
+# varValue returns the value of the named variable.
 func (s *state) varValue(name string) reflect.Value {
     for i := s.mark() - 1; i >= 0; i-- {
         if s.vars[i].name == name {
@@ -123,24 +87,20 @@ func isMissing(v reflect.Value) bool {
     return v.IsValid() && v.Type() == missingValReflectType
 }
 
-// at marks the state to be on node n, for error reporting.
+# at marks the state to be on node n, for error reporting.
 func (s *state) at(node parse.Node) {
     s.node = node
 }
 
-// doublePercent returns the string with %'s replaced by %%, if necessary,
-// so it can be used safely inside a Printf format string.
+# doublePercent returns the string with %'s replaced by %%, if necessary, so it can be used safely inside a Printf
+# format string.
 func doublePercent(str string) string {
     return strings.ReplaceAll(str, "%", "%%")
 }
 
-// TODO: It would be nice if ExecError was more broken down, but
-// the way ErrorContext embeds the template name makes the
-// processing too clumsy.
+// TODO: It would be nice if ExecError was more broken down, but the way ErrorContext embeds the template name makes the processing too clumsy.
 
-// ExecError is the custom error type returned when Execute has an
-// error evaluating its template. (If a write error occurs, the actual
-// error is returned; it will not be of type ExecError.)
+// ExecError is the custom error type returned when Execute has an error evaluating its template. (If a write error occurs, the actual error is returned; it will not be of type ExecError.)
 type ExecError struct {
     Name string // Name of template.
     Err  error  // Pre-formatted error.
@@ -169,10 +129,8 @@ func (s *state) errorf(format string, args ...any) {
     })
 }
 
-// writeError is the wrapper type used internally when Execute has an
-// error writing to its output. We strip the wrapper in errRecover.
-// Note that this is not an implementation of error, so it cannot escape
-// from the package as an error value.
+# writeError is the wrapper type used internally when Execute has an error writing to its output. We strip the wrapper in errRecover.
+# Note that this is not an implementation of error, so it cannot escape from the package as an error value.
 type writeError struct {
     Err error // Original error.
 }
@@ -183,8 +141,7 @@ func (s *state) writeError(err error) {
     })
 }
 
-// errRecover is the handler that turns panics into returns from the top
-// level of Parse.
+# errRecover is the handler that turns panics into returns from the top level of Parse.
 func errRecover(errp *error) {
     e := recover()
     if e != nil {
@@ -201,13 +158,8 @@ func errRecover(errp *error) {
     }
 }
 
-// ExecuteTemplate applies the template associated with t that has the given name
-// to the specified data object and writes the output to wr.
-// If an error occurs executing the template or writing its output,
-// execution stops, but partial results may already have been written to
-// the output writer.
-// A template may be executed safely in parallel, although if parallel
-// executions share a Writer the output may be interleaved.
+# ExecuteTemplate applies the template associated with t that has the given name to the specified data object and writes the output to wr. If an error occurs executing the template or writing its output, execution stops, but partial results may already have been written to the output writer.
+# A template may be executed safely in parallel, although if parallel executions share a Writer the output may be interleaved.
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data any) error {
     tmpl := t.Lookup(name)
     if tmpl == nil {
@@ -216,16 +168,11 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data any) error {
     return tmpl.Execute(wr, data)
 }
 
-// Execute applies a parsed template to the specified data object,
-// and writes the output to wr.
-// If an error occurs executing the template or writing its output,
-// execution stops, but partial results may already have been written to
-// the output writer.
-// A template may be executed safely in parallel, although if parallel
-// executions share a Writer the output may be interleaved.
-//
-// If data is a [reflect.Value], the template applies to the concrete
-// value that the reflect.Value holds, as in [fmt.Print].
+# Execute applies a parsed template to the specified data object, and writes the output to wr.
+# If an error occurs executing the template or writing its output, execution stops, but partial results may already have been written to the output writer.
+# A template may be executed safely in parallel, although if parallel executions share a Writer the output may be interleaved.
+#
+# If data is a [reflect.Value], the template applies to the concrete value that the reflect.Value holds, as in [fmt.Print].
 func (t *Template) Execute(wr io.Writer, data any) error {
     return t.execute(wr, data)
 }
