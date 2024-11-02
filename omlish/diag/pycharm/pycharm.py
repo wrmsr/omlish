@@ -1,7 +1,9 @@
 import dataclasses as dc
+import json
 import os.path
 import plistlib
 import re
+import shutil
 import subprocess
 import sys
 import typing as ta
@@ -43,6 +45,26 @@ def read_darwin_pycharm_info_plist() -> ta.Mapping[str, ta.Any] | None:
     return root
 
 
+#
+
+
+UBUNTU_PYCHARM_HOME = '/snap/pycharm-professional/current'
+
+
+def read_ubuntu_pycharm_product_info() -> ta.Mapping[str, ta.Any] | None:
+    json_file = os.path.join(UBUNTU_PYCHARM_HOME, 'product-info.json')
+    if not os.path.isfile(json_file):
+        return None
+
+    with open(json_file) as f:
+        root = json.load(f)
+
+    return root
+
+
+#
+
+
 @lang.cached_function
 def get_pycharm_version() -> str | None:
     if sys.platform == 'darwin':
@@ -53,6 +75,17 @@ def get_pycharm_version() -> str | None:
         ver = check.non_empty_str(plist['CFBundleVersion'])
         check.state(ver.startswith('PY-'))
         return ver[3:]
+
+    elif sys.platform == 'linux':
+        if shutil.which('lsb_release') is not None:
+            lsb_id = subprocess.check_output(['lsb_release', '-is']).decode().strip()
+            if lsb_id == 'Ubuntu':
+                pi = read_ubuntu_pycharm_product_info()
+                if pi is not None:
+                    ver = check.non_empty_str(pi['buildNumber'])
+                    return ver
+
+        return None
 
     else:
         return None
