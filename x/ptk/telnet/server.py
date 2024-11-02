@@ -1,7 +1,4 @@
-"""
-Telnet server.
-"""
-
+"""Telnet server."""
 from __future__ import annotations
 
 import asyncio
@@ -36,10 +33,6 @@ from .protocol import (
     TelnetProtocolParser,
 )
 
-__all__ = [
-    "TelnetServer",
-]
-
 
 def int2byte(number: int) -> bytes:
     return bytes((number,))
@@ -68,17 +61,14 @@ def _initialize_telnet(connection: socket.socket) -> None:
     # Assume the client will accept the negotiation with `IAC +  WILL + TTYPE`
     connection.send(IAC + DO + TTYPE)
 
-    # We can then select the first terminal type supported by the client,
-    # which is generally the best type the client supports
+    # We can then select the first terminal type supported by the client, which is generally the best type the client
+    # supports
     # The client should reply with a `IAC + SB  + TTYPE + IS + ttype + IAC + SE`
     connection.send(IAC + SB + TTYPE + SEND + IAC + SE)
 
 
 class _ConnectionStdout:
-    """
-    Wrapper around socket which provides `write` and `flush` methods for the
-    Vt100_Output output.
-    """
+    """Wrapper around socket which provides `write` and `flush` methods for the Vt100_Output output."""
 
     def __init__(self, connection: socket.socket, encoding: str) -> None:
         self._encoding = encoding
@@ -117,9 +107,7 @@ class _ConnectionStdout:
 
 
 class TelnetConnection:
-    """
-    Class that represents one Telnet connection.
-    """
+    """Class that represents one Telnet connection."""
 
     def __init__(
         self,
@@ -158,28 +146,27 @@ class TelnetConnection:
 
         def data_received(data: bytes) -> None:
             """TelnetProtocolParser 'data_received' callback"""
+
             self.vt100_input.send_bytes(data)
 
         def size_received(rows: int, columns: int) -> None:
             """TelnetProtocolParser 'size_received' callback"""
+
             self.size = Size(rows=rows, columns=columns)
             if self.vt100_output is not None and self.context:
                 self.context.run(lambda: get_app()._on_resize())
 
         def ttype_received(ttype: str) -> None:
             """TelnetProtocolParser 'ttype_received' callback"""
-            self.vt100_output = Vt100_Output(
-                self.stdout, get_size, term=ttype, enable_cpr=enable_cpr
-            )
+
+            self.vt100_output = Vt100_Output(self.stdout, get_size, term=ttype, enable_cpr=enable_cpr)
             self._ready.set()
 
         self.parser = TelnetProtocolParser(data_received, size_received, ttype_received)
         self.context: contextvars.Context | None = None
 
     async def run_application(self) -> None:
-        """
-        Run application.
-        """
+        """Run application."""
 
         def handle_incoming_data() -> None:
             data = self.conn.recv(1024)
@@ -205,14 +192,16 @@ class TelnetConnection:
 
     def feed(self, data: bytes) -> None:
         """
-        Handler for incoming data. (Called by TelnetServer.)
+        Handler for incoming data.
+
+        (Called by TelnetServer.)
         """
+
         self.parser.feed(data)
 
     def close(self) -> None:
-        """
-        Closed by client.
-        """
+        """Closed by client."""
+
         if not self._closed:
             self._closed = True
 
@@ -222,36 +211,33 @@ class TelnetConnection:
             self.stdout.close()
 
     def send(self, formatted_text: AnyFormattedText) -> None:
-        """
-        Send text to the client.
-        """
+        """Send text to the client."""
+
         if self.vt100_output is None:
             return
         formatted_text = to_formatted_text(formatted_text)
-        print_formatted_text(
-            self.vt100_output, formatted_text, self.style or DummyStyle()
-        )
+        print_formatted_text(self.vt100_output, formatted_text, self.style or DummyStyle())
 
     def send_above_prompt(self, formatted_text: AnyFormattedText) -> None:
         """
         Send text to the client.
         This is asynchronous, returns a `Future`.
         """
+
         formatted_text = to_formatted_text(formatted_text)
         return self._run_in_terminal(lambda: self.send(formatted_text))
 
     def _run_in_terminal(self, func: Callable[[], None]) -> None:
-        # Make sure that when an application was active for this connection,
-        # that we print the text above the application.
+        # Make sure that when an application was active for this connection, that we print the text above the
+        # application.
         if self.context:
             self.context.run(run_in_terminal, func)  # type: ignore
         else:
             raise RuntimeError("Called _run_in_terminal outside `run_application`.")
 
     def erase_screen(self) -> None:
-        """
-        Erase the screen and move the cursor to the top.
-        """
+        """Erase the screen and move the cursor to the top."""
+
         if self.vt100_output is None:
             return
         self.vt100_output.erase_screen()
@@ -320,10 +306,9 @@ class TelnetServer:
         :param ready_cb: Callback that will be called at the point that we're
             actually listening.
         """
+
         socket = self._create_socket(self.host, self.port)
-        logger.info(
-            "Listening for telnet connections on %s port %r", self.host, self.port
-        )
+        logger.info("Listening for telnet connections on %s port %r", self.host, self.port)
 
         get_running_loop().add_reader(socket, lambda: self._accept(socket))
 
@@ -341,10 +326,8 @@ class TelnetServer:
             for t in self._application_tasks:
                 t.cancel()
 
-            # (This is similar to
-            # `Application.cancel_and_wait_for_background_tasks`. We wait for the
-            # background tasks to complete, but don't propagate exceptions, because
-            # we can't use `ExceptionGroup` yet.)
+            # (This is similar to `Application.cancel_and_wait_for_background_tasks`. We wait for the background tasks
+            # to complete, but don't propagate exceptions, because we can't use `ExceptionGroup` yet.)
             if len(self._application_tasks) > 0:
                 await asyncio.wait(
                     self._application_tasks,
@@ -358,6 +341,7 @@ class TelnetServer:
 
         Start the telnet server (stop by calling and awaiting `stop()`).
         """
+
         if self._run_task is not None:
             # Already running.
             return
@@ -368,9 +352,9 @@ class TelnetServer:
         """
         Deprecated: Use `.run()` instead.
 
-        Stop a telnet server that was started using `.start()` and wait for the
-        cancellation to complete.
+        Stop a telnet server that was started using `.start()` and wait for the cancellation to complete.
         """
+
         if self._run_task is not None:
             self._run_task.cancel()
             try:
@@ -379,9 +363,8 @@ class TelnetServer:
                 pass
 
     def _accept(self, listen_socket: socket.socket) -> None:
-        """
-        Accept new incoming connection.
-        """
+        """Accept new incoming connection."""
+
         conn, addr = listen_socket.accept()
         logger.info("New connection %r %r", *addr)
 
@@ -407,20 +390,22 @@ class TelnetServer:
                     finally:
                         self.connections.remove(connection)
                         logger.info("Stopping interaction %r %r", *addr)
+
             except EOFError:
-                # Happens either when the connection is closed by the client
-                # (e.g., when the user types 'control-]', then 'quit' in the
-                # telnet client) or when the user types control-d in a prompt
-                # and this is not handled by the interact function.
+                # Happens either when the connection is closed by the client (e.g., when the user types 'control-]',
+                # then 'quit' in the telnet client) or when the user types control-d in a prompt and this is not handled
+                # by the interact function.
                 logger.info("Unhandled EOFError in telnet application.")
+
             except KeyboardInterrupt:
                 # Unhandled control-c propagated by a prompt.
                 logger.info("Unhandled KeyboardInterrupt in telnet application.")
+
             except BaseException as e:
                 print(f"Got {type(e).__name__}", e)
                 import traceback
-
                 traceback.print_exc()
+
             finally:
                 self._application_tasks.remove(task)
 
