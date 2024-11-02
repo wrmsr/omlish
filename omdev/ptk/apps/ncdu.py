@@ -69,14 +69,10 @@ class NcduApp:
 
         self._kb = ptk.KeyBindings()
         self._kb.add('q')(self.exit_app)
-        for k in ['up', 'p']:
-            self._kb.add(k)(self.move_up)
-        for k in ['down', 'n']:
-            self._kb.add(k)(self.move_down)
-        for k in ['right', 'enter']:
-            self._kb.add(k)(self.enter_directory)
-        for k in ['left', 'backspace']:
-            self._kb.add(k)(self.go_back)
+        self._kb.add('up', 'p')(self.move_up)
+        self._kb.add('down', 'n')(self.move_down)
+        self._kb.add('right', 'enter')(self.enter_directory)
+        self._kb.add('left', 'backspace')(self.go_back)
 
         self._layout = ptk.Layout(ptk.Frame(self._text_area))
 
