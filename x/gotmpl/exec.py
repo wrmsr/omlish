@@ -20,23 +20,29 @@ https://github.com/golang/go/blob/03103a54d830ee14187aac7720e42000927a6ce9/src/t
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
-# state represents the state of an execution. It's not part of thetemplate so that multiple executions of the same
-# template can execute in parallel.
-@dc.dataclass()
-class State:
-    tmpl:  Template
-    wr: ta.TextIO
-    node:  Node  # current node, for errors
-    vars:  list[Variable]  # push-down stack of variable values.
-    depth: int  # the height of the stack of executing templates.
+import dataclasses as dc
+import typing as ta
+
+from .nodes import Node
+from .tmpl import Template
 
 
 # variable holds the dynamic value of a variable such as $, $x etc.
 @dc.dataclass()
 class Variable:
-    name  string
-    value reflect.Value
+    name: str
+    value: ta.Any
+
+
+# state represents the state of an execution. It's not part of thetemplate so that multiple executions of the same
+# template can execute in parallel.
+@dc.dataclass()
+class State:
+    tmpl: Template
+    wr: ta.TextIO
+    node: Node  # current node, for errors
+    vars: list[Variable]  # push-down stack of variable values.
+    depth: int  # the height of the stack of executing templates.
 
     # push pushes a new variable on the stack.
     def push(self, name: str, value: ta.Any) -> None:
@@ -53,29 +59,27 @@ class Variable:
     # setVar overwrites the last declared variable with the given name.
     # Used by variable assignments.
     def set_var(self, name: str, value: ta.Any) -> None:
-        for i := s.mark() - 1; i >= 0; i-- {
-            if s.vars[i].name == name {
-                s.vars[i].value = value
+        for i in range(self.mark() - 1, -1, -1):
+            if self.vars[i].name == name:
+                self.vars[i].value = value
                 return
-        s.errorf("undefined variable: %s", name)
+        # raise NameError(f'undefined variable: {name}')
+        return None
 
-# setTopVar overwrites the top-nth variable on the stack. Used by range iterations.
-func (s *state) setTopVar(n int, value reflect.Value) {
-    s.vars[len(s.vars)-n].value = value
-}
+    # setTopVar overwrites the top-nth variable on the stack. Used by range iterations.
+    def set_top_var(self, n: int, value: ta.Any) -> None:
+        self.vars[len(self.vars) - n].value = value
 
-# varValue returns the value of the named variable.
-func (s *state) varValue(name string) reflect.Value {
-    for i := s.mark() - 1; i >= 0; i-- {
-        if s.vars[i].name == name {
-            return s.vars[i].value
-        }
-    }
-    s.errorf("undefined variable: %s", name)
-    return zero
-}
+    # varValue returns the value of the named variable.
+    def var_value(self, name: str) -> ta.Any:
+        for i in range(self.mark() - 1, -1, -1):
+            if self.vars[i].name == name:
+                return self.vars[i].value
+        # raise NameError(f'undefined variable: {name}')
+        return None
 
-var zero reflect.Value
+
+"""
 
 type missingValType struct{}
 
@@ -85,36 +89,27 @@ var missingValReflectType = reflect.TypeFor[missingValType]()
 
 func isMissing(v reflect.Value) bool {
     return v.IsValid() && v.Type() == missingValReflectType
-}
 
 # at marks the state to be on node n, for error reporting.
 func (s *state) at(node parse.Node) {
     s.node = node
-}
 
 # doublePercent returns the string with %'s replaced by %%, if necessary, so it can be used safely inside a Printf
 # format string.
 func doublePercent(str string) string {
     return strings.ReplaceAll(str, "%", "%%")
-}
 
-// TODO: It would be nice if ExecError was more broken down, but the way ErrorContext embeds the template name makes the processing too clumsy.
+# TODO: It would be nice if ExecError was more broken down, but the way ErrorContext embeds the template name makes the
+# processing too clumsy.
 
-// ExecError is the custom error type returned when Execute has an error evaluating its template. (If a write error occurs, the actual error is returned; it will not be of type ExecError.)
-type ExecError struct {
-    Name string // Name of template.
-    Err  error  // Pre-formatted error.
-}
+# ExecError is the custom error type returned when Execute has an error evaluating its template. (If a write error
+# occurs, the actual error is returned; it will not be of type ExecError.)
+@dc.dataclass()
+class ExecError struct {
+    Name string  # Name of template.
+    Err  error  # Pre-formatted error.
 
-func (e ExecError) Error() string {
-    return e.Err.Error()
-}
-
-func (e ExecError) Unwrap() error {
-    return e.Err
-}
-
-// errorf records an ExecError and terminates processing.
+# errorf records an ExecError and terminates processing.
 func (s *state) errorf(format string, args ...any) {
     name := doublePercent(s.tmpl.Name())
     if s.node == nil {
@@ -195,10 +190,10 @@ func (t *Template) execute(wr io.Writer, data any) (err error) {
     return
 }
 
-// DefinedTemplates returns a string listing the defined templates,
-// prefixed by the string "; defined templates are: ". If there are none,
-// it returns the empty string. For generating an error message here
-// and in [html/template].
+# DefinedTemplates returns a string listing the defined templates,
+# prefixed by the string "; defined templates are: ". If there are none,
+# it returns the empty string. For generating an error message here
+# and in [html/template].
 func (t *Template) DefinedTemplates() string {
     if t.common == nil {
         return ""
@@ -220,14 +215,14 @@ func (t *Template) DefinedTemplates() string {
     return b.String()
 }
 
-// Sentinel errors for use with panic to signal early exits from range loops.
+# Sentinel errors for use with panic to signal early exits from range loops.
 var (
     walkBreak    = errors.New("break")
     walkContinue = errors.New("continue")
 )
 
-// Walk functions step through the major pieces of the template structure,
-// generating output as they go.
+# Walk functions step through the major pieces of the template structure,
+# generating output as they go.
 func (s *state) walk(dot reflect.Value, node parse.Node) {
     s.at(node)
     switch node := node.(type) {
@@ -264,8 +259,8 @@ func (s *state) walk(dot reflect.Value, node parse.Node) {
     }
 }
 
-// walkIfOrWith walks an 'if' or 'with' node. The two control structures
-// are identical in behavior except that 'with' sets dot.
+# walkIfOrWith walks an 'if' or 'with' node. The two control structures
+# are identical in behavior except that 'with' sets dot.
 func (s *state) walkIfOrWith(typ parse.NodeType, dot reflect.Value, pipe *parse.PipeNode, list, elseList *parse.ListNode) {
     defer s.pop(s.mark())
     val := s.evalPipeline(dot, pipe)
@@ -284,9 +279,9 @@ func (s *state) walkIfOrWith(typ parse.NodeType, dot reflect.Value, pipe *parse.
     }
 }
 
-// IsTrue reports whether the value is 'true', in the sense of not the zero of its type,
-// and whether the value has a meaningful truth value. This is the definition of
-// truth used by if and other such actions.
+# IsTrue reports whether the value is 'true', in the sense of not the zero of its type,
+# and whether the value has a meaningful truth value. This is the definition of
+# truth used by if and other such actions.
 func IsTrue(val any) (truth, ok bool) {
     return isTrue(reflect.ValueOf(val))
 }
@@ -484,14 +479,14 @@ func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {
     newState.walk(dot, tmpl.Root)
 }
 
-// Eval functions evaluate pipelines, commands, and their elements and extract
-// values from the data structure by examining fields, calling methods, and so on.
-// The printing of those values happens only through walk functions.
+# Eval functions evaluate pipelines, commands, and their elements and extract
+# values from the data structure by examining fields, calling methods, and so on.
+# The printing of those values happens only through walk functions.
 
-// evalPipeline returns the value acquired by evaluating a pipeline. If the
-// pipeline has a variable declaration, the variable will be pushed on the
-// stack. Callers should therefore pop the stack after they are finished
-// executing commands depending on the pipeline value.
+# evalPipeline returns the value acquired by evaluating a pipeline. If the
+# pipeline has a variable declaration, the variable will be pushed on the
+# stack. Callers should therefore pop the stack after they are finished
+# executing commands depending on the pipeline value.
 func (s *state) evalPipeline(dot reflect.Value, pipe *parse.PipeNode) (value reflect.Value) {
     if pipe == nil {
         return
@@ -556,10 +551,10 @@ func (s *state) evalCommand(dot reflect.Value, cmd *parse.CommandNode, final ref
     panic("not reached")
 }
 
-// idealConstant is called to return the value of a number in a context where
-// we don't know the type. In that case, the syntax of the number tells us
-// its type, and we use Go rules to resolve. Note there is no such thing as
-// a uint ideal constant in this situation - the value must be of int type.
+# idealConstant is called to return the value of a number in a context where
+# we don't know the type. In that case, the syntax of the number tells us
+# its type, and we use Go rules to resolve. Note there is no such thing as
+# a uint ideal constant in this situation - the value must be of int type.
 func (s *state) idealConstant(constant *parse.NumberNode) reflect.Value {
     // These are ideal constants but we don't know the type
     // and we have no context.  (If it was a method argument,
@@ -624,9 +619,9 @@ func (s *state) evalVariableNode(dot reflect.Value, variable *parse.VariableNode
     return s.evalFieldChain(dot, value, variable, variable.Ident[1:], args, final)
 }
 
-// evalFieldChain evaluates .X.Y.Z possibly followed by arguments.
-// dot is the environment in which to evaluate arguments, while
-// receiver is the value being walked along the chain.
+# evalFieldChain evaluates .X.Y.Z possibly followed by arguments.
+# dot is the environment in which to evaluate arguments, while
+# receiver is the value being walked along the chain.
 func (s *state) evalFieldChain(dot, receiver reflect.Value, node parse.Node, ident []string, args []parse.Node, final reflect.Value) reflect.Value {
     n := len(ident)
     for i := 0; i < n-1; i++ {
@@ -646,9 +641,9 @@ func (s *state) evalFunction(dot reflect.Value, node *parse.IdentifierNode, cmd 
     return s.evalCall(dot, function, isBuiltin, cmd, name, args, final)
 }
 
-// evalField evaluates an expression like (.Field) or (.Field arg1 arg2).
-// The 'final' argument represents the return value from the preceding
-// value of the pipeline, if any.
+# evalField evaluates an expression like (.Field) or (.Field arg1 arg2).
+# The 'final' argument represents the return value from the preceding
+# value of the pipeline, if any.
 func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, args []parse.Node, final, receiver reflect.Value) reflect.Value {
     if !receiver.IsValid() {
         if s.tmpl.option.missingKey == mapError { // Treat invalid value as missing map key.
@@ -736,9 +731,9 @@ var (
     reflectValueType = reflect.TypeFor[reflect.Value]()
 )
 
-// evalCall executes a function or method call. If it's a method, fun already has the receiver bound, so
-// it looks just like a function call. The arg list, if non-nil, includes (in the manner of the shell), arg[0]
-// as the function itself.
+# evalCall executes a function or method call. If it's a method, fun already has the receiver bound, so
+# it looks just like a function call. The arg list, if non-nil, includes (in the manner of the shell), arg[0]
+# as the function itself.
 func (s *state) evalCall(dot, fun reflect.Value, isBuiltin bool, node parse.Node, name string, args []parse.Node, final reflect.Value) reflect.Value {
     if args != nil {
         args = args[1:] // Zeroth arg is function name/node; not passed to function.
@@ -841,7 +836,7 @@ func (s *state) evalCall(dot, fun reflect.Value, isBuiltin bool, node parse.Node
     return unwrap(v)
 }
 
-// canBeNil reports whether an untyped nil can be assigned to the type. See reflect.Zero.
+# canBeNil reports whether an untyped nil can be assigned to the type. See reflect.Zero.
 func canBeNil(typ reflect.Type) bool {
     switch typ.Kind() {
     case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
@@ -852,7 +847,7 @@ func canBeNil(typ reflect.Type) bool {
     return false
 }
 
-// validateType guarantees that the value is valid and assignable to the type.
+# validateType guarantees that the value is valid and assignable to the type.
 func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Value {
     if !value.IsValid() {
         if typ == nil {
@@ -1034,9 +1029,9 @@ func (s *state) evalEmptyInterface(dot reflect.Value, n parse.Node) reflect.Valu
     panic("not reached")
 }
 
-// indirect returns the item at the end of indirection, and a bool to indicate
-// if it's nil. If the returned bool is true, the returned value's kind will be
-// either a pointer or interface.
+# indirect returns the item at the end of indirection, and a bool to indicate
+# if it's nil. If the returned bool is true, the returned value's kind will be
+# either a pointer or interface.
 func indirect(v reflect.Value) (rv reflect.Value, isNil bool) {
     for ; v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface; v = v.Elem() {
         if v.IsNil() {
@@ -1046,10 +1041,10 @@ func indirect(v reflect.Value) (rv reflect.Value, isNil bool) {
     return v, false
 }
 
-// indirectInterface returns the concrete value in an interface value,
-// or else the zero reflect.Value.
-// That is, if v represents the interface value x, the result is the same as reflect.ValueOf(x):
-// the fact that x was an interface value is forgotten.
+# indirectInterface returns the concrete value in an interface value,
+# or else the zero reflect.Value.
+# That is, if v represents the interface value x, the result is the same as reflect.ValueOf(x):
+# the fact that x was an interface value is forgotten.
 func indirectInterface(v reflect.Value) reflect.Value {
     if v.Kind() != reflect.Interface {
         return v
@@ -1060,8 +1055,8 @@ func indirectInterface(v reflect.Value) reflect.Value {
     return v.Elem()
 }
 
-// printValue writes the textual representation of the value to the output of
-// the template.
+# printValue writes the textual representation of the value to the output of
+# the template.
 func (s *state) printValue(n parse.Node, v reflect.Value) {
     s.at(n)
     iface, ok := printableValue(v)
@@ -1074,8 +1069,8 @@ func (s *state) printValue(n parse.Node, v reflect.Value) {
     }
 }
 
-// printableValue returns the, possibly indirected, interface value inside v that
-// is best for a call to formatted printer.
+# printableValue returns the, possibly indirected, interface value inside v that
+# is best for a call to formatted printer.
 func printableValue(v reflect.Value) (any, bool) {
     if v.Kind() == reflect.Pointer {
         v, _ = indirect(v) // fmt.Fprint handles nil.
