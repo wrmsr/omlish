@@ -1470,7 +1470,7 @@ class AwsPutLogEventsResponse(AwsDataclass):
 ##
 
 
-class AwsLogMessagePoster:
+class AwsLogMessageBuilder:
     """
     TODO:
      - max_items
@@ -1572,7 +1572,7 @@ class AwsLogMessagePoster:
         )
         sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
 
-        post = AwsLogMessagePoster.Post(
+        post = AwsLogMessageBuilder.Post(
             url=self._url,
             headers={k: check_single(v) for k, v in sig_req.headers.items()},
             data=sig_req.payload,
@@ -1655,7 +1655,7 @@ class JournalctlMessageBuilder:
 
 
 ########################################
-# ../../../../threadworker.py
+# ../../../../threadworkers.py
 """
 TODO:
  - implement stop lol
@@ -2426,8 +2426,8 @@ class JournalctlToAwsDriver:
         )
 
     @cached_nullary
-    def _aws_log_message_poster(self) -> AwsLogMessagePoster:
-        return AwsLogMessagePoster(
+    def _aws_log_message_builder(self) -> AwsLogMessageBuilder:
+        return AwsLogMessageBuilder(
             log_group_name=self._config.aws_log_group_name,
             log_stream_name=check_non_empty_str(self._config.aws_log_stream_name),
             region_name=self._config.aws_region_name,
@@ -2471,7 +2471,7 @@ class JournalctlToAwsDriver:
 
         q = self._journalctl_message_queue()  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
         jtw = self._journalctl_tailer_worker()  # type: JournalctlTailerWorker
-        mp = self._aws_log_message_poster()  # type: AwsLogMessagePoster
+        lmb = self._aws_log_message_builder()  # type: AwsLogMessageBuilder
 
         jtw.start()
 
@@ -2502,12 +2502,12 @@ class JournalctlToAwsDriver:
 
             feed_msgs = []
             for m in msgs:
-                feed_msgs.append(mp.Message(
+                feed_msgs.append(lmb.Message(
                     message=json.dumps(m.dct, sort_keys=True),
                     ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
                 ))
 
-            [post] = mp.feed(feed_msgs)
+            [post] = lmb.feed(feed_msgs)
             log.debug('%r', post)
 
             if not self._config.dry_run:

@@ -349,7 +349,7 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_shell_wrap_exec
 
-from ..threadworker import ThreadWorker
+from ..threadworkers import ThreadWorker
 from .messages import JournalctlMessage  # noqa
 from .messages import JournalctlMessageBuilder
 
