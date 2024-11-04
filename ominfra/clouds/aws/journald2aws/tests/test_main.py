@@ -29,7 +29,8 @@ def test_main():
         __package__.rpartition('.')[0] + '.main',
         '--config-file', cfg_file,
         '--dry-run',
-        # '--verbose',
+        '--verbose',
+        '--num-messages', '10',
     ])
     proc.communicate()
     assert not proc.returncode

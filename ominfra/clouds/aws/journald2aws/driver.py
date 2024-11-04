@@ -204,3 +204,7 @@ class JournalctlToAwsDriver(ExitStacked):
                 break
 
             time.sleep(1.)
+
+        for w in reversed(ws):
+            w.stop()
+            w.join()

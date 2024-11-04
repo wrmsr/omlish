@@ -93,6 +93,8 @@ class ThreadWorker(ExitStacked, abc.ABC):
     def __run(self) -> None:
         try:
             self._run()
+        except ThreadWorker.Stopping:
+            pass
         except Exception:  # noqa
             log.exception('Error in worker thread: %r', self)
             raise
@@ -100,6 +102,17 @@ class ThreadWorker(ExitStacked, abc.ABC):
     @abc.abstractmethod
     def _run(self) -> None:
         raise NotImplementedError
+
+    #
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+    def join(self, timeout: ta.Optional[float] = None) -> None:
+        with self._lock:
+            if self._thread is None:
+                raise RuntimeError('Thread not started: %r', self)
+            self._thread.join(timeout)
 
 
 ##
