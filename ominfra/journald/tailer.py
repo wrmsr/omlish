@@ -385,7 +385,7 @@ class JournalctlTailerWorker(ThreadWorker):
         self._read_size = read_size
         self._sleep_s = sleep_s
 
-        self._mb = JournalctlMessageBuilder()
+        self._builder = JournalctlMessageBuilder()
 
         self._proc: ta.Optional[subprocess.Popen] = None
 
@@ -432,7 +432,7 @@ class JournalctlTailerWorker(ThreadWorker):
                         raise RuntimeError('Journalctl empty read')
 
                     log.debug('Journalctl read buffer: %r', buf)
-                    msgs = self._mb.feed(buf)
+                    msgs = self._builder.feed(buf)
                     if msgs:
                         while True:
                             try:

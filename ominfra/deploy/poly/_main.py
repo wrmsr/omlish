@@ -34,8 +34,10 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../base.py
+# ../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
+
+# ../base.py
 ConcernT = ta.TypeVar('ConcernT')
 ConfigT = ta.TypeVar('ConfigT')
 SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcernConfig')
@@ -84,7 +86,7 @@ class DeployConfig:
 # ../../../../omlish/lite/cached.py
 
 
-class cached_nullary:  # noqa
+class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
         self._fn = fn
@@ -99,6 +101,10 @@ class cached_nullary:  # noqa
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
+
+
+def cached_nullary(fn: ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _cached_nullary(fn)
 
 
 ########################################
