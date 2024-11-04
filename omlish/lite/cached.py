@@ -1,7 +1,11 @@
 import functools
+import typing as ta
 
 
-class cached_nullary:  # noqa
+T = ta.TypeVar('T')
+
+
+class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
         self._fn = fn
@@ -16,3 +20,7 @@ class cached_nullary:  # noqa
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
+
+
+def cached_nullary(fn: ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _cached_nullary(fn)

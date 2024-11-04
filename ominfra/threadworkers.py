@@ -8,14 +8,12 @@ TODO:
   - shared stop_event?
 """
 import abc
-import contextlib
 import dataclasses as dc
 import threading
 import time
 import typing as ta
 
-from omlish.lite.check import check_not_none
-from omlish.lite.check import check_state
+from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.logs import log
 
 
@@ -26,7 +24,7 @@ ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 ##
 
 
-class ThreadWorker(abc.ABC):
+class ThreadWorker(ExitStacked, abc.ABC):
     def __init__(
             self,
             *,
@@ -39,7 +37,6 @@ class ThreadWorker(abc.ABC):
         self._stop_event = stop_event
 
         self._lock = threading.RLock()
-        self._exit_stack: ta.Optional[contextlib.ExitStack] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
 
@@ -47,19 +44,7 @@ class ThreadWorker(abc.ABC):
 
     def __enter__(self: ThreadWorkerT) -> ThreadWorkerT:
         with self._lock:
-            check_state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.ExitStack()
-            es.__enter__()
-            return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check_not_none(self._exit_stack)
-        return es.enter_context(cm)
+            return super().__enter__()  # noqa
 
     #
 

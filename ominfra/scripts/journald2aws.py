@@ -49,8 +49,11 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../../../omlish/lite/check.py
+# ../../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
+
+# ../../../../../omlish/lite/contextmanagers.py
+ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 
 # ../../../../threadworkers.py
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
@@ -60,7 +63,7 @@ ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 # ../../../../../omlish/lite/cached.py
 
 
-class cached_nullary:  # noqa
+class _cached_nullary:  # noqa
     def __init__(self, fn):
         super().__init__()
         self._fn = fn
@@ -75,6 +78,10 @@ class cached_nullary:  # noqa
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
+
+
+def cached_nullary(fn: ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _cached_nullary(fn)
 
 
 ########################################
@@ -705,6 +712,52 @@ class AwsDataclassMeta:
             return self.cls(**dct)
 
         return AwsDataclassMeta.Converters(d2a, a2d)
+
+
+########################################
+# ../../../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        check_state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.ExitStack()
+        es.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check_not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
 
 
 ########################################
@@ -1420,6 +1473,52 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# ../cursor.py
+
+
+class JournalctlToAwsCursor:
+    def __init__(
+            self,
+            cursor_file: ta.Optional[str] = None,
+            *,
+            ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
+    ) -> None:
+        super().__init__()
+        self._cursor_file = cursor_file
+        self._ensure_locked = ensure_locked
+
+    #
+
+    def get(self) -> ta.Optional[str]:
+        if self._ensure_locked is not None:
+            self._ensure_locked()
+
+        if not (cf := self._cursor_file):
+            return None
+        cf = os.path.expanduser(cf)
+
+        try:
+            with open(cf) as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return None
+
+    def set(self, cursor: str) -> None:
+        if self._ensure_locked is not None:
+            self._ensure_locked()
+
+        if not (cf := self._cursor_file):
+            return
+        cf = os.path.expanduser(cf)
+
+        log.info('Writing cursor file %s : %s', cf, cursor)
+        with open(ncf := cf + '.next', 'w') as f:
+            f.write(cursor)
+
+        os.rename(ncf, cf)
+
+
+########################################
 # ../../logs.py
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
@@ -1671,7 +1770,7 @@ TODO:
 ##
 
 
-class ThreadWorker(abc.ABC):
+class ThreadWorker(ExitStacked, abc.ABC):
     def __init__(
             self,
             *,
@@ -1684,7 +1783,6 @@ class ThreadWorker(abc.ABC):
         self._stop_event = stop_event
 
         self._lock = threading.RLock()
-        self._exit_stack: ta.Optional[contextlib.ExitStack] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
 
@@ -1692,37 +1790,32 @@ class ThreadWorker(abc.ABC):
 
     def __enter__(self: ThreadWorkerT) -> ThreadWorkerT:
         with self._lock:
-            check_state(self._exit_stack is None)
-            es = self._exit_stack = contextlib.ExitStack()
-            es.__enter__()
-            return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check_not_none(self._exit_stack)
-        return es.enter_context(cm)
+            return super().__enter__()  # noqa
 
     #
 
     def should_stop(self) -> bool:
         return self._stop_event.is_set()
 
+    class Stopping(Exception):  # noqa
+        pass
+
+    #
+
     @property
     def last_heartbeat(self) -> ta.Optional[float]:
         return self._last_heartbeat
 
-    def _heartbeat(self) -> bool:
+    def _heartbeat(
+            self,
+            *,
+            no_stop_check: bool = False,
+    ) -> None:
         self._last_heartbeat = time.time()
 
-        if self.should_stop():
+        if not no_stop_check and self.should_stop():
             log.info('Stopping: %s', self)
-            return False
-
-        return True
+            raise ThreadWorker.Stopping
 
     #
 
@@ -1737,9 +1830,16 @@ class ThreadWorker(abc.ABC):
             if self._thread is not None:
                 raise RuntimeError('Thread already started: %r', self)
 
-            thr = threading.Thread(target=self._run)
+            thr = threading.Thread(target=self.__run)
             self._thread = thr
             thr.start()
+
+    def __run(self) -> None:
+        try:
+            self._run()
+        except Exception:  # noqa
+            log.exception('Error in worker thread: %r', self)
+            raise
 
     @abc.abstractmethod
     def _run(self) -> None:
@@ -1879,6 +1979,77 @@ def subprocess_try_output(
 def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
     out = subprocess_try_output(*args, **kwargs)
     return out.decode().strip() if out is not None else None
+
+
+########################################
+# ../poster.py
+
+
+class JournalctlToAwsPosterWorker(ThreadWorker):
+    def __init__(
+            self,
+            queue,  # type: queue.Queue[ta.Sequence[JournalctlMessage]]  # noqa
+            builder: AwsLogMessageBuilder,
+            cursor: JournalctlToAwsCursor,
+            *,
+            ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
+            dry_run: bool = False,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self._queue = queue
+        self._builder = builder
+        self._cursor = cursor
+        self._ensure_locked = ensure_locked
+        self._dry_run = dry_run
+    #
+
+    def _run(self) -> None:
+        if self._ensure_locked is not None:
+            self._ensure_locked()
+
+        last_cursor: ta.Optional[str] = None  # noqa
+        while True:
+            try:
+                msgs: ta.Sequence[JournalctlMessage] = self._queue.get(timeout=1.)
+            except queue.Empty:
+                msgs = []
+
+            if not msgs:
+                log.warning('Empty queue chunk')
+                continue
+
+            log.debug('%r', msgs)
+
+            cur_cursor: ta.Optional[str] = None
+            for m in reversed(msgs):
+                if m.cursor is not None:
+                    cur_cursor = m.cursor
+                    break
+
+            feed_msgs = []
+            for m in msgs:
+                feed_msgs.append(AwsLogMessageBuilder.Message(
+                    message=json.dumps(m.dct, sort_keys=True),
+                    ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
+                ))
+
+            [post] = self._builder.feed(feed_msgs)
+            log.debug('%r', post)
+
+            if not self._dry_run:
+                with urllib.request.urlopen(urllib.request.Request(  # noqa
+                        post.url,
+                        method='POST',
+                        headers=dict(post.headers),
+                        data=post.data,
+                )) as resp:
+                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
+                log.debug('%r', response)
+
+            if cur_cursor is not None:
+                self._cursor.set(cur_cursor)
+                last_cursor = cur_cursor  # noqa
 
 
 ########################################
@@ -2253,7 +2424,7 @@ class JournalctlTailerWorker(ThreadWorker):
         self._read_size = read_size
         self._sleep_s = sleep_s
 
-        self._mb = JournalctlMessageBuilder()
+        self._builder = JournalctlMessageBuilder()
 
         self._proc: ta.Optional[subprocess.Popen] = None
 
@@ -2289,35 +2460,33 @@ class JournalctlTailerWorker(ThreadWorker):
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
             while True:
-                if not self._heartbeat():
-                    return
+                self._heartbeat()
 
                 while stdout.readable():
-                    if not self._heartbeat():
-                        return
+                    self._heartbeat()
 
                     buf = stdout.read(self._read_size)
                     if not buf:
-                        log.debug('Journalctl empty read')
-                        break
+                        log.critical('Journalctl empty read')
+                        raise RuntimeError('Journalctl empty read')
 
                     log.debug('Journalctl read buffer: %r', buf)
-                    msgs = self._mb.feed(buf)
+                    msgs = self._builder.feed(buf)
                     if msgs:
                         while True:
                             try:
                                 self._output.put(msgs, timeout=1.)
                             except queue.Full:
-                                if not self._heartbeat():
-                                    return
+                                self._heartbeat()
                             else:
                                 break
+
+                log.debug('Journalctl not readable')
 
                 if self._proc.poll() is not None:
                     log.critical('Journalctl process terminated')
                     return
 
-                log.debug('Journalctl readable')
                 time.sleep(self._sleep_s)
 
 
@@ -2357,7 +2526,10 @@ class Journald2AwsConfig:
 """
 
 
-class JournalctlToAwsDriver:
+##
+
+
+class JournalctlToAwsDriver(ExitStacked):
     @dc.dataclass(frozen=True)
     class Config:
         pid_file: ta.Optional[str] = None
@@ -2387,18 +2559,8 @@ class JournalctlToAwsDriver:
 
     def __init__(self, config: Config) -> None:
         super().__init__()
+
         self._config = config
-
-    #
-
-    _es: contextlib.ExitStack
-
-    def __enter__(self) -> 'JournalctlToAwsDriver':
-        self._es = contextlib.ExitStack().__enter__()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return self._es.__exit__(exc_type, exc_val, exc_tb)
 
     #
 
@@ -2411,7 +2573,7 @@ class JournalctlToAwsDriver:
 
         log.info('Opening pidfile %s', pfp)
 
-        pf = self._es.enter_context(Pidfile(pfp))
+        pf = self._enter_context(Pidfile(pfp))
         pf.write()
         return pf
 
@@ -2421,31 +2583,12 @@ class JournalctlToAwsDriver:
 
     #
 
-    def _read_cursor_file(self) -> ta.Optional[str]:
-        self._ensure_locked()
-
-        if not (cf := self._config.cursor_file):
-            return None
-        cf = os.path.expanduser(cf)
-
-        try:
-            with open(cf) as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return None
-
-    def _write_cursor_file(self, cursor: str) -> None:
-        self._ensure_locked()
-
-        if not (cf := self._config.cursor_file):
-            return
-        cf = os.path.expanduser(cf)
-
-        log.info('Writing cursor file %s : %s', cf, cursor)
-        with open(ncf := cf + '.next', 'w') as f:
-            f.write(cursor)
-
-        os.rename(ncf, cf)
+    @cached_nullary
+    def _cursor(self) -> JournalctlToAwsCursor:
+        return JournalctlToAwsCursor(
+            self._config.cursor_file,
+            ensure_locked=self._ensure_locked,
+        )
 
     #
 
@@ -2481,7 +2624,7 @@ class JournalctlToAwsDriver:
         else:
             ac = self._config.journalctl_after_cursor
             if ac is None:
-                ac = self._read_cursor_file()
+                ac = self._cursor().get()
             if ac is not None:
                 log.info('Starting from cursor %s', ac)
 
@@ -2497,63 +2640,32 @@ class JournalctlToAwsDriver:
 
     #
 
+    @cached_nullary
+    def _aws_poster_worker(self) -> JournalctlToAwsPosterWorker:
+        return JournalctlToAwsPosterWorker(
+            self._journalctl_message_queue(),
+            self._aws_log_message_builder(),
+            self._cursor(),
+
+            ensure_locked=self._ensure_locked,
+            dry_run=self._config.dry_run,
+        )
+
+    #
+
     def run(self) -> None:
-        self._ensure_locked()
-
-        q = self._journalctl_message_queue()  # type: queue.Queue[ta.Sequence[JournalctlMessage]]
-        jtw = self._journalctl_tailer_worker()  # type: JournalctlTailerWorker
-        lmb = self._aws_log_message_builder()  # type: AwsLogMessageBuilder
-
-        jtw.start()
-
-        last_cursor: ta.Optional[str] = None  # noqa
+        pw: JournalctlToAwsPosterWorker = self._aws_poster_worker()
+        tw: JournalctlTailerWorker = self._journalctl_tailer_worker()
+        pw.start()
+        tw.start()
         while True:
-            if not jtw.is_alive():
-                log.critical('Journalctl tailer worker died')
-                break
-
-            try:
-                msgs: ta.Sequence[JournalctlMessage] = q.get(timeout=1.)
-            except queue.Empty:
-                msgs = []
-            if not msgs:
-                continue
-
-            log.debug('%r', msgs)
-
-            cur_cursor: ta.Optional[str] = None
-            for m in reversed(msgs):
-                if m.cursor is not None:
-                    cur_cursor = m.cursor
-                    break
-
-            if not msgs:
-                log.warning('Empty queue chunk')
-                continue
-
-            feed_msgs = []
-            for m in msgs:
-                feed_msgs.append(lmb.Message(
-                    message=json.dumps(m.dct, sort_keys=True),
-                    ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
-                ))
-
-            [post] = lmb.feed(feed_msgs)
-            log.debug('%r', post)
-
-            if not self._config.dry_run:
-                with urllib.request.urlopen(urllib.request.Request(  # noqa
-                        post.url,
-                        method='POST',
-                        headers=dict(post.headers),
-                        data=post.data,
-                )) as resp:
-                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                log.debug('%r', response)
-
-            if cur_cursor is not None:
-                self._write_cursor_file(cur_cursor)
-                last_cursor = cur_cursor  # noqa
+            if not pw.is_alive():
+                log.critical('Poster worker died!')
+                return
+            if not tw.is_alive():
+                log.critical('Tailer worker died!')
+                return
+            time.sleep(10.)
 
 
 ########################################
