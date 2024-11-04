@@ -213,7 +213,9 @@ class JournalctlToAwsDriver:
                 msgs: ta.Sequence[JournalctlMessage] = q.get(timeout=1.)
             except queue.Empty:
                 msgs = []
+
             if not msgs:
+                log.warning('Empty queue chunk')
                 continue
 
             log.debug('%r', msgs)
@@ -223,10 +225,6 @@ class JournalctlToAwsDriver:
                 if m.cursor is not None:
                     cur_cursor = m.cursor
                     break
-
-            if not msgs:
-                log.warning('Empty queue chunk')
-                continue
 
             feed_msgs = []
             for m in msgs:

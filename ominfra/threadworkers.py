@@ -66,18 +66,25 @@ class ThreadWorker(abc.ABC):
     def should_stop(self) -> bool:
         return self._stop_event.is_set()
 
+    class Stopping(Exception):  # noqa
+        pass
+
+    #
+
     @property
     def last_heartbeat(self) -> ta.Optional[float]:
         return self._last_heartbeat
 
-    def _heartbeat(self) -> bool:
+    def _heartbeat(
+            self,
+            *,
+            no_stop_check: bool = False,
+    ) -> None:
         self._last_heartbeat = time.time()
 
-        if self.should_stop():
+        if not no_stop_check and self.should_stop():
             log.info('Stopping: %s', self)
-            return False
-
-        return True
+            raise ThreadWorker.Stopping
 
     #
 
@@ -92,9 +99,16 @@ class ThreadWorker(abc.ABC):
             if self._thread is not None:
                 raise RuntimeError('Thread already started: %r', self)
 
-            thr = threading.Thread(target=self._run)
+            thr = threading.Thread(target=self.__run)
             self._thread = thr
             thr.start()
+
+    def __run(self) -> None:
+        try:
+            self._run()
+        except Exception:  # noqa
+            log.exception('Error in worker thread: %r', self)
+            raise
 
     @abc.abstractmethod
     def _run(self) -> None:
