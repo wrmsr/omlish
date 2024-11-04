@@ -64,7 +64,7 @@ def _main() -> None:
     for ca, pa in [
         ('journalctl_after_cursor', 'after_cursor'),
         ('journalctl_since', 'since'),
-        ('dry_run', 'dry_run'),
+        ('aws_poster_dry_run', 'dry_run'),
     ]:
         if (av := getattr(args, pa)):
             config = dc.replace(config, **{ca: av})

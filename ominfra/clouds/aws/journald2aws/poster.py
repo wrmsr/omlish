@@ -1,4 +1,8 @@
 # ruff: noqa: UP007
+"""
+TODO:
+ - retries
+"""
 import json
 import queue
 import time
@@ -23,6 +27,7 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
             *,
             ensure_locked: ta.Optional[ta.Callable[[], None]] = None,
             dry_run: bool = False,
+            queue_timeout_s: float = 1.,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -31,6 +36,7 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
         self._cursor = cursor
         self._ensure_locked = ensure_locked
         self._dry_run = dry_run
+        self._queue_timeout_s = queue_timeout_s
     #
 
     def _run(self) -> None:
@@ -39,8 +45,10 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
 
         last_cursor: ta.Optional[str] = None  # noqa
         while True:
+            self._heartbeat()
+
             try:
-                msgs: ta.Sequence[JournalctlMessage] = self._queue.get(timeout=1.)
+                msgs: ta.Sequence[JournalctlMessage] = self._queue.get(timeout=self._queue_timeout_s)
             except queue.Empty:
                 msgs = []
 
@@ -63,18 +71,18 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
                     ts_ms=int((m.ts_us / 1000.) if m.ts_us is not None else (time.time() * 1000.)),
                 ))
 
-            [post] = self._builder.feed(feed_msgs)
-            log.debug('%r', post)
+            for post in self._builder.feed(feed_msgs):
+                log.debug('%r', post)
 
-            if not self._dry_run:
-                with urllib.request.urlopen(urllib.request.Request(  # noqa
-                        post.url,
-                        method='POST',
-                        headers=dict(post.headers),
-                        data=post.data,
-                )) as resp:
-                    response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
-                log.debug('%r', response)
+                if not self._dry_run:
+                    with urllib.request.urlopen(urllib.request.Request(  # noqa
+                            post.url,
+                            method='POST',
+                            headers=dict(post.headers),
+                            data=post.data,
+                    )) as resp:
+                        response = AwsPutLogEventsResponse.from_aws(json.loads(resp.read().decode('utf-8')))
+                    log.debug('%r', response)
 
             if cur_cursor is not None:
                 self._cursor.set(cur_cursor)

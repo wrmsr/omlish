@@ -5,22 +5,38 @@ import sys
 import tempfile
 
 
+def mkstemp() -> str:
+    fd, fn = tempfile.mkstemp()
+    os.close(fd)
+    os.unlink(fn)
+    return fn
+
+
 def test_main():
     config = dict(
+        pid_file=(pid_file := mkstemp()),
+        cursor_file=(cursor_file := mkstemp()),
         aws_log_stream_name='foo',
     )
 
-    fd, fn = tempfile.mkstemp()
-    os.close(fd)
-
-    with open(fn, 'w') as f:
+    with open(cfg_file := mkstemp(), 'w') as f:
         f.write(json.dumps(config))
 
-    subprocess.check_call([
+    proc = subprocess.Popen([
         sys.executable,
         '-m',
         __package__.rpartition('.')[0] + '.main',
-        '--config-file', fn,
+        '--config-file', cfg_file,
         '--dry-run',
         # '--verbose',
     ])
+    proc.communicate()
+    assert not proc.returncode
+
+    with open(pid_file) as f:
+        pid = f.read()
+    with open(cursor_file) as f:
+        cursor = f.read()
+
+    print(pid)
+    print(cursor)
