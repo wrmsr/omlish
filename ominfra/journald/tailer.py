@@ -421,17 +421,15 @@ class JournalctlTailerWorker(ThreadWorker):
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
             while True:
-                if not self._heartbeat():
-                    return
+                self._heartbeat()
 
                 while stdout.readable():
-                    if not self._heartbeat():
-                        return
+                    self._heartbeat()
 
                     buf = stdout.read(self._read_size)
                     if not buf:
-                        log.debug('Journalctl empty read')
-                        break
+                        log.critical('Journalctl empty read')
+                        raise RuntimeError('Journalctl empty read')
 
                     log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._mb.feed(buf)
@@ -440,14 +438,14 @@ class JournalctlTailerWorker(ThreadWorker):
                             try:
                                 self._output.put(msgs, timeout=1.)
                             except queue.Full:
-                                if not self._heartbeat():
-                                    return
+                                self._heartbeat()
                             else:
                                 break
+
+                log.debug('Journalctl not readable')
 
                 if self._proc.poll() is not None:
                     log.critical('Journalctl process terminated')
                     return
 
-                log.debug('Journalctl readable')
                 time.sleep(self._sleep_s)
