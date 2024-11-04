@@ -120,7 +120,10 @@ class JournalctlToAwsDriver(ExitStacked):
     #
 
     @cached_nullary
-    def _aws_credentials(self) -> AwsSigner.Credentials:
+    def _aws_credentials(self) -> ta.Optional[AwsSigner.Credentials]:
+        if self._config.aws_access_key_id is None and self._config.aws_secret_access_key is None:
+            return None
+
         return AwsSigner.Credentials(
             access_key_id=check_non_empty_str(self._config.aws_access_key_id),
             secret_access_key=check_non_empty_str(self._config.aws_secret_access_key),
@@ -132,7 +135,7 @@ class JournalctlToAwsDriver(ExitStacked):
             log_group_name=self._config.aws_log_group_name,
             log_stream_name=check_non_empty_str(self._config.aws_log_stream_name),
             region_name=self._config.aws_region_name,
-            credentials=check_not_none(self._aws_credentials()),
+            credentials=self._aws_credentials(),
         )
 
     #
@@ -192,4 +195,4 @@ class JournalctlToAwsDriver(ExitStacked):
             if not tw.is_alive():
                 log.critical('Tailer worker died!')
                 return
-            time.sleep(10.)
+            time.sleep(1.)

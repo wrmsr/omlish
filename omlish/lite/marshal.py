@@ -150,7 +150,7 @@ class DataclassObjMarshaler(ObjMarshaler):
         return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items() if self.nonstrict or k in self.fs})
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items() if not self.nonstrict or k in self.fs})
 
 
 @dc.dataclass(frozen=True)

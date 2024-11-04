@@ -88,7 +88,7 @@ class AwsLogMessageBuilder:
             log_group_name: str,
             log_stream_name: str,
             region_name: str,
-            credentials: AwsSigner.Credentials,
+            credentials: ta.Optional[AwsSigner.Credentials],
 
             url: ta.Optional[str] = None,
             service_name: str = DEFAULT_SERVICE_NAME,
@@ -110,11 +110,16 @@ class AwsLogMessageBuilder:
             headers = {**headers, **extra_headers}
         self._headers = {k: [v] for k, v in headers.items()}
 
-        self._signer = V4AwsSigner(
-            credentials,
-            region_name,
-            service_name,
-        )
+        signer: ta.Optional[V4AwsSigner]
+        if credentials is not None:
+            signer = V4AwsSigner(
+                credentials,
+                region_name,
+                service_name,
+            )
+        else:
+            signer = None
+        self._signer = signer
 
     #
 
@@ -158,11 +163,12 @@ class AwsLogMessageBuilder:
             payload=body,
         )
 
-        sig_headers = self._signer.sign(
-            sig_req,
-            sign_payload=False,
-        )
-        sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
+        if (signer := self._signer) is not None:
+            sig_headers = signer.sign(
+                sig_req,
+                sign_payload=False,
+            )
+            sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
 
         post = AwsLogMessageBuilder.Post(
             url=self._url,

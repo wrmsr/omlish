@@ -428,8 +428,8 @@ class JournalctlTailerWorker(ThreadWorker):
 
                     buf = stdout.read(self._read_size)
                     if not buf:
-                        log.critical('Journalctl empty read')
-                        raise RuntimeError('Journalctl empty read')
+                        log.warning('Journalctl empty read')
+                        break
 
                     log.debug('Journalctl read buffer: %r', buf)
                     msgs = self._builder.feed(buf)
