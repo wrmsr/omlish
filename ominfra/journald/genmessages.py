@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import json
+import os
 import re
 import sys
 import time
@@ -34,6 +35,11 @@ def _main() -> None:
     else:
         start = 0
 
+    stdout_fd = sys.stdout.fileno()
+    out_fd = os.dup(stdout_fd)
+    null_fd = os.open('/dev/null', os.O_WRONLY)
+    os.dup2(null_fd, stdout_fd)
+
     for i in range(start, args.n):
         if args.sleep_s:
             if not args.sleep_n or (i and i % args.sleep_n == 0):
@@ -46,8 +52,14 @@ def _main() -> None:
             '__CURSOR': f'cursor:{i}',
             '_SOURCE_REALTIME_TIMESTAMP': str(int(ts_us)),
         }
-        print(json.dumps(dct, indent=None, separators=(',', ':')))
-        sys.stdout.flush()
+
+        buf = json.dumps(dct, indent=None, separators=(',', ':')).encode()
+
+        try:
+            os.write(out_fd, buf)
+            os.write(out_fd, b'\n')
+        except BrokenPipeError:
+            break
 
 
 if __name__ == '__main__':
