@@ -20,6 +20,7 @@ from .caching import pkl_cache
 from .chromadb import chroma_collection
 from .chromadb import get_relevant_docs
 from .docs import Doc
+from .models.charts import generate_pie_chart_code
 from .models.chat import generate_question_answer
 from .models.decision import classify_user_intent
 from .models.embedding import embed
@@ -124,8 +125,6 @@ def _main() -> None:
         '2. Data Center segment revenue'
     )
 
-    print(classify_user_intent(query))
-
     relevant_docs = get_relevant_docs(query)
     response_chunks = generate_question_answer(query, [d.doc for d in relevant_docs])
     response = print_and_join(response_chunks)  # noqa
@@ -133,7 +132,16 @@ def _main() -> None:
     ##
 
     query = 'Generate a pie chart of that data.'
-    print(classify_user_intent(query))
+    intent = classify_user_intent(query)
+    match intent:
+        case 'query_with_pdf':
+            raise NotImplementedError
+        case 'generate_slide_column_chart':
+            raise NotImplementedError
+        case 'generate_slide_pie_chart':
+            print(generate_pie_chart_code(response))
+        case _:
+            raise ValueError(intent)
 
 
 def main() -> None:

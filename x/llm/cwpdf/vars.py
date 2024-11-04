@@ -9,4 +9,5 @@ exit_stack: contextvars.ContextVar[contextlib.ExitStack] = contextvars.ContextVa
 
 data_dir: contextvars.ContextVar[str] = contextvars.ContextVar('data_dir')
 
-use_gpu: bool = False
+# use_gpu: bool = False
+use_gpu: bool = True
