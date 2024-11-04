@@ -16,6 +16,7 @@ def test_main():
     config = dict(
         pid_file=(pid_file := mkstemp()),
         cursor_file=(cursor_file := mkstemp()),
+        runtime_limit=5.,
         aws_log_stream_name='foo',
     )
 

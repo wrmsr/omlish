@@ -24,6 +24,7 @@ def _main() -> None:
 
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--real', action='store_true')
+    parser.add_argument('--runtime-limit', type=float)
 
     args = parser.parse_args()
 
@@ -64,7 +65,7 @@ def _main() -> None:
     for ca, pa in [
         ('journalctl_after_cursor', 'after_cursor'),
         ('journalctl_since', 'since'),
-        ('aws_poster_dry_run', 'dry_run'),
+        ('aws_dry_run', 'dry_run'),
     ]:
         if (av := getattr(args, pa)):
             config = dc.replace(config, **{ca: av})
