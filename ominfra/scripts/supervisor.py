@@ -1470,7 +1470,10 @@ class UuidObjMarshaler(ObjMarshaler):
         return uuid.UUID(o)
 
 
-_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
+##
+
+
+_DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in (type(None),)},
     **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
     **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
@@ -1499,20 +1502,19 @@ _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
 }
 
 
-def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
-    if ty in _OBJ_MARSHALERS:
-        raise KeyError(ty)
-    _OBJ_MARSHALERS[ty] = m
-
-
-def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
+def _make_obj_marshaler(
+        ty: ta.Any,
+        rec: ta.Callable[[ta.Any], ObjMarshaler],
+        *,
+        nonstrict_dataclasses: bool = False,
+) -> ObjMarshaler:
     if isinstance(ty, type):
         if abc.ABC in ty.__bases__:
             impls = [  # type: ignore
                 PolymorphicObjMarshaler.Impl(
                     ity,
                     ity.__qualname__,
-                    get_obj_marshaler(ity),
+                    rec(ity),
                 )
                 for ity in deep_subclasses(ty)
                 if abc.ABC not in ity.__bases__
@@ -1528,7 +1530,8 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
         if dc.is_dataclass(ty):
             return DataclassObjMarshaler(
                 ty,
-                {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
+                {f.name: rec(f.type) for f in dc.fields(ty)},
+                nonstrict=nonstrict_dataclasses,
             )
 
     if is_generic_alias(ty):
@@ -1538,7 +1541,7 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
             pass
         else:
             k, v = ta.get_args(ty)
-            return MappingObjMarshaler(mt, get_obj_marshaler(k), get_obj_marshaler(v))
+            return MappingObjMarshaler(mt, rec(k), rec(v))
 
         try:
             st = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES[ta.get_origin(ty)]
@@ -1546,31 +1549,69 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
             pass
         else:
             [e] = ta.get_args(ty)
-            return IterableObjMarshaler(st, get_obj_marshaler(e))
+            return IterableObjMarshaler(st, rec(e))
 
         if is_union_alias(ty):
-            return OptionalObjMarshaler(get_obj_marshaler(get_optional_alias_arg(ty)))
+            return OptionalObjMarshaler(rec(get_optional_alias_arg(ty)))
 
     raise TypeError(ty)
 
 
-def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
-    try:
-        return _OBJ_MARSHALERS[ty]
-    except KeyError:
-        pass
+##
 
-    p = ProxyObjMarshaler()
-    _OBJ_MARSHALERS[ty] = p
-    try:
-        m = _make_obj_marshaler(ty)
-    except Exception:
-        del _OBJ_MARSHALERS[ty]
-        raise
-    else:
-        p.m = m
+
+_OBJ_MARSHALERS_LOCK = threading.RLock()
+
+_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+
+_OBJ_MARSHALER_PROXIES: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
+
+
+def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
+    with _OBJ_MARSHALERS_LOCK:
+        if ty in _OBJ_MARSHALERS:
+            raise KeyError(ty)
         _OBJ_MARSHALERS[ty] = m
+
+
+def get_obj_marshaler(
+        ty: ta.Any,
+        *,
+        no_cache: bool = False,
+        **kwargs: ta.Any,
+) -> ObjMarshaler:
+    with _OBJ_MARSHALERS_LOCK:
+        if not no_cache:
+            try:
+                return _OBJ_MARSHALERS[ty]
+            except KeyError:
+                pass
+
+        try:
+            return _OBJ_MARSHALER_PROXIES[ty]
+        except KeyError:
+            pass
+
+        rec = functools.partial(
+            get_obj_marshaler,
+            no_cache=no_cache,
+            **kwargs,
+        )
+
+        p = ProxyObjMarshaler()
+        _OBJ_MARSHALER_PROXIES[ty] = p
+        try:
+            m = _make_obj_marshaler(ty, rec, **kwargs)
+        finally:
+            del _OBJ_MARSHALER_PROXIES[ty]
+        p.m = m
+
+        if not no_cache:
+            _OBJ_MARSHALERS[ty] = m
         return m
+
+
+##
 
 
 def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
