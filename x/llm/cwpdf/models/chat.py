@@ -58,6 +58,7 @@ def generate_question_answer(
 
     response_stream = chat_model().create_chat_completion(
         messages,  # type: ignore
+        stop=['<nexa_end>'],
         max_tokens=2048,
         temperature=0.7,
         top_k=50,

@@ -86,34 +86,16 @@ def pie_chart_model() -> 'llama_cpp.Llama':
 def generate_pie_chart_code(query: str) -> str:
     prompt = PIE_CHART_TEMPLATE.format(query=query)
 
-    prompt = """<s>[INST] <<SYS>>
-    You are a helpful assistant that generates a specific JSON response based on the given query. Your task is to analyze the query and create a JSON object with two main keys: "text" and "chart_data".
-
-    The "text" key should contain:
-    1. "title_text": A brief, relevant title for the information.
-    2. "main_text": A short summary or key takeaway from the data.
-
-    The "chart_data" key should contain:
-    1. "type": Always set to "chart".
-    2. "chart_type": Always set to "PIE".
-    3. "chart_data": An object with "categories" (array of labels) and "values" (array of numeric values corresponding to each category). The values should be decimal representations of percentages and must add up to 1 (representing 100%).
-    4. "title_text": A title for the chart.
-    5. "description_text": A brief description of what the chart shows.
-
-    Analyze the following query and generate the appropriate JSON response:
-    Here are NVIDIA's Q2 Fiscal 2025 financial metrics for the requested segments:
-
-    * Total quarterly revenue: $30.0 billion
-    * Data Center segment revenue: $26.3 billion
-    <<USR>>"""
-
     output = pie_chart_model().create_completion(
         prompt,
         stop=['<end>'],
+        logprobs=None,
+        max_tokens=2048,
+        temperature=0.7,
+        top_k=50,
+        top_p=1.0,
     )
 
     raw_code = output['choices'][0]['text'].strip()  # type: ignore
 
-    print(raw_code)
-
-    raise NotImplementedError
+    return raw_code

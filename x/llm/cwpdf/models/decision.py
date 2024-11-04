@@ -51,21 +51,27 @@ _USER_INTENT_MAP: ta.Mapping[str, UserIntent] = {
 }
 
 
-def classify_user_intent(query: str) -> UserIntent | None:
-    prompt_template = (
-        'Below is the query from the users, please call the correct function and generate the parameters to call the '
-        'function.'
-        '\n\n'
-        'Query: {query}'
-        '\n\n'
-        'Response:'
-    )
+DECISION_TEMPLATE = (
+    'Below is the query from the users, please call the correct function and generate the parameters to call the '
+    'function.'
+    '\n\n'
+    'Query: {query}'
+    '\n\n'
+    'Response:'
+)
 
-    prompt = prompt_template.format(query=query)
+
+def classify_user_intent(query: str) -> UserIntent | None:
+    prompt = DECISION_TEMPLATE.format(query=query)
 
     output = decision_model().create_completion(
         prompt,
         stop=['<nexa_end>'],
+        logprobs=None,
+        max_tokens=2048,
+        temperature=0.7,
+        top_k=50,
+        top_p=1.0,
     )
 
     raw_intent = output['choices'][0]['text'].strip()  # type: ignore
