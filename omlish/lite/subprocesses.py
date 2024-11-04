@@ -110,3 +110,20 @@ def subprocess_try_output(
 def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
     out = subprocess_try_output(*args, **kwargs)
     return out.decode().strip() if out is not None else None
+
+
+##
+
+
+def subprocess_close(
+        proc: subprocess.Popen,
+        timeout: ta.Optional[float] = None,
+) -> None:
+    if proc.stdout:
+        proc.stdout.close()
+    if proc.stderr:
+        proc.stderr.close()
+    if proc.stdin:
+        proc.stdin.close()
+
+    proc.wait(timeout)
