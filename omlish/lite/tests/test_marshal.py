@@ -105,6 +105,19 @@ class TestMarshalDataclasses(AbstractTestMarshal):
         ]:
             self._assert_marshal(a)
 
+    def test_strictness(self):
+        u = msh.unmarshal_obj(dict(i=24), Foo)
+        assert isinstance(u, Foo)
+        assert u.i == 24
+
+        with self.assertRaises(KeyError):
+            msh.unmarshal_obj(dict(i=24, j=25), Foo)
+
+        m = dc.replace(msh.get_obj_marshaler(Foo), nonstrict=True)
+        u = m.unmarshal(dict(i=24, j=25))
+        assert isinstance(u, Foo)
+        assert u.i == 24
+
 
 ##
 
