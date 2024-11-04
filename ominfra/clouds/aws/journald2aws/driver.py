@@ -39,7 +39,6 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_non_empty_str
-from omlish.lite.check import check_not_none
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.logs import log
 from omlish.lite.pidfile import Pidfile
