@@ -24,6 +24,7 @@ def _main() -> None:
 
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--real', action='store_true')
+    parser.add_argument('--num-messages', type=int)
     parser.add_argument('--runtime-limit', type=float)
 
     args = parser.parse_args()
@@ -57,7 +58,7 @@ def _main() -> None:
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
-            '100000',
+            str(args.num_messages or 100_000),
         ])
 
     #
