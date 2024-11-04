@@ -10,7 +10,7 @@ class Pidfile:
         super().__init__()
         self._path = path
 
-    _f: ta.Optional[ta.TextIO] = None
+    _f: ta.TextIO
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._path!r})'
@@ -30,9 +30,9 @@ class Pidfile:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._f is not None:
+        if hasattr(self, '_f'):
             self._f.close()
-            self._f = None
+            del self._f
 
     def try_lock(self) -> bool:
         try:
