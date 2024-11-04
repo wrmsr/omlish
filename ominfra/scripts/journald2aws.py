@@ -1846,7 +1846,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
         try:
             self._run()
         except ThreadWorker.Stopping:
-            pass
+            log.exception('Thread worker stopped: %r', self)
         except Exception:  # noqa
             log.exception('Error in worker thread: %r', self)
             raise
