@@ -200,7 +200,7 @@ class Pidfile:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._f is not None:
+        if hasattr(self, '_f'):
             self._f.close()
             del self._f
 
@@ -1845,6 +1845,8 @@ class ThreadWorker(ExitStacked, abc.ABC):
     def __run(self) -> None:
         try:
             self._run()
+        except ThreadWorker.Stopping:
+            pass
         except Exception:  # noqa
             log.exception('Error in worker thread: %r', self)
             raise
@@ -1852,6 +1854,17 @@ class ThreadWorker(ExitStacked, abc.ABC):
     @abc.abstractmethod
     def _run(self) -> None:
         raise NotImplementedError
+
+    #
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+    def join(self, timeout: ta.Optional[float] = None) -> None:
+        with self._lock:
+            if self._thread is None:
+                raise RuntimeError('Thread not started: %r', self)
+            self._thread.join(timeout)
 
 
 ##
@@ -1982,6 +1995,23 @@ def subprocess_try_output(
 def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
     out = subprocess_try_output(*args, **kwargs)
     return out.decode().strip() if out is not None else None
+
+
+##
+
+
+def subprocess_close(
+        proc: subprocess.Popen,
+        timeout: ta.Optional[float] = None,
+) -> None:
+    if proc.stdout:
+        proc.stdout.close()
+    if proc.stderr:
+        proc.stderr.close()
+    if proc.stdin:
+        proc.stdin.close()
+
+    proc.wait(timeout)
 
 
 ########################################
@@ -2459,46 +2489,53 @@ class JournalctlTailerWorker(ThreadWorker):
 
         return cmd
 
+    def _read_loop(self, stdout: ta.IO) -> None:
+        while stdout.readable():
+            self._heartbeat()
+
+            buf = stdout.read(self._read_size)
+            if not buf:
+                log.debug('Journalctl empty read')
+                break
+
+            log.debug('Journalctl read buffer: %r', buf)
+            msgs = self._builder.feed(buf)
+            if msgs:
+                while True:
+                    try:
+                        self._output.put(msgs, timeout=1.)
+                    except queue.Full:
+                        self._heartbeat()
+                    else:
+                        break
+
     def _run(self) -> None:
         with subprocess.Popen(
             self._full_cmd(),
             stdout=subprocess.PIPE,
         ) as self._proc:
-            stdout = check_not_none(self._proc.stdout)
+            try:
+                stdout = check_not_none(self._proc.stdout)
 
-            fd = stdout.fileno()
-            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+                fd = stdout.fileno()
+                fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+                fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-            while True:
-                self._heartbeat()
-
-                while stdout.readable():
+                while True:
                     self._heartbeat()
 
-                    buf = stdout.read(self._read_size)
-                    if not buf:
-                        log.debug('Journalctl empty read')
-                        break
+                    self._read_loop(stdout)
 
-                    log.debug('Journalctl read buffer: %r', buf)
-                    msgs = self._builder.feed(buf)
-                    if msgs:
-                        while True:
-                            try:
-                                self._output.put(msgs, timeout=1.)
-                            except queue.Full:
-                                self._heartbeat()
-                            else:
-                                break
+                    log.debug('Journalctl not readable')
 
-                log.debug('Journalctl not readable')
+                    if self._proc.poll() is not None:
+                        log.critical('Journalctl process terminated')
+                        return
 
-                if self._proc.poll() is not None:
-                    log.critical('Journalctl process terminated')
-                    return
+                    time.sleep(self._sleep_s)
 
-                time.sleep(self._sleep_s)
+            finally:
+                subprocess_close(self._proc)
 
 
 ########################################
@@ -2547,6 +2584,8 @@ class JournalctlToAwsDriver(ExitStacked):
 
         cursor_file: ta.Optional[str] = None
 
+        runtime_limit: ta.Optional[float] = None
+
         #
 
         aws_log_group_name: str = 'omlish'
@@ -2557,16 +2596,14 @@ class JournalctlToAwsDriver(ExitStacked):
 
         aws_region_name: str = 'us-west-1'
 
+        aws_dry_run: bool = False
+
         #
 
         journalctl_cmd: ta.Optional[ta.Sequence[str]] = None
 
         journalctl_after_cursor: ta.Optional[str] = None
         journalctl_since: ta.Optional[str] = None
-
-        #
-
-        dry_run: bool = False
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -2662,7 +2699,7 @@ class JournalctlToAwsDriver(ExitStacked):
             self._cursor(),
 
             ensure_locked=self._ensure_locked,
-            dry_run=self._config.dry_run,
+            dry_run=self._config.aws_dry_run,
         )
 
     #
@@ -2670,16 +2707,29 @@ class JournalctlToAwsDriver(ExitStacked):
     def run(self) -> None:
         pw: JournalctlToAwsPosterWorker = self._aws_poster_worker()
         tw: JournalctlTailerWorker = self._journalctl_tailer_worker()
-        pw.start()
-        tw.start()
+
+        ws = [pw, tw]
+
+        for w in ws:
+            w.start()
+
+        start = time.time()
+
         while True:
-            if not pw.is_alive():
-                log.critical('Poster worker died!')
-                return
-            if not tw.is_alive():
-                log.critical('Tailer worker died!')
-                return
+            for w in ws:
+                if not w.is_alive():
+                    log.critical('Worker died: %r', w)
+                    break
+
+            if (rl := self._config.runtime_limit) is not None and time.time() - start >= rl:
+                log.warning('Runtime limit reached')
+                break
+
             time.sleep(1.)
+
+        for w in reversed(ws):
+            w.stop()
+            w.join()
 
 
 ########################################
@@ -2698,6 +2748,8 @@ def _main() -> None:
 
     parser.add_argument('--message', nargs='?')
     parser.add_argument('--real', action='store_true')
+    parser.add_argument('--num-messages', type=int)
+    parser.add_argument('--runtime-limit', type=float)
 
     args = parser.parse_args()
 
@@ -2730,7 +2782,7 @@ def _main() -> None:
             '--sleep-n', '2',
             '--sleep-s', '.5',
             *(['--message', args.message] if args.message else []),
-            '100000',
+            str(args.num_messages or 100_000),
         ])
 
     #
@@ -2738,7 +2790,7 @@ def _main() -> None:
     for ca, pa in [
         ('journalctl_after_cursor', 'after_cursor'),
         ('journalctl_since', 'since'),
-        ('dry_run', 'dry_run'),
+        ('aws_dry_run', 'dry_run'),
     ]:
         if (av := getattr(args, pa)):
             config = dc.replace(config, **{ca: av})

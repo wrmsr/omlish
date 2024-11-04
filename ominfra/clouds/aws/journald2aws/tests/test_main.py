@@ -30,7 +30,7 @@ def test_main():
         '--config-file', cfg_file,
         '--dry-run',
         '--verbose',
-        '--num-messages', '10',
+        # '--num-messages', '10',
     ])
     proc.communicate()
     assert not proc.returncode

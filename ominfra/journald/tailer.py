@@ -347,6 +347,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_close
 from omlish.lite.subprocesses import subprocess_shell_wrap_exec
 
 from ..threadworkers import ThreadWorker
@@ -409,43 +410,50 @@ class JournalctlTailerWorker(ThreadWorker):
 
         return cmd
 
+    def _read_loop(self, stdout: ta.IO) -> None:
+        while stdout.readable():
+            self._heartbeat()
+
+            buf = stdout.read(self._read_size)
+            if not buf:
+                log.debug('Journalctl empty read')
+                break
+
+            log.debug('Journalctl read buffer: %r', buf)
+            msgs = self._builder.feed(buf)
+            if msgs:
+                while True:
+                    try:
+                        self._output.put(msgs, timeout=1.)
+                    except queue.Full:
+                        self._heartbeat()
+                    else:
+                        break
+
     def _run(self) -> None:
         with subprocess.Popen(
             self._full_cmd(),
             stdout=subprocess.PIPE,
         ) as self._proc:
-            stdout = check_not_none(self._proc.stdout)
+            try:
+                stdout = check_not_none(self._proc.stdout)
 
-            fd = stdout.fileno()
-            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+                fd = stdout.fileno()
+                fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+                fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-            while True:
-                self._heartbeat()
-
-                while stdout.readable():
+                while True:
                     self._heartbeat()
 
-                    buf = stdout.read(self._read_size)
-                    if not buf:
-                        log.debug('Journalctl empty read')
-                        break
+                    self._read_loop(stdout)
 
-                    log.debug('Journalctl read buffer: %r', buf)
-                    msgs = self._builder.feed(buf)
-                    if msgs:
-                        while True:
-                            try:
-                                self._output.put(msgs, timeout=1.)
-                            except queue.Full:
-                                self._heartbeat()
-                            else:
-                                break
+                    log.debug('Journalctl not readable')
 
-                log.debug('Journalctl not readable')
+                    if self._proc.poll() is not None:
+                        log.critical('Journalctl process terminated')
+                        return
 
-                if self._proc.poll() is not None:
-                    log.critical('Journalctl process terminated')
-                    return
+                    time.sleep(self._sleep_s)
 
-                time.sleep(self._sleep_s)
+            finally:
+                subprocess_close(self._proc)
