@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 # @omlish-lite
 """
 TODO:
@@ -6,11 +6,15 @@ TODO:
  - collective heartbeat monitoring - ThreadWorkerGroups
 """
 import abc
+import dataclasses as dc
 import threading
 import time
 import typing as ta
 
 from omlish.lite.logs import log
+
+
+##
 
 
 class ThreadWorker(abc.ABC):
@@ -65,3 +69,27 @@ class ThreadWorker(abc.ABC):
 
     def stop(self) -> None:
         raise NotImplementedError
+
+
+##
+
+
+class ThreadWorkerGroup:
+    @dc.dataclass()
+    class State:
+        worker: ThreadWorker
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._lock = threading.RLock()
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup.State] = {}
+
+    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
+        with self._lock:
+            for w in workers:
+                if w in self._states:
+                    raise KeyError(w)
+                self._states[w] = ThreadWorkerGroup.State(w)
+
+        return self
