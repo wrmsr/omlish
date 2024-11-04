@@ -62,6 +62,8 @@ class JournalctlToAwsDriver(ExitStacked):
 
         cursor_file: ta.Optional[str] = None
 
+        runtime_limit: ta.Optional[float] = None
+
         #
 
         aws_log_group_name: str = 'omlish'
@@ -72,16 +74,14 @@ class JournalctlToAwsDriver(ExitStacked):
 
         aws_region_name: str = 'us-west-1'
 
+        aws_dry_run: bool = False
+
         #
 
         journalctl_cmd: ta.Optional[ta.Sequence[str]] = None
 
         journalctl_after_cursor: ta.Optional[str] = None
         journalctl_since: ta.Optional[str] = None
-
-        #
-
-        aws_poster_dry_run: bool = False
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -177,7 +177,7 @@ class JournalctlToAwsDriver(ExitStacked):
             self._cursor(),
 
             ensure_locked=self._ensure_locked,
-            dry_run=self._config.aws_poster_dry_run,
+            dry_run=self._config.aws_dry_run,
         )
 
     #
@@ -185,13 +185,22 @@ class JournalctlToAwsDriver(ExitStacked):
     def run(self) -> None:
         pw: JournalctlToAwsPosterWorker = self._aws_poster_worker()
         tw: JournalctlTailerWorker = self._journalctl_tailer_worker()
-        pw.start()
-        tw.start()
+
+        ws = [pw, tw]
+
+        for w in ws:
+            w.start()
+
+        start = time.time()
+
         while True:
-            if not pw.is_alive():
-                log.critical('Poster worker died!')
-                return
-            if not tw.is_alive():
-                log.critical('Tailer worker died!')
-                return
+            for w in ws:
+                if not w.is_alive():
+                    log.critical('Worker died: %r', w)
+                    break
+
+            if (rl := self._config.runtime_limit) is not None and time.time() - start >= rl:
+                log.warning('Runtime limit reached')
+                break
+
             time.sleep(1.)
