@@ -123,7 +123,7 @@
     "module": ".ptk.apps.ncdu",
     "attr": "_CLI_MODULE",
     "file": "omdev/ptk/apps/ncdu.py",
-    "line": 157,
+    "line": 155,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "ptk/ncdu",

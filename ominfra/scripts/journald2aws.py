@@ -4,38 +4,6 @@
 # @omlish-script
 # @omlish-amalg-output ../clouds/aws/journald2aws/main.py
 # ruff: noqa: N802 UP006 UP007 UP036
-"""
-TODO:
- - create log group
- - log stats - chunk sizes, byte count, num calls, etc
-
-==
-
-https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
-
-journalctl:
-  -o json
-  --show-cursor
-
-  --since "2012-10-30 18:17:16"
-  --until "2012-10-30 18:17:16"
-
-  --after-cursor <cursor>
-
-==
-
-https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
-
-==
-
-@dc.dataclass(frozen=True)
-class Journald2AwsConfig:
-    log_group_name: str
-    log_stream_name: str
-
-    aws_batch_size: int = 1_000
-    aws_flush_interval_s: float = 1.
-"""
 import abc
 import argparse
 import base64
@@ -1695,6 +1663,9 @@ TODO:
 """
 
 
+##
+
+
 class ThreadWorker(abc.ABC):
     def __init__(
             self,
@@ -1747,6 +1718,30 @@ class ThreadWorker(abc.ABC):
 
     def stop(self) -> None:
         raise NotImplementedError
+
+
+##
+
+
+class ThreadWorkerGroup:
+    @dc.dataclass()
+    class State:
+        worker: ThreadWorker
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._lock = threading.RLock()
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup.State] = {}
+
+    def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
+        with self._lock:
+            for w in workers:
+                if w in self._states:
+                    raise KeyError(w)
+                self._states[w] = ThreadWorkerGroup.State(w)
+
+        return self
 
 
 ########################################
@@ -2296,18 +2291,42 @@ class JournalctlTailerWorker(ThreadWorker):
 
 
 ########################################
-# main.py
+# ../driver.py
+"""
+TODO:
+ - create log group
+ - log stats - chunk sizes, byte count, num calls, etc
 
+==
+
+https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
+
+journalctl:
+  -o json
+  --show-cursor
+
+  --since "2012-10-30 18:17:16"
+  --until "2012-10-30 18:17:16"
+
+  --after-cursor <cursor>
+
+==
+
+https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
+
+==
 
 @dc.dataclass(frozen=True)
-class JournalctlOpts:
-    after_cursor: ta.Optional[str] = None
+class Journald2AwsConfig:
+    log_group_name: str
+    log_stream_name: str
 
-    since: ta.Optional[str] = None
-    until: ta.Optional[str] = None
+    aws_batch_size: int = 1_000
+    aws_flush_interval_s: float = 1.
+"""
 
 
-class JournalctlToAws:
+class JournalctlToAwsDriver:
     @dc.dataclass(frozen=True)
     class Config:
         pid_file: ta.Optional[str] = None
@@ -2343,7 +2362,7 @@ class JournalctlToAws:
 
     _es: contextlib.ExitStack
 
-    def __enter__(self) -> 'JournalctlToAws':
+    def __enter__(self) -> 'JournalctlToAwsDriver':
         self._es = contextlib.ExitStack().__enter__()
         return self
 
@@ -2506,6 +2525,10 @@ class JournalctlToAws:
                 last_cursor = cur_cursor  # noqa
 
 
+########################################
+# main.py
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser()
 
@@ -2527,13 +2550,13 @@ def _main() -> None:
 
     #
 
-    config: JournalctlToAws.Config
+    config: JournalctlToAwsDriver.Config
     if args.config_file:
         with open(os.path.expanduser(args.config_file)) as cf:
             config_dct = json.load(cf)
-        config = unmarshal_obj(config_dct, JournalctlToAws.Config)
+        config = unmarshal_obj(config_dct, JournalctlToAwsDriver.Config)
     else:
-        config = JournalctlToAws.Config()
+        config = JournalctlToAwsDriver.Config()
 
     #
 
@@ -2565,7 +2588,7 @@ def _main() -> None:
 
     #
 
-    with JournalctlToAws(config) as jta:
+    with JournalctlToAwsDriver(config) as jta:
         jta.run()
 
 
