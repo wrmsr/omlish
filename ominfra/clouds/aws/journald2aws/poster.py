@@ -45,7 +45,7 @@ class JournalctlToAwsPosterWorker(ThreadWorker):
                 msgs = []
 
             if not msgs:
-                log.warning('Empty queue chunk')
+                log.debug('Empty queue chunk')
                 continue
 
             log.debug('%r', msgs)
