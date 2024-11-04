@@ -62,7 +62,7 @@ class AwsPutLogEventsResponse(AwsDataclass):
 ##
 
 
-class AwsLogMessagePoster:
+class AwsLogMessageBuilder:
     """
     TODO:
      - max_items
@@ -164,7 +164,7 @@ class AwsLogMessagePoster:
         )
         sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
 
-        post = AwsLogMessagePoster.Post(
+        post = AwsLogMessageBuilder.Post(
             url=self._url,
             headers={k: check_single(v) for k, v in sig_req.headers.items()},
             data=sig_req.payload,
