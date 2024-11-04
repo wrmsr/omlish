@@ -88,6 +88,8 @@ class ThreadWorker(ExitStacked, abc.ABC):
             self._thread = thr
             thr.start()
 
+    #
+
     def __run(self) -> None:
         try:
             self._run()
@@ -97,11 +99,6 @@ class ThreadWorker(ExitStacked, abc.ABC):
 
     @abc.abstractmethod
     def _run(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    def stop(self) -> None:
         raise NotImplementedError
 
 

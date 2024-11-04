@@ -81,7 +81,7 @@ class JournalctlToAwsDriver(ExitStacked):
 
         #
 
-        dry_run: bool = False
+        aws_poster_dry_run: bool = False
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -177,7 +177,7 @@ class JournalctlToAwsDriver(ExitStacked):
             self._cursor(),
 
             ensure_locked=self._ensure_locked,
-            dry_run=self._config.dry_run,
+            dry_run=self._config.aws_poster_dry_run,
         )
 
     #
