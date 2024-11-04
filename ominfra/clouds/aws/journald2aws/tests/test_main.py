@@ -8,7 +8,6 @@ import tempfile
 def test_main():
     config = dict(
         aws_log_stream_name='foo',
-        verbose=True,
     )
 
     fd, fn = tempfile.mkstemp()
@@ -23,4 +22,5 @@ def test_main():
         __package__.rpartition('.')[0] + '.main',
         '--config-file', fn,
         '--dry-run',
+        # '--verbose',
     ])
