@@ -63,7 +63,7 @@ sympy~=1.13.1  # FIXME: torch :|
 # triton-nightly; platform_machine == "x86_64"
 # triton==2.3.1; platform_machine == "x86_64"
 
-wgpu==0.18.1
+wgpu==0.19.0
 
 hypothesis==6.116.0
 
@@ -81,7 +81,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.9.9
+simsimd==5.9.11
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.53
+boto3>=1.35.54
 
 google-api-python-client==2.151.0
 google-cloud-compute==1.20.1
@@ -181,7 +181,7 @@ mitogen==0.3.15
 
 ##
 
-openai==1.53.0
+openai==1.53.1
 
 trl==0.12.0
 tf-keras==2.17.0
@@ -196,22 +196,22 @@ customtkinter==5.2.2
 
 ##
 
-langchain==0.3.6
-langchain-core==0.3.15
-
+langchain==0.3.7
 langchain-anthropic==0.2.4
-langchain-community==0.3.4
+langchain-community==0.3.5
+langchain-core==0.3.15
 langchain-elasticsearch==0.3.0
-langchain-experimental==0.3.2
+langchain-experimental==0.3.3
 langchain-mistralai==0.2.1
-# langchain-nomic==0.2.0
 langchain-ollama==0.2.0
 langchain-openai==0.2.5
-langchain-text-splitters==0.3.1
+langchain-text-splitters==0.3.2
+
+# langchain-nomic==0.2.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.43
+langgraph==0.2.44
 
 langsmith==0.1.139
 
@@ -242,7 +242,7 @@ pypdf==5.1.0
 
 fparser==0.1.4
 
-usearch==2.16.0
+usearch==2.16.1
 
 ##
 
@@ -257,7 +257,7 @@ libtmux==0.37.0
 
 sqlite-vec==0.1.3
 
-anthropic==0.38.0
+anthropic==0.39.0
 
 apsw==3.46.1.0
 
