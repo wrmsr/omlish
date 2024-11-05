@@ -42,6 +42,8 @@ CONTENT_CHARSET_UTF8 = b'charset=utf-8'
 
 CONTENT_TYPE_BYTES = b'application/octet-stream'
 
+CONTENT_TYPE_FORM_URLENCODED = b'application/x-www-form-urlencoded'
+
 CONTENT_TYPE_HTML = b'text/html'
 CONTENT_TYPE_HTML_UTF8 = b'; '.join([CONTENT_TYPE_HTML, CONTENT_CHARSET_UTF8])
 

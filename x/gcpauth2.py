@@ -2,8 +2,9 @@ import json
 import time
 import urllib.request
 
-from omlish.http import jwt
 from omdev.secrets import load_secrets
+from omlish import http
+from omlish.http import jwt
 
 
 def generate_gcp_jwt(service_account_info):
@@ -23,33 +24,32 @@ SERVICE_APPLICATION_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 
 
 def get_access_token(signed_jwt, token_uri):
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-
     body = f'grant_type={SERVICE_APPLICATION_GRANT_TYPE}&assertion={signed_jwt}'
 
-    request = urllib.request.Request(
+    resp = http.request(
         token_uri,
+        'POST',
         data=body.encode('utf-8'),
-        headers=headers,
-        method='POST',
+        headers={
+            http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_FORM_URLENCODED,
+        },
     )
-    with urllib.request.urlopen(request) as response:
-        response_data = json.loads(response.read().decode('utf-8'))
-        return response_data['access_token']
+    resp_dct = json.loads(resp.data.decode('utf-8'))
+
+    return resp_dct['access_token']
 
 
 def list_gcp_instances(access_token, api_url):
-    headers = {
-        'Authorization': f'Bearer {access_token}',
-    }
+    resp = http.request(
+        api_url,
+        'GET',
+        headers={
+            http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(access_token),
+        },
+    )
+    resp_dct = json.loads(resp.data.decode('utf-8'))
 
-    request = urllib.request.Request(api_url, headers=headers, method='GET')
-    with urllib.request.urlopen(request) as response:
-        resp = json.loads(response.read().decode('utf-8'))
-
-    print(json.dumps(resp['items']['zones/us-west1-b'], indent=2, separators=(', ', ': ')))
+    print(json.dumps(resp_dct['items']['zones/us-west1-b'], indent=2, separators=(', ', ': ')))
 
 
 def _main():
