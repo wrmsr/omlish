@@ -1,50 +1,65 @@
 import json
 import time
+import typing as ta
 
 from omdev.secrets import load_secrets
 from omlish import http
 from omlish.http import jwt
 
 
-def generate_gcp_jwt(service_account_info):
+def generate_gcp_jwt(
+        creds_dct: ta.Mapping[str, ta.Any],
+        *,
+        issued_at: int | None = None,
+        lifetime_s: int = 3600,
+) -> str:
     return jwt.generate_jwt(
-        issuer=service_account_info['client_email'],
-        subject=service_account_info['client_email'],
-        audience=service_account_info['token_uri'],
-        issued_at=(issued_at := int(time.time())),
-        expires_at=issued_at + 3600,  # 1 hour expiration
+        issuer=creds_dct['client_email'],
+        subject=creds_dct['client_email'],
+        audience=creds_dct['token_uri'],
+        issued_at=(issued_at := int(issued_at if issued_at is not None else time.time())),
+        expires_at=issued_at + lifetime_s,
         scope='https://www.googleapis.com/auth/cloud-platform',
-        key=service_account_info['private_key'],
+        key=creds_dct['private_key'],
         algorithm='RS256',
     )
 
 
-
-def get_access_token(signed_jwt, token_uri):
+def get_gcp_access_token(
+        creds_dct: ta.Mapping[str, ta.Any],
+        *,
+        client: http.HttpClient | None = None,
+) -> str:
+    signed_jwt = generate_gcp_jwt(creds_dct)
     resp = http.request(
-        token_uri,
+        creds_dct['token_uri'],
         'POST',
         data=jwt.build_get_token_body(signed_jwt).encode('utf-8'),
         headers={
             http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_FORM_URLENCODED,
         },
+        client=client,
     )
     resp_dct = json.loads(resp.data.decode('utf-8'))
-
     return resp_dct['access_token']
 
 
-def list_gcp_instances(access_token, api_url):
+def list_gcp_instances(
+        api_url: str,
+        access_token: str,
+        *,
+        client: http.HttpClient | None = None,
+):
     resp = http.request(
         api_url,
         'GET',
         headers={
             http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(access_token),
         },
+        client=client,
     )
     resp_dct = json.loads(resp.data.decode('utf-8'))
-
-    print(json.dumps(resp_dct['items']['zones/us-west1-b'], indent=2, separators=(', ', ': ')))
+    return resp_dct
 
 
 def _main():
@@ -53,12 +68,17 @@ def _main():
     creds_dct = json.loads(creds)
 
     project_id = creds_dct['project_id']
-    api_url = f'https://compute.googleapis.com/compute/v1/projects/{project_id}/aggregated/instances'
 
-    signed_jwt = generate_gcp_jwt(creds_dct)
-    access_token = get_access_token(signed_jwt, creds_dct['token_uri'])
-    if access_token:
-        list_gcp_instances(access_token, api_url)
+    access_token = get_gcp_access_token(creds_dct)
+    if not access_token:
+        raise Exception('Failed to get access token')
+
+    insts = list_gcp_instances(
+        f'https://compute.googleapis.com/compute/v1/projects/{project_id}/aggregated/instances',
+        access_token,
+    )
+
+    print(json.dumps(insts['items']['zones/us-west1-b'], indent=2, separators=(', ', ': ')))
 
 
 if __name__ == '__main__':
