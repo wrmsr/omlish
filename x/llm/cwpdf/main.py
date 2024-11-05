@@ -122,7 +122,7 @@ def _main() -> None:
     query = (
         "<pdf> Please provide NVIDIA's Q2 Fiscal 2025 financial metrics for:\n"
         '1. Total quarterly revenue\n'
-        '2. Data Center segment revenue\n'
+        '2. Data Center segment revenue'
     )
 
     relevant_docs = get_relevant_docs(query)

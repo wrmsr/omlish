@@ -36,23 +36,26 @@ def chat_model() -> 'llama_cpp.Llama':
     return ret
 
 
+SYSTEM_TEMPLATE = (
+    'You are a QA assistant. Based on the following context, answer the question using bullet points and include '
+    'necessary data.'
+    '\n\n'
+    'Context:'
+    '\n'
+    '{context}'
+)
+
+
 def generate_question_answer(
         query: str,
         relevant_docs: ta.Iterable[Doc],
 ) -> ta.Iterator[str]:
     context = '\n\n'.join(d.content for d in relevant_docs)
 
-    system_prompt = (
-        'You are a QA assistant. Based on the following context, answer the question using bullet points and include '
-        'necessary data.'
-        '\n\n'
-        'Context:'
-        '\n'
-        f'{context}'
-    )
+    system_template = SYSTEM_TEMPLATE.format(context=context)
 
     messages = [
-        {'role': 'system', 'content': system_prompt},
+        {'role': 'system', 'content': system_template},
         {'role': 'user', 'content': query},
     ]
 
