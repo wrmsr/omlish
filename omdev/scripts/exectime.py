@@ -12,7 +12,17 @@ _CLI_MODULE = {'$omdev.cli.types.CliModule': {
 
 
 def _main() -> None:
-    [src] = sys.argv[1:]
+    if len(sys.argv) == 2:
+        pre = None
+        [src] = sys.argv[1:]
+    elif len(sys.argv) == 3:
+        [pre, src] = sys.argv[1:]
+    else:
+        raise Exception('Invalid arguments')
+
+    if pre:
+        exec(pre)
+
     co = compile(src, '<string>', 'exec')
     start = time.time_ns()
     exec(co)
