@@ -10,11 +10,11 @@ from omdev.secrets import load_secrets
 
 class Algorithm(abc.ABC):
     @abc.abstractmethod
-    def prepare_key(self, key: str) -> bytes:
+    def prepare_key(self, key: str) -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def sign(self, s: bytes, key: bytes) -> bytes:
+    def sign(self, s: bytes, key: ta.Any) -> bytes:
         raise NotImplementedError
 
 
