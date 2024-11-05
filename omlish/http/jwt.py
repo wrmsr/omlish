@@ -163,3 +163,17 @@ def generate_jwt(
         key,
         **kwargs,
     )
+
+
+##
+
+
+SERVICE_APPLICATION_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+
+
+def build_get_token_body(
+        signed_jwt: str,
+        *,
+        grant_type: str = SERVICE_APPLICATION_GRANT_TYPE,
+) -> str:
+    return f'grant_type={grant_type}&assertion={signed_jwt}'
