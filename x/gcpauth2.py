@@ -1,6 +1,5 @@
 import json
 import time
-import urllib.request
 
 from omdev.secrets import load_secrets
 from omlish import http
@@ -20,16 +19,12 @@ def generate_gcp_jwt(service_account_info):
     )
 
 
-SERVICE_APPLICATION_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
-
 
 def get_access_token(signed_jwt, token_uri):
-    body = f'grant_type={SERVICE_APPLICATION_GRANT_TYPE}&assertion={signed_jwt}'
-
     resp = http.request(
         token_uri,
         'POST',
-        data=body.encode('utf-8'),
+        data=jwt.build_get_token_body(signed_jwt).encode('utf-8'),
         headers={
             http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_FORM_URLENCODED,
         },
