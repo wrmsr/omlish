@@ -110,8 +110,8 @@ class NeedMore(lang.Marker):
 BytesLike: ta.TypeAlias = ta.Any
 
 
-BufferedReader = io.BufferedReader
-# BufferedReader = pyio.BufferedReader
+# BufferedReader = io.BufferedReader
+BufferedReader = pyio.BufferedReader
 
 
 class ProxyReadFile:
@@ -181,19 +181,14 @@ class ThreadedIoTrampoline:
             BaseException
         ] = ConditionDeque()
 
+        self._proxy = ProxyReadFile(self._read)
+
         self._thread = threading.Thread(target=self._thread_proc, daemon=True)
-        self._eof = False
-        self._closed = False
+
+    #
 
     class Shutdown(BaseException):  # noqa
         pass
-
-    class Exited(lang.Marker):
-        pass
-
-    def __enter__(self) -> ta.Self:
-        self._thread.start()
-        return self
 
     def close(self, timeout: float | None = None) -> None:
         if not self._thread.is_alive():
@@ -206,58 +201,23 @@ class ThreadedIoTrampoline:
             else:
                 raise RuntimeError('Failed to join thread')
 
+    #
+
+    def __enter__(self) -> ta.Self:
+        self._thread.start()
+        return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
     #
 
-    @dc.dataclass(frozen=True)
-    class _ReadFile:
-        o: 'ThreadedIoTrampoline'
-
-        def read(self, n: int, /) -> bytes:
-            if self.o._closed:
-                raise RuntimeError('Closed')
-            if self.o._eof:
-                return b''
-            d = self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
-            if isinstance(d, BaseException):
-                raise d
-            if not d:
-                self.o._eof = True
-            return d
-
-        def seekable(self) -> bool:
-            return False
-
-        def seek(self, n: int, /) -> ta.Any:
-            raise TypeError
-
-        def close(self) -> None:
-            self.o._closed = True
-
-        def readall(self, *args, **kwargs):
-            raise TypeError
-
-        def readinto(self, b: BytesLike) -> int | None:
-            d = self.read(len(b))
-            if d:
-                b[:len(d)] = d
-            return len(d)
-
-        def readable(self) -> bool:
-            return not (self.o._eof or self.o._closed)
-
-        def flush(self) -> None:
-            pass
-
-        @property
-        def closed(self) -> bool:
-            return self.o._closed
+    class Exited(lang.Marker):
+        pass
 
     def _thread_proc(self) -> None:
         try:
-            with contextlib.closing(BufferedReader(self._ReadFile(self))) as bf:  # noqa
+            with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
                 with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
                     while out := gf.read(0x1000):
                         self._out.push(out)
@@ -267,6 +227,13 @@ class ThreadedIoTrampoline:
             raise
         finally:
             self._out.push(ThreadedIoTrampoline.Exited)
+
+    #
+
+    def _read(self, n: int, /) -> bytes:
+        return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
+
+    #
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
@@ -281,7 +248,7 @@ class ThreadedIoTrampoline:
                 yield e
 
 
-class GreenletIoTrampoline:
+# class GreenletIoTrampoline:
 
 
 def _main() -> None:
