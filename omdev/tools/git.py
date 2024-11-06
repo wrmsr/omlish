@@ -61,38 +61,42 @@ class Cli(ap.Cli):
         accepts_unknown=True,
     )
     def clone(self) -> None:
-        out_dir: str
+        # And expected usage is `cd $(om git clone foo/bar)` and an empty cd arg will return to the previous directory,
+        # so always output at least a . so it'll cd to the current dir at least lol - it still runs even if the proc
+        # fails.
+        out_dir = '.'
+        try:
+            if (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
+                user = m.group('user')
+                repo = m.group('repo')
 
-        if (m := self._GITHUB_PAT.fullmatch(self.args.repo)):
-            user = m.group('user')
-            repo = m.group('repo')
+                os.makedirs(user, 0o755, exist_ok=True)
 
-            os.makedirs(user, 0o755, exist_ok=True)
+                subprocess.check_call([
+                    'git',
+                    'clone',
+                    *self.unknown_args,
+                    *self.args.args,
+                    f'https://github.com/{user}/{repo}.git',
+                    os.path.join(user, repo),
+                ])
 
-            subprocess.check_call([
-                'git',
-                'clone',
-                *self.unknown_args,
-                *self.args.args,
-                f'https://github.com/{user}/{repo}.git',
-                os.path.join(user, repo),
-            ])
+                out_dir = os.path.join(user, repo)
 
-            out_dir = os.path.join(user, repo)
+            else:
+                parsed = urllib.parse.urlparse(self.args.repo)
+                out_dir = parsed.path.split('/')[-1]
 
-        else:
-            parsed = urllib.parse.urlparse(self.args.repo)
-            out_dir = parsed.path.split('/')[-1]
+                subprocess.check_call([
+                    'git',
+                    'clone',
+                    *self.unknown_args,
+                    *self.args.args,
+                    self.args.repo,
+                ])
 
-            subprocess.check_call([
-                'git',
-                'clone',
-                *self.unknown_args,
-                *self.args.args,
-                self.args.repo,
-            ])
-
-        print(out_dir)
+        finally:
+            print(out_dir)
 
     @ap.command(
         ap.arg('rev', nargs='?', default='HEAD'),
