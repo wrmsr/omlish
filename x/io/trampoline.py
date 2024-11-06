@@ -1,14 +1,14 @@
 """
 TODO:
- - greenlets
- - this prob goes in concurrent?
+ - concurrent.Threadlets
+ - https://docs.python.org/3/library/zlib.html#zlib.compressobj
 """
 import abc
 import collections
 import contextlib
-import dataclasses as dc
 import gzip
 import io  # noqa
+import json
 import os.path
 import threading
 import typing as ta
@@ -18,92 +18,12 @@ import _compression  # noqa
 import greenlet
 
 from omlish import lang
+from omlish.sync import ConditionDeque
 
 from . import pyio  # noqa
 
 
-"""
-class _Reader(Protocol):
-    def read(self, n: int, /) -> bytes: ...
-    def seekable(self) -> bool: ...
-    def seek(self, n: int, /) -> Any: ...
-
-class _ReadableFileobj(_Reader, Protocol): ...
-    # The following attributes and methods are optional:
-    # def fileno(self) -> int: ...
-    # def close(self) -> object: ...
-
-class _WritableFileobj(Protocol):
-    def write(self, b: bytes, /) -> object: ...
-    # The following attributes and methods are optional:
-    # def fileno(self) -> int: ...
-    # def close(self) -> object: ...
-"""
-
-
-# Unlike regular files, empty bytes does not mean eof - None does.
-IncrementalBytesCodec: ta.TypeAlias = ta.Callable[[bytes], bytes | None]
-
-
-def nop_incremental_bytes_codec(data: bytes | None) -> bytes | None:
-    return data
-
-
 T = ta.TypeVar('T')
-
-
-class ConditionDeque(ta.Generic[T]):
-    def __init__(
-            self,
-            *,
-            cond: threading.Condition | None = None,
-            deque: collections.deque[T] | None = None,
-
-            lock: ta.Optional['threading.RLock'] = None,
-            maxlen: int | None = None,
-            init: ta.Iterable[T] | None = None,
-    ) -> None:
-        super().__init__()
-
-        if cond is None:
-            cond = threading.Condition(lock=lock)
-        if deque is None:
-            deque = collections.deque(maxlen=maxlen)
-        if init:
-            deque.extend(init)
-
-        self._cond = cond
-        self._deque = deque
-
-    @property
-    def cond(self) -> threading.Condition:
-        return self._cond
-
-    @property
-    def deque(self) -> collections.deque[T]:
-        return self._deque
-
-    def push(
-            self,
-            *items: T,
-            n: int = 1,
-    ) -> None:
-        with self.cond:
-            self.deque.extend(items)
-            self.cond.notify(n)
-
-    def pop(
-            self,
-            timeout: float | None = None,
-            *,
-            if_empty: ta.Callable[[], None] | None = None,
-    ) -> T:
-        with self.cond:
-            if not self.deque and if_empty is not None:
-                if_empty()
-            while not self.deque:
-                self.cond.wait(timeout)
-            return self.deque.popleft()
 
 
 class NeedMore(lang.Marker):
@@ -256,15 +176,20 @@ class ThreadedIoTrampoline(IoTrampoline):
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
-        while e := self._out.pop():
+        while True:
+            e = self._out.pop()
             if isinstance(e, NeedMore):
                 break
             elif isinstance(e, BaseException):
                 raise e
             elif e is Exited:
                 raise RuntimeError('IO thread exited')
-            else:
+            elif isinstance(e, bytes):
                 yield e
+                if not e:
+                    return
+            else:
+                raise TypeError(e)
 
 
 class GreenletIoTrampoline(IoTrampoline):
@@ -280,7 +205,8 @@ class GreenletIoTrampoline(IoTrampoline):
         if self._g.dead:
             return
         out = self._g.switch(Shutdown())
-        raise NotImplementedError
+        if out is not Exited or not self._g.dead:
+            raise RuntimeError
 
     #
 
@@ -296,53 +222,58 @@ class GreenletIoTrampoline(IoTrampoline):
     #
 
     def _read(self, n: int, /) -> bytes:
-        return self._g.parent.switch(NeedMore)
+        out = self._g.parent.switch(NeedMore)
+        return out
 
-    def _g_proc(self) -> None:
+    def _g_proc(self) -> ta.Any:
         try:
             with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
                 with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
                     while out := gf.read(0x1000):
-                        self._g.parent.switch(out)
-                    self._g.parent.switch(out)
+                        e = self._g.parent.switch(out)
+                        if e is not NeedMore:
+                            raise TypeError(e)
+                    e = self._g.parent.switch(out)
+                    if not isinstance(e, Shutdown):
+                        raise TypeError(e)
+            return Exited
         except BaseException as e:
-            self._g.parent.switch(e)
+            self._g.parent.throw(e)
             raise
-        finally:
-            self._g.parent.switch(Exited)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
-        for buf in data:
-            out = self._g.switch(buf)
-            if out is NeedMore:
-                break
-            elif isinstance(out, bytes):
-                yield out
-            else:
-                raise TypeError(out)
+        i: bytes | type[NeedMore]
+        for i in data:
+            while True:
+                e = self._g.switch(i)
+                i = NeedMore
+                if e is NeedMore:
+                    break
+                elif isinstance(e, bytes):
+                    yield e
+                    if not e:
+                        return
+                else:
+                    raise TypeError(e)
 
 
 def _main() -> None:
-    in_file = os.path.expanduser('~/Downloads/access.json.gz')
-    with open(in_file, 'rb') as f:
-        with GreenletIoTrampoline() as iot:
-            while raw := f.read(0x1000):
-                for out in iot.feed(raw):
-                    print(out)
-            for out in iot.feed(b''):
-                print(out)
-
-    ##
-
-    # with gzip.GzipFile(fileobj=ThreadFile(), mode='rb') as f:
-    #     while data := f.read(0x1000):
-    #         print(data)
-
-    # ibc = nop_incremental_bytes_codec
-    # with open(in_file, 'rb') as f:
-    #     while data := f.read(0x1000):
-    #         print(ibc(data))
-    # print(ibc(None))
+    iot_cls: type[IoTrampoline]
+    for iot_cls in [
+        ThreadedIoTrampoline,
+        GreenletIoTrampoline,
+    ]:
+        buf = io.BytesIO()
+        in_file = os.path.expanduser('~/Downloads/access.json.gz')
+        with open(in_file, 'rb') as f:
+            with iot_cls() as iot:
+                while raw := f.read(0x1000):
+                    for out in iot.feed(raw):
+                        buf.write(out)
+                for out in iot.feed(b''):
+                    buf.write(out)
+        for l in buf.getvalue().decode('utf-8').splitlines():
+            json.loads(l)
 
 
 if __name__ == '__main__':
