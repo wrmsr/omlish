@@ -44,7 +44,6 @@ if ta.TYPE_CHECKING:
 else:
     _bz2 = lang.proxy_import('bz2')
     _gzip = lang.proxy_import('gzip')
-    _json = lang.proxy_import('json')
     _lzma = lang.proxy_import('lzma')
     _pickle = lang.proxy_import('pickle')
     _struct = lang.proxy_import('struct')

@@ -44,12 +44,19 @@ class Format:
 
 class Formats(enum.Enum):
     JSON = Format(['json'], json.load)
+
     YAML = Format(['yaml', 'yml'], lambda f: yaml.safe_load(f))
+
     TOML = Format(['toml'], lambda f: tomllib.loads(f.read()))
+
     ENV = Format(['env', 'dotenv'], lambda f: dotenv.dotenv_values(stream=f))
+
     PROPS = Format(['properties', 'props'], lambda f: dict(props.Properties().load(f.read())))
+
     PY = Format(['py', 'python', 'repr'], lambda f: ast.literal_eval(f.read()))
+
     XML = Format(['xml'], lambda f: xml.build_simple_element(xml.parse_tree(f.read()).getroot()).as_dict())
+
     CSV = Format(['csv'], lambda f: list(csv.DictReader(f)))
     TSV = Format(['tsv'], lambda f: list(csv.DictReader(f, delimiter='\t')))
     FLAT_CSV = Format(['fcsv'], lambda f: list(csv.reader(f)))
