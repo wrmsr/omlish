@@ -7,7 +7,7 @@ import collections
 import contextlib
 import dataclasses as dc
 import gzip
-import io
+import io  # noqa
 import os.path
 import threading
 import typing as ta
@@ -119,9 +119,10 @@ class ThreadedIoTrampoline:
         super().__init__()
 
         self._in: ConditionDeque[bytes] = ConditionDeque()
-        self._out: ConditionDeque[bytes | type[NeedMore] | BaseException] = ConditionDeque()
+        self._out: ConditionDeque[bytes | type[NeedMore] | BaseException | None] = ConditionDeque()
 
         self._thread = threading.Thread(target=self._thread_proc, daemon=True)
+        self._eof = False
         self._closed = False
 
     def __enter__(self) -> ta.Self:
@@ -142,9 +143,11 @@ class ThreadedIoTrampoline:
         def read(self, n: int, /) -> bytes:
             if self.o._closed:
                 raise Exception('Closed')
+            if self.o._eof:
+                return b''
             d = self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
             if not d:
-                self.o._closed = True
+                self.o._eof = True
             return d
 
         def seekable(self) -> bool:
@@ -169,7 +172,7 @@ class ThreadedIoTrampoline:
             return len(o)
 
         def readable(self) -> bool:
-            return not self.o._closed
+            return not (self.o._eof or self.o._closed)
 
         def flush(self) -> None:
             pass
@@ -187,6 +190,8 @@ class ThreadedIoTrampoline:
         except BaseException as e:
             self._out.push(e)
             raise
+        finally:
+            self._out.push(None)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
@@ -195,6 +200,8 @@ class ThreadedIoTrampoline:
                 break
             elif isinstance(e, BaseException):
                 raise e
+            elif e is None:
+                raise NotImplementedError
             elif not e:
                 raise NotImplementedError
             else:
