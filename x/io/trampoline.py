@@ -100,7 +100,27 @@ class Shutdown(BaseException):  # noqa
     pass
 
 
+IoTrampolineTarget: ta.TypeAlias = ta.Callable[[io.BufferedReader], ta.ContextManager[ta.Callable[[], bytes]]]
+
+
 class IoTrampoline(lang.Abstract):
+    def __init__(
+            self,
+            target: IoTrampolineTarget,
+            *,
+            buffer_size: int | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._target = target
+        self._buffer_size = buffer_size
+
+    def _make_buffered_reader(self, raw: ta.Any) -> io.BufferedReader:
+        return io.BufferedReader(
+            raw,
+            **(dict(buffer_size=self._buffer_size) if self._buffer_size is not None else {}),
+        )
+
     @abc.abstractmethod
     def close(self, timeout: float | None = None) -> None:
         raise NotImplementedError
@@ -119,8 +139,8 @@ class IoTrampoline(lang.Abstract):
 
 
 class ThreadedIoTrampoline(IoTrampoline):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, target: IoTrampolineTarget, **kwargs: ta.Any) -> None:
+        super().__init__(target, **kwargs)
 
         self._in: ConditionDeque[bytes | BaseException] = ConditionDeque()
         self._out: ConditionDeque[
@@ -163,7 +183,7 @@ class ThreadedIoTrampoline(IoTrampoline):
 
     def _thread_proc(self) -> None:
         try:
-            with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
+            with contextlib.closing(self._make_buffered_reader(self._proxy)) as bf:  # noqa
                 with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
                     while out := gf.read(0x1000):
                         self._out.push(out)
@@ -193,8 +213,8 @@ class ThreadedIoTrampoline(IoTrampoline):
 
 
 class GreenletIoTrampoline(IoTrampoline):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, target: IoTrampolineTarget, **kwargs: ta.Any) -> None:
+        super().__init__(target, **kwargs)
 
         self._proxy = ProxyReadFile(self._read)
         self._g = greenlet.greenlet(self._g_proc)
@@ -263,15 +283,21 @@ def _main() -> None:
         ThreadedIoTrampoline,
         GreenletIoTrampoline,
     ]:
+        @contextlib.contextmanager
+        def target(bf):
+            with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
+                yield lambda: gf.read(0x1000)
+
         buf = io.BytesIO()
         in_file = os.path.expanduser('~/Downloads/access.json.gz')
         with open(in_file, 'rb') as f:
-            with iot_cls() as iot:
+            with iot_cls(target) as iot:
                 while raw := f.read(0x1000):
                     for out in iot.feed(raw):
                         buf.write(out)
                 for out in iot.feed(b''):
                     buf.write(out)
+
         for l in buf.getvalue().decode('utf-8').splitlines():
             json.loads(l)
 
