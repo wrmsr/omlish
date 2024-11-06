@@ -114,7 +114,7 @@ datasets==3.1.0; python_version < "3.13"  # !! includes arrow and pandas and shi
 
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
-transformers==4.46.1; python_version < "3.13"
+transformers==4.46.2; python_version < "3.13"
 sentence-transformers==3.2.1; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
