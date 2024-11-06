@@ -14,6 +14,8 @@ import typing as ta
 
 import _compression  # noqa
 
+import greenlet
+
 from omlish import lang
 
 from . import pyio  # noqa
@@ -115,7 +117,7 @@ BufferedReader = io.BufferedReader
 
 
 class ProxyReadFile:
-    def __init__(self, read: ta.Callable[[int], bytes]) -> None:
+    def __init__(self, read: ta.Callable[[int], bytes | BaseException]) -> None:
         super().__init__()
 
         self._read = read
@@ -169,6 +171,14 @@ class ProxyReadFile:
         raise TypeError
 
 
+class Exited(lang.Marker):
+    pass
+
+
+class Shutdown(BaseException):  # noqa
+    pass
+
+
 class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
@@ -177,7 +187,7 @@ class ThreadedIoTrampoline:
         self._out: ConditionDeque[
             bytes |
             type[NeedMore] |
-            type[ThreadedIoTrampoline.Exited] |
+            type[Exited] |
             BaseException
         ] = ConditionDeque()
 
@@ -187,13 +197,10 @@ class ThreadedIoTrampoline:
 
     #
 
-    class Shutdown(BaseException):  # noqa
-        pass
-
     def close(self, timeout: float | None = None) -> None:
         if not self._thread.is_alive():
             return
-        self._out.push(self.Shutdown())
+        self._out.push(Shutdown())
         self._thread.join(timeout)
         if self._thread.is_alive():
             if timeout is not None:
@@ -212,9 +219,6 @@ class ThreadedIoTrampoline:
 
     #
 
-    class Exited(lang.Marker):
-        pass
-
     def _thread_proc(self) -> None:
         try:
             with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
@@ -226,7 +230,7 @@ class ThreadedIoTrampoline:
             self._out.push(e)
             raise
         finally:
-            self._out.push(ThreadedIoTrampoline.Exited)
+            self._out.push(Exited)
 
     #
 
@@ -242,19 +246,56 @@ class ThreadedIoTrampoline:
                 break
             elif isinstance(e, BaseException):
                 raise e
-            elif e is ThreadedIoTrampoline.Exited:
+            elif e is Exited:
                 raise RuntimeError('IO thread exited')
             else:
                 yield e
 
 
-# class GreenletIoTrampoline:
+class GreenletIoTrampoline:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._proxy = ProxyReadFile(self._read)
+        self._g = greenlet.greenlet(self._g_proc)
+
+    def __enter__(self) -> ta.Self:
+        out = self._g.switch()
+        if out is not NeedMore:
+            raise RuntimeError
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def _read(self, n: int, /) -> bytes:
+        # return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
+        self._g.parent.switch(NeedMore)
+        raise NotImplementedError
+
+    def _g_proc(self) -> None:
+        try:
+            with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
+                with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
+                    while out := gf.read(0x1000):
+                        self._out.append(out)
+                    self._out.append(out)
+        except BaseException as e:
+            self._out.append(e)
+            raise
+        finally:
+            self._out.append(Exited)
+
+    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+        for buf in data:
+            out = self._g.switch(buf)
+            raise NotImplementedError
 
 
 def _main() -> None:
     in_file = os.path.expanduser('~/Downloads/access.json.gz')
     with open(in_file, 'rb') as f:
-        with ThreadedIoTrampoline() as iot:
+        with GreenletIoTrampoline() as iot:
             while raw := f.read(0x1000):
                 for out in iot.feed(raw):
                     print(out)
