@@ -172,6 +172,9 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file, 'rb'))
 
+        from .io import gzip_io_codec
+        in_file = es.enter_context(gzip_io_codec(in_file, 'r'))
+
         #
 
         if args.less:
