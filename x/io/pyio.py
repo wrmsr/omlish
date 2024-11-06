@@ -1,7 +1,9 @@
+# type: ignore
+# ruff: noqa
+# flake8: ignore
 """
 Python implementation of the io module.
-"""
-"""
+
 https://github.com/python/cpython/blob/8fa4dc4ba8646c59f945f2451c53e2919f066065/Lib/_pyio.py
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
@@ -42,6 +44,7 @@ import abc
 import codecs
 import errno
 import io
+import locale
 import os
 import stat
 import sys
@@ -57,12 +60,8 @@ if hasattr(os, 'SEEK_HOLE'):
 # open() uses st_blksize whenever we can
 DEFAULT_BUFFER_SIZE = 8 * 1024  # bytes
 
-# NOTE: Base classes defined here are registered with the "official" ABCs
-# defined in io.py. We don't use real inheritance though, because we don't want
-# to inherit the C implementations.
-
-# Rebind for compatibility
-BlockingIOError = BlockingIOError
+# NOTE: Base classes defined here are registered with the "official" ABCs defined in io.py. We don't use real
+# inheritance though, because we don't want to inherit the C implementations.
 
 # Does open() check its 'errors' argument?
 _CHECK_ERRORS = hasattr(sys, 'gettotalrefcount') or sys.flags.dev_mode
@@ -316,6 +315,7 @@ except AttributeError:
 UnsupportedOperation = io.UnsupportedOperation
 
 
+@io.IOBase.register
 class IOBase(metaclass=abc.ABCMeta):
     """
     The abstract base class for all I/O classes.
@@ -616,9 +616,7 @@ class IOBase(metaclass=abc.ABCMeta):
             self.write(line)
 
 
-io.IOBase.register(IOBase)
-
-
+@io.RawIOBase.register
 class RawIOBase(IOBase):
     """Base class for raw binary I/O."""
 
@@ -679,13 +677,7 @@ class RawIOBase(IOBase):
         self._unsupported('write')
 
 
-io.RawIOBase.register(RawIOBase)
-from _io import FileIO
-
-
-RawIOBase.register(FileIO)
-
-
+@io.BufferedIOBase.register
 class BufferedIOBase(IOBase):
     """
     Base class for buffered IO objects.
@@ -780,9 +772,6 @@ class BufferedIOBase(IOBase):
         """
 
         self._unsupported('detach')
-
-
-io.BufferedIOBase.register(BufferedIOBase)
 
 
 class _BufferedIOMixin(BufferedIOBase):
@@ -1864,6 +1853,7 @@ class FileIO(RawIOBase):
             return 'wb'
 
 
+@io.TextIOBase.register
 class TextIOBase(IOBase):
     """
     Base class for text I/O.
@@ -1938,9 +1928,6 @@ class TextIOBase(IOBase):
         """
 
         return None
-
-
-io.TextIOBase.register(TextIOBase)
 
 
 class IncrementalNewlineDecoder(codecs.IncrementalDecoder):
@@ -2319,13 +2306,7 @@ class TextIOWrapper(TextIOBase):
         return chars
 
     def _get_locale_encoding(self):
-        try:
-            import locale
-        except ImportError:
-            # Importing locale may fail if Python is being built
-            return 'utf-8'
-        else:
-            return locale.getencoding()
+        return locale.getencoding()
 
     def _rewind_decoded_chars(self, n):
         """Rewind the _decoded_chars buffer."""
