@@ -1,6 +1,7 @@
 """
 TODO:
  - greenlets
+ - this prob goes in concurrent?
 """
 import collections
 import dataclasses as dc
@@ -39,6 +40,51 @@ def nop_incremental_bytes_codec(data: bytes | None) -> bytes | None:
     return data
 
 
+T = ta.TypeVar('T')
+
+class ConditionDeque(ta.Generic[T]):
+    def __init__(
+            self,
+            *,
+            cond: threading.Condition | None = None,
+            deque: collections.deque[T] | None = None,
+
+            lock: threading.RLock | None = None,
+            maxlen: int | None = None,
+            init: ta.Iterable[T] | None = None,
+    ) -> None:
+        super().__init__()
+
+        if cond is None:
+            cond = threading.Condition(lock=lock)
+        if deque is None:
+            deque = collections.deque(maxlen=maxlen)
+        if init:
+            deque.extend(init)
+
+        self._cond = cond
+        self._deque = deque
+
+    @property
+    def cond(self) -> threading.Condition:
+        return self._cond
+
+    @property
+    def deque(self) -> collections.deque[T]:
+        return self._deque
+
+    def append(self, *items: T, n: int = 1) -> None:
+        with self.cond:
+            self.deque.extend(items)
+            self.cond.notify(n)
+
+    def popleft(self, timeout: float | None = None) -> T:
+        with self.cond:
+            while not self.deque:
+                self.cond.wait(timeout)
+            return self.deque.popleft()
+
+
 class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
@@ -58,12 +104,22 @@ class ThreadedIoTrampoline:
     def __exit__(self, exc_type, exc_val, exc_tb):
         raise NotImplementedError
 
-    def enqueue_input(self, buf: bytes) -> None:
+    #
+
+    def _enqueue_input(self, buf: bytes) -> None:
         with self._in_cond:
             self._in_queue.append(buf)
             self._in_cond.notify()
 
     def _await_input(self, n: int) -> bytes:
+        with self._in_cond:
+            while not self._in_queue:
+                self._in_cond.wait()
+            return self._in_queue.popleft()
+
+    #
+
+    def _await_output(self) -> bytes:
         with self._in_cond:
             while not self._in_queue:
                 self._in_cond.wait()
