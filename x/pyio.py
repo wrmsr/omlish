@@ -1,7 +1,6 @@
 """
 Python implementation of the io module.
 """
-
 """
 https://github.com/python/cpython/blob/8fa4dc4ba8646c59f945f2451c53e2919f066065/Lib/_pyio.py
 """

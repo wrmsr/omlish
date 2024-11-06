@@ -16,6 +16,8 @@ import _compression  # noqa
 
 from omlish import lang
 
+from . import pyio  # noqa
+
 
 """
 class _Reader(Protocol):
@@ -108,14 +110,19 @@ class NeedMore(lang.Marker):
 BytesLike: ta.TypeAlias = ta.Any
 
 
+# BufferedReader = io.BufferedReader
+BufferedReader = pyio.BufferedReader
+
+
 class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
 
         self._in: ConditionDeque[bytes] = ConditionDeque()
-        self._out: ConditionDeque[bytes | type[NeedMore]] = ConditionDeque()
+        self._out: ConditionDeque[bytes | type[NeedMore] | BaseException] = ConditionDeque()
 
         self._thread = threading.Thread(target=self._thread_proc, daemon=True)
+        self._closed = False
 
     def __enter__(self) -> ta.Self:
         self._thread.start()
@@ -133,7 +140,12 @@ class ThreadedIoTrampoline:
         # _compression._ReadableFileobj
 
         def read(self, n: int, /) -> bytes:
-            return self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
+            if self.o._closed:
+                raise Exception('Closed')
+            d = self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
+            if not d:
+                self.o._closed = True
+            return d
 
         def seekable(self) -> bool:
             return False
@@ -157,29 +169,36 @@ class ThreadedIoTrampoline:
             return len(o)
 
         def readable(self) -> bool:
-            return True
+            return not self.o._closed
 
         def flush(self) -> None:
             pass
 
         @property
         def closed(self) -> bool:
-            return False
+            return self.o._closed
 
     def _thread_proc(self) -> None:
-        with contextlib.closing(io.BufferedReader(self._ReadFile(self))) as bf:
-            with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
-                while out := gf.read(0x1000):
-                    self._out.push(out)
+        try:
+            with contextlib.closing(BufferedReader(self._ReadFile(self))) as bf:
+                with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
+                    while out := gf.read(0x1000):
+                        self._out.push(out)
+        except BaseException as e:
+            self._out.push(e)
+            raise
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
-        while out := self._out.pop():
-            if isinstance(out, NeedMore):
+        while e := self._out.pop():
+            if isinstance(e, NeedMore):
                 break
-            if not out:
+            elif isinstance(e, BaseException):
+                raise e
+            elif not e:
                 raise NotImplementedError
-            yield out
+            else:
+                yield e
 
 
 def _main() -> None:
@@ -189,6 +208,8 @@ def _main() -> None:
             while raw := f.read(0x1000):
                 for out in iot.feed(raw):
                     print(out)
+            for out in iot.feed(b''):
+                print(out)
 
     ##
 
