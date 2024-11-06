@@ -110,8 +110,8 @@ class NeedMore(lang.Marker):
 BytesLike: ta.TypeAlias = ta.Any
 
 
-# BufferedReader = io.BufferedReader
-BufferedReader = pyio.BufferedReader
+BufferedReader = io.BufferedReader
+# BufferedReader = pyio.BufferedReader
 
 
 class ProxyReadFile:
