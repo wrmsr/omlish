@@ -76,13 +76,24 @@ class ConditionDeque(ta.Generic[T]):
     def deque(self) -> collections.deque[T]:
         return self._deque
 
-    def append(self, *items: T, n: int = 1) -> None:
+    def push(
+            self,
+            *items: T,
+            n: int = 1,
+    ) -> None:
         with self.cond:
             self.deque.extend(items)
             self.cond.notify(n)
 
-    def popleft(self, timeout: float | None = None) -> T:
+    def pop(
+            self,
+            timeout: float | None = None,
+            *,
+            if_empty: ta.Callable[[], None] | None = None,
+    ) -> T:
         with self.cond:
+            if not self.deque and if_empty is not None:
+                if_empty()
             while not self.deque:
                 self.cond.wait(timeout)
             return self.deque.popleft()
@@ -115,7 +126,7 @@ class ThreadedIoTrampoline:
         o: 'ThreadedIoTrampoline'
 
         def read(self, n: int, /) -> bytes:
-            return self.o._out.popleft()
+            return self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
 
         def seekable(self) -> bool:
             return False
@@ -129,7 +140,7 @@ class ThreadedIoTrampoline:
     def _thread_proc(self) -> None:
         with gzip.GzipFile(fileobj=self._ReadFile(self), mode='rb') as f:
             while out := f.read(0x1000):
-                self._out.append(out)
+                self._out.push(out)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         raise NotImplementedError
