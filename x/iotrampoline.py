@@ -4,8 +4,10 @@ TODO:
  - this prob goes in concurrent?
 """
 import collections
+import contextlib
 import dataclasses as dc
 import gzip
+import io
 import os.path
 import threading
 import typing as ta
@@ -52,7 +54,7 @@ class ConditionDeque(ta.Generic[T]):
             cond: threading.Condition | None = None,
             deque: collections.deque[T] | None = None,
 
-            lock: threading.RLock | None = None,
+            lock: ta.Optional['threading.RLock'] = None,
             maxlen: int | None = None,
             init: ta.Iterable[T] | None = None,
     ) -> None:
@@ -103,6 +105,9 @@ class NeedMore(lang.Marker):
     pass
 
 
+BytesLike: ta.TypeAlias = ta.Any
+
+
 class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
@@ -110,20 +115,22 @@ class ThreadedIoTrampoline:
         self._in: ConditionDeque[bytes] = ConditionDeque()
         self._out: ConditionDeque[bytes | type[NeedMore]] = ConditionDeque()
 
-        self._thread = threading.Thread(target=self._thread_proc)
+        self._thread = threading.Thread(target=self._thread_proc, daemon=True)
 
     def __enter__(self) -> ta.Self:
         self._thread.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        raise NotImplementedError
+        pass  # FIXME
 
     #
 
     @dc.dataclass(frozen=True)
     class _ReadFile:
         o: 'ThreadedIoTrampoline'
+
+        # _compression._ReadableFileobj
 
         def read(self, n: int, /) -> bytes:
             return self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
@@ -135,15 +142,44 @@ class ThreadedIoTrampoline:
             raise TypeError
 
         def close(self) -> None:
-            raise NotImplementedError
+            pass  # FIXME
+
+        # ta._RawIOBase
+
+        def readall(self, *args, **kwargs):
+            raise TypeError
+
+        def readinto(self, b: BytesLike) -> int | None:
+            o = self.read(len(b))
+            if not o:
+                return None
+            b[:len(o)] = o
+            return len(o)
+
+        def readable(self) -> bool:
+            return True
+
+        def flush(self) -> None:
+            pass
+
+        @property
+        def closed(self) -> bool:
+            return False
 
     def _thread_proc(self) -> None:
-        with gzip.GzipFile(fileobj=self._ReadFile(self), mode='rb') as f:
-            while out := f.read(0x1000):
-                self._out.push(out)
+        with contextlib.closing(io.BufferedReader(self._ReadFile(self))) as bf:
+            with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
+                while out := gf.read(0x1000):
+                    self._out.push(out)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
-        raise NotImplementedError
+        self._in.push(*data)
+        while out := self._out.pop():
+            if isinstance(out, NeedMore):
+                break
+            if not out:
+                raise NotImplementedError
+            yield out
 
 
 def _main() -> None:
