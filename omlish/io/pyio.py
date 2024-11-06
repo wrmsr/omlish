@@ -283,7 +283,7 @@ def open(
         text.mode = mode
         return result
 
-    except:
+    except:  # noqa
         result.close()
         raise
 
@@ -933,7 +933,7 @@ class BytesIO(BufferedIOBase):
         if len(self._buffer) <= self._pos:
             return b''
         newpos = min(len(self._buffer), self._pos + size)
-        b = self._buffer[self._pos : newpos]
+        b = self._buffer[self._pos:newpos]
         self._pos = newpos
         return bytes(b)
 
@@ -956,7 +956,7 @@ class BytesIO(BufferedIOBase):
             # Inserts null bytes between the current end of the file and the new write position.
             padding = b'\x00' * (pos - len(self._buffer))
             self._buffer += padding
-        self._buffer[pos : pos + n] = b
+        self._buffer[pos:pos + n] = b
         self._pos += n
         return n
 
@@ -1095,7 +1095,7 @@ class BufferedReader(_BufferedIOMixin):
         if n <= avail:
             # Fast path: the data to read is fully buffered.
             self._read_pos += n
-            return buf[pos : pos + n]
+            return buf[pos:pos + n]
 
         # Slow path: read from the stream until enough bytes are read, or until an EOF occurs or until read() would
         # block.
@@ -1135,9 +1135,9 @@ class BufferedReader(_BufferedIOMixin):
             to_read = self.buffer_size - have
             current = self.raw.read(to_read)
             if current:
-                self._read_buf = self._read_buf[self._read_pos :] + current
+                self._read_buf = self._read_buf[self._read_pos:] + current
                 self._read_pos = 0
-        return self._read_buf[self._read_pos :]
+        return self._read_buf[self._read_pos:]
 
     def read1(self, size=-1):
         """Reads up to size bytes, with at most one read() system call."""
@@ -1175,9 +1175,7 @@ class BufferedReader(_BufferedIOMixin):
                 # First try to read from internal buffer
                 avail = min(len(self._read_buf) - self._read_pos, len(buf))
                 if avail:
-                    buf[written : written + avail] = self._read_buf[
-                        self._read_pos : self._read_pos + avail
-                    ]
+                    buf[written: written + avail] = self._read_buf[self._read_pos: self._read_pos + avail]
                     self._read_pos += avail
                     written += avail
                     if written == len(buf):
@@ -1577,7 +1575,7 @@ class FileIO(RawIOBase):
                 except OSError as e:
                     if e.errno != errno.ESPIPE:
                         raise
-        except:
+        except:  # noqa
             self._stat_atopen = None
             if owned_fd is not None:
                 os.close(owned_fd)
@@ -2301,7 +2299,7 @@ class TextIOWrapper(TextIOBase):
         if n is None:
             chars = self._decoded_chars[offset:]
         else:
-            chars = self._decoded_chars[offset : offset + n]
+            chars = self._decoded_chars[offset: offset + n]
         self._decoded_chars_used += len(chars)
         return chars
 
@@ -2452,7 +2450,7 @@ class TextIOWrapper(TextIOBase):
             chars_decoded = 0
             for i in range(skip_bytes, len(next_input)):
                 bytes_fed += 1
-                chars_decoded += len(decoder.decode(next_input[i : i + 1]))
+                chars_decoded += len(decoder.decode(next_input[i: i + 1]))
                 dec_buffer, dec_flags = decoder.getstate()
                 if not dec_buffer and chars_decoded <= chars_to_skip:
                     # Decoder buffer is empty, so this is a safe start point.

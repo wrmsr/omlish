@@ -5,11 +5,8 @@ TODO:
 """
 import abc
 import contextlib
-import gzip
 import io
 import typing as ta
-
-import greenlet
 
 from .. import lang
 from ..sync import ConditionDeque
@@ -18,9 +15,14 @@ from ..sync import ConditionDeque
 if ta.TYPE_CHECKING:
     import threading
 
+    import greenlet
+
     from . import pyio  # noqa
+
 else:
     threading = lang.proxy_import('threading')
+
+    greenlet = lang.proxy_import('greenlet')
 
     pyio = lang.proxy_import('.pyio', __package__)
 
@@ -150,7 +152,7 @@ class ThreadIoTrampoline(IoTrampoline):
 
         self._in: ConditionDeque[bytes | BaseException] = ConditionDeque()
         self._out: ConditionDeque[
-            bytes |
+            bytes |  # noqa
             type[NeedMore] |
             type[Exited] |
             BaseException
@@ -184,7 +186,7 @@ class ThreadIoTrampoline(IoTrampoline):
 
     #
 
-    def _read(self, n: int, /) -> bytes:
+    def _read(self, n: int, /) -> bytes | BaseException:
         return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
 
     def _thread_proc(self) -> None:
@@ -204,7 +206,7 @@ class ThreadIoTrampoline(IoTrampoline):
         self._in.push(*data)
         while True:
             e = self._out.pop()
-            if isinstance(e, NeedMore):
+            if e is NeedMore:
                 break
             elif isinstance(e, BaseException):
                 raise e
@@ -253,15 +255,15 @@ class GreenletIoTrampoline(IoTrampoline):
 
     def _g_proc(self) -> ta.Any:
         try:
-            with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
+            with contextlib.closing(self._make_buffered_reader(self._proxy)) as bf:  # noqa
                 with self._target(bf) as read:
                     while out := read():
                         e = self._g.parent.switch(out)
                         if e is not NeedMore:
-                            raise TypeError(e)
+                            raise TypeError(e)  # noqa
                     e = self._g.parent.switch(out)
                     if not isinstance(e, Shutdown):
-                        raise TypeError(e)
+                        raise TypeError(e)  # noqa
             return Exited
         except BaseException as e:
             self._g.parent.throw(e)
