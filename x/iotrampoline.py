@@ -10,7 +10,9 @@ import os.path
 import threading
 import typing as ta
 
-import _compression
+import _compression  # noqa
+
+from omlish import lang
 
 
 """
@@ -86,12 +88,16 @@ class ConditionDeque(ta.Generic[T]):
             return self.deque.popleft()
 
 
+class NeedMore(lang.Marker):
+    pass
+
+
 class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
 
         self._in: ConditionDeque[bytes] = ConditionDeque()
-        self._out: ConditionDeque[bytes] = ConditionDeque()
+        self._out: ConditionDeque[bytes | type[NeedMore]] = ConditionDeque()
 
         self._thread = threading.Thread(target=self._thread_proc)
 
@@ -123,7 +129,7 @@ class ThreadedIoTrampoline:
     def _thread_proc(self) -> None:
         with gzip.GzipFile(fileobj=self._ReadFile(self), mode='rb') as f:
             while out := f.read(0x1000):
-                raise NotImplementedError
+                self._out.append(out)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         raise NotImplementedError
