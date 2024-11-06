@@ -3,6 +3,7 @@ TODO:
  - greenlets
  - this prob goes in concurrent?
 """
+import abc
 import collections
 import contextlib
 import dataclasses as dc
@@ -179,7 +180,25 @@ class Shutdown(BaseException):  # noqa
     pass
 
 
-class ThreadedIoTrampoline:
+class IoTrampoline(lang.Abstract):
+    @abc.abstractmethod
+    def close(self, timeout: float | None = None) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __enter__(self) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+        raise NotImplementedError
+
+
+class ThreadedIoTrampoline(IoTrampoline):
     def __init__(self) -> None:
         super().__init__()
 
@@ -248,12 +267,20 @@ class ThreadedIoTrampoline:
                 yield e
 
 
-class GreenletIoTrampoline:
+class GreenletIoTrampoline(IoTrampoline):
     def __init__(self) -> None:
         super().__init__()
 
         self._proxy = ProxyReadFile(self._read)
         self._g = greenlet.greenlet(self._g_proc)
+
+    #
+
+    def close(self, timeout: float | None = None) -> None:
+        if self._g.dead:
+            return
+        out = self._g.switch(Shutdown())
+        raise NotImplementedError
 
     #
 
@@ -264,9 +291,7 @@ class GreenletIoTrampoline:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not self._g.dead:
-            out = self._g.switch(Shutdown())
-            raise NotImplementedError
+        self.close()
 
     #
 
