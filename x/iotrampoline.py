@@ -190,9 +190,8 @@ class ThreadedIoTrampoline:
 
         def readinto(self, b: BytesLike) -> int | None:
             o = self.read(len(b))
-            if not o:
-                return None
-            b[:len(o)] = o
+            if o:
+                b[:len(o)] = o
             return len(o)
 
         def readable(self) -> bool:
