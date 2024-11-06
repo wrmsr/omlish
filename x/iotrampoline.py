@@ -2,8 +2,10 @@
 TODO:
  - greenlets
 """
+import collections
 import gzip
 import os.path
+import threading
 import typing as ta
 
 import _compression
@@ -37,11 +39,22 @@ def nop_incremental_bytes_codec(data: bytes | None) -> bytes | None:
 
 
 def _main() -> None:
-    in_file = os.path.expanduser('~/Downloads/access.json.gz')
-
     class ThreadFile:
+        def __init__(self) -> None:
+            super().__init__()
+            self._cond = threading.Condition()
+            self._queue: collections.deque = collections.deque()
+
+        def enqueue(self, buf: bytes) -> None:
+            with self._cond:
+                self._queue.append(buf)
+                self._cond.notify()
+
         def read(self, n: int, /) -> bytes:
-            raise NotImplementedError
+            with self._cond:
+                while not self._queue:
+                    self._cond.wait()
+                return self._queue.popleft()
 
         def seekable(self) -> bool:
             return False
@@ -51,6 +64,18 @@ def _main() -> None:
 
         def close(self) -> None:
             raise NotImplementedError
+
+    tf = ThreadFile()
+
+    def thread_proc() -> None:
+        pass
+
+    thr = threading.Thread(target=thread_proc)
+    thr.start()
+
+    ##
+
+    in_file = os.path.expanduser('~/Downloads/access.json.gz')
 
     with gzip.GzipFile(fileobj=ThreadFile(), mode='rb') as f:
         while data := f.read(0x1000):
