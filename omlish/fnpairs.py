@@ -26,7 +26,6 @@ from . import lang
 if ta.TYPE_CHECKING:
     import bz2 as _bz2
     import gzip as _gzip
-    import json as _json
     import lzma as _lzma
     import pickle as _pickle
     import struct as _struct
@@ -39,6 +38,8 @@ if ta.TYPE_CHECKING:
     import snappy as _snappy
     import yaml as _yaml
     import zstandard as _zstandard
+
+    from .formats import json as _json
 
 else:
     _bz2 = lang.proxy_import('bz2')
@@ -56,6 +57,8 @@ else:
     _snappy = lang.proxy_import('snappy')
     _yaml = lang.proxy_import('yaml')
     _zstandard = lang.proxy_import('zstandard')
+
+    _json = lang.proxy_import('.formats.json', __package__)
 
 
 ##
@@ -277,7 +280,7 @@ def _register_extension(*ss):
     def inner(cls):
         for s in ss:
             if s in _EXTENSION_REGISTRY:
-                raise Exception(s)
+                raise KeyError(s)
             _EXTENSION_REGISTRY[s] = cls
         return cls
     return inner
@@ -409,22 +412,30 @@ class Pickle(ObjectBytes_):
         return _pickle.loads(t)
 
 
-@_register_extension('json')
-@dc.dataclass(frozen=True)
-class Json(ObjectStr_):
-    indent: int | str | None = dc.field(default=None, kw_only=True)
-    separators: tuple[str, str] | None = dc.field(default=None, kw_only=True)
-
-    def forward(self, f: ta.Any) -> str:
-        return _json.dumps(f, indent=self.indent, separators=self.separators)
-
+class _Json(ObjectStr_, lang.Abstract):  # noqa
     def backward(self, t: str) -> ta.Any:
         return _json.loads(t)
 
 
+@_register_extension('json')
+class Json(_Json):
+    def forward(self, f: ta.Any) -> str:
+        return _json.dumps(f)
+
+
+class JsonPretty(_Json):
+    def forward(self, f: ta.Any) -> str:
+        return _json.dumps_pretty(f)
+
+
+class JsonCompact(_Json):
+    def forward(self, f: ta.Any) -> str:
+        return _json.dumps_compact(f)
+
+
 JSON = Json()
-PRETTY_JSON = Json(indent=2)
-COMPACT_JSON = Json(separators=(',', ':'))
+PRETTY_JSON = JsonPretty()
+COMPACT_JSON = JsonCompact()
 
 
 @_register_extension('jsonl')
