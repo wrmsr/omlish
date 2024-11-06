@@ -3,6 +3,7 @@ TODO:
  - greenlets
 """
 import collections
+import dataclasses as dc
 import gzip
 import os.path
 import threading
@@ -38,23 +39,42 @@ def nop_incremental_bytes_codec(data: bytes | None) -> bytes | None:
     return data
 
 
-def _main() -> None:
-    class ThreadFile:
-        def __init__(self) -> None:
-            super().__init__()
-            self._cond = threading.Condition()
-            self._queue: collections.deque = collections.deque()
+class ThreadedIoTrampoline:
+    def __init__(self) -> None:
+        super().__init__()
 
-        def enqueue(self, buf: bytes) -> None:
-            with self._cond:
-                self._queue.append(buf)
-                self._cond.notify()
+        self._in_cond = threading.Condition()
+        self._in_queue: collections.deque = collections.deque()
+
+        self._out_cond = threading.Condition()
+        self._out_queue: collections.deque = collections.deque()
+
+        self._thread = threading.Thread(target=self._thread_proc)
+
+    def __enter__(self) -> ta.Self:
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        raise NotImplementedError
+
+    def enqueue_input(self, buf: bytes) -> None:
+        with self._in_cond:
+            self._in_queue.append(buf)
+            self._in_cond.notify()
+
+    def _await_input(self, n: int) -> bytes:
+        with self._in_cond:
+            while not self._in_queue:
+                self._in_cond.wait()
+            return self._in_queue.popleft()
+
+    @dc.dataclass(frozen=True)
+    class _ReadFile:
+        o: 'ThreadedIoTrampoline'
 
         def read(self, n: int, /) -> bytes:
-            with self._cond:
-                while not self._queue:
-                    self._cond.wait()
-                return self._queue.popleft()
+            return self.o._await_input(n)
 
         def seekable(self) -> bool:
             return False
@@ -65,21 +85,26 @@ def _main() -> None:
         def close(self) -> None:
             raise NotImplementedError
 
-    tf = ThreadFile()
+    def _thread_proc(self) -> None:
+        with gzip.GzipFile(fileobj=self._ReadFile(self), mode='rb') as f:
+            while out := f.read(0x1000):
+                raise NotImplementedError
 
-    def thread_proc() -> None:
-        pass
 
-    thr = threading.Thread(target=thread_proc)
-    thr.start()
+def _main() -> None:
+    in_file = os.path.expanduser('~/Downloads/access.json.gz')
+    with open(in_file, 'rb') as f:
+        with ThreadedIoTrampoline() as iot:
+            while raw := f.read(0x1000):
+                iot.enqueue_input(raw)
+                out = b''
+                print(out)
 
     ##
 
-    in_file = os.path.expanduser('~/Downloads/access.json.gz')
-
-    with gzip.GzipFile(fileobj=ThreadFile(), mode='rb') as f:
-        while data := f.read(0x1000):
-            print(data)
+    # with gzip.GzipFile(fileobj=ThreadFile(), mode='rb') as f:
+    #     while data := f.read(0x1000):
+    #         print(data)
 
     # ibc = nop_incremental_bytes_codec
     # with open(in_file, 'rb') as f:
