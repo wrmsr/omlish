@@ -219,6 +219,9 @@ class ThreadedIoTrampoline:
 
     #
 
+    def _read(self, n: int, /) -> bytes:
+        return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
+
     def _thread_proc(self) -> None:
         try:
             with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
@@ -231,13 +234,6 @@ class ThreadedIoTrampoline:
             raise
         finally:
             self._out.push(Exited)
-
-    #
-
-    def _read(self, n: int, /) -> bytes:
-        return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
-
-    #
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
@@ -259,6 +255,8 @@ class GreenletIoTrampoline:
         self._proxy = ProxyReadFile(self._read)
         self._g = greenlet.greenlet(self._g_proc)
 
+    #
+
     def __enter__(self) -> ta.Self:
         out = self._g.switch()
         if out is not NeedMore:
@@ -266,30 +264,37 @@ class GreenletIoTrampoline:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        if not self._g.dead:
+            out = self._g.switch(Shutdown())
+            raise NotImplementedError
+
+    #
 
     def _read(self, n: int, /) -> bytes:
-        # return self._in.pop(if_empty=lambda: self._out.push(NeedMore))
-        self._g.parent.switch(NeedMore)
-        raise NotImplementedError
+        return self._g.parent.switch(NeedMore)
 
     def _g_proc(self) -> None:
         try:
             with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
                 with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
                     while out := gf.read(0x1000):
-                        self._out.append(out)
-                    self._out.append(out)
+                        self._g.parent.switch(out)
+                    self._g.parent.switch(out)
         except BaseException as e:
-            self._out.append(e)
+            self._g.parent.switch(e)
             raise
         finally:
-            self._out.append(Exited)
+            self._g.parent.switch(Exited)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         for buf in data:
             out = self._g.switch(buf)
-            raise NotImplementedError
+            if out is NeedMore:
+                break
+            elif isinstance(out, bytes):
+                yield out
+            else:
+                raise TypeError(out)
 
 
 def _main() -> None:
