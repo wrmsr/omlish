@@ -118,19 +118,41 @@ class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
 
-        self._in: ConditionDeque[bytes] = ConditionDeque()
-        self._out: ConditionDeque[bytes | type[NeedMore] | BaseException | None] = ConditionDeque()
+        self._in: ConditionDeque[bytes | BaseException] = ConditionDeque()
+        self._out: ConditionDeque[
+            bytes |
+            type[NeedMore] |
+            type[ThreadedIoTrampoline.Exited] |
+            BaseException
+        ] = ConditionDeque()
 
         self._thread = threading.Thread(target=self._thread_proc, daemon=True)
         self._eof = False
         self._closed = False
 
+    class Shutdown(BaseException):  # noqa
+        pass
+
+    class Exited(lang.Marker):
+        pass
+
     def __enter__(self) -> ta.Self:
         self._thread.start()
         return self
 
+    def close(self, timeout: float | None = None) -> None:
+        if not self._thread.is_alive():
+            return
+        self._out.push(self.Shutdown())
+        self._thread.join(timeout)
+        if self._thread.is_alive():
+            if timeout is not None:
+                raise TimeoutError
+            else:
+                raise RuntimeError('Failed to join thread')
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass  # FIXME
+        self.close()
 
     #
 
@@ -142,10 +164,12 @@ class ThreadedIoTrampoline:
 
         def read(self, n: int, /) -> bytes:
             if self.o._closed:
-                raise Exception('Closed')
+                raise RuntimeError('Closed')
             if self.o._eof:
                 return b''
             d = self.o._in.pop(if_empty=lambda: self.o._out.push(NeedMore))
+            if isinstance(d, BaseException):
+                raise d
             if not d:
                 self.o._eof = True
             return d
@@ -157,7 +181,7 @@ class ThreadedIoTrampoline:
             raise TypeError
 
         def close(self) -> None:
-            pass  # FIXME
+            self.o._closed = True
 
         # ta._RawIOBase
 
@@ -191,7 +215,7 @@ class ThreadedIoTrampoline:
             self._out.push(e)
             raise
         finally:
-            self._out.push(None)
+            self._out.push(ThreadedIoTrampoline.Exited)
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         self._in.push(*data)
@@ -200,10 +224,8 @@ class ThreadedIoTrampoline:
                 break
             elif isinstance(e, BaseException):
                 raise e
-            elif e is None:
-                raise NotImplementedError
-            elif not e:
-                raise NotImplementedError
+            elif e is ThreadedIoTrampoline.Exited:
+                raise RuntimeError('IO thread exited')
             else:
                 yield e
 
