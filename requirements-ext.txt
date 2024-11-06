@@ -181,7 +181,7 @@ mitogen==0.3.16
 
 ##
 
-openai==1.54.1
+openai==1.54.2
 
 trl==0.12.0
 tf-keras==2.17.0
@@ -204,7 +204,7 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-mistralai==0.2.1
 langchain-ollama==0.2.0
-langchain-openai==0.2.5
+langchain-openai==0.2.6
 langchain-text-splitters==0.3.2
 
 # langchain-nomic==0.2.0
@@ -213,13 +213,13 @@ langchainhub==0.1.21
 
 langgraph==0.2.45
 
-langsmith==0.1.139
+langsmith==0.1.140
 
 tavily-python==0.5.0
 
 gpt4all==2.8.2
 
-chromadb==0.5.17
+chromadb==0.5.18
 langchain-chroma==0.1.4
 
 ##
@@ -246,7 +246,7 @@ usearch==2.16.2
 
 ##
 
-llama-index-core==0.11.21
+llama-index-core==0.11.22
 
 unstructured==0.16.4
 
@@ -278,3 +278,5 @@ instructor~=1.5.2  # FIXME: INSTRUCTOR.
 docopt==0.6.2
 
 rapidocr_onnxruntime==1.3.25
+
+gguf==0.10.0
