@@ -4,37 +4,36 @@ TODO:
  - https://docs.python.org/3/library/zlib.html#zlib.compressobj
 """
 import abc
-import collections
 import contextlib
 import gzip
-import io  # noqa
-import json
-import os.path
-import threading
+import io
 import typing as ta
-
-import _compression  # noqa
 
 import greenlet
 
-from omlish import lang
-from omlish.sync import ConditionDeque
+from .. import lang
+from ..sync import ConditionDeque
 
-from . import pyio  # noqa
+
+if ta.TYPE_CHECKING:
+    import threading
+
+    from . import pyio  # noqa
+else:
+    threading = lang.proxy_import('threading')
+
+    pyio = lang.proxy_import('.pyio', __package__)
 
 
 T = ta.TypeVar('T')
 
-
-class NeedMore(lang.Marker):
-    pass
-
-
 BytesLike: ta.TypeAlias = ta.Any
-
 
 BufferedReader = io.BufferedReader
 # BufferedReader = pyio.BufferedReader
+
+
+##
 
 
 class ProxyReadFile:
@@ -92,6 +91,13 @@ class ProxyReadFile:
         raise TypeError
 
 
+##
+
+
+class NeedMore(lang.Marker):
+    pass
+
+
 class Exited(lang.Marker):
     pass
 
@@ -138,7 +144,7 @@ class IoTrampoline(lang.Abstract):
         raise NotImplementedError
 
 
-class ThreadedIoTrampoline(IoTrampoline):
+class ThreadIoTrampoline(IoTrampoline):
     def __init__(self, target: IoTrampolineTarget, **kwargs: ta.Any) -> None:
         super().__init__(target, **kwargs)
 
@@ -184,8 +190,8 @@ class ThreadedIoTrampoline(IoTrampoline):
     def _thread_proc(self) -> None:
         try:
             with contextlib.closing(self._make_buffered_reader(self._proxy)) as bf:  # noqa
-                with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
-                    while out := gf.read(0x1000):
+                with self._target(bf) as read:
+                    while out := read():
                         self._out.push(out)
                     self._out.push(out)
         except BaseException as e:
@@ -248,8 +254,8 @@ class GreenletIoTrampoline(IoTrampoline):
     def _g_proc(self) -> ta.Any:
         try:
             with contextlib.closing(BufferedReader(self._proxy)) as bf:  # noqa
-                with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
-                    while out := gf.read(0x1000):
+                with self._target(bf) as read:
+                    while out := read():
                         e = self._g.parent.switch(out)
                         if e is not NeedMore:
                             raise TypeError(e)
@@ -275,32 +281,3 @@ class GreenletIoTrampoline(IoTrampoline):
                         return
                 else:
                     raise TypeError(e)
-
-
-def _main() -> None:
-    iot_cls: type[IoTrampoline]
-    for iot_cls in [
-        ThreadedIoTrampoline,
-        GreenletIoTrampoline,
-    ]:
-        @contextlib.contextmanager
-        def target(bf):
-            with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
-                yield lambda: gf.read(0x1000)
-
-        buf = io.BytesIO()
-        in_file = os.path.expanduser('~/Downloads/access.json.gz')
-        with open(in_file, 'rb') as f:
-            with iot_cls(target) as iot:
-                while raw := f.read(0x1000):
-                    for out in iot.feed(raw):
-                        buf.write(out)
-                for out in iot.feed(b''):
-                    buf.write(out)
-
-        for l in buf.getvalue().decode('utf-8').splitlines():
-            json.loads(l)
-
-
-if __name__ == '__main__':
-    _main()
