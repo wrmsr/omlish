@@ -110,8 +110,8 @@ class NeedMore(lang.Marker):
 BytesLike: ta.TypeAlias = ta.Any
 
 
-# BufferedReader = io.BufferedReader
-BufferedReader = pyio.BufferedReader
+BufferedReader = io.BufferedReader
+# BufferedReader = pyio.BufferedReader
 
 
 class ThreadedIoTrampoline:
@@ -211,6 +211,7 @@ class ThreadedIoTrampoline:
                 with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
                     while out := gf.read(0x1000):
                         self._out.push(out)
+                    self._out.push(out)
         except BaseException as e:
             self._out.push(e)
             raise
