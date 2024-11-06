@@ -75,7 +75,7 @@ class ConditionDeque(ta.Generic[T]):
     def __init__(
             self,
             *,
-            cond: threading.Condition | None = None,
+            cond: ta.Optional['threading.Condition'] = None,
             deque: collections.deque[T] | None = None,
 
             lock: ta.Optional['threading.RLock'] = None,
@@ -95,7 +95,7 @@ class ConditionDeque(ta.Generic[T]):
         self._deque = deque
 
     @property
-    def cond(self) -> threading.Condition:
+    def cond(self) -> 'threading.Condition':
         return self._cond
 
     @property
