@@ -42,6 +42,7 @@ def nop_incremental_bytes_codec(data: bytes | None) -> bytes | None:
 
 T = ta.TypeVar('T')
 
+
 class ConditionDeque(ta.Generic[T]):
     def __init__(
             self,
@@ -89,11 +90,8 @@ class ThreadedIoTrampoline:
     def __init__(self) -> None:
         super().__init__()
 
-        self._in_cond = threading.Condition()
-        self._in_queue: collections.deque = collections.deque()
-
-        self._out_cond = threading.Condition()
-        self._out_queue: collections.deque = collections.deque()
+        self._in: ConditionDeque[bytes] = ConditionDeque()
+        self._out: ConditionDeque[bytes] = ConditionDeque()
 
         self._thread = threading.Thread(target=self._thread_proc)
 
@@ -106,31 +104,12 @@ class ThreadedIoTrampoline:
 
     #
 
-    def _enqueue_input(self, buf: bytes) -> None:
-        with self._in_cond:
-            self._in_queue.append(buf)
-            self._in_cond.notify()
-
-    def _await_input(self, n: int) -> bytes:
-        with self._in_cond:
-            while not self._in_queue:
-                self._in_cond.wait()
-            return self._in_queue.popleft()
-
-    #
-
-    def _await_output(self) -> bytes:
-        with self._in_cond:
-            while not self._in_queue:
-                self._in_cond.wait()
-            return self._in_queue.popleft()
-
     @dc.dataclass(frozen=True)
     class _ReadFile:
         o: 'ThreadedIoTrampoline'
 
         def read(self, n: int, /) -> bytes:
-            return self.o._await_input(n)
+            return self.o._out.popleft()
 
         def seekable(self) -> bool:
             return False
@@ -146,15 +125,17 @@ class ThreadedIoTrampoline:
             while out := f.read(0x1000):
                 raise NotImplementedError
 
+    def feed(self, *data: bytes) -> ta.Iterable[bytes]:
+        raise NotImplementedError
+
 
 def _main() -> None:
     in_file = os.path.expanduser('~/Downloads/access.json.gz')
     with open(in_file, 'rb') as f:
         with ThreadedIoTrampoline() as iot:
             while raw := f.read(0x1000):
-                iot.enqueue_input(raw)
-                out = b''
-                print(out)
+                for out in iot.feed(raw):
+                    print(out)
 
     ##
 
