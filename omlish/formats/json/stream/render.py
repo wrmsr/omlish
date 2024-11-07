@@ -44,7 +44,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             post = None
 
         if isinstance(o, SCALAR_TYPES):
-            yield self._format_scalar(o)
+            yield self._format_scalar(o)  # type: ignore
 
         else:
             raise TypeError(o)

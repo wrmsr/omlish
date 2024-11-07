@@ -30,11 +30,13 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
             separators: tuple[str, str] | None = None,
             sort_keys: bool = False,
             style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
+            ensure_ascii: bool = True,
     ) -> None:
         super().__init__()
 
         self._sort_keys = sort_keys
         self._style = style
+        self._ensure_ascii = ensure_ascii
 
         if isinstance(indent, (str, int)):
             self._indent = (' ' * indent) if isinstance(indent, int) else indent
@@ -79,7 +81,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
             return self._literals[o]
 
         elif isinstance(o, (str, int, float)):
-            return json.dumps(o)
+            return json.dumps(o, ensure_ascii=self._ensure_ascii)
 
         else:
             raise TypeError(o)
@@ -126,7 +128,7 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             post = None
 
         if isinstance(o, SCALAR_TYPES):
-            self._write(self._format_scalar(o))
+            self._write(self._format_scalar(o))  # type: ignore
 
         elif isinstance(o, ta.Mapping):
             self._write('{')
