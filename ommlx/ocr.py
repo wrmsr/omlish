@@ -1,13 +1,15 @@
 """
 TODO:
- - clipboard
+ - linux clipboard
 """
 import argparse
+import io
 import os.path
 import sys
 import typing as ta
 
 from omdev.cli import CliModule
+from omlish import check
 from omlish import lang
 
 
@@ -16,10 +18,14 @@ if ta.TYPE_CHECKING:
     import rapidocr_onnxruntime as rapidocr
     from PIL import Image
 
+    from omdev.clipboard import darwin as darwin_clipboard
+
 else:
     pytesseract = lang.proxy_import('pytesseract')
     rapidocr = lang.proxy_import('rapidocr_onnxruntime')
     Image = lang.proxy_import('PIL.Image')
+
+    darwin_clipboard = lang.proxy_import('omdev.clipboard.darwin')
 
 
 ##
@@ -38,15 +44,37 @@ DEFAULT_OCR_BACKEND = 'rapidocr'
 ##
 
 
+def _get_img_data(file: str | None) -> ta.Any:
+    if file == '@':
+        if sys.platform == 'darwin':
+            cis = darwin_clipboard.get_darwin_clipboard_data(types={'public.png'})
+            if not cis:
+                raise RuntimeError('No clipboard image data found')
+            return io.BytesIO(check.not_none(cis[0].data))
+
+        else:
+            raise OSError(sys.platform)
+
+    elif file:
+        return os.path.expanduser(file)
+
+    else:
+        return sys.stdin.buffer
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
     parser.add_argument('-b', '--backend', default=DEFAULT_OCR_BACKEND)
     args = parser.parse_args()
 
+    #
+
     ocr = OCR_BACKENDS[args.backend]
 
-    with Image.open(os.path.expanduser(args.file) if args.file else sys.stdin.buffer) as img:
+    img_data = _get_img_data(args.file)
+
+    with Image.open(img_data) as img:
         text = ocr(img)
 
     print(text)
