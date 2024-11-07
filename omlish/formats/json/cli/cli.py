@@ -249,17 +249,17 @@ def _main() -> None:
                     pipeline = lambda v: (renderer.render(v),)  # Any -> [str]  # noqa
                     pipeline = fp.bind(append_newlines, pipeline)  # Any -> [str]
                     pipeline = fp.bind(lang.flatmap, pipeline)  # [Any] -> [str]
-                    pipeline = fp.pipe(fp.bind(lang.flatmap, processor.process), pipeline)  # [Any] -> [str]
-                    pipeline = fp.pipe(fp.bind(lang.flatmap, builder.build), pipeline)  # [JsonStreamParserEvent] -> [str]  # noqa
-                    pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
+                    pipeline = fp.bind(lang.flatmap, processor.process) | pipeline  # [Any] -> [str]
+                    pipeline = fp.bind(lang.flatmap, builder.build) | pipeline  # [JsonStreamParserEvent] -> [str]  # noqa
+                    pipeline = parser.parse | pipeline  # bytes -> [str]
 
                 else:
                     renderer = StreamRenderer(cfg.rendering)
                     trailing_newline = True
 
-                    pipeline = renderer.render  # JsonStreamParserEvent -> [str]
-                    pipeline = fp.bind(lang.flatmap, pipeline)  # [JsonStreamParserEvent] -> [str]
-                    pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
+                    pipeline = fp.bind(renderer.render)  # JsonStreamParserEvent -> [str]
+                    pipeline = lang.flatmap | pipeline  # [JsonStreamParserEvent] -> [str]
+                    pipeline = parser.parse | pipeline  # bytes -> [str]
 
                 pipeline = fp.bind(flush_output, pipeline)  # bytes -> [str]
 
