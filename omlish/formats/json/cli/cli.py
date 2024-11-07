@@ -100,6 +100,7 @@ def _main() -> None:
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
     parser.add_argument('-s', '--sort-keys', action='store_true')
+    parser.add_argument('-U', '--unicode', action='store_true')
 
     parser.add_argument('-c', '--color', action='store_true')
 
@@ -122,10 +123,11 @@ def _main() -> None:
         except ValueError:
             indent = args.indent
 
-    kw: dict[str, ta.Any] = dict(
+    render_kw: dict[str, ta.Any] = dict(
         indent=indent,
         separators=separators,
         sort_keys=args.sort_keys,
+        ensure_ascii=not args.unicode,
     )
 
     if args.jmespath_expr is not None:
@@ -142,14 +144,14 @@ def _main() -> None:
         elif args.color:
             s = JsonRenderer.render_str(
                 v,
-                **kw,
+                **render_kw,
                 style=term_color,
             )
 
         else:
             s = json.dumps(
                 v,
-                **kw,
+                **render_kw,
             )
 
         print(s, file=out)
@@ -232,7 +234,7 @@ def _main() -> None:
                     renderer = StreamJsonRenderer(
                         style=term_color if args.color else None,
                         delimiter='\n',
-                        **kw,
+                        **render_kw,
                     )
                     build = None
 
