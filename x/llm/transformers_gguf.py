@@ -36,19 +36,33 @@ def _manual():
 
     #
 
-    kwargs = {
-        '_from_auto': True,
-        'gguf_file': gguf_file,
-    }
-
-    config, kwargs = tfm.AutoConfig.from_pretrained(
-        pretrained_model_name_or_path,
+    kwargs = dict(
+        _from_auto=True,
+        gguf_file=gguf_file,
         return_unused_kwargs=True,
         trust_remote_code=None,
         code_revision=None,
         _commit_hash=commit_hash,
+    )
+
+    # config, kwargs = tfm.AutoConfig.from_pretrained(
+    #     pretrained_model_name_or_path,
+    #     **kwargs,
+    # )
+
+    kwargs.pop("trust_remote_code", None)
+    kwargs.pop("code_revision", None)
+
+    config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
+        pretrained_model_name_or_path,
         **kwargs,
     )
+
+    config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict["model_type"]]
+
+    config, kwargs = config_class.from_dict(config_dict, **unused_kwargs)
+
+    #
 
     model_class = tfm.models.auto.auto_factory._get_model_class(  # noqa
         config,
