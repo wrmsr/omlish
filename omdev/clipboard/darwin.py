@@ -222,7 +222,7 @@ def get_darwin_clipboard_data(
 
 def _main() -> None:
     for i in get_darwin_clipboard_data():
-        print(i)
+        print(f'type: {i.type}, len: {len(i.data) if i.data is not None else None}')
 
 
 if __name__ == '__main__':

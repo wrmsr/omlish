@@ -34,6 +34,8 @@ all = [
     'datasets ~= 3.1',
     'llama-cpp-python ~= 0.3',
     'numpy >= 1.20',
+    'pytesseract ~= 0.3',
+    'rapidocr-onnxruntime ~= 1.3',
     'pillow ~= 11.0',
     'tinygrad ~= 0.9',
     'torch ~= 2.5',
@@ -54,6 +56,10 @@ llamacpp = [
 ]
 numpy = [
     'numpy >= 1.20',
+]
+ocr = [
+    'pytesseract ~= 0.3',
+    'rapidocr-onnxruntime ~= 1.3',
 ]
 pillow = [
     'pillow ~= 11.0',
