@@ -1,3 +1,4 @@
+import argparse
 import os.path
 import typing as ta
 
@@ -15,18 +16,31 @@ else:
     rapidocr = lang.proxy_import('rapidocr_onnxruntime')
 
 
+##
+
+
+Ocr: ta.TypeAlias = ta.Callable[['Image.Image'], str]
+
+OCR_BACKENDS: ta.Mapping[str, Ocr] = {
+    'rapidocr': lambda img: '\n'.join(text[1] for text in rapidocr.RapidOCR()(img)[0] or []),
+    'tesseract': lambda img: pytesseract.image_to_string(img),
+}
+
+DEFAULT_OCR_BACKEND = 'rapidocr'
+
+
 def _main() -> None:
-    from PIL import Image
-    img = Image.open(os.path.expanduser('~/Desktop/Screen Shot 2024-11-07 at 14.55.49.png'))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file')
+    parser.add_argument('-b', '--backend', default=DEFAULT_OCR_BACKEND)
+    args = parser.parse_args()
 
-    ocr = rapidocr.RapidOCR()
-    result, _ = ocr(img)  # noqa
-    text = '\n'.join(text[1] for text in result or [])
-    print(text)
+    ocr = OCR_BACKENDS[args.backend]
 
-    print()
+    img = Image.open(os.path.expanduser(args.file))
 
-    text = pytesseract.image_to_string(img)
+    text = ocr(img)
+
     print(text)
 
 
