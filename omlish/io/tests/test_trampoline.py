@@ -1,8 +1,8 @@
 import contextlib
 import gzip
-import io  # noqa
-import json
-import os.path
+import io
+import random
+import string
 
 from ...testing import pytest as ptu
 from ..trampoline import GreenletIoTrampoline
@@ -10,24 +10,36 @@ from ..trampoline import IoTrampoline
 from ..trampoline import ThreadIoTrampoline
 
 
+def generate_random_text(size: int) -> str:
+    chars = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choices(chars, k=size))
+
+
 def _test_trampoline(iot_cls: type[IoTrampoline]) -> None:
+    in_bytes = generate_random_text(0x100_000).encode('utf-8')
+
+    gz_buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=gz_buf, mode='wb') as gf:
+        gf.write(in_bytes)
+    gz_bytes = gz_buf.getvalue()
+    assert len(gz_bytes) < len(in_bytes)
+
     @contextlib.contextmanager
     def target(bf):
         with gzip.GzipFile(fileobj=bf, mode='rb') as gf:
             yield lambda: gf.read(0x1000)
 
-    buf = io.BytesIO()
-    in_file = os.path.expanduser('~/Downloads/access.json.gz')
-    with open(in_file, 'rb') as f:
-        with iot_cls(target) as iot:
-            while raw := f.read(0x1000):
-                for out in iot.feed(raw):
-                    buf.write(out)
-            for out in iot.feed(b''):
-                buf.write(out)
+    out_buf = io.BytesIO()
+    in_file = io.BytesIO(gz_bytes)
+    with iot_cls(target) as iot:
+        while raw := in_file.read(0x1000):
+            for out in iot.feed(raw):
+                out_buf.write(out)
+        for out in iot.feed(b''):
+            out_buf.write(out)
 
-    for l in buf.getvalue().decode('utf-8').splitlines():
-        json.loads(l)
+    out_bytes = out_buf.getvalue()
+    assert out_bytes == in_bytes
 
 
 def test_thread_trampoline() -> None:
