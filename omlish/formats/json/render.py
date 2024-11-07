@@ -5,9 +5,15 @@ import json
 import typing as ta
 
 from ... import lang
+from . import consts
 
 
 I = ta.TypeVar('I')
+Scalar: ta.TypeAlias = bool | int | float | str | None
+
+SCALAR_TYPES: tuple[type, ...] = (bool, int, float, str, type(None))
+
+MULTILINE_SEPARATORS = consts.Separators(',', ': ')
 
 
 ##
@@ -34,11 +40,11 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
             self._indent = (' ' * indent) if isinstance(indent, int) else indent
             self._endl = '\n'
             if separators is None:
-                separators = (',', ': ')
+                separators = MULTILINE_SEPARATORS
         elif indent is None:
             self._indent = self._endl = ''
             if separators is None:
-                separators = (', ', ': ')
+                separators = consts.PRETTY_SEPARATORS
         else:
             raise TypeError(indent)
         self._comma, self._colon = separators
@@ -67,6 +73,16 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         ret = self._endl + (self._indent * self._level)
         self._indent_cache[self._level] = ret
         return ret
+
+    def _format_scalar(self, o: Scalar) -> str:
+        if o is None or isinstance(o, bool):
+            return self._literals[o]
+
+        elif isinstance(o, (str, int, float)):
+            return json.dumps(o)
+
+        else:
+            raise TypeError(o)
 
     @classmethod
     @abc.abstractmethod
@@ -109,11 +125,8 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
         else:
             post = None
 
-        if o is None or isinstance(o, bool):
-            self._write(self._literals[o])
-
-        elif isinstance(o, (str, int, float)):
-            self._write(json.dumps(o))
+        if isinstance(o, SCALAR_TYPES):
+            self._write(self._format_scalar(o))
 
         elif isinstance(o, ta.Mapping):
             self._write('{')

@@ -3,6 +3,8 @@ from .consts import (  # noqa
     COMPACT_SEPARATORS,
     PRETTY_INDENT,
     PRETTY_KWARGS,
+    PRETTY_SEPARATORS,
+    Separators,
 )
 
 from .encoding import (  # noqa
