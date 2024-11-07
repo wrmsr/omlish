@@ -63,7 +63,7 @@ class GzipWriter:
 
         self.fileobj = fileobj
 
-        self._init_write(filename)
+        self._init_write(filename or '')
         self.compress = zlib.compressobj(
             compresslevel,
             zlib.DEFLATED,
@@ -78,6 +78,12 @@ class GzipWriter:
             buffer_size=self._buffer_size,
         )
         self._write_gzip_header(compresslevel)
+
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def _init_write(self, filename):
         self.name = filename
@@ -118,6 +124,52 @@ class GzipWriter:
         self.fileobj.write(b'\377')
         if fname:
             self.fileobj.write(fname + b'\000')
+
+    def _check_not_closed(self):
+        if self.closed:
+            raise ValueError("I/O operation on closed file")
+
+    @property
+    def closed(self):
+        return self.fileobj is None
+
+    def close(self):
+        fileobj = self.fileobj
+        if fileobj is None:
+            return
+        try:
+            self._buffer.flush()
+            fileobj.write(self.compress.flush())
+            write32u(fileobj, self.crc)
+            # self.size may exceed 2 GiB, or even 4 GiB
+            write32u(fileobj, self.size & 0xffffffff)
+        finally:
+            self.fileobj = None
+
+    def write(self,data):
+        self._check_not_closed()
+
+        if self.fileobj is None:
+            raise ValueError("write() on closed GzipFile object")
+
+        return self._buffer.write(data)
+
+    def _write_raw(self, data):
+        # Called by our self._buffer underlying WriteBufferStream.
+        if isinstance(data, (bytes, bytearray)):
+            length = len(data)
+        else:
+            # accept any data that supports the buffer protocol
+            data = memoryview(data)
+            length = data.nbytes
+
+        if length > 0:
+            self.fileobj.write(self.compress.compress(data))
+            self.size += length
+            self.crc = zlib.crc32(data, self.crc)
+            self.offset += length
+
+        return length
 
 
 def run_compress(in_bytes: bytes) -> bytes:
