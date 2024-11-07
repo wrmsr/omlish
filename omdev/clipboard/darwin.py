@@ -114,7 +114,7 @@ def cfstring_to_string(cf_string: CFStringRef) -> str:
     max_size = cf.CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1
     buffer = ct.create_string_buffer(max_size)
 
-    if success := cf.CFStringGetCString(cf_string, buffer, max_size, kCFStringEncodingUTF8):  # noqa
+    if not (success := cf.CFStringGetCString(cf_string, buffer, max_size, kCFStringEncodingUTF8)):  # noqa
         return ''
 
     return buffer.value.decode('utf-8')
@@ -222,7 +222,7 @@ def get_darwin_clipboard_data(
 
 def _main() -> None:
     for i in get_darwin_clipboard_data():
-        print(f'type: {i.type}, len: {len(i.data) if i.data is not None else None}')
+        print(f'type: {i.type}, len: {len(i.data)}')
 
 
 if __name__ == '__main__':
