@@ -1,4 +1,5 @@
 import json
+import typing as ta
 
 from ..... import check
 from ...tests.helpers import TEST_DOCS
@@ -57,13 +58,18 @@ def test_parse():
 def test_delimit():
     s = """"abc""def"{"a":{"b":[]}}[1]"""
 
-    with JsonStreamLexer() as lex:
-        with JsonStreamParser() as parse:
-            r = StreamJsonRenderer.render_str((
-                e
-                for c in s
-                for t in lex(c)
-                for e in parse(t)
-            ), delimiter='\n')
+    kw: ta.Any
+    for kw in [
+        dict(delimiter='\n'),
+        dict(indent=2, delimiter='\n'),
+    ]:
+        with JsonStreamLexer() as lex:
+            with JsonStreamParser() as parse:
+                r = StreamJsonRenderer.render_str((
+                    e
+                    for c in s
+                    for t in lex(c)
+                    for e in parse(t)
+                ), **kw)
 
-    print(r)
+        print(r)

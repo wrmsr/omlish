@@ -4,6 +4,14 @@ import typing as ta
 ##
 
 
+class Separators(ta.NamedTuple):
+    comma: str
+    colon: str
+
+
+##
+
+
 PRETTY_INDENT = 2
 
 PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
@@ -14,7 +22,7 @@ PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
 ##
 
 
-COMPACT_SEPARATORS = (',', ':')
+COMPACT_SEPARATORS = Separators(',', ':')
 
 COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=None,
