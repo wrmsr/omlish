@@ -6,6 +6,9 @@ T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
 
+##
+
+
 class Fn(abc.ABC, ta.Generic[T]):
     @abc.abstractmethod
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
@@ -22,6 +25,9 @@ class Fn(abc.ABC, ta.Generic[T]):
 
     def __and__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
         return self.apply(fn)
+
+
+##
 
 
 class Bind(Fn[T]):
@@ -54,6 +60,12 @@ class Bind(Fn[T]):
         return self._fn(*fa, **fkw)
 
 
+bind = Bind
+
+
+##
+
+
 class Pipe(Fn[T]):
     def __init__(self, lfns: ta.Sequence[ta.Callable], rfn: ta.Callable[..., T]) -> None:
         super().__init__()
@@ -64,6 +76,14 @@ class Pipe(Fn[T]):
         for fn in self._rfns:
             o = fn(o)
         return o
+
+
+def pipe(*fns: ta.Callable) -> Pipe:
+    *lfns, rfn = fns
+    return Pipe(lfns, rfn)
+
+
+##
 
 
 class Apply(Fn[T]):
@@ -77,6 +97,4 @@ class Apply(Fn[T]):
         return o
 
 
-bind = Bind
-pipe = Pipe
 apply = Apply
