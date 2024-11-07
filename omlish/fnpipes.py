@@ -30,7 +30,7 @@ class Fn(abc.ABC, ta.Generic[T]):
         return self.apply(fn)
 
     def __rand__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
-        return bind(fn).apply(fn)
+        return bind(fn).apply(self)
 
 
 ##
