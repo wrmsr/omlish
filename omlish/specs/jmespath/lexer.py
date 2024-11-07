@@ -3,8 +3,17 @@ import string
 import typing as ta
 import warnings
 
+from ... import check
 from .exceptions import EmptyExpressionError
 from .exceptions import LexerError
+from .visitor import Options
+
+
+class Token(ta.TypedDict):
+    type: str
+    value: ta.Any
+    start: int
+    end: int
 
 
 class Lexer:
@@ -33,10 +42,12 @@ class Lexer:
         '\u00f7': 'divide',
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._enable_legacy_literals = False
+        self._current: str | None = None
 
-    def tokenize(self, expression, options=None):
+    def tokenize(self, expression: str, options: Options | None = None) -> ta.Generator[Token, None, None]:
         if options is not None:
             self._enable_legacy_literals = options.enable_legacy_literals
 
@@ -205,18 +216,18 @@ class Lexer:
             'end': self._length,
         }
 
-    def _consume_number(self):
+    def _consume_number(self) -> str:
         start = self._position  # noqa
 
-        buff = self._current
+        buff = check.not_none(self._current)
         while self._next() in self.VALID_NUMBER:
-            buff += self._current
+            buff += check.not_none(self._current)
         return buff
 
-    def _consume_variable(self):
+    def _consume_variable(self) -> Token:
         start = self._position
 
-        buff = self._current
+        buff = check.not_none(self._current)
         self._next()
         if self._current not in self.START_IDENTIFIER:
             raise LexerError(
@@ -225,9 +236,9 @@ class Lexer:
                 message=f'Invalid variable starting character {self._current}',
             )
 
-        buff += self._current
+        buff += check.not_none(self._current)
         while self._next() in self.VALID_IDENTIFIER:
-            buff += self._current
+            buff += check.not_none(self._current)
 
         return {
             'type': 'variable',
@@ -236,21 +247,21 @@ class Lexer:
             'end': start + len(buff),
         }
 
-    def _peek_may_be_valid_unquoted_identifier(self):
+    def _peek_may_be_valid_unquoted_identifier(self) -> bool:
         if (self._position == self._length - 1):
             return False
         else:
             nxt = self._chars[self._position + 1]
             return nxt in self.START_IDENTIFIER
 
-    def _peek_is_next_digit(self):
+    def _peek_is_next_digit(self) -> bool:
         if (self._position == self._length - 1):
             return False
         else:
             nxt = self._chars[self._position + 1]
             return nxt in self.VALID_NUMBER
 
-    def _initialize_for_expression(self, expression):
+    def _initialize_for_expression(self, expression: str) -> None:
         if not expression:
             raise EmptyExpressionError
         self._position = 0
@@ -259,7 +270,7 @@ class Lexer:
         self._current = self._chars[self._position]
         self._length = len(self._expression)
 
-    def _next(self):
+    def _next(self) -> str | None:
         if self._position == self._length - 1:
             self._current = None
         else:
@@ -267,7 +278,7 @@ class Lexer:
             self._current = self._chars[self._position]
         return self._current
 
-    def _consume_until(self, delimiter):
+    def _consume_until(self, delimiter: str) -> str:
         # Consume until the delimiter is reached, allowing for the delimiter to be escaped with "\".
         start = self._position
 
@@ -293,12 +304,11 @@ class Lexer:
         self._next()
         return buff
 
-    def _consume_literal(self):
+    def _consume_literal(self) -> Token:
         start = self._position
 
         token = self._consume_until('`')
         lexeme = token.replace('\\`', '`')
-        parsed_json = None
         try:
             # Assume it is valid JSON and attempt to parse.
             parsed_json = json.loads(lexeme)
@@ -331,7 +341,7 @@ class Lexer:
             'end': token_len,
         }
 
-    def _consume_quoted_identifier(self):
+    def _consume_quoted_identifier(self) -> Token:
         start = self._position
 
         lexeme = '"' + self._consume_until('"') + '"'
@@ -352,7 +362,7 @@ class Lexer:
                 message=error_message,
             )
 
-    def _consume_raw_string_literal(self):
+    def _consume_raw_string_literal(self) -> Token:
         start = self._position
 
         lexeme = self._consume_until("'") \
@@ -367,10 +377,10 @@ class Lexer:
             'end': token_len,
         }
 
-    def _match_or_else(self, expected, match_type, else_type):
+    def _match_or_else(self, expected: str, match_type: str, else_type: str) -> Token:
         start = self._position
 
-        current = self._current
+        current = check.not_none(self._current)
         next_char = self._next()
         if next_char == expected:
             self._next()
