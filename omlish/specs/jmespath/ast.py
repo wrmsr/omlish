@@ -95,11 +95,11 @@ def not_expression(expr) -> Node:
     return {'type': 'not_expression', 'children': [expr]}
 
 
-def pipe(left, right) -> Node:
+def pipe(left: Node, right: Node) -> Node:
     return {'type': 'pipe', 'children': [left, right]}
 
 
-def projection(left, right) -> Node:
+def projection(left: Node, right: Node) -> Node:
     return {'type': 'projection', 'children': [left, right]}
 
 
@@ -111,7 +111,7 @@ def slice(start, end, step) -> Node:  # noqa
     return {'type': 'slice', 'children': [start, end, step]}
 
 
-def value_projection(left, right) -> Node:
+def value_projection(left: Node, right: Node) -> Node:
     return {'type': 'value_projection', 'children': [left, right]}
 
 
