@@ -155,7 +155,7 @@ class Parser:
                 None,
             )
             if led is None:
-                error_token = self._lookahead_token(0)
+                error_token = check.not_none(self._lookahead_token(0))
                 self._error_led_token(error_token)
 
             else:
@@ -292,7 +292,7 @@ class Parser:
             if current_token == 'colon':  # noqa
                 index += 1
                 if index == 3:
-                    self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
+                    self._raise_parse_error_for_token(check.not_none(self._lookahead_token(0)), 'syntax error')
                 self._advance()
 
             elif current_token == 'number':  # noqa
@@ -519,7 +519,7 @@ class Parser:
             right = self._parse_dot_rhs(binding_power)
 
         else:
-            self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
+            self._raise_parse_error_for_token(check.not_none(self._lookahead_token(0)), 'syntax error')
 
         return right
 
@@ -565,7 +565,7 @@ class Parser:
     def _error_led_token(self, token: lexer.Token) -> ta.NoReturn:
         self._raise_parse_error_for_token(token, 'invalid token')
 
-    def _match(self, token_type=None):
+    def _match(self, token_type: str | None = None) -> None:
         # inline'd self._current_token()
         if self._current_token() == token_type:
             # inline'd self._advance()
@@ -573,7 +573,7 @@ class Parser:
         else:
             self._raise_parse_error_maybe_eof(token_type, self._lookahead_token(0))
 
-    def _match_multiple_tokens(self, token_types):
+    def _match_multiple_tokens(self, token_types: ta.Container[str]) -> None:
         if self._current_token() not in token_types:
             self._raise_parse_error_maybe_eof(token_types, self._lookahead_token(0))
         self._advance()
