@@ -10,8 +10,7 @@ from ... import lang
 I = ta.TypeVar('I')
 
 
-class JsonRendererOut(ta.Protocol):
-    def write(self, s: str) -> ta.Any: ...
+##
 
 
 class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
@@ -21,8 +20,6 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
 
     def __init__(
             self,
-            out: JsonRendererOut,
-            *,
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
             sort_keys: bool = False,
@@ -30,7 +27,6 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
     ) -> None:
         super().__init__()
 
-        self._out = out
         self._sort_keys = sort_keys
         self._style = style
 
@@ -48,6 +44,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         self._comma, self._colon = separators
 
         self._level = 0
+        self._indent_cache: dict[int, str] = {}
 
     _literals: ta.ClassVar[ta.Mapping[ta.Any, str]] = {
         True: 'true',
@@ -55,28 +52,52 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
         None: 'null',
     }
 
+    def _get_indent(self) -> str:
+        if not self._indent:
+            return ''
+
+        if not self._level:
+            return self._endl
+
+        try:
+            return self._indent_cache[self._level]
+        except KeyError:
+            pass
+
+        ret = self._endl + (self._indent * self._level)
+        self._indent_cache[self._level] = ret
+        return ret
+
+    @classmethod
+    @abc.abstractmethod
+    def render_str(cls, i: I, /, **kwargs: ta.Any) -> str:
+        raise NotImplementedError
+
+
+##
+
+
+class JsonRendererOut(ta.Protocol):
+    def write(self, s: str) -> ta.Any: ...
+
+
+class JsonRenderer(AbstractJsonRenderer[ta.Any]):
+    def __init__(
+            self,
+            out: JsonRendererOut,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._out = out
+
     def _write(self, s: str) -> None:
         if s:
             self._out.write(s)
 
     def _write_indent(self) -> None:
-        if self._indent:
-            self._write(self._endl)
-            if self._level:
-                self._write(self._indent * self._level)
+        self._write(self._get_indent())
 
-    @abc.abstractmethod
-    def render(self, i: I) -> None:
-        raise NotImplementedError
-
-    @classmethod
-    def render_str(cls, i: I, **kwargs: ta.Any) -> str:
-        out = io.StringIO()
-        cls(out, **kwargs).render(i)
-        return out.getvalue()
-
-
-class JsonRenderer(AbstractJsonRenderer[ta.Any]):
     def _render(
             self,
             o: ta.Any,
@@ -133,3 +154,9 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
 
     def render(self, o: ta.Any) -> None:
         self._render(o)
+
+    @classmethod
+    def render_str(cls, i: ta.Any, /, **kwargs: ta.Any) -> str:
+        out = io.StringIO()
+        cls(out, **kwargs).render(i)
+        return out.getvalue()
