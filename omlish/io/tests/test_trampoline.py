@@ -5,9 +5,9 @@ import random
 import string
 
 from ...testing import pytest as ptu
-from ..trampoline import GreenletIoTrampoline
 from ..trampoline import IoTrampoline
 from ..trampoline import ThreadIoTrampoline
+from ..trampoline import ThreadletIoTrampoline
 
 
 def generate_random_text(size: int) -> str:
@@ -48,4 +48,4 @@ def test_thread_trampoline() -> None:
 
 @ptu.skip.if_cant_import('greenlet')
 def test_greenlet_trampoline() -> None:
-    _test_trampoline(GreenletIoTrampoline)
+    _test_trampoline(ThreadletIoTrampoline)

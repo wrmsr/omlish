@@ -94,3 +94,6 @@ class GreenletThreadlets(Threadlets):
 
     def get_current(self) -> Threadlet:
         return GreenletThreadlet(greenlet.getcurrent())
+
+
+GREENLET_THREADLETS = GreenletThreadlets()
