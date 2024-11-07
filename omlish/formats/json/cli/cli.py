@@ -197,7 +197,7 @@ def _main() -> None:
             )
             out = check.not_none(less.stdin)
 
-            def close_less():
+            def close_less() -> None:
                 out.close()
                 less.wait()
 
@@ -229,13 +229,16 @@ def _main() -> None:
                     renderer = EagerRenderer(cfg.rendering)
                     trailing_newline = False
 
+                    def append_newlines(fn, i):
+                        yield from fn(i)
+                        yield '\n'
+
                     def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
                         for e in parser.parse(buf):
                             for v in builder.build(e):
                                 for o in processor.process(v):
-                                    for s in renderer.render(o):  # noqa
+                                    for s in append_newlines(renderer.render, o):  # noqa
                                         yield s
-                                    yield '\n'
 
                 else:
                     renderer = StreamRenderer(cfg.rendering)
