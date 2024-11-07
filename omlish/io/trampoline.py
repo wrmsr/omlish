@@ -1,6 +1,5 @@
 """
 TODO:
- - concurrent.Threadlets
  - https://docs.python.org/3/library/zlib.html#zlib.compressobj
 """
 import abc
@@ -8,21 +7,19 @@ import contextlib
 import io
 import typing as ta
 
+from .. import check
 from .. import lang
+from ..concurrent import threadlets as tls
 from ..sync import ConditionDeque
 
 
 if ta.TYPE_CHECKING:
     import threading
 
-    import greenlet
-
     from . import pyio  # noqa
 
 else:
     threading = lang.proxy_import('threading')
-
-    greenlet = lang.proxy_import('greenlet')
 
     pyio = lang.proxy_import('.pyio', __package__)
 
@@ -146,6 +143,9 @@ class IoTrampoline(lang.Abstract):
         raise NotImplementedError
 
 
+#
+
+
 class ThreadIoTrampoline(IoTrampoline):
     def __init__(self, target: IoTrampolineTarget, **kwargs: ta.Any) -> None:
         super().__init__(target, **kwargs)
@@ -220,26 +220,34 @@ class ThreadIoTrampoline(IoTrampoline):
                 raise TypeError(e)
 
 
-class GreenletIoTrampoline(IoTrampoline):
-    def __init__(self, target: IoTrampolineTarget, **kwargs: ta.Any) -> None:
+#
+
+
+class ThreadletIoTrampoline(IoTrampoline):
+    def __init__(
+            self,
+            target: IoTrampolineTarget,
+            threadlets: tls.Threadlets = tls.GREENLET_THREADLETS,
+            ** kwargs: ta.Any,
+    ) -> None:
         super().__init__(target, **kwargs)
 
         self._proxy = ProxyReadFile(self._read)
-        self._g = greenlet.greenlet(self._g_proc)
+        self._tl: tls.Threadlet = threadlets.spawn(self._g_proc)
 
     #
 
     def close(self, timeout: float | None = None) -> None:
-        if self._g.dead:
+        if self._tl.dead:
             return
-        out = self._g.switch(Shutdown())
-        if out is not Exited or not self._g.dead:
+        out = self._tl.switch(Shutdown())
+        if out is not Exited or not self._tl.dead:
             raise RuntimeError
 
     #
 
     def __enter__(self) -> ta.Self:
-        out = self._g.switch()
+        out = self._tl.switch()
         if out is not NeedMore:
             raise RuntimeError
         return self
@@ -250,7 +258,7 @@ class GreenletIoTrampoline(IoTrampoline):
     #
 
     def _read(self, n: int, /) -> bytes:
-        out = self._g.parent.switch(NeedMore)
+        out = check.not_none(self._tl.parent).switch(NeedMore)
         return out
 
     def _g_proc(self) -> ta.Any:
@@ -258,22 +266,22 @@ class GreenletIoTrampoline(IoTrampoline):
             with contextlib.closing(self._make_buffered_reader(self._proxy)) as bf:  # noqa
                 with self._target(bf) as read:
                     while out := read():
-                        e = self._g.parent.switch(out)
+                        e = check.not_none(self._tl.parent).switch(out)
                         if e is not NeedMore:
                             raise TypeError(e)  # noqa
-                    e = self._g.parent.switch(out)
+                    e = check.not_none(self._tl.parent).switch(out)
                     if not isinstance(e, Shutdown):
                         raise TypeError(e)  # noqa
             return Exited
         except BaseException as e:
-            self._g.parent.throw(e)
+            check.not_none(self._tl.parent).throw(e)
             raise
 
     def feed(self, *data: bytes) -> ta.Iterable[bytes]:
         i: bytes | type[NeedMore]
         for i in data:
             while True:
-                e = self._g.switch(i)
+                e = self._tl.switch(i)
                 i = NeedMore
                 if e is NeedMore:
                     break

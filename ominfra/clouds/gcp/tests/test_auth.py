@@ -5,6 +5,7 @@ import pytest
 from omlish import check
 from omlish import http
 from omlish.secrets.tests.harness import HarnessSecrets
+from omlish.testing import pytest as ptu
 
 from ..auth import get_gcp_access_token
 
@@ -27,6 +28,7 @@ def list_gcp_instances(
     return resp_dct
 
 
+@ptu.skip.if_cant_import('cryptography')
 @pytest.mark.online
 def test_gcp_auth(harness):
     creds = harness[HarnessSecrets].get_or_skip('gcp_oauth2')
