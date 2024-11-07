@@ -55,16 +55,21 @@ class GzipWriter:
     def __init__(
             self,
             fileobj: ta.Any,
+            *,
             compresslevel: int = 9,
             name: str | None = None,
             buffer_size: int = 4 * io.DEFAULT_BUFFER_SIZE,
+            mtime: float | None = None,
     ) -> None:
         super().__init__()
 
         self._fileobj: ta.Any | None = fileobj
 
         self._name = name or ''
-        self._init_write()
+        self._crc = zlib.crc32(b"")
+        self._size = 0
+        self._offset = 0  # Current file offset for seek(), tell(), etc
+
         self._compress = zlib.compressobj(
             compresslevel,
             zlib.DEFLATED,
@@ -72,7 +77,7 @@ class GzipWriter:
             zlib.DEF_MEM_LEVEL,
             0,
         )
-        self._write_mtime = None
+        self._write_mtime = mtime
         self._buffer_size = buffer_size
         self._buffer = io.BufferedWriter(
             _BufferedWriterDelegate(self._write_raw),
@@ -85,13 +90,6 @@ class GzipWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-
-    def _init_write(self):
-        self.crc = zlib.crc32(b"")
-        self.size = 0
-        self.writebuf = []
-        self.bufsize = 0
-        self.offset = 0  # Current file offset for seek(), tell(), etc
 
     def _write_gzip_header(self, compresslevel):
         self._fileobj.write(b'\037\213')             # magic header
@@ -140,9 +138,9 @@ class GzipWriter:
         try:
             self._buffer.flush()
             fileobj.write(self._compress.flush())
-            write32u(fileobj, self.crc)
+            write32u(fileobj, self._crc)
             # self.size may exceed 2 GiB, or even 4 GiB
-            write32u(fileobj, self.size & 0xffffffff)
+            write32u(fileobj, self._size & 0xffffffff)
         finally:
             self._fileobj = None
 
@@ -165,9 +163,9 @@ class GzipWriter:
 
         if length > 0:
             self._fileobj.write(self._compress.compress(data))
-            self.size += length
-            self.crc = zlib.crc32(data, self.crc)
-            self.offset += length
+            self._size += length
+            self._crc = zlib.crc32(data, self._crc)
+            self._offset += length
 
         return length
 
