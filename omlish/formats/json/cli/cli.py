@@ -48,64 +48,19 @@ import subprocess
 import sys
 import typing as ta
 
-from .... import cached
 from .... import check
 from .... import lang
-from .... import term
-from ....lite.io import DelimitingBuffer
-from ..render import JsonRenderer
-from ..stream.build import JsonObjectBuilder
-from ..stream.lex import JsonStreamLexer
-from ..stream.parse import JsonStreamParser
-from ..stream.parse import JsonStreamParserEvent
-from ..stream.render import StreamJsonRenderer
+from .processing import Processor
 from .formats import FORMATS_BY_NAME
+from .parsing import StreamParser
+from .parsing import EagerParser
+from .parsing import DelimitingParser
 from .processing import ProcessingOptions
 from .formats import Format
 from .formats import Formats
 from .rendering import RenderingOptions
-
-
-##
-
-
-##
-
-
-
-
-class StreamBuilder(lang.ExitStacked):
-    _builder: JsonObjectBuilder | None = None
-
-    def __enter__(self) -> ta.Self:
-        super().__enter__()
-        self._builder = self._enter_context(JsonObjectBuilder())
-        return self
-
-    def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any, None, None]:
-        yield from check.not_none(self._builder)(e)
-
-##
-
-
-class StreamParser(lang.ExitStacked):
-    _decoder: codecs.IncrementalDecoder
-    _lex: JsonStreamLexer
-    _parse: JsonStreamParser
-
-    def __enter__(self) -> ta.Self:
-        super().__enter__()
-        self._decoder = codecs.getincrementaldecoder('utf-8')()
-        self._lex = self._enter_context(JsonStreamLexer())
-        self._parse = self._enter_context(JsonStreamParser())
-        return self
-
-    def parse(self, b: bytes) -> ta.Generator[JsonStreamParserEvent, None, None]:
-        for s in self._decoder.decode(b, not b):
-            for c in s:
-                for t in self._lex(c):
-                    for e in self._parse(t):
-                        yield e
+from .rendering import EagerRenderer
+from .rendering import StreamRenderer
 
 
 """
@@ -137,31 +92,6 @@ class StreamParser(lang.ExitStacked):
                 out.write('\n')
 
 """
-
-
-class LinesParser:
-    def __init__(
-            self,
-            fmt: Format,
-    ) -> None:
-        super().__init__()
-
-        self._fmt = fmt
-
-        self._db = DelimitingBuffer()
-
-    def parse(self, b: bytes) -> ta.Generator[ta.Any, None, None]:
-        for chunk in self._db.feed(b):
-            s = check.isinstance(chunk, bytes).decode('utf-8')
-            v = self._fmt.load(io.StringIO(s))
-            yield v
-
-
-class SimpleParser:
-    def run_simple(self) -> None:
-        with io.TextIOWrapper(in_file) as tw:
-            v = fmt.load(tw)
-        render_value(v)
 
 
 class Cli(lang.ExitStacked):
@@ -288,10 +218,19 @@ def _main() -> None:
         #
 
         if args.stream:
+            raise NotImplementedError
 
         elif args.lines:
+            raise NotImplementedError
 
         else:
+            with io.TextIOWrapper(in_file) as tf:
+                v = EagerParser(fmt).parse(tf)
+
+            r = EagerRenderer(r_opts)
+            for e in Processor(p_opts).process(v):
+                s = r.render(e)
+                print(s, file=out)
 
 
 if __name__ == '__main__':
