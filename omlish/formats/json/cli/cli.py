@@ -38,11 +38,9 @@ jq Command options:
   --                        terminates argument processing;
 """
 import argparse
-import codecs
 import contextlib
 import dataclasses as dc
 import io
-import json
 import os
 import subprocess
 import sys
@@ -50,16 +48,16 @@ import typing as ta
 
 from .... import check
 from .... import lang
-from .processing import Processor
 from .formats import FORMATS_BY_NAME
-from .parsing import StreamParser
-from .parsing import EagerParser
-from .parsing import DelimitingParser
-from .processing import ProcessingOptions
-from .formats import Format
 from .formats import Formats
-from .rendering import RenderingOptions
+from .parsing import DelimitingParser
+from .parsing import EagerParser
+from .parsing import StreamBuilder
+from .parsing import StreamParser
+from .processing import ProcessingOptions
+from .processing import Processor
 from .rendering import EagerRenderer
+from .rendering import RenderingOptions
 from .rendering import StreamRenderer
 
 
@@ -218,7 +216,34 @@ def _main() -> None:
         #
 
         if args.stream:
-            raise NotImplementedError
+            fd = in_file.fileno()
+
+            with contextlib.ExitStack() as es2:
+                parser: StreamParser = es2.enter_context(StreamParser())
+                processor = Processor(p_opts)
+
+                if args.stream_build:
+                    builder = es2.enter_context(StreamBuilder())
+                    raise NotImplementedError
+
+                else:
+                    renderer = StreamRenderer(r_opts)
+
+                    while True:
+                        buf = os.read(fd, args.read_buffer_size)
+
+                        n = 0
+                        for e in parser.parse(buf):
+                            for s in renderer.render(e):
+                                print(s, file=out, end='')
+                                n += 1
+                        if n:
+                            out.flush()
+
+                        if not buf:
+                            break
+
+                    out.write('\n')
 
         elif args.lines:
             fd = in_file.fileno()
