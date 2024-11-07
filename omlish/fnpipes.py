@@ -18,13 +18,19 @@ class Fn(abc.ABC, ta.Generic[T]):
         return Pipe([self], Bind(fn, *args, **kwargs))
 
     def __or__(self, fn: ta.Callable[..., U]) -> 'Fn[U]':
-        return self.pipe(fn)
+        return pipe(self, fn)
+
+    def __ror__(self, fn: ta.Callable[..., U]) -> 'Fn[U]':
+        return pipe(fn, self)
 
     def apply(self, fn: ta.Callable[[T], ta.Any], *args: ta.Any, **kwargs: ta.Any) -> 'Fn[T]':
         return Pipe([self], Apply(Bind(fn, *args, **kwargs)))
 
     def __and__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
         return self.apply(fn)
+
+    def __rand__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
+        return bind(fn).apply(fn)
 
 
 ##
