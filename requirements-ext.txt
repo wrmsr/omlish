@@ -57,7 +57,7 @@ networkx==3.4.2
 
 nevergrad==1.0.5
 
-sympy~=1.13.1  # FIXME: torch :|
+sympy>=1.13.1  # FIXME: torch :|
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == "x86_64"
@@ -81,7 +81,7 @@ scipy==1.14.1
 scikit-learn==1.5.2
 scikit-image==0.24.0
 
-simsimd==5.9.11
+simsimd>=5.9.11
 
 spacy==3.8.0  # FIXME: llama-index-core
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.55
+boto3>=1.35.56
 
 google-api-python-client==2.151.0
 google-cloud-compute==1.20.1
@@ -177,7 +177,7 @@ logbook==1.8.0
 
 # tenacity==9.0.0
 
-mitogen==0.3.17
+mitogen==0.3.18
 
 ##
 
@@ -248,7 +248,7 @@ usearch==2.16.2
 
 llama-index-core==0.11.22
 
-unstructured==0.16.4
+unstructured==0.16.5
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -273,7 +273,7 @@ jiter>=0.5.0
 
 ##
 
-instructor~=1.5.2  # FIXME: INSTRUCTOR.
+instructor>=1.5.2  # FIXME: INSTRUCTOR.
 
 docopt==0.6.2
 
