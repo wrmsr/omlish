@@ -93,6 +93,8 @@ def _main() -> None:
     parser.add_argument('-f', '--format')
 
     parser.add_argument('-x', '--jmespath-expr')
+    parser.add_argument('-F', '--flat', action='store_true')
+    parser.add_argument('-R', '--raw', action='store_true')
 
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
@@ -131,22 +133,40 @@ def _main() -> None:
     else:
         jp_expr = None
 
-    def render_one(v: ta.Any) -> str:
-        if jp_expr is not None:
-            v = jp_expr.search(v)
+    def render_one(v: ta.Any) -> None:
+        if args.raw:
+            if not isinstance(v, str):
+                raise TypeError(v)
+            s = v
 
-        if args.color:
-            return JsonRenderer.render_str(
+        elif args.color:
+            s = JsonRenderer.render_str(
                 v,
                 **kw,
                 style=term_color,
             )
 
         else:
-            return json.dumps(
+            s = json.dumps(
                 v,
                 **kw,
             )
+
+        print(s, file=out)
+
+    def render_value(v: ta.Any) -> None:
+        if jp_expr is not None:
+            v = jp_expr.search(v)
+
+        if args.flat:
+            if isinstance(v, str):
+                raise TypeError(v)
+
+            for e in v:
+                render_one(e)
+
+        else:
+            render_one(v)
 
     #
 
@@ -230,7 +250,7 @@ def _main() -> None:
 
                                     if build is not None:
                                         for v in build(e):
-                                            print(render_one(v), file=out)
+                                            render_value(v)
 
                                     n += 1
 
@@ -251,12 +271,12 @@ def _main() -> None:
                 for chunk in db.feed(buf):
                     s = check.isinstance(chunk, bytes).decode('utf-8')
                     v = fmt.load(io.StringIO(s))
-                    print(render_one(v), file=out)
+                    render_value(v)
 
         else:
             with io.TextIOWrapper(in_file) as tw:
                 v = fmt.load(tw)
-            print(render_one(v), file=out)
+            render_value(v)
 
 
 if __name__ == '__main__':

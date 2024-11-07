@@ -1,18 +1,12 @@
 import contextlib
 import gzip
 import io
-import random
-import string
 
 from ...testing import pytest as ptu
+from ...text.random import generate_random_text
 from ..trampoline import IoTrampoline
 from ..trampoline import ThreadIoTrampoline
 from ..trampoline import ThreadletIoTrampoline
-
-
-def generate_random_text(size: int) -> str:
-    chars = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choices(chars, k=size))
 
 
 def _test_trampoline(iot_cls: type[IoTrampoline]) -> None:
