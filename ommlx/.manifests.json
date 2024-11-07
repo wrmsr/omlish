@@ -13,5 +13,17 @@
         "mod_name": "ommlx.minichain.cli.__main__"
       }
     }
+  },
+  {
+    "module": ".ocr",
+    "attr": "_CLI_MODULE",
+    "file": "ommlx/ocr.py",
+    "line": 51,
+    "value": {
+      "$omdev.cli.types.CliModule": {
+        "cmd_name": "ocr",
+        "mod_name": "ommlx.ocr"
+      }
+    }
   }
 ]

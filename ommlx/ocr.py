@@ -1,20 +1,25 @@
+"""
+TODO:
+ - clipboard
+"""
 import argparse
 import os.path
 import sys
 import typing as ta
 
+from omdev.cli import CliModule
 from omlish import lang
 
 
 if ta.TYPE_CHECKING:
-    from PIL import Image
     import pytesseract
     import rapidocr_onnxruntime as rapidocr
+    from PIL import Image
 
 else:
-    Image = lang.proxy_import('PIL.Image')
     pytesseract = lang.proxy_import('pytesseract')
     rapidocr = lang.proxy_import('rapidocr_onnxruntime')
+    Image = lang.proxy_import('PIL.Image')
 
 
 ##
@@ -45,6 +50,10 @@ def _main() -> None:
         text = ocr(img)
 
     print(text)
+
+
+# @omlish-manifest
+_CLI_MODULE = CliModule('ocr', __name__)
 
 
 if __name__ == '__main__':
