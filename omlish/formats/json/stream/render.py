@@ -1,8 +1,8 @@
 import io
-import json
 import typing as ta
 
 from ..render import AbstractJsonRenderer
+from ..render import SCALAR_TYPES
 from .parse import BeginArray
 from .parse import BeginObject
 from .parse import EndArray
@@ -43,11 +43,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         else:
             post = None
 
-        if o is None or isinstance(o, bool):
-            yield self._literals[o]
-
-        elif isinstance(o, (str, int, float)):
-            yield json.dumps(o)
+        if isinstance(o, SCALAR_TYPES):
+            yield self._format_scalar(o)
 
         else:
             raise TypeError(o)
