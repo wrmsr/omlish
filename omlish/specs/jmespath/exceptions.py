@@ -1,3 +1,6 @@
+import typing as ta
+
+
 class JmespathError(ValueError):
     pass
 
@@ -18,7 +21,7 @@ class ParseError(JmespathError):
         self.token_type = token_type.upper()
         self.msg = msg
         # Whatever catches the ParseError can fill in the full expression
-        self.expression = None
+        self.expression: ta.Any = None
 
     def __str__(self):
         # self.lex_position +1 to account for the starting double quote char.
@@ -46,7 +49,7 @@ class IncompleteExpressionError(ParseError):
 
 
 class LexerError(ParseError):
-    def __init__(self, lexer_position, lexer_value, message, expression=None):
+    def __init__(self, lexer_position, lexer_value, message, expression: ta.Any | None = None):
         self.lexer_position = lexer_position
         self.lexer_value = lexer_value
         self.message = message
