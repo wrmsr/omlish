@@ -221,15 +221,28 @@ def _main() -> None:
             raise NotImplementedError
 
         elif args.lines:
-            raise NotImplementedError
+            fd = in_file.fileno()
+
+            parser = DelimitingParser(fmt)
+            processor = Processor(p_opts)
+            renderer = EagerRenderer(r_opts)
+
+            while b := os.read(fd, args.read_buffer_size):
+                for v in parser.parse(b):
+                    for e in processor.process(v):
+                        s = renderer.render(e)
+                        print(s, file=out)
 
         else:
-            with io.TextIOWrapper(in_file) as tf:
-                v = EagerParser(fmt).parse(tf)
+            parser = EagerParser(fmt)
+            processor = Processor(p_opts)
+            renderer = EagerRenderer(r_opts)
 
-            r = EagerRenderer(r_opts)
-            for e in Processor(p_opts).process(v):
-                s = r.render(e)
+            with io.TextIOWrapper(in_file) as tf:
+                v = parser.parse(tf)
+
+            for e in processor.process(v):
+                s = renderer.render(e)
                 print(s, file=out)
 
 
