@@ -55,6 +55,9 @@ def _main() -> None:
     gz_bytes = run_compress(in_bytes, lambda f: gzip.GzipFile(fileobj=f, mode='wb'))
     assert len(gz_bytes) < len(in_bytes)
 
+    out_bytes = run_decompress(gz_bytes, lambda f: gzip.GzipFile(fileobj=f, mode='rb'))
+    assert out_bytes == in_bytes
+
     out_bytes = run_decompress(gz_bytes, GzipReader)
     assert out_bytes == in_bytes
 
@@ -66,6 +69,9 @@ def _main() -> None:
 
     bz_bytes = run_compress(in_bytes, lambda f: bz2.BZ2File(f, mode='wb'))
     assert len(bz_bytes) < len(in_bytes)
+
+    out_bytes = run_decompress(bz_bytes, lambda f: bz2.BZ2File(f, mode='rb'))
+    assert out_bytes == in_bytes
 
     out_bytes = run_decompress(bz_bytes, Bz2Reader)
     assert out_bytes == in_bytes

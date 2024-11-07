@@ -1,3 +1,4 @@
+import bz2
 import typing as ta
 
 
