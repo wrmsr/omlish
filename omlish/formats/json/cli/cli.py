@@ -5,7 +5,7 @@ TODO:
 
 ==
 
-jq Command options:
+jq Command options)
   -n, --null-input          use `null` as the single input value;
   -R, --raw-input           read each line as string instead of JSON;
   -s, --slurp               read all inputs into an array and use it as the single input value;
@@ -47,6 +47,7 @@ import sys
 import typing as ta
 
 from .... import check
+from .... import fnpipes as fp
 from .... import lang
 from .formats import FORMATS_BY_NAME
 from .formats import Format
@@ -60,6 +61,10 @@ from .processing import Processor
 from .rendering import EagerRenderer
 from .rendering import RenderingOptions
 from .rendering import StreamRenderer
+
+
+T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 def _build_args_parser() -> argparse.ArgumentParser:
@@ -215,7 +220,10 @@ def _main() -> None:
             with contextlib.ExitStack() as es2:
                 parser = es2.enter_context(StreamParser())
 
-                def flush_output(fn, i):
+                def flush_output(
+                        fn: ta.Callable[[T], ta.Iterable[U]],
+                        i: T,
+                ) -> ta.Generator[U, None, None]:
                     n = 0
                     for o in fn(i):
                         yield o
@@ -223,34 +231,40 @@ def _main() -> None:
                     if n:
                         out.flush()
 
+                pipeline: ta.Any
+
                 if args.stream_build:
                     builder: StreamBuilder = es2.enter_context(StreamBuilder())
                     processor = Processor(cfg.processing)
                     renderer = EagerRenderer(cfg.rendering)
                     trailing_newline = False
 
-                    def append_newlines(fn, i):
+                    def append_newlines(
+                            fn: ta.Callable[[T], ta.Iterable[str]],
+                            i: T,
+                    ) -> ta.Generator[str, None, None]:
                         yield from fn(i)
                         yield '\n'
 
-                    def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
-                        for e in parser.parse(buf):
-                            for v in builder.build(e):
-                                for o in processor.process(v):
-                                    for s in append_newlines(renderer.render, o):  # noqa
-                                        yield s
+                    pipeline = lambda v: (renderer.render(v),)  # Any -> [str]  # noqa
+                    pipeline = fp.bind(append_newlines, pipeline)  # Any -> [str]
+                    pipeline = fp.bind(lang.flatmap, pipeline)  # [Any] -> [str]
+                    pipeline = fp.pipe(fp.bind(lang.flatmap, processor.process), pipeline)  # [Any] -> [str]
+                    pipeline = fp.pipe(fp.bind(lang.flatmap, builder.build), pipeline)  # [JsonStreamParserEvent] -> [str]  # noqa
+                    pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
 
                 else:
                     renderer = StreamRenderer(cfg.rendering)
                     trailing_newline = True
 
-                    def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
-                        for e in parser.parse(buf):
-                            for s in renderer.render(e):  # noqa
-                                yield s
+                    pipeline = renderer.render  # JsonStreamParserEvent -> [str]
+                    pipeline = fp.bind(lang.flatmap, pipeline)  # [JsonStreamParserEvent] -> [str]
+                    pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
+
+                pipeline = fp.bind(flush_output, pipeline)  # bytes -> [str]
 
                 for buf in yield_input():
-                    for s in flush_output(yield_output, buf):
+                    for s in pipeline(buf):
                         print(s, file=out, end='')
 
                 if trailing_newline:
