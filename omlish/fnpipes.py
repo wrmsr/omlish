@@ -15,7 +15,7 @@ class Fn(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     def pipe(self, fn: ta.Callable[..., U], *args: ta.Any, **kwargs: ta.Any) -> 'Fn[U]':
-        return Pipe([self], Bind(fn, *args, **kwargs))
+        return pipe(self, bind(fn, *args, **kwargs))
 
     def __or__(self, fn: ta.Callable[..., U]) -> 'Fn[U]':
         return pipe(self, fn)
@@ -24,13 +24,13 @@ class Fn(abc.ABC, ta.Generic[T]):
         return pipe(fn, self)
 
     def apply(self, fn: ta.Callable[[T], ta.Any], *args: ta.Any, **kwargs: ta.Any) -> 'Fn[T]':
-        return Pipe([self], Apply(Bind(fn, *args, **kwargs)))
+        return pipe(self, apply(bind(fn, *args, **kwargs)))
 
     def __and__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
-        return self.apply(fn)
+        return pipe(self, apply(fn))
 
     def __rand__(self, fn: ta.Callable[[T], ta.Any]) -> 'Fn[T]':
-        return bind(fn).apply(self)
+        return pipe(fn, apply(self))
 
 
 ##
