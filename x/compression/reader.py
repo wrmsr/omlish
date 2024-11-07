@@ -6,7 +6,15 @@ import typing as ta
 class DecompressReader(io.RawIOBase):
     """Adapts the decompressor API to a RawIOBase reader API"""
 
-    def __init__(self, fp, decomp_factory, trailing_error=(), **decomp_args):
+    def __init__(
+            self,
+            fp: ta.Any,
+            decomp_factory,
+            trailing_error=(),
+            **decomp_args,
+    ) -> None:
+        super().__init__()
+
         self._fp = fp
         self._eof = False
         self._pos = 0  # Current offset in decompressed stream

@@ -37,20 +37,20 @@ class PaddedFile:
         self._file = f
         self._read = 0
 
-    def read(self, size):
+    def read(self, size: int) -> bytes:
         if self._read is None:
             return self._file.read(size)
+
         if self._read + size <= self._length:
             read = self._read
             self._read += size
             return self._buffer[read:self._read]
-        else:
-            read = self._read
-            self._read = None
-            return self._buffer[read:] + \
-                self._file.read(size-self._length+read)
 
-    def prepend(self, prepend=b''):
+        read = self._read
+        self._read = None
+        return self._buffer[read:] + self._file.read(size-self._length+read)
+
+    def prepend(self, prepend: bytes = b'') -> None:
         if self._read is None:
             self._buffer = prepend
         else:  # Assume data was read since the last prepend() call
@@ -59,7 +59,7 @@ class PaddedFile:
         self._length = len(self._buffer)
         self._read = 0
 
-    def seek(self, off):
+    def seek(self, off: int) -> int:
         self._read = None
         self._buffer = None
         return self._file.seek(off)
@@ -69,7 +69,7 @@ class PaddedFile:
 
 
 class BufferedWriterDelegate(io.RawIOBase):
-    def __init__(self, write: ta.Callable[[bytes], int]):
+    def __init__(self, write: ta.Callable[[bytes], int]) -> None:
         super().__init__()
         self._write = write
 

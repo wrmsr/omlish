@@ -1,11 +1,7 @@
-import contextlib
 import gzip
 import io
 import os.path
-import random
-import string
 import struct
-import sys
 import time
 import typing as ta
 import zlib
