@@ -18,7 +18,7 @@
     "module": ".ocr",
     "attr": "_CLI_MODULE",
     "file": "ommlx/ocr.py",
-    "line": 51,
+    "line": 83,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": "ocr",
