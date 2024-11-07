@@ -14,6 +14,8 @@ class Separators(ta.NamedTuple):
 
 PRETTY_INDENT = 2
 
+PRETTY_SEPARATORS = Separators(', ', ': ')
+
 PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=PRETTY_INDENT,
 )
