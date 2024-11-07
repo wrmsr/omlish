@@ -210,7 +210,6 @@ def _main() -> None:
 
                 else:
                     renderer = StreamJsonRenderer(
-                        out,
                         style=term_color if args.color else None,
                         delimiter='\n',
                         **kw,
@@ -226,7 +225,8 @@ def _main() -> None:
                             for t in lex(c):
                                 for e in parse(t):
                                     if renderer is not None:
-                                        renderer.render((e,))
+                                        for r in renderer.render((e,)):
+                                            out.write(r)
 
                                     if build is not None:
                                         for v in build(e):

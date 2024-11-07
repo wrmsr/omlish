@@ -1,8 +1,8 @@
+import io
 import json
 import typing as ta
 
 from ..render import AbstractJsonRenderer
-from ..render import JsonRendererOut
 from .parse import BeginArray
 from .parse import BeginObject
 from .parse import EndArray
@@ -17,7 +17,6 @@ from .parse import Key
 class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]]):
     def __init__(
             self,
-            out: JsonRendererOut,
             *,
             delimiter: str = '',
             sort_keys: bool = False,
@@ -28,7 +27,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
         self._delimiter = delimiter
 
-        super().__init__(out, **kwargs)
+        super().__init__(**kwargs)
 
         self._stack: list[tuple[ta.Literal['OBJECT', 'ARRAY'], int]] = []
         self._need_delimit = False
@@ -37,41 +36,41 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             self,
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
-    ) -> None:
+    ) -> ta.Generator[str, None, None]:
         if self._style is not None:
             pre, post = self._style(o, state)
-            self._write(pre)
+            yield pre
         else:
             post = None
 
         if o is None or isinstance(o, bool):
-            self._write(self._literals[o])
+            yield self._literals[o]
 
         elif isinstance(o, (str, int, float)):
-            self._write(json.dumps(o))
+            yield json.dumps(o)
 
         else:
             raise TypeError(o)
 
         if post:
-            self._write(post)
+            yield post
 
-    def _render(self, e: JsonStreamParserEvent) -> None:
+    def _render(self, e: JsonStreamParserEvent) -> ta.Generator[str, None, None]:
         if self._need_delimit:
-            self._write(self._delimiter)
+            yield self._delimiter
             self._need_delimit = False
 
         if e != EndArray and self._stack and (tt := self._stack[-1])[0] == 'ARRAY':
             if tt[1]:
-                self._write(self._comma)
-            self._write_indent()
+                yield self._comma
+            yield self._get_indent()
 
             self._stack[-1] = ('ARRAY', tt[1] + 1)
 
         #
 
         if e is None or isinstance(e, (str, int, float, bool)):
-            self._render_value(e)
+            yield from self._render_value(e)
             if not self._stack:
                 self._need_delimit = True
 
@@ -79,7 +78,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
         elif e is BeginObject:
             self._stack.append(('OBJECT', 0))
-            self._write('{')
+            yield '{'
             self._level += 1
 
         elif isinstance(e, Key):
@@ -87,10 +86,10 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
                 raise Exception
 
             if tt[1]:
-                self._write(self._comma)
-            self._write_indent()
-            self._render_value(e.key, AbstractJsonRenderer.State.KEY)
-            self._write(self._colon)
+                yield self._comma
+            yield self._get_indent()
+            yield from self._render_value(e.key, AbstractJsonRenderer.State.KEY)
+            yield self._colon
 
             self._stack.append(('OBJECT', tt[1] + 1))
 
@@ -100,8 +99,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
             self._level -= 1
             if tt[1]:
-                self._write_indent()
-            self._write('}')
+                yield self._get_indent()
+            yield '}'
             if not self._stack:
                 self._need_delimit = True
 
@@ -109,7 +108,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
         elif e is BeginArray:
             self._stack.append(('ARRAY', 0))
-            self._write('[')
+            yield '['
             self._level += 1
 
         elif e is EndArray:
@@ -118,8 +117,8 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
 
             self._level -= 1
             if tt[1]:
-                self._write_indent()
-            self._write(']')
+                yield self._get_indent()
+            yield ']'
             if not self._stack:
                 self._need_delimit = True
 
@@ -128,6 +127,13 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         else:
             raise TypeError(e)
 
-    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> None:
+    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> ta.Generator[str, None, None]:
         for e in events:
-            self._render(e)
+            yield from self._render(e)
+
+    @classmethod
+    def render_str(cls, i: ta.Iterable[JsonStreamParserEvent], /, **kwargs: ta.Any) -> str:
+        out = io.StringIO()
+        for s in cls(**kwargs).render(i):
+            out.write(s)
+        return out.getvalue()
