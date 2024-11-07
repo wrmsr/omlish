@@ -10,8 +10,10 @@ import random
 import string
 import typing as ta
 
-from .gzip import GzipWriter
+from .bz2 import Bz2Reader
+from .bz2 import Bz2Writer
 from .gzip import GzipReader
+from .gzip import GzipWriter
 
 
 ##
@@ -48,6 +50,8 @@ def run_compress(in_bytes: bytes, fac: ta.Callable[[ta.Any], ta.Any]) -> bytes:
 def _main() -> None:
     in_bytes = generate_random_text(0x100_000).encode('utf-8')
 
+    #
+
     gz_bytes = run_compress(in_bytes, lambda f: gzip.GzipFile(fileobj=f, mode='wb'))
     assert len(gz_bytes) < len(in_bytes)
 
@@ -57,6 +61,14 @@ def _main() -> None:
     gz_bytes2 = run_compress(in_bytes, GzipWriter)
     out_bytes2 = run_decompress(gz_bytes2, GzipReader)
     assert out_bytes2 == in_bytes
+
+    #
+
+    bz_bytes = run_compress(in_bytes, lambda f: bz2.BZ2File(f, mode='wb'))
+    assert len(bz_bytes) < len(in_bytes)
+
+    out_bytes = run_decompress(bz_bytes, Bz2Reader)
+    assert out_bytes == in_bytes
 
 
 if __name__ == '__main__':
