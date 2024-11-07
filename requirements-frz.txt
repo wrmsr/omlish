@@ -1,5 +1,5 @@
 absl-py==2.1.0
-accelerate==1.1.0
+accelerate==1.1.1
 aiohappyeyeballs==2.4.3
 aiohttp==3.10.10
 aiomysql==0.2.0
@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.54
-botocore==1.35.54
+boto3==1.35.55
+botocore==1.35.55
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -152,7 +152,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.116.0
+hypothesis==6.117.0
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.0
@@ -241,7 +241,7 @@ matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 mistune==3.0.2
-mitogen==0.3.16
+mitogen==0.3.17
 ml-dtypes==0.4.1
 mmh3==5.0.1
 monotonic==1.6
@@ -278,7 +278,7 @@ ollama==0.3.3
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.19.2
-openai==1.54.2
+openai==1.54.3
 opencv-python==4.10.0.84
 opentelemetry-api==1.28.0
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
@@ -391,7 +391,7 @@ rdflib-sqlalchemy==0.5.3
 readme_renderer==44.0
 redis==5.2.0
 referencing==0.35.1
-regex==2024.9.11
+regex==2024.11.6
 requests==2.32.3
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
