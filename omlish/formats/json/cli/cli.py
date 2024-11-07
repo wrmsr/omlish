@@ -39,7 +39,6 @@ jq Command options:
 """
 import argparse
 import contextlib
-import dataclasses as dc
 import io
 import os
 import subprocess
@@ -61,53 +60,7 @@ from .rendering import RenderingOptions
 from .rendering import StreamRenderer
 
 
-"""
-        fd = in_file.fileno()
-        decoder = codecs.getincrementaldecoder('utf-8')()
-
-        with contextlib.ExitStack() as es2:
-            lex = es2.enter_context(JsonStreamLexer())
-            parse = es2.enter_context(JsonStreamParser())
-
-            while True:
-                buf = os.read(fd, args.read_buffer_size)
-
-                for s in decoder.decode(buf, not buf):
-                    n = 0
-                    for c in s:
-                        for t in lex(c):
-                            for e in parse(t):
-                                yield e
-                                n += 1
-
-                    if n:
-                        out.flush()
-
-                if not buf:
-                    break
-
-            if renderer is not None:
-                out.write('\n')
-
-"""
-
-
-class Cli(lang.ExitStacked):
-    @dc.dataclass(frozen=True)
-    class Options:
-        pass
-
-    def __init__(
-            self,
-    ) -> None:
-        super().__init__()
-
-    #
-
-
-
-
-def _main() -> None:
+def _build_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file', nargs='?')
@@ -134,7 +87,15 @@ def _main() -> None:
 
     parser.add_argument('-L', '--less', action='store_true')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(args: ta.Any = None) -> ta.Any:
+    return _build_args_parser().parse_args(args)
+
+
+def _main() -> None:
+    args = _parse_args()
 
     #
 
@@ -215,11 +176,14 @@ def _main() -> None:
 
         #
 
+        parser: ta.Any
+        renderer: ta.Any
+
         if args.stream:
             fd = in_file.fileno()
 
             with contextlib.ExitStack() as es2:
-                parser: StreamParser = es2.enter_context(StreamParser())
+                parser = es2.enter_context(StreamParser())
 
                 if args.stream_build:
                     builder: StreamBuilder = es2.enter_context(StreamBuilder())
