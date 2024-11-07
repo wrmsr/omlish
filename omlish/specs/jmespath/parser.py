@@ -82,6 +82,7 @@ class Parser:
 
     def __init__(self, lookahead: int = 2) -> None:
         super().__init__()
+
         self._tokenizer: ta.Iterable[lexer.Token] | None = None
         self._tokens: list[lexer.Token | None] = [None] * lookahead
         self._buffer_size = lookahead
@@ -635,6 +636,7 @@ class Parser:
 class ParsedResult:
     def __init__(self, expression: str, parsed: ast.Node) -> None:
         super().__init__()
+
         self.expression = expression
         self.parsed = parsed
 

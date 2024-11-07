@@ -44,6 +44,7 @@ class Lexer:
 
     def __init__(self) -> None:
         super().__init__()
+
         self._enable_legacy_literals = False
         self._current: str | None = None
 

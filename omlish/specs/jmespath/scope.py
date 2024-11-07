@@ -9,6 +9,8 @@ class ScopedChainDict:
     """
 
     def __init__(self, *scopes):
+        super().__init__()
+
         # The scopes are evaluated starting at the top of the stack (the most recently pushed scope via .push_scope()).
         # If we use a normal list() and push/pop scopes by adding/removing to the end of the list, we'd have to always
         # call reversed(self._scopes) whenever we resolve a key, because the end of the list is the top of the stack.
