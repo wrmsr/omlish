@@ -23,6 +23,7 @@ A few notes on the implementation.
 import random
 import typing as ta
 
+from ... import check
 from . import ast
 from . import exceptions
 from . import lexer
@@ -76,16 +77,17 @@ class Parser:
     _PROJECTION_STOP = 10
 
     # The _MAX_SIZE most recent expressions are cached in _CACHE dict.
-    _CACHE: dict = {}  # noqa
+    _CACHE: ta.ClassVar[dict[str, 'ParsedResult']] = {}  # noqa
     _MAX_SIZE = 128
 
-    def __init__(self, lookahead=2):
-        self.tokenizer = None
-        self._tokens = [None] * lookahead
+    def __init__(self, lookahead: int = 2) -> None:
+        super().__init__()
+        self._tokenizer: ta.Iterable[lexer.Token] | None = None
+        self._tokens: list[lexer.Token | None] = [None] * lookahead
         self._buffer_size = lookahead
         self._index = 0
 
-    def parse(self, expression, options=None):
+    def parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
         cached = self._CACHE.get(expression)
         if cached is not None:
             return cached
@@ -98,7 +100,7 @@ class Parser:
 
         return parsed_result
 
-    def _do_parse(self, expression, options=None):
+    def _do_parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
         try:
             return self._parse(expression, options)
 
@@ -114,15 +116,15 @@ class Parser:
             e.expression = expression
             raise
 
-    def _parse(self, expression, options=None):
-        self.tokenizer = lexer.Lexer().tokenize(expression, options)
-        self._tokens = list(self.tokenizer)
+    def _parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
+        self._tokenizer = lexer.Lexer().tokenize(expression, options)
+        self._tokens = list(self._tokenizer)
         self._index = 0
 
         parsed = self._expression(binding_power=0)
 
         if self._current_token() != 'eof':
-            t = self._lookahead_token(0)
+            t = check.not_none(self._lookahead_token(0))
             raise exceptions.ParseError(
                 t['start'],
                 t['value'],
@@ -132,8 +134,8 @@ class Parser:
 
         return ParsedResult(expression, parsed)
 
-    def _expression(self, binding_power=0):
-        left_token = self._lookahead_token(0)
+    def _expression(self, binding_power: int = 0):
+        left_token = check.not_none(self._lookahead_token(0))
 
         self._advance()
 
@@ -178,7 +180,7 @@ class Parser:
     def _parse_let_expression(self):
         bindings = []
         while True:
-            var_token = self._lookahead_token(0)
+            var_token = check.not_none(self._lookahead_token(0))
             # Strip off the '$'.
             varname = var_token['value'][1:]
             self._advance()
@@ -204,7 +206,7 @@ class Parser:
 
         # You can't have a quoted identifier as a function name.
         if self._current_token() == 'lparen':
-            t = self._lookahead_token(0)
+            t = check.not_none(self._lookahead_token(0))
             raise exceptions.ParseError(
                 0,
                 t['value'],
@@ -275,7 +277,7 @@ class Parser:
 
         else:
             # Parse the syntax [number]
-            node = ast.index(self._lookahead_token(0)['value'])
+            node = ast.index(check.not_none(self._lookahead_token(0))['value'])
             self._advance()
             self._match('rbracket')
             return node
@@ -294,11 +296,11 @@ class Parser:
                 self._advance()
 
             elif current_token == 'number':  # noqa
-                parts[index] = self._lookahead_token(0)['value']
+                parts[index] = check.not_none(self._lookahead_token(0))['value']
                 self._advance()
 
             else:
-                self._raise_parse_error_for_token(self._lookahead_token(0), 'syntax error')
+                self._raise_parse_error_for_token(check.not_none(self._lookahead_token(0)), 'syntax error')
 
             current_token = self._current_token()
 
@@ -348,7 +350,7 @@ class Parser:
             #  0 - first func arg or closing paren.
             # -1 - '(' token
             # -2 - invalid function "name".
-            prev_t = self._lookahead_token(-2)
+            prev_t = check.not_none(self._lookahead_token(-2))
             raise exceptions.ParseError(
                 prev_t['start'],
                 prev_t['value'],
@@ -423,7 +425,7 @@ class Parser:
         return ast.projection(left, right)
 
     def _token_led_lbracket(self, left):
-        token = self._lookahead_token(0)
+        token = check.not_none(self._lookahead_token(0))
         if token['type'] in ['number', 'colon']:
             right = self._parse_index_expression()
             if left['type'] == 'index_expression':
@@ -479,7 +481,7 @@ class Parser:
     def _parse_multi_select_hash(self):
         pairs = []
         while True:
-            key_token = self._lookahead_token(0)
+            key_token = check.not_none(self._lookahead_token(0))
 
             # Before getting the token value, verify it's an identifier.
             self._match_multiple_tokens(token_types=['quoted_identifier', 'unquoted_identifier'])
@@ -544,7 +546,7 @@ class Parser:
             return self._parse_multi_select_hash()
 
         else:
-            t = self._lookahead_token(0)
+            t = check.not_none(self._lookahead_token(0))
             allowed = ['quoted_identifier', 'unquoted_identifier', 'lbracket', 'lbrace']
             msg = f'Expecting: {allowed}, got: {t["type"]}'
             self._raise_parse_error_for_token(t, msg)
@@ -585,7 +587,7 @@ class Parser:
     def _lookahead(self, number):
         return self._tokens[self._index + number]['type']  # noqa
 
-    def _lookahead_token(self, number):
+    def _lookahead_token(self, number: int) -> lexer.Token | None:
         return self._tokens[self._index + number]
 
     def _raise_parse_error_for_token(self, token, reason) -> ta.NoReturn:
@@ -656,7 +658,7 @@ class ParsedResult:
         return repr(self.parsed)
 
 
-def compile(expression, options=None):  # noqa
+def compile(expression: str, options=None):  # noqa
     return Parser().parse(expression, options=options)
 
 
