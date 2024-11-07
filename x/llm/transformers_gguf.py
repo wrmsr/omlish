@@ -3,7 +3,6 @@ https://huggingface.co/docs/transformers/en/gguf
 
 https://github.com/ggerganov/llama.cpp/blob/master/convert_hf_to_gguf.py
 
-tokenizer = tfm.AutoTokenizer.from_pretrained(model_id, gguf_file=filename)
 
 LlamaForCausalLM(
     model_id,
@@ -13,19 +12,18 @@ LlamaForCausalLM(
 )
 """
 import os.path
+import sys
 
 import gguf
 import transformers as tfm
 
 
-def _manual():
-    pretrained_model_name_or_path = "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
-    gguf_file = 'tinyllama-1.1b-chat-v1.0.Q6_K.gguf'
-
-    #
-
+def _manual(
+        model_id: str,
+        gguf_file: str,
+):
     resolved_config_file = tfm.utils.cached_file(
-        pretrained_model_name_or_path,
+        model_id,
         tfm.utils.CONFIG_NAME,
         _raise_exceptions_for_gated_repo=False,
         _raise_exceptions_for_missing_entries=False,
@@ -46,7 +44,7 @@ def _manual():
     )
 
     # config, kwargs = tfm.AutoConfig.from_pretrained(
-    #     pretrained_model_name_or_path,
+    #     model_id,
     #     **kwargs,
     # )
 
@@ -54,7 +52,7 @@ def _manual():
     kwargs.pop("code_revision", None)
 
     config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
-        pretrained_model_name_or_path,
+        model_id,
         **kwargs,
     )
 
@@ -70,7 +68,7 @@ def _manual():
     )
 
     model = model_class.from_pretrained(
-        pretrained_model_name_or_path,
+        model_id,
         config=config,
         **kwargs
     )
@@ -79,14 +77,32 @@ def _manual():
 
 
 def _main() -> None:
-    # model_id = "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
-    # filename = "tinyllama-1.1b-chat-v1.0.Q6_K.gguf"
+    model_id = "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
+    gguf_file = "tinyllama-1.1b-chat-v1.0.Q6_K.gguf"
+
+    #
+
     # model = tfm.AutoModelForCausalLM.from_pretrained(model_id, gguf_file=filename)
 
     #
 
-    model = _manual()
+    model = _manual(model_id, gguf_file)
+
     print(model)
+
+    tokenizer = tfm.AutoTokenizer.from_pretrained(model_id, gguf_file=gguf_file)
+
+    pipeline = tfm.pipeline(
+        'text-generation',
+        model=model,
+        tokenizer=tokenizer,
+        **{
+            **dict(
+                # device='mps' if sys.platform == 'darwin' else 'cuda',
+            ),
+        },
+    )
+    print(pipeline('How are you?'))
 
     #
 
