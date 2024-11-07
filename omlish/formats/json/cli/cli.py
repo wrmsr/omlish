@@ -152,6 +152,17 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file, 'rb'))
 
+        def yield_input() -> ta.Generator[bytes, None, None]:
+            fd = check.isinstance(in_file.fileno(), int)
+
+            while True:
+                buf = os.read(fd, args.read_buffer_size)
+
+                yield buf
+
+                if not buf:
+                    break
+
         #
 
         if args.less:
@@ -180,63 +191,58 @@ def _main() -> None:
         renderer: ta.Any
 
         if args.stream:
-            fd = in_file.fileno()
-
             with contextlib.ExitStack() as es2:
                 parser = es2.enter_context(StreamParser())
+
+                def flush_output(fn, i):
+                    n = 0
+                    for o in fn(i):
+                        yield o
+                        n += 1
+                    if n:
+                        out.flush()
 
                 if args.stream_build:
                     builder: StreamBuilder = es2.enter_context(StreamBuilder())
                     processor = Processor(p_opts)
                     renderer = EagerRenderer(r_opts)
+                    trailing_newline = False
 
-                    while True:
-                        buf = os.read(fd, args.read_buffer_size)
-
-                        n = 0
+                    def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
                         for e in parser.parse(buf):
                             for v in builder.build(e):
                                 for o in processor.process(v):
-                                    for s in renderer.render(o):
-                                        print(s, file=out, end='')
-                                        n += 1
-                        if n:
-                            out.flush()
-
-                        if not buf:
-                            break
+                                    for s in renderer.render(o):  # noqa
+                                        yield s
+                                    yield '\n'
 
                 else:
                     renderer = StreamRenderer(r_opts)
+                    trailing_newline = True
 
-                    while True:
-                        buf = os.read(fd, args.read_buffer_size)
-
-                        n = 0
+                    def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
                         for e in parser.parse(buf):
-                            for s in renderer.render(e):
-                                print(s, file=out, end='')
-                                n += 1
-                        if n:
-                            out.flush()
+                            for s in renderer.render(e):  # noqa
+                                yield s
 
-                        if not buf:
-                            break
+                for buf in yield_input():
+                    for s in flush_output(yield_output, buf):
+                        print(s, file=out, end='')
 
+                if trailing_newline:
                     print(file=out)
 
         elif args.lines:
-            fd = in_file.fileno()
-
             parser = DelimitingParser(fmt)
             processor = Processor(p_opts)
             renderer = EagerRenderer(r_opts)
 
-            while b := os.read(fd, args.read_buffer_size):
-                for v in parser.parse(b):
-                    for e in processor.process(v):
-                        s = renderer.render(e)
-                        print(s, file=out)
+            for buf in yield_input():
+                if buf:
+                    for v in parser.parse(buf):
+                        for e in processor.process(v):
+                            s = renderer.render(e)
+                            print(s, file=out)
 
         else:
             parser = EagerParser(fmt)
