@@ -891,7 +891,7 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 }
 
 func (s *state) evalArg(dot reflect.Value, typ reflect.Type, n parse.Node) reflect.Value {
-    s.at(n)
+    self.at(n)
     switch arg := n.(type) {
     case *parse.DotNode:
         return s.validateType(dot, typ)
