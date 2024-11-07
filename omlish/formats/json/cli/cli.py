@@ -220,11 +220,27 @@ def _main() -> None:
 
             with contextlib.ExitStack() as es2:
                 parser: StreamParser = es2.enter_context(StreamParser())
-                processor = Processor(p_opts)
 
                 if args.stream_build:
-                    builder = es2.enter_context(StreamBuilder())
-                    raise NotImplementedError
+                    builder: StreamBuilder = es2.enter_context(StreamBuilder())
+                    processor = Processor(p_opts)
+                    renderer = EagerRenderer(r_opts)
+
+                    while True:
+                        buf = os.read(fd, args.read_buffer_size)
+
+                        n = 0
+                        for e in parser.parse(buf):
+                            for v in builder.build(e):
+                                for o in processor.process(v):
+                                    for s in renderer.render(o):
+                                        print(s, file=out, end='')
+                                        n += 1
+                        if n:
+                            out.flush()
+
+                        if not buf:
+                            break
 
                 else:
                     renderer = StreamRenderer(r_opts)
