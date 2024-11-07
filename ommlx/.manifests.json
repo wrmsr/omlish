@@ -15,14 +15,14 @@
     }
   },
   {
-    "module": ".ocr",
+    "module": ".tools.ocr",
     "attr": "_CLI_MODULE",
-    "file": "ommlx/ocr.py",
+    "file": "ommlx/tools/ocr.py",
     "line": 83,
     "value": {
       "$omdev.cli.types.CliModule": {
         "cmd_name": "ocr",
-        "mod_name": "ommlx.ocr"
+        "mod_name": "ommlx.tools.ocr"
       }
     }
   }
