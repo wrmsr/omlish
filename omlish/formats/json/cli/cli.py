@@ -40,6 +40,7 @@ jq Command options:
 import argparse
 import codecs
 import contextlib
+import dataclasses as dc
 import io
 import json
 import os
@@ -47,6 +48,7 @@ import subprocess
 import sys
 import typing as ta
 
+from .... import cached
 from .... import check
 from .... import lang
 from .... import term
@@ -55,27 +57,126 @@ from ..render import JsonRenderer
 from ..stream.build import JsonObjectBuilder
 from ..stream.lex import JsonStreamLexer
 from ..stream.parse import JsonStreamParser
+from ..stream.parse import JsonStreamParserEvent
 from ..stream.render import StreamJsonRenderer
 from .formats import FORMATS_BY_NAME
+from .processing import ProcessingOptions
+from .formats import Format
 from .formats import Formats
-
-
-if ta.TYPE_CHECKING:
-    from ....specs import jmespath
-else:
-    jmespath = lang.proxy_import('....specs.jmespath', __package__)
+from .rendering import RenderingOptions
 
 
 ##
 
 
-def term_color(o: ta.Any, state: JsonRenderer.State) -> tuple[str, str]:
-    if state is JsonRenderer.State.KEY:
-        return term.SGR(term.SGRs.FG.BRIGHT_BLUE), term.SGR(term.SGRs.RESET)
-    elif isinstance(o, str):
-        return term.SGR(term.SGRs.FG.GREEN), term.SGR(term.SGRs.RESET)
-    else:
-        return '', ''
+##
+
+
+
+
+class StreamBuilder(lang.ExitStacked):
+    _builder: JsonObjectBuilder | None = None
+
+    def __enter__(self) -> ta.Self:
+        super().__enter__()
+        self._builder = self._enter_context(JsonObjectBuilder())
+        return self
+
+    def build(self, e: JsonStreamParserEvent) -> ta.Generator[ta.Any, None, None]:
+        yield from check.not_none(self._builder)(e)
+
+##
+
+
+class StreamParser(lang.ExitStacked):
+    _decoder: codecs.IncrementalDecoder
+    _lex: JsonStreamLexer
+    _parse: JsonStreamParser
+
+    def __enter__(self) -> ta.Self:
+        super().__enter__()
+        self._decoder = codecs.getincrementaldecoder('utf-8')()
+        self._lex = self._enter_context(JsonStreamLexer())
+        self._parse = self._enter_context(JsonStreamParser())
+        return self
+
+    def parse(self, b: bytes) -> ta.Generator[JsonStreamParserEvent, None, None]:
+        for s in self._decoder.decode(b, not b):
+            for c in s:
+                for t in self._lex(c):
+                    for e in self._parse(t):
+                        yield e
+
+
+"""
+        fd = in_file.fileno()
+        decoder = codecs.getincrementaldecoder('utf-8')()
+
+        with contextlib.ExitStack() as es2:
+            lex = es2.enter_context(JsonStreamLexer())
+            parse = es2.enter_context(JsonStreamParser())
+
+            while True:
+                buf = os.read(fd, args.read_buffer_size)
+
+                for s in decoder.decode(buf, not buf):
+                    n = 0
+                    for c in s:
+                        for t in lex(c):
+                            for e in parse(t):
+                                yield e
+                                n += 1
+
+                    if n:
+                        out.flush()
+
+                if not buf:
+                    break
+
+            if renderer is not None:
+                out.write('\n')
+
+"""
+
+
+class LinesParser:
+    def __init__(
+            self,
+            fmt: Format,
+    ) -> None:
+        super().__init__()
+
+        self._fmt = fmt
+
+        self._db = DelimitingBuffer()
+
+    def parse(self, b: bytes) -> ta.Generator[ta.Any, None, None]:
+        for chunk in self._db.feed(b):
+            s = check.isinstance(chunk, bytes).decode('utf-8')
+            v = self._fmt.load(io.StringIO(s))
+            yield v
+
+
+class SimpleParser:
+    def run_simple(self) -> None:
+        with io.TextIOWrapper(in_file) as tw:
+            v = fmt.load(tw)
+        render_value(v)
+
+
+class Cli(lang.ExitStacked):
+    @dc.dataclass(frozen=True)
+    class Options:
+        pass
+
+    def __init__(
+            self,
+    ) -> None:
+        super().__init__()
+
+    #
+
+
 
 
 def _main() -> None:
@@ -94,14 +195,13 @@ def _main() -> None:
 
     parser.add_argument('-x', '--jmespath-expr')
     parser.add_argument('-F', '--flat', action='store_true')
-    parser.add_argument('-R', '--raw', action='store_true')
 
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
     parser.add_argument('-i', '--indent')
     parser.add_argument('-s', '--sort-keys', action='store_true')
+    parser.add_argument('-R', '--raw', action='store_true')
     parser.add_argument('-U', '--unicode', action='store_true')
-
     parser.add_argument('-c', '--color', action='store_true')
 
     parser.add_argument('-L', '--less', action='store_true')
@@ -123,52 +223,21 @@ def _main() -> None:
         except ValueError:
             indent = args.indent
 
-    render_kw: dict[str, ta.Any] = dict(
+    r_opts = RenderingOptions(
         indent=indent,
         separators=separators,
         sort_keys=args.sort_keys,
-        ensure_ascii=not args.unicode,
+        raw=args.raw,
+        unicode=args.unicode,
+        color=args.color,
     )
 
-    if args.jmespath_expr is not None:
-        jp_expr = jmespath.compile(args.jmespath_expr)
-    else:
-        jp_expr = None
+    #
 
-    def render_one(v: ta.Any) -> None:
-        if args.raw:
-            if not isinstance(v, str):
-                raise TypeError(v)
-            s = v
-
-        elif args.color:
-            s = JsonRenderer.render_str(
-                v,
-                **render_kw,
-                style=term_color,
-            )
-
-        else:
-            s = json.dumps(
-                v,
-                **render_kw,
-            )
-
-        print(s, file=out)
-
-    def render_value(v: ta.Any) -> None:
-        if jp_expr is not None:
-            v = jp_expr.search(v)
-
-        if args.flat:
-            if isinstance(v, str):
-                raise TypeError(v)
-
-            for e in v:
-                render_one(e)
-
-        else:
-            render_one(v)
+    p_opts = ProcessingOptions(
+        jmespath_expr=args.jmespath_expr,
+        flat=args.flat,
+    )
 
     #
 
@@ -219,66 +288,10 @@ def _main() -> None:
         #
 
         if args.stream:
-            fd = in_file.fileno()
-            decoder = codecs.getincrementaldecoder('utf-8')()
-
-            with contextlib.ExitStack() as es2:
-                lex = es2.enter_context(JsonStreamLexer())
-                parse = es2.enter_context(JsonStreamParser())
-
-                if args.stream_build:
-                    build = es2.enter_context(JsonObjectBuilder())
-                    renderer = None
-
-                else:
-                    renderer = StreamJsonRenderer(
-                        style=term_color if args.color else None,
-                        delimiter='\n',
-                        **render_kw,
-                    )
-                    build = None
-
-                while True:
-                    buf = os.read(fd, args.read_buffer_size)
-
-                    for s in decoder.decode(buf, not buf):
-                        n = 0
-                        for c in s:
-                            for t in lex(c):
-                                for e in parse(t):
-                                    if renderer is not None:
-                                        for r in renderer.render((e,)):
-                                            out.write(r)
-
-                                    if build is not None:
-                                        for v in build(e):
-                                            render_value(v)
-
-                                    n += 1
-
-                        if n:
-                            out.flush()
-
-                    if not buf:
-                        break
-
-                if renderer is not None:
-                    out.write('\n')
 
         elif args.lines:
-            fd = in_file.fileno()
-            db = DelimitingBuffer()
-
-            while buf := os.read(fd, args.read_buffer_size):
-                for chunk in db.feed(buf):
-                    s = check.isinstance(chunk, bytes).decode('utf-8')
-                    v = fmt.load(io.StringIO(s))
-                    render_value(v)
 
         else:
-            with io.TextIOWrapper(in_file) as tw:
-                v = fmt.load(tw)
-            render_value(v)
 
 
 if __name__ == '__main__':

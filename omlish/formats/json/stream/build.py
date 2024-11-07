@@ -36,7 +36,7 @@ class JsonObjectBuilder:
         if self._stack:
             raise self.StateError
 
-    def _emit_value(self, v):
+    def _emit_value(self, v: ta.Any) -> ta.Iterable[ta.Any]:
         if not (stk := self._stack):
             return (v,)
 
@@ -60,7 +60,7 @@ class JsonObjectBuilder:
         else:
             raise self.StateError
 
-    def __call__(self, e: JsonStreamParserEvent) -> ta.Any:
+    def __call__(self, e: JsonStreamParserEvent) -> ta.Iterable[ta.Any]:
         stk = self._stack
 
         #
