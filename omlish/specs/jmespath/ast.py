@@ -1,119 +1,119 @@
 import typing as ta
 
 
-class Ast(ta.TypedDict):
+class Node(ta.TypedDict):
     type: str
-    children: list['Ast']
+    children: list['Node']
     value: ta.NotRequired[ta.Any]
 
 
-def arithmetic_unary(operator, expression) -> Ast:
+def arithmetic_unary(operator, expression) -> Node:
     return {'type': 'arithmetic_unary', 'children': [expression], 'value': operator}
 
 
-def arithmetic(operator, left, right) -> Ast:
+def arithmetic(operator, left, right) -> Node:
     return {'type': 'arithmetic', 'children': [left, right], 'value': operator}
 
 
-def assign(name, expr) -> Ast:
+def assign(name, expr) -> Node:
     return {'type': 'assign', 'children': [expr], 'value': name}
 
 
-def comparator(name, first, second) -> Ast:
+def comparator(name, first, second) -> Node:
     return {'type': 'comparator', 'children': [first, second], 'value': name}
 
 
-def current_node() -> Ast:
+def current_node() -> Node:
     return {'type': 'current', 'children': []}
 
 
-def root_node() -> Ast:
+def root_node() -> Node:
     return {'type': 'root', 'children': []}
 
 
-def expref(expression) -> Ast:
+def expref(expression) -> Node:
     return {'type': 'expref', 'children': [expression]}
 
 
-def function_expression(name, args) -> Ast:
+def function_expression(name, args) -> Node:
     return {'type': 'function_expression', 'children': args, 'value': name}
 
 
-def field(name) -> Ast:
+def field(name) -> Node:
     return {'type': 'field', 'children': [], 'value': name}
 
 
-def filter_projection(left, right, comparator) -> Ast:
+def filter_projection(left, right, comparator) -> Node:
     return {'type': 'filter_projection', 'children': [left, right, comparator]}
 
 
-def flatten(node) -> Ast:
+def flatten(node) -> Node:
     return {'type': 'flatten', 'children': [node]}
 
 
-def identity() -> Ast:
+def identity() -> Node:
     return {'type': 'identity', 'children': []}
 
 
-def index(index) -> Ast:
+def index(index) -> Node:
     return {'type': 'index', 'value': index, 'children': []}
 
 
-def index_expression(children) -> Ast:
+def index_expression(children) -> Node:
     return {'type': 'index_expression', 'children': children}
 
 
-def key_val_pair(key_name, node) -> Ast:
+def key_val_pair(key_name, node) -> Node:
     return {'type': 'key_val_pair', 'children': [node], 'value': key_name}
 
 
-def let_expression(bindings, expr) -> Ast:
+def let_expression(bindings, expr) -> Node:
     return {'type': 'let_expression', 'children': [*bindings, expr]}
 
 
-def literal(literal_value) -> Ast:
+def literal(literal_value) -> Node:
     return {'type': 'literal', 'value': literal_value, 'children': []}
 
 
-def multi_select_dict(nodes) -> Ast:
+def multi_select_dict(nodes) -> Node:
     return {'type': 'multi_select_dict', 'children': nodes}
 
 
-def multi_select_list(nodes) -> Ast:
+def multi_select_list(nodes) -> Node:
     return {'type': 'multi_select_list', 'children': nodes}
 
 
-def or_expression(left, right) -> Ast:
+def or_expression(left, right) -> Node:
     return {'type': 'or_expression', 'children': [left, right]}
 
 
-def and_expression(left, right) -> Ast:
+def and_expression(left, right) -> Node:
     return {'type': 'and_expression', 'children': [left, right]}
 
 
-def not_expression(expr) -> Ast:
+def not_expression(expr) -> Node:
     return {'type': 'not_expression', 'children': [expr]}
 
 
-def pipe(left, right) -> Ast:
+def pipe(left, right) -> Node:
     return {'type': 'pipe', 'children': [left, right]}
 
 
-def projection(left, right) -> Ast:
+def projection(left, right) -> Node:
     return {'type': 'projection', 'children': [left, right]}
 
 
-def subexpression(children) -> Ast:
+def subexpression(children) -> Node:
     return {'type': 'subexpression', 'children': children}
 
 
-def slice(start, end, step) -> Ast:  # noqa
+def slice(start, end, step) -> Node:  # noqa
     return {'type': 'slice', 'children': [start, end, step]}
 
 
-def value_projection(left, right) -> Ast:
+def value_projection(left, right) -> Node:
     return {'type': 'value_projection', 'children': [left, right]}
 
 
-def variable_ref(name: str) -> Ast:
+def variable_ref(name: str) -> Node:
     return {'type': 'variable_ref', 'children': [], 'value': name}

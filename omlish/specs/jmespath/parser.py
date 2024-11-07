@@ -134,7 +134,7 @@ class Parser:
 
         return ParsedResult(expression, parsed)
 
-    def _expression(self, binding_power: int = 0):
+    def _expression(self, binding_power: int = 0) -> ast.Node:
         left_token = check.not_none(self._lookahead_token(0))
 
         self._advance()
@@ -165,19 +165,19 @@ class Parser:
 
         return left
 
-    def _token_nud_literal(self, token):
+    def _token_nud_literal(self, token: lexer.Token) -> ast.Node:
         return ast.literal(token['value'])
 
-    def _token_nud_variable(self, token):
+    def _token_nud_variable(self, token: lexer.Token) -> ast.Node:
         return ast.variable_ref(token['value'][1:])
 
-    def _token_nud_unquoted_identifier(self, token):
+    def _token_nud_unquoted_identifier(self, token: lexer.Token) -> ast.Node:
         if token['value'] == 'let' and self._current_token() == 'variable':
             return self._parse_let_expression()
         else:
             return ast.field(token['value'])
 
-    def _parse_let_expression(self):
+    def _parse_let_expression(self) -> ast.Node:
         bindings = []
         while True:
             var_token = check.not_none(self._lookahead_token(0))
@@ -187,7 +187,7 @@ class Parser:
             self._match('assign')
             assign_expr = self._expression()
             bindings.append(ast.assign(varname, assign_expr))
-            if self._is_in_keyword(self._lookahead_token(0)):
+            if self._is_in_keyword(check.not_none(self._lookahead_token(0))):
                 self._advance()
                 break
             else:
@@ -195,13 +195,13 @@ class Parser:
         expr = self._expression()
         return ast.let_expression(bindings, expr)
 
-    def _is_in_keyword(self, token):
+    def _is_in_keyword(self, token: lexer.Token) -> bool:
         return (
             token['type'] == 'unquoted_identifier' and
             token['value'] == 'in'
         )
 
-    def _token_nud_quoted_identifier(self, token):
+    def _token_nud_quoted_identifier(self, token: lexer.Token):
         field = ast.field(token['value'])
 
         # You can't have a quoted identifier as a function name.
@@ -216,7 +216,7 @@ class Parser:
 
         return field
 
-    def _token_nud_star(self, token):
+    def _token_nud_star(self, token: lexer.Token) -> ast.Node:
         left = ast.identity()
         if self._current_token() == 'rbracket':
             right = ast.identity()
@@ -224,34 +224,34 @@ class Parser:
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
         return ast.value_projection(left, right)
 
-    def _token_nud_filter(self, token):
+    def _token_nud_filter(self, token: lexer.Token) -> ast.Node:
         return self._token_led_filter(ast.identity())
 
-    def _token_nud_lbrace(self, token):
+    def _token_nud_lbrace(self, token: lexer.Token) -> ast.Node:
         return self._parse_multi_select_hash()
 
-    def _token_nud_lparen(self, token):
+    def _token_nud_lparen(self, token: lexer.Token) -> ast.Node:
         expression = self._expression()
         self._match('rparen')
         return expression
 
-    def _token_nud_minus(self, token):
+    def _token_nud_minus(self, token: lexer.Token) -> ast.Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_plus(self, token):
+    def _token_nud_plus(self, token: lexer.Token) -> ast.Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_flatten(self, token):
+    def _token_nud_flatten(self, token: lexer.Token) -> ast.Node:
         left = ast.flatten(ast.identity())
         right = self._parse_projection_rhs(
             self.BINDING_POWER['flatten'])
         return ast.projection(left, right)
 
-    def _token_nud_not(self, token):
+    def _token_nud_not(self, token: lexer.Token) -> ast.Node:
         expr = self._expression(self.BINDING_POWER['not'])
         return ast.not_expression(expr)
 
-    def _token_nud_lbracket(self, token):
+    def _token_nud_lbracket(self, token: lexer.Token) -> ast.Node:
         if self._current_token() in ['number', 'colon']:
             right = self._parse_index_expression()
             # We could optimize this and remove the identity() node. We don't really need an index_expression node, we
@@ -267,7 +267,7 @@ class Parser:
         else:
             return self._parse_multi_select_list()
 
-    def _parse_index_expression(self):
+    def _parse_index_expression(self) -> ast.Node:
         # We're here:
         # [<current>
         #  ^
@@ -282,7 +282,7 @@ class Parser:
             self._match('rbracket')
             return node
 
-    def _parse_slice_expression(self):
+    def _parse_slice_expression(self) -> ast.Node:
         # [start:end:step]
         # Where start, end, and step are optional. The last colon is optional as well.
         parts = [None, None, None]
@@ -307,17 +307,17 @@ class Parser:
         self._match('rbracket')
         return ast.slice(*parts)
 
-    def _token_nud_current(self, token):
+    def _token_nud_current(self, token: lexer.Token) -> ast.Node:
         return ast.current_node()
 
-    def _token_nud_root(self, token):
+    def _token_nud_root(self, token: lexer.Token) -> ast.Node:
         return ast.root_node()
 
-    def _token_nud_expref(self, token):
+    def _token_nud_expref(self, token: lexer.Token) -> ast.Node:
         expression = self._expression(self.BINDING_POWER['expref'])
         return ast.expref(expression)
 
-    def _token_led_dot(self, left):
+    def _token_led_dot(self, left: ast.Node) -> ast.Node:
         if self._current_token() != 'star':
             right = self._parse_dot_rhs(self.BINDING_POWER['dot'])
             if left['type'] == 'subexpression':
