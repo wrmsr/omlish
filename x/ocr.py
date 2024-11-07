@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import sys
 import typing as ta
 
 from omlish import lang
@@ -34,13 +35,13 @@ DEFAULT_OCR_BACKEND = 'rapidocr'
 
 def _main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('file')
+    parser.add_argument('file', nargs='?')
     parser.add_argument('-b', '--backend', default=DEFAULT_OCR_BACKEND)
     args = parser.parse_args()
 
     ocr = OCR_BACKENDS[args.backend]
 
-    with Image.open(os.path.expanduser(args.file)) as img:
+    with Image.open(os.path.expanduser(args.file) if args.file else sys.stdin.buffer) as img:
         text = ocr(img)
 
     print(text)
