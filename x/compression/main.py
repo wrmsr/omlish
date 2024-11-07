@@ -4,6 +4,7 @@ TODO:
 """
 import contextlib
 import gzip
+import bz2
 import io
 import random
 import string

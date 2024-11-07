@@ -85,18 +85,21 @@ class GzipReader(DecompressReader):
         self._new_member = True
         self._last_mtime = None
 
-    def _init_read(self):
+    _crc: int
+    _stream_size: int
+
+    def _init_read(self) -> None:
         self._crc = zlib.crc32(b'')
         self._stream_size = 0  # Decompressed size of unconcatenated stream
 
-    def _read_gzip_header(self):
+    def _read_gzip_header(self) -> bool:
         last_mtime = _read_gzip_header(self._fp)
         if last_mtime is None:
             return False
         self._last_mtime = last_mtime
         return True
 
-    def read(self, size=-1):
+    def read(self, size: int = -1) -> bytes:
         if size < 0:
             return self.readall()
 
@@ -145,8 +148,8 @@ class GzipReader(DecompressReader):
         self._pos += len(uncompress)
         return uncompress
 
-    def _read_eof(self):
-        # We've read to the end of the file
+    def _read_eof(self) -> None:
+        # We've read to the end of the file.
         # We check that the computed CRC and size of the uncompressed data matches the stored values.  Note that the
         # size stored is the true file size mod 2**32.
         crc32, isize = struct.unpack('<II', read_exact(self._fp, 8))
@@ -163,7 +166,7 @@ class GzipReader(DecompressReader):
         if c:
             self._fp.prepend(c)
 
-    def _rewind(self):
+    def _rewind(self) -> None:
         super()._rewind()
         self._new_member = True
 
