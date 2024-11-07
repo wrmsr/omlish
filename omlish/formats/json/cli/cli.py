@@ -39,6 +39,7 @@ jq Command options:
 """
 import argparse
 import contextlib
+import dataclasses as dc
 import io
 import os
 import subprocess
@@ -48,6 +49,7 @@ import typing as ta
 from .... import check
 from .... import lang
 from .formats import FORMATS_BY_NAME
+from .formats import Format
 from .formats import Formats
 from .parsing import DelimitingParser
 from .parsing import EagerParser
@@ -94,8 +96,33 @@ def _parse_args(args: ta.Any = None) -> ta.Any:
     return _build_args_parser().parse_args(args)
 
 
-def _main() -> None:
-    args = _parse_args()
+@dc.dataclass(frozen=True, kw_only=True)
+class RunConfiguration:
+    format: Format
+    processing: ProcessingOptions
+    rendering: RenderingOptions
+
+
+def _process_args(args: ta.Any) -> RunConfiguration:
+    fmt_name = args.format
+    if fmt_name is None:
+        if args.file is not None:
+            ext = args.file.rpartition('.')[2]
+            if ext in FORMATS_BY_NAME:
+                fmt_name = ext
+    if fmt_name is None:
+        fmt_name = 'json'
+    format = FORMATS_BY_NAME[fmt_name]  # noqa
+
+    if args.stream:
+        check.arg(format is Formats.JSON.value)
+
+    #
+
+    processing = ProcessingOptions(
+        jmespath_expr=args.jmespath_expr,
+        flat=args.flat,
+    )
 
     #
 
@@ -112,7 +139,7 @@ def _main() -> None:
         except ValueError:
             indent = args.indent
 
-    r_opts = RenderingOptions(
+    rendering = RenderingOptions(
         indent=indent,
         separators=separators,
         sort_keys=args.sort_keys,
@@ -123,25 +150,19 @@ def _main() -> None:
 
     #
 
-    p_opts = ProcessingOptions(
-        jmespath_expr=args.jmespath_expr,
-        flat=args.flat,
+    return RunConfiguration(
+        format=format,
+        processing=processing,
+        rendering=rendering,
     )
+
+
+def _main() -> None:
+    args = _parse_args()
 
     #
 
-    fmt_name = args.format
-    if fmt_name is None:
-        if args.file is not None:
-            ext = args.file.rpartition('.')[2]
-            if ext in FORMATS_BY_NAME:
-                fmt_name = ext
-    if fmt_name is None:
-        fmt_name = 'json'
-    fmt = FORMATS_BY_NAME[fmt_name]
-
-    if args.stream:
-        check.arg(fmt is Formats.JSON.value)
+    cfg = _process_args(args)
 
     #
 
@@ -169,7 +190,7 @@ def _main() -> None:
             less = subprocess.Popen(
                 [
                     'less',
-                    *(['-R'] if args.color else []),
+                    *(['-R'] if cfg.rendering.color else []),
                 ],
                 stdin=subprocess.PIPE,
                 encoding='utf-8',
@@ -204,8 +225,8 @@ def _main() -> None:
 
                 if args.stream_build:
                     builder: StreamBuilder = es2.enter_context(StreamBuilder())
-                    processor = Processor(p_opts)
-                    renderer = EagerRenderer(r_opts)
+                    processor = Processor(cfg.processing)
+                    renderer = EagerRenderer(cfg.rendering)
                     trailing_newline = False
 
                     def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
@@ -217,7 +238,7 @@ def _main() -> None:
                                     yield '\n'
 
                 else:
-                    renderer = StreamRenderer(r_opts)
+                    renderer = StreamRenderer(cfg.rendering)
                     trailing_newline = True
 
                     def yield_output(buf: bytes) -> ta.Generator[str, None, None]:
@@ -233,9 +254,9 @@ def _main() -> None:
                     print(file=out)
 
         elif args.lines:
-            parser = DelimitingParser(fmt)
-            processor = Processor(p_opts)
-            renderer = EagerRenderer(r_opts)
+            parser = DelimitingParser(cfg.format)
+            processor = Processor(cfg.processing)
+            renderer = EagerRenderer(cfg.rendering)
 
             for buf in yield_input():
                 if buf:
@@ -245,9 +266,9 @@ def _main() -> None:
                             print(s, file=out)
 
         else:
-            parser = EagerParser(fmt)
-            processor = Processor(p_opts)
-            renderer = EagerRenderer(r_opts)
+            parser = EagerParser(cfg.format)
+            processor = Processor(cfg.processing)
+            renderer = EagerRenderer(cfg.rendering)
 
             with io.TextIOWrapper(in_file) as tf:
                 v = parser.parse(tf)
