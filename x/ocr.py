@@ -29,6 +29,9 @@ OCR_BACKENDS: ta.Mapping[str, Ocr] = {
 DEFAULT_OCR_BACKEND = 'rapidocr'
 
 
+##
+
+
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('file')
@@ -37,9 +40,8 @@ def _main() -> None:
 
     ocr = OCR_BACKENDS[args.backend]
 
-    img = Image.open(os.path.expanduser(args.file))
-
-    text = ocr(img)
+    with Image.open(os.path.expanduser(args.file)) as img:
+        text = ocr(img)
 
     print(text)
 
