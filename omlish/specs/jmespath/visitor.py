@@ -85,6 +85,7 @@ class Options:
 
 class _Expression:
     def __init__(self, expression, interpreter):
+        super().__init__()
         self.expression = expression
         self.interpreter = interpreter
 
@@ -94,6 +95,7 @@ class _Expression:
 
 class Visitor:
     def __init__(self):
+        super().__init__()
         self._method_cache = {}
 
     def visit(self, node, *args, **kwargs):
