@@ -57,7 +57,8 @@ class EagerRenderer(Renderer):
     def render(self, v: ta.Any) -> str:
         if self._opts.raw:
             if not isinstance(v, str):
-                raise TypeError(v)
+                raise TypeError(f'Raw output must be strings, got {type(v)}', v)
+
             return v
 
         elif self._opts.color:

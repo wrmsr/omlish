@@ -36,7 +36,7 @@ class Processor:
 
         if self._opts.flat:
             if isinstance(v, str):
-                raise TypeError(v)
+                raise TypeError(f'Flat output must be arrays, got {type(v)}', v)
 
             yield from v
 
