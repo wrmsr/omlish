@@ -39,8 +39,8 @@ def run_decompress(z_bytes: bytes, fac: ta.Callable[[ta.Any], ta.Any]) -> bytes:
 
 def run_compress(in_bytes: bytes, fac: ta.Callable[[ta.Any], ta.Any]) -> bytes:
     z_buf = io.BytesIO()
-    with fac(z_buf) as gf:
-        gf.write(in_bytes)
+    with fac(z_buf) as zf:
+        zf.write(in_bytes)
     return z_buf.getvalue()
 
 

@@ -82,6 +82,10 @@ class Bz2Reader:
         self._check_not_closed()
         return self._buffer.tell()
 
+    def flush(self):
+        self._check_not_closed()
+        return self._buffer.flush()
+
 
 class Bz2Writer:
     def __init__(
@@ -106,6 +110,12 @@ class Bz2Writer:
     def _check_not_closed(self) -> None:
         if self.closed:
             raise ValueError('I/O operation on closed file')
+
+    def __enter__(self) -> ta.Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def close(self):
         if self._closed:
