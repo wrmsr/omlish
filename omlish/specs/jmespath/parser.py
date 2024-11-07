@@ -644,7 +644,7 @@ class ParsedResult:
         evaluator = visitor.TreeInterpreter(options)
         return evaluator.evaluate(self.parsed, value)
 
-    def _render_dot_file(self):
+    def _render_dot_file(self) -> str:
         """
         Render the parsed AST as a dot file.
 
@@ -657,13 +657,13 @@ class ParsedResult:
         contents = renderer.visit(self.parsed)
         return contents
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.parsed)
 
 
-def compile(expression: str, options=None):  # noqa
+def compile(expression: str, options: visitor.Options | None = None) -> ParsedResult:  # noqa
     return Parser().parse(expression, options=options)
 
 
-def search(expression, data, options=None):
+def search(expression: str, data: ta.Any, options: visitor.Options | None = None) -> ta.Any:
     return compile(expression, options).search(data, options=options)
