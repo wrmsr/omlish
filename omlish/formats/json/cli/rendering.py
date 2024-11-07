@@ -12,7 +12,7 @@ from ..stream.render import StreamJsonRenderer
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class RenderingOptions:
     indent: int | str | None = None
     separators: tuple[str, str] | None = None

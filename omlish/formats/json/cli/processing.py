@@ -13,7 +13,7 @@ else:
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ProcessingOptions:
     jmespath_expr: ta.Any | None = None
     flat: bool = False
