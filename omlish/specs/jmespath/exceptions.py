@@ -10,8 +10,8 @@ class ParseError(JmespathError):
             lex_position,
             token_value,
             token_type,
-            msg=_ERROR_MESSAGE,
-    ):
+            msg: str = _ERROR_MESSAGE,
+    ) -> None:
         super().__init__(lex_position, token_value, token_type)
         self.lex_position = lex_position
         self.token_value = token_value
