@@ -76,6 +76,10 @@ def _main() -> None:
     out_bytes = run_decompress(bz_bytes, Bz2Reader)
     assert out_bytes == in_bytes
 
+    bz_bytes2 = run_compress(in_bytes, Bz2Writer)
+    out_bytes2 = run_decompress(bz_bytes2, Bz2Reader)
+    assert out_bytes2 == in_bytes
+
 
 if __name__ == '__main__':
     _main()

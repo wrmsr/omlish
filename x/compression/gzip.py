@@ -77,7 +77,7 @@ class GzipReader(DecompressReader):
     def __init__(self, fp: ta.Any) -> None:
         super().__init__(
             PaddedFile(fp),
-            zlib._ZlibDecompressor,  # noqa
+            zlib._ZlibDecompressor,  # noqa  # FIXME: zlib.decompressobj
             wbits=-zlib.MAX_WBITS,
         )
 
@@ -255,13 +255,13 @@ class GzipWriter:
         if fname:
             self._fileobj.write(fname + b'\000')
 
-    def _check_not_closed(self) -> None:
-        if self.closed:
-            raise ValueError('I/O operation on closed file')
-
     @property
     def closed(self) -> bool:
         return self._fileobj is None
+
+    def _check_not_closed(self) -> None:
+        if self.closed:
+            raise ValueError('I/O operation on closed file')
 
     def close(self) -> None:
         fileobj = self._fileobj
