@@ -2,15 +2,19 @@
 TODO:
  - https://docs.python.org/3/library/zlib.html#zlib.compressobj
 """
+import bz2
 import contextlib
 import gzip
-import bz2
 import io
 import random
 import string
+import typing as ta
 
 from .gzip import GzipWriter
 from .gzip import GzipReader
+
+
+##
 
 
 def generate_random_text(size: int) -> str:
@@ -18,10 +22,11 @@ def generate_random_text(size: int) -> str:
     return ''.join(random.choices(chars, k=size))
 
 
-def run_decompress(gz_bytes: bytes) -> bytes:
-    fileobj = io.BytesIO(gz_bytes)
+##
 
-    with contextlib.closing(GzipReader(fileobj)) as raw:  # noqa
+
+def run_decompress(z_bytes: bytes, fac: ta.Callable[[ta.Any], ta.Any]) -> bytes:
+    with contextlib.closing(fac(io.BytesIO(z_bytes))) as raw:  # noqa
         with contextlib.closing(io.BufferedReader(raw)) as buffer:
             out_buf = io.BytesIO()
             while out := buffer.read(0x1000):
@@ -30,23 +35,11 @@ def run_decompress(gz_bytes: bytes) -> bytes:
     return out_buf.getvalue()
 
 
-def run_compress(in_bytes: bytes) -> bytes:
-    gz_buf = io.BytesIO()
-    with GzipWriter(gz_buf) as gf:
+def run_compress(in_bytes: bytes, fac: ta.Callable[[ta.Any], ta.Any]) -> bytes:
+    z_buf = io.BytesIO()
+    with fac(z_buf) as gf:
         gf.write(in_bytes)
-    return gz_buf.getvalue()
-
-
-def run_decompress2(gz_bytes: bytes) -> bytes:
-    fileobj = io.BytesIO(gz_bytes)
-
-    with contextlib.closing(GzipReader(fileobj)) as raw:  # noqa
-        with contextlib.closing(io.BufferedReader(raw)) as buffer:
-            out_buf = io.BytesIO()
-            while out := buffer.read(0x1000):
-                out_buf.write(out)
-
-    return out_buf.getvalue()
+    return z_buf.getvalue()
 
 
 ##
@@ -55,17 +48,14 @@ def run_decompress2(gz_bytes: bytes) -> bytes:
 def _main() -> None:
     in_bytes = generate_random_text(0x100_000).encode('utf-8')
 
-    gz_buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=gz_buf, mode='wb') as gf:
-        gf.write(in_bytes)
-    gz_bytes = gz_buf.getvalue()
+    gz_bytes = run_compress(in_bytes, lambda f: gzip.GzipFile(fileobj=f, mode='wb'))
     assert len(gz_bytes) < len(in_bytes)
 
-    out_bytes = run_decompress(gz_bytes)
+    out_bytes = run_decompress(gz_bytes, GzipReader)
     assert out_bytes == in_bytes
 
-    gz_bytes2 = run_compress(in_bytes)
-    out_bytes2 = run_decompress(gz_bytes2)
+    gz_bytes2 = run_compress(in_bytes, GzipWriter)
+    out_bytes2 = run_decompress(gz_bytes2, GzipReader)
     assert out_bytes2 == in_bytes
 
 

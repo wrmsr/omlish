@@ -74,7 +74,7 @@ def _read_gzip_header(fp: ta.IO) -> int | None:
 
 
 class GzipReader(DecompressReader):
-    def __init__(self, fp):
+    def __init__(self, fp: ta.Any) -> None:
         super().__init__(
             PaddedFile(fp),
             zlib._ZlibDecompressor,  # noqa
