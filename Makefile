@@ -68,6 +68,11 @@ _default_venv:
 
 	@.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
 
+	@LCW=$$(ls -1 ../llama_cpp_python-*-linux_x86_64.whl 2>/dev/null | tail -n1) && \
+	if [ ! -z "$$LCW" ] ; then \
+		${PYTHON} -m pip install "$$LCW" ; \
+	fi
+
 	@if ! $$(${PYTHON} -c 'import tinygrad.tensor' 2>/dev/null) ; then \
 		${MAKE} tg ; \
 	fi
