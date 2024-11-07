@@ -243,7 +243,7 @@ def _main() -> None:
                         if not buf:
                             break
 
-                    out.write('\n')
+                    print(file=out)
 
         elif args.lines:
             fd = in_file.fileno()
