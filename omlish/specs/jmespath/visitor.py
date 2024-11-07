@@ -4,17 +4,18 @@ import typing as ta
 
 from . import exceptions
 from . import functions
+from .ast import Node
 from .scope import ScopedChainDict
 
 
-def _equals(x, y):
+def _equals(x: ta.Any, y: ta.Any) -> bool:
     if _is_special_number_case(x, y):
         return False
     else:
         return x == y
 
 
-def _is_special_number_case(x, y):
+def _is_special_number_case(x: ta.Any, y: ta.Any) -> bool | None:
     # We need to special case comparing 0 or 1 to True/False.  While normally comparing any integer other than 0/1 to
     # True/False will always return False.  However 0/1 have this:
     # >>> 0 == True
@@ -39,13 +40,13 @@ def _is_special_number_case(x, y):
         return None
 
 
-def _is_comparable(x):
+def _is_comparable(x: ta.Any) -> bool:
     # The spec doesn't officially support string types yet, but enough people are relying on this behavior that it's
     # been added back.  This should eventually become part of the official spec.
     return _is_actual_number(x) or isinstance(x, str)
 
 
-def _is_actual_number(x):
+def _is_actual_number(x: ta.Any) -> bool:
     # We need to handle python's quirkiness with booleans, specifically:
     #
     # >>> isinstance(False, int)
@@ -62,10 +63,12 @@ class Options:
 
     def __init__(
             self,
-            dict_cls=None,
+            dict_cls: type | None = None,
             custom_functions=None,
-            enable_legacy_literals=False,
-    ):
+            enable_legacy_literals: bool = False,
+    ) -> None:
+        super().__init__()
+
         #: The class to use when creating a dict.  The interpreter may create dictionaries during the evaluation of a
         #  Jmespath expression.  For example, a multi-select hash will create a dictionary.  By default we use a dict()
         #  type. You can set this value to change what dict type is used. The most common reason you would change this
@@ -156,7 +159,7 @@ class TreeInterpreter(Visitor):
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError(node['type'])
 
-    def evaluate(self, ast, root):
+    def evaluate(self, ast, root: Node) -> ta.Any:
         self._root = root
         return self.visit(ast, root)
 

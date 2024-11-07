@@ -145,7 +145,7 @@ class Parser:
             self._error_nud_token,
         )
 
-        left = nud_function(left_token)
+        left = nud_function(left_token)  # noqa
 
         current_token = self._current_token()
         while binding_power < self.BINDING_POWER[current_token]:
@@ -633,11 +633,12 @@ class Parser:
 
 
 class ParsedResult:
-    def __init__(self, expression, parsed):
+    def __init__(self, expression: str, parsed: ast.Node) -> None:
+        super().__init__()
         self.expression = expression
         self.parsed = parsed
 
-    def search(self, value, options=None):
+    def search(self, value: ta.Any, options: visitor.Options | None = None) -> ta.Any:
         evaluator = visitor.TreeInterpreter(options)
         return evaluator.evaluate(self.parsed, value)
 
