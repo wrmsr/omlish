@@ -15,7 +15,9 @@ import os.path
 import sys
 
 import gguf
+
 import transformers as tfm
+import transformers.models.llama.configuration_llama
 
 
 def _manual(
@@ -56,9 +58,20 @@ def _manual(
         **kwargs,
     )
 
-    config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict["model_type"]]
+    #
 
-    config, kwargs = config_class.from_dict(config_dict, **unused_kwargs)
+    # config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict["model_type"]]
+    # config, kwargs = config_class.from_dict(config_dict, **unused_kwargs)
+
+    unused_kwargs.pop("return_unused_kwargs", False)
+    unused_kwargs.pop("_from_auto", None)
+    unused_kwargs.pop("_from_pipeline", None)
+    # The commit hash might have been updated in the `config_dict`, we don't want the kwargs to erase that update.
+    if "_commit_hash" in unused_kwargs and "_commit_hash" in config_dict:
+        unused_kwargs["_commit_hash"] = config_dict["_commit_hash"]
+    config = tfm.models.llama.configuration_llama.LlamaConfig(**config_dict)
+    kwargs = unused_kwargs
+
 
     #
 
