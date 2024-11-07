@@ -79,5 +79,4 @@ class StreamParser(lang.ExitStacked):
         for s in self._decoder.decode(b, not b):
             for c in s:
                 for t in self._lex(c):
-                    for e in self._parse(t):
-                        yield e
+                    yield from self._parse(t)

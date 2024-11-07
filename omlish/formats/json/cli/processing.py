@@ -26,7 +26,7 @@ class Processor:
         self._opts = opts
 
         jmespath_expr = opts.jmespath_expr
-        if isinstance(opts.jmespath_expr, str):
+        if isinstance(jmespath_expr, str):
             jmespath_expr = jmespath.compile(jmespath_expr)
         self._jmespath_expr: ta.Any | None = jmespath_expr
 
