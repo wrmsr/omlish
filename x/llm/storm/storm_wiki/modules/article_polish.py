@@ -1,11 +1,10 @@
 import copy
-from typing import Union
 
 import dspy
 
-from .storm_dataclass import StormArticle
 from ...interface import ArticlePolishingModule
 from ...utils import ArticleTextProcessing
+from .storm_dataclass import StormArticle
 
 
 class StormArticlePolishingModule(ArticlePolishingModule):
@@ -16,18 +15,18 @@ class StormArticlePolishingModule(ArticlePolishingModule):
 
     def __init__(
         self,
-        article_gen_lm: Union[dspy.dsp.LM, dspy.dsp.HFModel],
-        article_polish_lm: Union[dspy.dsp.LM, dspy.dsp.HFModel],
+        article_gen_lm: dspy.dsp.LM | dspy.dsp.HFModel,
+        article_polish_lm: dspy.dsp.LM | dspy.dsp.HFModel,
     ):
         self.article_gen_lm = article_gen_lm
         self.article_polish_lm = article_polish_lm
 
         self.polish_page = PolishPageModule(
-            write_lead_engine=self.article_gen_lm, polish_engine=self.article_polish_lm
+            write_lead_engine=self.article_gen_lm, polish_engine=self.article_polish_lm,
         )
 
     def polish_article(
-        self, topic: str, draft_article: StormArticle, remove_duplicate: bool = False
+        self, topic: str, draft_article: StormArticle, remove_duplicate: bool = False,
     ) -> StormArticle:
         """
         Polish article.
@@ -40,12 +39,12 @@ class StormArticlePolishingModule(ArticlePolishingModule):
 
         article_text = draft_article.to_string()
         polish_result = self.polish_page(
-            topic=topic, draft_page=article_text, polish_whole_page=remove_duplicate
+            topic=topic, draft_page=article_text, polish_whole_page=remove_duplicate,
         )
-        lead_section = f"# summary\n{polish_result.lead_section}"
-        polished_article = "\n\n".join([lead_section, polish_result.page])
+        lead_section = f'# summary\n{polish_result.lead_section}'
+        polished_article = '\n\n'.join([lead_section, polish_result.page])
         polished_article_dict = ArticleTextProcessing.parse_article_into_dict(
-            polished_article
+            polished_article,
         )
         polished_article = copy.deepcopy(draft_article)
         polished_article.insert_or_create_section(article_dict=polished_article_dict)
@@ -60,23 +59,23 @@ class WriteLeadSection(dspy.Signature):
     3. The lead section should be carefully sourced as appropriate. Add inline citations (e.g., "Washington, D.C., is the capital of the United States.[1][3].") where necessary.
     """
 
-    topic = dspy.InputField(prefix="The topic of the page: ", format=str)
-    draft_page = dspy.InputField(prefix="The draft page:\n", format=str)
-    lead_section = dspy.OutputField(prefix="Write the lead section:\n", format=str)
+    topic = dspy.InputField(prefix='The topic of the page: ', format=str)
+    draft_page = dspy.InputField(prefix='The draft page:\n', format=str)
+    lead_section = dspy.OutputField(prefix='Write the lead section:\n', format=str)
 
 
 class PolishPage(dspy.Signature):
     """You are a faithful text editor that is good at finding repeated information in the article and deleting them to make sure there is no repetition in the article. You won't delete any non-repeated part in the article. You will keep the inline citations and article structure (indicated by "#", "##", etc.) appropriately. Do your job for the following article."""
 
-    draft_page = dspy.InputField(prefix="The draft article:\n", format=str)
-    page = dspy.OutputField(prefix="Your revised article:\n", format=str)
+    draft_page = dspy.InputField(prefix='The draft article:\n', format=str)
+    page = dspy.OutputField(prefix='Your revised article:\n', format=str)
 
 
 class PolishPageModule(dspy.Module):
     def __init__(
         self,
-        write_lead_engine: Union[dspy.dsp.LM, dspy.dsp.HFModel],
-        polish_engine: Union[dspy.dsp.LM, dspy.dsp.HFModel],
+        write_lead_engine: dspy.dsp.LM | dspy.dsp.HFModel,
+        polish_engine: dspy.dsp.LM | dspy.dsp.HFModel,
     ):
         super().__init__()
         self.write_lead_engine = write_lead_engine
@@ -88,10 +87,10 @@ class PolishPageModule(dspy.Module):
         # NOTE: Change show_guidelines to false to make the generation more robust to different LM families.
         with dspy.settings.context(lm=self.write_lead_engine, show_guidelines=False):
             lead_section = self.write_lead(
-                topic=topic, draft_page=draft_page
+                topic=topic, draft_page=draft_page,
             ).lead_section
-            if "The lead section:" in lead_section:
-                lead_section = lead_section.split("The lead section:")[1].strip()
+            if 'The lead section:' in lead_section:
+                lead_section = lead_section.split('The lead section:')[1].strip()
         if polish_whole_page:
             # NOTE: Change show_guidelines to false to make the generation more robust to different LM families.
             with dspy.settings.context(lm=self.polish_engine, show_guidelines=False):

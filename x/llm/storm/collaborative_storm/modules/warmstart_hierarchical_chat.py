@@ -8,20 +8,22 @@ Additionally, the system generates a first draft of the report, which is then us
 The synthesized conversation is presented to the user to help them quickly catch up on the system's current knowledge about the topic.
 """
 
-import dspy
 import concurrent.futures
 from threading import Lock
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from .callback import BaseCallbackHandler
-from .collaborative_storm_utils import _get_answer_question_module_instance
-from .expert_generation import GenerateExpertModule
-from .grounded_question_answering import AnswerQuestionModule
-from ...dataclass import ConversationTurn, KnowledgeBase
+import dspy
+
+from ...dataclass import ConversationTurn
+from ...dataclass import KnowledgeBase
 from ...interface import LMConfigs
 from ...logging_wrapper import LoggingWrapper
 from ...storm_wiki.modules.outline_generation import WritePageOutline
 from ...utils import ArticleTextProcessing as AP
+from .callback import BaseCallbackHandler
+from .collaborative_storm_utils import _get_answer_question_module_instance
+from .expert_generation import GenerateExpertModule
+from .grounded_question_answering import AnswerQuestionModule
 
 
 if TYPE_CHECKING:
@@ -37,13 +39,13 @@ class WarmStartModerator(dspy.Signature):
     The output should only include the next question for the current expert. Do not include any other information or preamble.
     """
 
-    topic = dspy.InputField(prefix="Topic for roundtable discussion: ", format=str)
+    topic = dspy.InputField(prefix='Topic for roundtable discussion: ', format=str)
     history = dspy.InputField(
-        prefix="Experts you have already interacted with: ", format=str
+        prefix='Experts you have already interacted with: ', format=str,
     )
-    current_expert = dspy.InputField(prefix="Expert you are talking with:", format=str)
+    current_expert = dspy.InputField(prefix='Expert you are talking with:', format=str)
     question = dspy.OutputField(
-        prefix="Next question for the expert you are talking with: ", format=str
+        prefix='Next question for the expert you are talking with: ', format=str,
     )
 
 
@@ -58,17 +60,17 @@ class SectionToConvTranscript(dspy.Signature):
     2. Provide a brief and engaging answer (with all inline citations from original text) derived from the section serving as pointers and avoid too much details.
     """
 
-    topic = dspy.InputField(prefix="topic:", format=str)
-    section_name = dspy.InputField(prefix="section name:", format=str)
-    section_content = dspy.InputField(prefix="section content:", format=str)
-    question = dspy.OutputField(prefix="Now give engaging question only.\nQuestion:")
+    topic = dspy.InputField(prefix='topic:', format=str)
+    section_name = dspy.InputField(prefix='section name:', format=str)
+    section_content = dspy.InputField(prefix='section content:', format=str)
+    question = dspy.OutputField(prefix='Now give engaging question only.\nQuestion:')
     answer = dspy.OutputField(
-        prefix="Now give engaging answer only with all inline citations from original text.\nAnswer:"
+        prefix='Now give engaging answer only with all inline citations from original text.\nAnswer:',
     )
 
 
 class ReportToConversation(dspy.Module):
-    def __init__(self, engine: Union[dspy.dsp.LM, dspy.dsp.HFModel]):
+    def __init__(self, engine: dspy.dsp.LM | dspy.dsp.HFModel):
         self.engine = engine
         self.section_to_conv_transcript = dspy.Predict(SectionToConvTranscript)
 
@@ -80,13 +82,13 @@ class ReportToConversation(dspy.Module):
                     section_name=node.get_path_from_root(),
                     section_content=node.synthesize_output,
                 )
-                question = output.question.replace("Question:", "").strip()
-                answer = output.answer.replace("Answer:", "").strip()
+                question = output.question.replace('Question:', '').strip()
+                answer = output.answer.replace('Answer:', '').strip()
                 return question, answer
 
         conversations = []
         nodes = knowledge_base.collect_all_nodes()
-        nodes = [node for node in nodes if node.name != "root" and node.content]
+        nodes = [node for node in nodes if node.name != 'root' and node.content]
         topic = knowledge_base.topic
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -98,27 +100,27 @@ class ReportToConversation(dspy.Module):
                 question, answer = future.result()
                 conversations.append(
                     ConversationTurn(
-                        role="Background discussion moderator",
+                        role='Background discussion moderator',
                         raw_utterance=question,
-                        utterance_type="Original Question",
+                        utterance_type='Original Question',
                         utterance=question,
                         cited_info=[
                             knowledge_base.info_uuid_to_info_dict[idx]
                             for idx in AP.parse_citation_indices(question)
                         ],
-                    )
+                    ),
                 )
                 conversations.append(
                     ConversationTurn(
-                        role="Background discussion expert",
+                        role='Background discussion expert',
                         raw_utterance=answer,
-                        utterance_type="Potential Answer",
+                        utterance_type='Potential Answer',
                         utterance=answer,
                         cited_info=[
                             knowledge_base.info_uuid_to_info_dict[idx]
                             for idx in AP.parse_citation_indices(answer)
                         ],
-                    )
+                    ),
                 )
         return conversations
 
@@ -126,7 +128,7 @@ class ReportToConversation(dspy.Module):
 class WarmStartConversation(dspy.Module):
     def __init__(
         self,
-        question_asking_lm: Union[dspy.dsp.LM, dspy.dsp.HFModel],
+        question_asking_lm: dspy.dsp.LM | dspy.dsp.HFModel,
         generate_expert_module: GenerateExpertModule,
         answer_question_module: AnswerQuestionModule,
         logging_wrapper: LoggingWrapper,
@@ -146,13 +148,13 @@ class WarmStartConversation(dspy.Module):
         self.callback_handler = callback_handler
 
     def format_dialogue_question_history_string(
-        self, conversation_history: List[ConversationTurn]
+        self, conversation_history: list[ConversationTurn],
     ):
         output = []
         for idx, turn in enumerate(conversation_history):
             info = turn.claim_to_make if turn.claim_to_make else turn.utterance
-            output.append(f"{idx + 1}: {info}")
-        return "\n".join(output)
+            output.append(f'{idx + 1}: {info}')
+        return '\n'.join(output)
 
     def generate_warmstart_experts(self, topic: str):
         background_seeking_dialogue = self.get_background_info(topic=topic)
@@ -165,15 +167,15 @@ class WarmStartConversation(dspy.Module):
         return gen_expert_output.experts, background_seeking_dialogue
 
     def get_background_info(self, topic: str):
-        question = f"Background information about {topic}"
+        question = f'Background information about {topic}'
         answer = self.answer_question_module(
-            topic=topic, question=question, mode="extensive", style="conversational"
+            topic=topic, question=question, mode='extensive', style='conversational',
         )
 
         return ConversationTurn(
-            role="Default Background Researcher",
+            role='Default Background Researcher',
             raw_utterance=answer.response,
-            utterance_type="Questioning",
+            utterance_type='Questioning',
             claim_to_make=question,
             queries=answer.queries,
             raw_retrieved_info=answer.raw_retrieved_info,
@@ -182,66 +184,66 @@ class WarmStartConversation(dspy.Module):
 
     def forward(self, topic: str):
         with self.logging_wrapper.log_event(
-            "warm start, perspective guided QA: identify experts"
+            'warm start, perspective guided QA: identify experts',
         ):
             # do background research, generate some experts
             experts, background_seeking_dialogue = self.generate_warmstart_experts(
-                topic=topic
+                topic=topic,
             )
         # init list to store the dialogue history
-        conversation_history: List[ConversationTurn] = []
+        conversation_history: list[ConversationTurn] = []
         lock = Lock()
 
         # hierarchical chat: chat with one expert. Generate question, get answer
         def process_expert(expert):
-            expert_name, expert_descriptoin = expert.split(":")
+            expert_name, expert_descriptoin = expert.split(':')
             for idx in range(self.max_turn_per_experts):
                 with self.logging_wrapper.log_event(
-                    f"warm start, perspective guided QA: expert {expert_name}; turn {idx + 1}"
+                    f'warm start, perspective guided QA: expert {expert_name}; turn {idx + 1}',
                 ):
                     try:
                         with lock:
                             history = self.format_dialogue_question_history_string(
-                                conversation_history
+                                conversation_history,
                             )
                         with dspy.settings.context(lm=self.question_asking_lm):
                             question = self.ask_question(
-                                topic=topic, history=history, current_expert=expert
+                                topic=topic, history=history, current_expert=expert,
                             ).question
                         answer = self.answer_question_module(
                             topic=topic,
                             question=question,
-                            mode="brief",
-                            style="conversational",
+                            mode='brief',
+                            style='conversational',
                         )
                         conversation_turn = ConversationTurn(
                             role=expert,
                             claim_to_make=question,
                             raw_utterance=answer.response,
-                            utterance_type="Support",
+                            utterance_type='Support',
                             queries=answer.queries,
                             raw_retrieved_info=answer.raw_retrieved_info,
                             cited_info=answer.cited_info,
                         )
                         if self.callback_handler is not None:
                             self.callback_handler.on_warmstart_update(
-                                message="\n".join(
+                                message='\n'.join(
                                     [
-                                        f"Finish browsing {url}"
+                                        f'Finish browsing {url}'
                                         for url in [
                                             i.url for i in answer.raw_retrieved_info
                                         ]
-                                    ]
-                                )
+                                    ],
+                                ),
                             )
                         with lock:
                             conversation_history.append(conversation_turn)
                     except Exception as e:
-                        print(f"Error processing expert {expert}: {e}")
+                        print(f'Error processing expert {expert}: {e}')
 
         # multi-thread conversation
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.max_thread
+            max_workers=self.max_thread,
         ) as executor:
             futures = [
                 executor.submit(process_expert, expert)
@@ -252,7 +254,7 @@ class WarmStartConversation(dspy.Module):
         conversation_history = [background_seeking_dialogue] + conversation_history
 
         return dspy.Prediction(
-            conversation_history=conversation_history, experts=experts
+            conversation_history=conversation_history, experts=experts,
         )
 
 
@@ -267,9 +269,9 @@ class GenerateWarmStartOutline(dspy.Signature):
      The organization of outline should adopt wikiepdia style.
     """
 
-    topic = dspy.InputField(prefix="The topic discussed: ", format=str)
-    draft = dspy.InputField(prefix="Draft outline you can reference to: ", format=str)
-    conv = dspy.InputField(prefix="Discussion history:\n", format=str)
+    topic = dspy.InputField(prefix='The topic discussed: ', format=str)
+    draft = dspy.InputField(prefix='Draft outline you can reference to: ', format=str)
+    conv = dspy.InputField(prefix='Discussion history:\n', format=str)
     outline = dspy.OutputField(
         prefix='Write the conversation outline (Use "#" Title" to indicate section title, "##" Title" to indicate subsection title, ...):\n',
         format=str,
@@ -277,33 +279,33 @@ class GenerateWarmStartOutline(dspy.Signature):
 
 
 class GenerateWarmStartOutlineModule(dspy.Module):
-    def __init__(self, engine: Union[dspy.dsp.LM, dspy.dsp.HFModel]):
+    def __init__(self, engine: dspy.dsp.LM | dspy.dsp.HFModel):
         self.engine = engine
         self.gen_outline = dspy.Predict(GenerateWarmStartOutline)
         self.draft_outline = dspy.Predict(WritePageOutline)
 
-    def extract_questions_and_queries(self, conv: List[ConversationTurn]):
+    def extract_questions_and_queries(self, conv: list[ConversationTurn]):
         context = []
         for turn in conv:
             focus = turn.claim_to_make
             queries = turn.queries
-            queries_string = "\n\t".join(
-                f"Query {idx + 1}: {query}" for idx, query in enumerate(queries)
+            queries_string = '\n\t'.join(
+                f'Query {idx + 1}: {query}' for idx, query in enumerate(queries)
             )
-            string = f"Discussion focus {len(context) + 1}: {focus}\n\t{queries_string}"
+            string = f'Discussion focus {len(context) + 1}: {focus}\n\t{queries_string}'
             context.append(string)
-        return "\n".join(context)
+        return '\n'.join(context)
 
     def get_draft_outline(self, topic: str):
         with dspy.settings.context(lm=self.engine):
             return self.draft_outline(topic=topic).outline
 
-    def forward(self, topic: str, conv: List[ConversationTurn]):
+    def forward(self, topic: str, conv: list[ConversationTurn]):
         discussion_history = self.extract_questions_and_queries(conv)
         draft_outline = self.get_draft_outline(topic=topic)
         with dspy.settings.context(lm=self.engine):
             outline = self.gen_outline(
-                topic=topic, draft=draft_outline, conv=discussion_history
+                topic=topic, draft=draft_outline, conv=discussion_history,
             ).outline
             outline = AP.clean_up_outline(outline)
         return dspy.Prediction(outline=outline, draft_outline=draft_outline)
@@ -313,13 +315,13 @@ class WarmStartModule:
     def __init__(
         self,
         lm_config: LMConfigs,
-        runner_argument: "RunnerArgument",
+        runner_argument: 'RunnerArgument',
         logging_wrapper: LoggingWrapper,
-        rm: Optional[dspy.Retrieve] = None,
+        rm: dspy.Retrieve | None = None,
         callback_handler: BaseCallbackHandler = None,
     ):
         generate_expert_module = GenerateExpertModule(
-            engine=lm_config.discourse_manage_lm
+            engine=lm_config.discourse_manage_lm,
         )
         self.warmstart_conv = WarmStartConversation(
             question_asking_lm=lm_config.question_asking_lm,
@@ -337,7 +339,7 @@ class WarmStartModule:
             callback_handler=callback_handler,
         )
         self.warmstart_outline_gen_module = GenerateWarmStartOutlineModule(
-            engine=lm_config.warmstart_outline_gen_lm
+            engine=lm_config.warmstart_outline_gen_lm,
         )
         self.report_to_conversation = ReportToConversation(lm_config.knowledge_base_lm)
         self.logging_wrapper = logging_wrapper
@@ -357,45 +359,45 @@ class WarmStartModule:
                 - A list of strings representing the experts involved in the conversation.
                 - A KnowledgeBase instance containing the organized information.
         """
-        warm_start_conversation_history: List[ConversationTurn] = []
+        warm_start_conversation_history: list[ConversationTurn] = []
         warm_start_experts = None
         # get warm start conversations
-        with self.logging_wrapper.log_event("warm start: perspective guided QA"):
+        with self.logging_wrapper.log_event('warm start: perspective guided QA'):
             if self.callback_handler is not None:
                 self.callback_handler.on_warmstart_update(
-                    message="Start getting familiar with the topic by chatting with multiple LLM experts (Step 1 / 4)"
+                    message='Start getting familiar with the topic by chatting with multiple LLM experts (Step 1 / 4)',
                 )
             warm_start_result = self.warmstart_conv(topic=topic)
             warm_start_conversation_history = warm_start_result.conversation_history
             warm_start_experts = warm_start_result.experts
 
         # get warm start conv outline
-        with self.logging_wrapper.log_event("warm start: outline generation"):
+        with self.logging_wrapper.log_event('warm start: outline generation'):
             if self.callback_handler is not None:
                 self.callback_handler.on_warmstart_update(
-                    "Organizing collected information (Step 2 / 4)"
+                    'Organizing collected information (Step 2 / 4)',
                 )
             warm_start_outline_output = self.warmstart_outline_gen_module(
-                topic=topic, conv=warm_start_conversation_history
+                topic=topic, conv=warm_start_conversation_history,
             )
         # init knowledge base
-        with self.logging_wrapper.log_event("warm start: insert into knowledge base"):
+        with self.logging_wrapper.log_event('warm start: insert into knowledge base'):
             if self.callback_handler is not None:
                 self.callback_handler.on_warmstart_update(
-                    "Inserting collected information into knowledge base (Step 3 / 4)"
+                    'Inserting collected information into knowledge base (Step 3 / 4)',
                 )
             knowledge_base.insert_from_outline_string(
-                outline_string=warm_start_outline_output.outline
+                outline_string=warm_start_outline_output.outline,
             )
             # insert information to knowledge base
             for turn in warm_start_conversation_history:
                 knowledge_base.update_from_conv_turn(
-                    conv_turn=turn, allow_create_new_node=False
+                    conv_turn=turn, allow_create_new_node=False,
                 )
         # knowledge base to report
         if self.callback_handler is not None:
             self.callback_handler.on_warmstart_update(
-                "Synthesizing background information discussion utterances (Step 4 / 4)"
+                'Synthesizing background information discussion utterances (Step 4 / 4)',
             )
         knowledge_base.to_report()
 

@@ -4,25 +4,25 @@ import logging
 import os
 import pickle
 import re
-import regex
 import sys
-import time
-from typing import List, Dict
 
 import httpx
 import pandas as pd
+import regex
 import toml
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import Qdrant
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from qdrant_client import QdrantClient, models
+from qdrant_client import QdrantClient
+from qdrant_client import models
 from tqdm import tqdm
 from trafilatura import extract
 
 from .lm import OpenAIModel
 
-logging.getLogger("httpx").setLevel(logging.WARNING)  # Disable INFO logging for httpx.
+
+logging.getLogger('httpx').setLevel(logging.WARNING)  # Disable INFO logging for httpx.
 
 
 def truncate_filename(filename, max_length=125):
@@ -36,7 +36,7 @@ def truncate_filename(filename, max_length=125):
     if len(filename) > max_length:
         truncated_filename = filename[:max_length]
         logging.warning(
-            f"Filename is too long. Filename is truncated to {truncated_filename}."
+            f'Filename is too long. Filename is truncated to {truncated_filename}.',
         )
         return truncated_filename
 
@@ -45,13 +45,13 @@ def truncate_filename(filename, max_length=125):
 
 def load_api_key(toml_file_path):
     try:
-        with open(toml_file_path, "r") as file:
+        with open(toml_file_path) as file:
             data = toml.load(file)
     except FileNotFoundError:
-        print(f"File not found: {toml_file_path}", file=sys.stderr)
+        print(f'File not found: {toml_file_path}', file=sys.stderr)
         return
     except toml.TomlDecodeError:
-        print(f"Error decoding TOML file: {toml_file_path}", file=sys.stderr)
+        print(f'Error decoding TOML file: {toml_file_path}', file=sys.stderr)
         return
     # Set environment variables
     for key, value in data.items():
@@ -59,7 +59,7 @@ def load_api_key(toml_file_path):
 
 
 def makeStringRed(message):
-    return f"\033[91m {message}\033[00m"
+    return f'\033[91m {message}\033[00m'
 
 
 class QdrantVectorStoreManager:
@@ -72,13 +72,13 @@ class QdrantVectorStoreManager:
 
     @staticmethod
     def _check_create_collection(
-        client: QdrantClient, collection_name: str, model: HuggingFaceEmbeddings
+        client: QdrantClient, collection_name: str, model: HuggingFaceEmbeddings,
     ):
         """Check if the Qdrant collection exists and create it if it does not."""
         if client is None:
-            raise ValueError("Qdrant client is not initialized.")
-        if client.collection_exists(collection_name=f"{collection_name}"):
-            print(f"Collection {collection_name} exists. Loading the collection...")
+            raise ValueError('Qdrant client is not initialized.')
+        if client.collection_exists(collection_name=f'{collection_name}'):
+            print(f'Collection {collection_name} exists. Loading the collection...')
             return Qdrant(
                 client=client,
                 collection_name=collection_name,
@@ -86,13 +86,13 @@ class QdrantVectorStoreManager:
             )
         else:
             print(
-                f"Collection {collection_name} does not exist. Creating the collection..."
+                f'Collection {collection_name} does not exist. Creating the collection...',
             )
             # create the collection
             client.create_collection(
-                collection_name=f"{collection_name}",
+                collection_name=f'{collection_name}',
                 vectors_config=models.VectorParams(
-                    size=1024, distance=models.Distance.COSINE
+                    size=1024, distance=models.Distance.COSINE,
                 ),
             )
             return Qdrant(
@@ -103,7 +103,7 @@ class QdrantVectorStoreManager:
 
     @staticmethod
     def _init_online_vector_db(
-        url: str, api_key: str, collection_name: str, model: HuggingFaceEmbeddings
+        url: str, api_key: str, collection_name: str, model: HuggingFaceEmbeddings,
     ):
         """Initialize the Qdrant client that is connected to an online vector store with the given URL and API key.
 
@@ -112,23 +112,23 @@ class QdrantVectorStoreManager:
             api_key (str): API key for the Qdrant server.
         """
         if api_key is None:
-            if not os.getenv("QDRANT_API_KEY"):
-                raise ValueError("Please provide an api key.")
-            api_key = os.getenv("QDRANT_API_KEY")
+            if not os.getenv('QDRANT_API_KEY'):
+                raise ValueError('Please provide an api key.')
+            api_key = os.getenv('QDRANT_API_KEY')
         if url is None:
-            raise ValueError("Please provide a url for the Qdrant server.")
+            raise ValueError('Please provide a url for the Qdrant server.')
 
         try:
             client = QdrantClient(url=url, api_key=api_key)
             return QdrantVectorStoreManager._check_create_collection(
-                client=client, collection_name=collection_name, model=model
+                client=client, collection_name=collection_name, model=model,
             )
         except Exception as e:
-            raise ValueError(f"Error occurs when connecting to the server: {e}")
+            raise ValueError(f'Error occurs when connecting to the server: {e}')
 
     @staticmethod
     def _init_offline_vector_db(
-        vector_store_path: str, collection_name: str, model: HuggingFaceEmbeddings
+        vector_store_path: str, collection_name: str, model: HuggingFaceEmbeddings,
     ):
         """Initialize the Qdrant client that is connected to an offline vector store with the given vector store folder path.
 
@@ -136,15 +136,15 @@ class QdrantVectorStoreManager:
             vector_store_path (str): Path to the vector store.
         """
         if vector_store_path is None:
-            raise ValueError("Please provide a folder path.")
+            raise ValueError('Please provide a folder path.')
 
         try:
             client = QdrantClient(path=vector_store_path)
             return QdrantVectorStoreManager._check_create_collection(
-                client=client, collection_name=collection_name, model=model
+                client=client, collection_name=collection_name, model=model,
             )
         except Exception as e:
-            raise ValueError(f"Error occurs when loading the vector store: {e}")
+            raise ValueError(f'Error occurs when loading the vector store: {e}')
 
     @staticmethod
     def create_or_update_vector_store(
@@ -152,17 +152,17 @@ class QdrantVectorStoreManager:
         vector_db_mode: str,
         file_path: str,
         content_column: str,
-        title_column: str = "title",
-        url_column: str = "url",
-        desc_column: str = "description",
+        title_column: str = 'title',
+        url_column: str = 'url',
+        desc_column: str = 'description',
         batch_size: int = 64,
         chunk_size: int = 500,
         chunk_overlap: int = 100,
         vector_store_path: str = None,
         url: str = None,
         qdrant_api_key: str = None,
-        embedding_model: str = "BAAI/bge-m3",
-        device: str = "mps",
+        embedding_model: str = 'BAAI/bge-m3',
+        device: str = 'mps',
     ):
         """
         Takes a CSV file and adds each row in the CSV file to the Qdrant collection.
@@ -188,10 +188,10 @@ class QdrantVectorStoreManager:
         """
         # check if the collection name is provided
         if collection_name is None:
-            raise ValueError("Please provide a collection name.")
+            raise ValueError('Please provide a collection name.')
 
-        model_kwargs = {"device": device}
-        encode_kwargs = {"normalize_embeddings": True}
+        model_kwargs = {'device': device}
+        encode_kwargs = {'normalize_embeddings': True}
         model = HuggingFaceEmbeddings(
             model_name=embedding_model,
             model_kwargs=model_kwargs,
@@ -199,25 +199,25 @@ class QdrantVectorStoreManager:
         )
 
         if file_path is None:
-            raise ValueError("Please provide a file path.")
+            raise ValueError('Please provide a file path.')
         # check if the file is a csv file
-        if not file_path.endswith(".csv"):
-            raise ValueError(f"Not valid file format. Please provide a csv file.")
+        if not file_path.endswith('.csv'):
+            raise ValueError(f'Not valid file format. Please provide a csv file.')
         if content_column is None:
-            raise ValueError("Please provide the name of the content column.")
+            raise ValueError('Please provide the name of the content column.')
         if url_column is None:
-            raise ValueError("Please provide the name of the url column.")
+            raise ValueError('Please provide the name of the url column.')
 
         # try to initialize the Qdrant client
         qdrant = None
-        if vector_db_mode == "online":
+        if vector_db_mode == 'online':
             qdrant = QdrantVectorStoreManager._init_online_vector_db(
                 url=url,
                 api_key=qdrant_api_key,
                 collection_name=collection_name,
                 model=model,
             )
-        elif vector_db_mode == "offline":
+        elif vector_db_mode == 'offline':
             qdrant = QdrantVectorStoreManager._init_offline_vector_db(
                 vector_store_path=vector_store_path,
                 collection_name=collection_name,
@@ -225,31 +225,31 @@ class QdrantVectorStoreManager:
             )
         else:
             raise ValueError(
-                "Invalid vector_db_mode. Please provide either 'online' or 'offline'."
+                "Invalid vector_db_mode. Please provide either 'online' or 'offline'.",
             )
         if qdrant is None:
-            raise ValueError("Qdrant client is not initialized.")
+            raise ValueError('Qdrant client is not initialized.')
 
         # read the csv file
         df = pd.read_csv(file_path)
         # check that content column exists and url column exists
         if content_column not in df.columns:
             raise ValueError(
-                f"Content column {content_column} not found in the csv file."
+                f'Content column {content_column} not found in the csv file.',
             )
         if url_column not in df.columns:
-            raise ValueError(f"URL column {url_column} not found in the csv file.")
+            raise ValueError(f'URL column {url_column} not found in the csv file.')
 
         documents = [
             Document(
                 page_content=row[content_column],
                 metadata={
-                    "title": row.get(title_column, ""),
-                    "url": row[url_column],
-                    "description": row.get(desc_column, ""),
+                    'title': row.get(title_column, ''),
+                    'url': row[url_column],
+                    'description': row.get(desc_column, ''),
                 },
             )
-            for row in df.to_dict(orient="records")
+            for row in df.to_dict(orient='records')
         ]
 
         # split the documents
@@ -261,17 +261,17 @@ class QdrantVectorStoreManager:
             length_function=len,
             add_start_index=True,
             separators=[
-                "\n\n",
-                "\n",
-                ".",
-                "\uff0e",  # Fullwidth full stop
-                "\u3002",  # Ideographic full stop
-                ",",
-                "\uff0c",  # Fullwidth comma
-                "\u3001",  # Ideographic comma
-                " ",
-                "\u200B",  # Zero-width space
-                "",
+                '\n\n',
+                '\n',
+                '.',
+                '\uff0e',  # Fullwidth full stop
+                '\u3002',  # Ideographic full stop
+                ',',
+                '\uff0c',  # Fullwidth comma
+                '\u3001',  # Ideographic comma
+                ' ',
+                '\u200B',  # Zero-width space
+                '',
             ],
         )
         split_documents = text_splitter.split_documents(documents)
@@ -309,19 +309,19 @@ class ArticleTextProcessing:
         """
 
         word_count = 0
-        limited_string = ""
+        limited_string = ''
 
-        for word in input_string.split("\n"):
+        for word in input_string.split('\n'):
             line_words = word.split()
             for lw in line_words:
                 if word_count < max_word_count:
-                    limited_string += lw + " "
+                    limited_string += lw + ' '
                     word_count += 1
                 else:
                     break
             if word_count >= max_word_count:
                 break
-            limited_string = limited_string.strip() + "\n"
+            limited_string = limited_string.strip() + '\n'
 
         return limited_string.strip()
 
@@ -339,7 +339,7 @@ class ArticleTextProcessing:
             str: The string with all citation patterns removed.
         """
 
-        return re.sub(r"\[\d+(?:,\s*\d+)*\]", "", s)
+        return re.sub(r'\[\d+(?:,\s*\d+)*\]', '', s)
 
     @staticmethod
     def parse_citation_indices(s):
@@ -352,7 +352,7 @@ class ArticleTextProcessing:
         Returns:
             List[int]: A list of unique citation indexes extracted from the content, in the order they appear.
         """
-        matches = re.findall(r"\[\d+\]", s)
+        matches = re.findall(r'\[\d+\]', s)
         return [int(index[1:-1]) for index in matches]
 
     @staticmethod
@@ -373,21 +373,21 @@ class ArticleTextProcessing:
 
         # Convert citations like [1, 2, 3] to [1][2][3].
         def replace_with_individual_brackets(match):
-            numbers = match.group(1).split(", ")
-            return " ".join(f"[{n}]" for n in numbers)
+            numbers = match.group(1).split(', ')
+            return ' '.join(f'[{n}]' for n in numbers)
 
         # Deduplicate and sort individual groups of citations.
         def deduplicate_group(match):
             citations = match.group(0)
-            unique_citations = list(set(re.findall(r"\[\d+\]", citations)))
+            unique_citations = list(set(re.findall(r'\[\d+\]', citations)))
             sorted_citations = sorted(
-                unique_citations, key=lambda x: int(x.strip("[]"))
+                unique_citations, key=lambda x: int(x.strip('[]')),
             )
             # Return the sorted unique citations as a string
-            return "".join(sorted_citations)
+            return ''.join(sorted_citations)
 
-        text = re.sub(r"\[([0-9, ]+)\]", replace_with_individual_brackets, text)
-        text = re.sub(r"(\[\d+\])+", deduplicate_group, text)
+        text = re.sub(r'\[([0-9, ]+)\]', replace_with_individual_brackets, text)
+        text = re.sub(r'(\[\d+\])+', deduplicate_group, text)
 
         # Deprecated: Remove sentence without proper ending punctuation and citations.
         # Split the text into sentences (including citations).
@@ -408,7 +408,7 @@ class ArticleTextProcessing:
         #     combined_sentences += ' '.join(trailing_citations)
 
         # Regex pattern to match sentence endings, including optional citation markers.
-        eos_pattern = r"([.!?])\s*(\[\d+\])?\s*"
+        eos_pattern = r'([.!?])\s*(\[\d+\])?\s*'
         matches = list(re.finditer(eos_pattern, text))
         if matches:
             last_match = matches[-1]
@@ -419,79 +419,79 @@ class ArticleTextProcessing:
     @staticmethod
     def clean_up_citation(conv):
         for turn in conv.dlg_history:
-            if "References:" in turn.agent_utterance:
+            if 'References:' in turn.agent_utterance:
                 turn.agent_utterance = turn.agent_utterance[
-                    : turn.agent_utterance.find("References:")
+                    : turn.agent_utterance.find('References:')
                 ]
-            if "Sources:" in turn.agent_utterance:
+            if 'Sources:' in turn.agent_utterance:
                 turn.agent_utterance = turn.agent_utterance[
-                    : turn.agent_utterance.find("Sources:")
+                    : turn.agent_utterance.find('Sources:')
                 ]
-            turn.agent_utterance = turn.agent_utterance.replace("Answer:", "").strip()
+            turn.agent_utterance = turn.agent_utterance.replace('Answer:', '').strip()
             try:
                 max_ref_num = max(
-                    [int(x) for x in re.findall(r"\[(\d+)\]", turn.agent_utterance)]
+                    [int(x) for x in re.findall(r'\[(\d+)\]', turn.agent_utterance)],
                 )
-            except Exception as e:
+            except Exception:
                 max_ref_num = 0
             if max_ref_num > len(turn.search_results):
                 for i in range(len(turn.search_results), max_ref_num + 1):
-                    turn.agent_utterance = turn.agent_utterance.replace(f"[{i}]", "")
+                    turn.agent_utterance = turn.agent_utterance.replace(f'[{i}]', '')
             turn.agent_utterance = (
                 ArticleTextProcessing.remove_uncompleted_sentences_with_citations(
-                    turn.agent_utterance
+                    turn.agent_utterance,
                 )
             )
 
         return conv
 
     @staticmethod
-    def clean_up_outline(outline, topic=""):
+    def clean_up_outline(outline, topic=''):
         output_lines = []
         current_level = 0  # To track the current section level
 
-        for line in outline.split("\n"):
+        for line in outline.split('\n'):
             stripped_line = line.strip()
 
-            if topic != "" and f"# {topic.lower()}" in stripped_line.lower():
+            if topic != '' and f'# {topic.lower()}' in stripped_line.lower():
                 output_lines = []
 
             # Check if the line is a section header
-            if stripped_line.startswith("#"):
-                current_level = stripped_line.count("#")
+            if stripped_line.startswith('#'):
+                current_level = stripped_line.count('#')
                 output_lines.append(stripped_line)
             # Check if the line is a bullet point
-            elif stripped_line.startswith("-"):
+            elif stripped_line.startswith('-'):
                 subsection_header = (
-                    "#" * (current_level + 1) + " " + stripped_line[1:].strip()
+                    '#' * (current_level + 1) + ' ' + stripped_line[1:].strip()
                 )
                 output_lines.append(subsection_header)
 
-        outline = "\n".join(output_lines)
+        outline = '\n'.join(output_lines)
 
         # Remove references.
-        outline = re.sub(r"#[#]? See also.*?(?=##|$)", "", outline, flags=re.DOTALL)
-        outline = re.sub(r"#[#]? See Also.*?(?=##|$)", "", outline, flags=re.DOTALL)
-        outline = re.sub(r"#[#]? Notes.*?(?=##|$)", "", outline, flags=re.DOTALL)
-        outline = re.sub(r"#[#]? References.*?(?=##|$)", "", outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? See also.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? See Also.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Notes.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? References.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(
-            r"#[#]? External links.*?(?=##|$)", "", outline, flags=re.DOTALL
+            r'#[#]? External links.*?(?=##|$)', '', outline, flags=re.DOTALL,
         )
         outline = re.sub(
-            r"#[#]? External Links.*?(?=##|$)", "", outline, flags=re.DOTALL
+            r'#[#]? External Links.*?(?=##|$)', '', outline, flags=re.DOTALL,
         )
-        outline = re.sub(r"#[#]? Bibliography.*?(?=##|$)", "", outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Bibliography.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(
-            r"#[#]? Further reading*?(?=##|$)", "", outline, flags=re.DOTALL
+            r'#[#]? Further reading*?(?=##|$)', '', outline, flags=re.DOTALL,
         )
         outline = re.sub(
-            r"#[#]? Further Reading*?(?=##|$)", "", outline, flags=re.DOTALL
+            r'#[#]? Further Reading*?(?=##|$)', '', outline, flags=re.DOTALL,
         )
-        outline = re.sub(r"#[#]? Summary.*?(?=##|$)", "", outline, flags=re.DOTALL)
-        outline = re.sub(r"#[#]? Appendices.*?(?=##|$)", "", outline, flags=re.DOTALL)
-        outline = re.sub(r"#[#]? Appendix.*?(?=##|$)", "", outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Summary.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Appendices.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Appendix.*?(?=##|$)', '', outline, flags=re.DOTALL)
         # clean up citation in outline
-        outline = re.sub(r"\[.*?\]", "", outline)
+        outline = re.sub(r'\[.*?\]', '', outline)
         return outline
 
     @staticmethod
@@ -501,43 +501,43 @@ class ArticleTextProcessing:
         2. Deduplicate individual groups of citations.
         3. Remove unnecessary summary."""
 
-        paragraphs = text.split("\n")
+        paragraphs = text.split('\n')
         output_paragraphs = []
         summary_sec_flag = False
         for p in paragraphs:
             p = p.strip()
             if len(p) == 0:
                 continue
-            if not p.startswith("#"):
+            if not p.startswith('#'):
                 p = ArticleTextProcessing.remove_uncompleted_sentences_with_citations(p)
             if summary_sec_flag:
-                if p.startswith("#"):
+                if p.startswith('#'):
                     summary_sec_flag = False
                 else:
                     continue
             if (
-                p.startswith("Overall")
-                or p.startswith("In summary")
-                or p.startswith("In conclusion")
+                p.startswith('Overall')
+                or p.startswith('In summary')
+                or p.startswith('In conclusion')
             ):
                 continue
-            if "# Summary" in p or "# Conclusion" in p:
+            if '# Summary' in p or '# Conclusion' in p:
                 summary_sec_flag = True
                 continue
             output_paragraphs.append(p)
 
         # Join with '\n\n' for markdown format.
-        return "\n\n".join(output_paragraphs)
+        return '\n\n'.join(output_paragraphs)
 
     @staticmethod
     def update_citation_index(s, citation_map):
         """Update citation index in the string based on the citation map."""
         for original_citation in citation_map:
             s = s.replace(
-                f"[{original_citation}]", f"__PLACEHOLDER_{original_citation}__"
+                f'[{original_citation}]', f'__PLACEHOLDER_{original_citation}__',
             )
         for original_citation, unify_citation in citation_map.items():
-            s = s.replace(f"__PLACEHOLDER_{original_citation}__", f"[{unify_citation}]")
+            s = s.replace(f'__PLACEHOLDER_{original_citation}__', f'[{unify_citation}]')
 
         return s
 
@@ -562,63 +562,63 @@ class ArticleTextProcessing:
             A dictionary representing contains the section title as the key, and another dictionary
         as the value, which includes the 'content' and 'subsections' keys as described above.
         """
-        lines = input_string.split("\n")
+        lines = input_string.split('\n')
         lines = [line for line in lines if line.strip()]
-        root = {"content": "", "subsections": {}}
+        root = {'content': '', 'subsections': {}}
         current_path = [(root, -1)]  # (current_dict, level)
 
         for line in lines:
-            if line.startswith("#"):
-                level = line.count("#")
-                title = line.strip("# ").strip()
-                new_section = {"content": "", "subsections": {}}
+            if line.startswith('#'):
+                level = line.count('#')
+                title = line.strip('# ').strip()
+                new_section = {'content': '', 'subsections': {}}
 
                 # Pop from stack until find the parent level
                 while current_path and current_path[-1][1] >= level:
                     current_path.pop()
 
                 # Append new section to the nearest upper level's subsections
-                current_path[-1][0]["subsections"][title] = new_section
+                current_path[-1][0]['subsections'][title] = new_section
                 current_path.append((new_section, level))
             else:
-                current_path[-1][0]["content"] += line + "\n"
+                current_path[-1][0]['content'] += line + '\n'
 
-        return root["subsections"]
+        return root['subsections']
 
 
 class FileIOHelper:
     @staticmethod
-    def dump_json(obj, file_name, encoding="utf-8"):
-        with open(file_name, "w", encoding=encoding) as fw:
+    def dump_json(obj, file_name, encoding='utf-8'):
+        with open(file_name, 'w', encoding=encoding) as fw:
             json.dump(obj, fw, default=FileIOHelper.handle_non_serializable)
 
     @staticmethod
     def handle_non_serializable(obj):
-        return "non-serializable contents"  # mark the non-serializable part
+        return 'non-serializable contents'  # mark the non-serializable part
 
     @staticmethod
-    def load_json(file_name, encoding="utf-8"):
-        with open(file_name, "r", encoding=encoding) as fr:
+    def load_json(file_name, encoding='utf-8'):
+        with open(file_name, encoding=encoding) as fr:
             return json.load(fr)
 
     @staticmethod
     def write_str(s, path):
-        with open(path, "w") as f:
+        with open(path, 'w') as f:
             f.write(s)
 
     @staticmethod
     def load_str(path):
-        with open(path, "r") as f:
-            return "\n".join(f.readlines())
+        with open(path) as f:
+            return '\n'.join(f.readlines())
 
     @staticmethod
     def dump_pickle(obj, path):
-        with open(path, "wb") as f:
+        with open(path, 'wb') as f:
             pickle.dump(obj, f)
 
     @staticmethod
     def load_pickle(path):
-        with open(path, "rb") as f:
+        with open(path, 'rb') as f:
             return pickle.load(f)
 
 
@@ -649,17 +649,17 @@ class WebPageHelper:
             length_function=len,
             is_separator_regex=False,
             separators=[
-                "\n\n",
-                "\n",
-                ".",
-                "\uff0e",  # Fullwidth full stop
-                "\u3002",  # Ideographic full stop
-                ",",
-                "\uff0c",  # Fullwidth comma
-                "\u3001",  # Ideographic comma
-                " ",
-                "\u200B",  # Zero-width space
-                "",
+                '\n\n',
+                '\n',
+                '.',
+                '\uff0e',  # Fullwidth full stop
+                '\u3002',  # Ideographic full stop
+                ',',
+                '\uff0c',  # Fullwidth comma
+                '\u3001',  # Ideographic comma
+                ' ',
+                '\u200B',  # Zero-width space
+                '',
             ],
         )
 
@@ -670,12 +670,12 @@ class WebPageHelper:
                 res.raise_for_status()
             return res.content
         except httpx.HTTPError as exc:
-            print(f"Error while requesting {exc.request.url!r} - {exc!r}")
+            print(f'Error while requesting {exc.request.url!r} - {exc!r}')
             return None
 
-    def urls_to_articles(self, urls: List[str]) -> Dict:
+    def urls_to_articles(self, urls: list[str]) -> dict:
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.max_thread_num
+            max_workers=self.max_thread_num,
         ) as executor:
             htmls = list(executor.map(self.download_webpage, urls))
 
@@ -688,33 +688,33 @@ class WebPageHelper:
                 h,
                 include_tables=False,
                 include_comments=False,
-                output_format="txt",
+                output_format='txt',
             )
             if article_text is not None and len(article_text) > self.min_char_count:
-                articles[u] = {"text": article_text}
+                articles[u] = {'text': article_text}
 
         return articles
 
-    def urls_to_snippets(self, urls: List[str]) -> Dict:
+    def urls_to_snippets(self, urls: list[str]) -> dict:
         articles = self.urls_to_articles(urls)
         for u in articles:
-            articles[u]["snippets"] = self.text_splitter.split_text(articles[u]["text"])
+            articles[u]['snippets'] = self.text_splitter.split_text(articles[u]['text'])
 
         return articles
 
 
 def user_input_appropriateness_check(user_input):
     my_openai_model = OpenAIModel(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        api_provider="openai",
-        model="gpt-4o-mini-2024-07-18",
+        api_key=os.getenv('OPENAI_API_KEY'),
+        api_provider='openai',
+        model='gpt-4o-mini-2024-07-18',
         max_tokens=10,
         temperature=0.0,
         top_p=0.9,
     )
 
     if len(user_input.split()) > 20:
-        return "The input is too long. Please make your input topic more concise!"
+        return 'The input is too long. Please make your input topic more concise!'
 
     if not re.match(r'^[a-zA-Z0-9\s\-"\,\.?\']*$', user_input):
         return "The input contains invalid characters. The input should only contain a-z, A-Z, 0-9, space, -/\"/,./?/'."
@@ -727,44 +727,44 @@ def user_input_appropriateness_check(user_input):
 If the topic is appropriate for the engine to process, output "Yes."; otherwise, output "No. The input violates reason [1/2/3/4]".
 User input: {user_input}"""
     reject_reason_info = {
-        1: "Sorry, this input may be related to sensitive topics. Please try another topic. "
-        "(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. "
-        "We apologize for any inconvenience.)",
-        2: "Sorry, the current engine can only support English. Please try another topic. "
-        "(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. "
-        "We apologize for any inconvenience.)",
-        3: "Sorry, the current engine cannot process topics related to personal experience. Please try another topic. "
-        "(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. "
-        "We apologize for any inconvenience.)",
-        4: "Sorry, STORM cannot follow arbitrary instruction. Please input a topic you want to learn about. "
-        "(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. "
-        "We apologize for any inconvenience.)",
+        1: 'Sorry, this input may be related to sensitive topics. Please try another topic. '
+        '(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. '
+        'We apologize for any inconvenience.)',
+        2: 'Sorry, the current engine can only support English. Please try another topic. '
+        '(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. '
+        'We apologize for any inconvenience.)',
+        3: 'Sorry, the current engine cannot process topics related to personal experience. Please try another topic. '
+        '(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. '
+        'We apologize for any inconvenience.)',
+        4: 'Sorry, STORM cannot follow arbitrary instruction. Please input a topic you want to learn about. '
+        '(Our input filtering uses OpenAI GPT-4o-mini, which may result in false positives. '
+        'We apologize for any inconvenience.)',
     }
 
     try:
-        response = my_openai_model(prompt)[0].replace("[", "").replace("]", "")
-        if response.startswith("No"):
-            match = regex.search(r"reason\s(\d+)", response)
+        response = my_openai_model(prompt)[0].replace('[', '').replace(']', '')
+        if response.startswith('No'):
+            match = regex.search(r'reason\s(\d+)', response)
             if match:
                 reject_reason = int(match.group(1))
                 if reject_reason in reject_reason_info:
                     return reject_reason_info[reject_reason]
                 else:
                     return (
-                        "Sorry, the input is inappropriate. Please try another topic!"
+                        'Sorry, the input is inappropriate. Please try another topic!'
                     )
-            return "Sorry, the input is inappropriate. Please try another topic!"
+            return 'Sorry, the input is inappropriate. Please try another topic!'
 
-    except Exception as e:
-        return "Sorry, the input is inappropriate. Please try another topic!"
-    return "Approved"
+    except Exception:
+        return 'Sorry, the input is inappropriate. Please try another topic!'
+    return 'Approved'
 
 
 def purpose_appropriateness_check(user_input):
     my_openai_model = OpenAIModel(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        api_provider="openai",
-        model="gpt-4o-mini-2024-07-18",
+        api_key=os.getenv('OPENAI_API_KEY'),
+        api_provider='openai',
+        model='gpt-4o-mini-2024-07-18',
         max_tokens=10,
         temperature=0.0,
         top_p=0.9,
@@ -780,10 +780,10 @@ def purpose_appropriateness_check(user_input):
     User input: {user_input}
     """
     try:
-        response = my_openai_model(prompt)[0].replace("[", "").replace("]", "")
-        if response.startswith("No"):
-            return "Please provide a more detailed explanation on your purpose of requesting this article."
+        response = my_openai_model(prompt)[0].replace('[', '').replace(']', '')
+        if response.startswith('No'):
+            return 'Please provide a more detailed explanation on your purpose of requesting this article.'
 
-    except Exception as e:
-        return "Please provide a more detailed explanation on your purpose of requesting this article."
-    return "Approved"
+    except Exception:
+        return 'Please provide a more detailed explanation on your purpose of requesting this article.'
+    return 'Approved'

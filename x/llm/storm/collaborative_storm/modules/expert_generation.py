@@ -1,6 +1,6 @@
-import dspy
 import re
-from typing import Union
+
+import dspy
 
 
 class GenerateExpertGeneral(dspy.Signature):
@@ -13,11 +13,11 @@ class GenerateExpertGeneral(dspy.Signature):
     2. [speaker 2 role]: [speaker 2 short description]
     """
 
-    topic = dspy.InputField(prefix="Topic of interest:", format=str)
+    topic = dspy.InputField(prefix='Topic of interest:', format=str)
     background_info = dspy.InputField(
-        prefix="Background information about the topic:\n", format=str
+        prefix='Background information about the topic:\n', format=str,
     )
-    topN = dspy.InputField(prefix="Number of speakers needed: ", format=str)
+    topN = dspy.InputField(prefix='Number of speakers needed: ', format=str)
     experts = dspy.OutputField(format=str)
 
 
@@ -33,15 +33,15 @@ class GenerateExpertWithFocus(dspy.Signature):
     2. [speaker 2 role]: [speaker 2 short description]
     """
 
-    topic = dspy.InputField(prefix="Topic of interest:", format=str)
-    background_info = dspy.InputField(prefix="Background information:\n", format=str)
-    focus = dspy.InputField(prefix="Discussion focus: ", format=str)
-    topN = dspy.InputField(prefix="Number of speakers needed: ", format=str)
+    topic = dspy.InputField(prefix='Topic of interest:', format=str)
+    background_info = dspy.InputField(prefix='Background information:\n', format=str)
+    focus = dspy.InputField(prefix='Discussion focus: ', format=str)
+    topN = dspy.InputField(prefix='Number of speakers needed: ', format=str)
     experts = dspy.OutputField(format=str)
 
 
 class GenerateExpertModule(dspy.Module):
-    def __init__(self, engine: Union[dspy.dsp.LM, dspy.dsp.HFModel]):
+    def __init__(self, engine: dspy.dsp.LM | dspy.dsp.HFModel):
         self.engine = engine
         self.generate_expert_general = dspy.Predict(GenerateExpertGeneral)
         self.generate_expert_w_focus = dspy.ChainOfThought(GenerateExpertWithFocus)
@@ -52,20 +52,20 @@ class GenerateExpertModule(dspy.Module):
         if cur_len <= max_words:
             return background
         trimmed_words = words[: min(cur_len, max_words)]
-        trimmed_background = " ".join(trimmed_words)
-        return f"{trimmed_background} [rest content omitted]."
+        trimmed_background = ' '.join(trimmed_words)
+        return f'{trimmed_background} [rest content omitted].'
 
     def forward(
-        self, topic: str, num_experts: int, background_info: str = "", focus: str = ""
+        self, topic: str, num_experts: int, background_info: str = '', focus: str = '',
     ):
         with dspy.settings.context(lm=self.engine, show_guidelines=False):
             if not focus:
                 output = self.generate_expert_general(
-                    topic=topic, background_info=background_info, topN=num_experts
+                    topic=topic, background_info=background_info, topN=num_experts,
                 ).experts
             else:
                 background_info = self.trim_background(
-                    background=background_info, max_words=100
+                    background=background_info, max_words=100,
                 )
                 output = self.generate_expert_w_focus(
                     topic=topic,
@@ -73,10 +73,10 @@ class GenerateExpertModule(dspy.Module):
                     focus=focus,
                     topN=num_experts,
                 ).experts
-        output = output.replace("*", "").replace("[", "").replace("]", "")
+        output = output.replace('*', '').replace('[', '').replace(']', '')
         expert_list = []
-        for s in output.split("\n"):
-            match = re.search(r"\d+\.\s*(.*)", s)
+        for s in output.split('\n'):
+            match = re.search(r'\d+\.\s*(.*)', s)
             if match:
                 expert_list.append(match.group(1))
         expert_list = [expert.strip() for expert in expert_list if expert.strip()]

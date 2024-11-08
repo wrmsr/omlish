@@ -1,16 +1,14 @@
-import dspy
-from typing import Union, List
 
-from .callback import BaseCallbackHandler
-from .collaborative_storm_utils import (
-    trim_output_after_hint,
-    format_search_results,
-    extract_cited_storm_info,
-    separate_citations,
-)
+import dspy
+
+from ...interface import Information
 from ...logging_wrapper import LoggingWrapper
 from ...utils import ArticleTextProcessing
-from ...interface import Information
+from .callback import BaseCallbackHandler
+from .collaborative_storm_utils import extract_cited_storm_info
+from .collaborative_storm_utils import format_search_results
+from .collaborative_storm_utils import separate_citations
+from .collaborative_storm_utils import trim_output_after_hint
 
 
 class QuestionToQuery(dspy.Signature):
@@ -22,11 +20,11 @@ class QuestionToQuery(dspy.Signature):
     ...
     - query n"""
 
-    topic = dspy.InputField(prefix="Topic context:", format=str)
+    topic = dspy.InputField(prefix='Topic context:', format=str)
     question = dspy.InputField(
-        prefix="I want to collect information about: ", format=str
+        prefix='I want to collect information about: ', format=str,
     )
-    queries = dspy.OutputField(prefix="Queries: \n", format=str)
+    queries = dspy.OutputField(prefix='Queries: \n', format=str)
 
 
 class AnswerQuestion(dspy.Signature):
@@ -37,12 +35,12 @@ class AnswerQuestion(dspy.Signature):
     You DO NOT need to include a References or Sources section to list the sources at the end. The style of writing should be formal.
     """
 
-    topic = dspy.InputField(prefix="Topic you are discussing about:", format=str)
-    question = dspy.InputField(prefix="You want to provide insight on: ", format=str)
-    info = dspy.InputField(prefix="Gathered information:\n", format=str)
-    style = dspy.InputField(prefix="Style of your response should be:", format=str)
+    topic = dspy.InputField(prefix='Topic you are discussing about:', format=str)
+    question = dspy.InputField(prefix='You want to provide insight on: ', format=str)
+    info = dspy.InputField(prefix='Gathered information:\n', format=str)
+    style = dspy.InputField(prefix='Style of your response should be:', format=str)
     answer = dspy.OutputField(
-        prefix="Now give your response. (Try to use as many different sources as possible and do not hallucinate.)",
+        prefix='Now give your response. (Try to use as many different sources as possible and do not hallucinate.)',
         format=str,
     )
 
@@ -52,7 +50,7 @@ class AnswerQuestionModule(dspy.Module):
         self,
         retriever: dspy.Retrieve,
         max_search_queries: int,
-        question_answering_lm: Union[dspy.dsp.LM, dspy.dsp.HFModel],
+        question_answering_lm: dspy.dsp.LM | dspy.dsp.HFModel,
         logging_wrapper: LoggingWrapper,
     ):
         super().__init__()
@@ -66,35 +64,35 @@ class AnswerQuestionModule(dspy.Module):
     def retrieve_information(self, topic, question):
         # decompose question to queries
         with self.logging_wrapper.log_event(
-            f"AnswerQuestionModule.question_to_query ({hash(question)})"
+            f'AnswerQuestionModule.question_to_query ({hash(question)})',
         ):
             with dspy.settings.context(lm=self.question_answering_lm):
                 queries = self.question_to_query(topic=topic, question=question).queries
-            queries = trim_output_after_hint(queries, hint="Queries:")
+            queries = trim_output_after_hint(queries, hint='Queries:')
             queries = [
-                q.replace("-", "").strip().strip('"').strip('"').strip()
-                for q in queries.split("\n")
+                q.replace('-', '').strip().strip('"').strip('"').strip()
+                for q in queries.split('\n')
             ]
             queries = queries[: self.max_search_queries]
         self.logging_wrapper.add_query_count(count=len(queries))
         with self.logging_wrapper.log_event(
-            f"AnswerQuestionModule.retriever.retrieve ({hash(question)})"
+            f'AnswerQuestionModule.retriever.retrieve ({hash(question)})',
         ):
             # retrieve information using retriever
-            searched_results: List[Information] = self.retriever.retrieve(
-                list(set(queries)), exclude_urls=[]
+            searched_results: list[Information] = self.retriever.retrieve(
+                list(set(queries)), exclude_urls=[],
             )
         # update storm information meta to include the question
         for storm_info in searched_results:
-            storm_info.meta["question"] = question
+            storm_info.meta['question'] = question
         return queries, searched_results
 
     def forward(
         self,
         topic: str,
         question: str,
-        mode: str = "brief",
-        style: str = "conversational",
+        mode: str = 'brief',
+        style: str = 'conversational',
         callback_handler: BaseCallbackHandler = None,
     ):
         """
@@ -118,32 +116,32 @@ class AnswerQuestionModule(dspy.Module):
         if callback_handler is not None:
             callback_handler.on_expert_information_collection_start()
         queries, searched_results = self.retrieve_information(
-            topic=topic, question=question
+            topic=topic, question=question,
         )
         if callback_handler is not None:
             callback_handler.on_expert_information_collection_end(searched_results)
         # format information string for answer generation
         info_text, index_to_information_mapping = format_search_results(
-            searched_results, mode=mode
+            searched_results, mode=mode,
         )
-        answer = "Sorry, there is insufficient information to answer the question."
+        answer = 'Sorry, there is insufficient information to answer the question.'
         # generate answer to the question
         if info_text:
             with self.logging_wrapper.log_event(
-                f"AnswerQuestionModule.answer_question ({hash(question)})"
+                f'AnswerQuestionModule.answer_question ({hash(question)})',
             ):
                 with dspy.settings.context(
-                    lm=self.question_answering_lm, show_guidelines=False
+                    lm=self.question_answering_lm, show_guidelines=False,
                 ):
                     answer = self.answer_question(
-                        topic=topic, question=question, info=info_text, style=style
+                        topic=topic, question=question, info=info_text, style=style,
                     ).answer
                     answer = ArticleTextProcessing.remove_uncompleted_sentences_with_citations(
-                        answer
+                        answer,
                     )
                     answer = trim_output_after_hint(
                         answer,
-                        hint="Now give your response. (Try to use as many different sources as possible and do not hallucinate.)",
+                        hint='Now give your response. (Try to use as many different sources as possible and do not hallucinate.)',
                     )
                     # enforce single citation index bracket. [1, 2] -> [1][2]
                     answer = separate_citations(answer)
@@ -151,7 +149,7 @@ class AnswerQuestionModule(dspy.Module):
                         callback_handler.on_expert_utterance_generation_end()
         # construct cited search result
         cited_searched_results = extract_cited_storm_info(
-            response=answer, index_to_storm_info=index_to_information_mapping
+            response=answer, index_to_storm_info=index_to_information_mapping,
         )
 
         return dspy.Prediction(

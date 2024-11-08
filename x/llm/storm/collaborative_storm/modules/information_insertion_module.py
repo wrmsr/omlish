@@ -1,16 +1,17 @@
-import dspy
-import numpy as np
 import re
 import traceback
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import dspy
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import List, Union, Dict, Optional
 
-from .collaborative_storm_utils import trim_output_after_hint
-from ...dataclass import KnowledgeNode, KnowledgeBase
+from ...dataclass import KnowledgeBase
+from ...dataclass import KnowledgeNode
 from ...encoder import get_text_embeddings
 from ...interface import Information
+from .collaborative_storm_utils import trim_output_after_hint
 
 
 class InsertInformation(dspy.Signature):
@@ -30,10 +31,10 @@ class InsertInformation(dspy.Signature):
     """
 
     intent = dspy.InputField(
-        prefix="Question and query leads to this info: ", format=str
+        prefix='Question and query leads to this info: ', format=str,
     )
-    structure = dspy.InputField(prefix="Tree structure: \n", format=str)
-    choice = dspy.OutputField(prefix="Choice:\n", format=str)
+    structure = dspy.InputField(prefix='Tree structure: \n', format=str)
+    choice = dspy.OutputField(prefix='Choice:\n', format=str)
 
 
 class InsertInformationCandidateChoice(dspy.Signature):
@@ -44,64 +45,64 @@ class InsertInformationCandidateChoice(dspy.Signature):
     """
 
     intent = dspy.InputField(
-        prefix="Question and query leads to this info: ", format=str
+        prefix='Question and query leads to this info: ', format=str,
     )
-    choices = dspy.InputField(prefix="Candidate placement:\n", format=str)
-    decision = dspy.OutputField(prefix="Decision:\n", format=str)
+    choices = dspy.InputField(prefix='Candidate placement:\n', format=str)
+    decision = dspy.OutputField(prefix='Decision:\n', format=str)
 
 
 class InsertInformationModule(dspy.Module):
-    def __init__(self, engine: Union[dspy.dsp.LM, dspy.dsp.HFModel]):
+    def __init__(self, engine: dspy.dsp.LM | dspy.dsp.HFModel):
         self.engine = engine
         self.insert_info = dspy.ChainOfThought(InsertInformation)
         self.candidate_choosing = dspy.Predict(InsertInformationCandidateChoice)
 
     def _construct_intent(self, question: str, query: str):
-        intent = ""
-        if query == "Not applicable":
+        intent = ''
+        if query == 'Not applicable':
             return question
         if question:
-            intent += f"Question: {question}\n"
+            intent += f'Question: {question}\n'
         if query:
-            intent += f"Query: {query}\n"
+            intent += f'Query: {query}\n'
         if not intent:
-            intent = "Not available."
+            intent = 'Not available.'
         return intent
 
     def _get_navigation_choice(
-        self, knowledge_node: KnowledgeNode, question: str, query: str
+        self, knowledge_node: KnowledgeNode, question: str, query: str,
     ):
         # construct information intent
         intent = self._construct_intent(question, query)
         # construct current kb structure
-        structure = f"Current Node: {knowledge_node.name}\n"
-        child_names = ", ".join(knowledge_node.get_children_names())
+        structure = f'Current Node: {knowledge_node.name}\n'
+        child_names = ', '.join(knowledge_node.get_children_names())
         if child_names:
-            structure += f"Child Nodes: {child_names}"
-        navigated_path = " -> ".join(knowledge_node.get_path_from_root())
-        structure += f"Path you have nagivated: {navigated_path}"
+            structure += f'Child Nodes: {child_names}'
+        navigated_path = ' -> '.join(knowledge_node.get_path_from_root())
+        structure += f'Path you have nagivated: {navigated_path}'
 
         # get predicted action
         with dspy.settings.context(lm=self.engine):
             predicted_action = self.insert_info(
-                intent=intent, structure=structure
+                intent=intent, structure=structure,
             ).choice
 
         # parse action
         cleaned_predicted_action = trim_output_after_hint(
-            predicted_action, "Choice:"
+            predicted_action, 'Choice:',
         ).strip()
-        cleaned_predicted_action = cleaned_predicted_action.strip("-").strip()
-        if cleaned_predicted_action.startswith("insert"):
-            return "insert", ""
-        elif cleaned_predicted_action.startswith("step:"):
-            node_name = trim_output_after_hint(cleaned_predicted_action, "step:")
-            return "step", node_name
-        elif cleaned_predicted_action.startswith("create:"):
-            node_name = trim_output_after_hint(cleaned_predicted_action, "create:")
-            return "create", node_name
+        cleaned_predicted_action = cleaned_predicted_action.strip('-').strip()
+        if cleaned_predicted_action.startswith('insert'):
+            return 'insert', ''
+        elif cleaned_predicted_action.startswith('step:'):
+            node_name = trim_output_after_hint(cleaned_predicted_action, 'step:')
+            return 'step', node_name
+        elif cleaned_predicted_action.startswith('create:'):
+            node_name = trim_output_after_hint(cleaned_predicted_action, 'create:')
+            return 'create', node_name
         raise Exception(
-            f"Undefined predicted action in knowledge navigation. {predicted_action}"
+            f'Undefined predicted action in knowledge navigation. {predicted_action}',
         )
 
     def layer_by_layer_navigation_placement(
@@ -110,50 +111,50 @@ class InsertInformationModule(dspy.Module):
         question: str,
         query: str,
         allow_create_new_node: bool = False,
-        root: Optional[KnowledgeNode] = None,
+        root: KnowledgeNode | None = None,
     ):
         current_node: KnowledgeNode = knowledge_base.root if root is None else root
 
         while True:
             action_type, node_name = self._get_navigation_choice(
-                knowledge_node=current_node, question=question, query=query
+                knowledge_node=current_node, question=question, query=query,
             )
-            if action_type == "insert":
+            if action_type == 'insert':
                 return dspy.Prediction(
-                    information_placement=" -> ".join(
-                        current_node.get_path_from_root(root)
+                    information_placement=' -> '.join(
+                        current_node.get_path_from_root(root),
                     ),
-                    note="None",
+                    note='None',
                 )
-            elif action_type == "step":
+            elif action_type == 'step':
                 for child in current_node.children:
                     if child.name == node_name:
                         current_node = child
                         break
                 else:
-                    raise ValueError(f"Child node with name {node_name} not found.")
-            elif action_type == "create":
+                    raise ValueError(f'Child node with name {node_name} not found.')
+            elif action_type == 'create':
                 placement_path = current_node.get_path_from_root(root)
                 if allow_create_new_node:
                     placement_path.append(node_name)
-                    note = f"create new node: {{{node_name}}} under {{{current_node.name}}}"
+                    note = f'create new node: {{{node_name}}} under {{{current_node.name}}}'
                 else:
-                    note = f"attempt to create new node: {{{node_name}}} under {{{current_node.name}}}"
+                    note = f'attempt to create new node: {{{node_name}}} under {{{current_node.name}}}'
                 return dspy.Prediction(
-                    information_placement=" -> ".join(placement_path), note=note
+                    information_placement=' -> '.join(placement_path), note=note,
                 )
             else:
-                raise ValueError(f"Unknown action type: {action_type}")
+                raise ValueError(f'Unknown action type: {action_type}')
 
     def _get_sorted_embed_sim_section(
         self,
         encoded_outline: np.ndarray,
-        outlines: List[str],
+        outlines: list[str],
         question: str,
         query: str,
     ):
         if encoded_outline is not None and encoded_outline.size > 0:
-            encoded_query, token_usage = get_text_embeddings(f"{question}, {query}")
+            encoded_query, token_usage = get_text_embeddings(f'{question}, {query}')
             sim = cosine_similarity([encoded_query], encoded_outline)[0]
             sorted_indices = np.argsort(sim)
             sorted_outlines = np.array(outlines)[sorted_indices[::-1]]
@@ -162,7 +163,7 @@ class InsertInformationModule(dspy.Module):
             return outlines
 
     def _parse_selected_index(self, string: str):
-        match = re.search(r"\[(\d+)\]", string)
+        match = re.search(r'\[(\d+)\]', string)
         if match:
             return int(match.group(1))
         try:
@@ -176,43 +177,43 @@ class InsertInformationModule(dspy.Module):
         question: str,
         query: str,
         encoded_outlines: np.ndarray,
-        outlines: List[str],
+        outlines: list[str],
         top_N_candidates: int = 5,
     ):
         sorted_candidates = self._get_sorted_embed_sim_section(
-            encoded_outlines, outlines, question, query
+            encoded_outlines, outlines, question, query,
         )
         considered_candidates = sorted_candidates[
             : min(len(sorted_candidates), top_N_candidates)
         ]
-        choices_string = "\n".join(
+        choices_string = '\n'.join(
             [
-                f"{idx + 1}: {candidate}"
+                f'{idx + 1}: {candidate}'
                 for idx, candidate in enumerate(considered_candidates)
-            ]
+            ],
         )
         with dspy.settings.context(lm=self.engine, show_guidelines=False):
             decision = self.candidate_choosing(
                 intent=self._construct_intent(question=question, query=query),
                 choices=choices_string,
             ).decision
-            decision = trim_output_after_hint(decision, hint="Decision:")
-            if "Best placement:" in decision:
-                decision = trim_output_after_hint(decision, hint="Best placement:")
+            decision = trim_output_after_hint(decision, hint='Decision:')
+            if 'Best placement:' in decision:
+                decision = trim_output_after_hint(decision, hint='Best placement:')
                 selected_index = self._parse_selected_index(decision)
                 if selected_index is not None:
                     selected_index = selected_index - 1
                     if selected_index < len(sorted_candidates) and selected_index >= 0:
                         return dspy.Prediction(
                             information_placement=sorted_candidates[selected_index],
-                            note=f"Choosing from:\n{considered_candidates}",
+                            note=f'Choosing from:\n{considered_candidates}',
                         )
             return None
 
-    def _info_list_to_intent_mapping(self, information_list: List[Information]):
+    def _info_list_to_intent_mapping(self, information_list: list[Information]):
         intent_to_placement_dict = {}
         for info in information_list:
-            intent = (info.meta.get("question", ""), info.meta.get("query", ""))
+            intent = (info.meta.get('question', ''), info.meta.get('query', ''))
             if intent not in intent_to_placement_dict:
                 intent_to_placement_dict[intent] = None
         return intent_to_placement_dict
@@ -220,17 +221,17 @@ class InsertInformationModule(dspy.Module):
     def forward(
         self,
         knowledge_base: KnowledgeBase,
-        information: Union[Information, List[Information]],
+        information: Information | list[Information],
         allow_create_new_node: bool = False,
         max_thread: int = 5,
-        insert_root: Optional[KnowledgeNode] = None,
+        insert_root: KnowledgeNode | None = None,
         skip_candidate_from_embedding: bool = False,
     ):
 
-        if not isinstance(information, List):
+        if not isinstance(information, list):
             information = [information]
-        intent_to_placement_dict: Dict = self._info_list_to_intent_mapping(
-            information_list=information
+        intent_to_placement_dict: dict = self._info_list_to_intent_mapping(
+            information_list=information,
         )
 
         # process one intent
@@ -254,14 +255,14 @@ class InsertInformationModule(dspy.Module):
                         root=insert_root,
                     )
                 return (question, query), candidate_placement
-            except Exception as e:
+            except Exception:
                 print(traceback.format_exc())
                 return (question, query), None
 
         def insert_info_to_kb(info, placement_prediction):
             if placement_prediction is not None:
                 missing_node_handling = (
-                    "raise error" if not allow_create_new_node else "create"
+                    'raise error' if not allow_create_new_node else 'create'
                 )
                 knowledge_base.insert_information(
                     path=placement_prediction.information_placement,
@@ -287,8 +288,8 @@ class InsertInformationModule(dspy.Module):
                     intent_to_placement_dict[(question, query)] = candidate_placement
             # back mapping placement to each information
             for info in information:
-                intent = (info.meta.get("question", ""), info.meta.get("query", ""))
-                placement_prediction = intent_to_placement_dict.get(intent, None)
+                intent = (info.meta.get('question', ''), info.meta.get('query', ''))
+                placement_prediction = intent_to_placement_dict.get(intent)
                 insert_info_to_kb(info, placement_prediction)
                 to_return.append((info, placement_prediction))
             return to_return
@@ -297,15 +298,15 @@ class InsertInformationModule(dspy.Module):
             for question, query in intent_to_placement_dict:
                 encoded_outlines, outlines = (
                     knowledge_base.get_knowledge_base_structure_embedding(
-                        root=insert_root
+                        root=insert_root,
                     )
                 )
                 _, placement_prediction = process_intent(question=question, query=query)
                 intent_to_placement_dict[(question, query)] = placement_prediction
 
             for info in information:
-                intent = (info.meta.get("question", ""), info.meta.get("query", ""))
-                placement_prediction = intent_to_placement_dict.get(intent, None)
+                intent = (info.meta.get('question', ''), info.meta.get('query', ''))
+                placement_prediction = intent_to_placement_dict.get(intent)
                 insert_info_to_kb(info, placement_prediction)
                 to_return.append((info, placement_prediction))
             return to_return
@@ -321,8 +322,8 @@ class ExpandSection(dspy.Signature):
     subsection 3
     """
 
-    section = dspy.InputField(prefix="The section you need to expand: ", format=str)
-    info = dspy.InputField(prefix="The collected information:\n", format=str)
+    section = dspy.InputField(prefix='The section you need to expand: ', format=str)
+    info = dspy.InputField(prefix='The collected information:\n', format=str)
     output = dspy.OutputField(
         prefix="Now provide the expanded subsection names (If there's no need to expand current section as itself serves good organization, then output None):\n",
         format=str,
@@ -332,7 +333,7 @@ class ExpandSection(dspy.Signature):
 class ExpandNodeModule(dspy.Module):
     def __init__(
         self,
-        engine: Union[dspy.dsp.LM, dspy.dsp.HFModel],
+        engine: dspy.dsp.LM | dspy.dsp.HFModel,
         information_insert_module: dspy.Module,
         node_expansion_trigger_count: int,
     ):
@@ -348,7 +349,7 @@ class ExpandNodeModule(dspy.Module):
             intent = f"Question: {info.meta['question']}\nQuery: {info.meta['query']}"
             meta_string.add(intent)
 
-        return "\n\n".join(meta_string)
+        return '\n\n'.join(meta_string)
 
     def _get_expand_subnode_names(self, node, knowledge_base):
         information = self._get_cited_info_meta_string(node, knowledge_base)
@@ -356,20 +357,20 @@ class ExpandNodeModule(dspy.Module):
         with dspy.settings.context(lm=self.engine, show_guidelines=False):
             output = self.expand_section(section=node_path, info=information).output
         subsections = []
-        if "\n" in output and output != "None":
-            subsections = output.split("\n")
+        if '\n' in output and output != 'None':
+            subsections = output.split('\n')
             # remove any integer followed by a dot and a space, a leading dashline,
             # or a specific hint at the start of the string
             subsections = [
-                re.sub(r"^\d+\.\s|-|" + re.escape(node.name), "", text)
-                .replace("*", "")
+                re.sub(r'^\d+\.\s|-|' + re.escape(node.name), '', text)
+                .replace('*', '')
                 .strip()
                 for text in subsections
             ]
         return subsections
 
     def _find_first_node_to_expand(
-        self, root: KnowledgeNode, expanded_nodes: List[KnowledgeNode]
+        self, root: KnowledgeNode, expanded_nodes: list[KnowledgeNode],
     ):
         if root is None:
             return None
@@ -380,7 +381,7 @@ class ExpandNodeModule(dspy.Module):
             return root
         for child in root.children:
             to_return = self._find_first_node_to_expand(
-                root=child, expanded_nodes=expanded_nodes
+                root=child, expanded_nodes=expanded_nodes,
             )
             if to_return is not None:
                 return to_return
@@ -393,7 +394,7 @@ class ExpandNodeModule(dspy.Module):
         # create new nodes
         for subsection_name in subsection_names:
             # remove citation bracket in the subsection name
-            subsection_name = re.sub(r"\[.*?\]", "", subsection_name)
+            subsection_name = re.sub(r'\[.*?\]', '', subsection_name)
             knowledge_base.insert_node(new_node_name=subsection_name, parent_node=node)
         # reset original information placement
         original_cited_index = node.content
@@ -414,7 +415,7 @@ class ExpandNodeModule(dspy.Module):
         expanded_nodes = []
         while True:
             node_to_expand = self._find_first_node_to_expand(
-                root=knowledge_base.root, expanded_nodes=expanded_nodes
+                root=knowledge_base.root, expanded_nodes=expanded_nodes,
             )
             if node_to_expand is None:
                 break

@@ -19,9 +19,17 @@ args.output_dir/
 import os
 from argparse import ArgumentParser
 
-from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ... import STORMWikiLMConfigs
+from ... import STORMWikiRunner
+from ... import STORMWikiRunnerArguments
 from ...lm import ClaudeModel
-from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ...rm import BingSearch
+from ...rm import BraveRM
+from ...rm import DuckDuckGoSearchRM
+from ...rm import SearXNG
+from ...rm import SerperRM
+from ...rm import TavilySearchRM
+from ...rm import YouRM
 from ...utils import load_api_key
 
 
@@ -29,9 +37,9 @@ def main(args):
     load_api_key(toml_file_path='secrets.toml')
     lm_configs = STORMWikiLMConfigs()
     claude_kwargs = {
-        'api_key': os.getenv("ANTHROPIC_API_KEY"),
+        'api_key': os.getenv('ANTHROPIC_API_KEY'),
         'temperature': 1.0,
-        'top_p': 0.9
+        'top_p': 0.9,
     }
 
     # STORM is a LM system so different components can be powered by different models.
@@ -39,11 +47,21 @@ def main(args):
     # which is used to split queries, synthesize answers in the conversation. We recommend using stronger models
     # for outline_gen_lm which is responsible for organizing the collected information, and article_gen_lm
     # which is responsible for generating sections with citations.
-    conv_simulator_lm = ClaudeModel(model='claude-3-haiku-20240307', max_tokens=500, **claude_kwargs)
-    question_asker_lm = ClaudeModel(model='claude-3-sonnet-20240229', max_tokens=500, **claude_kwargs)
-    outline_gen_lm = ClaudeModel(model='claude-3-opus-20240229', max_tokens=400, **claude_kwargs)
-    article_gen_lm = ClaudeModel(model='claude-3-opus-20240229', max_tokens=700, **claude_kwargs)
-    article_polish_lm = ClaudeModel(model='claude-3-opus-20240229', max_tokens=4000, **claude_kwargs)
+    conv_simulator_lm = ClaudeModel(
+        model='claude-3-haiku-20240307', max_tokens=500, **claude_kwargs,
+    )
+    question_asker_lm = ClaudeModel(
+        model='claude-3-sonnet-20240229', max_tokens=500, **claude_kwargs,
+    )
+    outline_gen_lm = ClaudeModel(
+        model='claude-3-opus-20240229', max_tokens=400, **claude_kwargs,
+    )
+    article_gen_lm = ClaudeModel(
+        model='claude-3-opus-20240229', max_tokens=700, **claude_kwargs,
+    )
+    article_polish_lm = ClaudeModel(
+        model='claude-3-opus-20240229', max_tokens=4000, **claude_kwargs,
+    )
 
     lm_configs.set_conv_simulator_lm(conv_simulator_lm)
     lm_configs.set_question_asker_lm(question_asker_lm)
@@ -63,22 +81,41 @@ def main(args):
     # Currently, the information source is the Internet and we use search engine API as the retrieval module.
     match args.retriever:
         case 'bing':
-            rm = BingSearch(bing_search_api=os.getenv('BING_SEARCH_API_KEY'), k=engine_args.search_top_k)
+            rm = BingSearch(
+                bing_search_api=os.getenv('BING_SEARCH_API_KEY'),
+                k=engine_args.search_top_k,
+            )
         case 'you':
-             rm = YouRM(ydc_api_key=os.getenv('YDC_API_KEY'), k=engine_args.search_top_k)
+            rm = YouRM(ydc_api_key=os.getenv('YDC_API_KEY'), k=engine_args.search_top_k)
         case 'brave':
-            rm = BraveRM(brave_search_api_key=os.getenv('BRAVE_API_KEY'), k=engine_args.search_top_k)
+            rm = BraveRM(
+                brave_search_api_key=os.getenv('BRAVE_API_KEY'),
+                k=engine_args.search_top_k,
+            )
         case 'duckduckgo':
-            rm = DuckDuckGoSearchRM(k=engine_args.search_top_k, safe_search='On', region='us-en')
+            rm = DuckDuckGoSearchRM(
+                k=engine_args.search_top_k, safe_search='On', region='us-en',
+            )
         case 'serper':
-            rm = SerperRM(serper_search_api_key=os.getenv('SERPER_API_KEY'), query_params={'autocorrect': True, 'num': 10, 'page': 1})
+            rm = SerperRM(
+                serper_search_api_key=os.getenv('SERPER_API_KEY'),
+                query_params={'autocorrect': True, 'num': 10, 'page': 1},
+            )
         case 'tavily':
-            rm = TavilySearchRM(tavily_search_api_key=os.getenv('TAVILY_API_KEY'), k=engine_args.search_top_k, include_raw_content=True)
+            rm = TavilySearchRM(
+                tavily_search_api_key=os.getenv('TAVILY_API_KEY'),
+                k=engine_args.search_top_k,
+                include_raw_content=True,
+            )
         case 'searxng':
-            rm = SearXNG(searxng_api_key=os.getenv('SEARXNG_API_KEY'), k=engine_args.search_top_k)
+            rm = SearXNG(
+                searxng_api_key=os.getenv('SEARXNG_API_KEY'), k=engine_args.search_top_k,
+            )
         case _:
-             raise ValueError(f'Invalid retriever: {args.retriever}. Choose either "bing", "you", "brave", "duckduckgo", "serper", "tavily", or "searxng"')
-    
+            raise ValueError(
+                f'Invalid retriever: {args.retriever}. Choose either "bing", "you", "brave", "duckduckgo", "serper", "tavily", or "searxng"',
+            )
+
     runner = STORMWikiRunner(engine_args, lm_configs, rm)
 
     topic = input('Topic: ')
@@ -96,35 +133,78 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     # global arguments
-    parser.add_argument('--output-dir', type=str, default='./results/claude',
-                        help='Directory to store the outputs.')
-    parser.add_argument('--max-thread-num', type=int, default=3,
-                        help='Maximum number of threads to use. The information seeking part and the article generation'
-                             'part can speed up by using multiple threads. Consider reducing it if keep getting '
-                             '"Exceed rate limit" error when calling LM API.')
-    parser.add_argument('--retriever', type=str, choices=['bing', 'you', 'brave', 'serper', 'duckduckgo', 'tavily', 'searxng'],
-                        help='The search engine API to use for retrieving information.')
+    parser.add_argument(
+        '--output-dir',
+        type=str,
+        default='./results/claude',
+        help='Directory to store the outputs.',
+    )
+    parser.add_argument(
+        '--max-thread-num',
+        type=int,
+        default=3,
+        help='Maximum number of threads to use. The information seeking part and the article generation'
+        'part can speed up by using multiple threads. Consider reducing it if keep getting '
+        '"Exceed rate limit" error when calling LM API.',
+    )
+    parser.add_argument(
+        '--retriever',
+        type=str,
+        choices=['bing', 'you', 'brave', 'serper', 'duckduckgo', 'tavily', 'searxng'],
+        help='The search engine API to use for retrieving information.',
+    )
     # stage of the pipeline
-    parser.add_argument('--do-research', action='store_true',
-                        help='If True, simulate conversation to research the topic; otherwise, load the results.')
-    parser.add_argument('--do-generate-outline', action='store_true',
-                        help='If True, generate an outline for the topic; otherwise, load the results.')
-    parser.add_argument('--do-generate-article', action='store_true',
-                        help='If True, generate an article for the topic; otherwise, load the results.')
-    parser.add_argument('--do-polish-article', action='store_true',
-                        help='If True, polish the article by adding a summarization section and (optionally) removing '
-                             'duplicate content.')
+    parser.add_argument(
+        '--do-research',
+        action='store_true',
+        help='If True, simulate conversation to research the topic; otherwise, load the results.',
+    )
+    parser.add_argument(
+        '--do-generate-outline',
+        action='store_true',
+        help='If True, generate an outline for the topic; otherwise, load the results.',
+    )
+    parser.add_argument(
+        '--do-generate-article',
+        action='store_true',
+        help='If True, generate an article for the topic; otherwise, load the results.',
+    )
+    parser.add_argument(
+        '--do-polish-article',
+        action='store_true',
+        help='If True, polish the article by adding a summarization section and (optionally) removing '
+        'duplicate content.',
+    )
     # hyperparameters for the pre-writing stage
-    parser.add_argument('--max-conv-turn', type=int, default=3,
-                        help='Maximum number of questions in conversational question asking.')
-    parser.add_argument('--max-perspective', type=int, default=3,
-                        help='Maximum number of perspectives to consider in perspective-guided question asking.')
-    parser.add_argument('--search-top-k', type=int, default=3,
-                        help='Top k search results to consider for each search query.')
+    parser.add_argument(
+        '--max-conv-turn',
+        type=int,
+        default=3,
+        help='Maximum number of questions in conversational question asking.',
+    )
+    parser.add_argument(
+        '--max-perspective',
+        type=int,
+        default=3,
+        help='Maximum number of perspectives to consider in perspective-guided question asking.',
+    )
+    parser.add_argument(
+        '--search-top-k',
+        type=int,
+        default=3,
+        help='Top k search results to consider for each search query.',
+    )
     # hyperparameters for the writing stage
-    parser.add_argument('--retrieve-top-k', type=int, default=3,
-                        help='Top k collected references for each section title.')
-    parser.add_argument('--remove-duplicate', action='store_true',
-                        help='If True, remove duplicate content from the article.')
+    parser.add_argument(
+        '--retrieve-top-k',
+        type=int,
+        default=3,
+        help='Top k collected references for each section title.',
+    )
+    parser.add_argument(
+        '--remove-duplicate',
+        action='store_true',
+        help='If True, remove duplicate content from the article.',
+    )
 
     main(parser.parse_args())

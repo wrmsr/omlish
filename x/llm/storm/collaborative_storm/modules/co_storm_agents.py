@@ -1,21 +1,24 @@
-import dspy
 from itertools import zip_longest
+from typing import TYPE_CHECKING
+
+import dspy
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import List, Optional, TYPE_CHECKING
 
+from ...dataclass import ConversationTurn
+from ...dataclass import KnowledgeBase
+from ...encoder import get_text_embeddings
+from ...interface import Agent
+from ...interface import Information
+from ...interface import LMConfigs
+from ...logging_wrapper import LoggingWrapper
 from .callback import BaseCallbackHandler
-from .collaborative_storm_utils import (
-    extract_storm_info_snippet,
-    _get_answer_question_module_instance,
-)
+from .collaborative_storm_utils import _get_answer_question_module_instance
+from .collaborative_storm_utils import extract_storm_info_snippet
 from .costorm_expert_utterance_generator import CoStormExpertUtteranceGenerationModule
 from .grounded_question_generation import GroundedQuestionGenerationModule
 from .simulate_user import GenSimulatedUserUtterance
-from ...dataclass import ConversationTurn, KnowledgeBase
-from ...encoder import get_text_embeddings
-from ...interface import Agent, Information, LMConfigs
-from ...logging_wrapper import LoggingWrapper
+
 
 if TYPE_CHECKING:
     from ..engine import RunnerArgument
@@ -45,9 +48,9 @@ class CoStormExpert(Agent):
         role_name: str,
         role_description: str,
         lm_config: LMConfigs,
-        runner_argument: "RunnerArgument",
+        runner_argument: 'RunnerArgument',
         logging_wrapper: LoggingWrapper,
-        rm: Optional[dspy.Retrieve] = None,
+        rm: dspy.Retrieve | None = None,
         callback_handler: BaseCallbackHandler = None,
     ):
         super().__init__(topic, role_name, role_description)
@@ -60,7 +63,7 @@ class CoStormExpert(Agent):
         )
 
     def _get_costorm_expert_utterance_generator(
-        self, rm: Optional[dspy.Retrieve] = None
+        self, rm: dspy.Retrieve | None = None,
     ):
         return CoStormExpertUtteranceGenerationModule(
             action_planning_lm=self.lm_config.discourse_manage_lm,
@@ -78,16 +81,16 @@ class CoStormExpert(Agent):
     def generate_utterance(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
+        conversation_history: list[ConversationTurn],
     ):
         with self.logging_wrapper.log_event(
-            "CoStormExpert generate utternace: get knowledge base summary"
+            'CoStormExpert generate utternace: get knowledge base summary',
         ):
             if self.callback_handler is not None:
                 self.callback_handler.on_expert_action_planning_start()
             conversation_summary = knowledge_base.get_knowledge_base_summary()
         with self.logging_wrapper.log_event(
-            "CoStormExpert.generate_utterance generate utterance"
+            'CoStormExpert.generate_utterance generate utterance',
         ):
             last_conv_turn = conversation_history[-1]
             conv_turn = self.costorm_agent_utterance_generator(
@@ -97,12 +100,12 @@ class CoStormExpert(Agent):
                 last_conv_turn=last_conv_turn,
             ).conversation_turn
         with self.logging_wrapper.log_event(
-            "CoStormExpert generate utterance: polish utterance"
+            'CoStormExpert generate utterance: polish utterance',
         ):
             if self.callback_handler is not None:
                 self.callback_handler.on_expert_utterance_polishing_start()
             self.costorm_agent_utterance_generator.polish_utterance(
-                conversation_turn=conv_turn, last_conv_turn=last_conv_turn
+                conversation_turn=conv_turn, last_conv_turn=last_conv_turn,
             )
         return conv_turn
 
@@ -122,7 +125,7 @@ class SimulatedUser(Agent):
         role_description: str,
         intent: str,
         lm_config: LMConfigs,
-        runner_argument: "RunnerArgument",
+        runner_argument: 'RunnerArgument',
         logging_wrapper: LoggingWrapper,
         callback_handler: BaseCallbackHandler = None,
     ):
@@ -132,27 +135,27 @@ class SimulatedUser(Agent):
         self.runner_argument = runner_argument
         self.logging_wrapper = logging_wrapper
         self.gen_simulated_user_utterance = GenSimulatedUserUtterance(
-            engine=self.lm_config.question_answering_lm
+            engine=self.lm_config.question_answering_lm,
         )
         self.callback_handler = callback_handler
 
     def generate_utterance(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
+        conversation_history: list[ConversationTurn],
     ):
         assert (
             self.intent is not None and self.intent
-        ), "Simulate user intent is not initialized."
+        ), 'Simulate user intent is not initialized.'
 
         with self.logging_wrapper.log_event(
-            "SimulatedUser generate utternace: generate utterance"
+            'SimulatedUser generate utternace: generate utterance',
         ):
             utterance = self.gen_simulated_user_utterance(
-                topic=self.topic, intent=self.intent, conv_history=conversation_history
+                topic=self.topic, intent=self.intent, conv_history=conversation_history,
             )
         return ConversationTurn(
-            role="Guest", raw_utterance=utterance, utterance_type="Original Question"
+            role='Guest', raw_utterance=utterance, utterance_type='Original Question',
         )
 
 
@@ -172,7 +175,7 @@ class Moderator(Agent):
         role_name: str,
         role_description: str,
         lm_config: LMConfigs,
-        runner_argument: "RunnerArgument",
+        runner_argument: 'RunnerArgument',
         logging_wrapper: LoggingWrapper,
         callback_handler: BaseCallbackHandler = None,
     ):
@@ -181,27 +184,27 @@ class Moderator(Agent):
         self.runner_argument = runner_argument
         self.logging_wrapper = logging_wrapper
         self.grounded_question_generation_module = GroundedQuestionGenerationModule(
-            engine=self.lm_config.question_asking_lm
+            engine=self.lm_config.question_asking_lm,
         )
         self.callback_handler = callback_handler
 
     def _get_conv_turn_unused_information(
-        self, conv_turn: ConversationTurn, knowledge_base: KnowledgeBase
+        self, conv_turn: ConversationTurn, knowledge_base: KnowledgeBase,
     ):
         # extract all snippets from raw retrieved information
-        raw_retrieved_info: List[Information] = conv_turn.raw_retrieved_info
-        raw_retrieved_single_snippet_info: List[Information] = []
+        raw_retrieved_info: list[Information] = conv_turn.raw_retrieved_info
+        raw_retrieved_single_snippet_info: list[Information] = []
         for info in raw_retrieved_info:
             for snippet_idx in range(len(info.snippets)):
                 raw_retrieved_single_snippet_info.append(
-                    extract_storm_info_snippet(info, snippet_index=snippet_idx)
+                    extract_storm_info_snippet(info, snippet_index=snippet_idx),
                 )
         # get all cited information
         cited_info = list(knowledge_base.info_uuid_to_info_dict.values())
         cited_info_hash_set = set([hash(info) for info in cited_info])
         cited_snippets = [info.snippets[0] for info in cited_info]
         # get list of unused information
-        unused_information: List[Information] = [
+        unused_information: list[Information] = [
             info
             for info in raw_retrieved_single_snippet_info
             if hash(info) not in cited_info_hash_set
@@ -213,20 +216,20 @@ class Moderator(Agent):
         # get embeddings
         cache = knowledge_base.embedding_cache
         unused_snippets_embeddings, _ = get_text_embeddings(
-            unused_information_snippets, embedding_cache=cache, max_workers=100
+            unused_information_snippets, embedding_cache=cache, max_workers=100,
         )
         claim_embedding, _ = get_text_embeddings(
-            conv_turn.claim_to_make, embedding_cache=cache
+            conv_turn.claim_to_make, embedding_cache=cache,
         )
         query_embedding, _ = get_text_embeddings(
-            conv_turn.queries, embedding_cache=cache
+            conv_turn.queries, embedding_cache=cache,
         )
         cited_snippets_embedding, _ = get_text_embeddings(
-            cited_snippets, embedding_cache=cache
+            cited_snippets, embedding_cache=cache,
         )
         # calculate similarity
         query_similarities = cosine_similarity(
-            unused_snippets_embeddings, query_embedding
+            unused_snippets_embeddings, query_embedding,
         )
         max_query_similarity = np.max(query_similarities, axis=1)
         cited_snippets_similarity = np.max(
@@ -236,7 +239,7 @@ class Moderator(Agent):
         cited_snippets_similarity = np.clip(cited_snippets_similarity, 0, 1)
         # use claim similarity to filter out "real" not useful data
         claim_similarity = cosine_similarity(
-            unused_snippets_embeddings, claim_embedding.reshape(1, -1)
+            unused_snippets_embeddings, claim_embedding.reshape(1, -1),
         ).flatten()
         claim_similarity = np.where(claim_similarity >= 0.25, 1.0, 0.0)
         # calculate score: snippet that is close to topic but far from query
@@ -253,7 +256,7 @@ class Moderator(Agent):
     def _get_sorted_unused_snippets(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
+        conversation_history: list[ConversationTurn],
         last_n_conv_turn: int = 2,
     ):
         # get last N conv turn and batch encode all related strings
@@ -262,11 +265,11 @@ class Moderator(Agent):
         for conv_turn in reversed(conversation_history):
             if len(considered_conv_turn) == last_n_conv_turn:
                 break
-            if conv_turn.utterance_type == "Questioning":
+            if conv_turn.utterance_type == 'Questioning':
                 break
             considered_conv_turn.append(conv_turn)
             batch_snippets.extend(
-                sum([info.snippets for info in conv_turn.raw_retrieved_info], [])
+                sum([info.snippets for info in conv_turn.raw_retrieved_info], []),
             )
             batch_snippets.append(conv_turn.claim_to_make)
             batch_snippets.extend(conv_turn.queries)
@@ -278,8 +281,8 @@ class Moderator(Agent):
         for conv_turn in considered_conv_turn:
             sorted_snippets.append(
                 self._get_conv_turn_unused_information(
-                    conv_turn=conv_turn, knowledge_base=knowledge_base
-                )
+                    conv_turn=conv_turn, knowledge_base=knowledge_base,
+                ),
             )
 
         # use round robin rule to merge these snippets
@@ -291,16 +294,16 @@ class Moderator(Agent):
     def generate_utterance(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
+        conversation_history: list[ConversationTurn],
     ):
         with self.logging_wrapper.log_event(
-            "Moderator generate utternace: get unused snippets"
+            'Moderator generate utternace: get unused snippets',
         ):
-            unused_snippets: List[Information] = self._get_sorted_unused_snippets(
-                knowledge_base=knowledge_base, conversation_history=conversation_history
+            unused_snippets: list[Information] = self._get_sorted_unused_snippets(
+                knowledge_base=knowledge_base, conversation_history=conversation_history,
             )
         with self.logging_wrapper.log_event(
-            "Moderator generate utternace: QuestionGeneration module"
+            'Moderator generate utternace: QuestionGeneration module',
         ):
             generated_question = self.grounded_question_generation_module(
                 topic=self.topic,
@@ -311,7 +314,7 @@ class Moderator(Agent):
         return ConversationTurn(
             role=self.role_name,
             raw_utterance=generated_question.raw_utterance,
-            utterance_type="Original Question",
+            utterance_type='Original Question',
             utterance=generated_question.utterance,
             cited_info=generated_question.cited_info,
         )
@@ -331,9 +334,9 @@ class PureRAGAgent(Agent):
         role_name: str,
         role_description: str,
         lm_config: LMConfigs,
-        runner_argument: "RunnerArgument",
+        runner_argument: 'RunnerArgument',
         logging_wrapper: LoggingWrapper,
-        rm: Optional[dspy.Retrieve] = None,
+        rm: dspy.Retrieve | None = None,
         callback_handler: BaseCallbackHandler = None,
     ):
         super().__init__(topic, role_name, role_description)
@@ -351,11 +354,11 @@ class PureRAGAgent(Agent):
         grounded_answer = self.grounded_question_answering_module(
             topic=self.topic,
             question=question,
-            mode="brief",
-            style="conversational and concise",
+            mode='brief',
+            style='conversational and concise',
         )
         conversation_turn = ConversationTurn(
-            role=self.role_name, raw_utterance="", utterance_type="Potential Answer"
+            role=self.role_name, raw_utterance='', utterance_type='Potential Answer',
         )
         conversation_turn.claim_to_make = question
         conversation_turn.raw_utterance = grounded_answer.response
@@ -371,11 +374,11 @@ class PureRAGAgent(Agent):
     def generate_utterance(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
+        conversation_history: list[ConversationTurn],
     ):
         with self.logging_wrapper.log_event(
-            "PureRAGAgent generate utternace: generate utterance"
+            'PureRAGAgent generate utternace: generate utterance',
         ):
             return self._gen_utterance_from_question(
-                question=conversation_history[-1].utterance
+                question=conversation_history[-1].utterance,
             )

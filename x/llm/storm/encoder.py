@@ -1,73 +1,73 @@
-import requests
 import os
-from typing import List, Tuple, Union, Optional, Dict, Literal
-import numpy as np
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import numpy as np
+import requests
 
 
 class EmbeddingModel:
     def __init__(self):
         pass
 
-    def get_embedding(self, text: str) -> Tuple[np.ndarray, int]:
-        raise Exception("Not implemented")
+    def get_embedding(self, text: str) -> tuple[np.ndarray, int]:
+        raise Exception('Not implemented')
 
 
 class OpenAIEmbeddingModel(EmbeddingModel):
-    def __init__(self, model: str = "text-embedding-3-small", api_key: str = None):
+    def __init__(self, model: str = 'text-embedding-3-small', api_key: str = None):
         if not api_key:
-            api_key = os.getenv("OPENAI_API_KEY")
+            api_key = os.getenv('OPENAI_API_KEY')
 
-        self.url = "https://api.openai.com/v1/embeddings"
+        self.url = 'https://api.openai.com/v1/embeddings'
         self.headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}',
         }
         self.model = model
 
-    def get_embedding(self, text: str) -> Tuple[np.ndarray, int]:
-        data = {"input": text, "model": self.model}
+    def get_embedding(self, text: str) -> tuple[np.ndarray, int]:
+        data = {'input': text, 'model': self.model}
 
         response = requests.post(self.url, headers=self.headers, json=data)
         if response.status_code == 200:
             data = response.json()
-            embedding = np.array(data["data"][0]["embedding"])
-            token = data["usage"]["prompt_tokens"]
+            embedding = np.array(data['data'][0]['embedding'])
+            token = data['usage']['prompt_tokens']
             return embedding, token
         else:
             response.raise_for_status()
 
 
 class TogetherEmbeddingModel:
-    def __init__(self, model: str = "BAAI/bge-large-en-v1.5", api_key: str = None):
+    def __init__(self, model: str = 'BAAI/bge-large-en-v1.5', api_key: str = None):
         import together
 
         self.model = model
         if not api_key:
-            api_key = os.getenv("TOGETHER_API_KEY")
+            api_key = os.getenv('TOGETHER_API_KEY')
         self.together_client = together.Together(api_key=api_key)
 
-    def get_embedding(self, text: str) -> Tuple[np.ndarray, int]:
+    def get_embedding(self, text: str) -> tuple[np.ndarray, int]:
         response = self.together_client.embeddings.create(input=text, model=self.model)
         return response.data[0].embedding, -1
 
 
 class AzureOpenAIEmbeddingModel:
-    def __init__(self, model: str = "text-embedding-3-small", api_key: str = None):
+    def __init__(self, model: str = 'text-embedding-3-small', api_key: str = None):
         from openai import AzureOpenAI
 
         self.model = model
         if not api_key:
-            api_key = os.getenv("AZURE_API_KEY")
+            api_key = os.getenv('AZURE_API_KEY')
 
         self.client = AzureOpenAI(
             api_key=api_key,
-            api_version=os.getenv("AZURE_API_VERSION"),
-            azure_endpoint=os.getenv("AZURE_API_BASE"),
+            api_version=os.getenv('AZURE_API_VERSION'),
+            azure_endpoint=os.getenv('AZURE_API_BASE'),
         )
 
-    def get_embedding(self, text: str) -> Tuple[np.ndarray, int]:
+    def get_embedding(self, text: str) -> tuple[np.ndarray, int]:
         response = self.client.embeddings.create(input=text, model=self.model)
 
         embedding = np.array(response.data[0].embedding)
@@ -76,10 +76,10 @@ class AzureOpenAIEmbeddingModel:
 
 
 def get_text_embeddings(
-    texts: Union[str, List[str]],
+    texts: str | list[str],
     max_workers: int = 5,
-    embedding_cache: Optional[Dict[str, np.ndarray]] = None,
-) -> Tuple[np.ndarray, int]:
+    embedding_cache: dict[str, np.ndarray] | None = None,
+) -> tuple[np.ndarray, int]:
     """
     Get text embeddings using OpenAI's text-embedding-3-small model.
 
@@ -93,19 +93,19 @@ def get_text_embeddings(
         Tuple[np.ndarray, int]: The 2D array of embeddings and the total token usage.
     """
     embedding_model = None
-    encoder_type = os.getenv("ENCODER_API_TYPE")
-    if encoder_type and encoder_type == "openai":
+    encoder_type = os.getenv('ENCODER_API_TYPE')
+    if encoder_type and encoder_type == 'openai':
         embedding_model = OpenAIEmbeddingModel()
-    elif encoder_type and encoder_type == "azure":
+    elif encoder_type and encoder_type == 'azure':
         embedding_model = AzureOpenAIEmbeddingModel()
-    elif encoder_type == encoder_type == "together":
+    elif encoder_type == encoder_type == 'together':
         embedding_model = TogetherEmbeddingModel()
     else:
         raise Exception(
-            "No valid encoder type is provided. Check <repo root>/secrets.toml for the field ENCODER_API_TYPE"
+            'No valid encoder type is provided. Check <repo root>/secrets.toml for the field ENCODER_API_TYPE',
         )
 
-    def fetch_embedding(text: str) -> Tuple[str, np.ndarray, int]:
+    def fetch_embedding(text: str) -> tuple[str, np.ndarray, int]:
         if embedding_cache is not None and text in embedding_cache:
             return (
                 text,
@@ -131,7 +131,7 @@ def get_text_embeddings(
                 embeddings.append((text, embedding, tokens))
                 total_tokens += tokens
             except Exception as e:
-                print(f"An error occurred for text: {futures[future]}")
+                print(f'An error occurred for text: {futures[future]}')
                 print(e)
 
     # Sort results to match the order of the input texts

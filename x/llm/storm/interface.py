@@ -1,18 +1,21 @@
 import concurrent.futures
-import dspy
 import functools
 import hashlib
 import json
 import logging
 import time
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from collections import OrderedDict
-from typing import Dict, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+import dspy
 
 from .utils import ArticleTextProcessing
 
+
 logging.basicConfig(
-    level=logging.INFO, format="%(name)s : %(levelname)-8s : %(message)s"
+    level=logging.INFO, format='%(name)s : %(levelname)-8s : %(message)s',
 )
 logger = logging.getLogger(__name__)
 
@@ -72,7 +75,7 @@ class Information:
             (
                 self.url,
                 tuple(sorted(self.snippets)),
-            )
+            ),
         )
 
     def __eq__(self, other):
@@ -98,7 +101,7 @@ class Information:
         """Generate an MD5 hash for a given value."""
         if isinstance(value, (dict, list, tuple)):
             value = json.dumps(value, sort_keys=True)
-        return hashlib.md5(str(value).encode("utf-8")).hexdigest()
+        return hashlib.md5(str(value).encode('utf-8')).hexdigest()
 
     @classmethod
     def from_dict(cls, info_dict):
@@ -113,23 +116,23 @@ class Information:
             Information: An instance of Information.
         """
         info = cls(
-            url=info_dict["url"],
-            description=info_dict["description"],
-            snippets=info_dict["snippets"],
-            title=info_dict["title"],
-            meta=info_dict.get("meta", None),
+            url=info_dict['url'],
+            description=info_dict['description'],
+            snippets=info_dict['snippets'],
+            title=info_dict['title'],
+            meta=info_dict.get('meta', None),
         )
-        info.citation_uuid = int(info_dict.get("citation_uuid", -1))
+        info.citation_uuid = int(info_dict.get('citation_uuid', -1))
         return info
 
     def to_dict(self):
         return {
-            "url": self.url,
-            "description": self.description,
-            "snippets": self.snippets,
-            "title": self.title,
-            "meta": self.meta,
-            "citation_uuid": self.citation_uuid,
+            'url': self.url,
+            'description': self.description,
+            'snippets': self.snippets,
+            'title': self.title,
+            'meta': self.meta,
+            'citation_uuid': self.citation_uuid,
         }
 
 
@@ -164,8 +167,8 @@ class Article(ABC):
         self.root = ArticleSectionNode(topic_name)
 
     def find_section(
-        self, node: ArticleSectionNode, name: str
-    ) -> Optional[ArticleSectionNode]:
+        self, node: ArticleSectionNode, name: str,
+    ) -> ArticleSectionNode | None:
         """
         Return the node of the section given the section name.
 
@@ -221,7 +224,7 @@ class Article(ABC):
             }
         """
 
-        def build_tree(node) -> Dict[str, Dict]:
+        def build_tree(node) -> dict[str, dict]:
             tree = {}
             for child in node.children:
                 tree[child.section_name] = build_tree(child)
@@ -229,7 +232,7 @@ class Article(ABC):
 
         return build_tree(self.root)
 
-    def get_first_level_section_names(self) -> List[str]:
+    def get_first_level_section_names(self) -> list[str]:
         """
         Get first level section names
         """
@@ -241,7 +244,6 @@ class Article(ABC):
         """
         Create an instance of the Article object from a string
         """
-        pass
 
     def prune_empty_nodes(self, node=None):
         if node is None:
@@ -251,7 +253,7 @@ class Article(ABC):
             child for child in node.children if self.prune_empty_nodes(child)
         ]
 
-        if (node.content is None or node.content == "") and not node.children:
+        if (node.content is None or node.content == '') and not node.children:
             return None
         else:
             return node
@@ -272,8 +274,8 @@ class Retriever:
 
     def collect_and_reset_rm_usage(self):
         combined_usage = []
-        if hasattr(getattr(self, "rm"), "get_usage_and_reset"):
-            combined_usage.append(getattr(self, "rm").get_usage_and_reset())
+        if hasattr(getattr(self, 'rm'), 'get_usage_and_reset'):
+            combined_usage.append(getattr(self, 'rm').get_usage_and_reset())
 
         name_to_usage = {}
         for usage in combined_usage:
@@ -286,30 +288,30 @@ class Retriever:
         return name_to_usage
 
     def retrieve(
-        self, query: Union[str, List[str]], exclude_urls: List[str] = []
-    ) -> List[Information]:
+        self, query: str | list[str], exclude_urls: list[str] = [],
+    ) -> list[Information]:
         queries = query if isinstance(query, list) else [query]
         to_return = []
 
         def process_query(q):
             retrieved_data_list = self.rm(
-                query_or_queries=[q], exclude_urls=exclude_urls
+                query_or_queries=[q], exclude_urls=exclude_urls,
             )
             local_to_return = []
             for data in retrieved_data_list:
-                for i in range(len(data["snippets"])):
+                for i in range(len(data['snippets'])):
                     # STORM generate the article with citations. We do not consider multi-hop citations.
                     # Remove citations in the source to avoid confusion.
-                    data["snippets"][i] = ArticleTextProcessing.remove_citations(
-                        data["snippets"][i]
+                    data['snippets'][i] = ArticleTextProcessing.remove_citations(
+                        data['snippets'][i],
                     )
                 storm_info = Information.from_dict(data)
-                storm_info.meta["query"] = q
+                storm_info.meta['query'] = q
                 local_to_return.append(storm_info)
             return local_to_return
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.max_thread
+            max_workers=self.max_thread,
         ) as executor:
             results = list(executor.map(process_query, queries))
 
@@ -341,7 +343,6 @@ class KnowledgeCurationModule(ABC):
         Returns:
             collected_information: collected information in InformationTable type.
         """
-        pass
 
 
 class OutlineGenerationModule(ABC):
@@ -352,7 +353,7 @@ class OutlineGenerationModule(ABC):
 
     @abstractmethod
     def generate_outline(
-        self, topic: str, information_table: InformationTable, **kwargs
+        self, topic: str, information_table: InformationTable, **kwargs,
     ) -> Article:
         """
         Generate outline for the article. Required arguments include:
@@ -366,7 +367,6 @@ class OutlineGenerationModule(ABC):
         Returns:
             article_outline of type ArticleOutline
         """
-        pass
 
 
 class ArticleGenerationModule(ABC):
@@ -389,7 +389,6 @@ class ArticleGenerationModule(ABC):
             information_table: knowledge curation data generated from KnowledgeCurationModule
             article_with_outline: article with specified outline from OutlineGenerationModule
         """
-        pass
 
 
 class ArticlePolishingModule(ABC):
@@ -405,7 +404,6 @@ class ArticlePolishingModule(ABC):
             topic: the topic of interest
             draft_article: draft article from ArticleGenerationModule.
         """
-        pass
 
 
 def log_execution_time(func):
@@ -417,7 +415,7 @@ def log_execution_time(func):
         result = func(self, *args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        logger.info(f"{func.__name__} executed in {execution_time:.4f} seconds")
+        logger.info(f'{func.__name__} executed in {execution_time:.4f} seconds')
         self.time[func.__name__] = execution_time
         return result
 
@@ -435,15 +433,15 @@ class LMConfigs(ABC):
 
     def init_check(self):
         for attr_name in self.__dict__:
-            if "_lm" in attr_name and getattr(self, attr_name) is None:
+            if '_lm' in attr_name and getattr(self, attr_name) is None:
                 logging.warning(
-                    f"Language model for {attr_name} is not initialized. Please call set_{attr_name}()"
+                    f'Language model for {attr_name} is not initialized. Please call set_{attr_name}()',
                 )
 
     def collect_and_reset_lm_history(self):
         history = []
         for attr_name in self.__dict__:
-            if "_lm" in attr_name and hasattr(getattr(self, attr_name), "history"):
+            if '_lm' in attr_name and hasattr(getattr(self, attr_name), 'history'):
                 history.extend(getattr(self, attr_name).history)
                 getattr(self, attr_name).history = []
 
@@ -452,8 +450,8 @@ class LMConfigs(ABC):
     def collect_and_reset_lm_usage(self):
         combined_usage = []
         for attr_name in self.__dict__:
-            if "_lm" in attr_name and hasattr(
-                getattr(self, attr_name), "get_usage_and_reset"
+            if '_lm' in attr_name and hasattr(
+                getattr(self, attr_name), 'get_usage_and_reset',
             ):
                 combined_usage.append(getattr(self, attr_name).get_usage_and_reset())
 
@@ -463,11 +461,11 @@ class LMConfigs(ABC):
                 if model_name not in model_name_to_usage:
                     model_name_to_usage[model_name] = tokens
                 else:
-                    model_name_to_usage[model_name]["prompt_tokens"] += tokens[
-                        "prompt_tokens"
+                    model_name_to_usage[model_name]['prompt_tokens'] += tokens[
+                        'prompt_tokens'
                     ]
-                    model_name_to_usage[model_name]["completion_tokens"] += tokens[
-                        "completion_tokens"
+                    model_name_to_usage[model_name]['completion_tokens'] += tokens[
+                        'completion_tokens'
                     ]
 
         return model_name_to_usage
@@ -478,8 +476,8 @@ class LMConfigs(ABC):
             {
                 attr_name: getattr(self, attr_name).kwargs
                 for attr_name in self.__dict__
-                if "_lm" in attr_name and hasattr(getattr(self, attr_name), "kwargs")
-            }
+                if '_lm' in attr_name and hasattr(getattr(self, attr_name), 'kwargs')
+            },
         )
 
 
@@ -500,9 +498,9 @@ class Engine(ABC):
             end_time = time.time()
             execution_time = end_time - start_time
             self.time[func.__name__] = execution_time
-            logger.info(f"{func.__name__} executed in {execution_time:.4f} seconds")
+            logger.info(f'{func.__name__} executed in {execution_time:.4f} seconds')
             self.lm_cost[func.__name__] = self.lm_configs.collect_and_reset_lm_usage()
-            if hasattr(self, "retriever"):
+            if hasattr(self, 'retriever'):
                 self.rm_cost[func.__name__] = (
                     self.retriever.collect_and_reset_rm_usage()
                 )
@@ -515,7 +513,7 @@ class Engine(ABC):
         methods_to_decorate = [
             method_name
             for method_name in dir(self)
-            if callable(getattr(self, method_name)) and method_name.startswith("run_")
+            if callable(getattr(self, method_name)) and method_name.startswith('run_')
         ]
         for method_name in methods_to_decorate:
             original_method = getattr(self, method_name)
@@ -523,7 +521,7 @@ class Engine(ABC):
             setattr(self, method_name, decorated_method)
 
     @abstractmethod
-    def run_knowledge_curation_module(self, **kwargs) -> Optional[InformationTable]:
+    def run_knowledge_curation_module(self, **kwargs) -> InformationTable | None:
         pass
 
     @abstractmethod
@@ -543,19 +541,19 @@ class Engine(ABC):
         pass
 
     def summary(self):
-        print("***** Execution time *****")
+        print('***** Execution time *****')
         for k, v in self.time.items():
-            print(f"{k}: {v:.4f} seconds")
+            print(f'{k}: {v:.4f} seconds')
 
-        print("***** Token usage of language models: *****")
+        print('***** Token usage of language models: *****')
         for k, v in self.lm_cost.items():
-            print(f"{k}")
+            print(f'{k}')
             for model_name, tokens in v.items():
-                print(f"    {model_name}: {tokens}")
+                print(f'    {model_name}: {tokens}')
 
-        print("***** Number of queries of retrieval models: *****")
+        print('***** Number of queries of retrieval models: *****')
         for k, v in self.rm_cost.items():
-            print(f"{k}: {v}")
+            print(f'{k}: {v}')
 
     def reset(self):
         self.time = {}
@@ -586,7 +584,8 @@ class Agent(ABC):
         - The agent's role, perspective, and the knowledge base content will influence how the utterance is formulated.
     """
 
-    from .dataclass import KnowledgeBase, ConversationTurn
+    from .dataclass import ConversationTurn
+    from .dataclass import KnowledgeBase
 
     def __init__(self, topic: str, role_name: str, role_description: str):
         self.topic = topic
@@ -595,15 +594,15 @@ class Agent(ABC):
 
     def get_role_description(self):
         if self.role_description:
-            return f"{self.role_name}: {self.role_description}"
+            return f'{self.role_name}: {self.role_description}'
         return self.role_name
 
     @abstractmethod
     def generate_utterance(
         self,
         knowledge_base: KnowledgeBase,
-        conversation_history: List[ConversationTurn],
-        logging_wrapper: "LoggingWrapper",
+        conversation_history: list[ConversationTurn],
+        logging_wrapper: 'LoggingWrapper',
         **kwargs,
     ):
         pass

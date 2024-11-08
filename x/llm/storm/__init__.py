@@ -15,13 +15,14 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # https://github.com/stanford-oval/storm/commit/aca7b559a06c730866310a3a4757dc365c5c1a1a
-from .storm_wiki import *
 from .collaborative_storm import *
+from .dataclass import *
 from .encoder import *
 from .interface import *
 from .lm import *
 from .rm import *
+from .storm_wiki import *
 from .utils import *
-from .dataclass import *
 
-__version__ = "1.0.0"
+
+__version__ = '1.0.0'
