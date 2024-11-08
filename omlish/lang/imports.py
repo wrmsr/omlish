@@ -1,11 +1,8 @@
 import contextlib
-import functools
 import importlib.util
 import sys
 import types
 import typing as ta
-
-from .cached import cached_function
 
 
 ##
@@ -23,8 +20,40 @@ def can_import(name: str, package: str | None = None) -> bool:
 ##
 
 
-def lazy_import(name: str, package: str | None = None) -> ta.Callable[[], ta.Any]:
-    return cached_function(functools.partial(importlib.import_module, name, package=package))
+def lazy_import(
+        name: str,
+        package: str | None = None,
+        *,
+        optional: bool = False,
+        cache_failure: bool = False,
+) -> ta.Callable[[], ta.Any]:
+    result = not_set = object()
+
+    def inner():
+        nonlocal result
+
+        if result is not not_set:
+            if isinstance(result, Exception):
+                raise result
+            return result
+
+        try:
+            mod = importlib.import_module(name, package=package)
+
+        except Exception as e:
+            if optional:
+                if cache_failure:
+                    result = None
+                return None
+
+            if cache_failure:
+                result = e
+            raise
+
+        result = mod
+        return mod
+
+    return inner
 
 
 def proxy_import(
