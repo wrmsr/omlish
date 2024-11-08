@@ -19,6 +19,7 @@ from omlish.formats import json
 from ..cli import CliModule
 from ..packaging import marshal as _  # noqa
 from ..packaging.names import canonicalize_name
+from ..packaging.requires import ParsedRequirement
 from ..packaging.requires import RequiresVariable
 from ..packaging.requires import parse_requirement
 
@@ -103,8 +104,23 @@ class Cli(ap.Cli):
     @ap.command(
         ap.arg('files', nargs='*'),
         ap.arg('-r', '--follow-requirements', action='store_true'),
+        ap.arg('-j', '--json', action='store_true'),
+        ap.arg('-b', '--bare', action='store_true'),
     )
     def parse(self) -> None:
+        def print_req(req: ParsedRequirement) -> None:
+            if self.args.json:
+                req_m = msh.marshal(req)
+                print(json.dumps(req_m))
+
+            elif self.args.bare:
+                print(req.name)
+
+            else:
+                print(f'{req.name}{req.specifier or ""}')
+
+        #
+
         seen_files: set[str] = set()
 
         def do_file(file: ta.TextIO | str) -> None:
@@ -136,8 +152,7 @@ class Cli(ap.Cli):
 
                     else:
                         req = parse_requirement(l)
-                        req_m = msh.marshal(req)
-                        print(json.dumps(req_m))
+                        print_req(req)
 
         if self.args.files:
             for file in self.args.files:
