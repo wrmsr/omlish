@@ -36,56 +36,26 @@ def _manual(
 
     commit_hash = tfm.utils.extract_commit_hash(resolved_config_file, None)
 
-    #
-
     kwargs = dict(
         _from_auto=True,
         gguf_file=gguf_file,
         return_unused_kwargs=True,
-        trust_remote_code=None,
-        code_revision=None,
         _commit_hash=commit_hash,
     )
-
-    # config, kwargs = tfm.AutoConfig.from_pretrained(
-    #     model_id,
-    #     **kwargs,
-    # )
-
-    kwargs.pop('trust_remote_code', None)
-    kwargs.pop('code_revision', None)
 
     config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
         model_id,
         **kwargs,
     )
 
-    #
-
-    # config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict['model_type']]
-    # config, kwargs = config_class.from_dict(config_dict, **unused_kwargs)
-
     unused_kwargs.pop('return_unused_kwargs', False)
     unused_kwargs.pop('_from_auto', None)
     unused_kwargs.pop('_from_pipeline', None)
-    # The commit hash might have been updated in the `config_dict`, we don't want the kwargs to erase that update.
     if '_commit_hash' in unused_kwargs and '_commit_hash' in config_dict:
         unused_kwargs['_commit_hash'] = config_dict['_commit_hash']
     config_class = tfm.models.llama.configuration_llama.LlamaConfig
     config = config_class(**config_dict)
     kwargs = unused_kwargs
-
-    #
-
-    # model_class = tfm.models.auto.auto_factory._get_model_class(  # noqa
-    #     config,
-    #     tfm.AutoModelForCausalLM._model_mapping,  # noqa
-    # )
-    # model = model_class.from_pretrained(
-    #     model_id,
-    #     config=config,
-    #     **kwargs
-    # )
 
     model_class = tfm.models.llama.modeling_llama.LlamaForCausalLM
 
@@ -93,22 +63,14 @@ def _manual(
 
     from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
 
-    cached_file_kwargs = {
-        'cache_dir': None,
-        'force_download': False,
-        'proxies': None,
-        'resume_download': None,
-        'local_files_only': False,
-        'token': None,
-        'user_agent': {'file_type': 'model', 'framework': 'pytorch', 'from_auto_class': False},
-        'revision': 'main',
-        'subfolder': '',
-        '_raise_exceptions_for_gated_repo': False,
-        '_raise_exceptions_for_missing_entries': False,
-        '_commit_hash': commit_hash,
-    }
-
-    gguf_path = tfm.utils.cached_file(model_id, gguf_file, **cached_file_kwargs)
+    gguf_path = tfm.utils.cached_file(
+        model_id,
+        gguf_file,
+        revision='main',
+        _raise_exceptions_for_gated_repo=False,
+        _raise_exceptions_for_missing_entries=False,
+        _commit_hash=commit_hash,
+    )
 
     state_dict = load_gguf_checkpoint(gguf_path, return_tensors=True)['tensors']
 
@@ -125,33 +87,6 @@ def _manual(
         model = model_class(config)
 
     #
-
-    # (
-    #     model,
-    #     missing_keys,
-    #     unexpected_keys,
-    #     mismatched_keys,
-    #     offload_index,
-    #     error_msgs,
-    # ) = model_class._load_pretrained_model(  # noqa
-    #     model,
-    #     state_dict,
-    #     loaded_state_dict_keys,  # XXX: rename?
-    #     None,
-    #     model_id,
-    #     ignore_mismatched_sizes=False,
-    #     sharded_metadata=None,
-    #     _fast_init=True,
-    #     low_cpu_mem_usage=None,
-    #     device_map=None,
-    #     offload_folder=None,
-    #     offload_state_dict=False,
-    #     dtype=None,
-    #     hf_quantizer=None,
-    #     keep_in_fp32_modules=[],
-    #     gguf_path=gguf_path,
-    #     weights_only=True,
-    # )
 
     model.tie_weights()
 
@@ -179,11 +114,6 @@ def _manual(
 
     model.tie_weights()
 
-    # ptrs = collections.defaultdict(list)
-    # for name, tensor in model.state_dict().items():
-    #     id_tensor = tfm.pytorch_utils.id_tensor_storage(tensor)
-    #     ptrs[id_tensor].append(name)
-
     model.apply(model._initialize_weights)
 
     start_prefix = ''
@@ -194,15 +124,6 @@ def _manual(
         state_dict,
         start_prefix,
         expected_keys,
-        device_map=None,
-        offload_folder=None,
-        offload_index=None,
-        state_dict_folder=None,
-        state_dict_index=None,
-        dtype=None,
-        hf_quantizer=None,
-        is_safetensors=False,
-        keep_in_fp32_modules=[],
     )
 
     if error_msgs:
@@ -213,21 +134,6 @@ def _manual(
     model.tie_weights()
 
     model.eval()
-
-    # model.generation_config = tfm.generation.GenerationConfig.from_pretrained(
-    #     model_id,
-    #     cache_dir=None,
-    #     force_download=False,
-    #     resume_download=None,
-    #     proxies=None,
-    #     local_files_only=False,
-    #     token=None,
-    #     revision='main',
-    #     subfolder='',
-    #     _from_auto=False,
-    #     _from_pipeline=None,
-    #     **kwargs,
-    # )
 
     #
 
