@@ -18,6 +18,7 @@ import sys
 import gguf
 
 import transformers as tfm
+import transformers.modeling_gguf_pytorch_utils
 import transformers.models.llama.configuration_llama
 import transformers.models.llama.modeling_llama
 
@@ -34,34 +35,26 @@ def _manual(
         _raise_exceptions_for_connection_errors=False,
     )
 
-    commit_hash = tfm.utils.extract_commit_hash(resolved_config_file, None)
+    commit_hash = tfm.utils.extract_commit_hash(
+        resolved_config_file,
+        None,
+    )
 
-    kwargs = dict(
+    config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
+        model_id,
         _from_auto=True,
         gguf_file=gguf_file,
         return_unused_kwargs=True,
         _commit_hash=commit_hash,
     )
 
-    config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
-        model_id,
-        **kwargs,
-    )
+    unused_kwargs.pop('return_unused_kwargs')
+    unused_kwargs.pop('gguf_file')
+    if unused_kwargs:
+        raise Exception(unused_kwargs)
 
-    unused_kwargs.pop('return_unused_kwargs', False)
-    unused_kwargs.pop('_from_auto', None)
-    unused_kwargs.pop('_from_pipeline', None)
-    if '_commit_hash' in unused_kwargs and '_commit_hash' in config_dict:
-        unused_kwargs['_commit_hash'] = config_dict['_commit_hash']
     config_class = tfm.models.llama.configuration_llama.LlamaConfig
     config = config_class(**config_dict)
-    kwargs = unused_kwargs
-
-    model_class = tfm.models.llama.modeling_llama.LlamaForCausalLM
-
-    kwargs.pop('gguf_file', None)
-
-    from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
 
     gguf_path = tfm.utils.cached_file(
         model_id,
@@ -72,31 +65,29 @@ def _manual(
         _commit_hash=commit_hash,
     )
 
-    state_dict = load_gguf_checkpoint(gguf_path, return_tensors=True)['tensors']
-
-    loaded_state_dict_keys = list(state_dict.keys())
+    state_dict = tfm.modeling_gguf_pytorch_utils.load_gguf_checkpoint(
+        gguf_path,
+        return_tensors=True,
+    )['tensors']
 
     config.name_or_path = model_id
-
-    init_contexts = [tfm.modeling_utils.no_init_weights(_enable=True)]
 
     config._attn_implementation = 'sdpa'
     config._attn_implementation_autoset = True
 
-    with tfm.utils.ContextManagers(init_contexts):
+    model_class = tfm.models.llama.modeling_llama.LlamaForCausalLM
+    with tfm.modeling_utils.no_init_weights(_enable=True):
         model = model_class(config)
-
-    #
 
     model.tie_weights()
 
     model_state_dict = model.state_dict()
-    expected_keys = list(model_state_dict.keys())
+    expected_keys = list(model_state_dict)
     prefix = model.base_model_prefix
 
-    loaded_keys = loaded_state_dict_keys
+    loaded_keys = list(state_dict)
 
-    if len(prefix) > 0:
+    if prefix:
         has_prefix_module = any(s.startswith(prefix) for s in loaded_keys)
         expects_prefix_module = any(s.startswith(prefix) for s in expected_keys)
     else:
@@ -128,14 +119,14 @@ def _manual(
 
     if error_msgs:
         raise Exception(error_msgs)
-
-    #
+    if offload_index is not None:
+        raise Exception(offload_index)
+    if state_dict_index is not None:
+        raise Exception(state_dict_index)
 
     model.tie_weights()
 
     model.eval()
-
-    #
 
     return model
 
