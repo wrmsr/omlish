@@ -226,14 +226,15 @@ class RequiresOp(RequiresNode):
 
 
 RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']
+
 RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]
 RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]
 
 
 class RequiresMarkerItem(ta.NamedTuple):
-    l: RequiresMarkerVar
+    l: ta.Union[RequiresVariable, RequiresValue]
     op: RequiresOp
-    r: RequiresMarkerVar
+    r: ta.Union[RequiresVariable, RequiresValue]
 
 
 class ParsedRequirement(ta.NamedTuple):
