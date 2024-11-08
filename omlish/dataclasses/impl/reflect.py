@@ -3,7 +3,6 @@ TODO:
  - more cache-recursive reuse - fields, mro, etc
 """
 import dataclasses as dc
-import inspect
 import sys
 import typing as ta
 import weakref
@@ -28,20 +27,7 @@ from .params import get_params_extras
 from .utils import Namespace
 
 
-try:
-    import annotationlib  # noqa
-except ImportError:
-    annotationlib = None
-
-
 MISSING = dc.MISSING
-
-
-def _get_annotations(obj):
-    if annotationlib is not None:
-        return annotationlib.get_annotations(obj, format=annotationlib.Format.FORWARDREF)  # noqa
-    else:
-        return inspect.get_annotations(obj)
 
 
 class ClassInfo:
@@ -67,7 +53,10 @@ class ClassInfo:
 
     @cached.property
     def cls_annotations(self) -> ta.Mapping[str, ta.Any]:
-        return _get_annotations(self._cls)
+        # Does not use ta.get_type_hints because that's what std dataclasses do [1]. Might be worth revisiting? A part
+        # of why they don't is to not import typing for efficiency but we don't care about that degree of startup speed.
+        # [1]: https://github.com/python/cpython/blob/54c63a32d06cb5f07a66245c375eac7d7efb964a/Lib/dataclasses.py#L985-L986  # noqa
+        return rfl.get_annotations(self._cls)
 
     ##
 

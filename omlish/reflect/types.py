@@ -42,7 +42,7 @@ _KNOWN_SPECIALS = [
         v.__origin__,
         v._nparams,  # noqa
     )
-    for v in ta.__dict__.values()
+    for v in ta.__dict__.values()  # noqa
     if isinstance(v, _SpecialGenericAlias)
 ]
 

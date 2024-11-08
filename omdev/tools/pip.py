@@ -1,16 +1,31 @@
+"""
+TODO:
+ - https://github.com/pypa/pip/blob/420435903ff2fc694d6950a47b896427ecaed78f/src/pip/_internal/req/req_file.py ?
+"""
+import contextlib
 import importlib.metadata
 import io
+import os.path
 import sys
+import typing as ta
 import urllib.request
-import xml.etree.ElementTree as ET  # noqa
 
 from omlish import argparse as ap
 from omlish import check
+from omlish import lang
+from omlish import marshal as msh
+from omlish.formats import json
 
 from ..cli import CliModule
 from ..packaging.names import canonicalize_name
 from ..packaging.requires import RequiresVariable
 from ..packaging.requires import parse_requirement
+
+
+if ta.TYPE_CHECKING:
+    import xml.etree.ElementTree as ET  # noqa
+else:
+    ET = lang.proxy_import('xml.etree.ElementTree')
 
 
 PYPI_URL = 'https://pypi.org/'
@@ -83,6 +98,49 @@ class Cli(ap.Cli):
         for d in sorted(dists):
             if not uses_by_req.get(d):
                 print(d)
+
+    @ap.command(
+        ap.arg('files', nargs='*'),
+        ap.arg('-r', '--follow-requirements', action='store_true'),
+    )
+    def parse(self) -> None:
+        seen_files: set[str] = set()
+
+        def do_file(file: ta.TextIO | str) -> None:
+            if isinstance(file, str) and file in seen_files:
+                return
+
+            with contextlib.ExitStack() as es:
+                if isinstance(file, str):
+                    f = es.enter_context(open(file))
+                else:
+                    f = file
+
+                for l in f:
+                    if '#' in l:
+                        l = l.partition('#')[0]
+
+                    if not (l := l.strip()):
+                        continue
+
+                    if l.startswith('git+'):
+                        continue  # FIXME
+
+                    elif l.startswith('-r'):
+                        if self.args.follow_requirements:
+                            r_file = os.path.join(os.path.dirname(file), l[2:].strip())
+                            do_file(r_file)
+
+                    else:
+                        req = parse_requirement(l)
+                        req_m = msh.marshal(req)
+                        print(json.dumps(req_m))
+
+        if self.args.files:
+            for file in self.args.files:
+                do_file(file)
+        else:
+            do_file(sys.stdin)
 
 
 # @omlish-manifest

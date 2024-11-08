@@ -1,3 +1,7 @@
+from .inspect import (  # noqa
+    get_annotations,
+)
+
 from .isinstance import (  # noqa
     KNOWN_ISINSTANCE_GENERICS,
     isinstance_of,
