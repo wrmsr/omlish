@@ -1,3 +1,4 @@
+# @omlish-lite
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #

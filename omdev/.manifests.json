@@ -282,7 +282,7 @@
     "module": ".tools.pip",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pip.py",
-    "line": 88,
+    "line": 148,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
