@@ -15,6 +15,7 @@ from omlish import check
 from omlish import lang
 from omlish import logs
 from omlish.diag import pycharm
+from omlish.formats import dotenv
 from omlish.formats import json
 
 from ..backends.anthropic import AnthropicChatModel
@@ -204,10 +205,7 @@ def _main() -> None:
     #
 
     with open(os.path.join(os.path.expanduser('~/.omlish-llm/.env'))) as f:
-        for l in f:
-            if l := l.strip():
-                k, _, v = l.partition('=')
-                os.environ[k] = v
+        dotenv.DotEnv(stream=f).apply_to(os.environ)
 
     #
 
