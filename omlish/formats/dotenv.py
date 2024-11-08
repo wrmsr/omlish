@@ -324,10 +324,13 @@ def _with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[
         yield mapping
 
 
+StrMutableMappingT = ta.TypeVar('StrMutableMappingT', bound=ta.MutableMapping[str, str])
+
+
 class DotEnv:
     def __init__(
         self,
-        path: StrPath | None,
+        path: StrPath | None = None,
         stream: ta.IO[str] | None = None,
         verbose: bool = False,
         encoding: str | None = None,
@@ -372,6 +375,14 @@ class DotEnv:
             self._dict = dict(raw_values)
 
         return self._dict
+
+    def apply_to(self, dst: StrMutableMappingT) -> StrMutableMappingT:
+        for k, v in self.dict().items():
+            if v is not None:
+                dst[k] = v
+            elif k in dst:
+                del dst[k]
+        return dst
 
     def parse(self) -> ta.Iterator[tuple[str, str | None]]:
         with self._get_stream() as stream:
