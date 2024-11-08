@@ -226,9 +226,14 @@ class RequiresOp(RequiresNode):
 
 
 RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']
-RequiresMarkerItem = ta.Tuple['RequiresMarkerVar', 'RequiresOp', 'RequiresMarkerVar']
 RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]
 RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]
+
+
+class RequiresMarkerItem(ta.NamedTuple):
+    l: RequiresMarkerVar
+    op: RequiresOp
+    r: RequiresMarkerVar
 
 
 class ParsedRequirement(ta.NamedTuple):
@@ -442,7 +447,7 @@ def _parse_requires_marker_item(tokenizer: RequiresTokenizer) -> RequiresMarkerI
     tokenizer.consume('WS')
     marker_var_right = _parse_requires_marker_var(tokenizer)
     tokenizer.consume('WS')
-    return (marker_var_left, marker_op, marker_var_right)
+    return RequiresMarkerItem(marker_var_left, marker_op, marker_var_right)
 
 
 def _parse_requires_marker_var(tokenizer: RequiresTokenizer) -> RequiresMarkerVar:
