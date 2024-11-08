@@ -258,18 +258,26 @@ class Reflector:
         ):
             origin = ta.get_origin(obj)
             args = ta.get_args(obj)
+
             if oty is _CallableGenericAlias:
                 p, r = args
                 if p is Ellipsis or isinstance(p, ta.ParamSpec):
                     raise TypeError(f'Callable argument not yet supported for {obj=}')
                 args = (*p, r)
                 params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+
+            elif origin is tuple:
+                params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+
             elif origin is ta.Generic:
                 params = args
+
             else:
                 params = get_params(origin)
+
             if len(args) != len(params):
                 raise TypeError(f'Mismatched {args=} and {params=} for {obj=}')
+
             return Generic(
                 origin,
                 tuple(self.type(a) for a in args),

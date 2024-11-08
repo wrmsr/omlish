@@ -122,4 +122,11 @@ def test_normalize_generic():
 
 
 def test_tuples():
-    print(rfl.type_(tuple[int, str]))
+    assert_generic_full_eq(rfl.type_(ta.Tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), ta.Tuple[int, str]))
+    assert_generic_full_eq(rfl.type_(tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), tuple[int, str]))
+    assert rfl.type_(tuple) is tuple
+
+    with pytest.raises(TypeError):
+        rfl.type_(ta.Tuple)  # FIXME
+    with pytest.raises(TypeError):
+        rfl.type_(tuple[int, ...])  # FIXME
