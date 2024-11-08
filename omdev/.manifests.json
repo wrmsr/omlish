@@ -192,6 +192,18 @@
     }
   },
   {
+    "module": ".scripts.tmpexec",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/scripts/tmpexec.py",
+    "line": 50,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "tmpexec",
+        "mod_name": "omdev.scripts.tmpexec"
+      }
+    }
+  },
+  {
     "module": ".tools.doc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/doc.py",
