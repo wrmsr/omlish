@@ -18,6 +18,7 @@ import gguf
 
 import transformers as tfm
 import transformers.models.llama.configuration_llama
+import transformers.models.llama.modeling_llama
 
 
 def _manual(
@@ -69,22 +70,59 @@ def _manual(
     # The commit hash might have been updated in the `config_dict`, we don't want the kwargs to erase that update.
     if "_commit_hash" in unused_kwargs and "_commit_hash" in config_dict:
         unused_kwargs["_commit_hash"] = config_dict["_commit_hash"]
-    config = tfm.models.llama.configuration_llama.LlamaConfig(**config_dict)
+    config_class = tfm.models.llama.configuration_llama.LlamaConfig
+    config = config_class(**config_dict)
     kwargs = unused_kwargs
-
 
     #
 
-    model_class = tfm.models.auto.auto_factory._get_model_class(  # noqa
-        config,
-        tfm.AutoModelForCausalLM._model_mapping,  # noqa
-    )
+    # model_class = tfm.models.auto.auto_factory._get_model_class(  # noqa
+    #     config,
+    #     tfm.AutoModelForCausalLM._model_mapping,  # noqa
+    # )
+    # model = model_class.from_pretrained(
+    #     model_id,
+    #     config=config,
+    #     **kwargs
+    # )
 
-    model = model_class.from_pretrained(
-        model_id,
-        config=config,
-        **kwargs
-    )
+    model_class = tfm.models.llama.modeling_llama.LlamaForCausalLM
+
+    from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
+
+    cached_file_kwargs = {
+        "cache_dir": None,
+        "force_download": False,
+        "proxies": None,
+        "resume_download": None,
+        "local_files_only": False,
+        "token": None,
+        "user_agent": {'file_type': 'model', 'framework': 'pytorch', 'from_auto_class': False},
+        "revision": 'main',
+        "subfolder": '',
+        "_raise_exceptions_for_gated_repo": False,
+        "_raise_exceptions_for_missing_entries": False,
+        "_commit_hash": commit_hash,
+    }
+
+    gguf_path = tfm.utils.cached_file(model_id, gguf_file, **cached_file_kwargs)
+
+    state_dict = load_gguf_checkpoint(gguf_path, return_tensors=True)["tensors"]
+
+    loaded_state_dict_keys = list(state_dict.keys())
+
+    config.name_or_path = model_id
+
+    init_contexts = [tfm.modeling_utils.no_init_weights(_enable=True)]
+
+    config._attn_implementation = "sdpa"
+    config._attn_implementation_autoset = True
+
+    with tfm.utils.ContextManagers(init_contexts):
+        # Let's make sure we don't run the init function of buffer modules
+        model = model_class(config)
+
+    #
 
     return model
 
