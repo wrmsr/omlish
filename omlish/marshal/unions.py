@@ -3,6 +3,7 @@ import typing as ta
 from .. import cached
 from .. import check
 from .. import dataclasses as dc
+from .. import lang
 from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
@@ -115,34 +116,36 @@ PRIMITIVE_UNION_UNMARSHALER_FACTORY = PrimitiveUnionUnmarshalerFactory()
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionMarshalerFactory(MarshalerFactory):
+class _BasePolymorphismUnionFactory(lang.Abstract):
     impls: Impls
     tt: TypeTagging = WrapperTypeTagging()
+    allow_partial: bool = dc.field(default=False, kw_only=True)
 
     @cached.property
     @dc.init
-    def rty(self) -> rfl.Union:
-        return rfl.type_(ta.Union[*tuple(i.ty for i in self.impls)])  # type: ignore
+    def rtys(self) -> frozenset[rfl.Type]:
+        return frozenset(i.ty for i in self.impls)
 
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Union) and rty == self.rty
+    def guard(self, ctx: MarshalContext | UnmarshalContext, rty: rfl.Type) -> bool:
+        if not isinstance(rty, rfl.Union):
+            return False
+        if self.allow_partial:
+            return not (rty.args - self.rtys)
+        else:
+            return rty.args == self.rtys
 
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return make_polymorphism_marshaler(self.impls, self.tt, ctx)
+    def get_impls(self, rty: rfl.Type) -> Impls:
+        uty = check.isinstance(rty, rfl.Union)
+        return Impls([self.impls.by_ty[check.isinstance(a, type)] for a in uty.args])
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionUnmarshalerFactory(UnmarshalerFactory):
-    impls: Impls
-    tt: TypeTagging = WrapperTypeTagging()
+class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, MarshalerFactory):
+    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
+        return make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
 
-    @cached.property
-    @dc.init
-    def rty(self) -> rfl.Union:
-        return rfl.type_(ta.Union[*tuple(i.ty for i in self.impls)])  # type: ignore
 
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Union) and rty == self.rty
-
+@dc.dataclass(frozen=True)
+class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, UnmarshalerFactory):
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return make_polymorphism_unmarshaler(self.impls, self.tt, ctx)
+        return make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)

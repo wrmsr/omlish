@@ -17,6 +17,7 @@ from omlish import marshal as msh
 from omlish.formats import json
 
 from ..cli import CliModule
+from ..packaging import marshal as _  # noqa
 from ..packaging.names import canonicalize_name
 from ..packaging.requires import RequiresVariable
 from ..packaging.requires import parse_requirement
