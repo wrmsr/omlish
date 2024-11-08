@@ -17,7 +17,7 @@ annotationlib = lang.lazy_import('annotationlib', optional=True, cache_failure=T
 
 
 def get_annotations(obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-    if al := (annotationlib()) is not None:
-        return al.get_annotations(obj, format=annotationlib.Format.FORWARDREF)  # noqa
+    if (al := annotationlib()) is not None:
+        return al.get_annotations(obj, format=al.Format.FORWARDREF)  # noqa
     else:
         return inspect.get_annotations(obj)
