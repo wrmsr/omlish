@@ -78,7 +78,9 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
             return obj.__dict__.get('__parameters__', ())  # noqa
 
         if (ks := _KNOWN_SPECIALS_BY_ORIGIN.get(obj)) is not None:
-            return _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+            if (np := ks.nparams) < 0:
+                raise TypeError(obj)
+            return _KNOWN_SPECIAL_TYPE_VARS[:np]
 
     oty = type(obj)
 
@@ -289,7 +291,9 @@ class Reflector:
 
         if isinstance(obj, _SpecialGenericAlias):
             if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
-                params = _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+                if (np := ks.nparams) < 0:
+                    raise TypeError(obj)
+                params = _KNOWN_SPECIAL_TYPE_VARS[:np]
                 return Generic(
                     ks.origin,
                     params,
