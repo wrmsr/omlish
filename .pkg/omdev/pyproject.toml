@@ -36,6 +36,7 @@ all = [
     'mypy ~= 1.11',
     'gprof2dot ~= 2024.6',
     'prompt-toolkit ~= 3.0',
+    'segno ~= 1.6',
     'tokenize-rt ~= 6.1',
     'wheel ~= 0.44',
 ]
@@ -59,6 +60,9 @@ prof = [
 ]
 ptk = [
     'prompt-toolkit ~= 3.0',
+]
+qr = [
+    'segno ~= 1.6',
 ]
 tokens = [
     'tokenize-rt ~= 6.1',
