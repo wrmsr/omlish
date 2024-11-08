@@ -21,6 +21,8 @@ from .mappings import MappingMarshalerFactory
 from .mappings import MappingUnmarshalerFactory
 from .maybes import MaybeMarshalerFactory
 from .maybes import MaybeUnmarshalerFactory
+from .namedtuples import NamedtupleMarshalerFactory
+from .namedtuples import NamedtupleUnmarshalerFactory
 from .newtypes import NewtypeMarshalerFactory
 from .newtypes import NewtypeUnmarshalerFactory
 from .numbers import NUMBERS_MARSHALER_FACTORY
@@ -44,6 +46,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     OptionalMarshalerFactory(),
     PrimitiveUnionMarshalerFactory(),
     DataclassMarshalerFactory(),
+    NamedtupleMarshalerFactory(),
     EnumMarshalerFactory(),
     NUMBERS_MARSHALER_FACTORY,
     UUID_MARSHALER_FACTORY,
@@ -75,6 +78,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     OptionalUnmarshalerFactory(),
     PrimitiveUnionUnmarshalerFactory(),
     DataclassUnmarshalerFactory(),
+    NamedtupleUnmarshalerFactory(),
     EnumUnmarshalerFactory(),
     NUMBERS_UNMARSHALER_FACTORY,
     UUID_UNMARSHALER_FACTORY,
