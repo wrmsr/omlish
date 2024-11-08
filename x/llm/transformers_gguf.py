@@ -88,6 +88,8 @@ def _manual(
 
     model_class = tfm.models.llama.modeling_llama.LlamaForCausalLM
 
+    kwargs.pop('gguf_file', None)
+
     from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
 
     cached_file_kwargs = {
@@ -121,6 +123,52 @@ def _manual(
     with tfm.utils.ContextManagers(init_contexts):
         # Let's make sure we don't run the init function of buffer modules
         model = model_class(config)
+
+    (
+        model,
+        missing_keys,
+        unexpected_keys,
+        mismatched_keys,
+        offload_index,
+        error_msgs,
+    ) = model_class._load_pretrained_model(  # noqa
+        model,
+        state_dict,
+        loaded_state_dict_keys,  # XXX: rename?
+        None,
+        model_id,
+        ignore_mismatched_sizes=False,
+        sharded_metadata=None,
+        _fast_init=True,
+        low_cpu_mem_usage=None,
+        device_map=None,
+        offload_folder=None,
+        offload_state_dict=False,
+        dtype=None,
+        hf_quantizer=None,
+        keep_in_fp32_modules=[],
+        gguf_path=gguf_path,
+        weights_only=True,
+    )
+
+    model.tie_weights()
+
+    model.eval()
+
+    # model.generation_config = tfm.generation.GenerationConfig.from_pretrained(
+    #     model_id,
+    #     cache_dir=None,
+    #     force_download=False,
+    #     resume_download=None,
+    #     proxies=None,
+    #     local_files_only=False,
+    #     token=None,
+    #     revision='main',
+    #     subfolder='',
+    #     _from_auto=False,
+    #     _from_pipeline=None,
+    #     **kwargs,
+    # )
 
     #
 
