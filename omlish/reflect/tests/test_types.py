@@ -119,3 +119,7 @@ def test_normalize_generic():
             return self.l[item]
 
     assert rfl.type_(Foo) is Foo
+
+
+def test_tuples():
+    print(rfl.type_(tuple[int, str]))

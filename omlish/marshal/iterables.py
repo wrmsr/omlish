@@ -1,3 +1,7 @@
+"""
+TODO:
+ - heterogeneous tuples
+"""
 import collections.abc
 import dataclasses as dc
 import functools

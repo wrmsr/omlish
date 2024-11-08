@@ -43,3 +43,8 @@ def _install_standard_marshalling() -> None:
         msh.ReflectOverride(MarshalRequiresMarkerList),
         identity=True,
     )
+
+    RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']
+    RequiresMarkerItem = ta.Tuple['RequiresMarkerVar', 'RequiresOp', 'RequiresMarkerVar']
+    RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]
+    RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]
