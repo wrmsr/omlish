@@ -195,10 +195,9 @@ class RequiresTokenizer:
         self.read()
 
 
+@dc.dataclass(frozen=True)
 class RequiresNode:
-    def __init__(self, value: str) -> None:
-        super().__init__()
-        self.value = value
+    value: str
 
     def __str__(self) -> str:
         return self.value
@@ -210,16 +209,19 @@ class RequiresNode:
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
 class RequiresVariable(RequiresNode):
     def serialize(self) -> str:
         return str(self)
 
 
+@dc.dataclass(frozen=True)
 class RequiresValue(RequiresNode):
     def serialize(self) -> str:
         return f'"{self}"'
 
 
+@dc.dataclass(frozen=True)
 class RequiresOp(RequiresNode):
     def serialize(self) -> str:
         return str(self)
