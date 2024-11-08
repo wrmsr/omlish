@@ -36,7 +36,7 @@ class Processor:
 
         if self._opts.flat:
             if (
-                    not isinstance(ta.Iterable) or
+                    not isinstance(v, ta.Iterable) or  # noqa
                     isinstance(v, ta.Mapping) or
                     isinstance(v, lang.BUILTIN_SCALAR_ITERABLE_TYPES)
             ):
