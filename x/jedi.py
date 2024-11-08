@@ -1,3 +1,5 @@
+import os.path
+
 import jedi
 
 from omlish import lang
@@ -9,12 +11,12 @@ def _patch_jedi_subprocess_popen() -> None:
 
     from jedi.inference.compiled import subprocess as js
 
-    from omlish.lite.subprocesses import subprocess_shell_wrap_exec
+    from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
     #
 
     def _wrapped_popen(cmd, *rest, **kwargs):
-        return subprocess.Popen(subprocess_shell_wrap_exec(*cmd), *rest, **kwargs)
+        return subprocess.Popen(subprocess_maybe_shell_wrap_exec(*cmd), *rest, **kwargs)
 
     #
 
@@ -35,19 +37,33 @@ def find_method_references(project_path: str, base_file: str, line: int, column:
     # Initialize the Jedi Project
     project = jedi.Project(path=project_path)
 
-    # Load the script where the method is defined
-    script = jedi.Script(path=base_file)
+    for e in project.search('omlish.c3.mro'):
+        print(e)
 
-    # Find references to the method in the entire project
-    references = script.get_references(line, column, include_builtins=False, project=project)
+    # Load the base script where the method is defined
+    base_script = jedi.Script(path=base_file, project=project)
 
-    # Print out the references found
-    if references:
-        print(f"References found in project '{project_path}':")
-        for ref in references:
-            print(f"  - {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
-    else:
-        print("No references found.")
+    # Get references within the base file to get the initial reference object
+    references = base_script.get_references(line, column, include_builtins=False)
+
+    # If no references found in the base file, exit early
+    if not references:
+        print(f"No references found in '{base_file}'")
+        return
+
+    # Iterate over all Python files in the project to find references
+    print(f"Searching for references in project '{project_path}'...")
+    for python_file in project.get_python_files():
+        # Skip the base file to avoid self-references
+        if os.path.abspath(python_file) == os.path.abspath(base_file):
+            continue
+
+        try:
+            script = jedi.Script(path=python_file)
+            for ref in script.get_references(line, column, include_builtins=False):
+                print(f"  - {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
+        except Exception as e:
+            print(f"Error processing file {python_file}: {e}")
 
 
 if __name__ == "__main__":
@@ -58,8 +74,8 @@ if __name__ == "__main__":
     project_path = '.'
 
     # Line and column numbers where the method is defined in the base file
-    method_line = 10
-    method_column = 8
+    method_line = 45
+    method_column = 1
 
     # Perform the search for references across the entire project
     find_method_references(project_path, base_file, method_line, method_column)
