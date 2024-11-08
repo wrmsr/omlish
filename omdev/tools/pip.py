@@ -111,6 +111,7 @@ class Cli(ap.Cli):
                 return
 
             with contextlib.ExitStack() as es:
+                f: ta.TextIO
                 if isinstance(file, str):
                     f = es.enter_context(open(file))
                 else:
@@ -126,9 +127,10 @@ class Cli(ap.Cli):
                     if l.startswith('git+'):
                         continue  # FIXME
 
-                    elif l.startswith('-r'):
+                    elif l.startswith('-r'):  # noqa
                         if self.args.follow_requirements:
-                            r_file = os.path.join(os.path.dirname(file), l[2:].strip())
+                            base_dir = os.path.dirname(file) if isinstance(file, str) else '.'
+                            r_file = os.path.join(base_dir, l[2:].strip())
                             do_file(r_file)
 
                     else:

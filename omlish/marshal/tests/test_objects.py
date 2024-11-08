@@ -125,3 +125,17 @@ def test_embed():
     print(m)
     u = unmarshal(m, E3)
     assert u == o
+
+
+##
+
+
+class Pt(ta.NamedTuple):
+    i: int
+    f: float
+    s: str = 'foo'
+
+
+def test_namedtuples():
+    assert (d := marshal(p := Pt(1, 2.))) == {'i': 1, 'f': 2., 's': 'foo'}
+    assert unmarshal(d, Pt) == p

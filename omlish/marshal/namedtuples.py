@@ -24,9 +24,9 @@ from .objects import ObjectUnmarshaler
 
 def _is_named_tuple(rty: rfl.Type) -> bool:
     return (
-            isinstance(rty, type) and
-            issubclass(rty, tuple) and
-            ta.NamedTuple in rfl.get_orig_bases(rty)
+        isinstance(rty, type) and
+        issubclass(rty, tuple) and
+        ta.NamedTuple in rfl.get_orig_bases(rty)
     )
 
 
