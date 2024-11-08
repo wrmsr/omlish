@@ -11,6 +11,7 @@ LlamaForCausalLM(
     gguf_file='tinyllama-1.1b-chat-v1.0.Q6_K.gguf',
 )
 """
+import collections
 import os.path
 import sys
 
@@ -51,8 +52,8 @@ def _manual(
     #     **kwargs,
     # )
 
-    kwargs.pop("trust_remote_code", None)
-    kwargs.pop("code_revision", None)
+    kwargs.pop('trust_remote_code', None)
+    kwargs.pop('code_revision', None)
 
     config_dict, unused_kwargs = tfm.PretrainedConfig.get_config_dict(
         model_id,
@@ -61,15 +62,15 @@ def _manual(
 
     #
 
-    # config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict["model_type"]]
+    # config_class = tfm.models.auto.configuration_auto.CONFIG_MAPPING[config_dict['model_type']]
     # config, kwargs = config_class.from_dict(config_dict, **unused_kwargs)
 
-    unused_kwargs.pop("return_unused_kwargs", False)
-    unused_kwargs.pop("_from_auto", None)
-    unused_kwargs.pop("_from_pipeline", None)
+    unused_kwargs.pop('return_unused_kwargs', False)
+    unused_kwargs.pop('_from_auto', None)
+    unused_kwargs.pop('_from_pipeline', None)
     # The commit hash might have been updated in the `config_dict`, we don't want the kwargs to erase that update.
-    if "_commit_hash" in unused_kwargs and "_commit_hash" in config_dict:
-        unused_kwargs["_commit_hash"] = config_dict["_commit_hash"]
+    if '_commit_hash' in unused_kwargs and '_commit_hash' in config_dict:
+        unused_kwargs['_commit_hash'] = config_dict['_commit_hash']
     config_class = tfm.models.llama.configuration_llama.LlamaConfig
     config = config_class(**config_dict)
     kwargs = unused_kwargs
@@ -93,23 +94,23 @@ def _manual(
     from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
 
     cached_file_kwargs = {
-        "cache_dir": None,
-        "force_download": False,
-        "proxies": None,
-        "resume_download": None,
-        "local_files_only": False,
-        "token": None,
-        "user_agent": {'file_type': 'model', 'framework': 'pytorch', 'from_auto_class': False},
-        "revision": 'main',
-        "subfolder": '',
-        "_raise_exceptions_for_gated_repo": False,
-        "_raise_exceptions_for_missing_entries": False,
-        "_commit_hash": commit_hash,
+        'cache_dir': None,
+        'force_download': False,
+        'proxies': None,
+        'resume_download': None,
+        'local_files_only': False,
+        'token': None,
+        'user_agent': {'file_type': 'model', 'framework': 'pytorch', 'from_auto_class': False},
+        'revision': 'main',
+        'subfolder': '',
+        '_raise_exceptions_for_gated_repo': False,
+        '_raise_exceptions_for_missing_entries': False,
+        '_commit_hash': commit_hash,
     }
 
     gguf_path = tfm.utils.cached_file(model_id, gguf_file, **cached_file_kwargs)
 
-    state_dict = load_gguf_checkpoint(gguf_path, return_tensors=True)["tensors"]
+    state_dict = load_gguf_checkpoint(gguf_path, return_tensors=True)['tensors']
 
     loaded_state_dict_keys = list(state_dict.keys())
 
@@ -117,39 +118,97 @@ def _manual(
 
     init_contexts = [tfm.modeling_utils.no_init_weights(_enable=True)]
 
-    config._attn_implementation = "sdpa"
+    config._attn_implementation = 'sdpa'
     config._attn_implementation_autoset = True
 
     with tfm.utils.ContextManagers(init_contexts):
-        # Let's make sure we don't run the init function of buffer modules
         model = model_class(config)
 
-    (
-        model,
-        missing_keys,
-        unexpected_keys,
-        mismatched_keys,
-        offload_index,
-        error_msgs,
-    ) = model_class._load_pretrained_model(  # noqa
-        model,
+    #
+
+    # (
+    #     model,
+    #     missing_keys,
+    #     unexpected_keys,
+    #     mismatched_keys,
+    #     offload_index,
+    #     error_msgs,
+    # ) = model_class._load_pretrained_model(  # noqa
+    #     model,
+    #     state_dict,
+    #     loaded_state_dict_keys,  # XXX: rename?
+    #     None,
+    #     model_id,
+    #     ignore_mismatched_sizes=False,
+    #     sharded_metadata=None,
+    #     _fast_init=True,
+    #     low_cpu_mem_usage=None,
+    #     device_map=None,
+    #     offload_folder=None,
+    #     offload_state_dict=False,
+    #     dtype=None,
+    #     hf_quantizer=None,
+    #     keep_in_fp32_modules=[],
+    #     gguf_path=gguf_path,
+    #     weights_only=True,
+    # )
+
+    model.tie_weights()
+
+    model_state_dict = model.state_dict()
+    expected_keys = list(model_state_dict.keys())
+    prefix = model.base_model_prefix
+
+    loaded_keys = loaded_state_dict_keys
+
+    if len(prefix) > 0:
+        has_prefix_module = any(s.startswith(prefix) for s in loaded_keys)
+        expects_prefix_module = any(s.startswith(prefix) for s in expected_keys)
+    else:
+        has_prefix_module = False
+        expects_prefix_module = False
+
+    remove_prefix_from_model = not has_prefix_module and expects_prefix_module
+    add_prefix_to_model = has_prefix_module and not expects_prefix_module
+
+    if remove_prefix_from_model:
+        _prefix = f'{prefix}.'
+        expected_keys = [s[len(_prefix) :] if s.startswith(_prefix) else s for s in expected_keys]
+    elif add_prefix_to_model:
+        expected_keys = ['.'.join([prefix, s]) for s in expected_keys]
+
+    model.tie_weights()
+
+    # ptrs = collections.defaultdict(list)
+    # for name, tensor in model.state_dict().items():
+    #     id_tensor = tfm.pytorch_utils.id_tensor_storage(tensor)
+    #     ptrs[id_tensor].append(name)
+
+    model.apply(model._initialize_weights)
+
+    start_prefix = ''
+    model_to_load = model
+
+    error_msgs, offload_index, state_dict_index = tfm.modeling_utils._load_state_dict_into_meta_model(  # noqa
+        model_to_load,
         state_dict,
-        loaded_state_dict_keys,  # XXX: rename?
-        None,
-        model_id,
-        ignore_mismatched_sizes=False,
-        sharded_metadata=None,
-        _fast_init=True,
-        low_cpu_mem_usage=None,
+        start_prefix,
+        expected_keys,
         device_map=None,
         offload_folder=None,
-        offload_state_dict=False,
+        offload_index=None,
+        state_dict_folder=None,
+        state_dict_index=None,
         dtype=None,
         hf_quantizer=None,
+        is_safetensors=False,
         keep_in_fp32_modules=[],
-        gguf_path=gguf_path,
-        weights_only=True,
     )
+
+    if error_msgs:
+        raise Exception(error_msgs)
+
+    #
 
     model.tie_weights()
 
@@ -176,8 +235,8 @@ def _manual(
 
 
 def _main() -> None:
-    model_id = "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
-    gguf_file = "tinyllama-1.1b-chat-v1.0.Q6_K.gguf"
+    model_id = 'TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF'
+    gguf_file = 'tinyllama-1.1b-chat-v1.0.Q6_K.gguf'
 
     #
 
