@@ -1,33 +1,65 @@
 import jedi
 
-def find_method_references(file_path: str, line: int, column: int):
+from omlish import lang
+
+
+@lang.static_init
+def _patch_jedi_subprocess_popen() -> None:
+    import subprocess
+
+    from jedi.inference.compiled import subprocess as js
+
+    from omlish.lite.subprocesses import subprocess_shell_wrap_exec
+
+    #
+
+    def _wrapped_popen(cmd, *rest, **kwargs):
+        return subprocess.Popen(subprocess_shell_wrap_exec(*cmd), *rest, **kwargs)
+
+    #
+
+    js.subprocess = lang.proxy_import('subprocess')
+    js.subprocess.Popen = _wrapped_popen
+
+
+def find_method_references(project_path: str, base_file: str, line: int, column: int):
     """
-    Finds references to a class method using the jedi library.
+    Finds references to a class method across the entire project using the jedi Project API.
 
     Args:
-        file_path (str): Path to the file where the class method is defined.
+        project_path (str): The root path of the project.
+        base_file (str): The file where the method is defined.
         line (int): Line number of the method definition.
         column (int): Column number of the method definition.
     """
-    with open(file_path, 'r') as file:
-        code = file.read()
+    # Initialize the Jedi Project
+    project = jedi.Project(path=project_path)
 
-    # Initialize a Jedi Script object
-    script = jedi.Script(code, path=file_path)
+    # Load the script where the method is defined
+    script = jedi.Script(path=base_file)
 
-    # Get references to the symbol at the specified position
-    references = script.get_references(line, column, include_builtins=False)
+    # Find references to the method in the entire project
+    references = script.get_references(line, column, include_builtins=False, project=project)
 
     # Print out the references found
-    print(f"References to method found in '{file_path}':")
-    for ref in references:
-        print(f"- {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
+    if references:
+        print(f"References found in project '{project_path}':")
+        for ref in references:
+            print(f"  - {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
+    else:
+        print("No references found.")
 
-# Example usage
+
 if __name__ == "__main__":
-    # Adjust the file path, line, and column to match your target method
-    find_method_references(
-        file_path='example.py',
-        line=10,   # Line number of the method definition
-        column=5   # Column number within the method name
-    )
+    # Define the base file where the method is defined
+    base_file = 'omlish/c3.py'
+
+    # Define the project path (root directory of the project)
+    project_path = '.'
+
+    # Line and column numbers where the method is defined in the base file
+    method_line = 10
+    method_column = 8
+
+    # Perform the search for references across the entire project
+    find_method_references(project_path, base_file, method_line, method_column)
