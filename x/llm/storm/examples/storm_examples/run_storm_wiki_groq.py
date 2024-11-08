@@ -21,13 +21,13 @@ import os
 import re
 from argparse import ArgumentParser
 
-from knowledge_storm import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
 
 # Now import lm directly
-import lm
-from lm import GroqModel
-from knowledge_storm.rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
-from knowledge_storm.utils import load_api_key
+from ... import lm
+from ...lm import GroqModel
+from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ...utils import load_api_key
 
 
 def sanitize_topic(topic):

@@ -19,10 +19,10 @@ args.output_dir/
 import os
 from argparse import ArgumentParser
 
-from knowledge_storm import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
-from knowledge_storm.lm import GoogleModel
-from knowledge_storm.rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
-from knowledge_storm.utils import load_api_key
+from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ...lm import GoogleModel
+from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ...utils import load_api_key
 
 def main(args):
     load_api_key(toml_file_path='secrets.toml')

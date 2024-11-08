@@ -21,10 +21,10 @@ from argparse import ArgumentParser
 
 from dspy import Example
 
-from knowledge_storm.lm import OllamaClient
-from knowledge_storm.rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
-from knowledge_storm import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
-from knowledge_storm.utils import load_api_key
+from ...lm import OllamaClient
+from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ...utils import load_api_key
 
 
 def main(args):

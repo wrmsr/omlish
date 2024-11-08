@@ -3,7 +3,6 @@ import os
 from dataclasses import dataclass, field, asdict
 from typing import List, Union, Literal, Optional, Dict
 
-from .modules import collaborative_storm_utils as collaborative_storm_utils
 from .modules.callback import BaseCallbackHandler
 from .modules.co_storm_agents import (
     SimulatedUser,

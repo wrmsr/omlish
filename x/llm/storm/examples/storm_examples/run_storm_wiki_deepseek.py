@@ -22,10 +22,10 @@ import re
 import logging
 from argparse import ArgumentParser
 
-from knowledge_storm import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
-from knowledge_storm.lm import DeepSeekModel
-from knowledge_storm.rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
-from knowledge_storm.utils import load_api_key
+from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ...lm import DeepSeekModel
+from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ...utils import load_api_key
 
 
 def sanitize_topic(topic):

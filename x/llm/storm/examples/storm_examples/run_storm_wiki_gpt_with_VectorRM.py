@@ -29,10 +29,10 @@ args.output_dir/
 import os
 from argparse import ArgumentParser
 
-from knowledge_storm import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
-from knowledge_storm.rm import VectorRM
-from knowledge_storm.lm import OpenAIModel, AzureOpenAIModel
-from knowledge_storm.utils import load_api_key, QdrantVectorStoreManager
+from ... import STORMWikiRunnerArguments, STORMWikiRunner, STORMWikiLMConfigs
+from ...rm import VectorRM
+from ...lm import OpenAIModel, AzureOpenAIModel
+from ...utils import load_api_key, QdrantVectorStoreManager
 
 
 def main(args):

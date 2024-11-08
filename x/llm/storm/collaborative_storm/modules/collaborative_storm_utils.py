@@ -2,7 +2,7 @@ import dspy
 import os
 import re
 import sys
-import toml
+import tomllib
 from typing import List, Tuple, Dict, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -228,11 +228,11 @@ def clean_up_section(text):
 def load_api_key(toml_file_path):
     try:
         with open(toml_file_path, "r") as file:
-            data = toml.load(file)
+            data = tomllib.loads(file.read())
     except FileNotFoundError:
         print(f"File not found: {toml_file_path}", file=sys.stderr)
         return
-    except toml.TomlDecodeError:
+    except tomllib.TOMLDecodeError:
         print(f"Error decoding TOML file: {toml_file_path}", file=sys.stderr)
         return
     # Set environment variables

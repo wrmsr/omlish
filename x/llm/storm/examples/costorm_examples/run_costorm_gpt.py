@@ -16,12 +16,12 @@ args.output_dir/
 import os
 import json
 from argparse import ArgumentParser
-from knowledge_storm.collaborative_storm.engine import CollaborativeStormLMConfigs, RunnerArgument, CoStormRunner
-from knowledge_storm.collaborative_storm.modules.callback import LocalConsolePrintCallBackHandler
-from knowledge_storm.lm import OpenAIModel, AzureOpenAIModel
-from knowledge_storm.logging_wrapper import LoggingWrapper
-from knowledge_storm.rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
-from knowledge_storm.utils import load_api_key
+from ...collaborative_storm.engine import CollaborativeStormLMConfigs, RunnerArgument, CoStormRunner
+from ...collaborative_storm.modules.callback import LocalConsolePrintCallBackHandler
+from ...lm import OpenAIModel, AzureOpenAIModel
+from ...logging_wrapper import LoggingWrapper
+from ...rm import YouRM, BingSearch, BraveRM, SerperRM, DuckDuckGoSearchRM, TavilySearchRM, SearXNG
+from ...utils import load_api_key
 
 
 def main(args):

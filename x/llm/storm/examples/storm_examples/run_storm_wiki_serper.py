@@ -19,14 +19,14 @@ args.output_dir/
 import os
 from argparse import ArgumentParser
 
-from knowledge_storm import (
+from ... import (
     STORMWikiRunnerArguments,
     STORMWikiRunner,
     STORMWikiLMConfigs,
 )
-from knowledge_storm.lm import ClaudeModel
-from knowledge_storm.rm import SerperRM
-from knowledge_storm.utils import load_api_key
+from ...lm import ClaudeModel
+from ...rm import SerperRM
+from ...utils import load_api_key
 
 
 def main(args):
