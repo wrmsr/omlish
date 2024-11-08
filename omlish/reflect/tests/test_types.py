@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import collections.abc
 import dataclasses as dc
 import pprint
