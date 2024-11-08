@@ -5,7 +5,7 @@ TODO:
 
 ==
 
-jq Command options)
+jq Command options:
   -n, --null-input          use `null` as the single input value;
   -R, --raw-input           read each line as string instead of JSON;
   -s, --slurp               read all inputs into an array and use it as the single input value;
@@ -276,11 +276,10 @@ def _main() -> None:
             renderer = EagerRenderer(cfg.rendering)
 
             for buf in yield_input():
-                if buf:
-                    for v in parser.parse(buf):
-                        for e in processor.process(v):
-                            s = renderer.render(e)
-                            print(s, file=out)
+                for v in parser.parse(buf):
+                    for e in processor.process(v):
+                        s = renderer.render(e)
+                        print(s, file=out)
 
         else:
             parser = EagerParser(cfg.format)

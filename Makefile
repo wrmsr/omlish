@@ -69,9 +69,11 @@ _default_venv:
 	@.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
 
 	@if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("llama_cpp") is None)' ; then \
-		LCW=$$(ls -1 ../llama_cpp_python-*-linux_x86_64.whl 2>/dev/null | tail -n1) && \
-		if [ ! -z "$$LCW" ] ; then \
-			${PYTHON} -m pip install "$$LCW" ; \
+  		if [ $$(uname) == "Linux" ] && [ ]$$(uname -m) == "x86_64" ] ; then \
+			LCW=$$(ls -1 ../llama_cpp_python-*-linux_x86_64.whl 2>/dev/null | tail -n1) && \
+			if [ ! -z "$$LCW" ] ; then \
+				${PYTHON} -m pip install "$$LCW" ; \
+			fi ; \
 		fi ; \
 	fi
 

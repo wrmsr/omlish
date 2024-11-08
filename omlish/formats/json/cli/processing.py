@@ -35,8 +35,12 @@ class Processor:
             v = self._jmespath_expr.search(v)
 
         if self._opts.flat:
-            if isinstance(v, str):
-                raise TypeError(f'Flat output must be arrays, got {type(v)}', v)
+            if (
+                    not isinstance(ta.Iterable) or
+                    isinstance(v, ta.Mapping) or
+                    isinstance(v, lang.BUILTIN_SCALAR_ITERABLE_TYPES)
+            ):
+                raise TypeError(f'Flat output must be flat collections, got {type(v)}', v)
 
             yield from v
 
