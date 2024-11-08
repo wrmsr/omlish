@@ -41,6 +41,10 @@ class Project(ProjectBase):
             'prompt-toolkit ~= 3.0',
         ],
 
+        'qr': [
+            'segno ~= 1.6',
+        ],
+
         'tokens': [
             'tokenize-rt ~= 6.1',
         ],

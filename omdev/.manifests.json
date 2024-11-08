@@ -282,7 +282,7 @@
     "module": ".tools.pip",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pip.py",
-    "line": 148,
+    "line": 164,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
@@ -299,6 +299,18 @@
       "$.cli.types.CliModule": {
         "cmd_name": "prof",
         "mod_name": "omdev.tools.prof"
+      }
+    }
+  },
+  {
+    "module": ".tools.qr",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/qr.py",
+    "line": 74,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "qr",
+        "mod_name": "omdev.tools.qr"
       }
     }
   },

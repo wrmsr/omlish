@@ -118,3 +118,5 @@ transformers==4.46.2; python_version < "3.13"
 sentence-transformers==3.2.1; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
+
+segno==1.6.1
