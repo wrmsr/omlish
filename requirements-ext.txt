@@ -289,3 +289,5 @@ dspy==2.5.29
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
+
+duckduckgo_search==6.3.3
