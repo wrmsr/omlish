@@ -5,11 +5,11 @@ import os
 import pickle
 import re
 import sys
+import tomllib
 
 import httpx
 import pandas as pd
 import regex
-import toml
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import Qdrant
@@ -46,11 +46,11 @@ def truncate_filename(filename, max_length=125):
 def load_api_key(toml_file_path):
     try:
         with open(toml_file_path) as file:
-            data = toml.load(file)
+            data = tomllib.loads(file.read())
     except FileNotFoundError:
         print(f'File not found: {toml_file_path}', file=sys.stderr)
         return
-    except toml.TomlDecodeError:
+    except tomllib.TOMLDecodeError:
         print(f'Error decoding TOML file: {toml_file_path}', file=sys.stderr)
         return
     # Set environment variables

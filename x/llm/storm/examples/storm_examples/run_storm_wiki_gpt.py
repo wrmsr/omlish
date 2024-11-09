@@ -39,10 +39,6 @@ from ...utils import load_api_key
 
 
 def main(args):
-    # --retriever duckduckgo --do-research --topic nanotechnology
-    os.environ['OPENAI_API_TYPE'] = 'openai'
-    os.environ['OPENAI_API_VERSION'] = '2023-08-01'
-
     load_api_key(toml_file_path=os.path.expanduser('~/.omlish-llm/.env'))
     lm_configs = STORMWikiLMConfigs()
     openai_kwargs = {
@@ -243,5 +239,12 @@ if __name__ == '__main__':
     )
 
     parser.add_argument('topic', nargs='?')
+
+    ##
+
+    os.environ['OPENAI_API_TYPE'] = 'openai'
+    os.environ['OPENAI_API_VERSION'] = '2023-08-01'
+
+    # --retriever duckduckgo --do-research nanotechnology
 
     main(parser.parse_args())
