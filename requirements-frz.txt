@@ -94,6 +94,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.29
 duckdb==1.1.3
+duckduckgo_search==6.3.3
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -331,6 +332,7 @@ portalocker==2.8.2
 posthog==3.7.0
 pprintpp==0.4.0
 preshed==3.0.9
+primp==0.7.0
 priority==2.0.0
 prometheus_client==0.21.0
 prompt_toolkit==3.0.48
