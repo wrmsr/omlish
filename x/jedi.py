@@ -37,7 +37,7 @@ def find_method_references(project_path: str, base_file: str, line: int, column:
     # Initialize the Jedi Project
     project = jedi.Project(path=project_path)
 
-    for e in project.search('omlish.c3.mro'):
+    for e in project.search('def omlish.c3.mro'):
         print(e)
 
     # Load the base script where the method is defined
@@ -51,19 +51,20 @@ def find_method_references(project_path: str, base_file: str, line: int, column:
         print(f"No references found in '{base_file}'")
         return
 
-    # Iterate over all Python files in the project to find references
-    print(f"Searching for references in project '{project_path}'...")
-    for python_file in project.get_python_files():
-        # Skip the base file to avoid self-references
-        if os.path.abspath(python_file) == os.path.abspath(base_file):
-            continue
-
-        try:
-            script = jedi.Script(path=python_file)
-            for ref in script.get_references(line, column, include_builtins=False):
-                print(f"  - {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
-        except Exception as e:
-            print(f"Error processing file {python_file}: {e}")
+    # man wtf gpt
+    # # Iterate over all Python files in the project to find references
+    # print(f"Searching for references in project '{project_path}'...")
+    # for python_file in project.get_python_files():
+    #     # Skip the base file to avoid self-references
+    #     if os.path.abspath(python_file) == os.path.abspath(base_file):
+    #         continue
+    #
+    #     try:
+    #         script = jedi.Script(path=python_file)
+    #         for ref in script.get_references(line, column, include_builtins=False):
+    #             print(f"  - {ref.module_path}:{ref.line}:{ref.column}: {ref.name}")
+    #     except Exception as e:
+    #         print(f"Error processing file {python_file}: {e}")
 
 
 if __name__ == "__main__":
@@ -74,8 +75,8 @@ if __name__ == "__main__":
     project_path = '.'
 
     # Line and column numbers where the method is defined in the base file
-    method_line = 45
-    method_column = 1
+    method_line = 124
+    method_column = 5
 
     # Perform the search for references across the entire project
     find_method_references(project_path, base_file, method_line, method_column)
