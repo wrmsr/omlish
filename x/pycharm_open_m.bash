@@ -7,5 +7,5 @@ if [ -z "$1" ]; then
 fi
 
 # Run the AppleScript with the directory path as an argument
-osascript pycharm_open.scpt "$1"
+osascript pycharm_open_m.scpt "$1"
 
