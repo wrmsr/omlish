@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1
 wheel>=0.44.0
 
-uv>=0.5.0
+uv>=0.5.1
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -38,7 +38,7 @@ pg8000==1.31.2
 pymysql==1.1.1
 
 litecli==1.12.3  # @omlish-venv !13t
-mycli==1.27.2  # @omlish-venv !13t
+mycli==1.28.0  # @omlish-venv !13t
 pgcli==4.1.0  # @omlish-venv !13t
 
 # pydevd_pycharm==241.18034.82
@@ -58,7 +58,7 @@ lxml==5.3.0  # @omlish-venv !13t
 
 pytest-trio==0.8.0
 
-json5==0.9.25
+json5==0.9.28
 
 # pyrsistent
 # rpds-py
@@ -112,10 +112,10 @@ huggingface-hub==0.26.2
 
 datasets==3.1.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
+sentence-transformers==3.3.0; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
 tiktoken==0.8.0; python_version < "3.13"
 transformers==4.46.2; python_version < "3.13"
-sentence-transformers==3.2.1; python_version < "3.13"
 
 llama-cpp-python; sys_platform == "darwin"
 

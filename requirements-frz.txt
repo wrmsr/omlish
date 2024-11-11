@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.56
-botocore==1.35.56
+boto3==1.35.57
+botocore==1.35.57
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -94,7 +94,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.29
 duckdb==1.1.3
-duckduckgo_search==6.3.3
+duckduckgo_search==6.3.4
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -126,7 +126,7 @@ geopandas==1.0.1
 gguf==0.10.0
 gitdb==4.0.11
 GitPython==3.1.43
-google-api-core==2.22.0
+google-api-core==2.23.0
 google-api-python-client==2.151.0
 google-auth==2.36.0
 google-auth-httplib2==0.2.0
@@ -158,7 +158,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.118.0
+hypothesis==6.118.7
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.0
@@ -174,13 +174,13 @@ isoduration==20.11.0
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
 jaraco.functools==4.1.0
-jedi==0.19.1
+jedi==0.19.2
 jedi-language-server==0.42.0
 Jinja2==3.1.4
 jiter==0.5.0
 jmespath==1.0.1
 joblib==1.4.2
-json5==0.9.25
+json5==0.9.28
 json_repair==0.30.1
 jsonpatch==1.33
 jsonpath-python==1.0.6
@@ -265,7 +265,7 @@ multidict==6.1.0
 multiprocess==0.70.16
 murmurhash==1.0.10
 mwparserfromhell==0.6.6
-mycli==1.27.2
+mycli==1.28.0
 mypy==1.13.0
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
@@ -293,15 +293,15 @@ onnx2torch==1.5.15
 onnxruntime==1.19.2
 openai==1.54.3
 opencv-python==4.10.0.84
-opentelemetry-api==1.28.0
+opentelemetry-api==1.28.1
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
-opentelemetry-instrumentation==0.49b0
-opentelemetry-instrumentation-asgi==0.49b0
-opentelemetry-instrumentation-fastapi==0.49b0
+opentelemetry-instrumentation==0.49b1
+opentelemetry-instrumentation-asgi==0.49b1
+opentelemetry-instrumentation-fastapi==0.49b1
 opentelemetry-proto==1.15.0
-opentelemetry-sdk==1.28.0
-opentelemetry-semantic-conventions==0.49b0
-opentelemetry-util-http==0.49b0
+opentelemetry-sdk==1.28.1
+opentelemetry-semantic-conventions==0.49b1
+opentelemetry-util-http==0.49b1
 opt_einsum==3.4.0
 optree==0.13.0
 optuna==4.0.0
@@ -316,7 +316,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@b1fd97dc3e71d91abf9a8605e8be74ea6bb751c6
+peft @ git+https://github.com/huggingface/peft.git@162d7e57ee0088f42eb0f26150bd9170d30f3637
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -358,6 +358,7 @@ pydantic==2.9.2
 pydantic-settings==2.6.1
 pydantic_core==2.23.4
 pyflakes==3.2.0
+pyfzf==0.3.1
 pygls==1.3.1
 Pygments==2.18.0
 PyJWT==2.9.0
@@ -427,12 +428,12 @@ scikit-learn==1.5.2
 scipy==1.14.1
 scramp==1.4.5
 segno==1.6.1
-selectolax==0.3.21
+selectolax==0.3.26
 Send2Trash==1.8.3
-sentence-transformers==3.2.1
+sentence-transformers==3.3.0
 sentencepiece==0.2.0
 setproctitle==1.3.3
-setuptools==75.3.0
+setuptools==75.4.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
@@ -443,7 +444,7 @@ smmap==5.0.1
 sniffio==1.3.1
 snowflake-connector-python==3.12.3
 snowflake-sqlalchemy==1.6.1
-soco==0.30.5
+soco==0.30.6
 sortedcontainers==2.4.0
 sounddevice==0.5.1
 soundfile==0.12.1
@@ -492,7 +493,7 @@ trafilatura==1.12.2
 traitlets==5.14.3
 transformers==4.46.2
 tree-sitter==0.23.2
-tree-sitter-python==0.23.2
+tree-sitter-python==0.23.4
 trio==0.27.0
 trio_asyncio==0.15.0
 trl==0.12.0
@@ -517,7 +518,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.2
-uv==0.5.0
+uv==0.5.1
 uvicorn==0.32.0
 uvloop==0.21.0
 voluptuous==0.15.2
@@ -525,10 +526,10 @@ wasabi==1.1.3
 watchfiles==0.24.0
 wcwidth==0.2.13
 weasel==0.4.1
-webcolors==24.8.0
+webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
-websockets==13.1
+websockets==14.0
 Werkzeug==3.1.3
 wgpu==0.19.0
 wheel==0.45.0
@@ -542,6 +543,6 @@ xmltodict==0.14.2
 xxhash==3.5.0
 yarl==1.17.1
 zigpy==0.71.0
-zipp==3.20.2
+zipp==3.21.0
 zstandard==0.23.0
 zwave-js-server-python==0.59.0
