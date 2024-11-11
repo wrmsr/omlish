@@ -420,13 +420,9 @@ class ArticleTextProcessing:
     def clean_up_citation(conv):
         for turn in conv.dlg_history:
             if 'References:' in turn.agent_utterance:
-                turn.agent_utterance = turn.agent_utterance[
-                    : turn.agent_utterance.find('References:')
-                ]
+                turn.agent_utterance = turn.agent_utterance[:turn.agent_utterance.find('References:')]
             if 'Sources:' in turn.agent_utterance:
-                turn.agent_utterance = turn.agent_utterance[
-                    : turn.agent_utterance.find('Sources:')
-                ]
+                turn.agent_utterance = turn.agent_utterance[:turn.agent_utterance.find('Sources:')]
             turn.agent_utterance = turn.agent_utterance.replace('Answer:', '').strip()
             try:
                 max_ref_num = max(
@@ -474,19 +470,11 @@ class ArticleTextProcessing:
         outline = re.sub(r'#[#]? See Also.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? Notes.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? References.*?(?=##|$)', '', outline, flags=re.DOTALL)
-        outline = re.sub(
-            r'#[#]? External links.*?(?=##|$)', '', outline, flags=re.DOTALL,
-        )
-        outline = re.sub(
-            r'#[#]? External Links.*?(?=##|$)', '', outline, flags=re.DOTALL,
-        )
+        outline = re.sub(r'#[#]? External links.*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? External Links.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? Bibliography.*?(?=##|$)', '', outline, flags=re.DOTALL)
-        outline = re.sub(
-            r'#[#]? Further reading*?(?=##|$)', '', outline, flags=re.DOTALL,
-        )
-        outline = re.sub(
-            r'#[#]? Further Reading*?(?=##|$)', '', outline, flags=re.DOTALL,
-        )
+        outline = re.sub(r'#[#]? Further reading*?(?=##|$)', '', outline, flags=re.DOTALL)
+        outline = re.sub(r'#[#]? Further Reading*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? Summary.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? Appendices.*?(?=##|$)', '', outline, flags=re.DOTALL)
         outline = re.sub(r'#[#]? Appendix.*?(?=##|$)', '', outline, flags=re.DOTALL)
