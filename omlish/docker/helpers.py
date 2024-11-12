@@ -26,7 +26,7 @@ def timebomb_payload(delay_s: float, name: str = _DEFAULT_TIMEBOMB_NAME) -> str:
 DOCKER_FOR_MAC_HOSTNAME = 'docker.for.mac.localhost'
 
 
-_LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/docker/')
+_LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/(docker|desktop-containerd)/')
 
 
 def is_likely_in_docker() -> bool:
