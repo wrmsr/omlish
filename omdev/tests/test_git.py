@@ -27,21 +27,20 @@ from omlish.lite.check import check_state
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
-def find_any(s: str, chars: str, start: int = 0) -> int:
-    ret = -1
-    for c in chars:
-        if (found := s.find(c, start)) >= 0 and (ret < 0 or ret > found):
-            ret = found
-    return ret
+def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
+    def find_any(chars: str, start: int = 0) -> int:
+        ret = -1
+        for c in chars:
+            if (found := l.find(c, start)) >= 0 and (ret < 0 or ret > found):
+                ret = found
+        return ret
 
-
-def yield_status_line_fields(l: str) -> ta.Iterator[str]:
     p = 0
     while True:
         if l[p] == '"':
             p += 1
             s = []
-            while (n := find_any(l, '\\"', p)) > 0:
+            while (n := find_any('\\"', p)) > 0:
                 if (c := l[n]) == '\\':
                     s.append(l[p:n])
                     s.append(l[n + 1])
@@ -75,7 +74,7 @@ def yield_status_line_fields(l: str) -> ta.Iterator[str]:
             p = e + 1
 
 
-class StatusLineField(enum.Enum):
+class GitStatusLineState(enum.Enum):
     UNMODIFIED = ' '
     MODIFIED = 'M'
     FILE_TYPE_CHANGED = 'T'
@@ -127,9 +126,9 @@ class StatusLineField(enum.Enum):
 
 
 @dc.dataclass(frozen=True)
-class StatusLine:
-    x: StatusLineField
-    y: StatusLineField
+class GitStatusLine:
+    x: GitStatusLineState
+    y: GitStatusLineState
 
     a: str
     b: str | None
@@ -145,12 +144,12 @@ class StatusLine:
         )
 
 
-def parse_status_line(l: str) -> StatusLine:
+def parse_git_status_line(l: str) -> GitStatusLine:
     if len(l) < 3 or l[2] != ' ':
         raise ValueError(l)
     x, y = l[0], l[1]
 
-    fields = list(yield_status_line_fields(l[3:]))
+    fields = list(yield_git_status_line_fields(l[3:]))
     if len(fields) == 1:
         a, b = fields[0], None
     elif len(fields) == 3:
@@ -159,16 +158,20 @@ def parse_status_line(l: str) -> StatusLine:
     else:
         raise ValueError(l)
 
-    return StatusLine(
-        StatusLineField(x),
-        StatusLineField(y),
+    return GitStatusLine(
+        GitStatusLineState(x),
+        GitStatusLineState(y),
         a,
         b,
     )
 
 
+def parse_git_status(s: str) -> list[GitStatusLine]:
+    return [parse_git_status_line(l) for l in s.splitlines()]
+
+
 @debugging_on_exception()
-def test_parse_status():
+def test_parse_git_status():
     tmp_dir = tempfile.mkdtemp()
     print(f'{tmp_dir=}')
 
@@ -180,8 +183,8 @@ def test_parse_status():
             cwd=tmp_dir,
         ).decode()
 
-    def status() -> list[str]:
-        return run('git', 'status', '--porcelain=v1').splitlines()
+    def status() -> str:
+        return run('git', 'status', '--porcelain=v1')
 
     def write(file_name: str, contents: str) -> None:
         with open(os.path.join(tmp_dir, file_name), 'w') as f:
@@ -192,92 +195,85 @@ def test_parse_status():
 
     #
 
-    def parse_status():
-        # print(status())
-        for l in status():
-            print(parse_status_line(l))
-
-    #
-
     run('git', 'init')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     write('a.txt', '0\n' * 128)
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', 'a.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     write('a.txt', '1\n' * 128)
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', 'a.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     rename('a.txt', 'b.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', 'b.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', 'a.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     write('difficult " filename.txt', 'foo\n' * 128)
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', '.')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     rename('difficult " filename.txt', 'difficult 2 " filename.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', '.')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     write('->.txt', 'abc\n' * 128)
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', '.')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
 
     #
 
     rename('->.txt', '-> 2 ->.txt')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'add', '.')
-    parse_status()
+    print(parse_git_status(status()))
 
     run('git', 'commit', '-m', '--')
-    parse_status()
+    print(parse_git_status(status()))
