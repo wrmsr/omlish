@@ -18,31 +18,64 @@
 import os.path
 import subprocess
 import tempfile
+import typing as ta
 
 from omlish.diag.debug import debugging_on_exception
 from omlish.lite.check import check_state
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
+def find_any(s: str, chars: str, start: int = 0) -> int:
+    ret = -1
+    for c in chars:
+        if (found := s.find(c, start)) >= 0 and (ret < 0 or ret > found):
+            ret = found
+    return ret
+
+
+def yield_status_line_fields(l: str) -> ta.Iterator[str]:
+    p = 0
+    while True:
+        if l[p] == '"':
+            p += 1
+            s = []
+            while (n := find_any(l, '\\"', p)) > 0:
+                if (c := l[n]) == '\\':
+                    s.append(l[p:n])
+                    s.append(l[n + 1])
+                    p = n + 2
+                elif c == '"':
+                    s.append(l[p:n])
+                    p = n
+                    break
+                else:
+                    raise ValueError(l)
+
+            if l[p] != '"':
+                raise ValueError(l)
+
+            yield ''.join(s)
+
+            p += 1
+            if p == len(l):
+                return
+            elif l[p] != ' ':
+                raise ValueError(l)
+
+            p += 1
+
+        else:
+            if (e := l.find(' ', p)) < 0:
+                yield l[p:]
+                return
+
+            yield l[p:e]
+            p = e + 1
+
+
 def parse_status_line(l: str) -> None:
-    check_state(len(l) > 3, l)
-    x, y = l[0], l[1]
-    check_state(l[2] == ' ', l)
-    p = 3
-
-    def find(cs: str) -> int:
-        n = -1
-        for c in cs:
-            if (f := l.find(c, p)) >= 0 and (n < 0 or n > f):
-                n = f
-        return n
-
-    if l[p] == '"':
-        e = p + 1
-        while (n := find('\\"', e)) > 0:
-            raise NotImplementedError
-
-    # raise NotImplementedError
+    for f in yield_status_line_fields(l):
+        print(f)
 
 
 @debugging_on_exception()
