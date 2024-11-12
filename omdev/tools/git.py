@@ -77,7 +77,7 @@ class Cli(ap.Cli):
                     'clone',
                     *self.unknown_args,
                     *self.args.args,
-                    f'https://github.com/{user}/{repo}.git',
+                    f'git@github.com:{user}/{repo}.git',
                     os.path.join(user, repo),
                 ])
 
