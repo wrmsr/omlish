@@ -74,8 +74,18 @@ def yield_status_line_fields(l: str) -> ta.Iterator[str]:
 
 
 def parse_status_line(l: str) -> None:
-    for f in yield_status_line_fields(l):
-        print(f)
+    if len(l) < 3 or l[2] != ' ':
+        raise ValueError(l)
+    x, y = l[0], l[1]
+
+    fields = list(yield_status_line_fields(l[3:]))
+    if len(fields) == 1:
+        a, b = fields[0], None
+    elif len(fields) == 3:
+        check_state(fields[1] == '->', l)
+        a, b = fields[0], fields[2]
+    else:
+        raise ValueError(l)
 
 
 @debugging_on_exception()
