@@ -132,6 +132,18 @@
     }
   },
   {
+    "module": ".pycharm.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/pycharm/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "pycharm",
+        "mod_name": "omdev.pycharm.__main__"
+      }
+    }
+  },
+  {
     "module": ".pyproject.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/pyproject/__main__.py",

@@ -8,14 +8,14 @@ import subprocess
 import sys
 import typing as ta
 
-from ... import check
-from ... import lang
+from .. import check
+from .. import lang
 
 
 if ta.TYPE_CHECKING:
-    docker = lang.proxy_import('...docker')
+    docker = lang.proxy_import('..docker')
 else:
-    from ... import docker
+    from .. import docker
 
 
 ##
