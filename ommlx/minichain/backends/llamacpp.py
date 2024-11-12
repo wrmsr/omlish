@@ -31,6 +31,11 @@ else:
 
 
 class LlamacppPromptModel(PromptModel):
+    # hf.hf_hub_download(
+    #   revision='1ca85c857dce892b673b988ad0aa83f2cb1bbd19',
+    #   repo_id='QuantFactory/Meta-Llama-3-8B-GGUF',
+    #   filename='Meta-Llama-3-8B.Q8_0.gguf',
+    # )
     model_path = os.path.join(
         os.path.expanduser('~/.cache/huggingface/hub'),
         'models--QuantFactory--Meta-Llama-3-8B-GGUF',
