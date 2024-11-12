@@ -24,18 +24,6 @@
     }
   },
   {
-    "module": ".diag.pycharm.cli",
-    "attr": "_CLI_MODULE",
-    "file": "omlish/diag/pycharm/cli.py",
-    "line": 38,
-    "value": {
-      "$omdev.cli.types.CliModule": {
-        "cmd_name": "pycharm",
-        "mod_name": "omlish.diag.pycharm.cli"
-      }
-    }
-  },
-  {
     "module": ".formats.json.cli.__main__",
     "attr": "_CLI_MODULE",
     "file": "omlish/formats/json/cli/__main__.py",

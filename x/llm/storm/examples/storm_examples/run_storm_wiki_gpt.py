@@ -182,6 +182,7 @@ if __name__ == '__main__':
             'searxng',
             'azure_ai_search',
         ],
+        default='duckduckgo',
         help='The search engine API to use for retrieving information.',
     )
     # stage of the pipeline
