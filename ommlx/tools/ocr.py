@@ -65,7 +65,7 @@ def _get_img_data(file: str | None) -> ta.Any:
 def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
-    parser.add_argument('-b', '--backend', default=DEFAULT_OCR_BACKEND)
+    parser.add_argument('-b', '--backend', choices=list(OCR_BACKENDS), default=DEFAULT_OCR_BACKEND)
     args = parser.parse_args()
 
     #
