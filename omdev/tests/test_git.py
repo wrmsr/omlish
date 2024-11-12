@@ -15,6 +15,8 @@
 [' D "difficult \\" filename.txt"', '?? "difficult 2 \\" filename.txt"']
 ['R  "difficult \\" filename.txt" -> "difficult 2 \\" filename.txt"']
 """
+import dataclasses as dc
+import enum
 import os.path
 import subprocess
 import tempfile
@@ -73,7 +75,77 @@ def yield_status_line_fields(l: str) -> ta.Iterator[str]:
             p = e + 1
 
 
-def parse_status_line(l: str) -> None:
+class StatusLineField(enum.Enum):
+    UNMODIFIED = ' '
+    MODIFIED = 'M'
+    FILE_TYPE_CHANGED = 'T'
+    ADDED = 'A'
+    DELETED = 'D'
+    RENAMED = 'R'
+    COPIED = 'C'
+    UPDATED_BUT_UNMERGED = 'U'
+    UNTRACKED = '?'
+    IGNORED = '!'
+    SUBMODULE_MODIFIED_CONTENT = 'm'
+
+
+"""
+# X          Y     Meaning
+# -------------------------------------------------
+#          [AMD]   not updated
+# M        [ MTD]  updated in index
+# T        [ MTD]  type changed in index
+# A        [ MTD]  added to index
+# D                deleted from index
+# R        [ MTD]  renamed in index
+# C        [ MTD]  copied in index
+# [MTARC]          index and work tree matches
+# [ MTARC]    M    work tree changed since index
+# [ MTARC]    T    type changed in work tree since index
+# [ MTARC]    D    deleted in work tree
+#             R    renamed in work tree
+#             C    copied in work tree
+# -------------------------------------------------
+# D           D    unmerged, both deleted
+# A           U    unmerged, added by us
+# U           D    unmerged, deleted by them
+# U           A    unmerged, added by them
+# D           U    unmerged, deleted by us
+# A           A    unmerged, both added
+# U           U    unmerged, both modified
+# -------------------------------------------------
+# ?           ?    untracked
+# !           !    ignored
+# -------------------------------------------------
+# 
+# Submodules have more state and instead report
+# 
+#  - M = the submodule has a different HEAD than recorded in the index
+#  - m = the submodule has modified content
+#  - ? = the submodule has untracked files
+"""  # noqa
+
+
+@dc.dataclass(frozen=True)
+class StatusLine:
+    x: StatusLineField
+    y: StatusLineField
+
+    a: str
+    b: str | None
+
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}('
+            f'x={self.x.name}, '
+            f'y={self.y.name}, '
+            f'a={self.a!r}' +
+            (f', b={self.b!r}' if self.b is not None else '') +
+            ')'
+        )
+
+
+def parse_status_line(l: str) -> StatusLine:
     if len(l) < 3 or l[2] != ' ':
         raise ValueError(l)
     x, y = l[0], l[1]
@@ -86,6 +158,13 @@ def parse_status_line(l: str) -> None:
         a, b = fields[0], fields[2]
     else:
         raise ValueError(l)
+
+    return StatusLine(
+        StatusLineField(x),
+        StatusLineField(y),
+        a,
+        b,
+    )
 
 
 @debugging_on_exception()
