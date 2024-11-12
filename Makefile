@@ -197,12 +197,6 @@ GIT_BLACKLIST_FILES=\
 
 .PHONY: pre-commit
 pre-commit:
-	if git rev-parse --verify HEAD >/dev/null 2>&1 ; then \
-		against=HEAD ; \
-	else \
-		against=$$(git hash-object -t tree /dev/null) ; \
-	fi
-
 	for F in ${GIT_BLACKLIST_FILES} ; do \
 		ST=$$(git status -s "$$F") ; \
 		if [ ! -z "$$ST" ] ; then \

@@ -5,7 +5,6 @@ an already-debugging PyCharm instance to debug PySpark jobs.
 
 TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
- - PyCharm.app/Contents/plugins/python-ce/helpers/pydev/_pydevd_bundle/pydevd_constants.py -> USE_LOW_IMPACT_MONITORING
 
 ==
 

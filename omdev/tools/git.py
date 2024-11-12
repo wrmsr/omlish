@@ -6,6 +6,7 @@ import urllib.parse
 from omlish import argparse as ap
 from omlish import check
 from omlish import logs
+from x.ptk.ptpython.utils import NotImplementedOrNone
 
 from ..cli import CliModule
 
@@ -123,6 +124,12 @@ class Cli(ap.Cli):
 
         else:
             print(base_rev)
+
+    @ap.command(
+        ap.arg('-m', '--message', default='--'),
+    )
+    def add_commit_push(self) -> None:
+        raise NotImplementedOrNone
 
 
 # @omlish-manifest
