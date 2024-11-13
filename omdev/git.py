@@ -121,6 +121,14 @@ def get_git_revision(
 ##
 
 
+_GIT_STATUS_LINE_ESCAPE_CODES: ta.Mapping[str, str] = {
+    '\\': '\\',
+    '"': '"',
+    'n': '\n',
+    't': '\t',
+}
+
+
 def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
     def find_any(chars: str, start: int = 0) -> int:
         ret = -1
@@ -137,7 +145,7 @@ def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
             while (n := find_any('\\"', p)) > 0:
                 if (c := l[n]) == '\\':
                     s.append(l[p:n])
-                    s.append(l[n + 1])
+                    s.append(_GIT_STATUS_LINE_ESCAPE_CODES[l[n + 1]])
                     p = n + 2
                 elif c == '"':
                     s.append(l[p:n])
@@ -172,41 +180,41 @@ def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
 When merge is occurring and was successful, or outside of a merge situation, X shows the status of the index and Y shows
 the status of the working tree:
 -------------------------------------------------
-X          Y     Meaning
+X         Y       Meaning
 -------------------------------------------------
-         [AMD]   not updated
-M        [ MTD]  updated in index
-T        [ MTD]  type changed in index
-A        [ MTD]  added to index
-D                deleted from index
-R        [ MTD]  renamed in index
-C        [ MTD]  copied in index
-[MTARC]          index and work tree matches
-[ MTARC]    M    work tree changed since index
-[ MTARC]    T    type changed in work tree since index
-[ MTARC]    D    deleted in work tree
-            R    renamed in work tree
-            C    copied in work tree
+          [AMD]   not updated
+M         [ MTD]  updated in index
+T         [ MTD]  type changed in index
+A         [ MTD]  added to index
+D                 deleted from index
+R         [ MTD]  renamed in index
+C         [ MTD]  copied in index
+[MTARC]           index and work tree matches
+[ MTARC]  M       work tree changed since index
+[ MTARC]  T       type changed in work tree since index
+[ MTARC]  D       deleted in work tree
+          R       renamed in work tree
+          C       copied in work tree
 
 When merge conflict has occurred and has not yet been resolved, X and Y show the state introduced by each head of the
 merge, relative to the common ancestor:
 -------------------------------------------------
-X          Y     Meaning
+X         Y       Meaning
 -------------------------------------------------
-D           D    unmerged, both deleted
-A           U    unmerged, added by us
-U           D    unmerged, deleted by them
-U           A    unmerged, added by them
-D           U    unmerged, deleted by us
-A           A    unmerged, both added
-U           U    unmerged, both modified
+D         D       unmerged, both deleted
+A         U       unmerged, added by us
+U         D       unmerged, deleted by them
+U         A       unmerged, added by them
+D         U       unmerged, deleted by us
+A         A       unmerged, both added
+U         U       unmerged, both modified
 
 When path is untracked, X and Y are always the same, since they are unknown to the index:
 -------------------------------------------------
-X          Y     Meaning
+X         Y       Meaning
 -------------------------------------------------
-?           ?    untracked
-!           !    ignored
+?         ?       untracked
+!         !       ignored
 
 Submodules have more state and instead report
 
@@ -295,11 +303,16 @@ class GitStatus(ta.Sequence[GitStatusLine]):
 
         self._lst = list(lines)
 
-        self._has_unmerged = any(l.is_unmerged for l in self)
+        by_x: ta.Dict[GitStatusLineState, list[GitStatusLine]] = {}
+        by_y: ta.Dict[GitStatusLineState, list[GitStatusLine]] = {}
 
         by_a: ta.Dict[str, GitStatusLine] = {}
         by_b: ta.Dict[str, GitStatusLine] = {}
+
         for l in self._lst:
+            by_x.setdefault(l.x, []).append(l)
+            by_y.setdefault(l.y, []).append(l)
+
             if l.a in by_a:
                 raise KeyError(l.a)
             by_a[l.a] = l
@@ -309,8 +322,15 @@ class GitStatus(ta.Sequence[GitStatusLine]):
                     raise KeyError(l.b)
                 by_b[l.b] = l
 
+        self._by_x = by_x
+        self._by_y = by_y
+
         self._by_a = by_a
         self._by_b = by_b
+
+        self._has_unmerged = any(l.is_unmerged for l in self)
+
+    #
 
     def __iter__(self) -> ta.Iterator[GitStatusLine]:
         return iter(self._lst)
@@ -321,9 +341,15 @@ class GitStatus(ta.Sequence[GitStatusLine]):
     def __len__(self) -> int:
         return len(self._lst)
 
+    #
+
     @property
-    def has_unmerged(self) -> bool:
-        return self._has_unmerged
+    def by_x(self) -> ta.Mapping[GitStatusLineState, ta.Sequence[GitStatusLine]]:
+        return self._by_x
+
+    @property
+    def by_y(self) -> ta.Mapping[GitStatusLineState, ta.Sequence[GitStatusLine]]:
+        return self._by_y
 
     @property
     def by_a(self) -> ta.Mapping[str, GitStatusLine]:
@@ -332,6 +358,20 @@ class GitStatus(ta.Sequence[GitStatusLine]):
     @property
     def by_b(self) -> ta.Mapping[str, GitStatusLine]:
         return self._by_b
+
+    #
+
+    @property
+    def has_unmerged(self) -> bool:
+        return self._has_unmerged
+
+    @property
+    def has_staged(self) -> bool:
+        return any(l.x != GitStatusLineState.UNMODIFIED for l in self._lst)
+
+    @property
+    def has_dirty(self) -> bool:
+        return any(l.y != GitStatusLineState.UNMODIFIED for l in self._lst)
 
 
 def parse_git_status(s: str) -> GitStatus:

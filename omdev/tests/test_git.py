@@ -2,7 +2,6 @@ import os.path
 import subprocess
 import tempfile
 
-from omlish.diag.debug import debugging_on_exception
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ..git import GitStatusLine
@@ -10,7 +9,6 @@ from ..git import GitStatusLineState
 from ..git import get_git_status
 
 
-@debugging_on_exception()
 def test_parse_git_status():
     tmp_dir = tempfile.mkdtemp()
     print(f'{tmp_dir=}')
@@ -101,7 +99,7 @@ def test_parse_git_status():
 
     #
 
-    write(difficult_filename := 'difficult " filename.txt', 'foo\n' * 128)
+    write(difficult_filename := 'difficult " * ? \' \n \t filename.txt', 'foo\n' * 128)
     assert status() == [
         gsl('??', difficult_filename),
     ]
