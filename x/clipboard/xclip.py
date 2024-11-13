@@ -143,7 +143,7 @@ def get_clipboard_text(display, window):
         window,
         target_property,
         0,
-        (~0),
+        ~0,
         False,
         0,
         ct.byref(actual_type),
@@ -152,15 +152,16 @@ def get_clipboard_text(display, window):
         ct.byref(bytes_after),
         ct.byref(data),
     )
+    try:
+        if status != 0 or not data:
+            print('Failed to get clipboard data')
+            return
 
-    if status != 0 or not data:
-        print('Failed to get clipboard data')
-        return
+        clipboard_text = ct.cast(data, ct.c_char_p).value
+        print('Clipboard text:', clipboard_text.decode('utf-8') if clipboard_text else '')
 
-    clipboard_text = ct.cast(data, ct.c_char_p).value
-    print('Clipboard text:', clipboard_text.decode('utf-8') if clipboard_text else '')
-
-    x11.XFree(data)
+    finally:
+        x11.XFree(data)
 
 
 def get_clipboard_image(display, window):
@@ -205,56 +206,57 @@ def get_clipboard_image(display, window):
         ct.byref(bytes_after),
         ct.byref(data),
     )
-
-    if status != 0 or not data:
-        print('Failed to get available targets')
-        return
-
-    png_atom = x11.XInternAtom(display, b'image/png', False)
-    atoms = ct.cast(data, ct.POINTER(Atom))
-    for i in range(nitems.value):
-        if atoms[i] == png_atom:
-            x11.XConvertSelection(
-                display,
-                clipboard,
-                png_atom,
-                target_property,
-                window,
-                0,
-            )
-            x11.XFlush(display)
-            x11.XNextEvent(display, ct.byref(event))
-
-            if event.type != 31 or event.xselection[4] == 0:
-                print('Failed to receive SelectionNotify event for PNG image')
-                x11.XFree(data)
-                return
-
-            status = x11.XGetWindowProperty(
-                display,
-                window,
-                target_property,
-                0,
-                ~0,
-                False,
-                0,
-                ct.byref(actual_type),
-                ct.byref(actual_format),
-                ct.byref(nitems),
-                ct.byref(bytes_after),
-                ct.byref(data),
-            )
-
-            if status == 0 and data:
-                with open('clipboard_image.png', 'wb') as file:
-                    file.write(ct.string_at(data.value, nitems.value))
-                    print('Clipboard image saved to clipboard_image.png')
-
-            x11.XFree(data)
+    try:
+        if status != 0 or not data:
+            print('Failed to get available targets')
             return
 
-    print('No image data available on clipboard')
-    x11.XFree(data)
+        png_atom = x11.XInternAtom(display, b'image/png', False)
+        atoms = ct.cast(data, ct.POINTER(Atom))
+        for i in range(nitems.value):
+            if atoms[i] == png_atom:
+                x11.XConvertSelection(
+                    display,
+                    clipboard,
+                    png_atom,
+                    target_property,
+                    window,
+                    0,
+                )
+                x11.XFlush(display)
+                x11.XNextEvent(display, ct.byref(event))
+
+                if event.type != 31 or event.xselection[4] == 0:
+                    print('Failed to receive SelectionNotify event for PNG image')
+                    return
+
+                status = x11.XGetWindowProperty(
+                    display,
+                    window,
+                    target_property,
+                    0,
+                    ~0,
+                    False,
+                    0,
+                    ct.byref(actual_type),
+                    ct.byref(actual_format),
+                    ct.byref(nitems),
+                    ct.byref(bytes_after),
+                    ct.byref(data),
+                )
+
+                if status == 0 and data:
+                    with open('clipboard_image.png', 'wb') as file:
+                        file.write(ct.string_at(data.value, nitems.value))
+                        print('Clipboard image saved to clipboard_image.png')
+
+                return
+
+        print('No image data available on clipboard')
+
+    finally:
+        if data:
+            x11.XFree(data)
 
 
 ##
@@ -262,28 +264,33 @@ def get_clipboard_image(display, window):
 
 def main() -> None:
     display = x11.XOpenDisplay(None)
-    if not display:
-        print('Failed to open X display')
-        return
+    try:
+        if not display:
+            print('Failed to open X display')
+            return
 
-    screen = x11.XDefaultScreen(display)
-    window = x11.XCreateSimpleWindow(
-        display,
-        x11.XRootWindow(display, screen),
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-    )
+        screen = x11.XDefaultScreen(display)
+        window = x11.XCreateSimpleWindow(
+            display,
+            x11.XRootWindow(display, screen),
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+        )
+        try:
+            get_clipboard_text(display, window)
+            get_clipboard_image(display, window)
 
-    get_clipboard_text(display, window)
-    get_clipboard_image(display, window)
+        finally:
+            x11.XDestroyWindow(display, window)
 
-    x11.XDestroyWindow(display, window)
-    x11.XCloseDisplay(display)
+    finally:
+        if display:
+            x11.XCloseDisplay(display)
 
 
 if __name__ == '__main__':
