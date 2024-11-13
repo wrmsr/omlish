@@ -22,6 +22,8 @@ return
 
 
 _LINUX_OPEN_SCRIPT = """
+# sudo apt install xdotool wmctrl
+
 # wmctrl -lx
 # 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish – cli.py
 # wmctrl -i -a 0x03000054
