@@ -1,13 +1,16 @@
 import os
 import re
 import subprocess
+import typing as ta
 import urllib.parse
 
 from omlish import argparse as ap
 from omlish import check
 from omlish import logs
+from omlish.formats import json
 
 from ..cli import CliModule
+from ..git import GitStatusLine
 from ..git import get_git_status
 
 
@@ -124,6 +127,41 @@ class Cli(ap.Cli):
 
         else:
             print(base_rev)
+
+    @ap.command(
+        ap.arg('-v', '--verbose', action='store_true'),
+    )
+    def status(self) -> None:
+        st = get_git_status()
+
+        def gsl_dct(gsl: GitStatusLine) -> ta.Mapping[str, ta.Any]:
+            return {
+                'x': gsl.x.name,
+                'y': gsl.y.name,
+                'a': gsl.a,
+                **({'b': gsl.b} if gsl.b is not None else {}),
+            }
+
+        def gsl_dct_lst(gsls: ta.Iterable[GitStatusLine]) -> ta.Sequence[ta.Mapping[str, ta.Any]]:
+            return [gsl_dct(gsl) for gsl in sorted(gsls, key=lambda gsl: gsl.a)]
+
+        if self.args.verbose:
+            dct = {
+                'by_x': {x.name: gsl_dct_lst(lst) for x, lst in st.by_x.items()},
+                'by_y': {y.name: gsl_dct_lst(lst) for y, lst in st.by_x.items()},
+
+                'by_a': {a: gsl_dct(gsl) for a, gsl in sorted(st.by_a.items(), key=lambda t: t[0])},
+                'by_b': {b: gsl_dct(gsl) for b, gsl in sorted(st.by_b.items(), key=lambda t: t[0])},
+
+                'has_unmerged': st.has_unmerged,
+                'has_staged': st.has_staged,
+                'has_dirty': st.has_dirty,
+            }
+
+            print(json.dumps_pretty(dct))
+
+        else:
+            print(json.dumps_pretty([gsl_dct(gsl) for gsl in st]))
 
     @ap.command(
         ap.arg('-m', '--message', default='--'),
