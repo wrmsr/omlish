@@ -100,14 +100,14 @@ def test_parse_git_status():
 
     #
 
-    write('difficult " filename.txt', 'foo\n' * 128)
+    write(difficult_filename := 'difficult " filename.txt', 'foo\n' * 128)
     assert parse_git_status(status()) == [
-        gsl('??', 'difficult " filename.txt'),
+        gsl('??', difficult_filename),
     ]
 
     run('git', 'add', '.')
     assert parse_git_status(status()) == [
-        gsl('A ', 'difficult " filename.txt'),
+        gsl('A ', difficult_filename),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -115,15 +115,15 @@ def test_parse_git_status():
 
     #
 
-    rename('difficult " filename.txt', 'difficult 2 " filename.txt')
+    rename(difficult_filename, difficult_filename_2 := 'difficult 2 " filename.txt')
     assert parse_git_status(status()) == [
-        gsl(' D', 'difficult " filename.txt'),
-        gsl('??', 'difficult 2 " filename.txt'),
+        gsl(' D', difficult_filename),
+        gsl('??', difficult_filename_2),
     ]
 
     run('git', 'add', '.')
     assert parse_git_status(status()) == [
-        gsl('R ', 'difficult " filename.txt', 'difficult 2 " filename.txt'),
+        gsl('R ', difficult_filename, difficult_filename_2),
     ]
 
     run('git', 'commit', '-m', '--')
