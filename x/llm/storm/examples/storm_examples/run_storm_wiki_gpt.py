@@ -18,7 +18,6 @@ args.output_dir/
         storm_gen_article.txt           # Final article generated
         storm_gen_article_polished.txt  # Polished final article (if args.do_polish_article is True)
 """
-
 import os.path
 from argparse import ArgumentParser
 
@@ -158,7 +157,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--output-dir',
         type=str,
-        default='./results/gpt',
+        default=os.path.join(os.path.dirname(__file__), '../../results/gpt'),
         help='Directory to store the outputs.',
     )
     parser.add_argument(
@@ -246,6 +245,6 @@ if __name__ == '__main__':
     os.environ['OPENAI_API_TYPE'] = 'openai'
     os.environ['OPENAI_API_VERSION'] = '2023-08-01'
 
-    # --retriever duckduckgo --do-research nanotechnology
+    # --do-research nanotechnology
 
     main(parser.parse_args())
