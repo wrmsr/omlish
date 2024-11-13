@@ -8,6 +8,7 @@ from omlish import check
 from omlish import logs
 
 from ..cli import CliModule
+from ..git import get_git_status
 
 
 def rev_parse(rev: str) -> str:
@@ -128,7 +129,15 @@ class Cli(ap.Cli):
         ap.arg('-m', '--message', default='--'),
     )
     def add_commit_push(self) -> None:
-        raise NotImplementedError
+        st = get_git_status()
+
+        if st.has_dirty:
+            subprocess.check_call(['git', 'add', '.'])
+
+        if st.has_staged or st.has_dirty:
+            subprocess.check_call(['git', 'commit', '-m', self.args.message])
+
+        subprocess.check_call(['git', 'push'])
 
 
 # @omlish-manifest
