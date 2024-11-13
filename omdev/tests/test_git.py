@@ -43,6 +43,8 @@ def test_parse_git_status():
     #
 
     run('git', 'init')
+    run('git', 'config', 'user.email', 'you@example.com')
+    run('git', 'config', 'user.name', 'Your Name')
     assert status() == []
 
     #
