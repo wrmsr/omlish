@@ -165,6 +165,7 @@ class Cli(ap.Cli):
 
     @ap.command(
         ap.arg('-m', '--message', default='--'),
+        aliases=['acp'],
     )
     def add_commit_push(self) -> None:
         st = get_git_status()
