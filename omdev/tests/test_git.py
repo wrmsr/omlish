@@ -4,8 +4,8 @@ import tempfile
 
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
-from ..git import GitStatusLine
-from ..git import GitStatusLineState
+from ..git import GitStatusItem
+from ..git import GitStatusState
 from ..git import get_git_status
 
 
@@ -21,7 +21,7 @@ def test_parse_git_status():
             cwd=tmp_dir,
         ).decode()
 
-    def status() -> list[GitStatusLine]:
+    def status() -> list[GitStatusItem]:
         st = get_git_status(cwd=tmp_dir)
         return list(st)
 
@@ -32,10 +32,10 @@ def test_parse_git_status():
     def rename(src: str, dst: str) -> None:
         os.rename(os.path.join(tmp_dir, src), os.path.join(tmp_dir, dst))
 
-    def gsl(xy: str, a: str, b: str | None = None) -> GitStatusLine:
-        return GitStatusLine(
-            GitStatusLineState(xy[0]),
-            GitStatusLineState(xy[1]),
+    def gsi(xy: str, a: str, b: str | None = None) -> GitStatusItem:
+        return GitStatusItem(
+            GitStatusState(xy[0]),
+            GitStatusState(xy[1]),
             a,
             b,
         )
@@ -51,12 +51,12 @@ def test_parse_git_status():
 
     write('a.txt', '0\n' * 128)
     assert status() == [
-        gsl('??', 'a.txt'),
+        gsi('??', 'a.txt'),
     ]
 
     run('git', 'add', 'a.txt')
     assert status() == [
-        gsl('A ', 'a.txt'),
+        gsi('A ', 'a.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -66,12 +66,12 @@ def test_parse_git_status():
 
     write('a.txt', '1\n' * 128)
     assert status() == [
-        gsl(' M', 'a.txt'),
+        gsi(' M', 'a.txt'),
     ]
 
     run('git', 'add', 'a.txt')
     assert status() == [
-        gsl('M ', 'a.txt'),
+        gsi('M ', 'a.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -81,19 +81,19 @@ def test_parse_git_status():
 
     rename('a.txt', 'b.txt')
     assert status() == [
-        gsl(' D', 'a.txt'),
-        gsl('??', 'b.txt'),
+        gsi(' D', 'a.txt'),
+        gsi('??', 'b.txt'),
     ]
 
     run('git', 'add', 'b.txt')
     assert status() == [
-        gsl(' D', 'a.txt'),
-        gsl('A ', 'b.txt'),
+        gsi(' D', 'a.txt'),
+        gsi('A ', 'b.txt'),
     ]
 
     run('git', 'add', 'a.txt')
     assert status() == [
-        gsl('R ', 'a.txt', 'b.txt'),
+        gsi('R ', 'a.txt', 'b.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -103,12 +103,12 @@ def test_parse_git_status():
 
     write(difficult_filename := 'difficult " * ? \' \n \t filename.txt', 'foo\n' * 128)
     assert status() == [
-        gsl('??', difficult_filename),
+        gsi('??', difficult_filename),
     ]
 
     run('git', 'add', '.')
     assert status() == [
-        gsl('A ', difficult_filename),
+        gsi('A ', difficult_filename),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -118,13 +118,13 @@ def test_parse_git_status():
 
     rename(difficult_filename, difficult_filename_2 := 'difficult 2 " filename.txt')
     assert status() == [
-        gsl(' D', difficult_filename),
-        gsl('??', difficult_filename_2),
+        gsi(' D', difficult_filename),
+        gsi('??', difficult_filename_2),
     ]
 
     run('git', 'add', '.')
     assert status() == [
-        gsl('R ', difficult_filename, difficult_filename_2),
+        gsi('R ', difficult_filename, difficult_filename_2),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -134,12 +134,12 @@ def test_parse_git_status():
 
     write('->.txt', 'abc\n' * 128)
     assert status() == [
-        gsl('??', '->.txt'),
+        gsi('??', '->.txt'),
     ]
 
     run('git', 'add', '.')
     assert status() == [
-        gsl('A ', '->.txt'),
+        gsi('A ', '->.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
@@ -149,13 +149,13 @@ def test_parse_git_status():
 
     rename('->.txt', '-> 2 ->.txt')
     assert status() == [
-        gsl(' D', '->.txt'),
-        gsl('??', '-> 2 ->.txt'),
+        gsi(' D', '->.txt'),
+        gsi('??', '-> 2 ->.txt'),
     ]
 
     run('git', 'add', '.')
     assert status() == [
-        gsl('R ', '->.txt', '-> 2 ->.txt'),
+        gsi('R ', '->.txt', '-> 2 ->.txt'),
     ]
 
     run('git', 'commit', '-m', '--')

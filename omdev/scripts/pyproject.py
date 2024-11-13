@@ -3978,7 +3978,7 @@ untracked file, this is reported as ? as well.
 """  # noqa
 
 
-class GitStatusLineState(enum.Enum):
+class GitStatusState(enum.Enum):
     UNMODIFIED = ' '
     MODIFIED = 'M'
     FILE_TYPE_CHANGED = 'T'
@@ -3992,16 +3992,16 @@ class GitStatusLineState(enum.Enum):
     SUBMODULE_MODIFIED_CONTENT = 'm'
 
 
-_EXTRA_UNMERGED_GIT_STATUS_LINE_STATES: ta.FrozenSet[ta.Tuple[GitStatusLineState, GitStatusLineState]] = frozenset([
-    (GitStatusLineState.ADDED, GitStatusLineState.ADDED),
-    (GitStatusLineState.DELETED, GitStatusLineState.DELETED),
+_EXTRA_UNMERGED_GIT_STATUS_STATES: ta.FrozenSet[ta.Tuple[GitStatusState, GitStatusState]] = frozenset([
+    (GitStatusState.ADDED, GitStatusState.ADDED),
+    (GitStatusState.DELETED, GitStatusState.DELETED),
 ])
 
 
 @dc.dataclass(frozen=True)
-class GitStatusLine:
-    x: GitStatusLineState
-    y: GitStatusLineState
+class GitStatusItem:
+    x: GitStatusState
+    y: GitStatusState
 
     a: str
     b: ta.Optional[str]
@@ -4009,9 +4009,9 @@ class GitStatusLine:
     @property
     def is_unmerged(self) -> bool:
         return (
-            self.x is GitStatusLineState.UPDATED_BUT_UNMERGED or
-            self.y is GitStatusLineState.UPDATED_BUT_UNMERGED or
-            (self.x, self.y) in _EXTRA_UNMERGED_GIT_STATUS_LINE_STATES
+            self.x is GitStatusState.UPDATED_BUT_UNMERGED or
+            self.y is GitStatusState.UPDATED_BUT_UNMERGED or
+            (self.x, self.y) in _EXTRA_UNMERGED_GIT_STATUS_STATES
         )
 
     def __repr__(self) -> str:
@@ -4025,7 +4025,7 @@ class GitStatusLine:
         )
 
 
-def parse_git_status_line(l: str) -> GitStatusLine:
+def parse_git_status_line(l: str) -> GitStatusItem:
     if len(l) < 3 or l[2] != ' ':
         raise ValueError(l)
     x, y = l[0], l[1]
@@ -4039,25 +4039,25 @@ def parse_git_status_line(l: str) -> GitStatusLine:
     else:
         raise ValueError(l)
 
-    return GitStatusLine(
-        GitStatusLineState(x),
-        GitStatusLineState(y),
+    return GitStatusItem(
+        GitStatusState(x),
+        GitStatusState(y),
         a,
         b,
     )
 
 
-class GitStatus(ta.Sequence[GitStatusLine]):
-    def __init__(self, lines: ta.Iterable[GitStatusLine]) -> None:
+class GitStatus(ta.Sequence[GitStatusItem]):
+    def __init__(self, lines: ta.Iterable[GitStatusItem]) -> None:
         super().__init__()
 
         self._lst = list(lines)
 
-        by_x: ta.Dict[GitStatusLineState, list[GitStatusLine]] = {}
-        by_y: ta.Dict[GitStatusLineState, list[GitStatusLine]] = {}
+        by_x: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
+        by_y: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
 
-        by_a: ta.Dict[str, GitStatusLine] = {}
-        by_b: ta.Dict[str, GitStatusLine] = {}
+        by_a: ta.Dict[str, GitStatusItem] = {}
+        by_b: ta.Dict[str, GitStatusItem] = {}
 
         for l in self._lst:
             by_x.setdefault(l.x, []).append(l)
@@ -4082,7 +4082,7 @@ class GitStatus(ta.Sequence[GitStatusLine]):
 
     #
 
-    def __iter__(self) -> ta.Iterator[GitStatusLine]:
+    def __iter__(self) -> ta.Iterator[GitStatusItem]:
         return iter(self._lst)
 
     def __getitem__(self, index):
@@ -4094,19 +4094,19 @@ class GitStatus(ta.Sequence[GitStatusLine]):
     #
 
     @property
-    def by_x(self) -> ta.Mapping[GitStatusLineState, ta.Sequence[GitStatusLine]]:
+    def by_x(self) -> ta.Mapping[GitStatusState, ta.Sequence[GitStatusItem]]:
         return self._by_x
 
     @property
-    def by_y(self) -> ta.Mapping[GitStatusLineState, ta.Sequence[GitStatusLine]]:
+    def by_y(self) -> ta.Mapping[GitStatusState, ta.Sequence[GitStatusItem]]:
         return self._by_y
 
     @property
-    def by_a(self) -> ta.Mapping[str, GitStatusLine]:
+    def by_a(self) -> ta.Mapping[str, GitStatusItem]:
         return self._by_a
 
     @property
-    def by_b(self) -> ta.Mapping[str, GitStatusLine]:
+    def by_b(self) -> ta.Mapping[str, GitStatusItem]:
         return self._by_b
 
     #
@@ -4117,11 +4117,11 @@ class GitStatus(ta.Sequence[GitStatusLine]):
 
     @property
     def has_staged(self) -> bool:
-        return any(l.x != GitStatusLineState.UNMODIFIED for l in self._lst)
+        return any(l.x != GitStatusState.UNMODIFIED for l in self._lst)
 
     @property
     def has_dirty(self) -> bool:
-        return any(l.y != GitStatusLineState.UNMODIFIED for l in self._lst)
+        return any(l.y != GitStatusState.UNMODIFIED for l in self._lst)
 
 
 def parse_git_status(s: str) -> GitStatus:
