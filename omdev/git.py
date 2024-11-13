@@ -289,5 +289,20 @@ def parse_git_status_line(l: str) -> GitStatusLine:
     )
 
 
-def parse_git_status(s: str) -> ta.List[GitStatusLine]:
-    return [parse_git_status_line(l) for l in s.splitlines()]
+class GitStatus(ta.Sequence[GitStatusLine]):
+    def __init__(self, lines: ta.Iterable[GitStatusLine]) -> None:
+        super().__init__()
+        self._lines = list(lines)
+
+    def __iter__(self) -> ta.Iterator[GitStatusLine]:
+        return iter(self._lines)
+
+    def __getitem__(self, index):
+        return self._lines[index]
+
+    def __len__(self) -> int:
+        return len(self._lines)
+
+
+def parse_git_status(s: str) -> GitStatus:
+    return GitStatus(parse_git_status_line(l) for l in s.splitlines())
