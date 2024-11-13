@@ -35,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.58
-botocore==1.35.58
+boto3==1.35.59
+botocore==1.35.59
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -127,7 +127,7 @@ gguf==0.10.0
 gitdb==4.0.11
 GitPython==3.1.43
 google-api-core==2.23.0
-google-api-python-client==2.151.0
+google-api-python-client==2.152.0
 google-auth==2.36.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.20.1
@@ -204,23 +204,23 @@ keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
 langchain==0.3.7
-langchain-anthropic==0.2.4
+langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
-langchain-community==0.3.6
-langchain-core==0.3.16
+langchain-community==0.3.7
+langchain-core==0.3.17
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.1
 langchain-ollama==0.2.0
-langchain-openai==0.2.7
+langchain-openai==0.2.8
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.45
-langgraph-checkpoint==2.0.2
+langgraph==0.2.46
+langgraph-checkpoint==2.0.3
 langgraph-sdk==0.1.35
 langsmith==0.1.142
 language_data==1.2.0
@@ -316,7 +316,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@162d7e57ee0088f42eb0f26150bd9170d30f3637
+peft @ git+https://github.com/huggingface/peft.git@221965b7e140bdd47fbd04c131d56029e089902c
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -484,7 +484,7 @@ tokenizers==0.20.3
 tomlkit==0.13.2
 torch==2.5.1
 torchinfo==1.8.0
-torchmetrics==1.5.2
+torchmetrics==1.6.0
 torchsummary==1.5.1
 torchvision==0.20.1
 tornado==6.4.1
