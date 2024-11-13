@@ -100,109 +100,6 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 ########################################
-# ../../git.py
-
-
-def git_clone_subtree(
-        *,
-        base_dir: str,
-        repo_url: str,
-        repo_dir: str,
-        branch: ta.Optional[str] = None,
-        rev: ta.Optional[str] = None,
-        repo_subtrees: ta.Sequence[str],
-) -> None:
-    if not bool(branch) ^ bool(rev):
-        raise ValueError('must set branch or rev')
-
-    if isinstance(repo_subtrees, str):
-        raise TypeError(repo_subtrees)
-
-    git_opts = [
-        '-c', 'advice.detachedHead=false',
-    ]
-
-    subprocess.check_call(
-        [
-            'git',
-            *git_opts,
-            'clone',
-            '-n',
-            '--depth=1',
-            '--filter=tree:0',
-            *(['-b', branch] if branch else []),
-            '--single-branch',
-            repo_url,
-            repo_dir,
-        ],
-        cwd=base_dir,
-    )
-
-    rd = os.path.join(base_dir, repo_dir)
-    subprocess.check_call(
-        [
-            'git',
-            *git_opts,
-            'sparse-checkout',
-            'set',
-            '--no-cone',
-            *repo_subtrees,
-        ],
-        cwd=rd,
-    )
-
-    subprocess.check_call(
-        [
-            'git',
-            *git_opts,
-            'checkout',
-            *([rev] if rev else []),
-        ],
-        cwd=rd,
-    )
-
-
-def get_git_revision(
-        *,
-        cwd: ta.Optional[str] = None,
-) -> ta.Optional[str]:
-    subprocess.check_output(['git', '--version'])
-
-    if cwd is None:
-        cwd = os.getcwd()
-
-    if subprocess.run(  # noqa
-        [
-            'git',
-            'rev-parse',
-            '--is-inside-work-tree',
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ).returncode:
-        return None
-
-    has_untracked = bool(subprocess.check_output([
-        'git',
-        'ls-files',
-        '.',
-        '--exclude-standard',
-        '--others',
-    ], cwd=cwd).decode().strip())
-
-    dirty_rev = subprocess.check_output([
-        'git',
-        'describe',
-        '--match=NeVeRmAtCh',
-        '--always',
-        '--abbrev=40',
-        '--dirty',
-    ], cwd=cwd).decode().strip()
-
-    return dirty_rev + ('-untracked' if has_untracked else '')
-
-
-########################################
 # ../../magic/magic.py
 
 
@@ -3736,126 +3633,6 @@ class RequirementsRewriter:
 
 
 ########################################
-# ../../revisions.py
-"""
-TODO:
- - omlish-lite, move to pyproject/
-  - vendor-lite wheel.wheelfile
-"""
-
-
-##
-
-
-class GitRevisionAdder:
-    def __init__(
-            self,
-            revision: ta.Optional[str] = None,
-            output_suffix: ta.Optional[str] = None,
-    ) -> None:
-        super().__init__()
-        self._given_revision = revision
-        self._output_suffix = output_suffix
-
-    @cached_nullary
-    def revision(self) -> str:
-        if self._given_revision is not None:
-            return self._given_revision
-        return check_non_empty_str(get_git_revision())
-
-    REVISION_ATTR = '__revision__'
-
-    def add_to_contents(self, dct: ta.Dict[str, bytes]) -> bool:
-        changed = False
-        for n in dct:
-            if not n.endswith('__about__.py'):
-                continue
-            src = dct[n].decode('utf-8')
-            lines = src.splitlines(keepends=True)
-            for i, l in enumerate(lines):
-                if l != f'{self.REVISION_ATTR} = None\n':
-                    continue
-                lines[i] = f"{self.REVISION_ATTR} = '{self.revision()}'\n"
-                changed = True
-            dct[n] = ''.join(lines).encode('utf-8')
-        return changed
-
-    def add_to_wheel(self, f: str) -> None:
-        if not f.endswith('.whl'):
-            raise Exception(f)
-        log.info('Scanning wheel %s', f)
-
-        zis: ta.Dict[str, zipfile.ZipInfo] = {}
-        dct: ta.Dict[str, bytes] = {}
-        with WheelFile(f) as wf:
-            for zi in wf.filelist:
-                if zi.filename == wf.record_path:
-                    continue
-                zis[zi.filename] = zi
-                dct[zi.filename] = wf.read(zi.filename)
-
-        if self.add_to_contents(dct):
-            of = f[:-4] + (self._output_suffix or '') + '.whl'
-            log.info('Repacking wheel %s', of)
-            with WheelFile(of, 'w') as wf:
-                for n, d in dct.items():
-                    log.info('Adding zipinfo %s', n)
-                    wf.writestr(zis[n], d)
-
-    def add_to_tgz(self, f: str) -> None:
-        if not f.endswith('.tar.gz'):
-            raise Exception(f)
-        log.info('Scanning tgz %s', f)
-
-        tis: ta.Dict[str, tarfile.TarInfo] = {}
-        dct: ta.Dict[str, bytes] = {}
-        with tarfile.open(f, 'r:gz') as tf:
-            for ti in tf:
-                tis[ti.name] = ti
-                if ti.type == tarfile.REGTYPE:
-                    with tf.extractfile(ti.name) as tif:  # type: ignore
-                        dct[ti.name] = tif.read()
-
-        if self.add_to_contents(dct):
-            of = f[:-7] + (self._output_suffix or '') + '.tar.gz'
-            log.info('Repacking tgz %s', of)
-            with tarfile.open(of, 'w:gz') as tf:
-                for n, ti in tis.items():
-                    log.info('Adding tarinfo %s', n)
-                    if n in dct:
-                        data = dct[n]
-                        ti.size = len(data)
-                        fo = io.BytesIO(data)
-                    else:
-                        fo = None
-                    tf.addfile(ti, fileobj=fo)
-
-    EXTS = ('.tar.gz', '.whl')
-
-    def add_to_file(self, f: str) -> None:
-        if f.endswith('.whl'):
-            self.add_to_wheel(f)
-
-        elif f.endswith('.tar.gz'):
-            self.add_to_tgz(f)
-
-    def add_to(self, tgt: str) -> None:
-        log.info('Using revision %s', self.revision())
-
-        if os.path.isfile(tgt):
-            self.add_to_file(tgt)
-
-        elif os.path.isdir(tgt):
-            for dp, dns, fns in os.walk(tgt):  # noqa
-                for f in fns:
-                    if any(f.endswith(ext) for ext in self.EXTS):
-                        self.add_to_file(os.path.join(dp, f))
-
-
-#
-
-
-########################################
 # ../../../omlish/lite/subprocesses.py
 
 
@@ -3980,6 +3757,279 @@ def subprocess_close(
 
 
 ########################################
+# ../../git.py
+"""
+git status
+  --porcelain=v1
+  --ignore-submodules
+  2>/dev/null
+"""
+
+
+##
+
+
+def git_clone_subtree(
+        *,
+        base_dir: str,
+        repo_url: str,
+        repo_dir: str,
+        branch: ta.Optional[str] = None,
+        rev: ta.Optional[str] = None,
+        repo_subtrees: ta.Sequence[str],
+) -> None:
+    if not bool(branch) ^ bool(rev):
+        raise ValueError('must set branch or rev')
+
+    if isinstance(repo_subtrees, str):
+        raise TypeError(repo_subtrees)
+
+    git_opts = [
+        '-c', 'advice.detachedHead=false',
+    ]
+
+    subprocess.check_call(
+        subprocess_maybe_shell_wrap_exec(
+            'git',
+            *git_opts,
+            'clone',
+            '-n',
+            '--depth=1',
+            '--filter=tree:0',
+            *(['-b', branch] if branch else []),
+            '--single-branch',
+            repo_url,
+            repo_dir,
+        ),
+        cwd=base_dir,
+    )
+
+    rd = os.path.join(base_dir, repo_dir)
+    subprocess.check_call(
+        subprocess_maybe_shell_wrap_exec(
+            'git',
+            *git_opts,
+            'sparse-checkout',
+            'set',
+            '--no-cone',
+            *repo_subtrees,
+        ),
+        cwd=rd,
+    )
+
+    subprocess.check_call(
+        subprocess_maybe_shell_wrap_exec(
+            'git',
+            *git_opts,
+            'checkout',
+            *([rev] if rev else []),
+        ),
+        cwd=rd,
+    )
+
+
+def get_git_revision(
+        *,
+        cwd: ta.Optional[str] = None,
+) -> ta.Optional[str]:
+    subprocess.check_output(subprocess_maybe_shell_wrap_exec('git', '--version'))
+
+    if cwd is None:
+        cwd = os.getcwd()
+
+    if subprocess.run(  # noqa
+        subprocess_maybe_shell_wrap_exec(
+            'git',
+            'rev-parse',
+            '--is-inside-work-tree',
+        ),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).returncode:
+        return None
+
+    has_untracked = bool(subprocess.check_output(subprocess_maybe_shell_wrap_exec(
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+    ), cwd=cwd).decode().strip())
+
+    dirty_rev = subprocess.check_output(subprocess_maybe_shell_wrap_exec(
+        'git',
+        'describe',
+        '--match=NeVeRmAtCh',
+        '--always',
+        '--abbrev=40',
+        '--dirty',
+    ), cwd=cwd).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')
+
+
+##
+
+
+def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
+    def find_any(chars: str, start: int = 0) -> int:
+        ret = -1
+        for c in chars:
+            if (found := l.find(c, start)) >= 0 and (ret < 0 or ret > found):
+                ret = found
+        return ret
+
+    p = 0
+    while True:
+        if l[p] == '"':
+            p += 1
+            s = []
+            while (n := find_any('\\"', p)) > 0:
+                if (c := l[n]) == '\\':
+                    s.append(l[p:n])
+                    s.append(l[n + 1])
+                    p = n + 2
+                elif c == '"':
+                    s.append(l[p:n])
+                    p = n
+                    break
+                else:
+                    raise ValueError(l)
+
+            if l[p] != '"':
+                raise ValueError(l)
+
+            yield ''.join(s)
+
+            p += 1
+            if p == len(l):
+                return
+            elif l[p] != ' ':
+                raise ValueError(l)
+
+            p += 1
+
+        else:
+            if (e := l.find(' ', p)) < 0:
+                yield l[p:]
+                return
+
+            yield l[p:e]
+            p = e + 1
+
+
+class GitStatusLineState(enum.Enum):
+    UNMODIFIED = ' '
+    MODIFIED = 'M'
+    FILE_TYPE_CHANGED = 'T'
+    ADDED = 'A'
+    DELETED = 'D'
+    RENAMED = 'R'
+    COPIED = 'C'
+    UPDATED_BUT_UNMERGED = 'U'
+    UNTRACKED = '?'
+    IGNORED = '!'
+    SUBMODULE_MODIFIED_CONTENT = 'm'
+
+
+"""
+When merge is occurring and was successful, or outside of a merge situation, X shows the status of the index and Y shows
+the status of the working tree:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+         [AMD]   not updated
+M        [ MTD]  updated in index
+T        [ MTD]  type changed in index
+A        [ MTD]  added to index
+D                deleted from index
+R        [ MTD]  renamed in index
+C        [ MTD]  copied in index
+[MTARC]          index and work tree matches
+[ MTARC]    M    work tree changed since index
+[ MTARC]    T    type changed in work tree since index
+[ MTARC]    D    deleted in work tree
+            R    renamed in work tree
+            C    copied in work tree
+
+When merge conflict has occurred and has not yet been resolved, X and Y show the state introduced by each head of the
+merge, relative to the common ancestor:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+D           D    unmerged, both deleted
+A           U    unmerged, added by us
+U           D    unmerged, deleted by them
+U           A    unmerged, added by them
+D           U    unmerged, deleted by us
+A           A    unmerged, both added
+U           U    unmerged, both modified
+
+When path is untracked, X and Y are always the same, since they are unknown to the index:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+?           ?    untracked
+!           !    ignored
+
+Submodules have more state and instead report
+
+ - M = the submodule has a different HEAD than recorded in the index
+ - m = the submodule has modified content
+ - ? = the submodule has untracked files
+
+This is since modified content or untracked files in a submodule cannot be added via git add in the superproject to
+prepare a commit. m and ? are applied recursively. For example if a nested submodule in a submodule contains an
+untracked file, this is reported as ? as well.
+"""  # noqa
+
+
+@dc.dataclass(frozen=True)
+class GitStatusLine:
+    x: GitStatusLineState
+    y: GitStatusLineState
+
+    a: str
+    b: ta.Optional[str]
+
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}('
+            f'x={self.x.name}, '
+            f'y={self.y.name}, '
+            f'a={self.a!r}' +
+            (f', b={self.b!r}' if self.b is not None else '') +
+            ')'
+        )
+
+
+def parse_git_status_line(l: str) -> GitStatusLine:
+    if len(l) < 3 or l[2] != ' ':
+        raise ValueError(l)
+    x, y = l[0], l[1]
+
+    fields = list(yield_git_status_line_fields(l[3:]))
+    if len(fields) == 1:
+        a, b = fields[0], None
+    elif len(fields) == 3:
+        check_state(fields[1] == '->', l)
+        a, b = fields[0], fields[2]
+    else:
+        raise ValueError(l)
+
+    return GitStatusLine(
+        GitStatusLineState(x),
+        GitStatusLineState(y),
+        a,
+        b,
+    )
+
+
+def parse_git_status(s: str) -> ta.List[GitStatusLine]:
+    return [parse_git_status_line(l) for l in s.splitlines()]
+
+
+########################################
 # ../../interp/inspect.py
 
 
@@ -4076,564 +4126,6 @@ INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
-# ../pkg.py
-"""
-TODO:
- - ext scanning
- - __revision__
- - entry_points
-
-** NOTE **
-setuptools now (2024/09/02) has experimental support for extensions in pure pyproject.toml - but we still want a
-separate '-cext' package
-  https://setuptools.pypa.io/en/latest/userguide/ext_modules.html
-  https://github.com/pypa/setuptools/commit/1a9d87308dc0d8aabeaae0dce989b35dfb7699f0#diff-61d113525e9cc93565799a4bb8b34a68e2945b8a3f7d90c81380614a4ea39542R7-R8
-
---
-
-https://setuptools.pypa.io/en/latest/references/keywords.html
-https://packaging.python.org/en/latest/specifications/pyproject-toml
-
-How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
-https://stackoverflow.com/a/66479252
-
-https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
-
-https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
-vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
-'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
-"""  # noqa
-
-
-#
-
-
-class BasePyprojectPackageGenerator(abc.ABC):
-    def __init__(
-            self,
-            dir_name: str,
-            pkgs_root: str,
-            *,
-            pkg_suffix: str = '',
-    ) -> None:
-        super().__init__()
-        self._dir_name = dir_name
-        self._pkgs_root = pkgs_root
-        self._pkg_suffix = pkg_suffix
-
-    #
-
-    @cached_nullary
-    def about(self) -> types.ModuleType:
-        return importlib.import_module(f'{self._dir_name}.__about__')
-
-    #
-
-    @cached_nullary
-    def _pkg_dir(self) -> str:
-        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name + self._pkg_suffix)
-        if os.path.isdir(pkg_dir):
-            shutil.rmtree(pkg_dir)
-        os.makedirs(pkg_dir)
-        return pkg_dir
-
-    #
-
-    _GIT_IGNORE: ta.Sequence[str] = [
-        '/*.egg-info/',
-        '/dist',
-    ]
-
-    def _write_git_ignore(self) -> None:
-        with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
-            f.write('\n'.join(self._GIT_IGNORE))
-
-    #
-
-    def _symlink_source_dir(self) -> None:
-        os.symlink(
-            os.path.relpath(self._dir_name, self._pkg_dir()),
-            os.path.join(self._pkg_dir(), self._dir_name),
-        )
-
-    #
-
-    @cached_nullary
-    def project_cls(self) -> type:
-        return self.about().Project
-
-    @cached_nullary
-    def setuptools_cls(self) -> type:
-        return self.about().Setuptools
-
-    @staticmethod
-    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
-        dct = {}
-        for b in reversed(cls.__mro__):
-            for k, v in b.__dict__.items():
-                if k.startswith('_'):
-                    continue
-                dct[k] = v
-        return dct
-
-    @staticmethod
-    def _move_dict_key(
-            sd: ta.Dict[str, ta.Any],
-            sk: str,
-            dd: ta.Dict[str, ta.Any],
-            dk: str,
-    ) -> None:
-        if sk in sd:
-            dd[dk] = sd.pop(sk)
-
-    @dc.dataclass(frozen=True)
-    class Specs:
-        pyproject: ta.Dict[str, ta.Any]
-        setuptools: ta.Dict[str, ta.Any]
-
-    def build_specs(self) -> Specs:
-        return self.Specs(
-            self._build_cls_dct(self.project_cls()),
-            self._build_cls_dct(self.setuptools_cls()),
-        )
-
-    #
-
-    class _PkgData(ta.NamedTuple):
-        inc: ta.List[str]
-        exc: ta.List[str]
-
-    @cached_nullary
-    def _collect_pkg_data(self) -> _PkgData:
-        inc: ta.List[str] = []
-        exc: ta.List[str] = []
-
-        for p, ds, fs in os.walk(self._dir_name):  # noqa
-            for f in fs:
-                if f != '.pkgdata':
-                    continue
-                rp = os.path.relpath(p, self._dir_name)
-                log.info('Found pkgdata %s for pkg %s', rp, self._dir_name)
-                with open(os.path.join(p, f)) as fo:
-                    src = fo.read()
-                for l in src.splitlines():
-                    if not (l := l.strip()):
-                        continue
-                    if l.startswith('!'):
-                        exc.append(os.path.join(rp, l[1:]))
-                    else:
-                        inc.append(os.path.join(rp, l))
-
-        return self._PkgData(inc, exc)
-
-    #
-
-    @abc.abstractmethod
-    def _write_file_contents(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    _STANDARD_FILES: ta.Sequence[str] = [
-        'LICENSE',
-        'README.rst',
-    ]
-
-    def _symlink_standard_files(self) -> None:
-        for fn in self._STANDARD_FILES:
-            if os.path.exists(fn):
-                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
-
-    #
-
-    def children(self) -> ta.Sequence['BasePyprojectPackageGenerator']:
-        return []
-
-    #
-
-    def gen(self) -> str:
-        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
-
-        self._pkg_dir()
-        self._write_git_ignore()
-        self._symlink_source_dir()
-        self._write_file_contents()
-        self._symlink_standard_files()
-
-        return self._pkg_dir()
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class BuildOpts:
-        add_revision: bool = False
-        test: bool = False
-
-    def build(
-            self,
-            output_dir: ta.Optional[str] = None,
-            opts: BuildOpts = BuildOpts(),
-    ) -> None:
-        subprocess_check_call(
-            sys.executable,
-            '-m',
-            'build',
-            cwd=self._pkg_dir(),
-        )
-
-        dist_dir = os.path.join(self._pkg_dir(), 'dist')
-
-        if opts.add_revision:
-            GitRevisionAdder().add_to(dist_dir)
-
-        if opts.test:
-            for fn in os.listdir(dist_dir):
-                tmp_dir = tempfile.mkdtemp()
-
-                subprocess_check_call(
-                    sys.executable,
-                    '-m', 'venv',
-                    'test-install',
-                    cwd=tmp_dir,
-                )
-
-                subprocess_check_call(
-                    os.path.join(tmp_dir, 'test-install', 'bin', 'python3'),
-                    '-m', 'pip',
-                    'install',
-                    os.path.abspath(os.path.join(dist_dir, fn)),
-                    cwd=tmp_dir,
-                )
-
-        if output_dir is not None:
-            for fn in os.listdir(dist_dir):
-                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(output_dir, fn))
-
-
-#
-
-
-class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        manifest_in: ta.Optional[ta.Sequence[str]]
-
-    @cached_nullary
-    def file_contents(self) -> FileContents:
-        specs = self.build_specs()
-
-        #
-
-        pyp_dct = {}
-
-        pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
-            'build-backend': 'setuptools.build_meta',
-        }
-
-        prj = specs.pyproject
-        prj['name'] += self._pkg_suffix
-
-        pyp_dct['project'] = prj
-
-        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
-        if (extras := pyp_dct.get(extrask)):
-            pyp_dct[extrask] = {
-                'all': [
-                    e
-                    for lst in extras.values()
-                    for e in lst
-                ],
-                **extras,
-            }
-
-        if (eps := prj.pop('entry_points', None)):
-            pyp_dct['project.entry-points'] = {TomlWriter.Literal(f"'{k}'"): v for k, v in eps.items()}  # type: ignore  # noqa
-
-        if (scs := prj.pop('scripts', None)):
-            pyp_dct['project.scripts'] = scs
-
-        prj.pop('cli_scripts', None)
-
-        ##
-
-        st = dict(specs.setuptools)
-        pyp_dct['tool.setuptools'] = st
-
-        st.pop('cexts', None)
-
-        #
-
-        # TODO: default
-        # find_packages = {
-        #     'include': [Project.name, f'{Project.name}.*'],
-        #     'exclude': [*SetuptoolsBase.find_packages['exclude']],
-        # }
-
-        fp = dict(st.pop('find_packages', {}))
-
-        pyp_dct['tool.setuptools.packages.find'] = fp
-
-        #
-
-        # TODO: default
-        # package_data = {
-        #     '*': [
-        #         '*.c',
-        #         '*.cc',
-        #         '*.h',
-        #         '.manifests.json',
-        #         'LICENSE',
-        #     ],
-        # }
-
-        pd = dict(st.pop('package_data', {}))
-        epd = dict(st.pop('exclude_package_data', {}))
-
-        cpd = self._collect_pkg_data()
-        if cpd.inc:
-            pd['*'] = [*pd.get('*', []), *sorted(set(cpd.inc))]
-        if cpd.exc:
-            epd['*'] = [*epd.get('*', []), *sorted(set(cpd.exc))]
-
-        if pd:
-            pyp_dct['tool.setuptools.package-data'] = pd
-        if epd:
-            pyp_dct['tool.setuptools.exclude-package-data'] = epd
-
-        #
-
-        # TODO: default
-        # manifest_in = [
-        #     'global-exclude **/conftest.py',
-        # ]
-
-        mani_in = st.pop('manifest_in', None)
-
-        #
-
-        return self.FileContents(
-            pyp_dct,
-            mani_in,
-        )
-
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
-
-        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
-
-        if fc.manifest_in:
-            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
-                f.write('\n'.join(fc.manifest_in))  # noqa
-
-    #
-
-    @cached_nullary
-    def children(self) -> ta.Sequence[BasePyprojectPackageGenerator]:
-        out: ta.List[BasePyprojectPackageGenerator] = []
-
-        if self.build_specs().setuptools.get('cexts'):
-            out.append(_PyprojectCextPackageGenerator(
-                self._dir_name,
-                self._pkgs_root,
-                pkg_suffix='-cext',
-            ))
-
-        if self.build_specs().pyproject.get('cli_scripts'):
-            out.append(_PyprojectCliPackageGenerator(
-                self._dir_name,
-                self._pkgs_root,
-                pkg_suffix='-cli',
-            ))
-
-        return out
-
-
-#
-
-
-class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
-    @cached_nullary
-    def find_cext_srcs(self) -> ta.Sequence[str]:
-        return sorted(find_magic_files(
-            CextMagic.STYLE,
-            [self._dir_name],
-            keys=[CextMagic.KEY],
-        ))
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        setup_py: str
-
-    @cached_nullary
-    def file_contents(self) -> FileContents:
-        specs = self.build_specs()
-
-        #
-
-        pyp_dct = {}
-
-        pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
-            'build-backend': 'setuptools.build_meta',
-        }
-
-        prj = specs.pyproject
-        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
-        prj['name'] += self._pkg_suffix
-        for k in [
-            'optional_dependencies',
-            'entry_points',
-            'scripts',
-            'cli_scripts',
-        ]:
-            prj.pop(k, None)
-
-        pyp_dct['project'] = prj
-
-        #
-
-        st = dict(specs.setuptools)
-        pyp_dct['tool.setuptools'] = st
-
-        for k in [
-            'cexts',
-
-            'find_packages',
-            'package_data',
-            'manifest_in',
-        ]:
-            st.pop(k, None)
-
-        pyp_dct['tool.setuptools.packages.find'] = {
-            'include': [],
-        }
-
-        #
-
-        ext_lines = []
-
-        for ext_src in self.find_cext_srcs():
-            ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
-            ext_lines.extend([
-                'st.Extension(',
-                f"    name='{ext_name}',",
-                f"    sources=['{ext_src}'],",
-                "    extra_compile_args=['-std=c++20'],",
-                '),',
-            ])
-
-        src = '\n'.join([
-            'import setuptools as st',
-            '',
-            '',
-            'st.setup(',
-            '    ext_modules=[',
-            *['        ' + l for l in ext_lines],
-            '    ]',
-            ')',
-            '',
-        ])
-
-        #
-
-        return self.FileContents(
-            pyp_dct,
-            src,
-        )
-
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
-
-        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
-
-        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
-            f.write(fc.setup_py)
-
-
-##
-
-
-class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-
-    @cached_nullary
-    def file_contents(self) -> FileContents:
-        specs = self.build_specs()
-
-        #
-
-        pyp_dct = {}
-
-        pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
-            'build-backend': 'setuptools.build_meta',
-        }
-
-        prj = specs.pyproject
-        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
-        prj['name'] += self._pkg_suffix
-        for k in [
-            'optional_dependencies',
-            'entry_points',
-            'scripts',
-        ]:
-            prj.pop(k, None)
-
-        pyp_dct['project'] = prj
-
-        if (scs := prj.pop('cli_scripts', None)):
-            pyp_dct['project.scripts'] = scs
-
-        #
-
-        st = dict(specs.setuptools)
-        pyp_dct['tool.setuptools'] = st
-
-        for k in [
-            'cexts',
-
-            'find_packages',
-            'package_data',
-            'manifest_in',
-        ]:
-            st.pop(k, None)
-
-        pyp_dct['tool.setuptools.packages.find'] = {
-            'include': [],
-        }
-
-        #
-
-        return self.FileContents(
-            pyp_dct,
-        )
-
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
-
-        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
-
-
-########################################
 # ../../interp/providers.py
 """
 TODO:
@@ -4692,6 +4184,126 @@ class RunningInterpProvider(InterpProvider):
             exe=sys.executable,
             version=self.version(),
         )
+
+
+########################################
+# ../../revisions.py
+"""
+TODO:
+ - omlish-lite, move to pyproject/
+  - vendor-lite wheel.wheelfile
+"""
+
+
+##
+
+
+class GitRevisionAdder:
+    def __init__(
+            self,
+            revision: ta.Optional[str] = None,
+            output_suffix: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+        self._given_revision = revision
+        self._output_suffix = output_suffix
+
+    @cached_nullary
+    def revision(self) -> str:
+        if self._given_revision is not None:
+            return self._given_revision
+        return check_non_empty_str(get_git_revision())
+
+    REVISION_ATTR = '__revision__'
+
+    def add_to_contents(self, dct: ta.Dict[str, bytes]) -> bool:
+        changed = False
+        for n in dct:
+            if not n.endswith('__about__.py'):
+                continue
+            src = dct[n].decode('utf-8')
+            lines = src.splitlines(keepends=True)
+            for i, l in enumerate(lines):
+                if l != f'{self.REVISION_ATTR} = None\n':
+                    continue
+                lines[i] = f"{self.REVISION_ATTR} = '{self.revision()}'\n"
+                changed = True
+            dct[n] = ''.join(lines).encode('utf-8')
+        return changed
+
+    def add_to_wheel(self, f: str) -> None:
+        if not f.endswith('.whl'):
+            raise Exception(f)
+        log.info('Scanning wheel %s', f)
+
+        zis: ta.Dict[str, zipfile.ZipInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
+        with WheelFile(f) as wf:
+            for zi in wf.filelist:
+                if zi.filename == wf.record_path:
+                    continue
+                zis[zi.filename] = zi
+                dct[zi.filename] = wf.read(zi.filename)
+
+        if self.add_to_contents(dct):
+            of = f[:-4] + (self._output_suffix or '') + '.whl'
+            log.info('Repacking wheel %s', of)
+            with WheelFile(of, 'w') as wf:
+                for n, d in dct.items():
+                    log.info('Adding zipinfo %s', n)
+                    wf.writestr(zis[n], d)
+
+    def add_to_tgz(self, f: str) -> None:
+        if not f.endswith('.tar.gz'):
+            raise Exception(f)
+        log.info('Scanning tgz %s', f)
+
+        tis: ta.Dict[str, tarfile.TarInfo] = {}
+        dct: ta.Dict[str, bytes] = {}
+        with tarfile.open(f, 'r:gz') as tf:
+            for ti in tf:
+                tis[ti.name] = ti
+                if ti.type == tarfile.REGTYPE:
+                    with tf.extractfile(ti.name) as tif:  # type: ignore
+                        dct[ti.name] = tif.read()
+
+        if self.add_to_contents(dct):
+            of = f[:-7] + (self._output_suffix or '') + '.tar.gz'
+            log.info('Repacking tgz %s', of)
+            with tarfile.open(of, 'w:gz') as tf:
+                for n, ti in tis.items():
+                    log.info('Adding tarinfo %s', n)
+                    if n in dct:
+                        data = dct[n]
+                        ti.size = len(data)
+                        fo = io.BytesIO(data)
+                    else:
+                        fo = None
+                    tf.addfile(ti, fileobj=fo)
+
+    EXTS = ('.tar.gz', '.whl')
+
+    def add_to_file(self, f: str) -> None:
+        if f.endswith('.whl'):
+            self.add_to_wheel(f)
+
+        elif f.endswith('.tar.gz'):
+            self.add_to_tgz(f)
+
+    def add_to(self, tgt: str) -> None:
+        log.info('Using revision %s', self.revision())
+
+        if os.path.isfile(tgt):
+            self.add_to_file(tgt)
+
+        elif os.path.isdir(tgt):
+            for dp, dns, fns in os.walk(tgt):  # noqa
+                for f in fns:
+                    if any(f.endswith(ext) for ext in self.EXTS):
+                        self.add_to_file(os.path.join(dp, f))
+
+
+#
 
 
 ########################################
@@ -5250,6 +4862,564 @@ class SystemInterpProvider(InterpProvider):
                 version=ev,
             )
         raise KeyError(version)
+
+
+########################################
+# ../pkg.py
+"""
+TODO:
+ - ext scanning
+ - __revision__
+ - entry_points
+
+** NOTE **
+setuptools now (2024/09/02) has experimental support for extensions in pure pyproject.toml - but we still want a
+separate '-cext' package
+  https://setuptools.pypa.io/en/latest/userguide/ext_modules.html
+  https://github.com/pypa/setuptools/commit/1a9d87308dc0d8aabeaae0dce989b35dfb7699f0#diff-61d113525e9cc93565799a4bb8b34a68e2945b8a3f7d90c81380614a4ea39542R7-R8
+
+--
+
+https://setuptools.pypa.io/en/latest/references/keywords.html
+https://packaging.python.org/en/latest/specifications/pyproject-toml
+
+How to build a C extension in keeping with PEP 517, i.e. with pyproject.toml instead of setup.py?
+https://stackoverflow.com/a/66479252
+
+https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa2532e/setup.py
+
+https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
+vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+"""  # noqa
+
+
+#
+
+
+class BasePyprojectPackageGenerator(abc.ABC):
+    def __init__(
+            self,
+            dir_name: str,
+            pkgs_root: str,
+            *,
+            pkg_suffix: str = '',
+    ) -> None:
+        super().__init__()
+        self._dir_name = dir_name
+        self._pkgs_root = pkgs_root
+        self._pkg_suffix = pkg_suffix
+
+    #
+
+    @cached_nullary
+    def about(self) -> types.ModuleType:
+        return importlib.import_module(f'{self._dir_name}.__about__')
+
+    #
+
+    @cached_nullary
+    def _pkg_dir(self) -> str:
+        pkg_dir: str = os.path.join(self._pkgs_root, self._dir_name + self._pkg_suffix)
+        if os.path.isdir(pkg_dir):
+            shutil.rmtree(pkg_dir)
+        os.makedirs(pkg_dir)
+        return pkg_dir
+
+    #
+
+    _GIT_IGNORE: ta.Sequence[str] = [
+        '/*.egg-info/',
+        '/dist',
+    ]
+
+    def _write_git_ignore(self) -> None:
+        with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
+            f.write('\n'.join(self._GIT_IGNORE))
+
+    #
+
+    def _symlink_source_dir(self) -> None:
+        os.symlink(
+            os.path.relpath(self._dir_name, self._pkg_dir()),
+            os.path.join(self._pkg_dir(), self._dir_name),
+        )
+
+    #
+
+    @cached_nullary
+    def project_cls(self) -> type:
+        return self.about().Project
+
+    @cached_nullary
+    def setuptools_cls(self) -> type:
+        return self.about().Setuptools
+
+    @staticmethod
+    def _build_cls_dct(cls: type) -> ta.Dict[str, ta.Any]:  # noqa
+        dct = {}
+        for b in reversed(cls.__mro__):
+            for k, v in b.__dict__.items():
+                if k.startswith('_'):
+                    continue
+                dct[k] = v
+        return dct
+
+    @staticmethod
+    def _move_dict_key(
+            sd: ta.Dict[str, ta.Any],
+            sk: str,
+            dd: ta.Dict[str, ta.Any],
+            dk: str,
+    ) -> None:
+        if sk in sd:
+            dd[dk] = sd.pop(sk)
+
+    @dc.dataclass(frozen=True)
+    class Specs:
+        pyproject: ta.Dict[str, ta.Any]
+        setuptools: ta.Dict[str, ta.Any]
+
+    def build_specs(self) -> Specs:
+        return self.Specs(
+            self._build_cls_dct(self.project_cls()),
+            self._build_cls_dct(self.setuptools_cls()),
+        )
+
+    #
+
+    class _PkgData(ta.NamedTuple):
+        inc: ta.List[str]
+        exc: ta.List[str]
+
+    @cached_nullary
+    def _collect_pkg_data(self) -> _PkgData:
+        inc: ta.List[str] = []
+        exc: ta.List[str] = []
+
+        for p, ds, fs in os.walk(self._dir_name):  # noqa
+            for f in fs:
+                if f != '.pkgdata':
+                    continue
+                rp = os.path.relpath(p, self._dir_name)
+                log.info('Found pkgdata %s for pkg %s', rp, self._dir_name)
+                with open(os.path.join(p, f)) as fo:
+                    src = fo.read()
+                for l in src.splitlines():
+                    if not (l := l.strip()):
+                        continue
+                    if l.startswith('!'):
+                        exc.append(os.path.join(rp, l[1:]))
+                    else:
+                        inc.append(os.path.join(rp, l))
+
+        return self._PkgData(inc, exc)
+
+    #
+
+    @abc.abstractmethod
+    def _write_file_contents(self) -> None:
+        raise NotImplementedError
+
+    #
+
+    _STANDARD_FILES: ta.Sequence[str] = [
+        'LICENSE',
+        'README.rst',
+    ]
+
+    def _symlink_standard_files(self) -> None:
+        for fn in self._STANDARD_FILES:
+            if os.path.exists(fn):
+                os.symlink(os.path.relpath(fn, self._pkg_dir()), os.path.join(self._pkg_dir(), fn))
+
+    #
+
+    def children(self) -> ta.Sequence['BasePyprojectPackageGenerator']:
+        return []
+
+    #
+
+    def gen(self) -> str:
+        log.info('Generating pyproject package: %s -> %s (%s)', self._dir_name, self._pkgs_root, self._pkg_suffix)
+
+        self._pkg_dir()
+        self._write_git_ignore()
+        self._symlink_source_dir()
+        self._write_file_contents()
+        self._symlink_standard_files()
+
+        return self._pkg_dir()
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class BuildOpts:
+        add_revision: bool = False
+        test: bool = False
+
+    def build(
+            self,
+            output_dir: ta.Optional[str] = None,
+            opts: BuildOpts = BuildOpts(),
+    ) -> None:
+        subprocess_check_call(
+            sys.executable,
+            '-m',
+            'build',
+            cwd=self._pkg_dir(),
+        )
+
+        dist_dir = os.path.join(self._pkg_dir(), 'dist')
+
+        if opts.add_revision:
+            GitRevisionAdder().add_to(dist_dir)
+
+        if opts.test:
+            for fn in os.listdir(dist_dir):
+                tmp_dir = tempfile.mkdtemp()
+
+                subprocess_check_call(
+                    sys.executable,
+                    '-m', 'venv',
+                    'test-install',
+                    cwd=tmp_dir,
+                )
+
+                subprocess_check_call(
+                    os.path.join(tmp_dir, 'test-install', 'bin', 'python3'),
+                    '-m', 'pip',
+                    'install',
+                    os.path.abspath(os.path.join(dist_dir, fn)),
+                    cwd=tmp_dir,
+                )
+
+        if output_dir is not None:
+            for fn in os.listdir(dist_dir):
+                shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(output_dir, fn))
+
+
+#
+
+
+class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        manifest_in: ta.Optional[ta.Sequence[str]]
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['name'] += self._pkg_suffix
+
+        pyp_dct['project'] = prj
+
+        self._move_dict_key(prj, 'optional_dependencies', pyp_dct, extrask := 'project.optional-dependencies')
+        if (extras := pyp_dct.get(extrask)):
+            pyp_dct[extrask] = {
+                'all': [
+                    e
+                    for lst in extras.values()
+                    for e in lst
+                ],
+                **extras,
+            }
+
+        if (eps := prj.pop('entry_points', None)):
+            pyp_dct['project.entry-points'] = {TomlWriter.Literal(f"'{k}'"): v for k, v in eps.items()}  # type: ignore  # noqa
+
+        if (scs := prj.pop('scripts', None)):
+            pyp_dct['project.scripts'] = scs
+
+        prj.pop('cli_scripts', None)
+
+        ##
+
+        st = dict(specs.setuptools)
+        pyp_dct['tool.setuptools'] = st
+
+        st.pop('cexts', None)
+
+        #
+
+        # TODO: default
+        # find_packages = {
+        #     'include': [Project.name, f'{Project.name}.*'],
+        #     'exclude': [*SetuptoolsBase.find_packages['exclude']],
+        # }
+
+        fp = dict(st.pop('find_packages', {}))
+
+        pyp_dct['tool.setuptools.packages.find'] = fp
+
+        #
+
+        # TODO: default
+        # package_data = {
+        #     '*': [
+        #         '*.c',
+        #         '*.cc',
+        #         '*.h',
+        #         '.manifests.json',
+        #         'LICENSE',
+        #     ],
+        # }
+
+        pd = dict(st.pop('package_data', {}))
+        epd = dict(st.pop('exclude_package_data', {}))
+
+        cpd = self._collect_pkg_data()
+        if cpd.inc:
+            pd['*'] = [*pd.get('*', []), *sorted(set(cpd.inc))]
+        if cpd.exc:
+            epd['*'] = [*epd.get('*', []), *sorted(set(cpd.exc))]
+
+        if pd:
+            pyp_dct['tool.setuptools.package-data'] = pd
+        if epd:
+            pyp_dct['tool.setuptools.exclude-package-data'] = epd
+
+        #
+
+        # TODO: default
+        # manifest_in = [
+        #     'global-exclude **/conftest.py',
+        # ]
+
+        mani_in = st.pop('manifest_in', None)
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            mani_in,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        if fc.manifest_in:
+            with open(os.path.join(self._pkg_dir(), 'MANIFEST.in'), 'w') as f:
+                f.write('\n'.join(fc.manifest_in))  # noqa
+
+    #
+
+    @cached_nullary
+    def children(self) -> ta.Sequence[BasePyprojectPackageGenerator]:
+        out: ta.List[BasePyprojectPackageGenerator] = []
+
+        if self.build_specs().setuptools.get('cexts'):
+            out.append(_PyprojectCextPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-cext',
+            ))
+
+        if self.build_specs().pyproject.get('cli_scripts'):
+            out.append(_PyprojectCliPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-cli',
+            ))
+
+        return out
+
+
+#
+
+
+class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @cached_nullary
+    def find_cext_srcs(self) -> ta.Sequence[str]:
+        return sorted(find_magic_files(
+            CextMagic.STYLE,
+            [self._dir_name],
+            keys=[CextMagic.KEY],
+        ))
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        setup_py: str
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
+        prj['name'] += self._pkg_suffix
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+            'cli_scripts',
+        ]:
+            prj.pop(k, None)
+
+        pyp_dct['project'] = prj
+
+        #
+
+        st = dict(specs.setuptools)
+        pyp_dct['tool.setuptools'] = st
+
+        for k in [
+            'cexts',
+
+            'find_packages',
+            'package_data',
+            'manifest_in',
+        ]:
+            st.pop(k, None)
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [],
+        }
+
+        #
+
+        ext_lines = []
+
+        for ext_src in self.find_cext_srcs():
+            ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
+            ext_lines.extend([
+                'st.Extension(',
+                f"    name='{ext_name}',",
+                f"    sources=['{ext_src}'],",
+                "    extra_compile_args=['-std=c++20'],",
+                '),',
+            ])
+
+        src = '\n'.join([
+            'import setuptools as st',
+            '',
+            '',
+            'st.setup(',
+            '    ext_modules=[',
+            *['        ' + l for l in ext_lines],
+            '    ]',
+            ')',
+            '',
+        ])
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            src,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
+            f.write(fc.setup_py)
+
+
+##
+
+
+class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+
+    @cached_nullary
+    def file_contents(self) -> FileContents:
+        specs = self.build_specs()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        prj = specs.pyproject
+        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
+        prj['name'] += self._pkg_suffix
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+        ]:
+            prj.pop(k, None)
+
+        pyp_dct['project'] = prj
+
+        if (scs := prj.pop('cli_scripts', None)):
+            pyp_dct['project.scripts'] = scs
+
+        #
+
+        st = dict(specs.setuptools)
+        pyp_dct['tool.setuptools'] = st
+
+        for k in [
+            'cexts',
+
+            'find_packages',
+            'package_data',
+            'manifest_in',
+        ]:
+            st.pop(k, None)
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [],
+        }
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+        )
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
 
 
 ########################################
