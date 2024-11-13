@@ -234,7 +234,7 @@ class GitStatusLineState(enum.Enum):
     SUBMODULE_MODIFIED_CONTENT = 'm'
 
 
-_EXTRA_UNRESOLVED_MERGE_CONFLICT_GIT_STATUS_LINE_STATES: ta.FrozenSet[ta.Tuple[GitStatusLineState, GitStatusLineState]] = frozenset([  # noqa
+_EXTRA_UNMERGED_GIT_STATUS_LINE_STATES: ta.FrozenSet[ta.Tuple[GitStatusLineState, GitStatusLineState]] = frozenset([
     (GitStatusLineState.ADDED, GitStatusLineState.ADDED),
     (GitStatusLineState.DELETED, GitStatusLineState.DELETED),
 ])
@@ -249,11 +249,11 @@ class GitStatusLine:
     b: ta.Optional[str]
 
     @property
-    def is_unresolved_merge_conflict(self) -> bool:
+    def is_unmerged(self) -> bool:
         return (
             self.x is GitStatusLineState.UPDATED_BUT_UNMERGED or
             self.y is GitStatusLineState.UPDATED_BUT_UNMERGED or
-            (self.x, self.y) in _EXTRA_UNRESOLVED_MERGE_CONFLICT_GIT_STATUS_LINE_STATES
+            (self.x, self.y) in _EXTRA_UNMERGED_GIT_STATUS_LINE_STATES
         )
 
     def __repr__(self) -> str:
@@ -292,17 +292,72 @@ def parse_git_status_line(l: str) -> GitStatusLine:
 class GitStatus(ta.Sequence[GitStatusLine]):
     def __init__(self, lines: ta.Iterable[GitStatusLine]) -> None:
         super().__init__()
-        self._lines = list(lines)
+
+        self._lst = list(lines)
+
+        self._has_unmerged = any(l.is_unmerged for l in self)
+
+        by_a: ta.Dict[str, GitStatusLine] = {}
+        by_b: ta.Dict[str, GitStatusLine] = {}
+        for l in self._lst:
+            if l.a in by_a:
+                raise KeyError(l.a)
+            by_a[l.a] = l
+
+            if l.b is not None:
+                if l.b in by_b:
+                    raise KeyError(l.b)
+                by_b[l.b] = l
+
+        self._by_a = by_a
+        self._by_b = by_b
 
     def __iter__(self) -> ta.Iterator[GitStatusLine]:
-        return iter(self._lines)
+        return iter(self._lst)
 
     def __getitem__(self, index):
-        return self._lines[index]
+        return self._lst[index]
 
     def __len__(self) -> int:
-        return len(self._lines)
+        return len(self._lst)
+
+    @property
+    def has_unmerged(self) -> bool:
+        return self._has_unmerged
+
+    @property
+    def by_a(self) -> ta.Mapping[str, GitStatusLine]:
+        return self._by_a
+
+    @property
+    def by_b(self) -> ta.Mapping[str, GitStatusLine]:
+        return self._by_b
 
 
 def parse_git_status(s: str) -> GitStatus:
     return GitStatus(parse_git_status_line(l) for l in s.splitlines())
+
+
+def get_git_status(
+        *,
+        cwd: ta.Optional[str] = None,
+        ignore_submodules: bool = False,
+        verbose: bool = False,
+) -> GitStatus:
+    if cwd is None:
+        cwd = os.getcwd()
+
+    proc = subprocess.run(  # type: ignore
+        subprocess_maybe_shell_wrap_exec(
+            'git',
+            'status',
+            '--porcelain=v1',
+            *(['--ignore-submodules'] if ignore_submodules else []),
+        ),
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        **(dict(stderr=subprocess.PIPE) if not verbose else {}),
+        check=True,
+    )
+
+    return parse_git_status(proc.stdout.decode())  # noqa

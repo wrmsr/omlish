@@ -7,7 +7,7 @@ from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ..git import GitStatusLine
 from ..git import GitStatusLineState
-from ..git import parse_git_status
+from ..git import get_git_status
 
 
 @debugging_on_exception()
@@ -24,8 +24,7 @@ def test_parse_git_status():
         ).decode()
 
     def status() -> list[GitStatusLine]:
-        s = run('git', 'status', '--porcelain=v1')
-        st = parse_git_status(s)
+        st = get_git_status(cwd=tmp_dir)
         return list(st)
 
     def write(file_name: str, contents: str) -> None:
