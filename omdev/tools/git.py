@@ -10,7 +10,7 @@ from omlish import logs
 from omlish.formats import json
 
 from ..cli import CliModule
-from ..git import GitStatusLine
+from ..git import GitStatusItem
 from ..git import get_git_status
 
 
@@ -134,24 +134,24 @@ class Cli(ap.Cli):
     def status(self) -> None:
         st = get_git_status()
 
-        def gsl_dct(gsl: GitStatusLine) -> ta.Mapping[str, ta.Any]:
+        def gsi_dct(gsi: GitStatusItem) -> ta.Mapping[str, ta.Any]:
             return {
-                'x': gsl.x.name,
-                'y': gsl.y.name,
-                'a': gsl.a,
-                **({'b': gsl.b} if gsl.b is not None else {}),
+                'x': gsi.x.name.lower(),
+                'y': gsi.y.name.lower(),
+                'a': gsi.a,
+                **({'b': gsi.b} if gsi.b is not None else {}),
             }
 
-        def gsl_dct_lst(gsls: ta.Iterable[GitStatusLine]) -> ta.Sequence[ta.Mapping[str, ta.Any]]:
-            return [gsl_dct(gsl) for gsl in sorted(gsls, key=lambda gsl: gsl.a)]
+        def gsi_dct_lst(gsis: ta.Iterable[GitStatusItem]) -> ta.Sequence[ta.Mapping[str, ta.Any]]:
+            return [gsi_dct(gsi) for gsi in sorted(gsis, key=lambda gsi: gsi.a)]
 
         if self.args.verbose:
             dct = {
-                'by_x': {x.name: gsl_dct_lst(lst) for x, lst in st.by_x.items()},
-                'by_y': {y.name: gsl_dct_lst(lst) for y, lst in st.by_x.items()},
+                'by_x': {x.name.lower(): gsi_dct_lst(lst) for x, lst in st.by_x.items()},
+                'by_y': {y.name.lower(): gsi_dct_lst(lst) for y, lst in st.by_x.items()},
 
-                'by_a': {a: gsl_dct(gsl) for a, gsl in sorted(st.by_a.items(), key=lambda t: t[0])},
-                'by_b': {b: gsl_dct(gsl) for b, gsl in sorted(st.by_b.items(), key=lambda t: t[0])},
+                'by_a': {a: gsi_dct(gsi) for a, gsi in sorted(st.by_a.items(), key=lambda t: t[0])},
+                'by_b': {b: gsi_dct(gsi) for b, gsi in sorted(st.by_b.items(), key=lambda t: t[0])},
 
                 'has_unmerged': st.has_unmerged,
                 'has_staged': st.has_staged,
@@ -161,7 +161,7 @@ class Cli(ap.Cli):
             print(json.dumps_pretty(dct))
 
         else:
-            print(json.dumps_pretty([gsl_dct(gsl) for gsl in st]))
+            print(json.dumps_pretty([gsi_dct(gsi) for gsi in st]))
 
     @ap.command(
         ap.arg('-m', '--message', default='--'),

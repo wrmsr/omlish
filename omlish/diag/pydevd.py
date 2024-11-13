@@ -130,6 +130,24 @@ def is_running() -> bool:
     return get_setup() is not None
 
 
+#
+
+
+@lang.cached_function
+def _pydevd_constants() -> types.ModuleType | None:
+    try:
+        return __import__('_pydevd_bundle.pydevd_constants').pydevd_constants
+    except ImportError:
+        return None
+
+
+def get_global_debugger() -> ta.Any | None:
+    if (pc := _pydevd_constants()) is None:
+        return None
+
+    return pc.get_global_debugger()
+
+
 ##
 
 
