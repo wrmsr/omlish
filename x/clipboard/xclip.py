@@ -54,6 +54,12 @@ libX11.XDestroyWindow.restype = None
 libX11.XCloseDisplay.argtypes = [Display]
 libX11.XCloseDisplay.restype = None
 
+libX11.XDefaultScreen.argtypes = [Display]
+libX11.XDefaultScreen.restype = ctypes.c_int
+
+libX11.XRootWindow.argtypes = [Display, ctypes.c_int]
+libX11.XRootWindow.restype = Window
+
 # Helper function to convert atom to string
 def atom_to_string(display, atom):
     libX11.XGetAtomName.argtypes = [Display, Atom]
@@ -139,7 +145,7 @@ def get_clipboard_image(display, window):
 
     png_atom = libX11.XInternAtom(display, b"image/png", False)
     atoms = ctypes.cast(data, ctypes.POINTER(Atom))
-    for i in range(nitems):
+    for i in range(nitems.value):
         if atoms[i] == png_atom:
             libX11.XConvertSelection(display, clipboard, png_atom, target_property, window, 0)
             libX11.XFlush(display)
@@ -158,7 +164,7 @@ def get_clipboard_image(display, window):
 
             if status == 0 and data:
                 with open("clipboard_image.png", "wb") as file:
-                    file.write(ctypes.string_at(data, nitems))
+                    file.write(ctypes.string_at(data.value, nitems.value))
                     print("Clipboard image saved to clipboard_image.png")
             libX11.XFree(data)
             return
