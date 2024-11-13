@@ -3918,20 +3918,6 @@ def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
             p = e + 1
 
 
-class GitStatusLineState(enum.Enum):
-    UNMODIFIED = ' '
-    MODIFIED = 'M'
-    FILE_TYPE_CHANGED = 'T'
-    ADDED = 'A'
-    DELETED = 'D'
-    RENAMED = 'R'
-    COPIED = 'C'
-    UPDATED_BUT_UNMERGED = 'U'
-    UNTRACKED = '?'
-    IGNORED = '!'
-    SUBMODULE_MODIFIED_CONTENT = 'm'
-
-
 """
 When merge is occurring and was successful, or outside of a merge situation, X shows the status of the index and Y shows
 the status of the working tree:
@@ -3984,6 +3970,26 @@ untracked file, this is reported as ? as well.
 """  # noqa
 
 
+class GitStatusLineState(enum.Enum):
+    UNMODIFIED = ' '
+    MODIFIED = 'M'
+    FILE_TYPE_CHANGED = 'T'
+    ADDED = 'A'
+    DELETED = 'D'
+    RENAMED = 'R'
+    COPIED = 'C'
+    UPDATED_BUT_UNMERGED = 'U'
+    UNTRACKED = '?'
+    IGNORED = '!'
+    SUBMODULE_MODIFIED_CONTENT = 'm'
+
+
+_EXTRA_UNRESOLVED_MERGE_CONFLICT_GIT_STATUS_LINE_STATES: ta.FrozenSet[ta.Tuple[GitStatusLineState, GitStatusLineState]] = frozenset([  # noqa
+    (GitStatusLineState.ADDED, GitStatusLineState.ADDED),
+    (GitStatusLineState.DELETED, GitStatusLineState.DELETED),
+])
+
+
 @dc.dataclass(frozen=True)
 class GitStatusLine:
     x: GitStatusLineState
@@ -3991,6 +3997,14 @@ class GitStatusLine:
 
     a: str
     b: ta.Optional[str]
+
+    @property
+    def is_unresolved_merge_conflict(self) -> bool:
+        return (
+            self.x is GitStatusLineState.UPDATED_BUT_UNMERGED or
+            self.y is GitStatusLineState.UPDATED_BUT_UNMERGED or
+            (self.x, self.y) in _EXTRA_UNRESOLVED_MERGE_CONFLICT_GIT_STATUS_LINE_STATES
+        )
 
     def __repr__(self) -> str:
         return (
