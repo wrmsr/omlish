@@ -23,8 +23,10 @@ def test_parse_git_status():
             cwd=tmp_dir,
         ).decode()
 
-    def status() -> str:
-        return run('git', 'status', '--porcelain=v1')
+    def status() -> list[GitStatusLine]:
+        s = run('git', 'status', '--porcelain=v1')
+        st = parse_git_status(s)
+        return list(st)
 
     def write(file_name: str, contents: str) -> None:
         with open(os.path.join(tmp_dir, file_name), 'w') as f:
@@ -44,118 +46,118 @@ def test_parse_git_status():
     #
 
     run('git', 'init')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     write('a.txt', '0\n' * 128)
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('??', 'a.txt'),
     ]
 
     run('git', 'add', 'a.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('A ', 'a.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     write('a.txt', '1\n' * 128)
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl(' M', 'a.txt'),
     ]
 
     run('git', 'add', 'a.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('M ', 'a.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     rename('a.txt', 'b.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl(' D', 'a.txt'),
         gsl('??', 'b.txt'),
     ]
 
     run('git', 'add', 'b.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl(' D', 'a.txt'),
         gsl('A ', 'b.txt'),
     ]
 
     run('git', 'add', 'a.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('R ', 'a.txt', 'b.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     write(difficult_filename := 'difficult " filename.txt', 'foo\n' * 128)
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('??', difficult_filename),
     ]
 
     run('git', 'add', '.')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('A ', difficult_filename),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     rename(difficult_filename, difficult_filename_2 := 'difficult 2 " filename.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl(' D', difficult_filename),
         gsl('??', difficult_filename_2),
     ]
 
     run('git', 'add', '.')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('R ', difficult_filename, difficult_filename_2),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     write('->.txt', 'abc\n' * 128)
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('??', '->.txt'),
     ]
 
     run('git', 'add', '.')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('A ', '->.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
 
     #
 
     rename('->.txt', '-> 2 ->.txt')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl(' D', '->.txt'),
         gsl('??', '-> 2 ->.txt'),
     ]
 
     run('git', 'add', '.')
-    assert parse_git_status(status()) == [
+    assert status() == [
         gsl('R ', '->.txt', '-> 2 ->.txt'),
     ]
 
     run('git', 'commit', '-m', '--')
-    assert parse_git_status(status()) == []
+    assert status() == []
