@@ -143,9 +143,9 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.59
+boto3>=1.35.60
 
-google-api-python-client==2.152.0
+google-api-python-client==2.153.0
 google-cloud-compute==1.20.1
 
 cloudflare==3.1.0
@@ -161,7 +161,7 @@ sounddevice==0.5.1
 # vosk==0.3.45
 
 bellows==0.42.0
-zigpy==0.71.0
+zigpy==0.72.0
 
 # python-openzwave
 zwave-js-server-python==0.59.1
@@ -186,7 +186,7 @@ openai==1.54.4
 trl==0.12.0
 tf-keras==2.17.0
 
-polars==1.13.0
+polars==1.13.1
 
 pyzmq==26.2.0
 
@@ -199,7 +199,7 @@ customtkinter==5.2.2
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
 langchain-community==0.3.7
-langchain-core==0.3.17
+langchain-core==0.3.18
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -216,7 +216,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.46
 
-langsmith==0.1.142
+langsmith==0.1.143
 
 tavily-python==0.5.0
 
