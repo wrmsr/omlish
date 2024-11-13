@@ -1,3 +1,5 @@
+// gcc xclip.c -o xclip -lX11
+
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
