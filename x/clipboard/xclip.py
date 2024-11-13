@@ -6,7 +6,7 @@ import sys
 ##
 
 
-if getattr(sys, 'platform') != 'darwin':
+if getattr(sys, 'platform') != 'linux':
     raise OSError(sys.platform)
 
 
