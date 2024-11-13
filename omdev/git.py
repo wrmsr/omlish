@@ -12,7 +12,6 @@ import os.path
 import subprocess
 import typing as ta
 
-from omdev.scripts.pyproject import GitStatusLine
 from omlish.lite.check import check_state
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
