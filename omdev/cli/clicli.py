@@ -1,6 +1,5 @@
 import inspect
 import os
-import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -8,6 +7,8 @@ import urllib.request
 from omlish import __about__
 from omlish import argparse as ap
 
+from ..pip import get_root_dists
+from ..pip import lookup_latest_package_version
 from . import install
 from .types import CliModule
 
@@ -50,20 +51,17 @@ class CliCli(ap.Cli):
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
-        mod_name = globals()['__spec__'].name
-        tool_name = '.'.join([mod_name.partition('.')[0], 'tools', 'pip'])
+        latest_version = lookup_latest_package_version(__package__.split('.')[0])
 
-        out = subprocess.check_output([
-            sys.executable,
-            '-m',
-            tool_name,
-            'list-root-dists',
-        ]).decode()
+        #
 
+        root_dists = get_root_dists()
         deps = sorted(
-            ({s for l in out.splitlines() if (s := l.strip())} | set(self.args.extra_deps or []))
+            (set(root_dists) | set(self.args.extra_deps or []))
             - {install.DEFAULT_CLI_PKG}  # noqa
         )
+
+        #
 
         if deps:
             print('Reinstalling with following additional dependencies:')
@@ -72,11 +70,21 @@ class CliCli(ap.Cli):
             print('No additional dependencies detected.')
         print()
 
+        #
+
         if self.args.local:
             print('Reinstalling from local installer.')
         else:
             print(f'Reinstalling from script url: {self.args.url}')
         print()
+
+        #
+
+        print(f'Current version: {__about__.__version__}')
+        print(f'Latest version: {latest_version}')
+        print()
+
+        #
 
         print('Continue with reinstall? (ctrl-c to cancel)')
         input()

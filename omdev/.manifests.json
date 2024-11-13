@@ -51,7 +51,7 @@
     "module": ".cli.clicli",
     "attr": "_CLI_MODULE",
     "file": "omdev/cli/clicli.py",
-    "line": 103,
+    "line": 111,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cli",
@@ -306,7 +306,7 @@
     "module": ".tools.pip",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pip.py",
-    "line": 164,
+    "line": 120,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "pip",
