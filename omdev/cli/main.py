@@ -1,6 +1,5 @@
 """
 TODO:
- - py/foo - root command 'py'
  - cache ldr.discover() somehow if in uvx/pipx - very slow
   - <venv-root>/.omdev-cli-manifest-cache.json - {pkg_name: manifests_json}
  - allow manually specifying manifest packages

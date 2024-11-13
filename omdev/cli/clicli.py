@@ -89,6 +89,8 @@ class CliCli(ap.Cli):
         print('Continue with reinstall? (ctrl-c to cancel)')
         input()
 
+        #
+
         if self.args.local:
             install_src = inspect.getsource(install)
         else:
