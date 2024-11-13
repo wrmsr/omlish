@@ -77,14 +77,23 @@ CommandFn = ta.Callable[[], int | None]
 class Command:
     name: str
     fn: CommandFn
-    args: ta.Sequence[Arg] = ()
+    args: ta.Sequence[Arg] = ()  # noqa
+
+    _: dc.KW_ONLY
+
+    aliases: ta.Sequence[str] | None = None
     parent: ta.Optional['Command'] = None
     accepts_unknown: bool = False
 
     def __post_init__(self) -> None:
-        check.isinstance(self.name, str)
-        check.not_in('_', self.name)
-        check.not_empty(self.name)
+        def check_name(s: str) -> None:
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
+        check_name(self.name)
+        check.not_isinstance(self.aliases, str)
+        for a in self.aliases or []:
+            check_name(a)
 
         check.callable(self.fn)
         check.arg(all(isinstance(a, Arg) for a in self.args))
@@ -105,6 +114,7 @@ class Command:
 def command(
         *args: Arg,
         name: str | None = None,
+        aliases: ta.Iterable[str] | None = None,
         parent: Command | None = None,
         accepts_unknown: bool = False,
 ) -> ta.Any:  # ta.Callable[[CommandFn], Command]:  # FIXME
@@ -112,12 +122,14 @@ def command(
         check.isinstance(arg, Arg)
     check.isinstance(name, (str, None))
     check.isinstance(parent, (Command, None))
+    check.not_isinstance(aliases, str)
 
     def inner(fn):
         return Command(
             (name if name is not None else fn.__name__).replace('_', '-'),
             fn,
             args,
+            aliases=tuple(aliases) if aliases is not None else None,
             parent=parent,
             accepts_unknown=accepts_unknown,
         )
@@ -185,18 +197,23 @@ class _CliMeta(type):
             if isinstance(obj, Command):
                 if obj.parent is not None:
                     raise NotImplementedError
-                cparser = subparsers.add_parser(obj.name)
-                for arg in (obj.args or []):
-                    if (
-                            len(arg.args) == 1 and
-                            isinstance(arg.args[0], str) and
-                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
-                            'metavar' not in arg.kwargs
-                    ):
-                        cparser.add_argument(n.replace('-', '_'), **arg.kwargs, metavar=n)
-                    else:
-                        cparser.add_argument(*arg.args, **arg.kwargs)
-                cparser.set_defaults(_cmd=obj)
+                for cn in [obj.name, *(obj.aliases or [])]:
+                    cparser = subparsers.add_parser(cn)
+                    for arg in (obj.args or []):
+                        if (
+                                len(arg.args) == 1 and
+                                isinstance(arg.args[0], str) and
+                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                                'metavar' not in arg.kwargs
+                        ):
+                            cparser.add_argument(
+                                n.replace('-', '_'),
+                                **arg.kwargs,
+                                metavar=n,
+                            )
+                        else:
+                            cparser.add_argument(*arg.args, **arg.kwargs)
+                    cparser.set_defaults(_cmd=obj)
 
             elif isinstance(obj, Arg):
                 if att in anns:
