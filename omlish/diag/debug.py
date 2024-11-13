@@ -4,7 +4,6 @@ TODO:
 """
 import dataclasses as dc
 import functools
-import sys
 import traceback
 import types
 import typing as ta
@@ -14,7 +13,7 @@ from .. import lang
 
 
 if ta.TYPE_CHECKING:
-    import pdb
+    import pdb  # noqa
 
     from . import pydevd
 
@@ -73,13 +72,12 @@ class DebuggingOnException:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_val is None:
-            return None
+            return
 
         if not self.silent:
             traceback.print_exc()
 
-        self.fn((exc_type, exc_val, exc_tb))
-        return None
+        check.not_none(self.fn)((exc_type, exc_val, exc_tb))
 
 
 debugging_on_exception = DebuggingOnException

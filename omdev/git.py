@@ -1,98 +1,22 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 # @omlish-lite
 """
 git status
   --porcelain=v1
   --ignore-submodules
   2>/dev/null
-
-==
-
-In the short-format, the status of each path is shown as one of these forms
-
-   XY PATH
-   XY ORIG_PATH -> PATH
-
-where ORIG_PATH is where the renamed/copied contents came from. ORIG_PATH is only shown when the entry is renamed or
-copied. The XY is a two-letter status code.
-
-The fields (including the ->) are separated from each other by a single space. If a filename contains whitespace or
-other nonprintable characters, that field will be quoted in the manner of a C string literal: surrounded by ASCII double
-quote (34) characters, and with interior special characters backslash-escaped.
-
-There are three different types of states that are shown using this format, and each one uses the XY syntax differently:
-
- - When a merge is occurring and the merge was successful, or outside of a merge situation, X shows the status of the
-   index and Y shows the status of the working tree.
- - When a merge conflict has occurred and has not yet been resolved, X and Y show the state introduced by each head of
-   the merge, relative to the common ancestor. These paths are said to be unmerged.
- - When a path is untracked, X and Y are always the same, since they are unknown to the index.  ?? is used for untracked
-   paths. Ignored files are not listed unless --ignored is used; if it is, ignored files are indicated by !!.
-
-Note that the term merge here also includes rebases using the default --merge strategy, cherry-picks, and anything else
-using the merge machinery.
-
-In the following table, these three classes are shown in separate sections, and these characters are used for X and Y
-fields for the first two sections that show tracked paths:
-
- - ' ' = unmodified
- - M = modified
- - T = file type changed (regular file, symbolic link or submodule)
- - A = added
- - D = deleted
- - R = renamed
- - C = copied (if config option status.renames is set to "copies")
- - U = updated but unmerged
-
-X          Y     Meaning
--------------------------------------------------
-         [AMD]   not updated
-M        [ MTD]  updated in index
-T        [ MTD]  type changed in index
-A        [ MTD]  added to index
-D                deleted from index
-R        [ MTD]  renamed in index
-C        [ MTD]  copied in index
-[MTARC]          index and work tree matches
-[ MTARC]    M    work tree changed since index
-[ MTARC]    T    type changed in work tree since index
-[ MTARC]    D    deleted in work tree
-            R    renamed in work tree
-            C    copied in work tree
--------------------------------------------------
-D           D    unmerged, both deleted
-A           U    unmerged, added by us
-U           D    unmerged, deleted by them
-U           A    unmerged, added by them
-D           U    unmerged, deleted by us
-A           A    unmerged, both added
-U           U    unmerged, both modified
--------------------------------------------------
-?           ?    untracked
-!           !    ignored
--------------------------------------------------
-
-Submodules have more state and instead report
-
- - M = the submodule has a different HEAD than recorded in the index
- - m = the submodule has modified content
- - ? = the submodule has untracked files
-
-This is since modified content or untracked files in a submodule cannot be added via git add in the superproject to
-prepare a commit.
-
-m and ? are applied recursively. For example if a nested submodule in a submodule contains an untracked file, this is
-reported as ? as well.
-
-If -b is used the short-format status is preceded by a line
-
-   ## branchname tracking info
 """
+import dataclasses as dc
+import enum
 import os.path
 import subprocess
 import typing as ta
 
+from omlish.lite.check import check_state
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
+
+
+##
 
 
 def git_clone_subtree(
@@ -192,3 +116,164 @@ def get_git_revision(
     ), cwd=cwd).decode().strip()
 
     return dirty_rev + ('-untracked' if has_untracked else '')
+
+
+##
+
+
+def yield_git_status_line_fields(l: str) -> ta.Iterator[str]:
+    def find_any(chars: str, start: int = 0) -> int:
+        ret = -1
+        for c in chars:
+            if (found := l.find(c, start)) >= 0 and (ret < 0 or ret > found):
+                ret = found
+        return ret
+
+    p = 0
+    while True:
+        if l[p] == '"':
+            p += 1
+            s = []
+            while (n := find_any('\\"', p)) > 0:
+                if (c := l[n]) == '\\':
+                    s.append(l[p:n])
+                    s.append(l[n + 1])
+                    p = n + 2
+                elif c == '"':
+                    s.append(l[p:n])
+                    p = n
+                    break
+                else:
+                    raise ValueError(l)
+
+            if l[p] != '"':
+                raise ValueError(l)
+
+            yield ''.join(s)
+
+            p += 1
+            if p == len(l):
+                return
+            elif l[p] != ' ':
+                raise ValueError(l)
+
+            p += 1
+
+        else:
+            if (e := l.find(' ', p)) < 0:
+                yield l[p:]
+                return
+
+            yield l[p:e]
+            p = e + 1
+
+
+class GitStatusLineState(enum.Enum):
+    UNMODIFIED = ' '
+    MODIFIED = 'M'
+    FILE_TYPE_CHANGED = 'T'
+    ADDED = 'A'
+    DELETED = 'D'
+    RENAMED = 'R'
+    COPIED = 'C'
+    UPDATED_BUT_UNMERGED = 'U'
+    UNTRACKED = '?'
+    IGNORED = '!'
+    SUBMODULE_MODIFIED_CONTENT = 'm'
+
+
+"""
+When merge is occurring and was successful, or outside of a merge situation, X shows the status of the index and Y shows
+the status of the working tree:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+         [AMD]   not updated
+M        [ MTD]  updated in index
+T        [ MTD]  type changed in index
+A        [ MTD]  added to index
+D                deleted from index
+R        [ MTD]  renamed in index
+C        [ MTD]  copied in index
+[MTARC]          index and work tree matches
+[ MTARC]    M    work tree changed since index
+[ MTARC]    T    type changed in work tree since index
+[ MTARC]    D    deleted in work tree
+            R    renamed in work tree
+            C    copied in work tree
+
+When merge conflict has occurred and has not yet been resolved, X and Y show the state introduced by each head of the
+merge, relative to the common ancestor:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+D           D    unmerged, both deleted
+A           U    unmerged, added by us
+U           D    unmerged, deleted by them
+U           A    unmerged, added by them
+D           U    unmerged, deleted by us
+A           A    unmerged, both added
+U           U    unmerged, both modified
+
+When path is untracked, X and Y are always the same, since they are unknown to the index:
+-------------------------------------------------
+X          Y     Meaning
+-------------------------------------------------
+?           ?    untracked
+!           !    ignored
+
+Submodules have more state and instead report
+
+ - M = the submodule has a different HEAD than recorded in the index
+ - m = the submodule has modified content
+ - ? = the submodule has untracked files
+
+This is since modified content or untracked files in a submodule cannot be added via git add in the superproject to
+prepare a commit. m and ? are applied recursively. For example if a nested submodule in a submodule contains an
+untracked file, this is reported as ? as well.
+"""  # noqa
+
+
+@dc.dataclass(frozen=True)
+class GitStatusLine:
+    x: GitStatusLineState
+    y: GitStatusLineState
+
+    a: str
+    b: ta.Optional[str]
+
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}('
+            f'x={self.x.name}, '
+            f'y={self.y.name}, '
+            f'a={self.a!r}' +
+            (f', b={self.b!r}' if self.b is not None else '') +
+            ')'
+        )
+
+
+def parse_git_status_line(l: str) -> GitStatusLine:
+    if len(l) < 3 or l[2] != ' ':
+        raise ValueError(l)
+    x, y = l[0], l[1]
+
+    fields = list(yield_git_status_line_fields(l[3:]))
+    if len(fields) == 1:
+        a, b = fields[0], None
+    elif len(fields) == 3:
+        check_state(fields[1] == '->', l)
+        a, b = fields[0], fields[2]
+    else:
+        raise ValueError(l)
+
+    return GitStatusLine(
+        GitStatusLineState(x),
+        GitStatusLineState(y),
+        a,
+        b,
+    )
+
+
+def parse_git_status(s: str) -> ta.List[GitStatusLine]:
+    return [parse_git_status_line(l) for l in s.splitlines()]
