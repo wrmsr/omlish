@@ -22,20 +22,17 @@ return
 
 
 _LINUX_OPEN_SCRIPT = """
-# Check if PyCharm is already running
+# wmctrl -lx
+# 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish – cli.py
+# wmctrl -i -a 0x03000054
+
 if pgrep -x "pycharm.sh" > /dev/null; then
-    echo "PyCharm is already running. Opening project..."
-
-    # Bring PyCharm to the foreground
-    wmctrl -a "PyCharm"
-
-    # Simulate the keyboard shortcut to open a new project
-    xdotool key --delay 100 ctrl+shift+a
-    xdotool type "$PROJECT_PATH"
+    # export DISPLAY=":1"
+    wmctrl -x -a jetbrains-pycharm.jetbrains-pycharm
+    xdotool key --delay 20 alt+f alt+o
+    xdotool type --delay 10 "$(pwd)"
     xdotool key Return
-
 else
-    echo "Starting PyCharm with project..."
     nohup pycharm.sh "$PROJECT_PATH" > /dev/null 2>&1 &
 fi
 """
