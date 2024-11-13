@@ -1,6 +1,7 @@
 """
 TODO:
  - PyCharm.app/Contents/plugins/python-ce/helpers/pydev/_pydevd_bundle/pydevd_constants.py -> USE_LOW_IMPACT_MONITORING
+ - DISPLAY=":1" - ls /tmp/.X11-unix/X1 ?
 """
 import inspect
 import os.path
@@ -25,7 +26,7 @@ _LINUX_OPEN_SCRIPT = """
 # sudo apt install xdotool wmctrl
 
 # wmctrl -lx
-# 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish – cli.py
+# 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish - cli.py
 # wmctrl -i -a 0x03000054
 
 if pgrep -x "pycharm.sh" > /dev/null; then

@@ -30,7 +30,7 @@ def lookup_latest_package_version(
         pypi_url: str = DEFAULT_PYPI_URL,
 ) -> str:
     pkg_name = check.non_empty_str(package)
-    with urllib.request.urlopen(f'{pypi_url}rss/project/{pkg_name}/releases.xml') as resp:  # noqa
+    with urllib.request.urlopen(f'{pypi_url.rstrip("/")}/rss/project/{pkg_name}/releases.xml') as resp:  # noqa
         rss = resp.read()
     doc = ET.parse(io.BytesIO(rss))  # noqa
     latest = check.not_none(doc.find('./channel/item/title')).text

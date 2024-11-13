@@ -1,31 +1,4 @@
 # ruff: noqa: N802 N816
-"""
-        imageProperties = dict(
-            ColorModel = "RGB"
-            DPIHeight = 144
-            DPIWidth = 144
-            Depth = 8
-            PixelHeight = 1236
-            PixelWidth = 602
-            ProfileName = "Color LCD"
-            kCGImageDestinationAllowAlpha = true
-            {Exif} = dict(
-                PixelXDimension = 602
-                PixelYDimension = 1236
-                UserComment = "Screenshot"
-            )
-            {PNG} = dict(
-                InterlaceType = 0
-                XPixelsPerMeter = 5669
-                YPixelsPerMeter = 5669
-            )
-            {TIFF} = dict(
-                ResolutionUnit = 2
-                XResolution = 144
-                YResolution = 144
-            )
-        )
-"""
 import ctypes as ct
 import ctypes.util
 import dataclasses as dc
@@ -33,6 +6,11 @@ import sys
 import typing as ta
 
 from omlish import check
+
+from .clipboard import Clipboard
+from .clipboard import ClipboardContents
+from .clipboard import ImageClipboardContents
+from .clipboard import TextClipboardContents
 
 
 ##
@@ -249,6 +227,32 @@ def get_darwin_clipboard_data(
         cf.CFRelease(pasteboard)
 
     return lst
+
+
+##
+
+
+_TEXT_TYPE = 'public.utf8-plain-text'
+_IMAGE_TYPE = 'public.png'
+
+
+class CfDarwinClipboard(Clipboard):
+
+    def get(self) -> list[ClipboardContents]:
+        ret: list[ClipboardContents] = []
+        for i in get_darwin_clipboard_data(types={_TEXT_TYPE, _IMAGE_TYPE}):
+            if i.type == _TEXT_TYPE:
+                if i.data is not None:
+                    ret.append(TextClipboardContents(i.data.decode('utf-8')))
+            elif i.type == _IMAGE_TYPE:
+                if i.data is not None:
+                    ret.append(ImageClipboardContents(i.data))
+            else:
+                raise KeyError(i.type)
+        return ret
+
+    def put(self, c: ClipboardContents) -> None:
+        raise TypeError(self)
 
 
 ##
