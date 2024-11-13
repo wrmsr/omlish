@@ -2,6 +2,8 @@
 TODO:
  - PyCharm.app/Contents/plugins/python-ce/helpers/pydev/_pydevd_bundle/pydevd_constants.py -> USE_LOW_IMPACT_MONITORING
  - DISPLAY=":1" - ls /tmp/.X11-unix/X1 ?
+  - https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
+  - w -oush
 """
 import inspect
 import os.path
