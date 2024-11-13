@@ -1,6 +1,7 @@
 import inspect
 import json
 import math
+import re
 
 from . import exceptions
 
@@ -84,7 +85,6 @@ class Functions(metaclass=FunctionRegistry):
         return function(self, *resolved_args)
 
     def _validate_arguments(self, args, signature, function_name):
-
         if len(signature) == 0:
             return self._type_check(args, signature, function_name)
 
@@ -242,9 +242,9 @@ class Functions(metaclass=FunctionRegistry):
                 except ValueError:
                     return None
 
-    @signature({'types': ['array', 'string']}, {'types': []})
-    def _func_contains(self, subject, search):
-        return search in subject
+    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
+    def _func_contains(self, subject, *searches):
+        return any(search in subject for search in searches)
 
     @signature({'types': ['string', 'array', 'object']})
     def _func_length(self, arg):
@@ -592,3 +592,13 @@ class Functions(metaclass=FunctionRegistry):
 
     def _convert_to_jmespath_type(self, pyobject):
         return TYPES_MAP.get(pyobject, 'unknown')
+
+    #
+
+    @signature({'types': ['string']}, {'types': ['string']})
+    def _func_match(self, string, pattern):
+        return re.match(pattern, string) is not None
+
+    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
+    def _func_in(self, subject, *searches):
+        return subject in searches
