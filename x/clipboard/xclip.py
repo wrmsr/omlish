@@ -17,12 +17,12 @@ x11 = ct.CDLL(ct.util.find_library('X11'))
 
 #
 
-Display = ct.c_void_p
-Window = ct.c_ulong
 Atom = ct.c_ulong
-Time = ct.c_ulong
 Bool = ct.c_int
+Display = ct.c_void_p
 Status = ct.c_int
+Time = ct.c_ulong
+Window = ct.c_ulong
 
 #
 
@@ -34,11 +34,11 @@ class XEvent(ct.Structure):
 
 #
 
-x11.XOpenDisplay.argtypes = [ct.c_char_p]
-x11.XOpenDisplay.restype = Display
+x11.XCloseDisplay.argtypes = [Display]
+x11.XCloseDisplay.restype = None
 
-x11.XInternAtom.argtypes = [Display, ct.c_char_p, Bool]
-x11.XInternAtom.restype = Atom
+x11.XConvertSelection.argtypes = [Display, Atom, Atom, Atom, Window, Time]
+x11.XConvertSelection.restype = None
 
 x11.XCreateSimpleWindow.argtypes = [
     Display,
@@ -53,11 +53,17 @@ x11.XCreateSimpleWindow.argtypes = [
 ]
 x11.XCreateSimpleWindow.restype = Window
 
-x11.XConvertSelection.argtypes = [Display, Atom, Atom, Atom, Window, Time]
-x11.XConvertSelection.restype = None
+x11.XDefaultScreen.argtypes = [Display]
+x11.XDefaultScreen.restype = ct.c_int
 
-x11.XNextEvent.argtypes = [Display, ct.POINTER(XEvent)]
-x11.XNextEvent.restype = None
+x11.XDestroyWindow.argtypes = [Display, Window]
+x11.XDestroyWindow.restype = None
+
+x11.XFlush.argtypes = [Display]
+x11.XFlush.restype = None
+
+x11.XFree.argtypes = [ct.c_void_p]
+x11.XFree.restype = None
 
 x11.XGetWindowProperty.argtypes = [
     Display,
@@ -75,20 +81,14 @@ x11.XGetWindowProperty.argtypes = [
 ]
 x11.XGetWindowProperty.restype = Status
 
-x11.XFree.argtypes = [ct.c_void_p]
-x11.XFree.restype = None
+x11.XInternAtom.argtypes = [Display, ct.c_char_p, Bool]
+x11.XInternAtom.restype = Atom
 
-x11.XFlush.argtypes = [Display]
-x11.XFlush.restype = None
+x11.XNextEvent.argtypes = [Display, ct.POINTER(XEvent)]
+x11.XNextEvent.restype = None
 
-x11.XDestroyWindow.argtypes = [Display, Window]
-x11.XDestroyWindow.restype = None
-
-x11.XCloseDisplay.argtypes = [Display]
-x11.XCloseDisplay.restype = None
-
-x11.XDefaultScreen.argtypes = [Display]
-x11.XDefaultScreen.restype = ct.c_int
+x11.XOpenDisplay.argtypes = [ct.c_char_p]
+x11.XOpenDisplay.restype = Display
 
 x11.XRootWindow.argtypes = [Display, ct.c_int]
 x11.XRootWindow.restype = Window
