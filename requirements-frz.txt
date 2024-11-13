@@ -1,7 +1,7 @@
 absl-py==2.1.0
 accelerate==1.1.1
 aiohappyeyeballs==2.4.3
-aiohttp==3.10.10
+aiohttp==3.11.0
 aiomysql==0.2.0
 aiosignal==1.3.1
 aiosqlite==0.20.0
@@ -20,7 +20,6 @@ asn1crypto==1.5.1
 asttokens==2.4.1
 astunparse==1.6.3
 async-lru==2.0.4
-async-timeout==5.0.1
 asyncpg==0.30.0
 asyncssh==2.18.0
 attrs==24.2.0
@@ -35,8 +34,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.59
-botocore==1.35.59
+boto3==1.35.60
+botocore==1.35.60
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -98,7 +97,7 @@ duckduckgo_search==6.3.4
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
-elasticsearch==8.15.1
+elasticsearch==8.16.0
 emoji==2.14.0
 evaluate==0.4.3
 execnet==2.1.1
@@ -127,7 +126,7 @@ gguf==0.10.0
 gitdb==4.0.11
 GitPython==3.1.43
 google-api-core==2.23.0
-google-api-python-client==2.152.0
+google-api-python-client==2.153.0
 google-auth==2.36.0
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.20.1
@@ -207,7 +206,7 @@ langchain==0.3.7
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
 langchain-community==0.3.7
-langchain-core==0.3.17
+langchain-core==0.3.18
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -222,7 +221,7 @@ langdetect==1.0.9
 langgraph==0.2.46
 langgraph-checkpoint==2.0.3
 langgraph-sdk==0.1.35
-langsmith==0.1.142
+langsmith==0.1.143
 language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
@@ -269,7 +268,7 @@ mycli==1.28.0
 mypy==1.13.0
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
-mysqlclient==2.2.5
+mysqlclient==2.2.6
 namex==0.0.8
 nbclient==0.10.0
 nbconvert==7.16.4
@@ -326,7 +325,7 @@ pipdeptree==2.23.4
 pkginfo==1.10.0
 platformdirs==4.3.6
 pluggy==1.5.0
-polars==1.13.0
+polars==1.13.1
 pooch==1.8.2
 portalocker==2.8.2
 posthog==3.7.0
@@ -433,7 +432,7 @@ Send2Trash==1.8.3
 sentence-transformers==3.3.0
 sentencepiece==0.2.0
 setproctitle==1.3.3
-setuptools==75.4.0
+setuptools==75.5.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
@@ -529,7 +528,7 @@ weasel==0.4.1
 webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
-websockets==14.0
+websockets==14.1
 Werkzeug==3.1.3
 wgpu==0.19.0
 wheel==0.45.0
@@ -542,7 +541,7 @@ wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
 yarl==1.17.1
-zigpy==0.71.0
+zigpy==0.72.0
 zipp==3.21.0
 zstandard==0.23.0
 zwave-js-server-python==0.59.1
