@@ -3,6 +3,7 @@ import operator
 import typing as ta
 
 from ... import check
+from ... import lang
 from .ast import AndExpression
 from .ast import Arithmetic
 from .ast import ArithmeticUnary
@@ -91,6 +92,10 @@ def _is_actual_number(x: ta.Any) -> bool:
     return isinstance(x, numbers.Number)
 
 
+def _node_type(n: Node) -> str:
+    return lang.snake_case(type(n).__name__)
+
+
 ##
 
 
@@ -101,10 +106,10 @@ class Visitor:
         self._method_cache: dict[str, ta.Callable] = {}
 
     def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        node_type = node['type']
+        node_type = _node_type(node)
         method = self._method_cache.get(node_type)
         if method is None:
-            method = check.not_none(getattr(self, f'visit_{node["type"]}', self.default_visit))
+            method = check.not_none(getattr(self, f'visit_{node_type}', self.default_visit))
             self._method_cache[node_type] = method
         return method(node, *args, **kwargs)
 
