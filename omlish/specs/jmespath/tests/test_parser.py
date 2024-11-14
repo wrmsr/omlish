@@ -24,11 +24,11 @@ class TestParser(unittest.TestCase):
             self.parser.parse('')
 
     def test_field(self):
-        self.assert_parsed_ast('foo', ast.field('foo'))
+        self.assert_parsed_ast('foo', ast.Field('foo'))
 
     def test_dot_syntax(self):
         self.assert_parsed_ast(
-            'foo.bar', ast.subexpression([ast.field('foo'), ast.field('bar')]),
+            'foo.bar', ast.Subexpression([ast.Field('foo'), ast.Field('bar')]),
         )
 
     def test_multiple_dots(self):
@@ -41,7 +41,7 @@ class TestParser(unittest.TestCase):
 
     def test_quoted_subexpression(self):
         self.assert_parsed_ast(
-            '"foo"."bar"', ast.subexpression([ast.field('foo'), ast.field('bar')]),
+            '"foo"."bar"', ast.Subexpression([ast.Field('foo'), ast.Field('bar')]),
         )
 
     def test_wildcard(self):
@@ -71,7 +71,7 @@ class TestParser(unittest.TestCase):
 
     def test_or_repr(self):
         self.assert_parsed_ast(
-            'foo || bar', ast.or_expression(ast.field('foo'), ast.field('bar')),
+            'foo || bar', ast.OrExpression(ast.Field('foo'), ast.Field('bar')),
         )
 
     def test_arithmetic_expressions(self):
@@ -90,10 +90,10 @@ class TestParser(unittest.TestCase):
             expression = f'foo {sign} bar'
             self.assert_parsed_ast(
                 expression,
-                ast.arithmetic(
+                ast.Arithmetic(
                     operation,
-                    ast.field('foo'),
-                    ast.field('bar'),
+                    ast.Field('foo'),
+                    ast.Field('bar'),
                 ))
 
     def test_arithmetic_unary(self):
@@ -107,22 +107,22 @@ class TestParser(unittest.TestCase):
             expression = f'{sign} foo'
             self.assert_parsed_ast(
                 expression,
-                ast.arithmetic_unary(
+                ast.ArithmeticUnary(
                     operation,
-                    ast.field('foo'),
+                    ast.Field('foo'),
                 ))
 
     def test_arithmetic_multiplication(self):
         self.assert_parsed_ast(
             'foo * bar',
-            ast.arithmetic(
+            ast.Arithmetic(
                 'multiply',
-                ast.field('foo'),
-                ast.field('bar'),
+                ast.Field('foo'),
+                ast.Field('bar'),
             ))
 
     def test_unicode_literals_escaped(self):
-        self.assert_parsed_ast(r'`"\u2713"`', ast.literal('\u2713'))
+        self.assert_parsed_ast(r'`"\u2713"`', ast.Literal('\u2713'))
 
     def test_multiselect(self):
         parsed = self.parser.parse('foo.{bar: bar,baz: baz}')

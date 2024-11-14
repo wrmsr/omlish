@@ -20,6 +20,7 @@ A few notes on the implementation.
   interestingly enough, creating a token list first is actually faster than consuming from the token iterator one token
   at a time.
 """
+import dataclasses as dc
 import random
 import typing as ta
 
@@ -252,6 +253,7 @@ class Parser:
 
     def _token_nud_star(self, token: Token) -> Node:
         left = Identity()
+        right: Node
         if self._current_token() == 'rbracket':
             right = Identity()
         else:
@@ -354,9 +356,8 @@ class Parser:
     def _token_led_dot(self, left: Node) -> Node:
         if self._current_token() != 'star':
             right = self._parse_dot_rhs(self.BINDING_POWER['dot'])
-            if left['type'] == 'subexpression':
-                left['children'].append(right)
-                return left
+            if isinstance(left, Subexpression):
+                return dc.replace(left, children_nodes=[*left.children_nodes, right])
 
             else:
                 return Subexpression([left, right])
@@ -380,7 +381,7 @@ class Parser:
         return AndExpression(left, right)
 
     def _token_led_lparen(self, left: Node) -> Node:
-        if left['type'] != 'field':
+        if not isinstance(left, Field):
             #  0 - first func arg or closing paren.
             # -1 - '(' token
             # -2 - invalid function "name".
@@ -392,7 +393,7 @@ class Parser:
                 f"Invalid function name '{prev_t['value']}'",
             )
 
-        name = left['value']
+        name = left.name
         args = []
         while self._current_token() != 'rparen':
             expression = self._expression()
@@ -408,6 +409,7 @@ class Parser:
         # Filters are projections.
         condition = self._expression(0)
         self._match('rbracket')
+        right: Node
         if self._current_token() == 'flatten':
             right = Identity()
         else:
@@ -462,11 +464,10 @@ class Parser:
         token = check.not_none(self._lookahead_token(0))
         if token['type'] in ['number', 'colon']:
             right = self._parse_index_expression()
-            if left['type'] == 'index_expression':
+            if isinstance(left, IndexExpression):
                 # Optimization: if the left node is an index expr, we can avoid creating another node and instead just
                 # add the right node as a child of the left.
-                left['children'].append(right)
-                return left
+                return dc.replace(left, nodes=[*left.nodes, right])
 
             else:
                 return self._project_if_slice(left, right)
@@ -480,7 +481,7 @@ class Parser:
 
     def _project_if_slice(self, left: Node, right: Node) -> Node:
         index_expr = IndexExpression([left, right])
-        if right['type'] == 'slice':
+        if isinstance(right, Slice):
             return Projection(
                 index_expr,
                 self._parse_projection_rhs(self.BINDING_POWER['star']),
@@ -537,6 +538,8 @@ class Parser:
         return MultiSelectDict(nodes=pairs)
 
     def _parse_projection_rhs(self, binding_power: int) -> Node:
+        right: Node
+
         # Parse the right hand side of the projection.
         if self.BINDING_POWER[self._current_token()] < self._PROJECTION_STOP:
             # BP of 10 are all the tokens that stop a projection.
