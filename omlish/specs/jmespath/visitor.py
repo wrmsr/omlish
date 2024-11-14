@@ -100,7 +100,7 @@ def _is_actual_number(x: ta.Any) -> bool:
     return isinstance(x, numbers.Number)
 
 
-def _node_type(n: Node) -> str:
+def node_type(n: Node) -> str:
     return lang.snake_case(type(n).__name__)
 
 
@@ -114,11 +114,11 @@ class Visitor:
         self._method_cache: dict[str, ta.Callable] = {}
 
     def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        node_type = _node_type(node)
-        method = self._method_cache.get(node_type)
+        nty = node_type(node)
+        method = self._method_cache.get(nty)
         if method is None:
-            method = check.not_none(getattr(self, f'visit_{node_type}', self.default_visit))
-            self._method_cache[node_type] = method
+            method = check.not_none(getattr(self, f'visit_{nty}', self.default_visit))
+            self._method_cache[nty] = method
         return method(node, *args, **kwargs)
 
     def default_visit(self, node, *args, **kwargs):
@@ -213,7 +213,7 @@ class TreeInterpreter(Visitor):
         self._scope: ScopedChainDict = ScopedChainDict()
 
     def default_visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
-        raise NotImplementedError(_node_type(node))
+        raise NotImplementedError(node_type(node))
 
     def evaluate(self, ast: Node, root: Node) -> ta.Any:
         self._root = root
@@ -477,7 +477,7 @@ class GraphvizVisitor:
 
     def visit(self, node: Node) -> str:
         self._lines.append('digraph AST {')
-        current = f'{_node_type(node)}{self._count}'
+        current = f'{node_type(node)}{self._count}'
         self._count += 1
         self._visit(node, current)
         self._lines.append('}')
@@ -500,10 +500,10 @@ class GraphvizVisitor:
     def _visit(self, node: Node, current: str) -> None:
         self._lines.append(
             f'{current} '
-            f'[label="{_node_type(node)}({self._node_value(node).map(json.dumps).map(html.escape).or_else("")})"]',
+            f'[label="{node_type(node)}({self._node_value(node).map(json.dumps).map(html.escape).or_else("")})"]',
         )
         for child in node.children:
-            child_name = f'{_node_type(child)}{self._count}'
+            child_name = f'{node_type(child)}{self._count}'
             self._count += 1
             self._lines.append(f'  {current} -> {child_name}')
             self._visit(child, child_name)

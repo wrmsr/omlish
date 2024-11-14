@@ -6,12 +6,11 @@ import typing as ta
 
 from ... import lang
 from . import consts
+from .types import SCALAR_TYPES
+from .types import Scalar
 
 
 I = ta.TypeVar('I')
-Scalar: ta.TypeAlias = bool | int | float | str | None
-
-SCALAR_TYPES: tuple[type, ...] = (bool, int, float, str, type(None))
 
 MULTILINE_SEPARATORS = consts.Separators(',', ': ')
 

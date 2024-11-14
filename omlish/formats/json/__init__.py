@@ -37,3 +37,8 @@ else:
     _lang.proxy_init(globals(), '.render', [
         'JsonRenderer',
     ])
+
+from .types import (  # noqa
+    SCALAR_TYPES,
+    Scalar,
+)
