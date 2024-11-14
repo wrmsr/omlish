@@ -25,32 +25,55 @@ JmespathType: ta.TypeAlias = ta.Literal[
 ]
 
 
-# python types -> jmespath types
-TYPES_MAP: ta.Mapping[str, JmespathType] = {
-    'bool': 'boolean',
-    'list': 'array',
-    'dict': 'object',
-    'NoneType': 'null',
-    'unicode': 'string',
-    'str': 'string',
-    'float': 'number',
-    'int': 'number',
-    'long': 'number',
-    'OrderedDict': 'object',
-    '_Projection': 'array',
-    '_Expression': 'expref',
+PyType = ta.NewType('PyType', str)
+
+
+def pytype_of(o: ta.Any) -> PyType:
+    return PyType(type(o).__name__)
+
+
+TYPES_MAP: ta.Mapping[PyType, JmespathType] = {
+    PyType('bool'): 'boolean',
+    PyType('list'): 'array',
+    PyType('dict'): 'object',
+    PyType('NoneType'): 'null',
+    PyType('unicode'): 'string',
+    PyType('str'): 'string',
+    PyType('float'): 'number',
+    PyType('int'): 'number',
+    PyType('long'): 'number',
+    PyType('OrderedDict'): 'object',
+    PyType('_Projection'): 'array',
+    PyType('_Expression'): 'expref',
 }
 
 
-# jmespath types -> python types
-REVERSE_TYPES_MAP: ta.Mapping[JmespathType, ta.Sequence[str]] = {
-    'boolean': ('bool',),
-    'array': ('list', '_Projection'),
-    'object': ('dict', 'OrderedDict'),
-    'null': ('NoneType',),
-    'string': ('unicode', 'str'),
-    'number': ('float', 'int', 'long'),
-    'expref': ('_Expression',),
+REVERSE_TYPES_MAP: ta.Mapping[JmespathType, ta.Sequence[PyType]] = {
+    'boolean': [
+        PyType('bool'),
+    ],
+    'array': [
+        PyType('list'),
+        PyType('_Projection'),
+    ],
+    'object': [
+        PyType('dict'),
+        PyType('OrderedDict'),
+    ],
+    'null': [
+        PyType('NoneType'),
+    ],
+    'string': [
+        PyType('unicode'),
+        PyType('str'),
+    ],
+    'number': [
+        PyType('float'),
+        PyType('int'),
+    ],
+    'expref': [
+        PyType('_Expression'),
+    ],
 }
 
 
@@ -176,12 +199,12 @@ class FunctionsClass:
 
         # We're not using isinstance() on purpose. The type model for jmespath does not map 1-1 with python types
         # (booleans are considered integers in python for example).
-        actual_typename = type(current).__name__
-        if actual_typename not in allowed_types:
+        pytype = pytype_of(current)
+        if pytype not in allowed_types:
             raise exceptions.JmespathTypeError(
                 function_name,
                 current,
-                self._convert_to_jmespath_type(actual_typename),
+                self._convert_to_jmespath_type(pytype),
                 types,
             )
 
@@ -189,36 +212,49 @@ class FunctionsClass:
         # example a function can require a list of numbers or a list of strings). Arrays are the only types that can
         # have element types.
         if allowed_element_types:
-            self._element_type_check(current, allowed_element_types, types, function_name)
+            self._element_type_check(
+                current,
+                allowed_element_types,
+                types,
+                function_name,
+            )
 
-    def _get_allowed_pytypes(self, types):
+    class _AllowedPytypes(ta.NamedTuple):
+        types: ta.Sequence[PyType]
+        element_types: ta.Sequence[ta.Sequence[PyType]]
+
+    def _get_allowed_pytypes(self, types: ta.Iterable[ParameterType]) -> _AllowedPytypes:
         allowed_types: list = []
         allowed_element_types: list = []
 
+        t: str
         for t in types:
-            type_ = t.split('-', 1)
-            if len(type_) == 2:
-                type_, element_type = type_
-                allowed_element_types.append(REVERSE_TYPES_MAP[element_type])
-            else:
-                type_ = type_[0]
+            if '-' in t:
+                t, et = t.split('-', 1)
+                allowed_element_types.append(REVERSE_TYPES_MAP[ta.cast(JmespathType, et)])
 
-            allowed_types.extend(REVERSE_TYPES_MAP[type_])
+            allowed_types.extend(REVERSE_TYPES_MAP[ta.cast(JmespathType, t)])
 
-        return allowed_types, allowed_element_types
+        return FunctionsClass._AllowedPytypes(allowed_types, allowed_element_types)
 
-    def _element_type_check(self, current, allowed_element_types, types, function_name):
+    def _element_type_check(
+            self,
+            current: ta.Sequence[ta.Any],
+            allowed_element_types: ta.Sequence[ta.Sequence[PyType]],
+            types: ta.Sequence[ParameterType],
+            function_name: str,
+    ) -> None:
         if len(allowed_element_types) == 1:
             # The easy case, we know up front what type we need to validate.
-            allowed_element_types = allowed_element_types[0]
+            ets = allowed_element_types[0]
             for element in current:
-                actual_typename = type(element).__name__
-                if actual_typename not in allowed_element_types:
-                    raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
+                pytype = pytype_of(element)
+                if pytype not in ets:
+                    raise exceptions.JmespathTypeError(function_name, element, pytype, types)
 
         elif len(allowed_element_types) > 1 and current:
             # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
-            first = type(current[0]).__name__
+            first = pytype_of(current[0])
             for element_types in allowed_element_types:
                 if first in element_types:
                     allowed = element_types
@@ -227,14 +263,14 @@ class FunctionsClass:
                 raise exceptions.JmespathTypeError(function_name, current[0], first, types)
 
             for element in current:
-                actual_typename = type(element).__name__
-                if actual_typename not in allowed:
-                    raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
+                pytype = pytype_of(element)
+                if pytype not in allowed:
+                    raise exceptions.JmespathTypeError(function_name, element, pytype, types)
 
     #
 
-    def _convert_to_jmespath_type(self, pyobject: str) -> JmespathType | ta.Literal['unknown']:
-        return TYPES_MAP.get(pyobject, 'unknown')
+    def _convert_to_jmespath_type(self, pytype: PyType) -> JmespathType | ta.Literal['unknown']:
+        return TYPES_MAP.get(pytype, 'unknown')
 
     def _ensure_integer(
             self,
@@ -602,9 +638,7 @@ class KeyedFunctions(FunctionsClass):
     def _create_key_func(self, expref, allowed_types, function_name):
         def keyfunc(x):
             result = expref.visit(expref.expression, x)
-            actual_typename = type(result).__name__
-
-            jmespath_type = self._convert_to_jmespath_type(actual_typename)
+            jmespath_type = self._convert_to_jmespath_type(pytype_of(result))
             # allowed_types is in terms of jmespath types, not python types.
             if jmespath_type not in allowed_types:
                 raise exceptions.JmespathTypeError(
@@ -623,7 +657,7 @@ class KeyedFunctions(FunctionsClass):
         # We evaluate the first array element and verify that it's either a string of a number.  We then create a key
         # function that validates that type, which requires that remaining array elements resolve to the same type as
         # the first element.
-        required_type = self._convert_to_jmespath_type(type(expref.visit(expref.expression, array[0])).__name__)
+        required_type = self._convert_to_jmespath_type(pytype_of(expref.visit(expref.expression, array[0])))
         if required_type not in ['number', 'string']:
             raise exceptions.JmespathTypeError(
                 'sort_by',
