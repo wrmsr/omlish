@@ -15,7 +15,7 @@ class TestSearchOptions(unittest.TestCase):
         self.assertEqual(result, ['a', 'b', 'c'])
 
     def test_can_provide_custom_functions(self):
-        class CustomFunctions(jmespath.functions.Functions):
+        class CustomFunctions(jmespath.functions.DefaultFunctions):
             @jmespath.functions.signature({'types': ['number']}, {'types': ['number']})
             def _func_custom_add(self, x, y):
                 return x + y
