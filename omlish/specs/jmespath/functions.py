@@ -8,11 +8,25 @@ import typing as ta
 from . import exceptions
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
+JmespathType: ta.TypeAlias = ta.Literal[
+    'boolean',
+    'array',
+    'object',
+    'null',
+    'string',
+    'number',
+    'expref',
+]
+
+
 # python types -> jmespath types
-TYPES_MAP: ta.Mapping[str, str] = {
+TYPES_MAP: ta.Mapping[str, JmespathType] = {
     'bool': 'boolean',
     'list': 'array',
     'dict': 'object',
@@ -29,7 +43,7 @@ TYPES_MAP: ta.Mapping[str, str] = {
 
 
 # jmespath types -> python types
-REVERSE_TYPES_MAP: ta.Mapping[str, ta.Sequence[str]] = {
+REVERSE_TYPES_MAP: ta.Mapping[JmespathType, ta.Sequence[str]] = {
     'boolean': ('bool',),
     'array': ('list', '_Projection'),
     'object': ('dict', 'OrderedDict'),
@@ -40,20 +54,35 @@ REVERSE_TYPES_MAP: ta.Mapping[str, ta.Sequence[str]] = {
 }
 
 
-def signature(*arguments):
-    def _record_signature(func):
-        func.signature = arguments
-        return func
-    return _record_signature
+ArrayParameterType: ta.TypeAlias = ta.Literal[
+    'array-string',
+    'array-number',
+]
+
+ParameterType: ta.TypeAlias = JmespathType | ArrayParameterType
 
 
-Signature: ta.TypeAlias = dict
+class Parameter(ta.TypedDict):
+    type: ta.NotRequired[ParameterType]
+    types: ta.NotRequired[ta.Sequence[ParameterType]]
+    variadic: ta.NotRequired[bool]
+    optional: ta.NotRequired[bool]
+
+
+Signature: ta.TypeAlias = ta.Sequence[Parameter]
 
 
 @dc.dataclass(frozen=True)
 class Function:
     function: ta.Callable
     signature: Signature
+
+
+def signature(*params: Parameter):
+    def _record_signature(func):
+        func.signature = params
+        return func
+    return _record_signature
 
 
 class Functions(ta.Protocol):
@@ -133,7 +162,7 @@ class FunctionsClass:
             if allowed_types:
                 self._type_check_single(actual[i], allowed_types, function_name)
 
-    def _convert_to_jmespath_type(self, pyobject):
+    def _convert_to_jmespath_type(self, pyobject) -> JmespathType | ta.Literal['unknown']:
         return TYPES_MAP.get(pyobject, 'unknown')
 
     def _type_check_single(self, current, types, function_name):
@@ -146,8 +175,11 @@ class FunctionsClass:
         actual_typename = type(current).__name__
         if actual_typename not in allowed_types:
             raise exceptions.JmespathTypeError(
-                function_name, current,
-                self._convert_to_jmespath_type(actual_typename), types)
+                function_name,
+                current,
+                self._convert_to_jmespath_type(actual_typename),
+                types,
+            )
 
         # If we're dealing with a list type, we can have additional restrictions on the type of the list elements (for
         # example a function can require a list of numbers or a list of strings). Arrays are the only types that can
