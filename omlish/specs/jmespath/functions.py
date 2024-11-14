@@ -107,11 +107,11 @@ class FunctionsClass:
             if not name.startswith('_func_'):
                 continue
 
-            signature = getattr(method, 'signature', None)
-            if signature is not None:
+            sig = getattr(method, 'signature', None)
+            if sig is not None:
                 function_table[name[6:]] = Function(
                     method,
-                    signature,
+                    sig,
                 )
 
         cls._function_table = function_table
@@ -123,42 +123,42 @@ class FunctionsClass:
             raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
         function = spec.function
-        signature = spec.signature
+        sig = spec.signature
 
-        self._validate_arguments(resolved_args, signature, function_name)
+        self._validate_arguments(resolved_args, sig, function_name)
 
         return function(self, *resolved_args)
 
-    def _validate_arguments(self, args, signature, function_name):
-        if len(signature) == 0:
-            return self._type_check(args, signature, function_name)
+    def _validate_arguments(self, args, sig, function_name):
+        if len(sig) == 0:
+            return self._type_check(args, sig, function_name)
 
         required_arguments_count = len([
-            param for param in signature if param and (not param.get('optional') or not param['optional'])
+            param for param in sig if param and (not param.get('optional') or not param['optional'])
         ])
         optional_arguments_count = len([
-            param for param in signature if param and param.get('optional') and param['optional']
+            param for param in sig if param and param.get('optional') and param['optional']
         ])
-        has_variadic = signature[-1].get('variadic') if signature is not None else False
+        has_variadic = sig[-1].get('variadic') if sig is not None else False
 
         if has_variadic:
-            if len(args) < len(signature):
-                raise exceptions.VariadicArityError(len(signature), len(args), function_name)
+            if len(args) < len(sig):
+                raise exceptions.VariadicArityError(len(sig), len(args), function_name)
 
         elif optional_arguments_count > 0:
             if (
                     len(args) < required_arguments_count or
                     len(args) > (required_arguments_count + optional_arguments_count)
             ):
-                raise exceptions.ArityError(len(signature), len(args), function_name)
+                raise exceptions.ArityError(len(sig), len(args), function_name)
         elif len(args) != required_arguments_count:
-            raise exceptions.ArityError(len(signature), len(args), function_name)
+            raise exceptions.ArityError(len(sig), len(args), function_name)
 
-        return self._type_check(args, signature, function_name)
+        return self._type_check(args, sig, function_name)
 
-    def _type_check(self, actual, signature, function_name):
-        for i in range(min(len(signature), len(actual))):
-            allowed_types = self._get_allowed_types_from_signature(signature[i])
+    def _type_check(self, actual, sig, function_name):
+        for i in range(min(len(sig), len(actual))):
+            allowed_types = self._get_allowed_types_from_signature(sig[i])
             if allowed_types:
                 self._type_check_single(actual[i], allowed_types, function_name)
 
