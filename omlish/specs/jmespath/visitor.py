@@ -146,12 +146,12 @@ class Options:
 
 
 class _Expression:
-    def __init__(self, expression: Node, interpreter: 'TreeInterpreter'):
+    def __init__(self, expression: Node, interpreter: 'TreeInterpreter') -> None:
         super().__init__()
         self.expression = expression
         self.interpreter = interpreter
 
-    def visit(self, node, *args, **kwargs):
+    def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         return self.interpreter.visit(node, *args, **kwargs)
 
 
