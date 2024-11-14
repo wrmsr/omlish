@@ -344,8 +344,7 @@ class TreeInterpreter(Visitor):
     def visit_multi_select_dict(self, node: MultiSelectDict, value: ta.Any) -> ta.Any:
         collected = self._dict_cls()
         for child in node.nodes:
-            # FIXME: ??
-            collected[child['value']] = self.visit(child, value)
+            collected[check.isinstance(child, KeyValPair).key_name] = self.visit(child, value)
 
         return collected
 
