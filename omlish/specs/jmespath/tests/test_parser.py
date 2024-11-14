@@ -155,7 +155,7 @@ class TestParser(unittest.TestCase):
                         ast.CurrentNode(),
                     ),
                 ],
-            )
+            ),
         )
 
     def test_root_node(self):
