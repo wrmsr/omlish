@@ -3,9 +3,38 @@ import operator
 import typing as ta
 
 from ... import check
-from . import exceptions
-from . import functions
+from .functions import Functions
+from .functions import DefaultFunctions
+from .ast import AndExpression
+from .ast import Arithmetic
+from .ast import ArithmeticUnary
+from .ast import Assign
+from .ast import Comparator
+from .ast import CurrentNode
+from .ast import Expref
+from .ast import Field
+from .ast import FilterProjection
+from .ast import Flatten
+from .ast import FunctionExpression
+from .ast import Identity
+from .ast import Index
+from .ast import IndexExpression
+from .ast import KeyValPair
+from .ast import LetExpression
+from .ast import Literal
+from .ast import MultiSelectDict
+from .ast import MultiSelectList
 from .ast import Node
+from .ast import NotExpression
+from .ast import OrExpression
+from .ast import Pipe
+from .ast import Projection
+from .ast import RootNode
+from .ast import Slice
+from .ast import Subexpression
+from .ast import ValueProjection
+from .ast import VariableRef
+from .exceptions import UndefinedVariableError
 from .scope import ScopedChainDict
 
 
@@ -65,7 +94,7 @@ class Options:
     def __init__(
             self,
             dict_cls: type | None = None,
-            custom_functions: functions.Functions | None = None,
+            custom_functions: Functions | None = None,
             enable_legacy_literals: bool = False,
     ) -> None:
         super().__init__()
@@ -151,9 +180,9 @@ class TreeInterpreter(Visitor):
             self._dict_cls = options.dict_cls
 
         if options.custom_functions is not None:
-            self._functions: functions.Functions = options.custom_functions
+            self._functions: Functions = options.custom_functions
         else:
-            self._functions = functions.DefaultFunctions()
+            self._functions = DefaultFunctions()
 
         self._root: Node | None = None
         self._scope: ScopedChainDict = ScopedChainDict()
@@ -383,7 +412,7 @@ class TreeInterpreter(Visitor):
         try:
             return self._scope[node['value']]
         except KeyError:
-            raise exceptions.UndefinedVariableError(node['value'])  # noqa
+            raise UndefinedVariableError(node['value'])  # noqa
 
     def visit_value_projection(self, node: Node, value: ta.Any):
         base = self.visit(node['children'][0], value)

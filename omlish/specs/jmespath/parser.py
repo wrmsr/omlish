@@ -39,7 +39,6 @@ from .ast import Identity
 from .ast import Index
 from .ast import IndexExpression
 from .ast import KeyValPair
-from .ast import LeafNode
 from .ast import LetExpression
 from .ast import Literal
 from .ast import MultiSelectDict
