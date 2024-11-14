@@ -5,7 +5,12 @@ import math
 import re
 import typing as ta
 
-from . import exceptions
+from .exceptions import ArityError
+from .exceptions import JmespathError
+from .exceptions import JmespathTypeError
+from .exceptions import JmespathValueError
+from .exceptions import UnknownFunctionError
+from .exceptions import VariadicArityError
 
 
 T = ta.TypeVar('T')
@@ -145,7 +150,7 @@ class FunctionsClass:
         try:
             spec = self._function_table[function_name]
         except KeyError:
-            raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
+            raise UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
         self._validate_arguments(resolved_args, spec.signature, function_name)
         return spec.function.__get__(self, self.__class__)(*resolved_args)  # noqa
@@ -165,17 +170,17 @@ class FunctionsClass:
 
         if has_variadic:
             if len(args) < len(sig):
-                raise exceptions.VariadicArityError(len(sig), len(args), function_name)
+                raise VariadicArityError(len(sig), len(args), function_name)
 
         elif optional_arguments_count > 0:
             if (
                     len(args) < required_arguments_count or
                     len(args) > (required_arguments_count + optional_arguments_count)
             ):
-                raise exceptions.ArityError(len(sig), len(args), function_name)
+                raise ArityError(len(sig), len(args), function_name)
 
         elif len(args) != required_arguments_count:
-            raise exceptions.ArityError(len(sig), len(args), function_name)
+            raise ArityError(len(sig), len(args), function_name)
 
         self._type_check(args, sig, function_name)
 
@@ -201,7 +206,7 @@ class FunctionsClass:
         # (booleans are considered integers in python for example).
         pytype = pytype_of(current)
         if pytype not in allowed_types:
-            raise exceptions.JmespathTypeError(
+            raise JmespathTypeError(
                 function_name,
                 current,
                 self._convert_to_jmespath_type(pytype),
@@ -250,7 +255,7 @@ class FunctionsClass:
             for element in current:
                 pytype = pytype_of(element)
                 if pytype not in ets:
-                    raise exceptions.JmespathTypeError(function_name, element, pytype, types)
+                    raise JmespathTypeError(function_name, element, pytype, types)
 
         elif len(allowed_element_types) > 1 and current:
             # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
@@ -260,12 +265,12 @@ class FunctionsClass:
                     allowed = element_types
                     break
             else:
-                raise exceptions.JmespathTypeError(function_name, current[0], first, types)
+                raise JmespathTypeError(function_name, current[0], first, types)
 
             for element in current:
                 pytype = pytype_of(element)
                 if pytype not in allowed:
-                    raise exceptions.JmespathTypeError(function_name, element, pytype, types)
+                    raise JmespathTypeError(function_name, element, pytype, types)
 
     #
 
@@ -280,7 +285,7 @@ class FunctionsClass:
     ) -> None:
         if param_value is not None:
             if int(param_value) != param_value:
-                raise exceptions.JmespathValueError(
+                raise JmespathValueError(
                     func_name,
                     param_value,
                     'integer',
@@ -294,7 +299,7 @@ class FunctionsClass:
     ) -> None:
         if param_value is not None:
             if int(param_value) != param_value or int(param_value) < 0:
-                raise exceptions.JmespathValueError(
+                raise JmespathValueError(
                     func_name,
                     param_name,
                     'non-negative integer',
@@ -538,7 +543,7 @@ class StringFunctions(FunctionsClass):
 
     def _pad_impl(self, func, padding):
         if len(padding) != 1:
-            raise exceptions.JmespathError(
+            raise JmespathError(
                 f'syntax-error: pad_right() expects $padding to have a single character, but received '
                 f'`{padding}` instead.',
             )
@@ -641,7 +646,7 @@ class KeyedFunctions(FunctionsClass):
             jmespath_type = self._convert_to_jmespath_type(pytype_of(result))
             # allowed_types is in terms of jmespath types, not python types.
             if jmespath_type not in allowed_types:
-                raise exceptions.JmespathTypeError(
+                raise JmespathTypeError(
                     function_name, result, jmespath_type, allowed_types)
 
             return result
@@ -659,7 +664,7 @@ class KeyedFunctions(FunctionsClass):
         # the first element.
         required_type = self._convert_to_jmespath_type(pytype_of(expref.visit(expref.expression, array[0])))
         if required_type not in ['number', 'string']:
-            raise exceptions.JmespathTypeError(
+            raise JmespathTypeError(
                 'sort_by',
                 array[0],
                 required_type,
