@@ -107,6 +107,7 @@ class Cli(ap.Cli):
         ap.arg('-d', '--diff', action='store_true'),
         ap.arg('-s', '--diff-stat', action='store_true'),
         ap.arg('-g', '--github', action='store_true'),
+        ap.arg('-o', '--open', action='store_true'),
     )
     def recap(self) -> None:
         rev = rev_parse(self.args.rev)
@@ -118,12 +119,25 @@ class Cli(ap.Cli):
 
         elif self.args.github:
             rm_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin']).decode('utf-8').strip()
-            pu = urllib.parse.urlparse(rm_url)
-            check.equal(pu.scheme, 'https')
-            check.equal(pu.hostname, 'github.com')
-            _, user, repo, *_ = pu.path.split('/')
+
+            if rm_url.startswith(git_pfx := 'git@github.com:'):
+                s = rm_url[len(git_pfx):]
+                if s.endswith('.git'):
+                    s = s[:-4]
+                user, repo = s.split('/')
+
+            else:
+                pu = urllib.parse.urlparse(rm_url)
+                check.equal(pu.scheme, 'https')
+                check.equal(pu.hostname, 'github.com')
+                _, user, repo, *_ = pu.path.split('/')
+
             gh_url = f'https://github.com/{user}/{repo}/compare/{base_rev}...{rev}#files_bucket'
-            print(gh_url)
+
+            if self.args.open:
+                subprocess.check_call(['open', gh_url])
+            else:
+                print(gh_url)
 
         else:
             print(base_rev)
