@@ -7,7 +7,7 @@ class Node(ta.TypedDict):
     value: ta.NotRequired[ta.Any]
 
 
-def arithmetic_unary(operator, expression) -> Node:
+def arithmetic_unary(operator: str, expression: Node) -> Node:
     return {
         'type': 'arithmetic_unary',
         'children': [expression],
@@ -15,7 +15,7 @@ def arithmetic_unary(operator, expression) -> Node:
     }
 
 
-def arithmetic(operator, left, right) -> Node:
+def arithmetic(operator: str, left: Node, right: Node) -> Node:
     return {
         'type': 'arithmetic',
         'children': [left, right],
@@ -23,7 +23,7 @@ def arithmetic(operator, left, right) -> Node:
     }
 
 
-def assign(name, expr) -> Node:
+def assign(name: str, expr: Node) -> Node:
     return {
         'type': 'assign',
         'children': [expr],
@@ -31,7 +31,7 @@ def assign(name, expr) -> Node:
     }
 
 
-def comparator(name, first, second) -> Node:
+def comparator(name: str, first: Node, second: Node) -> Node:
     return {
         'type': 'comparator',
         'children': [first, second],
@@ -53,14 +53,14 @@ def root_node() -> Node:
     }
 
 
-def expref(expression) -> Node:
+def expref(expression: Node) -> Node:
     return {
         'type': 'expref',
         'children': [expression],
     }
 
 
-def function_expression(name, args) -> Node:
+def function_expression(name: str, args: list[Node]) -> Node:
     return {
         'type': 'function_expression',
         'children': args,
@@ -68,7 +68,7 @@ def function_expression(name, args) -> Node:
     }
 
 
-def field(name) -> Node:
+def field(name: str) -> Node:
     return {
         'type': 'field',
         'children': [],
@@ -76,14 +76,14 @@ def field(name) -> Node:
     }
 
 
-def filter_projection(left, right, comparator) -> Node:
+def filter_projection(left: Node, right: Node, comparator: Node) -> Node:  # noqa
     return {
         'type': 'filter_projection',
         'children': [left, right, comparator],
     }
 
 
-def flatten(node) -> Node:
+def flatten(node: Node) -> Node:
     return {
         'type': 'flatten',
         'children': [node],
@@ -97,7 +97,7 @@ def identity() -> Node:
     }
 
 
-def index(index) -> Node:
+def index(index: int) -> Node:
     return {
         'type': 'index',
         'children': [],
@@ -105,14 +105,14 @@ def index(index) -> Node:
     }
 
 
-def index_expression(children) -> Node:
+def index_expression(children: list[Node]) -> Node:
     return {
         'type': 'index_expression',
         'children': children,
     }
 
 
-def key_val_pair(key_name, node) -> Node:
+def key_val_pair(key_name: str, node: Node) -> Node:
     return {
         'type': 'key_val_pair',
         'children': [node],
@@ -120,14 +120,14 @@ def key_val_pair(key_name, node) -> Node:
     }
 
 
-def let_expression(bindings, expr) -> Node:
+def let_expression(bindings: list[Node], expr: Node) -> Node:
     return {
         'type': 'let_expression',
         'children': [*bindings, expr],
     }
 
 
-def literal(literal_value) -> Node:
+def literal(literal_value: ta.Any) -> Node:
     return {
         'type': 'literal',
         'children': [],
@@ -135,35 +135,35 @@ def literal(literal_value) -> Node:
     }
 
 
-def multi_select_dict(nodes) -> Node:
+def multi_select_dict(nodes: list[Node]) -> Node:
     return {
         'type': 'multi_select_dict',
         'children': nodes,
     }
 
 
-def multi_select_list(nodes) -> Node:
+def multi_select_list(nodes: list[Node]) -> Node:
     return {
         'type': 'multi_select_list',
         'children': nodes,
     }
 
 
-def or_expression(left, right) -> Node:
+def or_expression(left: Node, right: Node) -> Node:
     return {
         'type': 'or_expression',
         'children': [left, right],
     }
 
 
-def and_expression(left, right) -> Node:
+def and_expression(left: Node, right: Node) -> Node:
     return {
         'type': 'and_expression',
         'children': [left, right],
     }
 
 
-def not_expression(expr) -> Node:
+def not_expression(expr: Node) -> Node:
     return {
         'type': 'not_expression',
         'children': [expr],
@@ -184,7 +184,7 @@ def projection(left: Node, right: Node) -> Node:
     }
 
 
-def subexpression(children) -> Node:
+def subexpression(children: list[Node]) -> Node:
     return {
         'type': 'subexpression',
         'children': children,
@@ -194,7 +194,8 @@ def subexpression(children) -> Node:
 def slice(start, end, step) -> Node:  # noqa
     return {
         'type': 'slice',
-        'children': [start, end, step],
+        'children': [],
+        'value': (start, end, step),
     }
 
 

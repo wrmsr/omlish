@@ -273,7 +273,7 @@ class Parser:
         # [<current>
         #  ^
         #  | current token
-        if (self._lookahead(0) == 'colon' or self._lookahead(1) == 'colon'):
+        if self._lookahead(0) == 'colon' or self._lookahead(1) == 'colon':
             return self._parse_slice_expression()
 
         else:
@@ -627,7 +627,7 @@ class Parser:
             self._CACHE.pop(key, None)
 
     @classmethod
-    def purge(cls):
+    def purge(cls) -> None:
         """Clear the expression compilation cache."""
 
         cls._CACHE.clear()
