@@ -413,13 +413,13 @@ class TreeInterpreter(Visitor):
         return not self._is_false(value)
 
 
-class GraphvizVisitor(Visitor):
+class GraphvizVisitor:
     def __init__(self) -> None:
         super().__init__()
         self._lines: list[str] = []
         self._count = 1
 
-    def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any):
+    def visit(self, node: Node):
         self._lines.append('digraph AST {')
         current = f"{node['type']}{self._count}"
         self._count += 1
