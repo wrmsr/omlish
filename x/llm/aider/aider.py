@@ -12,6 +12,7 @@ def _main() -> None:
             if (s := l.strip())
             for k, v in [s.split('=')]
         })
+    s = None
 
     from .initial.coder import Coder
 

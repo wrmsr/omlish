@@ -16,6 +16,7 @@ def _main():
             if (s := l.strip())
             for k, v in [s.split('=')]
         })
+    s = None
 
     #
 
