@@ -39,6 +39,14 @@ from .functions import Functions
 from .scope import ScopedChainDict
 
 
+if ta.TYPE_CHECKING:
+    import json
+    import html
+else:
+    json = lang.proxy_import('json')
+    html = lang.proxy_import('html')
+
+
 ##
 
 
@@ -492,7 +500,7 @@ class GraphvizVisitor:
     def _visit(self, node: Node, current: str) -> None:
         self._lines.append(
             f'{current} '
-            f'[label="{_node_type(node)}({self._node_value(node).map(repr).or_else("")})"]',
+            f'[label="{_node_type(node)}({self._node_value(node).map(json.dumps).map(html.escape).or_else("")})"]',
         )
         for child in node.children:
             child_name = f'{_node_type(child)}{self._count}'
