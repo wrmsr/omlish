@@ -7,6 +7,10 @@ T = ta.TypeVar('T')
 
 _DISABLE_CHECKS = False
 
+_ABSTRACT_METHODS_ATTR = '__abstractmethods__'
+_IS_ABSTRACT_METHOD_ATTR = '__isabstractmethod__'
+_FORCE_ABSTRACT_ATTR = '__forceabstract__'
+
 
 def make_abstract(obj: T) -> T:
     if callable(obj):
@@ -29,13 +33,13 @@ class Abstract(abc.ABC):  # noqa
     def __forceabstract__(self):
         raise TypeError
 
-    setattr(__forceabstract__, '__isabstractmethod__', True)
+    setattr(__forceabstract__, _IS_ABSTRACT_METHOD_ATTR, True)
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         if Abstract in cls.__bases__:
-            cls.__forceabstract__ = Abstract.__forceabstract__  # type: ignore
+            setattr(cls, _FORCE_ABSTRACT_ATTR, getattr(Abstract, _FORCE_ABSTRACT_ATTR))
         else:
-            cls.__forceabstract__ = False  # type: ignore
+            setattr(cls, _FORCE_ABSTRACT_ATTR, False)
 
         super().__init_subclass__(**kwargs)
 
@@ -43,7 +47,7 @@ class Abstract(abc.ABC):  # noqa
             ams = {a for a, o in cls.__dict__.items() if is_abstract_method(o)}
             seen = set(cls.__dict__)
             for b in cls.__bases__:
-                ams.update(set(getattr(b, '__abstractmethods__', [])) - seen)
+                ams.update(set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen)
                 seen.update(dir(b))
             if ams:
                 raise TypeError(
@@ -53,18 +57,18 @@ class Abstract(abc.ABC):  # noqa
 
 
 def is_abstract_method(obj: ta.Any) -> bool:
-    return bool(getattr(obj, '__isabstractmethod__', False))
+    return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
 
 
 def is_abstract_class(obj: ta.Any) -> bool:
-    if bool(getattr(obj, '__abstractmethods__', [])):
+    if bool(getattr(obj, _ABSTRACT_METHODS_ATTR, [])):
         return True
     if isinstance(obj, type):
         if Abstract in obj.__bases__:
             return True
         if (
                 Abstract in obj.__mro__
-                and getattr(obj.__dict__.get('__forceabstract__', None), '__isabstractmethod__', False)
+                and getattr(obj.__dict__.get(_FORCE_ABSTRACT_ATTR, None), _IS_ABSTRACT_METHOD_ATTR, False)
         ):
             return True
     return False
@@ -75,13 +79,32 @@ def is_abstract(obj: ta.Any) -> bool:
 
 
 def unabstract_class(
-        impls: ta.Iterable[tuple[str, ta.Any]],
-) -> ta.Callable[[type[T]], type[T]]:
+        members: ta.Iterable[str | tuple[str, ta.Any]],
+):  # -> ta.Callable[[type[T]], type[T]]:
     def inner(cls):
-        for name, impl in impls:
-            if isinstance(impl, str):
-                impl = getattr(cls, impl)
-            setattr(cls, name, impl)
-        setattr(cls, '__abstractmethods__', frozenset())
+        if isinstance(members, str):
+            raise TypeError(members)
+
+        ams = getattr(cls, _ABSTRACT_METHODS_ATTR)
+
+        names: set[str] = set()
+        for m in members:
+            if isinstance(m, str):
+                if m not in ams:
+                    raise NameError(m)
+                getattr(cls, m)
+                names.add(m)
+
+            elif isinstance(m, tuple):
+                name, impl = m
+                if name not in ams:
+                    raise NameError(name)
+                if isinstance(impl, str):
+                    impl = getattr(cls, impl)
+                setattr(cls, name, impl)
+                names.add(name)
+
+        setattr(cls, _ABSTRACT_METHODS_ATTR, ams - names)
         return cls
+
     return inner

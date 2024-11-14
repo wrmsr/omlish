@@ -94,20 +94,11 @@ class FnPair(ta.Generic[F, T], abc.ABC):
 ##
 
 
-@lang.unabstract_class([
-    ('forward', '_forward'),
-    ('backward', 'backward'),
-])
+@lang.unabstract_class(['forward', 'backward'])
 @dc.dataclass(frozen=True)
 class Simple(FnPair[F, T]):
     forward: ta.Callable[[F], T]  # type: ignore
     backward: ta.Callable[[T], F]  # type: ignore
-
-    def _forward(self, f: F) -> T:
-        return self.forward(f)
-
-    def _backward(self, t: T) -> F:
-        return self.backward(t)
 
 
 of = Simple
