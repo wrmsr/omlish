@@ -23,11 +23,16 @@ A few notes on the implementation.
 import random
 import typing as ta
 
-from ... import check
 from . import ast
-from . import exceptions
-from . import lexer
-from . import visitor
+from ... import check
+from .exceptions import IncompleteExpressionError
+from .exceptions import LexerError
+from .exceptions import ParseError
+from .lexer import Lexer
+from .lexer import Token
+from .visitor import GraphvizVisitor
+from .visitor import Options
+from .visitor import TreeInterpreter
 
 
 class Parser:
@@ -83,12 +88,12 @@ class Parser:
     def __init__(self, lookahead: int = 2) -> None:
         super().__init__()
 
-        self._tokenizer: ta.Iterable[lexer.Token] | None = None
-        self._tokens: list[lexer.Token | None] = [None] * lookahead
+        self._tokenizer: ta.Iterable[Token] | None = None
+        self._tokens: list[Token | None] = [None] * lookahead
         self._buffer_size = lookahead
         self._index = 0
 
-    def parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
+    def parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
         cached = self._CACHE.get(expression)
         if cached is not None:
             return cached
@@ -101,24 +106,24 @@ class Parser:
 
         return parsed_result
 
-    def _do_parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
+    def _do_parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
         try:
             return self._parse(expression, options)
 
-        except exceptions.LexerError as e:
+        except LexerError as e:
             e.expression = expression
             raise
 
-        except exceptions.IncompleteExpressionError as e:
+        except IncompleteExpressionError as e:
             e.set_expression(expression)
             raise
 
-        except exceptions.ParseError as e:
+        except ParseError as e:
             e.expression = expression
             raise
 
-    def _parse(self, expression: str, options: visitor.Options | None = None) -> 'ParsedResult':
-        self._tokenizer = lexer.Lexer().tokenize(expression, options)
+    def _parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
+        self._tokenizer = Lexer().tokenize(expression, options)
         self._tokens = list(self._tokenizer)
         self._index = 0
 
@@ -126,7 +131,7 @@ class Parser:
 
         if self._current_token() != 'eof':
             t = check.not_none(self._lookahead_token(0))
-            raise exceptions.ParseError(
+            raise ParseError(
                 t['start'],
                 t['value'],
                 t['type'],
@@ -166,13 +171,13 @@ class Parser:
 
         return left
 
-    def _token_nud_literal(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_literal(self, token: Token) -> ast.Node:
         return ast.literal(token['value'])
 
-    def _token_nud_variable(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_variable(self, token: Token) -> ast.Node:
         return ast.variable_ref(token['value'][1:])
 
-    def _token_nud_unquoted_identifier(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_unquoted_identifier(self, token: Token) -> ast.Node:
         if token['value'] == 'let' and self._current_token() == 'variable':
             return self._parse_let_expression()
         else:
@@ -196,19 +201,19 @@ class Parser:
         expr = self._expression()
         return ast.let_expression(bindings, expr)
 
-    def _is_in_keyword(self, token: lexer.Token) -> bool:
+    def _is_in_keyword(self, token: Token) -> bool:
         return (
             token['type'] == 'unquoted_identifier' and
             token['value'] == 'in'
         )
 
-    def _token_nud_quoted_identifier(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_quoted_identifier(self, token: Token) -> ast.Node:
         field = ast.field(token['value'])
 
         # You can't have a quoted identifier as a function name.
         if self._current_token() == 'lparen':
             t = check.not_none(self._lookahead_token(0))
-            raise exceptions.ParseError(
+            raise ParseError(
                 0,
                 t['value'],
                 t['type'],
@@ -217,7 +222,7 @@ class Parser:
 
         return field
 
-    def _token_nud_star(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_star(self, token: Token) -> ast.Node:
         left = ast.identity()
         if self._current_token() == 'rbracket':
             right = ast.identity()
@@ -225,34 +230,34 @@ class Parser:
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
         return ast.value_projection(left, right)
 
-    def _token_nud_filter(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_filter(self, token: Token) -> ast.Node:
         return self._token_led_filter(ast.identity())
 
-    def _token_nud_lbrace(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_lbrace(self, token: Token) -> ast.Node:
         return self._parse_multi_select_hash()
 
-    def _token_nud_lparen(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_lparen(self, token: Token) -> ast.Node:
         expression = self._expression()
         self._match('rparen')
         return expression
 
-    def _token_nud_minus(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_minus(self, token: Token) -> ast.Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_plus(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_plus(self, token: Token) -> ast.Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_flatten(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_flatten(self, token: Token) -> ast.Node:
         left = ast.flatten(ast.identity())
         right = self._parse_projection_rhs(
             self.BINDING_POWER['flatten'])
         return ast.projection(left, right)
 
-    def _token_nud_not(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_not(self, token: Token) -> ast.Node:
         expr = self._expression(self.BINDING_POWER['not'])
         return ast.not_expression(expr)
 
-    def _token_nud_lbracket(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_lbracket(self, token: Token) -> ast.Node:
         if self._current_token() in ['number', 'colon']:
             right = self._parse_index_expression()
             # We could optimize this and remove the identity() node. We don't really need an index_expression node, we
@@ -308,13 +313,13 @@ class Parser:
         self._match('rbracket')
         return ast.slice(*parts)
 
-    def _token_nud_current(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_current(self, token: Token) -> ast.Node:
         return ast.current_node()
 
-    def _token_nud_root(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_root(self, token: Token) -> ast.Node:
         return ast.root_node()
 
-    def _token_nud_expref(self, token: lexer.Token) -> ast.Node:
+    def _token_nud_expref(self, token: Token) -> ast.Node:
         expression = self._expression(self.BINDING_POWER['expref'])
         return ast.expref(expression)
 
@@ -352,7 +357,7 @@ class Parser:
             # -1 - '(' token
             # -2 - invalid function "name".
             prev_t = check.not_none(self._lookahead_token(-2))
-            raise exceptions.ParseError(
+            raise ParseError(
                 prev_t['start'],
                 prev_t['value'],
                 prev_t['type'],
@@ -459,7 +464,7 @@ class Parser:
         right = self._expression(self.BINDING_POWER[comparator])
         return ast.comparator(comparator, left, right)
 
-    def _parse_arithmetic_unary(self, token: lexer.Token) -> ast.Node:
+    def _parse_arithmetic_unary(self, token: Token) -> ast.Node:
         expression = self._expression(self.BINDING_POWER[token['type']])
         return ast.arithmetic_unary(token['type'], expression)
 
@@ -553,9 +558,9 @@ class Parser:
             self._raise_parse_error_for_token(t, msg)
             raise RuntimeError  # noqa
 
-    def _error_nud_token(self, token: lexer.Token) -> ta.NoReturn:
+    def _error_nud_token(self, token: Token) -> ta.NoReturn:
         if token['type'] == 'eof':
-            raise exceptions.IncompleteExpressionError(
+            raise IncompleteExpressionError(
                 token['start'],
                 token['value'],
                 token['type'],
@@ -563,7 +568,7 @@ class Parser:
 
         self._raise_parse_error_for_token(token, 'invalid token')
 
-    def _error_led_token(self, token: lexer.Token) -> ta.NoReturn:
+    def _error_led_token(self, token: Token) -> ta.NoReturn:
         self._raise_parse_error_for_token(token, 'invalid token')
 
     def _match(self, token_type: str | None = None) -> None:
@@ -588,14 +593,14 @@ class Parser:
     def _lookahead(self, number: int) -> str:
         return check.not_none(self._tokens[self._index + number])['type']
 
-    def _lookahead_token(self, number: int) -> lexer.Token | None:
+    def _lookahead_token(self, number: int) -> Token | None:
         return self._tokens[self._index + number]
 
-    def _raise_parse_error_for_token(self, token: lexer.Token, reason: str) -> ta.NoReturn:
+    def _raise_parse_error_for_token(self, token: Token, reason: str) -> ta.NoReturn:
         lex_position = token['start']
         actual_value = token['value']
         actual_type = token['type']
-        raise exceptions.ParseError(
+        raise ParseError(
             lex_position,
             actual_value,
             actual_type,
@@ -607,14 +612,14 @@ class Parser:
         actual_value = token['value']
         actual_type = token['type']
         if actual_type == 'eof':
-            raise exceptions.IncompleteExpressionError(
+            raise IncompleteExpressionError(
                 lex_position,
                 actual_value,
                 actual_type,
             )
 
         message = f'Expecting: {expected_type}, got: {actual_type}'
-        raise exceptions.ParseError(
+        raise ParseError(
             lex_position,
             actual_value,
             actual_type,
@@ -640,8 +645,8 @@ class ParsedResult:
         self.expression = expression
         self.parsed = parsed
 
-    def search(self, value: ta.Any, options: visitor.Options | None = None) -> ta.Any:
-        evaluator = visitor.TreeInterpreter(options)
+    def search(self, value: ta.Any, options: Options | None = None) -> ta.Any:
+        evaluator = TreeInterpreter(options)
         return evaluator.evaluate(self.parsed, value)
 
     def _render_dot_file(self) -> str:
@@ -653,7 +658,7 @@ class ParsedResult:
         the public supported API.  Use at your own risk.
         """
 
-        renderer = visitor.GraphvizVisitor()
+        renderer = GraphvizVisitor()
         contents = renderer.visit(self.parsed)
         return contents
 
@@ -661,9 +666,9 @@ class ParsedResult:
         return repr(self.parsed)
 
 
-def compile(expression: str, options: visitor.Options | None = None) -> ParsedResult:  # noqa
+def compile(expression: str, options: Options | None = None) -> ParsedResult:  # noqa
     return Parser().parse(expression, options=options)
 
 
-def search(expression: str, data: ta.Any, options: visitor.Options | None = None) -> ta.Any:
+def search(expression: str, data: ta.Any, options: Options | None = None) -> ta.Any:
     return compile(expression, options).search(data, options=options)
