@@ -279,11 +279,11 @@ class TreeInterpreter(Visitor):
         if not isinstance(base, list):
             return None
 
-        comparator_node = node.right
+        comparator_node = node.comparator
         collected = []
         for element in base:
             if self._is_true(self.visit(comparator_node, element)):
-                current = self.visit(node.comparator, element)
+                current = self.visit(node.right, element)
                 if current is not None:
                     collected.append(current)
 
