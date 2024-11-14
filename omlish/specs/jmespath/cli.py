@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
+import dataclasses as dc
 import sys
+import typing as ta
 
 from ...formats import json
 from .ast import Node
@@ -11,10 +13,18 @@ from .exceptions import ParseError
 from .exceptions import UnknownFunctionError
 from .parser import compile
 from .parser import search
+from .visitor import node_type
 
 
-def _node_dict(n: Node) -> dict:
-    raise NotImplementedError
+def _ast_to_json(o: ta.Any) -> ta.Any:
+    if isinstance(o, json.SCALAR_TYPES):
+        return o
+    elif isinstance(o, Node):
+        return {node_type(o): {f.name: _ast_to_json(getattr(o, f.name)) for f in dc.fields(o)}}
+    elif isinstance(o, (list, tuple)):
+        return [_ast_to_json(e) for e in o]
+    else:
+        raise TypeError(o)
 
 
 def _main() -> int:
@@ -33,7 +43,7 @@ def _main() -> int:
     expression = args.expression
     if args.ast:
         expression = compile(args.expression)
-        print(json_dumps(expression.parsed))
+        print(json_dumps(_ast_to_json(expression.parsed)))
         return 0
 
     if args.filename:
