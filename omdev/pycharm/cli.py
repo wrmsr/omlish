@@ -16,7 +16,7 @@ from omlish.diag.pycharm import get_pycharm_version
 
 
 _DARWIN_OPEN_SCRIPT = """
-tell application "PyCharm"
+tell application "{app}"
     activate
     open "{dir}"
 end tell
@@ -29,6 +29,7 @@ _LINUX_OPEN_SCRIPT = """
 
 # wmctrl -lx
 # 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish - cli.py
+# 0x0480004c  0 jetbrains-clion.jetbrains-clion  spinlock-ws cpython – ceval.c
 # wmctrl -i -a 0x03000054
 
 if pgrep -x "pycharm.sh" > /dev/null; then
@@ -68,6 +69,7 @@ class Cli(ap.Cli):
 
     @ap.command(
         ap.arg('dir', nargs='?'),
+        ap.arg('--clion', action='store_true'),
     )
     def open(self) -> None:
         dir = os.path.abspath(self.args.dir or '.')  # noqa
@@ -76,7 +78,10 @@ class Cli(ap.Cli):
             if '"' in dir:
                 raise ValueError(dir)
 
-            scpt_src = _DARWIN_OPEN_SCRIPT.format(dir=dir)
+            scpt_src = _DARWIN_OPEN_SCRIPT.format(
+                app='CLion' if self.args.clion else 'PyCharm',
+                dir=dir,
+            )
 
             scpt_file = tempfile.mktemp(__package__ + '-pycharm-open')  # noqa
             with open(scpt_file, 'w') as f:
