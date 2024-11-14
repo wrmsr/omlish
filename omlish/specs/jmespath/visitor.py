@@ -3,8 +3,6 @@ import operator
 import typing as ta
 
 from ... import check
-from .functions import Functions
-from .functions import DefaultFunctions
 from .ast import AndExpression
 from .ast import Arithmetic
 from .ast import ArithmeticUnary
@@ -35,7 +33,12 @@ from .ast import Subexpression
 from .ast import ValueProjection
 from .ast import VariableRef
 from .exceptions import UndefinedVariableError
+from .functions import DefaultFunctions
+from .functions import Functions
 from .scope import ScopedChainDict
+
+
+##
 
 
 def _equals(x: ta.Any, y: ta.Any) -> bool:
@@ -88,6 +91,30 @@ def _is_actual_number(x: ta.Any) -> bool:
     return isinstance(x, numbers.Number)
 
 
+##
+
+
+class Visitor:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._method_cache: dict[str, ta.Callable] = {}
+
+    def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        node_type = node['type']
+        method = self._method_cache.get(node_type)
+        if method is None:
+            method = check.not_none(getattr(self, f'visit_{node["type"]}', self.default_visit))
+            self._method_cache[node_type] = method
+        return method(node, *args, **kwargs)
+
+    def default_visit(self, node, *args, **kwargs):
+        raise NotImplementedError('default_visit')
+
+
+##
+
+
 class Options:
     """Options to control how a Jmespath function is evaluated."""
 
@@ -114,31 +141,13 @@ class Options:
 
 
 class _Expression:
-    def __init__(self, expression, interpreter):
+    def __init__(self, expression: Node, interpreter: 'TreeInterpreter'):
         super().__init__()
         self.expression = expression
         self.interpreter = interpreter
 
     def visit(self, node, *args, **kwargs):
         return self.interpreter.visit(node, *args, **kwargs)
-
-
-class Visitor:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._method_cache: dict[str, ta.Callable] = {}
-
-    def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        node_type = node['type']
-        method = self._method_cache.get(node_type)
-        if method is None:
-            method = check.not_none(getattr(self, f'visit_{node["type"]}', self.default_visit))
-            self._method_cache[node_type] = method
-        return method(node, *args, **kwargs)
-
-    def default_visit(self, node, *args, **kwargs):
-        raise NotImplementedError('default_visit')
 
 
 class TreeInterpreter(Visitor):
