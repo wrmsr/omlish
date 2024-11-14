@@ -169,7 +169,7 @@ class Parser:
 
         return ParsedResult(expression, parsed)
 
-    def _expression(self, binding_power: int = 0) -> ast.Node:
+    def _expression(self, binding_power: int = 0) -> Node:
         left_token = check.not_none(self._lookahead_token(0))
 
         self._advance()
@@ -200,19 +200,19 @@ class Parser:
 
         return left
 
-    def _token_nud_literal(self, token: Token) -> ast.Node:
-        return ast.literal(token['value'])
+    def _token_nud_literal(self, token: Token) -> Node:
+        return Literal(token['value'])
 
-    def _token_nud_variable(self, token: Token) -> ast.Node:
-        return ast.variable_ref(token['value'][1:])
+    def _token_nud_variable(self, token: Token) -> Node:
+        return VariableRef(token['value'][1:])
 
-    def _token_nud_unquoted_identifier(self, token: Token) -> ast.Node:
+    def _token_nud_unquoted_identifier(self, token: Token) -> Node:
         if token['value'] == 'let' and self._current_token() == 'variable':
             return self._parse_let_expression()
         else:
-            return ast.field(token['value'])
+            return Field(token['value'])
 
-    def _parse_let_expression(self) -> ast.Node:
+    def _parse_let_expression(self) -> Node:
         bindings = []
         while True:
             var_token = check.not_none(self._lookahead_token(0))
@@ -221,14 +221,14 @@ class Parser:
             self._advance()
             self._match('assign')
             assign_expr = self._expression()
-            bindings.append(ast.assign(varname, assign_expr))
+            bindings.append(Assign(varname, assign_expr))
             if self._is_in_keyword(check.not_none(self._lookahead_token(0))):
                 self._advance()
                 break
             else:
                 self._match('comma')
         expr = self._expression()
-        return ast.let_expression(bindings, expr)
+        return LetExpression(bindings, expr)
 
     def _is_in_keyword(self, token: Token) -> bool:
         return (
@@ -236,8 +236,8 @@ class Parser:
             token['value'] == 'in'
         )
 
-    def _token_nud_quoted_identifier(self, token: Token) -> ast.Node:
-        field = ast.field(token['value'])
+    def _token_nud_quoted_identifier(self, token: Token) -> Node:
+        field = Field(token['value'])
 
         # You can't have a quoted identifier as a function name.
         if self._current_token() == 'lparen':
@@ -251,58 +251,58 @@ class Parser:
 
         return field
 
-    def _token_nud_star(self, token: Token) -> ast.Node:
-        left = ast.identity()
+    def _token_nud_star(self, token: Token) -> Node:
+        left = Identity()
         if self._current_token() == 'rbracket':
-            right = ast.identity()
+            right = Identity()
         else:
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
-        return ast.value_projection(left, right)
+        return ValueProjection(left, right)
 
-    def _token_nud_filter(self, token: Token) -> ast.Node:
-        return self._token_led_filter(ast.identity())
+    def _token_nud_filter(self, token: Token) -> Node:
+        return self._token_led_filter(Identity())
 
-    def _token_nud_lbrace(self, token: Token) -> ast.Node:
+    def _token_nud_lbrace(self, token: Token) -> Node:
         return self._parse_multi_select_hash()
 
-    def _token_nud_lparen(self, token: Token) -> ast.Node:
+    def _token_nud_lparen(self, token: Token) -> Node:
         expression = self._expression()
         self._match('rparen')
         return expression
 
-    def _token_nud_minus(self, token: Token) -> ast.Node:
+    def _token_nud_minus(self, token: Token) -> Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_plus(self, token: Token) -> ast.Node:
+    def _token_nud_plus(self, token: Token) -> Node:
         return self._parse_arithmetic_unary(token)
 
-    def _token_nud_flatten(self, token: Token) -> ast.Node:
-        left = ast.flatten(ast.identity())
+    def _token_nud_flatten(self, token: Token) -> Node:
+        left = Flatten(Identity())
         right = self._parse_projection_rhs(
             self.BINDING_POWER['flatten'])
-        return ast.projection(left, right)
+        return Projection(left, right)
 
-    def _token_nud_not(self, token: Token) -> ast.Node:
+    def _token_nud_not(self, token: Token) -> Node:
         expr = self._expression(self.BINDING_POWER['not'])
-        return ast.not_expression(expr)
+        return NotExpression(expr)
 
-    def _token_nud_lbracket(self, token: Token) -> ast.Node:
+    def _token_nud_lbracket(self, token: Token) -> Node:
         if self._current_token() in ['number', 'colon']:
             right = self._parse_index_expression()
             # We could optimize this and remove the identity() node. We don't really need an index_expression node, we
             # can just use emit an index node here if we're not dealing with a slice.
-            return self._project_if_slice(ast.identity(), right)
+            return self._project_if_slice(Identity(), right)
 
         elif self._current_token() == 'star' and self._lookahead(1) == 'rbracket':
             self._advance()
             self._advance()
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
-            return ast.projection(ast.identity(), right)
+            return Projection(Identity(), right)
 
         else:
             return self._parse_multi_select_list()
 
-    def _parse_index_expression(self) -> ast.Node:
+    def _parse_index_expression(self) -> Node:
         # We're here:
         # [<current>
         #  ^
@@ -312,12 +312,12 @@ class Parser:
 
         else:
             # Parse the syntax [number]
-            node = ast.index(check.not_none(self._lookahead_token(0))['value'])
+            node = Index(check.not_none(self._lookahead_token(0))['value'])
             self._advance()
             self._match('rbracket')
             return node
 
-    def _parse_slice_expression(self) -> ast.Node:
+    def _parse_slice_expression(self) -> Node:
         # [start:end:step]
         # Where start, end, and step are optional. The last colon is optional as well.
         parts = [None, None, None]
@@ -340,19 +340,19 @@ class Parser:
             current_token = self._current_token()
 
         self._match('rbracket')
-        return ast.slice(*parts)
+        return Slice(*parts)
 
-    def _token_nud_current(self, token: Token) -> ast.Node:
-        return ast.current_node()
+    def _token_nud_current(self, token: Token) -> Node:
+        return CurrentNode()
 
-    def _token_nud_root(self, token: Token) -> ast.Node:
-        return ast.root_node()
+    def _token_nud_root(self, token: Token) -> Node:
+        return RootNode()
 
-    def _token_nud_expref(self, token: Token) -> ast.Node:
+    def _token_nud_expref(self, token: Token) -> Node:
         expression = self._expression(self.BINDING_POWER['expref'])
-        return ast.expref(expression)
+        return Expref(expression)
 
-    def _token_led_dot(self, left: ast.Node) -> ast.Node:
+    def _token_led_dot(self, left: Node) -> Node:
         if self._current_token() != 'star':
             right = self._parse_dot_rhs(self.BINDING_POWER['dot'])
             if left['type'] == 'subexpression':
@@ -360,27 +360,27 @@ class Parser:
                 return left
 
             else:
-                return ast.subexpression([left, right])
+                return Subexpression([left, right])
 
         else:
             # We're creating a projection.
             self._advance()
             right = self._parse_projection_rhs(self.BINDING_POWER['dot'])
-            return ast.value_projection(left, right)
+            return ValueProjection(left, right)
 
-    def _token_led_pipe(self, left: ast.Node) -> ast.Node:
+    def _token_led_pipe(self, left: Node) -> Node:
         right = self._expression(self.BINDING_POWER['pipe'])
-        return ast.pipe(left, right)
+        return Pipe(left, right)
 
-    def _token_led_or(self, left: ast.Node) -> ast.Node:
+    def _token_led_or(self, left: Node) -> Node:
         right = self._expression(self.BINDING_POWER['or'])
-        return ast.or_expression(left, right)
+        return OrExpression(left, right)
 
-    def _token_led_and(self, left: ast.Node) -> ast.Node:
+    def _token_led_and(self, left: Node) -> Node:
         right = self._expression(self.BINDING_POWER['and'])
-        return ast.and_expression(left, right)
+        return AndExpression(left, right)
 
-    def _token_led_lparen(self, left: ast.Node) -> ast.Node:
+    def _token_led_lparen(self, left: Node) -> Node:
         if left['type'] != 'field':
             #  0 - first func arg or closing paren.
             # -1 - '(' token
@@ -402,64 +402,64 @@ class Parser:
             args.append(expression)
         self._match('rparen')
 
-        function_node = ast.function_expression(name, args)
+        function_node = FunctionExpression(name, args)
         return function_node
 
-    def _token_led_filter(self, left: ast.Node) -> ast.Node:
+    def _token_led_filter(self, left: Node) -> Node:
         # Filters are projections.
         condition = self._expression(0)
         self._match('rbracket')
         if self._current_token() == 'flatten':
-            right = ast.identity()
+            right = Identity()
         else:
             right = self._parse_projection_rhs(self.BINDING_POWER['filter'])
-        return ast.filter_projection(left, right, condition)
+        return FilterProjection(left, right, condition)
 
-    def _token_led_eq(self, left: ast.Node) -> ast.Node:
+    def _token_led_eq(self, left: Node) -> Node:
         return self._parse_comparator(left, 'eq')
 
-    def _token_led_ne(self, left: ast.Node) -> ast.Node:
+    def _token_led_ne(self, left: Node) -> Node:
         return self._parse_comparator(left, 'ne')
 
-    def _token_led_gt(self, left: ast.Node) -> ast.Node:
+    def _token_led_gt(self, left: Node) -> Node:
         return self._parse_comparator(left, 'gt')
 
-    def _token_led_gte(self, left: ast.Node) -> ast.Node:
+    def _token_led_gte(self, left: Node) -> Node:
         return self._parse_comparator(left, 'gte')
 
-    def _token_led_lt(self, left: ast.Node) -> ast.Node:
+    def _token_led_lt(self, left: Node) -> Node:
         return self._parse_comparator(left, 'lt')
 
-    def _token_led_lte(self, left: ast.Node) -> ast.Node:
+    def _token_led_lte(self, left: Node) -> Node:
         return self._parse_comparator(left, 'lte')
 
-    def _token_led_div(self, left: ast.Node) -> ast.Node:
+    def _token_led_div(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'div')
 
-    def _token_led_divide(self, left: ast.Node) -> ast.Node:
+    def _token_led_divide(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'divide')
 
-    def _token_led_minus(self, left: ast.Node) -> ast.Node:
+    def _token_led_minus(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'minus')
 
-    def _token_led_modulo(self, left: ast.Node) -> ast.Node:
+    def _token_led_modulo(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'modulo')
 
-    def _token_led_multiply(self, left: ast.Node) -> ast.Node:
+    def _token_led_multiply(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'multiply')
 
-    def _token_led_plus(self, left: ast.Node) -> ast.Node:
+    def _token_led_plus(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'plus')
 
-    def _token_led_star(self, left: ast.Node) -> ast.Node:
+    def _token_led_star(self, left: Node) -> Node:
         return self._parse_arithmetic(left, 'multiply')
 
-    def _token_led_flatten(self, left: ast.Node) -> ast.Node:
-        left = ast.flatten(left)
+    def _token_led_flatten(self, left: Node) -> Node:
+        left = Flatten(left)
         right = self._parse_projection_rhs(self.BINDING_POWER['flatten'])
-        return ast.projection(left, right)
+        return Projection(left, right)
 
-    def _token_led_lbracket(self, left: ast.Node) -> ast.Node:
+    def _token_led_lbracket(self, left: Node) -> Node:
         token = check.not_none(self._lookahead_token(0))
         if token['type'] in ['number', 'colon']:
             right = self._parse_index_expression()
@@ -477,32 +477,32 @@ class Parser:
             self._match('star')
             self._match('rbracket')
             right = self._parse_projection_rhs(self.BINDING_POWER['star'])
-            return ast.projection(left, right)
+            return Projection(left, right)
 
-    def _project_if_slice(self, left: ast.Node, right: ast.Node) -> ast.Node:
-        index_expr = ast.index_expression([left, right])
+    def _project_if_slice(self, left: Node, right: Node) -> Node:
+        index_expr = IndexExpression([left, right])
         if right['type'] == 'slice':
-            return ast.projection(
+            return Projection(
                 index_expr,
                 self._parse_projection_rhs(self.BINDING_POWER['star']),
             )
         else:
             return index_expr
 
-    def _parse_comparator(self, left: ast.Node, comparator: str) -> ast.Node:
+    def _parse_comparator(self, left: Node, comparator: str) -> Node:
         right = self._expression(self.BINDING_POWER[comparator])
-        return ast.comparator(comparator, left, right)
+        return Comparator(comparator, left, right)
 
-    def _parse_arithmetic_unary(self, token: Token) -> ast.Node:
+    def _parse_arithmetic_unary(self, token: Token) -> Node:
         expression = self._expression(self.BINDING_POWER[token['type']])
-        return ast.arithmetic_unary(token['type'], expression)
+        return ArithmeticUnary(token['type'], expression)
 
-    def _parse_arithmetic(self, left: ast.Node, operator: str) -> ast.Node:
+    def _parse_arithmetic(self, left: Node, operator: str) -> Node:
         right = self._expression(self.BINDING_POWER[operator])
-        return ast.arithmetic(operator, left, right)
+        return Arithmetic(operator, left, right)
 
-    def _parse_multi_select_list(self) -> ast.Node:
-        expressions: list[ast.Node] = []
+    def _parse_multi_select_list(self) -> Node:
+        expressions: list[Node] = []
         while True:
             expression = self._expression()
             expressions.append(expression)
@@ -511,9 +511,9 @@ class Parser:
             else:
                 self._match('comma')
         self._match('rbracket')
-        return ast.multi_select_list(expressions)
+        return MultiSelectList(expressions)
 
-    def _parse_multi_select_hash(self) -> ast.Node:
+    def _parse_multi_select_hash(self) -> Node:
         pairs = []
         while True:
             key_token = check.not_none(self._lookahead_token(0))
@@ -525,7 +525,7 @@ class Parser:
             self._match('colon')
             value = self._expression(0)
 
-            node = ast.key_val_pair(key_name=key_name, node=value)
+            node = KeyValPair(key_name=key_name, node=value)
 
             pairs.append(node)
             if self._current_token() == 'comma':
@@ -535,13 +535,13 @@ class Parser:
                 self._match('rbrace')
                 break
 
-        return ast.multi_select_dict(nodes=pairs)
+        return MultiSelectDict(nodes=pairs)
 
-    def _parse_projection_rhs(self, binding_power: int) -> ast.Node:
+    def _parse_projection_rhs(self, binding_power: int) -> Node:
         # Parse the right hand side of the projection.
         if self.BINDING_POWER[self._current_token()] < self._PROJECTION_STOP:
             # BP of 10 are all the tokens that stop a projection.
-            right = ast.identity()
+            right = Identity()
 
         elif self._current_token() == 'lbracket':
             right = self._expression(binding_power)
@@ -558,7 +558,7 @@ class Parser:
 
         return right
 
-    def _parse_dot_rhs(self, binding_power: int) -> ast.Node:
+    def _parse_dot_rhs(self, binding_power: int) -> Node:
         # From the grammar:
         # expression '.' ( identifier /
         #                  multi-select-list /
@@ -668,7 +668,7 @@ class Parser:
 
 
 class ParsedResult:
-    def __init__(self, expression: str, parsed: ast.Node) -> None:
+    def __init__(self, expression: str, parsed: Node) -> None:
         super().__init__()
 
         self.expression = expression
