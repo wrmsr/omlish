@@ -1,11 +1,4 @@
-**/*.dSYM/
-**/.DS_Store
-**/.benchmarks/
-**/.cache/
-**/.idea*/
-**/.ipynb_checkpoints/
-**/__pycache__/
-**/cmake-build-*/
+*.dSYM/
 *.dylib
 *.exe
 *.log
@@ -20,7 +13,12 @@
 *.sock
 *.swp
 */_version.py
+.DS_Store
+.benchmarks/
+.cache/
 .env
+.idea*/
+.ipynb_checkpoints/
 /*.egg-info/
 /.cache/
 /.data/
@@ -42,8 +40,11 @@
 /profiles/
 /target/
 /tmp/
+/venv/
 /weights/
 /wmt32k_data/
+__pycache__/
+cmake-build-*/
 test-*.xml
 
 /secrets.yml
