@@ -16,8 +16,9 @@ from .services import ServiceResponse
 @dc.dataclass(frozen=True, kw_only=True)
 class SearchHit(lang.Final):
     title: str | None
-    link: str | None
-    snippet: str | None
+    url: str | None
+    description: str | None = None
+    snippets: lang.SequenceNotStr[str] | None
 
 
 @dc.dataclass(frozen=True, kw_only=True)

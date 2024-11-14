@@ -18,8 +18,9 @@ args.output_dir/
         storm_gen_article.txt           # Final article generated
         storm_gen_article_polished.txt  # Polished final article (if args.do_polish_article is True)
 """
+import argparse
+import logging
 import os.path
-from argparse import ArgumentParser
 
 from ... import STORMWikiLMConfigs
 from ... import STORMWikiRunner
@@ -39,6 +40,21 @@ from ...utils import load_api_key
 
 def main(args):
     load_api_key(toml_file_path=os.path.expanduser('~/.omlish-llm/.env'))
+
+    logger = logging.getLogger(__name__)
+
+    if not any([
+        args.do_research,
+        args.do_generate_outline,
+        args.do_generate_article,
+        args.do_polish_article,
+    ]):
+        logger.info('No action is specified, defaulting to all')
+        args.do_research = True
+        args.do_generate_outline = True
+        args.do_generate_article = True
+        args.do_polish_article = True
+
     lm_configs = STORMWikiLMConfigs()
     openai_kwargs = {
         'api_key': os.getenv('OPENAI_API_KEY'),
@@ -152,7 +168,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
+    parser = argparse.ArgumentParser()
     # global arguments
     parser.add_argument(
         '--output-dir',
@@ -238,7 +254,7 @@ if __name__ == '__main__':
         help='If True, remove duplicate content from the article.',
     )
 
-    parser.add_argument('topic', nargs='?')
+    parser.add_argument('topic', nargs='?', default='nanotechnology')
 
     ##
 
@@ -247,4 +263,6 @@ if __name__ == '__main__':
 
     # --do-research nanotechnology
 
-    main(parser.parse_args())
+    args = parser.parse_args()
+
+    main(args)

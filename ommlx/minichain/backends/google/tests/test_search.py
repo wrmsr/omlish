@@ -14,3 +14,4 @@ def test_search(harness):
     )('lectures')
 
     print(res)
+    assert res
