@@ -1,3 +1,4 @@
+import dataclasses as dc
 import inspect
 import json
 import math
@@ -46,12 +47,21 @@ def signature(*arguments):
     return _record_signature
 
 
+Signature: ta.TypeAlias = dict
+
+
+@dc.dataclass(frozen=True)
+class Function:
+    function: ta.Callable
+    signature: Signature
+
+
 class Functions(ta.Protocol):
     def call_function(self, function_name, resolved_args): ...
 
 
 class FunctionsClass:
-    _function_table: ta.ClassVar[dict] = {}  # noqa
+    _function_table: ta.ClassVar[ta.Mapping[str, Function]] = {}  # noqa
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -60,7 +70,7 @@ class FunctionsClass:
 
     @classmethod
     def _populate_function_table(cls):
-        function_table: dict = {}
+        function_table: dict[str, Function] = {}
 
         # Any method with a @signature decorator that also starts with "_func_" is registered as a function.
         # _func_max_by -> max_by function.
@@ -70,10 +80,10 @@ class FunctionsClass:
 
             signature = getattr(method, 'signature', None)
             if signature is not None:
-                function_table[name[6:]] = {
-                    'function': method,
-                    'signature': signature,
-                }
+                function_table[name[6:]] = Function(
+                    method,
+                    signature,
+                )
 
         cls._function_table = function_table
 
@@ -83,8 +93,8 @@ class FunctionsClass:
         except KeyError:
             raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
-        function = spec['function']
-        signature = spec['signature']
+        function = spec.function
+        signature = spec.signature
 
         self._validate_arguments(resolved_args, signature, function_name)
 
