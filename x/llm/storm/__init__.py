@@ -15,6 +15,13 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # https://github.com/stanford-oval/storm/commit/aca7b559a06c730866310a3a4757dc365c5c1a1a
+
+import os.path
+
+# jfc
+os.environ['DSP_CACHEDIR'] = os.path.join(os.path.dirname(__file__), 'cache')
+# os.environ.get('DSP_NOTEBOOK_CACHEDIR')
+
 from .collaborative_storm import *
 from .dataclass import *
 from .encoder import *
