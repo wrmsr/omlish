@@ -119,6 +119,8 @@ def _raise(
     if message is None:
         message = default_message
 
+    try_enable_args_rendering()
+
     if render_fmt is not None and _ARGS_RENDERER is not None:
         rendered_args = _ARGS_RENDERER(render_fmt, *ak.args)
         if rendered_args is not None:
@@ -131,8 +133,6 @@ def _raise(
         *ak.args,
         **ak.kwargs,
     )
-
-    try_enable_args_rendering()
 
     for fn in _ON_RAISE:
         fn(exc)
