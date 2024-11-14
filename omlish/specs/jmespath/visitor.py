@@ -257,10 +257,10 @@ class TreeInterpreter(Visitor):
             self.visit(node.right, value),
         )
 
-    def visit_current(self, node: CurrentNode, value: ta.Any) -> ta.Any:
+    def visit_current_node(self, node: CurrentNode, value: ta.Any) -> ta.Any:
         return value
 
-    def visit_root(self, node: RootNode, value: ta.Any) -> ta.Any:
+    def visit_root_node(self, node: RootNode, value: ta.Any) -> ta.Any:
         return self._root
 
     def visit_expref(self, node: Expref, value: ta.Any) -> ta.Any:
