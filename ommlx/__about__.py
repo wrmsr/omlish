@@ -42,6 +42,10 @@ class Project(ProjectBase):
             'pillow ~= 11.0',
         ],
 
+        'search': [
+            'duckduckgo-search ~= 6.3',
+        ],
+
         'tinygrad': [
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
             'tinygrad ~= 0.9',
