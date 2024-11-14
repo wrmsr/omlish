@@ -98,7 +98,7 @@ class FunctionsClass:
         cls._populate_function_table()
 
     @classmethod
-    def _populate_function_table(cls):
+    def _populate_function_table(cls) -> None:
         function_table: dict[str, Function] = {}
 
         # Any method with a @signature decorator that also starts with "_func_" is registered as a function.
@@ -116,22 +116,21 @@ class FunctionsClass:
 
         cls._function_table = function_table
 
-    def call_function(self, function_name, resolved_args):
+    #
+
+    def call_function(self, function_name: str, resolved_args: ta.Sequence[ta.Any]) -> ta.Any:
         try:
             spec = self._function_table[function_name]
         except KeyError:
             raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
-        function = spec.function
-        sig = spec.signature
+        self._validate_arguments(resolved_args, spec.signature, function_name)
+        return spec.function.__get__(self, self.__class__)(*resolved_args)  # noqa
 
-        self._validate_arguments(resolved_args, sig, function_name)
-
-        return function(self, *resolved_args)
-
-    def _validate_arguments(self, args, sig, function_name):
+    def _validate_arguments(self, args: ta.Sequence[ta.Any], sig: Signature, function_name: str) -> None:
         if len(sig) == 0:
-            return self._type_check(args, sig, function_name)
+            self._type_check(args, sig, function_name)
+            return
 
         required_arguments_count = len([
             param for param in sig if param and (not param.get('optional') or not param['optional'])
@@ -151,24 +150,29 @@ class FunctionsClass:
                     len(args) > (required_arguments_count + optional_arguments_count)
             ):
                 raise exceptions.ArityError(len(sig), len(args), function_name)
+
         elif len(args) != required_arguments_count:
             raise exceptions.ArityError(len(sig), len(args), function_name)
 
-        return self._type_check(args, sig, function_name)
+        self._type_check(args, sig, function_name)
 
-    def _type_check(self, actual, sig, function_name):
+    def _type_check(self, actual: ta.Sequence[ta.Any], sig: Signature, function_name: str) -> None:
         for i in range(min(len(sig), len(actual))):
             allowed_types = self._get_allowed_types_from_signature(sig[i])
             if allowed_types:
                 self._type_check_single(actual[i], allowed_types, function_name)
 
-    def _convert_to_jmespath_type(self, pyobject) -> JmespathType | ta.Literal['unknown']:
-        return TYPES_MAP.get(pyobject, 'unknown')
+    def _get_allowed_types_from_signature(self, spec: Parameter) -> ta.Sequence[ParameterType]:
+        # signature supports monotype {'type': 'type-name'}## or multiple types {'types': ['type1-name', 'type2-name']}
+        return [
+            *([st] if (st := spec.get('type')) is not None else []),
+            *spec.get('types', []),
+        ]
 
-    def _type_check_single(self, current, types, function_name):
+    def _type_check_single(self, current: ta.Any, types: ta.Sequence[ParameterType], function_name: str) -> None:
         # Type checking involves checking the top level type, and in the case of arrays, potentially checking the types
         # of each element.
-        allowed_types, allowed_subtypes = self._get_allowed_pytypes(types)
+        allowed_types, allowed_element_types = self._get_allowed_pytypes(types)
 
         # We're not using isinstance() on purpose. The type model for jmespath does not map 1-1 with python types
         # (booleans are considered integers in python for example).
@@ -183,47 +187,41 @@ class FunctionsClass:
 
         # If we're dealing with a list type, we can have additional restrictions on the type of the list elements (for
         # example a function can require a list of numbers or a list of strings). Arrays are the only types that can
-        # have subtypes.
-        if allowed_subtypes:
-            self._subtype_check(current, allowed_subtypes, types, function_name)
-
-    def _get_allowed_types_from_signature(self, spec):
-        # signature supports monotype {'type': 'type-name'}## or multiple types {'types': ['type1-name', 'type2-name']}
-        if spec.get('type'):
-            spec.update({'types': [spec.get('type')]})
-        return spec.get('types')
+        # have element types.
+        if allowed_element_types:
+            self._element_type_check(current, allowed_element_types, types, function_name)
 
     def _get_allowed_pytypes(self, types):
         allowed_types: list = []
-        allowed_subtypes: list = []
+        allowed_element_types: list = []
 
         for t in types:
             type_ = t.split('-', 1)
             if len(type_) == 2:
-                type_, subtype = type_
-                allowed_subtypes.append(REVERSE_TYPES_MAP[subtype])
+                type_, element_type = type_
+                allowed_element_types.append(REVERSE_TYPES_MAP[element_type])
             else:
                 type_ = type_[0]
 
             allowed_types.extend(REVERSE_TYPES_MAP[type_])
 
-        return allowed_types, allowed_subtypes
+        return allowed_types, allowed_element_types
 
-    def _subtype_check(self, current, allowed_subtypes, types, function_name):
-        if len(allowed_subtypes) == 1:
+    def _element_type_check(self, current, allowed_element_types, types, function_name):
+        if len(allowed_element_types) == 1:
             # The easy case, we know up front what type we need to validate.
-            allowed_subtypes = allowed_subtypes[0]
+            allowed_element_types = allowed_element_types[0]
             for element in current:
                 actual_typename = type(element).__name__
-                if actual_typename not in allowed_subtypes:
+                if actual_typename not in allowed_element_types:
                     raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
 
-        elif len(allowed_subtypes) > 1 and current:
+        elif len(allowed_element_types) > 1 and current:
             # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
             first = type(current[0]).__name__
-            for subtypes in allowed_subtypes:
-                if first in subtypes:
-                    allowed = subtypes
+            for element_types in allowed_element_types:
+                if first in element_types:
+                    allowed = element_types
                     break
             else:
                 raise exceptions.JmespathTypeError(function_name, current[0], first, types)
@@ -233,12 +231,17 @@ class FunctionsClass:
                 if actual_typename not in allowed:
                     raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
 
+    #
+
+    def _convert_to_jmespath_type(self, pyobject: str) -> JmespathType | ta.Literal['unknown']:
+        return TYPES_MAP.get(pyobject, 'unknown')
+
     def _ensure_integer(
             self,
-            func_name,
-            param_name,
-            param_value,
-    ):
+            func_name: str,
+            param_name: str,
+            param_value: ta.Any,
+    ) -> None:
         if param_value is not None:
             if int(param_value) != param_value:
                 raise exceptions.JmespathValueError(
@@ -249,10 +252,10 @@ class FunctionsClass:
 
     def _ensure_non_negative_integer(
             self,
-            func_name,
-            param_name,
-            param_value,
-    ):
+            func_name: str,
+            param_name: str,
+            param_value: ta.Any,
+    ) -> None:
         if param_value is not None:
             if int(param_value) != param_value or int(param_value) < 0:
                 raise exceptions.JmespathValueError(
