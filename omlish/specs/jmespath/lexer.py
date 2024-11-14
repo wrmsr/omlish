@@ -249,14 +249,14 @@ class Lexer:
         }
 
     def _peek_may_be_valid_unquoted_identifier(self) -> bool:
-        if (self._position == self._length - 1):
+        if self._position == self._length - 1:
             return False
         else:
             nxt = self._chars[self._position + 1]
             return nxt in self.START_IDENTIFIER
 
     def _peek_is_next_digit(self) -> bool:
-        if (self._position == self._length - 1):
+        if self._position == self._length - 1:
             return False
         else:
             nxt = self._chars[self._position + 1]
