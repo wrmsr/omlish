@@ -27,20 +27,10 @@ class HashEq(lang.Abstract, ta.Generic[K]):
         raise NotImplementedError
 
 
-@lang.unabstract_class([
-    ('hash', '_hash'),
-    ('eq', '_eq'),
-])
 @dc.dataclass(frozen=True)
 class HashEq_(ta.Generic[K]):  # noqa
     hash: ta.Callable[[K], int]
     eq: ta.Callable[[K, K], bool]
-
-    def _hash(self, k: K) -> int:
-        return self.hash(k)
-
-    def _eq(self, l: K, r: K) -> bool:
-        return self.eq(l, r)
 
 
 class hash_eq(HashEq[K], lang.NotInstantiable, lang.Final):  # noqa
