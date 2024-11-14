@@ -1,35 +1,30 @@
 #!/usr/bin/env python3
 import argparse
-import json
-import pprint
 import sys
 
+from ...formats import json
 from . import exceptions
 from .parser import compile
 from .parser import search
 
 
-def _main():
+def _main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('expression')
-    parser.add_argument(
-        '-f',
-        '--filename',
-        help='The filename containing the input data.  If a filename is not given then data is read from stdin.',
-    )
-    parser.add_argument(
-        '--ast',
-        action='store_true',
-        help='Pretty print the AST, do not search the data.',
-    )
+    parser.add_argument('-f', '--filename')
+    parser.add_argument('-c', '--compact', action='store_true')
+    parser.add_argument('--ast', action='store_true')
     args = parser.parse_args()
+
+    if args.compact:
+        json_dumps = json.dumps_compact
+    else:
+        json_dumps = json.dumps_pretty
 
     expression = args.expression
     if args.ast:
-        # Only print the AST
         expression = compile(args.expression)
-        sys.stdout.write(pprint.pformat(expression.parsed))
-        sys.stdout.write('\n')
+        print(json_dumps(expression.parsed))
         return 0
 
     if args.filename:
@@ -40,27 +35,27 @@ def _main():
         data = json.loads(data)
 
     try:
-        sys.stdout.write(json.dumps(search(expression, data), indent=4, ensure_ascii=False))
-        sys.stdout.write('\n')
+        print(json_dumps(search(expression, data), ensure_ascii=False))
+        return 0
 
     except exceptions.ArityError as e:
-        sys.stderr.write(f'invalid-arity: {e}\n')
+        print(f'invalid-arity: {e}', file=sys.stderr)
         return 1
 
     except exceptions.JmespathTypeError as e:
-        sys.stderr.write(f'invalid-type: {e}\n')
+        print(f'invalid-type: {e}', file=sys.stderr)
         return 1
 
     except exceptions.JmespathValueError as e:
-        sys.stderr.write(f'invalid-value: {e}\n')
+        print(f'invalid-value: {e}', file=sys.stderr)
         return 1
 
     except exceptions.UnknownFunctionError as e:
-        sys.stderr.write(f'unknown-function: {e}\n')
+        print(f'unknown-function: {e}', file=sys.stderr)
         return 1
 
     except exceptions.ParseError as e:
-        sys.stderr.write(f'syntax-error: {e}\n')
+        print(f'syntax-error: {e}', file=sys.stderr)
         return 1
 
 
