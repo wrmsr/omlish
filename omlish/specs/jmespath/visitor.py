@@ -40,11 +40,11 @@ from .scope import ScopedChainDict
 
 
 if ta.TYPE_CHECKING:
-    import json
     import html
+    import json
 else:
-    json = lang.proxy_import('json')
     html = lang.proxy_import('html')
+    json = lang.proxy_import('json')
 
 
 ##
