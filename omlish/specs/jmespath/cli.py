@@ -3,9 +3,18 @@ import argparse
 import sys
 
 from ...formats import json
-from . import exceptions
+from .ast import Node
+from .exceptions import ArityError
+from .exceptions import JmespathTypeError
+from .exceptions import JmespathValueError
+from .exceptions import ParseError
+from .exceptions import UnknownFunctionError
 from .parser import compile
 from .parser import search
+
+
+def _node_dict(n: Node) -> dict:
+    raise NotImplementedError
 
 
 def _main() -> int:
@@ -38,23 +47,23 @@ def _main() -> int:
         print(json_dumps(search(expression, data), ensure_ascii=False))
         return 0
 
-    except exceptions.ArityError as e:
+    except ArityError as e:
         print(f'invalid-arity: {e}', file=sys.stderr)
         return 1
 
-    except exceptions.JmespathTypeError as e:
+    except JmespathTypeError as e:
         print(f'invalid-type: {e}', file=sys.stderr)
         return 1
 
-    except exceptions.JmespathValueError as e:
+    except JmespathValueError as e:
         print(f'invalid-value: {e}', file=sys.stderr)
         return 1
 
-    except exceptions.UnknownFunctionError as e:
+    except UnknownFunctionError as e:
         print(f'unknown-function: {e}', file=sys.stderr)
         return 1
 
-    except exceptions.ParseError as e:
+    except ParseError as e:
         print(f'syntax-error: {e}', file=sys.stderr)
         return 1
 
