@@ -4,7 +4,7 @@ import unittest
 from ... import jmespath
 
 
-class CustomFunctions(jmespath.functions.Functions):
+class CustomFunctions(jmespath.functions.DefaultFunctions):
     @jmespath.functions.signature({'types': ['string', 'array', 'object', 'null']})
     def _func_length0(self, s):
         return 0 if s is None else len(s)

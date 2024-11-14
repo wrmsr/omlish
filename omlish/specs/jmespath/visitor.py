@@ -151,9 +151,9 @@ class TreeInterpreter(Visitor):
             self._dict_cls = self._options.dict_cls
 
         if options.custom_functions is not None:
-            self._functions = self._options.custom_functions
+            self._functions: functions.Functions = self._options.custom_functions
         else:
-            self._functions = functions.Functions()
+            self._functions: functions.Functions = functions.DefaultFunctions()
 
         self._root = None
         self._scope: ScopedChainDict = ScopedChainDict()

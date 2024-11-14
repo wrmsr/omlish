@@ -9,7 +9,7 @@ from .. import functions
 class TestFunctionSignatures(unittest.TestCase):
 
     def setUp(self):
-        self._functions = functions.Functions()
+        self._functions = functions.DefaultFunctions()
 
     def test_signature_with_monotype_argument(self):
         (function_name, signature) = self._make_test('_function_with_monotyped_arguments')
