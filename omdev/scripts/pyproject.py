@@ -5977,20 +5977,26 @@ def _build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers()
 
-    parser_resolve = subparsers.add_parser('venv')
-    parser_resolve.add_argument('name')
-    parser_resolve.add_argument('-e', '--docker-env', action='append')
-    parser_resolve.add_argument('cmd', nargs='?')
-    parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
-    parser_resolve.set_defaults(func=_venv_cmd)
+    #
 
-    parser_resolve = subparsers.add_parser('pkg')
-    parser_resolve.add_argument('-b', '--build', action='store_true')
-    parser_resolve.add_argument('-r', '--revision', action='store_true')
-    parser_resolve.add_argument('-j', '--jobs', type=int)
-    parser_resolve.add_argument('cmd', nargs='?')
-    parser_resolve.add_argument('args', nargs=argparse.REMAINDER)
-    parser_resolve.set_defaults(func=_pkg_cmd)
+    parser_venv = subparsers.add_parser('venv')
+    parser_venv.add_argument('name')
+    parser_venv.add_argument('-e', '--docker-env', action='append')
+    parser_venv.add_argument('cmd', nargs='?')
+    parser_venv.add_argument('args', nargs=argparse.REMAINDER)
+    parser_venv.set_defaults(func=_venv_cmd)
+
+    #
+
+    parser_pkg = subparsers.add_parser('pkg')
+    parser_pkg.add_argument('-b', '--build', action='store_true')
+    parser_pkg.add_argument('-r', '--revision', action='store_true')
+    parser_pkg.add_argument('-j', '--jobs', type=int)
+    parser_pkg.add_argument('cmd', nargs='?')
+    parser_pkg.add_argument('args', nargs=argparse.REMAINDER)
+    parser_pkg.set_defaults(func=_pkg_cmd)
+
+    #
 
     return parser
 
