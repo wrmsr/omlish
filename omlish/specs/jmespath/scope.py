@@ -1,4 +1,3 @@
-import collections
 import typing as ta
 
 
@@ -21,10 +20,10 @@ class ScopedChainDict(ta.Generic[K, V]):
         # call reversed(self._scopes) whenever we resolve a key, because the end of the list is the top of the stack.
         # To avoid this, we're using a deque so we can append to the front of the list via .appendleft() in constant
         # time, and iterate over scopes without having to do so with a reversed() call each time.
-        self._scopes = collections.deque(scopes)
+        self._scopes: list[ta.Mapping[K, V]] = list(reversed(scopes))
 
     def __getitem__(self, key: K) -> V:
-        for scope in self._scopes:
+        for scope in reversed(self._scopes):
             if key in scope:
                 return scope[key]
         raise KeyError(key)
@@ -36,7 +35,7 @@ class ScopedChainDict(ta.Generic[K, V]):
             return default
 
     def push_scope(self, scope: ta.Mapping[K, V]) -> None:
-        self._scopes.appendleft(scope)
+        self._scopes.append(scope)
 
     def pop_scope(self) -> None:
-        self._scopes.popleft()
+        self._scopes.pop()
