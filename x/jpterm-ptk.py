@@ -13,7 +13,8 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.widgets import Label
 from prompt_toolkit.widgets import TextArea
 from pygments.lexers import JsonLexer
-import jmespath
+
+from omlish.specs import jmespath
 
 
 class JmespathDisplay:
