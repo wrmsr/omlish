@@ -312,7 +312,7 @@ class _ProxyInit:
         try:
             mod = self._mods_by_pkgs[pkg]
         except KeyError:
-            mod = importlib.import_module(pkg, package=self.name_package.package)
+            mod = importlib.import_module(pkg, package=self._name_package.package)
 
         val = getattr(mod, attr)
 
