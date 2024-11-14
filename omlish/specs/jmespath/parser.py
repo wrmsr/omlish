@@ -514,7 +514,7 @@ class Parser:
         return MultiSelectList(expressions)
 
     def _parse_multi_select_hash(self) -> Node:
-        pairs = []
+        pairs: list[KeyValPair] = []
         while True:
             key_token = check.not_none(self._lookahead_token(0))
 
