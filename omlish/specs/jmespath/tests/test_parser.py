@@ -461,9 +461,9 @@ class TestRenderGraphvizFile(unittest.TestCase):
             'digraph AST {\n'
             'subexpression1 [label="subexpression()"]\n'
             '  subexpression1 -> field2\n'
-            'field2 [label="field(foo)"]\n'
+            f'field2 [label="field({Q}foo{Q})"]\n'
             '  subexpression1 -> field3\n'
-            'field3 [label="field(bar)"]\n}',
+            f'field3 [label="field({Q}bar{Q})"]\n}}',
         )
 
 
