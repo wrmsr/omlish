@@ -147,31 +147,26 @@ class TestParser(unittest.TestCase):
     def test_function_call_with_and_statement(self):
         self.assert_parsed_ast(
             'f(@ && @)',
-            {
-                'children': [
-                    {
-                        'children': [
-                            {'children': [], 'type': 'current'},
-                            {'children': [], 'type': 'current'},
-                        ],
-                        'type': 'and_expression',
-                    },
+            ast.FunctionExpression(
+                'f',
+                [
+                    ast.AndExpression(
+                        ast.CurrentNode(),
+                        ast.CurrentNode(),
+                    ),
                 ],
-                'type': 'function_expression',
-                'value': 'f',
-            },
+            )
         )
 
     def test_root_node(self):
         self.assert_parsed_ast(
             '$[0]',
-            {
-                'type': 'index_expression',
-                'children': [
-                    {'type': 'root', 'children': []},
-                    {'type': 'index', 'value': 0, 'children': []},
+            ast.IndexExpression(
+                [
+                    ast.RootNode(),
+                    ast.Index(0),
                 ],
-            },
+            ),
         )
 
 
