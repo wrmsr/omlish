@@ -69,17 +69,17 @@ class Options:
     ) -> None:
         super().__init__()
 
-        #: The class to use when creating a dict.  The interpreter may create dictionaries during the evaluation of a
-        #  Jmespath expression.  For example, a multi-select hash will create a dictionary.  By default we use a dict()
-        #  type. You can set this value to change what dict type is used. The most common reason you would change this
-        #  is if you want to set a collections.OrderedDict so that you can have predictable key ordering.
+        # The class to use when creating a dict.  The interpreter may create dictionaries during the evaluation of a
+        # Jmespath expression.  For example, a multi-select hash will create a dictionary.  By default we use a dict()
+        # type. You can set this value to change what dict type is used. The most common reason you would change this is
+        # if you want to set a collections.OrderedDict so that you can have predictable key ordering.
         self.dict_cls = dict_cls
         self.custom_functions = custom_functions
 
-        #: The flag to enable pre-JEP-12 literal compatibility.
-        #  JEP-12 deprecates `foo` -> "foo" syntax.
-        #  Valid expressions MUST use: `"foo"` -> "foo"
-        #  Setting this flag to `True` enables support for legacy syntax.
+        # The flag to enable pre-JEP-12 literal compatibility.
+        # JEP-12 deprecates `foo` -> "foo" syntax.
+        # Valid expressions MUST use: `"foo"` -> "foo"
+        # Setting this flag to `True` enables support for legacy syntax.
         self.enable_legacy_literals = enable_legacy_literals
 
 
@@ -156,7 +156,7 @@ class TreeInterpreter(Visitor):
             self._functions = functions.Functions()
 
         self._root = None
-        self._scope = ScopedChainDict()
+        self._scope: ScopedChainDict = ScopedChainDict()
 
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError(node['type'])
@@ -280,15 +280,13 @@ class TreeInterpreter(Visitor):
 
     def visit_slice(self, node, value):
         if isinstance(value, str):
-            start = node['children'][0]
-            end = node['children'][1]
-            step = node['children'][2]
+            start, end, step = node['value']
             return value[start:end:step]
 
         if not isinstance(value, list):
             return None
 
-        s = slice(*node['children'])
+        s = slice(*node['value'])
         return value[s]
 
     def visit_key_val_pair(self, node, value):
