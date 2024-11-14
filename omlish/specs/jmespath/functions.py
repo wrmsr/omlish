@@ -2,6 +2,7 @@ import inspect
 import json
 import math
 import re
+import typing as ta
 
 from . import exceptions
 
@@ -42,14 +43,21 @@ def signature(*arguments):
     return _record_signature
 
 
-class FunctionRegistry(type):
-    def __init__(cls, name, bases, attrs):
+class Functions(ta.Protocol):
+    def call_function(self, function_name, resolved_args): ...
+
+
+class FunctionsClass:
+    _function_table: ta.ClassVar[dict] = {}  # noqa
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
         cls._populate_function_table()
 
-        super().__init__(name, bases, attrs)
-
+    @classmethod
     def _populate_function_table(cls):
-        function_table = {}
+        function_table: dict = {}
 
         # Any method with a @signature decorator that also starts with "_func_" is registered as a function.
         # _func_max_by -> max_by function.
@@ -64,16 +72,11 @@ class FunctionRegistry(type):
                     'signature': signature,
                 }
 
-        cls.FUNCTION_TABLE = function_table
-
-
-class Functions(metaclass=FunctionRegistry):
-
-    FUNCTION_TABLE: dict = {}  # noqa
+        cls._function_table = function_table
 
     def call_function(self, function_name, resolved_args):
         try:
-            spec = self.FUNCTION_TABLE[function_name]
+            spec = self._function_table[function_name]
         except KeyError:
             raise exceptions.UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
@@ -116,6 +119,9 @@ class Functions(metaclass=FunctionRegistry):
             allowed_types = self._get_allowed_types_from_signature(signature[i])
             if allowed_types:
                 self._type_check_single(actual[i], allowed_types, function_name)
+
+    def _convert_to_jmespath_type(self, pyobject):
+        return TYPES_MAP.get(pyobject, 'unknown')
 
     def _type_check_single(self, current, types, function_name):
         # Type checking involves checking the top level type, and in the case of arrays, potentially checking the types
@@ -182,6 +188,8 @@ class Functions(metaclass=FunctionRegistry):
                 if actual_typename not in allowed:
                     raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
 
+
+class DefaultFunctions(FunctionsClass):
     @signature({'types': ['number']})
     def _func_abs(self, arg):
         return abs(arg)
@@ -330,6 +338,20 @@ class Functions(metaclass=FunctionRegistry):
     def _func_values(self, arg):
         return list(arg.values())
 
+    def _find_impl(self, text, search, func, start, end):
+        if len(search) == 0:
+            return None
+        if end is None:
+            end = len(text)
+
+        pos = func(text[start:end], search)
+        if start < 0:
+            start = start + len(text)
+
+        # restrict resulting range to valid indices
+        start = min(max(start, 0), len(text))
+        return start + pos if pos != -1 else None
+
     @signature(
         {'type': 'string'},
         {'type': 'string'},
@@ -362,20 +384,6 @@ class Functions(metaclass=FunctionRegistry):
             start,
             end,
         )
-
-    def _find_impl(self, text, search, func, start, end):
-        if len(search) == 0:
-            return None
-        if end is None:
-            end = len(text)
-
-        pos = func(text[start:end], search)
-        if start < 0:
-            start = start + len(text)
-
-        # restrict resulting range to valid indices
-        start = min(max(start, 0), len(text))
-        return start + pos if pos != -1 else None
 
     @signature(
         {'type': 'string'},
@@ -510,6 +518,21 @@ class Functions(metaclass=FunctionRegistry):
         else:
             return None
 
+    def _create_key_func(self, expref, allowed_types, function_name):
+        def keyfunc(x):
+            result = expref.visit(expref.expression, x)
+            actual_typename = type(result).__name__
+
+            jmespath_type = self._convert_to_jmespath_type(actual_typename)
+            # allowed_types is in terms of jmespath types, not python types.
+            if jmespath_type not in allowed_types:
+                raise exceptions.JmespathTypeError(
+                    function_name, result, jmespath_type, allowed_types)
+
+            return result
+
+        return keyfunc
+
     @signature({'types': ['array']}, {'types': ['expref']})
     def _func_sort_by(self, array, expref):
         if not array:
@@ -574,24 +597,6 @@ class Functions(metaclass=FunctionRegistry):
             result.update({key: items})
 
         return result
-
-    def _create_key_func(self, expref, allowed_types, function_name):
-        def keyfunc(x):
-            result = expref.visit(expref.expression, x)
-            actual_typename = type(result).__name__
-
-            jmespath_type = self._convert_to_jmespath_type(actual_typename)
-            # allowed_types is in terms of jmespath types, not python types.
-            if jmespath_type not in allowed_types:
-                raise exceptions.JmespathTypeError(
-                    function_name, result, jmespath_type, allowed_types)
-
-            return result
-
-        return keyfunc
-
-    def _convert_to_jmespath_type(self, pyobject):
-        return TYPES_MAP.get(pyobject, 'unknown')
 
     #
 
