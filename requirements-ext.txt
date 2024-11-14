@@ -291,4 +291,5 @@ wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
 
-duckduckgo_search==6.3.4
+mlx==0.20.0; sys_platform == "darwin"
+mlx-lm==0.19.3; sys_platform == "darwin"

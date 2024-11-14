@@ -94,8 +94,8 @@ class CseSearchService(SearchService):
             l=[
                 SearchHit(
                     title=i.title,
-                    link=i.link,
-                    snippet=i.snippet,
+                    url=i.link,
+                    snippets=[i.snippet],
                 )
                 for i in res.items or ()
             ],
