@@ -2,6 +2,7 @@ import numbers
 import operator
 import typing as ta
 
+from ... import check
 from . import exceptions
 from . import functions
 from .ast import Node
@@ -94,17 +95,18 @@ class _Expression:
 
 
 class Visitor:
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self._method_cache = {}
 
-    def visit(self, node, *args, **kwargs):
+        self._method_cache: dict[str, ta.Callable] = {}
+
+    def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         node_type = node['type']
         method = self._method_cache.get(node_type)
         if method is None:
-            method = getattr(self, f'visit_{node["type"]}', self.default_visit)
+            method = check.not_none(getattr(self, f'visit_{node["type"]}', self.default_visit))
             self._method_cache[node_type] = method
-        return method(node, *args, **kwargs)  # type: ignore
+        return method(node, *args, **kwargs)
 
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError('default_visit')
