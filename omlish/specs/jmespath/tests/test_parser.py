@@ -1,4 +1,5 @@
 # ruff: noqa: PT009 PT027
+import html
 import random
 import re
 import string
@@ -441,12 +442,15 @@ class TestParsedResultAddsOptions(unittest.TestCase):
         self.assertEqual(list(result), ['a', 'b', 'c'])
 
 
+Q = html.escape('"')
+
+
 class TestRenderGraphvizFile(unittest.TestCase):
     def test_dot_file_rendered(self):
         p = parser.Parser()
         result = p.parse('foo')
         dot_contents = result._render_dot_file()  # noqa
-        self.assertEqual(dot_contents, 'digraph AST {\nfield1 [label="field(foo)"]\n}')
+        self.assertEqual(dot_contents, f'digraph AST {{\nfield1 [label="field({Q}foo{Q})"]\n}}')
 
     def test_dot_file_subexpr(self):
         p = parser.Parser()

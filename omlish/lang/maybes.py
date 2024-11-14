@@ -50,15 +50,15 @@ class Maybe(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def or_else(self, other: T) -> 'Maybe[T]':
+    def or_else(self, other: T) -> T:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def or_else_get(self, supplier: ta.Callable[[], T]) -> 'Maybe[T]':
+    def or_else_get(self, supplier: ta.Callable[[], T]) -> T:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> 'Maybe[T]':
+    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
         raise NotImplementedError
 
 
@@ -98,9 +98,7 @@ class _Maybe(Maybe[T], tuple):
 
     def map(self, mapper: ta.Callable[[T], U]) -> Maybe[U]:
         if self:
-            value = mapper(self[0])
-            if value is not None:
-                return just(value)
+            return just(mapper(self[0]))
         return _empty  # noqa
 
     def flat_map(self, mapper: ta.Callable[[T], Maybe[U]]) -> Maybe[U]:
@@ -111,15 +109,15 @@ class _Maybe(Maybe[T], tuple):
             return value
         return _empty  # noqa
 
-    def or_else(self, other: T) -> Maybe[T]:
-        return self if self else just(other)
+    def or_else(self, other: T) -> T:
+        return self.must() if self else other
 
-    def or_else_get(self, supplier: ta.Callable[[], T]) -> Maybe[T]:
-        return self if self else just(supplier())
+    def or_else_get(self, supplier: ta.Callable[[], T]) -> T:
+        return self.must() if self else supplier()
 
-    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> Maybe[T]:
+    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
         if self:
-            return self
+            return self.must()
         raise exception_supplier()
 
 
