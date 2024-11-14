@@ -7,7 +7,7 @@ def _main() -> None:
 
     with open(os.path.expanduser('~/.omlish-llm/.env')) as f:
         os.environ.update({
-            k: v
+            k: v[1:-1] if v.startswith('"') else v
             for l in f
             if (s := l.strip())
             for k, v in [s.split('=')]
