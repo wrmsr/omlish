@@ -343,7 +343,6 @@ class TreeInterpreter(Visitor):
         return value[s]
 
     def visit_key_val_pair(self, node: KeyValPair, value: ta.Any) -> ta.Any:
-        # FIXME: node.key_name not referenced??
         return self.visit(node.node, value)
 
     def visit_literal(self, node: Literal, value: ta.Any):
@@ -352,7 +351,7 @@ class TreeInterpreter(Visitor):
     def visit_multi_select_dict(self, node: MultiSelectDict, value: ta.Any) -> ta.Any:
         collected = self._dict_cls()
         for child in node.nodes:
-            collected[check.isinstance(child, KeyValPair).key_name] = self.visit(child, value)
+            collected[child.key_name] = self.visit(child, value)
 
         return collected
 

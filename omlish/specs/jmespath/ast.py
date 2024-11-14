@@ -162,7 +162,7 @@ class Literal(LeafNode, lang.Final):
 
 @dc.dataclass(frozen=True)
 class MultiSelectDict(Node, lang.Final):
-    nodes: ta.Sequence[Node]
+    nodes: ta.Sequence[KeyValPair]
 
     @property
     def children(self) -> ta.Sequence[Node]:
