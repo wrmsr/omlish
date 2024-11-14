@@ -128,11 +128,11 @@ class Index(LeafNode, lang.Final):
 
 @dc.dataclass(frozen=True)
 class IndexExpression(Node, lang.Final):
-    children: ta.Sequence[Node]
+    nodes: ta.Sequence[Node]
 
     @property
     def children(self) -> ta.Sequence[Node]:
-        return tuple(self.children)
+        return tuple(self.nodes)
 
 
 @dc.dataclass(frozen=True)
