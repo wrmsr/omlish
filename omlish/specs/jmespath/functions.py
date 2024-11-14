@@ -7,8 +7,11 @@ import typing as ta
 from . import exceptions
 
 
+##
+
+
 # python types -> jmespath types
-TYPES_MAP = {
+TYPES_MAP: ta.Mapping[str, str] = {
     'bool': 'boolean',
     'list': 'array',
     'dict': 'object',
@@ -25,7 +28,7 @@ TYPES_MAP = {
 
 
 # jmespath types -> python types
-REVERSE_TYPES_MAP = {
+REVERSE_TYPES_MAP: ta.Mapping[str, ta.Sequence[str]] = {
     'boolean': ('bool',),
     'array': ('list', '_Projection'),
     'object': ('dict', 'OrderedDict'),
@@ -174,7 +177,7 @@ class FunctionsClass:
                     raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
 
         elif len(allowed_subtypes) > 1 and current:
-            # Dynamic type validation.  Based on the first type we see, we validate that the remaining types match.
+            # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
             first = type(current[0]).__name__
             for subtypes in allowed_subtypes:
                 if first in subtypes:
@@ -188,24 +191,53 @@ class FunctionsClass:
                 if actual_typename not in allowed:
                     raise exceptions.JmespathTypeError(function_name, element, actual_typename, types)
 
+    def _ensure_integer(
+            self,
+            func_name,
+            param_name,
+            param_value,
+    ):
+        if param_value is not None:
+            if int(param_value) != param_value:
+                raise exceptions.JmespathValueError(
+                    func_name,
+                    param_value,
+                    'integer',
+                )
 
-class DefaultFunctions(FunctionsClass):
-    @signature({'types': ['number']})
-    def _func_abs(self, arg):
-        return abs(arg)
+    def _ensure_non_negative_integer(
+            self,
+            func_name,
+            param_name,
+            param_value,
+    ):
+        if param_value is not None:
+            if int(param_value) != param_value or int(param_value) < 0:
+                raise exceptions.JmespathValueError(
+                    func_name,
+                    param_name,
+                    'non-negative integer',
+                )
 
-    @signature({'types': ['string']})
-    def _func_lower(self, arg):
-        return arg.lower()
 
-    @signature({'types': ['string']})
-    def _func_upper(self, arg):
-        return arg.upper()
+##
 
-    @signature({'types': ['array-number']})
-    def _func_avg(self, arg):
-        if arg:
-            return sum(arg) / len(arg)
+
+class TypeFunctions(FunctionsClass):
+    @signature({'types': []})
+    def _func_type(self, arg):
+        if isinstance(arg, str):
+            return 'string'
+        elif isinstance(arg, bool):
+            return 'boolean'
+        elif isinstance(arg, list):
+            return 'array'
+        elif isinstance(arg, dict):
+            return 'object'
+        elif isinstance(arg, (float, int)):
+            return 'number'
+        elif arg is None:
+            return 'null'
         else:
             return None
 
@@ -250,21 +282,19 @@ class DefaultFunctions(FunctionsClass):
                 except ValueError:
                     return None
 
+
+class ContainerFunctions(FunctionsClass):
     @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
     def _func_contains(self, subject, *searches):
         return any(search in subject for search in searches)
 
+    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
+    def _func_in(self, subject, *searches):
+        return subject in searches
+
     @signature({'types': ['string', 'array', 'object']})
     def _func_length(self, arg):
         return len(arg)
-
-    @signature({'types': ['string']}, {'types': ['string']})
-    def _func_ends_with(self, search, suffix):
-        return search.endswith(suffix)
-
-    @signature({'types': ['string']}, {'types': ['string']})
-    def _func_starts_with(self, search, suffix):
-        return search.startswith(suffix)
 
     @signature({'types': ['array', 'string']})
     def _func_reverse(self, arg):
@@ -272,6 +302,41 @@ class DefaultFunctions(FunctionsClass):
             return arg[::-1]
         else:
             return list(reversed(arg))
+
+    @signature({'types': ['expref']}, {'types': ['array']})
+    def _func_map(self, expref, arg):
+        result = []
+        for element in arg:
+            result.append(expref.visit(expref.expression, element))
+        return result
+
+    @signature({'types': ['object'], 'variadic': True})
+    def _func_merge(self, *arguments):
+        merged = {}
+        for arg in arguments:
+            merged.update(arg)
+        return merged
+
+    @signature({'types': ['array-string', 'array-number']})
+    def _func_sort(self, arg):
+        return sorted(arg)
+
+    @signature({'types': ['array'], 'variadic': True})
+    def _func_zip(self, *arguments):
+        return [list(t) for t in zip(*arguments)]
+
+
+class NumberFunctions(FunctionsClass):
+    @signature({'types': ['number']})
+    def _func_abs(self, arg):
+        return abs(arg)
+
+    @signature({'types': ['array-number']})
+    def _func_avg(self, arg):
+        if arg:
+            return sum(arg) / len(arg)
+        else:
+            return None
 
     @signature({'types': ['number']})
     def _func_ceil(self, arg):
@@ -281,30 +346,12 @@ class DefaultFunctions(FunctionsClass):
     def _func_floor(self, arg):
         return math.floor(arg)
 
-    @signature({'types': ['string']}, {'types': ['array-string']})
-    def _func_join(self, separator, array):
-        return separator.join(array)
-
-    @signature({'types': ['expref']}, {'types': ['array']})
-    def _func_map(self, expref, arg):
-        result = []
-        for element in arg:
-            result.append(expref.visit(expref.expression, element))
-        return result
-
     @signature({'types': ['array-number', 'array-string']})
     def _func_max(self, arg):
         if arg:
             return max(arg)
         else:
             return None
-
-    @signature({'types': ['object'], 'variadic': True})
-    def _func_merge(self, *arguments):
-        merged = {}
-        for arg in arguments:
-            merged.update(arg)
-        return merged
 
     @signature({'types': ['array-number', 'array-string']})
     def _func_min(self, arg):
@@ -313,30 +360,51 @@ class DefaultFunctions(FunctionsClass):
         else:
             return None
 
-    @signature({'types': ['array-string', 'array-number']})
-    def _func_sort(self, arg):
-        return sorted(arg)
-
     @signature({'types': ['array-number']})
     def _func_sum(self, arg):
         return sum(arg)
 
-    @signature({'types': ['object']})
-    def _func_items(self, arg):
-        return [list(t) for t in arg.items()]
 
-    @signature({'types': ['array']})
-    def _func_from_items(self, items):
-        return dict(items)
+class StringFunctions(FunctionsClass):
+    @signature({'types': ['string']})
+    def _func_lower(self, arg):
+        return arg.lower()
 
-    @signature({'types': ['object']})
-    def _func_keys(self, arg):
-        # To be consistent with .values() should we also return the indices of a list?
-        return list(arg.keys())
+    @signature({'types': ['string']})
+    def _func_upper(self, arg):
+        return arg.upper()
 
-    @signature({'types': ['object']})
-    def _func_values(self, arg):
-        return list(arg.values())
+    @signature({'types': ['string']}, {'types': ['string']})
+    def _func_ends_with(self, search, suffix):
+        return search.endswith(suffix)
+
+    @signature({'types': ['string']}, {'types': ['string']})
+    def _func_starts_with(self, search, suffix):
+        return search.startswith(suffix)
+
+    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
+    def _func_trim(self, text, chars=None):
+        if chars is None or len(chars) == 0:
+            return text.strip()
+        return text.strip(chars)
+
+    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
+    def _func_trim_left(self, text, chars=None):
+        if chars is None or len(chars) == 0:
+            return text.lstrip()
+        return text.lstrip(chars)
+
+    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
+    def _func_trim_right(self, text, chars=None):
+        if chars is None or len(chars) == 0:
+            return text.rstrip()
+        return text.rstrip(chars)
+
+    @signature({'types': ['string']}, {'types': ['array-string']})
+    def _func_join(self, separator, array):
+        return separator.join(array)
+
+    #
 
     def _find_impl(self, text, search, func, start, end):
         if len(search) == 0:
@@ -385,6 +453,16 @@ class DefaultFunctions(FunctionsClass):
             end,
         )
 
+    #
+
+    def _pad_impl(self, func, padding):
+        if len(padding) != 1:
+            raise exceptions.JmespathError(
+                f'syntax-error: pad_right() expects $padding to have a single character, but received '
+                f'`{padding}` instead.',
+            )
+        return func()
+
     @signature(
         {'type': 'string'},
         {'type': 'number'},
@@ -403,13 +481,7 @@ class DefaultFunctions(FunctionsClass):
         self._ensure_non_negative_integer('pad_right', 'width', width)
         return self._pad_impl(lambda: text.ljust(width, padding), padding)
 
-    def _pad_impl(self, func, padding):
-        if len(padding) != 1:
-            raise exceptions.JmespathError(
-                f'syntax-error: pad_right() expects $padding to have a single character, but received '
-                f'`{padding}` instead.',
-            )
-        return func()
+    #
 
     @signature(
         {'type': 'string'},
@@ -455,69 +527,33 @@ class DefaultFunctions(FunctionsClass):
 
         return text.split(search)
 
-    def _ensure_integer(
-            self,
-            func_name,
-            param_name,
-            param_value,
-    ):
-        if param_value is not None:
-            if int(param_value) != param_value:
-                raise exceptions.JmespathValueError(
-                    func_name,
-                    param_value,
-                    'integer',
-                )
+    #
 
-    def _ensure_non_negative_integer(
-            self,
-            func_name,
-            param_name,
-            param_value,
-    ):
-        if param_value is not None:
-            if int(param_value) != param_value or int(param_value) < 0:
-                raise exceptions.JmespathValueError(
-                    func_name,
-                    param_name,
-                    'non-negative integer',
-                )
+    @signature({'types': ['string']}, {'types': ['string']})
+    def _func_match(self, string, pattern):
+        return re.match(pattern, string) is not None
 
-    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
-    def _func_trim(self, text, chars=None):
-        if chars is None or len(chars) == 0:
-            return text.strip()
-        return text.strip(chars)
 
-    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
-    def _func_trim_left(self, text, chars=None):
-        if chars is None or len(chars) == 0:
-            return text.lstrip()
-        return text.lstrip(chars)
+class ObjectFunctions(FunctionsClass):
+    @signature({'types': ['object']})
+    def _func_items(self, arg):
+        return [list(t) for t in arg.items()]
 
-    @signature({'type': 'string'}, {'type': 'string', 'optional': True})
-    def _func_trim_right(self, text, chars=None):
-        if chars is None or len(chars) == 0:
-            return text.rstrip()
-        return text.rstrip(chars)
+    @signature({'types': ['array']})
+    def _func_from_items(self, items):
+        return dict(items)
 
-    @signature({'types': []})
-    def _func_type(self, arg):
-        if isinstance(arg, str):
-            return 'string'
-        elif isinstance(arg, bool):
-            return 'boolean'
-        elif isinstance(arg, list):
-            return 'array'
-        elif isinstance(arg, dict):
-            return 'object'
-        elif isinstance(arg, (float, int)):
-            return 'number'
-        elif arg is None:
-            return 'null'
-        else:
-            return None
+    @signature({'types': ['object']})
+    def _func_keys(self, arg):
+        # To be consistent with .values() should we also return the indices of a list?
+        return list(arg.keys())
 
+    @signature({'types': ['object']})
+    def _func_values(self, arg):
+        return list(arg.values())
+
+
+class KeyedFunctions(FunctionsClass):
     def _create_key_func(self, expref, allowed_types, function_name):
         def keyfunc(x):
             result = expref.visit(expref.expression, x)
@@ -580,10 +616,6 @@ class DefaultFunctions(FunctionsClass):
         else:
             return None
 
-    @signature({'types': ['array'], 'variadic': True})
-    def _func_zip(self, *arguments):
-        return [list(t) for t in zip(*arguments)]
-
     @signature({'types': ['array']}, {'types': ['expref']})
     def _func_group_by(self, array, expref):
         keyfunc = self._create_key_func(expref, ['null', 'string'], 'group_by')
@@ -598,12 +630,14 @@ class DefaultFunctions(FunctionsClass):
 
         return result
 
-    #
 
-    @signature({'types': ['string']}, {'types': ['string']})
-    def _func_match(self, string, pattern):
-        return re.match(pattern, string) is not None
-
-    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
-    def _func_in(self, subject, *searches):
-        return subject in searches
+class DefaultFunctions(
+    KeyedFunctions,
+    ObjectFunctions,
+    StringFunctions,
+    NumberFunctions,
+    ContainerFunctions,
+    TypeFunctions,
+    FunctionsClass,
+):
+    pass
