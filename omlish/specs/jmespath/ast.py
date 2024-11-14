@@ -1,214 +1,258 @@
+import abc
+import dataclasses as dc
 import typing as ta
 
-
-class Node(ta.TypedDict):
-    type: str
-    children: list['Node']
-    value: ta.NotRequired[ta.Any]
+from ... import lang
 
 
-def arithmetic_unary(operator: str, expression: Node) -> Node:
-    return {
-        'type': 'arithmetic_unary',
-        'children': [expression],
-        'value': operator,
-    }
+@dc.dataclass(frozen=True)
+class Node(lang.Abstract):
+    @property
+    @abc.abstractmethod
+    def children(self) -> ta.Sequence['Node']:
+        raise NotImplementedError
 
 
-def arithmetic(operator: str, left: Node, right: Node) -> Node:
-    return {
-        'type': 'arithmetic',
-        'children': [left, right],
-        'value': operator,
-    }
+@dc.dataclass(frozen=True)
+class LeafNode(Node, lang.Abstract):
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return []
 
 
-def assign(name: str, expr: Node) -> Node:
-    return {
-        'type': 'assign',
-        'children': [expr],
-        'value': name,
-    }
+@dc.dataclass(frozen=True)
+class ArithmeticUnary(Node, lang.Final):
+    operator: str
+    expression: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.expression]
 
 
-def comparator(name: str, first: Node, second: Node) -> Node:
-    return {
-        'type': 'comparator',
-        'children': [first, second],
-        'value': name,
-    }
+@dc.dataclass(frozen=True)
+class Arithmetic(Node, lang.Final):
+    operator: str
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
 
 
-def current_node() -> Node:
-    return {
-        'type': 'current',
-        'children': [],
-    }
+@dc.dataclass(frozen=True)
+class Assign(Node, lang.Final):
+    name: str
+    expr: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.expr]
 
 
-def root_node() -> Node:
-    return {
-        'type': 'root',
-        'children': [],
-    }
+@dc.dataclass(frozen=True)
+class Comparator(Node, lang.Final):
+    name: str
+    first: Node
+    second: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.first, self.second]
 
 
-def expref(expression: Node) -> Node:
-    return {
-        'type': 'expref',
-        'children': [expression],
-    }
+@dc.dataclass(frozen=True)
+class CurrentNode(LeafNode, lang.Final):
+    pass
 
 
-def function_expression(name: str, args: list[Node]) -> Node:
-    return {
-        'type': 'function_expression',
-        'children': args,
-        'value': name,
-    }
+@dc.dataclass(frozen=True)
+class RootNode(LeafNode, lang.Final):
+    pass
 
 
-def field(name: str) -> Node:
-    return {
-        'type': 'field',
-        'children': [],
-        'value': name,
-    }
+@dc.dataclass(frozen=True)
+class Expref(Node, lang.Final):
+    expression: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.expression]
 
 
-def filter_projection(left: Node, right: Node, comparator: Node) -> Node:  # noqa
-    return {
-        'type': 'filter_projection',
-        'children': [left, right, comparator],
-    }
+@dc.dataclass(frozen=True)
+class FunctionExpression(Node, lang.Final):
+    name: str
+    args: ta.Sequence[Node]
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return tuple(self.args)
 
 
-def flatten(node: Node) -> Node:
-    return {
-        'type': 'flatten',
-        'children': [node],
-    }
+@dc.dataclass(frozen=True)
+class Field(LeafNode, lang.Final):
+    name: str
 
 
-def identity() -> Node:
-    return {
-        'type': 'identity',
-        'children': [],
-    }
+@dc.dataclass(frozen=True)
+class FilterProjection(Node, lang.Final):
+    left: Node
+    right: Node
+    comparator: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right, self.comparator]
 
 
-def index(index: int) -> Node:
-    return {
-        'type': 'index',
-        'children': [],
-        'value': index,
-    }
+@dc.dataclass(frozen=True)
+class Flatten(Node, lang.Final):
+    node: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.node]
 
 
-def index_expression(children: list[Node]) -> Node:
-    return {
-        'type': 'index_expression',
-        'children': children,
-    }
+@dc.dataclass(frozen=True)
+class Identity(LeafNode, lang.Final):
+    pass
 
 
-def key_val_pair(key_name: str, node: Node) -> Node:
-    return {
-        'type': 'key_val_pair',
-        'children': [node],
-        'value': key_name,
-    }
+@dc.dataclass(frozen=True)
+class Index(LeafNode, lang.Final):
+    index: int
 
 
-def let_expression(bindings: list[Node], expr: Node) -> Node:
-    return {
-        'type': 'let_expression',
-        'children': [*bindings, expr],
-    }
+@dc.dataclass(frozen=True)
+class IndexExpression(Node, lang.Final):
+    children: ta.Sequence[Node]
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return tuple(self.children)
 
 
-def literal(literal_value: ta.Any) -> Node:
-    return {
-        'type': 'literal',
-        'children': [],
-        'value': literal_value,
-    }
+@dc.dataclass(frozen=True)
+class KeyValPair(Node, lang.Final):
+    key_name: str
+    node: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.node]
 
 
-def multi_select_dict(nodes: list[Node]) -> Node:
-    return {
-        'type': 'multi_select_dict',
-        'children': nodes,
-    }
+@dc.dataclass(frozen=True)
+class LetExpression(Node, lang.Final):
+    bindings: ta.Sequence[Node]
+    expr: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [*self.bindings, self.expr]
 
 
-def multi_select_list(nodes: list[Node]) -> Node:
-    return {
-        'type': 'multi_select_list',
-        'children': nodes,
-    }
+@dc.dataclass(frozen=True)
+class Literal(LeafNode, lang.Final):
+    literal_value: ta.Any
 
 
-def or_expression(left: Node, right: Node) -> Node:
-    return {
-        'type': 'or_expression',
-        'children': [left, right],
-    }
+@dc.dataclass(frozen=True)
+class MultiSelectDict(Node, lang.Final):
+    nodes: ta.Sequence[Node]
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return tuple(self.nodes)
 
 
-def and_expression(left: Node, right: Node) -> Node:
-    return {
-        'type': 'and_expression',
-        'children': [left, right],
-    }
+@dc.dataclass(frozen=True)
+class MultiSelectList(Node, lang.Final):
+    nodes: ta.Sequence[Node]
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return tuple(self.nodes)
 
 
-def not_expression(expr: Node) -> Node:
-    return {
-        'type': 'not_expression',
-        'children': [expr],
-    }
+@dc.dataclass(frozen=True)
+class OrExpression(Node, lang.Final):
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
 
 
-def pipe(left: Node, right: Node) -> Node:
-    return {
-        'type': 'pipe',
-        'children': [left, right],
-    }
+@dc.dataclass(frozen=True)
+class AndExpression(Node, lang.Final):
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
 
 
-def projection(left: Node, right: Node) -> Node:
-    return {
-        'type': 'projection',
-        'children': [left, right],
-    }
+@dc.dataclass(frozen=True)
+class NotExpression(Node, lang.Final):
+    expr: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.expr]
 
 
-def subexpression(children: list[Node]) -> Node:
-    return {
-        'type': 'subexpression',
-        'children': children,
-    }
+@dc.dataclass(frozen=True)
+class Pipe(Node, lang.Final):
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
 
 
-def slice(start, end, step) -> Node:  # noqa
-    return {
-        'type': 'slice',
-        'children': [],
-        'value': (start, end, step),
-    }
+@dc.dataclass(frozen=True)
+class Projection(Node, lang.Final):
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
 
 
-def value_projection(left: Node, right: Node) -> Node:
-    return {
-        'type': 'value_projection',
-        'children': [left, right],
-    }
+@dc.dataclass(frozen=True)
+class Subexpression(Node, lang.Final):
+    children_nodes: ta.Sequence[Node]
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return tuple(self.children_nodes)
 
 
-def variable_ref(name: str) -> Node:
-    return {
-        'type': 'variable_ref',
-        'children': [],
-        'value': name,
-    }
+@dc.dataclass(frozen=True)
+class Slice(LeafNode, lang.Final):
+    start: int | None
+    end: int | None
+    step: int | None
+
+
+@dc.dataclass(frozen=True)
+class ValueProjection(Node, lang.Final):
+    left: Node
+    right: Node
+
+    @property
+    def children(self) -> ta.Sequence[Node]:
+        return [self.left, self.right]
+
+
+@dc.dataclass(frozen=True)
+class VariableRef(LeafNode, lang.Final):
+    name: str
