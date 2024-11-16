@@ -1,6 +1,7 @@
 import os.path
 
 import jedi
+import jedi.inference.references
 
 from omlish import lang
 
@@ -34,24 +35,33 @@ def find_method_references(project_path: str, base_file: str, line: int, column:
         line (int): Line number of the method definition.
         column (int): Column number of the method definition.
     """
+
+    # jedi.api.set_debug_function(print)
+    jedi.inference.references._PARSED_FILE_LIMIT = 30_000
+
     # Initialize the Jedi Project
     project = jedi.Project(path=project_path)
 
-    for e in project.search('def omlish.c3.mro'):
+    for e in project.search('def omlish.c3.compose_mro'):
         print(e)
 
-    # Load the base script where the method is defined
-    base_script = jedi.Script(path=base_file, project=project)
-
-    # Get references within the base file to get the initial reference object
-    references = base_script.get_references(line, column, include_builtins=False)
-
-    # If no references found in the base file, exit early
-    if not references:
-        print(f"No references found in '{base_file}'")
-        return
-
-    # man wtf gpt
+    # for e in project.search('def omlish.c3.mro'):
+    #     print(e)
+    #
+    # # Load the base script where the method is defined
+    # base_script = jedi.Script(path=base_file, project=project)
+    #
+    # # Get references within the base file to get the initial reference object
+    # references = base_script.get_references(line, column, include_builtins=False)
+    #
+    # print(references)
+    #
+    # # If no references found in the base file, exit early
+    # if not references:
+    #     print(f"No references found in '{base_file}'")
+    #     return
+    #
+    # # man wtf gpt
     # # Iterate over all Python files in the project to find references
     # print(f"Searching for references in project '{project_path}'...")
     # for python_file in project.get_python_files():
