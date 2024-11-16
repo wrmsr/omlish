@@ -29,7 +29,7 @@ _LINUX_OPEN_SCRIPT = """
 
 # wmctrl -lx
 # 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish - cli.py
-# 0x0480004c  0 jetbrains-clion.jetbrains-clion  spinlock-ws cpython – ceval.c
+# 0x0480004c  0 jetbrains-clion.jetbrains-clion  spinlock-ws cpython - ceval.c
 # wmctrl -i -a 0x03000054
 
 if pgrep -x "pycharm.sh" > /dev/null; then
