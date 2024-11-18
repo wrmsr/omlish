@@ -5750,7 +5750,7 @@ class Venv:
             *(['uv'] if uv else []),
         )
 
-        if (sr := self._cfg.requires):
+        if sr := self._cfg.requires:
             rr = RequirementsRewriter(self._name)
             reqs = [rr.rewrite(req) for req in sr]
 
