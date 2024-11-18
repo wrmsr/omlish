@@ -16,26 +16,79 @@ ExceptionInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.Tr
 
 
 class LogRecord:
+    """https://docs.python.org/3/library/logging.html#logrecord-attributes"""
+
+    # Name of the logger used to log the call.
     name: str
+
+    # Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the
+    # numbers after the comma are millisecond portion of the time).
+    asctime: str
+
+    # The logged message, computed as msg % args. This is set when Formatter.format() is invoked.
+    message: str
+
+    # The format string passed in the original logging call. Merged with args to produce message, or an arbitrary object
+    # (see Using arbitrary objects as messages).
     msg: str
+
+    # The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge (when
+    # there is only one argument, and it is a dictionary).
     args: tuple
+
+    # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL').
     levelname: str
+
+    # # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL).
     levelno: Level
+
+    # Full pathname of the source file where the logging call was issued (if available).
     pathname: str
+
+    # Filename portion of pathname.
     filename: str
+
+    # Module (name portion of filename).
     module: str
+
+    # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None.
     exc_info: ExceptionInfo | None
+
     exc_text: str | None
+
+    # Stack frame information (where available) from the bottom of the stack in the current thread, up to and including
+    # the stack frame of the logging call which resulted in the creation of this record.
     stack_info: str | None
+
+    # Source line number where the logging call was issued (if available).
     lineno: int
+
+    # Name of function containing the logging call.
     funcName: str
+
+    # Time when the LogRecord was created (as returned by time.time_ns() / 1e9).
     created: float
+
+    # Millisecond portion of the time when the LogRecord was created.
     msecs: float
+
+    # Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded.
     relativeCreated: float
+
+    # Thread ID (if available).
     thread: int
+
+    # Thread name (if available).
     threadName: str
+
+    # Process name (if available).
     processName: str
+
+    # Process ID (if available).
     process: int
+
+    # asyncio.Task name (if available).
+    taskName: str
 
 
 ##
