@@ -1,7 +1,7 @@
 absl-py==2.1.0
 accelerate==1.1.1
 aiohappyeyeballs==2.4.3
-aiohttp==3.11.1
+aiohttp==3.11.2
 aiomysql==0.2.0
 aiosignal==1.3.1
 aiosqlite==0.20.0
@@ -11,7 +11,7 @@ anthropic==0.39.0
 anyio==4.6.2.post1
 appdirs==1.4.4
 appnope==0.1.4
-apsw==3.46.1.0
+apsw==3.47.0.0
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 arrow==1.3.0
@@ -20,6 +20,7 @@ asn1crypto==1.5.1
 asttokens==2.4.1
 astunparse==1.6.3
 async-lru==2.0.4
+asyncer==0.0.8
 asyncpg==0.30.0
 asyncssh==2.18.0
 attrs==24.2.0
@@ -34,8 +35,8 @@ bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.60
-botocore==1.35.60
+boto3==1.35.63
+botocore==1.35.63
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -79,7 +80,7 @@ debugpy==1.8.8
 decorator==5.1.1
 deepdiff==8.0.1
 defusedxml==0.7.1
-Deprecated==1.2.14
+Deprecated==1.2.15
 dill==0.3.8
 directsearch==1.0
 dirtyjson==1.0.8
@@ -91,9 +92,9 @@ docstring-to-markdown==0.15
 docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
-dspy==2.5.29
+dspy==2.5.31
 duckdb==1.1.3
-duckduckgo_search==6.3.4
+duckduckgo_search==6.3.5
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -112,7 +113,7 @@ fire==0.6.0
 flake8==7.1.1
 Flake8-pyproject==1.2.3
 flatbuffers==24.3.25
-fonttools==4.54.1
+fonttools==4.55.0
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -135,7 +136,7 @@ googleapis-common-protos==1.66.0
 gprof2dot==2024.6.6
 gpt4all==2.8.2
 greenlet==3.1.1
-grpcio==1.67.1
+grpcio==1.68.0
 grpcio-status==1.62.3
 grpcio-tools==1.62.3
 guppy3==3.1.4.post1
@@ -149,7 +150,7 @@ hexdump==3.3
 hpack==4.0.0
 html5lib==1.1
 htmldate==1.9.2
-httpcore==1.0.6
+httpcore==1.0.7
 httplib2==0.22.0
 httptools==0.6.4
 httpx==0.27.2
@@ -157,7 +158,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.26.2
 humanfriendly==10.0
 hyperframe==6.0.1
-hypothesis==6.118.8
+hypothesis==6.119.3
 idna==3.10
 ifaddr==0.2.0
 imageio==2.36.0
@@ -193,7 +194,7 @@ jupyter_client==8.6.3
 jupyter_core==5.7.2
 jupyter_server==2.14.2
 jupyter_server_terminals==0.5.3
-jupyterlab==4.2.5
+jupyterlab==4.2.6
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
@@ -206,7 +207,7 @@ langchain==0.3.7
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
 langchain-community==0.3.7
-langchain-core==0.3.18
+langchain-core==0.3.19
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -218,8 +219,8 @@ langchain-text-splitters==0.3.2
 langchainhub==0.1.21
 langcodes==3.4.1
 langdetect==1.0.9
-langgraph==0.2.48
-langgraph-checkpoint==2.0.4
+langgraph==0.2.50
+langgraph-checkpoint==2.0.5
 langgraph-sdk==0.1.36
 langsmith==0.1.143
 language_data==1.2.0
@@ -230,8 +231,8 @@ libtmux==0.37.0
 lightning-utilities==0.11.8
 litecli==1.12.3
 litellm==1.51.0
-llama-index-core==0.11.23
-llama_cpp_python==0.3.1
+llama-index-core==0.12.0
+llama_cpp_python==0.3.2
 llvmlite==0.43.0
 Logbook==1.8.0
 loralib==0.1.2
@@ -239,7 +240,7 @@ lru-dict==1.3.0
 lsprotocol==2023.0.1
 lupa==2.2
 lxml==5.3.0
-lxml_html_clean==0.4.0
+lxml_html_clean==0.4.1
 lz4==4.3.3
 magicattr==0.1.6
 Mako==1.3.6
@@ -317,7 +318,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@221965b7e140bdd47fbd04c131d56029e089902c
+peft @ git+https://github.com/huggingface/peft.git@3a8afbe2aa9fe19f441e59358bb0e9a70f8819fa
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -362,7 +363,7 @@ pyflakes==3.2.0
 pyfzf==0.3.1
 pygls==1.3.1
 Pygments==2.18.0
-PyJWT==2.9.0
+PyJWT==2.10.0
 PyMySQL==1.1.1
 PyNaCl==1.5.0
 pyobjc-core==10.3.1
@@ -421,7 +422,7 @@ rich==13.9.4
 rpds-py==0.21.0
 rsa==4.9
 rubicon-objc==0.4.9
-ruff==0.7.3
+ruff==0.7.4
 s3transfer==0.10.3
 safetensors==0.4.5
 scikit-image==0.24.0
@@ -431,9 +432,9 @@ scramp==1.4.5
 segno==1.6.1
 selectolax==0.3.26
 Send2Trash==1.8.3
-sentence-transformers==3.3.0
+sentence-transformers==3.3.1
 sentencepiece==0.2.0
-setproctitle==1.3.3
+setproctitle==1.3.4
 setuptools==75.5.0
 setuptools-scm==8.1.0
 shapely==2.0.6
@@ -457,8 +458,8 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.35
 sqlean.py==3.47.0
-sqlglot==25.30.0
-sqlite-vec==0.1.3
+sqlglot==25.31.4
+sqlite-vec==0.1.5
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -519,7 +520,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.2
-uv==0.5.1
+uv==0.5.2
 uvicorn==0.32.0
 uvloop==0.21.0
 voluptuous==0.15.2
@@ -542,7 +543,7 @@ wrapt==1.16.0
 wsproto==1.2.0
 xmltodict==0.14.2
 xxhash==3.5.0
-yarl==1.17.1
+yarl==1.17.2
 zigpy==0.72.0
 zipp==3.21.0
 zstandard==0.23.0
