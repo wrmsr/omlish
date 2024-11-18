@@ -1,6 +1,7 @@
 # ruff: noqa: UP007 UP012
 import ctypes as ct
 import logging
+import sys
 import syslog
 import threading
 import typing as ta
@@ -84,10 +85,16 @@ class JournaldLogHandler(logging.Handler):
      - fallback handler for when this barfs
     """
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            use_formatter_output: bool = False,
+    ) -> None:
         super().__init__()
 
         sd_libsystemd()
+
+        self._use_formatter_output = use_formatter_output
 
     #
 
@@ -100,8 +107,14 @@ class JournaldLogHandler(logging.Handler):
     }
 
     def make_fields(self, record: logging.LogRecord) -> ta.Mapping[str, str]:
+        formatter_message = self.format(record)
+        if self._use_formatter_output:
+            message = formatter_message
+        else:
+            message = record.message
+
         fields: dict[str, str] = {
-            'message': record.message,
+            'message': message,
             'priority': str(SD_LOG_LEVEL_MAP[record.levelno]),
             'tid': str(threading.get_ident()),
         }
@@ -122,7 +135,29 @@ class JournaldLogHandler(logging.Handler):
     #
 
     def emit(self, record: logging.LogRecord) -> None:
-        fields = self.make_fields(record)
+        try:
+            fields = self.make_fields(record)
 
-        if rc := sd_journald_send(**fields):
-            raise RuntimeError(f'{self.__class__.__name__}.emit failed: {rc=}')
+            if rc := sd_journald_send(**fields):
+                raise RuntimeError(f'{self.__class__.__name__}.emit failed: {rc=}')  # noqa
+
+        except RecursionError:  # See issue 36272
+            raise
+
+        except Exception:  # noqa
+            self.handleError(record)
+
+
+def journald_log_handler_factory(
+        *,
+        no_tty_check: bool = False,
+        no_fallback: bool = False,
+) -> logging.Handler:
+    if (
+            sys.platform == 'linux' and
+            (no_tty_check or not sys.stderr.isatty()) and
+            (no_fallback or sd_try_libsystemd() is not None)
+    ):
+        return JournaldLogHandler()
+
+    return logging.StreamHandler()
