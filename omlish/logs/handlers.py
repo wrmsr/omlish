@@ -6,5 +6,5 @@ class ListHandler(logging.Handler):
         super().__init__()
         self.records: list[logging.LogRecord] = []
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         self.records.append(record)
