@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
 # @omlish-amalg ../scripts/supervisor.py
+import itertools
 import json
 import logging
 import signal
 import time
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.marshal import unmarshal_obj
@@ -56,6 +58,11 @@ class Supervisor:
         return self._context.state
 
     def main(self) -> None:
+        self.setup()
+        self.run()
+
+    @cached_nullary
+    def setup(self) -> None:
         if not self._context.first:
             # prevent crash on libdispatch-based systems, at least for the first request
             self._context.cleanup_fds()
@@ -70,9 +77,11 @@ class Supervisor:
             # clean up old automatic logs
             self._context.clear_auto_child_logdir()
 
-        self.run()
-
-    def run(self) -> None:
+    def run(
+            self,
+            *,
+            callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
+    ) -> None:
         self._process_groups = {}  # clear
         self._stop_groups = None  # clear
 
@@ -90,7 +99,13 @@ class Supervisor:
             # writing pid file needs to come *after* daemonizing or pid will be wrong
             self._context.write_pidfile()
 
-            self.runforever()
+            notify_event(SupervisorRunningEvent())
+
+            while True:
+                if callback is not None and not callback(self):
+                    break
+
+                self._run_once()
 
         finally:
             self._context.cleanup()
@@ -178,90 +193,84 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
-    def runforever(self) -> None:
-        notify_event(SupervisorRunningEvent())
+    def _run_once(self) -> None:
+        combined_map = {}
+        combined_map.update(self.get_process_map())
+
+        pgroups = list(self._process_groups.values())
+        pgroups.sort()
+
+        if self._context.state < SupervisorStates.RUNNING:
+            if not self._stopping:
+                # first time, set the stopping flag, do a notification and set stop_groups
+                self._stopping = True
+                self._stop_groups = pgroups[:]
+                notify_event(SupervisorStoppingEvent())
+
+            self._ordered_stop_groups_phase_1()
+
+            if not self.shutdown_report():
+                # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
+                raise ExitNow
+
+        for fd, dispatcher in combined_map.items():
+            if dispatcher.readable():
+                self._context.poller.register_readable(fd)
+            if dispatcher.writable():
+                self._context.poller.register_writable(fd)
+
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
+        r, w = self._context.poller.poll(timeout)
 
-        while True:
-            combined_map = {}
-            combined_map.update(self.get_process_map())
-
-            pgroups = list(self._process_groups.values())
-            pgroups.sort()
-
-            if self._context.state < SupervisorStates.RUNNING:
-                if not self._stopping:
-                    # first time, set the stopping flag, do a notification and set stop_groups
-                    self._stopping = True
-                    self._stop_groups = pgroups[:]
-                    notify_event(SupervisorStoppingEvent())
-
-                self._ordered_stop_groups_phase_1()
-
-                if not self.shutdown_report():
-                    # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
-                    raise ExitNow
-
-            for fd, dispatcher in combined_map.items():
-                if dispatcher.readable():
-                    self._context.poller.register_readable(fd)
-                if dispatcher.writable():
-                    self._context.poller.register_writable(fd)
-
-            r, w = self._context.poller.poll(timeout)
-
-            for fd in r:
-                if fd in combined_map:
-                    try:
-                        dispatcher = combined_map[fd]
-                        log.debug('read event caused by %r', dispatcher)
-                        dispatcher.handle_read_event()
-                        if not dispatcher.readable():
-                            self._context.poller.unregister_readable(fd)
-                    except ExitNow:
-                        raise
-                    except Exception:  # noqa
-                        combined_map[fd].handle_error()
-                else:
-                    # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
-                    # time, which may cause 100% cpu usage
-                    log.debug('unexpected read event from fd %r', fd)
-                    try:
+        for fd in r:
+            if fd in combined_map:
+                try:
+                    dispatcher = combined_map[fd]
+                    log.debug('read event caused by %r', dispatcher)
+                    dispatcher.handle_read_event()
+                    if not dispatcher.readable():
                         self._context.poller.unregister_readable(fd)
-                    except Exception:  # noqa
-                        pass
+                except ExitNow:
+                    raise
+                except Exception:  # noqa
+                    combined_map[fd].handle_error()
+            else:
+                # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
+                # time, which may cause 100% cpu usage
+                log.debug('unexpected read event from fd %r', fd)
+                try:
+                    self._context.poller.unregister_readable(fd)
+                except Exception:  # noqa
+                    pass
 
-            for fd in w:
-                if fd in combined_map:
-                    try:
-                        dispatcher = combined_map[fd]
-                        log.debug('write event caused by %r', dispatcher)
-                        dispatcher.handle_write_event()
-                        if not dispatcher.writable():
-                            self._context.poller.unregister_writable(fd)
-                    except ExitNow:
-                        raise
-                    except Exception:  # noqa
-                        combined_map[fd].handle_error()
-                else:
-                    log.debug('unexpected write event from fd %r', fd)
-                    try:
+        for fd in w:
+            if fd in combined_map:
+                try:
+                    dispatcher = combined_map[fd]
+                    log.debug('write event caused by %r', dispatcher)
+                    dispatcher.handle_write_event()
+                    if not dispatcher.writable():
                         self._context.poller.unregister_writable(fd)
-                    except Exception:  # noqa
-                        pass
+                except ExitNow:
+                    raise
+                except Exception:  # noqa
+                    combined_map[fd].handle_error()
+            else:
+                log.debug('unexpected write event from fd %r', fd)
+                try:
+                    self._context.poller.unregister_writable(fd)
+                except Exception:  # noqa
+                    pass
 
-            for group in pgroups:
-                group.transition()
+        for group in pgroups:
+            group.transition()
 
-            self._reap()
-            self._handle_signal()
-            self._tick()
+        self._reap()
+        self._handle_signal()
+        self._tick()
 
-            if self._context.state < SupervisorStates.RUNNING:
-                self._ordered_stop_groups_phase_2()
-
-            if self._context.test:
-                break
+        if self._context.state < SupervisorStates.RUNNING:
+            self._ordered_stop_groups_phase_2()
 
     def _tick(self, now: ta.Optional[float] = None) -> None:
         """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
@@ -339,7 +348,6 @@ def timeslice(period, when):
 def main(
         argv: ta.Optional[ta.Sequence[str]] = None,
         *,
-        test: bool = False,
         no_logging: bool = False,
 ) -> None:
     import argparse
@@ -348,15 +356,18 @@ def main(
     parser.add_argument('config_file', metavar='config-file')
     args = parser.parse_args(argv)
 
-    if not no_logging:
-        configure_standard_logging('INFO')
+    #
 
     if not (cf := args.config_file):
         raise RuntimeError('No config file specified')
 
+    if not no_logging:
+        configure_standard_logging('INFO')
+
+    #
+
     # if we hup, restart by making a new Supervisor()
-    first = True
-    while True:
+    for epoch in itertools.count():
         with open(cf) as f:
             config_src = f.read()
 
@@ -365,25 +376,17 @@ def main(
 
         context = ServerContext(
             config,
-            first=first,
-            test=test,
+            epoch=epoch,
         )
 
-        go(context)
+        supervisor = Supervisor(context)
+        try:
+            supervisor.main()
+        except ExitNow:
+            pass
 
-        # options.close_logger()
-
-        first = False
-        if test or (context.state < SupervisorStates.RESTARTING):
+        if context.state < SupervisorStates.RESTARTING:
             break
-
-
-def go(context):  # pragma: no cover
-    d = Supervisor(context)
-    try:
-        d.main()
-    except ExitNow:
-        pass
 
 
 if __name__ == '__main__':
