@@ -1977,15 +1977,18 @@ log = logging.getLogger(__name__)
 
 
 class ServerContext(AbstractServerContext):
-    first = False
-    test = False
-
-    ##
-
-    def __init__(self, config: ServerConfig) -> None:
+    def __init__(
+            self,
+            config: ServerConfig,
+            *,
+            first: bool = False,
+            test: bool = False,
+    ) -> None:
         super().__init__()
 
         self._config = config
+        self._first = first
+        self._test = test
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -2007,6 +2010,14 @@ class ServerContext(AbstractServerContext):
     @property
     def config(self) -> ServerConfig:
         return self._config
+
+    @property
+    def first(self) -> bool:
+        return self._first
+
+    @property
+    def test(self) -> bool:
+        return self._test
 
     @property
     def state(self) -> SupervisorState:
@@ -3462,7 +3473,12 @@ class Supervisor:
         finally:
             self._context.cleanup()
 
-    def diff_to_active(self):
+    class DiffToActive(ta.NamedTuple):
+        added: ta.List[ProcessGroupConfig]
+        changed: ta.List[ProcessGroupConfig]
+        removed: ta.List[ProcessGroupConfig]
+
+    def diff_to_active(self) -> DiffToActive:
         new = self._context.config.groups or []
         cur = [group.config for group in self._process_groups.values()]
 
@@ -3474,7 +3490,7 @@ class Supervisor:
 
         changed = [cand for cand in new if cand != curdict.get(cand.name, cand)]
 
-        return added, changed, removed
+        return Supervisor.DiffToActive(added, changed, removed)
 
     def add_process_group(self, config: ProcessGroupConfig) -> bool:
         name = config.name
@@ -3698,14 +3714,20 @@ def timeslice(period, when):
     return int(when - (when % period))
 
 
-def main(args=None, test=False):
+def main(
+        argv: ta.Optional[ta.Sequence[str]] = None,
+        *,
+        test: bool = False,
+        no_logging: bool = False,
+) -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', metavar='config-file')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    configure_standard_logging('INFO')
+    if not no_logging:
+        configure_standard_logging('INFO')
 
     if not (cf := args.config_file):
         raise RuntimeError('No config file specified')
@@ -3715,17 +3737,20 @@ def main(args=None, test=False):
     while True:
         with open(cf) as f:
             config_src = f.read()
+
         config_dct = json.loads(config_src)
         config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
 
         context = ServerContext(
             config,
+            first=first,
+            test=test,
         )
 
-        context.first = first
-        context.test = test
         go(context)
+
         # options.close_logger()
+
         first = False
         if test or (context.state < SupervisorStates.RESTARTING):
             break
