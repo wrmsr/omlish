@@ -39,7 +39,7 @@ class TestSupervisor(unittest.TestCase):
         def callback(_):
             nonlocal n
             n += 1
-            return n > 1
+            return n < 2
 
         supervisor.setup()
         supervisor.run(callback=callback)
