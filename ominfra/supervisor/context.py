@@ -23,6 +23,7 @@ from .datatypes import name_to_uid
 from .exceptions import NoPermissionError
 from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
+from .poller import BasePoller
 from .poller import Poller
 from .states import SupervisorState
 from .states import SupervisorStates
@@ -48,19 +49,19 @@ class ServerContext(AbstractServerContext):
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
 
-        self.signal_receiver = SignalReceiver()
+        self._signal_receiver = SignalReceiver()
 
-        self.poller = Poller()
+        self._poller: BasePoller = Poller()
 
-        if self.config.user is not None:
-            uid = name_to_uid(self.config.user)
-            self.uid = uid
-            self.gid = gid_for_uid(uid)
+        if config.user is not None:
+            uid = name_to_uid(config.user)
+            self._uid: ta.Optional[int] = uid
+            self._gid: ta.Optional[int] = gid_for_uid(uid)
         else:
-            self.uid = None
-            self.gid = None
+            self._uid = None
+            self._gid = None
 
-        self.unlink_pidfile = False
+        self._unlink_pidfile = False
 
     @property
     def config(self) -> ServerConfig:
@@ -82,16 +83,25 @@ class ServerContext(AbstractServerContext):
         self._state = state
 
     @property
+    def poller(self) -> BasePoller:
+        return self._poller
+
+    @property
     def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
         return self._pid_history
 
-    uid: ta.Optional[int]
-    gid: ta.Optional[int]
+    @property
+    def uid(self) -> ta.Optional[int]:
+        return self._uid
+
+    @property
+    def gid(self) -> ta.Optional[int]:
+        return self._gid
 
     ##
 
     def set_signals(self) -> None:
-        self.signal_receiver.install(
+        self._signal_receiver.install(
             signal.SIGTERM,
             signal.SIGINT,
             signal.SIGQUIT,
@@ -202,7 +212,7 @@ class ServerContext(AbstractServerContext):
                     ))
 
     def cleanup(self) -> None:
-        if self.unlink_pidfile:
+        if self._unlink_pidfile:
             try_unlink(self.config.pidfile)
         self.poller.close()
 
@@ -255,6 +265,7 @@ class ServerContext(AbstractServerContext):
             # Parent
             log.debug('supervisord forked; parent exiting')
             real_exit(0)
+
         # Child
         log.info('daemonizing the supervisord process')
         if self.config.directory:
@@ -264,11 +275,15 @@ class ServerContext(AbstractServerContext):
                 log.critical("can't chdir into %r: %s", self.config.directory, err)
             else:
                 log.info('set current directory: %r', self.config.directory)
+
         os.dup2(0, os.open('/dev/null', os.O_RDONLY))
         os.dup2(1, os.open('/dev/null', os.O_WRONLY))
         os.dup2(2, os.open('/dev/null', os.O_WRONLY))
+
         os.setsid()
+
         os.umask(self.config.umask)
+
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
         # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
@@ -283,7 +298,7 @@ class ServerContext(AbstractServerContext):
         return logfile
 
     def get_signal(self) -> ta.Optional[int]:
-        return self.signal_receiver.get_signal()
+        return self._signal_receiver.get_signal()
 
     def write_pidfile(self) -> None:
         pid = os.getpid()
@@ -293,7 +308,7 @@ class ServerContext(AbstractServerContext):
         except OSError:
             log.critical('could not write pidfile %s', self.config.pidfile)
         else:
-            self.unlink_pidfile = True
+            self._unlink_pidfile = True
             log.info('supervisord started with pid %s', pid)
 
 
@@ -346,11 +361,14 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
             os.setgroups(groups)
         except OSError:
             return 'Could not set groups of effective user'
+
     try:
         os.setgid(gid)
     except OSError:
         return 'Could not set group id of effective user'
+
     os.setuid(uid)
+
     return None
 
 
