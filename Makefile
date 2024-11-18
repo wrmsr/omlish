@@ -358,7 +358,7 @@ docker-stop:
 
 DOCKER_DEV_CONTAINERS=\
 	omlish-dev \
-	omlish-dev-amd64 \
+	# omlish-dev-amd64 \
 
 DOCKER_LITE_CONTAINERS=\
 	omlish-mysql \

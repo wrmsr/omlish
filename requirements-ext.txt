@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.0
 
-hypothesis==6.119.1
+hypothesis==6.119.3
 
 hexdump==3.3
 
@@ -248,7 +248,7 @@ usearch==2.16.2
 
 ##
 
-llama-index-core==0.11.23
+llama-index-core==0.12.0
 
 unstructured==0.16.5
 
@@ -261,7 +261,7 @@ sqlite-vec==0.1.5
 
 anthropic==0.39.0
 
-apsw==3.46.1.0
+apsw==3.47.0.0
 
 jedi==0.19.2
 jedi-language-server==0.42.0
@@ -286,7 +286,7 @@ gguf==0.10.0
 
 pytesseract==0.3.13
 
-dspy==2.5.29
+dspy==2.5.31
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
