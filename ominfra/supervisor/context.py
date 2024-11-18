@@ -34,15 +34,18 @@ log = logging.getLogger(__name__)
 
 
 class ServerContext(AbstractServerContext):
-    first = False
-    test = False
-
-    ##
-
-    def __init__(self, config: ServerConfig) -> None:
+    def __init__(
+            self,
+            config: ServerConfig,
+            *,
+            first: bool = False,
+            test: bool = False,
+    ) -> None:
         super().__init__()
 
         self._config = config
+        self._first = first
+        self._test = test
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -64,6 +67,14 @@ class ServerContext(AbstractServerContext):
     @property
     def config(self) -> ServerConfig:
         return self._config
+
+    @property
+    def first(self) -> bool:
+        return self._first
+
+    @property
+    def test(self) -> bool:
+        return self._test
 
     @property
     def state(self) -> SupervisorState:
