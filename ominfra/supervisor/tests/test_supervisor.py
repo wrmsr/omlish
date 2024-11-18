@@ -44,4 +44,5 @@ class TestSupervisor(unittest.TestCase):
         supervisor.setup()
         supervisor.run(callback=callback)
 
+        # FIXME: reap lol
         self.assertIsNotNone(supervisor)
