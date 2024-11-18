@@ -38,14 +38,12 @@ class ServerContext(AbstractServerContext):
             self,
             config: ServerConfig,
             *,
-            first: bool = False,
-            test: bool = False,
+            epoch: int = 0,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._first = first
-        self._test = test
+        self._epoch = epoch
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -69,12 +67,12 @@ class ServerContext(AbstractServerContext):
         return self._config
 
     @property
-    def first(self) -> bool:
-        return self._first
+    def epoch(self) -> int:
+        return self._epoch
 
     @property
-    def test(self) -> bool:
-        return self._test
+    def first(self) -> bool:
+        return not self._epoch
 
     @property
     def state(self) -> SupervisorState:

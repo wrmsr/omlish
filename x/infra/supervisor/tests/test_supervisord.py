@@ -1,22 +1,20 @@
-import unittest
-import time
+from io import StringIO
+import os
+import shutil
 import signal
 import sys
-import os
 import tempfile
-import shutil
+import time
+import unittest
 
-from supervisor.states import ProcessStates
-from supervisor.states import SupervisorStates
-
-from supervisor.tests.base import DummyOptions
-from supervisor.tests.base import DummyPConfig
-from supervisor.tests.base import DummyPGroupConfig
-from supervisor.tests.base import DummyProcess
-from supervisor.tests.base import DummyProcessGroup
-from supervisor.tests.base import DummyDispatcher
-
-from supervisor.compat import StringIO
+from ..states import ProcessStates
+from ..states import SupervisorStates
+from ..tests.base import DummyOptions
+from ..tests.base import DummyPConfig
+from ..tests.base import DummyPGroupConfig
+from ..tests.base import DummyProcess
+from ..tests.base import DummyProcessGroup
+from ..tests.base import DummyDispatcher
 
 try:
     import pstats
@@ -27,7 +25,7 @@ except ImportError: # pragma: no cover
 
 class EntryPointTests(unittest.TestCase):
     def test_main_noprofile(self):
-        from supervisor.supervisord import main
+        from ..supervisord import main
         conf = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'fixtures',
             'donothing.conf')
@@ -49,7 +47,7 @@ class EntryPointTests(unittest.TestCase):
 
     if pstats:
         def test_main_profile(self):
-            from supervisor.supervisord import main
+            from ..supervisord import main
             conf = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)), 'fixtures',
                 'donothing.conf')
@@ -70,7 +68,7 @@ class EntryPointTests(unittest.TestCase):
             self.assertTrue('cumulative time, call count' in output, output)
 
     def test_silent_off(self):
-        from supervisor.supervisord import main
+        from ..supervisord import main
         conf = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'fixtures',
             'donothing.conf')
@@ -91,7 +89,7 @@ class EntryPointTests(unittest.TestCase):
         self.assertGreater(len(output), 0)
 
     def test_silent_on(self):
-        from supervisor.supervisord import main
+        from ..supervisord import main
         conf = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'fixtures',
             'donothing.conf')
@@ -113,11 +111,11 @@ class EntryPointTests(unittest.TestCase):
 
 class SupervisordTests(unittest.TestCase):
     def tearDown(self):
-        from supervisor.events import clear
+        from ..events import clear
         clear()
 
     def _getTargetClass(self):
-        from supervisor.supervisord import Supervisor
+        from ..supervisord import Supervisor
         return Supervisor
 
     def _makeOne(self, options):
@@ -367,7 +365,7 @@ class SupervisordTests(unittest.TestCase):
         self.assertEqual(removed, [group2])
 
     def test_diff_to_active_changed(self):
-        from supervisor.options import ProcessConfig, ProcessGroupConfig
+        from ..options import ProcessConfig, ProcessGroupConfig
 
         options = DummyOptions()
         supervisord = self._makeOne(options)
@@ -435,8 +433,8 @@ class SupervisordTests(unittest.TestCase):
         self.assertEqual(changed, [group1])
 
     def test_diff_to_active_changed_eventlistener(self):
-        from supervisor.events import EventTypes
-        from supervisor.options import EventListenerConfig, EventListenerPoolConfig
+        from ..events import EventTypes
+        from ..options import EventListenerConfig, EventListenerPoolConfig
 
         options = DummyOptions()
         supervisord = self._makeOne(options)
@@ -575,7 +573,7 @@ class SupervisordTests(unittest.TestCase):
         self.assertTrue(not result)
 
     def test_add_process_group_emits_event(self):
-        from supervisor import events
+        from .. import events
         L = []
         def callback(event):
             L.append(1)
@@ -614,7 +612,7 @@ class SupervisordTests(unittest.TestCase):
         self.assertTrue(not result)
 
     def test_remove_process_group_event(self):
-        from supervisor import events
+        from .. import events
         L = []
         def callback(event):
             L.append(1)
@@ -634,7 +632,7 @@ class SupervisordTests(unittest.TestCase):
         self.assertEqual(L, [1])
 
     def test_runforever_emits_generic_startup_event(self):
-        from supervisor import events
+        from .. import events
         L = []
         def callback(event):
             L.append(1)
@@ -646,7 +644,7 @@ class SupervisordTests(unittest.TestCase):
         self.assertEqual(L, [1])
 
     def test_runforever_emits_generic_specific_event(self):
-        from supervisor import events
+        from .. import events
         L = []
         def callback(event):
             L.append(2)
@@ -691,7 +689,7 @@ class SupervisordTests(unittest.TestCase):
         pconfig = DummyPConfig(options, 'foo', '/bin/foo',)
         gconfig = DummyPGroupConfig(options, pconfigs=[pconfig])
         pgroup = DummyProcessGroup(gconfig)
-        from supervisor.medusa import asyncore_25 as asyncore
+        from ..medusa import asyncore_25 as asyncore
         exitnow = DummyDispatcher(readable=True, error=asyncore.ExitNow)
         pgroup.dispatchers = {6:exitnow}
         supervisord.process_groups = {'foo': pgroup}
@@ -705,7 +703,7 @@ class SupervisordTests(unittest.TestCase):
         pconfig = DummyPConfig(options, 'foo', '/bin/foo',)
         gconfig = DummyPGroupConfig(options, pconfigs=[pconfig])
         pgroup = DummyProcessGroup(gconfig)
-        from supervisor.medusa import asyncore_25 as asyncore
+        from ..medusa import asyncore_25 as asyncore
         exitnow = DummyDispatcher(readable=True, error=asyncore.ExitNow)
         pgroup.dispatchers = {6:exitnow}
         supervisord.process_groups = {'foo': pgroup}
@@ -750,9 +748,9 @@ class SupervisordTests(unittest.TestCase):
         L = []
         def callback(event):
             L.append(event)
-        from supervisor import events
+        from .. import events
         events.subscribe(events.SupervisorStateChangeEvent, callback)
-        from supervisor.medusa import asyncore_25 as asyncore
+        from ..medusa import asyncore_25 as asyncore
         options.test = True
         self.assertRaises(asyncore.ExitNow, supervisord.runforever)
         self.assertTrue(pgroup.all_stopped)
@@ -773,7 +771,7 @@ class SupervisordTests(unittest.TestCase):
         supervisord.process_groups = {'foo': pgroup}
         supervisord.options.mood = SupervisorStates.RESTARTING
         supervisord.options.test = True
-        from supervisor.medusa import asyncore_25 as asyncore
+        from ..medusa import asyncore_25 as asyncore
         self.assertRaises(asyncore.ExitNow, supervisord.runforever)
         self.assertEqual(pgroup.all_stopped, True)
 
@@ -795,12 +793,12 @@ class SupervisordTests(unittest.TestCase):
         self.assertNotEqual(supervisord.lastshutdownreport, 0)
 
     def test_getSupervisorStateDescription(self):
-        from supervisor.states import getSupervisorStateDescription
+        from ..states import getSupervisorStateDescription
         result = getSupervisorStateDescription(SupervisorStates.RUNNING)
         self.assertEqual(result, 'RUNNING')
 
     def test_tick(self):
-        from supervisor import events
+        from .. import events
         L = []
         def callback(event):
             L.append(event)
