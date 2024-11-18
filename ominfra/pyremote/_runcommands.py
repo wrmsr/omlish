@@ -437,7 +437,7 @@ class StandardLogFormatter(logging.Formatter):
         if datefmt:
             return ct.strftime(datefmt)  # noqa
         else:
-            t = ct.strftime("%Y-%m-%d %H:%M:%S")  # noqa
+            t = ct.strftime('%Y-%m-%d %H:%M:%S')
             return '%s.%03d' % (t, record.msecs)
 
 
@@ -574,6 +574,7 @@ def configure_standard_logging(
         json: bool = False,
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
+        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
 ) -> ta.Optional[StandardLogHandler]:
     with _locking_logging_module_lock():
         if target is None:
@@ -587,7 +588,10 @@ def configure_standard_logging(
 
         #
 
-        handler = logging.StreamHandler()
+        if handler_factory is not None:
+            handler = handler_factory()
+        else:
+            handler = logging.StreamHandler()
 
         #
 
