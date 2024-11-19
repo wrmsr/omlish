@@ -53,27 +53,6 @@ Binder = ta.Callable[[], Bindings]
 ##
 
 
-class _KeyGen(abc.ABC):
-    @abc.abstractmethod
-    def _gen_key(self) -> Key:
-        raise NotImplementedError
-
-
-class _ProviderGen(abc.ABC):
-    @abc.abstractmethod
-    def _gen_provider(self) -> Provider:
-        raise NotImplementedError
-
-
-class _BindingGen(abc.ABC):
-    @abc.abstractmethod
-    def _gen_binding(self) -> Binding:
-        raise NotImplementedError
-
-
-##
-
-
 class Injector(abc.ABC):
     @abc.abstractmethod
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:

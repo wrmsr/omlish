@@ -15,8 +15,6 @@ from .providers import fn as fn_provider
 from .types import Binding
 from .types import Bindings
 from .types import Key
-from .types import _BindingGen
-from .types import _ProviderGen
 
 
 ##
@@ -27,14 +25,10 @@ def as_binding(o: ta.Any) -> Binding:
     check_not_isinstance(o, Bindings)
     if isinstance(o, Binding):
         return o
-    if isinstance(o, _BindingGen):
-        return o._gen_binding()  # noqa
     if isinstance(o, Provider):
         def _raise_typeerror(_):
             raise TypeError(o)
         return Binding(Key(o.provided_cls(_raise_typeerror)), o)
-    if isinstance(o, _ProviderGen):
-        return as_binding(o._gen_provider())  # noqa
     if isinstance(o, type):
         return as_binding(ctor_provider(o))
     if callable(o):

@@ -12,19 +12,15 @@ from .types import Injector
 from .types import Key
 from .types import Provider
 from .types import ProviderFn
-from .types import _BindingGen
-from .types import _ProviderGen
 
 
 ##
 
 
 def as_provider(o: ta.Any) -> Provider:
-    check_not_isinstance(o, (Binding, _BindingGen, Bindings))
+    check_not_isinstance(o, (Binding, Bindings))
     if isinstance(o, Provider):
         return o
-    if isinstance(o, _ProviderGen):
-        return o._gen_provider()  # noqa
     if isinstance(o, Key):
         return LinkProvider(o)
     if isinstance(o, type):
