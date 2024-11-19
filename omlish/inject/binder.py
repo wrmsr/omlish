@@ -74,7 +74,7 @@ def bind_as_fn(cls: type[T]) -> type[T]:
 ##
 
 
-_BANNED_BIND_TYPES = (
+_BANNED_BIND_TYPES: tuple[type, ...] = (
     Element,
     Provider,
     Elements,
