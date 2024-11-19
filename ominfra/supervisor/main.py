@@ -2,13 +2,13 @@
 # ruff: noqa: UP006 UP007
 # @omlish-amalg ../scripts/supervisor.py
 import itertools
-import json
+import os.path
 import typing as ta
 
 from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
-from omlish.lite.marshal import unmarshal_obj
 
+from ..configs import read_config_file
 from .compat import ExitNow
 from .configs import ServerConfig
 from .context import ServerContext
@@ -43,11 +43,7 @@ def main(
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
-        with open(cf) as f:
-            config_src = f.read()
-
-        config_dct = json.loads(config_src)
-        config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
+        config = read_config_file(os.path.expanduser(cf), ServerConfig)
 
         context = ServerContext(
             config,
