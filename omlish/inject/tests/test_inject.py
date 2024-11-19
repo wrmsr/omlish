@@ -1,3 +1,5 @@
+import dataclasses as dc
+
 import pytest
 
 from ... import inject as inj
@@ -11,6 +13,16 @@ def test_inject():
     )
     assert i.provide(int) == 420
     assert i.provide(str) == '420'
+
+
+def test_default():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        i: int
+        s: str = 'hi'
+
+    assert inj.create_injector(inj.bind(420), inj.bind(Foo))[Foo] == Foo(420)
+    assert inj.create_injector(inj.bind(420), inj.bind('bye'), inj.bind(Foo))[Foo] == Foo(420, 'bye')
 
 
 def test_optional():
