@@ -1,9 +1,10 @@
+# ruff: noqa: PT009
 import abc
 import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
-from ..injectlite import inj
+from ..inject import inj
 
 
 class TestInject(unittest.TestCase):

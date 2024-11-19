@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import functools
@@ -81,7 +82,7 @@ class Injector(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class InjectorKeyException(Exception):
+class InjectorKeyError(Exception):
     key: InjectorKey
 
     source: ta.Any = None
@@ -89,12 +90,12 @@ class InjectorKeyException(Exception):
 
 
 @dc.dataclass(frozen=True)
-class UnboundInjectorKeyException(InjectorKeyException):
+class UnboundInjectorKeyError(InjectorKeyError):
     pass
 
 
 @dc.dataclass(frozen=True)
-class DuplicateInjectorKeyException(InjectorKeyException):
+class DuplicateInjectorKeyError(InjectorKeyError):
     pass
 
 
@@ -119,7 +120,6 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
 @dc.dataclass(frozen=True)
 class FnInjectorProvider(InjectorProvider):
     fn: ta.Any
-
 
     def __post_init__(self) -> None:
         check_not_isinstance(self.fn, type)
@@ -223,8 +223,8 @@ class _InjectorBindings(InjectorBindings):
 
 
 def as_injector_bindings(*vs: ta.Any) -> InjectorBindings:
-    bs: list[InjectorBinding] = []
-    ps: list[InjectorBindings] = []
+    bs: ta.List[InjectorBinding] = []
+    ps: ta.List[InjectorBindings] = []
     for a in vs:
         if isinstance(a, InjectorBindings):
             ps.append(a)
@@ -235,7 +235,7 @@ def as_injector_bindings(*vs: ta.Any) -> InjectorBindings:
     return _InjectorBindings(
         bs or None,
         ps or None,
-        )
+    )
 
 
 ##
@@ -252,10 +252,10 @@ class OverridesInjectorBindings(InjectorBindings):
 
 
 def injector_override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
-    m: dict[InjectorKey, InjectorBinding] = {}
+    m: ta.Dict[InjectorKey, InjectorBinding] = {}
     for b in as_injector_bindings(*a).bindings():
         if b.key in m:
-            raise DuplicateInjectorKeyException(b.key)
+            raise DuplicateInjectorKeyError(b.key)
         m[b.key] = b
     return OverridesInjectorBindings(p, m)
 
@@ -264,8 +264,8 @@ def injector_override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
 
 
 def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
-    pm: dict[InjectorKey, InjectorProvider] = {}
-    am: dict[InjectorKey, list[InjectorProvider]] = {}
+    pm: ta.Dict[InjectorKey, InjectorProvider] = {}
+    am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
     for b in bs.bindings():
         if b.key.array:
             am.setdefault(b.key, []).append(b.provider)
@@ -319,8 +319,8 @@ def build_injection_kwargs_target(
 ) -> InjectionKwargsTarget:
     sig = _injection_signature(obj)
 
-    seen: set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
-    kws: list[InjectionKwarg] = []
+    seen: ta.Set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
+    kws: ta.List[InjectionKwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
         if p.annotation is inspect.Signature.empty:
             if p.default is not inspect.Parameter.empty:
@@ -340,7 +340,7 @@ def build_injection_kwargs_target(
         k = as_injector_key(ann)
 
         if k in seen:
-            raise DuplicateInjectorKeyException(k)
+            raise DuplicateInjectorKeyError(k)
         seen.add(k)
 
         kws.append(InjectionKwarg(
@@ -360,10 +360,10 @@ def build_injection_kwargs_target(
 
 
 class InjectorBinder:
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
-    _FN_TYPES: tuple[type, ...] = (
+    _FN_TYPES: ta.Tuple[type, ...] = (
         types.FunctionType,
         types.MethodType,
 
@@ -379,13 +379,13 @@ class InjectorBinder:
         return isinstance(obj, cls._FN_TYPES)
 
     @classmethod
-    def bind_as_fn(cls, icls: type[T]) -> type[T]:
+    def bind_as_fn(cls, icls: ta.Type[T]) -> ta.Type[T]:
         check_isinstance(icls, type)
         if icls not in cls._FN_TYPES:
-            _FN_TYPES = (*cls._FN_TYPES, icls)
+            cls._FN_TYPES = (*cls._FN_TYPES, icls)
         return icls
 
-    _BANNED_BIND_TYPES: tuple[type, ...] = (
+    _BANNED_BIND_TYPES: ta.Tuple[type, ...] = (
         InjectorProvider,
     )
 
@@ -421,10 +421,10 @@ class InjectorBinder:
         ##
 
         has_to = (
-                to_fn is not None or
-                to_ctor is not None or
-                to_const is not None or
-                to_key is not None
+            to_fn is not None or
+            to_ctor is not None or
+            to_const is not None or
+            to_key is not None
         )
         if isinstance(obj, InjectorKey):
             if key is None:
@@ -460,7 +460,7 @@ class InjectorBinder:
 
         ##
 
-        providers: list[InjectorProvider] = []
+        providers: ta.List[InjectorProvider] = []
         if to_fn is not None:
             providers.append(FnInjectorProvider(to_fn))
         if to_ctor is not None:
@@ -520,11 +520,11 @@ class _Injector(Injector):
         v = self.try_provide(key)
         if v.present:
             return v.must()
-        raise UnboundInjectorKeyException(key)
+        raise UnboundInjectorKeyError(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
         kt = build_injection_kwargs_target(obj)
-        ret: dict[str, ta.Any] = {}
+        ret: ta.Dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
                 if not (mv := self.try_provide(kw.key)).present:
@@ -549,7 +549,7 @@ def create_injector(bs: InjectorBindings, p: ta.Optional[Injector] = None) -> In
 
 
 class Injection:
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
     # keys
