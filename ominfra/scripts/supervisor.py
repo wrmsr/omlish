@@ -110,7 +110,7 @@ SupervisorState = int  # ta.TypeAlias
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
 #
-# https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
+# https://github.com/python/cpython/blob/9ce90206b7a4649600218cf0bd4826db79c9a312/Lib/tomllib/_parser.py
 
 
 ##
@@ -1038,6 +1038,19 @@ def close_fd(fd: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def is_fd_open(fd: int) -> bool:
+    try:
+        n = os.dup(fd)
+    except OSError:
+        return False
+    os.close(n)
+    return True
+
+
+def get_open_fds(limit: int) -> ta.FrozenSet[int]:
+    return frozenset(filter(is_fd_open, range(limit)))
 
 
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
@@ -2969,6 +2982,11 @@ class AbstractServerContext(abc.ABC):
     def pid_history(self) -> ta.Dict[int, 'AbstractSubprocess']:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def inherited_fds(self) -> ta.FrozenSet[int]:
+        raise NotImplementedError
+
 
 class AbstractSubprocess(abc.ABC):
     @property
@@ -3001,11 +3019,13 @@ class ServerContext(AbstractServerContext):
             config: ServerConfig,
             *,
             epoch: int = 0,
+            inherited_fds: ta.Optional[ta.Iterable[int]] = None,
     ) -> None:
         super().__init__()
 
         self._config = config
         self._epoch = epoch
+        self._inherited_fds = frozenset(inherited_fds or [])
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -3058,6 +3078,10 @@ class ServerContext(AbstractServerContext):
     @property
     def gid(self) -> ta.Optional[int]:
         return self._gid
+
+    @property
+    def inherited_fds(self) -> ta.FrozenSet[int]:
+        return self._inherited_fds
 
     ##
 
@@ -3971,8 +3995,10 @@ class Subprocess(AbstractSubprocess):
             os.dup2(self._pipes['child_stdout'], 2)
         else:
             os.dup2(self._pipes['child_stderr'], 2)
-        # FIXME: leave debugger fds
+
         for i in range(3, self.context.config.minfds):
+            if i in self.context.inherited_fds:
+                continue
             close_fd(i)
 
     def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
@@ -4771,6 +4797,7 @@ def main(
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', metavar='config-file')
     parser.add_argument('--no-journald', action='store_true')
+    parser.add_argument('--inherit-initial-fds', action='store_true')
     args = parser.parse_args(argv)
 
     #
@@ -4786,6 +4813,10 @@ def main(
 
     #
 
+    initial_fds: ta.Optional[ta.FrozenSet[int]] = None
+    if args.inherit_initial_fds:
+        initial_fds = get_open_fds(0x10000)
+
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
         config = read_config_file(os.path.expanduser(cf), ServerConfig)
@@ -4793,6 +4824,7 @@ def main(
         context = ServerContext(
             config,
             epoch=epoch,
+            inherited_fds=initial_fds,
         )
 
         supervisor = Supervisor(context)

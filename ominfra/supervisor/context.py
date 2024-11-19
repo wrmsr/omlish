@@ -38,11 +38,13 @@ class ServerContext(AbstractServerContext):
             config: ServerConfig,
             *,
             epoch: int = 0,
+            inherited_fds: ta.Optional[ta.Iterable[int]] = None,
     ) -> None:
         super().__init__()
 
         self._config = config
         self._epoch = epoch
+        self._inherited_fds = frozenset(inherited_fds or [])
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -95,6 +97,10 @@ class ServerContext(AbstractServerContext):
     @property
     def gid(self) -> ta.Optional[int]:
         return self._gid
+
+    @property
+    def inherited_fds(self) -> ta.FrozenSet[int]:
+        return self._inherited_fds
 
     ##
 

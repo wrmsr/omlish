@@ -10,6 +10,7 @@ from omlish.lite.logs import configure_standard_logging
 
 from ..configs import read_config_file
 from .compat import ExitNow
+from .compat import get_open_fds
 from .configs import ServerConfig
 from .context import ServerContext
 from .states import SupervisorStates
@@ -26,6 +27,7 @@ def main(
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', metavar='config-file')
     parser.add_argument('--no-journald', action='store_true')
+    parser.add_argument('--inherit-initial-fds', action='store_true')
     args = parser.parse_args(argv)
 
     #
@@ -41,6 +43,10 @@ def main(
 
     #
 
+    initial_fds: ta.Optional[ta.FrozenSet[int]] = None
+    if args.inherit_initial_fds:
+        initial_fds = get_open_fds(0x10000)
+
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
         config = read_config_file(os.path.expanduser(cf), ServerConfig)
@@ -48,6 +54,7 @@ def main(
         context = ServerContext(
             config,
             epoch=epoch,
+            inherited_fds=initial_fds,
         )
 
         supervisor = Supervisor(context)
