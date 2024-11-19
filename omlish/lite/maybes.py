@@ -42,4 +42,4 @@ class _Maybe(Maybe[T], tuple):
         return self[0]
 
 
-Maybe._empty = tuple.__new__(_Maybe, ())
+Maybe._empty = tuple.__new__(_Maybe, ())  # noqa
