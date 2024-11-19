@@ -3,8 +3,6 @@ TODO:
  - unify reflect with marshal - fix type anns (ta.Seq is not a `type`)
  - defer
  - defaults
- - private
- - circular proxies
 """
 import typing as ta
 
@@ -13,7 +11,7 @@ from omlish.lite.maybes import Maybe
 
 from .bindings import build_provider_map
 from .exceptions import UnboundKeyException
-from .inspect import build_kwarg_keys
+from .inspect import build_kwargs_target
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
@@ -49,10 +47,16 @@ class _Injector(Injector):
         raise UnboundKeyException(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        kd = build_kwarg_keys(obj)
+        kt = build_kwargs_target(obj)
         ret: dict[str, ta.Any] = {}
-        for n, k in kd.items():
-            ret[n] = self.provide(k)
+        for kw in kt.kwargs:
+            if kw.has_default:
+                if not (mv := self.try_provide(kw.key)).present:
+                    continue
+                v = mv.must()
+            else:
+                v = self.provide(kw.key)
+            ret[kw.name] = v
         return ret
 
     def inject(self, obj: ta.Any) -> ta.Any:
