@@ -1,7 +1,6 @@
+import dataclasses as dc
 import inspect
 import typing as ta
-
-from omlish import dataclasses as dc
 
 from .types import Key
 from .types import _KeyGen

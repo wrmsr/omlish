@@ -1,7 +1,6 @@
 import abc
+import dataclasses as dc
 import typing as ta  # noqa
-
-from omlish import dataclasses as dc
 
 from ... import injectold as inj
 

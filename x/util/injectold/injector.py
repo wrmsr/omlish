@@ -8,8 +8,8 @@ TODO:
 """
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omlish.lite.check import check_isinstance
+from omlish.lite.maybes import Maybe
 
 from .bindings import build_provider_map
 from .exceptions import UnboundKeyException
@@ -23,24 +23,24 @@ class _Injector(Injector):
     def __init__(self, bs: Bindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
-        self._bs = check.isinstance(bs, Bindings)
-        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, None))
+        self._bs = check_isinstance(bs, Bindings)
+        self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
 
-    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
+    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         key = as_key(key)
 
         fn = self._pfm.get(key)
         if fn is not None:
-            return lang.just(fn(self))
+            return Maybe.just(fn(self))
 
         if self._p is not None:
             pv = self._p.try_provide(key)
             if pv is not None:
-                return lang.empty()
+                return Maybe.empty()
 
-        return lang.empty()
+        return Maybe.empty()
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)

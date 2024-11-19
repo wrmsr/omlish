@@ -1,8 +1,8 @@
 import abc
+import dataclasses as dc
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omlish.lite.maybes import Maybe
 
 
 ##
@@ -76,7 +76,7 @@ class _BindingGen(abc.ABC):
 
 class Injector(abc.ABC):
     @abc.abstractmethod
-    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
+    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod

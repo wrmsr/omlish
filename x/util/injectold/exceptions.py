@@ -1,6 +1,5 @@
+import dataclasses as dc
 import typing as ta
-
-from omlish import dataclasses as dc
 
 from .types import Key
 

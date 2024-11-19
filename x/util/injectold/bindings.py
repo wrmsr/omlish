@@ -1,8 +1,8 @@
+import dataclasses as dc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
+from omlish.lite.check import check_not_isinstance
+from omlish.lite.check import check_not_none
 
 from .arrays import array_provider
 from .exceptions import DuplicateKeyException
@@ -23,14 +23,16 @@ from .types import _ProviderGen
 
 
 def as_binding(o: ta.Any) -> Binding:
-    check.not_none(o)
-    check.not_isinstance(o, Bindings)
+    check_not_none(o)
+    check_not_isinstance(o, Bindings)
     if isinstance(o, Binding):
         return o
     if isinstance(o, _BindingGen):
         return o._gen_binding()  # noqa
     if isinstance(o, Provider):
-        return Binding(Key(o.provided_cls(lambda _: lang.raise_(TypeError(o)))), o)
+        def _raise_typeerror(_):
+            raise TypeError(o)
+        return Binding(Key(o.provided_cls(_raise_typeerror)), o)
     if isinstance(o, _ProviderGen):
         return as_binding(o._gen_provider())  # noqa
     if isinstance(o, type):

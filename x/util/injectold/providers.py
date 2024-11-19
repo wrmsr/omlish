@@ -1,7 +1,8 @@
+import dataclasses as dc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
+from omlish.lite.check import check_isinstance
+from omlish.lite.check import check_not_isinstance
 
 from .inspect import signature
 from .keys import as_key
@@ -19,7 +20,7 @@ from .types import _ProviderGen
 
 
 def as_provider(o: ta.Any) -> Provider:
-    check.not_isinstance(o, (Binding, _BindingGen, Bindings))
+    check_not_isinstance(o, (Binding, _BindingGen, Bindings))
     if isinstance(o, Provider):
         return o
     if isinstance(o, _ProviderGen):
@@ -52,10 +53,10 @@ class FnProvider(Provider):
 
 
 def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
-    check.not_isinstance(fn, type)
+    check_not_isinstance(fn, type)
     sig = signature(fn)
     if cls is None:
-        cls = check.isinstance(sig.return_annotation, type)
+        cls = check_isinstance(sig.return_annotation, type)
     return FnProvider(cls, fn)
 
 
@@ -77,7 +78,7 @@ class CtorProvider(Provider):
 
 
 def ctor(cls: type) -> Provider:
-    return CtorProvider(check.isinstance(cls, type))
+    return CtorProvider(check_isinstance(cls, type))
 
 
 ##
