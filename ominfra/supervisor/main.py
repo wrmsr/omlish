@@ -105,9 +105,9 @@ def main(
 
     #
 
-    initial_fds: ta.Optional[InheritedFds] = None
+    inherited_fds: ta.Optional[InheritedFds] = None
     if args.inherit_initial_fds:
-        initial_fds = InheritedFds(get_open_fds(0x10000))
+        inherited_fds = InheritedFds(get_open_fds(0x10000))
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
@@ -120,7 +120,7 @@ def main(
         injector = inj.create_injector(build_server_bindings(
             config,
             server_epoch=ServerEpoch(epoch),
-            inherited_fds=initial_fds,
+            inherited_fds=inherited_fds,
         ))
 
         context = injector.provide(ServerContext)
