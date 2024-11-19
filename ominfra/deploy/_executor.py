@@ -129,7 +129,7 @@ class _cached_nullary:  # noqa
         return bound
 
 
-def cached_nullary(fn: ta.Callable[..., T]) -> ta.Callable[..., T]:
+def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
     return _cached_nullary(fn)
 
 
