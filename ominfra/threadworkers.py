@@ -29,7 +29,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
             self,
             *,
             stop_event: ta.Optional[threading.Event] = None,
-            groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
+            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
     ) -> None:
         super().__init__()
 
@@ -41,7 +41,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
 
-        for g in groups or []:
+        for g in worker_groups or []:
             g.add(self)
 
     #
@@ -112,10 +112,17 @@ class ThreadWorker(ExitStacked, abc.ABC):
     def stop(self) -> None:
         self._stop_event.set()
 
-    def join(self, timeout: ta.Optional[float] = None) -> None:
+    def join(
+            self,
+            timeout: ta.Optional[float] = None,
+            *,
+            unless_not_started: bool = False,
+    ) -> None:
         with self._lock:
             if self._thread is None:
-                raise RuntimeError('Thread not started: %r', self)
+                if not unless_not_started:
+                    raise RuntimeError('Thread not started: %r', self)
+                return
             self._thread.join(timeout)
 
 
@@ -158,11 +165,13 @@ class ThreadWorkerGroup:
 
     def stop_all(self) -> None:
         for w in reversed(list(self._states)):
-            w.stop()
+            if w.has_started():
+                w.stop()
 
     def join_all(self, timeout: ta.Optional[float] = None) -> None:
         for w in reversed(list(self._states)):
-            w.join(timeout)
+            if w.has_started():
+                w.join(timeout, unless_not_started=True)
 
     #
 

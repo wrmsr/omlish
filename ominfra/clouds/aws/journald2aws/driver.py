@@ -174,7 +174,7 @@ class JournalctlToAwsDriver(ExitStacked):
             cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
 
-            groups=[self._worker_group()],
+            worker_groups=[self._worker_group()],
         )
 
     #
@@ -189,13 +189,21 @@ class JournalctlToAwsDriver(ExitStacked):
             ensure_locked=self._ensure_locked,
             dry_run=self._config.aws_dry_run,
 
-            groups=[self._worker_group()],
+            worker_groups=[self._worker_group()],
         )
 
     #
 
+    def _exit_contexts(self) -> None:
+        wg = self._worker_group()
+        wg.stop_all()
+        wg.join_all()
+
     def run(self) -> None:
-        wg: ThreadWorkerGroup = self._worker_group()
+        self._aws_poster_worker()
+        self._journalctl_tailer_worker()
+
+        wg = self._worker_group()
         wg.start_all()
 
         start = time.time()
@@ -206,7 +214,9 @@ class JournalctlToAwsDriver(ExitStacked):
                 break
 
             if (al := self._config.heartbeat_age_limit) is not None:
-                for w, age in wg.check_heartbeats().items():
+                hbs = wg.check_heartbeats()
+                log.debug('Worker heartbeats: %r', hbs)
+                for w, age in hbs.items():
                     if age > al:
                         log.critical('Worker heartbeat age limit exceeded: %r %f > %f', w, age, al)
                         break
