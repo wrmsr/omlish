@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import errno
 import functools
 import os.path
@@ -55,6 +56,9 @@ from .types import AbstractServerContext
 from .types import AbstractSubprocess
 
 
+##
+
+
 @functools.total_ordering
 class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
@@ -80,7 +84,12 @@ class Subprocess(AbstractSubprocess):
     spawn_err = None  # error message attached by spawn() if any
     group = None  # ProcessGroup instance if process is in the group
 
-    def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: AbstractServerContext) -> None:
+    def __init__(
+            self,
+            config: ProcessConfig,
+            group: 'ProcessGroup',
+            context: AbstractServerContext,
+    ) -> None:
         super().__init__()
         self._config = config
         self.group = group
@@ -721,15 +730,39 @@ class Subprocess(AbstractSubprocess):
         pass
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessFactory:
+    fn: ta.Callable[[ProcessConfig, 'ProcessGroup'], Subprocess]
+
+    def __call__(self, config: ProcessConfig, group: 'ProcessGroup') -> Subprocess:
+        return self.fn(config, group)
+
+
 @functools.total_ordering
 class ProcessGroup:
-    def __init__(self, config: ProcessGroupConfig, context: ServerContext):
+    def __init__(
+            self,
+            config: ProcessGroupConfig,
+            context: ServerContext,
+            *,
+            subprocess_factory: ta.Optional[SubprocessFactory] = None,
+    ):
         super().__init__()
         self.config = config
         self.context = context
+
+        if subprocess_factory is None:
+            def make_subprocess(config: ProcessConfig, group: ProcessGroup) -> Subprocess:
+                return Subprocess(config, group, self.context)
+            subprocess_factory = SubprocessFactory(make_subprocess)
+        self._subprocess_factory = subprocess_factory
+
         self.processes = {}
         for pconfig in self.config.processes or []:
-            process = Subprocess(pconfig, self, self.context)
+            process = self._subprocess_factory(pconfig, self)
             self.processes[pconfig.name] = process
 
     def __lt__(self, other):

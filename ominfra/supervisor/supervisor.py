@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import signal
 import time
 import typing as ta
@@ -31,12 +32,32 @@ def timeslice(period: int, when: float) -> int:
     return int(when - (when % period))
 
 
+@dc.dataclass(frozen=True)
+class ProcessGroupFactory:
+    fn: ta.Callable[[ProcessGroupConfig], ProcessGroup]
+
+    def __call__(self, config: ProcessGroupConfig) -> ProcessGroup:
+        return self.fn(config)
+
+
 class Supervisor:
 
-    def __init__(self, context: ServerContext) -> None:
+    def __init__(
+            self,
+            context: ServerContext,
+            *,
+            process_group_factory: ta.Optional[ProcessGroupFactory] = None,
+    ) -> None:
         super().__init__()
 
         self._context = context
+
+        if process_group_factory is None:
+            def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
+                return ProcessGroup(config, self._context)
+            process_group_factory = ProcessGroupFactory(make_process_group)
+        self._process_group_factory = process_group_factory
+
         self._ticks: ta.Dict[int, float] = {}
         self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -78,7 +99,7 @@ class Supervisor:
         if name in self._process_groups:
             return False
 
-        group = self._process_groups[name] = ProcessGroup(config, self._context)
+        group = self._process_groups[name] = self._process_group_factory(config)
         group.after_setuid()
 
         EVENT_CALLBACKS.notify(ProcessGroupAddedEvent(name))

@@ -32,13 +32,18 @@ from .types import AbstractServerContext
 from .types import AbstractSubprocess
 
 
+ServerEpoch = ta.NewType('ServerEpoch', int)
+
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
+
 class ServerContext(AbstractServerContext):
     def __init__(
             self,
             config: ServerConfig,
             *,
-            epoch: int = 0,
-            inherited_fds: ta.Optional[ta.Iterable[int]] = None,
+            epoch: ServerEpoch = ServerEpoch(0),
+            inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
         super().__init__()
 
@@ -68,7 +73,7 @@ class ServerContext(AbstractServerContext):
         return self._config
 
     @property
-    def epoch(self) -> int:
+    def epoch(self) -> ServerEpoch:
         return self._epoch
 
     @property
@@ -99,7 +104,7 @@ class ServerContext(AbstractServerContext):
         return self._gid
 
     @property
-    def inherited_fds(self) -> ta.FrozenSet[int]:
+    def inherited_fds(self) -> ta.FrozenSet[InheritedFds]:
         return self._inherited_fds
 
     ##
