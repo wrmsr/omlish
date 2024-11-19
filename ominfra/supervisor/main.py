@@ -30,6 +30,7 @@ from .process import SubprocessFactory
 from .states import SupervisorStates
 from .supervisor import ProcessGroupFactory
 from .supervisor import Supervisor
+from .types import AbstractServerContext
 
 
 ##
@@ -61,6 +62,8 @@ def build_server_bindings(
         inj.bind(config),
 
         inj.bind(ServerContext, singleton=True),
+        inj.bind(AbstractServerContext, to_key=ServerContext),
+
         inj.bind(Supervisor, singleton=True),
     ]
 
