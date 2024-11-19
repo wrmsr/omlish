@@ -7,7 +7,7 @@
         {
           "name": "journald2aws",
           "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
-          "directory": "~/omlish2",
+          "directory": "~/src/omlish2",
           "stderr": {
             "file": "/dev/fd/1",
             "maxbytes": 0
