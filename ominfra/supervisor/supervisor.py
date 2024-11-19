@@ -1,11 +1,11 @@
 # ruff: noqa: UP006 UP007
-import logging
 import signal
 import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
+from omlish.lite.logs import log
 
 from .compat import ExitNow
 from .compat import as_string
@@ -26,9 +26,6 @@ from .process import Subprocess
 from .states import SupervisorState
 from .states import SupervisorStates
 from .states import get_process_state_description
-
-
-log = logging.getLogger(__name__)
 
 
 def timeslice(period, when):
