@@ -20,9 +20,15 @@ class LeafNode(Node, lang.Abstract):
         return []
 
 
+UnaryArithmeticOperator: ta.TypeAlias = ta.Literal[
+    'plus',
+    'minus',
+]
+
+
 @dc.dataclass(frozen=True)
 class ArithmeticUnary(Node, lang.Final):
-    operator: str
+    operator: UnaryArithmeticOperator
     expression: Node
 
     @property
@@ -30,9 +36,19 @@ class ArithmeticUnary(Node, lang.Final):
         return [self.expression]
 
 
+ArithmeticOperator: ta.TypeAlias = ta.Literal[
+    'div',
+    'divide',
+    'minus',
+    'modulo',
+    'multiply',
+    'plus',
+]
+
+
 @dc.dataclass(frozen=True)
 class Arithmetic(Node, lang.Final):
-    operator: str
+    operator: ArithmeticOperator
     left: Node
     right: Node
 
@@ -51,9 +67,19 @@ class Assign(Node, lang.Final):
         return [self.expr]
 
 
+ComparatorName: ta.TypeAlias = ta.Literal[
+    'eq',
+    'ne',
+    'lt',
+    'gt',
+    'lte',
+    'gte',
+]
+
+
 @dc.dataclass(frozen=True)
 class Comparator(Node, lang.Final):
-    name: str
+    name: ComparatorName
     first: Node
     second: Node
 
