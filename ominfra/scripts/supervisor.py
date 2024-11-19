@@ -22,6 +22,7 @@ import itertools
 import json
 import logging
 import os
+import os.path
 import pwd
 import re
 import resource
@@ -3168,7 +3169,7 @@ class Subprocess(AbstractSubprocess):
             cwd = self.config.directory
             try:
                 if cwd is not None:
-                    os.chdir(cwd)
+                    os.chdir(os.path.expanduser(cwd))
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = f"couldn't chdir to {cwd}: {code}\n"

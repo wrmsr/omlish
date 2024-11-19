@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007
 import errno
 import functools
-import os
+import os.path
 import shlex
 import signal
 import time
@@ -359,7 +359,7 @@ class Subprocess(AbstractSubprocess):
             cwd = self.config.directory
             try:
                 if cwd is not None:
-                    os.chdir(cwd)
+                    os.chdir(os.path.expanduser(cwd))
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = f"couldn't chdir to {cwd}: {code}\n"
