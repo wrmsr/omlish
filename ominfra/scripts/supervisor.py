@@ -1602,9 +1602,6 @@ class EventCallbacks:
 
 EVENT_CALLBACKS = EventCallbacks()
 
-notify_event = EVENT_CALLBACKS.notify
-clear_events = EVENT_CALLBACKS.clear
-
 
 class Event(abc.ABC):  # noqa
     """Abstract event type """
@@ -2752,10 +2749,10 @@ class OutputDispatcher(Dispatcher):
 
             if self._channel == 'stdout':
                 if self._stdout_events_enabled:
-                    notify_event(ProcessLogStdoutEvent(self._process, self._process.pid, data))
+                    EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
 
             elif self._stderr_events_enabled:
-                notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
+                EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
         if self._capture_log is None:
@@ -2806,7 +2803,7 @@ class OutputDispatcher(Dispatcher):
                 channel = self._channel
                 procname = self._process.config.name
                 event = self.event_type(self._process, self._process.pid, data)
-                notify_event(event)
+                EVENT_CALLBACKS.notify(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
                 for handler in self._capture_log.handlers:
@@ -3019,7 +3016,7 @@ class Subprocess(AbstractSubprocess):
         event_class = self.event_map.get(new_state)
         if event_class is not None:
             event = event_class(self, old_state, expected)
-            notify_event(event)
+            EVENT_CALLBACKS.notify(event)
 
         return True
 
@@ -3438,7 +3435,7 @@ class Subprocess(AbstractSubprocess):
         # system that this event was rejected so it can be processed again.
         if self.event is not None:
             # Note: this should only be true if we were in the BUSY state when finish() was called.
-            notify_event(EventRejectedEvent(self, self.event))  # type: ignore
+            EVENT_CALLBACKS.notify(EventRejectedEvent(self, self.event))  # type: ignore
             self.event = None
 
     def set_uid(self) -> ta.Optional[str]:
@@ -3658,7 +3655,7 @@ class Supervisor:
         group = self._process_groups[name] = ProcessGroup(config, self._context)
         group.after_setuid()
 
-        notify_event(ProcessGroupAddedEvent(name))
+        EVENT_CALLBACKS.notify(ProcessGroupAddedEvent(name))
         return True
 
     def remove_process_group(self, name: str) -> bool:
@@ -3669,7 +3666,7 @@ class Supervisor:
 
         del self._process_groups[name]
 
-        notify_event(ProcessGroupRemovedEvent(name))
+        EVENT_CALLBACKS.notify(ProcessGroupRemovedEvent(name))
         return True
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
@@ -3728,7 +3725,7 @@ class Supervisor:
         self._process_groups = {}  # clear
         self._stop_groups = None  # clear
 
-        clear_events()
+        EVENT_CALLBACKS.clear()
 
         try:
             for config in self._context.config.groups or []:
@@ -3742,7 +3739,7 @@ class Supervisor:
             # writing pid file needs to come *after* daemonizing or pid will be wrong
             self._context.write_pidfile()
 
-            notify_event(SupervisorRunningEvent())
+            EVENT_CALLBACKS.notify(SupervisorRunningEvent())
 
             while True:
                 if callback is not None and not callback(self):
@@ -3792,7 +3789,7 @@ class Supervisor:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
                 self._stop_groups = pgroups[:]
-                notify_event(SupervisorStoppingEvent())
+                EVENT_CALLBACKS.notify(SupervisorStoppingEvent())
 
             self._ordered_stop_groups_phase_1()
 
@@ -3918,7 +3915,7 @@ class Supervisor:
             this_tick = timeslice(period, now)
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
-                notify_event(event(this_tick, self))
+                EVENT_CALLBACKS.notify(event(this_tick, self))
 
 
 ########################################

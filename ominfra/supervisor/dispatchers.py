@@ -13,9 +13,9 @@ from .compat import find_prefix_at_end
 from .compat import readfd
 from .compat import strip_escapes
 from .configs import ProcessConfig
+from .events import EVENT_CALLBACKS
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
-from .events import notify_event
 from .types import AbstractSubprocess
 
 
@@ -207,10 +207,10 @@ class OutputDispatcher(Dispatcher):
 
             if self._channel == 'stdout':
                 if self._stdout_events_enabled:
-                    notify_event(ProcessLogStdoutEvent(self._process, self._process.pid, data))
+                    EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
 
             elif self._stderr_events_enabled:
-                notify_event(ProcessLogStderrEvent(self._process, self._process.pid, data))
+                EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self):
         if self._capture_log is None:
@@ -261,7 +261,7 @@ class OutputDispatcher(Dispatcher):
                 channel = self._channel
                 procname = self._process.config.name
                 event = self.event_type(self._process, self._process.pid, data)
-                notify_event(event)
+                EVENT_CALLBACKS.notify(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
                 for handler in self._capture_log.handlers:

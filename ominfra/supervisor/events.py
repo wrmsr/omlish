@@ -29,9 +29,6 @@ class EventCallbacks:
 
 EVENT_CALLBACKS = EventCallbacks()
 
-notify_event = EVENT_CALLBACKS.notify
-clear_events = EVENT_CALLBACKS.clear
-
 
 class Event(abc.ABC):  # noqa
     """Abstract event type """
@@ -114,7 +111,7 @@ class RemoteCommunicationEvent(Event):
 
 
 class SupervisorStateChangeEvent(Event):
-    """ Abstract class """
+    """Abstract class."""
 
     def payload(self):
         return ''
@@ -136,7 +133,7 @@ class EventRejectedEvent:  # purposely does not subclass Event
 
 
 class ProcessStateEvent(Event):
-    """ Abstract class, never raised directly """
+    """Abstract class, never raised directly."""
     frm = None
     to = None
 
@@ -225,7 +222,7 @@ class ProcessGroupRemovedEvent(ProcessGroupEvent):
 
 
 class TickEvent(Event):
-    """ Abstract """
+    """Abstract."""
 
     def __init__(self, when, supervisord):
         super().__init__()
