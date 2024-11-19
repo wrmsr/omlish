@@ -1,7 +1,8 @@
 import typing as ta
 
-from .. import check
-from .. import dataclasses as dc
+from omlish import check
+from omlish import dataclasses as dc
+
 from .inspect import signature
 from .keys import as_key
 from .types import Binding

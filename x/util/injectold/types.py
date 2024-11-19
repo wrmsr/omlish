@@ -1,8 +1,8 @@
 import abc
 import typing as ta
 
-from .. import dataclasses as dc
-from .. import lang
+from omlish import dataclasses as dc
+from omlish import lang
 
 
 ##

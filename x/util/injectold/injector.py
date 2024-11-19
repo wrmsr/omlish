@@ -8,8 +8,9 @@ TODO:
 """
 import typing as ta
 
-from .. import check
-from .. import lang
+from omlish import check
+from omlish import lang
+
 from .bindings import build_provider_map
 from .exceptions import UnboundKeyException
 from .inspect import build_kwarg_keys

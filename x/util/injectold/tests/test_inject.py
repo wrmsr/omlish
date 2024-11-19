@@ -1,8 +1,9 @@
 import abc
 import typing as ta  # noqa
 
-from ... import dataclasses as dc
-from ... import inject as inj
+from omlish import dataclasses as dc
+
+from ... import injectold as inj
 
 
 def test_inject():

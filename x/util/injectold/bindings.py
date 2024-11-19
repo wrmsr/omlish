@@ -1,8 +1,9 @@
 import typing as ta
 
-from .. import check
-from .. import dataclasses as dc
-from .. import lang
+from omlish import check
+from omlish import dataclasses as dc
+from omlish import lang
+
 from .arrays import array_provider
 from .exceptions import DuplicateKeyException
 from .keys import as_key

@@ -1,6 +1,7 @@
 import typing as ta
 
-from .. import dataclasses as dc
+from omlish import dataclasses as dc
+
 from .providers import Provider
 from .types import Injector
 from .types import Key
