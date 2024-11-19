@@ -10,7 +10,7 @@ from ...configs import read_config_file
 from ..compat import get_open_fds
 from ..configs import ServerConfig
 from ..context import ServerContext
-from ..main import prepare_server_config_dct
+from ..main import prepare_server_config
 from ..supervisor import Supervisor
 
 
@@ -28,7 +28,7 @@ class TestSupervisor(unittest.TestCase):
         config = read_config_file(
             os.path.expanduser(config_file),
             ServerConfig,
-            prepare=prepare_server_config_dct,
+            prepare=prepare_server_config,
         )
 
         #
