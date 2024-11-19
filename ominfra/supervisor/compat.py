@@ -161,6 +161,19 @@ def close_fd(fd: int) -> bool:
     return True
 
 
+def is_fd_open(fd: int) -> bool:
+    try:
+        n = os.dup(fd)
+    except OSError:
+        return False
+    os.close(n)
+    return True
+
+
+def get_open_fds(limit: int) -> ta.FrozenSet[int]:
+    return frozenset(filter(is_fd_open, range(limit)))
+
+
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
     fd, filename = tempfile.mkstemp(suffix, prefix, dir)
     os.close(fd)

@@ -1,12 +1,14 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 UP006 UP007
 import json
 import os.path
+import typing as ta
 import unittest
 
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.runtime import is_debugger_attached
 
+from ..compat import get_open_fds
 from ..configs import ServerConfig
 from ..context import ServerContext
 from ..supervisor import Supervisor
@@ -14,8 +16,10 @@ from ..supervisor import Supervisor
 
 class TestSupervisor(unittest.TestCase):
     def test_supervisor(self):
+        initial_fds: ta.Optional[ta.FrozenSet[int]] = None
         if is_debugger_attached():
             configure_standard_logging('DEBUG')
+            initial_fds = get_open_fds(0x10000)
 
         #
 
@@ -29,7 +33,10 @@ class TestSupervisor(unittest.TestCase):
 
         #
 
-        context = ServerContext(config)
+        context = ServerContext(
+            config,
+            inherited_fds=initial_fds,
+        )
         supervisor = Supervisor(context)
 
         #

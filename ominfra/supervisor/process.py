@@ -324,8 +324,10 @@ class Subprocess(AbstractSubprocess):
             os.dup2(self._pipes['child_stdout'], 2)
         else:
             os.dup2(self._pipes['child_stderr'], 2)
-        # FIXME: leave debugger fds
+
         for i in range(3, self.context.config.minfds):
+            if i in self.context.inherited_fds:
+                continue
             close_fd(i)
 
     def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
