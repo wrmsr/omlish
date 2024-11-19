@@ -32,7 +32,6 @@ from .dispatchers import Dispatcher
 from .dispatchers import InputDispatcher
 from .dispatchers import OutputDispatcher
 from .events import EVENT_CALLBACKS
-from .events import EventRejectedEvent
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
@@ -63,27 +62,6 @@ from .types import AbstractSubprocess
 class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
 
-    # Initial state; overridden by instance variables
-
-    # pid = 0  # Subprocess pid; 0 when not running
-    # config = None  # ProcessConfig instance
-    # state = None  # process state code
-    listener_state = None  # listener state code (if we're an event listener)
-    event = None  # event currently being processed (if we're an event listener)
-    laststart = 0.  # Last time the subprocess was started; 0 if never
-    laststop = 0.  # Last time the subprocess was stopped; 0 if never
-    last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
-    delay = 0.  # If nonzero, delay starting or killing until this time
-    administrative_stop = False  # true if process has been stopped by an admin
-    system_stop = False  # true if process has been stopped by the system
-    killing = False  # true if we are trying to kill this process
-    backoff = 0  # backoff counter (to startretries)
-    dispatchers = None  # asyncore output dispatchers (keyed by fd)
-    pipes = None  # map of channel name to file descriptor #
-    exitstatus = None  # status attached to dead process by finish()
-    spawn_err = None  # error message attached by spawn() if any
-    group = None  # ProcessGroup instance if process is in the group
-
     def __init__(
             self,
             config: ProcessConfig,
@@ -94,10 +72,23 @@ class Subprocess(AbstractSubprocess):
         self._config = config
         self.group = group
         self._context = context
+
         self._dispatchers: dict = {}
         self._pipes: dict = {}
-        self.state = ProcessStates.STOPPED
-        self._pid = 0
+        self._state = ProcessStates.STOPPED
+        self._pid = 0  # 0 when not running
+        self._laststart = 0.  # Last time the subprocess was started; 0 if never
+        self._laststop = 0.  # Last time the subprocess was stopped; 0 if never
+        self.last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
+        self.delay = 0.  # If nonzero, delay starting or killing until this time
+        self.administrative_stop = False  # true if process has been stopped by an admin
+        self.system_stop = False  # true if process has been stopped by the system
+        self.killing = False  # true if we are trying to kill this process
+        self.backoff = 0  # backoff counter (to startretries)
+        self.dispatchers = None  # asyncore output dispatchers (keyed by fd)
+        self.pipes = None  # map of channel name to file descriptor #
+        self.exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
+        self.spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
     @property
     def pid(self) -> int:
@@ -110,6 +101,10 @@ class Subprocess(AbstractSubprocess):
     @property
     def context(self) -> AbstractServerContext:
         return self._context
+
+    @property
+    def state(self) -> ProcessState:
+        return self._state
 
     def remove_logs(self) -> None:
         for dispatcher in self._dispatchers.values():
@@ -203,11 +198,11 @@ class Subprocess(AbstractSubprocess):
     }
 
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
-        old_state = self.state
+        old_state = self._state
         if new_state is old_state:
             return False
 
-        self.state = new_state
+        self._state = new_state
         if new_state == ProcessStates.BACKOFF:
             now = time.time()
             self.backoff += 1
@@ -221,8 +216,8 @@ class Subprocess(AbstractSubprocess):
         return True
 
     def _check_in_state(self, *states: ProcessState) -> None:
-        if self.state not in states:
-            current_state = get_process_state_description(self.state)
+        if self._state not in states:
+            current_state = get_process_state_description(self._state)
             allowable_states = ' '.join(map(get_process_state_description, states))
             processname = as_string(self.config.name)
             raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
@@ -244,7 +239,7 @@ class Subprocess(AbstractSubprocess):
         self.system_stop = False
         self.administrative_stop = False
 
-        self.laststart = time.time()
+        self._laststart = time.time()
 
         self._check_in_state(
             ProcessStates.EXITED,
@@ -403,21 +398,21 @@ class Subprocess(AbstractSubprocess):
         """
         Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
         """
-        if self.state == ProcessStates.STARTING:
-            self.laststart = min(test_time, self.laststart)
+        if self._state == ProcessStates.STARTING:
+            self._laststart = min(test_time, self._laststart)
             if self.delay > 0 and test_time < (self.delay - self.config.startsecs):
                 self.delay = test_time + self.config.startsecs
 
-        elif self.state == ProcessStates.RUNNING:
-            if test_time > self.laststart and test_time < (self.laststart + self.config.startsecs):
-                self.laststart = test_time - self.config.startsecs
+        elif self._state == ProcessStates.RUNNING:
+            if test_time > self._laststart and test_time < (self._laststart + self.config.startsecs):
+                self._laststart = test_time - self.config.startsecs
 
-        elif self.state == ProcessStates.STOPPING:
+        elif self._state == ProcessStates.STOPPING:
             self.last_stop_report = min(test_time, self.last_stop_report)
             if self.delay > 0 and test_time < (self.delay - self.config.stopwaitsecs):
                 self.delay = test_time + self.config.stopwaitsecs
 
-        elif self.state == ProcessStates.BACKOFF:
+        elif self._state == ProcessStates.BACKOFF:
             if self.delay > 0 and test_time < (self.delay - self.backoff):
                 self.delay = test_time + self.backoff
 
@@ -428,7 +423,7 @@ class Subprocess(AbstractSubprocess):
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
-        if self.state == ProcessStates.STOPPING:
+        if self._state == ProcessStates.STOPPING:
             now = time.time()
 
             self._check_and_adjust_for_system_clock_rollback(now)
@@ -458,7 +453,7 @@ class Subprocess(AbstractSubprocess):
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
         # if startretries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
-        if self.state == ProcessStates.BACKOFF:
+        if self._state == ProcessStates.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', processname)
             self.change_state(ProcessStates.STOPPED)
             return None
@@ -470,7 +465,7 @@ class Subprocess(AbstractSubprocess):
             return fmt % args
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
-        if self.state == ProcessStates.STOPPING:
+        if self._state == ProcessStates.STOPPING:
             killasgroup = self.config.killasgroup
         else:
             killasgroup = self.config.stopasgroup
@@ -567,11 +562,11 @@ class Subprocess(AbstractSubprocess):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        self.laststop = now
+        self._laststop = now
         processname = as_string(self.config.name)
 
-        if now > self.laststart:
-            too_quickly = now - self.laststart < self.config.startsecs
+        if now > self._laststart:
+            too_quickly = now - self._laststart < self.config.startsecs
         else:
             too_quickly = False
             log.warning(
@@ -614,7 +609,7 @@ class Subprocess(AbstractSubprocess):
 
             # if the process was STARTING but a system time change causes self.laststart to be in the future, the normal
             # STARTING->RUNNING transition can be subverted so we perform the transition here.
-            if self.state == ProcessStates.STARTING:
+            if self._state == ProcessStates.STARTING:
                 self.change_state(ProcessStates.RUNNING)
 
             self._check_in_state(ProcessStates.RUNNING)
@@ -634,13 +629,6 @@ class Subprocess(AbstractSubprocess):
         self._pipes = {}
         self._dispatchers = {}
 
-        # if we died before we processed the current event (only happens if we're an event listener), notify the event
-        # system that this event was rejected so it can be processed again.
-        if self.event is not None:
-            # Note: this should only be true if we were in the BUSY state when finish() was called.
-            EVENT_CALLBACKS.notify(EventRejectedEvent(self, self.event))  # type: ignore
-            self.event = None
-
     def set_uid(self) -> ta.Optional[str]:
         if self.config.uid is None:
             return None
@@ -659,11 +647,11 @@ class Subprocess(AbstractSubprocess):
         return f'<Subprocess at {id(self)} with name {name} in state {get_process_state_description(self.get_state())}>'
 
     def get_state(self) -> ProcessState:
-        return self.state
+        return self._state
 
     def transition(self):
         now = time.time()
-        state = self.state
+        state = self._state
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
@@ -680,7 +668,7 @@ class Subprocess(AbstractSubprocess):
                         # EXITED -> STARTING
                         self.spawn()
 
-            elif state == ProcessStates.STOPPED and not self.laststart:
+            elif state == ProcessStates.STOPPED and not self._laststart:
                 if self.config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
@@ -693,7 +681,7 @@ class Subprocess(AbstractSubprocess):
 
         processname = as_string(self.config.name)
         if state == ProcessStates.STARTING:
-            if now - self.laststart > self.config.startsecs:
+            if now - self._laststart > self.config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self.delay = 0
