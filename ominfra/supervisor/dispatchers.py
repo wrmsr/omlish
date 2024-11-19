@@ -5,6 +5,8 @@ import logging
 import os
 import typing as ta
 
+from omlish.lite.logs import log
+
 from .compat import as_bytes
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
@@ -15,9 +17,6 @@ from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify_event
 from .types import AbstractSubprocess
-
-
-log = logging.getLogger(__name__)
 
 
 class Dispatcher(abc.ABC):
@@ -176,16 +175,16 @@ class OutputDispatcher(Dispatcher):
             # )
 
     def remove_logs(self):
-        for log in (self._normal_log, self._capture_log):
-            if log is not None:
-                for handler in log.handlers:
+        for l in (self._normal_log, self._capture_log):
+            if l is not None:
+                for handler in l.handlers:
                     handler.remove()  # type: ignore
                     handler.reopen()  # type: ignore
 
     def reopen_logs(self):
-        for log in (self._normal_log, self._capture_log):
-            if log is not None:
-                for handler in log.handlers:
+        for l in (self._normal_log, self._capture_log):
+            if l is not None:
+                for handler in l.handlers:
                     handler.reopen()  # type: ignore
 
     def _log(self, data):

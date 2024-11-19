@@ -2,7 +2,6 @@
 import errno
 import fcntl
 import grp
-import logging
 import os
 import pwd
 import re
@@ -11,6 +10,8 @@ import signal
 import stat
 import typing as ta
 import warnings
+
+from omlish.lite.logs import log
 
 from .compat import SignalReceiver
 from .compat import close_fd
@@ -29,9 +30,6 @@ from .states import SupervisorState
 from .states import SupervisorStates
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
-
-
-log = logging.getLogger(__name__)
 
 
 class ServerContext(AbstractServerContext):

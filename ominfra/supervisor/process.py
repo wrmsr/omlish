@@ -1,13 +1,14 @@
 # ruff: noqa: UP006 UP007
 import errno
 import functools
-import logging
 import os
 import shlex
 import signal
 import time
 import traceback
 import typing as ta
+
+from omlish.lite.logs import log
 
 from .compat import as_bytes
 from .compat import as_string
@@ -52,9 +53,6 @@ from .states import SupervisorStates
 from .states import get_process_state_description
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
-
-
-log = logging.getLogger(__name__)
 
 
 @functools.total_ordering

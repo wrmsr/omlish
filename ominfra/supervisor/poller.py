@@ -1,13 +1,11 @@
 # ruff: noqa: UP006 UP007
 import abc
 import errno
-import logging
 import select
 import sys
 import typing as ta
 
-
-log = logging.getLogger(__name__)
+from omlish.lite.logs import log
 
 
 class BasePoller(abc.ABC):
