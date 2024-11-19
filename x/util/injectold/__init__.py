@@ -1,5 +1,6 @@
+from .binder import bind  # noqa
 from .bindings import as_  # noqa
-from .bindings import bind  # noqa
+from .bindings import as_bindings  # noqa
 from .bindings import override  # noqa
 from .exceptions import DuplicateKeyException  # noqa
 from .exceptions import KeyException  # noqa

@@ -37,14 +37,6 @@ def as_binding(o: ta.Any) -> Binding:
     return Binding(Key(cls), ConstProvider(cls, o))
 
 
-def as_bindings(it: ta.Iterable[ta.Any]) -> ta.Sequence[Binding]:
-    bs: list[Binding] = []
-    for a in it:
-        if a is not None:
-            bs.append(as_binding(a))
-    return bs
-
-
 def as_(k: ta.Any, p: ta.Any) -> Binding:
     return Binding(as_key(k), as_provider(p))
 
@@ -65,8 +57,18 @@ class _Bindings(Bindings):
                 yield from p.bindings()
 
 
-def bind(*args: ta.Any) -> Bindings:
-    return _Bindings(as_bindings(args))
+def as_bindings(*vs: ta.Any) -> Bindings:
+    bs: list[Binding] = []
+    ps: list[Bindings] = []
+    for a in vs:
+        if isinstance(a, Bindings):
+            ps.append(a)
+        elif a is not None:
+            bs.append(as_binding(a))
+    return Bindings(
+        bs or None,
+        ps or None,
+    )
 
 
 ##
@@ -84,7 +86,7 @@ class _Overrides(Bindings):
 
 def override(p: Bindings, *a: ta.Any) -> Bindings:
     m: dict[Key, Binding] = {}
-    for b in bind(*a).bindings():
+    for b in as_bindings(*a).bindings():
         if b.key in m:
             raise DuplicateKeyException(b.key)
         m[b.key] = b

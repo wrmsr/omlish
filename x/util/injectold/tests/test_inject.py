@@ -20,10 +20,10 @@ def test_inject():
         sfn_n += 1
         return str(sfn_n)
 
-    bs = inj.bind(
-        # _as_binding(420),
-        ifn,
-        inj.singleton(sfn),
+    bs = inj.as_bindings(
+        # inj.bind(420),
+        inj.bind(ifn),
+        inj.bind(sfn, singleton=True),
     )
 
     i = inj.create_injector(bs)
@@ -56,7 +56,7 @@ class BarfB(Barf):
 
 
 def test_inject2():
-    i = inj.create_injector(inj.bind(420))
+    i = inj.create_injector(inj.as_bindings(inj.bind(420)))
     assert i.provide(int) == 420
 
 
@@ -66,23 +66,27 @@ def test_dataclasses():
         i: int
         s: str
 
-    foo = inj.create_injector(inj.bind(420, inj.fn(lambda: 'howdy', str), Foo)).provide(Foo)
+    foo = inj.create_injector(inj.as_bindings(
+        inj.bind(420),
+        inj.bind(inj.fn(lambda: 'howdy', str)),
+        inj.bind(Foo),
+    )).provide(Foo)
     print(foo)
 
 
 def test_override():
-    b0 = inj.bind(420, 'abc')
+    b0 = inj.as_bindings(inj.bind(420), inj.bind('abc'))
     i0 = inj.create_injector(b0)
     assert i0.provide(int) == 420
     assert i0.provide(str) == 'abc'
-    b1 = inj.override(b0, 421)
+    b1 = inj.override(b0, inj.bind(421))
     i1 = inj.create_injector(b1)
     assert i1.provide(int) == 421
     assert i1.provide(str) == 'abc'
 
 
 def test_arrays():
-    bs = inj.bind(
+    bs = inj.as_bindings(
         inj.as_(inj.array(int), 420),
         inj.as_(inj.array(int), 421),
     )
