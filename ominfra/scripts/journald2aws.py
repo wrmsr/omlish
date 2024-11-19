@@ -1826,6 +1826,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
             self,
             *,
             stop_event: ta.Optional[threading.Event] = None,
+            groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
     ) -> None:
         super().__init__()
 
@@ -1836,6 +1837,9 @@ class ThreadWorker(ExitStacked, abc.ABC):
         self._lock = threading.RLock()
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
+
+        for g in groups or []:
+            g.add(self)
 
     #
 
@@ -1881,13 +1885,13 @@ class ThreadWorker(ExitStacked, abc.ABC):
             if self._thread is not None:
                 raise RuntimeError('Thread already started: %r', self)
 
-            thr = threading.Thread(target=self.__run)
+            thr = threading.Thread(target=self.__thread_main)
             self._thread = thr
             thr.start()
 
     #
 
-    def __run(self) -> None:
+    def __thread_main(self) -> None:
         try:
             self._run()
         except ThreadWorker.Stopping:
@@ -1917,23 +1921,65 @@ class ThreadWorker(ExitStacked, abc.ABC):
 
 class ThreadWorkerGroup:
     @dc.dataclass()
-    class State:
+    class _State:
         worker: ThreadWorker
+
+        last_heartbeat: ta.Optional[float] = None
 
     def __init__(self) -> None:
         super().__init__()
 
         self._lock = threading.RLock()
-        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup.State] = {}
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
+        self._last_heartbeat_check: ta.Optional[float] = None
+
+    #
 
     def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
         with self._lock:
             for w in workers:
                 if w in self._states:
                     raise KeyError(w)
-                self._states[w] = ThreadWorkerGroup.State(w)
+                self._states[w] = ThreadWorkerGroup._State(w)
 
         return self
+
+    #
+
+    def start_all(self) -> None:
+        thrs = list(self._states)
+        with self._lock:
+            for thr in thrs:
+                if not thr.has_started():
+                    thr.start()
+
+    def stop_all(self) -> None:
+        for w in reversed(list(self._states)):
+            w.stop()
+
+    def join_all(self, timeout: ta.Optional[float] = None) -> None:
+        for w in reversed(list(self._states)):
+            w.join(timeout)
+
+    #
+
+    def get_dead(self) -> ta.List[ThreadWorker]:
+        with self._lock:
+            return [thr for thr in self._states if not thr.is_alive()]
+
+    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
+        with self._lock:
+            dct: ta.Dict[ThreadWorker, float] = {}
+            for thr, st in self._states.items():
+                if not thr.has_started():
+                    continue
+                hb = thr.last_heartbeat
+                if hb is None:
+                    hb = time.time()
+                st.last_heartbeat = hb
+                dct[st.worker] = time.time() - hb
+            self._last_heartbeat_check = time.time()
+        return dct
 
 
 ########################################
@@ -2694,6 +2740,7 @@ class JournalctlToAwsDriver(ExitStacked):
         cursor_file: ta.Optional[str] = None
 
         runtime_limit: ta.Optional[float] = None
+        heartbeat_age_limit: ta.Optional[float] = 60.
 
         #
 
@@ -2771,6 +2818,12 @@ class JournalctlToAwsDriver(ExitStacked):
     #
 
     @cached_nullary
+    def _worker_group(self) -> ThreadWorkerGroup:
+        return ThreadWorkerGroup()
+
+    #
+
+    @cached_nullary
     def _journalctl_message_queue(self):  # type: () -> queue.Queue[ta.Sequence[JournalctlMessage]]
         return queue.Queue()
 
@@ -2796,6 +2849,8 @@ class JournalctlToAwsDriver(ExitStacked):
 
             cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
+
+            groups=[self._worker_group()],
         )
 
     #
@@ -2809,26 +2864,28 @@ class JournalctlToAwsDriver(ExitStacked):
 
             ensure_locked=self._ensure_locked,
             dry_run=self._config.aws_dry_run,
+
+            groups=[self._worker_group()],
         )
 
     #
 
     def run(self) -> None:
-        pw: JournalctlToAwsPosterWorker = self._aws_poster_worker()
-        tw: JournalctlTailerWorker = self._journalctl_tailer_worker()
-
-        ws = [pw, tw]
-
-        for w in ws:
-            w.start()
+        wg: ThreadWorkerGroup = self._worker_group()
+        wg.start_all()
 
         start = time.time()
 
         while True:
-            for w in ws:
-                if not w.is_alive():
-                    log.critical('Worker died: %r', w)
-                    break
+            for w in wg.get_dead():
+                log.critical('Worker died: %r', w)
+                break
+
+            if (al := self._config.heartbeat_age_limit) is not None:
+                for w, age in wg.check_heartbeats().items():
+                    if age > al:
+                        log.critical('Worker heartbeat age limit exceeded: %r %f > %f', w, age, al)
+                        break
 
             if (rl := self._config.runtime_limit) is not None and time.time() - start >= rl:
                 log.warning('Runtime limit reached')
@@ -2836,9 +2893,8 @@ class JournalctlToAwsDriver(ExitStacked):
 
             time.sleep(1.)
 
-        for w in reversed(ws):
-            w.stop()
-            w.join()
+        wg.stop_all()
+        wg.join_all()
 
 
 ########################################

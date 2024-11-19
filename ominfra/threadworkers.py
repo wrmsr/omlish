@@ -29,6 +29,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
             self,
             *,
             stop_event: ta.Optional[threading.Event] = None,
+            groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
     ) -> None:
         super().__init__()
 
@@ -39,6 +40,9 @@ class ThreadWorker(ExitStacked, abc.ABC):
         self._lock = threading.RLock()
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
+
+        for g in groups or []:
+            g.add(self)
 
     #
 
@@ -84,13 +88,13 @@ class ThreadWorker(ExitStacked, abc.ABC):
             if self._thread is not None:
                 raise RuntimeError('Thread already started: %r', self)
 
-            thr = threading.Thread(target=self.__run)
+            thr = threading.Thread(target=self.__thread_main)
             self._thread = thr
             thr.start()
 
     #
 
-    def __run(self) -> None:
+    def __thread_main(self) -> None:
         try:
             self._run()
         except ThreadWorker.Stopping:
@@ -120,20 +124,62 @@ class ThreadWorker(ExitStacked, abc.ABC):
 
 class ThreadWorkerGroup:
     @dc.dataclass()
-    class State:
+    class _State:
         worker: ThreadWorker
+
+        last_heartbeat: ta.Optional[float] = None
 
     def __init__(self) -> None:
         super().__init__()
 
         self._lock = threading.RLock()
-        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup.State] = {}
+        self._states: ta.Dict[ThreadWorker, ThreadWorkerGroup._State] = {}
+        self._last_heartbeat_check: ta.Optional[float] = None
+
+    #
 
     def add(self, *workers: ThreadWorker) -> 'ThreadWorkerGroup':
         with self._lock:
             for w in workers:
                 if w in self._states:
                     raise KeyError(w)
-                self._states[w] = ThreadWorkerGroup.State(w)
+                self._states[w] = ThreadWorkerGroup._State(w)
 
         return self
+
+    #
+
+    def start_all(self) -> None:
+        thrs = list(self._states)
+        with self._lock:
+            for thr in thrs:
+                if not thr.has_started():
+                    thr.start()
+
+    def stop_all(self) -> None:
+        for w in reversed(list(self._states)):
+            w.stop()
+
+    def join_all(self, timeout: ta.Optional[float] = None) -> None:
+        for w in reversed(list(self._states)):
+            w.join(timeout)
+
+    #
+
+    def get_dead(self) -> ta.List[ThreadWorker]:
+        with self._lock:
+            return [thr for thr in self._states if not thr.is_alive()]
+
+    def check_heartbeats(self) -> ta.Dict[ThreadWorker, float]:
+        with self._lock:
+            dct: ta.Dict[ThreadWorker, float] = {}
+            for thr, st in self._states.items():
+                if not thr.has_started():
+                    continue
+                hb = thr.last_heartbeat
+                if hb is None:
+                    hb = time.time()
+                st.last_heartbeat = hb
+                dct[st.worker] = time.time() - hb
+            self._last_heartbeat_check = time.time()
+        return dct

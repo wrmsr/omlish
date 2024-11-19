@@ -46,6 +46,7 @@ from omlish.lite.runtime import is_debugger_attached
 
 from ....journald.messages import JournalctlMessage  # noqa
 from ....journald.tailer import JournalctlTailerWorker
+from ....threadworkers import ThreadWorkerGroup
 from ..auth import AwsSigner
 from ..logs import AwsLogMessageBuilder
 from .cursor import JournalctlToAwsCursor
@@ -63,6 +64,7 @@ class JournalctlToAwsDriver(ExitStacked):
         cursor_file: ta.Optional[str] = None
 
         runtime_limit: ta.Optional[float] = None
+        heartbeat_age_limit: ta.Optional[float] = 60.
 
         #
 
@@ -140,6 +142,12 @@ class JournalctlToAwsDriver(ExitStacked):
     #
 
     @cached_nullary
+    def _worker_group(self) -> ThreadWorkerGroup:
+        return ThreadWorkerGroup()
+
+    #
+
+    @cached_nullary
     def _journalctl_message_queue(self):  # type: () -> queue.Queue[ta.Sequence[JournalctlMessage]]
         return queue.Queue()
 
@@ -165,6 +173,8 @@ class JournalctlToAwsDriver(ExitStacked):
 
             cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
+
+            groups=[self._worker_group()],
         )
 
     #
@@ -178,26 +188,28 @@ class JournalctlToAwsDriver(ExitStacked):
 
             ensure_locked=self._ensure_locked,
             dry_run=self._config.aws_dry_run,
+
+            groups=[self._worker_group()],
         )
 
     #
 
     def run(self) -> None:
-        pw: JournalctlToAwsPosterWorker = self._aws_poster_worker()
-        tw: JournalctlTailerWorker = self._journalctl_tailer_worker()
-
-        ws = [pw, tw]
-
-        for w in ws:
-            w.start()
+        wg: ThreadWorkerGroup = self._worker_group()
+        wg.start_all()
 
         start = time.time()
 
         while True:
-            for w in ws:
-                if not w.is_alive():
-                    log.critical('Worker died: %r', w)
-                    break
+            for w in wg.get_dead():
+                log.critical('Worker died: %r', w)
+                break
+
+            if (al := self._config.heartbeat_age_limit) is not None:
+                for w, age in wg.check_heartbeats().items():
+                    if age > al:
+                        log.critical('Worker heartbeat age limit exceeded: %r %f > %f', w, age, al)
+                        break
 
             if (rl := self._config.runtime_limit) is not None and time.time() - start >= rl:
                 log.warning('Runtime limit reached')
@@ -205,6 +217,5 @@ class JournalctlToAwsDriver(ExitStacked):
 
             time.sleep(1.)
 
-        for w in reversed(ws):
-            w.stop()
-            w.join()
+        wg.stop_all()
+        wg.join_all()
