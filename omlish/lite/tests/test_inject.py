@@ -55,7 +55,7 @@ class TestInject(unittest.TestCase):
             return 'b'
 
     def test_inject2(self):
-        i = inj.create_injector(inj.as_bindings(inj.bind(420)))
+        i = inj.create_injector(inj.bind(420))
         self.assertEqual(i.provide(int), 420)
 
     def test_dataclasses(self):
@@ -64,11 +64,11 @@ class TestInject(unittest.TestCase):
             i: int
             s: str
 
-        foo = inj.create_injector(inj.as_bindings(
+        foo = inj.create_injector(
             inj.bind(420),
             inj.bind(lambda: 'howdy', key=str),
             inj.bind(Foo),
-        )).provide(Foo)
+        ).provide(Foo)
         print(foo)
 
     def test_override(self):

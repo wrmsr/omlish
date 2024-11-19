@@ -32,7 +32,7 @@ class InjectorKey:
 
 
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping[InjectorKey, InjectorProviderFn]
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 
 
 class InjectorProvider(abc.ABC):
@@ -55,6 +55,8 @@ class InjectorBindings(abc.ABC):
     def bindings(self) -> ta.Iterator[InjectorBinding]:
         raise NotImplementedError
 
+
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 ##
 
@@ -222,10 +224,10 @@ class _InjectorBindings(InjectorBindings):
                 yield from p.bindings()
 
 
-def as_injector_bindings(*vs: ta.Any) -> InjectorBindings:
+def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
     bs: ta.List[InjectorBinding] = []
     ps: ta.List[InjectorBindings] = []
-    for a in vs:
+    for a in args:
         if isinstance(a, InjectorBindings):
             ps.append(a)
         elif isinstance(a, InjectorBinding):
@@ -251,9 +253,9 @@ class OverridesInjectorBindings(InjectorBindings):
             yield self.m.get(b.key, b)
 
 
-def injector_override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
+def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
     m: ta.Dict[InjectorKey, InjectorBinding] = {}
-    for b in as_injector_bindings(*a).bindings():
+    for b in as_injector_bindings(*args).bindings():
         if b.key in m:
             raise DuplicateInjectorKeyError(b.key)
         m[b.key] = b
@@ -540,8 +542,8 @@ class _Injector(Injector):
         return obj(**kws)
 
 
-def create_injector(bs: InjectorBindings, p: ta.Optional[Injector] = None) -> Injector:
-    return _Injector(bs, p)
+def create_injector(*args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
+    return _Injector(as_injector_bindings(*args), p)
 
 
 ###
@@ -612,8 +614,8 @@ class Injection:
     # injector
 
     @classmethod
-    def create_injector(cls, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> Injector:
-        return create_injector(bs, p)
+    def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
+        return create_injector(*args, p=p)
 
 
 inj = Injection
