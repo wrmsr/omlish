@@ -256,7 +256,10 @@ def toml_loads(s: str, /, *, parse_float: TomlParseFloat = float) -> ta.Dict[str
     """Parse TOML from a string."""
 
     # The spec allows converting "\r\n" to "\n", even in string literals. Let's do so to simplify parsing.
-    src = s.replace('\r\n', '\n')
+    try:
+        src = s.replace('\r\n', '\n')
+    except (AttributeError, TypeError):
+        raise TypeError(f"Expected str object, not '{type(s).__qualname__}'") from None
     pos = 0
     out = TomlOutput(TomlNestedDict(), TomlFlags())
     header: TomlKey = ()
