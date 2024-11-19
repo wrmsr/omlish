@@ -1,9 +1,11 @@
 {
   "nodaemon": true,
-  "groups": {
-    "default": {
-      "processes": {
-        "sleep": {
+  "groups": [
+    {
+      "name": "default",
+      "processes": [
+        {
+          "name": "sleep",
           "command": "sleep 600",
           "stdout": {
             "file": "/dev/fd/1",
@@ -11,7 +13,8 @@
           },
           "redirect_stderr": true
         },
-        "ls": {
+        {
+          "name": "ls",
           "command": "ls -al",
           "stdout": {
             "file": "/dev/fd/1",
@@ -19,7 +22,7 @@
           },
           "redirect_stderr": true
         }
-      }
+      ]
     }
-  }
+  ]
 }

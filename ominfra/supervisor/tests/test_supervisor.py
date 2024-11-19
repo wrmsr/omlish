@@ -1,16 +1,16 @@
 # ruff: noqa: PT009 UP006 UP007
-import json
 import os.path
 import typing as ta
 import unittest
 
 from omlish.lite.logs import configure_standard_logging
-from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.runtime import is_debugger_attached
 
+from ...configs import read_config_file
 from ..compat import get_open_fds
 from ..configs import ServerConfig
 from ..context import ServerContext
+from ..main import prepare_server_config_dct
 from ..supervisor import Supervisor
 
 
@@ -25,11 +25,11 @@ class TestSupervisor(unittest.TestCase):
 
         config_file = os.path.join(os.path.dirname(__file__), 'demo.json')
 
-        with open(config_file) as f:
-            config_src = f.read()
-
-        config_dct = json.loads(config_src)
-        config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
+        config = read_config_file(
+            os.path.expanduser(config_file),
+            ServerConfig,
+            prepare=prepare_server_config_dct,
+        )
 
         #
 

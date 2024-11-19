@@ -9,6 +9,8 @@ from omlish.lite.inject import inj
 from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
 
+from ..configs import ConfigMapping
+from ..configs import build_config_named_children
 from ..configs import read_config_file
 from .compat import ExitNow
 from .compat import get_open_fds
@@ -16,6 +18,25 @@ from .configs import ServerConfig
 from .context import ServerContext
 from .states import SupervisorStates
 from .supervisor import Supervisor
+
+
+##
+
+
+def prepare_process_group_config_dct(dct: ConfigMapping) -> ConfigMapping:
+    out = dict(dct)
+    out['processes'] = build_config_named_children(out.get('processes'))
+    return out
+
+
+def prepare_server_config_dct(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+    out = dict(dct)
+    group_dcts = build_config_named_children(out.get('groups'))
+    out['groups'] = [prepare_process_group_config_dct(group_dct) for group_dct in group_dcts or []]
+    return out
+
+
+##
 
 
 def main(
@@ -50,7 +71,11 @@ def main(
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
-        config = read_config_file(os.path.expanduser(cf), ServerConfig)
+        config = read_config_file(
+            os.path.expanduser(cf),
+            ServerConfig,
+            prepare=prepare_server_config_dct,
+        )
 
         context = ServerContext(
             config,
