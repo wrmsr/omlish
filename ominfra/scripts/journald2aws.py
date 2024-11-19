@@ -80,7 +80,7 @@ class _cached_nullary:  # noqa
         return bound
 
 
-def cached_nullary(fn: ta.Callable[..., T]) -> ta.Callable[..., T]:
+def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
     return _cached_nullary(fn)
 
 
@@ -733,7 +733,11 @@ class ExitStacked:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if (es := self._exit_stack) is None:
             return None
+        self._exit_contexts()
         return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
 
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         es = check_not_none(self._exit_stack)
@@ -1826,7 +1830,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
             self,
             *,
             stop_event: ta.Optional[threading.Event] = None,
-            groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
+            worker_groups: ta.Optional[ta.Iterable['ThreadWorkerGroup']] = None,
     ) -> None:
         super().__init__()
 
@@ -1838,7 +1842,7 @@ class ThreadWorker(ExitStacked, abc.ABC):
         self._thread: ta.Optional[threading.Thread] = None
         self._last_heartbeat: ta.Optional[float] = None
 
-        for g in groups or []:
+        for g in worker_groups or []:
             g.add(self)
 
     #
@@ -1909,10 +1913,17 @@ class ThreadWorker(ExitStacked, abc.ABC):
     def stop(self) -> None:
         self._stop_event.set()
 
-    def join(self, timeout: ta.Optional[float] = None) -> None:
+    def join(
+            self,
+            timeout: ta.Optional[float] = None,
+            *,
+            unless_not_started: bool = False,
+    ) -> None:
         with self._lock:
             if self._thread is None:
-                raise RuntimeError('Thread not started: %r', self)
+                if not unless_not_started:
+                    raise RuntimeError('Thread not started: %r', self)
+                return
             self._thread.join(timeout)
 
 
@@ -1955,11 +1966,13 @@ class ThreadWorkerGroup:
 
     def stop_all(self) -> None:
         for w in reversed(list(self._states)):
-            w.stop()
+            if w.has_started():
+                w.stop()
 
     def join_all(self, timeout: ta.Optional[float] = None) -> None:
         for w in reversed(list(self._states)):
-            w.join(timeout)
+            if w.has_started():
+                w.join(timeout, unless_not_started=True)
 
     #
 
@@ -2850,7 +2863,7 @@ class JournalctlToAwsDriver(ExitStacked):
             cmd=self._config.journalctl_cmd,
             shell_wrap=is_debugger_attached(),
 
-            groups=[self._worker_group()],
+            worker_groups=[self._worker_group()],
         )
 
     #
@@ -2865,13 +2878,21 @@ class JournalctlToAwsDriver(ExitStacked):
             ensure_locked=self._ensure_locked,
             dry_run=self._config.aws_dry_run,
 
-            groups=[self._worker_group()],
+            worker_groups=[self._worker_group()],
         )
 
     #
 
+    def _exit_contexts(self) -> None:
+        wg = self._worker_group()
+        wg.stop_all()
+        wg.join_all()
+
     def run(self) -> None:
-        wg: ThreadWorkerGroup = self._worker_group()
+        self._aws_poster_worker()
+        self._journalctl_tailer_worker()
+
+        wg = self._worker_group()
         wg.start_all()
 
         start = time.time()
@@ -2882,7 +2903,9 @@ class JournalctlToAwsDriver(ExitStacked):
                 break
 
             if (al := self._config.heartbeat_age_limit) is not None:
-                for w, age in wg.check_heartbeats().items():
+                hbs = wg.check_heartbeats()
+                log.debug('Worker heartbeats: %r', hbs)
+                for w, age in hbs.items():
                     if age > al:
                         log.critical('Worker heartbeat age limit exceeded: %r %f > %f', w, age, al)
                         break

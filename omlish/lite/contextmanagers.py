@@ -25,7 +25,11 @@ class ExitStacked:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if (es := self._exit_stack) is None:
             return None
+        self._exit_contexts()
         return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
 
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         es = check_not_none(self._exit_stack)
