@@ -11,6 +11,7 @@ from .check import check_isinstance
 from .check import check_not_isinstance
 from .maybes import Maybe
 from .reflect import get_optional_alias_arg
+from .reflect import is_new_type
 from .reflect import is_optional_alias
 
 
@@ -110,7 +111,7 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
         return o
-    if isinstance(o, (type, ta.NewType)):
+    if isinstance(o, type) or is_new_type(o):
         return InjectorKey(o)
     raise TypeError(o)
 
@@ -226,6 +227,7 @@ class _InjectorBindings(InjectorBindings):
 def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
     bs: ta.List[InjectorBinding] = []
     ps: ta.List[InjectorBindings] = []
+
     for a in args:
         if isinstance(a, InjectorBindings):
             ps.append(a)
@@ -233,6 +235,7 @@ def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
             bs.append(a)
         else:
             raise TypeError(a)
+
     return _InjectorBindings(
         bs or None,
         ps or None,
@@ -254,10 +257,12 @@ class OverridesInjectorBindings(InjectorBindings):
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
     m: ta.Dict[InjectorKey, InjectorBinding] = {}
+
     for b in as_injector_bindings(*args).bindings():
         if b.key in m:
             raise DuplicateInjectorKeyError(b.key)
         m[b.key] = b
+
     return OverridesInjectorBindings(p, m)
 
 
