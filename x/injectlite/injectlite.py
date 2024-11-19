@@ -27,8 +27,8 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 class Key:
     cls: type
-    arr: bool = False
     tag: ta.Any = None
+    array: bool = False
 
 
 ##
@@ -123,7 +123,7 @@ def as_key(o: ta.Any) -> Key:
 
 
 def array(o: ta.Any) -> Key:
-    return dc.replace(as_key(o), arr=True)
+    return dc.replace(as_key(o), array=True)
 
 
 def tag(o: ta.Any, t: ta.Any) -> Key:
@@ -134,25 +134,13 @@ def tag(o: ta.Any, t: ta.Any) -> Key:
 # providers.py
 
 
-def as_provider(o: ta.Any) -> Provider:
-    check_not_isinstance(o, (Binding, Bindings))
-    if isinstance(o, Provider):
-        return o
-    if isinstance(o, Key):
-        return LinkProvider(o)
-    if isinstance(o, type):
-        return ctor(o)
-    if callable(o):
-        return fn(o)
-    return ConstProvider(o)
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class FnProvider(Provider):
     fn: ta.Any
+
+
+    def __post_init__(self) -> None:
+        check_not_isinstance(self.fn, type)
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -161,30 +149,18 @@ class FnProvider(Provider):
         return pfn
 
 
-def fn(fn: ta.Any) -> Provider:
-    check_not_isinstance(fn, type)
-    return FnProvider(fn)
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class CtorProvider(Provider):
     cls: type
+
+    def __post_init__(self) -> None:
+        check_isinstance(self.cls, type)
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
             return i.inject(self.cls)
 
         return pfn
-
-
-def ctor(cls: type) -> Provider:
-    return CtorProvider(check_isinstance(cls, type))
-
-
-##
 
 
 @dc.dataclass(frozen=True)
@@ -195,16 +171,12 @@ class ConstProvider(Provider):
         return lambda _: self.v
 
 
-def const(v: ta.Any) -> Provider:
-    return ConstProvider(v)
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class SingletonProvider(Provider):
     p: Provider
+
+    def __post_init__(self) -> None:
+        check_isinstance(self.p, Provider)
 
     def provider_fn(self) -> ProviderFn:
         v = not_set = object()
@@ -219,16 +191,12 @@ class SingletonProvider(Provider):
         return pfn
 
 
-def singleton(p: ta.Any) -> Provider:
-    return SingletonProvider(as_provider(p))
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class LinkProvider(Provider):
     k: Key
+
+    def __post_init__(self) -> None:
+        check_isinstance(self.k, Key)
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -237,20 +205,10 @@ class LinkProvider(Provider):
         return pfn
 
 
-def link(k: ta.Any) -> Provider:
-    return LinkProvider(as_key(k))
-
-
-###
-# arrays.py
-
-
 @dc.dataclass(frozen=True)
 class ArrayProvider(Provider):
     ty: type
     ps: ta.Sequence[Provider]
-
-    sty: type
 
     def provider_fn(self) -> ProviderFn:
         ps = [p.provider_fn() for p in self.ps]
@@ -265,39 +223,8 @@ class ArrayProvider(Provider):
         return pfn
 
 
-def array_provider(cls: type, *ps: Provider) -> ArrayProvider:
-    return ArrayProvider(
-        cls,
-        ps,
-        # FIXME:
-        ta.Sequence[cls],  # type: ignore
-    )
-
-
 ###
 # bindings.py
-
-
-def as_binding(o: ta.Any) -> Binding:
-    check_not_none(o)
-    check_not_isinstance(o, Bindings)
-    if isinstance(o, Binding):
-        return o
-    if isinstance(o, Provider):
-        raise TypeError(o)
-    if isinstance(o, type):
-        return as_binding(ctor(o))
-    if callable(o):
-        return as_binding(fn(o))
-    cls = type(o)
-    return Binding(Key(cls), ConstProvider(cls, o))
-
-
-def as_(k: ta.Any, p: ta.Any) -> Binding:
-    return Binding(as_key(k), as_provider(p))
-
-
-##
 
 
 @dc.dataclass(frozen=True)
@@ -319,8 +246,10 @@ def as_bindings(*vs: ta.Any) -> Bindings:
     for a in vs:
         if isinstance(a, Bindings):
             ps.append(a)
-        elif a is not None:
-            bs.append(as_binding(a))
+        elif isinstance(a, Binding):
+            bs.append(a)
+        else:
+            raise TypeError(a)
     return _Bindings(
         bs or None,
         ps or None,
@@ -356,7 +285,7 @@ def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
     pm: dict[Key, Provider] = {}
     am: dict[Key, list[Provider]] = {}
     for b in bs.bindings():
-        if b.key.arr:
+        if b.key.array:
             am.setdefault(b.key, []).append(b.provider)
         else:
             if b.key in pm:
@@ -364,7 +293,7 @@ def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
             pm[b.key] = b.provider
     if am:
         for k, aps in am.items():
-            pm[k] = array_provider(k.cls, *aps)
+            pm[k] = ArrayProvider(k.cls, aps)
 
     return pm
 
@@ -475,7 +404,7 @@ def bind_as_fn(cls: type[T]) -> type[T]:
 ##
 
 
-_BANNED_BIND_TYPES = (
+_BANNED_BIND_TYPES: tuple[type, ...] = (
     Provider,
 )
 
@@ -485,6 +414,7 @@ def bind(
         *,
         key: ta.Any = None,
         tag: ta.Any = None,
+        array: ta.Optional[bool] = None,  # noqa
 
         to_fn: ta.Any = None,
         to_ctor: ta.Any = None,
@@ -542,6 +472,9 @@ def bind(
         if key.tag is not None:
             raise TypeError('Tag already set')
         key = dc.replace(key, tag=tag)
+
+    if array is not None:
+        key = dc.replace(key, array=array)
 
     ##
 

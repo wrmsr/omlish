@@ -82,8 +82,8 @@ class TestInject(unittest.TestCase):
 
     def test_arrays(self):
         bs = inj.as_bindings(
-            inj.as_(inj.array(int), 420),
-            inj.as_(inj.array(int), 421),
+            inj.bind(420, array=True),
+            inj.bind(421, array=True),
         )
         i = inj.create_injector(bs)
         p = i.provide(inj.array(int))
