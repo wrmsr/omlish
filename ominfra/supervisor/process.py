@@ -415,7 +415,7 @@ class Subprocess(AbstractSubprocess):
         return self.kill(self.config.stopsignal)
 
     def stop_report(self) -> None:
-        """ Log a 'waiting for x to stop' message with throttling. """
+        """Log a 'waiting for x to stop' message with throttling."""
         if self.state == ProcessStates.STOPPING:
             now = time.time()
 
@@ -545,7 +545,7 @@ class Subprocess(AbstractSubprocess):
         return None
 
     def finish(self, sts: int) -> None:
-        """ The process was reaped and we need to report and manage its state """
+        """The process was reaped and we need to report and manage its state."""
 
         self.drain()
 
