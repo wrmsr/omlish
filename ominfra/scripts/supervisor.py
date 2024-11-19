@@ -5495,16 +5495,16 @@ class Supervisor:
 ##
 
 
-def prepare_process_group_config_dct(dct: ConfigMapping) -> ConfigMapping:
+def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
     out = dict(dct)
     out['processes'] = build_config_named_children(out.get('processes'))
     return out
 
 
-def prepare_server_config_dct(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
     out = dict(dct)
     group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config_dct(group_dct) for group_dct in group_dcts or []]
+    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
     return out
 
 
@@ -5546,7 +5546,7 @@ def main(
         config = read_config_file(
             os.path.expanduser(cf),
             ServerConfig,
-            prepare=prepare_server_config_dct,
+            prepare=prepare_server_config,
         )
 
         context = ServerContext(
