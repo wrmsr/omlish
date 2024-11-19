@@ -7,11 +7,11 @@ import types
 import typing as ta
 import weakref
 
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_not_isinstance
-from omlish.lite.maybes import Maybe
-from omlish.lite.reflect import get_optional_alias_arg
-from omlish.lite.reflect import is_optional_alias
+from .check import check_isinstance
+from .check import check_not_isinstance
+from .maybes import Maybe
+from .reflect import get_optional_alias_arg
+from .reflect import is_optional_alias
 
 
 T = ta.TypeVar('T')
