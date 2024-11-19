@@ -2,13 +2,12 @@
 # @omlish-amalg ../../../scripts/journald2aws.py
 import argparse
 import dataclasses as dc
-import json
 import os.path
 import sys
 
 from omlish.lite.logs import configure_standard_logging
-from omlish.lite.marshal import unmarshal_obj
 
+from ....configs import read_config_file
 from .driver import JournalctlToAwsDriver
 
 
@@ -37,9 +36,7 @@ def _main() -> None:
 
     config: JournalctlToAwsDriver.Config
     if args.config_file:
-        with open(os.path.expanduser(args.config_file)) as cf:
-            config_dct = json.load(cf)
-        config = unmarshal_obj(config_dct, JournalctlToAwsDriver.Config)
+        config = read_config_file(os.path.expanduser(args.config_file), JournalctlToAwsDriver.Config)
     else:
         config = JournalctlToAwsDriver.Config()
 
