@@ -5581,6 +5581,8 @@ def build_server_bindings(
         inj.bind(config),
 
         inj.bind(ServerContext, singleton=True),
+        inj.bind(AbstractServerContext, to_key=ServerContext),
+
         inj.bind(Supervisor, singleton=True),
     ]
 
