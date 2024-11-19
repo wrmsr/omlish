@@ -104,11 +104,8 @@ from .. import journald
 
 class TestJournald(unittest.TestCase):
     def test_write(self):
-        try:
-            journald.sd_libsystemd()
-        except OSError:
+        if journald.sd_try_libsystemd() is None:
             self.skipTest('Failed to find libsystemd')
-            raise RuntimeError  # noqa
 
         self.assertEqual(journald.sd_journald_send(**{  # noqa
             'message': 'hi',
