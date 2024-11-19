@@ -25,7 +25,7 @@ class TestSupervisor(unittest.TestCase):
 
         #
 
-        config_file = os.path.join(os.path.dirname(__file__), 'demo.json')
+        config_file = os.path.join(os.path.dirname(__file__), 'configs', 'demo.json')
 
         config = read_config_file(
             os.path.expanduser(config_file),
