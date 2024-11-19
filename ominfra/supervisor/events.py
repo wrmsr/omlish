@@ -31,7 +31,7 @@ EVENT_CALLBACKS = EventCallbacks()
 
 
 class Event(abc.ABC):  # noqa
-    """Abstract event type """
+    """Abstract event type."""
 
 
 class ProcessLogEvent(Event, abc.ABC):

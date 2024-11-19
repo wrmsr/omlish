@@ -27,7 +27,7 @@ from .states import SupervisorStates
 from .states import get_process_state_description
 
 
-def timeslice(period, when):
+def timeslice(period: int, when: float) -> int:
     return int(when - (when % period))
 
 

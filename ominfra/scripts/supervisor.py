@@ -1604,7 +1604,7 @@ EVENT_CALLBACKS = EventCallbacks()
 
 
 class Event(abc.ABC):  # noqa
-    """Abstract event type """
+    """Abstract event type."""
 
 
 class ProcessLogEvent(Event, abc.ABC):
@@ -1684,7 +1684,7 @@ class RemoteCommunicationEvent(Event):
 
 
 class SupervisorStateChangeEvent(Event):
-    """ Abstract class """
+    """Abstract class."""
 
     def payload(self):
         return ''
@@ -1706,7 +1706,7 @@ class EventRejectedEvent:  # purposely does not subclass Event
 
 
 class ProcessStateEvent(Event):
-    """ Abstract class, never raised directly """
+    """Abstract class, never raised directly."""
     frm = None
     to = None
 
@@ -1795,7 +1795,7 @@ class ProcessGroupRemovedEvent(ProcessGroupEvent):
 
 
 class TickEvent(Event):
-    """ Abstract """
+    """Abstract."""
 
     def __init__(self, when, supervisord):
         super().__init__()
@@ -3601,7 +3601,7 @@ class ProcessGroup:
 # ../supervisor.py
 
 
-def timeslice(period, when):
+def timeslice(period: int, when: float) -> int:
     return int(when - (when % period))
 
 
