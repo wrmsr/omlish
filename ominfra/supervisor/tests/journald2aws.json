@@ -1,0 +1,16 @@
+{
+  "nodaemon": true,
+  "groups": [
+    {
+      "name": "journald2aws",
+      "processes": [
+        {
+          "name": "journald2aws",
+          "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
+          "directory": "~/omlish2",
+          "redirect_stderr": true
+        }
+      ]
+    }
+  ]
+}
