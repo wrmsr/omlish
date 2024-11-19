@@ -13,14 +13,13 @@ from omlish.lite.inject import inj
 from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
 
-from ..configs import ConfigMapping
-from ..configs import build_config_named_children
 from ..configs import read_config_file
 from .compat import ExitNow
 from .compat import get_open_fds
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
+from .configs import prepare_server_config
 from .context import InheritedFds
 from .context import ServerContext
 from .context import ServerEpoch
@@ -31,22 +30,6 @@ from .states import SupervisorStates
 from .supervisor import ProcessGroupFactory
 from .supervisor import Supervisor
 from .types import AbstractServerContext
-
-
-##
-
-
-def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
-    out = dict(dct)
-    out['processes'] = build_config_named_children(out.get('processes'))
-    return out
-
-
-def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-    out = dict(dct)
-    group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
-    return out
 
 
 ##

@@ -5,11 +5,16 @@ import signal
 import tempfile
 import typing as ta
 
+from ..configs import ConfigMapping
+from ..configs import build_config_named_children
 from .datatypes import byte_size
 from .datatypes import existing_directory
 from .datatypes import existing_dirpath
 from .datatypes import logging_level
 from .datatypes import octal_type
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -108,3 +113,19 @@ class ServerConfig:
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
             **kwargs,
         )
+
+
+##
+
+
+def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
+    out = dict(dct)
+    out['processes'] = build_config_named_children(out.get('processes'))
+    return out
+
+
+def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+    out = dict(dct)
+    group_dcts = build_config_named_children(out.get('groups'))
+    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
+    return out
