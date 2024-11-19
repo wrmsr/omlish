@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
-# @omlish-amalg ../scripts/supervisor.py
-import itertools
-import json
 import logging
 import signal
 import time
@@ -10,15 +6,12 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
-from omlish.lite.logs import configure_standard_logging
-from omlish.lite.marshal import unmarshal_obj
 
 from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
 from .compat import signame
 from .configs import ProcessGroupConfig
-from .configs import ServerConfig
 from .context import ServerContext
 from .dispatchers import Dispatcher
 from .events import TICK_EVENTS
@@ -36,6 +29,10 @@ from .states import get_process_state_description
 
 
 log = logging.getLogger(__name__)
+
+
+def timeslice(period, when):
+    return int(when - (when % period))
 
 
 class Supervisor:
@@ -339,55 +336,3 @@ class Supervisor:
 
         else:
             log.debug('received %s indicating nothing', signame(sig))
-
-
-def timeslice(period, when):
-    return int(when - (when % period))
-
-
-def main(
-        argv: ta.Optional[ta.Sequence[str]] = None,
-        *,
-        no_logging: bool = False,
-) -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config_file', metavar='config-file')
-    args = parser.parse_args(argv)
-
-    #
-
-    if not (cf := args.config_file):
-        raise RuntimeError('No config file specified')
-
-    if not no_logging:
-        configure_standard_logging('INFO')
-
-    #
-
-    # if we hup, restart by making a new Supervisor()
-    for epoch in itertools.count():
-        with open(cf) as f:
-            config_src = f.read()
-
-        config_dct = json.loads(config_src)
-        config: ServerConfig = unmarshal_obj(config_dct, ServerConfig)
-
-        context = ServerContext(
-            config,
-            epoch=epoch,
-        )
-
-        supervisor = Supervisor(context)
-        try:
-            supervisor.main()
-        except ExitNow:
-            pass
-
-        if context.state < SupervisorStates.RESTARTING:
-            break
-
-
-if __name__ == '__main__':
-    main()
