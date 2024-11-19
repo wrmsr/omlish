@@ -27,9 +27,11 @@ import typing as ta
 from ... import check
 from .ast import AndExpression
 from .ast import Arithmetic
+from .ast import ArithmeticOperator
 from .ast import ArithmeticUnary
 from .ast import Assign
 from .ast import Comparator
+from .ast import ComparatorName
 from .ast import CurrentNode
 from .ast import Expref
 from .ast import Field
@@ -52,6 +54,7 @@ from .ast import Projection
 from .ast import RootNode
 from .ast import Slice
 from .ast import Subexpression
+from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
 from .exceptions import IncompleteExpressionError
@@ -491,15 +494,15 @@ class Parser:
 
     def _parse_comparator(self, left: Node, comparator: str) -> Node:
         right = self._expression(self.BINDING_POWER[comparator])
-        return Comparator(comparator, left, right)
+        return Comparator(ta.cast(ComparatorName, comparator), left, right)
 
     def _parse_arithmetic_unary(self, token: Token) -> Node:
         expression = self._expression(self.BINDING_POWER[token['type']])
-        return ArithmeticUnary(token['type'], expression)
+        return ArithmeticUnary(ta.cast(UnaryArithmeticOperator, token['type']), expression)
 
     def _parse_arithmetic(self, left: Node, operator: str) -> Node:
         right = self._expression(self.BINDING_POWER[operator])
-        return Arithmetic(operator, left, right)
+        return Arithmetic(ta.cast(ArithmeticOperator, operator), left, right)
 
     def _parse_multi_select_list(self) -> Node:
         expressions: list[Node] = []
