@@ -35,7 +35,7 @@ class Project(ProjectBase):
         'ocr': [
             'pytesseract ~= 0.3',
 
-            'rapidocr-onnxruntime ~= 1.3',
+            'rapidocr-onnxruntime ~= 1.4',
         ],
 
         'pillow': [
