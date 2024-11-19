@@ -1,6 +1,3 @@
-"""
-injector.py
-"""
 import abc
 import dataclasses as dc
 import functools
@@ -324,7 +321,7 @@ class InjectionKwargsTarget(ta.NamedTuple):
     kwargs: ta.Sequence[InjectionKwarg]
 
 
-def build_kwargs_target(
+def build_injection_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
@@ -361,7 +358,7 @@ def build_kwargs_target(
             p.name,
             k,
             p.default is not inspect.Parameter.empty,
-            ))
+        ))
 
     return InjectionKwargsTarget(
         obj,
@@ -370,134 +367,140 @@ def build_kwargs_target(
 
 
 ###
-#
+# binder
 
 
-_FN_TYPES: tuple[type, ...] = (
-    types.FunctionType,
-    types.MethodType,
+class InjectorBinder:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
 
-    classmethod,
-    staticmethod,
+    _FN_TYPES: tuple[type, ...] = (
+        types.FunctionType,
+        types.MethodType,
 
-    functools.partial,
-    functools.partialmethod,
-)
+        classmethod,
+        staticmethod,
 
-
-def _is_fn(obj: ta.Any) -> bool:
-    return isinstance(obj, _FN_TYPES)
-
-
-def bind_as_fn(cls: type[T]) -> type[T]:
-    check_isinstance(cls, type)
-    global _FN_TYPES
-    if cls not in _FN_TYPES:
-        _FN_TYPES = (*_FN_TYPES, cls)
-    return cls
-
-
-_BANNED_BIND_TYPES: tuple[type, ...] = (
-    InjectorProvider,
-)
-
-
-def bind(
-        obj: ta.Any,
-        *,
-        key: ta.Any = None,
-        tag: ta.Any = None,
-        array: ta.Optional[bool] = None,  # noqa
-
-        to_fn: ta.Any = None,
-        to_ctor: ta.Any = None,
-        to_const: ta.Any = None,
-        to_key: ta.Any = None,
-
-        singleton: bool = False,
-) -> InjectorBinding:
-    if obj is None or obj is inspect.Parameter.empty:
-        raise TypeError(obj)
-    if isinstance(obj, _BANNED_BIND_TYPES):
-        raise TypeError(obj)
-
-    ##
-
-    if key is not None:
-        if isinstance(key, type):
-            key = InjectorKey(key)
-        elif not isinstance(key, InjectorKey):
-            raise TypeError(key)
-
-    ##
-
-    has_to = (
-            to_fn is not None or
-            to_ctor is not None or
-            to_const is not None or
-            to_key is not None
+        functools.partial,
+        functools.partialmethod,
     )
-    if isinstance(obj, InjectorKey):
-        if key is None:
-            key = obj
-    elif isinstance(obj, type):
-        if not has_to:
-            to_ctor = obj
-        if key is None:
-            key = InjectorKey(obj)
-    elif _is_fn(obj) and not has_to:
-        to_fn = obj
-        if key is None:
-            sig = _injection_signature(obj)
-            ty = check_isinstance(sig.return_annotation, type)
-            key = InjectorKey(ty)
-    else:
+
+    @classmethod
+    def _is_fn(cls, obj: ta.Any) -> bool:
+        return isinstance(obj, cls._FN_TYPES)
+
+    @classmethod
+    def bind_as_fn(cls, icls: type[T]) -> type[T]:
+        check_isinstance(icls, type)
+        if icls not in cls._FN_TYPES:
+            _FN_TYPES = (*cls._FN_TYPES, icls)
+        return icls
+
+    _BANNED_BIND_TYPES: tuple[type, ...] = (
+        InjectorProvider,
+    )
+
+    @classmethod
+    def bind(
+            cls,
+            obj: ta.Any,
+            *,
+            key: ta.Any = None,
+            tag: ta.Any = None,
+            array: ta.Optional[bool] = None,  # noqa
+
+            to_fn: ta.Any = None,
+            to_ctor: ta.Any = None,
+            to_const: ta.Any = None,
+            to_key: ta.Any = None,
+
+            singleton: bool = False,
+    ) -> InjectorBinding:
+        if obj is None or obj is inspect.Parameter.empty:
+            raise TypeError(obj)
+        if isinstance(obj, cls._BANNED_BIND_TYPES):
+            raise TypeError(obj)
+
+        ##
+
+        if key is not None:
+            if isinstance(key, type):
+                key = InjectorKey(key)
+            elif not isinstance(key, InjectorKey):
+                raise TypeError(key)
+
+        ##
+
+        has_to = (
+                to_fn is not None or
+                to_ctor is not None or
+                to_const is not None or
+                to_key is not None
+        )
+        if isinstance(obj, InjectorKey):
+            if key is None:
+                key = obj
+        elif isinstance(obj, type):
+            if not has_to:
+                to_ctor = obj
+            if key is None:
+                key = InjectorKey(obj)
+        elif cls._is_fn(obj) and not has_to:
+            to_fn = obj
+            if key is None:
+                sig = _injection_signature(obj)
+                ty = check_isinstance(sig.return_annotation, type)
+                key = InjectorKey(ty)
+        else:
+            if to_const is not None:
+                raise TypeError('Cannot bind instance with to_const')
+            to_const = obj
+            if key is None:
+                key = InjectorKey(type(obj))
+        del has_to
+
+        ##
+
+        if tag is not None:
+            if key.tag is not None:
+                raise TypeError('Tag already set')
+            key = dc.replace(key, tag=tag)
+
+        if array is not None:
+            key = dc.replace(key, array=array)
+
+        ##
+
+        providers: list[InjectorProvider] = []
+        if to_fn is not None:
+            providers.append(FnInjectorProvider(to_fn))
+        if to_ctor is not None:
+            providers.append(CtorInjectorProvider(to_ctor))
         if to_const is not None:
-            raise TypeError('Cannot bind instance with to_const')
-        to_const = obj
-        if key is None:
-            key = InjectorKey(type(obj))
-    del has_to
+            providers.append(ConstInjectorProvider(to_const))
+        if to_key is not None:
+            providers.append(LinkInjectorProvider(as_key(to_key)))
+        if not providers:
+            raise TypeError('Must specify provider')
+        if len(providers) > 1:
+            raise TypeError('May not specify multiple providers')
+        provider, = providers
 
-    ##
+        ##
 
-    if tag is not None:
-        if key.tag is not None:
-            raise TypeError('Tag already set')
-        key = dc.replace(key, tag=tag)
+        if singleton:
+            provider = SingletonInjectorProvider(provider)
 
-    if array is not None:
-        key = dc.replace(key, array=array)
+        ##
 
-    ##
+        binding = InjectorBinding(key, provider)
 
-    providers: list[InjectorProvider] = []
-    if to_fn is not None:
-        providers.append(FnInjectorProvider(to_fn))
-    if to_ctor is not None:
-        providers.append(CtorInjectorProvider(to_ctor))
-    if to_const is not None:
-        providers.append(ConstInjectorProvider(to_const))
-    if to_key is not None:
-        providers.append(LinkInjectorProvider(as_key(to_key)))
-    if not providers:
-        raise TypeError('Must specify provider')
-    if len(providers) > 1:
-        raise TypeError('May not specify multiple providers')
-    provider, = providers
+        ##
 
-    ##
+        return binding
 
-    if singleton:
-        provider = SingletonInjectorProvider(provider)
 
-    ##
-
-    binding = InjectorBinding(key, provider)
-
-    ##
-
-    return binding
+bind = InjectorBinder.bind
 
 
 ###
@@ -534,7 +537,7 @@ class _Injector(Injector):
         raise UnboundInjectorKeyException(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        kt = build_kwargs_target(obj)
+        kt = build_injection_kwargs_target(obj)
         ret: dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
