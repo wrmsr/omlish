@@ -1,6 +1,10 @@
 """
 TODO:
- - @omlish-lite
+ - @omlish-lite ?
+ - 'recipes'
+ - abstract runtime
+  - https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/omnibus/jmespath/eval.py#L64
+ - pytest-ify
 
 Applied:
  https://github.com/jmespath-community/python-jmespath/compare/bbe7300c60056f52413603cf3e2bcd0b6afeda3d...aef45e9d665de662eee31b06aeb8261e2bc8b90a

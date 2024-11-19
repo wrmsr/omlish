@@ -638,6 +638,14 @@ class ObjectFunctions(FunctionsClass):
     def _func_values(self, arg):
         return list(arg.values())
 
+    @signature({'types': ['expref']}, {'types': ['object']})
+    def _func_filter_keys(self, expref, arg):
+        return {k: v for k, v in arg.items() if expref.visit(expref.expression, k)}
+
+    @signature({'types': ['expref']}, {'types': ['object']})
+    def _func_filter_values(self, expref, arg):
+        return {k: v for k, v in arg.items() if expref.visit(expref.expression, v)}
+
 
 class KeyedFunctions(FunctionsClass):
     def _create_key_func(self, expref, allowed_types, function_name):
