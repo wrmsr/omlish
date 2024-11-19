@@ -5,6 +5,7 @@ import itertools
 import os.path
 import typing as ta
 
+from omlish.lite.inject import inj
 from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
 
@@ -57,7 +58,13 @@ def main(
             inherited_fds=initial_fds,
         )
 
-        supervisor = Supervisor(context)
+        injector = inj.create_injector(
+            inj.bind(config),
+            inj.bind(context),
+            inj.bind(Supervisor, singleton=True),
+        )
+
+        supervisor = injector.provide(Supervisor)
         try:
             supervisor.main()
         except ExitNow:
