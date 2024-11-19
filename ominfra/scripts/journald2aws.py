@@ -2703,9 +2703,11 @@ class JournalctlMessageBuilder:
 ########################################
 # ../../../../threadworkers.py
 """
+FIXME:
+ - group is racy af - meditate on has_started, etc
+
 TODO:
- - implement stop lol
- - collective heartbeat monitoring - ThreadWorkerGroups
+ - overhaul stop lol
  - group -> 'context'? :|
   - shared stop_event?
 """

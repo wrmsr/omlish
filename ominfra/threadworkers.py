@@ -1,9 +1,11 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
 """
+FIXME:
+ - group is racy af - meditate on has_started, etc
+
 TODO:
- - implement stop lol
- - collective heartbeat monitoring - ThreadWorkerGroups
+ - overhaul stop lol
  - group -> 'context'? :|
   - shared stop_event?
 """
