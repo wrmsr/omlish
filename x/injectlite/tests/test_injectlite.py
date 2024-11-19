@@ -3,7 +3,7 @@ import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
-from .. import injectlite as inj
+from ..injectlite import inj
 
 
 class TestInject(unittest.TestCase):

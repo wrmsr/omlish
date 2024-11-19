@@ -102,7 +102,7 @@ class DuplicateInjectorKeyException(InjectorKeyException):
 # keys
 
 
-def as_key(o: ta.Any) -> InjectorKey:
+def as_injector_key(o: ta.Any) -> InjectorKey:
     if o is inspect.Parameter.empty:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
@@ -110,17 +110,6 @@ def as_key(o: ta.Any) -> InjectorKey:
     if isinstance(o, type):
         return InjectorKey(o)
     raise TypeError(o)
-
-
-##
-
-
-def array(o: ta.Any) -> InjectorKey:
-    return dc.replace(as_key(o), array=True)
-
-
-def tag(o: ta.Any, t: ta.Any) -> InjectorKey:
-    return dc.replace(as_key(o), tag=t)
 
 
 ###
@@ -233,7 +222,7 @@ class _InjectorBindings(InjectorBindings):
                 yield from p.bindings()
 
 
-def as_bindings(*vs: ta.Any) -> InjectorBindings:
+def as_injector_bindings(*vs: ta.Any) -> InjectorBindings:
     bs: list[InjectorBinding] = []
     ps: list[InjectorBindings] = []
     for a in vs:
@@ -262,9 +251,9 @@ class OverridesInjectorBindings(InjectorBindings):
             yield self.m.get(b.key, b)
 
 
-def override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
+def injector_override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
     m: dict[InjectorKey, InjectorBinding] = {}
-    for b in as_bindings(*a).bindings():
+    for b in as_injector_bindings(*a).bindings():
         if b.key in m:
             raise DuplicateInjectorKeyException(b.key)
         m[b.key] = b
@@ -274,7 +263,7 @@ def override(p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
 ##
 
 
-def build_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
+def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
     pm: dict[InjectorKey, InjectorProvider] = {}
     am: dict[InjectorKey, list[InjectorProvider]] = {}
     for b in bs.bindings():
@@ -330,7 +319,7 @@ def build_injection_kwargs_target(
 ) -> InjectionKwargsTarget:
     sig = _injection_signature(obj)
 
-    seen: set[InjectorKey] = set(map(as_key, skip_kwargs)) if skip_kwargs is not None else set()
+    seen: set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
     kws: list[InjectionKwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
         if p.annotation is inspect.Signature.empty:
@@ -348,7 +337,7 @@ def build_injection_kwargs_target(
         ):
             ann = get_optional_alias_arg(ann)
 
-        k = as_key(ann)
+        k = as_injector_key(ann)
 
         if k in seen:
             raise DuplicateInjectorKeyException(k)
@@ -479,7 +468,7 @@ class InjectorBinder:
         if to_const is not None:
             providers.append(ConstInjectorProvider(to_const))
         if to_key is not None:
-            providers.append(LinkInjectorProvider(as_key(to_key)))
+            providers.append(LinkInjectorProvider(as_injector_key(to_key)))
         if not providers:
             raise TypeError('Must specify provider')
         if len(providers) > 1:
@@ -500,9 +489,6 @@ class InjectorBinder:
         return binding
 
 
-bind = InjectorBinder.bind
-
-
 ###
 # injector
 
@@ -514,10 +500,10 @@ class _Injector(Injector):
         self._bs = check_isinstance(bs, InjectorBindings)
         self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
 
-        self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
+        self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
 
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
-        key = as_key(key)
+        key = as_injector_key(key)
 
         fn = self._pfm.get(key)
         if fn is not None:
@@ -556,3 +542,78 @@ class _Injector(Injector):
 
 def create_injector(bs: InjectorBindings, p: ta.Optional[Injector] = None) -> Injector:
     return _Injector(bs, p)
+
+
+###
+# injection helpers
+
+
+class Injection:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
+
+    # keys
+
+    @classmethod
+    def as_key(cls, o: ta.Any) -> InjectorKey:
+        return as_injector_key(o)
+
+    @classmethod
+    def array(cls, o: ta.Any) -> InjectorKey:
+        return dc.replace(as_injector_key(o), array=True)
+
+    @classmethod
+    def tag(cls, o: ta.Any, t: ta.Any) -> InjectorKey:
+        return dc.replace(as_injector_key(o), tag=t)
+
+    # bindings
+
+    @classmethod
+    def as_bindings(cls, *vs: ta.Any) -> InjectorBindings:
+        return as_injector_bindings(*vs)
+
+    @classmethod
+    def override(cls, p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
+        return injector_override(p, *a)
+
+    # binder
+
+    @classmethod
+    def bind(
+            cls,
+            obj: ta.Any,
+            *,
+            key: ta.Any = None,
+            tag: ta.Any = None,
+            array: ta.Optional[bool] = None,  # noqa
+
+            to_fn: ta.Any = None,
+            to_ctor: ta.Any = None,
+            to_const: ta.Any = None,
+            to_key: ta.Any = None,
+
+            singleton: bool = False,
+    ) -> InjectorBinding:
+        return InjectorBinder.bind(
+            obj,
+
+            key=key,
+            tag=tag,
+            array=array,
+
+            to_fn=to_fn,
+            to_ctor=to_ctor,
+            to_const=to_const,
+            to_key=to_key,
+
+            singleton=singleton,
+        )
+
+    # injector
+
+    @classmethod
+    def create_injector(cls, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> Injector:
+        return create_injector(bs, p)
+
+
+inj = Injection
