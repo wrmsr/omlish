@@ -71,6 +71,9 @@ SupervisorState = int  # ta.TypeAlias
 # ../../../omlish/lite/inject.py
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 
+# ../../configs.py
+ConfigMapping = ta.Mapping[str, ta.Any]
+
 
 ########################################
 # ../../../omdev/toml/parser.py
@@ -3076,7 +3079,7 @@ def read_config_file(
         path: str,
         cls: ta.Type[T],
         *,
-        prepare: ta.Optional[ta.Callable[[ta.Mapping[str, ta.Any]], ta.Mapping[str, ta.Any]]] = None,
+        prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
 ) -> T:
     with open(path) as cf:
         if path.endswith('.toml'):
@@ -3088,6 +3091,44 @@ def read_config_file(
         config_dct = prepare(config_dct)  # type: ignore
 
     return unmarshal_obj(config_dct, cls)
+
+
+def build_config_named_children(
+        o: ta.Union[
+            ta.Sequence[ConfigMapping],
+            ta.Mapping[str, ConfigMapping],
+            None,
+        ],
+        *,
+        name_key: str = 'name',
+) -> ta.Optional[ta.Sequence[ConfigMapping]]:
+    if o is None:
+        return None
+
+    lst: ta.List[ConfigMapping] = []
+    if isinstance(o, ta.Mapping):
+        for k, v in o.items():
+            check_isinstance(v, ta.Mapping)
+            if name_key in v:
+                n = v[name_key]
+                if k != n:
+                    raise KeyError(f'Given names do not match: {n} != {k}')
+                lst.append(v)
+            else:
+                lst.append({name_key: k, **v})
+
+    else:
+        check_not_isinstance(o, str)
+        lst.extend(o)
+
+    seen = set()
+    for d in lst:
+        n = d['name']
+        if n in d:
+            raise KeyError(f'Duplicate name: {n}')
+        seen.add(n)
+
+    return lst
 
 
 ########################################
@@ -5451,6 +5492,25 @@ class Supervisor:
 # main.py
 
 
+##
+
+
+def prepare_process_group_config_dct(dct: ConfigMapping) -> ConfigMapping:
+    out = dict(dct)
+    out['processes'] = build_config_named_children(out.get('processes'))
+    return out
+
+
+def prepare_server_config_dct(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+    out = dict(dct)
+    group_dcts = build_config_named_children(out.get('groups'))
+    out['groups'] = [prepare_process_group_config_dct(group_dct) for group_dct in group_dcts or []]
+    return out
+
+
+##
+
+
 def main(
         argv: ta.Optional[ta.Sequence[str]] = None,
         *,
@@ -5483,7 +5543,11 @@ def main(
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
-        config = read_config_file(os.path.expanduser(cf), ServerConfig)
+        config = read_config_file(
+            os.path.expanduser(cf),
+            ServerConfig,
+            prepare=prepare_server_config_dct,
+        )
 
         context = ServerContext(
             config,
