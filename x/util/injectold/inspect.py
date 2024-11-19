@@ -15,18 +15,18 @@ from .keys import as_key
 from .types import Key
 
 
-_signature_cache: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
+_SIGNATURE_CACHE: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
 
 
 def signature(obj: ta.Any) -> inspect.Signature:
     try:
-        return _signature_cache[obj]
+        return _SIGNATURE_CACHE[obj]
     except TypeError:
         return inspect.signature(obj)
     except KeyError:
         pass
     sig = inspect.signature(obj)
-    _signature_cache[obj] = sig
+    _SIGNATURE_CACHE[obj] = sig
     return sig
 
 
