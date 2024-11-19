@@ -92,10 +92,9 @@ def build_kwargs_target(
         if (
                 not raw_optional and
                 isinstance(rf := rfl.type_(ann), rfl.Union) and
-                len(rf.args) == 2   # noqa
-                and types.NoneType in rf.args
+                rf.is_optional
         ):
-            [ann] = [a for a in rf.args if a is not types.NoneType]
+            ann = rf.without_none()
 
         rty = rfl.type_(ann)
 
