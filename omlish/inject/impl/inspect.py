@@ -28,38 +28,38 @@ R = ta.TypeVar('R')
 ##
 
 
-_signature_cache: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
+_SIGNATURE_CACHE: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
 
 
 def signature(obj: ta.Any) -> inspect.Signature:
     try:
-        return _signature_cache[obj]
+        return _SIGNATURE_CACHE[obj]
     except TypeError:
         return inspect.signature(obj)
     except KeyError:
         pass
     sig = inspect.signature(obj)
-    _signature_cache[obj] = sig
+    _SIGNATURE_CACHE[obj] = sig
     return sig
 
 
 ##
 
 
-_tags: ta.MutableMapping[ta.Any, dict[str, ta.Any]] = weakref.WeakKeyDictionary()
+_TAGS: ta.MutableMapping[ta.Any, dict[str, ta.Any]] = weakref.WeakKeyDictionary()
 
 
 def tag(obj: T, **kwargs: ta.Any) -> T:
     for v in kwargs.values():
         if isinstance(v, Tag):
             raise TypeError(v)
-    _tags.setdefault(obj, {}).update(**kwargs)
+    _TAGS.setdefault(obj, {}).update(**kwargs)
     return obj
 
 
 def tags(**kwargs: ta.Any) -> ta.Callable[[ta.Callable[P, R]], ta.Callable[P, R]]:
     def inner(obj):
-        _tags[obj] = kwargs
+        _TAGS[obj] = kwargs
         return obj
     return inner
 
@@ -75,7 +75,7 @@ def build_kwargs_target(
         raw_optional: bool = False,
 ) -> KwargsTarget:
     sig = signature(obj)
-    tags = _tags.get(obj)
+    tags = _TAGS.get(obj)
 
     seen: set[Key] = set(map(as_key, skip_kwargs)) if skip_kwargs is not None else set()
     kws: list[Kwarg] = []
