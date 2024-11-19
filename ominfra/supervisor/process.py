@@ -48,7 +48,6 @@ from .exceptions import BadCommandError
 from .exceptions import ProcessError
 from .states import STOPPED_STATES
 from .states import ProcessState
-from .states import ProcessStates
 from .states import SupervisorStates
 from .states import get_process_state_description
 from .types import AbstractServerContext
@@ -75,7 +74,7 @@ class Subprocess(AbstractSubprocess):
 
         self._dispatchers: dict = {}
         self._pipes: dict = {}
-        self._state = ProcessStates.STOPPED
+        self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
         self._laststart = 0.  # Last time the subprocess was started; 0 if never
         self._laststop = 0.  # Last time the subprocess was stopped; 0 if never
@@ -186,15 +185,15 @@ class Subprocess(AbstractSubprocess):
 
         return filename, commandargs
 
-    event_map: ta.ClassVar[ta.Mapping[int, ta.Type[ProcessStateEvent]]] = {
-        ProcessStates.BACKOFF: ProcessStateBackoffEvent,
-        ProcessStates.FATAL: ProcessStateFatalEvent,
-        ProcessStates.UNKNOWN: ProcessStateUnknownEvent,
-        ProcessStates.STOPPED: ProcessStateStoppedEvent,
-        ProcessStates.EXITED: ProcessStateExitedEvent,
-        ProcessStates.RUNNING: ProcessStateRunningEvent,
-        ProcessStates.STARTING: ProcessStateStartingEvent,
-        ProcessStates.STOPPING: ProcessStateStoppingEvent,
+    event_map: ta.ClassVar[ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]]] = {
+        ProcessState.BACKOFF: ProcessStateBackoffEvent,
+        ProcessState.FATAL: ProcessStateFatalEvent,
+        ProcessState.UNKNOWN: ProcessStateUnknownEvent,
+        ProcessState.STOPPED: ProcessStateStoppedEvent,
+        ProcessState.EXITED: ProcessStateExitedEvent,
+        ProcessState.RUNNING: ProcessStateRunningEvent,
+        ProcessState.STARTING: ProcessStateStartingEvent,
+        ProcessState.STOPPING: ProcessStateStoppingEvent,
     }
 
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
@@ -203,7 +202,7 @@ class Subprocess(AbstractSubprocess):
             return False
 
         self._state = new_state
-        if new_state == ProcessStates.BACKOFF:
+        if new_state == ProcessState.BACKOFF:
             now = time.time()
             self.backoff += 1
             self.delay = now + self.backoff
@@ -242,20 +241,20 @@ class Subprocess(AbstractSubprocess):
         self._laststart = time.time()
 
         self._check_in_state(
-            ProcessStates.EXITED,
-            ProcessStates.FATAL,
-            ProcessStates.BACKOFF,
-            ProcessStates.STOPPED,
+            ProcessState.EXITED,
+            ProcessState.FATAL,
+            ProcessState.BACKOFF,
+            ProcessState.STOPPED,
         )
 
-        self.change_state(ProcessStates.STARTING)
+        self.change_state(ProcessState.STARTING)
 
         try:
             filename, argv = self._get_execv_args()
         except ProcessError as what:
             self._record_spawn_err(what.args[0])
-            self._check_in_state(ProcessStates.STARTING)
-            self.change_state(ProcessStates.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
             return None
 
         try:
@@ -268,8 +267,8 @@ class Subprocess(AbstractSubprocess):
             else:
                 msg = f"unknown error making dispatchers for '{processname}': {errno.errorcode.get(code, code)}"
             self._record_spawn_err(msg)
-            self._check_in_state(ProcessStates.STARTING)
-            self.change_state(ProcessStates.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
             return None
 
         try:
@@ -282,8 +281,8 @@ class Subprocess(AbstractSubprocess):
             else:
                 msg = f'unknown error during fork for \'{processname}\': {errno.errorcode.get(code, code)}'
             self._record_spawn_err(msg)
-            self._check_in_state(ProcessStates.STARTING)
-            self.change_state(ProcessStates.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
             close_parent_pipes(self._pipes)
             close_child_pipes(self._pipes)
             return None
@@ -398,21 +397,21 @@ class Subprocess(AbstractSubprocess):
         """
         Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
         """
-        if self._state == ProcessStates.STARTING:
+        if self._state == ProcessState.STARTING:
             self._laststart = min(test_time, self._laststart)
             if self.delay > 0 and test_time < (self.delay - self.config.startsecs):
                 self.delay = test_time + self.config.startsecs
 
-        elif self._state == ProcessStates.RUNNING:
+        elif self._state == ProcessState.RUNNING:
             if test_time > self._laststart and test_time < (self._laststart + self.config.startsecs):
                 self._laststart = test_time - self.config.startsecs
 
-        elif self._state == ProcessStates.STOPPING:
+        elif self._state == ProcessState.STOPPING:
             self.last_stop_report = min(test_time, self.last_stop_report)
             if self.delay > 0 and test_time < (self.delay - self.config.stopwaitsecs):
                 self.delay = test_time + self.config.stopwaitsecs
 
-        elif self._state == ProcessStates.BACKOFF:
+        elif self._state == ProcessState.BACKOFF:
             if self.delay > 0 and test_time < (self.delay - self.backoff):
                 self.delay = test_time + self.backoff
 
@@ -423,7 +422,7 @@ class Subprocess(AbstractSubprocess):
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
-        if self._state == ProcessStates.STOPPING:
+        if self._state == ProcessState.STOPPING:
             now = time.time()
 
             self._check_and_adjust_for_system_clock_rollback(now)
@@ -436,8 +435,8 @@ class Subprocess(AbstractSubprocess):
         self.delay = 0
         self.backoff = 0
         self.system_stop = True
-        self._check_in_state(ProcessStates.BACKOFF)
-        self.change_state(ProcessStates.FATAL)
+        self._check_in_state(ProcessState.BACKOFF)
+        self.change_state(ProcessState.FATAL)
 
     def kill(self, sig: int) -> ta.Optional[str]:
         """
@@ -453,9 +452,9 @@ class Subprocess(AbstractSubprocess):
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
         # if startretries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
-        if self._state == ProcessStates.BACKOFF:
+        if self._state == ProcessState.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', processname)
-            self.change_state(ProcessStates.STOPPED)
+            self.change_state(ProcessState.STOPPED)
             return None
 
         args: tuple
@@ -465,7 +464,7 @@ class Subprocess(AbstractSubprocess):
             return fmt % args
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
-        if self._state == ProcessStates.STOPPING:
+        if self._state == ProcessState.STOPPING:
             killasgroup = self.config.killasgroup
         else:
             killasgroup = self.config.stopasgroup
@@ -480,8 +479,8 @@ class Subprocess(AbstractSubprocess):
         self.killing = True
         self.delay = now + self.config.stopwaitsecs
         # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
-        self._check_in_state(ProcessStates.RUNNING, ProcessStates.STARTING, ProcessStates.STOPPING)
-        self.change_state(ProcessStates.STOPPING)
+        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self.change_state(ProcessState.STOPPING)
 
         pid = self.pid
         if killasgroup:
@@ -502,7 +501,7 @@ class Subprocess(AbstractSubprocess):
             tb = traceback.format_exc()
             fmt, args = 'unknown problem killing %s (%s):%s', (processname, self.pid, tb)
             log.critical(fmt, *args)
-            self.change_state(ProcessStates.UNKNOWN)
+            self.change_state(ProcessState.UNKNOWN)
             self.killing = False
             self.delay = 0
             return fmt % args
@@ -525,7 +524,7 @@ class Subprocess(AbstractSubprocess):
 
         log.debug('sending %s (pid %s) sig %s', processname, self.pid, signame(sig))
 
-        self._check_in_state(ProcessStates.RUNNING, ProcessStates.STARTING, ProcessStates.STOPPING)
+        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
         try:
             try:
@@ -546,7 +545,7 @@ class Subprocess(AbstractSubprocess):
             tb = traceback.format_exc()
             fmt, args = 'unknown problem sending sig %s (%s):%s', (processname, self.pid, tb)
             log.critical(fmt, *args)
-            self.change_state(ProcessStates.UNKNOWN)
+            self.change_state(ProcessState.UNKNOWN)
             return fmt % args
 
         return None
@@ -585,8 +584,8 @@ class Subprocess(AbstractSubprocess):
             self.exitstatus = es
 
             fmt, args = 'stopped: %s (%s)', (processname, msg)
-            self._check_in_state(ProcessStates.STOPPING)
-            self.change_state(ProcessStates.STOPPED)
+            self._check_in_state(ProcessState.STOPPING)
+            self.change_state(ProcessState.STOPPED)
             if exit_expected:
                 log.info(fmt, *args)
             else:
@@ -596,8 +595,8 @@ class Subprocess(AbstractSubprocess):
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
             self.exitstatus = None
             self.spawn_err = 'Exited too quickly (process log may have details)'
-            self._check_in_state(ProcessStates.STARTING)
-            self.change_state(ProcessStates.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
             log.warning('exited: %s (%s)', processname, msg + '; not expected')
 
         else:
@@ -609,19 +608,19 @@ class Subprocess(AbstractSubprocess):
 
             # if the process was STARTING but a system time change causes self.laststart to be in the future, the normal
             # STARTING->RUNNING transition can be subverted so we perform the transition here.
-            if self._state == ProcessStates.STARTING:
-                self.change_state(ProcessStates.RUNNING)
+            if self._state == ProcessState.STARTING:
+                self.change_state(ProcessState.RUNNING)
 
-            self._check_in_state(ProcessStates.RUNNING)
+            self._check_in_state(ProcessState.RUNNING)
 
             if exit_expected:
                 # expected exit code
-                self.change_state(ProcessStates.EXITED, expected=True)
+                self.change_state(ProcessState.EXITED, expected=True)
                 log.info('exited: %s (%s)', processname, msg + '; expected')
             else:
                 # unexpected exit code
                 self.spawn_err = f'Bad exit code {es}'
-                self.change_state(ProcessStates.EXITED, expected=False)
+                self.change_state(ProcessState.EXITED, expected=False)
                 log.warning('exited: %s (%s)', processname, msg + '; not expected')
 
         self._pid = 0
@@ -659,7 +658,7 @@ class Subprocess(AbstractSubprocess):
 
         if self.context.state > SupervisorStates.RESTARTING:
             # dont start any processes if supervisor is shutting down
-            if state == ProcessStates.EXITED:
+            if state == ProcessState.EXITED:
                 if self.config.autorestart:
                     if self.config.autorestart is RestartUnconditionally:
                         # EXITED -> STARTING
@@ -668,37 +667,37 @@ class Subprocess(AbstractSubprocess):
                         # EXITED -> STARTING
                         self.spawn()
 
-            elif state == ProcessStates.STOPPED and not self._laststart:
+            elif state == ProcessState.STOPPED and not self._laststart:
                 if self.config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
 
-            elif state == ProcessStates.BACKOFF:
+            elif state == ProcessState.BACKOFF:
                 if self.backoff <= self.config.startretries:
                     if now > self.delay:
                         # BACKOFF -> STARTING
                         self.spawn()
 
         processname = as_string(self.config.name)
-        if state == ProcessStates.STARTING:
+        if state == ProcessState.STARTING:
             if now - self._laststart > self.config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self.delay = 0
                 self.backoff = 0
-                self._check_in_state(ProcessStates.STARTING)
-                self.change_state(ProcessStates.RUNNING)
+                self._check_in_state(ProcessState.STARTING)
+                self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self.config.startsecs)  # noqa
                 logger.info('success: %s %s', processname, msg)
 
-        if state == ProcessStates.BACKOFF:
+        if state == ProcessState.BACKOFF:
             if self.backoff > self.config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
                 logger.info('gave up: %s %s', processname, msg)
 
-        elif state == ProcessStates.STOPPING:
+        elif state == ProcessState.STOPPING:
             time_left = self.delay - now
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
@@ -779,15 +778,15 @@ class ProcessGroup:
 
         for proc in processes:
             state = proc.get_state()
-            if state == ProcessStates.RUNNING:
+            if state == ProcessState.RUNNING:
                 # RUNNING -> STOPPING
                 proc.stop()
 
-            elif state == ProcessStates.STARTING:
+            elif state == ProcessState.STARTING:
                 # STARTING -> STOPPING
                 proc.stop()
 
-            elif state == ProcessStates.BACKOFF:
+            elif state == ProcessState.BACKOFF:
                 # BACKOFF -> FATAL
                 proc.give_up()
 
