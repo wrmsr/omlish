@@ -69,7 +69,10 @@ ProcessState = int  # ta.TypeAlias
 SupervisorState = int  # ta.TypeAlias
 
 # ../../../omlish/lite/inject.py
+InjectorKeyCls = ta.Union[type, ta.NewType]
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 # ../../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
@@ -1706,15 +1709,12 @@ def get_supervisor_state_description(code: SupervisorState) -> str:
 
 @dc.dataclass(frozen=True)
 class InjectorKey:
-    cls: ta.Union[type, ta.NewType]
+    cls: InjectorKeyCls
     tag: ta.Any = None
     array: bool = False
 
 
 ##
-
-
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 
 
 class InjectorProvider(abc.ABC):
@@ -1736,9 +1736,6 @@ class InjectorBindings(abc.ABC):
     @abc.abstractmethod
     def bindings(self) -> ta.Iterator[InjectorBinding]:
         raise NotImplementedError
-
-
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 ##
 
@@ -1873,7 +1870,6 @@ class LinkInjectorProvider(InjectorProvider):
 
 @dc.dataclass(frozen=True)
 class ArrayInjectorProvider(InjectorProvider):
-    ty: type
     ps: ta.Sequence[InjectorProvider]
 
     def provider_fn(self) -> InjectorProviderFn:
@@ -1961,7 +1957,7 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 
     if am:
         for k, aps in am.items():
-            pm[k] = ArrayInjectorProvider(k.cls, aps)
+            pm[k] = ArrayInjectorProvider(aps)
 
     return pm
 
@@ -3738,7 +3734,7 @@ class ServerContext(AbstractServerContext):
 
         self._config = config
         self._epoch = epoch
-        self._inherited_fds = frozenset(inherited_fds or [])
+        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorStates.RUNNING
@@ -3793,7 +3789,7 @@ class ServerContext(AbstractServerContext):
         return self._gid
 
     @property
-    def inherited_fds(self) -> ta.FrozenSet[InheritedFds]:
+    def inherited_fds(self) -> InheritedFds:
         return self._inherited_fds
 
     ##
@@ -5655,7 +5651,7 @@ def main(
 
         injector = inj.create_injector(build_server_bindings(
             config,
-            epoch=ServerEpoch(epoch),
+            server_epoch=ServerEpoch(epoch),
             inherited_fds=initial_fds,
         ))
 

@@ -16,6 +16,13 @@ from omlish.lite.reflect import is_optional_alias
 
 T = ta.TypeVar('T')
 
+InjectorKeyCls = ta.Union[type, ta.NewType]
+
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
+
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+
 
 ###
 # types
@@ -23,16 +30,12 @@ T = ta.TypeVar('T')
 
 @dc.dataclass(frozen=True)
 class InjectorKey:
-    cls: ta.Union[type, ta.NewType]
+    cls: InjectorKeyCls
     tag: ta.Any = None
     array: bool = False
 
 
 ##
-
-
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 
 
 class InjectorProvider(abc.ABC):
@@ -54,9 +57,6 @@ class InjectorBindings(abc.ABC):
     @abc.abstractmethod
     def bindings(self) -> ta.Iterator[InjectorBinding]:
         raise NotImplementedError
-
-
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 ##
 
@@ -191,7 +191,6 @@ class LinkInjectorProvider(InjectorProvider):
 
 @dc.dataclass(frozen=True)
 class ArrayInjectorProvider(InjectorProvider):
-    ty: type
     ps: ta.Sequence[InjectorProvider]
 
     def provider_fn(self) -> InjectorProviderFn:
@@ -279,7 +278,7 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 
     if am:
         for k, aps in am.items():
-            pm[k] = ArrayInjectorProvider(k.cls, aps)
+            pm[k] = ArrayInjectorProvider(aps)
 
     return pm
 

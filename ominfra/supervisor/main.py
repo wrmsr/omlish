@@ -136,7 +136,7 @@ def main(
 
         injector = inj.create_injector(build_server_bindings(
             config,
-            epoch=ServerEpoch(epoch),
+            server_epoch=ServerEpoch(epoch),
             inherited_fds=initial_fds,
         ))
 
