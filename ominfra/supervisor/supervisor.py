@@ -14,13 +14,12 @@ from .compat import signame
 from .configs import ProcessGroupConfig
 from .context import ServerContext
 from .dispatchers import Dispatcher
+from .events import EVENT_CALLBACKS
 from .events import TICK_EVENTS
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
-from .events import clear_events
-from .events import notify_event
 from .process import ProcessGroup
 from .process import Subprocess
 from .states import SupervisorState
@@ -82,7 +81,7 @@ class Supervisor:
         group = self._process_groups[name] = ProcessGroup(config, self._context)
         group.after_setuid()
 
-        notify_event(ProcessGroupAddedEvent(name))
+        EVENT_CALLBACKS.notify(ProcessGroupAddedEvent(name))
         return True
 
     def remove_process_group(self, name: str) -> bool:
@@ -93,7 +92,7 @@ class Supervisor:
 
         del self._process_groups[name]
 
-        notify_event(ProcessGroupRemovedEvent(name))
+        EVENT_CALLBACKS.notify(ProcessGroupRemovedEvent(name))
         return True
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
@@ -152,7 +151,7 @@ class Supervisor:
         self._process_groups = {}  # clear
         self._stop_groups = None  # clear
 
-        clear_events()
+        EVENT_CALLBACKS.clear()
 
         try:
             for config in self._context.config.groups or []:
@@ -166,7 +165,7 @@ class Supervisor:
             # writing pid file needs to come *after* daemonizing or pid will be wrong
             self._context.write_pidfile()
 
-            notify_event(SupervisorRunningEvent())
+            EVENT_CALLBACKS.notify(SupervisorRunningEvent())
 
             while True:
                 if callback is not None and not callback(self):
@@ -216,7 +215,7 @@ class Supervisor:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
                 self._stop_groups = pgroups[:]
-                notify_event(SupervisorStoppingEvent())
+                EVENT_CALLBACKS.notify(SupervisorStoppingEvent())
 
             self._ordered_stop_groups_phase_1()
 
@@ -342,4 +341,4 @@ class Supervisor:
             this_tick = timeslice(period, now)
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
-                notify_event(event(this_tick, self))
+                EVENT_CALLBACKS.notify(event(this_tick, self))

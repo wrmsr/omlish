@@ -30,6 +30,7 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatcher
 from .dispatchers import InputDispatcher
 from .dispatchers import OutputDispatcher
+from .events import EVENT_CALLBACKS
 from .events import EventRejectedEvent
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
@@ -43,7 +44,6 @@ from .events import ProcessStateStartingEvent
 from .events import ProcessStateStoppedEvent
 from .events import ProcessStateStoppingEvent
 from .events import ProcessStateUnknownEvent
-from .events import notify_event
 from .exceptions import BadCommandError
 from .exceptions import ProcessError
 from .states import STOPPED_STATES
@@ -207,7 +207,7 @@ class Subprocess(AbstractSubprocess):
         event_class = self.event_map.get(new_state)
         if event_class is not None:
             event = event_class(self, old_state, expected)
-            notify_event(event)
+            EVENT_CALLBACKS.notify(event)
 
         return True
 
@@ -626,7 +626,7 @@ class Subprocess(AbstractSubprocess):
         # system that this event was rejected so it can be processed again.
         if self.event is not None:
             # Note: this should only be true if we were in the BUSY state when finish() was called.
-            notify_event(EventRejectedEvent(self, self.event))  # type: ignore
+            EVENT_CALLBACKS.notify(EventRejectedEvent(self, self.event))  # type: ignore
             self.event = None
 
     def set_uid(self) -> ta.Optional[str]:
