@@ -23,7 +23,7 @@ T = ta.TypeVar('T')
 
 @dc.dataclass(frozen=True)
 class InjectorKey:
-    cls: type
+    cls: ta.Union[type, ta.NewType]
     tag: ta.Any = None
     array: bool = False
 
@@ -110,7 +110,7 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
         return o
-    if isinstance(o, type):
+    if isinstance(o, (type, ta.NewType)):
         return InjectorKey(o)
     raise TypeError(o)
 
@@ -268,6 +268,7 @@ def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> 
 def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
     pm: ta.Dict[InjectorKey, InjectorProvider] = {}
     am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
+
     for b in bs.bindings():
         if b.key.array:
             am.setdefault(b.key, []).append(b.provider)
@@ -275,6 +276,7 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
             if b.key in pm:
                 raise KeyError(b.key)
             pm[b.key] = b.provider
+
     if am:
         for k, aps in am.items():
             pm[k] = ArrayInjectorProvider(k.cls, aps)
@@ -415,10 +417,7 @@ class InjectorBinder:
         ##
 
         if key is not None:
-            if isinstance(key, type):
-                key = InjectorKey(key)
-            elif not isinstance(key, InjectorKey):
-                raise TypeError(key)
+            key = as_injector_key(key)
 
         ##
 
@@ -495,6 +494,9 @@ class InjectorBinder:
 # injector
 
 
+_INJECTOR_INJECTOR_KEY = InjectorKey(Injector)
+
+
 class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
@@ -504,8 +506,14 @@ class _Injector(Injector):
 
         self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
 
+        if _INJECTOR_INJECTOR_KEY in self._pfm:
+            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
+
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         key = as_injector_key(key)
+
+        if key == _INJECTOR_INJECTOR_KEY:
+            return Maybe.just(self)
 
         fn = self._pfm.get(key)
         if fn is not None:
@@ -542,10 +550,6 @@ class _Injector(Injector):
         return obj(**kws)
 
 
-def create_injector(*args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-    return _Injector(as_injector_bindings(*args), p)
-
-
 ###
 # injection helpers
 
@@ -571,12 +575,12 @@ class Injection:
     # bindings
 
     @classmethod
-    def as_bindings(cls, *vs: ta.Any) -> InjectorBindings:
-        return as_injector_bindings(*vs)
+    def as_bindings(cls, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return as_injector_bindings(*args)
 
     @classmethod
-    def override(cls, p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
-        return injector_override(p, *a)
+    def override(cls, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return injector_override(p, *args)
 
     # binder
 
@@ -615,7 +619,7 @@ class Injection:
 
     @classmethod
     def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-        return create_injector(*args, p=p)
+        return _Injector(as_injector_bindings(*args), p)
 
 
 inj = Injection

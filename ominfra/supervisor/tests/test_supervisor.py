@@ -3,23 +3,25 @@ import os.path
 import typing as ta
 import unittest
 
+from omlish.lite.inject import inj
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import is_debugger_attached
 
 from ...configs import read_config_file
 from ..compat import get_open_fds
 from ..configs import ServerConfig
-from ..context import ServerContext
+from ..context import InheritedFds
+from ..main import build_server_bindings
 from ..main import prepare_server_config
 from ..supervisor import Supervisor
 
 
 class TestSupervisor(unittest.TestCase):
     def test_supervisor(self):
-        initial_fds: ta.Optional[ta.FrozenSet[int]] = None
+        inherited_fds: ta.Optional[InheritedFds] = None
         if is_debugger_attached():
             configure_standard_logging('DEBUG')
-            initial_fds = get_open_fds(0x10000)
+            inherited_fds = InheritedFds(get_open_fds(0x10000))
 
         #
 
@@ -33,11 +35,12 @@ class TestSupervisor(unittest.TestCase):
 
         #
 
-        context = ServerContext(
+        injector = inj.create_injector(build_server_bindings(
             config,
-            inherited_fds=initial_fds,
-        )
-        supervisor = Supervisor(context)
+            inherited_fds=inherited_fds,
+        ))
+
+        supervisor = injector.provide(Supervisor)
 
         #
 

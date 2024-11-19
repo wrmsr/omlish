@@ -74,6 +74,10 @@ InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 # ../../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
 
+# ../context.py
+ServerEpoch = ta.NewType('ServerEpoch', int)
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
 
 ########################################
 # ../../../omdev/toml/parser.py
@@ -1702,7 +1706,7 @@ def get_supervisor_state_description(code: SupervisorState) -> str:
 
 @dc.dataclass(frozen=True)
 class InjectorKey:
-    cls: type
+    cls: ta.Union[type, ta.NewType]
     tag: ta.Any = None
     array: bool = False
 
@@ -1788,7 +1792,7 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
         return o
-    if isinstance(o, type):
+    if isinstance(o, (type, ta.NewType)):
         return InjectorKey(o)
     raise TypeError(o)
 
@@ -1946,6 +1950,7 @@ def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> 
 def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey, InjectorProvider]:
     pm: ta.Dict[InjectorKey, InjectorProvider] = {}
     am: ta.Dict[InjectorKey, ta.List[InjectorProvider]] = {}
+
     for b in bs.bindings():
         if b.key.array:
             am.setdefault(b.key, []).append(b.provider)
@@ -1953,6 +1958,7 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
             if b.key in pm:
                 raise KeyError(b.key)
             pm[b.key] = b.provider
+
     if am:
         for k, aps in am.items():
             pm[k] = ArrayInjectorProvider(k.cls, aps)
@@ -2093,10 +2099,7 @@ class InjectorBinder:
         ##
 
         if key is not None:
-            if isinstance(key, type):
-                key = InjectorKey(key)
-            elif not isinstance(key, InjectorKey):
-                raise TypeError(key)
+            key = as_injector_key(key)
 
         ##
 
@@ -2173,6 +2176,9 @@ class InjectorBinder:
 # injector
 
 
+_INJECTOR_INJECTOR_KEY = InjectorKey(Injector)
+
+
 class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
@@ -2182,8 +2188,14 @@ class _Injector(Injector):
 
         self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
 
+        if _INJECTOR_INJECTOR_KEY in self._pfm:
+            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
+
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         key = as_injector_key(key)
+
+        if key == _INJECTOR_INJECTOR_KEY:
+            return Maybe.just(self)
 
         fn = self._pfm.get(key)
         if fn is not None:
@@ -2220,10 +2232,6 @@ class _Injector(Injector):
         return obj(**kws)
 
 
-def create_injector(*args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-    return _Injector(as_injector_bindings(*args), p)
-
-
 ###
 # injection helpers
 
@@ -2249,12 +2257,12 @@ class Injection:
     # bindings
 
     @classmethod
-    def as_bindings(cls, *vs: ta.Any) -> InjectorBindings:
-        return as_injector_bindings(*vs)
+    def as_bindings(cls, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return as_injector_bindings(*args)
 
     @classmethod
-    def override(cls, p: InjectorBindings, *a: ta.Any) -> InjectorBindings:
-        return injector_override(p, *a)
+    def override(cls, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+        return injector_override(p, *args)
 
     # binder
 
@@ -2293,7 +2301,7 @@ class Injection:
 
     @classmethod
     def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-        return create_injector(*args, p=p)
+        return _Injector(as_injector_bindings(*args), p)
 
 
 inj = Injection
@@ -3723,8 +3731,8 @@ class ServerContext(AbstractServerContext):
             self,
             config: ServerConfig,
             *,
-            epoch: int = 0,
-            inherited_fds: ta.Optional[ta.Iterable[int]] = None,
+            epoch: ServerEpoch = ServerEpoch(0),
+            inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
         super().__init__()
 
@@ -3754,7 +3762,7 @@ class ServerContext(AbstractServerContext):
         return self._config
 
     @property
-    def epoch(self) -> int:
+    def epoch(self) -> ServerEpoch:
         return self._epoch
 
     @property
@@ -3785,7 +3793,7 @@ class ServerContext(AbstractServerContext):
         return self._gid
 
     @property
-    def inherited_fds(self) -> ta.FrozenSet[int]:
+    def inherited_fds(self) -> ta.FrozenSet[InheritedFds]:
         return self._inherited_fds
 
     ##
@@ -4431,6 +4439,9 @@ class InputDispatcher(Dispatcher):
 # ../process.py
 
 
+##
+
+
 @functools.total_ordering
 class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
@@ -4456,7 +4467,12 @@ class Subprocess(AbstractSubprocess):
     spawn_err = None  # error message attached by spawn() if any
     group = None  # ProcessGroup instance if process is in the group
 
-    def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: AbstractServerContext) -> None:
+    def __init__(
+            self,
+            config: ProcessConfig,
+            group: 'ProcessGroup',
+            context: AbstractServerContext,
+    ) -> None:
         super().__init__()
         self._config = config
         self.group = group
@@ -5097,15 +5113,39 @@ class Subprocess(AbstractSubprocess):
         pass
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessFactory:
+    fn: ta.Callable[[ProcessConfig, 'ProcessGroup'], Subprocess]
+
+    def __call__(self, config: ProcessConfig, group: 'ProcessGroup') -> Subprocess:
+        return self.fn(config, group)
+
+
 @functools.total_ordering
 class ProcessGroup:
-    def __init__(self, config: ProcessGroupConfig, context: ServerContext):
+    def __init__(
+            self,
+            config: ProcessGroupConfig,
+            context: ServerContext,
+            *,
+            subprocess_factory: ta.Optional[SubprocessFactory] = None,
+    ):
         super().__init__()
         self.config = config
         self.context = context
+
+        if subprocess_factory is None:
+            def make_subprocess(config: ProcessConfig, group: ProcessGroup) -> Subprocess:
+                return Subprocess(config, group, self.context)
+            subprocess_factory = SubprocessFactory(make_subprocess)
+        self._subprocess_factory = subprocess_factory
+
         self.processes = {}
         for pconfig in self.config.processes or []:
-            process = Subprocess(pconfig, self, self.context)
+            process = self._subprocess_factory(pconfig, self)
             self.processes[pconfig.name] = process
 
     def __lt__(self, other):
@@ -5175,12 +5215,32 @@ def timeslice(period: int, when: float) -> int:
     return int(when - (when % period))
 
 
+@dc.dataclass(frozen=True)
+class ProcessGroupFactory:
+    fn: ta.Callable[[ProcessGroupConfig], ProcessGroup]
+
+    def __call__(self, config: ProcessGroupConfig) -> ProcessGroup:
+        return self.fn(config)
+
+
 class Supervisor:
 
-    def __init__(self, context: ServerContext) -> None:
+    def __init__(
+            self,
+            context: ServerContext,
+            *,
+            process_group_factory: ta.Optional[ProcessGroupFactory] = None,
+    ) -> None:
         super().__init__()
 
         self._context = context
+
+        if process_group_factory is None:
+            def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
+                return ProcessGroup(config, self._context)
+            process_group_factory = ProcessGroupFactory(make_process_group)
+        self._process_group_factory = process_group_factory
+
         self._ticks: ta.Dict[int, float] = {}
         self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -5222,7 +5282,7 @@ class Supervisor:
         if name in self._process_groups:
             return False
 
-        group = self._process_groups[name] = ProcessGroup(config, self._context)
+        group = self._process_groups[name] = self._process_group_factory(config)
         group.after_setuid()
 
         EVENT_CALLBACKS.notify(ProcessGroupAddedEvent(name))
@@ -5511,6 +5571,48 @@ def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.An
 ##
 
 
+def build_server_bindings(
+        config: ServerConfig,
+        *,
+        server_epoch: ta.Optional[ServerEpoch] = None,
+        inherited_fds: ta.Optional[InheritedFds] = None,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(config),
+
+        inj.bind(ServerContext, singleton=True),
+        inj.bind(Supervisor, singleton=True),
+    ]
+
+    #
+
+    def make_process_group_factory(injector: Injector) -> ProcessGroupFactory:
+        def inner(group_config: ProcessGroupConfig) -> ProcessGroup:
+            return injector.inject(functools.partial(ProcessGroup, group_config))
+        return ProcessGroupFactory(inner)
+    lst.append(inj.bind(make_process_group_factory))
+
+    def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
+        def inner(process_config: ProcessConfig, group: ProcessGroup) -> Subprocess:
+            return injector.inject(functools.partial(Subprocess, process_config, group))
+        return SubprocessFactory(inner)
+    lst.append(inj.bind(make_subprocess_factory))
+
+    #
+
+    if server_epoch is not None:
+        lst.append(inj.bind(server_epoch, key=ServerEpoch))
+    if inherited_fds is not None:
+        lst.append(inj.bind(inherited_fds, key=InheritedFds))
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+##
+
+
 def main(
         argv: ta.Optional[ta.Sequence[str]] = None,
         *,
@@ -5537,9 +5639,9 @@ def main(
 
     #
 
-    initial_fds: ta.Optional[ta.FrozenSet[int]] = None
+    initial_fds: ta.Optional[InheritedFds] = None
     if args.inherit_initial_fds:
-        initial_fds = get_open_fds(0x10000)
+        initial_fds = InheritedFds(get_open_fds(0x10000))
 
     # if we hup, restart by making a new Supervisor()
     for epoch in itertools.count():
@@ -5549,19 +5651,15 @@ def main(
             prepare=prepare_server_config,
         )
 
-        context = ServerContext(
+        injector = inj.create_injector(build_server_bindings(
             config,
-            epoch=epoch,
+            epoch=ServerEpoch(epoch),
             inherited_fds=initial_fds,
-        )
+        ))
 
-        injector = inj.create_injector(
-            inj.bind(config),
-            inj.bind(context),
-            inj.bind(Supervisor, singleton=True),
-        )
-
+        context = injector.provide(ServerContext)
         supervisor = injector.provide(Supervisor)
+
         try:
             supervisor.main()
         except ExitNow:
