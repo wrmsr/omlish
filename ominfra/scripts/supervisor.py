@@ -3620,6 +3620,8 @@ class Supervisor:
         self._stopping = False  # set after we detect that we are handling a stop request
         self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
 
+    #
+
     @property
     def context(self) -> ServerContext:
         return self._context
@@ -3627,58 +3629,7 @@ class Supervisor:
     def get_state(self) -> SupervisorState:
         return self._context.state
 
-    def main(self) -> None:
-        self.setup()
-        self.run()
-
-    @cached_nullary
-    def setup(self) -> None:
-        if not self._context.first:
-            # prevent crash on libdispatch-based systems, at least for the first request
-            self._context.cleanup_fds()
-
-        self._context.set_uid_or_exit()
-
-        if self._context.first:
-            self._context.set_rlimits_or_exit()
-
-        # this sets the options.logger object delay logger instantiation until after setuid
-        if not self._context.config.nocleanup:
-            # clean up old automatic logs
-            self._context.clear_auto_child_logdir()
-
-    def run(
-            self,
-            *,
-            callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
-    ) -> None:
-        self._process_groups = {}  # clear
-        self._stop_groups = None  # clear
-
-        clear_events()
-
-        try:
-            for config in self._context.config.groups or []:
-                self.add_process_group(config)
-
-            self._context.set_signals()
-
-            if not self._context.config.nodaemon and self._context.first:
-                self._context.daemonize()
-
-            # writing pid file needs to come *after* daemonizing or pid will be wrong
-            self._context.write_pidfile()
-
-            notify_event(SupervisorRunningEvent())
-
-            while True:
-                if callback is not None and not callback(self):
-                    break
-
-                self._run_once()
-
-        finally:
-            self._context.cleanup()
+    #
 
     class DiffToActive(ta.NamedTuple):
         added: ta.List[ProcessGroupConfig]
@@ -3747,6 +3698,72 @@ class Supervisor:
 
         return unstopped
 
+    #
+
+    def main(self) -> None:
+        self.setup()
+        self.run()
+
+    @cached_nullary
+    def setup(self) -> None:
+        if not self._context.first:
+            # prevent crash on libdispatch-based systems, at least for the first request
+            self._context.cleanup_fds()
+
+        self._context.set_uid_or_exit()
+
+        if self._context.first:
+            self._context.set_rlimits_or_exit()
+
+        # this sets the options.logger object delay logger instantiation until after setuid
+        if not self._context.config.nocleanup:
+            # clean up old automatic logs
+            self._context.clear_auto_child_logdir()
+
+    def run(
+            self,
+            *,
+            callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
+    ) -> None:
+        self._process_groups = {}  # clear
+        self._stop_groups = None  # clear
+
+        clear_events()
+
+        try:
+            for config in self._context.config.groups or []:
+                self.add_process_group(config)
+
+            self._context.set_signals()
+
+            if not self._context.config.nodaemon and self._context.first:
+                self._context.daemonize()
+
+            # writing pid file needs to come *after* daemonizing or pid will be wrong
+            self._context.write_pidfile()
+
+            notify_event(SupervisorRunningEvent())
+
+            while True:
+                if callback is not None and not callback(self):
+                    break
+
+                self._run_once()
+
+        finally:
+            self._context.cleanup()
+
+    #
+
+    def _run_once(self) -> None:
+        self._poll()
+        self._reap()
+        self._handle_signal()
+        self._tick()
+
+        if self._context.state < SupervisorStates.RUNNING:
+            self._ordered_stop_groups_phase_2()
+
     def _ordered_stop_groups_phase_1(self) -> None:
         if self._stop_groups:
             # stop the last group (the one with the "highest" priority)
@@ -3763,7 +3780,7 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
-    def _run_once(self) -> None:
+    def _poll(self) -> None:
         combined_map = {}
         combined_map.update(self.get_process_map())
 
@@ -3835,33 +3852,6 @@ class Supervisor:
         for group in pgroups:
             group.transition()
 
-        self._reap()
-        self._handle_signal()
-        self._tick()
-
-        if self._context.state < SupervisorStates.RUNNING:
-            self._ordered_stop_groups_phase_2()
-
-    def _tick(self, now: ta.Optional[float] = None) -> None:
-        """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
-
-        if now is None:
-            # now won't be None in unit tests
-            now = time.time()
-
-        for event in TICK_EVENTS:
-            period = event.period  # type: ignore
-
-            last_tick = self._ticks.get(period)
-            if last_tick is None:
-                # we just started up
-                last_tick = self._ticks[period] = timeslice(period, now)
-
-            this_tick = timeslice(period, now)
-            if this_tick != last_tick:
-                self._ticks[period] = this_tick
-                notify_event(event(this_tick, self))
-
     def _reap(self, *, once: bool = False, depth: int = 0) -> None:
         if depth >= 100:
             return
@@ -3909,6 +3899,26 @@ class Supervisor:
 
         else:
             log.debug('received %s indicating nothing', signame(sig))
+
+    def _tick(self, now: ta.Optional[float] = None) -> None:
+        """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
+
+        if now is None:
+            # now won't be None in unit tests
+            now = time.time()
+
+        for event in TICK_EVENTS:
+            period = event.period  # type: ignore
+
+            last_tick = self._ticks.get(period)
+            if last_tick is None:
+                # we just started up
+                last_tick = self._ticks[period] = timeslice(period, now)
+
+            this_tick = timeslice(period, now)
+            if this_tick != last_tick:
+                self._ticks[period] = this_tick
+                notify_event(event(this_tick, self))
 
 
 ########################################
