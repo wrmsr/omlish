@@ -1102,6 +1102,14 @@ def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     return it
 
 
+def is_new_type(spec: ta.Any) -> bool:
+    if isinstance(ta.NewType, type):
+        return isinstance(spec, ta.NewType)
+    else:
+        # Before https://github.com/python/cpython/commit/c2f33dfc83ab270412bf243fb21f724037effa1a
+        return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
+
+
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))

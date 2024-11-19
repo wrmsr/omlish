@@ -1511,6 +1511,14 @@ def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     return it
 
 
+def is_new_type(spec: ta.Any) -> bool:
+    if isinstance(ta.NewType, type):
+        return isinstance(spec, ta.NewType)
+    else:
+        # Before https://github.com/python/cpython/commit/c2f33dfc83ab270412bf243fb21f724037effa1a
+        return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
+
+
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
@@ -1687,7 +1695,7 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
         return o
-    if isinstance(o, (type, ta.NewType)):
+    if isinstance(o, type) or is_new_type(o):
         return InjectorKey(o)
     raise TypeError(o)
 
@@ -1803,6 +1811,7 @@ class _InjectorBindings(InjectorBindings):
 def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
     bs: ta.List[InjectorBinding] = []
     ps: ta.List[InjectorBindings] = []
+
     for a in args:
         if isinstance(a, InjectorBindings):
             ps.append(a)
@@ -1810,6 +1819,7 @@ def as_injector_bindings(*args: InjectorBindingOrBindings) -> InjectorBindings:
             bs.append(a)
         else:
             raise TypeError(a)
+
     return _InjectorBindings(
         bs or None,
         ps or None,
@@ -1831,10 +1841,12 @@ class OverridesInjectorBindings(InjectorBindings):
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
     m: ta.Dict[InjectorKey, InjectorBinding] = {}
+
     for b in as_injector_bindings(*args).bindings():
         if b.key in m:
             raise DuplicateInjectorKeyError(b.key)
         m[b.key] = b
+
     return OverridesInjectorBindings(p, m)
 
 
