@@ -92,7 +92,7 @@ class TestParser(unittest.TestCase):
             self.assert_parsed_ast(
                 expression,
                 ast.Arithmetic(
-                    operation,
+                    operation,  # type: ignore
                     ast.Field('foo'),
                     ast.Field('bar'),
                 ))
@@ -109,7 +109,7 @@ class TestParser(unittest.TestCase):
             self.assert_parsed_ast(
                 expression,
                 ast.ArithmeticUnary(
-                    operation,
+                    operation,  # type: ignore
                     ast.Field('foo'),
                 ))
 

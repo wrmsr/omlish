@@ -6,9 +6,11 @@ from ... import check
 from ... import lang
 from .ast import AndExpression
 from .ast import Arithmetic
+from .ast import ArithmeticOperator
 from .ast import ArithmeticUnary
 from .ast import Assign
 from .ast import Comparator
+from .ast import ComparatorName
 from .ast import CurrentNode
 from .ast import Expref
 from .ast import Field
@@ -31,6 +33,7 @@ from .ast import Projection
 from .ast import RootNode
 from .ast import Slice
 from .ast import Subexpression
+from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
 from .exceptions import UndefinedVariableError
@@ -164,7 +167,7 @@ class _Expression:
 
 
 class TreeInterpreter(Visitor):
-    COMPARATOR_FUNC: ta.Mapping[str, ta.Callable] = {
+    _COMPARATOR_FUNC: ta.Mapping[ComparatorName, ta.Callable] = {
         'eq': _equals,
         'ne': lambda x, y: not _equals(x, y),
         'lt': operator.lt,
@@ -173,23 +176,23 @@ class TreeInterpreter(Visitor):
         'gte': operator.ge,
     }
 
-    _EQUALITY_OPS: ta.AbstractSet[str] = {
+    _EQUALITY_OPS: ta.AbstractSet[ComparatorName] = {
         'eq',
         'ne',
     }
 
-    _ARITHMETIC_UNARY_FUNC: ta.Mapping[str, ta.Callable] = {
-        'minus': operator.neg,
-        'plus': lambda x: x,
-    }
-
-    _ARITHMETIC_FUNC: ta.Mapping[str, ta.Callable] = {
+    _ARITHMETIC_FUNC: ta.Mapping[ArithmeticOperator, ta.Callable] = {
         'div': operator.floordiv,
         'divide': operator.truediv,
         'minus': operator.sub,
         'modulo': operator.mod,
         'multiply': operator.mul,
         'plus': operator.add,
+    }
+
+    _ARITHMETIC_UNARY_FUNC: ta.Mapping[UnaryArithmeticOperator, ta.Callable] = {
+        'minus': operator.neg,
+        'plus': lambda x: x,
     }
 
     def __init__(self, options: Options | None = None) -> None:
@@ -235,7 +238,7 @@ class TreeInterpreter(Visitor):
 
     def visit_comparator(self, node: Comparator, value: ta.Any) -> ta.Any:
         # Common case: comparator is == or !=
-        comparator_func = self.COMPARATOR_FUNC[node.name]
+        comparator_func = self._COMPARATOR_FUNC[node.name]
         if node.name in self._EQUALITY_OPS:
             return comparator_func(
                 self.visit(node.first, value),
