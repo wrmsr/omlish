@@ -17,9 +17,6 @@ class ArrayProvider(Provider):
 
     sty: type
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return self.sty
-
     def provider_fn(self) -> ProviderFn:
         ps = [p.provider_fn() for p in self.ps]
 

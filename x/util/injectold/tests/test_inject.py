@@ -68,7 +68,7 @@ def test_dataclasses():
 
     foo = inj.create_injector(inj.as_bindings(
         inj.bind(420),
-        inj.bind(inj.fn(lambda: 'howdy', str)),
+        inj.bind(lambda: 'howdy', key=str),
         inj.bind(Foo),
     )).provide(Foo)
     print(foo)

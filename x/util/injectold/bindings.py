@@ -26,9 +26,7 @@ def as_binding(o: ta.Any) -> Binding:
     if isinstance(o, Binding):
         return o
     if isinstance(o, Provider):
-        def _raise_typeerror(_):
-            raise TypeError(o)
-        return Binding(Key(o.provided_cls(_raise_typeerror)), o)
+        raise TypeError(o)
     if isinstance(o, type):
         return as_binding(ctor_provider(o))
     if callable(o):
@@ -65,7 +63,7 @@ def as_bindings(*vs: ta.Any) -> Bindings:
             ps.append(a)
         elif a is not None:
             bs.append(as_binding(a))
-    return Bindings(
+    return _Bindings(
         bs or None,
         ps or None,
     )

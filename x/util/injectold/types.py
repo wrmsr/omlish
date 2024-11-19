@@ -24,10 +24,6 @@ ProviderFnMap = ta.Mapping[Key, ProviderFn]
 
 class Provider(abc.ABC):
     @abc.abstractmethod
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def provider_fn(self) -> ProviderFn:
         raise NotImplementedError
 

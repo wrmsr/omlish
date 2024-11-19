@@ -4,7 +4,6 @@ import typing as ta
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_isinstance
 
-from .inspect import signature
 from .keys import as_key
 from .types import Binding
 from .types import Bindings
@@ -27,7 +26,7 @@ def as_provider(o: ta.Any) -> Provider:
         return ctor(o)
     if callable(o):
         return fn(o)
-    return ConstProvider(type(o), o)
+    return ConstProvider(o)
 
 
 ##
@@ -35,11 +34,7 @@ def as_provider(o: ta.Any) -> Provider:
 
 @dc.dataclass(frozen=True)
 class FnProvider(Provider):
-    cls: type
     fn: ta.Any
-
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return self.cls
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -48,12 +43,9 @@ class FnProvider(Provider):
         return pfn
 
 
-def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
+def fn(fn: ta.Any) -> Provider:
     check_not_isinstance(fn, type)
-    sig = signature(fn)
-    if cls is None:
-        cls = check_isinstance(sig.return_annotation, type)
-    return FnProvider(cls, fn)
+    return FnProvider(fn)
 
 
 ##
@@ -62,9 +54,6 @@ def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
 @dc.dataclass(frozen=True)
 class CtorProvider(Provider):
     cls: type
-
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return self.cls
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -82,20 +71,14 @@ def ctor(cls: type) -> Provider:
 
 @dc.dataclass(frozen=True)
 class ConstProvider(Provider):
-    cls: type
     v: ta.Any
-
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return self.cls
 
     def provider_fn(self) -> ProviderFn:
         return lambda _: self.v
 
 
-def const(v: ta.Any, cls: ta.Optional[type] = None) -> Provider:
-    if cls is None:
-        cls = type(v)
-    return ConstProvider(cls, v)
+def const(v: ta.Any) -> Provider:
+    return ConstProvider(v)
 
 
 ##
@@ -104,9 +87,6 @@ def const(v: ta.Any, cls: ta.Optional[type] = None) -> Provider:
 @dc.dataclass(frozen=True)
 class SingletonProvider(Provider):
     p: Provider
-
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return self.p.provided_cls(rec)
 
     def provider_fn(self) -> ProviderFn:
         v = not_set = object()
@@ -131,9 +111,6 @@ def singleton(p: ta.Any) -> Provider:
 @dc.dataclass(frozen=True)
 class LinkProvider(Provider):
     k: Key
-
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        return rec(self.k)
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:

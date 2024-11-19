@@ -59,6 +59,7 @@ _BANNED_BIND_TYPES = (
 def bind(
         obj: ta.Any,
         *,
+        key: ta.Any = None,
         tag: ta.Any = None,
 
         to_fn: ta.Any = None,
@@ -75,6 +76,14 @@ def bind(
 
     ##
 
+    if key is not None:
+        if isinstance(key, type):
+            key = Key(key)
+        elif not isinstance(key, Key):
+            raise TypeError(key)
+
+    ##
+
     has_to = (
         to_fn is not None or
         to_ctor is not None or
@@ -82,21 +91,25 @@ def bind(
         to_key is not None
     )
     if isinstance(obj, Key):
-        key = obj
+        if key is None:
+            key = obj
     elif isinstance(obj, type):
         if not has_to:
             to_ctor = obj
-        key = Key(obj)
+        if key is None:
+            key = Key(obj)
     elif _is_fn(obj) and not has_to:
-        sig = signature(obj)
-        ty = check_isinstance(sig.return_annotation, type)
         to_fn = obj
-        key = Key(ty)
+        if key is None:
+            sig = signature(obj)
+            ty = check_isinstance(sig.return_annotation, type)
+            key = Key(ty)
     else:
         if to_const is not None:
             raise TypeError('Cannot bind instance with to_const')
         to_const = obj
-        key = Key(type(obj))
+        if key is None:
+            key = Key(type(obj))
     del has_to
 
     ##
