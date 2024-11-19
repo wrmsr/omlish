@@ -3134,6 +3134,7 @@ class Subprocess(AbstractSubprocess):
             os.dup2(self._pipes['child_stdout'], 2)
         else:
             os.dup2(self._pipes['child_stderr'], 2)
+        # FIXME: leave debugger fds
         for i in range(3, self.context.config.minfds):
             close_fd(i)
 
