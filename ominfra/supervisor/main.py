@@ -20,6 +20,7 @@ from .configs import ServerConfig
 from .configs import prepare_server_config
 from .context import ServerContext
 from .context import ServerEpoch
+from .events import EVENT_CALLBACKS
 from .poller import Poller
 from .poller import get_poller_impl
 from .process import InheritedFds
@@ -29,6 +30,8 @@ from .process import SubprocessFactory
 from .signals import SignalReceiver
 from .states import SupervisorState
 from .supervisor import ProcessGroupFactory
+from .supervisor import ProcessGroups
+from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import AbstractServerContext
 from .utils import ExitNow
@@ -52,8 +55,12 @@ def build_server_bindings(
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),
 
+        inj.bind(EVENT_CALLBACKS),
+
         inj.bind(SignalReceiver, singleton=True),
 
+        inj.bind(SignalHandler, singleton=True),
+        inj.bind(ProcessGroups, singleton=True),
         inj.bind(Supervisor, singleton=True),
     ]
 
