@@ -293,6 +293,9 @@ class InputDispatcher(Dispatcher):
         super().__init__(process, channel, fd)
         self._input_buffer = b''
 
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        self._input_buffer += as_bytes(chars)
+
     def writable(self) -> bool:
         if self._input_buffer and not self._closed:
             return True

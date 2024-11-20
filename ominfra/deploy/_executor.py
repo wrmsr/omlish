@@ -138,7 +138,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 # ../../../../omlish/lite/check.py
 
 
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
     if not isinstance(v, spec):
         raise TypeError(v)
     return v

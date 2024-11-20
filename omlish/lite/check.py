@@ -5,7 +5,7 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
     if not isinstance(v, spec):
         raise TypeError(v)
     return v

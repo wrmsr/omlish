@@ -917,7 +917,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 # ../../../../../omlish/lite/check.py
 
 
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
     if not isinstance(v, spec):
         raise TypeError(v)
     return v
@@ -2704,7 +2704,7 @@ class JournalctlMessageBuilder:
     def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))  # type: ignore
+            ret.append(self._make_message(check_isinstance(line, bytes)))
         return ret
 
 
