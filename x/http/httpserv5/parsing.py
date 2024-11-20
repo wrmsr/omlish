@@ -183,7 +183,7 @@ class HttpRequestParser:
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
                     message=f'Invalid HTTP version ({base_version_number})',
-                    close_connection=close_connection,
+                    **result_kwargs(),
                 )
 
             request_version = version
