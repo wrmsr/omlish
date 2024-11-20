@@ -57,18 +57,56 @@ from omlish.http import consts as hc
 SocketAddress: ta.TypeAlias = ta.Any
 
 
+##
+
+
 class SocketServerBaseRequestHandler_:  # noqa
     request: socket.socket
     client_address: SocketAddress
     server: socketserver.TCPServer
 
 
+class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noqa
+    rbufsize: int
+    wbufsize: int
+
+    timeout: float | None
+
+    disable_nagle_algorithm: bool
+
+    connection: socket.socket
+    rfile: ta.IO
+    wfile: ta.IO
+
+
+DEFAULT_ERROR_MESSAGE = """\
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: %(code)d</p>
+        <p>Message: %(message)s.</p>
+        <p>Error code explanation: %(code)s - %(explain)s.</p>
+    </body>
+</html>
+"""
+
+DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
+
+
+##
+
+
 class BaseHTTPRequestHandler(
     socketserver.StreamRequestHandler,
-    SocketServerBaseRequestHandler_,
+    SocketServerStreamRequestHandler_,
 ):
-    error_message_format = http.server.DEFAULT_ERROR_MESSAGE
-    error_content_type = http.server.DEFAULT_ERROR_CONTENT_TYPE
+    error_message_format = DEFAULT_ERROR_MESSAGE
+    error_content_type = DEFAULT_ERROR_CONTENT_TYPE
 
     # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
