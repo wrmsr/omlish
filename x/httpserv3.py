@@ -160,7 +160,8 @@ class BaseHTTPRequestHandler(
             if version_number >= (2, 0):
                 self.send_error(
                     http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
-                    f'Invalid HTTP version ({base_version_number})')
+                    f'Invalid HTTP version ({base_version_number})',
+                )
                 return False
 
             self.request_version = version
@@ -258,7 +259,10 @@ class BaseHTTPRequestHandler(
 
             mname = 'do_' + self.command
             if not hasattr(self, mname):
-                self.send_error(http.HTTPStatus.NOT_IMPLEMENTED, f'Unsupported method ({self.command!r})')
+                self.send_error(
+                    http.HTTPStatus.NOT_IMPLEMENTED,
+                    f'Unsupported method ({self.command!r})',
+                )
                 return
 
             method = getattr(self, mname)
@@ -278,7 +282,7 @@ class BaseHTTPRequestHandler(
         while not self.close_connection:
             self.handle_one_request()
 
-    def send_error(self, code, message=None, explain=None):
+    def send_error(self, code, message=None, explain=None) -> None:
         try:
             shortmsg, longmsg = self.responses[code]
         except KeyError:
