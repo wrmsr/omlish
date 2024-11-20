@@ -550,13 +550,31 @@ def _get_best_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
 
 
 class SayHiHttpRequestHandler(BaseHttpRequestHandler):
-    def do_GET(self) -> None:
-        out = b'hi'
+    def do_method(self) -> None:
+        method = self.command
+        path = self.path
+
+        if (cl := self.headers.get('Content-Length')):
+            data = self.rfile.read(int(cl))
+        else:
+            data = b''
+
+        resp = '\n'.join([
+            f'method: {method}',
+            f'path: {path}',
+            f'data: {len(data)}',
+            '',
+        ])
+
+        resp_bytes = resp.encode('utf-8')
         self.send_response(http.HTTPStatus.OK)
         self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
-        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
+        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(resp_bytes)))
         self.end_headers()
-        self.wfile.write(out)
+        self.wfile.write(resp_bytes)
+
+    do_GET = do_method
+    do_POST = do_method
 
 
 def _main() -> None:
