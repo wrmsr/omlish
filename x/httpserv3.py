@@ -105,6 +105,20 @@ class BaseHTTPRequestHandler(
     socketserver.StreamRequestHandler,
     SocketServerStreamRequestHandler_,
 ):
+    def __init__(
+            self,
+            request: socket.socket,
+            client_address: SocketAddress,
+            server: socketserver.TCPServer,
+    ) -> None:
+        super().__init__(
+            request,
+            client_address,
+            server,
+        )
+
+    #
+
     error_message_format = DEFAULT_ERROR_MESSAGE
     error_content_type = DEFAULT_ERROR_CONTENT_TYPE
 
@@ -113,16 +127,27 @@ class BaseHTTPRequestHandler(
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
     default_request_version = 'HTTP/0.9'
 
+    #
+
+    command: str | None
+    request_version: str
+    close_connection: bool
+
+    request_line: str
+    path: str
+
+    headers: http.client.HTTPMessage
+
     def parse_request(self) -> bool:
         self.command = None  # set in case of error on the first line
-        self.request_version = version = self.default_request_version
+        self.request_version = self.default_request_version
         self.close_connection = True
 
-        requestline = str(self.raw_requestline, 'iso-8859-1')
-        requestline = requestline.rstrip('\r\n')
-        self.requestline = requestline
+        request_line = str(self.raw_request_line, 'iso-8859-1')
+        request_line = request_line.rstrip('\r\n')
+        self.request_line = request_line
 
-        words = requestline.split()
+        words = request_line.split()
         if len(words) == 0:
             return False
 
@@ -169,7 +194,7 @@ class BaseHTTPRequestHandler(
         if not 2 <= len(words) <= 3:
             self.send_error(
                 http.HTTPStatus.BAD_REQUEST,
-                f'Bad request syntax ({requestline!r})',
+                f'Bad request syntax ({request_line!r})',
             )
             return False
 
@@ -194,7 +219,7 @@ class BaseHTTPRequestHandler(
 
         # Examine the headers and look for a Connection directive.
         try:
-            self.headers = http.client.parse_headers(self.rfile, _class=self.MessageClass)
+            self.headers = http.client.parse_headers(self.rfile)
 
         except http.client.LineTooLong as err:
             self.send_error(
@@ -212,11 +237,11 @@ class BaseHTTPRequestHandler(
             )
             return False
 
-        conntype = self.headers.get('Connection', '')
-        if conntype.lower() == 'close':
+        conn_type = self.headers.get('Connection', '')
+        if conn_type.lower() == 'close':
             self.close_connection = True
         elif (
-                conntype.lower() == 'keep-alive' and
+                conn_type.lower() == 'keep-alive' and
                 self.protocol_version >= 'HTTP/1.1'
         ):
             self.close_connection = False
@@ -238,18 +263,20 @@ class BaseHTTPRequestHandler(
         self.end_headers()
         return True
 
+    raw_request_line: bytes
+
     def handle_one_request(self) -> None:
         try:
-            self.raw_requestline = self.rfile.readline(65537)
+            self.raw_request_line = self.rfile.readline(65537)
 
-            if len(self.raw_requestline) > 65536:
-                self.requestline = ''
+            if len(self.raw_request_line) > 65536:
+                self.request_line = ''
                 self.request_version = ''
                 self.command = ''
                 self.send_error(http.HTTPStatus.REQUEST_URI_TOO_LONG)
                 return
 
-            if not self.raw_requestline:
+            if not self.raw_request_line:
                 self.close_connection = True
                 return
 
@@ -257,15 +284,15 @@ class BaseHTTPRequestHandler(
                 # An error code has been sent, just exit
                 return
 
-            mname = 'do_' + self.command
-            if not hasattr(self, mname):
+            method_name = 'do_' + self.command
+            if not hasattr(self, method_name):
                 self.send_error(
                     http.HTTPStatus.NOT_IMPLEMENTED,
                     f'Unsupported method ({self.command!r})',
                 )
                 return
 
-            method = getattr(self, mname)
+            method = getattr(self, method_name)
             method()
             self.wfile.flush() #actually send the response if not already done.
 
@@ -370,7 +397,7 @@ class BaseHTTPRequestHandler(
     def log_request(self, code='-', size='-'):
         if isinstance(code, http.HTTPStatus):
             code = code.value
-        self.log_message('"%s" %s %s', self.requestline, str(code), str(size))
+        self.log_message('"%s" %s %s', self.request_line, str(code), str(size))
 
     def log_error(self, format, *args):
         self.log_message(format, *args)
@@ -406,11 +433,7 @@ class BaseHTTPRequestHandler(
     def address_string(self) -> str:
         return self.client_address[0]
 
-    # The version of the HTTP protocol we support. Set this to HTTP/1.1 to enable automatic keepalive
     protocol_version = 'HTTP/1.0'
-
-    # MessageClass used to parse headers
-    MessageClass = http.client.HTTPMessage
 
     # hack to maintain backwards compatibility
     responses = {
