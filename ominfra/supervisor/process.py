@@ -53,6 +53,9 @@ from .types import AbstractServerContext
 from .types import AbstractSubprocess
 
 
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
+
 ##
 
 
@@ -65,11 +68,14 @@ class Subprocess(AbstractSubprocess):
             config: ProcessConfig,
             group: 'ProcessGroup',
             context: AbstractServerContext,
+            *,
+            inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
         super().__init__()
         self._config = config
-        self.group = group
+        self._group = group
         self._context = context
+        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._dispatchers: dict = {}
         self._pipes: dict = {}
@@ -89,6 +95,10 @@ class Subprocess(AbstractSubprocess):
     @property
     def pid(self) -> int:
         return self._pid
+
+    @property
+    def group(self) -> 'ProcessGroup':
+        return self._group
 
     @property
     def config(self) -> ProcessConfig:
@@ -147,9 +157,9 @@ class Subprocess(AbstractSubprocess):
         """
 
         try:
-            commandargs = shlex.split(self.config.command)
+            commandargs = shlex.split(self._config.command)
         except ValueError as e:
-            raise BadCommandError(f"can't parse command {self.config.command!r}: {e}")  # noqa
+            raise BadCommandError(f"can't parse command {self._config.command!r}: {e}")  # noqa
 
         if commandargs:
             program = commandargs[0]
@@ -219,7 +229,7 @@ class Subprocess(AbstractSubprocess):
         if self._state not in states:
             current_state = self._state.name
             allowable_states = ' '.join(s.name for s in states)
-            processname = as_string(self.config.name)
+            processname = as_string(self._config.name)
             raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
 
     def _record_spawn_err(self, msg: str) -> None:
@@ -227,7 +237,7 @@ class Subprocess(AbstractSubprocess):
         log.info('_spawn_err: %s', msg)
 
     def spawn(self) -> ta.Optional[int]:
-        processname = as_string(self.config.name)
+        processname = as_string(self._config.name)
 
         if self.pid:
             log.warning('process \'%s\' already running', processname)
@@ -296,7 +306,7 @@ class Subprocess(AbstractSubprocess):
             return None
 
     def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
-        use_stderr = not self.config.redirect_stderr
+        use_stderr = not self._config.redirect_stderr
         p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers: ta.Dict[int, Dispatcher] = {}
@@ -315,22 +325,22 @@ class Subprocess(AbstractSubprocess):
         # Parent
         self._pid = pid
         close_child_pipes(self._pipes)
-        log.info('spawned: \'%s\' with pid %s', as_string(self.config.name), pid)
+        log.info('spawned: \'%s\' with pid %s', as_string(self._config.name), pid)
         self._spawn_err = None
-        self._delay = time.time() + self.config.startsecs
+        self._delay = time.time() + self._config.startsecs
         self.context.pid_history[pid] = self
         return pid
 
     def _prepare_child_fds(self) -> None:
         os.dup2(self._pipes['child_stdin'], 0)
         os.dup2(self._pipes['child_stdout'], 1)
-        if self.config.redirect_stderr:
+        if self._config.redirect_stderr:
             os.dup2(self._pipes['child_stdout'], 2)
         else:
             os.dup2(self._pipes['child_stderr'], 2)
 
         for i in range(3, self.context.config.minfds):
-            if i in self.context.inherited_fds:
+            if i in self._inherited_fds:
                 continue
             close_fd(i)
 
@@ -348,7 +358,7 @@ class Subprocess(AbstractSubprocess):
             # set user
             setuid_msg = self.set_uid()
             if setuid_msg:
-                uid = self.config.uid
+                uid = self._config.uid
                 msg = f"couldn't setuid to {uid}: {setuid_msg}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
@@ -356,14 +366,14 @@ class Subprocess(AbstractSubprocess):
             # set environment
             env = os.environ.copy()
             env['SUPERVISOR_ENABLED'] = '1'
-            env['SUPERVISOR_PROCESS_NAME'] = self.config.name
-            if self.group:
-                env['SUPERVISOR_GROUP_NAME'] = self.group.config.name
-            if self.config.environment is not None:
-                env.update(self.config.environment)
+            env['SUPERVISOR_PROCESS_NAME'] = self._config.name
+            if self._group:
+                env['SUPERVISOR_GROUP_NAME'] = self._group.config.name
+            if self._config.environment is not None:
+                env.update(self._config.environment)
 
             # change directory
-            cwd = self.config.directory
+            cwd = self._config.directory
             try:
                 if cwd is not None:
                     os.chdir(os.path.expanduser(cwd))
@@ -375,8 +385,8 @@ class Subprocess(AbstractSubprocess):
 
             # set umask, then execve
             try:
-                if self.config.umask is not None:
-                    os.umask(self.config.umask)
+                if self._config.umask is not None:
+                    os.umask(self._config.umask)
                 os.execve(filename, list(argv), env)
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
@@ -400,17 +410,17 @@ class Subprocess(AbstractSubprocess):
         """
         if self._state == ProcessState.STARTING:
             self._laststart = min(test_time, self._laststart)
-            if self._delay > 0 and test_time < (self._delay - self.config.startsecs):
-                self._delay = test_time + self.config.startsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
+                self._delay = test_time + self._config.startsecs
 
         elif self._state == ProcessState.RUNNING:
-            if test_time > self._laststart and test_time < (self._laststart + self.config.startsecs):
-                self._laststart = test_time - self.config.startsecs
+            if test_time > self._laststart and test_time < (self._laststart + self._config.startsecs):
+                self._laststart = test_time - self._config.startsecs
 
         elif self._state == ProcessState.STOPPING:
             self._last_stop_report = min(test_time, self._last_stop_report)
-            if self._delay > 0 and test_time < (self._delay - self.config.stopwaitsecs):
-                self._delay = test_time + self.config.stopwaitsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.stopwaitsecs):
+                self._delay = test_time + self._config.stopwaitsecs
 
         elif self._state == ProcessState.BACKOFF:
             if self._delay > 0 and test_time < (self._delay - self._backoff):
@@ -419,7 +429,7 @@ class Subprocess(AbstractSubprocess):
     def stop(self) -> ta.Optional[str]:
         self._administrative_stop = True
         self._last_stop_report = 0
-        return self.kill(self.config.stopsignal)
+        return self.kill(self._config.stopsignal)
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
@@ -429,7 +439,7 @@ class Subprocess(AbstractSubprocess):
             self._check_and_adjust_for_system_clock_rollback(now)
 
             if now > (self._last_stop_report + 2):  # every 2 seconds
-                log.info('waiting for %s to stop', as_string(self.config.name))
+                log.info('waiting for %s to stop', as_string(self._config.name))
                 self._last_stop_report = now
 
     def give_up(self) -> None:
@@ -449,7 +459,7 @@ class Subprocess(AbstractSubprocess):
         """
         now = time.time()
 
-        processname = as_string(self.config.name)
+        processname = as_string(self._config.name)
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
         # if startretries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
@@ -466,9 +476,9 @@ class Subprocess(AbstractSubprocess):
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
         if self._state == ProcessState.STOPPING:
-            killasgroup = self.config.killasgroup
+            killasgroup = self._config.killasgroup
         else:
-            killasgroup = self.config.stopasgroup
+            killasgroup = self._config.stopasgroup
 
         as_group = ''
         if killasgroup:
@@ -478,7 +488,7 @@ class Subprocess(AbstractSubprocess):
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
-        self._delay = now + self.config.stopwaitsecs
+        self._delay = now + self._config.stopwaitsecs
         # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
         self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
@@ -516,7 +526,7 @@ class Subprocess(AbstractSubprocess):
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
-        processname = as_string(self.config.name)
+        processname = as_string(self._config.name)
         args: tuple
         if not self.pid:
             fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, signame(sig))
@@ -563,10 +573,10 @@ class Subprocess(AbstractSubprocess):
         self._check_and_adjust_for_system_clock_rollback(now)
 
         self._laststop = now
-        processname = as_string(self.config.name)
+        processname = as_string(self._config.name)
 
         if now > self._laststart:
-            too_quickly = now - self._laststart < self.config.startsecs
+            too_quickly = now - self._laststart < self._config.startsecs
         else:
             too_quickly = False
             log.warning(
@@ -576,7 +586,7 @@ class Subprocess(AbstractSubprocess):
                 self.pid,
             )
 
-        exit_expected = es in self.config.exitcodes
+        exit_expected = es in self._config.exitcodes
 
         if self._killing:
             # likely the result of a stop request implies STOPPING -> STOPPED
@@ -630,20 +640,20 @@ class Subprocess(AbstractSubprocess):
         self._dispatchers = {}
 
     def set_uid(self) -> ta.Optional[str]:
-        if self.config.uid is None:
+        if self._config.uid is None:
             return None
-        msg = drop_privileges(self.config.uid)
+        msg = drop_privileges(self._config.uid)
         return msg
 
     def __lt__(self, other):
-        return self.config.priority < other.config.priority
+        return self._config.priority < other.config.priority
 
     def __eq__(self, other):
-        return self.config.priority == other.config.priority
+        return self._config.priority == other.config.priority
 
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self.config.name
+        name = self._config.name
         return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
 
     def get_state(self) -> ProcessState:
@@ -660,39 +670,39 @@ class Subprocess(AbstractSubprocess):
         if self.context.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
-                if self.config.autorestart:
-                    if self.config.autorestart is RestartUnconditionally:
+                if self._config.autorestart:
+                    if self._config.autorestart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
-                    elif self._exitstatus not in self.config.exitcodes:
+                    elif self._exitstatus not in self._config.exitcodes:
                         # EXITED -> STARTING
                         self.spawn()
 
             elif state == ProcessState.STOPPED and not self._laststart:
-                if self.config.autostart:
+                if self._config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
 
             elif state == ProcessState.BACKOFF:
-                if self._backoff <= self.config.startretries:
+                if self._backoff <= self._config.startretries:
                     if now > self._delay:
                         # BACKOFF -> STARTING
                         self.spawn()
 
-        processname = as_string(self.config.name)
+        processname = as_string(self._config.name)
         if state == ProcessState.STARTING:
-            if now - self._laststart > self.config.startsecs:
+            if now - self._laststart > self._config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self._delay = 0
                 self._backoff = 0
                 self._check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
-                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self.config.startsecs)  # noqa
+                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
                 logger.info('success: %s %s', processname, msg)
 
         if state == ProcessState.BACKOFF:
-            if self._backoff > self.config.startretries:
+            if self._backoff > self._config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
@@ -710,7 +720,7 @@ class Subprocess(AbstractSubprocess):
         # temporary logfiles which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
-        # name = self.config.name  # noqa
+        # name = self._config.name  # noqa
         # if self.stdout_logfile is Automatic:
         #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
         # if self.stderr_logfile is Automatic:
@@ -739,41 +749,49 @@ class ProcessGroup:
             subprocess_factory: ta.Optional[SubprocessFactory] = None,
     ):
         super().__init__()
-        self.config = config
-        self.context = context
+        self._config = config
+        self._context = context
 
         if subprocess_factory is None:
             def make_subprocess(config: ProcessConfig, group: ProcessGroup) -> Subprocess:
-                return Subprocess(config, group, self.context)
+                return Subprocess(config, group, self._context)
             subprocess_factory = SubprocessFactory(make_subprocess)
         self._subprocess_factory = subprocess_factory
 
-        self.processes = {}
-        for pconfig in self.config.processes or []:
+        self._processes = {}
+        for pconfig in self._config.processes or []:
             process = self._subprocess_factory(pconfig, self)
-            self.processes[pconfig.name] = process
+            self._processes[pconfig.name] = process
+
+    @property
+    def config(self) -> ProcessGroupConfig:
+        return self._config
+
+    @property
+    def context(self) -> AbstractServerContext:
+        return self._context
 
     def __lt__(self, other):
-        return self.config.priority < other.config.priority
+        return self._config.priority < other.config.priority
 
     def __eq__(self, other):
-        return self.config.priority == other.config.priority
+        return self._config.priority == other.config.priority
 
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self.config.name
+        name = self._config.name
         return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
 
     def remove_logs(self) -> None:
-        for process in self.processes.values():
+        for process in self._processes.values():
             process.remove_logs()
 
     def reopen_logs(self) -> None:
-        for process in self.processes.values():
+        for process in self._processes.values():
             process.reopen_logs()
 
     def stop_all(self) -> None:
-        processes = list(self.processes.values())
+        processes = list(self._processes.values())
         processes.sort()
         processes.reverse()  # stop in desc priority order
 
@@ -792,11 +810,11 @@ class ProcessGroup:
                 proc.give_up()
 
     def get_unstopped_processes(self) -> ta.List[Subprocess]:
-        return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
+        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
 
     def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
         dispatchers = {}
-        for process in self.processes.values():
+        for process in self._processes.values():
             dispatchers.update(process._dispatchers)  # noqa
         return dispatchers
 
@@ -804,9 +822,9 @@ class ProcessGroup:
         pass
 
     def transition(self) -> None:
-        for proc in self.processes.values():
+        for proc in self._processes.values():
             proc.transition()
 
     def after_setuid(self) -> None:
-        for proc in self.processes.values():
+        for proc in self._processes.values():
             proc.create_auto_child_logs()
