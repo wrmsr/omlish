@@ -22,6 +22,8 @@ from .configs import ServerConfig
 from .configs import prepare_server_config
 from .context import ServerContext
 from .context import ServerEpoch
+from .poller import Poller
+from .poller import get_poller_impl
 from .process import InheritedFds
 from .process import ProcessGroup
 from .process import Subprocess
@@ -43,6 +45,8 @@ def build_server_bindings(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
+
+        inj.bind(get_poller_impl(), key=Poller, singleton=True),
 
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),

@@ -21,6 +21,7 @@ from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
+from .poller import Poller
 from .process import ProcessGroup
 from .process import Subprocess
 from .states import SupervisorState
@@ -43,12 +44,14 @@ class Supervisor:
     def __init__(
             self,
             context: ServerContext,
+            poller: Poller,
             *,
             process_group_factory: ta.Optional[ProcessGroupFactory] = None,
     ) -> None:
         super().__init__()
 
         self._context = context
+        self._poller = poller
 
         if process_group_factory is None:
             def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
@@ -243,12 +246,12 @@ class Supervisor:
 
         for fd, dispatcher in combined_map.items():
             if dispatcher.readable():
-                self._context.poller.register_readable(fd)
+                self._poller.register_readable(fd)
             if dispatcher.writable():
-                self._context.poller.register_writable(fd)
+                self._poller.register_writable(fd)
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        r, w = self._context.poller.poll(timeout)
+        r, w = self._poller.poll(timeout)
 
         for fd in r:
             if fd in combined_map:
@@ -257,7 +260,7 @@ class Supervisor:
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.handle_read_event()
                     if not dispatcher.readable():
-                        self._context.poller.unregister_readable(fd)
+                        self._poller.unregister_readable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
@@ -267,7 +270,7 @@ class Supervisor:
                 # time, which may cause 100% cpu usage
                 log.debug('unexpected read event from fd %r', fd)
                 try:
-                    self._context.poller.unregister_readable(fd)
+                    self._poller.unregister_readable(fd)
                 except Exception:  # noqa
                     pass
 
@@ -278,7 +281,7 @@ class Supervisor:
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.handle_write_event()
                     if not dispatcher.writable():
-                        self._context.poller.unregister_writable(fd)
+                        self._poller.unregister_writable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
@@ -286,7 +289,7 @@ class Supervisor:
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
-                    self._context.poller.unregister_writable(fd)
+                    self._poller.unregister_writable(fd)
                 except Exception:  # noqa
                     pass
 
