@@ -14,7 +14,7 @@ from .impl.params import get_field_extras
 T = ta.TypeVar('T')
 
 
-#
+##
 
 
 def maybe_post_init(sup: ta.Any) -> bool:
@@ -26,7 +26,7 @@ def maybe_post_init(sup: ta.Any) -> bool:
     return True
 
 
-#
+##
 
 
 def opt_repr(o: ta.Any) -> str | None:
@@ -37,7 +37,7 @@ def truthy_repr(o: ta.Any) -> str | None:
     return repr(o) if o else None
 
 
-#
+##
 
 
 def fields_dict(cls_or_instance: ta.Any) -> dict[str, dc.Field]:
@@ -121,7 +121,7 @@ def update_fields_metadata(
     return update_fields(inner, fields)
 
 
-#
+##
 
 
 def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]) -> T:
@@ -131,3 +131,21 @@ def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any
         return dc.replace(o, **args[0](o))  # type: ignore
     else:
         return dc.replace(o, **{args[0]: deep_replace(getattr(o, args[0]), *args[1:])})  # type: ignore
+
+
+##
+
+
+def iter_items(obj: ta.Any) -> ta.Iterator[tuple[str, ta.Any]]:
+    for f in dc.fields(obj):
+        yield (f.name, getattr(obj, f.name))
+
+
+def iter_keys(obj: ta.Any) -> ta.Iterator[str]:
+    for f in dc.fields(obj):
+        yield f.name
+
+
+def iter_values(obj: ta.Any) -> ta.Iterator[ta.Any]:
+    for f in dc.fields(obj):
+        yield getattr(obj, f.name)
