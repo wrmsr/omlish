@@ -10,7 +10,7 @@ from omlish.lite.logs import log
 from .compat import as_bytes
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
-from .compat import readfd
+from .compat import read_fd
 from .compat import strip_escapes
 from .configs import ProcessConfig
 from .events import EVENT_CALLBACKS
@@ -278,7 +278,7 @@ class OutputDispatcher(Dispatcher):
         return True
 
     def handle_read_event(self) -> None:
-        data = readfd(self._fd)
+        data = read_fd(self._fd)
         self._output_buffer += data
         self.record_output()
         if not data:

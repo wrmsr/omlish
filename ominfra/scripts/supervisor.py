@@ -902,6 +902,9 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 # ../compat.py
 
 
+##
+
+
 def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
@@ -909,11 +912,21 @@ def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
         return s.encode(encoding)
 
 
-def as_string(s: ta.Union[str, bytes], encoding='utf8') -> str:
+def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
     if isinstance(s, str):
         return s
     else:
         return s.decode(encoding)
+
+
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
+    l = len(needle) - 1
+    while l and not haystack.endswith(needle[:l]):
+        l -= 1
+    return l
+
+
+##
 
 
 def compact_traceback() -> ta.Tuple[
@@ -943,15 +956,12 @@ def compact_traceback() -> ta.Tuple[
     return (file, function, line), t, v, info  # type: ignore
 
 
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
 class ExitNow(Exception):  # noqa
     pass
+
+
+def real_exit(code: int) -> None:
+    os._exit(code)  # noqa
 
 
 ##
@@ -971,7 +981,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
         return es, msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
-        msg = f'terminated by {signame(sig)}'
+        msg = f'terminated by {sig_name(sig)}'
         if hasattr(os, 'WCOREDUMP'):
             iscore = os.WCOREDUMP(sts)
         else:
@@ -984,19 +994,22 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
         return -1, msg
 
 
-_signames: ta.Optional[ta.Mapping[int, str]] = None
+##
 
 
-def signame(sig: int) -> str:
-    global _signames
-    if _signames is None:
-        _signames = _init_signames()
-    return _signames.get(sig) or 'signal %d' % sig
+_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
 
 
-def _init_signames() -> ta.Dict[int, str]:
+def sig_name(sig: int) -> str:
+    global _SIG_NAMES
+    if _SIG_NAMES is None:
+        _SIG_NAMES = _init_sig_names()
+    return _SIG_NAMES.get(sig) or 'signal %d' % sig
+
+
+def _init_sig_names() -> ta.Dict[int, str]:
     d = {}
-    for k, v in signal.__dict__.items():
+    for k, v in signal.__dict__.items():  # noqa
         k_startswith = getattr(k, 'startswith', None)
         if k_startswith is None:
             continue
@@ -1026,7 +1039,10 @@ class SignalReceiver:
         return sig
 
 
-def readfd(fd: int) -> bytes:
+##
+
+
+def read_fd(fd: int) -> bytes:
     try:
         data = os.read(fd, 2 << 16)  # 128K
     except OSError as why:
@@ -1071,8 +1087,7 @@ def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
     return filename
 
 
-def real_exit(code: int) -> None:
-    os._exit(code)  # noqa
+##
 
 
 def get_path() -> ta.Sequence[str]:
@@ -1088,6 +1103,9 @@ def get_path() -> ta.Sequence[str]:
 
 def normalize_path(v: str) -> str:
     return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
+
+
+##
 
 
 ANSI_ESCAPE_BEGIN = b'\x1b['
@@ -3359,30 +3377,30 @@ class SelectPoller(BasePoller):
     def __init__(self) -> None:
         super().__init__()
 
-        self._readables: ta.Set[int] = set()
-        self._writables: ta.Set[int] = set()
+        self._readable: ta.Set[int] = set()
+        self._writable: ta.Set[int] = set()
 
     def register_readable(self, fd: int) -> None:
-        self._readables.add(fd)
+        self._readable.add(fd)
 
     def register_writable(self, fd: int) -> None:
-        self._writables.add(fd)
+        self._writable.add(fd)
 
     def unregister_readable(self, fd: int) -> None:
-        self._readables.discard(fd)
+        self._readable.discard(fd)
 
     def unregister_writable(self, fd: int) -> None:
-        self._writables.discard(fd)
+        self._writable.discard(fd)
 
     def unregister_all(self) -> None:
-        self._readables.clear()
-        self._writables.clear()
+        self._readable.clear()
+        self._writable.clear()
 
     def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         try:
             r, w, x = select.select(
-                self._readables,
-                self._writables,
+                self._readable,
+                self._writable,
                 [], timeout,
             )
         except OSError as err:
@@ -3405,40 +3423,40 @@ class PollPoller(BasePoller):
         super().__init__()
 
         self._poller = select.poll()
-        self._readables: set[int] = set()
-        self._writables: set[int] = set()
+        self._readable: set[int] = set()
+        self._writable: set[int] = set()
 
     def register_readable(self, fd: int) -> None:
         self._poller.register(fd, self._READ)
-        self._readables.add(fd)
+        self._readable.add(fd)
 
     def register_writable(self, fd: int) -> None:
         self._poller.register(fd, self._WRITE)
-        self._writables.add(fd)
+        self._writable.add(fd)
 
     def unregister_readable(self, fd: int) -> None:
-        self._readables.discard(fd)
+        self._readable.discard(fd)
         self._poller.unregister(fd)
-        if fd in self._writables:
+        if fd in self._writable:
             self._poller.register(fd, self._WRITE)
 
     def unregister_writable(self, fd: int) -> None:
-        self._writables.discard(fd)
+        self._writable.discard(fd)
         self._poller.unregister(fd)
-        if fd in self._readables:
+        if fd in self._readable:
             self._poller.register(fd, self._READ)
 
     def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
         fds = self._poll_fds(timeout)  # type: ignore
-        readables, writables = [], []
+        readable, writable = [], []
         for fd, eventmask in fds:
             if self._ignore_invalid(fd, eventmask):
                 continue
             if eventmask & self._READ:
-                readables.append(fd)
+                readable.append(fd)
             if eventmask & self._WRITE:
-                writables.append(fd)
-        return readables, writables
+                writable.append(fd)
+        return readable, writable
 
     def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[int, int]]:
         try:
@@ -3454,8 +3472,8 @@ class PollPoller(BasePoller):
             # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
             # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
             self._poller.unregister(fd)
-            self._readables.discard(fd)
-            self._writables.discard(fd)
+            self._readable.discard(fd)
+            self._writable.discard(fd)
             return True
         return False
 
@@ -3468,27 +3486,27 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             super().__init__()
 
             self._kqueue: ta.Optional[ta.Any] = select.kqueue()
-            self._readables: set[int] = set()
-            self._writables: set[int] = set()
+            self._readable: set[int] = set()
+            self._writable: set[int] = set()
 
         def register_readable(self, fd: int) -> None:
-            self._readables.add(fd)
+            self._readable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
         def register_writable(self, fd: int) -> None:
-            self._writables.add(fd)
+            self._writable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
         def unregister_readable(self, fd: int) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-            self._readables.discard(fd)
+            self._readable.discard(fd)
             self._kqueue_control(fd, kevent)
 
         def unregister_writable(self, fd: int) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-            self._writables.discard(fd)
+            self._writable.discard(fd)
             self._kqueue_control(fd, kevent)
 
         def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
@@ -3501,32 +3519,32 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                     raise
 
         def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
-            readables, writables = [], []  # type: ignore
+            readable, writable = [], []  # type: ignore
 
             try:
                 kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
             except OSError as error:
                 if error.errno == errno.EINTR:
                     log.debug('EINTR encountered in poll')
-                    return readables, writables
+                    return readable, writable
                 raise
 
             for kevent in kevents:
                 if kevent.filter == select.KQ_FILTER_READ:
-                    readables.append(kevent.ident)
+                    readable.append(kevent.ident)
                 if kevent.filter == select.KQ_FILTER_WRITE:
-                    writables.append(kevent.ident)
+                    writable.append(kevent.ident)
 
-            return readables, writables
+            return readable, writable
 
         def before_daemonize(self) -> None:
             self.close()
 
         def after_daemonize(self) -> None:
             self._kqueue = select.kqueue()
-            for fd in self._readables:
+            for fd in self._readable:
                 self.register_readable(fd)
-            for fd in self._writables:
+            for fd in self._writable:
                 self.register_writable(fd)
 
         def close(self) -> None:
@@ -4383,7 +4401,7 @@ class OutputDispatcher(Dispatcher):
         return True
 
     def handle_read_event(self) -> None:
-        data = readfd(self._fd)
+        data = read_fd(self._fd)
         self._output_buffer += data
         self.record_output()
         if not data:
@@ -4850,7 +4868,7 @@ class Subprocess(AbstractSubprocess):
 
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (processname, signame(sig))
+            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (processname, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
@@ -4864,7 +4882,7 @@ class Subprocess(AbstractSubprocess):
         if killasgroup:
             as_group = 'process group '
 
-        log.debug('killing %s (pid %s) %swith signal %s', processname, self.pid, as_group, signame(sig))
+        log.debug('killing %s (pid %s) %s with signal %s', processname, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
@@ -4909,11 +4927,11 @@ class Subprocess(AbstractSubprocess):
         processname = as_string(self._config.name)
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, signame(sig))
+            fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
-        log.debug('sending %s (pid %s) sig %s', processname, self.pid, signame(sig))
+        log.debug('sending %s (pid %s) sig %s', processname, self.pid, sig_name(sig))
 
         self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
@@ -5507,27 +5525,27 @@ class Supervisor:
             return
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-            log.warning('received %s indicating exit request', signame(sig))
+            log.warning('received %s indicating exit request', sig_name(sig))
             self._context.set_state(SupervisorState.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
             if self._context.state == SupervisorState.SHUTDOWN:
-                log.warning('ignored %s indicating restart request (shutdown in progress)', signame(sig))  # noqa
+                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
             else:
-                log.warning('received %s indicating restart request', signame(sig))  # noqa
+                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
                 self._context.set_state(SupervisorState.RESTARTING)
 
         elif sig == signal.SIGCHLD:
-            log.debug('received %s indicating a child quit', signame(sig))
+            log.debug('received %s indicating a child quit', sig_name(sig))
 
         elif sig == signal.SIGUSR2:
-            log.info('received %s indicating log reopen request', signame(sig))
+            log.info('received %s indicating log reopen request', sig_name(sig))
             # self._context.reopen_logs()
             for group in self._process_groups.values():
                 group.reopen_logs()
 
         else:
-            log.debug('received %s indicating nothing', signame(sig))
+            log.debug('received %s indicating nothing', sig_name(sig))
 
     def _tick(self, now: ta.Optional[float] = None) -> None:
         """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""

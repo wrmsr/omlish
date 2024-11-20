@@ -19,7 +19,7 @@ from .compat import compact_traceback
 from .compat import decode_wait_status
 from .compat import get_path
 from .compat import real_exit
-from .compat import signame
+from .compat import sig_name
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .context import ServerContext
@@ -477,7 +477,7 @@ class Subprocess(AbstractSubprocess):
 
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (processname, signame(sig))
+            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (processname, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
@@ -491,7 +491,7 @@ class Subprocess(AbstractSubprocess):
         if killasgroup:
             as_group = 'process group '
 
-        log.debug('killing %s (pid %s) %swith signal %s', processname, self.pid, as_group, signame(sig))
+        log.debug('killing %s (pid %s) %s with signal %s', processname, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
@@ -536,11 +536,11 @@ class Subprocess(AbstractSubprocess):
         processname = as_string(self._config.name)
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, signame(sig))
+            fmt, args = "attempted to send %s sig %s but it wasn't running", (processname, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
-        log.debug('sending %s (pid %s) sig %s', processname, self.pid, signame(sig))
+        log.debug('sending %s (pid %s) sig %s', processname, self.pid, sig_name(sig))
 
         self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
