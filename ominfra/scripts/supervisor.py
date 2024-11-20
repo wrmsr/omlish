@@ -1395,7 +1395,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 # ../../../omlish/lite/check.py
 
 
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
     if not isinstance(v, spec):
         raise TypeError(v)
     return v
@@ -4398,6 +4398,9 @@ class InputDispatcher(Dispatcher):
         super().__init__(process, channel, fd)
         self._input_buffer = b''
 
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        self._input_buffer += as_bytes(chars)
+
     def writable(self) -> bool:
         if self._input_buffer and not self._closed:
             return True
@@ -4448,18 +4451,24 @@ class Subprocess(AbstractSubprocess):
         self._context = context
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
-        self._dispatchers: dict = {}
-        self._pipes: dict = {}
+        self._dispatchers: ta.Dict[int, Dispatcher] = {}
+        self._pipes: ta.Dict[str, int] = {}
+
         self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
+
         self._laststart = 0.  # Last time the subprocess was started; 0 if never
         self._laststop = 0.  # Last time the subprocess was stopped; 0 if never
         self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
         self._delay = 0.  # If nonzero, delay starting or killing until this time
+
         self._administrative_stop = False  # true if process has been stopped by an admin
         self._system_stop = False  # true if process has been stopped by the system
+
         self._killing = False  # true if we are trying to kill this process
+
         self._backoff = 0  # backoff counter (to startretries)
+
         self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
@@ -4514,11 +4523,11 @@ class Subprocess(AbstractSubprocess):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = self._dispatchers[stdin_fd]
+        dispatcher = check_isinstance(self._dispatchers[stdin_fd], InputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
-        dispatcher.input_buffer += chars
+        dispatcher.write(chars)
         dispatcher.flush()  # this must raise EPIPE if the pipe is closed
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
