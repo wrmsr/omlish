@@ -14,8 +14,6 @@ from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
 
 from ..configs import read_config_file
-from .compat import ExitNow
-from .compat import get_open_fds
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
@@ -28,10 +26,13 @@ from .process import InheritedFds
 from .process import ProcessGroup
 from .process import Subprocess
 from .process import SubprocessFactory
+from .signals import SignalReceiver
 from .states import SupervisorState
 from .supervisor import ProcessGroupFactory
 from .supervisor import Supervisor
 from .types import AbstractServerContext
+from .utils import ExitNow
+from .utils import get_open_fds
 
 
 ##
@@ -50,6 +51,8 @@ def build_server_bindings(
 
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),
+
+        inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(Supervisor, singleton=True),
     ]

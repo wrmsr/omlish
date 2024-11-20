@@ -7,17 +7,17 @@ import typing as ta
 
 from omlish.lite.logs import log
 
-from .compat import as_bytes
-from .compat import compact_traceback
-from .compat import find_prefix_at_end
-from .compat import read_fd
-from .compat import strip_escapes
 from .configs import ProcessConfig
 from .events import EVENT_CALLBACKS
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .types import AbstractSubprocess
+from .utils import as_bytes
+from .utils import compact_traceback
+from .utils import find_prefix_at_end
+from .utils import read_fd
+from .utils import strip_escapes
 
 
 class Dispatcher(abc.ABC):
@@ -227,11 +227,11 @@ class OutputDispatcher(Dispatcher):
             return
 
         if self._capture_mode:
-            token, tokenlen = self._end_token_data
+            token, token_len = self._end_token_data
         else:
-            token, tokenlen = self._begin_token_data
+            token, token_len = self._begin_token_data
 
-        if len(self._output_buffer) <= tokenlen:
+        if len(self._output_buffer) <= token_len:
             return  # not enough data
 
         data = self._output_buffer

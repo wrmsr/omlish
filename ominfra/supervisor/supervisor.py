@@ -8,10 +8,6 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 
-from .compat import ExitNow
-from .compat import as_string
-from .compat import decode_wait_status
-from .compat import sig_name
 from .configs import ProcessGroupConfig
 from .context import ServerContext
 from .dispatchers import Dispatcher
@@ -24,11 +20,85 @@ from .events import SupervisorStoppingEvent
 from .poller import Poller
 from .process import ProcessGroup
 from .process import Subprocess
+from .signals import SignalReceiver
+from .signals import sig_name
 from .states import SupervisorState
+from .utils import ExitNow
+from .utils import as_string
+from .utils import decode_wait_status
+from .utils import timeslice
 
 
-def timeslice(period: int, when: float) -> int:
-    return int(when - (when % period))
+##
+
+
+class ProcessGroups:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._by_name: ta.Dict[str, ProcessGroup] = {}
+
+    def all(self) -> ta.Mapping[str, ProcessGroup]:
+        return self._by_name
+
+
+##
+
+
+class SignalHandler:
+    def __init__(
+            self,
+            *,
+            context: ServerContext,
+            signal_receiver: SignalReceiver,
+            process_groups: ProcessGroups,
+    ) -> None:
+        super().__init__()
+
+        self._context = context
+        self._signal_receiver = signal_receiver
+        self._process_groups = process_groups
+
+    def set_signals(self) -> None:
+        self._signal_receiver.install(
+            signal.SIGTERM,
+            signal.SIGINT,
+            signal.SIGQUIT,
+            signal.SIGHUP,
+            signal.SIGCHLD,
+            signal.SIGUSR2,
+        )
+
+    def handle_signal(self) -> None:
+        sig = self._signal_receiver.get_signal()
+        if not sig:
+            return
+
+        if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
+            log.warning('received %s indicating exit request', sig_name(sig))
+            self._context.set_state(SupervisorState.SHUTDOWN)
+
+        elif sig == signal.SIGHUP:
+            if self._context.state == SupervisorState.SHUTDOWN:
+                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
+            else:
+                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
+                self._context.set_state(SupervisorState.RESTARTING)
+
+        elif sig == signal.SIGCHLD:
+            log.debug('received %s indicating a child quit', sig_name(sig))
+
+        elif sig == signal.SIGUSR2:
+            log.info('received %s indicating log reopen request', sig_name(sig))
+            # self._context.reopen_logs()
+            for group in self._process_groups.all().values():
+                group.reopen_logs()
+
+        else:
+            log.debug('received %s indicating nothing', sig_name(sig))
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -40,13 +110,13 @@ class ProcessGroupFactory:
 
 
 class Supervisor:
-
     def __init__(
             self,
             context: ServerContext,
             poller: Poller,
             *,
             process_group_factory: ta.Optional[ProcessGroupFactory] = None,
+            signal_receiver: ta.Optional[SignalReceiver] = None,
     ) -> None:
         super().__init__()
 
@@ -58,6 +128,8 @@ class Supervisor:
                 return ProcessGroup(config, self._context)
             process_group_factory = ProcessGroupFactory(make_process_group)
         self._process_group_factory = process_group_factory
+
+        self._signal_receiver = signal_receiver if signal_receiver is not None else SignalReceiver()
 
         self._ticks: ta.Dict[int, float] = {}
         self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
@@ -178,7 +250,7 @@ class Supervisor:
             for config in self._context.config.groups or []:
                 self.add_process_group(config)
 
-            self._context.set_signals()
+            self._set_signals()
 
             if not self._context.config.nodaemon and self._context.first:
                 self._context.daemonize()
@@ -315,34 +387,6 @@ class Supervisor:
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
             self._reap(once=False, depth=depth + 1)
-
-    def _handle_signal(self) -> None:
-        sig = self._context.get_signal()
-        if not sig:
-            return
-
-        if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-            log.warning('received %s indicating exit request', sig_name(sig))
-            self._context.set_state(SupervisorState.SHUTDOWN)
-
-        elif sig == signal.SIGHUP:
-            if self._context.state == SupervisorState.SHUTDOWN:
-                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
-            else:
-                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
-                self._context.set_state(SupervisorState.RESTARTING)
-
-        elif sig == signal.SIGCHLD:
-            log.debug('received %s indicating a child quit', sig_name(sig))
-
-        elif sig == signal.SIGUSR2:
-            log.info('received %s indicating log reopen request', sig_name(sig))
-            # self._context.reopen_logs()
-            for group in self._process_groups.values():
-                group.reopen_logs()
-
-        else:
-            log.debug('received %s indicating nothing', sig_name(sig))
 
     def _tick(self, now: ta.Optional[float] = None) -> None:
         """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
