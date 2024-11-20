@@ -2,7 +2,8 @@
 import abc
 import typing as ta
 
-from .utils import as_string
+
+##
 
 
 class EventCallbacks:
@@ -29,6 +30,9 @@ class EventCallbacks:
 EVENT_CALLBACKS = EventCallbacks()
 
 
+##
+
+
 class Event(abc.ABC):  # noqa
     """Abstract event type."""
 
@@ -41,24 +45,6 @@ class ProcessLogEvent(Event, abc.ABC):
         self.process = process
         self.pid = pid
         self.data = data
-
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        try:
-            data = as_string(self.data)
-        except UnicodeDecodeError:
-            data = f'Undecodable: {self.data!r}'
-
-        result = 'processname:%s groupname:%s pid:%s channel:%s\n%s' % (  # noqa
-            as_string(self.process.config.name),
-            as_string(groupname),
-            self.pid,
-            as_string(self.channel),  # type: ignore
-            data,
-        )
-        return result
 
 
 class ProcessLogStdoutEvent(ProcessLogEvent):
@@ -82,16 +68,6 @@ class ProcessCommunicationEvent(Event, abc.ABC):
         self.pid = pid
         self.data = data
 
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        try:
-            data = as_string(self.data)
-        except UnicodeDecodeError:
-            data = f'Undecodable: {self.data!r}'
-        return f'processname:{self.process.config.name} groupname:{groupname} pid:{self.pid}\n{data}'
-
 
 class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
     channel = 'stdout'
@@ -107,15 +83,9 @@ class RemoteCommunicationEvent(Event):
         self.type = type
         self.data = data
 
-    def payload(self):
-        return f'type:{self.type}\n{self.data}'
-
 
 class SupervisorStateChangeEvent(Event):
     """Abstract class."""
-
-    def payload(self):
-        return ''
 
 
 class SupervisorRunningEvent(SupervisorStateChangeEvent):
@@ -146,19 +116,6 @@ class ProcessStateEvent(Event):
         # we eagerly render these so if the process pid, etc changes beneath
         # us, we stash the values at the time the event was sent
         self.extra_values = self.get_extra_values()
-
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        l = [
-            ('processname', self.process.config.name),
-            ('groupname', groupname),
-            ('from_state', self.from_state.name),
-        ]
-        l.extend(self.extra_values)
-        s = ' '.join([f'{name}:{val}' for name, val in l])
-        return s
 
     def get_extra_values(self):
         return []
@@ -210,9 +167,6 @@ class ProcessGroupEvent(Event):
         super().__init__()
         self.group = group
 
-    def payload(self):
-        return f'groupname:{self.group}\n'
-
 
 class ProcessGroupAddedEvent(ProcessGroupEvent):
     pass
@@ -229,9 +183,6 @@ class TickEvent(Event):
         super().__init__()
         self.when = when
         self.supervisord = supervisord
-
-    def payload(self):
-        return f'when:{self.when}'
 
 
 class Tick5Event(TickEvent):
