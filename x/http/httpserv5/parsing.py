@@ -41,6 +41,14 @@ def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
 
 
 class ParseHttpRequestResult(abc.ABC):
+    __slots__ = (
+        'protocol_version',
+        'request_line',
+        'request_version',
+        'headers',
+        'close_connection',
+    )
+
     def __init__(
             self,
             *,
@@ -58,6 +66,9 @@ class ParseHttpRequestResult(abc.ABC):
         self.headers = headers
         self.close_connection = close_connection
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({", ".join(f"{a}={getattr(self, a)}" for a in self.__slots__)})'
+
 
 class EmptyParsedHttpResult(ParseHttpRequestResult):
     pass
@@ -68,6 +79,12 @@ class ContinueParsedHttpResult(ParseHttpRequestResult):
 
 
 class ParseHttpRequestError(ParseHttpRequestResult):
+    __slots__ = (
+        'code',
+        'message',
+        *ParseHttpRequestResult.__slots__,
+    )
+
     def __init__(
             self,
             *,
@@ -83,6 +100,13 @@ class ParseHttpRequestError(ParseHttpRequestResult):
 
 
 class ParsedHttpRequest(ParseHttpRequestResult):
+    __slots__ = (
+        'method',
+        'path',
+        'headers',
+        *[a for a in ParseHttpRequestResult.__slots__ if a != 'headers'],
+    )
+
     def __init__(
             self,
             *,
