@@ -4039,19 +4039,25 @@ def make_pipes(stderr=True) -> ta.Mapping[str, int]:
         'stderr': None,
         'child_stderr': None,
     }
+
     try:
         stdin, child_stdin = os.pipe()
         pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
+
         stdout, child_stdout = os.pipe()
         pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
+
         if stderr:
             stderr, child_stderr = os.pipe()
             pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
+
         for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
             if fd is not None:
                 flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
                 fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
         return pipes  # type: ignore
+
     except OSError:
         for fd in pipes.values():
             if fd is not None:
@@ -4097,12 +4103,16 @@ class Dispatcher(abc.ABC):
             process: AbstractSubprocess,
             channel: str,
             fd: int,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__()
 
         self._process = process  # process which "owns" this dispatcher
         self._channel = channel  # 'stderr' or 'stdout'
         self._fd = fd
+        self._event_callbacks = event_callbacks
+
         self._closed = False  # True if close() has been called
 
     def __repr__(self) -> str:
@@ -4167,8 +4177,14 @@ class OutputDispatcher(Dispatcher):
             process: AbstractSubprocess,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(process, event_type.channel, fd)
+        super().__init__(
+            process,
+            event_type.channel,
+            fd,
+            **kwargs,
+        )
 
         self._event_type = event_type
 
@@ -4284,10 +4300,10 @@ class OutputDispatcher(Dispatcher):
 
         if self._channel == 'stdout':
             if self._stdout_events_enabled:
-                EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
+                self._event_callbacks.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
 
         elif self._stderr_events_enabled:
-            EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
+            self._event_callbacks.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self) -> None:
         if self._capture_log is None:
@@ -4338,7 +4354,7 @@ class OutputDispatcher(Dispatcher):
                 channel = self._channel
                 procname = self._process.config.name
                 event = self._event_type(self._process, self._process.pid, data)
-                EVENT_CALLBACKS.notify(event)
+                self._event_callbacks.notify(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
                 for handler in self._capture_log.handlers:
@@ -4370,8 +4386,15 @@ class InputDispatcher(Dispatcher):
             process: AbstractSubprocess,
             channel: str,
             fd: int,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(process, channel, fd)
+        super().__init__(
+            process,
+            channel,
+            fd,
+            **kwargs,
+        )
+
         self._input_buffer = b''
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
@@ -4667,18 +4690,43 @@ class Subprocess(AbstractSubprocess):
 
     def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
         use_stderr = not self._config.redirect_stderr
+
         p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
+
         dispatchers: ta.Dict[int, Dispatcher] = {}
+
+        dispatcher_kw = dict(
+            event_callbacks=self._event_callbacks,
+        )
+
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = OutputDispatcher(self, etype, stdout_fd)
+            dispatchers[stdout_fd] = OutputDispatcher(
+                self,
+                etype,
+                stdout_fd,
+                **dispatcher_kw,
+            )
+
         if stderr_fd is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = OutputDispatcher(self, etype, stderr_fd)
+            dispatchers[stderr_fd] = OutputDispatcher(
+                self,
+                etype,
+                stderr_fd,
+                **dispatcher_kw,
+            )
+
         if stdin_fd is not None:
-            dispatchers[stdin_fd] = InputDispatcher(self, 'stdin', stdin_fd)
+            dispatchers[stdin_fd] = InputDispatcher(
+                self,
+                'stdin',
+                stdin_fd,
+                **dispatcher_kw,
+            )
+
         return dispatchers, p
 
     def _spawn_as_parent(self, pid: int) -> int:
