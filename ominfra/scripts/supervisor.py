@@ -1668,6 +1668,8 @@ class ProcessCommunicationEvent(Event, abc.ABC):
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
 
+    channel: ta.ClassVar[str]
+
     def __init__(self, process, pid, data):
         super().__init__()
         self.process = process
@@ -4137,8 +4139,12 @@ def check_execv_args(filename, argv, st) -> None:
 
 
 class Dispatcher(abc.ABC):
-
-    def __init__(self, process: AbstractSubprocess, channel: str, fd: int) -> None:
+    def __init__(
+            self,
+            process: AbstractSubprocess,
+            channel: str,
+            fd: int,
+    ) -> None:
         super().__init__()
 
         self._process = process  # process which "owns" this dispatcher
@@ -4203,18 +4209,17 @@ class OutputDispatcher(Dispatcher):
     - route the output to the appropriate log handlers as specified in the config.
     """
 
-    def __init__(self, process: AbstractSubprocess, event_type, fd):
-        """
-        Initialize the dispatcher.
-
-        `event_type` should be one of ProcessLogStdoutEvent or ProcessLogStderrEvent
-        """
-
+    def __init__(
+            self,
+            process: AbstractSubprocess,
+            event_type: ta.Type[ProcessCommunicationEvent],
+            fd: int,
+    ) -> None:
         super().__init__(process, event_type.channel, fd)
 
-        self.event_type = event_type
+        self._event_type = event_type
 
-        self.lc: ProcessConfig.Log = getattr(process.config, self._channel)
+        self._lc: ProcessConfig.Log = getattr(process.config, self._channel)
 
         self._init_normal_log()
         self._init_capture_log()
@@ -4226,8 +4231,8 @@ class OutputDispatcher(Dispatcher):
 
         # all code below is purely for minor speedups
 
-        begin_token = self.event_type.BEGIN_TOKEN
-        end_token = self.event_type.END_TOKEN
+        begin_token = self._event_type.BEGIN_TOKEN
+        end_token = self._event_type.END_TOKEN
         self._begin_token_data = (begin_token, len(begin_token))
         self._end_token_data = (end_token, len(end_token))
 
@@ -4252,10 +4257,10 @@ class OutputDispatcher(Dispatcher):
         config = self._process.config  # noqa
         channel = self._channel  # noqa
 
-        logfile = self.lc.file
-        maxbytes = self.lc.maxbytes  # noqa
-        backups = self.lc.backups  # noqa
-        to_syslog = self.lc.syslog
+        logfile = self._lc.file
+        maxbytes = self._lc.maxbytes  # noqa
+        backups = self._lc.backups  # noqa
+        to_syslog = self._lc.syslog
 
         if logfile or to_syslog:
             self._normal_log = logging.getLogger(__name__)
@@ -4282,7 +4287,7 @@ class OutputDispatcher(Dispatcher):
         is detected. Sets self.capture_log if capturing is enabled.
         """
 
-        capture_maxbytes = self.lc.capture_maxbytes
+        capture_maxbytes = self._lc.capture_maxbytes
         if capture_maxbytes:
             self._capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
@@ -4291,45 +4296,47 @@ class OutputDispatcher(Dispatcher):
             #     maxbytes=capture_maxbytes,
             # )
 
-    def remove_logs(self):
+    def remove_logs(self) -> None:
         for l in (self._normal_log, self._capture_log):
             if l is not None:
                 for handler in l.handlers:
                     handler.remove()  # type: ignore
                     handler.reopen()  # type: ignore
 
-    def reopen_logs(self):
+    def reopen_logs(self) -> None:
         for l in (self._normal_log, self._capture_log):
             if l is not None:
                 for handler in l.handlers:
                     handler.reopen()  # type: ignore
 
-    def _log(self, data):
-        if data:
-            if self._process.context.config.strip_ansi:
-                data = strip_escapes(data)
+    def _log(self, data: ta.Union[str, bytes, None]) -> None:
+        if not data:
+            return
 
-            if self._child_log:
-                self._child_log.info(data)
+        if self._process.context.config.strip_ansi:
+            data = strip_escapes(as_bytes(data))
 
-            if self._log_to_main_log:
-                if not isinstance(data, bytes):
-                    text = data
-                else:
-                    try:
-                        text = data.decode('utf-8')
-                    except UnicodeDecodeError:
-                        text = f'Undecodable: {data!r}'
-                log.log(self._main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
+        if self._child_log:
+            self._child_log.info(data)
 
-            if self._channel == 'stdout':
-                if self._stdout_events_enabled:
-                    EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
+        if self._log_to_main_log:
+            if not isinstance(data, bytes):
+                text = data
+            else:
+                try:
+                    text = data.decode('utf-8')
+                except UnicodeDecodeError:
+                    text = f'Undecodable: {data!r}'
+            log.log(self._main_log_level, '%r %s output:\n%s', self._process.config.name, self._channel, text)  # noqa
 
-            elif self._stderr_events_enabled:
-                EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
+        if self._channel == 'stdout':
+            if self._stdout_events_enabled:
+                EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
 
-    def record_output(self):
+        elif self._stderr_events_enabled:
+            EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
+
+    def record_output(self) -> None:
         if self._capture_log is None:
             # shortcut trying to find capture data
             data = self._output_buffer
@@ -4365,7 +4372,7 @@ class OutputDispatcher(Dispatcher):
         if after:
             self.record_output()
 
-    def toggle_capture_mode(self):
+    def toggle_capture_mode(self) -> None:
         self._capture_mode = not self._capture_mode
 
         if self._capture_log is not None:
@@ -4377,7 +4384,7 @@ class OutputDispatcher(Dispatcher):
                 data = self._capture_log.getvalue()  # type: ignore
                 channel = self._channel
                 procname = self._process.config.name
-                event = self.event_type(self._process, self._process.pid, data)
+                event = self._event_type(self._process, self._process.pid, data)
                 EVENT_CALLBACKS.notify(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
@@ -4405,8 +4412,12 @@ class OutputDispatcher(Dispatcher):
 
 
 class InputDispatcher(Dispatcher):
-
-    def __init__(self, process: AbstractSubprocess, channel: str, fd: int) -> None:
+    def __init__(
+            self,
+            process: AbstractSubprocess,
+            channel: str,
+            fd: int,
+    ) -> None:
         super().__init__(process, channel, fd)
         self._input_buffer = b''
 

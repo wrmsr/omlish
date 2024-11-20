@@ -74,6 +74,8 @@ class ProcessCommunicationEvent(Event, abc.ABC):
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
 
+    channel: ta.ClassVar[str]
+
     def __init__(self, process, pid, data):
         super().__init__()
         self.process = process
