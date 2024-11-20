@@ -3337,8 +3337,7 @@ def build_config_named_children(
 # ../poller.py
 
 
-class BasePoller(abc.ABC):
-
+class Poller(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
@@ -3372,8 +3371,7 @@ class BasePoller(abc.ABC):
         pass
 
 
-class SelectPoller(BasePoller):
-
+class SelectPoller(Poller):
     def __init__(self) -> None:
         super().__init__()
 
@@ -3415,7 +3413,7 @@ class SelectPoller(BasePoller):
         return r, w
 
 
-class PollPoller(BasePoller):
+class PollPoller(Poller):
     _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
     _WRITE = select.POLLOUT
 
@@ -3479,7 +3477,7 @@ class PollPoller(BasePoller):
 
 
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-    class KqueuePoller(BasePoller):
+    class KqueuePoller(Poller):
         max_events = 1000
 
         def __init__(self) -> None:
@@ -3555,16 +3553,16 @@ else:
     KqueuePoller = None
 
 
-Poller: ta.Type[BasePoller]
-if (
-        sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
-        hasattr(select, 'kqueue') and KqueuePoller is not None
-):
-    Poller = KqueuePoller
-elif hasattr(select, 'poll'):
-    Poller = PollPoller
-else:
-    Poller = SelectPoller
+def get_poller_impl() -> ta.Type[Poller]:
+    if (
+            sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
+            hasattr(select, 'kqueue') and KqueuePoller is not None
+    ):
+        return KqueuePoller
+    elif hasattr(select, 'poll'):
+        return PollPoller
+    else:
+        return SelectPoller
 
 
 ########################################
@@ -3742,20 +3740,20 @@ class ServerContext(AbstractServerContext):
     def __init__(
             self,
             config: ServerConfig,
+            poller: Poller,
             *,
             epoch: ServerEpoch = ServerEpoch(0),
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._poller = poller
         self._epoch = epoch
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
         self._signal_receiver = SignalReceiver()
-
-        self._poller: BasePoller = Poller()
 
         if config.user is not None:
             uid = name_to_uid(config.user)
@@ -3785,10 +3783,6 @@ class ServerContext(AbstractServerContext):
 
     def set_state(self, state: SupervisorState) -> None:
         self._state = state
-
-    @property
-    def poller(self) -> BasePoller:
-        return self._poller
 
     @property
     def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
@@ -3918,7 +3912,7 @@ class ServerContext(AbstractServerContext):
     def cleanup(self) -> None:
         if self._unlink_pidfile:
             try_unlink(self.config.pidfile)
-        self.poller.close()
+        self._poller.close()
 
     def cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
@@ -3944,9 +3938,9 @@ class ServerContext(AbstractServerContext):
                     log.warning('Failed to clean up %r', pathname)
 
     def daemonize(self) -> None:
-        self.poller.before_daemonize()
+        self._poller.before_daemonize()
         self._daemonize()
-        self.poller.after_daemonize()
+        self._poller.after_daemonize()
 
     def _daemonize(self) -> None:
         # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
@@ -5249,12 +5243,14 @@ class Supervisor:
     def __init__(
             self,
             context: ServerContext,
+            poller: Poller,
             *,
             process_group_factory: ta.Optional[ProcessGroupFactory] = None,
     ) -> None:
         super().__init__()
 
         self._context = context
+        self._poller = poller
 
         if process_group_factory is None:
             def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
@@ -5449,12 +5445,12 @@ class Supervisor:
 
         for fd, dispatcher in combined_map.items():
             if dispatcher.readable():
-                self._context.poller.register_readable(fd)
+                self._poller.register_readable(fd)
             if dispatcher.writable():
-                self._context.poller.register_writable(fd)
+                self._poller.register_writable(fd)
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        r, w = self._context.poller.poll(timeout)
+        r, w = self._poller.poll(timeout)
 
         for fd in r:
             if fd in combined_map:
@@ -5463,7 +5459,7 @@ class Supervisor:
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.handle_read_event()
                     if not dispatcher.readable():
-                        self._context.poller.unregister_readable(fd)
+                        self._poller.unregister_readable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
@@ -5473,7 +5469,7 @@ class Supervisor:
                 # time, which may cause 100% cpu usage
                 log.debug('unexpected read event from fd %r', fd)
                 try:
-                    self._context.poller.unregister_readable(fd)
+                    self._poller.unregister_readable(fd)
                 except Exception:  # noqa
                     pass
 
@@ -5484,7 +5480,7 @@ class Supervisor:
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.handle_write_event()
                     if not dispatcher.writable():
-                        self._context.poller.unregister_writable(fd)
+                        self._poller.unregister_writable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
@@ -5492,7 +5488,7 @@ class Supervisor:
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
-                    self._context.poller.unregister_writable(fd)
+                    self._poller.unregister_writable(fd)
                 except Exception:  # noqa
                     pass
 
@@ -5583,6 +5579,8 @@ def build_server_bindings(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
+
+        inj.bind(get_poller_impl(), key=Poller, singleton=True),
 
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),

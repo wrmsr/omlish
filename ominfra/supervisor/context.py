@@ -24,7 +24,6 @@ from .datatypes import name_to_uid
 from .exceptions import NoPermissionError
 from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
-from .poller import BasePoller
 from .poller import Poller
 from .states import SupervisorState
 from .types import AbstractServerContext
@@ -38,20 +37,20 @@ class ServerContext(AbstractServerContext):
     def __init__(
             self,
             config: ServerConfig,
+            poller: Poller,
             *,
             epoch: ServerEpoch = ServerEpoch(0),
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._poller = poller
         self._epoch = epoch
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
         self._signal_receiver = SignalReceiver()
-
-        self._poller: BasePoller = Poller()
 
         if config.user is not None:
             uid = name_to_uid(config.user)
@@ -81,10 +80,6 @@ class ServerContext(AbstractServerContext):
 
     def set_state(self, state: SupervisorState) -> None:
         self._state = state
-
-    @property
-    def poller(self) -> BasePoller:
-        return self._poller
 
     @property
     def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
@@ -214,7 +209,7 @@ class ServerContext(AbstractServerContext):
     def cleanup(self) -> None:
         if self._unlink_pidfile:
             try_unlink(self.config.pidfile)
-        self.poller.close()
+        self._poller.close()
 
     def cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
@@ -240,9 +235,9 @@ class ServerContext(AbstractServerContext):
                     log.warning('Failed to clean up %r', pathname)
 
     def daemonize(self) -> None:
-        self.poller.before_daemonize()
+        self._poller.before_daemonize()
         self._daemonize()
-        self.poller.after_daemonize()
+        self._poller.after_daemonize()
 
     def _daemonize(self) -> None:
         # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to

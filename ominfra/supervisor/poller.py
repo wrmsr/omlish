@@ -8,8 +8,7 @@ import typing as ta
 from omlish.lite.logs import log
 
 
-class BasePoller(abc.ABC):
-
+class Poller(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
@@ -43,8 +42,7 @@ class BasePoller(abc.ABC):
         pass
 
 
-class SelectPoller(BasePoller):
-
+class SelectPoller(Poller):
     def __init__(self) -> None:
         super().__init__()
 
@@ -86,7 +84,7 @@ class SelectPoller(BasePoller):
         return r, w
 
 
-class PollPoller(BasePoller):
+class PollPoller(Poller):
     _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
     _WRITE = select.POLLOUT
 
@@ -150,7 +148,7 @@ class PollPoller(BasePoller):
 
 
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-    class KqueuePoller(BasePoller):
+    class KqueuePoller(Poller):
         max_events = 1000
 
         def __init__(self) -> None:
@@ -226,13 +224,13 @@ else:
     KqueuePoller = None
 
 
-Poller: ta.Type[BasePoller]
-if (
-        sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
-        hasattr(select, 'kqueue') and KqueuePoller is not None
-):
-    Poller = KqueuePoller
-elif hasattr(select, 'poll'):
-    Poller = PollPoller
-else:
-    Poller = SelectPoller
+def get_poller_impl() -> ta.Type[Poller]:
+    if (
+            sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
+            hasattr(select, 'kqueue') and KqueuePoller is not None
+    ):
+        return KqueuePoller
+    elif hasattr(select, 'poll'):
+        return PollPoller
+    else:
+        return SelectPoller
