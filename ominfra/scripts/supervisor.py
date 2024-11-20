@@ -1354,10 +1354,6 @@ SIGNALLABLE_STATES = (
 )
 
 
-def get_process_state_description(code: ProcessState) -> str:
-    return code.name
-
-
 ##
 
 
@@ -1366,10 +1362,6 @@ class SupervisorState(enum.IntEnum):
     RUNNING = 1
     RESTARTING = 0
     SHUTDOWN = -1
-
-
-def get_supervisor_state_description(code: SupervisorState) -> str:
-    return code.name
 
 
 ########################################
@@ -1734,7 +1726,7 @@ class ProcessStateEvent(Event):
         l = [
             ('processname', self.process.config.name),
             ('groupname', groupname),
-            ('from_state', get_process_state_description(self.from_state)),
+            ('from_state', self.from_state.name),
         ]
         l.extend(self.extra_values)
         s = ' '.join([f'{name}:{val}' for name, val in l])
@@ -4606,8 +4598,8 @@ class Subprocess(AbstractSubprocess):
 
     def _check_in_state(self, *states: ProcessState) -> None:
         if self._state not in states:
-            current_state = get_process_state_description(self._state)
-            allowable_states = ' '.join(map(get_process_state_description, states))
+            current_state = self._state.name
+            allowable_states = ' '.join(s.name for s in states)
             processname = as_string(self.config.name)
             raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
 
@@ -5033,7 +5025,7 @@ class Subprocess(AbstractSubprocess):
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self.config.name
-        return f'<Subprocess at {id(self)} with name {name} in state {get_process_state_description(self.get_state())}>'
+        return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
 
     def get_state(self) -> ProcessState:
         return self._state
@@ -5314,8 +5306,7 @@ class Supervisor:
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
                 for proc in unstopped:
-                    state = get_process_state_description(proc.get_state())
-                    log.debug('%s state: %s', proc.config.name, state)
+                    log.debug('%s state: %s', proc.config.name, proc.get_state().name)
 
         return unstopped
 

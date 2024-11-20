@@ -3,7 +3,6 @@ import abc
 import typing as ta
 
 from .compat import as_string
-from .states import get_process_state_description
 
 
 class EventCallbacks:
@@ -153,7 +152,7 @@ class ProcessStateEvent(Event):
         l = [
             ('processname', self.process.config.name),
             ('groupname', groupname),
-            ('from_state', get_process_state_description(self.from_state)),
+            ('from_state', self.from_state.name),
         ]
         l.extend(self.extra_values)
         s = ' '.join([f'{name}:{val}' for name, val in l])
