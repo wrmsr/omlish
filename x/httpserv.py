@@ -722,11 +722,23 @@ def test_json_http():
 
 def _main() -> None:
     def app(environ, start_response):
-        assert environ['PATH_INFO'] == '/test'
-        start_response(hc.STATUS_OK, [])
-        return [b'hi']
+        method = environ['REQUEST_METHOD']
+        path = environ['PATH_INFO']
 
-    port = 8187
+        if (cl := environ.get('CONTENT_LENGTH')):
+            data = environ['wsgi.input'].read(int(cl))
+        else:
+            data = b''
+
+        start_response(hc.STATUS_OK, [])
+        return ['\n'.join([
+            f'method: {method}',
+            f'path: {path}',
+            f'data: {len(data)}',
+            '',
+        ]).encode()]
+
+    port = 8000
 
     server = ThreadSpawningWsgiRefServer(
         TcpBinder(TcpBinder.Config('0.0.0.0', port)),

@@ -328,7 +328,12 @@ class BaseHTTPRequestHandler(
     error_message_format = DEFAULT_ERROR_MESSAGE
     error_content_type = DEFAULT_ERROR_CONTENT_TYPE
 
-    def send_error(self, code, message=None, explain=None) -> None:
+    def send_error(
+            self,
+            code,
+            message=None,
+            explain: str | None = None,
+    ) -> None:
         try:
             short_msg, long_msg = self.responses[code]
         except KeyError:
@@ -372,27 +377,7 @@ class BaseHTTPRequestHandler(
 
     #
 
-    def send_response(self, code, message=None):
-        self.log_request(code)
-        self.send_response_only(code, message)
-        self.send_header('Server', self.version_string())
-        self.send_header('Date', self.date_time_string())
-
-    def send_response_only(self, code, message=None):
-        if self.request_version != 'HTTP/0.9':
-            if message is None:
-                if code in self.responses:
-                    message = self.responses[code][0]
-                else:
-                    message = ''
-
-            if not hasattr(self, '_headers_buffer'):
-                self._headers_buffer = []
-
-            line = f'{self.protocol_version} {int(code)} {message}\r\n'
-            self._headers_buffer.append(line.encode('latin-1', 'strict'))
-
-    #
+    _headers_buffer: list[bytes]
 
     def send_header(self, keyword, value):
         if self.request_version != 'HTTP/0.9':
@@ -419,29 +404,56 @@ class BaseHTTPRequestHandler(
 
     #
 
-    def log_request(self, code='-', size='-'):
+    def send_response(self, code, message=None):
+        self.log_request(code)
+        self.send_response_only(code, message)
+        self.send_header('Server', self.version_string())
+        self.send_header('Date', self.date_time_string())
+
+    def send_response_only(self, code, message=None):
+        if self.request_version != 'HTTP/0.9':
+            if message is None:
+                if code in self.responses:
+                    message = self.responses[code][0]
+                else:
+                    message = ''
+
+            if not hasattr(self, '_headers_buffer'):
+                self._headers_buffer = []
+
+            line = f'{self.protocol_version} {int(code)} {message}\r\n'
+            self._headers_buffer.append(line.encode('latin-1', 'strict'))
+
+    #
+
+    def log_request(
+            self,
+            code: str | int | http.HTTPStatus = '-',
+            size: int | str = '-',
+    ) -> None:
         if isinstance(code, http.HTTPStatus):
             code = code.value
         self.log_message('"%s" %s %s', self.request_line, str(code), str(size))
 
-    def log_error(self, format, *args):
+    def log_error(self, format: str, *args: ta.Any) -> None:
         self.log_message(format, *args)
 
     # https://en.wikipedia.org/wiki/List_of_Unicode_characters#Control_codes
-    _control_char_table = str.maketrans({
+    _CONTROL_CHAR_TABLE = str.maketrans({
         c: fr'\x{c:02x}'
-        for c in itertools.chain(range(0x20), range(0x7f,0xa0))
+        for c in itertools.chain(range(0x20), range(0x7f, 0xa0))
     })
 
-    _control_char_table[ord('\\')] = r'\\'
+    _CONTROL_CHAR_TABLE[ord('\\')] = r'\\'
 
-    def log_message(self, format, *args):
+    def log_message(self, format: str, *args: ta.Any) -> None:
         message = format % args
+
         sys.stderr.write(
             '%s - - [%s] %s\n' % (
                 self.address_string(),
                 self.log_date_time_string(),
-                message.translate(self._control_char_table),
+                message.translate(self._CONTROL_CHAR_TABLE),
             ),
         )
 
@@ -460,10 +472,17 @@ class BaseHTTPRequestHandler(
         return self.client_address[0]
 
 
-
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         out = b'hi'
+        self.send_response(http.HTTPStatus.OK)
+        self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
+        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
+        self.end_headers()
+        self.wfile.write(out)
+
+    def do_POST(self):
+        out = b'hi post'
         self.send_response(http.HTTPStatus.OK)
         self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
         self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
