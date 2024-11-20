@@ -1,25 +1,16 @@
-"""
-TODO:
- - SocketClientAddress family / tuple pairs
-  + codification of https://docs.python.org/3/library/socket.html#socket-families
-"""
-import abc
-import dataclasses as dc
 import datetime
 import email.utils
-import functools
 import html
 import http.client
 import http.server
 import itertools
-import socket
-import socketserver
 import sys
 import time
 import typing as ta
 
-from omlish import check
-from omlish.http import consts as hc
+from omlish import lang
+
+from .sockets import SocketRequestHandler
 
 
 ##
@@ -44,7 +35,10 @@ DEFAULT_ERROR_MESSAGE = """\
 DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
-class BaseHttpRequestHandler(StreamRequestHandler):
+##
+
+
+class HttpSocketRequestHandler(SocketRequestHandler):
     DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
 
     protocol_version = DEFAULT_PROTOCOL_VERSION

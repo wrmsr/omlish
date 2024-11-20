@@ -1,3 +1,14 @@
+"""
+TODO:
+ - SocketClientAddress family / tuple pairs
+  + codification of https://docs.python.org/3/library/socket.html#socket-families
+"""
+import abc
+import dataclasses as dc
+import socket
+import typing as ta
+
+
 SocketAddress: ta.TypeAlias = ta.Any
 
 
@@ -5,7 +16,7 @@ SocketAddress: ta.TypeAlias = ta.Any
 
 
 @dc.dataclass(frozen=True)
-class AddrInfoArgs:
+class SocketAddressInfoArgs:
     host: str | None
     port: str | int | None
     family: socket.AddressFamily = socket.AddressFamily.AF_UNSPEC
@@ -15,7 +26,7 @@ class AddrInfoArgs:
 
 
 @dc.dataclass(frozen=True)
-class AddrInfo:
+class SocketAddressInfo:
     family: socket.AddressFamily
     type: int
     proto: int
@@ -23,20 +34,20 @@ class AddrInfo:
     sockaddr: SocketAddress
 
 
-def get_best_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
+def get_best_socket_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
     infos = socket.getaddrinfo(
         *address,
         type=socket.SOCK_STREAM,
         flags=socket.AI_PASSIVE,
     )
-    ai = AddrInfo(*next(iter(infos)))
+    ai = SocketAddressInfo(*next(iter(infos)))
     return ai.family, ai.sockaddr
 
 
 ##
 
 
-class StreamRequestHandler(abc.ABC):
+class SocketRequestHandler(abc.ABC):
     def __init__(
             self,
             client_address: SocketAddress,

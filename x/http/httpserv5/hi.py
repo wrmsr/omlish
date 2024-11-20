@@ -1,6 +1,18 @@
+import functools
+import http.server
+import sys
+
+from omlish.http import consts as hc
+
+from .adapter import SocketRequestHandlerSocketServerAdapter
+from .http import HttpSocketRequestHandler
+from .sockets import get_best_socket_family
 
 
-class SayHiHttpRequestHandler(BaseHttpRequestHandler):
+##
+
+
+class SayHiHandler(HttpSocketRequestHandler):
     def do_method(self) -> None:
         method = self.command
         path = self.path
@@ -28,18 +40,21 @@ class SayHiHttpRequestHandler(BaseHttpRequestHandler):
     do_POST = do_method
 
 
+##
+
+
 def _main() -> None:
     port = 8000
     bind = None
 
     ServerClass = http.server.ThreadingHTTPServer
-    ServerClass.address_family, addr = _get_best_family(bind, port)
+    ServerClass.address_family, addr = get_best_socket_family(bind, port)
 
     with ServerClass(
             addr,
             functools.partial(
-                SocketServerStreamRequestHandlerAdapter,
-                adapter_target_cls=SayHiHttpRequestHandler,
+                SocketRequestHandlerSocketServerAdapter,
+                adapter_target_cls=SayHiHandler,
             ),
     ) as httpd:
         host, port = httpd.socket.getsockname()[:2]

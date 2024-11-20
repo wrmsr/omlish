@@ -1,3 +1,14 @@
+import socket
+import socketserver
+import typing as ta
+
+from omlish import check
+
+from .sockets import SocketAddress
+from .sockets import SocketRequestHandler
+
+
+##
 
 
 class SocketServerBaseRequestHandler_:  # noqa
@@ -22,11 +33,11 @@ class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noq
 #
 
 
-class SocketServerStreamRequestHandlerAdapter(
+class SocketRequestHandlerSocketServerAdapter(
     socketserver.StreamRequestHandler,
     SocketServerBaseRequestHandler_,
 ):
-    adapter_target_cls: type[StreamRequestHandler] | None = None
+    adapter_target_cls: type[SocketRequestHandler] | None = None
 
     def __init__(
             self,
@@ -34,7 +45,7 @@ class SocketServerStreamRequestHandlerAdapter(
             client_address: SocketAddress,
             server: socketserver.TCPServer,
             *,
-            adapter_target_cls: type[StreamRequestHandler] | None = None,
+            adapter_target_cls: type[SocketRequestHandler] | None = None,
     ) -> None:
         if adapter_target_cls is not None:
             self.adapter_target_cls = adapter_target_cls
