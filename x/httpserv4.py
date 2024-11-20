@@ -38,9 +38,11 @@ TODO:
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import abc
 import dataclasses as dc
 import datetime
 import email.utils
+import functools
 import html
 import http.client
 import http.server
@@ -51,6 +53,7 @@ import sys
 import time
 import typing as ta
 
+from omlish import check
 from omlish.http import consts as hc
 
 
@@ -60,23 +63,25 @@ SocketAddress: ta.TypeAlias = ta.Any
 ##
 
 
-class SocketServerBaseRequestHandler_:  # noqa
-    request: socket.socket
-    client_address: SocketAddress
-    server: socketserver.TCPServer
+class StreamRequestHandler(abc.ABC):
+    def __init__(
+            self,
+            client_address: SocketAddress,
+            rfile: ta.IO,
+            wfile: ta.IO,
+    ) -> None:
+        super().__init__()
+
+        self.client_address = client_address
+        self.rfile = rfile
+        self.wfile = wfile
+
+    @abc.abstractmethod
+    def handle(self) -> None:
+        raise NotImplementedError
 
 
-class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noqa
-    rbufsize: int
-    wbufsize: int
-
-    timeout: float | None
-
-    disable_nagle_algorithm: bool
-
-    connection: socket.socket
-    rfile: ta.IO
-    wfile: ta.IO
+##
 
 
 DEFAULT_ERROR_MESSAGE = """\
@@ -98,30 +103,10 @@ DEFAULT_ERROR_MESSAGE = """\
 DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
-##
-
-
-class BaseHTTPRequestHandler(
-    socketserver.StreamRequestHandler,
-    SocketServerStreamRequestHandler_,
-):
+class BaseHttpRequestHandler(StreamRequestHandler):
     DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
 
-    def __init__(
-            self,
-            request: socket.socket,
-            client_address: SocketAddress,
-            server: socketserver.TCPServer,
-            *,
-            protocol_version: str = DEFAULT_PROTOCOL_VERSION,
-    ) -> None:
-        self.protocol_version = protocol_version
-
-        super().__init__(
-            request,
-            client_address,
-            server,
-        )
+    protocol_version = DEFAULT_PROTOCOL_VERSION
 
     #
 
@@ -472,14 +457,61 @@ class BaseHTTPRequestHandler(
         return self.client_address[0]
 
 
-class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        out = b'hi'
-        self.send_response(http.HTTPStatus.OK)
-        self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
-        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
-        self.end_headers()
-        self.wfile.write(out)
+##
+
+
+class SocketServerBaseRequestHandler_:  # noqa
+    request: socket.socket
+    client_address: SocketAddress
+    server: socketserver.TCPServer
+
+
+class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noqa
+    rbufsize: int
+    wbufsize: int
+
+    timeout: float | None
+
+    disable_nagle_algorithm: bool
+
+    connection: socket.socket
+    rfile: ta.IO
+    wfile: ta.IO
+
+
+#
+
+
+class SocketServerStreamRequestHandlerAdapter(
+    socketserver.StreamRequestHandler,
+    SocketServerBaseRequestHandler_,
+):
+    adapter_target_cls: type[StreamRequestHandler] | None = None
+
+    def __init__(
+            self,
+            request: socket.socket,
+            client_address: SocketAddress,
+            server: socketserver.TCPServer,
+            *,
+            adapter_target_cls: type[StreamRequestHandler] | None = None,
+    ) -> None:
+        if adapter_target_cls is not None:
+            self.adapter_target_cls = adapter_target_cls
+
+        super().__init__(
+            request,
+            client_address,
+            server,
+        )
+
+    def handle(self) -> None:
+        target = check.not_none(self.adapter_target_cls)(
+            self.client_address,
+            self.rfile,
+            self.wfile,
+        )
+        target.handle()
 
 
 ##
@@ -508,17 +540,30 @@ def _get_best_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
 ##
 
 
+class SayHiHttpRequestHandler(BaseHttpRequestHandler):
+    def do_GET(self) -> None:
+        out = b'hi'
+        self.send_response(http.HTTPStatus.OK)
+        self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
+        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
+        self.end_headers()
+        self.wfile.write(out)
+
+
 def _main() -> None:
     port = 8000
     bind = None
-    protocol = 'HTTP/1.0'
 
     ServerClass = http.server.ThreadingHTTPServer
-    HandlerClass = SimpleHTTPRequestHandler
-
     ServerClass.address_family, addr = _get_best_family(bind, port)
-    HandlerClass.protocol_version = protocol
-    with ServerClass(addr, HandlerClass) as httpd:
+
+    with ServerClass(
+            addr,
+            functools.partial(
+                SocketServerStreamRequestHandlerAdapter,
+                adapter_target_cls=SayHiHttpRequestHandler,
+            ),
+    ) as httpd:
         host, port = httpd.socket.getsockname()[:2]
         url_host = f'[{host}]' if ':' in host else host
         print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')
