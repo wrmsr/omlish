@@ -27,11 +27,6 @@ class AbstractServerContext(abc.ABC):
     def pid_history(self) -> ta.Dict[int, 'AbstractSubprocess']:
         raise NotImplementedError
 
-    @property
-    @abc.abstractmethod
-    def inherited_fds(self) -> ta.FrozenSet[int]:
-        raise NotImplementedError
-
 
 class AbstractSubprocess(abc.ABC):
     @property
