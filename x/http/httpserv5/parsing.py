@@ -40,21 +40,21 @@ def read_raw_http_headers(
     Length of line is limited by _MAXLINE, and number of headers is limited by _MAXHEADERS.
     """
 
-    headers: list[bytes] = []
+    raw_headers: list[bytes] = []
     while True:
         line = read_line(max_line + 1)
         if len(line) > max_line:
             raise http.client.LineTooLong('header line')
-        headers.append(line)
-        if len(headers) > max_headers:
+        raw_headers.append(line)
+        if len(raw_headers) > max_headers:
             raise http.client.HTTPException(f'got more than {max_headers} headers')
         if line in (b'\r\n', b'\n', b''):
             break
-    return headers
+    return raw_headers
 
 
-def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> HttpHeaders:
-    return http.client.parse_headers(io.BytesIO(b''.join(lst)))
+def parse_raw_http_headers(raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
+    return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
 
 
 ##
