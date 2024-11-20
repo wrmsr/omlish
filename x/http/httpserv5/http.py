@@ -13,6 +13,9 @@ from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
 
+HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
+
+
 ##
 
 
@@ -49,7 +52,7 @@ class HttpServerRequest:
 
 @dc.dataclass(frozen=True)
 class HttpServerResponse:
-    status: http.HTTPStatus
+    status: HttpStatusOrInt
     _: dc.KW_ONLY
     headers: ta.Mapping[str, str] | None = None
     data: bytes | None = None
@@ -173,7 +176,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         for k, v in response_headers.items():
             self.send_header(k, v)
         if 'Content-Type' not in response_headers:
-            self.send_header('Content-Type', hc.CONTENT_TYPE_TEXT.decode())
+            self.send_header('Content-Type', 'text/plain')
         if 'Content-Length' not in response_headers and response_data is not None:
             self.send_header('Content-Length', str(len(response_data)))
         self.end_headers()
@@ -381,7 +384,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     _headers_buffer: list[bytes]
 
-    def send_header(self, keyword, value):
+    def send_header(self, keyword: str, value: str) -> None:
         if self.request_version != 'HTTP/0.9':
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
@@ -394,12 +397,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             elif value.lower() == 'keep-alive':
                 self.close_connection = False
 
-    def end_headers(self):
+    def end_headers(self) -> None:
         if self.request_version != 'HTTP/0.9':
             self._headers_buffer.append(b'\r\n')
             self.flush_headers()
 
-    def flush_headers(self):
+    def flush_headers(self) -> None:
         if hasattr(self, '_headers_buffer'):
             self.wfile.write(b''.join(self._headers_buffer))
             self._headers_buffer = []

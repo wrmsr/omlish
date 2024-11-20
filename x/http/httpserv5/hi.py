@@ -2,42 +2,32 @@ import functools
 import http.server
 import sys
 
-from omlish.http import consts as hc
-
 from .adapter import SocketRequestHandlerSocketServerAdapter
+from .http import HttpServerRequest
+from .http import HttpServerResponse
 from .http import HttpSocketRequestHandler
+from .http import UnsupportedMethodServerHandlerError
 from .sockets import get_best_socket_family
 
 
 ##
 
 
-class SayHiHandler(HttpSocketRequestHandler):
-    def say_hi_handler(self) -> None:
-        method = self.command
-        path = self.path
+def say_hi_handler(req: HttpServerRequest) -> HttpServerResponse:
+    if req.method not in ('GET', 'POST'):
+        raise UnsupportedMethodServerHandlerError
 
-        if (cl := self.headers.get('Content-Length')):
-            data = self.rfile.read(int(cl))
-        else:
-            data = b''
+    resp = '\n'.join([
+        f'method: {req.method}',
+        f'path: {req.path}',
+        f'data: {len(req.data or b"")}',
+        '',
+    ])
 
-        resp = '\n'.join([
-            f'method: {method}',
-            f'path: {path}',
-            f'data: {len(data)}',
-            '',
-        ])
-
-        resp_bytes = resp.encode('utf-8')
-        self.send_response(http.HTTPStatus.OK)
-        self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
-        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(resp_bytes)))
-        self.end_headers()
-        self.wfile.write(resp_bytes)
-
-    do_GET = do_method
-    do_POST = do_method
+    return HttpServerResponse(
+        200,
+        data=resp.encode('utf-8'),
+    )
 
 
 ##
@@ -54,7 +44,10 @@ def _main() -> None:
             addr,
             functools.partial(
                 SocketRequestHandlerSocketServerAdapter,
-                adapter_target_factory=SayHiHandler,
+                adapter_target_factory=functools.partial(
+                    HttpSocketRequestHandler,
+                    handler=say_hi_handler,
+                ),
             ),
     ) as httpd:
         host, port = httpd.socket.getsockname()[:2]
