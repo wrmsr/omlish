@@ -12,6 +12,8 @@ from .logging import DefaultHttpLogging
 from .logging import HttpLogging
 from .parsing import EmptyParsedHttpResult
 from .parsing import HttpHeaders
+from .parsing import HttpProtocolVersion
+from .parsing import HttpProtocolVersions
 from .parsing import HttpRequestParser
 from .parsing import ParseHttpRequestError
 from .parsing import ParsedHttpRequest
@@ -109,7 +111,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    protocol_version: str
+    protocol_version: HttpProtocolVersion
 
     close_connection: bool
 
@@ -124,7 +126,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     raw_request_line: bytes
 
-    request_version: str
+    request_version: HttpProtocolVersion
     request_line: str
 
     method: str | None
@@ -286,7 +288,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     _headers_buffer: list[bytes]
 
     def send_header(self, keyword: str, value: str) -> None:
-        if self.request_version != 'HTTP/0.9':
+        if self.request_version != HttpProtocolVersions.HTTP_0_9:
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
             line = f'{keyword}: {value}\r\n'
@@ -299,7 +301,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 self.close_connection = False
 
     def end_headers(self) -> None:
-        if self.request_version != 'HTTP/0.9':
+        if self.request_version != HttpProtocolVersions.HTTP_0_9:
             self._headers_buffer.append(b'\r\n')
             self.flush_headers()
 
@@ -323,7 +325,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         self.send_header('Date', self.format_timestamp())
 
     def send_response_only(self, code: HttpStatusOrInt, message: str | None = None) -> None:
-        if self.request_version != 'HTTP/0.9':
+        if self.request_version != HttpProtocolVersions.HTTP_0_9:
             if message is None:
                 if code in self._STATUS_RESPONSES:
                     message = self._STATUS_RESPONSES[code][0]

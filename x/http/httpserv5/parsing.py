@@ -1,5 +1,4 @@
 import abc
-import enum
 import http.client
 import http.server
 import io
@@ -12,10 +11,18 @@ HttpHeaders: ta.TypeAlias = http.client.HTTPMessage
 ##
 
 
-class HttpProtocolVersion(enum.StrEnum):
-    HTTP_0_9 = 'HTTP/0.9'
-    HTTP_1_0 = 'HTTP/1.0'
-    HTTP_1_1 = 'HTTP/1.1'
+class HttpProtocolVersion(ta.NamedTuple):
+    major: int
+    minor: int
+
+    def __str__(self) -> str:
+        return f'HTTP/{self.major}.{self.minor}'
+
+
+class HttpProtocolVersions:
+    HTTP_0_9 = HttpProtocolVersion(0, 9)
+    HTTP_1_0 = HttpProtocolVersion(1, 0)
+    HTTP_1_1 = HttpProtocolVersion(1, 1)
 
 
 ##
@@ -67,7 +74,7 @@ class ParseHttpRequestResult(abc.ABC):  # noqa
             *,
             protocol_version: HttpProtocolVersion,
             request_line: str,
-            request_version: str,
+            request_version: HttpProtocolVersion,
             headers: HttpHeaders | None,
             close_connection: bool,
     ) -> None:
@@ -143,17 +150,17 @@ class ParsedHttpRequest(ParseHttpRequestResult):
 
 
 class HttpRequestParser:
-    DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
+    DEFAULT_PROTOCOL_VERSION = HttpProtocolVersions.HTTP_1_0
 
     # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
-    DEFAULT_REQUEST_VERSION = 'HTTP/0.9'
+    DEFAULT_REQUEST_VERSION = HttpProtocolVersions.HTTP_0_9
 
     def __init__(
             self,
             *,
-            protocol_version: str = DEFAULT_PROTOCOL_VERSION,
+            protocol_version: HttpProtocolVersion = DEFAULT_PROTOCOL_VERSION,
     ) -> None:
         super().__init__()
 
@@ -199,12 +206,12 @@ class HttpRequestParser:
             return EmptyParsedHttpResult(**result_kwargs())
 
         if len(words) >= 3:  # Enough to determine protocol version
-            version = words[-1]
+            version_str = words[-1]
             try:
-                if not version.startswith('HTTP/'):
-                    raise ValueError(version)  # noqa
+                if not version_str.startswith('HTTP/'):
+                    raise ValueError(version_str)  # noqa
 
-                base_version_number = version.split('/', 1)[1]
+                base_version_number = version_str.split('/', 1)[1]
                 version_number_parts = base_version_number.split('.')
 
                 # RFC 2145 section 3.1 says there can be only one "." and
@@ -217,26 +224,24 @@ class HttpRequestParser:
                     raise ValueError('non digit in http version')  # noqa
                 if any(len(component) > 10 for component in version_number_parts):
                     raise ValueError('unreasonable length http version')  # noqa
-                version_number = int(version_number_parts[0]), int(version_number_parts[1])
+                request_version = HttpProtocolVersion(int(version_number_parts[0]), int(version_number_parts[1]))
 
             except (ValueError, IndexError):
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.BAD_REQUEST,
-                    message=f'Bad request version ({version!r})',
+                    message=f'Bad request version ({version_str!r})',
                     **result_kwargs(),
                 )
 
-            if version_number >= (1, 1) and self._protocol_version >= 'HTTP/1.1':
+            if request_version >= (1, 1) and self._protocol_version >= HttpProtocolVersions.HTTP_1_1:
                 close_connection = False
 
-            if version_number >= (2, 0):
+            if request_version >= (2, 0):
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
                     message=f'Invalid HTTP version ({base_version_number})',
                     **result_kwargs(),
                 )
-
-            request_version = version
 
         if not 2 <= len(words) <= 3:
             return ParseHttpRequestError(
@@ -285,7 +290,7 @@ class HttpRequestParser:
             close_connection = True
         elif (
                 conn_type.lower() == 'keep-alive' and
-                self._protocol_version >= 'HTTP/1.1'
+                self._protocol_version >= HttpProtocolVersions.HTTP_1_1
         ):
             close_connection = False
 
@@ -293,8 +298,8 @@ class HttpRequestParser:
         expect = headers.get('Expect', '')
         if (
                 expect.lower() == '100-continue' and
-                self._protocol_version >= 'HTTP/1.1' and
-                request_version >= 'HTTP/1.1'
+                self._protocol_version >= HttpProtocolVersions.HTTP_1_1 and
+                request_version >= HttpProtocolVersions.HTTP_1_1
         ):
             expects_continue = True
         else:
