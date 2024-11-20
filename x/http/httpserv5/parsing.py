@@ -1,8 +1,21 @@
 import abc
+import enum
 import http.client
 import http.server
 import io
 import typing as ta
+
+
+HttpHeaders: ta.TypeAlias = http.client.HTTPMessage
+
+
+##
+
+
+class HttpProtocolVersion(enum.StrEnum):
+    HTTP_0_9 = 'HTTP/0.9'
+    HTTP_1_0 = 'HTTP/1.0'
+    HTTP_1_1 = 'HTTP/1.1'
 
 
 ##
@@ -33,7 +46,7 @@ def read_raw_http_headers(
     return headers
 
 
-def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
+def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> HttpHeaders:
     return http.client.parse_headers(io.BytesIO(b''.join(lst)))
 
 
@@ -52,10 +65,10 @@ class ParseHttpRequestResult(abc.ABC):  # noqa
     def __init__(
             self,
             *,
-            protocol_version: str,
+            protocol_version: HttpProtocolVersion,
             request_line: str,
             request_version: str,
-            headers: http.client.HTTPMessage | None,
+            headers: HttpHeaders | None,
             close_connection: bool,
     ) -> None:
         super().__init__()
@@ -67,7 +80,7 @@ class ParseHttpRequestResult(abc.ABC):  # noqa
         self.close_connection = close_connection
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({", ".join(f"{a}={getattr(self, a)}" for a in self.__slots__)})'
+        return f'{self.__class__.__name__}({", ".join(f"{a}={getattr(self, a)!r}" for a in self.__slots__)})'
 
 
 class EmptyParsedHttpResult(ParseHttpRequestResult):
@@ -109,7 +122,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
             *,
             method: str,
             path: str,
-            headers: http.client.HTTPMessage,
+            headers: HttpHeaders,
             expects_continue: bool,
 
             **kwargs: ta.Any,
@@ -123,7 +136,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
         self.path = path
         self.expects_continue = expects_continue
 
-    headers: http.client.HTTPMessage
+    headers: HttpHeaders
 
 
 #
@@ -153,7 +166,7 @@ class HttpRequestParser:
 
         request_line = '-'
         request_version = self.DEFAULT_REQUEST_VERSION
-        headers: http.client.HTTPMessage | None = None
+        headers: HttpHeaders | None = None
         close_connection = True
 
         def result_kwargs():

@@ -11,9 +11,10 @@ from omlish import check
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
 from .parsing import EmptyParsedHttpResult
+from .parsing import HttpHeaders
 from .parsing import HttpRequestParser
-from .parsing import ParsedHttpRequest
 from .parsing import ParseHttpRequestError
+from .parsing import ParsedHttpRequest
 from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
@@ -29,7 +30,7 @@ class HttpServerRequest:
     client_address: SocketAddress
     method: str
     path: str
-    headers: http.client.HTTPMessage
+    headers: HttpHeaders
     data: bytes | None
 
 
@@ -129,7 +130,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     method: str | None
     path: str
 
-    headers: http.client.HTTPMessage
+    headers: HttpHeaders
 
     #
 
@@ -154,6 +155,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 return
 
             parsed = check.isinstance(parsed, ParsedHttpRequest)
+            self.logging.log_message(self.logging_context, '%r', parsed)
             if parsed.expects_continue:
                 if not self.handle_expect_100():
                     return
