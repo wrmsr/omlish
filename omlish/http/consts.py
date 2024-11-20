@@ -1,6 +1,7 @@
 """
 TODO:
  - import mimetypes lol
+ - http.HTTPStatus / http.HTTPMethod
 """
 import base64
 import http
