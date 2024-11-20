@@ -1,3 +1,4 @@
+import dataclasses as dc
 import datetime
 import email.utils
 import html
@@ -8,8 +9,7 @@ import sys
 import time
 import typing as ta
 
-from omlish import lang
-
+from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
 
@@ -38,7 +38,56 @@ DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 ##
 
 
+@dc.dataclass(frozen=True)
+class HttpServerRequest:
+    client_address: SocketAddress
+    method: str
+    path: str
+    headers: http.client.HTTPMessage
+    data: bytes | None
+
+
+@dc.dataclass(frozen=True)
+class HttpServerResponse:
+    status: http.HTTPStatus
+    _: dc.KW_ONLY
+    headers: ta.Mapping[str, str] | None = None
+    data: bytes | None = None
+
+
+class HttpServerHandlerError(Exception):
+    pass
+
+
+class UnsupportedMethodServerHandlerError(Exception):
+    pass
+
+
+HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerResponse]
+
+
+##
+
+
 class HttpSocketRequestHandler(SocketRequestHandler):
+    def __init__(
+            self,
+            client_address: SocketAddress,
+            rfile: ta.IO,
+            wfile: ta.IO,
+            *,
+            handler: HttpServerHandler,
+    ) -> None:
+        super().__init__(
+            client_address,
+            rfile,
+            wfile,
+        )
+
+        self.handler = handler
+
+    #
+
     DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
 
     protocol_version = DEFAULT_PROTOCOL_VERSION
@@ -81,23 +130,56 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 # An error code has been sent, just exit
                 return
 
-            method_name = 'do_' + self.command
-            if not hasattr(self, method_name):
-                self.send_error(
-                    http.HTTPStatus.NOT_IMPLEMENTED,
-                    f'Unsupported method ({self.command!r})',
-                )
-                return
+            self.invoke_handler()
 
-            method = getattr(self, method_name)
-            method()
-            self.wfile.flush() #actually send the response if not already done.
+            self.wfile.flush()  # actually send the response if not already done.
 
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
             self.log_error('Request timed out: %r', e)
             self.close_connection = True
             return
+    #
+
+    def invoke_handler(self) -> None:
+        request_data: bytes | None
+        if (cl := self.headers.get('Content-Length')) is not None:
+            request_data = self.rfile.read(int(cl))
+        else:
+            request_data = None
+
+        request = HttpServerRequest(
+            client_address=self.client_address,
+            method=self.command,
+            path=self.path,
+            headers=self.headers,
+            data=request_data,
+        )
+
+        try:
+            response = self.handler(request)
+        except UnsupportedMethodServerHandlerError:
+            self.send_error(
+                http.HTTPStatus.NOT_IMPLEMENTED,
+                f'Unsupported method ({self.command!r})',
+            )
+            return
+
+        response_headers = response.headers or {}
+        response_data = response.data
+
+        self.send_response(response.status)
+
+        for k, v in response_headers.items():
+            self.send_header(k, v)
+        if 'Content-Type' not in response_headers:
+            self.send_header('Content-Type', hc.CONTENT_TYPE_TEXT.decode())
+        if 'Content-Length' not in response_headers and response_data is not None:
+            self.send_header('Content-Length', str(len(response_data)))
+        self.end_headers()
+
+        if response_data is not None:
+            self.wfile.write(response_data)
 
     #
 

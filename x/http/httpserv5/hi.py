@@ -13,7 +13,7 @@ from .sockets import get_best_socket_family
 
 
 class SayHiHandler(HttpSocketRequestHandler):
-    def do_method(self) -> None:
+    def say_hi_handler(self) -> None:
         method = self.command
         path = self.path
 
