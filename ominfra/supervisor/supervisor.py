@@ -24,7 +24,6 @@ from .events import SupervisorStoppingEvent
 from .process import ProcessGroup
 from .process import Subprocess
 from .states import SupervisorState
-from .states import SupervisorStates
 from .states import get_process_state_description
 
 
@@ -205,7 +204,7 @@ class Supervisor:
         self._handle_signal()
         self._tick()
 
-        if self._context.state < SupervisorStates.RUNNING:
+        if self._context.state < SupervisorState.RUNNING:
             self._ordered_stop_groups_phase_2()
 
     def _ordered_stop_groups_phase_1(self) -> None:
@@ -231,7 +230,7 @@ class Supervisor:
         pgroups = list(self._process_groups.values())
         pgroups.sort()
 
-        if self._context.state < SupervisorStates.RUNNING:
+        if self._context.state < SupervisorState.RUNNING:
             if not self._stopping:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
@@ -323,14 +322,14 @@ class Supervisor:
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
             log.warning('received %s indicating exit request', signame(sig))
-            self._context.set_state(SupervisorStates.SHUTDOWN)
+            self._context.set_state(SupervisorState.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
-            if self._context.state == SupervisorStates.SHUTDOWN:
+            if self._context.state == SupervisorState.SHUTDOWN:
                 log.warning('ignored %s indicating restart request (shutdown in progress)', signame(sig))  # noqa
             else:
                 log.warning('received %s indicating restart request', signame(sig))  # noqa
-                self._context.set_state(SupervisorStates.RESTARTING)
+                self._context.set_state(SupervisorState.RESTARTING)
 
         elif sig == signal.SIGCHLD:
             log.debug('received %s indicating a child quit', signame(sig))
