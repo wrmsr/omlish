@@ -36,6 +36,7 @@ STATUS_GATEWAY_TIMEOUT = format_status(http.HTTPStatus.GATEWAY_TIMEOUT)
 
 
 HEADER_CONTENT_TYPE = b'Content-Type'
+HEADER_CONTENT_LENGTH = b'Content-Length'
 HEADER_ACCEPT = b'Accept'
 
 CONTENT_CHARSET_UTF8 = b'charset=utf-8'
