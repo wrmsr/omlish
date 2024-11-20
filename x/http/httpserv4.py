@@ -305,7 +305,7 @@ class BaseHttpRequestHandler(StreamRequestHandler):
     #
 
     # hack to maintain backwards compatibility
-    responses = {
+    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
         v: (v.phrase, v.description)
         for v in http.HTTPStatus.__members__.values()
     }
@@ -320,7 +320,7 @@ class BaseHttpRequestHandler(StreamRequestHandler):
             explain: str | None = None,
     ) -> None:
         try:
-            short_msg, long_msg = self.responses[code]
+            short_msg, long_msg = self._STATUS_RESPONSES[code]
         except KeyError:
             short_msg, long_msg = '???', '???'
         if message is None:
@@ -398,8 +398,8 @@ class BaseHttpRequestHandler(StreamRequestHandler):
     def send_response_only(self, code, message=None):
         if self.request_version != 'HTTP/0.9':
             if message is None:
-                if code in self.responses:
-                    message = self.responses[code][0]
+                if code in self._STATUS_RESPONSES:
+                    message = self._STATUS_RESPONSES[code][0]
                 else:
                     message = ''
 
