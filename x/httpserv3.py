@@ -46,10 +46,8 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                 base_version_number = version.split('/', 1)[1]
                 version_number = base_version_number.split(".")
                 # RFC 2145 section 3.1 says there can be only one "." and
-                #   - major and minor numbers MUST be treated as
-                #      separate integers;
-                #   - HTTP/2.4 is a lower version than HTTP/2.13, which in
-                #      turn is lower than HTTP/12.3;
+                #   - major and minor numbers MUST be treated as separate integers;
+                #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
                 #   - Leading zeros MUST be ignored by recipients.
                 if len(version_number) != 2:
                     raise ValueError
@@ -61,7 +59,8 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             except (ValueError, IndexError):
                 self.send_error(
                     http.HTTPStatus.BAD_REQUEST,
-                    "Bad request version (%r)" % version)
+                    "Bad request version (%r)" % version,
+                )
                 return False
             if version_number >= (1, 1) and self.protocol_version >= "HTTP/1.1":
                 self.close_connection = False
@@ -87,10 +86,9 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                 return False
         self.command, self.path = command, path
 
-        # gh-87389: The purpose of replacing '//' with '/' is to protect
-        # against open redirect attacks possibly triggered if the path starts
-        # with '//' because http clients treat //path as an absolute URI
-        # without scheme (similar to http://path) rather than a path.
+        # gh-87389: The purpose of replacing '//' with '/' is to protect against open redirect attacks possibly
+        # triggered if the path starts with '//' because http clients treat //path as an absolute URI without scheme
+        # (similar to http://path) rather than a path.
         if self.path.startswith('//'):
             self.path = '/' + self.path.lstrip('/')  # Reduce to a single /
 
@@ -118,13 +116,17 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         elif (conntype.lower() == 'keep-alive' and
               self.protocol_version >= "HTTP/1.1"):
             self.close_connection = False
+
         # Examine the headers and look for an Expect directive
         expect = self.headers.get('Expect', "")
-        if (expect.lower() == "100-continue" and
+        if (
+                expect.lower() == "100-continue" and
                 self.protocol_version >= "HTTP/1.1" and
-                self.request_version >= "HTTP/1.1"):
+                self.request_version >= "HTTP/1.1"
+        ):
             if not self.handle_expect_100():
                 return False
+
         return True
 
     def handle_expect_100(self):
@@ -191,8 +193,7 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                 code not in (http.HTTPStatus.NO_CONTENT,
                              http.HTTPStatus.RESET_CONTENT,
                              http.HTTPStatus.NOT_MODIFIED)):
-            # HTML encode to prevent Cross Site Scripting attacks
-            # (see bug #1100201)
+            # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
             content = (self.error_message_format % {
                 'code': code,
                 'message': html.escape(message, quote=False),
@@ -207,20 +208,12 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             self.wfile.write(body)
 
     def send_response(self, code, message=None):
-        """Add the response header to the headers buffer and log the
-        response code.
-
-        Also send two standard headers with the server software
-        version and the current date.
-
-        """
         self.log_request(code)
         self.send_response_only(code, message)
         self.send_header('Server', self.version_string())
         self.send_header('Date', self.date_time_string())
 
     def send_response_only(self, code, message=None):
-        """Send the response header only."""
         if self.request_version != 'HTTP/0.9':
             if message is None:
                 if code in self.responses:
@@ -229,12 +222,10 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                     message = ''
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
-            self._headers_buffer.append(("%s %d %s\r\n" %
-                                         (self.protocol_version, code, message)).encode(
-                'latin-1', 'strict'))
+            line = "%s %d %s\r\n" % (self.protocol_version, code, message)
+            self._headers_buffer.append(line.encode('latin-1', 'strict'))
 
     def send_header(self, keyword, value):
-        """Send a MIME header to the headers buffer."""
         if self.request_version != 'HTTP/0.9':
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
@@ -248,7 +239,6 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                 self.close_connection = False
 
     def end_headers(self):
-        """Send the blank line ending the MIME headers."""
         if self.request_version != 'HTTP/0.9':
             self._headers_buffer.append(b"\r\n")
             self.flush_headers()
@@ -259,94 +249,66 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             self._headers_buffer = []
 
     def log_request(self, code='-', size='-'):
-        """Log an accepted request.
-
-        This is called by send_response().
-
-        """
         if isinstance(code, http.HTTPStatus):
             code = code.value
         self.log_message('"%s" %s %s',
                          self.requestline, str(code), str(size))
 
     def log_error(self, format, *args):
-        """Log an error.
-
-        This is called when a request cannot be fulfilled.  By
-        default it passes the message on to log_message().
-
-        Arguments are the same as for log_message().
-
-        XXX This should go to the separate error log.
-
-        """
-
         self.log_message(format, *args)
 
     # https://en.wikipedia.org/wiki/List_of_Unicode_characters#Control_codes
-    _control_char_table = str.maketrans(
-        {c: fr'\x{c:02x}' for c in itertools.chain(range(0x20), range(0x7f,0xa0))})
+    _control_char_table = str.maketrans({
+        c: fr'\x{c:02x}'
+        for c in itertools.chain(range(0x20), range(0x7f,0xa0))
+    })
     _control_char_table[ord('\\')] = r'\\'
 
     def log_message(self, format, *args):
-        """Log an arbitrary message.
-
-        This is used by all other logging functions.  Override
-        it if you have specific logging wishes.
-
-        The first argument, FORMAT, is a format string for the
-        message to be logged.  If the format string contains
-        any % escapes requiring parameters, they should be
-        specified as subsequent arguments (it's just like
-        printf!).
-
-        The client ip and current date/time are prefixed to
-        every message.
-
-        Unicode control characters are replaced with escaped hex
-        before writing the output to stderr.
-
-        """
-
         message = format % args
-        sys.stderr.write("%s - - [%s] %s\n" %
-                         (self.address_string(),
-                          self.log_date_time_string(),
-                          message.translate(self._control_char_table)))
+        sys.stderr.write(
+            "%s - - [%s] %s\n" % (
+                self.address_string(),
+                self.log_date_time_string(),
+                message.translate(self._control_char_table),
+            ),
+        )
 
     def version_string(self):
-        """Return the server software version string."""
         return self.server_version + ' ' + self.sys_version
 
     def date_time_string(self, timestamp=None):
-        """Return the current date and time formatted for a message header."""
         if timestamp is None:
             timestamp = time.time()
         return email.utils.formatdate(timestamp, usegmt=True)
 
     def log_date_time_string(self):
-        """Return the current time formatted for logging."""
         now = time.time()
         year, month, day, hh, mm, ss, x, y, z = time.localtime(now)
         s = "%02d/%3s/%04d %02d:%02d:%02d" % (
             day, self.monthname[month], year, hh, mm, ss)
         return s
 
-    weekdayname = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-    monthname = [None,
-                 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthname = [
+        None,
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+    ]
 
     def address_string(self):
-        """Return the client address."""
-
         return self.client_address[0]
 
-    # Essentially static class variables
-
-    # The version of the HTTP protocol we support.
-    # Set this to HTTP/1.1 to enable automatic keepalive
+    # The version of the HTTP protocol we support. Set this to HTTP/1.1 to enable automatic keepalive
     protocol_version = "HTTP/1.0"
 
     # MessageClass used to parse headers
