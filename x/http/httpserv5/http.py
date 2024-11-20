@@ -111,11 +111,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
-
-    protocol_version = DEFAULT_PROTOCOL_VERSION
-
-    #
+    protocol_version: str
 
     close_connection: bool
 
@@ -154,9 +150,20 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 self.raw_request_line,
                 lambda: read_raw_http_headers(self.rfile),
             )
-            if not self.parse_request():
+
+            self.protocol_version = parsed.protocol_version
+            self.request_line = parsed.request_line
+            self.request_version = parsed.request_version
+            self.headers = parsed.headers
+            self.close_connection = parsed.close_connection
+
+            if isinstance(parsed, EmptyParsedHttpResult):
                 # An error code has been sent, just exit
                 return
+
+            elif isinstance(parsed, ContinueParsedHttpResult):
+                if not self.handle_expect_100():
+                    return False
 
             self.invoke_handler()
 

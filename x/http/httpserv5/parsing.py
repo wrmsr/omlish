@@ -74,10 +74,6 @@ class EmptyParsedHttpResult(ParseHttpRequestResult):
     pass
 
 
-class ContinueParsedHttpResult(ParseHttpRequestResult):
-    pass
-
-
 class ParseHttpRequestError(ParseHttpRequestResult):
     __slots__ = (
         'code',
@@ -104,6 +100,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
         'method',
         'path',
         'headers',
+        'expects_continue',
         *[a for a in ParseHttpRequestResult.__slots__ if a != 'headers'],
     )
 
@@ -113,6 +110,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
             method: str,
             path: str,
             headers: http.client.HTTPMessage,
+            expects_continue: bool,
 
             **kwargs: ta.Any,
     ) -> None:
@@ -123,6 +121,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
 
         self.method = method
         self.path = path
+        self.expects_continue = expects_continue
 
 
 #
@@ -270,10 +269,13 @@ class HttpRequestParser:
                 self._protocol_version >= 'HTTP/1.1' and
                 request_version >= 'HTTP/1.1'
         ):
-            return ContinueParsedHttpResult(**result_kwargs())
+            expects_continue = True
+        else:
+            expects_continue = False
 
         return ParsedHttpRequest(
             method=method,
             path=path,
+            expects_continue=expects_continue,
             **result_kwargs(),
         )
