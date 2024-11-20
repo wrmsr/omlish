@@ -366,7 +366,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    # hack to maintain backwards compatibility
     _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
         v: (v.phrase, v.description)
         for v in http.HTTPStatus.__members__.values()
@@ -458,12 +457,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    def send_response(self, code, message=None):
+    def send_response(self, code: HttpStatusOrInt, message: str | None = None) -> None:
         self.logging.log_request(self.logging_context, self.request_line, code)
         self.send_response_only(code, message)
         self.send_header('Date', self.format_timestamp())
 
-    def send_response_only(self, code, message=None):
+    def send_response_only(self, code: HttpStatusOrInt, message: str | None = None) -> None:
         if self.request_version != 'HTTP/0.9':
             if message is None:
                 if code in self._STATUS_RESPONSES:
