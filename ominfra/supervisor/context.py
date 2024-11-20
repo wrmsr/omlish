@@ -33,8 +33,6 @@ from .types import AbstractSubprocess
 
 ServerEpoch = ta.NewType('ServerEpoch', int)
 
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
-
 
 class ServerContext(AbstractServerContext):
     def __init__(
@@ -42,13 +40,11 @@ class ServerContext(AbstractServerContext):
             config: ServerConfig,
             *,
             epoch: ServerEpoch = ServerEpoch(0),
-            inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
         super().__init__()
 
         self._config = config
         self._epoch = epoch
-        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
@@ -101,10 +97,6 @@ class ServerContext(AbstractServerContext):
     @property
     def gid(self) -> ta.Optional[int]:
         return self._gid
-
-    @property
-    def inherited_fds(self) -> InheritedFds:
-        return self._inherited_fds
 
     ##
 

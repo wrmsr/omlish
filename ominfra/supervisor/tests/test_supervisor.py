@@ -10,9 +10,9 @@ from omlish.lite.runtime import is_debugger_attached
 from ...configs import read_config_file
 from ..compat import get_open_fds
 from ..configs import ServerConfig
-from ..context import InheritedFds
 from ..main import build_server_bindings
 from ..main import prepare_server_config
+from ..process import InheritedFds
 from ..supervisor import Supervisor
 
 
