@@ -40,7 +40,7 @@ def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
 ##
 
 
-class ParseHttpRequestResult(abc.ABC):
+class ParseHttpRequestResult(abc.ABC):  # noqa
     __slots__ = (
         'protocol_version',
         'request_line',
