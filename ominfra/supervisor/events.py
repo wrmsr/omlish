@@ -37,6 +37,9 @@ class EventCallbacks:
         self._callbacks[:] = []
 
 
+##
+
+
 class ProcessLogEvent(Event, abc.ABC):
     channel: ta.Optional[str] = None
 
@@ -53,6 +56,9 @@ class ProcessLogStdoutEvent(ProcessLogEvent):
 
 class ProcessLogStderrEvent(ProcessLogEvent):
     channel = 'stderr'
+
+
+#
 
 
 class ProcessCommunicationEvent(Event, abc.ABC):
@@ -77,11 +83,17 @@ class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
     channel = 'stderr'
 
 
+#
+
+
 class RemoteCommunicationEvent(Event):
     def __init__(self, type, data):  # noqa
         super().__init__()
         self.type = type
         self.data = data
+
+
+#
 
 
 class SupervisorStateChangeEvent(Event):
@@ -96,11 +108,17 @@ class SupervisorStoppingEvent(SupervisorStateChangeEvent):
     pass
 
 
+#
+
+
 class EventRejectedEvent:  # purposely does not subclass Event
     def __init__(self, process, event):
         super().__init__()
         self.process = process
         self.event = event
+
+
+#
 
 
 class ProcessStateEvent(Event):
@@ -162,6 +180,9 @@ class ProcessStateStoppedEvent(ProcessStateEvent):
         return [('pid', self.process.pid)]
 
 
+#
+
+
 class ProcessGroupEvent(Event):
     def __init__(self, group):
         super().__init__()
@@ -174,6 +195,9 @@ class ProcessGroupAddedEvent(ProcessGroupEvent):
 
 class ProcessGroupRemovedEvent(ProcessGroupEvent):
     pass
+
+
+#
 
 
 class TickEvent(Event):
@@ -197,11 +221,14 @@ class Tick3600Event(TickEvent):
     period = 3600
 
 
-TICK_EVENTS = [  # imported elsewhere
+TICK_EVENTS = (  # imported elsewhere
     Tick5Event,
     Tick60Event,
     Tick3600Event,
-]
+)
+
+
+##
 
 
 class EventTypes:
@@ -246,7 +273,3 @@ def get_event_name_by_type(requested):
         if typ is requested:
             return name
     return None
-
-
-def register(name, event):
-    setattr(EventTypes, name, event)

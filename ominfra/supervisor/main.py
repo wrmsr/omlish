@@ -21,19 +21,21 @@ from .configs import prepare_server_config
 from .context import ServerContext
 from .context import ServerEpoch
 from .events import EventCallbacks
+from .groups import ProcessGroup
+from .groups import SubprocessFactory
 from .poller import Poller
 from .poller import get_poller_impl
 from .process import InheritedFds
-from .process import ProcessGroup
 from .process import Subprocess
-from .process import SubprocessFactory
 from .signals import SignalReceiver
 from .states import SupervisorState
 from .supervisor import ProcessGroupFactory
 from .supervisor import ProcessGroups
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
+from .types import AbstractProcessGroup
 from .types import AbstractServerContext
+from .types import AbstractSubprocess
 from .utils import ExitNow
 from .utils import get_open_fds
 
@@ -73,7 +75,7 @@ def build_server_bindings(
     lst.append(inj.bind(make_process_group_factory))
 
     def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
-        def inner(process_config: ProcessConfig, group: ProcessGroup) -> Subprocess:
+        def inner(process_config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
             return injector.inject(functools.partial(Subprocess, process_config, group))
         return SubprocessFactory(inner)
     lst.append(inj.bind(make_subprocess_factory))
