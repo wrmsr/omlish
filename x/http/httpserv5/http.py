@@ -14,7 +14,6 @@ from .parsing import EmptyParsedHttpResult
 from .parsing import HttpRequestParser
 from .parsing import ParsedHttpRequest
 from .parsing import ParseHttpRequestError
-from .parsing import read_raw_http_headers
 from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
