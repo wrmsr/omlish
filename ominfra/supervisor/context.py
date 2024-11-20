@@ -364,19 +364,25 @@ def make_pipes(stderr=True) -> ta.Mapping[str, int]:
         'stderr': None,
         'child_stderr': None,
     }
+
     try:
         stdin, child_stdin = os.pipe()
         pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
+
         stdout, child_stdout = os.pipe()
         pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
+
         if stderr:
             stderr, child_stderr = os.pipe()
             pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
+
         for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
             if fd is not None:
                 flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
                 fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
         return pipes  # type: ignore
+
     except OSError:
         for fd in pipes.values():
             if fd is not None:

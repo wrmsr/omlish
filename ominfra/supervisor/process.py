@@ -318,18 +318,43 @@ class Subprocess(AbstractSubprocess):
 
     def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
         use_stderr = not self._config.redirect_stderr
+
         p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
+
         dispatchers: ta.Dict[int, Dispatcher] = {}
+
+        dispatcher_kw = dict(
+            event_callbacks=self._event_callbacks,
+        )
+
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = OutputDispatcher(self, etype, stdout_fd)
+            dispatchers[stdout_fd] = OutputDispatcher(
+                self,
+                etype,
+                stdout_fd,
+                **dispatcher_kw,
+            )
+
         if stderr_fd is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = OutputDispatcher(self, etype, stderr_fd)
+            dispatchers[stderr_fd] = OutputDispatcher(
+                self,
+                etype,
+                stderr_fd,
+                **dispatcher_kw,
+            )
+
         if stdin_fd is not None:
-            dispatchers[stdin_fd] = InputDispatcher(self, 'stdin', stdin_fd)
+            dispatchers[stdin_fd] = InputDispatcher(
+                self,
+                'stdin',
+                stdin_fd,
+                **dispatcher_kw,
+            )
+
         return dispatchers, p
 
     def _spawn_as_parent(self, pid: int) -> int:
