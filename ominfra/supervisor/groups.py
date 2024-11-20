@@ -9,7 +9,6 @@ from .dispatchers import Dispatcher
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
-from .states import STOPPED_STATES
 from .states import ProcessState
 from .types import AbstractProcessGroup
 from .types import AbstractServerContext
@@ -91,7 +90,7 @@ class ProcessGroup(AbstractProcessGroup):
                 proc.give_up()
 
     def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
-        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
+        return [x for x in self._processes.values() if not x.get_state().stopped]
 
     def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
         dispatchers: dict = {}
