@@ -6,18 +6,12 @@ import os
 import pwd
 import re
 import resource
-import signal
 import stat
 import typing as ta
 import warnings
 
 from omlish.lite.logs import log
 
-from .compat import SignalReceiver
-from .compat import close_fd
-from .compat import mktempfile
-from .compat import real_exit
-from .compat import try_unlink
 from .configs import ServerConfig
 from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
@@ -28,6 +22,10 @@ from .poller import Poller
 from .states import SupervisorState
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .utils import close_fd
+from .utils import mktempfile
+from .utils import real_exit
+from .utils import try_unlink
 
 
 ServerEpoch = ta.NewType('ServerEpoch', int)
@@ -49,8 +47,6 @@ class ServerContext(AbstractServerContext):
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
-
-        self._signal_receiver = SignalReceiver()
 
         if config.user is not None:
             uid = name_to_uid(config.user)
@@ -94,16 +90,6 @@ class ServerContext(AbstractServerContext):
         return self._gid
 
     ##
-
-    def set_signals(self) -> None:
-        self._signal_receiver.install(
-            signal.SIGTERM,
-            signal.SIGINT,
-            signal.SIGQUIT,
-            signal.SIGHUP,
-            signal.SIGCHLD,
-            signal.SIGUSR2,
-        )
 
     def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
@@ -291,9 +277,6 @@ class ServerContext(AbstractServerContext):
             dir=self.config.child_logdir,
         )
         return logfile
-
-    def get_signal(self) -> ta.Optional[int]:
-        return self._signal_receiver.get_signal()
 
     def write_pidfile(self) -> None:
         pid = os.getpid()

@@ -8,12 +8,12 @@ from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import is_debugger_attached
 
 from ...configs import read_config_file
-from ..compat import get_open_fds
 from ..configs import ServerConfig
 from ..main import build_server_bindings
 from ..main import prepare_server_config
 from ..process import InheritedFds
 from ..supervisor import Supervisor
+from ..utils import get_open_fds
 
 
 class TestSupervisor(unittest.TestCase):

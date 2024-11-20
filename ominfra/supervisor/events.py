@@ -2,7 +2,7 @@
 import abc
 import typing as ta
 
-from .compat import as_string
+from .utils import as_string
 
 
 class EventCallbacks:

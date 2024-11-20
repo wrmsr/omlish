@@ -12,14 +12,6 @@ import typing as ta
 from omlish.lite.check import check_isinstance
 from omlish.lite.logs import log
 
-from .compat import as_bytes
-from .compat import as_string
-from .compat import close_fd
-from .compat import compact_traceback
-from .compat import decode_wait_status
-from .compat import get_path
-from .compat import real_exit
-from .compat import sig_name
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .context import ServerContext
@@ -47,11 +39,19 @@ from .events import ProcessStateStoppingEvent
 from .events import ProcessStateUnknownEvent
 from .exceptions import BadCommandError
 from .exceptions import ProcessError
+from .signals import sig_name
 from .states import STOPPED_STATES
 from .states import ProcessState
 from .states import SupervisorState
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .utils import as_bytes
+from .utils import as_string
+from .utils import close_fd
+from .utils import compact_traceback
+from .utils import decode_wait_status
+from .utils import get_path
+from .utils import real_exit
 
 
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
@@ -773,6 +773,10 @@ class ProcessGroup:
     @property
     def config(self) -> ProcessGroupConfig:
         return self._config
+
+    @property
+    def name(self) -> str:
+        return self._config.name
 
     @property
     def context(self) -> AbstractServerContext:

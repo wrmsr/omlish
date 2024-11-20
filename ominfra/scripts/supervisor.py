@@ -61,7 +61,7 @@ TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
-# ../compat.py
+# ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
 # ../../../omlish/lite/inject.py
@@ -899,242 +899,6 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 ########################################
-# ../compat.py
-
-
-##
-
-
-def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
-    if isinstance(s, bytes):
-        return s
-    else:
-        return s.encode(encoding)
-
-
-def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
-    if isinstance(s, str):
-        return s
-    else:
-        return s.decode(encoding)
-
-
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
-##
-
-
-def compact_traceback() -> ta.Tuple[
-    ta.Tuple[str, str, int],
-    ta.Type[BaseException],
-    BaseException,
-    types.TracebackType,
-]:
-    t, v, tb = sys.exc_info()
-    if not tb:
-        raise RuntimeError('No traceback')
-
-    tbinfo = []
-    while tb:
-        tbinfo.append((
-            tb.tb_frame.f_code.co_filename,
-            tb.tb_frame.f_code.co_name,
-            str(tb.tb_lineno),
-        ))
-        tb = tb.tb_next
-
-    # just to be safe
-    del tb
-
-    file, function, line = tbinfo[-1]
-    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
-    return (file, function, line), t, v, info  # type: ignore
-
-
-class ExitNow(Exception):  # noqa
-    pass
-
-
-def real_exit(code: int) -> None:
-    os._exit(code)  # noqa
-
-
-##
-
-
-def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
-    """
-    Decode the status returned by wait() or waitpid().
-
-    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
-    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
-    """
-
-    if os.WIFEXITED(sts):
-        es = os.WEXITSTATUS(sts) & 0xffff
-        msg = f'exit status {es}'
-        return es, msg
-    elif os.WIFSIGNALED(sts):
-        sig = os.WTERMSIG(sts)
-        msg = f'terminated by {sig_name(sig)}'
-        if hasattr(os, 'WCOREDUMP'):
-            iscore = os.WCOREDUMP(sts)
-        else:
-            iscore = bool(sts & 0x80)
-        if iscore:
-            msg += ' (core dumped)'
-        return -1, msg
-    else:
-        msg = 'unknown termination cause 0x%04x' % sts  # noqa
-        return -1, msg
-
-
-##
-
-
-_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
-
-
-def sig_name(sig: int) -> str:
-    global _SIG_NAMES
-    if _SIG_NAMES is None:
-        _SIG_NAMES = _init_sig_names()
-    return _SIG_NAMES.get(sig) or 'signal %d' % sig
-
-
-def _init_sig_names() -> ta.Dict[int, str]:
-    d = {}
-    for k, v in signal.__dict__.items():  # noqa
-        k_startswith = getattr(k, 'startswith', None)
-        if k_startswith is None:
-            continue
-        if k_startswith('SIG') and not k_startswith('SIG_'):
-            d[v] = k
-    return d
-
-
-class SignalReceiver:
-    def __init__(self) -> None:
-        super().__init__()
-        self._signals_recvd: ta.List[int] = []
-
-    def receive(self, sig: int, frame: ta.Any) -> None:
-        if sig not in self._signals_recvd:
-            self._signals_recvd.append(sig)
-
-    def install(self, *sigs: int) -> None:
-        for sig in sigs:
-            signal.signal(sig, self.receive)
-
-    def get_signal(self) -> ta.Optional[int]:
-        if self._signals_recvd:
-            sig = self._signals_recvd.pop(0)
-        else:
-            sig = None
-        return sig
-
-
-##
-
-
-def read_fd(fd: int) -> bytes:
-    try:
-        data = os.read(fd, 2 << 16)  # 128K
-    except OSError as why:
-        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
-            raise
-        data = b''
-    return data
-
-
-def try_unlink(path: str) -> bool:
-    try:
-        os.unlink(path)
-    except OSError:
-        return False
-    return True
-
-
-def close_fd(fd: int) -> bool:
-    try:
-        os.close(fd)
-    except OSError:
-        return False
-    return True
-
-
-def is_fd_open(fd: int) -> bool:
-    try:
-        n = os.dup(fd)
-    except OSError:
-        return False
-    os.close(n)
-    return True
-
-
-def get_open_fds(limit: int) -> ta.FrozenSet[int]:
-    return frozenset(filter(is_fd_open, range(limit)))
-
-
-def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
-    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
-    os.close(fd)
-    return filename
-
-
-##
-
-
-def get_path() -> ta.Sequence[str]:
-    """Return a list corresponding to $PATH, or a default."""
-
-    path = ['/bin', '/usr/bin', '/usr/local/bin']
-    if 'PATH' in os.environ:
-        p = os.environ['PATH']
-        if p:
-            path = p.split(os.pathsep)
-    return path
-
-
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
-
-
-##
-
-
-ANSI_ESCAPE_BEGIN = b'\x1b['
-ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
-
-
-def strip_escapes(s: bytes) -> bytes:
-    """Remove all ANSI color escapes from the given string."""
-
-    result = b''
-    show = 1
-    i = 0
-    l = len(s)
-    while i < l:
-        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
-            show = 1
-        elif show:
-            n = s.find(ANSI_ESCAPE_BEGIN, i)
-            if n == -1:
-                return result + s[i:]
-            else:
-                result = result + s[i:n]
-                i = n
-                show = 0
-        i += 1
-    return result
-
-
-########################################
 # ../datatypes.py
 
 
@@ -1334,6 +1098,59 @@ class NoPermissionError(ProcessError):
     Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
     filesystem permission to execute the file.
     """
+
+
+########################################
+# ../signals.py
+
+
+##
+
+
+_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
+
+
+def sig_name(sig: int) -> str:
+    global _SIG_NAMES
+    if _SIG_NAMES is None:
+        _SIG_NAMES = _init_sig_names()
+    return _SIG_NAMES.get(sig) or 'signal %d' % sig
+
+
+def _init_sig_names() -> ta.Dict[int, str]:
+    d = {}
+    for k, v in signal.__dict__.items():  # noqa
+        k_startswith = getattr(k, 'startswith', None)
+        if k_startswith is None:
+            continue
+        if k_startswith('SIG') and not k_startswith('SIG_'):
+            d[v] = k
+    return d
+
+
+##
+
+
+class SignalReceiver:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._signals_recvd: ta.List[int] = []
+
+    def receive(self, sig: int, frame: ta.Any) -> None:
+        if sig not in self._signals_recvd:
+            self._signals_recvd.append(sig)
+
+    def install(self, *sigs: int) -> None:
+        for sig in sigs:
+            signal.signal(sig, self.receive)
+
+    def get_signal(self) -> ta.Optional[int]:
+        if self._signals_recvd:
+            sig = self._signals_recvd.pop(0)
+        else:
+            sig = None
+        return sig
 
 
 ########################################
@@ -1596,303 +1413,194 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
-# ../events.py
+# ../compat.py
 
 
-class EventCallbacks:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._callbacks: ta.List[ta.Tuple[type, ta.Callable]] = []
-
-    def subscribe(self, type, callback):  # noqa
-        self._callbacks.append((type, callback))
-
-    def unsubscribe(self, type, callback):  # noqa
-        self._callbacks.remove((type, callback))
-
-    def notify(self, event):
-        for type, callback in self._callbacks:  # noqa
-            if isinstance(event, type):
-                callback(event)
-
-    def clear(self):
-        self._callbacks[:] = []
+##
 
 
-EVENT_CALLBACKS = EventCallbacks()
-
-
-class Event(abc.ABC):  # noqa
-    """Abstract event type."""
-
-
-class ProcessLogEvent(Event, abc.ABC):
-    channel: ta.Optional[str] = None
-
-    def __init__(self, process, pid, data):
-        super().__init__()
-        self.process = process
-        self.pid = pid
-        self.data = data
-
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        try:
-            data = as_string(self.data)
-        except UnicodeDecodeError:
-            data = f'Undecodable: {self.data!r}'
-
-        result = 'processname:%s groupname:%s pid:%s channel:%s\n%s' % (  # noqa
-            as_string(self.process.config.name),
-            as_string(groupname),
-            self.pid,
-            as_string(self.channel),  # type: ignore
-            data,
-        )
-        return result
-
-
-class ProcessLogStdoutEvent(ProcessLogEvent):
-    channel = 'stdout'
-
-
-class ProcessLogStderrEvent(ProcessLogEvent):
-    channel = 'stderr'
-
-
-class ProcessCommunicationEvent(Event, abc.ABC):
-    # event mode tokens
-    BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
-    END_TOKEN = b'<!--XSUPERVISOR:END-->'
-
-    channel: ta.ClassVar[str]
-
-    def __init__(self, process, pid, data):
-        super().__init__()
-        self.process = process
-        self.pid = pid
-        self.data = data
-
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        try:
-            data = as_string(self.data)
-        except UnicodeDecodeError:
-            data = f'Undecodable: {self.data!r}'
-        return f'processname:{self.process.config.name} groupname:{groupname} pid:{self.pid}\n{data}'
-
-
-class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
-    channel = 'stdout'
-
-
-class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
-    channel = 'stderr'
-
-
-class RemoteCommunicationEvent(Event):
-    def __init__(self, type, data):  # noqa
-        super().__init__()
-        self.type = type
-        self.data = data
-
-    def payload(self):
-        return f'type:{self.type}\n{self.data}'
-
-
-class SupervisorStateChangeEvent(Event):
-    """Abstract class."""
-
-    def payload(self):
-        return ''
-
-
-class SupervisorRunningEvent(SupervisorStateChangeEvent):
-    pass
-
-
-class SupervisorStoppingEvent(SupervisorStateChangeEvent):
-    pass
-
-
-class EventRejectedEvent:  # purposely does not subclass Event
-    def __init__(self, process, event):
-        super().__init__()
-        self.process = process
-        self.event = event
-
-
-class ProcessStateEvent(Event):
-    """Abstract class, never raised directly."""
-    frm = None
-    to = None
-
-    def __init__(self, process, from_state, expected=True):
-        super().__init__()
-        self.process = process
-        self.from_state = from_state
-        self.expected = expected
-        # we eagerly render these so if the process pid, etc changes beneath
-        # us, we stash the values at the time the event was sent
-        self.extra_values = self.get_extra_values()
-
-    def payload(self):
-        groupname = ''
-        if self.process.group is not None:
-            groupname = self.process.group.config.name
-        l = [
-            ('processname', self.process.config.name),
-            ('groupname', groupname),
-            ('from_state', self.from_state.name),
-        ]
-        l.extend(self.extra_values)
-        s = ' '.join([f'{name}:{val}' for name, val in l])
+def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
+    if isinstance(s, bytes):
         return s
+    else:
+        return s.encode(encoding)
 
-    def get_extra_values(self):
-        return []
+
+def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
+    if isinstance(s, str):
+        return s
+    else:
+        return s.decode(encoding)
 
 
-class ProcessStateFatalEvent(ProcessStateEvent):
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
+    l = len(needle) - 1
+    while l and not haystack.endswith(needle[:l]):
+        l -= 1
+    return l
+
+
+##
+
+
+def compact_traceback() -> ta.Tuple[
+    ta.Tuple[str, str, int],
+    ta.Type[BaseException],
+    BaseException,
+    types.TracebackType,
+]:
+    t, v, tb = sys.exc_info()
+    if not tb:
+        raise RuntimeError('No traceback')
+
+    tbinfo = []
+    while tb:
+        tbinfo.append((
+            tb.tb_frame.f_code.co_filename,
+            tb.tb_frame.f_code.co_name,
+            str(tb.tb_lineno),
+        ))
+        tb = tb.tb_next
+
+    # just to be safe
+    del tb
+
+    file, function, line = tbinfo[-1]
+    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])  # noqa
+    return (file, function, line), t, v, info  # type: ignore
+
+
+class ExitNow(Exception):  # noqa
     pass
 
 
-class ProcessStateUnknownEvent(ProcessStateEvent):
-    pass
+def real_exit(code: int) -> None:
+    os._exit(code)  # noqa
 
 
-class ProcessStateStartingOrBackoffEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('tries', int(self.process.backoff))]
+##
 
 
-class ProcessStateBackoffEvent(ProcessStateStartingOrBackoffEvent):
-    pass
+def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
+    """
+    Decode the status returned by wait() or waitpid().
+
+    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
+    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
+    """
+
+    if os.WIFEXITED(sts):
+        es = os.WEXITSTATUS(sts) & 0xffff
+        msg = f'exit status {es}'
+        return es, msg
+    elif os.WIFSIGNALED(sts):
+        sig = os.WTERMSIG(sts)
+        msg = f'terminated by {sig_name(sig)}'
+        if hasattr(os, 'WCOREDUMP'):
+            iscore = os.WCOREDUMP(sts)
+        else:
+            iscore = bool(sts & 0x80)
+        if iscore:
+            msg += ' (core dumped)'
+        return -1, msg
+    else:
+        msg = 'unknown termination cause 0x%04x' % sts  # noqa
+        return -1, msg
 
 
-class ProcessStateStartingEvent(ProcessStateStartingOrBackoffEvent):
-    pass
+##
 
 
-class ProcessStateExitedEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('expected', int(self.expected)), ('pid', self.process.pid)]
+def read_fd(fd: int) -> bytes:
+    try:
+        data = os.read(fd, 2 << 16)  # 128K
+    except OSError as why:
+        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
+            raise
+        data = b''
+    return data
 
 
-class ProcessStateRunningEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
+def try_unlink(path: str) -> bool:
+    try:
+        os.unlink(path)
+    except OSError:
+        return False
+    return True
 
 
-class ProcessStateStoppingEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
+def close_fd(fd: int) -> bool:
+    try:
+        os.close(fd)
+    except OSError:
+        return False
+    return True
 
 
-class ProcessStateStoppedEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
+def is_fd_open(fd: int) -> bool:
+    try:
+        n = os.dup(fd)
+    except OSError:
+        return False
+    os.close(n)
+    return True
 
 
-class ProcessGroupEvent(Event):
-    def __init__(self, group):
-        super().__init__()
-        self.group = group
-
-    def payload(self):
-        return f'groupname:{self.group}\n'
+def get_open_fds(limit: int) -> ta.FrozenSet[int]:
+    return frozenset(filter(is_fd_open, range(limit)))
 
 
-class ProcessGroupAddedEvent(ProcessGroupEvent):
-    pass
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
+    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
+    os.close(fd)
+    return filename
 
 
-class ProcessGroupRemovedEvent(ProcessGroupEvent):
-    pass
+##
 
 
-class TickEvent(Event):
-    """Abstract."""
+def get_path() -> ta.Sequence[str]:
+    """Return a list corresponding to $PATH, or a default."""
 
-    def __init__(self, when, supervisord):
-        super().__init__()
-        self.when = when
-        self.supervisord = supervisord
-
-    def payload(self):
-        return f'when:{self.when}'
-
-
-class Tick5Event(TickEvent):
-    period = 5
+    path = ['/bin', '/usr/bin', '/usr/local/bin']
+    if 'PATH' in os.environ:
+        p = os.environ['PATH']
+        if p:
+            path = p.split(os.pathsep)
+    return path
 
 
-class Tick60Event(TickEvent):
-    period = 60
+def normalize_path(v: str) -> str:
+    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
 
 
-class Tick3600Event(TickEvent):
-    period = 3600
+##
 
 
-TICK_EVENTS = [  # imported elsewhere
-    Tick5Event,
-    Tick60Event,
-    Tick3600Event,
-]
+ANSI_ESCAPE_BEGIN = b'\x1b['
+ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
 
 
-class EventTypes:
-    EVENT = Event  # abstract
+def strip_escapes(s: bytes) -> bytes:
+    """Remove all ANSI color escapes from the given string."""
 
-    PROCESS_STATE = ProcessStateEvent  # abstract
-    PROCESS_STATE_STOPPED = ProcessStateStoppedEvent
-    PROCESS_STATE_EXITED = ProcessStateExitedEvent
-    PROCESS_STATE_STARTING = ProcessStateStartingEvent
-    PROCESS_STATE_STOPPING = ProcessStateStoppingEvent
-    PROCESS_STATE_BACKOFF = ProcessStateBackoffEvent
-    PROCESS_STATE_FATAL = ProcessStateFatalEvent
-    PROCESS_STATE_RUNNING = ProcessStateRunningEvent
-    PROCESS_STATE_UNKNOWN = ProcessStateUnknownEvent
-
-    PROCESS_COMMUNICATION = ProcessCommunicationEvent  # abstract
-    PROCESS_COMMUNICATION_STDOUT = ProcessCommunicationStdoutEvent
-    PROCESS_COMMUNICATION_STDERR = ProcessCommunicationStderrEvent
-
-    PROCESS_LOG = ProcessLogEvent
-    PROCESS_LOG_STDOUT = ProcessLogStdoutEvent
-    PROCESS_LOG_STDERR = ProcessLogStderrEvent
-
-    REMOTE_COMMUNICATION = RemoteCommunicationEvent
-
-    SUPERVISOR_STATE_CHANGE = SupervisorStateChangeEvent  # abstract
-    SUPERVISOR_STATE_CHANGE_RUNNING = SupervisorRunningEvent
-    SUPERVISOR_STATE_CHANGE_STOPPING = SupervisorStoppingEvent
-
-    TICK = TickEvent  # abstract
-    TICK_5 = Tick5Event
-    TICK_60 = Tick60Event
-    TICK_3600 = Tick3600Event
-
-    PROCESS_GROUP = ProcessGroupEvent  # abstract
-    PROCESS_GROUP_ADDED = ProcessGroupAddedEvent
-    PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
-
-
-def get_event_name_by_type(requested):
-    for name, typ in EventTypes.__dict__.items():
-        if typ is requested:
-            return name
-    return None
-
-
-def register(name, event):
-    setattr(EventTypes, name, event)
+    result = b''
+    show = 1
+    i = 0
+    l = len(s)
+    while i < l:
+        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
+            show = 1
+        elif show:
+            n = s.find(ANSI_ESCAPE_BEGIN, i)
+            if n == -1:
+                return result + s[i:]
+            else:
+                result = result + s[i:n]
+                i = n
+                show = 0
+        i += 1
+    return result
 
 
 ########################################
@@ -3336,6 +3044,306 @@ def build_config_named_children(
 
 
 ########################################
+# ../events.py
+
+
+class EventCallbacks:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._callbacks: ta.List[ta.Tuple[type, ta.Callable]] = []
+
+    def subscribe(self, type, callback):  # noqa
+        self._callbacks.append((type, callback))
+
+    def unsubscribe(self, type, callback):  # noqa
+        self._callbacks.remove((type, callback))
+
+    def notify(self, event):
+        for type, callback in self._callbacks:  # noqa
+            if isinstance(event, type):
+                callback(event)
+
+    def clear(self):
+        self._callbacks[:] = []
+
+
+EVENT_CALLBACKS = EventCallbacks()
+
+
+class Event(abc.ABC):  # noqa
+    """Abstract event type."""
+
+
+class ProcessLogEvent(Event, abc.ABC):
+    channel: ta.Optional[str] = None
+
+    def __init__(self, process, pid, data):
+        super().__init__()
+        self.process = process
+        self.pid = pid
+        self.data = data
+
+    def payload(self):
+        groupname = ''
+        if self.process.group is not None:
+            groupname = self.process.group.config.name
+        try:
+            data = as_string(self.data)
+        except UnicodeDecodeError:
+            data = f'Undecodable: {self.data!r}'
+
+        result = 'processname:%s groupname:%s pid:%s channel:%s\n%s' % (  # noqa
+            as_string(self.process.config.name),
+            as_string(groupname),
+            self.pid,
+            as_string(self.channel),  # type: ignore
+            data,
+        )
+        return result
+
+
+class ProcessLogStdoutEvent(ProcessLogEvent):
+    channel = 'stdout'
+
+
+class ProcessLogStderrEvent(ProcessLogEvent):
+    channel = 'stderr'
+
+
+class ProcessCommunicationEvent(Event, abc.ABC):
+    # event mode tokens
+    BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
+    END_TOKEN = b'<!--XSUPERVISOR:END-->'
+
+    channel: ta.ClassVar[str]
+
+    def __init__(self, process, pid, data):
+        super().__init__()
+        self.process = process
+        self.pid = pid
+        self.data = data
+
+    def payload(self):
+        groupname = ''
+        if self.process.group is not None:
+            groupname = self.process.group.config.name
+        try:
+            data = as_string(self.data)
+        except UnicodeDecodeError:
+            data = f'Undecodable: {self.data!r}'
+        return f'processname:{self.process.config.name} groupname:{groupname} pid:{self.pid}\n{data}'
+
+
+class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
+    channel = 'stdout'
+
+
+class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
+    channel = 'stderr'
+
+
+class RemoteCommunicationEvent(Event):
+    def __init__(self, type, data):  # noqa
+        super().__init__()
+        self.type = type
+        self.data = data
+
+    def payload(self):
+        return f'type:{self.type}\n{self.data}'
+
+
+class SupervisorStateChangeEvent(Event):
+    """Abstract class."""
+
+    def payload(self):
+        return ''
+
+
+class SupervisorRunningEvent(SupervisorStateChangeEvent):
+    pass
+
+
+class SupervisorStoppingEvent(SupervisorStateChangeEvent):
+    pass
+
+
+class EventRejectedEvent:  # purposely does not subclass Event
+    def __init__(self, process, event):
+        super().__init__()
+        self.process = process
+        self.event = event
+
+
+class ProcessStateEvent(Event):
+    """Abstract class, never raised directly."""
+    frm = None
+    to = None
+
+    def __init__(self, process, from_state, expected=True):
+        super().__init__()
+        self.process = process
+        self.from_state = from_state
+        self.expected = expected
+        # we eagerly render these so if the process pid, etc changes beneath
+        # us, we stash the values at the time the event was sent
+        self.extra_values = self.get_extra_values()
+
+    def payload(self):
+        groupname = ''
+        if self.process.group is not None:
+            groupname = self.process.group.config.name
+        l = [
+            ('processname', self.process.config.name),
+            ('groupname', groupname),
+            ('from_state', self.from_state.name),
+        ]
+        l.extend(self.extra_values)
+        s = ' '.join([f'{name}:{val}' for name, val in l])
+        return s
+
+    def get_extra_values(self):
+        return []
+
+
+class ProcessStateFatalEvent(ProcessStateEvent):
+    pass
+
+
+class ProcessStateUnknownEvent(ProcessStateEvent):
+    pass
+
+
+class ProcessStateStartingOrBackoffEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('tries', int(self.process.backoff))]
+
+
+class ProcessStateBackoffEvent(ProcessStateStartingOrBackoffEvent):
+    pass
+
+
+class ProcessStateStartingEvent(ProcessStateStartingOrBackoffEvent):
+    pass
+
+
+class ProcessStateExitedEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('expected', int(self.expected)), ('pid', self.process.pid)]
+
+
+class ProcessStateRunningEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+class ProcessStateStoppingEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+class ProcessStateStoppedEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+class ProcessGroupEvent(Event):
+    def __init__(self, group):
+        super().__init__()
+        self.group = group
+
+    def payload(self):
+        return f'groupname:{self.group}\n'
+
+
+class ProcessGroupAddedEvent(ProcessGroupEvent):
+    pass
+
+
+class ProcessGroupRemovedEvent(ProcessGroupEvent):
+    pass
+
+
+class TickEvent(Event):
+    """Abstract."""
+
+    def __init__(self, when, supervisord):
+        super().__init__()
+        self.when = when
+        self.supervisord = supervisord
+
+    def payload(self):
+        return f'when:{self.when}'
+
+
+class Tick5Event(TickEvent):
+    period = 5
+
+
+class Tick60Event(TickEvent):
+    period = 60
+
+
+class Tick3600Event(TickEvent):
+    period = 3600
+
+
+TICK_EVENTS = [  # imported elsewhere
+    Tick5Event,
+    Tick60Event,
+    Tick3600Event,
+]
+
+
+class EventTypes:
+    EVENT = Event  # abstract
+
+    PROCESS_STATE = ProcessStateEvent  # abstract
+    PROCESS_STATE_STOPPED = ProcessStateStoppedEvent
+    PROCESS_STATE_EXITED = ProcessStateExitedEvent
+    PROCESS_STATE_STARTING = ProcessStateStartingEvent
+    PROCESS_STATE_STOPPING = ProcessStateStoppingEvent
+    PROCESS_STATE_BACKOFF = ProcessStateBackoffEvent
+    PROCESS_STATE_FATAL = ProcessStateFatalEvent
+    PROCESS_STATE_RUNNING = ProcessStateRunningEvent
+    PROCESS_STATE_UNKNOWN = ProcessStateUnknownEvent
+
+    PROCESS_COMMUNICATION = ProcessCommunicationEvent  # abstract
+    PROCESS_COMMUNICATION_STDOUT = ProcessCommunicationStdoutEvent
+    PROCESS_COMMUNICATION_STDERR = ProcessCommunicationStderrEvent
+
+    PROCESS_LOG = ProcessLogEvent
+    PROCESS_LOG_STDOUT = ProcessLogStdoutEvent
+    PROCESS_LOG_STDERR = ProcessLogStderrEvent
+
+    REMOTE_COMMUNICATION = RemoteCommunicationEvent
+
+    SUPERVISOR_STATE_CHANGE = SupervisorStateChangeEvent  # abstract
+    SUPERVISOR_STATE_CHANGE_RUNNING = SupervisorRunningEvent
+    SUPERVISOR_STATE_CHANGE_STOPPING = SupervisorStoppingEvent
+
+    TICK = TickEvent  # abstract
+    TICK_5 = Tick5Event
+    TICK_60 = Tick60Event
+    TICK_3600 = Tick3600Event
+
+    PROCESS_GROUP = ProcessGroupEvent  # abstract
+    PROCESS_GROUP_ADDED = ProcessGroupAddedEvent
+    PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
+
+
+def get_event_name_by_type(requested):
+    for name, typ in EventTypes.__dict__.items():
+        if typ is requested:
+            return name
+    return None
+
+
+def register(name, event):
+    setattr(EventTypes, name, event)
+
+
+########################################
 # ../poller.py
 
 
@@ -3755,8 +3763,6 @@ class ServerContext(AbstractServerContext):
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
-        self._signal_receiver = SignalReceiver()
-
         if config.user is not None:
             uid = name_to_uid(config.user)
             self._uid: ta.Optional[int] = uid
@@ -3799,16 +3805,6 @@ class ServerContext(AbstractServerContext):
         return self._gid
 
     ##
-
-    def set_signals(self) -> None:
-        self._signal_receiver.install(
-            signal.SIGTERM,
-            signal.SIGINT,
-            signal.SIGQUIT,
-            signal.SIGHUP,
-            signal.SIGCHLD,
-            signal.SIGUSR2,
-        )
 
     def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
@@ -3996,9 +3992,6 @@ class ServerContext(AbstractServerContext):
             dir=self.config.child_logdir,
         )
         return logfile
-
-    def get_signal(self) -> ta.Optional[int]:
-        return self._signal_receiver.get_signal()
 
     def write_pidfile(self) -> None:
         pid = os.getpid()
@@ -4345,11 +4338,11 @@ class OutputDispatcher(Dispatcher):
             return
 
         if self._capture_mode:
-            token, tokenlen = self._end_token_data
+            token, token_len = self._end_token_data
         else:
-            token, tokenlen = self._begin_token_data
+            token, token_len = self._begin_token_data
 
-        if len(self._output_buffer) <= tokenlen:
+        if len(self._output_buffer) <= token_len:
             return  # not enough data
 
         data = self._output_buffer
@@ -5257,6 +5250,7 @@ class Supervisor:
             poller: Poller,
             *,
             process_group_factory: ta.Optional[ProcessGroupFactory] = None,
+            signal_receiver: ta.Optional[SignalReceiver] = None,
     ) -> None:
         super().__init__()
 
@@ -5268,6 +5262,8 @@ class Supervisor:
                 return ProcessGroup(config, self._context)
             process_group_factory = ProcessGroupFactory(make_process_group)
         self._process_group_factory = process_group_factory
+
+        self._signal_receiver = signal_receiver if signal_receiver is not None else SignalReceiver()
 
         self._ticks: ta.Dict[int, float] = {}
         self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
@@ -5388,7 +5384,7 @@ class Supervisor:
             for config in self._context.config.groups or []:
                 self.add_process_group(config)
 
-            self._context.set_signals()
+            self._set_signals()
 
             if not self._context.config.nodaemon and self._context.first:
                 self._context.daemonize()
@@ -5406,6 +5402,16 @@ class Supervisor:
 
         finally:
             self._context.cleanup()
+
+    def _set_signals(self) -> None:
+        self._signal_receiver.install(
+            signal.SIGTERM,
+            signal.SIGINT,
+            signal.SIGQUIT,
+            signal.SIGHUP,
+            signal.SIGCHLD,
+            signal.SIGUSR2,
+        )
 
     #
 
@@ -5527,7 +5533,7 @@ class Supervisor:
             self._reap(once=False, depth=depth + 1)
 
     def _handle_signal(self) -> None:
-        sig = self._context.get_signal()
+        sig = self._signal_receiver.get_signal()
         if not sig:
             return
 
