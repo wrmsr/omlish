@@ -13,6 +13,7 @@ from .context import ServerContext
 from .dispatchers import Dispatcher
 from .events import EVENT_CALLBACKS
 from .events import TICK_EVENTS
+from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .events import SupervisorRunningEvent
@@ -33,14 +34,54 @@ from .utils import timeslice
 
 
 class ProcessGroups:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            event_callbacks: ta.Optional[EventCallbacks] = None,
+    ) -> None:
         super().__init__()
 
+        self._event_callbacks = event_callbacks
+
         self._by_name: ta.Dict[str, ProcessGroup] = {}
+
+    def get(self, name: str) -> ta.Optional[ProcessGroup]:
+        return self._by_name.get(name)
+
+    def __getitem__(self, name: str) -> ProcessGroup:
+        return self._by_name[name]
+
+    def __len__(self) -> int:
+        return len(self._by_name)
+
+    def __iter__(self) -> ta.Iterator[ProcessGroup]:
+        return iter(self._by_name.values())
 
     def all(self) -> ta.Mapping[str, ProcessGroup]:
         return self._by_name
 
+    def add(self, group: ProcessGroup) -> None:
+        if (name := group.name) in self._by_name:
+            raise KeyError(f'Process group already exists: {name}')
+
+        self._by_name[name] = group
+
+        if self._event_callbacks is not None:
+            self._event_callbacks.notify(ProcessGroupAddedEvent(name))
+
+    def remove(self, name: str) -> None:
+        group = self._by_name[name]
+
+        group.before_remove()
+
+        del self._by_name[name]
+
+        if self._event_callbacks is not None:
+            self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+
+    def clear(self) -> None:
+        # FIXME: events?
+        self._by_name.clear()
 
 ##
 
@@ -69,7 +110,7 @@ class SignalHandler:
             signal.SIGUSR2,
         )
 
-    def handle_signal(self) -> None:
+    def handle_signals(self) -> None:
         sig = self._signal_receiver.get_signal()
         if not sig:
             return
@@ -90,8 +131,8 @@ class SignalHandler:
 
         elif sig == signal.SIGUSR2:
             log.info('received %s indicating log reopen request', sig_name(sig))
-            # self._context.reopen_logs()
-            for group in self._process_groups.all().values():
+
+            for group in self._process_groups:
                 group.reopen_logs()
 
         else:
@@ -112,16 +153,20 @@ class ProcessGroupFactory:
 class Supervisor:
     def __init__(
             self,
+            *,
             context: ServerContext,
             poller: Poller,
-            *,
+            process_groups: ProcessGroups,
+            signal_handler: SignalHandler,
+
             process_group_factory: ta.Optional[ProcessGroupFactory] = None,
-            signal_receiver: ta.Optional[SignalReceiver] = None,
     ) -> None:
         super().__init__()
 
         self._context = context
         self._poller = poller
+        self._process_groups = process_groups
+        self._signal_handler = signal_handler
 
         if process_group_factory is None:
             def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
@@ -129,10 +174,8 @@ class Supervisor:
             process_group_factory = ProcessGroupFactory(make_process_group)
         self._process_group_factory = process_group_factory
 
-        self._signal_receiver = signal_receiver if signal_receiver is not None else SignalReceiver()
-
         self._ticks: ta.Dict[int, float] = {}
-        self._process_groups: ta.Dict[str, ProcessGroup] = {}  # map of process group name to process group object
+
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
         self._stopping = False  # set after we detect that we are handling a stop request
         self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
@@ -155,7 +198,7 @@ class Supervisor:
 
     def diff_to_active(self) -> DiffToActive:
         new = self._context.config.groups or []
-        cur = [group.config for group in self._process_groups.values()]
+        cur = [group.config for group in self._process_groups]
 
         curdict = dict(zip([cfg.name for cfg in cur], cur))
         newdict = dict(zip([cfg.name for cfg in new], new))
@@ -168,37 +211,34 @@ class Supervisor:
         return Supervisor.DiffToActive(added, changed, removed)
 
     def add_process_group(self, config: ProcessGroupConfig) -> bool:
-        name = config.name
-        if name in self._process_groups:
+        if self._process_groups.get(config.name) is not None:
             return False
 
-        group = self._process_groups[name] = self._process_group_factory(config)
+        group = self._process_group_factory(config)
         group.after_setuid()
 
-        EVENT_CALLBACKS.notify(ProcessGroupAddedEvent(name))
+        self._process_groups.add(group)
+
         return True
 
     def remove_process_group(self, name: str) -> bool:
         if self._process_groups[name].get_unstopped_processes():
             return False
 
-        self._process_groups[name].before_remove()
+        self._process_groups.remove(name)
 
-        del self._process_groups[name]
-
-        EVENT_CALLBACKS.notify(ProcessGroupRemovedEvent(name))
         return True
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
         process_map = {}
-        for group in self._process_groups.values():
+        for group in self._process_groups:
             process_map.update(group.get_dispatchers())
         return process_map
 
     def shutdown_report(self) -> ta.List[Subprocess]:
         unstopped: ta.List[Subprocess] = []
 
-        for group in self._process_groups.values():
+        for group in self._process_groups:
             unstopped.extend(group.get_unstopped_processes())
 
         if unstopped:
@@ -241,7 +281,7 @@ class Supervisor:
             *,
             callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
     ) -> None:
-        self._process_groups = {}  # clear
+        self._process_groups.clear()
         self._stop_groups = None  # clear
 
         EVENT_CALLBACKS.clear()
@@ -250,7 +290,7 @@ class Supervisor:
             for config in self._context.config.groups or []:
                 self.add_process_group(config)
 
-            self._set_signals()
+            self._signal_handler.set_signals()
 
             if not self._context.config.nodaemon and self._context.first:
                 self._context.daemonize()
@@ -274,7 +314,7 @@ class Supervisor:
     def _run_once(self) -> None:
         self._poll()
         self._reap()
-        self._handle_signal()
+        self._signal_handler.handle_signals()
         self._tick()
 
         if self._context.state < SupervisorState.RUNNING:
@@ -300,7 +340,7 @@ class Supervisor:
         combined_map = {}
         combined_map.update(self.get_process_map())
 
-        pgroups = list(self._process_groups.values())
+        pgroups = list(self._process_groups)
         pgroups.sort()
 
         if self._context.state < SupervisorState.RUNNING:
