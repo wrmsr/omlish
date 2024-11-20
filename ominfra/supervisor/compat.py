@@ -18,7 +18,7 @@ def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
         return s.encode(encoding)
 
 
-def as_string(s: ta.Union[str, bytes], encoding='utf8') -> str:
+def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
     if isinstance(s, str):
         return s
     else:
@@ -105,7 +105,7 @@ def signame(sig: int) -> str:
 
 def _init_signames() -> ta.Dict[int, str]:
     d = {}
-    for k, v in signal.__dict__.items():
+    for k, v in signal.__dict__.items():  # noqa
         k_startswith = getattr(k, 'startswith', None)
         if k_startswith is None:
             continue
