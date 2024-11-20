@@ -7,6 +7,8 @@ import io
 import time
 import typing as ta
 
+from omlish import check
+
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
 from .sockets import SocketAddress
@@ -75,8 +77,8 @@ DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 def read_raw_http_headers(
         fp: ta.IO,
         *,
-        max_line: int = http.client._MAXLINE,  # noqa
-        max_headers: int = http.client._MAXHEADERS,  # noqa
+        max_line: int = http.client._MAXLINE,  # type: ignore
+        max_headers: int = http.client._MAXHEADERS,  # type: ignore
 ) -> list[bytes]:
     """
     Reads potential header lines into a list from a file pointer.
@@ -194,7 +196,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         request = HttpServerRequest(
             client_address=self.client_address,
-            method=self.command,
+            method=check.not_none(self.command),
             path=self.path,
             headers=self.headers,
             data=request_data,
@@ -256,19 +258,19 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                     raise ValueError(version)  # noqa
 
                 base_version_number = version.split('/', 1)[1]
-                version_number = base_version_number.split('.')
+                version_number_parts = base_version_number.split('.')
 
                 # RFC 2145 section 3.1 says there can be only one "." and
                 #   - major and minor numbers MUST be treated as separate integers;
                 #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
                 #   - Leading zeros MUST be ignored by recipients.
-                if len(version_number) != 2:
-                    raise ValueError(version_number)  # noqa
-                if any(not component.isdigit() for component in version_number):
+                if len(version_number_parts) != 2:
+                    raise ValueError(version_number_parts)  # noqa
+                if any(not component.isdigit() for component in version_number_parts):
                     raise ValueError('non digit in http version')  # noqa
-                if any(len(component) > 10 for component in version_number):
+                if any(len(component) > 10 for component in version_number_parts):
                     raise ValueError('unreasonable length http version')  # noqa
-                version_number = int(version_number[0]), int(version_number[1])
+                version_number = int(version_number_parts[0]), int(version_number_parts[1])
 
             except (ValueError, IndexError):
                 self.send_error(

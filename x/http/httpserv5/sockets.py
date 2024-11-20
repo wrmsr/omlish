@@ -35,10 +35,14 @@ class SocketAddressInfo:
 
 
 def get_best_socket_family(
-        *address: ta.Any,  # SocketAddressInfoArgs
+        host: str | None,
+        port: str | int | None,
+        family: int | socket.AddressFamily = socket.AddressFamily.AF_UNSPEC,
 ) -> tuple[socket.AddressFamily, SocketAddress]:
     infos = socket.getaddrinfo(
-        *address,
+        host,
+        port,
+        family,
         type=socket.SOCK_STREAM,
         flags=socket.AI_PASSIVE,
     )
