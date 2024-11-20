@@ -10,11 +10,9 @@ from omlish import check
 
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
-from .parsing import ContinueParsedHttpResult
 from .parsing import EmptyParsedHttpResult
 from .parsing import HttpRequestParser
 from .parsing import ParseHttpRequestError
-from .parsing import ParseHttpRequestResult
 from .parsing import ParsedHttpRequest
 from .parsing import read_raw_http_headers
 from .sockets import SocketAddress
@@ -128,7 +126,13 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     request_version: str
     request_line: str
+
     method: str | None
+    path: str
+
+    headers: http.client.HTTPMessage
+
+    #
 
     def handle_one_request(self) -> None:
         try:
@@ -161,10 +165,20 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 # An error code has been sent, just exit
                 return
 
-            elif isinstance(parsed, ContinueParsedHttpResult):
-                if not self.handle_expect_100():
-                    return False
+            if isinstance(parsed, ParseHttpRequestError):
+                self.send_error(
+                    parsed.code,
+                    *parsed.message,
+                )
+                return
 
+            parsed = check.isinstance(parsed, ParsedHttpRequest)
+            if parsed.expects_continue:
+                if not self.handle_expect_100():
+                    return
+
+            self.method = parsed.method
+            self.path = parsed.path
             self.invoke_handler()
 
             self.wfile.flush()  # actually send the response if not already done.
@@ -218,141 +232,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         if response_data is not None:
             self.wfile.write(response_data)
-
-    #
-
-
-    path: str
-
-    headers: http.client.HTTPMessage
-
-    class ParsedRequest(ta.NamedTuple):
-        pass
-
-    class ParseRequestError(ta.NamedTuple):
-        code: http.HTTPStatus
-        message: str
-
-    def parse_request(self) -> bool:
-        self.method = None  # set in case of error on the first line
-        self.request_version = self.default_request_version
-        self.close_connection = True
-
-        request_line = self.raw_request_line.decode('iso-8859-1')
-        request_line = request_line.rstrip('\r\n')
-        self.request_line = request_line
-
-        words = request_line.split()
-        if len(words) == 0:
-            return False
-
-        if len(words) >= 3:  # Enough to determine protocol version
-            version = words[-1]
-            try:
-                if not version.startswith('HTTP/'):
-                    raise ValueError(version)  # noqa
-
-                base_version_number = version.split('/', 1)[1]
-                version_number_parts = base_version_number.split('.')
-
-                # RFC 2145 section 3.1 says there can be only one "." and
-                #   - major and minor numbers MUST be treated as separate integers;
-                #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
-                #   - Leading zeros MUST be ignored by recipients.
-                if len(version_number_parts) != 2:
-                    raise ValueError(version_number_parts)  # noqa
-                if any(not component.isdigit() for component in version_number_parts):
-                    raise ValueError('non digit in http version')  # noqa
-                if any(len(component) > 10 for component in version_number_parts):
-                    raise ValueError('unreasonable length http version')  # noqa
-                version_number = int(version_number_parts[0]), int(version_number_parts[1])
-
-            except (ValueError, IndexError):
-                self.send_error(
-                    http.HTTPStatus.BAD_REQUEST,
-                    f'Bad request version ({version!r})',
-                )
-                return False
-
-            if version_number >= (1, 1) and self.protocol_version >= 'HTTP/1.1':
-                self.close_connection = False
-
-            if version_number >= (2, 0):
-                self.send_error(
-                    http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
-                    f'Invalid HTTP version ({base_version_number})',
-                )
-                return False
-
-            self.request_version = version
-
-        if not 2 <= len(words) <= 3:
-            self.send_error(
-                http.HTTPStatus.BAD_REQUEST,
-                f'Bad request syntax ({request_line!r})',
-            )
-            return False
-
-        method, path = words[:2]
-        if len(words) == 2:
-            self.close_connection = True
-            if method != 'GET':
-                self.send_error(
-                    http.HTTPStatus.BAD_REQUEST,
-                    f'Bad HTTP/0.9 request type ({method!r})',
-                )
-                return False
-
-        self.method = method
-        self.path = path
-
-        # gh-87389: The purpose of replacing '//' with '/' is to protect against open redirect attacks possibly
-        # triggered if the path starts with '//' because http clients treat //path as an absolute URI without scheme
-        # (similar to http://path) rather than a path.
-        if self.path.startswith('//'):
-            self.path = '/' + self.path.lstrip('/')  # Reduce to a single /
-
-        # Examine the headers and look for a Connection directive.
-        try:
-            raw_headers = read_raw_http_headers(self.rfile)
-            self.headers = parse_raw_http_headers(raw_headers)
-
-        except http.client.LineTooLong as err:
-            self.send_error(
-                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                'Line too long',
-                str(err),
-            )
-            return False
-
-        except http.client.HTTPException as err:
-            self.send_error(
-                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                'Too many headers',
-                str(err),
-            )
-            return False
-
-        conn_type = self.headers.get('Connection', '')
-        if conn_type.lower() == 'close':
-            self.close_connection = True
-        elif (
-                conn_type.lower() == 'keep-alive' and
-                self.protocol_version >= 'HTTP/1.1'
-        ):
-            self.close_connection = False
-
-        # Examine the headers and look for an Expect directive
-        expect = self.headers.get('Expect', '')
-        if (
-                expect.lower() == '100-continue' and
-                self.protocol_version >= 'HTTP/1.1' and
-                self.request_version >= 'HTTP/1.1'
-        ):
-            if not self.handle_expect_100():
-                return False
-
-        return True
 
     #
 
