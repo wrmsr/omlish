@@ -2,6 +2,19 @@ import http.server
 import socket
 import sys
 
+from omlish.http import consts as hc
+
+
+class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        out = b'hi'
+
+        self.send_response(http.HTTPStatus.OK)
+        self.send_header(hc.HEADER_CONTENT_TYPE.decode(), hc.CONTENT_TYPE_TEXT.decode())
+        self.send_header(hc.HEADER_CONTENT_LENGTH.decode(), str(len(out)))
+        self.end_headers()
+        self.wfile.write(out)
+
 
 def _get_best_family(*address):
     infos = socket.getaddrinfo(
@@ -19,7 +32,7 @@ def _main() -> None:
     protocol = 'HTTP/1.0'
 
     ServerClass = http.server.ThreadingHTTPServer
-    HandlerClass = http.server.SimpleHTTPRequestHandler
+    HandlerClass = SimpleHTTPRequestHandler
 
     ServerClass.address_family, addr = _get_best_family(bind, port)
     HandlerClass.protocol_version = protocol
