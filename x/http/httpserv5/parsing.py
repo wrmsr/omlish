@@ -9,7 +9,7 @@ import typing as ta
 
 
 def read_raw_http_headers(
-        fp: ta.BinaryIO,
+        read_line: ta.Callable[[int], bytes],
         *,
         max_line: int = http.client._MAXLINE,  # type: ignore  # noqa
         max_headers: int = http.client._MAXHEADERS,  # type: ignore  # noqa
@@ -22,7 +22,7 @@ def read_raw_http_headers(
 
     headers: list[bytes] = []
     while True:
-        line = fp.readline(max_line + 1)
+        line = read_line(max_line + 1)
         if len(line) > max_line:
             raise http.client.LineTooLong('header line')
         headers.append(line)
@@ -146,15 +146,12 @@ class HttpRequestParser:
 
         self._protocol_version = protocol_version
 
-    def parse(
-            self,
-            raw_request_line: bytes,
-            read_raw_headers: ta.Callable[[], ta.Sequence[bytes]],
-    ) -> ParseHttpRequestResult:
-        request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
+    def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
+        raw_request_line = read_line(65537)
 
         #
 
+        request_line = '-'
         request_version = self.DEFAULT_REQUEST_VERSION
         headers: http.client.HTTPMessage | None = None
         close_connection = True
@@ -167,6 +164,20 @@ class HttpRequestParser:
                 headers=headers,
                 close_connection=close_connection,
             )
+
+        #
+
+        if len(raw_request_line) > 65536:
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.REQUEST_URI_TOO_LONG,
+                message='Request line too long',
+                **result_kwargs(),
+            )
+
+        if not raw_request_line:
+            return EmptyParsedHttpResult(**result_kwargs())
+
+        request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
 
         #
 
@@ -239,7 +250,7 @@ class HttpRequestParser:
 
         # Examine the headers and look for a Connection directive.
         try:
-            raw_headers = read_raw_headers()
+            raw_headers = read_raw_http_headers(read_line)
             headers = parse_raw_http_headers(raw_headers)
 
         except http.client.LineTooLong as err:

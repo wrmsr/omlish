@@ -136,24 +136,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def handle_one_request(self) -> None:
         try:
-            # FIXME: move into parser, parser just takes a read_line: ta.Callable[[], bytes], natural translation to gen
-            self.raw_request_line = self.rfile.readline(65537)
-
-            if len(self.raw_request_line) > 65536:
-                self.request_line = ''
-                self.request_version = ''
-                self.method = ''
-                self.send_error(http.HTTPStatus.REQUEST_URI_TOO_LONG)
-                return
-
-            if not self.raw_request_line:
-                self.close_connection = True
-                return
-
-            parsed = self.parser.parse(
-                self.raw_request_line,
-                lambda: read_raw_http_headers(self.rfile),
-            )
+            parsed = self.parser.parse(self.rfile.readline)
 
             self.protocol_version = parsed.protocol_version
             self.request_line = parsed.request_line
