@@ -1,7 +1,5 @@
 # ruff: noqa: UP006 UP007
-import dataclasses as dc
 import errno
-import functools
 import os.path
 import shlex
 import signal
@@ -13,8 +11,6 @@ from omlish.lite.check import check_isinstance
 from omlish.lite.logs import log
 
 from .configs import ProcessConfig
-from .configs import ProcessGroupConfig
-from .context import ServerContext
 from .context import check_execv_args
 from .context import close_child_pipes
 from .context import close_parent_pipes
@@ -40,9 +36,9 @@ from .events import ProcessStateUnknownEvent
 from .exceptions import BadCommandError
 from .exceptions import ProcessError
 from .signals import sig_name
-from .states import STOPPED_STATES
 from .states import ProcessState
 from .states import SupervisorState
+from .types import AbstractProcessGroup
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
 from .utils import as_bytes
@@ -60,14 +56,13 @@ InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 ##
 
 
-@functools.total_ordering
 class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
 
     def __init__(
             self,
             config: ProcessConfig,
-            group: 'ProcessGroup',
+            group: AbstractProcessGroup,
             *,
             context: AbstractServerContext,
             event_callbacks: EventCallbacks,
@@ -108,7 +103,7 @@ class Subprocess(AbstractSubprocess):
         return self._pid
 
     @property
-    def group(self) -> 'ProcessGroup':
+    def group(self) -> AbstractProcessGroup:
         return self._group
 
     @property
@@ -126,6 +121,9 @@ class Subprocess(AbstractSubprocess):
     @property
     def backoff(self) -> int:
         return self._backoff
+
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+        return self._dispatchers
 
     def remove_logs(self) -> None:
         for dispatcher in self._dispatchers.values():
@@ -683,12 +681,6 @@ class Subprocess(AbstractSubprocess):
         msg = drop_privileges(self._config.uid)
         return msg
 
-    def __lt__(self, other):
-        return self._config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self._config.priority == other.config.priority
-
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self._config.name
@@ -764,105 +756,3 @@ class Subprocess(AbstractSubprocess):
         # if self.stderr_logfile is Automatic:
         #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
         pass
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, 'ProcessGroup'], Subprocess]
-
-    def __call__(self, config: ProcessConfig, group: 'ProcessGroup') -> Subprocess:
-        return self.fn(config, group)
-
-
-@functools.total_ordering
-class ProcessGroup:
-    def __init__(
-            self,
-            config: ProcessGroupConfig,
-            context: ServerContext,
-            *,
-            subprocess_factory: SubprocessFactory,
-    ):
-        super().__init__()
-
-        self._config = config
-        self._context = context
-        self._subprocess_factory = subprocess_factory
-
-        self._processes = {}
-        for pconfig in self._config.processes or []:
-            process = self._subprocess_factory(pconfig, self)
-            self._processes[pconfig.name] = process
-
-    @property
-    def config(self) -> ProcessGroupConfig:
-        return self._config
-
-    @property
-    def name(self) -> str:
-        return self._config.name
-
-    @property
-    def context(self) -> AbstractServerContext:
-        return self._context
-
-    def __lt__(self, other):
-        return self._config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self._config.priority == other.config.priority
-
-    def __repr__(self):
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
-
-    def remove_logs(self) -> None:
-        for process in self._processes.values():
-            process.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for process in self._processes.values():
-            process.reopen_logs()
-
-    def stop_all(self) -> None:
-        processes = list(self._processes.values())
-        processes.sort()
-        processes.reverse()  # stop in desc priority order
-
-        for proc in processes:
-            state = proc.get_state()
-            if state == ProcessState.RUNNING:
-                # RUNNING -> STOPPING
-                proc.stop()
-
-            elif state == ProcessState.STARTING:
-                # STARTING -> STOPPING
-                proc.stop()
-
-            elif state == ProcessState.BACKOFF:
-                # BACKOFF -> FATAL
-                proc.give_up()
-
-    def get_unstopped_processes(self) -> ta.List[Subprocess]:
-        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
-
-    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
-        dispatchers = {}
-        for process in self._processes.values():
-            dispatchers.update(process._dispatchers)  # noqa
-        return dispatchers
-
-    def before_remove(self) -> None:
-        pass
-
-    def transition(self) -> None:
-        for proc in self._processes.values():
-            proc.transition()
-
-    def after_setuid(self) -> None:
-        for proc in self._processes.values():
-            proc.create_auto_child_logs()
