@@ -3,6 +3,7 @@ TODO:
  - SocketClientAddress family / tuple pairs
   + codification of https://docs.python.org/3/library/socket.html#socket-families
 """
+import datetime
 import email.utils
 import html
 import http.client
@@ -30,25 +31,19 @@ class BaseHTTPRequestHandler(
     socketserver.StreamRequestHandler,
     SocketServerBaseRequestHandler_,
 ):
-    # The Python system version, truncated to its first component.
-    sys_version = "Python/" + sys.version.split()[0]
-
-    # The server software version.  You may want to override this.
-    # The format is multiple whitespace-separated strings, where each string is of the form name[/version].
-    server_version = "BaseHTTP/0.0"
-
     error_message_format = http.server.DEFAULT_ERROR_MESSAGE
     error_content_type = http.server.DEFAULT_ERROR_CONTENT_TYPE
 
-    # The default request version.  This only affects responses up until the point where the request line is parsed, so
+    # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
-    default_request_version = "HTTP/0.9"
+    default_request_version = 'HTTP/0.9'
 
-    def parse_request(self):
+    def parse_request(self) -> bool:
         self.command = None  # set in case of error on the first line
         self.request_version = version = self.default_request_version
         self.close_connection = True
+
         requestline = str(self.raw_requestline, 'iso-8859-1')
         requestline = requestline.rstrip('\r\n')
         self.requestline = requestline
@@ -62,7 +57,7 @@ class BaseHTTPRequestHandler(
                 if not version.startswith('HTTP/'):
                     raise ValueError
                 base_version_number = version.split('/', 1)[1]
-                version_number = base_version_number.split(".")
+                version_number = base_version_number.split('.')
                 # RFC 2145 section 3.1 says there can be only one "." and
                 #   - major and minor numbers MUST be treated as separate integers;
                 #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
@@ -70,29 +65,30 @@ class BaseHTTPRequestHandler(
                 if len(version_number) != 2:
                     raise ValueError
                 if any(not component.isdigit() for component in version_number):
-                    raise ValueError("non digit in http version")
+                    raise ValueError('non digit in http version')
                 if any(len(component) > 10 for component in version_number):
-                    raise ValueError("unreasonable length http version")
+                    raise ValueError('unreasonable length http version')
                 version_number = int(version_number[0]), int(version_number[1])
             except (ValueError, IndexError):
                 self.send_error(
                     http.HTTPStatus.BAD_REQUEST,
-                    "Bad request version (%r)" % version,
+                    f'Bad request version ({version!r})',
                 )
                 return False
-            if version_number >= (1, 1) and self.protocol_version >= "HTTP/1.1":
+            if version_number >= (1, 1) and self.protocol_version >= 'HTTP/1.1':
                 self.close_connection = False
             if version_number >= (2, 0):
                 self.send_error(
                     http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
-                    "Invalid HTTP version (%s)" % base_version_number)
+                    f'Invalid HTTP version ({base_version_number})')
                 return False
             self.request_version = version
 
         if not 2 <= len(words) <= 3:
             self.send_error(
                 http.HTTPStatus.BAD_REQUEST,
-                "Bad request syntax (%r)" % requestline)
+                f'Bad request syntax ({requestline!r})',
+            )
             return False
         command, path = words[:2]
         if len(words) == 2:
@@ -100,7 +96,8 @@ class BaseHTTPRequestHandler(
             if command != 'GET':
                 self.send_error(
                     http.HTTPStatus.BAD_REQUEST,
-                    "Bad HTTP/0.9 request type (%r)" % command)
+                    f'Bad HTTP/0.9 request type ({command!r})',
+                )
                 return False
         self.command, self.path = command, path
 
@@ -112,47 +109,49 @@ class BaseHTTPRequestHandler(
 
         # Examine the headers and look for a Connection directive.
         try:
-            self.headers = http.client.parse_headers(self.rfile,
-                                                     _class=self.MessageClass)
+            self.headers = http.client.parse_headers(self.rfile, _class=self.MessageClass)
+
         except http.client.LineTooLong as err:
             self.send_error(
                 http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                "Line too long",
-                str(err))
-            return False
-        except http.client.HTTPException as err:
-            self.send_error(
-                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                "Too many headers",
-                str(err)
+                'Line too long',
+                str(err),
             )
             return False
 
-        conntype = self.headers.get('Connection', "")
+        except http.client.HTTPException as err:
+            self.send_error(
+                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
+                'Too many headers',
+                str(err),
+            )
+            return False
+
+        conntype = self.headers.get('Connection', '')
         if conntype.lower() == 'close':
             self.close_connection = True
         elif (conntype.lower() == 'keep-alive' and
-              self.protocol_version >= "HTTP/1.1"):
+              self.protocol_version >= 'HTTP/1.1'):
             self.close_connection = False
 
         # Examine the headers and look for an Expect directive
-        expect = self.headers.get('Expect', "")
+        expect = self.headers.get('Expect', '')
         if (
-                expect.lower() == "100-continue" and
-                self.protocol_version >= "HTTP/1.1" and
-                self.request_version >= "HTTP/1.1"
+                expect.lower() == '100-continue' and
+                self.protocol_version >= 'HTTP/1.1' and
+                self.request_version >= 'HTTP/1.1'
         ):
             if not self.handle_expect_100():
                 return False
 
         return True
 
-    def handle_expect_100(self):
+    def handle_expect_100(self) -> bool:
         self.send_response_only(http.HTTPStatus.CONTINUE)
         self.end_headers()
         return True
 
-    def handle_one_request(self):
+    def handle_one_request(self) -> None:
         try:
             self.raw_requestline = self.rfile.readline(65537)
             if len(self.raw_requestline) > 65536:
@@ -161,29 +160,31 @@ class BaseHTTPRequestHandler(
                 self.command = ''
                 self.send_error(http.HTTPStatus.REQUEST_URI_TOO_LONG)
                 return
+
             if not self.raw_requestline:
                 self.close_connection = True
                 return
+
             if not self.parse_request():
                 # An error code has been sent, just exit
                 return
+
             mname = 'do_' + self.command
             if not hasattr(self, mname):
-                self.send_error(
-                    http.HTTPStatus.NOT_IMPLEMENTED,
-                    "Unsupported method (%r)" % self.command)
+                self.send_error(http.HTTPStatus.NOT_IMPLEMENTED, f'Unsupported method ({self.command!r})')
                 return
+
             method = getattr(self, mname)
             method()
             self.wfile.flush() #actually send the response if not already done.
+
         except TimeoutError as e:
-            #a read or a write timed out.  Discard this connection
-            self.log_error("Request timed out: %r", e)
+            # A read or a write timed out. Discard this connection
+            self.log_error('Request timed out: %r', e)
             self.close_connection = True
             return
 
-    def handle(self):
-        """Handle multiple requests if necessary."""
+    def handle(self) -> None:
         self.close_connection = True
 
         self.handle_one_request()
@@ -199,7 +200,7 @@ class BaseHTTPRequestHandler(
             message = shortmsg
         if explain is None:
             explain = longmsg
-        self.log_error("code %d, message %s", code, message)
+        self.log_error('code %d, message %s', code, message)
         self.send_response(code, message)
         self.send_header('Connection', 'close')
 
@@ -207,10 +208,14 @@ class BaseHTTPRequestHandler(
         #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
         #  - RFC7231: 6.3.6. 205(Reset Content)
         body = None
-        if (code >= 200 and
-                code not in (http.HTTPStatus.NO_CONTENT,
-                             http.HTTPStatus.RESET_CONTENT,
-                             http.HTTPStatus.NOT_MODIFIED)):
+        if (
+                code >= 200 and
+                code not in (
+                    http.HTTPStatus.NO_CONTENT,
+                    http.HTTPStatus.RESET_CONTENT,
+                    http.HTTPStatus.NOT_MODIFIED,
+                )
+        ):
             # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
             content = (self.error_message_format % {
                 'code': code,
@@ -218,7 +223,7 @@ class BaseHTTPRequestHandler(
                 'explain': html.escape(explain, quote=False)
             })
             body = content.encode('UTF-8', 'replace')
-            self.send_header("Content-Type", self.error_content_type)
+            self.send_header('Content-Type', self.error_content_type)
             self.send_header('Content-Length', str(len(body)))
         self.end_headers()
 
@@ -240,15 +245,15 @@ class BaseHTTPRequestHandler(
                     message = ''
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
-            line = "%s %d %s\r\n" % (self.protocol_version, code, message)
+            line = f'{self.protocol_version} {int(code)} {message}\r\n'
             self._headers_buffer.append(line.encode('latin-1', 'strict'))
 
     def send_header(self, keyword, value):
         if self.request_version != 'HTTP/0.9':
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
-            self._headers_buffer.append(
-                ("%s: %s\r\n" % (keyword, value)).encode('latin-1', 'strict'))
+            line = f'{keyword}: {value}\r\n'
+            self._headers_buffer.append(line.encode('latin-1', 'strict'))
 
         if keyword.lower() == 'connection':
             if value.lower() == 'close':
@@ -258,12 +263,12 @@ class BaseHTTPRequestHandler(
 
     def end_headers(self):
         if self.request_version != 'HTTP/0.9':
-            self._headers_buffer.append(b"\r\n")
+            self._headers_buffer.append(b'\r\n')
             self.flush_headers()
 
     def flush_headers(self):
         if hasattr(self, '_headers_buffer'):
-            self.wfile.write(b"".join(self._headers_buffer))
+            self.wfile.write(b''.join(self._headers_buffer))
             self._headers_buffer = []
 
     def log_request(self, code='-', size='-'):
@@ -285,49 +290,29 @@ class BaseHTTPRequestHandler(
     def log_message(self, format, *args):
         message = format % args
         sys.stderr.write(
-            "%s - - [%s] %s\n" % (
+            '%s - - [%s] %s\n' % (
                 self.address_string(),
                 self.log_date_time_string(),
                 message.translate(self._control_char_table),
             ),
         )
 
-    def version_string(self):
-        return self.server_version + ' ' + self.sys_version
+    def version_string(self) -> str:
+        return 'BaseHTTP/0.0'
 
-    def date_time_string(self, timestamp=None):
+    def date_time_string(self, timestamp: float | None = None) -> str:
         if timestamp is None:
             timestamp = time.time()
         return email.utils.formatdate(timestamp, usegmt=True)
 
-    def log_date_time_string(self):
-        now = time.time()
-        year, month, day, hh, mm, ss, x, y, z = time.localtime(now)
-        s = "%02d/%3s/%04d %02d:%02d:%02d" % (
-            day, self.monthname[month], year, hh, mm, ss)
-        return s
+    def log_date_time_string(self) -> str:
+        return datetime.datetime.now().ctime()
 
-    monthname = [
-        None,
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-    ]
-
-    def address_string(self):
+    def address_string(self) -> str:
         return self.client_address[0]
 
     # The version of the HTTP protocol we support. Set this to HTTP/1.1 to enable automatic keepalive
-    protocol_version = "HTTP/1.0"
+    protocol_version = 'HTTP/1.0'
 
     # MessageClass used to parse headers
     MessageClass = http.client.HTTPMessage
