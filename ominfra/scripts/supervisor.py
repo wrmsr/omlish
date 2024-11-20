@@ -5248,7 +5248,7 @@ class ProcessGroups:
     def __init__(
             self,
             *,
-            event_callbacks: ta.Optional[EventCallbacks] = None,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__()
 
@@ -5277,8 +5277,7 @@ class ProcessGroups:
 
         self._by_name[name] = group
 
-        if self._event_callbacks is not None:
-            self._event_callbacks.notify(ProcessGroupAddedEvent(name))
+        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
 
     def remove(self, name: str) -> None:
         group = self._by_name[name]
@@ -5287,8 +5286,7 @@ class ProcessGroups:
 
         del self._by_name[name]
 
-        if self._event_callbacks is not None:
-            self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
 
     def clear(self) -> None:
         # FIXME: events?
@@ -5369,8 +5367,8 @@ class Supervisor:
             poller: Poller,
             process_groups: ProcessGroups,
             signal_handler: SignalHandler,
-
-            process_group_factory: ta.Optional[ProcessGroupFactory] = None,
+            event_callbacks: EventCallbacks,
+            process_group_factory: ProcessGroupFactory,
     ) -> None:
         super().__init__()
 
@@ -5378,15 +5376,10 @@ class Supervisor:
         self._poller = poller
         self._process_groups = process_groups
         self._signal_handler = signal_handler
-
-        if process_group_factory is None:
-            def make_process_group(config: ProcessGroupConfig) -> ProcessGroup:
-                return ProcessGroup(config, self._context)
-            process_group_factory = ProcessGroupFactory(make_process_group)
+        self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
 
         self._ticks: ta.Dict[int, float] = {}
-
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
         self._stopping = False  # set after we detect that we are handling a stop request
         self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
@@ -5495,7 +5488,7 @@ class Supervisor:
         self._process_groups.clear()
         self._stop_groups = None  # clear
 
-        EVENT_CALLBACKS.clear()
+        self._event_callbacks.clear()
 
         try:
             for config in self._context.config.groups or []:
@@ -5509,7 +5502,7 @@ class Supervisor:
             # writing pid file needs to come *after* daemonizing or pid will be wrong
             self._context.write_pidfile()
 
-            EVENT_CALLBACKS.notify(SupervisorRunningEvent())
+            self._event_callbacks.notify(SupervisorRunningEvent())
 
             while True:
                 if callback is not None and not callback(self):
@@ -5559,7 +5552,7 @@ class Supervisor:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
                 self._stop_groups = pgroups[:]
-                EVENT_CALLBACKS.notify(SupervisorStoppingEvent())
+                self._event_callbacks.notify(SupervisorStoppingEvent())
 
             self._ordered_stop_groups_phase_1()
 
@@ -5657,7 +5650,7 @@ class Supervisor:
             this_tick = timeslice(period, now)
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
-                EVENT_CALLBACKS.notify(event(this_tick, self))
+                self._event_callbacks.notify(event(this_tick, self))
 
 
 ########################################
