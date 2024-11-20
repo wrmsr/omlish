@@ -13,12 +13,11 @@ from .context import ServerContext
 from .dispatchers import Dispatcher
 from .events import TICK_EVENTS
 from .events import EventCallbacks
-from .events import ProcessGroupAddedEvent
-from .events import ProcessGroupRemovedEvent
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
+from .groups import ProcessGroup
+from .groups import ProcessGroups
 from .poller import Poller
-from .process import ProcessGroup
 from .process import Subprocess
 from .signals import SignalReceiver
 from .signals import sig_name
@@ -28,57 +27,6 @@ from .utils import as_string
 from .utils import decode_wait_status
 from .utils import timeslice
 
-
-##
-
-
-class ProcessGroups:
-    def __init__(
-            self,
-            *,
-            event_callbacks: EventCallbacks,
-    ) -> None:
-        super().__init__()
-
-        self._event_callbacks = event_callbacks
-
-        self._by_name: ta.Dict[str, ProcessGroup] = {}
-
-    def get(self, name: str) -> ta.Optional[ProcessGroup]:
-        return self._by_name.get(name)
-
-    def __getitem__(self, name: str) -> ProcessGroup:
-        return self._by_name[name]
-
-    def __len__(self) -> int:
-        return len(self._by_name)
-
-    def __iter__(self) -> ta.Iterator[ProcessGroup]:
-        return iter(self._by_name.values())
-
-    def all(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
-
-    def add(self, group: ProcessGroup) -> None:
-        if (name := group.name) in self._by_name:
-            raise KeyError(f'Process group already exists: {name}')
-
-        self._by_name[name] = group
-
-        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
-
-    def remove(self, name: str) -> None:
-        group = self._by_name[name]
-
-        group.before_remove()
-
-        del self._by_name[name]
-
-        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
-
-    def clear(self) -> None:
-        # FIXME: events?
-        self._by_name.clear()
 
 ##
 
@@ -231,7 +179,7 @@ class Supervisor:
         unstopped: ta.List[Subprocess] = []
 
         for group in self._process_groups:
-            unstopped.extend(group.get_unstopped_processes())
+            unstopped.extend(group.get_unstopped_processes())  # type: ignore
 
         if unstopped:
             # throttle 'waiting for x to die' reports
@@ -428,7 +376,7 @@ class Supervisor:
             now = time.time()
 
         for event in TICK_EVENTS:
-            period = event.period  # type: ignore
+            period = event.period
 
             last_tick = self._ticks.get(period)
             if last_tick is None:

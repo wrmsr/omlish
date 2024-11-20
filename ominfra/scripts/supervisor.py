@@ -1108,6 +1108,9 @@ class EventCallbacks:
         self._callbacks[:] = []
 
 
+##
+
+
 class ProcessLogEvent(Event, abc.ABC):
     channel: ta.Optional[str] = None
 
@@ -1124,6 +1127,9 @@ class ProcessLogStdoutEvent(ProcessLogEvent):
 
 class ProcessLogStderrEvent(ProcessLogEvent):
     channel = 'stderr'
+
+
+#
 
 
 class ProcessCommunicationEvent(Event, abc.ABC):
@@ -1148,11 +1154,17 @@ class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
     channel = 'stderr'
 
 
+#
+
+
 class RemoteCommunicationEvent(Event):
     def __init__(self, type, data):  # noqa
         super().__init__()
         self.type = type
         self.data = data
+
+
+#
 
 
 class SupervisorStateChangeEvent(Event):
@@ -1167,11 +1179,17 @@ class SupervisorStoppingEvent(SupervisorStateChangeEvent):
     pass
 
 
+#
+
+
 class EventRejectedEvent:  # purposely does not subclass Event
     def __init__(self, process, event):
         super().__init__()
         self.process = process
         self.event = event
+
+
+#
 
 
 class ProcessStateEvent(Event):
@@ -1233,6 +1251,9 @@ class ProcessStateStoppedEvent(ProcessStateEvent):
         return [('pid', self.process.pid)]
 
 
+#
+
+
 class ProcessGroupEvent(Event):
     def __init__(self, group):
         super().__init__()
@@ -1245,6 +1266,9 @@ class ProcessGroupAddedEvent(ProcessGroupEvent):
 
 class ProcessGroupRemovedEvent(ProcessGroupEvent):
     pass
+
+
+#
 
 
 class TickEvent(Event):
@@ -1268,11 +1292,14 @@ class Tick3600Event(TickEvent):
     period = 3600
 
 
-TICK_EVENTS = [  # imported elsewhere
+TICK_EVENTS = (  # imported elsewhere
     Tick5Event,
     Tick60Event,
     Tick3600Event,
-]
+)
+
+
+##
 
 
 class EventTypes:
@@ -1317,10 +1344,6 @@ def get_event_name_by_type(requested):
         if typ is requested:
             return name
     return None
-
-
-def register(name, event):
-    setattr(EventTypes, name, event)
 
 
 ########################################
@@ -3681,6 +3704,7 @@ class AbstractServerContext(abc.ABC):
         raise NotImplementedError
 
 
+@functools.total_ordering
 class AbstractSubprocess(abc.ABC):
     @property
     @abc.abstractmethod
@@ -3692,6 +3716,12 @@ class AbstractSubprocess(abc.ABC):
     def config(self) -> ProcessConfig:
         raise NotImplementedError
 
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
+
     @property
     @abc.abstractmethod
     def context(self) -> AbstractServerContext:
@@ -3700,6 +3730,52 @@ class AbstractSubprocess(abc.ABC):
     @abc.abstractmethod
     def finish(self, sts: int) -> None:
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def remove_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def stop(self) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def give_up(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def transition(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_state(self) -> ProcessState:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create_auto_child_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]
+        raise NotImplementedError
+
+
+@functools.total_ordering
+class AbstractProcessGroup(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def config(self) -> ProcessGroupConfig:
+        raise NotImplementedError
+
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
 
 
 ########################################
@@ -4426,20 +4502,170 @@ class InputDispatcher(Dispatcher):
 
 
 ########################################
+# ../groups.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SubprocessFactory:
+    fn: ta.Callable[[ProcessConfig, AbstractProcessGroup], AbstractSubprocess]
+
+    def __call__(self, config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
+        return self.fn(config, group)
+
+
+class ProcessGroup(AbstractProcessGroup):
+    def __init__(
+            self,
+            config: ProcessGroupConfig,
+            context: ServerContext,
+            *,
+            subprocess_factory: SubprocessFactory,
+    ):
+        super().__init__()
+
+        self._config = config
+        self._context = context
+        self._subprocess_factory = subprocess_factory
+
+        self._processes = {}
+        for pconfig in self._config.processes or []:
+            process = self._subprocess_factory(pconfig, self)
+            self._processes[pconfig.name] = process
+
+    @property
+    def config(self) -> ProcessGroupConfig:
+        return self._config
+
+    @property
+    def name(self) -> str:
+        return self._config.name
+
+    @property
+    def context(self) -> AbstractServerContext:
+        return self._context
+
+    def __repr__(self):
+        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
+        name = self._config.name
+        return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
+
+    def remove_logs(self) -> None:
+        for process in self._processes.values():
+            process.remove_logs()
+
+    def reopen_logs(self) -> None:
+        for process in self._processes.values():
+            process.reopen_logs()
+
+    def stop_all(self) -> None:
+        processes = list(self._processes.values())
+        processes.sort()
+        processes.reverse()  # stop in desc priority order
+
+        for proc in processes:
+            state = proc.get_state()
+            if state == ProcessState.RUNNING:
+                # RUNNING -> STOPPING
+                proc.stop()
+
+            elif state == ProcessState.STARTING:
+                # STARTING -> STOPPING
+                proc.stop()
+
+            elif state == ProcessState.BACKOFF:
+                # BACKOFF -> FATAL
+                proc.give_up()
+
+    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
+
+    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
+        dispatchers: dict = {}
+        for process in self._processes.values():
+            dispatchers.update(process.get_dispatchers())
+        return dispatchers
+
+    def before_remove(self) -> None:
+        pass
+
+    def transition(self) -> None:
+        for proc in self._processes.values():
+            proc.transition()
+
+    def after_setuid(self) -> None:
+        for proc in self._processes.values():
+            proc.create_auto_child_logs()
+
+
+##
+
+
+class ProcessGroups:
+    def __init__(
+            self,
+            *,
+            event_callbacks: EventCallbacks,
+    ) -> None:
+        super().__init__()
+
+        self._event_callbacks = event_callbacks
+
+        self._by_name: ta.Dict[str, ProcessGroup] = {}
+
+    def get(self, name: str) -> ta.Optional[ProcessGroup]:
+        return self._by_name.get(name)
+
+    def __getitem__(self, name: str) -> ProcessGroup:
+        return self._by_name[name]
+
+    def __len__(self) -> int:
+        return len(self._by_name)
+
+    def __iter__(self) -> ta.Iterator[ProcessGroup]:
+        return iter(self._by_name.values())
+
+    def all(self) -> ta.Mapping[str, ProcessGroup]:
+        return self._by_name
+
+    def add(self, group: ProcessGroup) -> None:
+        if (name := group.name) in self._by_name:
+            raise KeyError(f'Process group already exists: {name}')
+
+        self._by_name[name] = group
+
+        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
+
+    def remove(self, name: str) -> None:
+        group = self._by_name[name]
+
+        group.before_remove()
+
+        del self._by_name[name]
+
+        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+
+    def clear(self) -> None:
+        # FIXME: events?
+        self._by_name.clear()
+
+
+########################################
 # ../process.py
 
 
 ##
 
 
-@functools.total_ordering
 class Subprocess(AbstractSubprocess):
     """A class to manage a subprocess."""
 
     def __init__(
             self,
             config: ProcessConfig,
-            group: 'ProcessGroup',
+            group: AbstractProcessGroup,
             *,
             context: AbstractServerContext,
             event_callbacks: EventCallbacks,
@@ -4480,7 +4706,7 @@ class Subprocess(AbstractSubprocess):
         return self._pid
 
     @property
-    def group(self) -> 'ProcessGroup':
+    def group(self) -> AbstractProcessGroup:
         return self._group
 
     @property
@@ -4498,6 +4724,9 @@ class Subprocess(AbstractSubprocess):
     @property
     def backoff(self) -> int:
         return self._backoff
+
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+        return self._dispatchers
 
     def remove_logs(self) -> None:
         for dispatcher in self._dispatchers.values():
@@ -5055,12 +5284,6 @@ class Subprocess(AbstractSubprocess):
         msg = drop_privileges(self._config.uid)
         return msg
 
-    def __lt__(self, other):
-        return self._config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self._config.priority == other.config.priority
-
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self._config.name
@@ -5138,162 +5361,9 @@ class Subprocess(AbstractSubprocess):
         pass
 
 
-##
-
-
-@dc.dataclass(frozen=True)
-class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, 'ProcessGroup'], Subprocess]
-
-    def __call__(self, config: ProcessConfig, group: 'ProcessGroup') -> Subprocess:
-        return self.fn(config, group)
-
-
-@functools.total_ordering
-class ProcessGroup:
-    def __init__(
-            self,
-            config: ProcessGroupConfig,
-            context: ServerContext,
-            *,
-            subprocess_factory: SubprocessFactory,
-    ):
-        super().__init__()
-
-        self._config = config
-        self._context = context
-        self._subprocess_factory = subprocess_factory
-
-        self._processes = {}
-        for pconfig in self._config.processes or []:
-            process = self._subprocess_factory(pconfig, self)
-            self._processes[pconfig.name] = process
-
-    @property
-    def config(self) -> ProcessGroupConfig:
-        return self._config
-
-    @property
-    def name(self) -> str:
-        return self._config.name
-
-    @property
-    def context(self) -> AbstractServerContext:
-        return self._context
-
-    def __lt__(self, other):
-        return self._config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self._config.priority == other.config.priority
-
-    def __repr__(self):
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
-
-    def remove_logs(self) -> None:
-        for process in self._processes.values():
-            process.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for process in self._processes.values():
-            process.reopen_logs()
-
-    def stop_all(self) -> None:
-        processes = list(self._processes.values())
-        processes.sort()
-        processes.reverse()  # stop in desc priority order
-
-        for proc in processes:
-            state = proc.get_state()
-            if state == ProcessState.RUNNING:
-                # RUNNING -> STOPPING
-                proc.stop()
-
-            elif state == ProcessState.STARTING:
-                # STARTING -> STOPPING
-                proc.stop()
-
-            elif state == ProcessState.BACKOFF:
-                # BACKOFF -> FATAL
-                proc.give_up()
-
-    def get_unstopped_processes(self) -> ta.List[Subprocess]:
-        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
-
-    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
-        dispatchers = {}
-        for process in self._processes.values():
-            dispatchers.update(process._dispatchers)  # noqa
-        return dispatchers
-
-    def before_remove(self) -> None:
-        pass
-
-    def transition(self) -> None:
-        for proc in self._processes.values():
-            proc.transition()
-
-    def after_setuid(self) -> None:
-        for proc in self._processes.values():
-            proc.create_auto_child_logs()
-
-
 ########################################
 # ../supervisor.py
 
-
-##
-
-
-class ProcessGroups:
-    def __init__(
-            self,
-            *,
-            event_callbacks: EventCallbacks,
-    ) -> None:
-        super().__init__()
-
-        self._event_callbacks = event_callbacks
-
-        self._by_name: ta.Dict[str, ProcessGroup] = {}
-
-    def get(self, name: str) -> ta.Optional[ProcessGroup]:
-        return self._by_name.get(name)
-
-    def __getitem__(self, name: str) -> ProcessGroup:
-        return self._by_name[name]
-
-    def __len__(self) -> int:
-        return len(self._by_name)
-
-    def __iter__(self) -> ta.Iterator[ProcessGroup]:
-        return iter(self._by_name.values())
-
-    def all(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
-
-    def add(self, group: ProcessGroup) -> None:
-        if (name := group.name) in self._by_name:
-            raise KeyError(f'Process group already exists: {name}')
-
-        self._by_name[name] = group
-
-        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
-
-    def remove(self, name: str) -> None:
-        group = self._by_name[name]
-
-        group.before_remove()
-
-        del self._by_name[name]
-
-        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
-
-    def clear(self) -> None:
-        # FIXME: events?
-        self._by_name.clear()
 
 ##
 
@@ -5446,7 +5516,7 @@ class Supervisor:
         unstopped: ta.List[Subprocess] = []
 
         for group in self._process_groups:
-            unstopped.extend(group.get_unstopped_processes())
+            unstopped.extend(group.get_unstopped_processes())  # type: ignore
 
         if unstopped:
             # throttle 'waiting for x to die' reports
@@ -5643,7 +5713,7 @@ class Supervisor:
             now = time.time()
 
         for event in TICK_EVENTS:
-            period = event.period  # type: ignore
+            period = event.period
 
             last_tick = self._ticks.get(period)
             if last_tick is None:
@@ -5695,7 +5765,7 @@ def build_server_bindings(
     lst.append(inj.bind(make_process_group_factory))
 
     def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
-        def inner(process_config: ProcessConfig, group: ProcessGroup) -> Subprocess:
+        def inner(process_config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
             return injector.inject(functools.partial(Subprocess, process_config, group))
         return SubprocessFactory(inner)
     lst.append(inj.bind(make_subprocess_factory))
