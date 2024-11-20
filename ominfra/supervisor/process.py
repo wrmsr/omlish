@@ -49,7 +49,6 @@ from .exceptions import ProcessError
 from .states import STOPPED_STATES
 from .states import ProcessState
 from .states import SupervisorState
-from .states import get_process_state_description
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
 
@@ -216,8 +215,8 @@ class Subprocess(AbstractSubprocess):
 
     def _check_in_state(self, *states: ProcessState) -> None:
         if self._state not in states:
-            current_state = get_process_state_description(self._state)
-            allowable_states = ' '.join(map(get_process_state_description, states))
+            current_state = self._state.name
+            allowable_states = ' '.join(s.name for s in states)
             processname = as_string(self.config.name)
             raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
 
@@ -643,7 +642,7 @@ class Subprocess(AbstractSubprocess):
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self.config.name
-        return f'<Subprocess at {id(self)} with name {name} in state {get_process_state_description(self.get_state())}>'
+        return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
 
     def get_state(self) -> ProcessState:
         return self._state

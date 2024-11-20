@@ -1,4 +1,3 @@
-# ruff: noqa: UP006
 import enum
 
 
@@ -36,10 +35,6 @@ SIGNALLABLE_STATES = (
 )
 
 
-def get_process_state_description(code: ProcessState) -> str:
-    return code.name
-
-
 ##
 
 
@@ -48,7 +43,3 @@ class SupervisorState(enum.IntEnum):
     RUNNING = 1
     RESTARTING = 0
     SHUTDOWN = -1
-
-
-def get_supervisor_state_description(code: SupervisorState) -> str:
-    return code.name
