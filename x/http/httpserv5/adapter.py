@@ -33,7 +33,7 @@ class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noq
 #
 
 
-class SocketRequestHandlerSocketServerAdapter(
+class SocketRequestHandlerSocketServerAdapter(  # type: ignore[misc]
     socketserver.StreamRequestHandler,
     SocketServerBaseRequestHandler_,
 ):
