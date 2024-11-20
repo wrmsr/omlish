@@ -123,6 +123,8 @@ class ParsedHttpRequest(ParseHttpRequestResult):
         self.path = path
         self.expects_continue = expects_continue
 
+    headers: http.client.HTTPMessage
+
 
 #
 

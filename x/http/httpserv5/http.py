@@ -158,7 +158,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             self.protocol_version = parsed.protocol_version
             self.request_line = parsed.request_line
             self.request_version = parsed.request_version
-            self.headers = parsed.headers
             self.close_connection = parsed.close_connection
 
             if isinstance(parsed, EmptyParsedHttpResult):
@@ -179,6 +178,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
             self.method = parsed.method
             self.path = parsed.path
+            self.headers = parsed.headers
             self.invoke_handler()
 
             self.wfile.flush()  # actually send the response if not already done.
