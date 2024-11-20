@@ -715,3 +715,25 @@ def test_json_http():
                 pass
 
     thread.join()
+
+
+##
+
+
+def _main() -> None:
+    def app(environ, start_response):
+        assert environ['PATH_INFO'] == '/test'
+        start_response(hc.STATUS_OK, [])
+        return [b'hi']
+
+    port = 8187
+
+    server = ThreadSpawningWsgiRefServer(
+        TcpBinder(TcpBinder.Config('0.0.0.0', port)),
+        app,
+    )
+    server.run()
+
+
+if __name__ == '__main__':
+    _main()
