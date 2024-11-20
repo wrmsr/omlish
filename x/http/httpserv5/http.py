@@ -75,10 +75,10 @@ DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
 def read_raw_http_headers(
-        fp: ta.IO,
+        fp: ta.BinaryIO,
         *,
-        max_line: int = http.client._MAXLINE,  # type: ignore
-        max_headers: int = http.client._MAXHEADERS,  # type: ignore
+        max_line: int = http.client._MAXLINE,  # type: ignore  # noqa
+        max_headers: int = http.client._MAXHEADERS,  # type: ignore  # noqa
 ) -> list[bytes]:
     """
     Reads potential header lines into a list from a file pointer.
@@ -113,8 +113,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     def __init__(
             self,
             client_address: SocketAddress,
-            rfile: ta.IO,
-            wfile: ta.IO,
+            rfile: ta.BinaryIO,
+            wfile: ta.BinaryIO,
             *,
             handler: HttpServerHandler,
             logging: HttpLogging = DefaultHttpLogging(),
@@ -243,7 +243,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         self.request_version = self.default_request_version
         self.close_connection = True
 
-        request_line = str(self.raw_request_line, 'iso-8859-1')
+        request_line = self.raw_request_line.decode('iso-8859-1')
         request_line = request_line.rstrip('\r\n')
         self.request_line = request_line
 

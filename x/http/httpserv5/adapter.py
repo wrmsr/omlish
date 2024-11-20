@@ -26,8 +26,8 @@ class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noq
     disable_nagle_algorithm: bool
 
     connection: socket.socket
-    rfile: ta.IO
-    wfile: ta.IO
+    rfile: ta.BinaryIO
+    wfile: ta.BinaryIO
 
 
 #
@@ -59,7 +59,7 @@ class SocketRequestHandlerSocketServerAdapter(  # type: ignore[misc]
     def handle(self) -> None:
         target = check.not_none(self.adapter_target_factory)(
             self.client_address,
-            self.rfile,
-            self.wfile,
+            self.rfile,  # type: ignore[arg-type]
+            self.wfile,  # type: ignore[arg-type]
         )
         target.handle()
