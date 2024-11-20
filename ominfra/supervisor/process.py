@@ -20,19 +20,11 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatcher
 from .dispatchers import InputDispatcher
 from .dispatchers import OutputDispatcher
+from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
-from .events import ProcessStateBackoffEvent
-from .events import ProcessStateEvent
-from .events import ProcessStateExitedEvent
-from .events import ProcessStateFatalEvent
-from .events import ProcessStateRunningEvent
-from .events import ProcessStateStartingEvent
-from .events import ProcessStateStoppedEvent
-from .events import ProcessStateStoppingEvent
-from .events import ProcessStateUnknownEvent
 from .exceptions import BadCommandError
 from .exceptions import ProcessError
 from .signals import sig_name
@@ -83,8 +75,8 @@ class Subprocess(AbstractSubprocess):
         self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
 
-        self._laststart = 0.  # Last time the subprocess was started; 0 if never
-        self._laststop = 0.  # Last time the subprocess was stopped; 0 if never
+        self._last_start = 0.  # Last time the subprocess was started; 0 if never
+        self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
         self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
         self._delay = 0.  # If nonzero, delay starting or killing until this time
 
@@ -205,17 +197,6 @@ class Subprocess(AbstractSubprocess):
 
         return filename, commandargs
 
-    event_map: ta.ClassVar[ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]]] = {
-        ProcessState.BACKOFF: ProcessStateBackoffEvent,
-        ProcessState.FATAL: ProcessStateFatalEvent,
-        ProcessState.UNKNOWN: ProcessStateUnknownEvent,
-        ProcessState.STOPPED: ProcessStateStoppedEvent,
-        ProcessState.EXITED: ProcessStateExitedEvent,
-        ProcessState.RUNNING: ProcessStateRunningEvent,
-        ProcessState.STARTING: ProcessStateStartingEvent,
-        ProcessState.STOPPING: ProcessStateStoppingEvent,
-    }
-
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
         old_state = self._state
         if new_state is old_state:
@@ -227,7 +208,7 @@ class Subprocess(AbstractSubprocess):
             self._backoff += 1
             self._delay = now + self._backoff
 
-        event_class = self.event_map.get(new_state)
+        event_class = PROCESS_STATE_EVENT_MAP.get(new_state)
         if event_class is not None:
             event = event_class(self, old_state, expected)
             self._event_callbacks.notify(event)
@@ -239,7 +220,7 @@ class Subprocess(AbstractSubprocess):
             current_state = self._state.name
             allowable_states = ' '.join(s.name for s in states)
             process_name = as_string(self._config.name)
-            raise AssertionError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
+            raise RuntimeError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
 
     def _record_spawn_err(self, msg: str) -> None:
         self._spawn_err = msg
@@ -258,7 +239,7 @@ class Subprocess(AbstractSubprocess):
         self._system_stop = False
         self._administrative_stop = False
 
-        self._laststart = time.time()
+        self._last_start = time.time()
 
         self._check_in_state(
             ProcessState.EXITED,
@@ -444,13 +425,13 @@ class Subprocess(AbstractSubprocess):
         """
 
         if self._state == ProcessState.STARTING:
-            self._laststart = min(test_time, self._laststart)
+            self._last_start = min(test_time, self._last_start)
             if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
                 self._delay = test_time + self._config.startsecs
 
         elif self._state == ProcessState.RUNNING:
-            if test_time > self._laststart and test_time < (self._laststart + self._config.startsecs):
-                self._laststart = test_time - self._config.startsecs
+            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
+                self._last_start = test_time - self._config.startsecs
 
         elif self._state == ProcessState.STOPPING:
             self._last_stop_report = min(test_time, self._last_stop_report)
@@ -608,15 +589,15 @@ class Subprocess(AbstractSubprocess):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        self._laststop = now
+        self._last_stop = now
         process_name = as_string(self._config.name)
 
-        if now > self._laststart:
-            too_quickly = now - self._laststart < self._config.startsecs
+        if now > self._last_start:
+            too_quickly = now - self._last_start < self._config.startsecs
         else:
             too_quickly = False
             log.warning(
-                "process '%s' (%s) laststart time is in the future, don't know how long process was running so "
+                "process '%s' (%s) last_start time is in the future, don't know how long process was running so "
                 "assuming it did not exit too quickly",
                 process_name,
                 self.pid,
@@ -653,8 +634,8 @@ class Subprocess(AbstractSubprocess):
             self._backoff = 0
             self._exitstatus = es
 
-            # if the process was STARTING but a system time change causes self.laststart to be in the future, the normal
-            # STARTING->RUNNING transition can be subverted so we perform the transition here.
+            # if the process was STARTING but a system time change causes self.last_start to be in the future, the
+            # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
             if self._state == ProcessState.STARTING:
                 self.change_state(ProcessState.RUNNING)
 
@@ -681,7 +662,7 @@ class Subprocess(AbstractSubprocess):
         msg = drop_privileges(self._config.uid)
         return msg
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self._config.name
         return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
@@ -689,7 +670,7 @@ class Subprocess(AbstractSubprocess):
     def get_state(self) -> ProcessState:
         return self._state
 
-    def transition(self):
+    def transition(self) -> None:
         now = time.time()
         state = self._state
 
@@ -708,7 +689,7 @@ class Subprocess(AbstractSubprocess):
                         # EXITED -> STARTING
                         self.spawn()
 
-            elif state == ProcessState.STOPPED and not self._laststart:
+            elif state == ProcessState.STOPPED and not self._last_start:
                 if self._config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
@@ -721,7 +702,7 @@ class Subprocess(AbstractSubprocess):
 
         process_name = as_string(self._config.name)
         if state == ProcessState.STARTING:
-            if now - self._laststart > self._config.startsecs:
+            if now - self._last_start > self._config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self._delay = 0
@@ -746,7 +727,7 @@ class Subprocess(AbstractSubprocess):
                 log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
                 self.kill(signal.SIGKILL)
 
-    def create_auto_child_logs(self):
+    def create_auto_child_logs(self) -> None:
         # temporary logfiles which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa

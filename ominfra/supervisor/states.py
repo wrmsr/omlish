@@ -14,6 +14,18 @@ class ProcessState(enum.IntEnum):
     FATAL = 200
     UNKNOWN = 1000
 
+    @property
+    def stopped(self) -> bool:
+        return self in STOPPED_STATES
+
+    @property
+    def running(self) -> bool:
+        return self in RUNNING_STATES
+
+    @property
+    def signalable(self) -> bool:
+        return self in SIGNALABLE_STATES
+
 
 STOPPED_STATES = (
     ProcessState.STOPPED,
@@ -28,7 +40,7 @@ RUNNING_STATES = (
     ProcessState.STARTING,
 )
 
-SIGNALLABLE_STATES = (
+SIGNALABLE_STATES = (
     ProcessState.RUNNING,
     ProcessState.STARTING,
     ProcessState.STOPPING,

@@ -2,6 +2,8 @@
 import abc
 import typing as ta
 
+from .states import ProcessState
+
 
 ##
 
@@ -178,6 +180,18 @@ class ProcessStateStoppingEvent(ProcessStateEvent):
 class ProcessStateStoppedEvent(ProcessStateEvent):
     def get_extra_values(self):
         return [('pid', self.process.pid)]
+
+
+PROCESS_STATE_EVENT_MAP: ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]] = {
+    ProcessState.BACKOFF: ProcessStateBackoffEvent,
+    ProcessState.FATAL: ProcessStateFatalEvent,
+    ProcessState.UNKNOWN: ProcessStateUnknownEvent,
+    ProcessState.STOPPED: ProcessStateStoppedEvent,
+    ProcessState.EXITED: ProcessStateExitedEvent,
+    ProcessState.RUNNING: ProcessStateRunningEvent,
+    ProcessState.STARTING: ProcessStateStartingEvent,
+    ProcessState.STOPPING: ProcessStateStoppingEvent,
+}
 
 
 #
