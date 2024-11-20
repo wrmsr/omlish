@@ -168,6 +168,7 @@ class SetuptoolsBase:
             '.manifests.json',
 
             'LICENSE',
+            'LICENSE.txt',
         ],
     }
 
