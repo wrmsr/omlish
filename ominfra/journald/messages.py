@@ -74,5 +74,5 @@ class JournalctlMessageBuilder:
     def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))  # type: ignore
+            ret.append(self._make_message(check_isinstance(line, bytes)))
         return ret
