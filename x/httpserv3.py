@@ -3,6 +3,41 @@ TODO:
  - SocketClientAddress family / tuple pairs
   + codification of https://docs.python.org/3/library/socket.html#socket-families
 """
+# PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+# --------------------------------------------
+#
+# 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
+# ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
+# documentation.
+#
+# 2. Subject to the terms and conditions of this License Agreement, PSF hereby grants Licensee a nonexclusive,
+# royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative
+# works, distribute, and otherwise use Python alone or in any derivative version, provided, however, that PSF's License
+# Agreement and PSF's notice of copyright, i.e., "Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+# 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Python Software Foundation; All Rights Reserved" are retained in Python
+# alone or in any derivative version prepared by Licensee.
+#
+# 3. In the event Licensee prepares a derivative work that is based on or incorporates Python or any part thereof, and
+# wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in
+# any such work a brief summary of the changes made to Python.
+#
+# 4. PSF is making Python available to Licensee on an "AS IS" basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES,
+# EXPRESS OR IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY
+# OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
+# RIGHTS.
+#
+# 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
+# DAMAGES OR LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON, OR ANY DERIVATIVE THEREOF, EVEN IF
+# ADVISED OF THE POSSIBILITY THEREOF.
+#
+# 6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
+#
+# 7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint
+# venture between PSF and Licensee.  This License Agreement does not grant permission to use PSF trademarks or trade
+# name in a trademark sense to endorse or promote products or services of Licensee, or any third party.
+#
+# 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
+# License Agreement.
 import datetime
 import email.utils
 import html
@@ -47,6 +82,7 @@ class BaseHTTPRequestHandler(
         requestline = str(self.raw_requestline, 'iso-8859-1')
         requestline = requestline.rstrip('\r\n')
         self.requestline = requestline
+
         words = requestline.split()
         if len(words) == 0:
             return False
@@ -56,8 +92,10 @@ class BaseHTTPRequestHandler(
             try:
                 if not version.startswith('HTTP/'):
                     raise ValueError
+
                 base_version_number = version.split('/', 1)[1]
                 version_number = base_version_number.split('.')
+
                 # RFC 2145 section 3.1 says there can be only one "." and
                 #   - major and minor numbers MUST be treated as separate integers;
                 #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
@@ -69,19 +107,23 @@ class BaseHTTPRequestHandler(
                 if any(len(component) > 10 for component in version_number):
                     raise ValueError('unreasonable length http version')
                 version_number = int(version_number[0]), int(version_number[1])
+
             except (ValueError, IndexError):
                 self.send_error(
                     http.HTTPStatus.BAD_REQUEST,
                     f'Bad request version ({version!r})',
                 )
                 return False
+
             if version_number >= (1, 1) and self.protocol_version >= 'HTTP/1.1':
                 self.close_connection = False
+
             if version_number >= (2, 0):
                 self.send_error(
                     http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
                     f'Invalid HTTP version ({base_version_number})')
                 return False
+
             self.request_version = version
 
         if not 2 <= len(words) <= 3:
@@ -90,6 +132,7 @@ class BaseHTTPRequestHandler(
                 f'Bad request syntax ({requestline!r})',
             )
             return False
+
         command, path = words[:2]
         if len(words) == 2:
             self.close_connection = True
@@ -99,7 +142,9 @@ class BaseHTTPRequestHandler(
                     f'Bad HTTP/0.9 request type ({command!r})',
                 )
                 return False
-        self.command, self.path = command, path
+
+        self.command = command
+        self.path = path
 
         # gh-87389: The purpose of replacing '//' with '/' is to protect against open redirect attacks possibly
         # triggered if the path starts with '//' because http clients treat //path as an absolute URI without scheme
@@ -130,8 +175,10 @@ class BaseHTTPRequestHandler(
         conntype = self.headers.get('Connection', '')
         if conntype.lower() == 'close':
             self.close_connection = True
-        elif (conntype.lower() == 'keep-alive' and
-              self.protocol_version >= 'HTTP/1.1'):
+        elif (
+                conntype.lower() == 'keep-alive' and
+                self.protocol_version >= 'HTTP/1.1'
+        ):
             self.close_connection = False
 
         # Examine the headers and look for an Expect directive
@@ -154,6 +201,7 @@ class BaseHTTPRequestHandler(
     def handle_one_request(self) -> None:
         try:
             self.raw_requestline = self.rfile.readline(65537)
+
             if len(self.raw_requestline) > 65536:
                 self.requestline = ''
                 self.request_version = ''
@@ -200,7 +248,9 @@ class BaseHTTPRequestHandler(
             message = shortmsg
         if explain is None:
             explain = longmsg
+
         self.log_error('code %d, message %s', code, message)
+
         self.send_response(code, message)
         self.send_header('Connection', 'close')
 
@@ -225,6 +275,7 @@ class BaseHTTPRequestHandler(
             body = content.encode('UTF-8', 'replace')
             self.send_header('Content-Type', self.error_content_type)
             self.send_header('Content-Length', str(len(body)))
+
         self.end_headers()
 
         if self.command != 'HEAD' and body:
@@ -243,8 +294,10 @@ class BaseHTTPRequestHandler(
                     message = self.responses[code][0]
                 else:
                     message = ''
+
             if not hasattr(self, '_headers_buffer'):
                 self._headers_buffer = []
+
             line = f'{self.protocol_version} {int(code)} {message}\r\n'
             self._headers_buffer.append(line.encode('latin-1', 'strict'))
 
@@ -274,8 +327,7 @@ class BaseHTTPRequestHandler(
     def log_request(self, code='-', size='-'):
         if isinstance(code, http.HTTPStatus):
             code = code.value
-        self.log_message('"%s" %s %s',
-                         self.requestline, str(code), str(size))
+        self.log_message('"%s" %s %s', self.requestline, str(code), str(size))
 
     def log_error(self, format, *args):
         self.log_message(format, *args)
