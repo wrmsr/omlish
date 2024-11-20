@@ -38,6 +38,7 @@ TODO:
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import dataclasses as dc
 import datetime
 import email.utils
 import html
@@ -53,12 +54,12 @@ import typing as ta
 from omlish.http import consts as hc
 
 
-ClientAddress: ta.TypeAlias = ta.Any
+SocketAddress: ta.TypeAlias = ta.Any
 
 
 class SocketServerBaseRequestHandler_:  # noqa
     request: socket.socket
-    client_address: ClientAddress
+    client_address: SocketAddress
     server: socketserver.TCPServer
 
 
@@ -387,7 +388,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(out)
 
 
-def _get_best_family(*address):
+##
+
+
+@dc.dataclass(frozen=True)
+class AddrInfoArgs:
+    host: str | None
+    port: str | int | None
+    family: socket.AddressFamily = socket.AddressFamily.AF_UNSPEC
+    type: int = 0
+    proto: int = 0
+    flags: socket.AddressInfo = socket.AddressInfo(0)
+
+
+def _get_best_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
     infos = socket.getaddrinfo(
         *address,
         type=socket.SOCK_STREAM,
@@ -395,6 +409,9 @@ def _get_best_family(*address):
     )
     family, type, proto, canonname, sockaddr = next(iter(infos))
     return family, sockaddr
+
+
+##
 
 
 def _main() -> None:
