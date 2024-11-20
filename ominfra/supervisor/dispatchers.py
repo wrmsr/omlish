@@ -8,7 +8,7 @@ import typing as ta
 from omlish.lite.logs import log
 
 from .configs import ProcessConfig
-from .events import EVENT_CALLBACKS
+from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
@@ -26,12 +26,16 @@ class Dispatcher(abc.ABC):
             process: AbstractSubprocess,
             channel: str,
             fd: int,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__()
 
         self._process = process  # process which "owns" this dispatcher
         self._channel = channel  # 'stderr' or 'stdout'
         self._fd = fd
+        self._event_callbacks = event_callbacks
+
         self._closed = False  # True if close() has been called
 
     def __repr__(self) -> str:
@@ -96,8 +100,14 @@ class OutputDispatcher(Dispatcher):
             process: AbstractSubprocess,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(process, event_type.channel, fd)
+        super().__init__(
+            process,
+            event_type.channel,
+            fd,
+            **kwargs,
+        )
 
         self._event_type = event_type
 
@@ -213,10 +223,10 @@ class OutputDispatcher(Dispatcher):
 
         if self._channel == 'stdout':
             if self._stdout_events_enabled:
-                EVENT_CALLBACKS.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
+                self._event_callbacks.notify(ProcessLogStdoutEvent(self._process, self._process.pid, data))
 
         elif self._stderr_events_enabled:
-            EVENT_CALLBACKS.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
+            self._event_callbacks.notify(ProcessLogStderrEvent(self._process, self._process.pid, data))
 
     def record_output(self) -> None:
         if self._capture_log is None:
@@ -267,7 +277,7 @@ class OutputDispatcher(Dispatcher):
                 channel = self._channel
                 procname = self._process.config.name
                 event = self._event_type(self._process, self._process.pid, data)
-                EVENT_CALLBACKS.notify(event)
+                self._event_callbacks.notify(event)
 
                 log.debug('%r %s emitted a comm event', procname, channel)
                 for handler in self._capture_log.handlers:
@@ -299,8 +309,15 @@ class InputDispatcher(Dispatcher):
             process: AbstractSubprocess,
             channel: str,
             fd: int,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(process, channel, fd)
+        super().__init__(
+            process,
+            channel,
+            fd,
+            **kwargs,
+        )
+
         self._input_buffer = b''
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
