@@ -1,3 +1,8 @@
+"""
+TODO:
+ - SocketClientAddress family / tuple pairs
+  + codification of https://docs.python.org/3/library/socket.html#socket-families
+"""
 import email.utils
 import html
 import http.client
@@ -7,11 +12,24 @@ import socket
 import socketserver
 import sys
 import time
+import typing as ta
 
 from omlish.http import consts as hc
 
 
-class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
+ClientAddress: ta.TypeAlias = ta.Any
+
+
+class SocketServerBaseRequestHandler_:  # noqa
+    request: socket.socket
+    client_address: ClientAddress
+    server: socketserver.TCPServer
+
+
+class BaseHTTPRequestHandler(
+    socketserver.StreamRequestHandler,
+    SocketServerBaseRequestHandler_,
+):
     # The Python system version, truncated to its first component.
     sys_version = "Python/" + sys.version.split()[0]
 
@@ -321,7 +339,7 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
     }
 
 
-class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         out = b'hi'
 
