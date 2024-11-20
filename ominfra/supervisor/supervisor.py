@@ -11,7 +11,7 @@ from omlish.lite.logs import log
 from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
-from .compat import signame
+from .compat import sig_name
 from .configs import ProcessGroupConfig
 from .context import ServerContext
 from .dispatchers import Dispatcher
@@ -319,27 +319,27 @@ class Supervisor:
             return
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-            log.warning('received %s indicating exit request', signame(sig))
+            log.warning('received %s indicating exit request', sig_name(sig))
             self._context.set_state(SupervisorState.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
             if self._context.state == SupervisorState.SHUTDOWN:
-                log.warning('ignored %s indicating restart request (shutdown in progress)', signame(sig))  # noqa
+                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
             else:
-                log.warning('received %s indicating restart request', signame(sig))  # noqa
+                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
                 self._context.set_state(SupervisorState.RESTARTING)
 
         elif sig == signal.SIGCHLD:
-            log.debug('received %s indicating a child quit', signame(sig))
+            log.debug('received %s indicating a child quit', sig_name(sig))
 
         elif sig == signal.SIGUSR2:
-            log.info('received %s indicating log reopen request', signame(sig))
+            log.info('received %s indicating log reopen request', sig_name(sig))
             # self._context.reopen_logs()
             for group in self._process_groups.values():
                 group.reopen_logs()
 
         else:
-            log.debug('received %s indicating nothing', signame(sig))
+            log.debug('received %s indicating nothing', sig_name(sig))
 
     def _tick(self, now: ta.Optional[float] = None) -> None:
         """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""

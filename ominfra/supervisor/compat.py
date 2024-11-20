@@ -11,6 +11,9 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
+##
+
+
 def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
@@ -23,6 +26,16 @@ def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
         return s
     else:
         return s.decode(encoding)
+
+
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
+    l = len(needle) - 1
+    while l and not haystack.endswith(needle[:l]):
+        l -= 1
+    return l
+
+
+##
 
 
 def compact_traceback() -> ta.Tuple[
@@ -52,15 +65,12 @@ def compact_traceback() -> ta.Tuple[
     return (file, function, line), t, v, info  # type: ignore
 
 
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
 class ExitNow(Exception):  # noqa
     pass
+
+
+def real_exit(code: int) -> None:
+    os._exit(code)  # noqa
 
 
 ##
@@ -80,7 +90,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
         return es, msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
-        msg = f'terminated by {signame(sig)}'
+        msg = f'terminated by {sig_name(sig)}'
         if hasattr(os, 'WCOREDUMP'):
             iscore = os.WCOREDUMP(sts)
         else:
@@ -93,17 +103,20 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
         return -1, msg
 
 
-_signames: ta.Optional[ta.Mapping[int, str]] = None
+##
 
 
-def signame(sig: int) -> str:
-    global _signames
-    if _signames is None:
-        _signames = _init_signames()
-    return _signames.get(sig) or 'signal %d' % sig
+_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
 
 
-def _init_signames() -> ta.Dict[int, str]:
+def sig_name(sig: int) -> str:
+    global _SIG_NAMES
+    if _SIG_NAMES is None:
+        _SIG_NAMES = _init_sig_names()
+    return _SIG_NAMES.get(sig) or 'signal %d' % sig
+
+
+def _init_sig_names() -> ta.Dict[int, str]:
     d = {}
     for k, v in signal.__dict__.items():  # noqa
         k_startswith = getattr(k, 'startswith', None)
@@ -135,7 +148,10 @@ class SignalReceiver:
         return sig
 
 
-def readfd(fd: int) -> bytes:
+##
+
+
+def read_fd(fd: int) -> bytes:
     try:
         data = os.read(fd, 2 << 16)  # 128K
     except OSError as why:
@@ -180,8 +196,7 @@ def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
     return filename
 
 
-def real_exit(code: int) -> None:
-    os._exit(code)  # noqa
+##
 
 
 def get_path() -> ta.Sequence[str]:
@@ -197,6 +212,9 @@ def get_path() -> ta.Sequence[str]:
 
 def normalize_path(v: str) -> str:
     return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
+
+
+##
 
 
 ANSI_ESCAPE_BEGIN = b'\x1b['
