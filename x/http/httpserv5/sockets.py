@@ -34,7 +34,9 @@ class SocketAddressInfo:
     sockaddr: SocketAddress
 
 
-def get_best_socket_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
+def get_best_socket_family(
+        *address: ta.Any,  # SocketAddressInfoArgs
+) -> tuple[socket.AddressFamily, SocketAddress]:
     infos = socket.getaddrinfo(
         *address,
         type=socket.SOCK_STREAM,

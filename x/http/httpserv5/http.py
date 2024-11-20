@@ -1,41 +1,18 @@
 import dataclasses as dc
-import datetime
 import email.utils
 import html
 import http.client
 import http.server
-import itertools
-import sys
 import time
 import typing as ta
 
+from .logging import DefaultHttpLogging
+from .logging import HttpLogging
 from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
 
 HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
-
-
-##
-
-
-DEFAULT_ERROR_MESSAGE = """\
-<!DOCTYPE HTML>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Error response</title>
-    </head>
-    <body>
-        <h1>Error response</h1>
-        <p>Error code: %(code)d</p>
-        <p>Message: %(message)s.</p>
-        <p>Error code explanation: %(code)s - %(explain)s.</p>
-    </body>
-</html>
-"""
-
-DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
 ##
@@ -72,7 +49,32 @@ HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerRes
 ##
 
 
+DEFAULT_ERROR_MESSAGE = """\
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: %(code)d</p>
+        <p>Message: %(message)s.</p>
+        <p>Error code explanation: %(code)s - %(explain)s.</p>
+    </body>
+</html>
+"""
+
+DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
+
+
+##
+
+
 class HttpSocketRequestHandler(SocketRequestHandler):
+
+    #
+
     def __init__(
             self,
             client_address: SocketAddress,
@@ -80,6 +82,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             wfile: ta.IO,
             *,
             handler: HttpServerHandler,
+            logging: HttpLogging = DefaultHttpLogging(),
     ) -> None:
         super().__init__(
             client_address,
@@ -88,6 +91,11 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         )
 
         self.handler = handler
+        self.logging = logging
+
+        self.logging_context = HttpLogging.Context(
+            client=str(self.client_address[0]),
+        )
 
     #
 
@@ -139,7 +147,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
-            self.log_error('Request timed out: %r', e)
+            self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
             self.close_connection = True
             return
     #
@@ -335,8 +343,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def send_error(
             self,
-            code,
-            message=None,
+            code: HttpStatusOrInt,
+            message: str | None = None,
             explain: str | None = None,
     ) -> None:
         try:
@@ -348,7 +356,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         if explain is None:
             explain = long_msg
 
-        self.log_error('code %d, message %s', code, message)
+        self.logging.log_error(self.logging_context, 'code %d, message %s', code, message)
 
         self.send_response(code, message)
         self.send_header('Connection', 'close')
@@ -409,11 +417,17 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
+    def format_timestamp(self, timestamp: float | None = None) -> str:
+        if timestamp is None:
+            timestamp = time.time()
+        return email.utils.formatdate(timestamp, usegmt=True)
+
+    #
+
     def send_response(self, code, message=None):
-        self.log_request(code)
+        self.logging.log_request(self.logging_context, self.request_line, code)
         self.send_response_only(code, message)
-        self.send_header('Server', self.version_string())
-        self.send_header('Date', self.date_time_string())
+        self.send_header('Date', self.format_timestamp())
 
     def send_response_only(self, code, message=None):
         if self.request_version != 'HTTP/0.9':
@@ -428,50 +442,3 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
             line = f'{self.protocol_version} {int(code)} {message}\r\n'
             self._headers_buffer.append(line.encode('latin-1', 'strict'))
-
-    #
-
-    def log_request(
-            self,
-            code: str | int | http.HTTPStatus = '-',
-            size: int | str = '-',
-    ) -> None:
-        if isinstance(code, http.HTTPStatus):
-            code = code.value
-        self.log_message('"%s" %s %s', self.request_line, str(code), str(size))
-
-    def log_error(self, format: str, *args: ta.Any) -> None:
-        self.log_message(format, *args)
-
-    # https://en.wikipedia.org/wiki/List_of_Unicode_characters#Control_codes
-    _CONTROL_CHAR_TABLE = str.maketrans({
-        c: fr'\x{c:02x}'
-        for c in itertools.chain(range(0x20), range(0x7f, 0xa0))
-    })
-
-    _CONTROL_CHAR_TABLE[ord('\\')] = r'\\'
-
-    def log_message(self, format: str, *args: ta.Any) -> None:
-        message = format % args
-
-        sys.stderr.write(
-            '%s - - [%s] %s\n' % (
-                self.address_string(),
-                self.log_date_time_string(),
-                message.translate(self._CONTROL_CHAR_TABLE),
-            ),
-        )
-
-    def version_string(self) -> str:
-        return 'BaseHTTP/0.0'
-
-    def date_time_string(self, timestamp: float | None = None) -> str:
-        if timestamp is None:
-            timestamp = time.time()
-        return email.utils.formatdate(timestamp, usegmt=True)
-
-    def log_date_time_string(self) -> str:
-        return datetime.datetime.now().ctime()
-
-    def address_string(self) -> str:
-        return self.client_address[0]
