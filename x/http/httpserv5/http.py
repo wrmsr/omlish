@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import email.utils
 import html
@@ -107,41 +108,79 @@ def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ParseHttpRequestResult(abc.ABC):  # noqa
-    close_connection: bool
+class ParseHttpRequestResult(abc.ABC):
+    def __init__(
+            self,
+            *,
+            request_line: str,
+            request_version: str,
+            close_connection: bool,
+    ) -> None:
+        super().__init__()
+
+        self.request_line = request_line
+        self.request_version = request_version
+        self.close_connection = close_connection
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+class EmptyParsedHttpResult(ParseHttpRequestResult):
+    pass
+
+
 class ParsedHttpRequest(ParseHttpRequestResult):
     pass
 
 
-@dc.dataclass(frozen=True, kw_only=True)
 class ParseHttpRequestError(ParseHttpRequestResult):
-    code: http.HTTPStatus
-    message: str | tuple[str, str]
+    def __init__(
+            self,
+            *,
+            code: http.HTTPStatus,
+            message: str | tuple[str, str],
+
+             **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self.code = code
+        self.message = message
+
+
+#
 
 
 class HttpRequestParser:
     def __init__(self) -> None:
         super().__init__()
 
+    # The default request version. This only affects responses up until the point where the request line is parsed, so
+    # it mainly decides what the client gets back when sending a malformed request line.
+    # Most web servers default to HTTP 0.9, i.e. don't send a status line.
+    default_request_version = 'HTTP/0.9'
+
     def parse(
             self,
             raw_request_line: bytes,
     ) -> ParseHttpRequestResult:
-        self.method = None  # set in case of error on the first line
-        self.request_version = self.default_request_version
+        request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
+
+        #
+
+        request_version = self.default_request_version
         close_connection = True
 
-        request_line = raw_request_line.decode('iso-8859-1')
-        request_line = request_line.rstrip('\r\n')
-        self.request_line = request_line
+        def result_kwargs():
+            return dict(
+                request_line=request_line,
+                request_version=request_version,
+                close_connection=close_connection,
+            )
+
+        #
 
         words = request_line.split()
         if len(words) == 0:
-            return False
+            return EmptyParsedHttpResult(**result_kwargs())
 
         if len(words) >= 3:  # Enough to determine protocol version
             version = words[-1]
@@ -168,7 +207,7 @@ class HttpRequestParser:
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.BAD_REQUEST,
                     message=f'Bad request version ({version!r})',
-                    close_connection=close_connection,
+                    **result_kwargs(),
                 )
 
             if version_number >= (1, 1) and self.protocol_version >= 'HTTP/1.1':
@@ -187,7 +226,7 @@ class HttpRequestParser:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.BAD_REQUEST,
                 message=f'Bad request syntax ({request_line!r})',
-                close_connection=close_connection,
+                **result_kwargs(),
             )
 
         method, path = words[:2]
@@ -197,7 +236,7 @@ class HttpRequestParser:
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.BAD_REQUEST,
                     message=f'Bad HTTP/0.9 request type ({method!r})',
-                    close_connection=close_connection,
+                    **result_kwargs(),
                 )
 
         self.method = method
@@ -218,14 +257,14 @@ class HttpRequestParser:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
                 message=('Line too long', str(err)),
-                close_connection=close_connection,
+                **result_kwargs(),
             )
 
         except http.client.HTTPException as err:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
                 message=('Too many headers', str(err)),
-                close_connection=close_connection,
+                **result_kwargs(),
             )
 
         conn_type = self.headers.get('Connection', '')
@@ -245,7 +284,7 @@ class HttpRequestParser:
                 self.request_version >= 'HTTP/1.1'
         ):
             if not self.handle_expect_100():
-                return False
+                return EmptyParsedHttpResult(**result_kwargs())
 
         return True
 
@@ -379,10 +418,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    # The default request version. This only affects responses up until the point where the request line is parsed, so
-    # it mainly decides what the client gets back when sending a malformed request line.
-    # Most web servers default to HTTP 0.9, i.e. don't send a status line.
-    default_request_version = 'HTTP/0.9'
 
     path: str
 
