@@ -27,7 +27,6 @@ from .exceptions import NotFoundError
 from .poller import BasePoller
 from .poller import Poller
 from .states import SupervisorState
-from .states import SupervisorStates
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
 
@@ -52,7 +51,7 @@ class ServerContext(AbstractServerContext):
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
-        self._state: SupervisorState = SupervisorStates.RUNNING
+        self._state: SupervisorState = SupervisorState.RUNNING
 
         self._signal_receiver = SignalReceiver()
 

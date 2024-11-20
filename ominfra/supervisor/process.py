@@ -48,7 +48,7 @@ from .exceptions import BadCommandError
 from .exceptions import ProcessError
 from .states import STOPPED_STATES
 from .states import ProcessState
-from .states import SupervisorStates
+from .states import SupervisorState
 from .states import get_process_state_description
 from .types import AbstractServerContext
 from .types import AbstractSubprocess
@@ -656,7 +656,7 @@ class Subprocess(AbstractSubprocess):
 
         logger = log
 
-        if self.context.state > SupervisorStates.RESTARTING:
+        if self.context.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
                 if self.config.autorestart:

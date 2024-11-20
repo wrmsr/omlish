@@ -26,7 +26,7 @@ from .context import ServerEpoch
 from .process import ProcessGroup
 from .process import Subprocess
 from .process import SubprocessFactory
-from .states import SupervisorStates
+from .states import SupervisorState
 from .supervisor import ProcessGroupFactory
 from .supervisor import Supervisor
 from .types import AbstractServerContext
@@ -131,7 +131,7 @@ def main(
         except ExitNow:
             pass
 
-        if context.state < SupervisorStates.RESTARTING:
+        if context.state < SupervisorState.RESTARTING:
             break
 
 
