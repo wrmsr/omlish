@@ -24,7 +24,6 @@ from .events import SupervisorStoppingEvent
 from .process import ProcessGroup
 from .process import Subprocess
 from .states import SupervisorState
-from .states import get_process_state_description
 
 
 def timeslice(period: int, when: float) -> int:
@@ -136,8 +135,7 @@ class Supervisor:
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
                 for proc in unstopped:
-                    state = get_process_state_description(proc.get_state())
-                    log.debug('%s state: %s', proc.config.name, state)
+                    log.debug('%s state: %s', proc.config.name, proc.get_state().name)
 
         return unstopped
 
