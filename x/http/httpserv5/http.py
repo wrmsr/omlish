@@ -36,6 +36,7 @@ class HttpServerResponse:
     _: dc.KW_ONLY
     headers: ta.Mapping[str, str] | None = None
     data: bytes | None = None
+    close_connection: bool | None = None
 
 
 class HttpServerHandlerError(Exception):
@@ -106,13 +107,20 @@ def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
 ##
 
 
-class ParsedHttpRequest(ta.NamedTuple):
+@dc.dataclass(frozen=True, kw_only=True)
+class ParseHttpRequestResult(abc.ABC):  # noqa
+    close_connection: bool
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ParsedHttpRequest(ParseHttpRequestResult):
     pass
 
 
-class ParseHttpRequestError(ta.NamedTuple):
+@dc.dataclass(frozen=True, kw_only=True)
+class ParseHttpRequestError(ParseHttpRequestResult):
     code: http.HTTPStatus
-    message: str
+    message: str | tuple[str, str]
 
 
 class HttpRequestParser:
@@ -122,10 +130,10 @@ class HttpRequestParser:
     def parse(
             self,
             raw_request_line: bytes,
-    ) -> ParsedHttpRequest | ParseHttpRequestError:
+    ) -> ParseHttpRequestResult:
         self.method = None  # set in case of error on the first line
         self.request_version = self.default_request_version
-        self.close_connection = True
+        close_connection = True
 
         request_line = raw_request_line.decode('iso-8859-1')
         request_line = request_line.rstrip('\r\n')
@@ -157,40 +165,40 @@ class HttpRequestParser:
                 version_number = int(version_number_parts[0]), int(version_number_parts[1])
 
             except (ValueError, IndexError):
-                self.send_error(
-                    http.HTTPStatus.BAD_REQUEST,
-                    f'Bad request version ({version!r})',
+                return ParseHttpRequestError(
+                    code=http.HTTPStatus.BAD_REQUEST,
+                    message=f'Bad request version ({version!r})',
+                    close_connection=close_connection,
                 )
-                return False
 
             if version_number >= (1, 1) and self.protocol_version >= 'HTTP/1.1':
-                self.close_connection = False
+                close_connection = False
 
             if version_number >= (2, 0):
-                self.send_error(
-                    http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
-                    f'Invalid HTTP version ({base_version_number})',
+                return ParseHttpRequestError(
+                    code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
+                    message=f'Invalid HTTP version ({base_version_number})',
+                    close_connection=close_connection,
                 )
-                return False
 
             self.request_version = version
 
         if not 2 <= len(words) <= 3:
-            self.send_error(
-                http.HTTPStatus.BAD_REQUEST,
-                f'Bad request syntax ({request_line!r})',
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.BAD_REQUEST,
+                message=f'Bad request syntax ({request_line!r})',
+                close_connection=close_connection,
             )
-            return False
 
         method, path = words[:2]
         if len(words) == 2:
-            self.close_connection = True
+            close_connection = True
             if method != 'GET':
-                self.send_error(
-                    http.HTTPStatus.BAD_REQUEST,
-                    f'Bad HTTP/0.9 request type ({method!r})',
+                return ParseHttpRequestError(
+                    code=http.HTTPStatus.BAD_REQUEST,
+                    message=f'Bad HTTP/0.9 request type ({method!r})',
+                    close_connection=close_connection,
                 )
-                return False
 
         self.method = method
         self.path = path
@@ -207,29 +215,27 @@ class HttpRequestParser:
             self.headers = parse_raw_http_headers(raw_headers)
 
         except http.client.LineTooLong as err:
-            self.send_error(
-                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                'Line too long',
-                str(err),
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
+                message=('Line too long', str(err)),
+                close_connection=close_connection,
             )
-            return False
 
         except http.client.HTTPException as err:
-            self.send_error(
-                http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                'Too many headers',
-                str(err),
+            return ParseHttpRequestError(
+                code=http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
+                message=('Too many headers', str(err)),
+                close_connection=close_connection,
             )
-            return False
 
         conn_type = self.headers.get('Connection', '')
         if conn_type.lower() == 'close':
-            self.close_connection = True
+            close_connection = True
         elif (
                 conn_type.lower() == 'keep-alive' and
                 self.protocol_version >= 'HTTP/1.1'
         ):
-            self.close_connection = False
+            close_connection = False
 
         # Examine the headers and look for an Expect directive
         expect = self.headers.get('Expect', '')
@@ -346,12 +352,15 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         try:
             response = self.handler(request)
         except UnsupportedMethodServerHandlerError:
+            # FIXME: close_connection?
             self.send_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({self.method!r})',
             )
             return
 
+        if response.close_connection is not None:
+            self.close_connection = response.close_connection
         response_headers = response.headers or {}
         response_data = response.data
 
