@@ -527,14 +527,23 @@ class AddrInfoArgs:
     flags: socket.AddressInfo = socket.AddressInfo(0)
 
 
+@dc.dataclass(frozen=True)
+class AddrInfo:
+    family: socket.AddressFamily
+    type: int
+    proto: int
+    canonname: str | None
+    sockaddr: SocketAddress
+
+
 def _get_best_family(*address) -> tuple[socket.AddressFamily, SocketAddress]:
     infos = socket.getaddrinfo(
         *address,
         type=socket.SOCK_STREAM,
         flags=socket.AI_PASSIVE,
     )
-    family, type, proto, canonname, sockaddr = next(iter(infos))
-    return family, sockaddr
+    ai = AddrInfo(*next(iter(infos)))
+    return ai.family, ai.sockaddr
 
 
 ##
