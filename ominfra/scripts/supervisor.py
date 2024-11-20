@@ -1071,282 +1071,6 @@ class RestartUnconditionally:
 
 
 ########################################
-# ../events.py
-
-
-##
-
-
-class Event(abc.ABC):  # noqa
-    """Abstract event type."""
-
-
-##
-
-
-EventCallback = ta.Callable[['Event'], None]
-
-
-class EventCallbacks:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._callbacks: ta.List[ta.Tuple[ta.Type[Event], EventCallback]] = []
-
-    def subscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
-        self._callbacks.append((type, callback))
-
-    def unsubscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
-        self._callbacks.remove((type, callback))
-
-    def notify(self, event: Event) -> None:
-        for type, callback in self._callbacks:  # noqa
-            if isinstance(event, type):
-                callback(event)
-
-    def clear(self) -> None:
-        self._callbacks[:] = []
-
-
-##
-
-
-class ProcessLogEvent(Event, abc.ABC):
-    channel: ta.Optional[str] = None
-
-    def __init__(self, process, pid, data):
-        super().__init__()
-        self.process = process
-        self.pid = pid
-        self.data = data
-
-
-class ProcessLogStdoutEvent(ProcessLogEvent):
-    channel = 'stdout'
-
-
-class ProcessLogStderrEvent(ProcessLogEvent):
-    channel = 'stderr'
-
-
-#
-
-
-class ProcessCommunicationEvent(Event, abc.ABC):
-    # event mode tokens
-    BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
-    END_TOKEN = b'<!--XSUPERVISOR:END-->'
-
-    channel: ta.ClassVar[str]
-
-    def __init__(self, process, pid, data):
-        super().__init__()
-        self.process = process
-        self.pid = pid
-        self.data = data
-
-
-class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
-    channel = 'stdout'
-
-
-class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
-    channel = 'stderr'
-
-
-#
-
-
-class RemoteCommunicationEvent(Event):
-    def __init__(self, type, data):  # noqa
-        super().__init__()
-        self.type = type
-        self.data = data
-
-
-#
-
-
-class SupervisorStateChangeEvent(Event):
-    """Abstract class."""
-
-
-class SupervisorRunningEvent(SupervisorStateChangeEvent):
-    pass
-
-
-class SupervisorStoppingEvent(SupervisorStateChangeEvent):
-    pass
-
-
-#
-
-
-class EventRejectedEvent:  # purposely does not subclass Event
-    def __init__(self, process, event):
-        super().__init__()
-        self.process = process
-        self.event = event
-
-
-#
-
-
-class ProcessStateEvent(Event):
-    """Abstract class, never raised directly."""
-    frm = None
-    to = None
-
-    def __init__(self, process, from_state, expected=True):
-        super().__init__()
-        self.process = process
-        self.from_state = from_state
-        self.expected = expected
-        # we eagerly render these so if the process pid, etc changes beneath
-        # us, we stash the values at the time the event was sent
-        self.extra_values = self.get_extra_values()
-
-    def get_extra_values(self):
-        return []
-
-
-class ProcessStateFatalEvent(ProcessStateEvent):
-    pass
-
-
-class ProcessStateUnknownEvent(ProcessStateEvent):
-    pass
-
-
-class ProcessStateStartingOrBackoffEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('tries', int(self.process.backoff))]
-
-
-class ProcessStateBackoffEvent(ProcessStateStartingOrBackoffEvent):
-    pass
-
-
-class ProcessStateStartingEvent(ProcessStateStartingOrBackoffEvent):
-    pass
-
-
-class ProcessStateExitedEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('expected', int(self.expected)), ('pid', self.process.pid)]
-
-
-class ProcessStateRunningEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
-
-
-class ProcessStateStoppingEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
-
-
-class ProcessStateStoppedEvent(ProcessStateEvent):
-    def get_extra_values(self):
-        return [('pid', self.process.pid)]
-
-
-#
-
-
-class ProcessGroupEvent(Event):
-    def __init__(self, group):
-        super().__init__()
-        self.group = group
-
-
-class ProcessGroupAddedEvent(ProcessGroupEvent):
-    pass
-
-
-class ProcessGroupRemovedEvent(ProcessGroupEvent):
-    pass
-
-
-#
-
-
-class TickEvent(Event):
-    """Abstract."""
-
-    def __init__(self, when, supervisord):
-        super().__init__()
-        self.when = when
-        self.supervisord = supervisord
-
-
-class Tick5Event(TickEvent):
-    period = 5
-
-
-class Tick60Event(TickEvent):
-    period = 60
-
-
-class Tick3600Event(TickEvent):
-    period = 3600
-
-
-TICK_EVENTS = (  # imported elsewhere
-    Tick5Event,
-    Tick60Event,
-    Tick3600Event,
-)
-
-
-##
-
-
-class EventTypes:
-    EVENT = Event  # abstract
-
-    PROCESS_STATE = ProcessStateEvent  # abstract
-    PROCESS_STATE_STOPPED = ProcessStateStoppedEvent
-    PROCESS_STATE_EXITED = ProcessStateExitedEvent
-    PROCESS_STATE_STARTING = ProcessStateStartingEvent
-    PROCESS_STATE_STOPPING = ProcessStateStoppingEvent
-    PROCESS_STATE_BACKOFF = ProcessStateBackoffEvent
-    PROCESS_STATE_FATAL = ProcessStateFatalEvent
-    PROCESS_STATE_RUNNING = ProcessStateRunningEvent
-    PROCESS_STATE_UNKNOWN = ProcessStateUnknownEvent
-
-    PROCESS_COMMUNICATION = ProcessCommunicationEvent  # abstract
-    PROCESS_COMMUNICATION_STDOUT = ProcessCommunicationStdoutEvent
-    PROCESS_COMMUNICATION_STDERR = ProcessCommunicationStderrEvent
-
-    PROCESS_LOG = ProcessLogEvent
-    PROCESS_LOG_STDOUT = ProcessLogStdoutEvent
-    PROCESS_LOG_STDERR = ProcessLogStderrEvent
-
-    REMOTE_COMMUNICATION = RemoteCommunicationEvent
-
-    SUPERVISOR_STATE_CHANGE = SupervisorStateChangeEvent  # abstract
-    SUPERVISOR_STATE_CHANGE_RUNNING = SupervisorRunningEvent
-    SUPERVISOR_STATE_CHANGE_STOPPING = SupervisorStoppingEvent
-
-    TICK = TickEvent  # abstract
-    TICK_5 = Tick5Event
-    TICK_60 = Tick60Event
-    TICK_3600 = Tick3600Event
-
-    PROCESS_GROUP = ProcessGroupEvent  # abstract
-    PROCESS_GROUP_ADDED = ProcessGroupAddedEvent
-    PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
-
-
-def get_event_name_by_type(requested):
-    for name, typ in EventTypes.__dict__.items():
-        if typ is requested:
-            return name
-    return None
-
-
-########################################
 # ../exceptions.py
 
 
@@ -1446,6 +1170,18 @@ class ProcessState(enum.IntEnum):
     FATAL = 200
     UNKNOWN = 1000
 
+    @property
+    def stopped(self) -> bool:
+        return self in STOPPED_STATES
+
+    @property
+    def running(self) -> bool:
+        return self in RUNNING_STATES
+
+    @property
+    def signalable(self) -> bool:
+        return self in SIGNALABLE_STATES
+
 
 STOPPED_STATES = (
     ProcessState.STOPPED,
@@ -1460,7 +1196,7 @@ RUNNING_STATES = (
     ProcessState.STARTING,
 )
 
-SIGNALLABLE_STATES = (
+SIGNALABLE_STATES = (
     ProcessState.RUNNING,
     ProcessState.STARTING,
     ProcessState.STOPPING,
@@ -1686,6 +1422,294 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
         seen.add(cur)
         yield cur
         todo.extend(reversed(cur.__subclasses__()))
+
+
+########################################
+# ../events.py
+
+
+##
+
+
+class Event(abc.ABC):  # noqa
+    """Abstract event type."""
+
+
+##
+
+
+EventCallback = ta.Callable[['Event'], None]
+
+
+class EventCallbacks:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._callbacks: ta.List[ta.Tuple[ta.Type[Event], EventCallback]] = []
+
+    def subscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
+        self._callbacks.append((type, callback))
+
+    def unsubscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
+        self._callbacks.remove((type, callback))
+
+    def notify(self, event: Event) -> None:
+        for type, callback in self._callbacks:  # noqa
+            if isinstance(event, type):
+                callback(event)
+
+    def clear(self) -> None:
+        self._callbacks[:] = []
+
+
+##
+
+
+class ProcessLogEvent(Event, abc.ABC):
+    channel: ta.Optional[str] = None
+
+    def __init__(self, process, pid, data):
+        super().__init__()
+        self.process = process
+        self.pid = pid
+        self.data = data
+
+
+class ProcessLogStdoutEvent(ProcessLogEvent):
+    channel = 'stdout'
+
+
+class ProcessLogStderrEvent(ProcessLogEvent):
+    channel = 'stderr'
+
+
+#
+
+
+class ProcessCommunicationEvent(Event, abc.ABC):
+    # event mode tokens
+    BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
+    END_TOKEN = b'<!--XSUPERVISOR:END-->'
+
+    channel: ta.ClassVar[str]
+
+    def __init__(self, process, pid, data):
+        super().__init__()
+        self.process = process
+        self.pid = pid
+        self.data = data
+
+
+class ProcessCommunicationStdoutEvent(ProcessCommunicationEvent):
+    channel = 'stdout'
+
+
+class ProcessCommunicationStderrEvent(ProcessCommunicationEvent):
+    channel = 'stderr'
+
+
+#
+
+
+class RemoteCommunicationEvent(Event):
+    def __init__(self, type, data):  # noqa
+        super().__init__()
+        self.type = type
+        self.data = data
+
+
+#
+
+
+class SupervisorStateChangeEvent(Event):
+    """Abstract class."""
+
+
+class SupervisorRunningEvent(SupervisorStateChangeEvent):
+    pass
+
+
+class SupervisorStoppingEvent(SupervisorStateChangeEvent):
+    pass
+
+
+#
+
+
+class EventRejectedEvent:  # purposely does not subclass Event
+    def __init__(self, process, event):
+        super().__init__()
+        self.process = process
+        self.event = event
+
+
+#
+
+
+class ProcessStateEvent(Event):
+    """Abstract class, never raised directly."""
+    frm = None
+    to = None
+
+    def __init__(self, process, from_state, expected=True):
+        super().__init__()
+        self.process = process
+        self.from_state = from_state
+        self.expected = expected
+        # we eagerly render these so if the process pid, etc changes beneath
+        # us, we stash the values at the time the event was sent
+        self.extra_values = self.get_extra_values()
+
+    def get_extra_values(self):
+        return []
+
+
+class ProcessStateFatalEvent(ProcessStateEvent):
+    pass
+
+
+class ProcessStateUnknownEvent(ProcessStateEvent):
+    pass
+
+
+class ProcessStateStartingOrBackoffEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('tries', int(self.process.backoff))]
+
+
+class ProcessStateBackoffEvent(ProcessStateStartingOrBackoffEvent):
+    pass
+
+
+class ProcessStateStartingEvent(ProcessStateStartingOrBackoffEvent):
+    pass
+
+
+class ProcessStateExitedEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('expected', int(self.expected)), ('pid', self.process.pid)]
+
+
+class ProcessStateRunningEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+class ProcessStateStoppingEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+class ProcessStateStoppedEvent(ProcessStateEvent):
+    def get_extra_values(self):
+        return [('pid', self.process.pid)]
+
+
+PROCESS_STATE_EVENT_MAP: ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]] = {
+    ProcessState.BACKOFF: ProcessStateBackoffEvent,
+    ProcessState.FATAL: ProcessStateFatalEvent,
+    ProcessState.UNKNOWN: ProcessStateUnknownEvent,
+    ProcessState.STOPPED: ProcessStateStoppedEvent,
+    ProcessState.EXITED: ProcessStateExitedEvent,
+    ProcessState.RUNNING: ProcessStateRunningEvent,
+    ProcessState.STARTING: ProcessStateStartingEvent,
+    ProcessState.STOPPING: ProcessStateStoppingEvent,
+}
+
+
+#
+
+
+class ProcessGroupEvent(Event):
+    def __init__(self, group):
+        super().__init__()
+        self.group = group
+
+
+class ProcessGroupAddedEvent(ProcessGroupEvent):
+    pass
+
+
+class ProcessGroupRemovedEvent(ProcessGroupEvent):
+    pass
+
+
+#
+
+
+class TickEvent(Event):
+    """Abstract."""
+
+    def __init__(self, when, supervisord):
+        super().__init__()
+        self.when = when
+        self.supervisord = supervisord
+
+
+class Tick5Event(TickEvent):
+    period = 5
+
+
+class Tick60Event(TickEvent):
+    period = 60
+
+
+class Tick3600Event(TickEvent):
+    period = 3600
+
+
+TICK_EVENTS = (  # imported elsewhere
+    Tick5Event,
+    Tick60Event,
+    Tick3600Event,
+)
+
+
+##
+
+
+class EventTypes:
+    EVENT = Event  # abstract
+
+    PROCESS_STATE = ProcessStateEvent  # abstract
+    PROCESS_STATE_STOPPED = ProcessStateStoppedEvent
+    PROCESS_STATE_EXITED = ProcessStateExitedEvent
+    PROCESS_STATE_STARTING = ProcessStateStartingEvent
+    PROCESS_STATE_STOPPING = ProcessStateStoppingEvent
+    PROCESS_STATE_BACKOFF = ProcessStateBackoffEvent
+    PROCESS_STATE_FATAL = ProcessStateFatalEvent
+    PROCESS_STATE_RUNNING = ProcessStateRunningEvent
+    PROCESS_STATE_UNKNOWN = ProcessStateUnknownEvent
+
+    PROCESS_COMMUNICATION = ProcessCommunicationEvent  # abstract
+    PROCESS_COMMUNICATION_STDOUT = ProcessCommunicationStdoutEvent
+    PROCESS_COMMUNICATION_STDERR = ProcessCommunicationStderrEvent
+
+    PROCESS_LOG = ProcessLogEvent
+    PROCESS_LOG_STDOUT = ProcessLogStdoutEvent
+    PROCESS_LOG_STDERR = ProcessLogStderrEvent
+
+    REMOTE_COMMUNICATION = RemoteCommunicationEvent
+
+    SUPERVISOR_STATE_CHANGE = SupervisorStateChangeEvent  # abstract
+    SUPERVISOR_STATE_CHANGE_RUNNING = SupervisorRunningEvent
+    SUPERVISOR_STATE_CHANGE_STOPPING = SupervisorStoppingEvent
+
+    TICK = TickEvent  # abstract
+    TICK_5 = Tick5Event
+    TICK_60 = Tick60Event
+    TICK_3600 = Tick3600Event
+
+    PROCESS_GROUP = ProcessGroupEvent  # abstract
+    PROCESS_GROUP_ADDED = ProcessGroupAddedEvent
+    PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
+
+
+def get_event_name_by_type(requested):
+    for name, typ in EventTypes.__dict__.items():
+        if typ is requested:
+            return name
+    return None
 
 
 ########################################
@@ -4580,7 +4604,7 @@ class ProcessGroup(AbstractProcessGroup):
                 proc.give_up()
 
     def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
-        return [x for x in self._processes.values() if x.get_state() not in STOPPED_STATES]
+        return [x for x in self._processes.values() if not x.get_state().stopped]
 
     def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
         dispatchers: dict = {}
@@ -4686,8 +4710,8 @@ class Subprocess(AbstractSubprocess):
         self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
 
-        self._laststart = 0.  # Last time the subprocess was started; 0 if never
-        self._laststop = 0.  # Last time the subprocess was stopped; 0 if never
+        self._last_start = 0.  # Last time the subprocess was started; 0 if never
+        self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
         self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
         self._delay = 0.  # If nonzero, delay starting or killing until this time
 
@@ -4808,17 +4832,6 @@ class Subprocess(AbstractSubprocess):
 
         return filename, commandargs
 
-    event_map: ta.ClassVar[ta.Mapping[ProcessState, ta.Type[ProcessStateEvent]]] = {
-        ProcessState.BACKOFF: ProcessStateBackoffEvent,
-        ProcessState.FATAL: ProcessStateFatalEvent,
-        ProcessState.UNKNOWN: ProcessStateUnknownEvent,
-        ProcessState.STOPPED: ProcessStateStoppedEvent,
-        ProcessState.EXITED: ProcessStateExitedEvent,
-        ProcessState.RUNNING: ProcessStateRunningEvent,
-        ProcessState.STARTING: ProcessStateStartingEvent,
-        ProcessState.STOPPING: ProcessStateStoppingEvent,
-    }
-
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
         old_state = self._state
         if new_state is old_state:
@@ -4830,7 +4843,7 @@ class Subprocess(AbstractSubprocess):
             self._backoff += 1
             self._delay = now + self._backoff
 
-        event_class = self.event_map.get(new_state)
+        event_class = PROCESS_STATE_EVENT_MAP.get(new_state)
         if event_class is not None:
             event = event_class(self, old_state, expected)
             self._event_callbacks.notify(event)
@@ -4842,7 +4855,7 @@ class Subprocess(AbstractSubprocess):
             current_state = self._state.name
             allowable_states = ' '.join(s.name for s in states)
             process_name = as_string(self._config.name)
-            raise AssertionError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
+            raise RuntimeError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
 
     def _record_spawn_err(self, msg: str) -> None:
         self._spawn_err = msg
@@ -4861,7 +4874,7 @@ class Subprocess(AbstractSubprocess):
         self._system_stop = False
         self._administrative_stop = False
 
-        self._laststart = time.time()
+        self._last_start = time.time()
 
         self._check_in_state(
             ProcessState.EXITED,
@@ -5047,13 +5060,13 @@ class Subprocess(AbstractSubprocess):
         """
 
         if self._state == ProcessState.STARTING:
-            self._laststart = min(test_time, self._laststart)
+            self._last_start = min(test_time, self._last_start)
             if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
                 self._delay = test_time + self._config.startsecs
 
         elif self._state == ProcessState.RUNNING:
-            if test_time > self._laststart and test_time < (self._laststart + self._config.startsecs):
-                self._laststart = test_time - self._config.startsecs
+            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
+                self._last_start = test_time - self._config.startsecs
 
         elif self._state == ProcessState.STOPPING:
             self._last_stop_report = min(test_time, self._last_stop_report)
@@ -5211,15 +5224,15 @@ class Subprocess(AbstractSubprocess):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        self._laststop = now
+        self._last_stop = now
         process_name = as_string(self._config.name)
 
-        if now > self._laststart:
-            too_quickly = now - self._laststart < self._config.startsecs
+        if now > self._last_start:
+            too_quickly = now - self._last_start < self._config.startsecs
         else:
             too_quickly = False
             log.warning(
-                "process '%s' (%s) laststart time is in the future, don't know how long process was running so "
+                "process '%s' (%s) last_start time is in the future, don't know how long process was running so "
                 "assuming it did not exit too quickly",
                 process_name,
                 self.pid,
@@ -5256,8 +5269,8 @@ class Subprocess(AbstractSubprocess):
             self._backoff = 0
             self._exitstatus = es
 
-            # if the process was STARTING but a system time change causes self.laststart to be in the future, the normal
-            # STARTING->RUNNING transition can be subverted so we perform the transition here.
+            # if the process was STARTING but a system time change causes self.last_start to be in the future, the
+            # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
             if self._state == ProcessState.STARTING:
                 self.change_state(ProcessState.RUNNING)
 
@@ -5311,7 +5324,7 @@ class Subprocess(AbstractSubprocess):
                         # EXITED -> STARTING
                         self.spawn()
 
-            elif state == ProcessState.STOPPED and not self._laststart:
+            elif state == ProcessState.STOPPED and not self._last_start:
                 if self._config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
@@ -5324,7 +5337,7 @@ class Subprocess(AbstractSubprocess):
 
         process_name = as_string(self._config.name)
         if state == ProcessState.STARTING:
-            if now - self._laststart > self._config.startsecs:
+            if now - self._last_start > self._config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self._delay = 0
