@@ -253,7 +253,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             version = words[-1]
             try:
                 if not version.startswith('HTTP/'):
-                    raise ValueError
+                    raise ValueError(version)  # noqa
 
                 base_version_number = version.split('/', 1)[1]
                 version_number = base_version_number.split('.')
@@ -263,11 +263,11 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
                 #   - Leading zeros MUST be ignored by recipients.
                 if len(version_number) != 2:
-                    raise ValueError
+                    raise ValueError(version_number)  # noqa
                 if any(not component.isdigit() for component in version_number):
-                    raise ValueError('non digit in http version')
+                    raise ValueError('non digit in http version')  # noqa
                 if any(len(component) > 10 for component in version_number):
-                    raise ValueError('unreasonable length http version')
+                    raise ValueError('unreasonable length http version')  # noqa
                 version_number = int(version_number[0]), int(version_number[1])
 
             except (ValueError, IndexError):
@@ -410,7 +410,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             content = (self.error_message_format % {
                 'code': code,
                 'message': html.escape(message, quote=False),
-                'explain': html.escape(explain, quote=False)
+                'explain': html.escape(explain, quote=False),
             })
             body = content.encode('UTF-8', 'replace')
             self.send_header('Content-Type', self.error_content_type)

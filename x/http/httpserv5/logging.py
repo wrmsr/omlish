@@ -98,9 +98,9 @@ class DefaultHttpLogging(HttpLogging):
         message = fmt % args
 
         sys.stderr.write(
-            '%s - - [%s] %s\n' % (
+            '%s - - [%s] %s\n' % (  # noqa
                 ctx.client,
-                datetime.datetime.now().ctime(),
+                datetime.datetime.now().ctime(),  # noqa
                 message.translate(self._CONTROL_CHAR_TABLE),
             ),
         )

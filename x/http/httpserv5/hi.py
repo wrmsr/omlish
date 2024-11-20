@@ -37,10 +37,10 @@ def _main() -> None:
     port = 8000
     bind = None
 
-    ServerClass = http.server.ThreadingHTTPServer
-    ServerClass.address_family, addr = get_best_socket_family(bind, port)
+    server_class = http.server.ThreadingHTTPServer
+    server_class.address_family, addr = get_best_socket_family(bind, port)
 
-    with ServerClass(
+    with server_class(
             addr,
             functools.partial(
                 SocketRequestHandlerSocketServerAdapter,
