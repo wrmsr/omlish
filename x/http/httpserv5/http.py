@@ -15,8 +15,8 @@ from .parsing import HttpHeaders
 from .parsing import HttpProtocolVersion
 from .parsing import HttpProtocolVersions
 from .parsing import HttpRequestParser
-from .parsing import ParseHttpRequestError
 from .parsing import ParsedHttpRequest
+from .parsing import ParseHttpRequestError
 from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 

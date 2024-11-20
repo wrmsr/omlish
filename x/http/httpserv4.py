@@ -104,7 +104,7 @@ DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
 class BaseHttpRequestHandler(StreamRequestHandler):
-    DEFAULT_PROTOCOL_VERSION = 'HTTP/1.0'
+    DEFAULT_PROTOCOL_VERSION = 'HTTP/1.1'
 
     protocol_version = DEFAULT_PROTOCOL_VERSION
 

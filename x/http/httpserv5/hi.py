@@ -7,6 +7,8 @@ from .http import HttpServerRequest
 from .http import HttpServerResponse
 from .http import HttpSocketRequestHandler
 from .http import UnsupportedMethodServerHandlerError
+from .parsing import HttpProtocolVersions
+from .parsing import HttpRequestParser
 from .sockets import get_best_socket_family
 
 
@@ -47,6 +49,9 @@ def _main() -> None:
                 adapter_target_factory=functools.partial(
                     HttpSocketRequestHandler,
                     handler=say_hi_handler,
+                    parser=HttpRequestParser(
+                        protocol_version=HttpProtocolVersions.HTTP_1_1,
+                    ),
                 ),
             ),
     ) as httpd:
