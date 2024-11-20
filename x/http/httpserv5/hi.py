@@ -54,7 +54,7 @@ def _main() -> None:
             addr,
             functools.partial(
                 SocketRequestHandlerSocketServerAdapter,
-                adapter_target_cls=SayHiHandler,
+                adapter_target_factory=SayHiHandler,
             ),
     ) as httpd:
         host, port = httpd.socket.getsockname()[:2]

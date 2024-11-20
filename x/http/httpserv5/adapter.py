@@ -5,7 +5,7 @@ import typing as ta
 from omlish import check
 
 from .sockets import SocketAddress
-from .sockets import SocketRequestHandler
+from .sockets import SocketRequestHandlerFactory
 
 
 ##
@@ -37,7 +37,7 @@ class SocketRequestHandlerSocketServerAdapter(
     socketserver.StreamRequestHandler,
     SocketServerBaseRequestHandler_,
 ):
-    adapter_target_cls: type[SocketRequestHandler] | None = None
+    adapter_target_factory: SocketRequestHandlerFactory | None = None
 
     def __init__(
             self,
@@ -45,10 +45,10 @@ class SocketRequestHandlerSocketServerAdapter(
             client_address: SocketAddress,
             server: socketserver.TCPServer,
             *,
-            adapter_target_cls: type[SocketRequestHandler] | None = None,
+            adapter_target_factory: SocketRequestHandlerFactory | None = None,
     ) -> None:
-        if adapter_target_cls is not None:
-            self.adapter_target_cls = adapter_target_cls
+        if adapter_target_factory is not None:
+            self.adapter_target_factory = adapter_target_factory
 
         super().__init__(
             request,
@@ -57,7 +57,7 @@ class SocketRequestHandlerSocketServerAdapter(
         )
 
     def handle(self) -> None:
-        target = check.not_none(self.adapter_target_cls)(
+        target = check.not_none(self.adapter_target_factory)(
             self.client_address,
             self.rfile,
             self.wfile,

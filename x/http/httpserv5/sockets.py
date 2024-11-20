@@ -47,6 +47,9 @@ def get_best_socket_family(*address) -> tuple[socket.AddressFamily, SocketAddres
 ##
 
 
+SocketRequestHandlerFactory: ta.TypeAlias = ta.Callable[[SocketAddress, ta.IO, ta.IO], 'SocketRequestHandler']
+
+
 class SocketRequestHandler(abc.ABC):
     def __init__(
             self,
