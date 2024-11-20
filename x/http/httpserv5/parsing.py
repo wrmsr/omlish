@@ -159,6 +159,7 @@ class HttpRequestParser:
 
         def result_kwargs():
             return dict(
+                protocol_version=self._protocol_version,
                 request_line=request_line,
                 request_version=request_version,
                 headers=headers,
