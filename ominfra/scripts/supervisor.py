@@ -5297,7 +5297,7 @@ class Subprocess(AbstractSubprocess):
         msg = drop_privileges(self._config.uid)
         return msg
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self._config.name
         return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
@@ -5305,7 +5305,7 @@ class Subprocess(AbstractSubprocess):
     def get_state(self) -> ProcessState:
         return self._state
 
-    def transition(self):
+    def transition(self) -> None:
         now = time.time()
         state = self._state
 
@@ -5362,7 +5362,7 @@ class Subprocess(AbstractSubprocess):
                 log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
                 self.kill(signal.SIGKILL)
 
-    def create_auto_child_logs(self):
+    def create_auto_child_logs(self) -> None:
         # temporary logfiles which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
