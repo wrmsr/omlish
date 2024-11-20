@@ -1,7 +1,30 @@
 import abc
+import collections.abc
+import contextlib
+import json
+import logging
+import os
+import selectors
+import socket as sock
+import stat
+import sys
+import threading
+import traceback
+import types
 import typing as ta
+import wsgiref.simple_server
 
+from omlish import cached
+from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
+from omlish.http import consts as hc
+
+
+log = logging.getLogger(__name__)
+
+
+##
 
 
 AppT = ta.TypeVar('AppT', bound='App')
@@ -30,21 +53,6 @@ class App(lang.Abstract):
 
 
 ##
-
-
-import abc
-import logging
-import os
-import socket as sock
-import stat
-import typing as ta
-
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-
-
-log = logging.getLogger(__name__)
 
 
 BinderT = ta.TypeVar('BinderT', bound='Binder')
@@ -255,22 +263,6 @@ class UnixBinder(BindBinder):
 ##
 
 
-import abc
-import contextlib
-import logging
-import selectors
-import socket as sock
-import threading
-import typing as ta
-
-from omlish import cached
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-
-
-log = logging.getLogger(__name__)
-
 ClientAddress = tuple[str, int]
 
 
@@ -434,16 +426,6 @@ class WsgiServer(lang.ContextManaged, lang.Abstract):
 ##
 
 
-import logging
-import socket as sock
-import threading
-import typing as ta
-import wsgiref.simple_server
-
-
-log = logging.getLogger(__name__)
-
-
 WsgiRequestHandler = wsgiref.simple_server.WSGIRequestHandler
 
 
@@ -503,3 +485,233 @@ class ThreadSpawningWsgiRefServer(WsgiRefWsgiServer):
     def process_request(self, request: sock.socket, client_address: ClientAddress) -> None:
         thread = threading.Thread(target=super().process_request, args=(request, client_address))
         thread.start()
+
+
+##
+
+
+def read_input(environ: Environ) -> bytes:
+    try:
+        request_body_size = int(environ.get('CONTENT_LENGTH', 0))
+    except ValueError:
+        request_body_size = 0
+
+    return environ['wsgi.input'].read(request_body_size)
+
+
+class SimpleDictApp(App):
+
+    class _BadRequestHandledException(Exception):
+        pass
+
+    Target = ta.Callable[[ta.Optional[ta.Dict[str, ta.Any]]], ta.Dict[str, ta.Any]]
+
+    def __init__(
+            self,
+            target: Target,
+            encode: ta.Callable[[ta.Any], ta.Any],
+            decode: ta.Callable[[ta.Any], ta.Any],
+            content_type: str,
+            *,
+            stream: bool = False,
+            stream_separator: bytes = b'\n',
+            stream_terminator: bytes = b'\0',
+            handle_bad_requests: bool = False,
+            on_bad_request: ta.Callable[[ta.Type[BadRequestExceptionT], BadRequestExceptionT, types.TracebackType], None] = None,  # noqa
+            **kwargs
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._target = check.callable(target)
+        self._encode = check.callable(encode)
+        self._decode = check.callable(decode)
+        self._content_type = check.isinstance(content_type, str)
+
+        self._stream = stream
+        self._stream_separator = stream_separator
+        self._stream_terminator = stream_terminator
+
+        self._handle_bad_requests = handle_bad_requests
+        self._on_bad_request = on_bad_request
+
+    def __call__(self, environ: Environ, start_response: StartResponse) -> ta.Iterable[bytes]:
+        request_body = read_input(environ)
+
+        if request_body:
+            input = self._decode(request_body)
+        else:
+            input = None
+
+        @contextlib.contextmanager
+        def bad_request_manager():
+            if not self._handle_bad_requests:
+                yield
+                return
+
+            try:
+                yield
+            except BadRequestException:
+                exc_info = sys.exc_info()
+                if self._on_bad_request is not None:
+                    self._on_bad_request(*exc_info)
+                write = start_response(
+                    hc.STATUS_BAD_REQUEST.decode(),
+                    [hc.CONTENT_TYPE_TEXT.decode()],
+                    exc_info=exc_info,
+                )
+                write('\n'.join(traceback.TracebackException(*exc_info).format()).encode('utf-8'))
+                raise self._BadRequestHandledException
+
+        try:
+            with bad_request_manager():
+                output = self._target(input)
+        except self._BadRequestHandledException:
+            return []
+
+        start_response(
+            hc.STATUS_OK,
+            [(hc.HEADER_CONTENT_TYPE.decode(), self._content_type)],
+        )
+
+        if output is None:
+            return []
+
+        elif isinstance(output, collections.abc.Iterator):
+            if not self._stream:
+                raise TypeError(output)
+
+            def inner():
+                try:
+                    with bad_request_manager():
+                        for item in output:
+                            yield self._encode(item)
+                            yield self._stream_separator
+                        yield self._stream_terminator
+                except self._BadRequestHandledException:
+                    pass
+
+            return inner()
+
+        else:
+            return [self._encode(output)]
+
+
+def simple_json_app(target: SimpleDictApp.Target) -> App:
+    return SimpleDictApp(
+        target,
+        lambda output: json.dumps(output).encode('utf-8'),
+        lambda request_body: json.loads(request_body.decode('utf-8')),
+        hc.CONTENT_TYPE_JSON.decode(),
+    )
+
+
+##
+import time
+
+import requests
+
+from omlish.testing import run_with_timeout
+
+
+def test_inline_http():
+    server: ta.Optional[WsgiServer] = None
+
+    def app(environ, start_response):
+        assert environ['PATH_INFO'] == '/test'
+        start_response(hc.STATUS_OK, [])
+        server.shutdown()
+        return [b'hi']
+
+    port = 9999
+
+    def fn1():
+        time.sleep(0.5)
+        while True:
+            try:
+                response: requests.Response
+                with contextlib.closing(requests.post(f'http://localhost:{port}/test', timeout=0.1)) as response:
+                    if response.status_code == 200:
+                        return
+            except requests.RequestException:
+                pass
+            time.sleep(0.1)
+
+    thread = threading.Thread(target=fn1)
+    thread.start()
+
+    with ThreadSpawningWsgiRefServer(TcpBinder(TcpBinder.Config('0.0.0.0', port)), app) as server:
+        with server.loop_context() as loop:
+            port = server.binder.port
+            for _ in loop:
+                pass
+
+    thread.join()
+
+
+def test_http():
+    # FIXME: dynamic port
+    server: ta.Optional[WsgiServer] = None
+
+    def app(environ, start_response):
+        assert environ['PATH_INFO'] == '/test'
+        start_response(hc.STATUS_OK, [])
+        server.shutdown()
+        return [b'hi']
+
+    port = 8181
+
+    def fn0():
+        nonlocal server
+        server = ThreadSpawningWsgiRefServer(TcpBinder(TcpBinder.Config('0.0.0.0', port)), app)
+        server.run()
+
+    def fn1():
+        time.sleep(0.5)
+        while True:
+            try:
+                response: requests.Response
+                with contextlib.closing(requests.post(f'http://localhost:{port}/test', timeout=0.1)) as response:
+                    if response.status_code == 200:
+                        return
+            except requests.RequestException:
+                pass
+            time.sleep(0.1)
+
+    run_with_timeout(fn0, fn1)
+
+
+def test_json_http():
+    server: ta.Optional[WsgiServer] = None
+
+    def json_app(obj):
+        server.shutdown()
+        return {'hi': True}
+
+    port = 9998
+
+    def fn1():
+        time.sleep(0.5)
+        while True:
+            try:
+                response: requests.Response
+                with contextlib.closing(requests.post(f'http://localhost:{port}/test', timeout=0.1)) as response:
+                    if response.status_code == 200:
+                        assert json.loads(response.content) == {'hi': True}
+                        return
+            except requests.RequestException:
+                pass
+            time.sleep(0.1)
+
+    thread = threading.Thread(target=fn1)
+    thread.start()
+
+    with ThreadSpawningWsgiRefServer(
+            TcpBinder(TcpBinder.Config('0.0.0.0', 0)),
+            simple_json_app(json_app)
+    ) as server:
+        with server.loop_context() as loop:
+            port = server.binder.port
+            for _ in loop:
+                pass
+
+    thread.join()
