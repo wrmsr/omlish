@@ -20,7 +20,7 @@ from .configs import ServerConfig
 from .configs import prepare_server_config
 from .context import ServerContext
 from .context import ServerEpoch
-from .events import EVENT_CALLBACKS
+from .events import EventCallbacks
 from .poller import Poller
 from .poller import get_poller_impl
 from .process import InheritedFds
@@ -55,7 +55,7 @@ def build_server_bindings(
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),
 
-        inj.bind(EVENT_CALLBACKS),
+        inj.bind(EventCallbacks, singleton=True),
 
         inj.bind(SignalReceiver, singleton=True),
 

@@ -1077,35 +1077,35 @@ class RestartUnconditionally:
 ##
 
 
-class EventCallbacks:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._callbacks: ta.List[ta.Tuple[type, ta.Callable]] = []
-
-    def subscribe(self, type, callback):  # noqa
-        self._callbacks.append((type, callback))
-
-    def unsubscribe(self, type, callback):  # noqa
-        self._callbacks.remove((type, callback))
-
-    def notify(self, event):
-        for type, callback in self._callbacks:  # noqa
-            if isinstance(event, type):
-                callback(event)
-
-    def clear(self):
-        self._callbacks[:] = []
-
-
-EVENT_CALLBACKS = EventCallbacks()
+class Event(abc.ABC):  # noqa
+    """Abstract event type."""
 
 
 ##
 
 
-class Event(abc.ABC):  # noqa
-    """Abstract event type."""
+EventCallback = ta.Callable[['Event'], None]
+
+
+class EventCallbacks:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._callbacks: ta.List[ta.Tuple[ta.Type[Event], EventCallback]] = []
+
+    def subscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
+        self._callbacks.append((type, callback))
+
+    def unsubscribe(self, type: ta.Type[Event], callback: EventCallback) -> None:  # noqa
+        self._callbacks.remove((type, callback))
+
+    def notify(self, event: Event) -> None:
+        for type, callback in self._callbacks:  # noqa
+            if isinstance(event, type):
+                callback(event)
+
+    def clear(self) -> None:
+        self._callbacks[:] = []
 
 
 class ProcessLogEvent(Event, abc.ABC):
@@ -5677,7 +5677,7 @@ def build_server_bindings(
         inj.bind(ServerContext, singleton=True),
         inj.bind(AbstractServerContext, to_key=ServerContext),
 
-        inj.bind(EVENT_CALLBACKS),
+        inj.bind(EventCallbacks, singleton=True),
 
         inj.bind(SignalReceiver, singleton=True),
 
