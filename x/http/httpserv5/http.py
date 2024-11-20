@@ -16,6 +16,7 @@ from .parsing import HttpRequestParser
 from .parsing import ParseHttpRequestError
 from .parsing import ParseHttpRequestResult
 from .parsing import ParsedHttpRequest
+from .parsing import read_raw_http_headers
 from .sockets import SocketAddress
 from .sockets import SocketRequestHandler
 
@@ -91,6 +92,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             wfile: ta.BinaryIO,
             *,
             handler: HttpServerHandler,
+            parser: HttpRequestParser = HttpRequestParser(),
             logging: HttpLogging = DefaultHttpLogging(),
     ) -> None:
         super().__init__(
@@ -100,6 +102,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         )
 
         self.handler = handler
+        self.parser = parser
         self.logging = logging
 
         self.logging_context = HttpLogging.Context(
@@ -133,6 +136,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def handle_one_request(self) -> None:
         try:
+            # FIXME: move into parser, parser just takes a read_line: ta.Callable[[], bytes], natural translation to gen
             self.raw_request_line = self.rfile.readline(65537)
 
             if len(self.raw_request_line) > 65536:
@@ -146,6 +150,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 self.close_connection = True
                 return
 
+            parsed = self.parser.parse(
+                self.raw_request_line,
+                lambda: read_raw_http_headers(self.rfile),
+            )
             if not self.parse_request():
                 # An error code has been sent, just exit
                 return
