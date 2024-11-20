@@ -3,6 +3,7 @@ import email.utils
 import html
 import http.client
 import http.server
+import io
 import time
 import typing as ta
 
@@ -66,6 +67,38 @@ DEFAULT_ERROR_MESSAGE = """\
 """
 
 DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
+
+
+##
+
+
+def read_raw_http_headers(
+        fp: ta.IO,
+        *,
+        max_line: int = http.client._MAXLINE,  # noqa
+        max_headers: int = http.client._MAXHEADERS,  # noqa
+) -> list[bytes]:
+    """
+    Reads potential header lines into a list from a file pointer.
+
+    Length of line is limited by _MAXLINE, and number of headers is limited by _MAXHEADERS.
+    """
+
+    headers: list[bytes] = []
+    while True:
+        line = fp.readline(max_line + 1)
+        if len(line) > max_line:
+            raise http.client.LineTooLong('header line')
+        headers.append(line)
+        if len(headers) > max_headers:
+            raise http.client.HTTPException(f'got more than {max_headers} headers')
+        if line in (b'\r\n', b'\n', b''):
+            break
+    return headers
+
+
+def parse_raw_http_headers(lst: ta.Sequence[bytes]) -> http.client.HTTPMessage:
+    return http.client.parse_headers(io.BytesIO(b''.join(lst)))
 
 
 ##
@@ -284,7 +317,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         # Examine the headers and look for a Connection directive.
         try:
-            self.headers = http.client.parse_headers(self.rfile)
+            raw_headers = read_raw_http_headers(self.rfile)
+            self.headers = parse_raw_http_headers(raw_headers)
 
         except http.client.LineTooLong as err:
             self.send_error(
