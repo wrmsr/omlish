@@ -499,6 +499,7 @@ class CoroHttpServerSocketHandler(SocketHandler):
         while True:
             if isinstance(o, CoroHttpServer.AnyLogIo):
                 i = None
+                # self._logging.log_error(self._logging_context, 'code %d, message %s', code, message)
                 print(repr(o))
 
             elif isinstance(o, CoroHttpServer.ReadIo):
