@@ -38,7 +38,7 @@ class SocketHandlerSocketServerStreamRequestHandler(  # type: ignore[misc]
     socketserver.StreamRequestHandler,
     SocketServerStreamRequestHandler_,
 ):
-    handler_factory: ta.Optional[SocketHandlerFactory] = None
+    socket_handler_factory: ta.Optional[SocketHandlerFactory] = None
 
     def __init__(
             self,
@@ -46,10 +46,10 @@ class SocketHandlerSocketServerStreamRequestHandler(  # type: ignore[misc]
             client_address: SocketAddress,
             server: socketserver.TCPServer,
             *,
-            handler_factory: ta.Optional[SocketHandlerFactory] = None,
+            socket_handler_factory: ta.Optional[SocketHandlerFactory] = None,
     ) -> None:
-        if handler_factory is not None:
-            self.handler_factory = handler_factory
+        if socket_handler_factory is not None:
+            self.socket_handler_factory = socket_handler_factory
 
         super().__init__(
             request,
@@ -58,7 +58,7 @@ class SocketHandlerSocketServerStreamRequestHandler(  # type: ignore[misc]
         )
 
     def handle(self) -> None:
-        target = check_not_none(self.handler_factory)(
+        target = check_not_none(self.socket_handler_factory)(
             self.client_address,
             self.rfile,  # type: ignore[arg-type]
             self.wfile,  # type: ignore[arg-type]
