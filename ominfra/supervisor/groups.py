@@ -9,7 +9,7 @@ from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .states import ProcessState
-from .types import AbstractSubprocess
+from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
 
@@ -18,10 +18,10 @@ from .types import ServerContext
 
 
 @dc.dataclass(frozen=True)
-class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, ProcessGroup], AbstractSubprocess]
+class ProcessFactory:
+    fn: ta.Callable[[ProcessConfig, ProcessGroup], Process]
 
-    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
+    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> Process:
         return self.fn(config, group)
 
 
@@ -31,17 +31,17 @@ class ProcessGroupImpl(ProcessGroup):
             config: ProcessGroupConfig,
             context: ServerContext,
             *,
-            subprocess_factory: SubprocessFactory,
+            process_factory: ProcessFactory,
     ):
         super().__init__()
 
         self._config = config
         self._context = context
-        self._subprocess_factory = subprocess_factory
+        self._process_factory = process_factory
 
         self._processes = {}
         for pconfig in self._config.processes or []:
-            process = self._subprocess_factory(pconfig, self)
+            process = self._process_factory(pconfig, self)
             self._processes[pconfig.name] = process
 
     @property
@@ -88,7 +88,7 @@ class ProcessGroupImpl(ProcessGroup):
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+    def get_unstopped_processes(self) -> ta.List[Process]:
         return [x for x in self._processes.values() if not x.get_state().stopped]
 
     def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:

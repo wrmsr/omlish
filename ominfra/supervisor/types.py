@@ -27,12 +27,12 @@ class ServerContext(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def pid_history(self) -> ta.Dict[int, 'AbstractSubprocess']:
+    def pid_history(self) -> ta.Dict[int, 'Process']:
         raise NotImplementedError
 
 
 @functools.total_ordering
-class AbstractSubprocess(abc.ABC):
+class Process(abc.ABC):
     @property
     @abc.abstractmethod
     def pid(self) -> int:
@@ -130,7 +130,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+    def get_unstopped_processes(self) -> ta.List[Process]:
         raise NotImplementedError
 
     @abc.abstractmethod

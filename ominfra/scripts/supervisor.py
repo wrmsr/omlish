@@ -4835,12 +4835,12 @@ class ServerContext(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def pid_history(self) -> ta.Dict[int, 'AbstractSubprocess']:
+    def pid_history(self) -> ta.Dict[int, 'Process']:
         raise NotImplementedError
 
 
 @functools.total_ordering
-class AbstractSubprocess(abc.ABC):
+class Process(abc.ABC):
     @property
     @abc.abstractmethod
     def pid(self) -> int:
@@ -4938,7 +4938,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+    def get_unstopped_processes(self) -> ta.List[Process]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -4964,7 +4964,7 @@ class ServerContextImpl(ServerContext):
         self._poller = poller
         self._epoch = epoch
 
-        self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
+        self._pid_history: ta.Dict[int, Process] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
         if config.user is not None:
@@ -4997,7 +4997,7 @@ class ServerContextImpl(ServerContext):
         self._state = state
 
     @property
-    def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
+    def pid_history(self) -> ta.Dict[int, Process]:
         return self._pid_history
 
     @property
@@ -5344,7 +5344,7 @@ def check_execv_args(filename, argv, st) -> None:
 class Dispatcher(abc.ABC):
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             channel: str,
             fd: int,
             *,
@@ -5363,7 +5363,7 @@ class Dispatcher(abc.ABC):
         return f'<{self.__class__.__name__} at {id(self)} for {self._process} ({self._channel})>'
 
     @property
-    def process(self) -> AbstractSubprocess:
+    def process(self) -> Process:
         return self._process
 
     @property
@@ -5418,7 +5418,7 @@ class OutputDispatcher(Dispatcher):
 
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
             **kwargs: ta.Any,
@@ -5627,7 +5627,7 @@ class OutputDispatcher(Dispatcher):
 class InputDispatcher(Dispatcher):
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             channel: str,
             fd: int,
             **kwargs: ta.Any,
@@ -5677,10 +5677,10 @@ class InputDispatcher(Dispatcher):
 
 
 @dc.dataclass(frozen=True)
-class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, ProcessGroup], AbstractSubprocess]
+class ProcessFactory:
+    fn: ta.Callable[[ProcessConfig, ProcessGroup], Process]
 
-    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
+    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> Process:
         return self.fn(config, group)
 
 
@@ -5690,17 +5690,17 @@ class ProcessGroupImpl(ProcessGroup):
             config: ProcessGroupConfig,
             context: ServerContext,
             *,
-            subprocess_factory: SubprocessFactory,
+            process_factory: ProcessFactory,
     ):
         super().__init__()
 
         self._config = config
         self._context = context
-        self._subprocess_factory = subprocess_factory
+        self._process_factory = process_factory
 
         self._processes = {}
         for pconfig in self._config.processes or []:
-            process = self._subprocess_factory(pconfig, self)
+            process = self._process_factory(pconfig, self)
             self._processes[pconfig.name] = process
 
     @property
@@ -5747,7 +5747,7 @@ class ProcessGroupImpl(ProcessGroup):
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+    def get_unstopped_processes(self) -> ta.List[Process]:
         return [x for x in self._processes.values() if not x.get_state().stopped]
 
     def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
@@ -5827,7 +5827,7 @@ class ProcessGroups:
 ##
 
 
-class Subprocess(AbstractSubprocess):
+class ProcessImpl(Process):
     """A class to manage a subprocess."""
 
     def __init__(
@@ -6669,11 +6669,11 @@ class Supervisor:
             process_map.update(group.get_dispatchers())
         return process_map
 
-    def shutdown_report(self) -> ta.List[Subprocess]:
-        unstopped: ta.List[Subprocess] = []
+    def shutdown_report(self) -> ta.List[Process]:
+        unstopped: ta.List[Process] = []
 
         for group in self._process_groups:
-            unstopped.extend(group.get_unstopped_processes())  # type: ignore
+            unstopped.extend(group.get_unstopped_processes())
 
         if unstopped:
             # throttle 'waiting for x to die' reports
@@ -6921,11 +6921,11 @@ def bind_server(
         return ProcessGroupFactory(inner)
     lst.append(inj.bind(make_process_group_factory))
 
-    def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
-        def inner(process_config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
-            return injector.inject(functools.partial(Subprocess, process_config, group))
-        return SubprocessFactory(inner)
-    lst.append(inj.bind(make_subprocess_factory))
+    def make_process_factory(injector: Injector) -> ProcessFactory:
+        def inner(process_config: ProcessConfig, group: ProcessGroup) -> Process:
+            return injector.inject(functools.partial(ProcessImpl, process_config, group))
+        return ProcessFactory(inner)
+    lst.append(inj.bind(make_process_factory))
 
     #
 
