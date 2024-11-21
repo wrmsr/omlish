@@ -90,8 +90,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    protocol_version: HttpProtocolVersion
-
     close_connection: bool
 
     def handle(self) -> None:
@@ -103,14 +101,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    raw_request_line: bytes
-
-    request_version: HttpProtocolVersion
+    protocol_version: HttpProtocolVersion
     request_line: str
+    request_version: HttpProtocolVersion
 
     method: str | None
     path: str
-
     headers: HttpHeaders
 
     #
@@ -136,7 +132,9 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 return
 
             parsed = check_isinstance(parsed, ParsedHttpRequest)
+
             self.logging.log_message(self.logging_context, '%r', parsed)
+
             if parsed.expects_continue:
                 self.send_response_only(http.HTTPStatus.CONTINUE)
                 self.end_headers()
