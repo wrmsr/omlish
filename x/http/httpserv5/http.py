@@ -332,16 +332,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             code: HttpStatusOrInt,
             message: str | None = None,
     ) -> None:
-        self._headers_buffer.extend(self.make_initial_response_headers(
-            code,
-            message,
-        ))
-
-    def make_initial_response_headers(
-            self,
-            code: HttpStatusOrInt,
-            message: str | None = None,
-    ) -> ta.Iterator[bytes]:
         if self.request_version != HttpProtocolVersions.HTTP_0_9:
             if message is None:
                 if code in self._STATUS_RESPONSES:
@@ -350,4 +340,4 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                     message = ''
 
             line = f'{self.protocol_version} {int(code)} {message}\r\n'
-            yield line.encode('latin-1', 'strict')
+            self._headers_buffer.append(line.encode('latin-1', 'strict'))
