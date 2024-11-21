@@ -195,7 +195,7 @@ class Cli(ap.Cli):
         subprocess.check_call(['git', 'push'])
 
     @ap.command(
-        aliases=['psm'],
+        aliases=['psu'],
     )
     def pull_submodule_update(self) -> None:
         subprocess.check_call(['git', 'pull'])
