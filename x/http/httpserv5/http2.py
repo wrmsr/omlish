@@ -158,8 +158,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     @dc.dataclass(frozen=True, kw_only=True)
     class ResponseAction(Action):
         code: http.HTTPStatus
-        message: str | None
-        headers: ta.Sequence['HttpSocketRequestHandler.Header']
+        message: str | None = None
+        headers: ta.Sequence['HttpSocketRequestHandler.Header'] | None = None
         data: bytes | None = None
 
     class CloseConnectionAction(Action):
@@ -215,8 +215,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             if parsed.expects_continue:
                 # https://bugs.python.org/issue1491
                 # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-                self.send_status_line(http.HTTPStatus.CONTINUE)
-                self.end_headers()
+                yield self.ResponseAction(http.HTTPStatus.CONTINUE)
 
             self.method = parsed.method
             self.path = parsed.path
