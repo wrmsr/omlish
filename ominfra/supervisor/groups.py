@@ -4,14 +4,13 @@ import typing as ta
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
-from .context import ServerContextImpl
 from .dispatchers import Dispatcher
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .states import ProcessState
-from .types import AbstractProcessGroup
 from .types import AbstractSubprocess
+from .types import ProcessGroup
 from .types import ServerContext
 
 
@@ -20,17 +19,17 @@ from .types import ServerContext
 
 @dc.dataclass(frozen=True)
 class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, AbstractProcessGroup], AbstractSubprocess]
+    fn: ta.Callable[[ProcessConfig, ProcessGroup], AbstractSubprocess]
 
-    def __call__(self, config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
+    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
         return self.fn(config, group)
 
 
-class ProcessGroup(AbstractProcessGroup):
+class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            context: ServerContextImpl,
+            context: ServerContext,
             *,
             subprocess_factory: SubprocessFactory,
     ):

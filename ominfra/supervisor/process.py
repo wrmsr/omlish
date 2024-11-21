@@ -30,8 +30,8 @@ from .exceptions import ProcessError
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
-from .types import AbstractProcessGroup
 from .types import AbstractSubprocess
+from .types import ProcessGroup
 from .types import ServerContext
 from .utils import as_bytes
 from .utils import as_string
@@ -54,7 +54,7 @@ class Subprocess(AbstractSubprocess):
     def __init__(
             self,
             config: ProcessConfig,
-            group: AbstractProcessGroup,
+            group: ProcessGroup,
             *,
             context: ServerContext,
             event_callbacks: EventCallbacks,
@@ -95,7 +95,7 @@ class Subprocess(AbstractSubprocess):
         return self._pid
 
     @property
-    def group(self) -> AbstractProcessGroup:
+    def group(self) -> ProcessGroup:
         return self._group
 
     @property
