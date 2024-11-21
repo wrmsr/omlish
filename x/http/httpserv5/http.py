@@ -6,7 +6,8 @@ import http.server
 import time
 import typing as ta
 
-from omlish import check
+from omlish.lite.check import check_isinstance
+from omlish.lite.check import check_not_none
 
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
@@ -54,28 +55,6 @@ class UnsupportedMethodServerHandlerError(Exception):
 
 
 HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerResponse]
-
-
-##
-
-
-DEFAULT_ERROR_MESSAGE = """\
-<!DOCTYPE HTML>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Error response</title>
-    </head>
-    <body>
-        <h1>Error response</h1>
-        <p>Error code: %(code)d</p>
-        <p>Message: %(message)s.</p>
-        <p>Error code explanation: %(code)s - %(explain)s.</p>
-    </body>
-</html>
-"""
-
-DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
 
 ##
@@ -156,7 +135,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 )
                 return
 
-            parsed = check.isinstance(parsed, ParsedHttpRequest)
+            parsed = check_isinstance(parsed, ParsedHttpRequest)
             self.logging.log_message(self.logging_context, '%r', parsed)
             if parsed.expects_continue:
                 if not self.handle_expect_100():
@@ -185,7 +164,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         request = HttpServerRequest(
             client_address=self.client_address,
-            method=check.not_none(self.method),
+            method=check_not_none(self.method),
             path=self.path,
             headers=self.headers,
             data=request_data,
@@ -232,6 +211,24 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         v: (v.phrase, v.description)
         for v in http.HTTPStatus.__members__.values()
     }
+
+    DEFAULT_ERROR_MESSAGE = """\
+    <!DOCTYPE HTML>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <title>Error response</title>
+        </head>
+        <body>
+            <h1>Error response</h1>
+            <p>Error code: %(code)d</p>
+            <p>Message: %(message)s.</p>
+            <p>Error code explanation: %(code)s - %(explain)s.</p>
+        </body>
+    </html>
+    """
+
+    DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
     error_message_format = DEFAULT_ERROR_MESSAGE
     error_content_type = DEFAULT_ERROR_CONTENT_TYPE
