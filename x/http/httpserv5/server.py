@@ -34,10 +34,11 @@ from omlish.lite.http.parsing import ParseHttpRequestError
 from omlish.lite.http.parsing import ParsedHttpRequest
 from omlish.lite.http.versions import HttpProtocolVersion
 from omlish.lite.http.versions import HttpProtocolVersions
+from omlish.lite.socket import SocketAddress
+from omlish.lite.socket import SocketHandler
 
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
-from .sockets import SocketAddress
 
 
 HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
@@ -68,7 +69,7 @@ class HttpServerHandlerError(Exception):
     pass
 
 
-class UnsupportedMethodServerHandlerError(Exception):
+class UnsupportedMethodHttpServerHandlerError(Exception):
     pass
 
 
@@ -423,7 +424,8 @@ class HttpServer:
 
         try:
             response = self._handler(request)
-        except UnsupportedMethodServerHandlerError:
+
+        except UnsupportedMethodHttpServerHandlerError:
             yield self._build_error_internal_response(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({parsed.method!r})',
@@ -454,3 +456,27 @@ class HttpServer:
             data=response_data,
             close_connection=response.close_connection,
         )
+
+
+##
+
+
+class HttpServerSocketHandler(SocketHandler):
+    def __init__(
+            self,
+            client_address: SocketAddress,
+            rfile: ta.BinaryIO,
+            wfile: ta.BinaryIO,
+            *,
+            http_server: HttpServer,
+    ) -> None:
+        super().__init__(
+            client_address,
+            rfile,
+            wfile,
+        )
+
+        self._http_server = http_server
+
+    def handle(self) -> None:
+        raise NotImplementedError
