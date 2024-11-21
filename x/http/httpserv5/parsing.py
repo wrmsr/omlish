@@ -172,7 +172,7 @@ class HttpRequestParser:
 
     #
 
-    def _parse_request_version(self, version_str: str) -> HttpProtocolVersion:
+    def parse_request_version(self, version_str: str) -> HttpProtocolVersion:
         if not version_str.startswith('HTTP/'):
             raise ValueError(version_str)  # noqa
 
@@ -240,7 +240,7 @@ class HttpRequestParser:
                 close_connection=close_connection,
             )
 
-        # Parse raw line
+        # Decode line
 
         if len(raw_request_line) > self._max_line:
             return ParseHttpRequestError(
@@ -265,7 +265,7 @@ class HttpRequestParser:
         if len(words) >= 3:  # Enough to determine protocol version
             version_str = words[-1]
             try:
-                request_version = self._parse_request_version(version_str)
+                request_version = self.parse_request_version(version_str)
 
             except (ValueError, IndexError):
                 return ParseHttpRequestError(

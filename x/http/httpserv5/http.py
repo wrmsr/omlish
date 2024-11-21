@@ -4,6 +4,7 @@ import email.utils
 import html
 import http.client
 import http.server
+import io
 import time
 import typing as ta
 
@@ -108,12 +109,15 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
+    def header_encode(self, s: str) -> bytes:
+        return s.encode('latin-1', 'strict')
+
     class Header(ta.NamedTuple):
         key: str
         value: str
 
-    def encode_header(self, s: str) -> bytes:
-        return s.encode('latin-1', 'strict')
+    def format_header_line(self, h: Header) -> str:
+        return f'{h.key}: {h.value}\r\n'
 
     def get_header_close_connection_action(self, h: Header) -> bool | None:
         if h.key.lower() != 'connection':
@@ -167,6 +171,40 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     class CloseConnectionAction(Action):
         pass
 
+    #
+
+    def build_response_bytes(self, a: ResponseAction) -> bytes:
+        out = io.BytesIO()
+
+        if a.version >= HttpProtocolVersions.HTTP_1_0:
+            out.write(self.header_encode(self.format_status_line(
+                a.version,
+                a.code,
+                a.message,
+            )))
+
+            for h in a.headers or []:
+                out.write(self.header_encode(self.format_header_line(h)))
+
+            out.write(b'\r\n')
+
+        if a.data is not None:
+            out.write(a.data)
+
+        return out.getvalue()
+
+    def preprocess_response(self, a: ResponseAction) -> ta.Sequence[ResponseAction]:
+        # FIXME:
+        # if 'Content-Type' not in response_headers:
+        #     headers.append(self.Header('Content-Type', 'text/plain'))
+        # if 'Content-Length' not in response_headers and response_data is not None:
+        #     headers.append(self.Header('Content-Length', str(len(response_data))))
+
+        # FIXME: add Connection: foo according to response.close_connection
+        # if (cla := self.get_header_close_connection_action())
+
+        return [a]
+
     ##
 
     def handle(self) -> None:
@@ -178,7 +216,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             for a in actions:
                 if isinstance(a, self.ResponseAction):
                     if a.version >= HttpProtocolVersions.HTTP_1_0:
-                        self.wfile.write(self.encode_header(self.format_status_line(a.version, a.code, a.message)))
+                        self.wfile.write(self.header_encode(self.format_status_line(a.version, a.code, a.message)))
                         raise NotImplementedError
 
                     raise NotImplementedError
