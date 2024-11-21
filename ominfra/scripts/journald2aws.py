@@ -45,8 +45,7 @@ import weakref  # noqa
 
 
 if sys.version_info < (3, 8):
-    raise OSError(
-        f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
+    raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -2359,8 +2358,7 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 
 def check_runtime_version() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+        raise OSError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
