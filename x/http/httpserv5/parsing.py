@@ -5,6 +5,9 @@ import io
 import typing as ta
 
 
+T = ta.TypeVar('T')
+
+
 HttpHeaders: ta.TypeAlias = http.client.HTTPMessage
 
 
@@ -148,6 +151,20 @@ class HttpRequestParser:
 
     #
 
+    def _run_read_line_coro(
+            self,
+            gen: ta.Generator[int, bytes, T],
+            read_line: ta.Callable[[int], bytes],
+    ) -> T:
+        sz = next(gen)
+        while True:
+            try:
+                sz = gen.send(read_line(sz))
+            except StopIteration as e:
+                return e.value
+
+    #
+
     def coro_read_raw_headers(self) -> ta.Generator[int, bytes, list[bytes]]:
         raw_headers: list[bytes] = []
         while True:
@@ -162,13 +179,7 @@ class HttpRequestParser:
         return raw_headers
 
     def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> list[bytes]:
-        gen = self.coro_read_raw_headers()
-        sz = next(gen)
-        while True:
-            try:
-                sz = gen.send(read_line(sz))
-            except StopIteration as e:
-                return e.value
+        return self._run_read_line_coro(self.coro_read_raw_headers(), read_line)
 
     def parse_raw_headers(self, raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
         return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
@@ -332,10 +343,4 @@ class HttpRequestParser:
         )
 
     def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
-        gen = self.coro_parse()
-        sz = next(gen)
-        while True:
-            try:
-                sz = gen.send(read_line(sz))
-            except StopIteration as e:
-                return e.value
+        return self._run_read_line_coro(self.coro_parse(), read_line)

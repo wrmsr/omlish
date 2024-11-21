@@ -177,7 +177,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
             for a in actions:
                 if isinstance(a, self.ResponseAction):
-                    if a.version != HttpProtocolVersions.HTTP_0_9:
+                    if a.version >= HttpProtocolVersions.HTTP_1_0:
                         self.wfile.write(self.encode_header(self.format_status_line(a.version, a.code, a.message)))
                         raise NotImplementedError
 
