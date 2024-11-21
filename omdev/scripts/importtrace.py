@@ -8,8 +8,7 @@ TODO:
  - create table paths(path varchar(1024); - norm, dedupe, index, etc (bonus points for 32bit key)
  - gviz
 
-http://www.logilab.org/856
-http://www.python.org/dev/peps/pep-0302/
+https://www.python.org/dev/peps/pep-0302/
 
 start / end / cumulative / exclusive time / vm_rss / vm_vms
 
