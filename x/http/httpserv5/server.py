@@ -351,7 +351,7 @@ class CoroHttpServer:
                     i = None
                     yield o
 
-                if isinstance(o, self.AnyReadIo):
+                elif isinstance(o, self.AnyReadIo):
                     i = check_isinstance((yield o), bytes)
 
                 elif isinstance(o, self._InternalResponse):
@@ -387,11 +387,13 @@ class CoroHttpServer:
             raise EOFError
 
         if isinstance(parsed, ParseHttpRequestError):
-            yield self._build_error_internal_response(
+            err = self._build_error(
                 parsed.code,
                 *parsed.message,
                 version=parsed.version,
             )
+            yield self.ErrorLogIo(err)
+            yield self._build_error_internal_response(err)
             return
 
         parsed = check_isinstance(parsed, ParsedHttpRequest)
@@ -434,12 +436,14 @@ class CoroHttpServer:
             response = self._handler(request)
 
         except UnsupportedMethodHttpHandlerError:
-            yield self._build_error_internal_response(
+            err = self._build_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({parsed.method!r})',
                 version=parsed.version,
                 method=parsed.method,
             )
+            yield self.ErrorLogIo(err)
+            yield self._build_error_internal_response(err)
             return
 
         # Build internal response
@@ -493,14 +497,21 @@ class CoroHttpServerSocketHandler(SocketHandler):
 
         o = next(gen)
         while True:
-            if isinstance(o, CoroHttpServer.ReadIo):
+            if isinstance(o, CoroHttpServer.AnyLogIo):
+                i = None
+                print(repr(o))
+
+            elif isinstance(o, CoroHttpServer.ReadIo):
                 i = self._rfile.read(o.sz)
+
             elif isinstance(o, CoroHttpServer.ReadLineIo):
                 i = self._rfile.readline(o.sz)
+
             elif isinstance(o, CoroHttpServer.WriteIo):
+                i = None
                 self._wfile.write(o.data)
                 self._wfile.flush()
-                i = None
+
             else:
                 raise TypeError(o)
 
