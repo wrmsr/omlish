@@ -17,11 +17,15 @@ def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
     return v
 
 
+def check_none(v: T) -> None:
+    if v is not None:
+        raise ValueError(v)
+
+
 def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
     return v
-
 
 def check_not(v: ta.Any) -> None:
     if v:
