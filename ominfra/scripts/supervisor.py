@@ -4872,7 +4872,7 @@ class AbstractSubprocess(abc.ABC):
 
 
 @functools.total_ordering
-class AbstractProcessGroup(abc.ABC):
+class ProcessGroup(abc.ABC):
     @property
     @abc.abstractmethod
     def config(self) -> ProcessGroupConfig:
@@ -4883,6 +4883,39 @@ class AbstractProcessGroup(abc.ABC):
 
     def __eq__(self, other):
         return self.config.priority == other.config.priority
+
+    @abc.abstractmethod
+    def transition(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def before_remove(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def after_setuid(self) -> None:
+        raise NotImplementedError
 
 
 ########################################
@@ -5617,17 +5650,17 @@ class InputDispatcher(Dispatcher):
 
 @dc.dataclass(frozen=True)
 class SubprocessFactory:
-    fn: ta.Callable[[ProcessConfig, AbstractProcessGroup], AbstractSubprocess]
+    fn: ta.Callable[[ProcessConfig, ProcessGroup], AbstractSubprocess]
 
-    def __call__(self, config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
+    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
         return self.fn(config, group)
 
 
-class ProcessGroup(AbstractProcessGroup):
+class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            context: ServerContextImpl,
+            context: ServerContext,
             *,
             subprocess_factory: SubprocessFactory,
     ):
@@ -5772,7 +5805,7 @@ class Subprocess(AbstractSubprocess):
     def __init__(
             self,
             config: ProcessConfig,
-            group: AbstractProcessGroup,
+            group: ProcessGroup,
             *,
             context: ServerContext,
             event_callbacks: EventCallbacks,
@@ -5813,7 +5846,7 @@ class Subprocess(AbstractSubprocess):
         return self._pid
 
     @property
-    def group(self) -> AbstractProcessGroup:
+    def group(self) -> ProcessGroup:
         return self._group
 
     @property
@@ -6603,7 +6636,7 @@ class Supervisor:
         return True
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
-        process_map = {}
+        process_map: ta.Dict[int, Dispatcher] = {}
         for group in self._process_groups:
             process_map.update(group.get_dispatchers())
         return process_map
@@ -6856,12 +6889,12 @@ def bind_server(
 
     def make_process_group_factory(injector: Injector) -> ProcessGroupFactory:
         def inner(group_config: ProcessGroupConfig) -> ProcessGroup:
-            return injector.inject(functools.partial(ProcessGroup, group_config))
+            return injector.inject(functools.partial(ProcessGroupImpl, group_config))
         return ProcessGroupFactory(inner)
     lst.append(inj.bind(make_process_group_factory))
 
     def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
-        def inner(process_config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
+        def inner(process_config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
             return injector.inject(functools.partial(Subprocess, process_config, group))
         return SubprocessFactory(inner)
     lst.append(inj.bind(make_subprocess_factory))

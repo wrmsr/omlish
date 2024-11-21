@@ -170,7 +170,7 @@ class Supervisor:
         return True
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
-        process_map = {}
+        process_map: ta.Dict[int, Dispatcher] = {}
         for group in self._process_groups:
             process_map.update(group.get_dispatchers())
         return process_map
