@@ -3,6 +3,7 @@ import os
 import sys
 import urllib.parse
 import urllib.request
+import typing as ta
 
 from omlish import __about__
 from omlish import argparse as ap
@@ -18,6 +19,8 @@ DEFAULT_REINSTALL_URL = 'https://raw.githubusercontent.com/wrmsr/omlish/master/o
 
 class CliCli(ap.Cli):
 
+    #
+
     @ap.command(name='version')
     def print_version(self) -> None:
         print(__about__.__version__)
@@ -30,20 +33,42 @@ class CliCli(ap.Cli):
     def print_home(self) -> None:
         print(sys.prefix)
 
+    #
+
+    def _passthrough_args_cmd(
+            self,
+            exe: str,
+            pre_args: ta.Sequence[str] = (),
+            post_args: ta.Sequence[str] = (),
+    ) -> ta.NoReturn:
+        os.execvp(
+            exe,
+            [
+                sys.executable,
+                *pre_args,
+                *self.unknown_args,
+                *self.args.args,
+                *post_args,
+            ],
+        )
+
     @ap.command(
         ap.arg('args', nargs=ap.REMAINDER),
         name='python',
         accepts_unknown=True,
     )
     def python_cmd(self) -> None:
-        os.execvp(
-            sys.executable,
-            [
-                sys.executable,
-                *self.unknown_args,
-                *self.args.args,
-            ],
-        )
+        self._passthrough_args_cmd(sys.executable)
+
+    @ap.command(
+        ap.arg('args', nargs=ap.REMAINDER),
+        name='pip',
+        accepts_unknown=True,
+    )
+    def pip_cmd(self) -> None:
+        self._passthrough_args_cmd(sys.executable, ['-m', 'pip'])
+
+    #
 
     @ap.command(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),

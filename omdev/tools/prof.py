@@ -1,3 +1,7 @@
+"""
+TODO:
+ - a general purpose profile tool lol - or is this for / in bootstrap?
+"""
 import os.path
 import subprocess
 import sys
