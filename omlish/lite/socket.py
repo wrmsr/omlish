@@ -4,12 +4,16 @@ TODO:
  - SocketClientAddress family / tuple pairs
   + codification of https://docs.python.org/3/library/socket.html#socket-families
 """
+import abc
 import dataclasses as dc
 import socket
 import typing as ta
 
 
 SocketAddress = ta.Any
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -47,3 +51,27 @@ def get_best_socket_family(
     )
     ai = SocketAddressInfo(*next(iter(infos)))
     return ai.family, ai.sockaddr
+
+
+##
+
+
+SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
+
+
+class SocketHandler(abc.ABC):
+    def __init__(
+            self,
+            client_address: SocketAddress,
+            rfile: ta.BinaryIO,
+            wfile: ta.BinaryIO,
+    ) -> None:
+        super().__init__()
+
+        self._client_address = client_address
+        self._rfile = rfile
+        self._wfile = wfile
+
+    @abc.abstractmethod
+    def handle(self) -> None:
+        raise NotImplementedError
