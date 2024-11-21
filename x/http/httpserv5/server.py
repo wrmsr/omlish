@@ -25,6 +25,7 @@ import time
 import typing as ta
 
 from omlish.lite.check import check_isinstance
+from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
 from omlish.lite.http.parsing import EmptyParsedHttpResult
 from omlish.lite.http.parsing import HttpHeaders
@@ -350,7 +351,7 @@ class HttpServer:
                     i = None
                     r = self._preprocess_internal_response(o)
                     b = self._build_internal_response_bytes(r)
-                    yield self.WriteIo(b)
+                    check_none((yield self.WriteIo(b)))
 
                 else:
                     raise TypeError(o)
