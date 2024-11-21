@@ -230,32 +230,21 @@ class HttpServer:
             return a
         return dc.replace(a, **kw)
 
-    def preprocess_actions(self, actions: ta.Sequence[Action]) -> ta.Iterator[Action]:
-        for a in actions:
-            if isinstance(a, self.ResponseAction):
-                yield self.preprocess_response(a)
-
-                if (clh := a.get_header('Connection')) is not None:
-                    if self.get_header_close_connection_action(clh):
-                        yield self.CloseConnectionAction()
-                        break
-
-            elif isinstance(a, self.CloseConnectionAction):
-                yield a
-                break
-
-            else:
-                raise TypeError(a)
-
     #
 
     class Io(abc.ABC):  # noqa
         pass
 
+    class AnyReadIo(Io):  # noqa
+        pass
+
     @dc.dataclass(frozen=True)
-    class ReadIo(Io):
+    class ReadIo(AnyReadIo):
         sz: int
-        line: bool
+
+    @dc.dataclass(frozen=True)
+    class ReadLineIo(AnyReadIo):
+        sz: int
 
     @dc.dataclass(frozen=True)
     class WriteIo(Io):
@@ -286,7 +275,7 @@ class HttpServer:
                         else:
                             raise TypeError(a)
 
-    def coro_handle_one(self) -> ta.Generator[Io | Action, bytes | None, None]:
+    def coro_handle_one(self) -> ta.Generator[Io | Response, bytes | None, None]:
         gen = self._parser.coro_parse()
         sz = next(gen)
         while True:
@@ -328,7 +317,7 @@ class HttpServer:
     def coro_send_handled(
             self,
             parsed: ParsedHttpRequest,
-    ) -> ta.Generator[Io | Action, bytes | None, None]:
+    ) -> ta.Generator[Io | Response, bytes | None, None]:
         # Read data
 
         request_data: bytes | None
@@ -417,7 +406,7 @@ class HttpServer:
             *,
             version: HttpProtocolVersion | None = None,
             method: str | None = None,
-    ) -> ResponseAction:
+    ) -> Response:
         code = http.HTTPStatus(code)
 
         headers: list[HttpServer.Header] = [
@@ -465,7 +454,7 @@ class HttpServer:
             if method != 'HEAD' and body:
                 data = body
 
-        return self.ResponseAction(
+        return self.Response(
             version=version or self._parser.server_version,
             code=code,
             message=message,
