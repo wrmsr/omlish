@@ -328,15 +328,15 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 )
         ):
             # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
-            content = (self.error_message_format % {
-                'code': code,
-                'message': html.escape(message, quote=False),
-                'explain': html.escape(explain, quote=False),
-            })
+            content = self._error_message_format.format(
+                code=code,
+                message=html.escape(message, quote=False),
+                explain=html.escape(explain, quote=False),
+            )
             body = content.encode('UTF-8', 'replace')
 
             headers.extend([
-                self.Header('Content-Type', self.error_content_type),
+                self.Header('Content-Type', self._error_content_type),
                 self.Header('Content-Length', str(len(body))),
             ])
 
