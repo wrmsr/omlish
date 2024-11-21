@@ -7,19 +7,19 @@ from omlish.lite.http.versions import HttpProtocolVersions
 from omlish.lite.socket import get_best_socket_family
 from omlish.lite.socketserver import SocketHandlerSocketServerStreamRequestHandler
 
-from .server import HttpServer
-from .server import HttpServerRequest
-from .server import HttpServerResponse
-from .server import HttpServerSocketHandler
-from .server import UnsupportedMethodHttpServerHandlerError
+from .server import CoroHttpServer
+from .server import CoroHttpServerSocketHandler
+from .server import HttpHandlerRequest
+from .server import HttpHandlerResponse
+from .server import UnsupportedMethodHttpHandlerError
 
 
 ##
 
 
-def say_hi_handler(req: HttpServerRequest) -> HttpServerResponse:
+def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
     if req.method not in ('GET', 'POST'):
-        raise UnsupportedMethodHttpServerHandlerError
+        raise UnsupportedMethodHttpHandlerError
 
     resp = '\n'.join([
         f'method: {req.method}',
@@ -48,9 +48,10 @@ def _main() -> None:
             addr,
             functools.partial(
                 SocketHandlerSocketServerStreamRequestHandler,
-                handler_factory=functools.partial(
-                    HttpServerSocketHandler,
-                    http_server=HttpServer(
+                socket_handler_factory=functools.partial(
+                    CoroHttpServerSocketHandler,
+                    coro_http_server_factory=functools.partial(
+                        CoroHttpServer,
                         handler=say_hi_handler,
                         parser=HttpRequestParser(
                             server_version=HttpProtocolVersions.HTTP_1_1,
