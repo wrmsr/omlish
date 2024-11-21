@@ -5,7 +5,7 @@ import typing as ta
 from omlish.lite.check import check_not_none
 
 from .sockets import SocketAddress
-from .sockets import SocketRequestHandlerFactory
+from .sockets import SocketHandlerFactory
 
 
 ##
@@ -33,11 +33,11 @@ class SocketServerStreamRequestHandler_(SocketServerBaseRequestHandler_):  # noq
 #
 
 
-class SocketRequestHandlerSocketServerAdapter(  # type: ignore[misc]
+class SocketHandlerSocketServerAdapter(  # type: ignore[misc]
     socketserver.StreamRequestHandler,
-    SocketServerBaseRequestHandler_,
+    SocketServerStreamRequestHandler_,
 ):
-    adapter_target_factory: SocketRequestHandlerFactory | None = None
+    adapter_target_factory: SocketHandlerFactory | None = None
 
     def __init__(
             self,
@@ -45,7 +45,7 @@ class SocketRequestHandlerSocketServerAdapter(  # type: ignore[misc]
             client_address: SocketAddress,
             server: socketserver.TCPServer,
             *,
-            adapter_target_factory: SocketRequestHandlerFactory | None = None,
+            adapter_target_factory: SocketHandlerFactory | None = None,
     ) -> None:
         if adapter_target_factory is not None:
             self.adapter_target_factory = adapter_target_factory

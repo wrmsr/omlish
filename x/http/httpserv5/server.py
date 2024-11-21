@@ -30,21 +30,22 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
+from omlish.lite.http.parsing import EmptyParsedHttpResult
+from omlish.lite.http.parsing import HttpHeaders
+from omlish.lite.http.parsing import HttpRequestParser
+from omlish.lite.http.parsing import ParseHttpRequestError
+from omlish.lite.http.parsing import ParsedHttpRequest
+from omlish.lite.http.versions import HttpProtocolVersion
+from omlish.lite.http.versions import HttpProtocolVersions
 
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
-from .parsing import EmptyParsedHttpResult
-from .parsing import HttpHeaders
-from .parsing import HttpProtocolVersion
-from .parsing import HttpProtocolVersions
-from .parsing import HttpRequestParser
-from .parsing import ParsedHttpRequest
-from .parsing import ParseHttpRequestError
 from .sockets import SocketAddress
-from .sockets import SocketRequestHandler
+from .sockets import SocketHandler
 
 
 HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
+
 
 ##
 
@@ -81,7 +82,7 @@ HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerRes
 ##
 
 
-class HttpSocketRequestHandler(SocketRequestHandler):
+class HttpSocketHandler(SocketHandler):
 
     #
 
@@ -184,10 +185,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         version: HttpProtocolVersion
         code: http.HTTPStatus
         message: str | None = None
-        headers: ta.Sequence['HttpSocketRequestHandler.Header'] | None = None
+        headers: ta.Sequence['HttpSocketHandler.Header'] | None = None
         data: bytes | None = None
 
-        def get_header(self, key: str) -> ta.Optional['HttpSocketRequestHandler.Header']:
+        def get_header(self, key: str) -> ta.Optional['HttpSocketHandler.Header']:
             for h in self.headers or []:
                 if h.key.lower() == key.lower():
                     return h
@@ -221,7 +222,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
     def preprocess_response(self, a: ResponseAction) -> ResponseAction:
-        nh: list[HttpSocketRequestHandler.Header] = []
+        nh: list[HttpSocketHandler.Header] = []
 
         if a.get_header('Content-Type') is None:
             nh.append(self.Header('Content-Type', self._default_content_type))
@@ -344,7 +345,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         response_headers = response.headers or {}
         response_data = response.data
 
-        headers: list[HttpSocketRequestHandler.Header] = [
+        headers: list[HttpSocketHandler.Header] = [
             *self.make_default_headers(),
         ]
 
@@ -399,7 +400,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     ) -> ta.Iterator[Action]:
         code = http.HTTPStatus(code)
 
-        headers: list[HttpSocketRequestHandler.Header] = [
+        headers: list[HttpSocketHandler.Header] = [
             *self.make_default_headers(),
         ]
 

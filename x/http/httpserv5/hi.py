@@ -2,14 +2,14 @@ import functools
 import http.server
 import sys
 
-from .adapter import SocketRequestHandlerSocketServerAdapter
-from .http import HttpServerRequest
-from .http import HttpServerResponse
-from .http import HttpSocketRequestHandler
-from .http import UnsupportedMethodServerHandlerError
-from .parsing import HttpProtocolVersions
-from .parsing import HttpRequestParser
-from .sockets import get_best_socket_family
+from .adapter import SocketHandlerSocketServerAdapter
+from .server import HttpServerRequest
+from .server import HttpServerResponse
+from .server import HttpSocketHandler
+from .server import UnsupportedMethodServerHandlerError
+from omlish.lite.http.versions import HttpProtocolVersions
+from omlish.lite.http.parsing import HttpRequestParser
+from omlish.lite.sockets import get_best_socket_family
 
 
 ##
@@ -45,9 +45,9 @@ def _main() -> None:
     with server_class(
             addr,
             functools.partial(
-                SocketRequestHandlerSocketServerAdapter,
+                SocketHandlerSocketServerAdapter,
                 adapter_target_factory=functools.partial(
-                    HttpSocketRequestHandler,
+                    HttpSocketHandler,
                     handler=say_hi_handler,
                     parser=HttpRequestParser(
                         server_version=HttpProtocolVersions.HTTP_1_1,
