@@ -47,8 +47,6 @@ from .logging import HttpLogging
 
 ##
 
-##
-
 
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
@@ -63,7 +61,6 @@ class CoroHttpServer:
             *,
             handler: HttpHandler,
             parser: HttpRequestParser = HttpRequestParser(),
-            logging: HttpLogging = DefaultHttpLogging(),
 
             default_content_type: str | None = None,
 
@@ -76,11 +73,6 @@ class CoroHttpServer:
 
         self._handler = handler
         self._parser = parser
-        self._logging = logging
-
-        self._logging_context = HttpLogging.Context(
-            client=str(self._client_address[0]),
-        )
 
         self._default_content_type = default_content_type or self.DEFAULT_CONTENT_TYPE
 
@@ -225,7 +217,16 @@ class CoroHttpServer:
 
     DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
-    def _build_error_internal_response(
+    @dc.dataclass(frozen=True)
+    class Error:
+        version: HttpProtocolVersion
+        code: http.HTTPStatus
+        message: str
+        explain: str
+
+        method: str | None = None
+
+    def _build_error(
             self,
             code: ta.Union[http.HTTPStatus, int],
             message: str | None = None,
@@ -233,12 +234,8 @@ class CoroHttpServer:
             *,
             version: HttpProtocolVersion | None = None,
             method: str | None = None,
-    ) -> _InternalResponse:
+    ) -> Error:
         code = http.HTTPStatus(code)
-
-        headers: list[CoroHttpServer._Header] = [
-            *self._make_default_headers(),
-        ]
 
         try:
             short_msg, long_msg = self._STATUS_RESPONSES[code]
@@ -249,17 +246,31 @@ class CoroHttpServer:
         if explain is None:
             explain = long_msg
 
-        self._logging.log_error(self._logging_context, 'code %d, message %s', code, message)
+        if version is None:
+            version = self._parser.server_version
 
-        headers.append(self._Header('Connection', 'close'))
+        return self.Error(
+            versoin=version,
+            code=code,
+            message=message,
+            explain=explain,
+
+            method=method,
+        )
+
+    def _build_error_internal_response(self, err: Error) -> _InternalResponse:
+        headers: list[CoroHttpServer._Header] = [
+            *self._make_default_headers(),
+            self._Header('Connection', 'close'),
+        ]
 
         # Message body is omitted for cases described in:
         #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
         #  - RFC7231: 6.3.6. 205(Reset Content)
         data: bytes | None = None
         if (
-                code >= http.HTTPStatus.OK and
-                code not in (
+                err.code >= http.HTTPStatus.OK and
+                err.code not in (
                     http.HTTPStatus.NO_CONTENT,
                     http.HTTPStatus.RESET_CONTENT,
                     http.HTTPStatus.NOT_MODIFIED,
@@ -267,9 +278,9 @@ class CoroHttpServer:
         ):
             # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
             content = self._error_message_format.format(
-                code=code,
-                message=html.escape(message, quote=False),
-                explain=html.escape(explain, quote=False),
+                code=err.code,
+                message=html.escape(err.message, quote=False),
+                explain=html.escape(err.explain, quote=False),
             )
             body = content.encode('UTF-8', 'replace')
 
@@ -278,13 +289,13 @@ class CoroHttpServer:
                 self._Header('Content-Length', str(len(body))),
             ])
 
-            if method != 'HEAD' and body:
+            if err.method != 'HEAD' and body:
                 data = body
 
         return self._InternalResponse(
-            version=version or self._parser.server_version,
-            code=code,
-            message=message,
+            version=err.version,
+            code=err.code,
+            message=err.message,
             headers=headers,
             data=data,
             close_connection=True,
@@ -294,6 +305,21 @@ class CoroHttpServer:
 
     class Io(abc.ABC):  # noqa
         pass
+
+    #
+
+    class AnyLogIo(Io):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class RequestLogIo(AnyLogIo):
+        request: ParsedHttpRequest
+
+    @dc.dataclass(frozen=True)
+    class ErrorLogIo(AnyLogIo):
+        error: 'CoroHttpServer.Error'
+
+    #
 
     class AnyReadIo(Io):  # noqa
         pass
@@ -305,6 +331,8 @@ class CoroHttpServer:
     @dc.dataclass(frozen=True)
     class ReadLineIo(AnyReadIo):
         sz: int
+
+    #
 
     @dc.dataclass(frozen=True)
     class WriteIo(Io):
@@ -319,6 +347,10 @@ class CoroHttpServer:
             o = next(gen)
             i: bytes | None
             while True:
+                if isinstance(o, self.AnyLogIo):
+                    i = None
+                    yield o
+
                 if isinstance(o, self.AnyReadIo):
                     i = check_isinstance((yield o), bytes)
 
@@ -338,7 +370,7 @@ class CoroHttpServer:
                 except StopIteration:
                     break
 
-    def coro_handle_one(self) -> ta.Generator[AnyReadIo | _InternalResponse, bytes | None, None]:
+    def coro_handle_one(self) -> ta.Generator[AnyLogIo | AnyReadIo | _InternalResponse, bytes | None, None]:
         # Parse request
 
         gen = self._parser.coro_parse()
@@ -366,7 +398,7 @@ class CoroHttpServer:
 
         # Log
 
-        self._logging.log_message(self._logging_context, '%r', parsed)
+        check_none((yield self.RequestLogIo(parsed)))
 
         # Handle CONTINUE
 
@@ -382,7 +414,7 @@ class CoroHttpServer:
 
         request_data: bytes | None
         if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = yield self.ReadIo(int(cl))
+            request_data = check_isinstance((yield self.ReadIo(int(cl))), bytes)
         else:
             request_data = None
 
