@@ -1,4 +1,11 @@
 """
+Imports given python modules, each in isolation, outputting for each:
+ - "time" - time taken
+ - "rss" - final RSS
+ - "imported" - imported modules in import order
+
+Can be run on external python interpreters.
+
 TODO:
  - dump agg stats
  - graphviz
@@ -6,6 +13,7 @@ TODO:
 import argparse
 import dataclasses as dc
 import inspect
+import itertools
 import json
 import os
 import re
@@ -14,6 +22,7 @@ import subprocess
 import sys
 import typing as ta
 
+from omlish import check
 from omlish import concurrent as cu
 from omlish import lang
 
@@ -108,13 +117,7 @@ def run_one(
 ##
 
 
-def _find_specs(
-        *roots: str,
-        filters: ta.Iterable[str] | None = None,
-) -> ta.Sequence[str]:
-    filter_pats = [re.compile(f) for f in filters or []]
-
-    out: list[str] = []
+def _find_root_specs(*roots: str) -> ta.Iterator[str]:
     stk: list[str] = list(reversed(roots))
     while stk:
         cur = stk.pop()
@@ -134,21 +137,30 @@ def _find_specs(
         else:
             spec = cur
 
-        if any(p.fullmatch(spec) for p in filter_pats):
-            continue
-
-        out.append(spec)
-
-    return out
+        yield spec
 
 
 def run(
-        *roots: str,
+        *,
+        roots: lang.SequenceNotStr[str] | None = None,
+        modules: lang.SequenceNotStr[str] | None = None,
+
         filters: ta.Iterable[str] | None = None,
         num_threads: int | None = 0,
+
         **kwargs: ta.Any,
 ) -> ta.Mapping[str, Item]:
-    specs = _find_specs(*roots, filters=filters)
+    filter_pats = [re.compile(f) for f in filters or []]
+
+    specs: list[str] = []
+    for spec in itertools.chain(
+        *([_find_root_specs(*check.not_isinstance(roots, str))] if roots is not None else []),
+        *([check.not_isinstance(modules, str)] if modules is not None else []),
+    ):
+        if any(p.fullmatch(spec) for p in filter_pats):
+            continue
+
+        specs.append(spec)
 
     out: dict[str, Item] = {}
     with cu.new_executor(num_threads) as ex:
@@ -173,7 +185,8 @@ def _main() -> None:
     parser.add_argument('-f', '--filter', action='append')
     parser.add_argument('-t', '--filter-tests', action='store_true')
     parser.add_argument('--python', default=sys.executable)
-    parser.add_argument('root', nargs='+')
+    parser.add_argument('-m', '--module', action='append')
+    parser.add_argument('root', nargs='*')
     args = parser.parse_args()
 
     filters = [*(args.filter or [])]
@@ -184,7 +197,8 @@ def _main() -> None:
         ])
 
     for item in run(
-            *args.root,
+            roots=args.root,
+            modules=args.module,
             filters=filters,
             num_threads=args.jobs,
             python=args.python,
