@@ -103,11 +103,11 @@ class HttpSocketHandler(SocketHandler):
             wfile,
         )
 
-        self.handler = handler
-        self.parser = parser
-        self.logging = logging
+        self._handler = handler
+        self._parser = parser
+        self._logging = logging
 
-        self.logging_context = HttpLogging.Context(
+        self._logging_context = HttpLogging.Context(
             client=str(self.client_address[0]),
         )
 
@@ -270,7 +270,7 @@ class HttpSocketHandler(SocketHandler):
 
     def handle_one(self) -> ta.Iterator[Action]:
         try:
-            parsed = self.parser.parse(self.rfile.readline)
+            parsed = self._parser.parse(self.rfile.readline)
 
             if isinstance(parsed, EmptyParsedHttpResult):
                 yield self.CloseConnectionAction()
@@ -286,7 +286,7 @@ class HttpSocketHandler(SocketHandler):
 
             parsed = check_isinstance(parsed, ParsedHttpRequest)
 
-            self.logging.log_message(self.logging_context, '%r', parsed)
+            self._logging.log_message(self._logging_context, '%r', parsed)
 
             if parsed.expects_continue:
                 # https://bugs.python.org/issue1491
@@ -300,7 +300,7 @@ class HttpSocketHandler(SocketHandler):
 
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
-            self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
+            self._logging.log_error(self._logging_context, 'Request timed out: %r', e)
             yield self.CloseConnectionAction()
 
     #
@@ -327,7 +327,7 @@ class HttpSocketHandler(SocketHandler):
         # Build response
 
         try:
-            response = self.handler(request)
+            response = self._handler(request)
         except UnsupportedMethodServerHandlerError:
             yield from self.send_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
@@ -410,7 +410,7 @@ class HttpSocketHandler(SocketHandler):
         if explain is None:
             explain = long_msg
 
-        self.logging.log_error(self.logging_context, 'code %d, message %s', code, message)
+        self._logging.log_error(self._logging_context, 'code %d, message %s', code, message)
 
         headers.append(self.Header('Connection', 'close'))
 
@@ -443,7 +443,7 @@ class HttpSocketHandler(SocketHandler):
                 data = body
 
         yield self.ResponseAction(
-            version=version or self.parser.server_version,
+            version=version or self._parser.server_version,
             code=code,
             message=message,
             headers=headers,
