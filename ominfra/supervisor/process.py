@@ -30,7 +30,7 @@ from .exceptions import ProcessError
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
-from .types import AbstractSubprocess
+from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
 from .utils import as_bytes
@@ -48,7 +48,7 @@ InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 ##
 
 
-class Subprocess(AbstractSubprocess):
+class ProcessImpl(Process):
     """A class to manage a subprocess."""
 
     def __init__(

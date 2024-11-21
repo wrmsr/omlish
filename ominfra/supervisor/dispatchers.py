@@ -12,7 +12,7 @@ from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
-from .types import AbstractSubprocess
+from .types import Process
 from .utils import as_bytes
 from .utils import compact_traceback
 from .utils import find_prefix_at_end
@@ -23,7 +23,7 @@ from .utils import strip_escapes
 class Dispatcher(abc.ABC):
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             channel: str,
             fd: int,
             *,
@@ -42,7 +42,7 @@ class Dispatcher(abc.ABC):
         return f'<{self.__class__.__name__} at {id(self)} for {self._process} ({self._channel})>'
 
     @property
-    def process(self) -> AbstractSubprocess:
+    def process(self) -> Process:
         return self._process
 
     @property
@@ -97,7 +97,7 @@ class OutputDispatcher(Dispatcher):
 
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
             **kwargs: ta.Any,
@@ -306,7 +306,7 @@ class OutputDispatcher(Dispatcher):
 class InputDispatcher(Dispatcher):
     def __init__(
             self,
-            process: AbstractSubprocess,
+            process: Process,
             channel: str,
             fd: int,
             **kwargs: ta.Any,

@@ -20,7 +20,7 @@ from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
 from .poller import Poller
 from .states import SupervisorState
-from .types import AbstractSubprocess
+from .types import Process
 from .types import ServerContext
 from .utils import close_fd
 from .utils import mktempfile
@@ -45,7 +45,7 @@ class ServerContextImpl(ServerContext):
         self._poller = poller
         self._epoch = epoch
 
-        self._pid_history: ta.Dict[int, AbstractSubprocess] = {}
+        self._pid_history: ta.Dict[int, Process] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
         if config.user is not None:
@@ -78,7 +78,7 @@ class ServerContextImpl(ServerContext):
         self._state = state
 
     @property
-    def pid_history(self) -> ta.Dict[int, AbstractSubprocess]:
+    def pid_history(self) -> ta.Dict[int, Process]:
         return self._pid_history
 
     @property
