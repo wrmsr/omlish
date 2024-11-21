@@ -343,7 +343,7 @@ class HttpServer:
             o = next(gen)
             i: bytes | None
             while True:
-                if isinstance(o, self.Io):
+                if isinstance(o, self.AnyReadIo):
                     i = yield o
 
                 elif isinstance(o, self._InternalResponse):
@@ -355,9 +355,12 @@ class HttpServer:
                 else:
                     raise TypeError(o)
 
-                o = gen.send(i)
+                try:
+                    o = gen.send(i)
+                except EOFError:
+                    break
 
-    def coro_handle_one(self) -> ta.Generator[Io | _InternalResponse, bytes | None, None]:
+    def coro_handle_one(self) -> ta.Generator[AnyReadIo | _InternalResponse, bytes | None, None]:
         # Parse request
 
         gen = self._parser.coro_parse()
@@ -428,7 +431,7 @@ class HttpServer:
             )
             return
 
-        # Build action
+        # Build internal response
 
         response_headers = response.headers or {}
         response_data = response.data
