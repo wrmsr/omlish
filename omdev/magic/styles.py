@@ -27,7 +27,7 @@ PY_MAGIC_STYLE = MagicStyle(
 
 C_MAGIC_STYLE = MagicStyle(
     name='c',
-    exts=frozenset(['c', 'cc', 'cpp']),
+    exts=frozenset(['c', 'cc', 'cpp', 'cu']),
     line_prefix='// ',
     block_prefix_suffix=('/* ', '*/'),
 )
