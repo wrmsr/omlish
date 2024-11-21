@@ -4,15 +4,15 @@ import typing as ta
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
-from .context import ServerContext
+from .context import ServerContextImpl
 from .dispatchers import Dispatcher
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .states import ProcessState
 from .types import AbstractProcessGroup
-from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .types import ServerContext
 
 
 ##
@@ -30,7 +30,7 @@ class ProcessGroup(AbstractProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            context: ServerContext,
+            context: ServerContextImpl,
             *,
             subprocess_factory: SubprocessFactory,
     ):
@@ -54,7 +54,7 @@ class ProcessGroup(AbstractProcessGroup):
         return self._config.name
 
     @property
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         return self._context
 
     def __repr__(self):
