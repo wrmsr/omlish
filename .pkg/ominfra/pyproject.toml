@@ -60,4 +60,5 @@ exclude = [
     '*.h',
     '.manifests.json',
     'LICENSE',
+    'LICENSE.txt',
 ]

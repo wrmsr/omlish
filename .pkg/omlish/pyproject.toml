@@ -146,6 +146,7 @@ exclude = [
     '*.h',
     '.manifests.json',
     'LICENSE',
+    'LICENSE.txt',
     'specs/jsonschema/schemas/draft202012/*.json',
     'specs/jsonschema/schemas/draft202012/vocabularies/*.json',
 ]
