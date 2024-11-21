@@ -1,8 +1,4 @@
 """
-$ FIXME: LAG WITH CONTINUE, LAG IN GENERAL COMPARED TO HTTP4
-
-==
-
 "Test suite" lol:
 
 curl -v localhost:8000
