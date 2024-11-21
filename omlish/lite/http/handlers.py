@@ -23,8 +23,6 @@ class HttpHandlerRequest:
 class HttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
 
-    # _: dc.KW_ONLY
-
     headers: ta.Optional[ta.Mapping[str, str]] = None
     data: ta.Optional[bytes] = None
     close_connection: ta.Optional[bool] = None
