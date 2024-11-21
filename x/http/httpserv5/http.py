@@ -215,16 +215,23 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         return a
 
     def preprocess_actions(self, actions: ta.Sequence[Action]) -> ta.Iterator[Action]:
+        for a in actions:
+            if isinstance(a, self.ResponseAction):
+                yield self.preprocess_response(a)
 
-        #
+                if (clh := a.get_header('Connection')) is not None:
+                    if self.get_header_close_connection_action(clh):
+                        yield self.CloseConnectionAction()
+                        break
 
-        if (clh := a.get_header('Connection')) is not None:
-            # FIXME: add Connection: foo according to response.close_connection
-            # if (cla := self.get_header_close_connection_action())
+            elif isinstance(a, self.CloseConnectionAction):
+                yield a
+                break
 
-        return [a]
+            else:
+                raise TypeError(a)
 
-    ##
+    #
 
     def handle(self) -> None:
         while True:
@@ -232,15 +239,11 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             if not actions:
                 raise RuntimeError
 
-            for a in actions:
+            for a in self.preprocess_actions(actions):
                 if isinstance(a, self.ResponseAction):
-                    for pa in self.preprocess_response(a):
-                        if isinstance(pa, self.ResponseAction):
-                            out = self.build_response_bytes(pa)
-                            self.wfile.write(out)
-                            self.wfile.flush()
-                        else:
-                            raise TypeError(pa)
+                    out = self.build_response_bytes(a)
+                    self.wfile.write(out)
+                    self.wfile.flush()
 
                 elif isinstance(a, self.CloseConnectionAction):
                     break
@@ -260,6 +263,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 yield from self.send_error(
                     parsed.code,
                     *parsed.message,
+                    version=parsed.version,
                 )
                 return
 
@@ -304,6 +308,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             yield from self.send_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({parsed.method!r})',
+                version=parsed.version,
                 method=parsed.method,
             )
             return
@@ -363,6 +368,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             message: str | None = None,
             explain: str | None = None,
             *,
+            version: HttpProtocolVersion | None = None,
             method: str | None = None,
     ) -> ta.Iterator[Action]:
         headers: list[HttpSocketRequestHandler.Header] = [
@@ -411,6 +417,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 data = body
 
         yield self.ResponseAction(
+            version=version or self.parser.server_version,
             code=code,
             message=message,
             headers=headers,

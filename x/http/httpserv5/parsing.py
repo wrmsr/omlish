@@ -158,6 +158,12 @@ class HttpRequestParser:
 
     #
 
+    @property
+    def server_version(self) -> HttpProtocolVersion:
+        return self._server_version
+
+    #
+
     def _run_read_line_coro(
             self,
             gen: ta.Generator[int, bytes, T],
@@ -226,8 +232,13 @@ class HttpRequestParser:
 
         request_line = '-'
         request_version = self.DEFAULT_REQUEST_VERSION
-        version = request_version
+
+        # Set to min(server, request) when it gets that far, but if it fails before that the server authoritatively
+        # responds with its own version.
+        version = self._server_version
+
         headers: HttpHeaders | None = None
+
         close_connection = True
 
         def result_kwargs():
