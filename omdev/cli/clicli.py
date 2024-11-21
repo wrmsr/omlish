@@ -1,9 +1,9 @@
 import inspect
 import os
 import sys
+import typing as ta
 import urllib.parse
 import urllib.request
-import typing as ta
 
 from omlish import __about__
 from omlish import argparse as ap
