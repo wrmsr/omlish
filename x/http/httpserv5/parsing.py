@@ -28,12 +28,11 @@ class HttpProtocolVersions:
 ##
 
 
-def read_raw_http_headers(
-        read_line: ta.Callable[[int], bytes],
+def read_raw_http_headers_gen(
         *,
         max_line: int = http.client._MAXLINE,  # type: ignore  # noqa
         max_headers: int = http.client._MAXHEADERS,  # type: ignore  # noqa
-) -> list[bytes]:
+) -> ta.Generator[int, bytes, list[bytes]]:
     """
     Reads potential header lines into a list from a file pointer.
 
@@ -42,7 +41,7 @@ def read_raw_http_headers(
 
     raw_headers: list[bytes] = []
     while True:
-        line = read_line(max_line + 1)
+        line = yield max_line + 1
         if len(line) > max_line:
             raise http.client.LineTooLong('header line')
         raw_headers.append(line)
@@ -51,6 +50,19 @@ def read_raw_http_headers(
         if line in (b'\r\n', b'\n', b''):
             break
     return raw_headers
+
+
+def read_raw_http_headers(
+        read_line: ta.Callable[[int], bytes],
+        **kwargs: ta.Any,
+) -> list[bytes]:
+    gen = read_raw_http_headers_gen(**kwargs)
+    sz = next(gen)
+    while True:
+        try:
+            sz = gen.send(read_line(sz))
+        except StopIteration as e:
+            return e.value
 
 
 def parse_raw_http_headers(raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
