@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP07
+# ruff: noqa: UP006 UP007
 """
 "Test suite" lol:
 
@@ -400,7 +400,7 @@ class CoroHttpServer:
                 break
 
         if isinstance(parsed, EmptyParsedHttpResult):
-            raise EOFError
+            raise EOFError  # noqa
 
         if isinstance(parsed, ParseHttpRequestError):
             err = self._build_error(
