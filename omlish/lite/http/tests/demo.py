@@ -1,5 +1,6 @@
 import functools
-import http.server
+import socket
+import socketserver
 import sys
 
 from ...socket import get_best_socket_family
@@ -36,12 +37,31 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 ##
 
 
+class HTTPServer(socketserver.TCPServer):
+
+    allow_reuse_address = True  # Seems to make sense in testing environment
+
+    def server_bind(self):
+        super().server_bind()
+        host, port = self.server_address[:2]
+        self.server_name = socket.getfqdn(host)  # type: ignore
+        self.server_port = port
+
+
+class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+
+##
+
+
 def _main() -> None:
     port = 8000
     bind = None
 
-    server_class = http.server.ThreadingHTTPServer
+    server_class = ThreadingHTTPServer
     server_class.address_family, addr = get_best_socket_family(bind, port)
+    # server_class.address_family = socket.AF_UNIX
 
     with server_class(
             addr,
