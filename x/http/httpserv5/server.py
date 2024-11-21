@@ -249,7 +249,7 @@ class HttpServer:
 
     DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
-    def _build_error_response(
+    def _build_error_internal_response(
             self,
             code: HttpStatusOrInt,
             message: str | None = None,
