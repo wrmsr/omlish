@@ -132,7 +132,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def make_default_headers(self) -> list[Header]:
         return [
-            self.Header('Date', self.format_timestamp())
+            self.Header('Date', self.format_timestamp()),
         ]
 
     #
@@ -275,7 +275,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             if parsed.expects_continue:
                 # https://bugs.python.org/issue1491
                 # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-                yield self.ResponseAction(http.HTTPStatus.CONTINUE)
+                yield self.ResponseAction(
+                    version=parsed.version,
+                    code=http.HTTPStatus.CONTINUE,
+                )
 
             yield from self.send_handled(parsed)
 
@@ -335,7 +338,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         action = self.ResponseAction(
             version=parsed.version,
-            code=response.status,
+            code=http.HTTPStatus(response.status),
             headers=headers,
             data=response_data,
         )
@@ -376,6 +379,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             version: HttpProtocolVersion | None = None,
             method: str | None = None,
     ) -> ta.Iterator[Action]:
+        code = http.HTTPStatus(code)
+
         headers: list[HttpSocketRequestHandler.Header] = [
             *self.make_default_headers(),
         ]
@@ -398,7 +403,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         #  - RFC7231: 6.3.6. 205(Reset Content)
         data: bytes | None = None
         if (
-                code >= 200 and
+                code >= http.HTTPStatus.OK and
                 code not in (
                     http.HTTPStatus.NO_CONTENT,
                     http.HTTPStatus.RESET_CONTENT,
