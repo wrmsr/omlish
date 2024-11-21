@@ -50,6 +50,10 @@ CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
 
 class CoroHttpServer:
+    """
+    Adapted from stdlib:
+     - https://github.com/python/cpython/blob/4b4e0dbdf49adc91c35a357ad332ab3abd4c31b1/Lib/http/server.py#L146
+    """
 
     #
 
