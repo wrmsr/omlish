@@ -18,10 +18,10 @@ from .events import SupervisorStoppingEvent
 from .groups import ProcessGroup
 from .groups import ProcessGroups
 from .poller import Poller
-from .process import Subprocess
 from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
+from .types import Process
 from .utils import ExitNow
 from .utils import as_string
 from .utils import decode_wait_status
@@ -175,11 +175,11 @@ class Supervisor:
             process_map.update(group.get_dispatchers())
         return process_map
 
-    def shutdown_report(self) -> ta.List[Subprocess]:
-        unstopped: ta.List[Subprocess] = []
+    def shutdown_report(self) -> ta.List[Process]:
+        unstopped: ta.List[Process] = []
 
         for group in self._process_groups:
-            unstopped.extend(group.get_unstopped_processes())  # type: ignore
+            unstopped.extend(group.get_unstopped_processes())
 
         if unstopped:
             # throttle 'waiting for x to die' reports
