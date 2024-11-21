@@ -28,7 +28,7 @@ class HttpProtocolVersions:
 ##
 
 
-def read_raw_http_headers_gen(
+def coro_read_raw_http_headers(
         *,
         max_line: int = http.client._MAXLINE,  # type: ignore  # noqa
         max_headers: int = http.client._MAXHEADERS,  # type: ignore  # noqa
@@ -56,7 +56,7 @@ def read_raw_http_headers(
         read_line: ta.Callable[[int], bytes],
         **kwargs: ta.Any,
 ) -> list[bytes]:
-    gen = read_raw_http_headers_gen(**kwargs)
+    gen = coro_read_raw_http_headers(**kwargs)
     sz = next(gen)
     while True:
         try:
@@ -178,8 +178,8 @@ class HttpRequestParser:
 
         self._protocol_version = protocol_version
 
-    def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
-        raw_request_line = read_line(65537)
+    def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
+        raw_request_line = yield 65537
 
         #
 
@@ -280,7 +280,16 @@ class HttpRequestParser:
 
         # Examine the headers and look for a Connection directive.
         try:
-            raw_headers = read_raw_http_headers(read_line)
+            raw_gen = coro_read_raw_http_headers()
+            raw_sz = next(raw_gen)
+            while True:
+                buf = yield raw_sz
+                try:
+                    raw_sz = raw_gen.send(buf)
+                except StopIteration as e:
+                    raw_headers = e.value
+                    break
+
             headers = parse_raw_http_headers(raw_headers)
 
         except http.client.LineTooLong as err:
@@ -323,3 +332,12 @@ class HttpRequestParser:
             expects_continue=expects_continue,
             **result_kwargs(),
         )
+
+    def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
+        gen = self.coro_parse()
+        sz = next(gen)
+        while True:
+            try:
+                sz = gen.send(read_line(sz))
+            except StopIteration as e:
+                return e.value
