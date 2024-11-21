@@ -79,6 +79,9 @@ HttpHandler: ta.TypeAlias = ta.Callable[[HttpHandlerRequest], HttpHandlerRespons
 ##
 
 
+CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+
+
 class CoroHttpServer:
 
     #
@@ -461,14 +464,14 @@ class CoroHttpServer:
 ##
 
 
-class HttpServerSocketHandler(SocketHandler):
+class CoroHttpServerSocketHandler(SocketHandler):
     def __init__(
             self,
             client_address: SocketAddress,
             rfile: ta.BinaryIO,
             wfile: ta.BinaryIO,
             *,
-            coro_http_server: CoroHttpServer,
+            coro_http_server_factory: CoroHttpServerFactory,
     ) -> None:
         super().__init__(
             client_address,
@@ -476,7 +479,7 @@ class HttpServerSocketHandler(SocketHandler):
             wfile,
         )
 
-        self._http_server = http_server
+        self._coro_http_server_factory = coro_http_server_factory
 
     def handle(self) -> None:
         raise NotImplementedError
