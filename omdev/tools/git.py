@@ -177,6 +177,8 @@ class Cli(ap.Cli):
         else:
             print(json.dumps_pretty([gsi_dct(gsi) for gsi in st]))
 
+    # Lazy helpers
+
     @ap.command(
         ap.arg('-m', '--message', default='--'),
         aliases=['acp'],
@@ -191,6 +193,13 @@ class Cli(ap.Cli):
             subprocess.check_call(['git', 'commit', '-m', self.args.message])
 
         subprocess.check_call(['git', 'push'])
+
+    @ap.command(
+        aliases=['psm'],
+    )
+    def pull_submodule_update(self) -> None:
+        subprocess.check_call(['git', 'pull'])
+        subprocess.check_call(['git', 'submodule', 'update'])
 
 
 # @omlish-manifest
