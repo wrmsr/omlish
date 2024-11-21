@@ -324,13 +324,9 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         for k, v in response_headers.items():
             headers.append(self.Header(k, v))
-        if 'Content-Type' not in response_headers:
-            headers.append(self.Header('Content-Type', 'text/plain'))
-        if 'Content-Length' not in response_headers and response_data is not None:
-            headers.append(self.Header('Content-Length', str(len(response_data))))
 
-        # FIXME: add Connection: foo according to response.close_connection
-        # if (cla := self.get_header_close_connection_action())
+        if response.close_connection and 'Connection' not in headers:
+            headers.append(self.Header('Connection', 'close'))
 
         yield self.ResponseAction(
             version=parsed.version,
