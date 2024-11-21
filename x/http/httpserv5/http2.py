@@ -139,6 +139,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def format_status_line(
             self,
+            protocol_version: HttpProtocolVersion,
             code: HttpStatusOrInt,
             message: str | None = None,
     ) -> str:
@@ -148,7 +149,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             else:
                 message = ''
 
-        return f'{self.protocol_version} {int(code)} {message}\r\n'
+        return f'{protocol_version} {int(code)} {message}\r\n'
 
     #
 
@@ -167,35 +168,14 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     ##
 
-    close_connection: bool
-
     def handle(self) -> None:
-        self.close_connection = True
+        while True:
+             for action in self.handle_one():
+                raise NotImplementedError
 
-        self.handle_one_request()
-        while not self.close_connection:
-            self.handle_one_request()
-
-    #
-
-    protocol_version: HttpProtocolVersion
-    request_line: str
-    request_version: HttpProtocolVersion
-
-    method: str | None
-    path: str
-    headers: HttpHeaders
-
-    #
-
-    def handle_one_request(self) -> ta.Iterator[Action]:
+    def handle_one(self) -> ta.Iterator[Action]:
         try:
             parsed = self.parser.parse(self.rfile.readline)
-
-            self.protocol_version = parsed.protocol_version
-            self.request_line = parsed.request_line
-            self.request_version = parsed.request_version
-            self.close_connection = parsed.close_connection
 
             if isinstance(parsed, EmptyParsedHttpResult):
                 # An error code has been sent, just exit
@@ -217,64 +197,69 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
                 yield self.ResponseAction(http.HTTPStatus.CONTINUE)
 
-            self.method = parsed.method
-            self.path = parsed.path
-            self.headers = parsed.headers
-
             yield from self.send_handled()
-
-            self.wfile.flush()  # actually send the response if not already done.
 
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
             self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
-            self.close_connection = True
-            return
+
+            yield self.CloseConnectionAction()
 
     #
 
-    def send_handled(self) -> ta.Iterator[Action]:
+    def send_handled(self, parsed: ParsedHttpRequest) -> ta.Iterator[Action]:
         request_data: bytes | None
-        if (cl := self.headers.get('Content-Length')) is not None:
+        if (cl := parsed.headers.get('Content-Length')) is not None:
             request_data = self.rfile.read(int(cl))
         else:
             request_data = None
 
         request = HttpServerRequest(
             client_address=self.client_address,
-            method=check_not_none(self.method),
-            path=self.path,
-            headers=self.headers,
+            method=check_not_none(parsed.method),
+            path=parsed.path,
+            headers=parsed.headers,
             data=request_data,
         )
+
+        #
 
         try:
             response = self.handler(request)
         except UnsupportedMethodServerHandlerError:
-            self.send_error(
+            yield from self.send_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
-                f'Unsupported method ({self.method!r})',
+                f'Unsupported method ({parsed.method!r})',
             )
-            self.wfile.flush()  # actually send the response if not already done.
             return
 
-        if response.close_connection is not None:
-            self.close_connection = response.close_connection
         response_headers = response.headers or {}
         response_data = response.data
 
-        self.send_response(response.status)
+        #
+
+        headers: list[HttpSocketRequestHandler.Header] = [
+            *self.make_default_headers(),
+        ]
 
         for k, v in response_headers.items():
-            self.send_header(k, v)
+            headers.append(self.Header(k, v))
         if 'Content-Type' not in response_headers:
-            self.send_header('Content-Type', 'text/plain')
+            headers.append(self.Header('Content-Type', 'text/plain'))
         if 'Content-Length' not in response_headers and response_data is not None:
-            self.send_header('Content-Length', str(len(response_data)))
-        self.end_headers()
+            headers.append(self.Header('Content-Length', str(len(response_data))))
 
-        if response_data is not None:
-            self.wfile.write(response_data)
+        # FIXME: add Connection: foo according to response.close_connection
+        # if (cla := self.get_header_close_connection_action())
+
+        self.ResponseAction(
+            code=response.status,
+            headers=headers,
+            data=response_data,
+        )
+
+        if response.close_connection:
+            yield self.CloseConnectionAction()
 
     #
 
