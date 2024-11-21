@@ -62,7 +62,12 @@ def _check_cmd(args) -> None:
         for pc in pcs:
             async for v in pc.run():
                 vs.append(v)
-                print(v)
+                print('*** VIOLATION ***')
+                print(f'Seq: {len(vs)}')
+                print(f'Precheck: {v.pc}')
+                print(f'Message:')
+                print(v.msg.strip())
+                print()
 
         return vs
 

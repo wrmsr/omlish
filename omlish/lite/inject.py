@@ -91,7 +91,7 @@ class Injector(abc.ABC):
 
     def __getitem__(
             self,
-            target: InjectorKey[T] | ta.Type[T],
+            target: ta.Union[InjectorKey[T], ta.Type[T]],
     ) -> T:
         return self.provide(target)
 
@@ -514,7 +514,7 @@ class InjectorBinder:
 # injector
 
 
-_INJECTOR_INJECTOR_KEY = InjectorKey(Injector)
+_INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
 
 
 class _Injector(Injector):
