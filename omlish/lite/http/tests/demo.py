@@ -2,15 +2,15 @@ import functools
 import http.server
 import sys
 
-from omlish.lite.http.coroserver import CoroHttpServer
-from omlish.lite.http.coroserver import CoroHttpServerSocketHandler
-from omlish.lite.http.coroserver import UnsupportedMethodHttpHandlerError
-from omlish.lite.http.handlers import HttpHandlerRequest
-from omlish.lite.http.handlers import HttpHandlerResponse
-from omlish.lite.http.parsing import HttpRequestParser
-from omlish.lite.http.versions import HttpProtocolVersions
-from omlish.lite.socket import get_best_socket_family
-from omlish.lite.socketserver import SocketHandlerSocketServerStreamRequestHandler
+from ...socket import get_best_socket_family
+from ...socketserver import SocketHandlerSocketServerStreamRequestHandler
+from ..coroserver import CoroHttpServer
+from ..coroserver import CoroHttpServerSocketHandler
+from ..coroserver import UnsupportedMethodHttpHandlerError
+from ..handlers import HttpHandlerRequest
+from ..handlers import HttpHandlerResponse
+from ..parsing import HttpRequestParser
+from ..versions import HttpProtocolVersions
 
 
 ##
@@ -62,7 +62,7 @@ def _main() -> None:
     ) as httpd:
         host, port = httpd.socket.getsockname()[:2]
         url_host = f'[{host}]' if ':' in host else host
-        print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')
+        print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')  # noqa
 
         try:
             httpd.serve_forever()
