@@ -2,6 +2,8 @@ import functools
 import http.server
 import sys
 
+from omlish.lite.http.handlers import HttpHandlerRequest
+from omlish.lite.http.handlers import HttpHandlerResponse
 from omlish.lite.http.parsing import HttpRequestParser
 from omlish.lite.http.versions import HttpProtocolVersions
 from omlish.lite.socket import get_best_socket_family
@@ -9,8 +11,6 @@ from omlish.lite.socketserver import SocketHandlerSocketServerStreamRequestHandl
 
 from .server import CoroHttpServer
 from .server import CoroHttpServerSocketHandler
-from .server import HttpHandlerRequest
-from .server import HttpHandlerResponse
 from .server import UnsupportedMethodHttpHandlerError
 
 

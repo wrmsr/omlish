@@ -451,4 +451,19 @@ class CoroHttpServerSocketHandler(SocketHandler):
         self._coro_http_server_factory = coro_http_server_factory
 
     def handle(self) -> None:
-        raise NotImplementedError
+        server = self._coro_http_server_factory(self._client_address)
+
+        gen = server.coro_handle()
+
+        o = next(gen)
+        while True:
+            if isinstance(o, CoroHttpServer.ReadIo):
+                o = gen.send(self._rfile.read(o.sz))
+            elif isinstance(o, CoroHttpServer.ReadLineIo):
+                o = gen.send(self._rfile.readline(o.sz))
+            elif isinstance(o, CoroHttpServer.WriteIo):
+                self._wfile.write(o.data)
+                self._wfile.flush()
+                o = next(gen)
+            else:
+                raise TypeError(o)
