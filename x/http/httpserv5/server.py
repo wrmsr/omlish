@@ -37,7 +37,6 @@ from omlish.lite.http.versions import HttpProtocolVersions
 from .logging import DefaultHttpLogging
 from .logging import HttpLogging
 from .sockets import SocketAddress
-from .sockets import SocketHandler
 
 
 HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
@@ -170,7 +169,7 @@ class HttpServer:
     #
 
     @dc.dataclass(frozen=True, kw_only=True)
-    class Response:
+    class InternalResponse:
         version: HttpProtocolVersion
         code: http.HTTPStatus
         message: str | None = None
@@ -186,7 +185,7 @@ class HttpServer:
 
     #
 
-    def build_response_bytes(self, a: Response) -> bytes:
+    def build_response_bytes(self, a: InternalResponse) -> bytes:
         out = io.BytesIO()
 
         if a.version >= HttpProtocolVersions.HTTP_1_0:
@@ -210,25 +209,25 @@ class HttpServer:
 
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
-    def preprocess_response(self, a: Response) -> Response:
+    def preprocess_response(self, resp: InternalResponse) -> InternalResponse:
         nh: list[HttpServer.Header] = []
         kw: dict[str, ta.Any] = {}
 
-        if a.get_header('Content-Type') is None:
+        if resp.get_header('Content-Type') is None:
             nh.append(self.Header('Content-Type', self._default_content_type))
-        if a.data is not None and a.get_header('Content-Length') is None:
-            nh.append(self.Header('Content-Length', str(len(a.data))))
+        if resp.data is not None and resp.get_header('Content-Length') is None:
+            nh.append(self.Header('Content-Length', str(len(resp.data))))
 
         if nh:
-            kw.update(headers=[*(a.headers or []), *nh])
+            kw.update(headers=[*(resp.headers or []), *nh])
 
-        if (clh := a.get_header('Connection')) is not None:
+        if (clh := resp.get_header('Connection')) is not None:
             if self.get_header_close_connection_action(clh):
                 kw.update(close_connection=True)
 
         if not kw:
-            return a
-        return dc.replace(a, **kw)
+            return resp
+        return dc.replace(resp, **kw)
 
     #
 
@@ -255,27 +254,27 @@ class HttpServer:
     def coro_handle(self) -> ta.Generator[Io, bytes | None, None]:
         while True:
             gen = self.coro_handle_one()
+
             o = next(gen)
             i: bytes | None
             while True:
                 if isinstance(o, self.Io):
                     i = yield o
 
-                elif isinstance(o, self.Action):
+                elif isinstance(o, self.InternalResponse):
                     i = None
-                    for a in self.preprocess_actions(actions):
-                        print(a)
-                        if isinstance(a, self.ResponseAction):
-                            out = self.build_response_bytes(a)
-                            yield self.WriteIo(out)
+                    r = self.preprocess_response(o)
+                    b = self.build_response_bytes(r)
+                    yield self.WriteIo(b)
 
-                        elif isinstance(a, self.CloseConnectionAction):
-                            return
+                else:
+                    raise TypeError(o)
 
-                        else:
-                            raise TypeError(a)
+                o = gen.send(i)
 
-    def coro_handle_one(self) -> ta.Generator[Io | Response, bytes | None, None]:
+    def coro_handle_one(self) -> ta.Generator[Io | InternalResponse, bytes | None, None]:
+        # Parse request
+
         gen = self._parser.coro_parse()
         sz = next(gen)
         while True:
@@ -287,11 +286,10 @@ class HttpServer:
                 break
 
         if isinstance(parsed, EmptyParsedHttpResult):
-            yield self.CloseConnectionAction()
-            return
+            raise EOFError
 
         if isinstance(parsed, ParseHttpRequestError):
-            yield from self.send_error(
+            yield self.build_error_response(
                 parsed.code,
                 *parsed.message,
                 version=parsed.version,
@@ -300,29 +298,25 @@ class HttpServer:
 
         parsed = check_isinstance(parsed, ParsedHttpRequest)
 
+        # Log
+
         self._logging.log_message(self._logging_context, '%r', parsed)
+
+        # Handle CONTINUE
 
         if parsed.expects_continue:
             # https://bugs.python.org/issue1491
             # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-            yield self.ResponseAction(
+            yield self.InternalResponse(
                 version=parsed.version,
                 code=http.HTTPStatus.CONTINUE,
             )
 
-        yield from self.coro_send_handled(parsed)
-
-    #
-
-    def coro_send_handled(
-            self,
-            parsed: ParsedHttpRequest,
-    ) -> ta.Generator[Io | Response, bytes | None, None]:
         # Read data
 
         request_data: bytes | None
         if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = yield self.ReadIo(int(cl), False)
+            request_data = yield self.ReadIo(int(cl))
         else:
             request_data = None
 
@@ -341,7 +335,7 @@ class HttpServer:
         try:
             response = self._handler(request)
         except UnsupportedMethodServerHandlerError:
-            yield from self.send_error(
+            yield self.build_error_response(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({parsed.method!r})',
                 version=parsed.version,
@@ -364,19 +358,13 @@ class HttpServer:
         if response.close_connection and 'Connection' not in headers:
             headers.append(self.Header('Connection', 'close'))
 
-        action = self.ResponseAction(
+        yield self.InternalResponse(
             version=parsed.version,
             code=http.HTTPStatus(response.status),
             headers=headers,
             data=response_data,
+            close_connection=response.close_connection,
         )
-
-        # Emit actions
-
-        yield action
-
-        if response.close_connection:
-            yield self.CloseConnectionAction()
 
     #
 
@@ -406,7 +394,7 @@ class HttpServer:
             *,
             version: HttpProtocolVersion | None = None,
             method: str | None = None,
-    ) -> Response:
+    ) -> InternalResponse:
         code = http.HTTPStatus(code)
 
         headers: list[HttpServer.Header] = [
@@ -454,7 +442,7 @@ class HttpServer:
             if method != 'HEAD' and body:
                 data = body
 
-        return self.Response(
+        return self.InternalResponse(
             version=version or self._parser.server_version,
             code=code,
             message=message,
