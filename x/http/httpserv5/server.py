@@ -260,13 +260,14 @@ class HttpSocketHandler(SocketHandler):
                 raise RuntimeError
 
             for a in self.preprocess_actions(actions):
+                print(a)
                 if isinstance(a, self.ResponseAction):
                     out = self.build_response_bytes(a)
                     self.wfile.write(out)
                     self.wfile.flush()
 
                 elif isinstance(a, self.CloseConnectionAction):
-                    break
+                    return
 
                 else:
                     raise TypeError(a)
