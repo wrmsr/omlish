@@ -74,6 +74,9 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             handler: HttpServerHandler,
             parser: HttpRequestParser = HttpRequestParser(),
             logging: HttpLogging = DefaultHttpLogging(),
+
+            error_message_format: str | None = None,
+            error_content_type: str | None = None,
     ) -> None:
         super().__init__(
             client_address,
@@ -89,7 +92,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             client=str(self.client_address[0]),
         )
 
-        self._headers_buffer: list[bytes] = []
+        if error_message_format is None:
+            error_message_format = self.DEFAULT_ERROR_MESSAGE
+        self._error_message_format = error_message_format
+        if error_content_type is None:
+            error_content_type = self.DEFAULT_ERROR_CONTENT_TYPE
+        self._error_content_type = error_content_type
 
     #
 
@@ -123,6 +131,11 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         ]
 
     #
+
+    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
+        v: (v.phrase, v.description)
+        for v in http.HTTPStatus.__members__.values()
+    }
 
     def format_status_line(
             self,
@@ -261,11 +274,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
-        v: (v.phrase, v.description)
-        for v in http.HTTPStatus.__members__.values()
-    }
-
     DEFAULT_ERROR_MESSAGE = """\
     <!DOCTYPE HTML>
     <html lang="en">
@@ -283,9 +291,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     """
 
     DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
-
-    error_message_format = DEFAULT_ERROR_MESSAGE
-    error_content_type = DEFAULT_ERROR_CONTENT_TYPE
 
     def send_error(
             self,
