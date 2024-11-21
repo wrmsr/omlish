@@ -13,7 +13,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-class Factory(ta.Generic[T]):
+class Func(ta.Generic[T]):
     fn: ta.Callable[..., T]
 
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
@@ -23,11 +23,11 @@ class Factory(ta.Generic[T]):
 def make_injector_factory(
         factory_cls: ta.Any,
         factory_fn: ta.Callable[..., T],
-) -> ta.Callable[..., Factory[T]]:
+) -> ta.Callable[..., Func[T]]:
     def outer(injector: Injector) -> factory_cls:
         def inner(*args, **kwargs):
             return injector.inject(functools.partial(factory_fn, *args, **kwargs))
-        return Factory(inner)
+        return Func(inner)
     return outer
 
 
@@ -45,7 +45,7 @@ class Bar:
     foo: Foo
 
 
-BarFactory = ta.NewType('BarFactory', Factory[Bar])
+BarFactory = ta.NewType('BarFactory', Func[Bar])
 
 
 def _main() -> None:
