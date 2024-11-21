@@ -170,19 +170,19 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     def handle(self) -> None:
         while True:
-             for action in self.handle_one():
-                raise NotImplementedError
+            actions = list(self.handle_one())
+            raise NotImplementedError
 
     def handle_one(self) -> ta.Iterator[Action]:
         try:
             parsed = self.parser.parse(self.rfile.readline)
 
             if isinstance(parsed, EmptyParsedHttpResult):
-                # An error code has been sent, just exit
+                yield self.CloseConnectionAction()
                 return
 
             if isinstance(parsed, ParseHttpRequestError):
-                self.send_error(
+                yield from self.send_error(
                     parsed.code,
                     *parsed.message,
                 )
@@ -202,7 +202,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
             self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
-
             yield self.CloseConnectionAction()
 
     #
