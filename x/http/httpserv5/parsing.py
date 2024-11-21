@@ -146,6 +146,7 @@ class HttpRequestParser:
         super().__init__()
 
         self._protocol_version = protocol_version
+
         self._max_line = max_line
         self._max_headers = max_headers
 
