@@ -169,16 +169,14 @@ class HttpServer:
 
     #
 
-    class Action(abc.ABC):  # noqa
-        pass
-
     @dc.dataclass(frozen=True, kw_only=True)
-    class ResponseAction(Action):
+    class Response:
         version: HttpProtocolVersion
         code: http.HTTPStatus
         message: str | None = None
         headers: ta.Sequence['HttpServer.Header'] | None = None
         data: bytes | None = None
+        close_connection: bool = False
 
         def get_header(self, key: str) -> ta.Optional['HttpServer.Header']:
             for h in self.headers or []:
@@ -186,12 +184,9 @@ class HttpServer:
                     return h
             return None
 
-    class CloseConnectionAction(Action):
-        pass
-
     #
 
-    def build_response_bytes(self, a: ResponseAction) -> bytes:
+    def build_response_bytes(self, a: Response) -> bytes:
         out = io.BytesIO()
 
         if a.version >= HttpProtocolVersions.HTTP_1_0:
@@ -211,10 +206,13 @@ class HttpServer:
 
         return out.getvalue()
 
+    #
+
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
-    def preprocess_response(self, a: ResponseAction) -> ResponseAction:
+    def preprocess_response(self, a: Response) -> Response:
         nh: list[HttpServer.Header] = []
+        kw: dict[str, ta.Any] = {}
 
         if a.get_header('Content-Type') is None:
             nh.append(self.Header('Content-Type', self._default_content_type))
@@ -222,9 +220,15 @@ class HttpServer:
             nh.append(self.Header('Content-Length', str(len(a.data))))
 
         if nh:
-            a = dc.replace(a, headers=[*(a.headers or []), *nh])
+            kw.update(headers=[*(a.headers or []), *nh])
 
-        return a
+        if (clh := a.get_header('Connection')) is not None:
+            if self.get_header_close_connection_action(clh):
+                kw.update(close_connection=True)
+
+        if not kw:
+            return a
+        return dc.replace(a, **kw)
 
     def preprocess_actions(self, actions: ta.Sequence[Action]) -> ta.Iterator[Action]:
         for a in actions:
@@ -249,7 +253,7 @@ class HttpServer:
         pass
 
     @dc.dataclass(frozen=True)
-    class Read(Io):
+    class ReadIo(Io):
         sz: int
         line: bool
 
@@ -261,65 +265,75 @@ class HttpServer:
 
     def coro_handle(self) -> ta.Generator[Io, bytes | None, None]:
         while True:
-            actions = list(self.handle_one())
-            if not actions:
-                raise RuntimeError
+            gen = self.coro_handle_one()
+            o = next(gen)
+            i: bytes | None
+            while True:
+                if isinstance(o, self.Io):
+                    i = yield o
 
-            for a in self.preprocess_actions(actions):
-                print(a)
-                if isinstance(a, self.ResponseAction):
-                    out = self.build_response_bytes(a)
-                    yield self.WriteIo(out)
+                elif isinstance(o, self.Action):
+                    i = None
+                    for a in self.preprocess_actions(actions):
+                        print(a)
+                        if isinstance(a, self.ResponseAction):
+                            out = self.build_response_bytes(a)
+                            yield self.WriteIo(out)
 
-                elif isinstance(a, self.CloseConnectionAction):
-                    return
+                        elif isinstance(a, self.CloseConnectionAction):
+                            return
 
-                else:
-                    raise TypeError(a)
+                        else:
+                            raise TypeError(a)
 
-    def handle_one(self) -> ta.Iterator[Action]:
-        try:
-            parsed = self._parser.parse(self.rfile.readline)
+    def coro_handle_one(self) -> ta.Generator[Io | Action, bytes | None, None]:
+        gen = self._parser.coro_parse()
+        sz = next(gen)
+        while True:
+            try:
+                line = yield self.ReadIo(sz, True)
+                sz = gen.send(line)
+            except StopIteration as e:
+                parsed = e.value
+                break
 
-            if isinstance(parsed, EmptyParsedHttpResult):
-                yield self.CloseConnectionAction()
-                return
-
-            if isinstance(parsed, ParseHttpRequestError):
-                yield from self.send_error(
-                    parsed.code,
-                    *parsed.message,
-                    version=parsed.version,
-                )
-                return
-
-            parsed = check_isinstance(parsed, ParsedHttpRequest)
-
-            self._logging.log_message(self._logging_context, '%r', parsed)
-
-            if parsed.expects_continue:
-                # https://bugs.python.org/issue1491
-                # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-                yield self.ResponseAction(
-                    version=parsed.version,
-                    code=http.HTTPStatus.CONTINUE,
-                )
-
-            yield from self.send_handled(parsed)
-
-        except TimeoutError as e:
-            # A read or a write timed out. Discard this connection
-            self._logging.log_error(self._logging_context, 'Request timed out: %r', e)
+        if isinstance(parsed, EmptyParsedHttpResult):
             yield self.CloseConnectionAction()
+            return
+
+        if isinstance(parsed, ParseHttpRequestError):
+            yield from self.send_error(
+                parsed.code,
+                *parsed.message,
+                version=parsed.version,
+            )
+            return
+
+        parsed = check_isinstance(parsed, ParsedHttpRequest)
+
+        self._logging.log_message(self._logging_context, '%r', parsed)
+
+        if parsed.expects_continue:
+            # https://bugs.python.org/issue1491
+            # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
+            yield self.ResponseAction(
+                version=parsed.version,
+                code=http.HTTPStatus.CONTINUE,
+            )
+
+        yield from self.coro_send_handled(parsed)
 
     #
 
-    def send_handled(self, parsed: ParsedHttpRequest) -> ta.Iterator[Action]:
+    def coro_send_handled(
+            self,
+            parsed: ParsedHttpRequest,
+    ) -> ta.Generator[Io | Action, bytes | None, None]:
         # Read data
 
         request_data: bytes | None
         if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = self.rfile.read(int(cl))
+            request_data = yield self.ReadIo(int(cl), False)
         else:
             request_data = None
 
@@ -395,7 +409,7 @@ class HttpServer:
 
     DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
-    def send_error(
+    def build_error_response(
             self,
             code: HttpStatusOrInt,
             message: str | None = None,
@@ -403,7 +417,7 @@ class HttpServer:
             *,
             version: HttpProtocolVersion | None = None,
             method: str | None = None,
-    ) -> ta.Iterator[Action]:
+    ) -> ResponseAction:
         code = http.HTTPStatus(code)
 
         headers: list[HttpServer.Header] = [
@@ -451,12 +465,11 @@ class HttpServer:
             if method != 'HEAD' and body:
                 data = body
 
-        yield self.ResponseAction(
+        return self.ResponseAction(
             version=version or self._parser.server_version,
             code=code,
             message=message,
             headers=headers,
             data=data,
+            close_connection=True,
         )
-
-        yield self.CloseConnectionAction()
