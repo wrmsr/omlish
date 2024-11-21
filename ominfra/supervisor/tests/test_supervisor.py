@@ -9,8 +9,8 @@ from omlish.lite.runtime import is_debugger_attached
 
 from ...configs import read_config_file
 from ..configs import ServerConfig
-from ..main import build_server_bindings
-from ..main import prepare_server_config
+from ..configs import prepare_server_config
+from ..inject import bind_server
 from ..process import InheritedFds
 from ..supervisor import Supervisor
 from ..utils import get_open_fds
@@ -35,7 +35,7 @@ class TestSupervisor(unittest.TestCase):
 
         #
 
-        injector = inj.create_injector(build_server_bindings(
+        injector = inj.create_injector(bind_server(
             config,
             inherited_fds=inherited_fds,
         ))

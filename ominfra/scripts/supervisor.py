@@ -6789,13 +6789,13 @@ class Supervisor:
 
 
 ########################################
-# main.py
+# ../inject.py
 
 
 ##
 
 
-def build_server_bindings(
+def bind_server(
         config: ServerConfig,
         *,
         server_epoch: ta.Optional[ServerEpoch] = None,
@@ -6844,6 +6844,10 @@ def build_server_bindings(
     return inj.as_bindings(*lst)
 
 
+########################################
+# main.py
+
+
 ##
 
 
@@ -6889,14 +6893,14 @@ def main(
             prepare=prepare_server_config,
         )
 
-        injector = inj.create_injector(build_server_bindings(
+        injector = inj.create_injector(bind_server(
             config,
             server_epoch=ServerEpoch(epoch),
             inherited_fds=inherited_fds,
         ))
 
-        context = injector.provide(ServerContext)
-        supervisor = injector.provide(Supervisor)
+        context = injector[ServerContext]
+        supervisor = injector[Supervisor]
 
         try:
             supervisor.main()
