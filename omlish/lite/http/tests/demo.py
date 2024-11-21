@@ -1,4 +1,8 @@
+"""
+socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
+"""
 import functools
+import os
 import socket
 import socketserver
 import sys
@@ -56,12 +60,21 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
 
 
 def _main() -> None:
+    unix_socket = 'foo.sock'
+
     port = 8000
     bind = None
 
     server_class = ThreadingHTTPServer
-    server_class.address_family, addr = get_best_socket_family(bind, port)
-    # server_class.address_family = socket.AF_UNIX
+    if unix_socket is not None:
+        if not unix_socket.endswith('.sock'):
+            raise ValueError(unix_socket)
+        if os.path.exists(unix_socket):
+            os.unlink(unix_socket)
+        addr = unix_socket
+        server_class.address_family = socket.AF_UNIX
+    else:
+        server_class.address_family, addr = get_best_socket_family(bind, port)
 
     with server_class(
             addr,
@@ -80,9 +93,12 @@ def _main() -> None:
                 ),
             ),
     ) as httpd:
-        host, port = httpd.socket.getsockname()[:2]
-        url_host = f'[{host}]' if ':' in host else host
-        print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')  # noqa
+        if unix_socket:
+            print(f'Serving HTTP on unix socket {httpd.socket.getsockname()} ...')  # noqa
+        else:
+            host, port = httpd.socket.getsockname()[:2]
+            url_host = f'[{host}]' if ':' in host else host
+            print(f'Serving HTTP on {host} port {port} (http://{url_host}:{port}/) ...')  # noqa
 
         try:
             httpd.serve_forever()
