@@ -26,6 +26,7 @@ class HttpProtocolVersions:
     HTTP_0_9 = HttpProtocolVersion(0, 9)
     HTTP_1_0 = HttpProtocolVersion(1, 0)
     HTTP_1_1 = HttpProtocolVersion(1, 1)
+    HTTP_2_0 = HttpProtocolVersion(2, 0)
 
 
 ##
@@ -33,9 +34,10 @@ class HttpProtocolVersions:
 
 class ParseHttpRequestResult(abc.ABC):  # noqa
     __slots__ = (
-        'protocol_version',
+        'server_version',
         'request_line',
         'request_version',
+        'version',
         'headers',
         'close_connection',
     )
@@ -43,17 +45,19 @@ class ParseHttpRequestResult(abc.ABC):  # noqa
     def __init__(
             self,
             *,
-            protocol_version: HttpProtocolVersion,
+            server_version: HttpProtocolVersion,
             request_line: str,
             request_version: HttpProtocolVersion,
+            version: HttpProtocolVersion,
             headers: HttpHeaders | None,
             close_connection: bool,
     ) -> None:
         super().__init__()
 
-        self.protocol_version = protocol_version
+        self.server_version = server_version
         self.request_line = request_line
         self.request_version = request_version
+        self.version = version
         self.headers = headers
         self.close_connection = close_connection
 
@@ -121,7 +125,7 @@ class ParsedHttpRequest(ParseHttpRequestResult):
 
 
 class HttpRequestParser:
-    DEFAULT_PROTOCOL_VERSION = HttpProtocolVersions.HTTP_1_0
+    DEFAULT_SERVER_VERSION = HttpProtocolVersions.HTTP_1_0
 
     # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
@@ -138,14 +142,16 @@ class HttpRequestParser:
     def __init__(
             self,
             *,
-            protocol_version: HttpProtocolVersion = DEFAULT_PROTOCOL_VERSION,
+            server_version: HttpProtocolVersion = DEFAULT_SERVER_VERSION,
 
             max_line: int = DEFAULT_MAX_LINE,
             max_headers: int = DEFAULT_MAX_HEADERS,
     ) -> None:
         super().__init__()
 
-        self._protocol_version = protocol_version
+        if server_version >= HttpProtocolVersions.HTTP_2_0:
+            raise ValueError(f'Unsupported protocol version: {server_version}')
+        self._server_version = server_version
 
         self._max_line = max_line
         self._max_headers = max_headers
@@ -163,6 +169,31 @@ class HttpRequestParser:
                 sz = gen.send(read_line(sz))
             except StopIteration as e:
                 return e.value
+
+    #
+
+    def _parse_request_version(self, version_str: str) -> HttpProtocolVersion:
+        if not version_str.startswith('HTTP/'):
+            raise ValueError(version_str)  # noqa
+
+        base_version_number = version_str.split('/', 1)[1]
+        version_number_parts = base_version_number.split('.')
+
+        # RFC 2145 section 3.1 says there can be only one "." and
+        #   - major and minor numbers MUST be treated as separate integers;
+        #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
+        #   - Leading zeros MUST be ignored by recipients.
+        if len(version_number_parts) != 2:
+            raise ValueError(version_number_parts)  # noqa
+        if any(not component.isdigit() for component in version_number_parts):
+            raise ValueError('non digit in http version')  # noqa
+        if any(len(component) > 10 for component in version_number_parts):
+            raise ValueError('unreasonable length http version')  # noqa
+
+        return HttpProtocolVersion(
+            int(version_number_parts[0]),
+            int(version_number_parts[1]),
+        )
 
     #
 
@@ -191,23 +222,25 @@ class HttpRequestParser:
     def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
         raw_request_line = yield self._max_line + 1
 
-        #
+        # Common result kwargs
 
         request_line = '-'
         request_version = self.DEFAULT_REQUEST_VERSION
+        version = request_version
         headers: HttpHeaders | None = None
         close_connection = True
 
         def result_kwargs():
             return dict(
-                protocol_version=self._protocol_version,
+                server_version=self._server_version,
                 request_line=request_line,
                 request_version=request_version,
+                version=version,
                 headers=headers,
                 close_connection=close_connection,
             )
 
-        #
+        # Parse raw line
 
         if len(raw_request_line) > self._max_line:
             return ParseHttpRequestError(
@@ -221,32 +254,18 @@ class HttpRequestParser:
 
         request_line = raw_request_line.decode('iso-8859-1').rstrip('\r\n')
 
-        #
+        # Split words
 
         words = request_line.split()
         if len(words) == 0:
             return EmptyParsedHttpResult(**result_kwargs())
 
+        # Parse and set version
+
         if len(words) >= 3:  # Enough to determine protocol version
             version_str = words[-1]
             try:
-                if not version_str.startswith('HTTP/'):
-                    raise ValueError(version_str)  # noqa
-
-                base_version_number = version_str.split('/', 1)[1]
-                version_number_parts = base_version_number.split('.')
-
-                # RFC 2145 section 3.1 says there can be only one "." and
-                #   - major and minor numbers MUST be treated as separate integers;
-                #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
-                #   - Leading zeros MUST be ignored by recipients.
-                if len(version_number_parts) != 2:
-                    raise ValueError(version_number_parts)  # noqa
-                if any(not component.isdigit() for component in version_number_parts):
-                    raise ValueError('non digit in http version')  # noqa
-                if any(len(component) > 10 for component in version_number_parts):
-                    raise ValueError('unreasonable length http version')  # noqa
-                request_version = HttpProtocolVersion(int(version_number_parts[0]), int(version_number_parts[1]))
+                request_version = self._parse_request_version(version_str)
 
             except (ValueError, IndexError):
                 return ParseHttpRequestError(
@@ -255,15 +274,22 @@ class HttpRequestParser:
                     **result_kwargs(),
                 )
 
-            if request_version >= (1, 1) and self._protocol_version >= HttpProtocolVersions.HTTP_1_1:
-                close_connection = False
-
-            if request_version >= (2, 0):
+            if (
+                    request_version < HttpProtocolVersions.HTTP_0_9 or
+                    request_version >= HttpProtocolVersions.HTTP_2_0
+            ):
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
-                    message=f'Invalid HTTP version ({base_version_number})',
+                    message=f'Invalid HTTP version ({version_str})',
                     **result_kwargs(),
                 )
+
+            version = min([self._server_version, request_version])
+
+            if version >= HttpProtocolVersions.HTTP_1_1:
+                close_connection = False
+
+        # Verify word count
 
         if not 2 <= len(words) <= 3:
             return ParseHttpRequestError(
@@ -271,6 +297,8 @@ class HttpRequestParser:
                 message=f'Bad request syntax ({request_line!r})',
                 **result_kwargs(),
             )
+
+        # Parse method and path
 
         method, path = words[:2]
         if len(words) == 2:
@@ -288,7 +316,8 @@ class HttpRequestParser:
         if path.startswith('//'):
             path = '/' + path.lstrip('/')  # Reduce to a single /
 
-        # Examine the headers and look for a Connection directive.
+        # Parse headers
+
         try:
             raw_gen = self.coro_read_raw_headers()
             raw_sz = next(raw_gen)
@@ -316,25 +345,29 @@ class HttpRequestParser:
                 **result_kwargs(),
             )
 
+        # Check for connection directive
+
         conn_type = headers.get('Connection', '')
         if conn_type.lower() == 'close':
             close_connection = True
         elif (
                 conn_type.lower() == 'keep-alive' and
-                self._protocol_version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpProtocolVersions.HTTP_1_1
         ):
             close_connection = False
 
-        # Examine the headers and look for an Expect directive
+        # Check for expect directive
+
         expect = headers.get('Expect', '')
         if (
                 expect.lower() == '100-continue' and
-                self._protocol_version >= HttpProtocolVersions.HTTP_1_1 and
-                request_version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpProtocolVersions.HTTP_1_1
         ):
             expects_continue = True
         else:
             expects_continue = False
+
+        # Return
 
         return ParsedHttpRequest(
             method=method,
