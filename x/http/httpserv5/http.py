@@ -74,6 +74,9 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             handler: HttpServerHandler,
             parser: HttpRequestParser = HttpRequestParser(),
             logging: HttpLogging = DefaultHttpLogging(),
+
+            error_message_format: str | None = None,
+            error_content_type: str | None = None,
     ) -> None:
         super().__init__(
             client_address,
@@ -89,58 +92,113 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             client=str(self.client_address[0]),
         )
 
-        self._headers_buffer: list[bytes] = []
+        if error_message_format is None:
+            error_message_format = self.DEFAULT_ERROR_MESSAGE
+        self._error_message_format = error_message_format
+        if error_content_type is None:
+            error_content_type = self.DEFAULT_ERROR_CONTENT_TYPE
+        self._error_content_type = error_content_type
 
     #
 
-    close_connection: bool
-
-    def handle(self) -> None:
-        self.close_connection = True
-
-        self.handle_one_request()
-        while not self.close_connection:
-            self.handle_one_request()
+    def format_timestamp(self, timestamp: float | None = None) -> str:
+        if timestamp is None:
+            timestamp = time.time()
+        return email.utils.formatdate(timestamp, usegmt=True)
 
     #
 
-    protocol_version: HttpProtocolVersion
-    request_line: str
-    request_version: HttpProtocolVersion
+    class Header(ta.NamedTuple):
+        key: str
+        value: str
 
-    method: str | None
-    path: str
-    headers: HttpHeaders
+    def encode_header(self, s: str) -> bytes:
+        return s.encode('latin-1', 'strict')
+
+    def get_header_close_connection_action(self, h: Header) -> bool | None:
+        if h.key.lower() != 'connection':
+            return None
+        elif h.value.lower() == 'close':
+            return True
+        elif h.value.lower() == 'keep-alive':
+            return False
+        else:
+            return None
+
+    def make_default_headers(self) -> list[Header]:
+        return [
+            self.Header('Date', self.format_timestamp())
+        ]
+
+    #
+
+    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
+        v: (v.phrase, v.description)
+        for v in http.HTTPStatus.__members__.values()
+    }
+
+    def format_status_line(
+            self,
+            version: HttpProtocolVersion,
+            code: HttpStatusOrInt,
+            message: str | None = None,
+    ) -> str:
+        if message is None:
+            if code in self._STATUS_RESPONSES:
+                message = self._STATUS_RESPONSES[code][0]
+            else:
+                message = ''
+
+        return f'{version} {int(code)} {message}\r\n'
 
     #
 
     class Action(abc.ABC):  # noqa
         pass
 
-    @dc.dataclass(frozen=True)
-    class ErrorAction(Action):
-        code: HttpStatusOrInt
+    @dc.dataclass(frozen=True, kw_only=True)
+    class ResponseAction(Action):
+        version: HttpProtocolVersion
+        code: http.HTTPStatus
         message: str | None = None
-        explain: str | None = None
+        headers: ta.Sequence['HttpSocketRequestHandler.Header'] | None = None
+        data: bytes | None = None
 
     class CloseConnectionAction(Action):
         pass
 
-    def handle_one_request(self) -> None:
+    ##
+
+    def handle(self) -> None:
+        while True:
+            actions = list(self.handle_one())
+            if not actions:
+                raise RuntimeError
+
+            for a in actions:
+                if isinstance(a, self.ResponseAction):
+                    if a.version != HttpProtocolVersions.HTTP_0_9:
+                        self.wfile.write(self.encode_header(self.format_status_line(a.version, a.code, a.message)))
+                        raise NotImplementedError
+
+                    raise NotImplementedError
+
+                elif isinstance(a, self.CloseConnectionAction):
+                    break
+
+                else:
+                    raise TypeError(a)
+
+    def handle_one(self) -> ta.Iterator[Action]:
         try:
             parsed = self.parser.parse(self.rfile.readline)
 
-            self.protocol_version = parsed.protocol_version
-            self.request_line = parsed.request_line
-            self.request_version = parsed.request_version
-            self.close_connection = parsed.close_connection
-
             if isinstance(parsed, EmptyParsedHttpResult):
-                # An error code has been sent, just exit
+                yield self.CloseConnectionAction()
                 return
 
             if isinstance(parsed, ParseHttpRequestError):
-                self.send_error(
+                yield from self.send_error(
                     parsed.code,
                     *parsed.message,
                 )
@@ -153,69 +211,74 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             if parsed.expects_continue:
                 # https://bugs.python.org/issue1491
                 # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-                self.send_status_line(http.HTTPStatus.CONTINUE)
-                self.end_headers()
+                yield self.ResponseAction(http.HTTPStatus.CONTINUE)
 
-            self.method = parsed.method
-            self.path = parsed.path
-            self.headers = parsed.headers
-
-            request_data: bytes | None
-            if (cl := self.headers.get('Content-Length')) is not None:
-                request_data = self.rfile.read(int(cl))
-            else:
-                request_data = None
-
-            request = HttpServerRequest(
-                client_address=self.client_address,
-                method=check_not_none(self.method),
-                path=self.path,
-                headers=self.headers,
-                data=request_data,
-            )
-
-            try:
-                response = self.handler(request)
-            except UnsupportedMethodServerHandlerError:
-                self.send_error(
-                    http.HTTPStatus.NOT_IMPLEMENTED,
-                    f'Unsupported method ({self.method!r})',
-                )
-                self.wfile.flush()  # actually send the response if not already done.
-                return
-
-            if response.close_connection is not None:
-                self.close_connection = response.close_connection
-            response_headers = response.headers or {}
-            response_data = response.data
-
-            self.send_response(response.status)
-
-            for k, v in response_headers.items():
-                self.send_header(k, v)
-            if 'Content-Type' not in response_headers:
-                self.send_header('Content-Type', 'text/plain')
-            if 'Content-Length' not in response_headers and response_data is not None:
-                self.send_header('Content-Length', str(len(response_data)))
-            self.end_headers()
-
-            if response_data is not None:
-                self.wfile.write(response_data)
-
-            self.wfile.flush()  # actually send the response if not already done.
+            yield from self.send_handled(parsed)
 
         except TimeoutError as e:
             # A read or a write timed out. Discard this connection
             self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
-            self.close_connection = True
-            return
+            yield self.CloseConnectionAction()
 
     #
 
-    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
-        v: (v.phrase, v.description)
-        for v in http.HTTPStatus.__members__.values()
-    }
+    def send_handled(self, parsed: ParsedHttpRequest) -> ta.Iterator[Action]:
+        request_data: bytes | None
+        if (cl := parsed.headers.get('Content-Length')) is not None:
+            request_data = self.rfile.read(int(cl))
+        else:
+            request_data = None
+
+        request = HttpServerRequest(
+            client_address=self.client_address,
+            method=check_not_none(parsed.method),
+            path=parsed.path,
+            headers=parsed.headers,
+            data=request_data,
+        )
+
+        #
+
+        try:
+            response = self.handler(request)
+        except UnsupportedMethodServerHandlerError:
+            yield from self.send_error(
+                http.HTTPStatus.NOT_IMPLEMENTED,
+                f'Unsupported method ({parsed.method!r})',
+                method=parsed.method,
+            )
+            return
+
+        response_headers = response.headers or {}
+        response_data = response.data
+
+        #
+
+        headers: list[HttpSocketRequestHandler.Header] = [
+            *self.make_default_headers(),
+        ]
+
+        for k, v in response_headers.items():
+            headers.append(self.Header(k, v))
+        if 'Content-Type' not in response_headers:
+            headers.append(self.Header('Content-Type', 'text/plain'))
+        if 'Content-Length' not in response_headers and response_data is not None:
+            headers.append(self.Header('Content-Length', str(len(response_data))))
+
+        # FIXME: add Connection: foo according to response.close_connection
+        # if (cla := self.get_header_close_connection_action())
+
+        yield self.ResponseAction(
+            version=parsed.request_version,
+            code=response.status,
+            headers=headers,
+            data=response_data,
+        )
+
+        if response.close_connection:
+            yield self.CloseConnectionAction()
+
+    #
 
     DEFAULT_ERROR_MESSAGE = """\
     <!DOCTYPE HTML>
@@ -235,15 +298,18 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
-    error_message_format = DEFAULT_ERROR_MESSAGE
-    error_content_type = DEFAULT_ERROR_CONTENT_TYPE
-
     def send_error(
             self,
             code: HttpStatusOrInt,
             message: str | None = None,
             explain: str | None = None,
-    ) -> None:
+            *,
+            method: str | None = None,
+    ) -> ta.Iterator[Action]:
+        headers: list[HttpSocketRequestHandler.Header] = [
+            *self.make_default_headers(),
+        ]
+
         try:
             short_msg, long_msg = self._STATUS_RESPONSES[code]
         except KeyError:
@@ -255,13 +321,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         self.logging.log_error(self.logging_context, 'code %d, message %s', code, message)
 
-        self.send_response(code, message)
-        self.send_header('Connection', 'close')
+        headers.append(self.Header('Connection', 'close'))
 
         # Message body is omitted for cases described in:
         #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
         #  - RFC7231: 6.3.6. 205(Reset Content)
-        body = None
+        data: bytes | None = None
         if (
                 code >= 200 and
                 code not in (
@@ -271,68 +336,26 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 )
         ):
             # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
-            content = (self.error_message_format % {
-                'code': code,
-                'message': html.escape(message, quote=False),
-                'explain': html.escape(explain, quote=False),
-            })
+            content = self._error_message_format.format(
+                code=code,
+                message=html.escape(message, quote=False),
+                explain=html.escape(explain, quote=False),
+            )
             body = content.encode('UTF-8', 'replace')
-            self.send_header('Content-Type', self.error_content_type)
-            self.send_header('Content-Length', str(len(body)))
 
-        self.end_headers()
+            headers.extend([
+                self.Header('Content-Type', self._error_content_type),
+                self.Header('Content-Length', str(len(body))),
+            ])
 
-        if self.method != 'HEAD' and body:
-            self.wfile.write(body)
+            if method != 'HEAD' and body:
+                data = body
 
-    #
+        yield self.ResponseAction(
+            code=code,
+            message=message,
+            headers=headers,
+            data=data,
+        )
 
-    def send_header(self, keyword: str, value: str) -> None:
-        if self.request_version != HttpProtocolVersions.HTTP_0_9:
-            line = f'{keyword}: {value}\r\n'
-            self._headers_buffer.append(line.encode('latin-1', 'strict'))
-
-        if keyword.lower() == 'connection':
-            if value.lower() == 'close':
-                self.close_connection = True
-            elif value.lower() == 'keep-alive':
-                self.close_connection = False
-
-    def end_headers(self) -> None:
-        if self.request_version != HttpProtocolVersions.HTTP_0_9:
-            self._headers_buffer.append(b'\r\n')
-            self.wfile.write(b''.join(self._headers_buffer))
-            self._headers_buffer = []
-
-    #
-
-    def format_timestamp(self, timestamp: float | None = None) -> str:
-        if timestamp is None:
-            timestamp = time.time()
-        return email.utils.formatdate(timestamp, usegmt=True)
-
-    #
-
-    def send_response(
-            self,
-            code: HttpStatusOrInt,
-            message: str | None = None,
-    ) -> None:
-        self.logging.log_request(self.logging_context, self.request_line, code)
-        self.send_status_line(code, message)
-        self.send_header('Date', self.format_timestamp())
-
-    def send_status_line(
-            self,
-            code: HttpStatusOrInt,
-            message: str | None = None,
-    ) -> None:
-        if self.request_version != HttpProtocolVersions.HTTP_0_9:
-            if message is None:
-                if code in self._STATUS_RESPONSES:
-                    message = self._STATUS_RESPONSES[code][0]
-                else:
-                    message = ''
-
-            line = f'{self.protocol_version} {int(code)} {message}\r\n'
-            self._headers_buffer.append(line.encode('latin-1', 'strict'))
+        yield self.CloseConnectionAction()
