@@ -20,6 +20,17 @@ class Factory(ta.Generic[T]):
         return self.fn(*args, **kwargs)
 
 
+def make_injector_factory(
+        factory_cls: ta.Any,
+        factory_fn: ta.Callable[..., T],
+) -> ta.Callable[..., Factory[T]]:
+    def outer(injector: Injector) -> factory_cls:
+        def inner(*args, **kwargs):
+            return injector.inject(functools.partial(factory_fn, *args, **kwargs))
+        return Factory(inner)
+    return outer
+
+
 ##
 
 
@@ -38,15 +49,10 @@ BarFactory = ta.NewType('BarFactory', Factory[Bar])
 
 
 def _main() -> None:
-    def make_bar_factory(injector: Injector) -> BarFactory:
-        def inner(y: int) -> Bar:
-            return injector.inject(functools.partial(Bar, y))
-        return BarFactory(Factory(inner))
-
     foo = Foo(420)
 
     injector = inj.create_injector(
-        inj.bind(make_bar_factory),
+        inj.bind(make_injector_factory(BarFactory, Bar)),
         inj.bind(foo),
     )
 
@@ -55,7 +61,7 @@ def _main() -> None:
     bar_factory = injector[BarFactory]
 
     for i in range(2):
-        bar = bar_factory(i)
+        bar: Bar = bar_factory.fn(i)
         assert isinstance(bar, Bar)
         assert bar.y == i
         assert bar.foo is foo
