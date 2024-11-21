@@ -280,7 +280,7 @@ class HttpServer:
         sz = next(gen)
         while True:
             try:
-                line = yield self.ReadIo(sz, True)
+                line = yield self.ReadLineIo(sz)
                 sz = gen.send(line)
             except StopIteration as e:
                 parsed = e.value
