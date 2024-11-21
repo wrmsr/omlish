@@ -41,40 +41,7 @@ from .logging import DefaultHttpLogging
 from .logging import HttpLogging
 
 
-HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
-
-
 ##
-
-
-@dc.dataclass(frozen=True)
-class HttpHandlerRequest:
-    client_address: SocketAddress
-    method: str
-    path: str
-    headers: HttpHeaders
-    data: bytes | None
-
-
-@dc.dataclass(frozen=True)
-class HttpHandlerResponse:
-    status: HttpStatusOrInt
-    _: dc.KW_ONLY
-    headers: ta.Mapping[str, str] | None = None
-    data: bytes | None = None
-    close_connection: bool | None = None
-
-
-class HttpHandlerError(Exception):
-    pass
-
-
-class UnsupportedMethodHttpHandlerError(Exception):
-    pass
-
-
-HttpHandler: ta.TypeAlias = ta.Callable[[HttpHandlerRequest], HttpHandlerResponse]
-
 
 ##
 
@@ -160,7 +127,7 @@ class CoroHttpServer:
     def _format_status_line(
             self,
             version: HttpProtocolVersion,
-            code: HttpStatusOrInt,
+            code: ta.Union[http.HTTPStatus, int],
             message: str | None = None,
     ) -> str:
         if message is None:
@@ -256,7 +223,7 @@ class CoroHttpServer:
 
     def _build_error_internal_response(
             self,
-            code: HttpStatusOrInt,
+            code: ta.Union[http.HTTPStatus, int],
             message: str | None = None,
             explain: str | None = None,
             *,

@@ -28,7 +28,7 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
         '',
     ])
 
-    return HttpServerResponse(
+    return HttpHandlerResponse(
         200,
         data=resp.encode('utf-8'),
     )
