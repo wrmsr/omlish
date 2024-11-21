@@ -169,17 +169,59 @@ class HttpRequestParser:
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
     DEFAULT_REQUEST_VERSION = HttpProtocolVersions.HTTP_0_9
 
+    #
+
+    DEFAULT_MAX_LINE: int = 0x10000
+    DEFAULT_MAX_HEADERS: int = 100
+
+    #
+
     def __init__(
             self,
             *,
             protocol_version: HttpProtocolVersion = DEFAULT_PROTOCOL_VERSION,
+
+            max_line: int = DEFAULT_MAX_LINE,
+            max_headers: int = DEFAULT_MAX_HEADERS,
     ) -> None:
         super().__init__()
 
         self._protocol_version = protocol_version
+        self._max_line = max_line
+        self._max_headers = max_headers
+
+    #
+
+    def coro_read_raw_http_headers(self) -> ta.Generator[int, bytes, list[bytes]]:
+        raw_headers: list[bytes] = []
+        while True:
+            line = yield self._max_line + 1
+            if len(line) > self._max_line:
+                raise http.client.LineTooLong('header line')
+            raw_headers.append(line)
+            if len(raw_headers) > self._max_headers:
+                raise http.client.HTTPException(f'got more than {self._max_headers} headers')
+            if line in (b'\r\n', b'\n', b''):
+                break
+        return raw_headers
+
+    def read_raw_http_headers(self, read_line: ta.Callable[[int], bytes]) -> list[bytes]:
+        gen = coro_read_raw_http_headers()
+        sz = next(gen)
+        while True:
+            try:
+                sz = gen.send(read_line(sz))
+            except StopIteration as e:
+                return e.value
+
+    def parse_raw_http_headers(self, raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
+        return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
+
+    #
+
 
     def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
-        raw_request_line = yield 65537
+        raw_request_line = yield self._max_line + 1
 
         #
 
@@ -199,7 +241,7 @@ class HttpRequestParser:
 
         #
 
-        if len(raw_request_line) > 65536:
+        if len(raw_request_line) > self._max_line:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.REQUEST_URI_TOO_LONG,
                 message='Request line too long',
