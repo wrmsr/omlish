@@ -4790,7 +4790,7 @@ class CoroHttpServerSocketHandler(SocketHandler):
 # ../types.py
 
 
-class AbstractServerContext(abc.ABC):
+class ServerContext(abc.ABC):
     @property
     @abc.abstractmethod
     def config(self) -> ServerConfig:
@@ -4831,7 +4831,7 @@ class AbstractSubprocess(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -4889,7 +4889,7 @@ class AbstractProcessGroup(abc.ABC):
 # ../context.py
 
 
-class ServerContext(AbstractServerContext):
+class ServerContextImpl(ServerContext):
     def __init__(
             self,
             config: ServerConfig,
@@ -5627,7 +5627,7 @@ class ProcessGroup(AbstractProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            context: ServerContext,
+            context: ServerContextImpl,
             *,
             subprocess_factory: SubprocessFactory,
     ):
@@ -5651,7 +5651,7 @@ class ProcessGroup(AbstractProcessGroup):
         return self._config.name
 
     @property
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         return self._context
 
     def __repr__(self):
@@ -5774,7 +5774,7 @@ class Subprocess(AbstractSubprocess):
             config: ProcessConfig,
             group: AbstractProcessGroup,
             *,
-            context: AbstractServerContext,
+            context: ServerContext,
             event_callbacks: EventCallbacks,
 
             inherited_fds: ta.Optional[InheritedFds] = None,
@@ -5821,7 +5821,7 @@ class Subprocess(AbstractSubprocess):
         return self._config
 
     @property
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         return self._context
 
     @property
@@ -6468,7 +6468,7 @@ class SignalHandler:
     def __init__(
             self,
             *,
-            context: ServerContext,
+            context: ServerContextImpl,
             signal_receiver: SignalReceiver,
             process_groups: ProcessGroups,
     ) -> None:
@@ -6532,7 +6532,7 @@ class Supervisor:
     def __init__(
             self,
             *,
-            context: ServerContext,
+            context: ServerContextImpl,
             poller: Poller,
             process_groups: ProcessGroups,
             signal_handler: SignalHandler,
@@ -6556,7 +6556,7 @@ class Supervisor:
     #
 
     @property
-    def context(self) -> ServerContext:
+    def context(self) -> ServerContextImpl:
         return self._context
 
     def get_state(self) -> SupervisorState:
@@ -6840,8 +6840,8 @@ def bind_server(
 
         inj.bind(get_poller_impl(), key=Poller, singleton=True),
 
-        inj.bind(ServerContext, singleton=True),
-        inj.bind(AbstractServerContext, to_key=ServerContext),
+        inj.bind(ServerContextImpl, singleton=True),
+        inj.bind(ServerContext, to_key=ServerContextImpl),
 
         inj.bind(EventCallbacks, singleton=True),
 
@@ -6933,7 +6933,7 @@ def main(
             inherited_fds=inherited_fds,
         ))
 
-        context = injector[ServerContext]
+        context = injector[ServerContextImpl]
         supervisor = injector[Supervisor]
 
         try:

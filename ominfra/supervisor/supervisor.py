@@ -9,7 +9,7 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 
 from .configs import ProcessGroupConfig
-from .context import ServerContext
+from .context import ServerContextImpl
 from .dispatchers import Dispatcher
 from .events import TICK_EVENTS
 from .events import EventCallbacks
@@ -35,7 +35,7 @@ class SignalHandler:
     def __init__(
             self,
             *,
-            context: ServerContext,
+            context: ServerContextImpl,
             signal_receiver: SignalReceiver,
             process_groups: ProcessGroups,
     ) -> None:
@@ -99,7 +99,7 @@ class Supervisor:
     def __init__(
             self,
             *,
-            context: ServerContext,
+            context: ServerContextImpl,
             poller: Poller,
             process_groups: ProcessGroups,
             signal_handler: SignalHandler,
@@ -123,7 +123,7 @@ class Supervisor:
     #
 
     @property
-    def context(self) -> ServerContext:
+    def context(self) -> ServerContextImpl:
         return self._context
 
     def get_state(self) -> SupervisorState:

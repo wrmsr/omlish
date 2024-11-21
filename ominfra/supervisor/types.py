@@ -10,7 +10,7 @@ from .states import ProcessState
 from .states import SupervisorState
 
 
-class AbstractServerContext(abc.ABC):
+class ServerContext(abc.ABC):
     @property
     @abc.abstractmethod
     def config(self) -> ServerConfig:
@@ -51,7 +51,7 @@ class AbstractSubprocess(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         raise NotImplementedError
 
     @abc.abstractmethod

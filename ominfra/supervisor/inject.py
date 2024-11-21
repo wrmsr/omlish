@@ -10,7 +10,7 @@ from omlish.lite.inject import inj
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
-from .context import ServerContext
+from .context import ServerContextImpl
 from .context import ServerEpoch
 from .events import EventCallbacks
 from .groups import ProcessGroup
@@ -25,8 +25,8 @@ from .supervisor import ProcessGroups
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import AbstractProcessGroup
-from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .types import ServerContext
 
 
 ##
@@ -43,8 +43,8 @@ def bind_server(
 
         inj.bind(get_poller_impl(), key=Poller, singleton=True),
 
-        inj.bind(ServerContext, singleton=True),
-        inj.bind(AbstractServerContext, to_key=ServerContext),
+        inj.bind(ServerContextImpl, singleton=True),
+        inj.bind(ServerContext, to_key=ServerContextImpl),
 
         inj.bind(EventCallbacks, singleton=True),
 

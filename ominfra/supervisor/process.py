@@ -31,8 +31,8 @@ from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
 from .types import AbstractProcessGroup
-from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .types import ServerContext
 from .utils import as_bytes
 from .utils import as_string
 from .utils import close_fd
@@ -56,7 +56,7 @@ class Subprocess(AbstractSubprocess):
             config: ProcessConfig,
             group: AbstractProcessGroup,
             *,
-            context: AbstractServerContext,
+            context: ServerContext,
             event_callbacks: EventCallbacks,
 
             inherited_fds: ta.Optional[InheritedFds] = None,
@@ -103,7 +103,7 @@ class Subprocess(AbstractSubprocess):
         return self._config
 
     @property
-    def context(self) -> AbstractServerContext:
+    def context(self) -> ServerContext:
         return self._context
 
     @property
