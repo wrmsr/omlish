@@ -6,6 +6,7 @@ import itertools
 import os.path
 import typing as ta
 
+from omlish.lite.http.coroserver import CoroHttpServer
 from omlish.lite.inject import Injector
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
@@ -100,6 +101,10 @@ def main(
         *,
         no_logging: bool = False,
 ) -> None:
+    server_cls = CoroHttpServer  # noqa
+
+    #
+
     import argparse
 
     parser = argparse.ArgumentParser()

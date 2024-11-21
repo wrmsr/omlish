@@ -43,10 +43,10 @@ from .versions import HttpProtocolVersion
 from .versions import HttpProtocolVersions
 
 
-##
-
-
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+
+
+##
 
 
 class CoroHttpServer:

@@ -13,6 +13,9 @@ import typing as ta
 SocketAddress = ta.Any
 
 
+SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
+
+
 ##
 
 
@@ -54,9 +57,6 @@ def get_best_socket_family(
 
 
 ##
-
-
-SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
 
 
 class SocketHandler(abc.ABC):
