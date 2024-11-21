@@ -313,7 +313,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         # Message body is omitted for cases described in:
         #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
         #  - RFC7231: 6.3.6. 205(Reset Content)
-        body: bytes | None = None
+        data: bytes | None = None
         if (
                 code >= 200 and
                 code not in (
@@ -335,7 +335,14 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 self.Header('Content-Length', str(len(body))),
             ])
 
-        self.end_headers()
+            if self.method != 'HEAD' and body:
+                data = body
 
-        if self.method != 'HEAD' and body:
-            self.wfile.write(body)
+        yield self.ResponseAction(
+            code=code,
+            message=message,
+            headers=headers,
+            data=data,
+        )
+
+        yield self.CloseConnectionAction()
