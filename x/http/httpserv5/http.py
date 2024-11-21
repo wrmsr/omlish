@@ -1,3 +1,18 @@
+"""
+"Test suite" lol:
+
+curl -v localhost:8000
+curl -v localhost:8000 -d 'foo'
+
+curl -v -XPOST -H 'Expect: 100-Continue' localhost:8000 -d 'foo'
+
+curl -v -XFOO localhost:8000 -d 'foo'
+
+curl -v -XPOST localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
+curl -v -XPOST localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
+curl -v -XFOO localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
+curl -v -XFOO localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
+"""
 import abc
 import dataclasses as dc
 import email.utils
