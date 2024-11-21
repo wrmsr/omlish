@@ -138,13 +138,55 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             parsed = check_isinstance(parsed, ParsedHttpRequest)
             self.logging.log_message(self.logging_context, '%r', parsed)
             if parsed.expects_continue:
-                if not self.handle_expect_100():
-                    return
+                self.send_response_only(http.HTTPStatus.CONTINUE)
+                self.end_headers()
 
             self.method = parsed.method
             self.path = parsed.path
             self.headers = parsed.headers
-            self.invoke_handler()
+
+            request_data: bytes | None
+            if (cl := self.headers.get('Content-Length')) is not None:
+                request_data = self.rfile.read(int(cl))
+            else:
+                request_data = None
+
+            request = HttpServerRequest(
+                client_address=self.client_address,
+                method=check_not_none(self.method),
+                path=self.path,
+                headers=self.headers,
+                data=request_data,
+            )
+
+            try:
+                response = self.handler(request)
+            except UnsupportedMethodServerHandlerError:
+                # FIXME: close_connection?
+                self.send_error(
+                    http.HTTPStatus.NOT_IMPLEMENTED,
+                    f'Unsupported method ({self.method!r})',
+                )
+                self.wfile.flush()  # actually send the response if not already done.
+                return
+
+            if response.close_connection is not None:
+                self.close_connection = response.close_connection
+            response_headers = response.headers or {}
+            response_data = response.data
+
+            self.send_response(response.status)
+
+            for k, v in response_headers.items():
+                self.send_header(k, v)
+            if 'Content-Type' not in response_headers:
+                self.send_header('Content-Type', 'text/plain')
+            if 'Content-Length' not in response_headers and response_data is not None:
+                self.send_header('Content-Length', str(len(response_data)))
+            self.end_headers()
+
+            if response_data is not None:
+                self.wfile.write(response_data)
 
             self.wfile.flush()  # actually send the response if not already done.
 
@@ -153,57 +195,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             self.logging.log_error(self.logging_context, 'Request timed out: %r', e)
             self.close_connection = True
             return
-    #
-
-    def invoke_handler(self) -> None:
-        request_data: bytes | None
-        if (cl := self.headers.get('Content-Length')) is not None:
-            request_data = self.rfile.read(int(cl))
-        else:
-            request_data = None
-
-        request = HttpServerRequest(
-            client_address=self.client_address,
-            method=check_not_none(self.method),
-            path=self.path,
-            headers=self.headers,
-            data=request_data,
-        )
-
-        try:
-            response = self.handler(request)
-        except UnsupportedMethodServerHandlerError:
-            # FIXME: close_connection?
-            self.send_error(
-                http.HTTPStatus.NOT_IMPLEMENTED,
-                f'Unsupported method ({self.method!r})',
-            )
-            return
-
-        if response.close_connection is not None:
-            self.close_connection = response.close_connection
-        response_headers = response.headers or {}
-        response_data = response.data
-
-        self.send_response(response.status)
-
-        for k, v in response_headers.items():
-            self.send_header(k, v)
-        if 'Content-Type' not in response_headers:
-            self.send_header('Content-Type', 'text/plain')
-        if 'Content-Length' not in response_headers and response_data is not None:
-            self.send_header('Content-Length', str(len(response_data)))
-        self.end_headers()
-
-        if response_data is not None:
-            self.wfile.write(response_data)
-
-    #
-
-    def handle_expect_100(self) -> bool:
-        self.send_response_only(http.HTTPStatus.CONTINUE)
-        self.end_headers()
-        return True
 
     #
 
