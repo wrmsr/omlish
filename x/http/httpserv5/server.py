@@ -344,7 +344,7 @@ class HttpServer:
             i: bytes | None
             while True:
                 if isinstance(o, self.AnyReadIo):
-                    i = yield o
+                    i = check_isinstance((yield o), bytes)
 
                 elif isinstance(o, self._InternalResponse):
                     i = None
@@ -367,7 +367,7 @@ class HttpServer:
         sz = next(gen)
         while True:
             try:
-                line = yield self.ReadLineIo(sz)
+                line = check_isinstance((yield self.ReadLineIo(sz)), bytes)
                 sz = gen.send(line)
             except StopIteration as e:
                 parsed = e.value
