@@ -30,10 +30,20 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 
 @dc.dataclass(frozen=True)
-class InjectorKey:
+class InjectorKey(ta.Generic[T]):
     cls: InjectorKeyCls
     tag: ta.Any = None
     array: bool = False
+
+
+def is_valid_injector_key_cls(cls: ta.Any) -> bool:
+    return isinstance(cls, type) or is_new_type(cls)
+
+
+def check_valid_injector_key_cls(cls: T) -> T:
+    if not is_valid_injector_key_cls(cls):
+        raise TypeError(cls)
+    return cls
 
 
 ##
@@ -79,6 +89,12 @@ class Injector(abc.ABC):
     def inject(self, obj: ta.Any) -> ta.Any:
         raise NotImplementedError
 
+    def __getitem__(
+            self,
+            target: InjectorKey[T] | ta.Type[T],
+    ) -> T:
+        return self.provide(target)
+
 
 ###
 # exceptions
@@ -111,7 +127,7 @@ def as_injector_key(o: ta.Any) -> InjectorKey:
         raise TypeError(o)
     if isinstance(o, InjectorKey):
         return o
-    if isinstance(o, type) or is_new_type(o):
+    if is_valid_injector_key_cls(o):
         return InjectorKey(o)
     raise TypeError(o)
 
@@ -443,8 +459,8 @@ class InjectorBinder:
             to_fn = obj
             if key is None:
                 sig = _injection_signature(obj)
-                ty = check_isinstance(sig.return_annotation, type)
-                key = InjectorKey(ty)
+                key_cls = check_valid_injector_key_cls(sig.return_annotation)
+                key = InjectorKey(key_cls)
         else:
             if to_const is not None:
                 raise TypeError('Cannot bind instance with to_const')
