@@ -41,9 +41,6 @@ from omlish.lite.http.versions import HttpProtocolVersions
 from omlish.lite.socket import SocketAddress
 from omlish.lite.socket import SocketHandler
 
-from .logging import DefaultHttpLogging
-from .logging import HttpLogging
-
 
 ##
 
@@ -78,6 +75,20 @@ class CoroHttpServer:
 
         self._error_message_format = error_message_format or self.DEFAULT_ERROR_MESSAGE
         self._error_content_type = error_content_type or self.DEFAULT_ERROR_CONTENT_TYPE
+
+    #
+
+    @property
+    def client_address(self) -> SocketAddress:
+        return self._client_address
+
+    @property
+    def handler(self) -> HttpHandler:
+        return self._handler
+
+    @property
+    def parser(self) -> HttpRequestParser:
+        return self._parser
 
     #
 
@@ -250,7 +261,7 @@ class CoroHttpServer:
             version = self._parser.server_version
 
         return self.Error(
-            versoin=version,
+            version=version,
             code=code,
             message=message,
             explain=explain,
@@ -480,7 +491,8 @@ class CoroHttpServerSocketHandler(SocketHandler):
             rfile: ta.BinaryIO,
             wfile: ta.BinaryIO,
             *,
-            coro_http_server_factory: CoroHttpServerFactory,
+            server_factory: CoroHttpServerFactory,
+            log_handler: ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None] | None = None,
     ) -> None:
         super().__init__(
             client_address,
@@ -488,10 +500,11 @@ class CoroHttpServerSocketHandler(SocketHandler):
             wfile,
         )
 
-        self._coro_http_server_factory = coro_http_server_factory
+        self._server_factory = server_factory
+        self._log_handler = log_handler
 
     def handle(self) -> None:
-        server = self._coro_http_server_factory(self._client_address)
+        server = self._server_factory(self._client_address)
 
         gen = server.coro_handle()
 
@@ -499,8 +512,8 @@ class CoroHttpServerSocketHandler(SocketHandler):
         while True:
             if isinstance(o, CoroHttpServer.AnyLogIo):
                 i = None
-                # self._logging.log_error(self._logging_context, 'code %d, message %s', code, message)
-                print(repr(o))
+                if self._log_handler is not None:
+                    self._log_handler(server, o)
 
             elif isinstance(o, CoroHttpServer.ReadIo):
                 i = self._rfile.read(o.sz)

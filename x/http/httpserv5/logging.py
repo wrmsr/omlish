@@ -1,3 +1,6 @@
+"""
+self._logging.log_error(self._logging_context, 'code %d, message %s', code, message)
+"""
 import abc
 import dataclasses as dc
 import datetime

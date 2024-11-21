@@ -50,13 +50,14 @@ def _main() -> None:
                 SocketHandlerSocketServerStreamRequestHandler,
                 socket_handler_factory=functools.partial(
                     CoroHttpServerSocketHandler,
-                    coro_http_server_factory=functools.partial(
+                    server_factory=functools.partial(
                         CoroHttpServer,
                         handler=say_hi_handler,
                         parser=HttpRequestParser(
                             server_version=HttpProtocolVersions.HTTP_1_1,
                         ),
                     ),
+                    log_handler=lambda s, l: print(repr((s.client_address, l)), file=sys.stderr),
                 ),
             ),
     ) as httpd:
