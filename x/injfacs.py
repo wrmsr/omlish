@@ -40,7 +40,7 @@ BarFactory = ta.NewType('BarFactory', Factory[Bar])
 def _main() -> None:
     def make_bar_factory(injector: Injector) -> BarFactory:
         def inner(y: int) -> Bar:
-            return injector.inject(functools.partial(BarFactory, y))
+            return injector.inject(functools.partial(Bar, y))
         return BarFactory(Factory(inner))
 
     foo = Foo(420)
@@ -51,6 +51,14 @@ def _main() -> None:
     )
 
     assert injector[Foo] is foo
+
+    bar_factory = injector[BarFactory]
+
+    for i in range(2):
+        bar = bar_factory(i)
+        assert isinstance(bar, Bar)
+        assert bar.y == i
+        assert bar.foo is foo
 
 
 if __name__ == '__main__':
