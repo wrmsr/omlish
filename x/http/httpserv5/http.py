@@ -269,7 +269,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         # if (cla := self.get_header_close_connection_action())
 
         yield self.ResponseAction(
-            version=parsed.request_version,
+            version=parsed.version,
             code=response.status,
             headers=headers,
             data=response_data,

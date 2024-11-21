@@ -50,7 +50,7 @@ def _main() -> None:
                     HttpSocketRequestHandler,
                     handler=say_hi_handler,
                     parser=HttpRequestParser(
-                        protocol_version=HttpProtocolVersions.HTTP_1_1,
+                        server_version=HttpProtocolVersions.HTTP_1_1,
                     ),
                 ),
             ),
