@@ -37,8 +37,8 @@ from .handlers import HttpHandlerRequest
 from .handlers import UnsupportedMethodHttpHandlerError
 from .parsing import EmptyParsedHttpResult
 from .parsing import HttpRequestParser
-from .parsing import ParseHttpRequestError
 from .parsing import ParsedHttpRequest
+from .parsing import ParseHttpRequestError
 from .versions import HttpProtocolVersion
 from .versions import HttpProtocolVersions
 
