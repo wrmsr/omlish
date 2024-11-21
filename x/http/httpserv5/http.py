@@ -89,6 +89,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             client=str(self.client_address[0]),
         )
 
+        self._headers_buffer: list[bytes] = []
+
     #
 
     close_connection: bool
@@ -286,12 +288,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    _headers_buffer: list[bytes]
-
     def send_header(self, keyword: str, value: str) -> None:
         if self.request_version != HttpProtocolVersions.HTTP_0_9:
-            if not hasattr(self, '_headers_buffer'):
-                self._headers_buffer = []
             line = f'{keyword}: {value}\r\n'
             self._headers_buffer.append(line.encode('latin-1', 'strict'))
 
@@ -307,7 +305,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             self.flush_headers()
 
     def flush_headers(self) -> None:
-        if hasattr(self, '_headers_buffer'):
+        if self._headers_buffer:
             self.wfile.write(b''.join(self._headers_buffer))
             self._headers_buffer = []
 
@@ -334,9 +332,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             code: HttpStatusOrInt,
             message: str | None = None,
     ) -> None:
-        if not hasattr(self, '_headers_buffer'):
-            self._headers_buffer = []
-
         self._headers_buffer.extend(self.make_initial_response_headers(
             code,
             message,
