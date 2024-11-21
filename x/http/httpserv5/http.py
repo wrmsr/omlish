@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import email.utils
 import html
@@ -111,6 +112,18 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
+    class RequestAction(abc.ABC):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class ErrorRequestAction(RequestAction):
+        code: HttpStatusOrInt
+        message: str | None = None
+        explain: str | None = None
+
+    class CloseConnectionRequestAction(RequestAction):
+        pass
+
     def handle_one_request(self) -> None:
         try:
             parsed = self.parser.parse(self.rfile.readline)
@@ -136,7 +149,9 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             self.logging.log_message(self.logging_context, '%r', parsed)
 
             if parsed.expects_continue:
-                self.send_response_only(http.HTTPStatus.CONTINUE)
+                # https://bugs.python.org/issue1491
+                # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
+                self.send_response_header_only(http.HTTPStatus.CONTINUE)
                 self.end_headers()
 
             self.method = parsed.method
@@ -305,12 +320,20 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    def send_response(self, code: HttpStatusOrInt, message: str | None = None) -> None:
+    def send_response(
+            self,
+            code: HttpStatusOrInt,
+            message: str | None = None,
+    ) -> None:
         self.logging.log_request(self.logging_context, self.request_line, code)
-        self.send_response_only(code, message)
+        self.send_response_header_only(code, message)
         self.send_header('Date', self.format_timestamp())
 
-    def send_response_only(self, code: HttpStatusOrInt, message: str | None = None) -> None:
+    def send_response_header_only(
+            self,
+            code: HttpStatusOrInt,
+            message: str | None = None,
+    ) -> None:
         if self.request_version != HttpProtocolVersions.HTTP_0_9:
             if message is None:
                 if code in self._STATUS_RESPONSES:
