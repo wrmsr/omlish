@@ -312,7 +312,7 @@ class CoroHttpServer:
         pass
 
     @dc.dataclass(frozen=True)
-    class RequestLogIo(AnyLogIo):
+    class ParsedRequestLogIo(AnyLogIo):
         request: ParsedHttpRequest
 
     @dc.dataclass(frozen=True)
@@ -400,7 +400,7 @@ class CoroHttpServer:
 
         # Log
 
-        check_none((yield self.RequestLogIo(parsed)))
+        check_none((yield self.ParsedRequestLogIo(parsed)))
 
         # Handle CONTINUE
 
