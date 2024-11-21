@@ -112,16 +112,16 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
     #
 
-    class RequestAction(abc.ABC):
+    class Action(abc.ABC):  # noqa
         pass
 
     @dc.dataclass(frozen=True)
-    class ErrorRequestAction(RequestAction):
+    class ErrorAction(Action):
         code: HttpStatusOrInt
         message: str | None = None
         explain: str | None = None
 
-    class CloseConnectionRequestAction(RequestAction):
+    class CloseConnectionAction(Action):
         pass
 
     def handle_one_request(self) -> None:
@@ -334,6 +334,19 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             code: HttpStatusOrInt,
             message: str | None = None,
     ) -> None:
+        if not hasattr(self, '_headers_buffer'):
+            self._headers_buffer = []
+
+        self._headers_buffer.extend(self.make_initial_response_headers(
+            code,
+            message,
+        ))
+
+    def make_initial_response_headers(
+            self,
+            code: HttpStatusOrInt,
+            message: str | None = None,
+    ) -> ta.Iterator[bytes]:
         if self.request_version != HttpProtocolVersions.HTTP_0_9:
             if message is None:
                 if code in self._STATUS_RESPONSES:
@@ -341,8 +354,5 @@ class HttpSocketRequestHandler(SocketRequestHandler):
                 else:
                     message = ''
 
-            if not hasattr(self, '_headers_buffer'):
-                self._headers_buffer = []
-
             line = f'{self.protocol_version} {int(code)} {message}\r\n'
-            self._headers_buffer.append(line.encode('latin-1', 'strict'))
+            yield line.encode('latin-1', 'strict')
