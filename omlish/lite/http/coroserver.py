@@ -120,14 +120,14 @@ class CoroHttpServer:
         else:
             return None
 
-    def _make_default_headers(self) -> list[_Header]:
+    def _make_default_headers(self) -> ta.List[_Header]:
         return [
             self._Header('Date', self._format_timestamp()),
         ]
 
     #
 
-    _STATUS_RESPONSES: ta.Mapping[int, tuple[str, str]] = {
+    _STATUS_RESPONSES: ta.Mapping[int, ta.Tuple[str, str]] = {
         v: (v.phrase, v.description)
         for v in http.HTTPStatus.__members__.values()
     }
@@ -148,10 +148,11 @@ class CoroHttpServer:
 
     #
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class _InternalResponse:
+    @dc.dataclass(frozen=True)
+    class _Response:
         version: HttpProtocolVersion
         code: http.HTTPStatus
+
         message: ta.Optional[str] = None
         headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
         data: ta.Optional[bytes] = None
@@ -165,7 +166,7 @@ class CoroHttpServer:
 
     #
 
-    def _build_internal_response_bytes(self, a: _InternalResponse) -> bytes:
+    def _build_response_bytes(self, a: _Response) -> bytes:
         out = io.BytesIO()
 
         if a.version >= HttpProtocolVersions.HTTP_1_0:
@@ -189,9 +190,9 @@ class CoroHttpServer:
 
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
-    def _preprocess_internal_response(self, resp: _InternalResponse) -> _InternalResponse:
-        nh: list[CoroHttpServer._Header] = []
-        kw: dict[str, ta.Any] = {}
+    def _preprocess_response(self, resp: _Response) -> _Response:
+        nh: ta.List[CoroHttpServer._Header] = []
+        kw: ta.Dict[str, ta.Any] = {}
 
         if resp.get_header('Content-Type') is None:
             nh.append(self._Header('Content-Type', self._default_content_type))
@@ -210,24 +211,6 @@ class CoroHttpServer:
         return dc.replace(resp, **kw)
 
     #
-
-    DEFAULT_ERROR_MESSAGE = textwrap.dedent("""\
-        <!DOCTYPE HTML>
-        <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <title>Error response</title>
-            </head>
-            <body>
-                <h1>Error response</h1>
-                <p>Error code: %(code)d</p>
-                <p>Message: %(message)s.</p>
-                <p>Error code explanation: %(code)s - %(explain)s.</p>
-            </body>
-        </html>
-    """)
-
-    DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
 
     @dc.dataclass(frozen=True)
     class Error:
@@ -270,8 +253,28 @@ class CoroHttpServer:
             method=method,
         )
 
-    def _build_error_internal_response(self, err: Error) -> _InternalResponse:
-        headers: list[CoroHttpServer._Header] = [
+    #
+
+    DEFAULT_ERROR_MESSAGE = textwrap.dedent("""\
+        <!DOCTYPE HTML>
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <title>Error response</title>
+            </head>
+            <body>
+                <h1>Error response</h1>
+                <p>Error code: %(code)d</p>
+                <p>Message: %(message)s.</p>
+                <p>Error code explanation: %(code)s - %(explain)s.</p>
+            </body>
+        </html>
+    """)
+
+    DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
+
+    def _build_error_response(self, err: Error) -> _Response:
+        headers: ta.List[CoroHttpServer._Header] = [
             *self._make_default_headers(),
             self._Header('Connection', 'close'),
         ]
@@ -304,7 +307,7 @@ class CoroHttpServer:
             if err.method != 'HEAD' and body:
                 data = body
 
-        return self._InternalResponse(
+        return self._Response(
             version=err.version,
             code=err.code,
             message=err.message,
@@ -366,10 +369,10 @@ class CoroHttpServer:
                 elif isinstance(o, self.AnyReadIo):
                     i = check_isinstance((yield o), bytes)
 
-                elif isinstance(o, self._InternalResponse):
+                elif isinstance(o, self._Response):
                     i = None
-                    r = self._preprocess_internal_response(o)
-                    b = self._build_internal_response_bytes(r)
+                    r = self._preprocess_response(o)
+                    b = self._build_response_bytes(r)
                     check_none((yield self.WriteIo(b)))
 
                 else:
@@ -383,7 +386,7 @@ class CoroHttpServer:
                     break
 
     def coro_handle_one(self) -> ta.Generator[
-        ta.Union[AnyLogIo, AnyReadIo, _InternalResponse],
+        ta.Union[AnyLogIo, AnyReadIo, _Response],
         ta.Optional[bytes],
         None,
     ]:
@@ -409,7 +412,7 @@ class CoroHttpServer:
                 version=parsed.version,
             )
             yield self.ErrorLogIo(err)
-            yield self._build_error_internal_response(err)
+            yield self._build_error_response(err)
             return
 
         parsed = check_isinstance(parsed, ParsedHttpRequest)
@@ -423,7 +426,7 @@ class CoroHttpServer:
         if parsed.expects_continue:
             # https://bugs.python.org/issue1491
             # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-            yield self._InternalResponse(
+            yield self._Response(
                 version=parsed.version,
                 code=http.HTTPStatus.CONTINUE,
             )
@@ -438,7 +441,7 @@ class CoroHttpServer:
 
         # Build request
 
-        request = HttpHandlerRequest(
+        handler_request = HttpHandlerRequest(
             client_address=self._client_address,
             method=check_not_none(parsed.method),
             path=parsed.path,
@@ -446,10 +449,10 @@ class CoroHttpServer:
             data=request_data,
         )
 
-        # Build response
+        # Build handler response
 
         try:
-            response = self._handler(request)
+            handler_response = self._handler(handler_request)
 
         except UnsupportedMethodHttpHandlerError:
             err = self._build_error(
@@ -459,30 +462,30 @@ class CoroHttpServer:
                 method=parsed.method,
             )
             yield self.ErrorLogIo(err)
-            yield self._build_error_internal_response(err)
+            yield self._build_error_response(err)
             return
 
         # Build internal response
 
-        response_headers = response.headers or {}
-        response_data = response.data
+        response_headers = handler_response.headers or {}
+        response_data = handler_response.data
 
-        headers: list[CoroHttpServer._Header] = [
+        headers: ta.List[CoroHttpServer._Header] = [
             *self._make_default_headers(),
         ]
 
         for k, v in response_headers.items():
             headers.append(self._Header(k, v))
 
-        if response.close_connection and 'Connection' not in headers:
+        if handler_response.close_connection and 'Connection' not in headers:
             headers.append(self._Header('Connection', 'close'))
 
-        yield self._InternalResponse(
+        yield self._Response(
             version=parsed.version,
-            code=http.HTTPStatus(response.status),
+            code=http.HTTPStatus(handler_response.status),
             headers=headers,
             data=response_data,
-            close_connection=response.close_connection,
+            close_connection=handler_response.close_connection,
         )
 
 
