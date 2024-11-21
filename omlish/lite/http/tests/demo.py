@@ -74,10 +74,10 @@ def _main() -> None:
         addr = unix_socket
         server_class.address_family = socket.AF_UNIX
     else:
-        server_class.address_family, addr = get_best_socket_family(bind, port)
+        server_class.address_family, addr = get_best_socket_family(bind, port)  # type: ignore
 
     with server_class(
-            addr,
+            addr,  # type: ignore
             functools.partial(
                 SocketHandlerSocketServerStreamRequestHandler,
                 socket_handler_factory=functools.partial(
