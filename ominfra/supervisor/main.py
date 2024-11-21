@@ -13,7 +13,7 @@ from omlish.lite.logs import configure_standard_logging
 from ..configs import read_config_file
 from .configs import ServerConfig
 from .configs import prepare_server_config
-from .context import ServerContext
+from .context import ServerContextImpl
 from .context import ServerEpoch
 from .inject import bind_server
 from .process import InheritedFds
@@ -74,7 +74,7 @@ def main(
             inherited_fds=inherited_fds,
         ))
 
-        context = injector[ServerContext]
+        context = injector[ServerContextImpl]
         supervisor = injector[Supervisor]
 
         try:

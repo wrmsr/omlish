@@ -20,8 +20,8 @@ from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
 from .poller import Poller
 from .states import SupervisorState
-from .types import AbstractServerContext
 from .types import AbstractSubprocess
+from .types import ServerContext
 from .utils import close_fd
 from .utils import mktempfile
 from .utils import real_exit
@@ -31,7 +31,7 @@ from .utils import try_unlink
 ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
-class ServerContext(AbstractServerContext):
+class ServerContextImpl(ServerContext):
     def __init__(
             self,
             config: ServerConfig,
