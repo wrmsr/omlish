@@ -76,6 +76,8 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             parser: HttpRequestParser = HttpRequestParser(),
             logging: HttpLogging = DefaultHttpLogging(),
 
+            default_content_type: str | None = None,
+
             error_message_format: str | None = None,
             error_content_type: str | None = None,
     ) -> None:
@@ -93,12 +95,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             client=str(self.client_address[0]),
         )
 
-        if error_message_format is None:
-            error_message_format = self.DEFAULT_ERROR_MESSAGE
-        self._error_message_format = error_message_format
-        if error_content_type is None:
-            error_content_type = self.DEFAULT_ERROR_CONTENT_TYPE
-        self._error_content_type = error_content_type
+        self._default_content_type = default_content_type or self.DEFAULT_CONTENT_TYPE
+
+        self._error_message_format = error_message_format or self.DEFAULT_ERROR_MESSAGE
+        self._error_content_type = error_content_type or self.DEFAULT_ERROR_CONTENT_TYPE
 
     #
 
@@ -168,6 +168,12 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         headers: ta.Sequence['HttpSocketRequestHandler.Header'] | None = None
         data: bytes | None = None
 
+        def get_header(self, key: str) -> ta.Optional['HttpSocketRequestHandler.Header']:
+            for h in self.headers or []:
+                if h.key.lower() == key.lower():
+                    return h
+            return None
+
     class CloseConnectionAction(Action):
         pass
 
@@ -193,15 +199,28 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
         return out.getvalue()
 
-    def preprocess_response(self, a: ResponseAction) -> ta.Sequence[ResponseAction]:
-        # FIXME:
-        # if 'Content-Type' not in response_headers:
-        #     headers.append(self.Header('Content-Type', 'text/plain'))
-        # if 'Content-Length' not in response_headers and response_data is not None:
-        #     headers.append(self.Header('Content-Length', str(len(response_data))))
+    DEFAULT_CONTENT_TYPE = 'text/plain'
 
-        # FIXME: add Connection: foo according to response.close_connection
-        # if (cla := self.get_header_close_connection_action())
+    def preprocess_response(self, a: ResponseAction) -> ResponseAction:
+        nh: list[HttpSocketRequestHandler.Header] = []
+
+        if a.get_header('Content-Type') is None:
+            nh.append(self.Header('Content-Type', self._default_content_type))
+        if a.data is not None and a.get_header('Content-Length') is None:
+            nh.append(self.Header('Content-Length', str(len(a.data))))
+
+        if nh:
+            a = dc.replace(a, headers=[*(a.headers or []), *nh])
+
+        return a
+
+    def preprocess_actions(self, actions: ta.Sequence[Action]) -> ta.Iterator[Action]:
+
+        #
+
+        if (clh := a.get_header('Connection')) is not None:
+            # FIXME: add Connection: foo according to response.close_connection
+            # if (cla := self.get_header_close_connection_action())
 
         return [a]
 
