@@ -48,7 +48,7 @@ HttpStatusOrInt: ta.TypeAlias = http.HTTPStatus | int
 
 
 @dc.dataclass(frozen=True)
-class HttpServerRequest:
+class HttpHandlerRequest:
     client_address: SocketAddress
     method: str
     path: str
@@ -57,7 +57,7 @@ class HttpServerRequest:
 
 
 @dc.dataclass(frozen=True)
-class HttpServerResponse:
+class HttpHandlerResponse:
     status: HttpStatusOrInt
     _: dc.KW_ONLY
     headers: ta.Mapping[str, str] | None = None
@@ -65,21 +65,21 @@ class HttpServerResponse:
     close_connection: bool | None = None
 
 
-class HttpServerHandlerError(Exception):
+class HttpHandlerError(Exception):
     pass
 
 
-class UnsupportedMethodHttpServerHandlerError(Exception):
+class UnsupportedMethodHttpHandlerError(Exception):
     pass
 
 
-HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerResponse]
+HttpHandler: ta.TypeAlias = ta.Callable[[HttpHandlerRequest], HttpHandlerResponse]
 
 
 ##
 
 
-class HttpServer:
+class CoroHttpServer:
 
     #
 
@@ -87,7 +87,7 @@ class HttpServer:
             self,
             client_address: SocketAddress,
             *,
-            handler: HttpServerHandler,
+            handler: HttpHandler,
             parser: HttpRequestParser = HttpRequestParser(),
             logging: HttpLogging = DefaultHttpLogging(),
 
@@ -175,11 +175,11 @@ class HttpServer:
         version: HttpProtocolVersion
         code: http.HTTPStatus
         message: str | None = None
-        headers: ta.Sequence['HttpServer._Header'] | None = None
+        headers: ta.Sequence['CoroHttpServer._Header'] | None = None
         data: bytes | None = None
         close_connection: bool = False
 
-        def get_header(self, key: str) -> ta.Optional['HttpServer._Header']:
+        def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
             for h in self.headers or []:
                 if h.key.lower() == key.lower():
                     return h
@@ -212,7 +212,7 @@ class HttpServer:
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
     def _preprocess_internal_response(self, resp: _InternalResponse) -> _InternalResponse:
-        nh: list[HttpServer._Header] = []
+        nh: list[CoroHttpServer._Header] = []
         kw: dict[str, ta.Any] = {}
 
         if resp.get_header('Content-Type') is None:
@@ -262,7 +262,7 @@ class HttpServer:
     ) -> _InternalResponse:
         code = http.HTTPStatus(code)
 
-        headers: list[HttpServer._Header] = [
+        headers: list[CoroHttpServer._Header] = [
             *self._make_default_headers(),
         ]
 
@@ -412,7 +412,7 @@ class HttpServer:
 
         # Build request
 
-        request = HttpServerRequest(
+        request = HttpHandlerRequest(
             client_address=self._client_address,
             method=check_not_none(parsed.method),
             path=parsed.path,
@@ -425,7 +425,7 @@ class HttpServer:
         try:
             response = self._handler(request)
 
-        except UnsupportedMethodHttpServerHandlerError:
+        except UnsupportedMethodHttpHandlerError:
             yield self._build_error_internal_response(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({parsed.method!r})',
@@ -439,7 +439,7 @@ class HttpServer:
         response_headers = response.headers or {}
         response_data = response.data
 
-        headers: list[HttpServer._Header] = [
+        headers: list[CoroHttpServer._Header] = [
             *self._make_default_headers(),
         ]
 
@@ -468,7 +468,7 @@ class HttpServerSocketHandler(SocketHandler):
             rfile: ta.BinaryIO,
             wfile: ta.BinaryIO,
             *,
-            http_server: HttpServer,
+            coro_http_server: CoroHttpServer,
     ) -> None:
         super().__init__(
             client_address,

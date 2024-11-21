@@ -11,7 +11,7 @@ from .server import HttpServer
 from .server import HttpServerRequest
 from .server import HttpServerResponse
 from .server import HttpServerSocketHandler
-from .server import UnsupportedMethodServerHandlerError
+from .server import UnsupportedMethodHttpServerHandlerError
 
 
 ##
@@ -19,7 +19,7 @@ from .server import UnsupportedMethodServerHandlerError
 
 def say_hi_handler(req: HttpServerRequest) -> HttpServerResponse:
     if req.method not in ('GET', 'POST'):
-        raise UnsupportedMethodServerHandlerError
+        raise UnsupportedMethodHttpServerHandlerError
 
     resp = '\n'.join([
         f'method: {req.method}',
