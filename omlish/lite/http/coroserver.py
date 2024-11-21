@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP07
 """
 "Test suite" lol:
 
@@ -26,20 +27,20 @@ import textwrap
 import time
 import typing as ta
 
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_none
-from omlish.lite.check import check_not_none
-from omlish.lite.http.handlers import HttpHandler
-from omlish.lite.http.handlers import HttpHandlerRequest
-from omlish.lite.http.handlers import UnsupportedMethodHttpHandlerError
-from omlish.lite.http.parsing import EmptyParsedHttpResult
-from omlish.lite.http.parsing import HttpRequestParser
-from omlish.lite.http.parsing import ParseHttpRequestError
-from omlish.lite.http.parsing import ParsedHttpRequest
-from omlish.lite.http.versions import HttpProtocolVersion
-from omlish.lite.http.versions import HttpProtocolVersions
-from omlish.lite.socket import SocketAddress
-from omlish.lite.socket import SocketHandler
+from ..check import check_isinstance
+from ..check import check_none
+from ..check import check_not_none
+from ..socket import SocketAddress
+from ..socket import SocketHandler
+from .handlers import HttpHandler
+from .handlers import HttpHandlerRequest
+from .handlers import UnsupportedMethodHttpHandlerError
+from .parsing import EmptyParsedHttpResult
+from .parsing import HttpRequestParser
+from .parsing import ParseHttpRequestError
+from .parsing import ParsedHttpRequest
+from .versions import HttpProtocolVersion
+from .versions import HttpProtocolVersions
 
 
 ##
@@ -59,10 +60,10 @@ class CoroHttpServer:
             handler: HttpHandler,
             parser: HttpRequestParser = HttpRequestParser(),
 
-            default_content_type: str | None = None,
+            default_content_type: ta.Optional[str] = None,
 
-            error_message_format: str | None = None,
-            error_content_type: str | None = None,
+            error_message_format: ta.Optional[str] = None,
+            error_content_type: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
@@ -92,7 +93,7 @@ class CoroHttpServer:
 
     #
 
-    def _format_timestamp(self, timestamp: float | None = None) -> str:
+    def _format_timestamp(self, timestamp: ta.Optional[float] = None) -> str:
         if timestamp is None:
             timestamp = time.time()
         return email.utils.formatdate(timestamp, usegmt=True)
@@ -109,7 +110,7 @@ class CoroHttpServer:
     def _format_header_line(self, h: _Header) -> str:
         return f'{h.key}: {h.value}\r\n'
 
-    def _get_header_close_connection_action(self, h: _Header) -> bool | None:
+    def _get_header_close_connection_action(self, h: _Header) -> ta.Optional[bool]:
         if h.key.lower() != 'connection':
             return None
         elif h.value.lower() == 'close':
@@ -135,7 +136,7 @@ class CoroHttpServer:
             self,
             version: HttpProtocolVersion,
             code: ta.Union[http.HTTPStatus, int],
-            message: str | None = None,
+            message: ta.Optional[str] = None,
     ) -> str:
         if message is None:
             if code in self._STATUS_RESPONSES:
@@ -151,10 +152,10 @@ class CoroHttpServer:
     class _InternalResponse:
         version: HttpProtocolVersion
         code: http.HTTPStatus
-        message: str | None = None
-        headers: ta.Sequence['CoroHttpServer._Header'] | None = None
-        data: bytes | None = None
-        close_connection: bool = False
+        message: ta.Optional[str] = None
+        headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
+        data: ta.Optional[bytes] = None
+        close_connection: ta.Optional[bool] = False
 
         def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
             for h in self.headers or []:
@@ -235,16 +236,16 @@ class CoroHttpServer:
         message: str
         explain: str
 
-        method: str | None = None
+        method: ta.Optional[str] = None
 
     def _build_error(
             self,
             code: ta.Union[http.HTTPStatus, int],
-            message: str | None = None,
-            explain: str | None = None,
+            message: ta.Optional[str] = None,
+            explain: ta.Optional[str] = None,
             *,
-            version: HttpProtocolVersion | None = None,
-            method: str | None = None,
+            version: ta.Optional[HttpProtocolVersion] = None,
+            method: ta.Optional[str] = None,
     ) -> Error:
         code = http.HTTPStatus(code)
 
@@ -278,7 +279,7 @@ class CoroHttpServer:
         # Message body is omitted for cases described in:
         #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
         #  - RFC7231: 6.3.6. 205(Reset Content)
-        data: bytes | None = None
+        data: ta.Optional[bytes] = None
         if (
                 err.code >= http.HTTPStatus.OK and
                 err.code not in (
@@ -351,12 +352,12 @@ class CoroHttpServer:
 
     #
 
-    def coro_handle(self) -> ta.Generator[Io, bytes | None, None]:
+    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], None]:
         while True:
             gen = self.coro_handle_one()
 
             o = next(gen)
-            i: bytes | None
+            i: ta.Optional[bytes]
             while True:
                 if isinstance(o, self.AnyLogIo):
                     i = None
@@ -381,7 +382,11 @@ class CoroHttpServer:
                 except StopIteration:
                     break
 
-    def coro_handle_one(self) -> ta.Generator[AnyLogIo | AnyReadIo | _InternalResponse, bytes | None, None]:
+    def coro_handle_one(self) -> ta.Generator[
+        ta.Union[AnyLogIo, AnyReadIo, _InternalResponse],
+        ta.Optional[bytes],
+        None,
+    ]:
         # Parse request
 
         gen = self._parser.coro_parse()
@@ -425,7 +430,7 @@ class CoroHttpServer:
 
         # Read data
 
-        request_data: bytes | None
+        request_data: ta.Optional[bytes]
         if (cl := parsed.headers.get('Content-Length')) is not None:
             request_data = check_isinstance((yield self.ReadIo(int(cl))), bytes)
         else:
@@ -492,7 +497,7 @@ class CoroHttpServerSocketHandler(SocketHandler):
             wfile: ta.BinaryIO,
             *,
             server_factory: CoroHttpServerFactory,
-            log_handler: ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None] | None = None,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__(
             client_address,
