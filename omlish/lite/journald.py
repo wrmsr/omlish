@@ -29,7 +29,6 @@ sd_iovec._fields_ = [
 def sd_libsystemd() -> ta.Any:
     lib = ct.CDLL('libsystemd.so.0')
 
-    lib.sd_journal_sendv = lib['sd_journal_sendv']  # type: ignore
     lib.sd_journal_sendv.restype = ct.c_int
     lib.sd_journal_sendv.argtypes = [ct.POINTER(sd_iovec), ct.c_int]
 
