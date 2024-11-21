@@ -3,10 +3,12 @@
 
 curl -v localhost:8000
 curl -v localhost:8000 -d 'foo'
-
+curl -v -XFOO localhost:8000 -d 'foo'
 curl -v -XPOST -H 'Expect: 100-Continue' localhost:8000 -d 'foo'
 
-curl -v -XFOO localhost:8000 -d 'foo'
+curl -v -0 localhost:8000
+curl -v -0 localhost:8000 -d 'foo'
+curl -v -0 -XFOO localhost:8000 -d 'foo'
 
 curl -v -XPOST localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
 curl -v -XPOST localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
@@ -332,6 +334,8 @@ class CoroHttpServer:
                 try:
                     o = gen.send(i)
                 except EOFError:
+                    return
+                except StopIteration:
                     break
 
     def coro_handle_one(self) -> ta.Generator[AnyReadIo | _InternalResponse, bytes | None, None]:
@@ -458,12 +462,20 @@ class CoroHttpServerSocketHandler(SocketHandler):
         o = next(gen)
         while True:
             if isinstance(o, CoroHttpServer.ReadIo):
-                o = gen.send(self._rfile.read(o.sz))
+                i = self._rfile.read(o.sz)
             elif isinstance(o, CoroHttpServer.ReadLineIo):
-                o = gen.send(self._rfile.readline(o.sz))
+                i = self._rfile.readline(o.sz)
             elif isinstance(o, CoroHttpServer.WriteIo):
                 self._wfile.write(o.data)
                 self._wfile.flush()
-                o = next(gen)
+                i = None
             else:
                 raise TypeError(o)
+
+            try:
+                if i is not None:
+                    o = gen.send(i)
+                else:
+                    o = next(gen)
+            except StopIteration:
+                break
