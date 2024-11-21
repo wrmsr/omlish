@@ -177,7 +177,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             try:
                 response = self.handler(request)
             except UnsupportedMethodServerHandlerError:
-                # FIXME: close_connection?
                 self.send_error(
                     http.HTTPStatus.NOT_IMPLEMENTED,
                     f'Unsupported method ({self.method!r})',
