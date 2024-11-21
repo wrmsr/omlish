@@ -78,15 +78,13 @@ HttpServerHandler: ta.TypeAlias = ta.Callable[[HttpServerRequest], HttpServerRes
 ##
 
 
-class HttpSocketHandler(SocketHandler):
+class HttpServer:
 
     #
 
     def __init__(
             self,
             client_address: SocketAddress,
-            rfile: ta.BinaryIO,
-            wfile: ta.BinaryIO,
             *,
             handler: HttpServerHandler,
             parser: HttpRequestParser = HttpRequestParser(),
@@ -97,18 +95,16 @@ class HttpSocketHandler(SocketHandler):
             error_message_format: str | None = None,
             error_content_type: str | None = None,
     ) -> None:
-        super().__init__(
-            client_address,
-            rfile,
-            wfile,
-        )
+        super().__init__()
+
+        self._client_address = client_address
 
         self._handler = handler
         self._parser = parser
         self._logging = logging
 
         self._logging_context = HttpLogging.Context(
-            client=str(self.client_address[0]),
+            client=str(self._client_address[0]),
         )
 
         self._default_content_type = default_content_type or self.DEFAULT_CONTENT_TYPE
@@ -181,10 +177,10 @@ class HttpSocketHandler(SocketHandler):
         version: HttpProtocolVersion
         code: http.HTTPStatus
         message: str | None = None
-        headers: ta.Sequence['HttpSocketHandler.Header'] | None = None
+        headers: ta.Sequence['HttpServer.Header'] | None = None
         data: bytes | None = None
 
-        def get_header(self, key: str) -> ta.Optional['HttpSocketHandler.Header']:
+        def get_header(self, key: str) -> ta.Optional['HttpServer.Header']:
             for h in self.headers or []:
                 if h.key.lower() == key.lower():
                     return h
@@ -218,7 +214,7 @@ class HttpSocketHandler(SocketHandler):
     DEFAULT_CONTENT_TYPE = 'text/plain'
 
     def preprocess_response(self, a: ResponseAction) -> ResponseAction:
-        nh: list[HttpSocketHandler.Header] = []
+        nh: list[HttpServer.Header] = []
 
         if a.get_header('Content-Type') is None:
             nh.append(self.Header('Content-Type', self._default_content_type))
@@ -249,7 +245,21 @@ class HttpSocketHandler(SocketHandler):
 
     #
 
-    def handle(self) -> None:
+    class Io(abc.ABC):  # noqa
+        pass
+
+    @dc.dataclass(frozen=True)
+    class Read(Io):
+        sz: int
+        line: bool
+
+    @dc.dataclass(frozen=True)
+    class WriteIo(Io):
+        data: bytes
+
+    #
+
+    def coro_handle(self) -> ta.Generator[Io, bytes | None, None]:
         while True:
             actions = list(self.handle_one())
             if not actions:
@@ -259,8 +269,7 @@ class HttpSocketHandler(SocketHandler):
                 print(a)
                 if isinstance(a, self.ResponseAction):
                     out = self.build_response_bytes(a)
-                    self.wfile.write(out)
-                    self.wfile.flush()
+                    yield self.WriteIo(out)
 
                 elif isinstance(a, self.CloseConnectionAction):
                     return
@@ -317,7 +326,7 @@ class HttpSocketHandler(SocketHandler):
         # Build request
 
         request = HttpServerRequest(
-            client_address=self.client_address,
+            client_address=self._client_address,
             method=check_not_none(parsed.method),
             path=parsed.path,
             headers=parsed.headers,
@@ -342,7 +351,7 @@ class HttpSocketHandler(SocketHandler):
         response_headers = response.headers or {}
         response_data = response.data
 
-        headers: list[HttpSocketHandler.Header] = [
+        headers: list[HttpServer.Header] = [
             *self.make_default_headers(),
         ]
 
@@ -359,7 +368,7 @@ class HttpSocketHandler(SocketHandler):
             data=response_data,
         )
 
-        # Yield actions
+        # Emit actions
 
         yield action
 
@@ -397,7 +406,7 @@ class HttpSocketHandler(SocketHandler):
     ) -> ta.Iterator[Action]:
         code = http.HTTPStatus(code)
 
-        headers: list[HttpSocketHandler.Header] = [
+        headers: list[HttpServer.Header] = [
             *self.make_default_headers(),
         ]
 
