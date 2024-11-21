@@ -462,10 +462,13 @@ def gen_amalg(
     out.write(SECTION_SEP)
     out.write('\n\n')
 
+    version_check_fail_msg = (
+        f'Requires python {REQUIRED_PYTHON_VERSION!r}, '
+        f'got {{sys.version_info}} from {{sys.executable}}'
+    )
     out.write(textwrap.dedent(f"""
     if sys.version_info < {REQUIRED_PYTHON_VERSION!r}:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION!r}, got {{sys.version_info}} from {{sys.executable}}')  # noqa
+        raise OSError(f{version_check_fail_msg!r})  # noqa
     """).lstrip())
     out.write('\n\n')
 
