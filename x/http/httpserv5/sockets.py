@@ -53,14 +53,10 @@ def get_best_socket_family(
 ##
 
 
-SocketRequestHandlerFactory: ta.TypeAlias = ta.Callable[[
-    SocketAddress,
-    ta.BinaryIO,
-    ta.BinaryIO,
-], 'SocketRequestHandler']
+SocketHandlerFactory: ta.TypeAlias = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']  # noqa
 
 
-class SocketRequestHandler(abc.ABC):
+class SocketHandler(abc.ABC):
     def __init__(
             self,
             client_address: SocketAddress,

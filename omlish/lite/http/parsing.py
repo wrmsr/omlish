@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import abc
 import http.client
 import http.server
@@ -8,7 +9,7 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-HttpHeaders: ta.TypeAlias = http.client.HTTPMessage
+HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
 
 ##
@@ -49,7 +50,7 @@ class ParseHttpRequestResult(abc.ABC):  # noqa
             request_line: str,
             request_version: HttpProtocolVersion,
             version: HttpProtocolVersion,
-            headers: HttpHeaders | None,
+            headers: ta.Optional[HttpHeaders],
             close_connection: bool,
     ) -> None:
         super().__init__()
@@ -80,7 +81,7 @@ class ParseHttpRequestError(ParseHttpRequestResult):
             self,
             *,
             code: http.HTTPStatus,
-            message: str | tuple[str, str],
+            message: ta.Union[str, ta.Tuple[str, str]],
 
             **kwargs: ta.Any,
     ) -> None:
@@ -203,8 +204,8 @@ class HttpRequestParser:
 
     #
 
-    def coro_read_raw_headers(self) -> ta.Generator[int, bytes, list[bytes]]:
-        raw_headers: list[bytes] = []
+    def coro_read_raw_headers(self) -> ta.Generator[int, bytes, ta.List[bytes]]:
+        raw_headers: ta.List[bytes] = []
         while True:
             line = yield self._max_line + 1
             if len(line) > self._max_line:
@@ -216,14 +217,13 @@ class HttpRequestParser:
                 break
         return raw_headers
 
-    def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> list[bytes]:
+    def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> ta.List[bytes]:
         return self._run_read_line_coro(self.coro_read_raw_headers(), read_line)
 
     def parse_raw_headers(self, raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
         return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
 
     #
-
 
     def coro_parse(self) -> ta.Generator[int, bytes, ParseHttpRequestResult]:
         raw_request_line = yield self._max_line + 1
