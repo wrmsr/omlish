@@ -215,11 +215,13 @@ class HttpSocketRequestHandler(SocketRequestHandler):
 
             for a in actions:
                 if isinstance(a, self.ResponseAction):
-                    if a.version >= HttpProtocolVersions.HTTP_1_0:
-                        self.wfile.write(self.header_encode(self.format_status_line(a.version, a.code, a.message)))
-                        raise NotImplementedError
-
-                    raise NotImplementedError
+                    for pa in self.preprocess_response(a):
+                        if isinstance(pa, self.ResponseAction):
+                            out = self.build_response_bytes(pa)
+                            self.wfile.write(out)
+                            self.wfile.flush()
+                        else:
+                            raise TypeError(pa)
 
                 elif isinstance(a, self.CloseConnectionAction):
                     break
