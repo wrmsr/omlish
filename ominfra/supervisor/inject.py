@@ -13,7 +13,7 @@ from .configs import ServerConfig
 from .context import ServerContextImpl
 from .context import ServerEpoch
 from .events import EventCallbacks
-from .groups import ProcessGroup
+from .groups import ProcessGroupImpl
 from .groups import SubprocessFactory
 from .poller import Poller
 from .poller import get_poller_impl
@@ -24,8 +24,8 @@ from .supervisor import ProcessGroupFactory
 from .supervisor import ProcessGroups
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
-from .types import AbstractProcessGroup
 from .types import AbstractSubprocess
+from .types import ProcessGroup
 from .types import ServerContext
 
 
@@ -59,12 +59,12 @@ def bind_server(
 
     def make_process_group_factory(injector: Injector) -> ProcessGroupFactory:
         def inner(group_config: ProcessGroupConfig) -> ProcessGroup:
-            return injector.inject(functools.partial(ProcessGroup, group_config))
+            return injector.inject(functools.partial(ProcessGroupImpl, group_config))
         return ProcessGroupFactory(inner)
     lst.append(inj.bind(make_process_group_factory))
 
     def make_subprocess_factory(injector: Injector) -> SubprocessFactory:
-        def inner(process_config: ProcessConfig, group: AbstractProcessGroup) -> AbstractSubprocess:
+        def inner(process_config: ProcessConfig, group: ProcessGroup) -> AbstractSubprocess:
             return injector.inject(functools.partial(Subprocess, process_config, group))
         return SubprocessFactory(inner)
     lst.append(inj.bind(make_subprocess_factory))

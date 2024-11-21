@@ -92,7 +92,7 @@ class AbstractSubprocess(abc.ABC):
 
 
 @functools.total_ordering
-class AbstractProcessGroup(abc.ABC):
+class ProcessGroup(abc.ABC):
     @property
     @abc.abstractmethod
     def config(self) -> ProcessGroupConfig:
@@ -103,3 +103,36 @@ class AbstractProcessGroup(abc.ABC):
 
     def __eq__(self, other):
         return self.config.priority == other.config.priority
+
+    @abc.abstractmethod
+    def transition(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def before_remove(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_unstopped_processes(self) -> ta.List[AbstractSubprocess]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def after_setuid(self) -> None:
+        raise NotImplementedError
