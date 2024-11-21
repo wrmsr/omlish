@@ -28,50 +28,6 @@ class HttpProtocolVersions:
 ##
 
 
-def coro_read_raw_http_headers(
-        *,
-        max_line: int = http.client._MAXLINE,  # type: ignore  # noqa
-        max_headers: int = http.client._MAXHEADERS,  # type: ignore  # noqa
-) -> ta.Generator[int, bytes, list[bytes]]:
-    """
-    Reads potential header lines into a list from a file pointer.
-
-    Length of line is limited by _MAXLINE, and number of headers is limited by _MAXHEADERS.
-    """
-
-    raw_headers: list[bytes] = []
-    while True:
-        line = yield max_line + 1
-        if len(line) > max_line:
-            raise http.client.LineTooLong('header line')
-        raw_headers.append(line)
-        if len(raw_headers) > max_headers:
-            raise http.client.HTTPException(f'got more than {max_headers} headers')
-        if line in (b'\r\n', b'\n', b''):
-            break
-    return raw_headers
-
-
-def read_raw_http_headers(
-        read_line: ta.Callable[[int], bytes],
-        **kwargs: ta.Any,
-) -> list[bytes]:
-    gen = coro_read_raw_http_headers(**kwargs)
-    sz = next(gen)
-    while True:
-        try:
-            sz = gen.send(read_line(sz))
-        except StopIteration as e:
-            return e.value
-
-
-def parse_raw_http_headers(raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
-    return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
-
-
-##
-
-
 class ParseHttpRequestResult(abc.ABC):  # noqa
     __slots__ = (
         'protocol_version',
@@ -192,7 +148,7 @@ class HttpRequestParser:
 
     #
 
-    def coro_read_raw_http_headers(self) -> ta.Generator[int, bytes, list[bytes]]:
+    def coro_read_raw_headers(self) -> ta.Generator[int, bytes, list[bytes]]:
         raw_headers: list[bytes] = []
         while True:
             line = yield self._max_line + 1
@@ -205,8 +161,8 @@ class HttpRequestParser:
                 break
         return raw_headers
 
-    def read_raw_http_headers(self, read_line: ta.Callable[[int], bytes]) -> list[bytes]:
-        gen = coro_read_raw_http_headers()
+    def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> list[bytes]:
+        gen = self.coro_read_raw_headers()
         sz = next(gen)
         while True:
             try:
@@ -214,7 +170,7 @@ class HttpRequestParser:
             except StopIteration as e:
                 return e.value
 
-    def parse_raw_http_headers(self, raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
+    def parse_raw_headers(self, raw_headers: ta.Sequence[bytes]) -> HttpHeaders:
         return http.client.parse_headers(io.BytesIO(b''.join(raw_headers)))
 
     #
@@ -322,7 +278,7 @@ class HttpRequestParser:
 
         # Examine the headers and look for a Connection directive.
         try:
-            raw_gen = coro_read_raw_http_headers()
+            raw_gen = self.coro_read_raw_headers()
             raw_sz = next(raw_gen)
             while True:
                 buf = yield raw_sz
@@ -332,7 +288,7 @@ class HttpRequestParser:
                     raw_headers = e.value
                     break
 
-            headers = parse_raw_http_headers(raw_headers)
+            headers = self.parse_raw_headers(raw_headers)
 
         except http.client.LineTooLong as err:
             return ParseHttpRequestError(
