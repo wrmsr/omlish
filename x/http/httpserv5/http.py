@@ -153,7 +153,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             if parsed.expects_continue:
                 # https://bugs.python.org/issue1491
                 # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-                self.send_response_header_only(http.HTTPStatus.CONTINUE)
+                self.send_status_line(http.HTTPStatus.CONTINUE)
                 self.end_headers()
 
             self.method = parsed.method
@@ -302,10 +302,6 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     def end_headers(self) -> None:
         if self.request_version != HttpProtocolVersions.HTTP_0_9:
             self._headers_buffer.append(b'\r\n')
-            self.flush_headers()
-
-    def flush_headers(self) -> None:
-        if self._headers_buffer:
             self.wfile.write(b''.join(self._headers_buffer))
             self._headers_buffer = []
 
@@ -324,10 +320,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             message: str | None = None,
     ) -> None:
         self.logging.log_request(self.logging_context, self.request_line, code)
-        self.send_response_header_only(code, message)
+        self.send_status_line(code, message)
         self.send_header('Date', self.format_timestamp())
 
-    def send_response_header_only(
+    def send_status_line(
             self,
             code: HttpStatusOrInt,
             message: str | None = None,
