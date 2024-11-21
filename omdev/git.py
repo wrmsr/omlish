@@ -242,7 +242,11 @@ class GitStatusState(enum.Enum):
     SUBMODULE_MODIFIED_CONTENT = 'm'
 
 
-_EXTRA_UNMERGED_GIT_STATUS_STATES: ta.FrozenSet[ta.Tuple[GitStatusState, GitStatusState]] = frozenset([
+_UNMERGED_GIT_STATUS_STATES: ta.FrozenSet[GitStatusState] = frozenset([
+    GitStatusState.UPDATED_BUT_UNMERGED,
+])
+
+_UNMERGED_GIT_STATUS_STATE_PAIRS: ta.FrozenSet[ta.Tuple[GitStatusState, GitStatusState]] = frozenset([
     (GitStatusState.ADDED, GitStatusState.ADDED),
     (GitStatusState.DELETED, GitStatusState.DELETED),
 ])
@@ -259,9 +263,9 @@ class GitStatusItem:
     @property
     def is_unmerged(self) -> bool:
         return (
-            self.x is GitStatusState.UPDATED_BUT_UNMERGED or
-            self.y is GitStatusState.UPDATED_BUT_UNMERGED or
-            (self.x, self.y) in _EXTRA_UNMERGED_GIT_STATUS_STATES
+            self.x in _UNMERGED_GIT_STATUS_STATE_PAIRS or
+            self.y in _UNMERGED_GIT_STATUS_STATE_PAIRS or
+            (self.x, self.y) in _UNMERGED_GIT_STATUS_STATE_PAIRS
         )
 
     def __repr__(self) -> str:
