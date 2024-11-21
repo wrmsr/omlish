@@ -286,11 +286,15 @@ class HttpSocketRequestHandler(SocketRequestHandler):
     #
 
     def send_handled(self, parsed: ParsedHttpRequest) -> ta.Iterator[Action]:
+        # Read data
+
         request_data: bytes | None
         if (cl := parsed.headers.get('Content-Length')) is not None:
             request_data = self.rfile.read(int(cl))
         else:
             request_data = None
+
+        # Build request
 
         request = HttpServerRequest(
             client_address=self.client_address,
@@ -300,7 +304,7 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             data=request_data,
         )
 
-        #
+        # Build response
 
         try:
             response = self.handler(request)
@@ -313,10 +317,10 @@ class HttpSocketRequestHandler(SocketRequestHandler):
             )
             return
 
+        # Build action
+
         response_headers = response.headers or {}
         response_data = response.data
-
-        #
 
         headers: list[HttpSocketRequestHandler.Header] = [
             *self.make_default_headers(),
@@ -328,12 +332,16 @@ class HttpSocketRequestHandler(SocketRequestHandler):
         if response.close_connection and 'Connection' not in headers:
             headers.append(self.Header('Connection', 'close'))
 
-        yield self.ResponseAction(
+        action = self.ResponseAction(
             version=parsed.version,
             code=response.status,
             headers=headers,
             data=response_data,
         )
+
+        # Yield actions
+
+        yield action
 
         if response.close_connection:
             yield self.CloseConnectionAction()
