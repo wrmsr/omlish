@@ -352,6 +352,32 @@ class Dispatchers:
     def __init__(self, dispatchers: ta.Iterable[Dispatcher]) -> None:
         super().__init__()
 
+        by_fd: ta.Dict[int, Dispatcher] = {}
+        for d in dispatchers:
+            if d.fd in by_fd:
+                raise KeyError(f'fd {d.fd} of dispatcher {d} already registered by {by_fd[d.fd]}')
+            by_fd[d.fd] = d
+        self._by_fd = by_fd
+
+    #
+
+    def __iter__(self) -> ta.Iterator[Dispatcher]:
+        return iter(self._by_fd.values())
+
+    def __len__(self) -> int:
+        return len(self._by_fd)
+
+    def __contains__(self, fd: int) -> bool:
+        return fd in self._by_fd
+
+    def __getitem__(self, fd: int) -> Dispatcher:
+        return self._by_fd[fd]
+
+    def get(self, fd: int, default: ta.Optional[Dispatcher] = None) -> ta.Optional[Dispatcher]:
+        return self._by_fd.get(fd, default)
+
+    #
+
     def remove_logs(self) -> None:
         for dispatcher in self._dispatchers.values():
             if hasattr(dispatcher, 'remove_logs'):
