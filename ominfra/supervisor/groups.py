@@ -2,8 +2,9 @@
 import typing as ta
 
 from omlish.lite.check import check_isinstance
-from omlish.lite.typing import Func
+from omlish.lite.typing import Func2
 
+from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
@@ -18,7 +19,8 @@ from .types import ServerContext
 ##
 
 
-ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
+class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
+    pass
 
 
 class ProcessGroupImpl(ProcessGroup):

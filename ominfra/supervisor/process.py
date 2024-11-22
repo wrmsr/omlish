@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.logs import log
-from omlish.lite.typing import Func
+from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
 from .context import check_execv_args
@@ -43,11 +43,13 @@ from .utils import get_path
 from .utils import real_exit
 
 
-# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
-OutputDispatcherFactory = ta.NewType('OutputDispatcherFactory', Func[OutputDispatcher])
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+    pass
 
-# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
-InputDispatcherFactory = ta.NewType('InputDispatcherFactory', Func[InputDispatcher])
+
+class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+    pass
+
 
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
@@ -319,10 +321,6 @@ class ProcessImpl(Process):
 
         dispatchers: ta.Dict[int, Dispatcher] = {}
 
-        dispatcher_kw = dict(
-            event_callbacks=self._event_callbacks,
-        )
-
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
@@ -330,7 +328,6 @@ class ProcessImpl(Process):
                 self,
                 etype,
                 stdout_fd,
-                **dispatcher_kw,
             ), OutputDispatcher)
 
         if stderr_fd is not None:
@@ -339,7 +336,6 @@ class ProcessImpl(Process):
                 self,
                 etype,
                 stderr_fd,
-                **dispatcher_kw,
             ), OutputDispatcher)
 
         if stdin_fd is not None:
@@ -347,7 +343,6 @@ class ProcessImpl(Process):
                 self,
                 'stdin',
                 stdin_fd,
-                **dispatcher_kw,
             ), InputDispatcher)
 
         return dispatchers, p

@@ -14,10 +14,10 @@ from .maybes import Maybe
 from .reflect import get_optional_alias_arg
 from .reflect import is_new_type
 from .reflect import is_optional_alias
-from .typing import Func
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 InjectorKeyCls = ta.Union[type, ta.NewType]
 
@@ -606,13 +606,18 @@ class InjectorBinder:
 
 
 def make_injector_factory(
-        factory_cls: ta.Any,
-        factory_fn: ta.Callable[..., T],
-) -> ta.Callable[..., Func[T]]:
-    def outer(injector: Injector) -> factory_cls:
+        fn: ta.Callable[..., T],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if ann is None:
+        ann = cls
+
+    def outer(injector: Injector) -> ann:
         def inner(*args, **kwargs):
-            return injector.inject(functools.partial(factory_fn, *args, **kwargs))
-        return Func(inner)
+            return injector.inject(functools.partial(fn, *args, **kwargs))
+        return cls(inner)  # type: ignore
+
     return outer
 
 
@@ -691,10 +696,11 @@ class Injection:
     @classmethod
     def bind_factory(
             cls,
-            factory_cls: ta.Any,
-            factory_fn: ta.Callable[..., T],
+            fn: ta.Callable[..., T],
+            cls_: U,
+            ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
-        return cls.bind(make_injector_factory(factory_cls, factory_fn))
+        return cls.bind(make_injector_factory(fn, cls_, ann))
 
 
 inj = Injection
