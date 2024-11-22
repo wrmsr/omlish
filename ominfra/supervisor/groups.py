@@ -33,10 +33,13 @@ class ProcessGroupImpl(ProcessGroup):
         self._config = config
         self._process_factory = process_factory
 
-        self._by_name = {}
+        by_name = {}
         for pconfig in self._config.processes or []:
-            process = check_isinstance(self._process_factory(pconfig, self), Process)
-            self._by_name[pconfig.name] = process
+            p = check_isinstance(self._process_factory(pconfig, self), Process)
+            if p.name in by_name:
+                raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
+            by_name[pconfig.name] = p
+        self._by_name =by_name
 
     #
 
@@ -70,6 +73,9 @@ class ProcessGroupImpl(ProcessGroup):
 
     def __getitem__(self, name: str) -> Process:
         return self._by_name[name]
+
+    def get(self, name: str, default: ta.Optional[Process] = None) -> ta.Optional[Process]:
+        return self._by_name.get(name, default)
 
     #
 
