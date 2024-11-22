@@ -49,18 +49,108 @@ from .utils import get_path
 from .utils import real_exit
 
 
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+    pass
+
+
+class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+    pass
+
+
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
+
 ##
 
 
 class ProcessSpawning(Process):
     """A class to manage a subprocess."""
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            config: ProcessConfig,
+            group: ProcessGroup,
+            *,
+            output_dispatcher_factory: OutputDispatcherFactory,
+            input_dispatcher_factory: InputDispatcherFactory,
+
+            inherited_fds: ta.Optional[InheritedFds] = None,
+    ) -> None:
         super().__init__()
+
+        self._config = config
+        self._group = group
+
+        self._output_dispatcher_factory = output_dispatcher_factory
+        self._input_dispatcher_factory = input_dispatcher_factory
+
+        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
+
+    #
+
+    @property
+    def name(self) -> str:
+        return self._config.name
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._config
+
+    @property
+    def group(self) -> ProcessGroup:
+        return self._group
+
+    #
 
     def _record_spawn_err(self, msg: str) -> None:
         self._spawn_err = msg
         log.info('_spawn_err: %s', msg)
+
+    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
+        """
+        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
+        ProcessError if not
+        """
+
+        try:
+            commandargs = shlex.split(self._config.command)
+        except ValueError as e:
+            raise BadCommandError(f"can't parse command {self._config.command!r}: {e}")  # noqa
+
+        if commandargs:
+            program = commandargs[0]
+        else:
+            raise BadCommandError('command is empty')
+
+        if '/' in program:
+            filename = program
+            try:
+                st = os.stat(filename)
+            except OSError:
+                st = None
+
+        else:
+            path = get_path()
+            found = None
+            st = None
+            for dir in path:  # noqa
+                found = os.path.join(dir, program)
+                try:
+                    st = os.stat(found)
+                except OSError:
+                    pass
+                else:
+                    break
+            if st is None:
+                filename = program
+            else:
+                filename = found  # type: ignore
+
+        # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
+        # options method call here only to service unit tests
+        check_execv_args(filename, commandargs, st)
+
+        return filename, commandargs
 
     def spawn(self) -> ta.Optional[int]:
         process_name = as_string(self._config.name)
@@ -246,3 +336,20 @@ class ProcessSpawning(Process):
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
             real_exit(127)  # exit process with code for spawn failure
+
+
+##
+
+
+def check_execv_args(filename, argv, st) -> None:
+    if st is None:
+        raise NotFoundError(f"can't find command {filename!r}")
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutableError(f'command at {filename!r} is a directory')
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutableError(f'command at {filename!r} is not executable')
+
+    elif not os.access(filename, os.X_OK):
+        raise NoPermissionError(f'no permission to run command {filename!r}')
