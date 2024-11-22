@@ -31,16 +31,15 @@ _SIGNATURE_CACHE: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKey
 
 
 def signature(obj: ta.Any) -> inspect.Signature:
-    kw: dict = dict(
-        eval_str=True,
-    )
+    def get() -> inspect.Signature:
+        return inspect.signature(obj, eval_str=True)
     try:
         return _SIGNATURE_CACHE[obj]
     except TypeError:
-        return inspect.signature(obj, **kw)
+        return get()
     except KeyError:
         pass
-    sig = inspect.signature(obj, **kw)
+    sig = get()
     _SIGNATURE_CACHE[obj] = sig
     return sig
 
