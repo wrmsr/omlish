@@ -182,7 +182,8 @@ class ProcessSpawning(Process):
             return None
 
         try:
-            self._dispatchers, self._pipes = self._make_dispatchers()
+            self._pipes = make_process_pipes(not self.config.redirect_stderr)
+            self._dispatchers = self._make_dispatchers(pipes)
         except OSError as why:
             code = why.args[0]
             if code == errno.EMFILE:
@@ -218,35 +219,33 @@ class ProcessSpawning(Process):
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> ta.Tuple[Dispatchers, ProcessPipes]:
-        use_stderr = not self.config.redirect_stderr
-
-        p = make_process_pipes(use_stderr)
-
+    def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
         dispatchers: ta.List[Dispatcher] = []
 
-        if p.stdout is not None:
+        if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 ProcessCommunicationStdoutEvent,
-                p.stdout,
+                pipes.stdout,
             ), OutputDispatcher))
 
-        if p.stderr is not None:
+        if pipes.stderr is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 ProcessCommunicationStderrEvent,
-                p.stderr,
+                pipes.stderr,
             ), OutputDispatcher))
 
-        if p.stdin is not None:
+        if pipes.stdin is not None:
             dispatchers.append(check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
-                p.stdin,
+                pipes.stdin,
             ), InputDispatcher))
 
-        return Dispatchers(dispatchers), p
+        return Dispatchers(dispatchers)
+
+    #
 
     def _spawn_as_parent(self, pid: int) -> int:
         # Parent
@@ -257,25 +256,7 @@ class ProcessSpawning(Process):
         self._pid_history[pid] = self
         return pid
 
-    def _prepare_child_fds(self) -> None:
-        os.dup2(check_not_none(self._pipes.child_stdin), 0)
-        os.dup2(check_not_none(self._pipes.child_stdout), 1)
-        if self.config.redirect_stderr:
-            os.dup2(check_not_none(self._pipes.child_stdout), 2)
-        else:
-            os.dup2(check_not_none(self._pipes.child_stderr), 2)
-
-        for i in range(3, self._server_config.minfds):
-            if i in self._inherited_fds:
-                continue
-            close_fd(i)
-
-    def _set_uid(self) -> ta.Optional[str]:
-        if self.config.uid is None:
-            return None
-
-        msg = drop_privileges(self.config.uid)
-        return msg
+    #
 
     def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
         try:
@@ -338,6 +319,26 @@ class ProcessSpawning(Process):
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
             real_exit(127)  # exit process with code for spawn failure
+
+    def _prepare_child_fds(self) -> None:
+        os.dup2(check_not_none(self._pipes.child_stdin), 0)
+        os.dup2(check_not_none(self._pipes.child_stdout), 1)
+        if self.config.redirect_stderr:
+            os.dup2(check_not_none(self._pipes.child_stdout), 2)
+        else:
+            os.dup2(check_not_none(self._pipes.child_stderr), 2)
+
+        for i in range(3, self._server_config.minfds):
+            if i in self._inherited_fds:
+                continue
+            close_fd(i)
+
+    def _set_uid(self) -> ta.Optional[str]:
+        if self.config.uid is None:
+            return None
+
+        msg = drop_privileges(self.config.uid)
+        return msg
 
 
 ##
