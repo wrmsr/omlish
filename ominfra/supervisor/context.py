@@ -47,8 +47,6 @@ class ServerContextImpl(ServerContext):
             self._uid = None
             self._gid = None
 
-        self._unlink_pidfile = False
-
     @property
     def config(self) -> ServerConfig:
         return self._config
@@ -101,73 +99,6 @@ class ServerContextImpl(ServerContext):
         return pid, sts
 
 
-    def clear_auto_child_logdir(self) -> None:
-        # must be called after realize()
-        child_logdir = self.config.child_logdir
-        fnre = re.compile(rf'.+?---{self.config.identifier}-\S+\.log\.?\d{{0,4}}')
-        try:
-            filenames = os.listdir(child_logdir)
-        except OSError:
-            log.warning('Could not clear child_log dir')
-            return
-
-        for filename in filenames:
-            if fnre.match(filename):
-                pathname = os.path.join(child_logdir, filename)
-                try:
-                    os.remove(pathname)
-                except OSError:
-                    log.warning('Failed to clean up %r', pathname)
-
-    def daemonize(self) -> None:
-        self._poller.before_daemonize()
-        self._daemonize()
-        self._poller.after_daemonize()
-
-    def _daemonize(self) -> None:
-        # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
-        # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
-        # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
-        # terminal window to escape from a logtail command. To disassociate ourselves from our parent's session group we
-        # use os.setsid.  It means "set session id", which has the effect of disassociating a process from is current
-        # session and process group and setting itself up as a new session leader.
-        #
-        # Unfortunately we cannot call setsid if we're already a session group leader, so we use "fork" to make a copy
-        # of ourselves that is guaranteed to not be a session group leader.
-        #
-        # We also change directories, set stderr and stdout to null, and change our umask.
-        #
-        # This explanation was (gratefully) garnered from
-        # http://www.cems.uwe.ac.uk/~irjohnso/coursenotes/lrc/system/daemons/d3.htm
-
-        pid = os.fork()
-        if pid != 0:
-            # Parent
-            log.debug('supervisord forked; parent exiting')
-            real_exit(0)
-
-        # Child
-        log.info('daemonizing the supervisord process')
-        if self.config.directory:
-            try:
-                os.chdir(self.config.directory)
-            except OSError as err:
-                log.critical("can't chdir into %r: %s", self.config.directory, err)
-            else:
-                log.info('set current directory: %r', self.config.directory)
-
-        os.dup2(0, os.open('/dev/null', os.O_RDONLY))
-        os.dup2(1, os.open('/dev/null', os.O_WRONLY))
-        os.dup2(2, os.open('/dev/null', os.O_WRONLY))
-
-        os.setsid()
-
-        os.umask(self.config.umask)
-
-        # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
-        # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
-        # again after the setsid() call, for obscure SVR4 reasons.
-
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = f'{name}-{channel}---{identifier}-'
         logfile = mktempfile(
@@ -176,14 +107,3 @@ class ServerContextImpl(ServerContext):
             dir=self.config.child_logdir,
         )
         return logfile
-
-    def write_pidfile(self) -> None:
-        pid = os.getpid()
-        try:
-            with open(self.config.pidfile, 'w') as f:
-                f.write(f'{pid}\n')
-        except OSError:
-            log.critical('could not write pidfile %s', self.config.pidfile)
-        else:
-            self._unlink_pidfile = True
-            log.info('supervisord started with pid %s', pid)
