@@ -3,8 +3,12 @@ import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
+from ..inject import _do_injection_inspect  # noqa
 from ..inject import inj
 from ..typing import AnyFunc
+
+
+T = ta.TypeVar('T')
 
 
 class TestInject(unittest.TestCase):
@@ -117,3 +121,15 @@ class TestFactories(unittest.TestCase):
             self.assertIsInstance(bar, self.Bar)
             self.assertEqual(bar.y, i)
             self.assertIs(bar.foo, foo)
+
+
+class TestInspect(unittest.TestCase):
+    def test_overridden_new(self):
+        class Foo(ta.Generic[T]):
+            def __init__(self, t: T) -> None:
+                pass
+
+        # See note in _do_injection_inspect about failing on 3.8.
+        insp = _do_injection_inspect(Foo)
+
+        self.assertIs(insp.signature.parameters['t'].annotation, T)
