@@ -5,7 +5,6 @@ import os
 import pwd
 import re
 import resource
-import stat
 import typing as ta
 import warnings
 
@@ -14,9 +13,6 @@ from omlish.lite.logs import log
 from .configs import ServerConfig
 from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
-from .exceptions import NoPermissionError
-from .exceptions import NotExecutableError
-from .exceptions import NotFoundError
 from .poller import Poller
 from .states import SupervisorState
 from .types import Process
@@ -346,17 +342,3 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     os.setuid(uid)
 
     return None
-
-
-def check_execv_args(filename, argv, st) -> None:
-    if st is None:
-        raise NotFoundError(f"can't find command {filename!r}")
-
-    elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutableError(f'command at {filename!r} is a directory')
-
-    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutableError(f'command at {filename!r} is not executable')
-
-    elif not os.access(filename, os.X_OK):
-        raise NoPermissionError(f'no permission to run command {filename!r}')

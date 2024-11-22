@@ -23,6 +23,9 @@ from .utils import read_fd
 from .utils import strip_escapes
 
 
+##
+
+
 class BaseDispatcherImpl(Dispatcher, abc.ABC):
     def __init__(
             self,
@@ -41,8 +44,12 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
 
         self._closed = False  # True if close() has been called
 
+    #
+
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} at {id(self)} for {self._process} ({self._channel})>'
+
+    #
 
     @property
     def process(self) -> Process:
@@ -60,16 +67,18 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
     def closed(self) -> bool:
         return self._closed
 
-    def handle_error(self) -> None:
-        nil, t, v, tbinfo = compact_traceback()
-
-        log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
-        self.close()
+    #
 
     def close(self) -> None:
         if not self._closed:
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
+
+    def handle_error(self) -> None:
+        nil, t, v, tbinfo = compact_traceback()
+
+        log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
+        self.close()
 
 
 class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
@@ -334,3 +343,30 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
                     self.close()
                 else:
                     raise
+
+
+##
+
+
+class Dispatchers:
+    def __init__(self, dispatchers: ta.Iterable[Dispatcher]) -> None:
+        super().__init__()
+
+    def remove_logs(self) -> None:
+        for dispatcher in self._dispatchers.values():
+            if hasattr(dispatcher, 'remove_logs'):
+                dispatcher.remove_logs()
+
+    def reopen_logs(self) -> None:
+        for dispatcher in self._dispatchers.values():
+            if hasattr(dispatcher, 'reopen_logs'):
+                dispatcher.reopen_logs()
+
+    def drain(self) -> None:
+        for dispatcher in self._dispatchers.values():
+            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
+            # dispatcher (eg. call handle_listener_state_change for event listener processes)
+            if dispatcher.readable():
+                dispatcher.handle_read_event()
+            if dispatcher.writable():
+                dispatcher.handle_write_event()
