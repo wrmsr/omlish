@@ -2,10 +2,10 @@
 """
 _delay
 _dispatchers
-_pid
 _pipes
 _spawn_err
 """
+import dataclasses as dc
 import errno
 import os.path
 import shlex
@@ -35,8 +35,6 @@ from .pipes import close_parent_pipes
 from .pipes import make_process_pipes
 from .privileges import drop_privileges
 from .processes import PidHistory
-from .processes import ProcessStateManager
-from .states import ProcessState
 from .types import Dispatcher
 from .types import InputDispatcher
 from .types import OutputDispatcher
@@ -64,13 +62,18 @@ InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 ##
 
 
+@dc.dataclass(frozen=True)
+class ProcessSpawnError:
+    msg: str
+    exc: ta.Optional[BaseException]
+
+
 class ProcessSpawning(Process):
     """A class to manage a subprocess."""
 
     def __init__(
             self,
             process: Process,
-            states: ProcessStateManager,
             *,
             server_config: ServerConfig,
             pid_history: PidHistory,
@@ -83,7 +86,6 @@ class ProcessSpawning(Process):
         super().__init__()
 
         self._process = process
-        self._states = states
 
         self._server_config = server_config
         self._pid_history = pid_history
@@ -161,40 +163,33 @@ class ProcessSpawning(Process):
 
         return exe, args
 
-    def spawn(self) -> ta.Optional[int]:
-        self._spawn_err = None
-
-        self._states.check_in_state(
-            ProcessState.EXITED,
-            ProcessState.FATAL,
-            ProcessState.BACKOFF,
-            ProcessState.STOPPED,
-        )
-
-        self._states.change_state(ProcessState.STARTING)
-
+    def spawn(
+            self,
+            *,
+            record_error: ta.Optional[ta.Callable[[ProcessSpawnError], None]] = None,
+    ) -> ta.Union[int, ProcessSpawnError]:
         try:
             exe, argv = self._get_execv_args()
-        except ProcessError as what:
-            self._record_spawn_err(what.args[0])
-            self._states.check_in_state(ProcessState.STARTING)
-            self._states.change_state(ProcessState.BACKOFF)
-            return None
+        except ProcessError as exc:
+            err = ProcessSpawnError(exc.args[0], exc)
+            if record_error is not None:
+                record_error(err)
+            return err
 
         try:
             self._pipes = make_process_pipes(not self.config.redirect_stderr)
             self._dispatchers = self._make_dispatchers(pipes)
-        except OSError as why:
-            code = why.args[0]
+        except OSError as exc:
+            code = exc.args[0]
             if code == errno.EMFILE:
                 # too many file descriptors open
                 msg = f"too many open files to spawn '{self.name}'"
             else:
                 msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
-            self._record_spawn_err(msg)
-            self._states.check_in_state(ProcessState.STARTING)
-            self._states.change_state(ProcessState.BACKOFF)
-            return None
+            err = ProcessSpawnError(msg, exc)
+            if record_error is not None:
+                record_error(err)
+            return err
 
         try:
             pid = os.fork()
@@ -206,8 +201,6 @@ class ProcessSpawning(Process):
             else:
                 msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
             self._record_spawn_err(msg)
-            self._states.check_in_state(ProcessState.STARTING)
-            self._states.change_state(ProcessState.BACKOFF)
             close_parent_pipes(self._pipes)
             close_child_pipes(self._pipes)
             return None
@@ -248,12 +241,12 @@ class ProcessSpawning(Process):
     #
 
     def _spawn_as_parent(self, pid: int) -> int:
-        # Parent
-        self._pid = pid
         close_child_pipes(self._pipes)
+
         log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
-        self._spawn_err = None
+
         self._pid_history[pid] = self
+
         return pid
 
     #
