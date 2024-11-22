@@ -1,6 +1,11 @@
 import abc
+import typing as ta
 
 from .states import ProcessState
+from .types import Process
+
+
+##
 
 
 class ProcessStateError(RuntimeError):
@@ -15,3 +20,10 @@ class ProcessStateManager(abc.ABC):
     @abc.abstractmethod
     def check_in_state(self, *states: ProcessState) -> None:
         raise NotImplementedError
+
+
+##
+
+
+class PidHistory(ta.Dict[int, Process]):
+    pass
