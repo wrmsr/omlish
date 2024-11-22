@@ -29,8 +29,16 @@ def is_ws(tok: 'trt.Token') -> bool:
     return tok.name in WS_NAMES
 
 
-def ignore_ws(toks: ta.Iterable['trt.Token']) -> ta.Iterable['trt.Token']:
-    return (t for t in toks if not is_ws(t))
+def ignore_ws(
+        toks: ta.Iterable['trt.Token'],
+        *,
+        keep: ta.Container[str] = (),
+) -> ta.Iterable['trt.Token']:
+    return (
+        t
+        for t in toks
+        if t.name in keep or t.name not in WS_NAMES
+    )
 
 
 ##
