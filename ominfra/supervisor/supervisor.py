@@ -277,7 +277,7 @@ class Supervisor:
         )
 
     def _poll(self) -> None:
-        combined_map = {}
+        combined_map: ta.Dict[int, Dispatcher] = {}
         combined_map.update(self.get_dispatchers().items())
 
         pgroups = list(self._process_groups)

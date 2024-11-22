@@ -93,7 +93,7 @@ class ProcessImpl(Process):
 
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
-        self._dispatchers = Dispatchers()
+        self._dispatchers = Dispatchers([])
         self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
@@ -592,7 +592,7 @@ class ProcessImpl(Process):
     def finish(self, sts: int) -> None:
         """The process was reaped and we need to report and manage its state."""
 
-        self.drain()
+        self._dispatchers.drain()
 
         es, msg = decode_wait_status(sts)
 
@@ -665,7 +665,7 @@ class ProcessImpl(Process):
         self._pid = 0
         close_parent_pipes(self._pipes)
         self._pipes = ProcessPipes()
-        self._dispatchers = {}
+        self._dispatchers = Dispatchers([])
 
     def set_uid(self) -> ta.Optional[str]:
         if self._config.uid is None:
