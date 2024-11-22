@@ -13,6 +13,7 @@ from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
 from .poller import Poller
 from .privileges import drop_privileges
+from .processes import PidHistory
 from .states import SupervisorState
 from .types import Process
 from .types import ServerContext

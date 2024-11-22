@@ -21,9 +21,8 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
-from .configs import ServerConfig
 from .configs import ProcessConfig
-from .privileges import drop_privileges
+from .configs import ServerConfig
 from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import EventCallbacks
@@ -40,6 +39,8 @@ from .pipes import ProcessPipes
 from .pipes import close_child_pipes
 from .pipes import close_parent_pipes
 from .pipes import make_process_pipes
+from .privileges import drop_privileges
+from .processes import PidHistory
 from .processes import ProcessStateManager
 from .signals import sig_name
 from .states import ProcessState
@@ -78,11 +79,10 @@ class ProcessSpawning(Process):
 
     def __init__(
             self,
-            config: ProcessConfig,
-            group: ProcessGroup,
-            states: ProcessStateManager,
+            process: Process,
             *,
             server_config: ServerConfig,
+            pid_history: PidHistory,
 
             output_dispatcher_factory: OutputDispatcherFactory,
             input_dispatcher_factory: InputDispatcherFactory,
@@ -91,11 +91,10 @@ class ProcessSpawning(Process):
     ) -> None:
         super().__init__()
 
-        self._config = config
-        self._group = group
-        self._states = states
+        self._process = process
 
         self._server_config = server_config
+        self._pid_history = pid_history
 
         self._output_dispatcher_factory = output_dispatcher_factory
         self._input_dispatcher_factory = input_dispatcher_factory
@@ -105,16 +104,16 @@ class ProcessSpawning(Process):
     #
 
     @property
-    def name(self) -> str:
-        return self._config.name
+    def process(self) -> Process:
+        return self._process
 
     @property
     def config(self) -> ProcessConfig:
-        return self._config
+        return self._process.config
 
     @property
     def group(self) -> ProcessGroup:
-        return self._group
+        return self._process.group
 
     #
 
@@ -273,7 +272,7 @@ class ProcessSpawning(Process):
         log.info('spawned: \'%s\' with pid %s', as_string(self._config.name), pid)
         self._spawn_err = None
         self._delay = time.time() + self._config.startsecs
-        self.context.pid_history[pid] = self
+        self._pid_history[pid] = self
         return pid
 
     def _prepare_child_fds(self) -> None:

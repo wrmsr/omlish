@@ -12,13 +12,14 @@ from omlish.lite.typing import Func1
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
 from .dispatchers import Dispatchers
-from .events import TICK_EVENTS
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
+from .events import TICK_EVENTS
 from .groups import ProcessGroup
 from .groups import ProcessGroupManager
 from .poller import Poller
+from .processes import PidHistory
 from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
@@ -105,6 +106,7 @@ class Supervisor:
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
+            pid_history: PidHistory,
     ) -> None:
         super().__init__()
 
@@ -114,6 +116,7 @@ class Supervisor:
         self._signal_handler = signal_handler
         self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
+        self._pid_history = pid_history
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -341,13 +344,13 @@ class Supervisor:
         if not pid:
             return
 
-        process = self._context.pid_history.get(pid, None)
+        process = self._pid_history.get(pid, None)
         if process is None:
             _, msg = decode_wait_status(check_not_none(sts))
             log.info('reaped unknown pid %s (%s)', pid, msg)
         else:
             process.finish(check_not_none(sts))
-            del self._context.pid_history[pid]
+            del self._pid_history[pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
