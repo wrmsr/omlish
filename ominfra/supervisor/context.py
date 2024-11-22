@@ -54,7 +54,7 @@ class ServerContextImpl(ServerContext):
     def pid_history(self) -> ta.Dict[int, Process]:
         return self._pid_history
 
-    ##
+    #
 
     def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
@@ -73,7 +73,6 @@ class ServerContextImpl(ServerContext):
                 log.debug('EINTR during reap')
             pid, sts = None, None
         return pid, sts
-
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = f'{name}-{channel}---{identifier}-'
