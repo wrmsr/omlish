@@ -12,8 +12,6 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
-from .datatypes import gid_for_uid
-from .datatypes import name_to_uid
 from .poller import Poller
 from .privileges import drop_privileges
 from .states import SupervisorState
@@ -23,6 +21,7 @@ from .types import ServerEpoch
 from .utils import mktempfile
 from .utils import real_exit
 from .utils import try_unlink
+from .users import User
 
 
 ##
@@ -60,12 +59,14 @@ class SupervisorSetupImpl(SupervisorSetup):
             self,
             *,
             config: ServerConfig,
+            user: SupervisorUser,
             epoch: ServerEpoch = ServerEpoch(0),
             daemonize_listeners: DaemonizeListeners = DaemonizeListeners([]),
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._user = user
         self._epoch = epoch
         self._daemonize_listeners = daemonize_listeners
 
