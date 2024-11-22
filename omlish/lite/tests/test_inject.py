@@ -223,7 +223,7 @@ class TestInspect(unittest.TestCase):
         #
 
         def ikw(n: str, cls: type, d: bool = False) -> InjectionKwarg:
-            return InjectionKwarg(name='n', key=InjectorKey(cls_=cls), has_default=d)
+            return InjectionKwarg(name=n, key=InjectorKey(cls_=cls), has_default=d)
         #
 
         kwt = build_injection_kwargs_target(f)
@@ -234,7 +234,46 @@ class TestInspect(unittest.TestCase):
         for p, ekw in [
             (functools.partial(f, 0), [ikw('s', str)]),
             (functools.partial(f, 0, ''), []),
-            (functools.partial(f, s=''), [ikw('i', int)]),
+            (functools.partial(f, s=''), [ikw('i', int), ikw('s', str, True)]),
         ]:
             kwt = build_injection_kwargs_target(p)
             self.assertEqual(kwt.kwargs, ekw)
+
+    def test_weird(self):
+        def f(x: int, y: str) -> None:
+            pass
+
+        class C:
+            def __init__(self, x: int, y: str) -> None:
+                pass
+
+        class G(ta.Generic[T]):
+            def __init__(self, x: int, y: str) -> None:
+                pass
+
+        #
+
+        def ikw(n: str, cls: type, d: bool = False) -> InjectionKwarg:
+            return InjectionKwarg(name=n, key=InjectorKey(cls_=cls), has_default=d)
+
+        for o in [f, C, G]:
+            kwt = build_injection_kwargs_target(o)
+            self.assertEqual(kwt.kwargs, [ikw('x', int), ikw('y', str)])
+
+            kwt = build_injection_kwargs_target(functools.partial(o))
+            self.assertEqual(kwt.kwargs, [ikw('x', int), ikw('y', str)])
+
+            kwt = build_injection_kwargs_target(functools.partial(o, 0))
+            self.assertEqual(kwt.kwargs, [ikw('y', str)])
+
+            kwt = build_injection_kwargs_target(functools.partial(o, 0, 1))
+            self.assertEqual(kwt.kwargs, [])
+
+            kwt = build_injection_kwargs_target(functools.partial(o, x=0))
+            self.assertEqual(kwt.kwargs, [ikw('x', int, True), ikw('y', str)])
+
+            kwt = build_injection_kwargs_target(functools.partial(o, y=0))
+            self.assertEqual(kwt.kwargs, [ikw('x', int), ikw('y', str, True)])
+
+            kwt = build_injection_kwargs_target(functools.partial(o, x=0, y=0))
+            self.assertEqual(kwt.kwargs, [ikw('x', int, True), ikw('y', str, True)])
