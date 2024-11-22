@@ -3,7 +3,6 @@ import grp
 import logging
 import os
 import pwd
-import signal
 import typing as ta
 
 
@@ -142,29 +141,6 @@ byte_size = SuffixMultiplier({
     'mb': 1024 * 1024,
     'gb': 1024 * 1024 * 1024,
 })
-
-
-# all valid signal numbers
-SIGNUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
-
-
-def signal_number(value: ta.Union[int, str]) -> int:
-    try:
-        num = int(value)
-
-    except (ValueError, TypeError):
-        name = value.strip().upper()  # type: ignore
-        if not name.startswith('SIG'):
-            name = f'SIG{name}'
-
-        num = getattr(signal, name, None)  # type: ignore
-        if num is None:
-            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
-
-    if num not in SIGNUMS:
-        raise ValueError(f'value {value!r} is not a valid signal number')
-
-    return num
 
 
 class RestartWhenExitUnexpected:

@@ -78,8 +78,8 @@ class SignalHandler:
         elif sig == signal.SIGUSR2:
             log.info('received %s indicating log reopen request', sig_name(sig))
 
-            for group in self._process_groups:
-                group.reopen_logs()
+            for process in self._process_groups.all_processes():
+                process.reopen_logs()
 
         else:
             log.debug('received %s indicating nothing', sig_name(sig))
@@ -152,7 +152,8 @@ class Supervisor:
             return False
 
         group = check_isinstance(self._process_group_factory(config), ProcessGroup)
-        group.after_setuid()
+        for process in group:
+            process.after_setuid()
 
         self._process_groups.add(group)
 
@@ -168,8 +169,8 @@ class Supervisor:
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
         process_map: ta.Dict[int, Dispatcher] = {}
-        for group in self._process_groups:
-            process_map.update(group.get_dispatchers())
+        for process in self._process_groups.all_processes():
+            process_map.update(process.get_dispatchers())
         return process_map
 
     def shutdown_report(self) -> ta.List[Process]:
@@ -343,7 +344,8 @@ class Supervisor:
                     pass
 
         for group in pgroups:
-            group.transition()
+            for process in group:
+                process.transition()
 
     def _reap(self, *, once: bool = False, depth: int = 0) -> None:
         if depth >= 100:

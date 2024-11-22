@@ -10,7 +10,6 @@ from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .states import ProcessState
-from .types import Dispatcher
 from .types import Process
 from .types import ProcessGroup
 
@@ -34,34 +33,43 @@ class ProcessGroupImpl(ProcessGroup):
         self._config = config
         self._process_factory = process_factory
 
-        self._processes = {}
+        self._by_name = {}
         for pconfig in self._config.processes or []:
             process = check_isinstance(self._process_factory(pconfig, self), Process)
-            self._processes[pconfig.name] = process
+            self._by_name[pconfig.name] = process
+
+    @property
+    def name(self) -> str:
+        return self._config.name
 
     @property
     def config(self) -> ProcessGroupConfig:
         return self._config
 
     @property
-    def name(self) -> str:
-        return self._config.name
+    def by_name(self) -> ta.Mapping[str, Process]:
+        return self._by_name
 
-    def __repr__(self):
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
+    def __iter__(self) -> ta.Iterator[Process]:
+        return iter(self._by_name.values())
 
-    def remove_logs(self) -> None:
-        for process in self._processes.values():
-            process.remove_logs()
+    def __len__(self) -> int:
+        return len(self._by_name)
 
-    def reopen_logs(self) -> None:
-        for process in self._processes.values():
-            process.reopen_logs()
+    def __contains__(self, name: str) -> bool:
+        return name in self._by_name
+
+    def __getitem__(self, name: str) -> Process:
+        return self._by_name[name]
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+
+    def get_unstopped_processes(self) -> ta.List[Process]:
+        return [x for x in self if not x.get_state().stopped]
 
     def stop_all(self) -> None:
-        processes = list(self._processes.values())
+        processes = list(self._by_name.values())
         processes.sort()
         processes.reverse()  # stop in desc priority order
 
@@ -79,25 +87,8 @@ class ProcessGroupImpl(ProcessGroup):
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self) -> ta.List[Process]:
-        return [x for x in self._processes.values() if not x.get_state().stopped]
-
-    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
-        dispatchers: dict = {}
-        for process in self._processes.values():
-            dispatchers.update(process.get_dispatchers())
-        return dispatchers
-
     def before_remove(self) -> None:
         pass
-
-    def transition(self) -> None:
-        for proc in self._processes.values():
-            proc.transition()
-
-    def after_setuid(self) -> None:
-        for proc in self._processes.values():
-            proc.create_auto_child_logs()
 
 
 ##
@@ -127,8 +118,12 @@ class ProcessGroups:
     def __iter__(self) -> ta.Iterator[ProcessGroup]:
         return iter(self._by_name.values())
 
-    def all(self) -> ta.Mapping[str, ProcessGroup]:
+    def by_name(self) -> ta.Mapping[str, ProcessGroup]:
         return self._by_name
+
+    def all_processes(self) -> ta.Iterator[Process]:
+        for g in self:
+            yield from g
 
     def add(self, group: ProcessGroup) -> None:
         if (name := group.name) in self._by_name:
