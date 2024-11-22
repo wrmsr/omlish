@@ -16,6 +16,9 @@ from .groupsimpl import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
 from .processes import PidHistory
+from .users import User
+from .users import get_user
+from .setup import SupervisorUser
 from .processesimpl import ProcessImpl
 from .processesimpl import ProcessSpawningFactory
 from .setup import DaemonizeListener
@@ -43,7 +46,6 @@ def bind_server(
 
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
 
-        inj.bind(get_poller_impl(), key=Poller, singleton=True),
         inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
         inj.bind(ServerContextImpl, singleton=True),
@@ -74,6 +76,18 @@ def bind_server(
         lst.append(inj.bind(server_epoch, key=ServerEpoch))
     if inherited_fds is not None:
         lst.append(inj.bind(inherited_fds, key=InheritedFds))
+
+    #
+
+    if config.user is not None:
+        user = get_user(config.user)
+    else:
+        user = None
+    lst.append(inj.bind(user, key=SupervisorUser))
+
+    #
+
+    lst.append(inj.bind(get_poller_impl(), key=Poller, singleton=True))
 
     #
 

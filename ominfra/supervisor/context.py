@@ -9,8 +9,6 @@ import warnings
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
-from .datatypes import gid_for_uid
-from .datatypes import name_to_uid
 from .poller import Poller
 from .privileges import drop_privileges
 from .states import SupervisorState
@@ -38,14 +36,6 @@ class ServerContextImpl(ServerContext):
 
         self._pid_history: ta.Dict[int, Process] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
-
-        if config.user is not None:
-            uid = name_to_uid(config.user)
-            self._uid: ta.Optional[int] = uid
-            self._gid: ta.Optional[int] = gid_for_uid(uid)
-        else:
-            self._uid = None
-            self._gid = None
 
     @property
     def config(self) -> ServerConfig:
