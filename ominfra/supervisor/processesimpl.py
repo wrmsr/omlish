@@ -16,6 +16,7 @@ from omlish.lite.typing import Func3
 from .configs import ProcessConfig
 from .context import drop_privileges
 from .datatypes import RestartUnconditionally
+from .dispatchers import Dispatchers
 from .events import EventCallbacks
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import ProcessCommunicationEvent
@@ -92,7 +93,7 @@ class ProcessImpl(Process):
 
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
-        self._dispatchers: ta.Dict[int, Dispatcher] = {}
+        self._dispatchers = Dispatchers()
         self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
@@ -150,7 +151,7 @@ class ProcessImpl(Process):
     def backoff(self) -> int:
         return self._backoff
 
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
 
 
