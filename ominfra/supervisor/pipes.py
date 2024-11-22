@@ -19,7 +19,7 @@ class ProcessPipes:
     child_stderr: ta.Optional[int] = None
 
     def as_dict(self) -> ta.Mapping[str, int]:
-        return dc.asdict(self)
+        return dc.asdict(self)  # noqa
 
 
 def make_process_pipes(stderr=True) -> ProcessPipes:

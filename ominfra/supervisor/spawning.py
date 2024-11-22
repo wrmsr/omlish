@@ -2,17 +2,15 @@
 """
 _delay
 _dispatchers
+_pid
 _pipes
 _spawn_err
-pid
 """
 import errno
 import os.path
 import shlex
-import signal
 import stat
 import time
-import traceback
 import typing as ta
 
 from omlish.lite.check import check_isinstance
@@ -22,10 +20,7 @@ from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
 from .configs import ServerConfig
-from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
-from .events import EventCallbacks
-from .events import PROCESS_STATE_EVENT_MAP
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
@@ -41,20 +36,16 @@ from .pipes import make_process_pipes
 from .privileges import drop_privileges
 from .processes import PidHistory
 from .processes import ProcessStateManager
-from .signals import sig_name
 from .states import ProcessState
-from .states import SupervisorState
 from .types import Dispatcher
 from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
-from .types import ServerContext
 from .utils import as_bytes
 from .utils import as_string
 from .utils import close_fd
 from .utils import compact_traceback
-from .utils import decode_wait_status
 from .utils import get_path
 from .utils import real_exit
 
@@ -171,12 +162,6 @@ class ProcessSpawning(Process):
         return filename, args
 
     def spawn(self) -> ta.Optional[int]:
-        process_name = as_string(self.name)
-
-        if self.pid:
-            log.warning('process \'%s\' already running', process_name)
-            return None
-
         self._spawn_err = None
 
         self._states.check_in_state(
@@ -202,9 +187,9 @@ class ProcessSpawning(Process):
             code = why.args[0]
             if code == errno.EMFILE:
                 # too many file descriptors open
-                msg = f"too many open files to spawn '{process_name}'"
+                msg = f"too many open files to spawn '{self.name}'"
             else:
-                msg = f"unknown error making dispatchers for '{process_name}': {errno.errorcode.get(code, code)}"
+                msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
             self._record_spawn_err(msg)
             self._states.check_in_state(ProcessState.STARTING)
             self._states.change_state(ProcessState.BACKOFF)
@@ -216,9 +201,9 @@ class ProcessSpawning(Process):
             code = why.args[0]
             if code == errno.EAGAIN:
                 # process table full
-                msg = f'Too many processes in process table to spawn \'{process_name}\''
+                msg = f'Too many processes in process table to spawn \'{self.name}\''
             else:
-                msg = f'unknown error during fork for \'{process_name}\': {errno.errorcode.get(code, code)}'
+                msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
             self._record_spawn_err(msg)
             self._states.check_in_state(ProcessState.STARTING)
             self._states.change_state(ProcessState.BACKOFF)
@@ -240,20 +225,17 @@ class ProcessSpawning(Process):
 
         dispatchers: ta.List[Dispatcher] = []
 
-        etype: ta.Type[ProcessCommunicationEvent]
         if p.stdout is not None:
-            etype = ProcessCommunicationStdoutEvent
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
-                etype,
+                ProcessCommunicationStdoutEvent,
                 p.stdout,
             ), OutputDispatcher))
 
         if p.stderr is not None:
-            etype = ProcessCommunicationStderrEvent
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
-                etype,
+                ProcessCommunicationStderrEvent,
                 p.stderr,
             ), OutputDispatcher))
 
@@ -272,7 +254,6 @@ class ProcessSpawning(Process):
         close_child_pipes(self._pipes)
         log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
         self._spawn_err = None
-        self._delay = time.time() + self.config.startsecs
         self._pid_history[pid] = self
         return pid
 
