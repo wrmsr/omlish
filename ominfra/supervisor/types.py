@@ -109,7 +109,13 @@ class Dispatcher(abc.ABC):
 
 
 class OutputDispatcher(Dispatcher, abc.ABC):
-    pass
+    @abc.abstractmethod
+    def remove_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
 
 
 class InputDispatcher(Dispatcher, abc.ABC):
@@ -155,14 +161,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     @abc.abstractmethod
     def finish(self, sts: int) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def remove_logs(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def reopen_logs(self) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod

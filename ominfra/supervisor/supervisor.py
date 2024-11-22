@@ -23,6 +23,7 @@ from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
 from .types import Dispatcher
+from .types import OutputDispatcher
 from .types import Process
 from .utils import ExitNow
 from .utils import as_string
@@ -79,8 +80,10 @@ class SignalHandler:
         elif sig == signal.SIGUSR2:
             log.info('received %s indicating log reopen request', sig_name(sig))
 
-            for process in self._process_groups.all_processes():
-                process.reopen_logs()
+            for p in self._process_groups.all_processes():
+                for d in p.get_dispatchers():
+                    if isinstance(d, OutputDispatcher):
+                        d.reopen_logs()
 
         else:
             log.debug('received %s indicating nothing', sig_name(sig))

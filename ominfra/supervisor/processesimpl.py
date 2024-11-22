@@ -314,38 +314,38 @@ class ProcessImpl(Process):
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ProcessPipes]:
+    def _make_dispatchers(self) -> ta.Tuple[Dispatchers, ProcessPipes]:
         use_stderr = not self._config.redirect_stderr
 
         p = make_process_pipes(use_stderr)
 
-        dispatchers: ta.Dict[int, Dispatcher] = {}
+        dispatchers: ta.List[Dispatcher] = []
 
         etype: ta.Type[ProcessCommunicationEvent]
         if p.stdout is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[p.stdout] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 p.stdout,
-            ), OutputDispatcher)
+            ), OutputDispatcher))
 
         if p.stderr is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[p.stderr] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 p.stderr,
-            ), OutputDispatcher)
+            ), OutputDispatcher))
 
         if p.stdin is not None:
-            dispatchers[p.stdin] = check_isinstance(self._input_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
                 p.stdin,
-            ), InputDispatcher)
+            ), InputDispatcher))
 
-        return dispatchers, p
+        return Dispatchers(dispatchers), p
 
     def _spawn_as_parent(self, pid: int) -> int:
         # Parent
