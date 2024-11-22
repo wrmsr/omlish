@@ -632,7 +632,7 @@ def make_injector_factory(
     return outer
 
 
-def make_injector_array(
+def make_injector_array_type(
         ele: ta.Union[InjectorKey, InjectorKeyCls],
         cls: U,
         ann: ta.Any = None,
@@ -735,13 +735,13 @@ class Injection:
         return cls.bind(make_injector_factory(fn, cls_, ann))
 
     @classmethod
-    def bind_array(
+    def bind_array_type(
             cls,
             ele: ta.Union[InjectorKey, InjectorKeyCls],
             cls_: U,
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
-        return cls.bind(make_injector_array(ele, cls_, ann))
+        return cls.bind(make_injector_array_type(ele, cls_, ann))
 
 
 inj = Injection
