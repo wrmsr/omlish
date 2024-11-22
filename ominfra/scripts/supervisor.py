@@ -6041,7 +6041,7 @@ class ProcessGroupImpl(ProcessGroup):
             if p.name in by_name:
                 raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
             by_name[pconfig.name] = p
-        self._by_name =by_name
+        self._by_name = by_name
 
     #
 
@@ -6215,7 +6215,6 @@ class ProcessImpl(Process):
 
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
-
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._killing:
