@@ -220,8 +220,21 @@ class TestInspect(unittest.TestCase):
         def f(i: int, s: str) -> list:
             return [i, s]
 
-        ikw = InjectionKwarg(name='i', key=InjectorKey(cls_=int), has_default=False)
-        skw = InjectionKwarg(name='s', key=InjectorKey(cls_=str), has_default=False)
+        #
+
+        def ikw(n: str, cls: type, d: bool = False) -> InjectionKwarg:
+            return InjectionKwarg(name='n', key=InjectorKey(cls_=cls), has_default=d)
+        #
 
         kwt = build_injection_kwargs_target(f)
-        self.assertEqual(kwt.kwargs, [ikw, skw])
+        self.assertEqual(kwt.kwargs, [ikw('i', int), ikw('s', str)])
+
+        #
+
+        for p, ekw in [
+            (functools.partial(f, 0), [ikw('s', str)]),
+            (functools.partial(f, 0, ''), []),
+            (functools.partial(f, s=''), [ikw('i', int)]),
+        ]:
+            kwt = build_injection_kwargs_target(p)
+            self.assertEqual(kwt.kwargs, ekw)
