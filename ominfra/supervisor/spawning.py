@@ -1,8 +1,4 @@
 # ruff: noqa: UP006 UP007
-"""
-_dispatchers
-_pipes
-"""
 import dataclasses as dc
 import errno
 import os.path
@@ -68,7 +64,7 @@ class ProcessSpawnError(RuntimeError):
     pass
 
 
-class ProcessSpawning(Process):
+class ProcessSpawning:
     """A class to manage a subprocess."""
 
     def __init__(
@@ -123,16 +119,16 @@ class ProcessSpawning(Process):
             code = exc.args[0]
             if code == errno.EMFILE:
                 # too many file descriptors open
-                msg = f"Too many open files to spawn '{self.name}'"
+                msg = f"Too many open files to spawn '{self.process.name}'"
             else:
-                msg = f"Unknown error making pipes for '{self.name}': {errno.errorcode.get(code, code)}"
+                msg = f"Unknown error making pipes for '{self.process.name}': {errno.errorcode.get(code, code)}"
             raise ProcessSpawnError(msg) from exc
 
         try:
             dispatchers = self._make_dispatchers(pipes)
         except Exception as exc:  # noqa
             close_pipes(pipes)
-            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.name}'") from exc
+            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}'") from exc
 
         try:
             pid = os.fork()
@@ -140,9 +136,9 @@ class ProcessSpawning(Process):
             code = exc.args[0]
             if code == errno.EAGAIN:
                 # process table full
-                msg = f"Too many processes in process table to spawn '{self.name}'"
+                msg = f"Too many processes in process table to spawn '{self.process.name}'"
             else:
-                msg = f"Unknown error during fork for '{self.name}': {errno.errorcode.get(code, code)}"
+                msg = f"Unknown error during fork for '{self.process.name}': {errno.errorcode.get(code, code)}"
             err = ProcessSpawnError(msg)
             close_pipes(pipes)
             raise err from exc
@@ -157,7 +153,11 @@ class ProcessSpawning(Process):
             return sp
 
         else:
-            self._spawn_as_child(exe, argv)
+            self._spawn_as_child(
+                exe,
+                argv,
+                pipes,
+            )
             raise RuntimeError('Unreachable')
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
@@ -242,7 +242,12 @@ class ProcessSpawning(Process):
 
     #
 
-    def _spawn_as_child(self, exe: str, argv: ta.Sequence[str]) -> None:
+    def _spawn_as_child(
+            self,
+            exe: str,
+            argv: ta.Sequence[str],
+            pipes: ProcessPipes,
+    ) -> ta.NoReturn:
         try:
             # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
             # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
@@ -250,7 +255,7 @@ class ProcessSpawning(Process):
             # Presumably it also prevents HUP, etc received by supervisord from being sent to children.
             os.setpgrp()
 
-            self._prepare_child_fds()
+            self._prepare_child_fds(pipes)
             # sending to fd 2 will put this output in the stderr log
 
             # set user
@@ -264,7 +269,7 @@ class ProcessSpawning(Process):
             # set environment
             env = os.environ.copy()
             env['SUPERVISOR_ENABLED'] = '1'
-            env['SUPERVISOR_PROCESS_NAME'] = self.name
+            env['SUPERVISOR_PROCESS_NAME'] = self.process.name
             if self.group:
                 env['SUPERVISOR_GROUP_NAME'] = self.group.name
             if self.config.environment is not None:
@@ -298,19 +303,19 @@ class ProcessSpawning(Process):
                 msg = f"couldn't exec {exe}: {error}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
 
-            # this point should only be reached if execve failed. the finally clause will exit the child process.
+            # This point should only be reached if execve failed. The finally clause will exit the child process.
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
             real_exit(127)  # exit process with code for spawn failure
 
-    def _prepare_child_fds(self) -> None:
-        os.dup2(check_not_none(self._pipes.child_stdin), 0)
-        os.dup2(check_not_none(self._pipes.child_stdout), 1)
+    def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
+        os.dup2(check_not_none(pipes.child_stdin), 0)
+        os.dup2(check_not_none(pipes.child_stdout), 1)
         if self.config.redirect_stderr:
-            os.dup2(check_not_none(self._pipes.child_stdout), 2)
+            os.dup2(check_not_none(pipes.child_stdout), 2)
         else:
-            os.dup2(check_not_none(self._pipes.child_stderr), 2)
+            os.dup2(check_not_none(pipes.child_stderr), 2)
 
         for i in range(3, self._server_config.minfds):
             if i in self._inherited_fds:
