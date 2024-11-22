@@ -327,6 +327,12 @@ _INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = w
 
 
 def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
+    if isinstance(obj, type) and obj.__init__ is not object.__init__:
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        obj = obj.__init__
+
     uw = obj
     while True:
         if isinstance(uw, functools.partial):
