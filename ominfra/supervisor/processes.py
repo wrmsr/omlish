@@ -3,6 +3,7 @@ import errno
 import os.path
 import shlex
 import signal
+import stat
 import time
 import traceback
 import typing as ta
@@ -13,15 +14,17 @@ from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
-from .context import check_execv_args
 from .context import drop_privileges
 from .datatypes import RestartUnconditionally
-from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
+from .events import PROCESS_STATE_EVENT_MAP
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
 from .exceptions import BadCommandError
+from .exceptions import NoPermissionError
+from .exceptions import NotExecutableError
+from .exceptions import NotFoundError
 from .exceptions import ProcessError
 from .pipes import ProcessPipes
 from .pipes import close_child_pipes
@@ -110,6 +113,13 @@ class ProcessImpl(Process):
         self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
+    #
+
+    def __repr__(self) -> str:
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
+
+    #
+
     @property
     def name(self) -> str:
         return self._config.name
@@ -126,6 +136,8 @@ class ProcessImpl(Process):
     def pid(self) -> int:
         return self._pid
 
+    #
+
     @property
     def context(self) -> ServerContext:
         return self._context
@@ -141,24 +153,6 @@ class ProcessImpl(Process):
     def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
         return self._dispatchers
 
-    def remove_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'remove_logs'):
-                dispatcher.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'reopen_logs'):
-                dispatcher.reopen_logs()
-
-    def drain(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
-            # dispatcher (eg. call handle_listener_state_change for event listener processes)
-            if dispatcher.readable():
-                dispatcher.handle_read_event()
-            if dispatcher.writable():
-                dispatcher.handle_write_event()
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._killing:
@@ -678,11 +672,6 @@ class ProcessImpl(Process):
         msg = drop_privileges(self._config.uid)
         return msg
 
-    def __repr__(self) -> str:
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
-
     def get_state(self) -> ProcessState:
         return self._state
 
@@ -753,3 +742,20 @@ class ProcessImpl(Process):
         # if self.stderr_logfile is Automatic:
         #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
         pass
+
+
+##
+
+
+def check_execv_args(filename, argv, st) -> None:
+    if st is None:
+        raise NotFoundError(f"can't find command {filename!r}")
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutableError(f'command at {filename!r} is a directory')
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutableError(f'command at {filename!r} is not executable')
+
+    elif not os.access(filename, os.X_OK):
+        raise NoPermissionError(f'no permission to run command {filename!r}')
