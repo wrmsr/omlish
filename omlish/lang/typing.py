@@ -107,6 +107,14 @@ def typed_partial(obj, **kw):  # noqa
 
 
 @dc.dataclass(frozen=True)
+class AnyFunc(ta.Generic[T]):
+    fn: ta.Callable[..., T]
+
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
 class Func0(ta.Generic[T]):
     fn: ta.Callable[[], T]
 
