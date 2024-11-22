@@ -1,5 +1,3 @@
-# This module should import nothing but stdlib modules, and as few as possible. That *includes* lite - no using lite.
-
 from .cached import (  # noqa
     cached_function,
     cached_property,
@@ -219,14 +217,19 @@ from .timeouts import (  # noqa
 )
 
 from .typing import (  # noqa
-    AnyFunc,
     BytesLike,
-    Func0,
-    Func1,
-    Func2,
-    Func3,
     SequenceNotStr,
     protocol_check,
     typed_lambda,
     typed_partial,
+)
+
+##
+
+from ..lite.typing import (  # noqa
+    AnyFunc,
+    Func0,
+    Func1,
+    Func2,
+    Func3,
 )

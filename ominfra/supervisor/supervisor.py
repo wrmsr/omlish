@@ -7,7 +7,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
-from omlish.lite.typing import Func
+from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
@@ -88,7 +88,8 @@ class SignalHandler:
 ##
 
 
-ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
+class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+    pass
 
 
 class Supervisor:
