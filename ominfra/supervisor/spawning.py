@@ -4,7 +4,6 @@ _delay
 _dispatchers
 _pipes
 _spawn_err
-context.pid_history
 pid
 """
 import errno
@@ -80,6 +79,7 @@ class ProcessSpawning(Process):
     def __init__(
             self,
             process: Process,
+            states: ProcessStateManager,
             *,
             server_config: ServerConfig,
             pid_history: PidHistory,
@@ -92,6 +92,7 @@ class ProcessSpawning(Process):
         super().__init__()
 
         self._process = process
+        self._states = states
 
         self._server_config = server_config
         self._pid_history = pid_history
