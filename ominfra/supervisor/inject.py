@@ -7,7 +7,6 @@ from omlish.lite.inject import inj
 
 from .configs import ServerConfig
 from .context import ServerContextImpl
-from .types import ServerEpoch
 from .dispatchersimpl import InputDispatcherImpl
 from .dispatchersimpl import OutputDispatcherImpl
 from .events import EventCallbacks
@@ -19,6 +18,8 @@ from .poller import get_poller_impl
 from .processes import PidHistory
 from .processesimpl import ProcessImpl
 from .processesimpl import ProcessSpawningFactory
+from .setup import DaemonizeListener
+from .setup import DaemonizeListeners
 from .signals import SignalReceiver
 from .spawningimpl import InheritedFds
 from .spawningimpl import InputDispatcherFactory
@@ -28,6 +29,7 @@ from .supervisor import ProcessGroupFactory
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import ServerContext
+from .types import ServerEpoch
 
 
 def bind_server(
@@ -39,7 +41,10 @@ def bind_server(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
+        inj.bind_array(DaemonizeListener, DaemonizeListeners),
+
         inj.bind(get_poller_impl(), key=Poller, singleton=True),
+        inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
         inj.bind(ServerContextImpl, singleton=True),
         inj.bind(ServerContext, to_key=ServerContextImpl),
