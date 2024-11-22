@@ -1,4 +1,11 @@
 # ruff: noqa: UP006 UP007
+"""
+self._spawn_err = msg
+self.pid
+self._dispatchers, self._pipes = self._make_dispatchers()
+self._delay = time.time() + self._config.startsecs
+self.context.pid_history[pid] = self
+"""
 import errno
 import os.path
 import shlex
@@ -105,6 +112,7 @@ class ProcessSpawning(Process):
 
     #
 
+
     def _record_spawn_err(self, msg: str) -> None:
         self._spawn_err = msg
         log.info('_spawn_err: %s', msg)
@@ -116,12 +124,12 @@ class ProcessSpawning(Process):
         """
 
         try:
-            commandargs = shlex.split(self._config.command)
+            args = shlex.split(self._config.command)
         except ValueError as e:
             raise BadCommandError(f"can't parse command {self._config.command!r}: {e}")  # noqa
 
-        if commandargs:
-            program = commandargs[0]
+        if args:
+            program = args[0]
         else:
             raise BadCommandError('command is empty')
 
@@ -144,6 +152,7 @@ class ProcessSpawning(Process):
                     pass
                 else:
                     break
+
             if st is None:
                 filename = program
             else:
@@ -151,9 +160,9 @@ class ProcessSpawning(Process):
 
         # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
         # options method call here only to service unit tests
-        check_execv_args(filename, commandargs, st)
+        check_execv_args(filename, args, st)
 
-        return filename, commandargs
+        return filename, args
 
     def spawn(self) -> ta.Optional[int]:
         process_name = as_string(self._config.name)
@@ -171,14 +180,14 @@ class ProcessSpawning(Process):
             ProcessState.STOPPED,
         )
 
-        self.change_state(ProcessState.STARTING)
+        self._states.change_state(ProcessState.STARTING)
 
         try:
             filename, argv = self._get_execv_args()
         except ProcessError as what:
             self._record_spawn_err(what.args[0])
             self._states.check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
+            self._states.change_state(ProcessState.BACKOFF)
             return None
 
         try:
@@ -192,7 +201,7 @@ class ProcessSpawning(Process):
                 msg = f"unknown error making dispatchers for '{process_name}': {errno.errorcode.get(code, code)}"
             self._record_spawn_err(msg)
             self._states.check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
+            self._states.change_state(ProcessState.BACKOFF)
             return None
 
         try:
@@ -206,7 +215,7 @@ class ProcessSpawning(Process):
                 msg = f'unknown error during fork for \'{process_name}\': {errno.errorcode.get(code, code)}'
             self._record_spawn_err(msg)
             self._states.check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
+            self._states.change_state(ProcessState.BACKOFF)
             close_parent_pipes(self._pipes)
             close_child_pipes(self._pipes)
             return None
@@ -325,10 +334,12 @@ class ProcessSpawning(Process):
                 if self._config.umask is not None:
                     os.umask(self._config.umask)
                 os.execve(filename, list(argv), env)
+
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = f"couldn't exec {argv[0]}: {code}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
+
             except Exception:  # noqa
                 (file, fun, line), t, v, tbinfo = compact_traceback()
                 error = f'{t}, {v}: file: {file} line: {line}'
