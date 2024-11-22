@@ -5054,10 +5054,6 @@ class CoroHttpServerSocketHandler(SocketHandler):
 # ../types.py
 
 
-if ta.TYPE_CHECKING:
-    from .dispatchers import Dispatchers
-
-
 ##
 
 

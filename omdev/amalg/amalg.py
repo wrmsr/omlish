@@ -273,8 +273,8 @@ def make_typing(
 ##
 
 
-def is_if_type_checking_block(lts: Tokens) -> bool:
-    return tks.match_toks(tks.ignore_ws(lts), [
+def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
+    return tks.match_toks(tks.ignore_ws(lts, keep=['INDENT']), [
         ('NAME', 'if'),
         ('NAME', 'ta'),
         ('OP', '.'),
@@ -365,8 +365,12 @@ def make_src_file(
                 for ml in mls
             ])
 
-        elif is_if_type_checking_block(line):
-            raise NotImplementedError
+        elif is_root_level_if_type_checking_block(line):
+            while True:
+                nl = cls[i]
+                if nl and nl[0].name != 'INDENT':
+                    break
+                i += 1
 
         else:
             ctls.append(line)
