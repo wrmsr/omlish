@@ -100,7 +100,18 @@ class TestArrays(unittest.TestCase):
         )
         i = inj.create_injector(bs)
         p = i.provide(Ints)
-        assert set(p) == {420, 421}
+        self.assertEqual(set(p), {420, 421})
+
+    # FIXME:
+    # def test_empty_array(self):
+    #     Ints = ta.NewType('Ints', ta.Sequence[int])  # noqa
+    #
+    #     bs = inj.as_bindings(
+    #         inj.bind_array_type(int, Ints),
+    #     )
+    #     i = inj.create_injector(bs)
+    #     p = i.provide(Ints)
+    #     self.assertEqual(len(p), 0)
 
     def test_listener_array(self):
         on_foos: list = []
@@ -125,8 +136,6 @@ class TestArrays(unittest.TestCase):
             def foo(self):
                 for l in self._listeners:
                     l.on_foo()
-
-        # FIXME: bind empty array
 
         i = inj.create_injector(
             inj.bind(Fooer, singleton=True),
