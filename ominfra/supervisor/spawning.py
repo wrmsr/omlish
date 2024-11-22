@@ -1,10 +1,12 @@
 # ruff: noqa: UP006 UP007
 """
-self._spawn_err = msg
-self.pid
-self._dispatchers, self._pipes = self._make_dispatchers()
-self._delay = time.time() + self._config.startsecs
-self.context.pid_history[pid] = self
+_delay
+_dispatchers
+_pipes
+_spawn_err
+context.config.minfds
+context.pid_history
+pid
 """
 import errno
 import os.path
