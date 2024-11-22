@@ -17,7 +17,10 @@ from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
 from .pipes import ProcessPipes
 from .pipes import close_parent_pipes
+from .processes import ProcessStateError
 from .signals import sig_name
+from .spawning import ProcessSpawnError
+from .spawning import ProcessSpawning
 from .states import ProcessState
 from .states import SupervisorState
 from .types import InputDispatcher
@@ -26,9 +29,6 @@ from .types import ProcessGroup
 from .types import ServerContext
 from .utils import as_string
 from .utils import decode_wait_status
-from .processes import ProcessStateError
-from .spawning import ProcessSpawning
-from .spawning import ProcessSpawnError
 
 
 class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
@@ -149,9 +149,8 @@ class ProcessImpl(Process):
         try:
             sp = self._spawning.spawn()
         except ProcessSpawnError as err:
-            msg = err.args[0]
-            self._spawn_err = msg
-            log.error('Spawn error: %s', msg)
+            log.exception('Spawn error')
+            self._spawn_err = err.args[0]
             self.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
             return None

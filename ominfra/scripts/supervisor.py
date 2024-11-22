@@ -1181,6 +1181,70 @@ class NoPermissionError(ProcessError):
 
 
 ########################################
+# ../privileges.py
+
+
+def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
+    """
+    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
+    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
+    dropped.
+    """
+
+    if user is None:
+        return 'No user specified to setuid to!'
+
+    # get uid for user, which can be a number or username
+    try:
+        uid = int(user)
+    except ValueError:
+        try:
+            pwrec = pwd.getpwnam(user)  # type: ignore
+        except KeyError:
+            return f"Can't find username {user!r}"
+        uid = pwrec[2]
+    else:
+        try:
+            pwrec = pwd.getpwuid(uid)
+        except KeyError:
+            return f"Can't find uid {uid!r}"
+
+    current_uid = os.getuid()
+
+    if current_uid == uid:
+        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
+        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
+        # it.
+        return None
+
+    if current_uid != 0:
+        return "Can't drop privilege as nonroot user"
+
+    gid = pwrec[3]
+    if hasattr(os, 'setgroups'):
+        user = pwrec[0]
+        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
+
+        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
+        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
+        # python 2.7 - this will be safe though for all unix /python version combos)
+        groups.insert(0, gid)
+        try:
+            os.setgroups(groups)
+        except OSError:
+            return 'Could not set groups of effective user'
+
+    try:
+        os.setgid(gid)
+    except OSError:
+        return 'Could not set group id of effective user'
+
+    os.setuid(uid)
+
+    return None
+
+
+########################################
 # ../signals.py
 
 
@@ -4073,8 +4137,11 @@ class ProcessPipes:
     stderr: ta.Optional[int] = None
     child_stderr: ta.Optional[int] = None
 
-    def as_dict(self) -> ta.Mapping[str, int]:
-        return dc.asdict(self)
+    def child_fds(self) -> ta.List[int]:
+        return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
+
+    def parent_fds(self) -> ta.List[int]:
+        return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
 
 
 def make_process_pipes(stderr=True) -> ProcessPipes:
@@ -4120,26 +4187,19 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
         raise
 
 
+def close_pipes(pipes: ProcessPipes) -> None:
+    close_parent_pipes(pipes)
+    close_child_pipes(pipes)
+
+
 def close_parent_pipes(pipes: ProcessPipes) -> None:
-    for name in (
-            'stdin',
-            'stdout',
-            'stderr',
-    ):
-        fd = getattr(pipes, name)
-        if fd is not None:
-            close_fd(fd)
+    for fd in pipes.parent_fds():
+        close_fd(fd)
 
 
 def close_child_pipes(pipes: ProcessPipes) -> None:
-    for name in (
-            'child_stdin',
-            'child_stdout',
-            'child_stderr',
-    ):
-        fd = getattr(pipes, name)
-        if fd is not None:
-            close_fd(fd)
+    for fd in pipes.child_fds():
+        close_fd(fd)
 
 
 ########################################
@@ -5567,66 +5627,6 @@ class ServerContextImpl(ServerContext):
             log.info('supervisord started with pid %s', pid)
 
 
-def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
-    """
-    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
-    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
-    dropped.
-    """
-
-    if user is None:
-        return 'No user specified to setuid to!'
-
-    # get uid for user, which can be a number or username
-    try:
-        uid = int(user)
-    except ValueError:
-        try:
-            pwrec = pwd.getpwnam(user)  # type: ignore
-        except KeyError:
-            return f"Can't find username {user!r}"
-        uid = pwrec[2]
-    else:
-        try:
-            pwrec = pwd.getpwuid(uid)
-        except KeyError:
-            return f"Can't find uid {uid!r}"
-
-    current_uid = os.getuid()
-
-    if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
-        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
-        # it.
-        return None
-
-    if current_uid != 0:
-        return "Can't drop privilege as nonroot user"
-
-    gid = pwrec[3]
-    if hasattr(os, 'setgroups'):
-        user = pwrec[0]
-        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
-
-        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
-        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
-        # python 2.7 - this will be safe though for all unix /python version combos)
-        groups.insert(0, gid)
-        try:
-            os.setgroups(groups)
-        except OSError:
-            return 'Could not set groups of effective user'
-
-    try:
-        os.setgid(gid)
-    except OSError:
-        return 'Could not set group id of effective user'
-
-    os.setuid(uid)
-
-    return None
-
-
 ########################################
 # ../dispatchers.py
 
@@ -6135,719 +6135,49 @@ class ProcessGroupImpl(ProcessGroup):
 
 
 ########################################
-# ../processesimpl.py
-
-
-class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
-    pass
-
-
-class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
-    pass
-
-
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+# ../processes.py
 
 
 ##
 
 
-class ProcessImpl(Process):
-    """A class to manage a subprocess."""
-
-    def __init__(
-            self,
-            config: ProcessConfig,
-            group: ProcessGroup,
-            *,
-            context: ServerContext,
-            event_callbacks: EventCallbacks,
-
-            output_dispatcher_factory: OutputDispatcherFactory,
-            input_dispatcher_factory: InputDispatcherFactory,
-
-            inherited_fds: ta.Optional[InheritedFds] = None,
-
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-        self._group = group
-
-        self._context = context
-        self._event_callbacks = event_callbacks
-
-        self._output_dispatcher_factory = output_dispatcher_factory
-        self._input_dispatcher_factory = input_dispatcher_factory
-
-        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
-
-        self._dispatchers = Dispatchers([])
-        self._pipes = ProcessPipes()
-
-        self._state = ProcessState.STOPPED
-        self._pid = 0  # 0 when not running
-
-        self._last_start = 0.  # Last time the subprocess was started; 0 if never
-        self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
-        self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
-        self._delay = 0.  # If nonzero, delay starting or killing until this time
-
-        self._administrative_stop = False  # true if process has been stopped by an admin
-        self._system_stop = False  # true if process has been stopped by the system
-
-        self._killing = False  # true if we are trying to kill this process
-
-        self._backoff = 0  # backoff counter (to startretries)
-
-        self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
-        self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
-
-    #
-
-    def __repr__(self) -> str:
-        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
-
-    #
-
-    @property
-    def name(self) -> str:
-        return self._config.name
-
-    @property
-    def config(self) -> ProcessConfig:
-        return self._config
-
-    @property
-    def group(self) -> ProcessGroup:
-        return self._group
-
-    @property
-    def pid(self) -> int:
-        return self._pid
-
-    #
-
-    @property
-    def context(self) -> ServerContext:
-        return self._context
-
-    @property
-    def state(self) -> ProcessState:
-        return self._state
-
-    @property
-    def backoff(self) -> int:
-        return self._backoff
-
-    def get_dispatchers(self) -> Dispatchers:
-        return self._dispatchers
-
-    def write(self, chars: ta.Union[bytes, str]) -> None:
-        if not self.pid or self._killing:
-            raise OSError(errno.EPIPE, 'Process already closed')
-
-        stdin_fd = self._pipes.stdin
-        if stdin_fd is None:
-            raise OSError(errno.EPIPE, 'Process has no stdin channel')
-
-        dispatcher = check_isinstance(self._dispatchers[stdin_fd], InputDispatcher)
-        if dispatcher.closed:
-            raise OSError(errno.EPIPE, "Process' stdin channel is closed")
-
-        dispatcher.write(chars)
-        dispatcher.flush()  # this must raise EPIPE if the pipe is closed
-
-    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
-        """
-        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
-        ProcessError if not
-        """
-
-        try:
-            commandargs = shlex.split(self._config.command)
-        except ValueError as e:
-            raise BadCommandError(f"can't parse command {self._config.command!r}: {e}")  # noqa
-
-        if commandargs:
-            program = commandargs[0]
-        else:
-            raise BadCommandError('command is empty')
-
-        if '/' in program:
-            filename = program
-            try:
-                st = os.stat(filename)
-            except OSError:
-                st = None
-
-        else:
-            path = get_path()
-            found = None
-            st = None
-            for dir in path:  # noqa
-                found = os.path.join(dir, program)
-                try:
-                    st = os.stat(found)
-                except OSError:
-                    pass
-                else:
-                    break
-            if st is None:
-                filename = program
-            else:
-                filename = found  # type: ignore
-
-        # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
-        # options method call here only to service unit tests
-        check_execv_args(filename, commandargs, st)
-
-        return filename, commandargs
-
-    def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
-        old_state = self._state
-        if new_state is old_state:
-            return False
-
-        self._state = new_state
-        if new_state == ProcessState.BACKOFF:
-            now = time.time()
-            self._backoff += 1
-            self._delay = now + self._backoff
-
-        event_class = PROCESS_STATE_EVENT_MAP.get(new_state)
-        if event_class is not None:
-            event = event_class(self, old_state, expected)
-            self._event_callbacks.notify(event)
-
-        return True
-
-    def _check_in_state(self, *states: ProcessState) -> None:
-        if self._state not in states:
-            current_state = self._state.name
-            allowable_states = ' '.join(s.name for s in states)
-            process_name = as_string(self._config.name)
-            raise RuntimeError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
-
-    def _record_spawn_err(self, msg: str) -> None:
-        self._spawn_err = msg
-        log.info('_spawn_err: %s', msg)
-
-    def spawn(self) -> ta.Optional[int]:
-        process_name = as_string(self._config.name)
-
-        if self.pid:
-            log.warning('process \'%s\' already running', process_name)
-            return None
-
-        self._killing = False
-        self._spawn_err = None
-        self._exitstatus = None
-        self._system_stop = False
-        self._administrative_stop = False
-
-        self._last_start = time.time()
-
-        self._check_in_state(
-            ProcessState.EXITED,
-            ProcessState.FATAL,
-            ProcessState.BACKOFF,
-            ProcessState.STOPPED,
-        )
-
-        self.change_state(ProcessState.STARTING)
-
-        try:
-            filename, argv = self._get_execv_args()
-        except ProcessError as what:
-            self._record_spawn_err(what.args[0])
-            self._check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
-            return None
-
-        try:
-            self._dispatchers, self._pipes = self._make_dispatchers()
-        except OSError as why:
-            code = why.args[0]
-            if code == errno.EMFILE:
-                # too many file descriptors open
-                msg = f"too many open files to spawn '{process_name}'"
-            else:
-                msg = f"unknown error making dispatchers for '{process_name}': {errno.errorcode.get(code, code)}"
-            self._record_spawn_err(msg)
-            self._check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
-            return None
-
-        try:
-            pid = os.fork()
-        except OSError as why:
-            code = why.args[0]
-            if code == errno.EAGAIN:
-                # process table full
-                msg = f'Too many processes in process table to spawn \'{process_name}\''
-            else:
-                msg = f'unknown error during fork for \'{process_name}\': {errno.errorcode.get(code, code)}'
-            self._record_spawn_err(msg)
-            self._check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
-            close_parent_pipes(self._pipes)
-            close_child_pipes(self._pipes)
-            return None
-
-        if pid != 0:
-            return self._spawn_as_parent(pid)
-
-        else:
-            self._spawn_as_child(filename, argv)
-            return None
-
-    def _make_dispatchers(self) -> ta.Tuple[Dispatchers, ProcessPipes]:
-        use_stderr = not self._config.redirect_stderr
-
-        p = make_process_pipes(use_stderr)
-
-        dispatchers: ta.List[Dispatcher] = []
-
-        etype: ta.Type[ProcessCommunicationEvent]
-        if p.stdout is not None:
-            etype = ProcessCommunicationStdoutEvent
-            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
-                self,
-                etype,
-                p.stdout,
-            ), OutputDispatcher))
-
-        if p.stderr is not None:
-            etype = ProcessCommunicationStderrEvent
-            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
-                self,
-                etype,
-                p.stderr,
-            ), OutputDispatcher))
-
-        if p.stdin is not None:
-            dispatchers.append(check_isinstance(self._input_dispatcher_factory(
-                self,
-                'stdin',
-                p.stdin,
-            ), InputDispatcher))
-
-        return Dispatchers(dispatchers), p
-
-    def _spawn_as_parent(self, pid: int) -> int:
-        # Parent
-        self._pid = pid
-        close_child_pipes(self._pipes)
-        log.info('spawned: \'%s\' with pid %s', as_string(self._config.name), pid)
-        self._spawn_err = None
-        self._delay = time.time() + self._config.startsecs
-        self.context.pid_history[pid] = self
-        return pid
-
-    def _prepare_child_fds(self) -> None:
-        os.dup2(check_not_none(self._pipes.child_stdin), 0)
-        os.dup2(check_not_none(self._pipes.child_stdout), 1)
-        if self._config.redirect_stderr:
-            os.dup2(check_not_none(self._pipes.child_stdout), 2)
-        else:
-            os.dup2(check_not_none(self._pipes.child_stderr), 2)
-
-        for i in range(3, self.context.config.minfds):
-            if i in self._inherited_fds:
-                continue
-            close_fd(i)
-
-    def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
-        try:
-            # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
-            # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
-            # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
-            # Presumably it also prevents HUP, etc received by supervisord from being sent to children.
-            os.setpgrp()
-
-            self._prepare_child_fds()
-            # sending to fd 2 will put this output in the stderr log
-
-            # set user
-            setuid_msg = self.set_uid()
-            if setuid_msg:
-                uid = self._config.uid
-                msg = f"couldn't setuid to {uid}: {setuid_msg}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-                return  # finally clause will exit the child process
-
-            # set environment
-            env = os.environ.copy()
-            env['SUPERVISOR_ENABLED'] = '1'
-            env['SUPERVISOR_PROCESS_NAME'] = self._config.name
-            if self._group:
-                env['SUPERVISOR_GROUP_NAME'] = self._group.config.name
-            if self._config.environment is not None:
-                env.update(self._config.environment)
-
-            # change directory
-            cwd = self._config.directory
-            try:
-                if cwd is not None:
-                    os.chdir(os.path.expanduser(cwd))
-            except OSError as why:
-                code = errno.errorcode.get(why.args[0], why.args[0])
-                msg = f"couldn't chdir to {cwd}: {code}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-                return  # finally clause will exit the child process
-
-            # set umask, then execve
-            try:
-                if self._config.umask is not None:
-                    os.umask(self._config.umask)
-                os.execve(filename, list(argv), env)
-            except OSError as why:
-                code = errno.errorcode.get(why.args[0], why.args[0])
-                msg = f"couldn't exec {argv[0]}: {code}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-            except Exception:  # noqa
-                (file, fun, line), t, v, tbinfo = compact_traceback()
-                error = f'{t}, {v}: file: {file} line: {line}'
-                msg = f"couldn't exec {filename}: {error}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-
-            # this point should only be reached if execve failed. the finally clause will exit the child process.
-
-        finally:
-            os.write(2, as_bytes('supervisor: child process was not spawned\n'))
-            real_exit(127)  # exit process with code for spawn failure
-
-    def _check_and_adjust_for_system_clock_rollback(self, test_time):
-        """
-        Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
-        """
-
-        if self._state == ProcessState.STARTING:
-            self._last_start = min(test_time, self._last_start)
-            if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
-                self._delay = test_time + self._config.startsecs
-
-        elif self._state == ProcessState.RUNNING:
-            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
-                self._last_start = test_time - self._config.startsecs
-
-        elif self._state == ProcessState.STOPPING:
-            self._last_stop_report = min(test_time, self._last_stop_report)
-            if self._delay > 0 and test_time < (self._delay - self._config.stopwaitsecs):
-                self._delay = test_time + self._config.stopwaitsecs
-
-        elif self._state == ProcessState.BACKOFF:
-            if self._delay > 0 and test_time < (self._delay - self._backoff):
-                self._delay = test_time + self._backoff
-
-    def stop(self) -> ta.Optional[str]:
-        self._administrative_stop = True
-        self._last_stop_report = 0
-        return self.kill(self._config.stopsignal)
-
-    def stop_report(self) -> None:
-        """Log a 'waiting for x to stop' message with throttling."""
-
-        if self._state == ProcessState.STOPPING:
-            now = time.time()
-
-            self._check_and_adjust_for_system_clock_rollback(now)
-
-            if now > (self._last_stop_report + 2):  # every 2 seconds
-                log.info('waiting for %s to stop', as_string(self._config.name))
-                self._last_stop_report = now
-
-    def give_up(self) -> None:
-        self._delay = 0
-        self._backoff = 0
-        self._system_stop = True
-        self._check_in_state(ProcessState.BACKOFF)
-        self.change_state(ProcessState.FATAL)
-
-    def kill(self, sig: int) -> ta.Optional[str]:
-        """
-        Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
-        kill it.
-
-        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
-        running.
-        """
-        now = time.time()
-
-        process_name = as_string(self._config.name)
-        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
-        # if startretries is a large number and the process isn't starting successfully, the stop request would be
-        # blocked for a long time waiting for the retries.
-        if self._state == ProcessState.BACKOFF:
-            log.debug('Attempted to kill %s, which is in BACKOFF state.', process_name)
-            self.change_state(ProcessState.STOPPED)
-            return None
-
-        args: tuple
-        if not self.pid:
-            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (process_name, sig_name(sig))
-            log.debug(fmt, *args)
-            return fmt % args
-
-        # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
-        if self._state == ProcessState.STOPPING:
-            killasgroup = self._config.killasgroup
-        else:
-            killasgroup = self._config.stopasgroup
-
-        as_group = ''
-        if killasgroup:
-            as_group = 'process group '
-
-        log.debug('killing %s (pid %s) %s with signal %s', process_name, self.pid, as_group, sig_name(sig))
-
-        # RUNNING/STARTING/STOPPING -> STOPPING
-        self._killing = True
-        self._delay = now + self._config.stopwaitsecs
-        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
-        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
-        self.change_state(ProcessState.STOPPING)
-
-        pid = self.pid
-        if killasgroup:
-            # send to the whole process group instead
-            pid = -self.pid
-
-        try:
-            try:
-                os.kill(pid, sig)
-            except OSError as exc:
-                if exc.errno == errno.ESRCH:
-                    log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', process_name, self.pid, str(exc))  # noqa
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
-                    # processing.
-                    return None
-                raise
-        except Exception:  # noqa
-            tb = traceback.format_exc()
-            fmt, args = 'unknown problem killing %s (%s):%s', (process_name, self.pid, tb)
-            log.critical(fmt, *args)
-            self.change_state(ProcessState.UNKNOWN)
-            self._killing = False
-            self._delay = 0
-            return fmt % args
-
-        return None
-
-    def signal(self, sig: int) -> ta.Optional[str]:
-        """
-        Send a signal to the subprocess, without intending to kill it.
-
-        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
-        running.
-        """
-        process_name = as_string(self._config.name)
-        args: tuple
-        if not self.pid:
-            fmt, args = "attempted to send %s sig %s but it wasn't running", (process_name, sig_name(sig))
-            log.debug(fmt, *args)
-            return fmt % args
-
-        log.debug('sending %s (pid %s) sig %s', process_name, self.pid, sig_name(sig))
-
-        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
-
-        try:
-            try:
-                os.kill(self.pid, sig)
-            except OSError as exc:
-                if exc.errno == errno.ESRCH:
-                    log.debug(
-                        'unable to signal %s (pid %s), it probably just now exited on its own: %s',
-                        process_name,
-                        self.pid,
-                        str(exc),
-                    )
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
-                    # processing.
-                    return None
-                raise
-        except Exception:  # noqa
-            tb = traceback.format_exc()
-            fmt, args = 'unknown problem sending sig %s (%s):%s', (process_name, self.pid, tb)
-            log.critical(fmt, *args)
-            self.change_state(ProcessState.UNKNOWN)
-            return fmt % args
-
-        return None
-
-    def finish(self, sts: int) -> None:
-        """The process was reaped and we need to report and manage its state."""
-
-        self._dispatchers.drain()
-
-        es, msg = decode_wait_status(sts)
-
-        now = time.time()
-
-        self._check_and_adjust_for_system_clock_rollback(now)
-
-        self._last_stop = now
-        process_name = as_string(self._config.name)
-
-        if now > self._last_start:
-            too_quickly = now - self._last_start < self._config.startsecs
-        else:
-            too_quickly = False
-            log.warning(
-                "process '%s' (%s) last_start time is in the future, don't know how long process was running so "
-                "assuming it did not exit too quickly",
-                process_name,
-                self.pid,
-            )
-
-        exit_expected = es in self._config.exitcodes
-
-        if self._killing:
-            # likely the result of a stop request implies STOPPING -> STOPPED
-            self._killing = False
-            self._delay = 0
-            self._exitstatus = es
-
-            fmt, args = 'stopped: %s (%s)', (process_name, msg)
-            self._check_in_state(ProcessState.STOPPING)
-            self.change_state(ProcessState.STOPPED)
-            if exit_expected:
-                log.info(fmt, *args)
-            else:
-                log.warning(fmt, *args)
-
-        elif too_quickly:
-            # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
-            self._exitstatus = None
-            self._spawn_err = 'Exited too quickly (process log may have details)'
-            self._check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
-            log.warning('exited: %s (%s)', process_name, msg + '; not expected')
-
-        else:
-            # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
-            # RUNNING -> EXITED normally but see next comment
-            self._delay = 0
-            self._backoff = 0
-            self._exitstatus = es
-
-            # if the process was STARTING but a system time change causes self.last_start to be in the future, the
-            # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
-            if self._state == ProcessState.STARTING:
-                self.change_state(ProcessState.RUNNING)
-
-            self._check_in_state(ProcessState.RUNNING)
-
-            if exit_expected:
-                # expected exit code
-                self.change_state(ProcessState.EXITED, expected=True)
-                log.info('exited: %s (%s)', process_name, msg + '; expected')
-            else:
-                # unexpected exit code
-                self._spawn_err = f'Bad exit code {es}'
-                self.change_state(ProcessState.EXITED, expected=False)
-                log.warning('exited: %s (%s)', process_name, msg + '; not expected')
-
-        self._pid = 0
-        close_parent_pipes(self._pipes)
-        self._pipes = ProcessPipes()
-        self._dispatchers = Dispatchers([])
-
-    def set_uid(self) -> ta.Optional[str]:
-        if self._config.uid is None:
-            return None
-        msg = drop_privileges(self._config.uid)
-        return msg
-
-    def get_state(self) -> ProcessState:
-        return self._state
-
-    def transition(self) -> None:
-        now = time.time()
-        state = self._state
-
-        self._check_and_adjust_for_system_clock_rollback(now)
-
-        logger = log
-
-        if self.context.state > SupervisorState.RESTARTING:
-            # dont start any processes if supervisor is shutting down
-            if state == ProcessState.EXITED:
-                if self._config.autorestart:
-                    if self._config.autorestart is RestartUnconditionally:
-                        # EXITED -> STARTING
-                        self.spawn()
-                    elif self._exitstatus not in self._config.exitcodes:
-                        # EXITED -> STARTING
-                        self.spawn()
-
-            elif state == ProcessState.STOPPED and not self._last_start:
-                if self._config.autostart:
-                    # STOPPED -> STARTING
-                    self.spawn()
-
-            elif state == ProcessState.BACKOFF:
-                if self._backoff <= self._config.startretries:
-                    if now > self._delay:
-                        # BACKOFF -> STARTING
-                        self.spawn()
-
-        process_name = as_string(self._config.name)
-        if state == ProcessState.STARTING:
-            if now - self._last_start > self._config.startsecs:
-                # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
-                # proc.config.startsecs,
-                self._delay = 0
-                self._backoff = 0
-                self._check_in_state(ProcessState.STARTING)
-                self.change_state(ProcessState.RUNNING)
-                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
-                logger.info('success: %s %s', process_name, msg)
-
-        if state == ProcessState.BACKOFF:
-            if self._backoff > self._config.startretries:
-                # BACKOFF -> FATAL if the proc has exceeded its number of retries
-                self.give_up()
-                msg = ('entered FATAL state, too many start retries too quickly')
-                logger.info('gave up: %s %s', process_name, msg)
-
-        elif state == ProcessState.STOPPING:
-            time_left = self._delay - now
-            if time_left <= 0:
-                # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
-                # process will be stuck in the STOPPING state forever.
-                log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
-                self.kill(signal.SIGKILL)
-
-    def after_setuid(self) -> None:
-        # temporary logfiles which are erased at start time
-        # get_autoname = self.context.get_auto_child_log_name  # noqa
-        # sid = self.context.config.identifier  # noqa
-        # name = self._config.name  # noqa
-        # if self.stdout_logfile is Automatic:
-        #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
-        # if self.stderr_logfile is Automatic:
-        #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
-        pass
+class ProcessStateError(RuntimeError):
+    pass
 
 
 ##
 
 
-def check_execv_args(filename, argv, st) -> None:
-    if st is None:
-        raise NotFoundError(f"can't find command {filename!r}")
+class PidHistory(ta.Dict[int, Process]):
+    pass
 
-    elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutableError(f'command at {filename!r} is a directory')
 
-    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutableError(f'command at {filename!r} is not executable')
+########################################
+# ../spawning.py
 
-    elif not os.access(filename, os.X_OK):
-        raise NoPermissionError(f'no permission to run command {filename!r}')
+
+@dc.dataclass(frozen=True)
+class SpawnedProcess:
+    pid: int
+    pipes: ProcessPipes
+    dispatchers: Dispatchers
+
+
+class ProcessSpawnError(RuntimeError):
+    pass
+
+
+class ProcessSpawning:
+    @property
+    @abc.abstractmethod
+    def process(self) -> Process:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
+        raise NotImplementedError
 
 
 ########################################
@@ -6929,6 +6259,7 @@ class Supervisor:
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
+            pid_history: PidHistory,
     ) -> None:
         super().__init__()
 
@@ -6938,6 +6269,7 @@ class Supervisor:
         self._signal_handler = signal_handler
         self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
+        self._pid_history = pid_history
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -7165,13 +6497,13 @@ class Supervisor:
         if not pid:
             return
 
-        process = self._context.pid_history.get(pid, None)
+        process = self._pid_history.get(pid, None)
         if process is None:
             _, msg = decode_wait_status(check_not_none(sts))
             log.info('reaped unknown pid %s (%s)', pid, msg)
         else:
             process.finish(check_not_none(sts))
-            del self._context.pid_history[pid]
+            del self._pid_history[pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
@@ -7196,6 +6528,810 @@ class Supervisor:
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
                 self._event_callbacks.notify(event(this_tick, self))
+
+
+########################################
+# ../processesimpl.py
+
+
+class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
+    pass
+
+
+##
+
+
+class ProcessImpl(Process):
+    """A class to manage a subprocess."""
+
+    def __init__(
+            self,
+            config: ProcessConfig,
+            group: ProcessGroup,
+            *,
+            context: ServerContext,
+            event_callbacks: EventCallbacks,
+            process_spawning_factory: ProcessSpawningFactory,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._group = group
+
+        self._context = context
+        self._event_callbacks = event_callbacks
+
+        self._spawning = process_spawning_factory(self)
+
+        #
+
+        self._dispatchers = Dispatchers([])
+        self._pipes = ProcessPipes()
+
+        self._state = ProcessState.STOPPED
+        self._pid = 0  # 0 when not running
+
+        self._last_start = 0.  # Last time the subprocess was started; 0 if never
+        self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
+        self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
+        self._delay = 0.  # If nonzero, delay starting or killing until this time
+
+        self._administrative_stop = False  # true if process has been stopped by an admin
+        self._system_stop = False  # true if process has been stopped by the system
+
+        self._killing = False  # true if we are trying to kill this process
+
+        self._backoff = 0  # backoff counter (to startretries)
+
+        self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
+        self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
+
+    #
+
+    def __repr__(self) -> str:
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
+
+    #
+
+    @property
+    def name(self) -> str:
+        return self._config.name
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._config
+
+    @property
+    def group(self) -> ProcessGroup:
+        return self._group
+
+    @property
+    def pid(self) -> int:
+        return self._pid
+
+    #
+
+    @property
+    def context(self) -> ServerContext:
+        return self._context
+
+    @property
+    def state(self) -> ProcessState:
+        return self._state
+
+    @property
+    def backoff(self) -> int:
+        return self._backoff
+
+    #
+
+    def spawn(self) -> ta.Optional[int]:
+        process_name = as_string(self._config.name)
+
+        if self.pid:
+            log.warning('process \'%s\' already running', process_name)
+            return None
+
+        self.check_in_state(
+            ProcessState.EXITED,
+            ProcessState.FATAL,
+            ProcessState.BACKOFF,
+            ProcessState.STOPPED,
+        )
+
+        self._killing = False
+        self._spawn_err = None
+        self._exitstatus = None
+        self._system_stop = False
+        self._administrative_stop = False
+
+        self._last_start = time.time()
+
+        self.change_state(ProcessState.STARTING)
+
+        try:
+            sp = self._spawning.spawn()
+        except ProcessSpawnError as err:
+            log.exception('Spawn error')
+            self._spawn_err = err.args[0]
+            self.check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
+            return None
+
+        log.info("Spawned: '%s' with pid %s", self.name, sp.pid)
+
+        self._pid = sp.pid
+        self._pipes = sp.pipes
+        self._dispatchers = sp.dispatchers
+
+        self._delay = time.time() + self.config.startsecs
+
+        return sp.pid
+
+    def get_dispatchers(self) -> Dispatchers:
+        return self._dispatchers
+
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        if not self.pid or self._killing:
+            raise OSError(errno.EPIPE, 'Process already closed')
+
+        stdin_fd = self._pipes.stdin
+        if stdin_fd is None:
+            raise OSError(errno.EPIPE, 'Process has no stdin channel')
+
+        dispatcher = check_isinstance(self._dispatchers[stdin_fd], InputDispatcher)
+        if dispatcher.closed:
+            raise OSError(errno.EPIPE, "Process' stdin channel is closed")
+
+        dispatcher.write(chars)
+        dispatcher.flush()  # this must raise EPIPE if the pipe is closed
+
+    #
+
+    def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
+        old_state = self._state
+        if new_state is old_state:
+            return False
+
+        self._state = new_state
+        if new_state == ProcessState.BACKOFF:
+            now = time.time()
+            self._backoff += 1
+            self._delay = now + self._backoff
+
+        event_class = PROCESS_STATE_EVENT_MAP.get(new_state)
+        if event_class is not None:
+            event = event_class(self, old_state, expected)
+            self._event_callbacks.notify(event)
+
+        return True
+
+    def check_in_state(self, *states: ProcessState) -> None:
+        if self._state not in states:
+            raise ProcessStateError(
+                f'Check failed for {self._config.name}: '
+                f'{self._state.name} not in {" ".join(s.name for s in states)}',
+            )
+
+    #
+
+    def _check_and_adjust_for_system_clock_rollback(self, test_time):
+        """
+        Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
+        """
+
+        if self._state == ProcessState.STARTING:
+            self._last_start = min(test_time, self._last_start)
+            if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
+                self._delay = test_time + self._config.startsecs
+
+        elif self._state == ProcessState.RUNNING:
+            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
+                self._last_start = test_time - self._config.startsecs
+
+        elif self._state == ProcessState.STOPPING:
+            self._last_stop_report = min(test_time, self._last_stop_report)
+            if self._delay > 0 and test_time < (self._delay - self._config.stopwaitsecs):
+                self._delay = test_time + self._config.stopwaitsecs
+
+        elif self._state == ProcessState.BACKOFF:
+            if self._delay > 0 and test_time < (self._delay - self._backoff):
+                self._delay = test_time + self._backoff
+
+    def stop(self) -> ta.Optional[str]:
+        self._administrative_stop = True
+        self._last_stop_report = 0
+        return self.kill(self._config.stopsignal)
+
+    def stop_report(self) -> None:
+        """Log a 'waiting for x to stop' message with throttling."""
+
+        if self._state == ProcessState.STOPPING:
+            now = time.time()
+
+            self._check_and_adjust_for_system_clock_rollback(now)
+
+            if now > (self._last_stop_report + 2):  # every 2 seconds
+                log.info('waiting for %s to stop', as_string(self._config.name))
+                self._last_stop_report = now
+
+    def give_up(self) -> None:
+        self._delay = 0
+        self._backoff = 0
+        self._system_stop = True
+        self.check_in_state(ProcessState.BACKOFF)
+        self.change_state(ProcessState.FATAL)
+
+    def kill(self, sig: int) -> ta.Optional[str]:
+        """
+        Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
+        kill it.
+
+        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
+        running.
+        """
+        now = time.time()
+
+        process_name = as_string(self._config.name)
+        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
+        # if startretries is a large number and the process isn't starting successfully, the stop request would be
+        # blocked for a long time waiting for the retries.
+        if self._state == ProcessState.BACKOFF:
+            log.debug('Attempted to kill %s, which is in BACKOFF state.', process_name)
+            self.change_state(ProcessState.STOPPED)
+            return None
+
+        args: tuple
+        if not self.pid:
+            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (process_name, sig_name(sig))
+            log.debug(fmt, *args)
+            return fmt % args
+
+        # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
+        if self._state == ProcessState.STOPPING:
+            killasgroup = self._config.killasgroup
+        else:
+            killasgroup = self._config.stopasgroup
+
+        as_group = ''
+        if killasgroup:
+            as_group = 'process group '
+
+        log.debug('killing %s (pid %s) %s with signal %s', process_name, self.pid, as_group, sig_name(sig))
+
+        # RUNNING/STARTING/STOPPING -> STOPPING
+        self._killing = True
+        self._delay = now + self._config.stopwaitsecs
+        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
+        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self.change_state(ProcessState.STOPPING)
+
+        pid = self.pid
+        if killasgroup:
+            # send to the whole process group instead
+            pid = -self.pid
+
+        try:
+            try:
+                os.kill(pid, sig)
+            except OSError as exc:
+                if exc.errno == errno.ESRCH:
+                    log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', process_name, self.pid, str(exc))  # noqa
+                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # processing.
+                    return None
+                raise
+        except Exception:  # noqa
+            tb = traceback.format_exc()
+            fmt, args = 'unknown problem killing %s (%s):%s', (process_name, self.pid, tb)
+            log.critical(fmt, *args)
+            self.change_state(ProcessState.UNKNOWN)
+            self._killing = False
+            self._delay = 0
+            return fmt % args
+
+        return None
+
+    def signal(self, sig: int) -> ta.Optional[str]:
+        """
+        Send a signal to the subprocess, without intending to kill it.
+
+        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
+        running.
+        """
+        process_name = as_string(self._config.name)
+        args: tuple
+        if not self.pid:
+            fmt, args = "attempted to send %s sig %s but it wasn't running", (process_name, sig_name(sig))
+            log.debug(fmt, *args)
+            return fmt % args
+
+        log.debug('sending %s (pid %s) sig %s', process_name, self.pid, sig_name(sig))
+
+        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+
+        try:
+            try:
+                os.kill(self.pid, sig)
+            except OSError as exc:
+                if exc.errno == errno.ESRCH:
+                    log.debug(
+                        'unable to signal %s (pid %s), it probably just now exited on its own: %s',
+                        process_name,
+                        self.pid,
+                        str(exc),
+                    )
+                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # processing.
+                    return None
+                raise
+        except Exception:  # noqa
+            tb = traceback.format_exc()
+            fmt, args = 'unknown problem sending sig %s (%s):%s', (process_name, self.pid, tb)
+            log.critical(fmt, *args)
+            self.change_state(ProcessState.UNKNOWN)
+            return fmt % args
+
+        return None
+
+    def finish(self, sts: int) -> None:
+        """The process was reaped and we need to report and manage its state."""
+
+        self._dispatchers.drain()
+
+        es, msg = decode_wait_status(sts)
+
+        now = time.time()
+
+        self._check_and_adjust_for_system_clock_rollback(now)
+
+        self._last_stop = now
+        process_name = as_string(self._config.name)
+
+        if now > self._last_start:
+            too_quickly = now - self._last_start < self._config.startsecs
+        else:
+            too_quickly = False
+            log.warning(
+                "process '%s' (%s) last_start time is in the future, don't know how long process was running so "
+                "assuming it did not exit too quickly",
+                process_name,
+                self.pid,
+            )
+
+        exit_expected = es in self._config.exitcodes
+
+        if self._killing:
+            # likely the result of a stop request implies STOPPING -> STOPPED
+            self._killing = False
+            self._delay = 0
+            self._exitstatus = es
+
+            fmt, args = 'stopped: %s (%s)', (process_name, msg)
+            self.check_in_state(ProcessState.STOPPING)
+            self.change_state(ProcessState.STOPPED)
+            if exit_expected:
+                log.info(fmt, *args)
+            else:
+                log.warning(fmt, *args)
+
+        elif too_quickly:
+            # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
+            self._exitstatus = None
+            self._spawn_err = 'Exited too quickly (process log may have details)'
+            self.check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
+            log.warning('exited: %s (%s)', process_name, msg + '; not expected')
+
+        else:
+            # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
+            # RUNNING -> EXITED normally but see next comment
+            self._delay = 0
+            self._backoff = 0
+            self._exitstatus = es
+
+            # if the process was STARTING but a system time change causes self.last_start to be in the future, the
+            # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
+            if self._state == ProcessState.STARTING:
+                self.change_state(ProcessState.RUNNING)
+
+            self.check_in_state(ProcessState.RUNNING)
+
+            if exit_expected:
+                # expected exit code
+                self.change_state(ProcessState.EXITED, expected=True)
+                log.info('exited: %s (%s)', process_name, msg + '; expected')
+            else:
+                # unexpected exit code
+                self._spawn_err = f'Bad exit code {es}'
+                self.change_state(ProcessState.EXITED, expected=False)
+                log.warning('exited: %s (%s)', process_name, msg + '; not expected')
+
+        self._pid = 0
+        close_parent_pipes(self._pipes)
+        self._pipes = ProcessPipes()
+        self._dispatchers = Dispatchers([])
+
+    def get_state(self) -> ProcessState:
+        return self._state
+
+    def transition(self) -> None:
+        now = time.time()
+        state = self._state
+
+        self._check_and_adjust_for_system_clock_rollback(now)
+
+        logger = log
+
+        if self.context.state > SupervisorState.RESTARTING:
+            # dont start any processes if supervisor is shutting down
+            if state == ProcessState.EXITED:
+                if self._config.autorestart:
+                    if self._config.autorestart is RestartUnconditionally:
+                        # EXITED -> STARTING
+                        self.spawn()
+                    elif self._exitstatus not in self._config.exitcodes:
+                        # EXITED -> STARTING
+                        self.spawn()
+
+            elif state == ProcessState.STOPPED and not self._last_start:
+                if self._config.autostart:
+                    # STOPPED -> STARTING
+                    self.spawn()
+
+            elif state == ProcessState.BACKOFF:
+                if self._backoff <= self._config.startretries:
+                    if now > self._delay:
+                        # BACKOFF -> STARTING
+                        self.spawn()
+
+        process_name = as_string(self._config.name)
+        if state == ProcessState.STARTING:
+            if now - self._last_start > self._config.startsecs:
+                # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
+                # proc.config.startsecs,
+                self._delay = 0
+                self._backoff = 0
+                self.check_in_state(ProcessState.STARTING)
+                self.change_state(ProcessState.RUNNING)
+                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
+                logger.info('success: %s %s', process_name, msg)
+
+        if state == ProcessState.BACKOFF:
+            if self._backoff > self._config.startretries:
+                # BACKOFF -> FATAL if the proc has exceeded its number of retries
+                self.give_up()
+                msg = ('entered FATAL state, too many start retries too quickly')
+                logger.info('gave up: %s %s', process_name, msg)
+
+        elif state == ProcessState.STOPPING:
+            time_left = self._delay - now
+            if time_left <= 0:
+                # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
+                # process will be stuck in the STOPPING state forever.
+                log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
+                self.kill(signal.SIGKILL)
+
+    def after_setuid(self) -> None:
+        # temporary logfiles which are erased at start time
+        # get_autoname = self.context.get_auto_child_log_name  # noqa
+        # sid = self.context.config.identifier  # noqa
+        # name = self._config.name  # noqa
+        # if self.stdout_logfile is Automatic:
+        #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
+        # if self.stderr_logfile is Automatic:
+        #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
+        pass
+
+
+########################################
+# ../spawningimpl.py
+
+
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+    pass
+
+
+class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+    pass
+
+
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
+
+##
+
+
+class ProcessSpawningImpl(ProcessSpawning):
+    def __init__(
+            self,
+            process: Process,
+            *,
+            server_config: ServerConfig,
+            pid_history: PidHistory,
+
+            output_dispatcher_factory: OutputDispatcherFactory,
+            input_dispatcher_factory: InputDispatcherFactory,
+
+            inherited_fds: ta.Optional[InheritedFds] = None,
+    ) -> None:
+        super().__init__()
+
+        self._process = process
+
+        self._server_config = server_config
+        self._pid_history = pid_history
+
+        self._output_dispatcher_factory = output_dispatcher_factory
+        self._input_dispatcher_factory = input_dispatcher_factory
+
+        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
+
+    #
+
+    @property
+    def process(self) -> Process:
+        return self._process
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._process.config
+
+    @property
+    def group(self) -> ProcessGroup:
+        return self._process.group
+
+    #
+
+    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
+        try:
+            exe, argv = self._get_execv_args()
+        except ProcessError as exc:
+            raise ProcessSpawnError(exc.args[0]) from exc
+
+        try:
+            pipes = make_process_pipes(not self.config.redirect_stderr)
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EMFILE:
+                # too many file descriptors open
+                msg = f"Too many open files to spawn '{self.process.name}'"
+            else:
+                msg = f"Unknown error making pipes for '{self.process.name}': {errno.errorcode.get(code, code)}"
+            raise ProcessSpawnError(msg) from exc
+
+        try:
+            dispatchers = self._make_dispatchers(pipes)
+        except Exception as exc:  # noqa
+            close_pipes(pipes)
+            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
+
+        try:
+            pid = os.fork()
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EAGAIN:
+                # process table full
+                msg = f"Too many processes in process table to spawn '{self.process.name}'"
+            else:
+                msg = f"Unknown error during fork for '{self.process.name}': {errno.errorcode.get(code, code)}"
+            err = ProcessSpawnError(msg)
+            close_pipes(pipes)
+            raise err from exc
+
+        if pid != 0:
+            sp = SpawnedProcess(
+                pid,
+                pipes,
+                dispatchers,
+            )
+            self._spawn_as_parent(sp)
+            return sp
+
+        else:
+            self._spawn_as_child(
+                exe,
+                argv,
+                pipes,
+            )
+            raise RuntimeError('Unreachable')  # noqa
+
+    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
+        """
+        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
+        ProcessError if not
+        """
+
+        try:
+            args = shlex.split(self.config.command)
+        except ValueError as e:
+            raise BadCommandError(f"Can't parse command {self.config.command!r}: {e}")  # noqa
+
+        if args:
+            program = args[0]
+        else:
+            raise BadCommandError('Command is empty')
+
+        if '/' in program:
+            exe = program
+            try:
+                st = os.stat(exe)
+            except OSError:
+                st = None
+
+        else:
+            path = get_path()
+            found = None
+            st = None
+            for dir in path:  # noqa
+                found = os.path.join(dir, program)
+                try:
+                    st = os.stat(found)
+                except OSError:
+                    pass
+                else:
+                    break
+
+            if st is None:
+                exe = program
+            else:
+                exe = found  # type: ignore
+
+        # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
+        # options method call here only to service unit tests
+        check_execv_args(exe, args, st)
+
+        return exe, args
+
+    def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
+        dispatchers: ta.List[Dispatcher] = []
+
+        if pipes.stdout is not None:
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
+                self.process,
+                ProcessCommunicationStdoutEvent,
+                pipes.stdout,
+            ), OutputDispatcher))
+
+        if pipes.stderr is not None:
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
+                self.process,
+                ProcessCommunicationStderrEvent,
+                pipes.stderr,
+            ), OutputDispatcher))
+
+        if pipes.stdin is not None:
+            dispatchers.append(check_isinstance(self._input_dispatcher_factory(
+                self.process,
+                'stdin',
+                pipes.stdin,
+            ), InputDispatcher))
+
+        return Dispatchers(dispatchers)
+
+    #
+
+    def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
+        close_child_pipes(sp.pipes)
+
+        self._pid_history[sp.pid] = self.process
+
+    #
+
+    def _spawn_as_child(
+            self,
+            exe: str,
+            argv: ta.Sequence[str],
+            pipes: ProcessPipes,
+    ) -> ta.NoReturn:
+        try:
+            # Prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
+            # group for the child. This prevents, for instance, the case of child processes being sent a SIGINT when
+            # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
+            # Presumably it also prevents HUP, etc. received by supervisord from being sent to children.
+            os.setpgrp()
+
+            #
+
+            # After preparation sending to fd 2 will put this output in the stderr log.
+            self._prepare_child_fds(pipes)
+
+            #
+
+            setuid_msg = self._set_uid()
+            if setuid_msg:
+                uid = self.config.uid
+                msg = f"Couldn't setuid to {uid}: {setuid_msg}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+                raise RuntimeError(msg)
+
+            #
+
+            env = os.environ.copy()
+            env['SUPERVISOR_ENABLED'] = '1'
+            env['SUPERVISOR_PROCESS_NAME'] = self.process.name
+            if self.group:
+                env['SUPERVISOR_GROUP_NAME'] = self.group.name
+            if self.config.environment is not None:
+                env.update(self.config.environment)
+
+            #
+
+            cwd = self.config.directory
+            try:
+                if cwd is not None:
+                    os.chdir(os.path.expanduser(cwd))
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't chdir to {cwd}: {code}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+                raise RuntimeError(msg) from exc
+
+            #
+
+            try:
+                if self.config.umask is not None:
+                    os.umask(self.config.umask)
+                os.execve(exe, list(argv), env)
+
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't exec {argv[0]}: {code}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+
+            except Exception:  # noqa
+                (file, fun, line), t, v, tb = compact_traceback()
+                msg = f"Couldn't exec {exe}: {t}, {v}: file: {file} line: {line}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+
+        finally:
+            os.write(2, as_bytes('supervisor: child process was not spawned\n'))
+            real_exit(127)  # exit process with code for spawn failure
+
+        raise RuntimeError('Unreachable')
+
+    def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
+        os.dup2(check_not_none(pipes.child_stdin), 0)
+
+        os.dup2(check_not_none(pipes.child_stdout), 1)
+
+        if self.config.redirect_stderr:
+            os.dup2(check_not_none(pipes.child_stdout), 2)
+        else:
+            os.dup2(check_not_none(pipes.child_stderr), 2)
+
+        for i in range(3, self._server_config.minfds):
+            if i in self._inherited_fds:
+                continue
+            close_fd(i)
+
+    def _set_uid(self) -> ta.Optional[str]:
+        if self.config.uid is None:
+            return None
+
+        msg = drop_privileges(self.config.uid)
+        return msg
+
+
+##
+
+
+def check_execv_args(
+        exe: str,
+        argv: ta.Sequence[str],
+        st: ta.Optional[os.stat_result],
+) -> None:
+    if st is None:
+        raise NotFoundError(f"Can't find command {exe!r}")
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutableError(f'Command at {exe!r} is a directory')
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutableError(f'Command at {exe!r} is not executable')
+
+    elif not os.access(exe, os.X_OK):
+        raise NoPermissionError(f'No permission to run command {exe!r}')
 
 
 ########################################
@@ -7224,8 +7360,12 @@ def bind_server(
         inj.bind(ProcessGroupManager, singleton=True),
         inj.bind(Supervisor, singleton=True),
 
+        inj.bind(PidHistory()),
+
         inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
         inj.bind_factory(ProcessImpl, ProcessFactory),
+
+        inj.bind_factory(ProcessSpawningImpl, ProcessSpawningFactory),
 
         inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
         inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
