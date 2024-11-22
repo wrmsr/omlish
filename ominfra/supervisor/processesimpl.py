@@ -154,7 +154,6 @@ class ProcessImpl(Process):
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
 
-
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._killing:
             raise OSError(errno.EPIPE, 'Process already closed')
