@@ -1089,29 +1089,6 @@ byte_size = SuffixMultiplier({
 })
 
 
-# all valid signal numbers
-SIGNUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
-
-
-def signal_number(value: ta.Union[int, str]) -> int:
-    try:
-        num = int(value)
-
-    except (ValueError, TypeError):
-        name = value.strip().upper()  # type: ignore
-        if not name.startswith('SIG'):
-            name = f'SIG{name}'
-
-        num = getattr(signal, name, None)  # type: ignore
-        if num is None:
-            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
-
-    if num not in SIGNUMS:
-        raise ValueError(f'value {value!r} is not a valid signal number')
-
-    return num
-
-
 class RestartWhenExitUnexpected:
     pass
 
@@ -1157,6 +1134,31 @@ class NoPermissionError(ProcessError):
 ##
 
 
+_SIG_NUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
+
+
+def signal_number(value: ta.Union[int, str]) -> int:
+    try:
+        num = int(value)
+
+    except (ValueError, TypeError):
+        name = value.strip().upper()  # type: ignore
+        if not name.startswith('SIG'):
+            name = f'SIG{name}'
+
+        num = getattr(signal, name, None)  # type: ignore
+        if num is None:
+            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+
+    if num not in _SIG_NUMS:
+        raise ValueError(f'value {value!r} is not a valid signal number')
+
+    return num
+
+
+##
+
+
 _SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
 
 
@@ -1187,7 +1189,7 @@ class SignalReceiver:
 
         self._signals_recvd: ta.List[int] = []
 
-    def receive(self, sig: int, frame: ta.Any) -> None:
+    def receive(self, sig: int, frame: ta.Any = None) -> None:
         if sig not in self._signals_recvd:
             self._signals_recvd.append(sig)
 
@@ -4925,6 +4927,26 @@ class CoroHttpServerSocketHandler(SocketHandler):
 # ../types.py
 
 
+##
+
+
+@functools.total_ordering
+class ConfigPriorityOrdered(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def config(self) -> ta.Any:
+        raise NotImplementedError
+
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
+
+
+##
+
+
 class ServerContext(abc.ABC):
     @property
     @abc.abstractmethod
@@ -4944,6 +4966,9 @@ class ServerContext(abc.ABC):
     @abc.abstractmethod
     def pid_history(self) -> ta.Dict[int, 'Process']:
         raise NotImplementedError
+
+
+##
 
 
 class Dispatcher(abc.ABC):
@@ -4985,11 +5010,13 @@ class InputDispatcher(Dispatcher, abc.ABC):
         raise NotImplementedError
 
 
-@functools.total_ordering
-class Process(abc.ABC):
+##
+
+
+class Process(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
-    def pid(self) -> int:
+    def name(self) -> str:
         raise NotImplementedError
 
     @property
@@ -4997,11 +5024,17 @@ class Process(abc.ABC):
     def config(self) -> ProcessConfig:
         raise NotImplementedError
 
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
+    @property
+    @abc.abstractmethod
+    def group(self) -> 'ProcessGroup':
+        raise NotImplementedError
 
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
+    @property
+    @abc.abstractmethod
+    def pid(self) -> int:
+        raise NotImplementedError
+
+    #
 
     @property
     @abc.abstractmethod
@@ -5037,7 +5070,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create_auto_child_logs(self) -> None:
+    def after_setuid(self) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5045,42 +5078,47 @@ class Process(abc.ABC):
         raise NotImplementedError
 
 
-@functools.total_ordering
-class ProcessGroup(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ProcessGroupConfig:
-        raise NotImplementedError
+##
 
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
 
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
-
-    @abc.abstractmethod
-    def transition(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def stop_all(self) -> None:
-        raise NotImplementedError
-
+class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
-    def before_remove(self) -> None:
+    def config(self) -> ProcessGroupConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def by_name(self) -> ta.Mapping[str, Process]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __iter__(self) -> ta.Iterator[Process]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def __len__(self) -> int:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def reopen_logs(self) -> None:
+    def __contains__(self, name: str) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __getitem__(self, name: str) -> Process:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5088,7 +5126,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def after_setuid(self) -> None:
+    def before_remove(self) -> None:
         raise NotImplementedError
 
 
@@ -5826,34 +5864,43 @@ class ProcessGroupImpl(ProcessGroup):
         self._config = config
         self._process_factory = process_factory
 
-        self._processes = {}
+        self._by_name = {}
         for pconfig in self._config.processes or []:
             process = check_isinstance(self._process_factory(pconfig, self), Process)
-            self._processes[pconfig.name] = process
+            self._by_name[pconfig.name] = process
+
+    @property
+    def name(self) -> str:
+        return self._config.name
 
     @property
     def config(self) -> ProcessGroupConfig:
         return self._config
 
     @property
-    def name(self) -> str:
-        return self._config.name
+    def by_name(self) -> ta.Mapping[str, Process]:
+        return self._by_name
 
-    def __repr__(self):
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<{self.__class__.__name__} instance at {id(self)} named {name}>'
+    def __iter__(self) -> ta.Iterator[Process]:
+        return iter(self._by_name.values())
 
-    def remove_logs(self) -> None:
-        for process in self._processes.values():
-            process.remove_logs()
+    def __len__(self) -> int:
+        return len(self._by_name)
 
-    def reopen_logs(self) -> None:
-        for process in self._processes.values():
-            process.reopen_logs()
+    def __contains__(self, name: str) -> bool:
+        return name in self._by_name
+
+    def __getitem__(self, name: str) -> Process:
+        return self._by_name[name]
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+
+    def get_unstopped_processes(self) -> ta.List[Process]:
+        return [x for x in self if not x.get_state().stopped]
 
     def stop_all(self) -> None:
-        processes = list(self._processes.values())
+        processes = list(self._by_name.values())
         processes.sort()
         processes.reverse()  # stop in desc priority order
 
@@ -5871,25 +5918,8 @@ class ProcessGroupImpl(ProcessGroup):
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self) -> ta.List[Process]:
-        return [x for x in self._processes.values() if not x.get_state().stopped]
-
-    def get_dispatchers(self) -> ta.Dict[int, Dispatcher]:
-        dispatchers: dict = {}
-        for process in self._processes.values():
-            dispatchers.update(process.get_dispatchers())
-        return dispatchers
-
     def before_remove(self) -> None:
         pass
-
-    def transition(self) -> None:
-        for proc in self._processes.values():
-            proc.transition()
-
-    def after_setuid(self) -> None:
-        for proc in self._processes.values():
-            proc.create_auto_child_logs()
 
 
 ##
@@ -5919,8 +5949,12 @@ class ProcessGroups:
     def __iter__(self) -> ta.Iterator[ProcessGroup]:
         return iter(self._by_name.values())
 
-    def all(self) -> ta.Mapping[str, ProcessGroup]:
+    def by_name(self) -> ta.Mapping[str, ProcessGroup]:
         return self._by_name
+
+    def all_processes(self) -> ta.Iterator[Process]:
+        for g in self:
+            yield from g
 
     def add(self, group: ProcessGroup) -> None:
         if (name := group.name) in self._by_name:
@@ -6014,16 +6048,20 @@ class ProcessImpl(Process):
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
     @property
-    def pid(self) -> int:
-        return self._pid
+    def name(self) -> str:
+        return self._config.name
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._config
 
     @property
     def group(self) -> ProcessGroup:
         return self._group
 
     @property
-    def config(self) -> ProcessConfig:
-        return self._config
+    def pid(self) -> int:
+        return self._pid
 
     @property
     def context(self) -> ServerContext:
@@ -6643,7 +6681,7 @@ class ProcessImpl(Process):
                 log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
                 self.kill(signal.SIGKILL)
 
-    def create_auto_child_logs(self) -> None:
+    def after_setuid(self) -> None:
         # temporary logfiles which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
@@ -6708,8 +6746,8 @@ class SignalHandler:
         elif sig == signal.SIGUSR2:
             log.info('received %s indicating log reopen request', sig_name(sig))
 
-            for group in self._process_groups:
-                group.reopen_logs()
+            for process in self._process_groups.all_processes():
+                process.reopen_logs()
 
         else:
             log.debug('received %s indicating nothing', sig_name(sig))
@@ -6782,7 +6820,8 @@ class Supervisor:
             return False
 
         group = check_isinstance(self._process_group_factory(config), ProcessGroup)
-        group.after_setuid()
+        for process in group:
+            process.after_setuid()
 
         self._process_groups.add(group)
 
@@ -6798,8 +6837,8 @@ class Supervisor:
 
     def get_process_map(self) -> ta.Dict[int, Dispatcher]:
         process_map: ta.Dict[int, Dispatcher] = {}
-        for group in self._process_groups:
-            process_map.update(group.get_dispatchers())
+        for process in self._process_groups.all_processes():
+            process_map.update(process.get_dispatchers())
         return process_map
 
     def shutdown_report(self) -> ta.List[Process]:
@@ -6973,7 +7012,8 @@ class Supervisor:
                     pass
 
         for group in pgroups:
-            group.transition()
+            for process in group:
+                process.transition()
 
     def _reap(self, *, once: bool = False, depth: int = 0) -> None:
         if depth >= 100:

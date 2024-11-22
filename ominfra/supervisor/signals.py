@@ -6,25 +6,33 @@ import typing as ta
 ##
 
 
-_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
+_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
+_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
 
 
-def sig_name(sig: int) -> str:
-    global _SIG_NAMES
-    if _SIG_NAMES is None:
-        _SIG_NAMES = _init_sig_names()
-    return _SIG_NAMES.get(sig) or 'signal %d' % sig
+def sig_num(value: ta.Union[int, str]) -> int:
+    try:
+        num = int(value)
+
+    except (ValueError, TypeError):
+        name = value.strip().upper()  # type: ignore
+        if not name.startswith('SIG'):
+            name = f'SIG{name}'
+
+        num = _SIGS_BY_NAME.get(name)
+        if num is None:
+            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+
+    if num not in _SIGS_BY_NUM:
+        raise ValueError(f'value {value!r} is not a valid signal number')
+
+    return num
 
 
-def _init_sig_names() -> ta.Dict[int, str]:
-    d = {}
-    for k, v in signal.__dict__.items():  # noqa
-        k_startswith = getattr(k, 'startswith', None)
-        if k_startswith is None:
-            continue
-        if k_startswith('SIG') and not k_startswith('SIG_'):
-            d[v] = k
-    return d
+def sig_name(num: int) -> str:
+    if (sig := _SIGS_BY_NUM.get(num)) is not None:
+        return sig.name
+    return f'signal {sig}'
 
 
 ##
@@ -36,7 +44,7 @@ class SignalReceiver:
 
         self._signals_recvd: ta.List[int] = []
 
-    def receive(self, sig: int, frame: ta.Any) -> None:
+    def receive(self, sig: int, frame: ta.Any = None) -> None:
         if sig not in self._signals_recvd:
             self._signals_recvd.append(sig)
 
