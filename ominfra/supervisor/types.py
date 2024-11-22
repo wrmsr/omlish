@@ -3,6 +3,7 @@ import abc
 import functools
 import typing as ta
 
+from .collections import KeyedCollectionAccessors
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
@@ -191,7 +192,11 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 ##
 
 
-class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
+class ProcessGroup(
+    ConfigPriorityOrdered,
+    KeyedCollectionAccessors[str, Process],
+    abc.ABC,
+):
     @property
     @abc.abstractmethod
     def name(self) -> str:
@@ -205,24 +210,6 @@ class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
     def by_name(self) -> ta.Mapping[str, Process]:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def __iter__(self) -> ta.Iterator[Process]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __len__(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __contains__(self, name: str) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __getitem__(self, name: str) -> Process:
         raise NotImplementedError
 
     #
