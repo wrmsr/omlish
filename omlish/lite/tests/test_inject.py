@@ -145,6 +145,6 @@ class TestInspect(unittest.TestCase):
     def test_build_injection_kwargs_target(self):
         kwt = build_injection_kwargs_target(TestInspect.B)
         [kw] = kwt.kwargs
-        self.assertEqual(kw.name ,'a')
+        self.assertEqual(kw.name,'a')
         self.assertIs(kw.key.cls_, TestInspect.A)
         self.assertFalse(kw.has_default)
