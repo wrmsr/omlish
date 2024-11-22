@@ -9,6 +9,7 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.logs import log
+from omlish.lite.typing import Func
 
 from .configs import ProcessConfig
 from .context import check_execv_args
@@ -17,9 +18,6 @@ from .context import close_parent_pipes
 from .context import drop_privileges
 from .context import make_pipes
 from .datatypes import RestartUnconditionally
-from .dispatchers import Dispatcher
-from .dispatchers import InputDispatcher
-from .dispatchers import OutputDispatcher
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
@@ -30,6 +28,9 @@ from .exceptions import ProcessError
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
+from .types import Dispatcher
+from .types import InputDispatcher
+from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
@@ -41,6 +42,12 @@ from .utils import decode_wait_status
 from .utils import get_path
 from .utils import real_exit
 
+
+# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
+OutputDispatcherFactory = ta.NewType('OutputDispatcherFactory', Func[OutputDispatcher])
+
+# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
+InputDispatcherFactory = ta.NewType('InputDispatcherFactory', Func[InputDispatcher])
 
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
@@ -59,14 +66,23 @@ class ProcessImpl(Process):
             context: ServerContext,
             event_callbacks: EventCallbacks,
 
+            output_dispatcher_factory: OutputDispatcherFactory,
+            input_dispatcher_factory: InputDispatcherFactory,
+
             inherited_fds: ta.Optional[InheritedFds] = None,
+
     ) -> None:
         super().__init__()
 
         self._config = config
         self._group = group
+
         self._context = context
         self._event_callbacks = event_callbacks
+
+        self._output_dispatcher_factory = output_dispatcher_factory
+        self._input_dispatcher_factory = input_dispatcher_factory
+
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._dispatchers: ta.Dict[int, Dispatcher] = {}
@@ -310,29 +326,29 @@ class ProcessImpl(Process):
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = OutputDispatcher(
+            dispatchers[stdout_fd] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 stdout_fd,
                 **dispatcher_kw,
-            )
+            ), OutputDispatcher)
 
         if stderr_fd is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = OutputDispatcher(
+            dispatchers[stderr_fd] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 stderr_fd,
                 **dispatcher_kw,
-            )
+            ), OutputDispatcher)
 
         if stdin_fd is not None:
-            dispatchers[stdin_fd] = InputDispatcher(
+            dispatchers[stdin_fd] = check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
                 stdin_fd,
                 **dispatcher_kw,
-            )
+            ), InputDispatcher)
 
         return dispatchers, p
 

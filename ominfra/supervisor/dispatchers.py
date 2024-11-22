@@ -12,6 +12,9 @@ from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
+from .types import Dispatcher
+from .types import InputDispatcher
+from .types import OutputDispatcher
 from .types import Process
 from .utils import as_bytes
 from .utils import compact_traceback
@@ -20,7 +23,7 @@ from .utils import read_fd
 from .utils import strip_escapes
 
 
-class Dispatcher(abc.ABC):
+class BaseDispatcherImpl(Dispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
@@ -57,20 +60,6 @@ class Dispatcher(abc.ABC):
     def closed(self) -> bool:
         return self._closed
 
-    @abc.abstractmethod
-    def readable(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def writable(self) -> bool:
-        raise NotImplementedError
-
-    def handle_read_event(self) -> None:
-        raise TypeError
-
-    def handle_write_event(self) -> None:
-        raise TypeError
-
     def handle_error(self) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
@@ -82,11 +71,8 @@ class Dispatcher(abc.ABC):
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
 
-    def flush(self) -> None:  # noqa
-        pass
 
-
-class OutputDispatcher(Dispatcher):
+class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
     """
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
@@ -100,13 +86,14 @@ class OutputDispatcher(Dispatcher):
             process: Process,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
-            **kwargs: ta.Any,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__(
             process,
             event_type.channel,
             fd,
-            **kwargs,
+            event_callbacks=event_callbacks,
         )
 
         self._event_type = event_type
@@ -303,19 +290,20 @@ class OutputDispatcher(Dispatcher):
             self.close()
 
 
-class InputDispatcher(Dispatcher):
+class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
     def __init__(
             self,
             process: Process,
             channel: str,
             fd: int,
-            **kwargs: ta.Any,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__(
             process,
             channel,
             fd,
-            **kwargs,
+            event_callbacks=event_callbacks,
         )
 
         self._input_buffer = b''
