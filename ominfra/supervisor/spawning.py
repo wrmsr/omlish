@@ -26,8 +26,8 @@ from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
 from .exceptions import ProcessError
 from .pipes import ProcessPipes
+from .pipes import close_pipes
 from .pipes import close_child_pipes
-from .pipes import close_parent_pipes
 from .pipes import make_process_pipes
 from .privileges import drop_privileges
 from .processes import PidHistory
@@ -119,15 +119,20 @@ class ProcessSpawning(Process):
 
         try:
             pipes = make_process_pipes(not self.config.redirect_stderr)
-            dispatchers = self._make_dispatchers(pipes)
         except OSError as exc:
             code = exc.args[0]
             if code == errno.EMFILE:
                 # too many file descriptors open
-                msg = f"too many open files to spawn '{self.name}'"
+                msg = f"Too many open files to spawn '{self.name}'"
             else:
-                msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
+                msg = f"Unknown error making pipes for '{self.name}': {errno.errorcode.get(code, code)}"
             raise ProcessSpawnError(msg) from exc
+
+        try:
+            dispatchers = self._make_dispatchers(pipes)
+        except Exception as exc:  # noqa
+            close_pipes(pipes)
+            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.name}'") from exc
 
         try:
             pid = os.fork()
@@ -135,12 +140,11 @@ class ProcessSpawning(Process):
             code = exc.args[0]
             if code == errno.EAGAIN:
                 # process table full
-                msg = f'Too many processes in process table to spawn \'{self.name}\''
+                msg = f"Too many processes in process table to spawn '{self.name}'"
             else:
-                msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
+                msg = f"Unknown error during fork for '{self.name}': {errno.errorcode.get(code, code)}"
             err = ProcessSpawnError(msg)
-            close_parent_pipes(pipes)
-            close_child_pipes(pipes)
+            close_pipes(pipes)
             raise err from exc
 
         if pid != 0:
