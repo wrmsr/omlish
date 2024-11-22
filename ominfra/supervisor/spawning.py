@@ -158,7 +158,6 @@ class ProcessSpawning:
                 argv,
                 pipes,
             )
-            raise RuntimeError('Unreachable')
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
         """
@@ -249,16 +248,19 @@ class ProcessSpawning:
             pipes: ProcessPipes,
     ) -> ta.NoReturn:
         try:
-            # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
-            # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
+            # Prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
+            # group for the child. This prevents, for instance, the case of child processes being sent a SIGINT when
             # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
-            # Presumably it also prevents HUP, etc received by supervisord from being sent to children.
+            # Presumably it also prevents HUP, etc. received by supervisord from being sent to children.
             os.setpgrp()
 
-            self._prepare_child_fds(pipes)
-            # sending to fd 2 will put this output in the stderr log
+            #
 
-            # set user
+            # After preparation sending to fd 2 will put this output in the stderr log.
+            self._prepare_child_fds(pipes)
+
+            #
+
             setuid_msg = self._set_uid()
             if setuid_msg:
                 uid = self.config.uid
@@ -266,7 +268,8 @@ class ProcessSpawning:
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
-            # set environment
+            #
+
             env = os.environ.copy()
             env['SUPERVISOR_ENABLED'] = '1'
             env['SUPERVISOR_PROCESS_NAME'] = self.process.name
@@ -275,7 +278,8 @@ class ProcessSpawning:
             if self.config.environment is not None:
                 env.update(self.config.environment)
 
-            # change directory
+            #
+
             cwd = self.config.directory
             try:
                 if cwd is not None:
@@ -286,7 +290,8 @@ class ProcessSpawning:
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
-            # set umask, then execve
+            #
+
             try:
                 if self.config.umask is not None:
                     os.umask(self.config.umask)
@@ -303,7 +308,7 @@ class ProcessSpawning:
                 msg = f"couldn't exec {exe}: {error}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
 
-            # This point should only be reached if execve failed. The finally clause will exit the child process.
+            raise RuntimeError('Unreachable')
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
