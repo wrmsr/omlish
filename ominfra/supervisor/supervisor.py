@@ -11,12 +11,13 @@ from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
-from .events import TICK_EVENTS
+from .dispatchers import Dispatchers
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
+from .events import TICK_EVENTS
 from .groups import ProcessGroup
-from .groups import ProcessGroups
+from .groups import ProcessGroupManager
 from .poller import Poller
 from .signals import SignalReceiver
 from .signals import sig_name
@@ -38,7 +39,7 @@ class SignalHandler:
             *,
             context: ServerContextImpl,
             signal_receiver: SignalReceiver,
-            process_groups: ProcessGroups,
+            process_groups: ProcessGroupManager,
     ) -> None:
         super().__init__()
 
@@ -98,7 +99,7 @@ class Supervisor:
             *,
             context: ServerContextImpl,
             poller: Poller,
-            process_groups: ProcessGroups,
+            process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
@@ -166,12 +167,6 @@ class Supervisor:
         self._process_groups.remove(name)
 
         return True
-
-    def get_process_map(self) -> ta.Dict[int, Dispatcher]:
-        process_map: ta.Dict[int, Dispatcher] = {}
-        for process in self._process_groups.all_processes():
-            process_map.update(process.get_dispatchers())
-        return process_map
 
     def shutdown_report(self) -> ta.List[Process]:
         unstopped: ta.List[Process] = []
@@ -274,9 +269,16 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for p in self._process_groups.all_processes()
+            for d in p.get_dispatchers()
+        )
+
     def _poll(self) -> None:
         combined_map = {}
-        combined_map.update(self.get_process_map())
+        combined_map.update(self.get_dispatchers())
 
         pgroups = list(self._process_groups)
         pgroups.sort()

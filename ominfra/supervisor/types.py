@@ -10,6 +10,10 @@ from .states import ProcessState
 from .states import SupervisorState
 
 
+if ta.TYPE_CHECKING:
+    from .dispatchers import Dispatchers
+
+
 ##
 
 
@@ -182,7 +186,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
