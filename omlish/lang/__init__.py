@@ -1,3 +1,5 @@
+# This module should import nothing but stdlib modules, and as few as possible. That *includes* lite - no using lite.
+
 from .cached import (  # noqa
     cached_function,
     cached_property,
