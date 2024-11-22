@@ -10,6 +10,26 @@ from .states import ProcessState
 from .states import SupervisorState
 
 
+##
+
+
+@functools.total_ordering
+class ConfigPriorityOrdered(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def config(self) -> ta.Any:
+        raise NotImplementedError
+
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
+
+
+##
+
+
 class ServerContext(abc.ABC):
     @property
     @abc.abstractmethod
@@ -29,6 +49,9 @@ class ServerContext(abc.ABC):
     @abc.abstractmethod
     def pid_history(self) -> ta.Dict[int, 'Process']:
         raise NotImplementedError
+
+
+##
 
 
 class Dispatcher(abc.ABC):
@@ -70,11 +93,13 @@ class InputDispatcher(Dispatcher, abc.ABC):
         raise NotImplementedError
 
 
-@functools.total_ordering
-class Process(abc.ABC):
+##
+
+
+class Process(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
-    def pid(self) -> int:
+    def name(self) -> str:
         raise NotImplementedError
 
     @property
@@ -82,11 +107,17 @@ class Process(abc.ABC):
     def config(self) -> ProcessConfig:
         raise NotImplementedError
 
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
+    @property
+    @abc.abstractmethod
+    def group(self) -> 'ProcessGroup':
+        raise NotImplementedError
 
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
+    @property
+    @abc.abstractmethod
+    def pid(self) -> int:
+        raise NotImplementedError
+
+    #
 
     @property
     @abc.abstractmethod
@@ -122,7 +153,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create_auto_child_logs(self) -> None:
+    def after_setuid(self) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -130,42 +161,47 @@ class Process(abc.ABC):
         raise NotImplementedError
 
 
-@functools.total_ordering
-class ProcessGroup(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ProcessGroupConfig:
-        raise NotImplementedError
+##
 
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
 
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
-
-    @abc.abstractmethod
-    def transition(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def stop_all(self) -> None:
-        raise NotImplementedError
-
+class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
-    def before_remove(self) -> None:
+    def config(self) -> ProcessGroupConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def by_name(self) -> ta.Mapping[str, Process]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __iter__(self) -> ta.Iterator[Process]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def __len__(self) -> int:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def reopen_logs(self) -> None:
+    def __contains__(self, name: str) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __getitem__(self, name: str) -> Process:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -173,5 +209,5 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def after_setuid(self) -> None:
+    def before_remove(self) -> None:
         raise NotImplementedError

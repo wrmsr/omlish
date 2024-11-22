@@ -109,16 +109,20 @@ class ProcessImpl(Process):
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
     @property
-    def pid(self) -> int:
-        return self._pid
+    def name(self) -> str:
+        return self._config.name
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._config
 
     @property
     def group(self) -> ProcessGroup:
         return self._group
 
     @property
-    def config(self) -> ProcessConfig:
-        return self._config
+    def pid(self) -> int:
+        return self._pid
 
     @property
     def context(self) -> ServerContext:
@@ -738,7 +742,7 @@ class ProcessImpl(Process):
                 log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
                 self.kill(signal.SIGKILL)
 
-    def create_auto_child_logs(self) -> None:
+    def after_setuid(self) -> None:
         # temporary logfiles which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
