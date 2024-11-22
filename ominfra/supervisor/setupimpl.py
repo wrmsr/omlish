@@ -189,6 +189,9 @@ class SupervisorSetupImpl(SupervisorSetup):
     def _clear_auto_child_logdir(self) -> None:
         # must be called after realize()
         child_logdir = self._config.child_logdir
+        if child_logdir == '/dev/null':
+            return
+
         fnre = re.compile(rf'.+?---{self._config.identifier}-\S+\.log\.?\d{{0,4}}')
         try:
             filenames = os.listdir(child_logdir)

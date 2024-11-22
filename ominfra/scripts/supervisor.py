@@ -3291,7 +3291,7 @@ def make_injector_array_type(
         ann = cls
 
     def inner(injector: Injector) -> ann:
-        return cls(injector.provide(key))
+        return cls(injector.provide(key))  # type: ignore[operator]
 
     return inner
 

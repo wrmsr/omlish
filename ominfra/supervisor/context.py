@@ -10,8 +10,8 @@ from .poller import Poller
 from .states import SupervisorState
 from .types import Process
 from .types import ServerContext
-from .utils import mktempfile
 from .types import ServerEpoch
+from .utils import mktempfile
 
 
 class ServerContextImpl(ServerContext):
