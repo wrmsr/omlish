@@ -90,6 +90,17 @@ class TestArrays(unittest.TestCase):
         p = i.provide(inj.array(int))
         print(p)
 
+    def test_array_factory(self):
+        Ints = ta.NewType('Ints', ta.Sequence[int])  # noqa
+
+        bs = inj.as_bindings(
+            inj.bind(420, array=True),
+            inj.bind(421, array=True),
+        )
+        i = inj.create_injector(bs)
+        p = i.provide(Ints)
+        print(p)
+
 
 class TestFactories(unittest.TestCase):
     @dc.dataclass(frozen=True)
