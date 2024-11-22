@@ -14,11 +14,11 @@ SupervisorUser = ta.NewType('SupervisorUser', User)
 ##
 
 
-class DaemonizeListener(abc.ABC):
-    def before_daemonize(self) -> None:
+class DaemonizeListener(abc.ABC):  # noqa
+    def before_daemonize(self) -> None:  # noqa
         pass
 
-    def after_daemonize(self) -> None:
+    def after_daemonize(self) -> None:  # noqa
         pass
 
 

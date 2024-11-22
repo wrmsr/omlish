@@ -33,7 +33,6 @@ from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import ServerContext
 from .types import ServerEpoch
-from .users import User
 from .users import get_user
 
 
