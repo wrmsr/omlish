@@ -232,13 +232,13 @@ def _is_typing(
         return True
 
     wts = list(tks.ignore_ws(lts))
-    if not (
-            len(wts) >= 5 and
-            wts[0].name == 'NAME' and
-            wts[1].name == 'OP' and wts[1].src == '=' and
-            wts[2].name == 'NAME' and wts[2].src == 'ta' and
-            wts[3].name == 'OP' and wts[3].src == '.'
-    ):
+    if not tks.match_toks(wts, [
+        ('NAME', None),
+        ('OP', '='),
+        ('NAME', 'ta'),
+        ('OP', '.'),
+        (None, None),
+    ]):
         return False
 
     if exclude_newtypes:
@@ -268,6 +268,19 @@ def make_typing(
 
         toks=lts,
     )
+
+
+##
+
+
+def is_if_type_checking_block(lts: Tokens) -> bool:
+    return tks.match_toks(tks.ignore_ws(lts), [
+        ('NAME', 'if'),
+        ('NAME', 'ta'),
+        ('OP', '.'),
+        ('NAME', 'TYPE_CHECKING'),
+        ('OP', ':'),
+    ])
 
 
 ##
@@ -351,6 +364,9 @@ def make_src_file(
                 [trt.Token('COMMENT', '# ' + tks.join_toks(ml))]
                 for ml in mls
             ])
+
+        elif is_if_type_checking_block(line):
+            raise NotImplementedError
 
         else:
             ctls.append(line)
