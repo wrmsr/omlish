@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
+from omlish.lite.check import check_isinstance
 from omlish.lite.typing import Func
 
 from .configs import ProcessGroupConfig
@@ -36,7 +37,7 @@ class ProcessGroupImpl(ProcessGroup):
 
         self._processes = {}
         for pconfig in self._config.processes or []:
-            process = self._process_factory(pconfig, self)
+            process = check_isinstance(self._process_factory(pconfig, self), Process)
             self._processes[pconfig.name] = process
 
     @property
