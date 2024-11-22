@@ -159,13 +159,7 @@ class ProcessSpawning(Process):
             log.warning('process \'%s\' already running', process_name)
             return None
 
-        self._killing = False
         self._spawn_err = None
-        self._exitstatus = None
-        self._system_stop = False
-        self._administrative_stop = False
-
-        self._last_start = time.time()
 
         self._check_in_state(
             ProcessState.EXITED,
@@ -277,6 +271,13 @@ class ProcessSpawning(Process):
                 continue
             close_fd(i)
 
+    def _set_uid(self) -> ta.Optional[str]:
+        if self._config.uid is None:
+            return None
+
+        msg = drop_privileges(self._config.uid)
+        return msg
+
     def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
         try:
             # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
@@ -289,7 +290,7 @@ class ProcessSpawning(Process):
             # sending to fd 2 will put this output in the stderr log
 
             # set user
-            setuid_msg = self.set_uid()
+            setuid_msg = self._set_uid()
             if setuid_msg:
                 uid = self._config.uid
                 msg = f"couldn't setuid to {uid}: {setuid_msg}\n"
