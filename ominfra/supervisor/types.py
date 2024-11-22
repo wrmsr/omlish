@@ -31,6 +31,18 @@ class ServerContext(abc.ABC):
         raise NotImplementedError
 
 
+# class Dispatcher(abc.ABC):
+#     pass
+#
+#
+# class OutputDispatcher(Dispatcher, abc.ABC):
+#     pass
+#
+#
+# class InputDispatcher(Dispatcher, abc.ABC):
+#     pass
+
+
 @functools.total_ordering
 class Process(abc.ABC):
     @property
@@ -87,7 +99,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
         raise NotImplementedError
 
 
@@ -122,7 +134,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
         raise NotImplementedError
 
     @abc.abstractmethod

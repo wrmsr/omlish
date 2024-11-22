@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import dataclasses as dc
 import signal
 import time
 import typing as ta
@@ -7,6 +6,7 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
+from omlish.lite.typing import Func
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
@@ -87,12 +87,7 @@ class SignalHandler:
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessGroupFactory:
-    fn: ta.Callable[[ProcessGroupConfig], ProcessGroup]
-
-    def __call__(self, config: ProcessGroupConfig) -> ProcessGroup:
-        return self.fn(config)
+ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
 
 
 class Supervisor:
