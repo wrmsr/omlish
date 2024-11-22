@@ -39,7 +39,9 @@ T = ta.TypeVar('T')
 # ../base.py
 ConcernT = ta.TypeVar('ConcernT')
 ConfigT = ta.TypeVar('ConfigT')
+SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
 SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcernConfig')
+DeployConcernT = ta.TypeVar('DeployConcernT', bound='DeployConcern')
 DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcernConfig')
 
 
@@ -239,7 +241,6 @@ class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
 ##
 
 
-SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
 
 
 class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
@@ -269,7 +270,6 @@ class Site(ConcernsContainer[SiteConcern, SiteConfig]):
 ##
 
 
-DeployConcernT = ta.TypeVar('DeployConcernT', bound='DeployConcern')
 
 
 class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
