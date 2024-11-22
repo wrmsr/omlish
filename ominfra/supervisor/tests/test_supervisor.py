@@ -51,8 +51,7 @@ class TestSupervisor(unittest.TestCase):
             n += 1
             return n < 2
 
-        supervisor.setup()
-        supervisor.run(callback=callback)
+        supervisor.main(callback=callback)
 
         # FIXME: reap lol
         self.assertIsNotNone(supervisor)

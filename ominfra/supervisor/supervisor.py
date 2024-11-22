@@ -179,10 +179,10 @@ class Supervisor:
 
     #
 
-    def main(self) -> None:
+    def main(self, **kwargs: ta.Any) -> None:
         self._setup.setup()
         try:
-            self.run()
+            self.run(**kwargs)
         finally:
             self._setup.cleanup()
 
