@@ -255,7 +255,7 @@ class ProcessSpawningImpl(ProcessSpawning):
                 uid = self.config.uid
                 msg = f"Couldn't setuid to {uid}: {setuid_msg}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
-                return  # finally clause will exit the child process
+                raise RuntimeError(msg)
 
             #
 
@@ -277,7 +277,7 @@ class ProcessSpawningImpl(ProcessSpawning):
                 code = errno.errorcode.get(exc.args[0], exc.args[0])
                 msg = f"Couldn't chdir to {cwd}: {code}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
-                return  # finally clause will exit the child process
+                raise RuntimeError(msg)
 
             #
 
