@@ -22,7 +22,6 @@ from .poller import Poller
 from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
-from .types import Dispatcher
 from .types import OutputDispatcher
 from .types import Process
 from .utils import ExitNow
@@ -132,25 +131,6 @@ class Supervisor:
 
     #
 
-    class DiffToActive(ta.NamedTuple):
-        added: ta.List[ProcessGroupConfig]
-        changed: ta.List[ProcessGroupConfig]
-        removed: ta.List[ProcessGroupConfig]
-
-    def diff_to_active(self) -> DiffToActive:
-        new = self._context.config.groups or []
-        cur = [group.config for group in self._process_groups]
-
-        curdict = dict(zip([cfg.name for cfg in cur], cur))
-        newdict = dict(zip([cfg.name for cfg in new], new))
-
-        added = [cand for cand in new if cand.name not in curdict]
-        removed = [cand for cand in cur if cand.name not in newdict]
-
-        changed = [cand for cand in new if cand != curdict.get(cand.name, cand)]
-
-        return Supervisor.DiffToActive(added, changed, removed)
-
     def add_process_group(self, config: ProcessGroupConfig) -> bool:
         if self._process_groups.get(config.name) is not None:
             return False
@@ -170,6 +150,8 @@ class Supervisor:
         self._process_groups.remove(name)
 
         return True
+
+    #
 
     def shutdown_report(self) -> ta.List[Process]:
         unstopped: ta.List[Process] = []
@@ -280,17 +262,16 @@ class Supervisor:
         )
 
     def _poll(self) -> None:
-        combined_map: ta.Dict[int, Dispatcher] = {}
-        combined_map.update(self.get_dispatchers().items())
+        dispatchers = self.get_dispatchers()
 
-        pgroups = list(self._process_groups)
-        pgroups.sort()
+        sorted_groups = list(self._process_groups)
+        sorted_groups.sort()
 
         if self._context.state < SupervisorState.RUNNING:
             if not self._stopping:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
-                self._stop_groups = pgroups[:]
+                self._stop_groups = sorted_groups[:]
                 self._event_callbacks.notify(SupervisorStoppingEvent())
 
             self._ordered_stop_groups_phase_1()
@@ -299,7 +280,7 @@ class Supervisor:
                 # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
                 raise ExitNow
 
-        for fd, dispatcher in combined_map.items():
+        for fd, dispatcher in dispatchers.items():
             if dispatcher.readable():
                 self._poller.register_readable(fd)
             if dispatcher.writable():
@@ -309,9 +290,9 @@ class Supervisor:
         r, w = self._poller.poll(timeout)
 
         for fd in r:
-            if fd in combined_map:
+            if fd in dispatchers:
                 try:
-                    dispatcher = combined_map[fd]
+                    dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.handle_read_event()
                     if not dispatcher.readable():
@@ -319,9 +300,9 @@ class Supervisor:
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    combined_map[fd].handle_error()
+                    dispatchers[fd].handle_error()
             else:
-                # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
+                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
                 log.debug('unexpected read event from fd %r', fd)
                 try:
@@ -330,9 +311,9 @@ class Supervisor:
                     pass
 
         for fd in w:
-            if fd in combined_map:
+            if fd in dispatchers:
                 try:
-                    dispatcher = combined_map[fd]
+                    dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.handle_write_event()
                     if not dispatcher.writable():
@@ -340,7 +321,7 @@ class Supervisor:
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    combined_map[fd].handle_error()
+                    dispatchers[fd].handle_error()
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
@@ -348,7 +329,7 @@ class Supervisor:
                 except Exception:  # noqa
                     pass
 
-        for group in pgroups:
+        for group in sorted_groups:
             for process in group:
                 process.transition()
 

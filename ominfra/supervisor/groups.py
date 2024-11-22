@@ -2,6 +2,7 @@
 import typing as ta
 
 from .collections import KeyedCollectionAccessors
+from .configs import ProcessGroupConfig
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
@@ -53,3 +54,26 @@ class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):
     def clear(self) -> None:
         # FIXME: events?
         self._by_name.clear()
+
+    #
+
+    class Diff(ta.NamedTuple):
+        added: ta.List[ProcessGroupConfig]
+        changed: ta.List[ProcessGroupConfig]
+        removed: ta.List[ProcessGroupConfig]
+
+    def diff(self, new: ta.Sequence[ProcessGroupConfig]) -> Diff:
+        cur = [group.config for group in self]
+
+        cur_by_name = {cfg.name: cfg for cfg in cur}
+        new_by_name = {cfg.name: cfg for cfg in new}
+
+        added = [cand for cand in new if cand.name not in cur_by_name]
+        removed = [cand for cand in cur if cand.name not in new_by_name]
+        changed = [cand for cand in new if cand != cur_by_name.get(cand.name, cand)]
+
+        return ProcessGroupManager.Diff(
+            added,
+            changed,
+            removed,
+        )
