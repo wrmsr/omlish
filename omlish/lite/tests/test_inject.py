@@ -1,8 +1,11 @@
 # ruff: noqa: PT009
 import dataclasses as dc
+import functools
 import typing as ta  # noqa
 import unittest
 
+from ..inject import InjectionKwarg
+from ..inject import InjectorKey
 from ..inject import _do_injection_inspect  # noqa
 from ..inject import build_injection_kwargs_target
 from ..inject import inj
@@ -212,3 +215,13 @@ class TestInspect(unittest.TestCase):
         self.assertEqual(kw.name,'a')
         self.assertIs(kw.key.cls_, TestInspect.A)
         self.assertFalse(kw.has_default)
+
+    def test_unwrap(self):
+        def f(i: int, s: str) -> list:
+            return [i, s]
+
+        ikw = InjectionKwarg(name='i', key=InjectorKey(cls_=int), has_default=False)
+        skw = InjectionKwarg(name='s', key=InjectorKey(cls_=str), has_default=False)
+
+        kwt = build_injection_kwargs_target(f)
+        self.assertEqual(kwt.kwargs, [ikw, skw])
