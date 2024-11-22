@@ -278,7 +278,7 @@ class Supervisor:
 
     def _poll(self) -> None:
         combined_map = {}
-        combined_map.update(self.get_dispatchers())
+        combined_map.update(self.get_dispatchers().items())
 
         pgroups = list(self._process_groups)
         pgroups.sort()
