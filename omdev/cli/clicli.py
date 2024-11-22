@@ -21,11 +21,11 @@ class CliCli(ap.Cli):
 
     #
 
-    @ap.command(name='version')
+    @ap.command(name='version', aliases=['ver'])
     def print_version(self) -> None:
         print(__about__.__version__)
 
-    @ap.command(name='revision')
+    @ap.command(name='revision', aliases=['rev'])
     def print_revision(self) -> None:
         print(__about__.__revision__)
 
