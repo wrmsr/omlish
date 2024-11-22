@@ -151,7 +151,14 @@ class ProcessImpl(
 
         self._last_start = time.time()
 
-        self._spawning.spawn()
+        pid = self._spawning.spawn()
+        if pid is None:
+            return None
+
+        self._pid = pid
+        self._delay = time.time() + self.config.startsecs
+
+        return pid
 
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
