@@ -23,6 +23,17 @@ from .utils import real_exit
 from .utils import try_unlink
 
 
+class DaemonizeListener(abc.ABC):
+    def before_daemonize(self) -> None:
+        pass
+
+    def after_daemonize(self) -> None:
+        pass
+
+
+DaemonizeListeners = ta.NewType('DaemonizeListeners', ta.Sequence[DaemonizeListener])
+
+
 class SupervisorSetup(abc.ABC):
     @abc.abstractmethod
     def setup(self) -> None:
@@ -39,11 +50,13 @@ class SupervisorSetupImpl(SupervisorSetup):
             *,
             config: ServerConfig,
             epoch: ServerEpoch = ServerEpoch(0),
+            daemonize_listeners: DaemonizeListeners = DaemonizeListeners([]),
     ) -> None:
         super().__init__()
 
         self._config = config
         self._epoch = epoch
+        self._daemonize_listeners = daemonize_listeners
 
         self._unlink_pidfile = False
 
