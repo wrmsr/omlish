@@ -1,4 +1,5 @@
 # ruff: noqa: UP007
+import dataclasses as dc
 import grp
 import logging
 import os
@@ -33,6 +34,9 @@ def logfile_name(val):
         return Syslog
     else:
         return existing_dirpath(val)
+
+
+##
 
 
 def name_to_uid(name: str) -> int:
@@ -72,6 +76,24 @@ def name_to_gid(name: str) -> int:
 def gid_for_uid(uid: int) -> int:
     pwrec = pwd.getpwuid(uid)
     return pwrec[3]
+
+
+@dc.dataclass(frozen=True)
+class User:
+    name: str
+    uid: int
+    gid: int
+
+
+def get_user(name: str) -> User:
+    return User(
+        name=name,
+        uid=(uid := name_to_uid(name)),
+        gid=gid_for_uid(uid),
+    )
+
+
+##
 
 
 def octal_type(arg: ta.Union[str, int]) -> int:
