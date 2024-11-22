@@ -46,3 +46,23 @@ def join_toks(ts: Tokens) -> str:
 
 def join_lines(ls: ta.Iterable[Tokens]) -> str:
     return ''.join(map(join_toks, ls))
+
+
+##
+
+
+def match_toks(
+        ts: ta.Iterable['trt.Token'],
+        pat: ta.Sequence[tuple[str | None, str | None]],
+) -> bool:
+    it = iter(ts)
+    for pn, ps in pat:
+        try:
+            t = next(it)
+        except StopIteration:
+            return False
+        if pn is not None and t.name != pn:
+            return False
+        if ps is not None and t.src != ps:
+            return False
+    return True
