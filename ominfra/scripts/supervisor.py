@@ -4898,16 +4898,43 @@ class ServerContext(abc.ABC):
         raise NotImplementedError
 
 
-# class Dispatcher(abc.ABC):
-#     pass
-#
-#
-# class OutputDispatcher(Dispatcher, abc.ABC):
-#     pass
-#
-#
-# class InputDispatcher(Dispatcher, abc.ABC):
-#     pass
+class Dispatcher(abc.ABC):
+    @abc.abstractmethod
+    def readable(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def writable(self) -> bool:
+        raise NotImplementedError
+
+    def handle_read_event(self) -> None:
+        raise TypeError
+
+    def handle_write_event(self) -> None:
+        raise TypeError
+
+    @abc.abstractmethod
+    def handle_error(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+
+class OutputDispatcher(Dispatcher, abc.ABC):
+    pass
+
+
+class InputDispatcher(Dispatcher, abc.ABC):
+    @abc.abstractmethod
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        raise NotImplementedError
 
 
 @functools.total_ordering
@@ -4966,7 +4993,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
         raise NotImplementedError
 
 
@@ -5001,7 +5028,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5415,7 +5442,7 @@ def check_execv_args(filename, argv, st) -> None:
 # ../dispatchers.py
 
 
-class Dispatcher(abc.ABC):
+class BaseDispatcherImpl(Dispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
@@ -5452,20 +5479,6 @@ class Dispatcher(abc.ABC):
     def closed(self) -> bool:
         return self._closed
 
-    @abc.abstractmethod
-    def readable(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def writable(self) -> bool:
-        raise NotImplementedError
-
-    def handle_read_event(self) -> None:
-        raise TypeError
-
-    def handle_write_event(self) -> None:
-        raise TypeError
-
     def handle_error(self) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
@@ -5477,11 +5490,8 @@ class Dispatcher(abc.ABC):
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
 
-    def flush(self) -> None:  # noqa
-        pass
 
-
-class OutputDispatcher(Dispatcher):
+class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
     """
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
@@ -5495,13 +5505,14 @@ class OutputDispatcher(Dispatcher):
             process: Process,
             event_type: ta.Type[ProcessCommunicationEvent],
             fd: int,
-            **kwargs: ta.Any,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__(
             process,
             event_type.channel,
             fd,
-            **kwargs,
+            event_callbacks=event_callbacks,
         )
 
         self._event_type = event_type
@@ -5698,19 +5709,20 @@ class OutputDispatcher(Dispatcher):
             self.close()
 
 
-class InputDispatcher(Dispatcher):
+class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
     def __init__(
             self,
             process: Process,
             channel: str,
             fd: int,
-            **kwargs: ta.Any,
+            *,
+            event_callbacks: EventCallbacks,
     ) -> None:
         super().__init__(
             process,
             channel,
             fd,
-            **kwargs,
+            event_callbacks=event_callbacks,
         )
 
         self._input_buffer = b''
@@ -5893,6 +5905,12 @@ class ProcessGroups:
 # ../process.py
 
 
+# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
+OutputDispatcherFactory = ta.NewType('OutputDispatcherFactory', Func[OutputDispatcher])
+
+# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
+InputDispatcherFactory = ta.NewType('InputDispatcherFactory', Func[InputDispatcher])
+
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
 
@@ -5910,14 +5928,23 @@ class ProcessImpl(Process):
             context: ServerContext,
             event_callbacks: EventCallbacks,
 
+            output_dispatcher_factory: OutputDispatcherFactory,
+            input_dispatcher_factory: InputDispatcherFactory,
+
             inherited_fds: ta.Optional[InheritedFds] = None,
+
     ) -> None:
         super().__init__()
 
         self._config = config
         self._group = group
+
         self._context = context
         self._event_callbacks = event_callbacks
+
+        self._output_dispatcher_factory = output_dispatcher_factory
+        self._input_dispatcher_factory = input_dispatcher_factory
+
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._dispatchers: ta.Dict[int, Dispatcher] = {}
@@ -6161,29 +6188,29 @@ class ProcessImpl(Process):
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = OutputDispatcher(
+            dispatchers[stdout_fd] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 stdout_fd,
                 **dispatcher_kw,
-            )
+            ), OutputDispatcher)
 
         if stderr_fd is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = OutputDispatcher(
+            dispatchers[stderr_fd] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 stderr_fd,
                 **dispatcher_kw,
-            )
+            ), OutputDispatcher)
 
         if stdin_fd is not None:
-            dispatchers[stdin_fd] = InputDispatcher(
+            dispatchers[stdin_fd] = check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
                 stdin_fd,
                 **dispatcher_kw,
-            )
+            ), InputDispatcher)
 
         return dispatchers, p
 
@@ -6981,6 +7008,9 @@ def bind_server(
 
         inj.bind_factory(ProcessGroupFactory, ProcessGroupImpl),
         inj.bind_factory(ProcessFactory, ProcessImpl),
+
+        inj.bind_factory(OutputDispatcherFactory, OutputDispatcherImpl),
+        inj.bind_factory(InputDispatcherFactory, InputDispatcherImpl),
     ]
 
     #

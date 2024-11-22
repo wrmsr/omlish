@@ -5,11 +5,11 @@ from omlish.lite.check import check_isinstance
 from omlish.lite.typing import Func
 
 from .configs import ProcessGroupConfig
-from .dispatchers import Dispatcher
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .states import ProcessState
+from .types import Dispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext

@@ -31,16 +31,43 @@ class ServerContext(abc.ABC):
         raise NotImplementedError
 
 
-# class Dispatcher(abc.ABC):
-#     pass
-#
-#
-# class OutputDispatcher(Dispatcher, abc.ABC):
-#     pass
-#
-#
-# class InputDispatcher(Dispatcher, abc.ABC):
-#     pass
+class Dispatcher(abc.ABC):
+    @abc.abstractmethod
+    def readable(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def writable(self) -> bool:
+        raise NotImplementedError
+
+    def handle_read_event(self) -> None:
+        raise TypeError
+
+    def handle_write_event(self) -> None:
+        raise TypeError
+
+    @abc.abstractmethod
+    def handle_error(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+
+class OutputDispatcher(Dispatcher, abc.ABC):
+    pass
+
+
+class InputDispatcher(Dispatcher, abc.ABC):
+    @abc.abstractmethod
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        raise NotImplementedError
 
 
 @functools.total_ordering
@@ -99,7 +126,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
         raise NotImplementedError
 
 
@@ -134,7 +161,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
         raise NotImplementedError
 
     @abc.abstractmethod

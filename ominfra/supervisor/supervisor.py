@@ -11,7 +11,6 @@ from omlish.lite.typing import Func
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
-from .dispatchers import Dispatcher
 from .events import TICK_EVENTS
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
@@ -22,6 +21,7 @@ from .poller import Poller
 from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
+from .types import Dispatcher
 from .types import Process
 from .utils import ExitNow
 from .utils import as_string
