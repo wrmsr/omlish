@@ -16,9 +16,12 @@ from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
-from .processesimpl import InheritedFds
-from .processesimpl import InputDispatcherFactory
-from .processesimpl import OutputDispatcherFactory
+from .spawningimpl import InheritedFds
+from .spawningimpl import InputDispatcherFactory
+from .spawningimpl import OutputDispatcherFactory
+from .spawningimpl import ProcessSpawningImpl
+from .processesimpl import ProcessSpawningFactory
+from .processes import PidHistory
 from .processesimpl import ProcessImpl
 from .signals import SignalReceiver
 from .supervisor import ProcessGroupFactory
@@ -49,8 +52,12 @@ def bind_server(
         inj.bind(ProcessGroupManager, singleton=True),
         inj.bind(Supervisor, singleton=True),
 
+        inj.bind(PidHistory()),
+
         inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
         inj.bind_factory(ProcessImpl, ProcessFactory),
+
+        inj.bind_factory(ProcessSpawningImpl, ProcessSpawningFactory),
 
         inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
         inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
