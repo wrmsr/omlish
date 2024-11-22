@@ -67,7 +67,7 @@ class AwsSigner:
         }
         if url_parts.port is not None:
             if url_parts.port != default_ports.get(url_parts.scheme):
-                host = '%s:%d' % (host, url_parts.port)
+                host = f'{host}:{int(url_parts.port)}'
         return host
 
     @staticmethod

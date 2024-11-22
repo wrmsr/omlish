@@ -86,8 +86,7 @@ class TestParser(unittest.TestCase):
             '\u00d7': 'multiply',
             '\u00f7': 'divide',
         }
-        for sign in operations:
-            operation = operations[sign]
+        for sign, operation in operations.items():
             expression = f'foo {sign} bar'
             self.assert_parsed_ast(
                 expression,
@@ -103,8 +102,7 @@ class TestParser(unittest.TestCase):
             '-': 'minus',
             '\u2212': 'minus',
         }
-        for sign in operations:
-            operation = operations[sign]
+        for sign, operation in operations.items():
             expression = f'{sign} foo'
             self.assert_parsed_ast(
                 expression,
