@@ -3,7 +3,6 @@
 _delay
 _dispatchers
 _pipes
-_spawn_err
 """
 import errno
 import os.path
@@ -13,7 +12,6 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
-from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
@@ -39,7 +37,6 @@ from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
 from .utils import as_bytes
-from .utils import as_string
 from .utils import close_fd
 from .utils import compact_traceback
 from .utils import get_path
@@ -107,10 +104,6 @@ class ProcessSpawning(Process):
 
     #
 
-
-    def _record_spawn_err(self, msg: str) -> None:
-        self._spawn_err = msg
-        log.info('_spawn_err: %s', msg)
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
         """
@@ -228,8 +221,6 @@ class ProcessSpawning(Process):
 
     def _spawn_as_parent(self, pid: int) -> int:
         close_child_pipes(self._pipes)
-
-        log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
 
         self._pid_history[pid] = self
 

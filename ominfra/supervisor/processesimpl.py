@@ -163,6 +163,8 @@ class ProcessImpl(Process):
             self._states.change_state(ProcessState.BACKOFF)
 
         else:
+            log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
+
             self._pid = pid
             self._delay = time.time() + self.config.startsecs
 
