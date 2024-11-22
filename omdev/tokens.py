@@ -16,7 +16,13 @@ Tokens: ta.TypeAlias = ta.Sequence['trt.Token']
 ##
 
 
-WS_NAMES = ('UNIMPORTANT_WS', 'NEWLINE', 'COMMENT')
+WS_NAMES = (
+    'UNIMPORTANT_WS',
+    'NEWLINE',
+    'COMMENT',
+    'INDENT',
+    'DEDENT',
+)
 
 
 def is_ws(tok: 'trt.Token') -> bool:
