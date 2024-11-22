@@ -41,7 +41,7 @@ def bind_server(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
-        inj.bind_array(DaemonizeListener, DaemonizeListeners),
+        inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
 
         inj.bind(get_poller_impl(), key=Poller, singleton=True),
         inj.bind(DaemonizeListener, array=True, to_key=Poller),
