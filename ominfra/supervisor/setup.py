@@ -1,4 +1,6 @@
+# ruff: noqa: UP006 UP007
 import abc
+import dataclasses as dc
 import errno
 import os
 import re
@@ -24,6 +26,9 @@ from .utils import try_unlink
 
 
 ##
+
+
+SupervisorUser = ta.NewType('SupervisorUser', User)
 
 
 class DaemonizeListener(abc.ABC):
