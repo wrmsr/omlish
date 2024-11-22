@@ -90,7 +90,13 @@ class Injector(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -384,7 +390,10 @@ def build_injection_kwargs_target(
 ) -> InjectionKwargsTarget:
     insp = _injection_inspect(obj)
 
-    seen: ta.Set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
+    seen: ta.Set[InjectorKey] = set()
+    if skip_kwargs is not None:
+        seen.update(map(as_injector_key, check_not_isinstance(skip_kwargs)))
+
     kws: ta.List[InjectionKwarg] = []
     for p in list(insp.signature.parameters.values())[skip_args:]:
         if p.annotation is inspect.Signature.empty:
@@ -463,7 +472,13 @@ class _Injector(Injector):
             return v.must()
         raise UnboundInjectorKeyError(key)
 
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
         kt = build_injection_kwargs_target(obj)
         ret: ta.Dict[str, ta.Any] = {}
         for kw in kt.kwargs:

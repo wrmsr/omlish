@@ -10,6 +10,7 @@ import inspect
 import typing as ta
 import weakref
 
+from ... import check
 from ... import reflect as rfl
 from ..exceptions import ConflictingKeyError
 from ..inspect import Kwarg
@@ -78,7 +79,10 @@ def build_kwargs_target(
     sig = signature(obj)
     tags = _TAGS.get(obj)
 
-    seen: set[Key] = set(map(as_key, skip_kwargs)) if skip_kwargs is not None else set()
+    seen: set[Key] = set()
+    if skip_kwargs is not None:
+        seen.update(map(as_key, check.not_isinstance(skip_kwargs)))
+
     kws: list[Kwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
         if p.annotation is inspect.Signature.empty:
