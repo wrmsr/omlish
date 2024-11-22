@@ -147,6 +147,7 @@ class ProcessSpawningImpl(ProcessSpawning):
                 argv,
                 pipes,
             )
+            raise RuntimeError('Unreachable')  # noqa
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
         """
@@ -277,7 +278,7 @@ class ProcessSpawningImpl(ProcessSpawning):
                 code = errno.errorcode.get(exc.args[0], exc.args[0])
                 msg = f"Couldn't chdir to {cwd}: {code}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
-                raise RuntimeError(msg)
+                raise RuntimeError(msg) from exc
 
             #
 
