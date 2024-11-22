@@ -3,7 +3,6 @@ import signal
 import time
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
@@ -178,24 +177,7 @@ class Supervisor:
     #
 
     def main(self) -> None:
-        self.setup()
         self.run()
-
-    @cached_nullary
-    def setup(self) -> None:
-        if not self._context.first:
-            # prevent crash on libdispatch-based systems, at least for the first request
-            self._context.cleanup_fds()
-
-        self._context.set_uid_or_exit()
-
-        if self._context.first:
-            self._context.set_rlimits_or_exit()
-
-        # this sets the options.logger object delay logger instantiation until after setuid
-        if not self._context.config.nocleanup:
-            # clean up old automatic logs
-            self._context.clear_auto_child_logdir()
 
     def run(
             self,
@@ -213,12 +195,6 @@ class Supervisor:
 
             self._signal_handler.set_signals()
 
-            if not self._context.config.nodaemon and self._context.first:
-                self._context.daemonize()
-
-            # writing pid file needs to come *after* daemonizing or pid will be wrong
-            self._context.write_pidfile()
-
             self._event_callbacks.notify(SupervisorRunningEvent())
 
             while True:
@@ -228,7 +204,7 @@ class Supervisor:
                 self._run_once()
 
         finally:
-            self._context.cleanup()
+            self._poller.close()
 
     #
 

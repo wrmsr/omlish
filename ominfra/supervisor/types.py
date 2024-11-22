@@ -18,6 +18,12 @@ if ta.TYPE_CHECKING:
 ##
 
 
+ServerEpoch = ta.NewType('ServerEpoch', int)
+
+
+##
+
+
 @functools.total_ordering
 class ConfigPriorityOrdered(abc.ABC):
     @property

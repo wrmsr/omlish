@@ -7,7 +7,7 @@ from omlish.lite.inject import inj
 
 from .configs import ServerConfig
 from .context import ServerContextImpl
-from .context import ServerEpoch
+from .types import ServerEpoch
 from .dispatchersimpl import InputDispatcherImpl
 from .dispatchersimpl import OutputDispatcherImpl
 from .events import EventCallbacks
