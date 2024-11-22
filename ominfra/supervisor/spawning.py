@@ -131,9 +131,9 @@ class ProcessSpawning(Process):
             raise BadCommandError('command is empty')
 
         if '/' in program:
-            filename = program
+            exe = program
             try:
-                st = os.stat(filename)
+                st = os.stat(exe)
             except OSError:
                 st = None
 
@@ -151,15 +151,15 @@ class ProcessSpawning(Process):
                     break
 
             if st is None:
-                filename = program
+                exe = program
             else:
-                filename = found  # type: ignore
+                exe = found  # type: ignore
 
         # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
         # options method call here only to service unit tests
-        check_execv_args(filename, args, st)
+        check_execv_args(exe, args, st)
 
-        return filename, args
+        return exe, args
 
     def spawn(self) -> ta.Optional[int]:
         self._spawn_err = None
@@ -174,7 +174,7 @@ class ProcessSpawning(Process):
         self._states.change_state(ProcessState.STARTING)
 
         try:
-            filename, argv = self._get_execv_args()
+            exe, argv = self._get_execv_args()
         except ProcessError as what:
             self._record_spawn_err(what.args[0])
             self._states.check_in_state(ProcessState.STARTING)
@@ -216,7 +216,7 @@ class ProcessSpawning(Process):
             return self._spawn_as_parent(pid)
 
         else:
-            self._spawn_as_child(filename, argv)
+            self._spawn_as_child(exe, argv)
             return None
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
@@ -258,7 +258,7 @@ class ProcessSpawning(Process):
 
     #
 
-    def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
+    def _spawn_as_child(self, exe: str, argv: ta.Sequence[str]) -> None:
         try:
             # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
             # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
@@ -301,7 +301,7 @@ class ProcessSpawning(Process):
             try:
                 if self.config.umask is not None:
                     os.umask(self.config.umask)
-                os.execve(filename, list(argv), env)
+                os.execve(exe, list(argv), env)
 
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
@@ -311,7 +311,7 @@ class ProcessSpawning(Process):
             except Exception:  # noqa
                 (file, fun, line), t, v, tbinfo = compact_traceback()
                 error = f'{t}, {v}: file: {file} line: {line}'
-                msg = f"couldn't exec {filename}: {error}\n"
+                msg = f"couldn't exec {exe}: {error}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
 
             # this point should only be reached if execve failed. the finally clause will exit the child process.
@@ -344,15 +344,15 @@ class ProcessSpawning(Process):
 ##
 
 
-def check_execv_args(filename, argv, st) -> None:
+def check_execv_args(exe: str, argv, st) -> None:
     if st is None:
-        raise NotFoundError(f"can't find command {filename!r}")
+        raise NotFoundError(f"can't find command {exe!r}")
 
     elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutableError(f'command at {filename!r} is a directory')
+        raise NotExecutableError(f'command at {exe!r} is a directory')
 
     elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutableError(f'command at {filename!r} is not executable')
+        raise NotExecutableError(f'command at {exe!r} is not executable')
 
-    elif not os.access(filename, os.X_OK):
-        raise NoPermissionError(f'no permission to run command {filename!r}')
+    elif not os.access(exe, os.X_OK):
+        raise NoPermissionError(f'no permission to run command {exe!r}')
