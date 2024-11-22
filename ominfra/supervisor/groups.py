@@ -38,6 +38,13 @@ class ProcessGroupImpl(ProcessGroup):
             process = check_isinstance(self._process_factory(pconfig, self), Process)
             self._by_name[pconfig.name] = process
 
+    #
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+
+    #
+
     @property
     def name(self) -> str:
         return self._config.name
@@ -49,6 +56,8 @@ class ProcessGroupImpl(ProcessGroup):
     @property
     def by_name(self) -> ta.Mapping[str, Process]:
         return self._by_name
+
+    #
 
     def __iter__(self) -> ta.Iterator[Process]:
         return iter(self._by_name.values())
@@ -62,8 +71,7 @@ class ProcessGroupImpl(ProcessGroup):
     def __getitem__(self, name: str) -> Process:
         return self._by_name[name]
 
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+    #
 
     def get_unstopped_processes(self) -> ta.List[Process]:
         return [x for x in self if not x.get_state().stopped]

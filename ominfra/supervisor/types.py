@@ -55,6 +55,38 @@ class ServerContext(abc.ABC):
 
 
 class Dispatcher(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def channel(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def fd(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def close(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_error(self) -> None:
+        raise NotImplementedError
+
+    #
+
     @abc.abstractmethod
     def readable(self) -> bool:
         raise NotImplementedError
@@ -63,20 +95,13 @@ class Dispatcher(abc.ABC):
     def writable(self) -> bool:
         raise NotImplementedError
 
+    #
+
     def handle_read_event(self) -> None:
         raise TypeError
 
     def handle_write_event(self) -> None:
         raise TypeError
-
-    @abc.abstractmethod
-    def handle_error(self) -> None:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def closed(self) -> bool:
-        raise NotImplementedError
 
 
 class OutputDispatcher(Dispatcher, abc.ABC):
