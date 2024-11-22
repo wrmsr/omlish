@@ -156,7 +156,7 @@ class ProcessImpl(Process):
             self.change_state(ProcessState.BACKOFF)
             return None
 
-        log.info("spawned: \'%s\' with pid %s", as_string(self.name), sp.pid)
+        log.info("Spawned: '%s' with pid %s", self.name, sp.pid)
 
         self._pid = sp.pid
         self._pipes = sp.pipes
@@ -208,7 +208,7 @@ class ProcessImpl(Process):
         if self._state not in states:
             raise ProcessStateError(
                 f'Check failed for {self._config.name}: '
-                f'{self._state.name} not in {" ".join(s.name for s in states)}'
+                f'{self._state.name} not in {" ".join(s.name for s in states)}',
             )
 
     #
