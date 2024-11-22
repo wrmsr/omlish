@@ -222,22 +222,30 @@ class Typing:
     toks: Tokens = dc.field(repr=False)
 
 
-def _is_typing(lts: Tokens) -> bool:
+def _is_typing(
+        lts: Tokens,
+        *,
+        exclude_newtypes: bool = False,
+) -> bool:
     es = tks.join_toks(lts).strip()
     if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
         return True
 
     wts = list(tks.ignore_ws(lts))
-    if (
+    if not (
             len(wts) >= 5 and
             wts[0].name == 'NAME' and
             wts[1].name == 'OP' and wts[1].src == '=' and
             wts[2].name == 'NAME' and wts[2].src == 'ta' and
             wts[3].name == 'OP' and wts[3].src == '.'
     ):
-        return True
+        return False
 
-    return False
+    if exclude_newtypes:
+        if wts[4].name == 'NAME' and wts[4].src == 'NewType':
+            return False
+
+    return True
 
 
 def make_typing(
@@ -248,7 +256,7 @@ def make_typing(
     if not lts or lts[0].name == 'UNIMPORTANT_WS':
         return None
 
-    if not _is_typing(lts):
+    if not _is_typing(lts, exclude_newtypes=True):
         return None
 
     ft = next(iter(tks.ignore_ws(lts)))

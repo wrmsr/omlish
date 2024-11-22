@@ -241,8 +241,6 @@ class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
 ##
 
 
-
-
 class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
     def __init__(self, config: SiteConcernConfigT, site: 'Site') -> None:
         super().__init__()
@@ -268,8 +266,6 @@ class Site(ConcernsContainer[SiteConcern, SiteConfig]):
 
 
 ##
-
-
 
 
 class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
