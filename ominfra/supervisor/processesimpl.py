@@ -13,6 +13,9 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
+from .spawning import ProcessSpawning
+from .spawning import SpawnedProcess
+from .spawning import ProcessSpawnError
 from .configs import ProcessConfig
 from .context import drop_privileges
 from .datatypes import RestartUnconditionally
@@ -154,13 +157,13 @@ class ProcessImpl(Process):
 
         self._last_start = time.time()
 
-        self._states.change_state(ProcessState.STARTING)
+        self.change_state(ProcessState.STARTING)
 
         res = self._spawning.spawn()
 
         if err:
-            self._states.check_in_state(ProcessState.STARTING)
-            self._states.change_state(ProcessState.BACKOFF)
+            self.check_in_state(ProcessState.STARTING)
+            self.change_state(ProcessState.BACKOFF)
 
         else:
             log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
