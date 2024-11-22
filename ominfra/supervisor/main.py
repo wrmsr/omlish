@@ -44,7 +44,7 @@ from .configs import prepare_server_config
 from .context import ServerContextImpl
 from .context import ServerEpoch
 from .inject import bind_server
-from .processesimpl import InheritedFds
+from .spawningimpl import InheritedFds
 from .states import SupervisorState
 from .supervisor import Supervisor
 from .utils import ExitNow
