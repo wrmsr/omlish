@@ -73,7 +73,7 @@ def get_python_version():
     Return a string containing the major and minor Python version, leaving off the patchlevel.  Sample return values
     could be '1.5' or '2.2'.
     """
-    return '%d.%d' % sys.version_info[:2]
+    return '%d.%d' % sys.version_info[:2]  # noqa
 
 
 def get_python_inc(plat_specific=0, prefix=None):
@@ -193,9 +193,9 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
 
     if prefix is None:
         if standard_lib:
-            prefix = plat_specific and BASE_EXEC_PREFIX or BASE_PREFIX
+            prefix = plat_specific and BASE_EXEC_PREFIX or BASE_PREFIX  # noqa
         else:
-            prefix = plat_specific and EXEC_PREFIX or PREFIX
+            prefix = plat_specific and EXEC_PREFIX or PREFIX  # noqa
 
     if os.name == 'posix':
         if plat_specific or standard_lib:

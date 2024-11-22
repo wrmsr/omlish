@@ -388,7 +388,7 @@ class StandardLogFormatter(logging.Formatter):
             return ct.strftime(datefmt)  # noqa
         else:
             t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)
+            return '%s.%03d' % (t, record.msecs)  # noqa
 
 
 ##

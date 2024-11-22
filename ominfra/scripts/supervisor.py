@@ -3696,7 +3696,7 @@ class StandardLogFormatter(logging.Formatter):
             return ct.strftime(datefmt)  # noqa
         else:
             t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)
+            return '%s.%03d' % (t, record.msecs)  # noqa
 
 
 ##
@@ -4584,8 +4584,9 @@ else:
 
 def get_poller_impl() -> ta.Type[Poller]:
     if (
-            sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
-            hasattr(select, 'kqueue') and KqueuePoller is not None
+            (sys.platform == 'darwin' or sys.platform.startswith('freebsd')) and
+            hasattr(select, 'kqueue') and
+            KqueuePoller is not None
     ):
         return KqueuePoller
     elif hasattr(select, 'poll'):

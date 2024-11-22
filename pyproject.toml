@@ -182,6 +182,7 @@ ignore = [
     'PERF401',  # manual-list-comprehension
     'PGH003',  # blanket-type-ignore
     'PGH004',  # blanket-noqa
+    'PLC0206',  # dict-index-missing-items
     'PLC0208',  # iteration-over-set
     'PLR0911',  # too-many-return-statements
     'PLR0912',  # too-many-branches
@@ -191,7 +192,6 @@ ignore = [
     'PLR2044',  # empty-comment
     'PLW0603',  # global-statement
     'PLW2901',  # redefined-loop-name
-    'PT004',  # pytest-missing-fixture-name-underscore
     'PT016',  # pytest-fail-without-message
     'PT018',  # pytest-composite-assertion
     'PTH',  # pathlib
@@ -202,6 +202,7 @@ ignore = [
     'RET508',  # superfluous-else-break
     'RUF009',  # function-call-in-dataclass-default-argument
     'RUF018',  # assignment-in-assert
+    'RUF023',  # unsorted-dunder-slots
     'RUF100',  # unused-noqa
     'S102',  # exec-builtin
     'S311',  # suspicious-non-cryptographic-random-usage
@@ -217,7 +218,7 @@ ignore = [
     'SIM117',  # multiple-with-statements
     'T201',  # print
     'T203',  # p-print
-    'TCH001',  # typing-only-first-party-import
+    'TC001',  # typing-only-first-party-import
     'TD001', # invalid-todo-tag
     'TD002',  # missing-todo-author
     'TD003',  # missing-todo-link

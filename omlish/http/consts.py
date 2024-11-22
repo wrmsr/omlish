@@ -11,7 +11,7 @@ import http
 
 
 def format_status(status: http.HTTPStatus) -> str:
-    return '%d %s' % (int(status), status.phrase)
+    return f'{int(status)} {status.phrase}'
 
 
 STATUS_OK = format_status(http.HTTPStatus.OK)

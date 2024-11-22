@@ -13,7 +13,7 @@ from .coerce import (  # noqa
     frozenset_of,
     frozenset_of_or_none,
     frozenset_or_none,
-    map,
+    map,  # noqa
     map_of,
     map_of_or_none,
     map_or_none,

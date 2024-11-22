@@ -1252,7 +1252,7 @@ class AwsSigner:
         }
         if url_parts.port is not None:
             if url_parts.port != default_ports.get(url_parts.scheme):
-                host = '%s:%d' % (host, url_parts.port)
+                host = f'{host}:{int(url_parts.port)}'
         return host
 
     @staticmethod
@@ -1818,7 +1818,7 @@ class StandardLogFormatter(logging.Formatter):
             return ct.strftime(datefmt)  # noqa
         else:
             t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)
+            return '%s.%03d' % (t, record.msecs)  # noqa
 
 
 ##

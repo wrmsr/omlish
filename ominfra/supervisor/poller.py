@@ -228,8 +228,9 @@ else:
 
 def get_poller_impl() -> ta.Type[Poller]:
     if (
-            sys.platform == 'darwin' or sys.platform.startswith('freebsd') and
-            hasattr(select, 'kqueue') and KqueuePoller is not None
+            (sys.platform == 'darwin' or sys.platform.startswith('freebsd')) and
+            hasattr(select, 'kqueue') and
+            KqueuePoller is not None
     ):
         return KqueuePoller
     elif hasattr(select, 'poll'):

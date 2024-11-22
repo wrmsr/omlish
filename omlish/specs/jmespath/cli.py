@@ -11,7 +11,7 @@ from .exceptions import JmespathTypeError
 from .exceptions import JmespathValueError
 from .exceptions import ParseError
 from .exceptions import UnknownFunctionError
-from .parser import compile
+from .parser import compile  # noqa
 from .parser import search
 from .visitor import node_type
 

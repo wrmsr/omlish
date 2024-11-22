@@ -403,7 +403,7 @@ class AsdlParser:
         * Reads in the next token
         """
 
-        if isinstance(kind, tuple) and self.cur().kind in kind or self.cur().kind == kind:
+        if (isinstance(kind, tuple) and self.cur().kind in kind) or self.cur().kind == kind:
             value = self.cur().value
             self._advance()
             return value
