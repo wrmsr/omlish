@@ -47,17 +47,13 @@ from .utils import compact_traceback
 from .utils import decode_wait_status
 from .utils import get_path
 from .utils import real_exit
-from .processes import ProcessStateManager
 from .processes import ProcessStateError
 
 
 ##
 
 
-class ProcessImpl(
-    Process,
-    ProcessStateManager,
-):
+class ProcessImpl(Process):
     """A class to manage a subprocess."""
 
     def __init__(
@@ -143,6 +139,13 @@ class ProcessImpl(
             log.warning('process \'%s\' already running', process_name)
             return None
 
+        self.check_in_state(
+            ProcessState.EXITED,
+            ProcessState.FATAL,
+            ProcessState.BACKOFF,
+            ProcessState.STOPPED,
+        )
+
         self._killing = False
         self._spawn_err = None
         self._exitstatus = None
@@ -151,14 +154,19 @@ class ProcessImpl(
 
         self._last_start = time.time()
 
-        pid = self._spawning.spawn()
-        if pid is None:
-            return None
+        self._states.change_state(ProcessState.STARTING)
 
-        self._pid = pid
-        self._delay = time.time() + self.config.startsecs
+        res = self._spawning.spawn()
 
-        return pid
+        if err:
+            self._states.check_in_state(ProcessState.STARTING)
+            self._states.change_state(ProcessState.BACKOFF)
+
+        else:
+            self._pid = pid
+            self._delay = time.time() + self.config.startsecs
+
+            return pid
 
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
