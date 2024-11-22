@@ -16,13 +16,13 @@ from .groupsimpl import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
 from .processes import PidHistory
-from .users import User
-from .users import get_user
-from .setup import SupervisorUser
 from .processesimpl import ProcessImpl
 from .processesimpl import ProcessSpawningFactory
 from .setup import DaemonizeListener
 from .setup import DaemonizeListeners
+from .setup import SupervisorUser
+from .setupimpl import SupervisorSetup
+from .setupimpl import SupervisorSetupImpl
 from .signals import SignalReceiver
 from .spawningimpl import InheritedFds
 from .spawningimpl import InputDispatcherFactory
@@ -33,6 +33,8 @@ from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import ServerContext
 from .types import ServerEpoch
+from .users import User
+from .users import get_user
 
 
 def bind_server(
@@ -45,6 +47,9 @@ def bind_server(
         inj.bind(config),
 
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
+
+        inj.bind(SupervisorSetupImpl, singleton=True),
+        inj.bind(SupervisorSetup, to_key=SupervisorSetupImpl),
 
         inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
