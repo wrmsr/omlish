@@ -7,8 +7,10 @@ import typing as ta
 
 from omlish.lite.logs import log
 
+from .setup import DaemonizeListener
 
-class Poller(abc.ABC):
+
+class Poller(DaemonizeListener, abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
