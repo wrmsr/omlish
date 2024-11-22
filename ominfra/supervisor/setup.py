@@ -70,8 +70,6 @@ class SupervisorSetupImpl(SupervisorSetup):
         self._epoch = epoch
         self._daemonize_listeners = daemonize_listeners
 
-        self._unlink_pidfile = False
-
     #
 
     @property
@@ -84,35 +82,38 @@ class SupervisorSetupImpl(SupervisorSetup):
     def setup(self) -> None:
         if not self.first:
             # prevent crash on libdispatch-based systems, at least for the first request
-            self.cleanup_fds()
+            self._cleanup_fds()
 
-        self.set_uid_or_exit()
+        self._set_uid_or_exit()
 
         if self.first:
-            self.set_rlimits_or_exit()
+            self._set_rlimits_or_exit()
 
         # this sets the options.logger object delay logger instantiation until after setuid
         if not self._config.nocleanup:
             # clean up old automatic logs
-            self.clear_auto_child_logdir()
+            self._clear_auto_child_logdir()
 
         if not self._config.nodaemon and self.first:
-            self.daemonize()
+            self._daemonize()
 
         # writing pid file needs to come *after* daemonizing or pid will be wrong
-        self.write_pidfile()
+        self._write_pidfile()
 
     @cached_nullary
     def cleanup(self) -> None:
-        if self._unlink_pidfile:
-            try_unlink(self._config.pidfile)
+        self._cleanup_pidfile()
 
-    def cleanup_fds(self) -> None:
+    #
+
+    def _cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
         start = 5
         os.closerange(start, self._config.minfds)
 
-    def set_uid_or_exit(self) -> None:
+    #
+
+    def _set_uid_or_exit(self) -> None:
         """
         Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
         process via usage() if privileges could not be dropped.
@@ -132,7 +133,9 @@ class SupervisorSetupImpl(SupervisorSetup):
             else:  # failed to drop privileges
                 raise RuntimeError(msg)
 
-    def set_rlimits_or_exit(self) -> None:
+    #
+
+    def _set_rlimits_or_exit(self) -> None:
         """
         Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
         the process via usage() if any rlimits could not be set.
@@ -195,7 +198,11 @@ class SupervisorSetupImpl(SupervisorSetup):
                         hard=hard,
                     ))
 
-    def write_pidfile(self) -> None:
+    #
+
+    _unlink_pidfile = False
+
+    def _write_pidfile(self) -> None:
         pid = os.getpid()
         try:
             with open(self._config.pidfile, 'w') as f:
@@ -206,7 +213,13 @@ class SupervisorSetupImpl(SupervisorSetup):
             self._unlink_pidfile = True
             log.info('supervisord started with pid %s', pid)
 
-    def clear_auto_child_logdir(self) -> None:
+    def _cleanup_pidfile(self) -> None:
+        if self._unlink_pidfile:
+            try_unlink(self._config.pidfile)
+
+    #
+
+    def _clear_auto_child_logdir(self) -> None:
         # must be called after realize()
         child_logdir = self._config.child_logdir
         fnre = re.compile(rf'.+?---{self._config.identifier}-\S+\.log\.?\d{{0,4}}')
@@ -224,16 +237,18 @@ class SupervisorSetupImpl(SupervisorSetup):
                 except OSError:
                     log.warning('Failed to clean up %r', pathname)
 
-    def daemonize(self) -> None:
+    #
+
+    def _daemonize(self) -> None:
         for dl in self._daemonize_listeners:
             dl.before_daemonize()
 
-        self._daemonize()
+        self._do_daemonize()
 
         for dl in self._daemonize_listeners:
             dl.after_daemonize()
 
-    def _daemonize(self) -> None:
+    def _do_daemonize(self) -> None:
         # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
         # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
         # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
