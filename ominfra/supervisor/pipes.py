@@ -68,6 +68,11 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
         raise
 
 
+def close_pipes(pipes: ProcessPipes) -> None:
+    close_parent_pipes(pipes)
+    close_child_pipes(pipes)
+
+
 def close_parent_pipes(pipes: ProcessPipes) -> None:
     for fd in pipes.parent_fds():
         close_fd(fd)
