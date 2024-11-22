@@ -1,10 +1,10 @@
 # ruff: noqa: PT009
-import abc
 import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
 from ..inject import inj
+from ..typing import Func
 
 
 class TestInject(unittest.TestCase):
@@ -41,23 +41,14 @@ class TestInject(unittest.TestCase):
         self.assertEqual(i.inject(barf), 4)
         self.assertEqual(i.inject(barf), 5)
 
-    class Barf(abc.ABC):
-        @abc.abstractmethod
-        def barf(self) -> str:
-            raise NotImplementedError
 
-    class BarfA(Barf):
-        def barf(self) -> str:
-            return 'a'
-
-    class BarfB(Barf):
-        def barf(self) -> str:
-            return 'b'
-
+class TestInject2(unittest.TestCase):
     def test_inject2(self):
         i = inj.create_injector(inj.bind(420))
         self.assertEqual(i.provide(int), 420)
 
+
+class TestDataclasses(unittest.TestCase):
     def test_dataclasses(self):
         @dc.dataclass(frozen=True)
         class Foo:
@@ -71,6 +62,8 @@ class TestInject(unittest.TestCase):
         ).provide(Foo)
         print(foo)
 
+
+class TestOverride(unittest.TestCase):
     def test_override(self):
         b0 = inj.as_bindings(inj.bind(420), inj.bind('abc'))
         i0 = inj.create_injector(b0)
@@ -81,6 +74,8 @@ class TestInject(unittest.TestCase):
         self.assertEqual(i1.provide(int), 421)
         self.assertEqual(i1.provide(str), 'abc')
 
+
+class TestArrays(unittest.TestCase):
     def test_arrays(self):
         bs = inj.as_bindings(
             inj.bind(420, array=True),
@@ -89,3 +84,34 @@ class TestInject(unittest.TestCase):
         i = inj.create_injector(bs)
         p = i.provide(inj.array(int))
         print(p)
+
+
+class TestFactories(unittest.TestCase):
+    @dc.dataclass(frozen=True)
+    class Foo:
+        x: int
+
+    @dc.dataclass(frozen=True)
+    class Bar:
+        y: int
+        foo: 'TestFactories.Foo'
+
+    BarFactory = ta.NewType('BarFactory', Func[Bar])
+
+    def test_factories(self):
+        foo = self.Foo(420)
+
+        injector = inj.create_injector(
+            inj.bind_factory(self.BarFactory, self.Bar),
+            inj.bind(foo),
+        )
+
+        self.assertIs(injector[self.Foo], foo)
+
+        bar_factory = injector[self.BarFactory]
+
+        for i in range(2):
+            bar: TestFactories.Bar = bar_factory.fn(i)
+            self.assertIsInstance(bar, self.Bar)
+            self.assertEqual(bar.y, i)
+            self.assertIs(bar.foo, foo)

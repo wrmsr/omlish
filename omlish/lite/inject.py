@@ -13,6 +13,7 @@ from .maybes import Maybe
 from .reflect import get_optional_alias_arg
 from .reflect import is_new_type
 from .reflect import is_optional_alias
+from .typing import Func
 
 
 T = ta.TypeVar('T')
@@ -312,13 +313,16 @@ _INJECTION_SIGNATURE_CACHE: ta.MutableMapping[ta.Any, inspect.Signature] = weakr
 
 
 def _injection_signature(obj: ta.Any) -> inspect.Signature:
+    kw: dict = dict(
+        eval_str=True,
+    )
     try:
         return _INJECTION_SIGNATURE_CACHE[obj]
     except TypeError:
-        return inspect.signature(obj)
+        return inspect.signature(obj, **kw)
     except KeyError:
         pass
-    sig = inspect.signature(obj)
+    sig = inspect.signature(obj, **kw)
     _INJECTION_SIGNATURE_CACHE[obj] = sig
     return sig
 
@@ -380,6 +384,66 @@ def build_injection_kwargs_target(
 
 
 ###
+# injector
+
+
+_INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
+
+
+class _Injector(Injector):
+    def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
+        super().__init__()
+
+        self._bs = check_isinstance(bs, InjectorBindings)
+        self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
+
+        self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
+
+        if _INJECTOR_INJECTOR_KEY in self._pfm:
+            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
+
+    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
+        key = as_injector_key(key)
+
+        if key == _INJECTOR_INJECTOR_KEY:
+            return Maybe.just(self)
+
+        fn = self._pfm.get(key)
+        if fn is not None:
+            return Maybe.just(fn(self))
+
+        if self._p is not None:
+            pv = self._p.try_provide(key)
+            if pv is not None:
+                return Maybe.empty()
+
+        return Maybe.empty()
+
+    def provide(self, key: ta.Any) -> ta.Any:
+        v = self.try_provide(key)
+        if v.present:
+            return v.must()
+        raise UnboundInjectorKeyError(key)
+
+    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+        kt = build_injection_kwargs_target(obj)
+        ret: ta.Dict[str, ta.Any] = {}
+        for kw in kt.kwargs:
+            if kw.has_default:
+                if not (mv := self.try_provide(kw.key)).present:
+                    continue
+                v = mv.must()
+            else:
+                v = self.provide(kw.key)
+            ret[kw.name] = v
+        return ret
+
+    def inject(self, obj: ta.Any) -> ta.Any:
+        kws = self.provide_kwargs(obj)
+        return obj(**kws)
+
+
+###
 # binder
 
 
@@ -428,7 +492,7 @@ class InjectorBinder:
             to_key: ta.Any = None,
 
             singleton: bool = False,
-    ) -> InjectorBinding:
+    ) -> InjectorBindingOrBindings:
         if obj is None or obj is inspect.Parameter.empty:
             raise TypeError(obj)
         if isinstance(obj, cls._BANNED_BIND_TYPES):
@@ -511,67 +575,21 @@ class InjectorBinder:
 
 
 ###
-# injector
-
-
-_INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
-
-
-class _Injector(Injector):
-    def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
-        super().__init__()
-
-        self._bs = check_isinstance(bs, InjectorBindings)
-        self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
-
-        self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
-
-        if _INJECTOR_INJECTOR_KEY in self._pfm:
-            raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
-
-    def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
-        key = as_injector_key(key)
-
-        if key == _INJECTOR_INJECTOR_KEY:
-            return Maybe.just(self)
-
-        fn = self._pfm.get(key)
-        if fn is not None:
-            return Maybe.just(fn(self))
-
-        if self._p is not None:
-            pv = self._p.try_provide(key)
-            if pv is not None:
-                return Maybe.empty()
-
-        return Maybe.empty()
-
-    def provide(self, key: ta.Any) -> ta.Any:
-        v = self.try_provide(key)
-        if v.present:
-            return v.must()
-        raise UnboundInjectorKeyError(key)
-
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        kt = build_injection_kwargs_target(obj)
-        ret: ta.Dict[str, ta.Any] = {}
-        for kw in kt.kwargs:
-            if kw.has_default:
-                if not (mv := self.try_provide(kw.key)).present:
-                    continue
-                v = mv.must()
-            else:
-                v = self.provide(kw.key)
-            ret[kw.name] = v
-        return ret
-
-    def inject(self, obj: ta.Any) -> ta.Any:
-        kws = self.provide_kwargs(obj)
-        return obj(**kws)
-
-
-###
 # injection helpers
+
+
+def make_injector_factory(
+        factory_cls: ta.Any,
+        factory_fn: ta.Callable[..., T],
+) -> ta.Callable[..., Func[T]]:
+    def outer(injector: Injector) -> factory_cls:
+        def inner(*args, **kwargs):
+            return injector.inject(functools.partial(factory_fn, *args, **kwargs))
+        return Func(inner)
+    return outer
+
+
+##
 
 
 class Injection:
@@ -602,6 +620,12 @@ class Injection:
     def override(cls, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
         return injector_override(p, *args)
 
+    # injector
+
+    @classmethod
+    def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
+        return _Injector(as_injector_bindings(*args), p)
+
     # binder
 
     @classmethod
@@ -619,7 +643,7 @@ class Injection:
             to_key: ta.Any = None,
 
             singleton: bool = False,
-    ) -> InjectorBinding:
+    ) -> InjectorBindingOrBindings:
         return InjectorBinder.bind(
             obj,
 
@@ -635,11 +659,15 @@ class Injection:
             singleton=singleton,
         )
 
-    # injector
+    # helpers
 
     @classmethod
-    def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-        return _Injector(as_injector_bindings(*args), p)
+    def bind_factory(
+            cls,
+            factory_cls: ta.Any,
+            factory_fn: ta.Callable[..., T],
+    ) -> InjectorBindingOrBindings:
+        return cls.bind(make_injector_factory(factory_cls, factory_fn))
 
 
 inj = Injection

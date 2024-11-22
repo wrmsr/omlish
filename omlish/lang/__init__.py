@@ -217,6 +217,7 @@ from .timeouts import (  # noqa
 )
 
 from .typing import (  # noqa
+    AnyFunc,
     BytesLike,
     Func0,
     Func1,
