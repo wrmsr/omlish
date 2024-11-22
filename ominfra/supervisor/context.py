@@ -1,22 +1,16 @@
 # ruff: noqa: UP006 UP007
 import errno
 import os
-import re
-import resource
 import typing as ta
-import warnings
 
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
 from .poller import Poller
-from .privileges import drop_privileges
 from .states import SupervisorState
 from .types import Process
 from .types import ServerContext
 from .utils import mktempfile
-from .utils import real_exit
-from .utils import try_unlink
 from .types import ServerEpoch
 
 
