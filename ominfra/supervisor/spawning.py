@@ -4,7 +4,6 @@ _delay
 _dispatchers
 _pipes
 _spawn_err
-context.config.minfds
 context.pid_history
 pid
 """
@@ -22,8 +21,9 @@ from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
+from .configs import ServerConfig
 from .configs import ProcessConfig
-from .context import drop_privileges
+from .privileges import drop_privileges
 from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import EventCallbacks
@@ -82,6 +82,8 @@ class ProcessSpawning(Process):
             group: ProcessGroup,
             states: ProcessStateManager,
             *,
+            server_config: ServerConfig,
+
             output_dispatcher_factory: OutputDispatcherFactory,
             input_dispatcher_factory: InputDispatcherFactory,
 
@@ -92,6 +94,8 @@ class ProcessSpawning(Process):
         self._config = config
         self._group = group
         self._states = states
+
+        self._server_config = server_config
 
         self._output_dispatcher_factory = output_dispatcher_factory
         self._input_dispatcher_factory = input_dispatcher_factory
@@ -280,7 +284,7 @@ class ProcessSpawning(Process):
         else:
             os.dup2(check_not_none(self._pipes.child_stderr), 2)
 
-        for i in range(3, self.context.config.minfds):
+        for i in range(3, self._server_config.minfds):
             if i in self._inherited_fds:
                 continue
             close_fd(i)
