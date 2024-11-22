@@ -16,7 +16,6 @@ from ..exceptions import ConflictingKeyError
 from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
-from ..keys import as_key
 from ..types import Tag
 
 
@@ -79,11 +78,14 @@ def build_kwargs_target(
     sig = signature(obj)
     tags = _TAGS.get(obj)
 
-    sns: ta.Set[str] = set(check.not_isinstance(skip_kwargs, str)) if skip_kwargs is not None else set()
+    skip_names: set[str] = set()
+    if skip_kwargs is not None:
+        skip_names.update(check.not_isinstance(skip_kwargs, str))
+
     seen: set[Key] = set()
     kws: list[Kwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
-        if p.name in sns:
+        if p.name in skip_names:
             continue
 
         if p.annotation is inspect.Signature.empty:

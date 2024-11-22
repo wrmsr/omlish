@@ -2733,11 +2733,23 @@ class Injector(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inject(self, obj: ta.Any) -> ta.Any:
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
         raise NotImplementedError
 
     def __getitem__(
@@ -2963,35 +2975,49 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 # inspection
 
 
-# inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to eval
-# str annotations *in addition to* getting the signature for parameter information.
 class _InjectionInspection(ta.NamedTuple):
     signature: inspect.Signature
     type_hints: ta.Mapping[str, ta.Any]
+    args_offset: int
 
 
 _INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
 
 
 def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    uw = obj
+    tgt = obj
+    if isinstance(tgt, type) and tgt.__init__ is not object.__init__:  # type: ignore[misc]
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        tgt = tgt.__init__  # type: ignore[misc]
+        has_generic_base = True
+    else:
+        has_generic_base = False
+
+    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
+    # eval str annotations *in addition to* getting the signature for parameter information.
+    uw = tgt
+    has_partial = False
     while True:
         if isinstance(uw, functools.partial):
+            has_partial = True
             uw = uw.func
         else:
             if (uw2 := inspect.unwrap(uw)) is uw:
                 break
             uw = uw2
 
-    if isinstance(obj, type) and obj.__init__ is not object.__init__:  # type: ignore[misc]
-        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
-        #  - https://bugs.python.org/issue40897
-        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
-        obj = obj.__init__  # type: ignore[misc]
+    if has_generic_base and has_partial:
+        raise InjectorError(
+            'Injector inspection does not currently support both a typing.Generic base and a functools.partial: '
+            f'{obj}',
+        )
 
     return _InjectionInspection(
-        inspect.signature(obj),
+        inspect.signature(tgt),
         ta.get_type_hints(uw),
+        1 if has_generic_base else 0,
     )
 
 
@@ -3022,14 +3048,23 @@ def build_injection_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
-        skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+        skip_kwargs: ta.Optional[ta.Iterable[str]] = None,
         raw_optional: bool = False,
 ) -> InjectionKwargsTarget:
     insp = _injection_inspect(obj)
 
-    seen: ta.Set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
+    params = list(insp.signature.parameters.values())
+
+    skip_names: ta.Set[str] = set()
+    if skip_kwargs is not None:
+        skip_names.update(check_not_isinstance(skip_kwargs, str))
+
+    seen: ta.Set[InjectorKey] = set()
     kws: ta.List[InjectionKwarg] = []
-    for p in list(insp.signature.parameters.values())[skip_args:]:
+    for p in params[insp.args_offset + skip_args:]:
+        if p.name in skip_names:
+            continue
+
         if p.annotation is inspect.Signature.empty:
             if p.default is not inspect.Parameter.empty:
                 raise KeyError(f'{obj}, {p.name}')
@@ -3106,8 +3141,19 @@ class _Injector(Injector):
             return v.must()
         raise UnboundInjectorKeyError(key)
 
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        kt = build_injection_kwargs_target(obj)
+    def provide_kwargs(
+            self,
+            obj: ta.Any,
+            *,
+            skip_args: int = 0,
+            skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+    ) -> ta.Mapping[str, ta.Any]:
+        kt = build_injection_kwargs_target(
+            obj,
+            skip_args=skip_args,
+            skip_kwargs=skip_kwargs,
+        )
+
         ret: ta.Dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
@@ -3119,9 +3165,24 @@ class _Injector(Injector):
             ret[kw.name] = v
         return ret
 
-    def inject(self, obj: ta.Any) -> ta.Any:
-        kws = self.provide_kwargs(obj)
-        return obj(**kws)
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
+        provided = self.provide_kwargs(
+            obj,
+            skip_args=len(args) if args is not None else 0,
+            skip_kwargs=kwargs if kwargs is not None else None,
+        )
+
+        return obj(
+            *(args if args is not None else ()),
+            **(kwargs if kwargs is not None else {}),
+            **provided,
+        )
 
 
 ###
@@ -3269,7 +3330,7 @@ def make_injector_factory(
 
     def outer(injector: Injector) -> ann:
         def inner(*args, **kwargs):
-            return injector.inject(functools.partial(fn, *args, **kwargs))
+            return injector.inject(fn, args=args, kwargs=kwargs)
         return cls(inner)  # type: ignore
 
     return outer

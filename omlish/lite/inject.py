@@ -332,35 +332,49 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 # inspection
 
 
-# inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to eval
-# str annotations *in addition to* getting the signature for parameter information.
 class _InjectionInspection(ta.NamedTuple):
     signature: inspect.Signature
     type_hints: ta.Mapping[str, ta.Any]
+    args_offset: int
 
 
 _INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
 
 
 def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    uw = obj
+    tgt = obj
+    if isinstance(tgt, type) and tgt.__init__ is not object.__init__:  # type: ignore[misc]
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        tgt = tgt.__init__  # type: ignore[misc]
+        has_generic_base = True
+    else:
+        has_generic_base = False
+
+    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
+    # eval str annotations *in addition to* getting the signature for parameter information.
+    uw = tgt
+    has_partial = False
     while True:
         if isinstance(uw, functools.partial):
+            has_partial = True
             uw = uw.func
         else:
             if (uw2 := inspect.unwrap(uw)) is uw:
                 break
             uw = uw2
 
-    if isinstance(obj, type) and obj.__init__ is not object.__init__:  # type: ignore[misc]
-        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
-        #  - https://bugs.python.org/issue40897
-        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
-        obj = obj.__init__  # type: ignore[misc]
+    if has_generic_base and has_partial:
+        raise InjectorError(
+            'Injector inspection does not currently support both a typing.Generic base and a functools.partial: '
+            f'{obj}',
+        )
 
     return _InjectionInspection(
-        inspect.signature(obj),
+        inspect.signature(tgt),
         ta.get_type_hints(uw),
+        1 if has_generic_base else 0,
     )
 
 
@@ -396,11 +410,16 @@ def build_injection_kwargs_target(
 ) -> InjectionKwargsTarget:
     insp = _injection_inspect(obj)
 
-    sns: ta.Set[str] = set(check_not_isinstance(skip_kwargs, str)) if skip_kwargs is not None else set()
+    params = list(insp.signature.parameters.values())
+
+    skip_names: ta.Set[str] = set()
+    if skip_kwargs is not None:
+        skip_names.update(check_not_isinstance(skip_kwargs, str))
+
     seen: ta.Set[InjectorKey] = set()
     kws: ta.List[InjectionKwarg] = []
-    for p in list(insp.signature.parameters.values())[skip_args:]:
-        if p.name in sns:
+    for p in params[insp.args_offset + skip_args:]:
+        if p.name in skip_names:
             continue
 
         if p.annotation is inspect.Signature.empty:
@@ -512,7 +531,7 @@ class _Injector(Injector):
     ) -> ta.Any:
         provided = self.provide_kwargs(
             obj,
-            skip_args=len(args) if args is not None else None,
+            skip_args=len(args) if args is not None else 0,
             skip_kwargs=kwargs if kwargs is not None else None,
         )
 
