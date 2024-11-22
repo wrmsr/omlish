@@ -5,6 +5,9 @@ import typing as ta
 from .states import ProcessState
 
 
+EventCallback = ta.Callable[['Event'], None]
+
+
 ##
 
 
@@ -13,9 +16,6 @@ class Event(abc.ABC):  # noqa
 
 
 ##
-
-
-EventCallback = ta.Callable[['Event'], None]
 
 
 class EventCallbacks:
