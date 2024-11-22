@@ -8,12 +8,16 @@ from omlish.lite.inject import inj
 from .configs import ServerConfig
 from .context import ServerContextImpl
 from .context import ServerEpoch
+from .dispatchers import InputDispatcherImpl
+from .dispatchers import OutputDispatcherImpl
 from .events import EventCallbacks
 from .groups import ProcessFactory
 from .groups import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
 from .process import InheritedFds
+from .process import InputDispatcherFactory
+from .process import OutputDispatcherFactory
 from .process import ProcessImpl
 from .signals import SignalReceiver
 from .supervisor import ProcessGroupFactory
@@ -50,6 +54,9 @@ def bind_server(
 
         inj.bind_factory(ProcessGroupFactory, ProcessGroupImpl),
         inj.bind_factory(ProcessFactory, ProcessImpl),
+
+        inj.bind_factory(OutputDispatcherFactory, OutputDispatcherImpl),
+        inj.bind_factory(InputDispatcherFactory, InputDispatcherImpl),
     ]
 
     #
