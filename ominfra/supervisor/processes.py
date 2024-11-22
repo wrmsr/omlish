@@ -8,15 +8,13 @@ import traceback
 import typing as ta
 
 from omlish.lite.check import check_isinstance
+from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
 from .context import check_execv_args
-from .context import close_child_pipes
-from .context import close_parent_pipes
 from .context import drop_privileges
-from .context import make_pipes
 from .datatypes import RestartUnconditionally
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
@@ -25,6 +23,10 @@ from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
 from .exceptions import BadCommandError
 from .exceptions import ProcessError
+from .pipes import ProcessPipes
+from .pipes import close_child_pipes
+from .pipes import close_parent_pipes
+from .pipes import make_process_pipes
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
@@ -88,7 +90,7 @@ class ProcessImpl(Process):
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._dispatchers: ta.Dict[int, Dispatcher] = {}
-        self._pipes: ta.Dict[str, int] = {}
+        self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
@@ -162,7 +164,7 @@ class ProcessImpl(Process):
         if not self.pid or self._killing:
             raise OSError(errno.EPIPE, 'Process already closed')
 
-        stdin_fd = self._pipes['stdin']
+        stdin_fd = self._pipes.stdin
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
@@ -317,36 +319,35 @@ class ProcessImpl(Process):
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
+    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ProcessPipes]:
         use_stderr = not self._config.redirect_stderr
 
-        p = make_pipes(use_stderr)
-        stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
+        p = make_process_pipes(use_stderr)
 
         dispatchers: ta.Dict[int, Dispatcher] = {}
 
         etype: ta.Type[ProcessCommunicationEvent]
-        if stdout_fd is not None:
+        if p.stdout is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers[p.stdout] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
-                stdout_fd,
+                p.stdout,
             ), OutputDispatcher)
 
-        if stderr_fd is not None:
+        if p.stderr is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers[p.stderr] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
-                stderr_fd,
+                p.stderr,
             ), OutputDispatcher)
 
-        if stdin_fd is not None:
-            dispatchers[stdin_fd] = check_isinstance(self._input_dispatcher_factory(
+        if p.stdin is not None:
+            dispatchers[p.stdin] = check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
-                stdin_fd,
+                p.stdin,
             ), InputDispatcher)
 
         return dispatchers, p
@@ -362,12 +363,12 @@ class ProcessImpl(Process):
         return pid
 
     def _prepare_child_fds(self) -> None:
-        os.dup2(self._pipes['child_stdin'], 0)
-        os.dup2(self._pipes['child_stdout'], 1)
+        os.dup2(check_not_none(self._pipes.child_stdin), 0)
+        os.dup2(check_not_none(self._pipes.child_stdout), 1)
         if self._config.redirect_stderr:
-            os.dup2(self._pipes['child_stdout'], 2)
+            os.dup2(check_not_none(self._pipes.child_stdout), 2)
         else:
-            os.dup2(self._pipes['child_stderr'], 2)
+            os.dup2(check_not_none(self._pipes.child_stderr), 2)
 
         for i in range(3, self.context.config.minfds):
             if i in self._inherited_fds:
@@ -668,7 +669,7 @@ class ProcessImpl(Process):
 
         self._pid = 0
         close_parent_pipes(self._pipes)
-        self._pipes = {}
+        self._pipes = ProcessPipes()
         self._dispatchers = {}
 
     def set_uid(self) -> ta.Optional[str]:
