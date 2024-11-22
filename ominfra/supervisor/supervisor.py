@@ -12,10 +12,10 @@ from omlish.lite.typing import Func1
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
 from .dispatchers import Dispatchers
+from .events import TICK_EVENTS
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
-from .events import TICK_EVENTS
 from .groups import ProcessGroup
 from .groups import ProcessGroupManager
 from .poller import Poller

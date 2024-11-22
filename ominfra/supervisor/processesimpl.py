@@ -17,8 +17,8 @@ from .configs import ProcessConfig
 from .context import drop_privileges
 from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
-from .events import EventCallbacks
 from .events import PROCESS_STATE_EVENT_MAP
+from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
@@ -277,7 +277,7 @@ class ProcessImpl(Process):
             return None
 
         try:
-            self._dispatchers, self._pipes = self._make_dispatchers()  # type: ignore
+            self._dispatchers, self._pipes = self._make_dispatchers()
         except OSError as why:
             code = why.args[0]
             if code == errno.EMFILE:

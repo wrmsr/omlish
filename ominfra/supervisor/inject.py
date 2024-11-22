@@ -11,6 +11,7 @@ from .context import ServerEpoch
 from .dispatchersimpl import InputDispatcherImpl
 from .dispatchersimpl import OutputDispatcherImpl
 from .events import EventCallbacks
+from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
 from .poller import Poller
@@ -21,7 +22,6 @@ from .processesimpl import OutputDispatcherFactory
 from .processesimpl import ProcessImpl
 from .signals import SignalReceiver
 from .supervisor import ProcessGroupFactory
-from .groups import ProcessGroupManager
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import ServerContext
