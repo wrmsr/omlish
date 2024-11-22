@@ -11,7 +11,7 @@ import typing as ta
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
-from omlish.lite.typing import Func3
+from omlish.lite.typing import Func1
 
 from .spawning import ProcessSpawning
 from .spawning import SpawnedProcess
@@ -51,6 +51,12 @@ from .utils import decode_wait_status
 from .utils import get_path
 from .utils import real_exit
 from .processes import ProcessStateError
+from .spawning import ProcessSpawning
+from .spawning import ProcessSpawnError
+
+
+class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
+    pass
 
 
 ##
@@ -66,6 +72,7 @@ class ProcessImpl(Process):
             *,
             context: ServerContext,
             event_callbacks: EventCallbacks,
+            process_spawning_factory: ProcessSpawningFactory,
     ) -> None:
         super().__init__()
 
@@ -74,6 +81,9 @@ class ProcessImpl(Process):
 
         self._context = context
         self._event_callbacks = event_callbacks
+        self._process_spawning_factory = process_spawning_factory
+
+        #
 
         self._dispatchers = Dispatchers([])
         self._pipes = ProcessPipes()
