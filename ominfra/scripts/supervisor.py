@@ -95,6 +95,10 @@ TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
+# ../collections.py
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+
 # ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
@@ -946,6 +950,55 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
         return float_value
 
     return safe_parse_float
+
+
+########################################
+# ../collections.py
+
+
+class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
+    @property
+    @abc.abstractmethod
+    def _by_key(self) -> ta.Mapping[K, V]:
+        raise NotImplementedError
+
+    def __iter__(self) -> ta.Iterator[V]:
+        return iter(self._by_key.values())
+
+    def __len__(self) -> int:
+        return len(self._by_key)
+
+    def __contains__(self, key: K) -> bool:
+        return key in self._by_key
+
+    def __getitem__(self, key: K) -> V:
+        return self._by_key[key]
+
+    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
+        return self._by_key.get(key, default)
+
+    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
+        return iter(self._by_key.items())
+
+
+class KeyedCollection(KeyedCollectionAccessors[K, V]):
+    def __init__(self, items: ta.Iterable[V]) -> None:
+        super().__init__()
+
+        by_key: ta.Dict[K, V] = {}
+        for v in items:
+            if (k := self._key(v)) in by_key:
+                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
+            by_key[k] = v
+        self.__by_key = by_key
+
+    @property
+    def _by_key(self) -> ta.Mapping[K, V]:
+        return self.__by_key
+
+    @abc.abstractmethod
+    def _key(self, v: V) -> K:
+        raise NotImplementedError
 
 
 ########################################
@@ -2753,6 +2806,12 @@ _INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = w
 
 
 def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
+    if isinstance(obj, type) and obj.__init__ is not object.__init__:
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        obj = obj.__init__
+
     uw = obj
     while True:
         if isinstance(uw, functools.partial):
@@ -2811,6 +2870,7 @@ def build_injection_kwargs_target(
         if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
             raise TypeError(insp)
 
+        # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
         ann = insp.type_hints.get(p.name, p.annotation)
         if (
                 not raw_optional and
@@ -4994,6 +5054,10 @@ class CoroHttpServerSocketHandler(SocketHandler):
 # ../types.py
 
 
+if ta.TYPE_CHECKING:
+    from .dispatchers import Dispatchers
+
+
 ##
 
 
@@ -5039,6 +5103,38 @@ class ServerContext(abc.ABC):
 
 
 class Dispatcher(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def channel(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def fd(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def close(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_error(self) -> None:
+        raise NotImplementedError
+
+    #
+
     @abc.abstractmethod
     def readable(self) -> bool:
         raise NotImplementedError
@@ -5047,24 +5143,23 @@ class Dispatcher(abc.ABC):
     def writable(self) -> bool:
         raise NotImplementedError
 
+    #
+
     def handle_read_event(self) -> None:
         raise TypeError
 
     def handle_write_event(self) -> None:
         raise TypeError
 
-    @abc.abstractmethod
-    def handle_error(self) -> None:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def closed(self) -> bool:
-        raise NotImplementedError
-
 
 class OutputDispatcher(Dispatcher, abc.ABC):
-    pass
+    @abc.abstractmethod
+    def remove_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
 
 
 class InputDispatcher(Dispatcher, abc.ABC):
@@ -5113,14 +5208,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def remove_logs(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def reopen_logs(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def stop(self) -> ta.Optional[str]:
         raise NotImplementedError
 
@@ -5141,7 +5228,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
@@ -5523,22 +5610,40 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     return None
 
 
-def check_execv_args(filename, argv, st) -> None:
-    if st is None:
-        raise NotFoundError(f"can't find command {filename!r}")
+########################################
+# ../dispatchers.py
 
-    elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutableError(f'command at {filename!r} is a directory')
 
-    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutableError(f'command at {filename!r} is not executable')
+class Dispatchers(KeyedCollection[int, Dispatcher]):
+    def _key(self, v: Dispatcher) -> int:
+        return v.fd
 
-    elif not os.access(filename, os.X_OK):
-        raise NoPermissionError(f'no permission to run command {filename!r}')
+    #
+
+    def drain(self) -> None:
+        for d in self:
+            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
+            # dispatcher (eg. call handle_listener_state_change for event listener processes)
+            if d.readable():
+                d.handle_read_event()
+            if d.writable():
+                d.handle_write_event()
+
+    #
+
+    def remove_logs(self) -> None:
+        for d in self:
+            if isinstance(d, OutputDispatcher):
+                d.remove_logs()
+
+    def reopen_logs(self) -> None:
+        for d in self:
+            if isinstance(d, OutputDispatcher):
+                d.reopen_logs()
 
 
 ########################################
-# ../dispatchers.py
+# ../dispatchersimpl.py
 
 
 class BaseDispatcherImpl(Dispatcher, abc.ABC):
@@ -5559,8 +5664,12 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
 
         self._closed = False  # True if close() has been called
 
+    #
+
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} at {id(self)} for {self._process} ({self._channel})>'
+
+    #
 
     @property
     def process(self) -> Process:
@@ -5578,16 +5687,18 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
     def closed(self) -> bool:
         return self._closed
 
-    def handle_error(self) -> None:
-        nil, t, v, tbinfo = compact_traceback()
-
-        log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
-        self.close()
+    #
 
     def close(self) -> None:
         if not self._closed:
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
+
+    def handle_error(self) -> None:
+        nil, t, v, tbinfo = compact_traceback()
+
+        log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
+        self.close()
 
 
 class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
@@ -5858,7 +5969,54 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
 # ../groups.py
 
 
-##
+class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):
+    def __init__(
+            self,
+            *,
+            event_callbacks: EventCallbacks,
+    ) -> None:
+        super().__init__()
+
+        self._event_callbacks = event_callbacks
+
+        self._by_name: ta.Dict[str, ProcessGroup] = {}
+
+    @property
+    def _by_key(self) -> ta.Mapping[str, ProcessGroup]:
+        return self._by_name
+
+    #
+
+    def all_processes(self) -> ta.Iterator[Process]:
+        for g in self:
+            yield from g
+
+    #
+
+    def add(self, group: ProcessGroup) -> None:
+        if (name := group.name) in self._by_name:
+            raise KeyError(f'Process group already exists: {name}')
+
+        self._by_name[name] = group
+
+        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
+
+    def remove(self, name: str) -> None:
+        group = self._by_name[name]
+
+        group.before_remove()
+
+        del self._by_name[name]
+
+        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+
+    def clear(self) -> None:
+        # FIXME: events?
+        self._by_name.clear()
+
+
+########################################
+# ../groupsimpl.py
 
 
 class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
@@ -5877,10 +6035,20 @@ class ProcessGroupImpl(ProcessGroup):
         self._config = config
         self._process_factory = process_factory
 
-        self._by_name = {}
+        by_name: ta.Dict[str, Process] = {}
         for pconfig in self._config.processes or []:
-            process = check_isinstance(self._process_factory(pconfig, self), Process)
-            self._by_name[pconfig.name] = process
+            p = check_isinstance(self._process_factory(pconfig, self), Process)
+            if p.name in by_name:
+                raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
+            by_name[pconfig.name] = p
+        self._by_name =by_name
+
+    #
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+
+    #
 
     @property
     def name(self) -> str:
@@ -5894,6 +6062,8 @@ class ProcessGroupImpl(ProcessGroup):
     def by_name(self) -> ta.Mapping[str, Process]:
         return self._by_name
 
+    #
+
     def __iter__(self) -> ta.Iterator[Process]:
         return iter(self._by_name.values())
 
@@ -5906,8 +6076,10 @@ class ProcessGroupImpl(ProcessGroup):
     def __getitem__(self, name: str) -> Process:
         return self._by_name[name]
 
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+    def get(self, name: str, default: ta.Optional[Process] = None) -> ta.Optional[Process]:
+        return self._by_name.get(name, default)
+
+    #
 
     def get_unstopped_processes(self) -> ta.List[Process]:
         return [x for x in self if not x.get_state().stopped]
@@ -5935,64 +6107,8 @@ class ProcessGroupImpl(ProcessGroup):
         pass
 
 
-##
-
-
-class ProcessGroups:
-    def __init__(
-            self,
-            *,
-            event_callbacks: EventCallbacks,
-    ) -> None:
-        super().__init__()
-
-        self._event_callbacks = event_callbacks
-
-        self._by_name: ta.Dict[str, ProcessGroup] = {}
-
-    def get(self, name: str) -> ta.Optional[ProcessGroup]:
-        return self._by_name.get(name)
-
-    def __getitem__(self, name: str) -> ProcessGroup:
-        return self._by_name[name]
-
-    def __len__(self) -> int:
-        return len(self._by_name)
-
-    def __iter__(self) -> ta.Iterator[ProcessGroup]:
-        return iter(self._by_name.values())
-
-    def by_name(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
-
-    def all_processes(self) -> ta.Iterator[Process]:
-        for g in self:
-            yield from g
-
-    def add(self, group: ProcessGroup) -> None:
-        if (name := group.name) in self._by_name:
-            raise KeyError(f'Process group already exists: {name}')
-
-        self._by_name[name] = group
-
-        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
-
-    def remove(self, name: str) -> None:
-        group = self._by_name[name]
-
-        group.before_remove()
-
-        del self._by_name[name]
-
-        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
-
-    def clear(self) -> None:
-        # FIXME: events?
-        self._by_name.clear()
-
-
 ########################################
-# ../processes.py
+# ../processesimpl.py
 
 
 class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
@@ -6039,7 +6155,7 @@ class ProcessImpl(Process):
 
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
-        self._dispatchers: ta.Dict[int, Dispatcher] = {}
+        self._dispatchers = Dispatchers([])
         self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
@@ -6060,6 +6176,13 @@ class ProcessImpl(Process):
         self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
+    #
+
+    def __repr__(self) -> str:
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
+
+    #
+
     @property
     def name(self) -> str:
         return self._config.name
@@ -6076,6 +6199,8 @@ class ProcessImpl(Process):
     def pid(self) -> int:
         return self._pid
 
+    #
+
     @property
     def context(self) -> ServerContext:
         return self._context
@@ -6088,27 +6213,9 @@ class ProcessImpl(Process):
     def backoff(self) -> int:
         return self._backoff
 
-    def get_dispatchers(self) -> ta.Mapping[int, Dispatcher]:
+    def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
 
-    def remove_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'remove_logs'):
-                dispatcher.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'reopen_logs'):
-                dispatcher.reopen_logs()
-
-    def drain(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
-            # dispatcher (eg. call handle_listener_state_change for event listener processes)
-            if dispatcher.readable():
-                dispatcher.handle_read_event()
-            if dispatcher.writable():
-                dispatcher.handle_write_event()
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._killing:
@@ -6269,38 +6376,38 @@ class ProcessImpl(Process):
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ProcessPipes]:
+    def _make_dispatchers(self) -> ta.Tuple[Dispatchers, ProcessPipes]:
         use_stderr = not self._config.redirect_stderr
 
         p = make_process_pipes(use_stderr)
 
-        dispatchers: ta.Dict[int, Dispatcher] = {}
+        dispatchers: ta.List[Dispatcher] = []
 
         etype: ta.Type[ProcessCommunicationEvent]
         if p.stdout is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[p.stdout] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 p.stdout,
-            ), OutputDispatcher)
+            ), OutputDispatcher))
 
         if p.stderr is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[p.stderr] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
                 p.stderr,
-            ), OutputDispatcher)
+            ), OutputDispatcher))
 
         if p.stdin is not None:
-            dispatchers[p.stdin] = check_isinstance(self._input_dispatcher_factory(
+            dispatchers.append(check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
                 p.stdin,
-            ), InputDispatcher)
+            ), InputDispatcher))
 
-        return dispatchers, p
+        return Dispatchers(dispatchers), p
 
     def _spawn_as_parent(self, pid: int) -> int:
         # Parent
@@ -6547,7 +6654,7 @@ class ProcessImpl(Process):
     def finish(self, sts: int) -> None:
         """The process was reaped and we need to report and manage its state."""
 
-        self.drain()
+        self._dispatchers.drain()
 
         es, msg = decode_wait_status(sts)
 
@@ -6620,18 +6727,13 @@ class ProcessImpl(Process):
         self._pid = 0
         close_parent_pipes(self._pipes)
         self._pipes = ProcessPipes()
-        self._dispatchers = {}
+        self._dispatchers = Dispatchers([])
 
     def set_uid(self) -> ta.Optional[str]:
         if self._config.uid is None:
             return None
         msg = drop_privileges(self._config.uid)
         return msg
-
-    def __repr__(self) -> str:
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self._config.name
-        return f'<Subprocess at {id(self)} with name {name} in state {self.get_state().name}>'
 
     def get_state(self) -> ProcessState:
         return self._state
@@ -6705,6 +6807,23 @@ class ProcessImpl(Process):
         pass
 
 
+##
+
+
+def check_execv_args(filename, argv, st) -> None:
+    if st is None:
+        raise NotFoundError(f"can't find command {filename!r}")
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutableError(f'command at {filename!r} is a directory')
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutableError(f'command at {filename!r} is not executable')
+
+    elif not os.access(filename, os.X_OK):
+        raise NoPermissionError(f'no permission to run command {filename!r}')
+
+
 ########################################
 # ../supervisor.py
 
@@ -6718,7 +6837,7 @@ class SignalHandler:
             *,
             context: ServerContextImpl,
             signal_receiver: SignalReceiver,
-            process_groups: ProcessGroups,
+            process_groups: ProcessGroupManager,
     ) -> None:
         super().__init__()
 
@@ -6758,8 +6877,10 @@ class SignalHandler:
         elif sig == signal.SIGUSR2:
             log.info('received %s indicating log reopen request', sig_name(sig))
 
-            for process in self._process_groups.all_processes():
-                process.reopen_logs()
+            for p in self._process_groups.all_processes():
+                for d in p.get_dispatchers():
+                    if isinstance(d, OutputDispatcher):
+                        d.reopen_logs()
 
         else:
             log.debug('received %s indicating nothing', sig_name(sig))
@@ -6778,7 +6899,7 @@ class Supervisor:
             *,
             context: ServerContextImpl,
             poller: Poller,
-            process_groups: ProcessGroups,
+            process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
@@ -6846,12 +6967,6 @@ class Supervisor:
         self._process_groups.remove(name)
 
         return True
-
-    def get_process_map(self) -> ta.Dict[int, Dispatcher]:
-        process_map: ta.Dict[int, Dispatcher] = {}
-        for process in self._process_groups.all_processes():
-            process_map.update(process.get_dispatchers())
-        return process_map
 
     def shutdown_report(self) -> ta.List[Process]:
         unstopped: ta.List[Process] = []
@@ -6954,9 +7069,16 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for p in self._process_groups.all_processes()
+            for d in p.get_dispatchers()
+        )
+
     def _poll(self) -> None:
-        combined_map = {}
-        combined_map.update(self.get_process_map())
+        combined_map: ta.Dict[int, Dispatcher] = {}
+        combined_map.update(self.get_dispatchers().items())
 
         pgroups = list(self._process_groups)
         pgroups.sort()
@@ -7072,9 +7194,6 @@ class Supervisor:
 # ../inject.py
 
 
-##
-
-
 def bind_server(
         config: ServerConfig,
         *,
@@ -7094,7 +7213,7 @@ def bind_server(
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(SignalHandler, singleton=True),
-        inj.bind(ProcessGroups, singleton=True),
+        inj.bind(ProcessGroupManager, singleton=True),
         inj.bind(Supervisor, singleton=True),
 
         inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
