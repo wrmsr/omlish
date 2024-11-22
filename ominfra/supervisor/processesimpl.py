@@ -78,7 +78,6 @@ class ProcessImpl(Process):
             input_dispatcher_factory: InputDispatcherFactory,
 
             inherited_fds: ta.Optional[InheritedFds] = None,
-
     ) -> None:
         super().__init__()
 
