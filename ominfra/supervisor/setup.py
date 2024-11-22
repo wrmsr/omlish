@@ -23,6 +23,9 @@ from .utils import real_exit
 from .utils import try_unlink
 
 
+##
+
+
 class DaemonizeListener(abc.ABC):
     def before_daemonize(self) -> None:
         pass
@@ -42,6 +45,9 @@ class SupervisorSetup(abc.ABC):
     @abc.abstractmethod
     def cleanup(self) -> None:
         raise NotImplementedError
+
+
+##
 
 
 class SupervisorSetupImpl(SupervisorSetup):
@@ -213,9 +219,13 @@ class SupervisorSetupImpl(SupervisorSetup):
                     log.warning('Failed to clean up %r', pathname)
 
     def daemonize(self) -> None:
-        self._poller.before_daemonize()
+        for dl in self._daemonize_listeners:
+            dl.before_daemonize()
+
         self._daemonize()
-        self._poller.after_daemonize()
+
+        for dl in self._daemonize_listeners:
+            dl.after_daemonize()
 
     def _daemonize(self) -> None:
         # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to

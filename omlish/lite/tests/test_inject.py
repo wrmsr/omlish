@@ -102,6 +102,49 @@ class TestArrays(unittest.TestCase):
         p = i.provide(Ints)
         assert set(p) == {420, 421}
 
+    def test_listener_array(self):
+        on_foos: list = []
+
+        class FooListener:
+            def on_foo(self):
+                on_foos.append(self)
+
+        FooListeners = ta.NewType('FooListeners', ta.Sequence[FooListener])  # noqa
+
+        class A(FooListener):
+            pass
+
+        class B(FooListener):
+            pass
+
+        class Fooer:
+            def __init__(self, listeners: FooListeners) -> None:
+                super().__init__()
+                self._listeners = listeners
+
+            def foo(self):
+                for l in self._listeners:
+                    l.on_foo()
+
+        # FIXME: bind empty array
+
+        i = inj.create_injector(
+            inj.bind(Fooer, singleton=True),
+            inj.bind_array(FooListener, FooListeners),
+
+            inj.bind(A, singleton=True),
+            inj.bind(FooListener, array=True, to_key=A),
+
+            inj.bind(B()),
+            inj.bind(FooListener, array=True, to_key=B),
+        )
+
+        fooer = i[Fooer]
+        fooer.foo()
+        self.assertEqual(len(on_foos), 2)
+        for cls in [A, B]:
+            self.assertTrue(any(isinstance(o, cls) for o in on_foos))
+
 
 class TestFactories(unittest.TestCase):
     @dc.dataclass(frozen=True)
