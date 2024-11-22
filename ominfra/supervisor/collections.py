@@ -15,7 +15,7 @@ class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
     def __iter__(self) -> ta.Iterator[V]:
         return iter(self._by_key.values())
 
-    def __len__(self) -> K:
+    def __len__(self) -> int:
         return len(self._by_key)
 
     def __contains__(self, key: K) -> bool:
@@ -39,7 +39,7 @@ class KeyedCollection(KeyedCollectionAccessors[K, V]):
         for v in items:
             if (k := self._key(v)) in by_key:
                 raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
-            by_key[v.key] = v
+            by_key[k] = v
         self.__by_key = by_key
 
     @property
