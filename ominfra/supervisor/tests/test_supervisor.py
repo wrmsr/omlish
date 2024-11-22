@@ -11,7 +11,7 @@ from ...configs import read_config_file
 from ..configs import ServerConfig
 from ..configs import prepare_server_config
 from ..inject import bind_server
-from ..processes import InheritedFds
+from ..processesimpl import InheritedFds
 from ..supervisor import Supervisor
 from ..utils import get_open_fds
 
