@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007
-import dataclasses as dc
 import typing as ta
 
-from .configs import ProcessConfig
+from omlish.lite.typing import Func
+
 from .configs import ProcessGroupConfig
 from .dispatchers import Dispatcher
 from .events import EventCallbacks
@@ -17,12 +17,7 @@ from .types import ServerContext
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessFactory:
-    fn: ta.Callable[[ProcessConfig, ProcessGroup], Process]
-
-    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> Process:
-        return self.fn(config, group)
+ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
 
 
 class ProcessGroupImpl(ProcessGroup):
