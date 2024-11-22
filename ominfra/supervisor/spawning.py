@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007
 """
-_delay
 _dispatchers
 _pipes
 """
+import dataclasses as dc
 import errno
 import os.path
 import shlex
@@ -57,6 +57,13 @@ InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 ##
 
 
+@dc.dataclass(frozen=True)
+class SpawnedProcess:
+    pid: int
+    pipes: ProcessPipes
+    dispatchers: Dispatchers
+
+
 class ProcessSpawnError(RuntimeError):
     pass
 
@@ -104,6 +111,50 @@ class ProcessSpawning(Process):
 
     #
 
+    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
+        try:
+            exe, argv = self._get_execv_args()
+        except ProcessError as exc:
+            raise ProcessSpawnError(exc.args[0]) from exc
+
+        try:
+            pipes = make_process_pipes(not self.config.redirect_stderr)
+            dispatchers = self._make_dispatchers(pipes)
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EMFILE:
+                # too many file descriptors open
+                msg = f"too many open files to spawn '{self.name}'"
+            else:
+                msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
+            raise ProcessSpawnError(msg) from exc
+
+        try:
+            pid = os.fork()
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EAGAIN:
+                # process table full
+                msg = f'Too many processes in process table to spawn \'{self.name}\''
+            else:
+                msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
+            err = ProcessSpawnError(msg)
+            close_parent_pipes(pipes)
+            close_child_pipes(pipes)
+            raise err from exc
+
+        if pid != 0:
+            sp = SpawnedProcess(
+                pid,
+                pipes,
+                dispatchers,
+            )
+            self._spawn_as_parent(sp)
+            return sp
+
+        else:
+            self._spawn_as_child(exe, argv)
+            raise RuntimeError('Unreachable')
 
     def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
         """
@@ -152,45 +203,6 @@ class ProcessSpawning(Process):
 
         return exe, args
 
-    def spawn(self) -> int:  # Raises[ProcessSpawnError]
-        try:
-            exe, argv = self._get_execv_args()
-        except ProcessError as exc:
-            raise ProcessSpawnError(exc.args[0]) from exc
-
-        try:
-            self._pipes = make_process_pipes(not self.config.redirect_stderr)
-            self._dispatchers = self._make_dispatchers(pipes)
-        except OSError as exc:
-            code = exc.args[0]
-            if code == errno.EMFILE:
-                # too many file descriptors open
-                msg = f"too many open files to spawn '{self.name}'"
-            else:
-                msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
-            raise ProcessSpawnError(msg) from exc
-
-        try:
-            pid = os.fork()
-        except OSError as exc:
-            code = exc.args[0]
-            if code == errno.EAGAIN:
-                # process table full
-                msg = f'Too many processes in process table to spawn \'{self.name}\''
-            else:
-                msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
-            err = ProcessSpawnError(msg)
-            close_parent_pipes(self._pipes)
-            close_child_pipes(self._pipes)
-            raise err from exc
-
-        if pid != 0:
-            return self._spawn_as_parent(pid)
-
-        else:
-            self._spawn_as_child(exe, argv)
-            raise RuntimeError('Unreachable')
-
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
         dispatchers: ta.List[Dispatcher] = []
 
@@ -219,12 +231,10 @@ class ProcessSpawning(Process):
 
     #
 
-    def _spawn_as_parent(self, pid: int) -> int:
-        close_child_pipes(self._pipes)
+    def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
+        close_child_pipes(sp.pipes)
 
-        self._pid_history[pid] = self
-
-        return pid
+        self._pid_history[sp.pid] = self.process
 
     #
 
