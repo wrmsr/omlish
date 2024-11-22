@@ -54,14 +54,6 @@ class ServerContextImpl(ServerContext):
     def pid_history(self) -> ta.Dict[int, Process]:
         return self._pid_history
 
-    @property
-    def uid(self) -> ta.Optional[int]:
-        return self._uid
-
-    @property
-    def gid(self) -> ta.Optional[int]:
-        return self._gid
-
     ##
 
     def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:

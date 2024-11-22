@@ -2,6 +2,7 @@
 import os
 import re
 import resource
+import typing as ta
 import warnings
 
 from omlish.lite.cached import cached_nullary
@@ -25,7 +26,7 @@ class SupervisorSetupImpl(SupervisorSetup):
             self,
             *,
             config: ServerConfig,
-            user: SupervisorUser,
+            user: ta.Optional[SupervisorUser] = None,
             epoch: ServerEpoch = ServerEpoch(0),
             daemonize_listeners: DaemonizeListeners = DaemonizeListeners([]),
     ) -> None:

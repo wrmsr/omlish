@@ -19,6 +19,7 @@ from .groups import ProcessGroup
 from .groups import ProcessGroupManager
 from .poller import Poller
 from .processes import PidHistory
+from .setup import SupervisorSetup
 from .signals import SignalReceiver
 from .signals import sig_name
 from .states import SupervisorState
@@ -106,6 +107,7 @@ class Supervisor:
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
             pid_history: PidHistory,
+            setup: SupervisorSetup,
     ) -> None:
         super().__init__()
 
@@ -116,6 +118,7 @@ class Supervisor:
         self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
         self._pid_history = pid_history
+        self._setup = setup
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -177,7 +180,11 @@ class Supervisor:
     #
 
     def main(self) -> None:
-        self.run()
+        self._setup.setup()
+        try:
+            self.run()
+        finally:
+            self._setup.cleanup()
 
     def run(
             self,
