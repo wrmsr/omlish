@@ -5818,14 +5818,12 @@ class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            context: ServerContext,
             *,
             process_factory: ProcessFactory,
     ):
         super().__init__()
 
         self._config = config
-        self._context = context
         self._process_factory = process_factory
 
         self._processes = {}
@@ -5840,10 +5838,6 @@ class ProcessGroupImpl(ProcessGroup):
     @property
     def name(self) -> str:
         return self._config.name
-
-    @property
-    def context(self) -> ServerContext:
-        return self._context
 
     def __repr__(self):
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
