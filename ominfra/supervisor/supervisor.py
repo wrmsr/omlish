@@ -4,6 +4,7 @@ import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func
@@ -149,7 +150,7 @@ class Supervisor:
         if self._process_groups.get(config.name) is not None:
             return False
 
-        group = self._process_group_factory(config)
+        group = check_isinstance(self._process_group_factory(config), ProcessGroup)
         group.after_setuid()
 
         self._process_groups.add(group)
