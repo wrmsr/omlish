@@ -108,8 +108,12 @@ class Injector(abc.ABC):
 # exceptions
 
 
+class InjectorError(Exception):
+    pass
+
+
 @dc.dataclass(frozen=True)
-class InjectorKeyError(Exception):
+class InjectorKeyError(InjectorError):
     key: InjectorKey
 
     source: ta.Any = None
@@ -628,6 +632,27 @@ def make_injector_factory(
     return outer
 
 
+def make_injector_array(
+        ele: ta.Union[InjectorKey, InjectorKeyCls],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if isinstance(ele, InjectorKey):
+        if not ele.array:
+            raise InjectorError('Provided key must be array', ele)
+        key = ele
+    else:
+        key = dc.replace(as_injector_key(ele), array=True)
+
+    if ann is None:
+        ann = cls
+
+    def inner(injector: Injector) -> ann:
+        return cls(injector.provide(key))
+
+    return inner
+
+
 ##
 
 
@@ -708,6 +733,15 @@ class Injection:
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
         return cls.bind(make_injector_factory(fn, cls_, ann))
+
+    @classmethod
+    def bind_array(
+            cls,
+            ele: ta.Union[InjectorKey, InjectorKeyCls],
+            cls_: U,
+            ann: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return cls.bind(make_injector_array(ele, cls_, ann))
 
 
 inj = Injection

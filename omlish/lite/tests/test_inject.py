@@ -90,16 +90,17 @@ class TestArrays(unittest.TestCase):
         p = i.provide(inj.array(int))
         print(p)
 
-    def test_array_factory(self):
+    def test_bind_array(self):
         Ints = ta.NewType('Ints', ta.Sequence[int])  # noqa
 
         bs = inj.as_bindings(
             inj.bind(420, array=True),
             inj.bind(421, array=True),
+            inj.bind_array(int, Ints),
         )
         i = inj.create_injector(bs)
         p = i.provide(Ints)
-        print(p)
+        assert set(p) == {420, 421}
 
 
 class TestFactories(unittest.TestCase):
