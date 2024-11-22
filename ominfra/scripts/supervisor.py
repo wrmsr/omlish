@@ -123,18 +123,6 @@ HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']
 # ../../../omlish/lite/http/coroserver.py
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
-# ../context.py
-ServerEpoch = ta.NewType('ServerEpoch', int)
-
-# ../groups.py
-ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
-
-# ../process.py
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
-
-# ../supervisor.py
-ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
-
 
 ########################################
 # ../../../omdev/toml/parser.py
@@ -1598,8 +1586,6 @@ class Event(abc.ABC):  # noqa
 
 
 ##
-
-
 
 
 class EventCallbacks:
@@ -5009,6 +4995,9 @@ class ProcessGroup(abc.ABC):
 # ../context.py
 
 
+ServerEpoch = ta.NewType('ServerEpoch', int)
+
+
 class ServerContextImpl(ServerContext):
     def __init__(
             self,
@@ -5735,6 +5724,7 @@ class InputDispatcher(Dispatcher):
 ##
 
 
+ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
 
 
 class ProcessGroupImpl(ProcessGroup):
@@ -5875,6 +5865,9 @@ class ProcessGroups:
 
 ########################################
 # ../process.py
+
+
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
 
 ##
@@ -6634,6 +6627,7 @@ class SignalHandler:
 ##
 
 
+ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
 
 
 class Supervisor:
