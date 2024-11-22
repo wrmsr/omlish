@@ -120,24 +120,30 @@ class ProcessGroups:
 
         self._by_name: ta.Dict[str, ProcessGroup] = {}
 
-    def get(self, name: str) -> ta.Optional[ProcessGroup]:
-        return self._by_name.get(name)
-
-    def __getitem__(self, name: str) -> ProcessGroup:
-        return self._by_name[name]
-
-    def __len__(self) -> int:
-        return len(self._by_name)
+    #
 
     def __iter__(self) -> ta.Iterator[ProcessGroup]:
         return iter(self._by_name.values())
 
-    def by_name(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
+    def __len__(self) -> int:
+        return len(self._by_name)
+
+    def __contains__(self, name: str) -> bool:
+        return name in self._by_name
+
+    def __getitem__(self, name: str) -> ProcessGroup:
+        return self._by_name[name]
+
+    def get(self, name: str, default: ta.Optional[ProcessGroup] = None) -> ta.Optional[ProcessGroup]:
+        return self._by_name.get(name, default)
+
+    #
 
     def all_processes(self) -> ta.Iterator[Process]:
         for g in self:
             yield from g
+
+    #
 
     def add(self, group: ProcessGroup) -> None:
         if (name := group.name) in self._by_name:
