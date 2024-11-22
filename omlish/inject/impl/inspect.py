@@ -73,18 +73,19 @@ def build_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
-        skip_kwargs: ta.Iterable[ta.Any] | None = None,
+        skip_kwargs: ta.Iterable[str] | None = None,
         raw_optional: bool = False,
 ) -> KwargsTarget:
     sig = signature(obj)
     tags = _TAGS.get(obj)
 
+    sns: ta.Set[str] = set(check.not_isinstance(skip_kwargs, str)) if skip_kwargs is not None else set()
     seen: set[Key] = set()
-    if skip_kwargs is not None:
-        seen.update(map(as_key, check.not_isinstance(skip_kwargs)))
-
     kws: list[Kwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
+        if p.name in sns:
+            continue
+
         if p.annotation is inspect.Signature.empty:
             if p.default is not inspect.Parameter.empty:
                 raise KeyError(f'{obj}, {p.name}')

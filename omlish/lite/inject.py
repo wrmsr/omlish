@@ -100,7 +100,13 @@ class Injector(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inject(self, obj: ta.Any) -> ta.Any:
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
         raise NotImplementedError
 
     def __getitem__(
@@ -385,17 +391,18 @@ def build_injection_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
-        skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+        skip_kwargs: ta.Optional[ta.Iterable[str]] = None,
         raw_optional: bool = False,
 ) -> InjectionKwargsTarget:
     insp = _injection_inspect(obj)
 
+    sns: ta.Set[str] = set(check_not_isinstance(skip_kwargs, str)) if skip_kwargs is not None else set()
     seen: ta.Set[InjectorKey] = set()
-    if skip_kwargs is not None:
-        seen.update(map(as_injector_key, check_not_isinstance(skip_kwargs)))
-
     kws: ta.List[InjectionKwarg] = []
     for p in list(insp.signature.parameters.values())[skip_args:]:
+        if p.name in sns:
+            continue
+
         if p.annotation is inspect.Signature.empty:
             if p.default is not inspect.Parameter.empty:
                 raise KeyError(f'{obj}, {p.name}')
@@ -479,7 +486,12 @@ class _Injector(Injector):
             skip_args: int = 0,
             skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
     ) -> ta.Mapping[str, ta.Any]:
-        kt = build_injection_kwargs_target(obj)
+        kt = build_injection_kwargs_target(
+            obj,
+            skip_args=skip_args,
+            skip_kwargs=skip_kwargs,
+        )
+
         ret: ta.Dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
@@ -491,9 +503,24 @@ class _Injector(Injector):
             ret[kw.name] = v
         return ret
 
-    def inject(self, obj: ta.Any) -> ta.Any:
-        kws = self.provide_kwargs(obj)
-        return obj(**kws)
+    def inject(
+            self,
+            obj: ta.Any,
+            *,
+            args: ta.Optional[ta.Sequence[ta.Any]] = None,
+            kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    ) -> ta.Any:
+        provided = self.provide_kwargs(
+            obj,
+            skip_args=len(args) if args is not None else None,
+            skip_kwargs=kwargs if kwargs is not None else None,
+        )
+
+        return obj(
+            *(args if args is not None else ()),
+            **(kwargs if kwargs is not None else {}),
+            **provided,
+        )
 
 
 ###
@@ -641,7 +668,7 @@ def make_injector_factory(
 
     def outer(injector: Injector) -> ann:
         def inner(*args, **kwargs):
-            return injector.inject(functools.partial(fn, *args, **kwargs))
+            return injector.inject(fn, args=args, kwargs=kwargs)
         return cls(inner)  # type: ignore
 
     return outer
