@@ -79,6 +79,7 @@ def bind_server(
 
     #
 
+    user: ta.Optional[User]
     if config.user is not None:
         user = get_user(config.user)
     else:
