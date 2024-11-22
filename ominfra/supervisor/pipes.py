@@ -18,8 +18,11 @@ class ProcessPipes:
     stderr: ta.Optional[int] = None
     child_stderr: ta.Optional[int] = None
 
-    def as_dict(self) -> ta.Mapping[str, int]:
-        return dc.asdict(self)  # noqa
+    def child_fds(self) -> ta.List[int]:
+        return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
+
+    def parent_fds(self) -> ta.List[int]:
+        return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
 
 
 def make_process_pipes(stderr=True) -> ProcessPipes:
@@ -66,22 +69,10 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
 
 
 def close_parent_pipes(pipes: ProcessPipes) -> None:
-    for name in (
-            'stdin',
-            'stdout',
-            'stderr',
-    ):
-        fd = getattr(pipes, name)
-        if fd is not None:
-            close_fd(fd)
+    for fd in pipes.parent_fds():
+        close_fd(fd)
 
 
 def close_child_pipes(pipes: ProcessPipes) -> None:
-    for name in (
-            'child_stdin',
-            'child_stdout',
-            'child_stderr',
-    ):
-        fd = getattr(pipes, name)
-        if fd is not None:
-            close_fd(fd)
+    for fd in pipes.child_fds():
+        close_fd(fd)
