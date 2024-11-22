@@ -391,6 +391,7 @@ def build_injection_kwargs_target(
         if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
             raise TypeError(insp)
 
+        # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
         ann = insp.type_hints.get(p.name, p.annotation)
         if (
                 not raw_optional and
