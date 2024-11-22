@@ -5,12 +5,10 @@ _dispatchers
 _pipes
 _spawn_err
 """
-import dataclasses as dc
 import errno
 import os.path
 import shlex
 import stat
-import time
 import typing as ta
 
 from omlish.lite.check import check_isinstance
@@ -62,10 +60,8 @@ InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessSpawnError:
-    msg: str
-    exc: ta.Optional[BaseException]
+class ProcessSpawnError(RuntimeError):
+    pass
 
 
 class ProcessSpawning(Process):
@@ -163,18 +159,11 @@ class ProcessSpawning(Process):
 
         return exe, args
 
-    def spawn(
-            self,
-            *,
-            record_error: ta.Optional[ta.Callable[[ProcessSpawnError], None]] = None,
-    ) -> ta.Union[int, ProcessSpawnError]:
+    def spawn(self) -> int:  # Raises[ProcessSpawnError]
         try:
             exe, argv = self._get_execv_args()
         except ProcessError as exc:
-            err = ProcessSpawnError(exc.args[0], exc)
-            if record_error is not None:
-                record_error(err)
-            return err
+            raise ProcessSpawnError(exc.args[0]) from exc
 
         try:
             self._pipes = make_process_pipes(not self.config.redirect_stderr)
@@ -186,31 +175,28 @@ class ProcessSpawning(Process):
                 msg = f"too many open files to spawn '{self.name}'"
             else:
                 msg = f"unknown error making dispatchers for '{self.name}': {errno.errorcode.get(code, code)}"
-            err = ProcessSpawnError(msg, exc)
-            if record_error is not None:
-                record_error(err)
-            return err
+            raise ProcessSpawnError(msg) from exc
 
         try:
             pid = os.fork()
-        except OSError as why:
-            code = why.args[0]
+        except OSError as exc:
+            code = exc.args[0]
             if code == errno.EAGAIN:
                 # process table full
                 msg = f'Too many processes in process table to spawn \'{self.name}\''
             else:
                 msg = f'unknown error during fork for \'{self.name}\': {errno.errorcode.get(code, code)}'
-            self._record_spawn_err(msg)
+            err = ProcessSpawnError(msg)
             close_parent_pipes(self._pipes)
             close_child_pipes(self._pipes)
-            return None
+            raise err from exc
 
         if pid != 0:
             return self._spawn_as_parent(pid)
 
         else:
             self._spawn_as_child(exe, argv)
-            return None
+            raise RuntimeError('Unreachable')
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
         dispatchers: ta.List[Dispatcher] = []
