@@ -2432,7 +2432,13 @@ class HttpRequestParser:
 
 @dc.dataclass(frozen=True)
 class InjectorKey(ta.Generic[T]):
-    cls: InjectorKeyCls
+    # Before PEP-560 typing.Generic was a metaclass with a __new__ that takes a 'cls' arg, so instantiating a dataclass
+    # with kwargs (such as through dc.replace) causes `TypeError: __new__() got multiple values for argument 'cls'`.
+    # See:
+    #  - https://github.com/python/cpython/commit/d911e40e788fb679723d78b6ea11cabf46caed5a
+    #  - https://gist.github.com/wrmsr/4468b86efe9f373b6b114bfe85b98fd3
+    cls_: InjectorKeyCls
+
     tag: ta.Any = None
     array: bool = False
 
@@ -2553,14 +2559,14 @@ class FnInjectorProvider(InjectorProvider):
 
 @dc.dataclass(frozen=True)
 class CtorInjectorProvider(InjectorProvider):
-    cls: type
+    cls_: type
 
     def __post_init__(self) -> None:
-        check_isinstance(self.cls, type)
+        check_isinstance(self.cls_, type)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            return i.inject(self.cls)
+            return i.inject(self.cls_)
 
         return pfn
 
@@ -2709,22 +2715,42 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 # inspection
 
 
-_INJECTION_SIGNATURE_CACHE: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
+# inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to eval
+# str annotations *in addition to* getting the signature for parameter information.
+class _InjectionInspection(ta.NamedTuple):
+    signature: inspect.Signature
+    type_hints: ta.Mapping[str, ta.Any]
 
 
-def _injection_signature(obj: ta.Any) -> inspect.Signature:
-    kw: dict = dict(
-        eval_str=True,
+_INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
+
+
+def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
+    uw = obj
+    while True:
+        if isinstance(uw, functools.partial):
+            uw = uw.func
+        else:
+            if (uw2 := inspect.unwrap(uw)) is uw:
+                break
+            uw = uw2
+
+    return _InjectionInspection(
+        inspect.signature(obj),
+        ta.get_type_hints(uw),
     )
+
+
+def _injection_inspect(obj: ta.Any) -> _InjectionInspection:
     try:
-        return _INJECTION_SIGNATURE_CACHE[obj]
+        return _INJECTION_INSPECTION_CACHE[obj]
     except TypeError:
-        return inspect.signature(obj, **kw)
+        return _do_injection_inspect(obj)
     except KeyError:
         pass
-    sig = inspect.signature(obj, **kw)
-    _INJECTION_SIGNATURE_CACHE[obj] = sig
-    return sig
+    insp = _do_injection_inspect(obj)
+    _INJECTION_INSPECTION_CACHE[obj] = insp
+    return insp
 
 
 class InjectionKwarg(ta.NamedTuple):
@@ -2745,20 +2771,20 @@ def build_injection_kwargs_target(
         skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
         raw_optional: bool = False,
 ) -> InjectionKwargsTarget:
-    sig = _injection_signature(obj)
+    insp = _injection_inspect(obj)
 
     seen: ta.Set[InjectorKey] = set(map(as_injector_key, skip_kwargs)) if skip_kwargs is not None else set()
     kws: ta.List[InjectionKwarg] = []
-    for p in list(sig.parameters.values())[skip_args:]:
+    for p in list(insp.signature.parameters.values())[skip_args:]:
         if p.annotation is inspect.Signature.empty:
             if p.default is not inspect.Parameter.empty:
                 raise KeyError(f'{obj}, {p.name}')
             continue
 
         if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
-            raise TypeError(sig)
+            raise TypeError(insp)
 
-        ann = p.annotation
+        ann = insp.type_hints.get(p.name, p.annotation)
         if (
                 not raw_optional and
                 is_optional_alias(ann)
@@ -2922,8 +2948,8 @@ class InjectorBinder:
         elif cls._is_fn(obj) and not has_to:
             to_fn = obj
             if key is None:
-                sig = _injection_signature(obj)
-                key_cls = check_valid_injector_key_cls(sig.return_annotation)
+                insp = _injection_inspect(obj)
+                key_cls: ta.Any = check_valid_injector_key_cls(check_not_none(insp.type_hints.get('return')))
                 key = InjectorKey(key_cls)
         else:
             if to_const is not None:
