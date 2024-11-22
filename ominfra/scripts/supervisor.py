@@ -102,6 +102,11 @@ T = ta.TypeVar('T')
 SocketAddress = ta.Any
 SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
 
+# ../../../omlish/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
+
 # ../events.py
 EventCallback = ta.Callable[['Event'], None]
 
@@ -109,6 +114,7 @@ EventCallback = ta.Callable[['Event'], None]
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
 # ../../../omlish/lite/inject.py
+U = ta.TypeVar('U')
 InjectorKeyCls = ta.Union[type, ta.NewType]
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
@@ -1566,12 +1572,48 @@ class SocketHandler(abc.ABC):
 # ../../../omlish/lite/typing.py
 
 
+##
+# A workaround for typing deficiencies (like `Argument 2 to NewType(...) must be subclassable`).
+
+
 @dc.dataclass(frozen=True)
-class Func(ta.Generic[T]):
+class AnyFunc(ta.Generic[T]):
     fn: ta.Callable[..., T]
 
     def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
         return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class Func0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        return self.fn()
+
+
+@dc.dataclass(frozen=True)
+class Func1(ta.Generic[A0, T]):
+    fn: ta.Callable[[A0], T]
+
+    def __call__(self, a0: A0) -> T:
+        return self.fn(a0)
+
+
+@dc.dataclass(frozen=True)
+class Func2(ta.Generic[A0, A1, T]):
+    fn: ta.Callable[[A0, A1], T]
+
+    def __call__(self, a0: A0, a1: A1) -> T:
+        return self.fn(a0, a1)
+
+
+@dc.dataclass(frozen=True)
+class Func3(ta.Generic[A0, A1, A2, T]):
+    fn: ta.Callable[[A0, A1, A2], T]
+
+    def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
+        return self.fn(a0, a1, a2)
 
 
 ########################################
@@ -3005,13 +3047,18 @@ class InjectorBinder:
 
 
 def make_injector_factory(
-        factory_cls: ta.Any,
-        factory_fn: ta.Callable[..., T],
-) -> ta.Callable[..., Func[T]]:
-    def outer(injector: Injector) -> factory_cls:
+        fn: ta.Callable[..., T],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if ann is None:
+        ann = cls
+
+    def outer(injector: Injector) -> ann:
         def inner(*args, **kwargs):
-            return injector.inject(functools.partial(factory_fn, *args, **kwargs))
-        return Func(inner)
+            return injector.inject(functools.partial(fn, *args, **kwargs))
+        return cls(inner)  # type: ignore
+
     return outer
 
 
@@ -3090,10 +3137,11 @@ class Injection:
     @classmethod
     def bind_factory(
             cls,
-            factory_cls: ta.Any,
-            factory_fn: ta.Callable[..., T],
+            fn: ta.Callable[..., T],
+            cls_: U,
+            ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
-        return cls.bind(make_injector_factory(factory_cls, factory_fn))
+        return cls.bind(make_injector_factory(fn, cls_, ann))
 
 
 inj = Injection
@@ -5762,7 +5810,8 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
 ##
 
 
-ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
+class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
+    pass
 
 
 class ProcessGroupImpl(ProcessGroup):
@@ -5905,11 +5954,13 @@ class ProcessGroups:
 # ../process.py
 
 
-# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
-OutputDispatcherFactory = ta.NewType('OutputDispatcherFactory', Func[OutputDispatcher])
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+    pass
 
-# (process: Process, event_type: ta.Type[ProcessCommunicationEvent], fd: int)
-InputDispatcherFactory = ta.NewType('InputDispatcherFactory', Func[InputDispatcher])
+
+class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+    pass
+
 
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
@@ -6181,10 +6232,6 @@ class ProcessImpl(Process):
 
         dispatchers: ta.Dict[int, Dispatcher] = {}
 
-        dispatcher_kw = dict(
-            event_callbacks=self._event_callbacks,
-        )
-
         etype: ta.Type[ProcessCommunicationEvent]
         if stdout_fd is not None:
             etype = ProcessCommunicationStdoutEvent
@@ -6192,7 +6239,6 @@ class ProcessImpl(Process):
                 self,
                 etype,
                 stdout_fd,
-                **dispatcher_kw,
             ), OutputDispatcher)
 
         if stderr_fd is not None:
@@ -6201,7 +6247,6 @@ class ProcessImpl(Process):
                 self,
                 etype,
                 stderr_fd,
-                **dispatcher_kw,
             ), OutputDispatcher)
 
         if stdin_fd is not None:
@@ -6209,7 +6254,6 @@ class ProcessImpl(Process):
                 self,
                 'stdin',
                 stdin_fd,
-                **dispatcher_kw,
             ), InputDispatcher)
 
         return dispatchers, p
@@ -6680,7 +6724,8 @@ class SignalHandler:
 ##
 
 
-ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
+class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+    pass
 
 
 class Supervisor:
@@ -7006,11 +7051,11 @@ def bind_server(
         inj.bind(ProcessGroups, singleton=True),
         inj.bind(Supervisor, singleton=True),
 
-        inj.bind_factory(ProcessGroupFactory, ProcessGroupImpl),
-        inj.bind_factory(ProcessFactory, ProcessImpl),
+        inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
+        inj.bind_factory(ProcessImpl, ProcessFactory),
 
-        inj.bind_factory(OutputDispatcherFactory, OutputDispatcherImpl),
-        inj.bind_factory(InputDispatcherFactory, InputDispatcherImpl),
+        inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
+        inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
     ]
 
     #

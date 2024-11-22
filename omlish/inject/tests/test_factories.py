@@ -10,16 +10,22 @@ from ... import lang
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 def make_factory(
-        factory_cls: ta.Any,
-        factory_fn: ta.Callable[..., T],
-) -> ta.Callable[..., lang.AnyFunc[T]]:
-    def outer(injector: inj.Injector) -> factory_cls:
+        fn: ta.Callable[..., T],
+        cls: U,
+        ann: ta.Any = None,
+) -> ta.Callable[..., U]:
+    if ann is None:
+        ann = cls
+
+    def outer(injector: inj.Injector) -> ann:
         def inner(*args, **kwargs):
-            return injector.inject(functools.partial(factory_fn, *args, **kwargs))
-        return lang.AnyFunc(inner)
+            return injector.inject(functools.partial(fn, *args, **kwargs))
+        return cls(inner)  # type: ignore
+
     return outer
 
 
@@ -39,7 +45,7 @@ class TestFactories:
         foo = self.Foo(420)
 
         injector = inj.create_injector(
-            inj.bind(make_factory(self.BarFactory, self.Bar)),
+            inj.bind(make_factory(self.Bar, lang.AnyFunc, self.BarFactory)),
             inj.bind(foo),
         )
 

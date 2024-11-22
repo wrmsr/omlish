@@ -4,7 +4,7 @@ import typing as ta  # noqa
 import unittest
 
 from ..inject import inj
-from ..typing import Func
+from ..typing import AnyFunc
 
 
 class TestInject(unittest.TestCase):
@@ -99,12 +99,12 @@ class TestFactories(unittest.TestCase):
     def test_factories(self):
         # Note: in 3.8 NewType is a function not a type, so tacking it on TestFactories like the classes makes it a
         # bound method lol.
-        BarFactory = ta.NewType('BarFactory', Func[TestFactories.Bar])  # noqa
+        BarFactory = ta.NewType('BarFactory', AnyFunc[TestFactories.Bar])  # noqa
 
         foo = self.Foo(420)
 
         injector = inj.create_injector(
-            inj.bind_factory(BarFactory, self.Bar),
+            inj.bind_factory(self.Bar, AnyFunc, BarFactory),
             inj.bind(foo),
         )
 

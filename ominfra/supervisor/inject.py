@@ -52,11 +52,11 @@ def bind_server(
         inj.bind(ProcessGroups, singleton=True),
         inj.bind(Supervisor, singleton=True),
 
-        inj.bind_factory(ProcessGroupFactory, ProcessGroupImpl),
-        inj.bind_factory(ProcessFactory, ProcessImpl),
+        inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
+        inj.bind_factory(ProcessImpl, ProcessFactory),
 
-        inj.bind_factory(OutputDispatcherFactory, OutputDispatcherImpl),
-        inj.bind_factory(InputDispatcherFactory, InputDispatcherImpl),
+        inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
+        inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
     ]
 
     #
