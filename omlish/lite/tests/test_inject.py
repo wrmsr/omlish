@@ -4,6 +4,7 @@ import typing as ta  # noqa
 import unittest
 
 from ..inject import _do_injection_inspect  # noqa
+from ..inject import build_injection_kwargs_target
 from ..inject import inj
 from ..typing import AnyFunc
 
@@ -133,3 +134,17 @@ class TestInspect(unittest.TestCase):
         insp = _do_injection_inspect(Foo)
 
         self.assertIs(insp.signature.parameters['t'].annotation, T)
+
+    class A:
+        pass
+
+    @dc.dataclass(frozen=True)
+    class B:
+        a: 'TestInspect.A'
+
+    def test_build_injection_kwargs_target(self):
+        kwt = build_injection_kwargs_target(TestInspect.B)
+        [kw] = kwt.kwargs
+        self.assertEqual(kw.name ,'a')
+        self.assertIs(kw.key.cls_, TestInspect.A)
+        self.assertFalse(kw.has_default)
