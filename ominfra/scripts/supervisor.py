@@ -2974,12 +2974,6 @@ _INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = w
 
 
 def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    if isinstance(obj, type) and obj.__init__ is not object.__init__:  # type: ignore[misc]
-        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
-        #  - https://bugs.python.org/issue40897
-        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
-        obj = obj.__init__  # type: ignore[misc]
-
     uw = obj
     while True:
         if isinstance(uw, functools.partial):
@@ -2988,6 +2982,12 @@ def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
             if (uw2 := inspect.unwrap(uw)) is uw:
                 break
             uw = uw2
+
+    if isinstance(obj, type) and obj.__init__ is not object.__init__:  # type: ignore[misc]
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        obj = obj.__init__  # type: ignore[misc]
 
     return _InjectionInspection(
         inspect.signature(obj),
@@ -3330,8 +3330,8 @@ class Injection:
     # injector
 
     @classmethod
-    def create_injector(cls, *args: InjectorBindingOrBindings, p: ta.Optional[Injector] = None) -> Injector:
-        return _Injector(as_injector_bindings(*args), p)
+    def create_injector(cls, *args: InjectorBindingOrBindings, parent: ta.Optional[Injector] = None) -> Injector:
+        return _Injector(as_injector_bindings(*args), parent)
 
     # binder
 
