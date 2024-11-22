@@ -123,6 +123,9 @@ CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 # ../context.py
 ServerEpoch = ta.NewType('ServerEpoch', int)
 
+# ../groups.py
+ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: ProcessConfig, group: ProcessGroup)
+
 # ../process.py
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
 
@@ -4878,6 +4881,18 @@ class ServerContext(abc.ABC):
         raise NotImplementedError
 
 
+# class Dispatcher(abc.ABC):
+#     pass
+#
+#
+# class OutputDispatcher(Dispatcher, abc.ABC):
+#     pass
+#
+#
+# class InputDispatcher(Dispatcher, abc.ABC):
+#     pass
+
+
 @functools.total_ordering
 class Process(abc.ABC):
     @property
@@ -4934,7 +4949,7 @@ class Process(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
         raise NotImplementedError
 
 
@@ -4969,7 +4984,7 @@ class ProcessGroup(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # dict[int, Dispatcher]:
+    def get_dispatchers(self) -> ta.Mapping[int, ta.Any]:  # Dispatcher]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5715,12 +5730,6 @@ class InputDispatcher(Dispatcher):
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessFactory:
-    fn: ta.Callable[[ProcessConfig, ProcessGroup], Process]
-
-    def __call__(self, config: ProcessConfig, group: ProcessGroup) -> Process:
-        return self.fn(config, group)
 
 
 class ProcessGroupImpl(ProcessGroup):
@@ -6620,12 +6629,7 @@ class SignalHandler:
 ##
 
 
-@dc.dataclass(frozen=True)
-class ProcessGroupFactory:
-    fn: ta.Callable[[ProcessGroupConfig], ProcessGroup]
-
-    def __call__(self, config: ProcessGroupConfig) -> ProcessGroup:
-        return self.fn(config)
+ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
 
 
 class Supervisor:
@@ -6950,21 +6954,10 @@ def bind_server(
         inj.bind(SignalHandler, singleton=True),
         inj.bind(ProcessGroups, singleton=True),
         inj.bind(Supervisor, singleton=True),
+
+        inj.bind_factory(ProcessGroupFactory, ProcessGroupImpl),
+        inj.bind_factory(ProcessFactory, ProcessImpl),
     ]
-
-    #
-
-    def make_process_group_factory(injector: Injector) -> ProcessGroupFactory:
-        def inner(group_config: ProcessGroupConfig) -> ProcessGroup:
-            return injector.inject(functools.partial(ProcessGroupImpl, group_config))
-        return ProcessGroupFactory(inner)
-    lst.append(inj.bind(make_process_group_factory))
-
-    def make_process_factory(injector: Injector) -> ProcessFactory:
-        def inner(process_config: ProcessConfig, group: ProcessGroup) -> Process:
-            return injector.inject(functools.partial(ProcessImpl, process_config, group))
-        return ProcessFactory(inner)
-    lst.append(inj.bind(make_process_factory))
 
     #
 
