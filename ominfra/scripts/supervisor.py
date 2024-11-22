@@ -5769,7 +5769,7 @@ class ProcessGroupImpl(ProcessGroup):
 
         self._processes = {}
         for pconfig in self._config.processes or []:
-            process = self._process_factory(pconfig, self)
+            process = check_isinstance(self._process_factory(pconfig, self), Process)
             self._processes[pconfig.name] = process
 
     @property
@@ -6715,7 +6715,7 @@ class Supervisor:
         if self._process_groups.get(config.name) is not None:
             return False
 
-        group = self._process_group_factory(config)
+        group = check_isinstance(self._process_group_factory(config), ProcessGroup)
         group.after_setuid()
 
         self._process_groups.add(group)
