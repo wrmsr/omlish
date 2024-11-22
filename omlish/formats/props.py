@@ -548,7 +548,7 @@ class Properties(collections.abc.MutableMapping):
             month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             now = time.gmtime()
             print(
-                '#%s %s %02d %02d:%02d:%02d UTC %04d' % (
+                '#%s %s %02d %02d:%02d:%02d UTC %04d' % (  # noqa
                     day_of_week[now.tm_wday],
                     month[now.tm_mon - 1],
                     now.tm_mday,

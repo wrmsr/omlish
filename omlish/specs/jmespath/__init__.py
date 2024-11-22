@@ -33,7 +33,7 @@ from . import lexer  # noqa
 from . import parser  # noqa
 
 from .parser import (  # noqa
-    compile,
+    compile,  # noqa
     search,
 )
 
