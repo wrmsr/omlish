@@ -344,7 +344,11 @@ class ProcessSpawning(Process):
 ##
 
 
-def check_execv_args(exe: str, argv, st) -> None:
+def check_execv_args(
+        exe: str,
+        argv: ta.Sequence[str],
+        st: ta.Optional[os.stat_result],
+) -> None:
     if st is None:
         raise NotFoundError(f"can't find command {exe!r}")
 
