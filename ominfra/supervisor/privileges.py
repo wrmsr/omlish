@@ -5,7 +5,6 @@ import pwd
 import typing as ta
 
 
-
 def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     """
     Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
