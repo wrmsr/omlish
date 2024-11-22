@@ -378,21 +378,23 @@ class Dispatchers:
 
     #
 
-    def remove_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'remove_logs'):
-                dispatcher.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for dispatcher in self._dispatchers.values():
-            if hasattr(dispatcher, 'reopen_logs'):
-                dispatcher.reopen_logs()
-
     def drain(self) -> None:
-        for dispatcher in self._dispatchers.values():
+        for dispatcher in self:
             # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
             # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if dispatcher.readable():
                 dispatcher.handle_read_event()
             if dispatcher.writable():
                 dispatcher.handle_write_event()
+
+    #
+
+    def remove_logs(self) -> None:
+        for dispatcher in self:
+            if hasattr(dispatcher, 'remove_logs'):
+                dispatcher.remove_logs()
+
+    def reopen_logs(self) -> None:
+        for dispatcher in self:
+            if hasattr(dispatcher, 'reopen_logs'):
+                dispatcher.reopen_logs()
