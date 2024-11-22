@@ -129,9 +129,9 @@ class ProcessSpawning(Process):
         """
 
         try:
-            args = shlex.split(self._config.command)
+            args = shlex.split(self.config.command)
         except ValueError as e:
-            raise BadCommandError(f"can't parse command {self._config.command!r}: {e}")  # noqa
+            raise BadCommandError(f"can't parse command {self.config.command!r}: {e}")  # noqa
 
         if args:
             program = args[0]
@@ -170,7 +170,7 @@ class ProcessSpawning(Process):
         return filename, args
 
     def spawn(self) -> ta.Optional[int]:
-        process_name = as_string(self._config.name)
+        process_name = as_string(self.name)
 
         if self.pid:
             log.warning('process \'%s\' already running', process_name)
@@ -233,7 +233,7 @@ class ProcessSpawning(Process):
             return None
 
     def _make_dispatchers(self) -> ta.Tuple[Dispatchers, ProcessPipes]:
-        use_stderr = not self._config.redirect_stderr
+        use_stderr = not self.config.redirect_stderr
 
         p = make_process_pipes(use_stderr)
 
@@ -269,16 +269,16 @@ class ProcessSpawning(Process):
         # Parent
         self._pid = pid
         close_child_pipes(self._pipes)
-        log.info('spawned: \'%s\' with pid %s', as_string(self._config.name), pid)
+        log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
         self._spawn_err = None
-        self._delay = time.time() + self._config.startsecs
+        self._delay = time.time() + self.config.startsecs
         self._pid_history[pid] = self
         return pid
 
     def _prepare_child_fds(self) -> None:
         os.dup2(check_not_none(self._pipes.child_stdin), 0)
         os.dup2(check_not_none(self._pipes.child_stdout), 1)
-        if self._config.redirect_stderr:
+        if self.config.redirect_stderr:
             os.dup2(check_not_none(self._pipes.child_stdout), 2)
         else:
             os.dup2(check_not_none(self._pipes.child_stderr), 2)
@@ -289,10 +289,10 @@ class ProcessSpawning(Process):
             close_fd(i)
 
     def _set_uid(self) -> ta.Optional[str]:
-        if self._config.uid is None:
+        if self.config.uid is None:
             return None
 
-        msg = drop_privileges(self._config.uid)
+        msg = drop_privileges(self.config.uid)
         return msg
 
     def _spawn_as_child(self, filename: str, argv: ta.Sequence[str]) -> None:
@@ -309,7 +309,7 @@ class ProcessSpawning(Process):
             # set user
             setuid_msg = self._set_uid()
             if setuid_msg:
-                uid = self._config.uid
+                uid = self.config.uid
                 msg = f"couldn't setuid to {uid}: {setuid_msg}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
@@ -317,14 +317,14 @@ class ProcessSpawning(Process):
             # set environment
             env = os.environ.copy()
             env['SUPERVISOR_ENABLED'] = '1'
-            env['SUPERVISOR_PROCESS_NAME'] = self._config.name
-            if self._group:
-                env['SUPERVISOR_GROUP_NAME'] = self._group.config.name
-            if self._config.environment is not None:
-                env.update(self._config.environment)
+            env['SUPERVISOR_PROCESS_NAME'] = self.name
+            if self.group:
+                env['SUPERVISOR_GROUP_NAME'] = self.group.name
+            if self.config.environment is not None:
+                env.update(self.config.environment)
 
             # change directory
-            cwd = self._config.directory
+            cwd = self.config.directory
             try:
                 if cwd is not None:
                     os.chdir(os.path.expanduser(cwd))
@@ -336,8 +336,8 @@ class ProcessSpawning(Process):
 
             # set umask, then execve
             try:
-                if self._config.umask is not None:
-                    os.umask(self._config.umask)
+                if self.config.umask is not None:
+                    os.umask(self.config.umask)
                 os.execve(filename, list(argv), env)
 
             except OSError as why:
