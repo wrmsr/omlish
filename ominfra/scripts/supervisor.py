@@ -102,6 +102,9 @@ T = ta.TypeVar('T')
 SocketAddress = ta.Any
 SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
 
+# ../events.py
+EventCallback = ta.Callable[['Event'], None]
+
 # ../../../omlish/lite/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
@@ -128,6 +131,9 @@ ProcessFactory = ta.NewType('ProcessFactory', Func[Process])  # (config: Process
 
 # ../process.py
 InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+
+# ../supervisor.py
+ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
 
 
 ########################################
@@ -1594,7 +1600,6 @@ class Event(abc.ABC):  # noqa
 ##
 
 
-EventCallback = ta.Callable[['Event'], None]
 
 
 class EventCallbacks:
@@ -6629,7 +6634,6 @@ class SignalHandler:
 ##
 
 
-ProcessGroupFactory = ta.NewType('ProcessGroupFactory', Func[ProcessGroup])  # (config: ProcessGroupConfig)
 
 
 class Supervisor:
