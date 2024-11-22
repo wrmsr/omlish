@@ -5266,7 +5266,11 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 ##
 
 
-class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
+class ProcessGroup(
+    ConfigPriorityOrdered,
+    KeyedCollectionAccessors[str, Process],
+    abc.ABC,
+):
     @property
     @abc.abstractmethod
     def name(self) -> str:
@@ -5280,24 +5284,6 @@ class ProcessGroup(ConfigPriorityOrdered, abc.ABC):
     @property
     @abc.abstractmethod
     def by_name(self) -> ta.Mapping[str, Process]:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def __iter__(self) -> ta.Iterator[Process]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __len__(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __contains__(self, name: str) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __getitem__(self, name: str) -> Process:
         raise NotImplementedError
 
     #
@@ -6074,6 +6060,10 @@ class ProcessGroupImpl(ProcessGroup):
             by_name[pconfig.name] = p
         self._by_name = by_name
 
+    @property
+    def _by_key(self) -> ta.Mapping[str, Process]:
+        return self._by_name
+
     #
 
     def __repr__(self) -> str:
@@ -6092,23 +6082,6 @@ class ProcessGroupImpl(ProcessGroup):
     @property
     def by_name(self) -> ta.Mapping[str, Process]:
         return self._by_name
-
-    #
-
-    def __iter__(self) -> ta.Iterator[Process]:
-        return iter(self._by_name.values())
-
-    def __len__(self) -> int:
-        return len(self._by_name)
-
-    def __contains__(self, name: str) -> bool:
-        return name in self._by_name
-
-    def __getitem__(self, name: str) -> Process:
-        return self._by_name[name]
-
-    def get(self, name: str, default: ta.Optional[Process] = None) -> ta.Optional[Process]:
-        return self._by_name.get(name, default)
 
     #
 
