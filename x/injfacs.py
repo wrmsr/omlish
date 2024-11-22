@@ -4,20 +4,14 @@ import typing as ta
 
 from omlish.lite.inject import inj
 from omlish.lite.inject import Injector
+from omlish.lite.inject import InjectorBindingOrBindings
+from omlish.lite.typing import Func
 
 
 T = ta.TypeVar('T')
 
 
 ##
-
-
-@dc.dataclass(frozen=True)
-class Func(ta.Generic[T]):
-    fn: ta.Callable[..., T]
-
-    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
-        return self.fn(*args, **kwargs)
 
 
 def make_injector_factory(
@@ -29,6 +23,13 @@ def make_injector_factory(
             return injector.inject(functools.partial(factory_fn, *args, **kwargs))
         return Func(inner)
     return outer
+
+
+def bind_injector_factory(
+        factory_cls: ta.Any,
+        factory_fn: ta.Callable[..., T],
+) -> InjectorBindingOrBindings:
+    return inj.bind(make_injector_factory(factory_cls, factory_fn))
 
 
 ##
@@ -52,7 +53,7 @@ def _main() -> None:
     foo = Foo(420)
 
     injector = inj.create_injector(
-        inj.bind(make_injector_factory(BarFactory, Bar)),
+        bind_injector_factory(BarFactory, Bar),
         inj.bind(foo),
     )
 
