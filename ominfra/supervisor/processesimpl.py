@@ -129,6 +129,25 @@ class ProcessImpl(Process):
     def backoff(self) -> int:
         return self._backoff
 
+    #
+
+    def spawn_OLD_STUFF(self) -> ta.Optional[int]:
+        process_name = as_string(self._config.name)
+
+        if self.pid:
+            log.warning('process \'%s\' already running', process_name)
+            return None
+
+        self._killing = False
+        self._spawn_err = None
+        self._exitstatus = None
+        self._system_stop = False
+        self._administrative_stop = False
+
+        self._last_start = time.time()
+
+        self._spawning.spawn()
+
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers
 
@@ -408,12 +427,6 @@ class ProcessImpl(Process):
         close_parent_pipes(self._pipes)
         self._pipes = ProcessPipes()
         self._dispatchers = Dispatchers([])
-
-    def set_uid(self) -> ta.Optional[str]:
-        if self._config.uid is None:
-            return None
-        msg = drop_privileges(self._config.uid)
-        return msg
 
     def get_state(self) -> ProcessState:
         return self._state
