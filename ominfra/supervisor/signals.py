@@ -19,9 +19,9 @@ def sig_num(value: ta.Union[int, str]) -> int:
         if not name.startswith('SIG'):
             name = f'SIG{name}'
 
-        num = _SIGS_BY_NAME.get(name)
-        if num is None:
+        if (sn := _SIGS_BY_NAME.get(name)) is None:
             raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+        num = sn
 
     if num not in _SIGS_BY_NUM:
         raise ValueError(f'value {value!r} is not a valid signal number')

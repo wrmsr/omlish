@@ -1134,10 +1134,11 @@ class NoPermissionError(ProcessError):
 ##
 
 
-_SIG_NUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
+_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
+_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
 
 
-def signal_number(value: ta.Union[int, str]) -> int:
+def sig_num(value: ta.Union[int, str]) -> int:
     try:
         num = int(value)
 
@@ -1146,38 +1147,20 @@ def signal_number(value: ta.Union[int, str]) -> int:
         if not name.startswith('SIG'):
             name = f'SIG{name}'
 
-        num = getattr(signal, name, None)  # type: ignore
-        if num is None:
+        if (sn := _SIGS_BY_NAME.get(name)) is None:
             raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+        num = sn
 
-    if num not in _SIG_NUMS:
+    if num not in _SIGS_BY_NUM:
         raise ValueError(f'value {value!r} is not a valid signal number')
 
     return num
 
 
-##
-
-
-_SIG_NAMES: ta.Optional[ta.Mapping[int, str]] = None
-
-
-def sig_name(sig: int) -> str:
-    global _SIG_NAMES
-    if _SIG_NAMES is None:
-        _SIG_NAMES = _init_sig_names()
-    return _SIG_NAMES.get(sig) or 'signal %d' % sig
-
-
-def _init_sig_names() -> ta.Dict[int, str]:
-    d = {}
-    for k, v in signal.__dict__.items():  # noqa
-        k_startswith = getattr(k, 'startswith', None)
-        if k_startswith is None:
-            continue
-        if k_startswith('SIG') and not k_startswith('SIG_'):
-            d[v] = k
-    return d
+def sig_name(num: int) -> str:
+    if (sig := _SIGS_BY_NUM.get(num)) is not None:
+        return sig.name
+    return f'signal {sig}'
 
 
 ##
@@ -3981,6 +3964,90 @@ def build_config_named_children(
 
 
 ########################################
+# ../pipes.py
+
+
+@dc.dataclass(frozen=True)
+class ProcessPipes:
+    child_stdin: ta.Optional[int] = None
+    stdin: ta.Optional[int] = None
+
+    stdout: ta.Optional[int] = None
+    child_stdout: ta.Optional[int] = None
+
+    stderr: ta.Optional[int] = None
+    child_stderr: ta.Optional[int] = None
+
+    def as_dict(self) -> ta.Mapping[str, int]:
+        return dc.asdict(self)
+
+
+def make_process_pipes(stderr=True) -> ProcessPipes:
+    """
+    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
+    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
+    """
+
+    pipes: ta.Dict[str, ta.Optional[int]] = {
+        'child_stdin': None,
+        'stdin': None,
+
+        'stdout': None,
+        'child_stdout': None,
+
+        'stderr': None,
+        'child_stderr': None,
+    }
+
+    try:
+        pipes['child_stdin'], pipes['stdin'] = os.pipe()
+        pipes['stdout'], pipes['child_stdout'] = os.pipe()
+
+        if stderr:
+            pipes['stderr'], pipes['child_stderr'] = os.pipe()
+
+        for fd in (
+                pipes['stdout'],
+                pipes['stderr'],
+                pipes['stdin'],
+        ):
+            if fd is not None:
+                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
+                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
+        return ProcessPipes(**pipes)
+
+    except OSError:
+        for fd in pipes.values():
+            if fd is not None:
+                close_fd(fd)
+
+        raise
+
+
+def close_parent_pipes(pipes: ProcessPipes) -> None:
+    for name in (
+            'stdin',
+            'stdout',
+            'stderr',
+    ):
+        fd = getattr(pipes, name)
+        if fd is not None:
+            close_fd(fd)
+
+
+def close_child_pipes(pipes: ProcessPipes) -> None:
+    for name in (
+            'child_stdin',
+            'child_stdout',
+            'child_stderr',
+    ):
+        fd = getattr(pipes, name)
+        if fd is not None:
+            close_fd(fd)
+
+
+########################################
 # ../poller.py
 
 
@@ -5456,60 +5523,6 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     return None
 
 
-def make_pipes(stderr=True) -> ta.Mapping[str, int]:
-    """
-    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
-    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
-    """
-
-    pipes: ta.Dict[str, ta.Optional[int]] = {
-        'child_stdin': None,
-        'stdin': None,
-        'stdout': None,
-        'child_stdout': None,
-        'stderr': None,
-        'child_stderr': None,
-    }
-
-    try:
-        stdin, child_stdin = os.pipe()
-        pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
-
-        stdout, child_stdout = os.pipe()
-        pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
-
-        if stderr:
-            stderr, child_stderr = os.pipe()
-            pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
-
-        for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
-            if fd is not None:
-                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
-                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-
-        return pipes  # type: ignore
-
-    except OSError:
-        for fd in pipes.values():
-            if fd is not None:
-                close_fd(fd)
-        raise
-
-
-def close_parent_pipes(pipes: ta.Mapping[str, int]) -> None:
-    for fdname in ('stdin', 'stdout', 'stderr'):
-        fd = pipes.get(fdname)
-        if fd is not None:
-            close_fd(fd)
-
-
-def close_child_pipes(pipes: ta.Mapping[str, int]) -> None:
-    for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
-        fd = pipes.get(fdname)
-        if fd is not None:
-            close_fd(fd)
-
-
 def check_execv_args(filename, argv, st) -> None:
     if st is None:
         raise NotFoundError(f"can't find command {filename!r}")
@@ -5979,7 +5992,7 @@ class ProcessGroups:
 
 
 ########################################
-# ../process.py
+# ../processes.py
 
 
 class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
@@ -6027,7 +6040,7 @@ class ProcessImpl(Process):
         self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
         self._dispatchers: ta.Dict[int, Dispatcher] = {}
-        self._pipes: ta.Dict[str, int] = {}
+        self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
         self._pid = 0  # 0 when not running
@@ -6101,7 +6114,7 @@ class ProcessImpl(Process):
         if not self.pid or self._killing:
             raise OSError(errno.EPIPE, 'Process already closed')
 
-        stdin_fd = self._pipes['stdin']
+        stdin_fd = self._pipes.stdin
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
@@ -6256,36 +6269,35 @@ class ProcessImpl(Process):
             self._spawn_as_child(filename, argv)
             return None
 
-    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ta.Mapping[str, int]]:
+    def _make_dispatchers(self) -> ta.Tuple[ta.Mapping[int, Dispatcher], ProcessPipes]:
         use_stderr = not self._config.redirect_stderr
 
-        p = make_pipes(use_stderr)
-        stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
+        p = make_process_pipes(use_stderr)
 
         dispatchers: ta.Dict[int, Dispatcher] = {}
 
         etype: ta.Type[ProcessCommunicationEvent]
-        if stdout_fd is not None:
+        if p.stdout is not None:
             etype = ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers[p.stdout] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
-                stdout_fd,
+                p.stdout,
             ), OutputDispatcher)
 
-        if stderr_fd is not None:
+        if p.stderr is not None:
             etype = ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = check_isinstance(self._output_dispatcher_factory(
+            dispatchers[p.stderr] = check_isinstance(self._output_dispatcher_factory(
                 self,
                 etype,
-                stderr_fd,
+                p.stderr,
             ), OutputDispatcher)
 
-        if stdin_fd is not None:
-            dispatchers[stdin_fd] = check_isinstance(self._input_dispatcher_factory(
+        if p.stdin is not None:
+            dispatchers[p.stdin] = check_isinstance(self._input_dispatcher_factory(
                 self,
                 'stdin',
-                stdin_fd,
+                p.stdin,
             ), InputDispatcher)
 
         return dispatchers, p
@@ -6301,12 +6313,12 @@ class ProcessImpl(Process):
         return pid
 
     def _prepare_child_fds(self) -> None:
-        os.dup2(self._pipes['child_stdin'], 0)
-        os.dup2(self._pipes['child_stdout'], 1)
+        os.dup2(check_not_none(self._pipes.child_stdin), 0)
+        os.dup2(check_not_none(self._pipes.child_stdout), 1)
         if self._config.redirect_stderr:
-            os.dup2(self._pipes['child_stdout'], 2)
+            os.dup2(check_not_none(self._pipes.child_stdout), 2)
         else:
-            os.dup2(self._pipes['child_stderr'], 2)
+            os.dup2(check_not_none(self._pipes.child_stderr), 2)
 
         for i in range(3, self.context.config.minfds):
             if i in self._inherited_fds:
@@ -6607,7 +6619,7 @@ class ProcessImpl(Process):
 
         self._pid = 0
         close_parent_pipes(self._pipes)
-        self._pipes = {}
+        self._pipes = ProcessPipes()
         self._dispatchers = {}
 
     def set_uid(self) -> ta.Optional[str]:

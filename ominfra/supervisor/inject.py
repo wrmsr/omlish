@@ -15,10 +15,10 @@ from .groups import ProcessFactory
 from .groups import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
-from .process import InheritedFds
-from .process import InputDispatcherFactory
-from .process import OutputDispatcherFactory
-from .process import ProcessImpl
+from .processes import InheritedFds
+from .processes import InputDispatcherFactory
+from .processes import OutputDispatcherFactory
+from .processes import ProcessImpl
 from .signals import SignalReceiver
 from .supervisor import ProcessGroupFactory
 from .supervisor import ProcessGroups
