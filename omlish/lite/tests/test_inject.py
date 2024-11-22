@@ -96,19 +96,21 @@ class TestFactories(unittest.TestCase):
         y: int
         foo: 'TestFactories.Foo'
 
-    BarFactory = ta.NewType('BarFactory', Func[Bar])
-
     def test_factories(self):
+        # Note: in 3.8 NewType is a function not a type, so tacking it on TestFactories like the classes makes it a
+        # bound method lol.
+        BarFactory = ta.NewType('BarFactory', Func[TestFactories.Bar])  # noqa
+
         foo = self.Foo(420)
 
         injector = inj.create_injector(
-            inj.bind_factory(self.BarFactory, self.Bar),
+            inj.bind_factory(BarFactory, self.Bar),
             inj.bind(foo),
         )
 
         self.assertIs(injector[self.Foo], foo)
 
-        bar_factory = injector[self.BarFactory]
+        bar_factory = injector[BarFactory]
 
         for i in range(2):
             bar: TestFactories.Bar = bar_factory.fn(i)
