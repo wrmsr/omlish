@@ -17,8 +17,8 @@ from .configs import ProcessConfig
 from .context import drop_privileges
 from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
-from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
+from .events import PROCESS_STATE_EVENT_MAP
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
@@ -31,6 +31,7 @@ from .pipes import ProcessPipes
 from .pipes import close_child_pipes
 from .pipes import close_parent_pipes
 from .pipes import make_process_pipes
+from .processes import ProcessStateManager
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
@@ -70,6 +71,7 @@ class ProcessSpawning(Process):
             self,
             config: ProcessConfig,
             group: ProcessGroup,
+            states: ProcessStateManager,
             *,
             output_dispatcher_factory: OutputDispatcherFactory,
             input_dispatcher_factory: InputDispatcherFactory,
@@ -80,6 +82,7 @@ class ProcessSpawning(Process):
 
         self._config = config
         self._group = group
+        self._states = states
 
         self._output_dispatcher_factory = output_dispatcher_factory
         self._input_dispatcher_factory = input_dispatcher_factory
@@ -161,7 +164,7 @@ class ProcessSpawning(Process):
 
         self._spawn_err = None
 
-        self._check_in_state(
+        self._states.check_in_state(
             ProcessState.EXITED,
             ProcessState.FATAL,
             ProcessState.BACKOFF,
@@ -174,7 +177,7 @@ class ProcessSpawning(Process):
             filename, argv = self._get_execv_args()
         except ProcessError as what:
             self._record_spawn_err(what.args[0])
-            self._check_in_state(ProcessState.STARTING)
+            self._states.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
             return None
 
@@ -188,7 +191,7 @@ class ProcessSpawning(Process):
             else:
                 msg = f"unknown error making dispatchers for '{process_name}': {errno.errorcode.get(code, code)}"
             self._record_spawn_err(msg)
-            self._check_in_state(ProcessState.STARTING)
+            self._states.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
             return None
 
@@ -202,7 +205,7 @@ class ProcessSpawning(Process):
             else:
                 msg = f'unknown error during fork for \'{process_name}\': {errno.errorcode.get(code, code)}'
             self._record_spawn_err(msg)
-            self._check_in_state(ProcessState.STARTING)
+            self._states.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
             close_parent_pipes(self._pipes)
             close_child_pipes(self._pipes)

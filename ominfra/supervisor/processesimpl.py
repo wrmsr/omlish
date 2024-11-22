@@ -47,12 +47,17 @@ from .utils import compact_traceback
 from .utils import decode_wait_status
 from .utils import get_path
 from .utils import real_exit
+from .processes import ProcessStateManager
+from .processes import ProcessStateError
 
 
 ##
 
 
-class ProcessImpl(Process):
+class ProcessImpl(
+    Process,
+    ProcessStateManager,
+):
     """A class to manage a subprocess."""
 
     def __init__(
@@ -166,6 +171,8 @@ class ProcessImpl(Process):
         dispatcher.write(chars)
         dispatcher.flush()  # this must raise EPIPE if the pipe is closed
 
+    #
+
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
         old_state = self._state
         if new_state is old_state:
@@ -184,12 +191,14 @@ class ProcessImpl(Process):
 
         return True
 
-    def _check_in_state(self, *states: ProcessState) -> None:
+    def check_in_state(self, *states: ProcessState) -> None:
         if self._state not in states:
-            current_state = self._state.name
-            allowable_states = ' '.join(s.name for s in states)
-            process_name = as_string(self._config.name)
-            raise RuntimeError('Assertion failed for %s: %s not in %s' % (process_name, current_state, allowable_states))  # noqa
+            raise ProcessStateError(
+                f'Check failed for {self._config.name}: '
+                f'{self._state.name} not in {" ".join(s.name for s in states)}'
+            )
+
+    #
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time):
         """
@@ -235,7 +244,7 @@ class ProcessImpl(Process):
         self._delay = 0
         self._backoff = 0
         self._system_stop = True
-        self._check_in_state(ProcessState.BACKOFF)
+        self.check_in_state(ProcessState.BACKOFF)
         self.change_state(ProcessState.FATAL)
 
     def kill(self, sig: int) -> ta.Optional[str]:
@@ -279,7 +288,7 @@ class ProcessImpl(Process):
         self._killing = True
         self._delay = now + self._config.stopwaitsecs
         # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
-        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
 
         pid = self.pid
@@ -324,7 +333,7 @@ class ProcessImpl(Process):
 
         log.debug('sending %s (pid %s) sig %s', process_name, self.pid, sig_name(sig))
 
-        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
         try:
             try:
@@ -384,7 +393,7 @@ class ProcessImpl(Process):
             self._exitstatus = es
 
             fmt, args = 'stopped: %s (%s)', (process_name, msg)
-            self._check_in_state(ProcessState.STOPPING)
+            self.check_in_state(ProcessState.STOPPING)
             self.change_state(ProcessState.STOPPED)
             if exit_expected:
                 log.info(fmt, *args)
@@ -395,7 +404,7 @@ class ProcessImpl(Process):
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
             self._exitstatus = None
             self._spawn_err = 'Exited too quickly (process log may have details)'
-            self._check_in_state(ProcessState.STARTING)
+            self.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
             log.warning('exited: %s (%s)', process_name, msg + '; not expected')
 
@@ -411,7 +420,7 @@ class ProcessImpl(Process):
             if self._state == ProcessState.STARTING:
                 self.change_state(ProcessState.RUNNING)
 
-            self._check_in_state(ProcessState.RUNNING)
+            self.check_in_state(ProcessState.RUNNING)
 
             if exit_expected:
                 # expected exit code
@@ -468,7 +477,7 @@ class ProcessImpl(Process):
                 # proc.config.startsecs,
                 self._delay = 0
                 self._backoff = 0
-                self._check_in_state(ProcessState.STARTING)
+                self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
                 logger.info('success: %s %s', process_name, msg)
