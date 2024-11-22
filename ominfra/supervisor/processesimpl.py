@@ -1,55 +1,31 @@
 # ruff: noqa: UP006 UP007
 import errno
 import os.path
-import shlex
 import signal
-import stat
 import time
 import traceback
 import typing as ta
 
 from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
-from .spawning import ProcessSpawning
-from .spawning import SpawnedProcess
-from .spawning import ProcessSpawnError
 from .configs import ProcessConfig
-from .context import drop_privileges
 from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
-from .events import ProcessCommunicationEvent
-from .events import ProcessCommunicationStderrEvent
-from .events import ProcessCommunicationStdoutEvent
-from .exceptions import BadCommandError
-from .exceptions import NoPermissionError
-from .exceptions import NotExecutableError
-from .exceptions import NotFoundError
-from .exceptions import ProcessError
 from .pipes import ProcessPipes
-from .pipes import close_child_pipes
 from .pipes import close_parent_pipes
-from .pipes import make_process_pipes
 from .signals import sig_name
 from .states import ProcessState
 from .states import SupervisorState
-from .types import Dispatcher
 from .types import InputDispatcher
-from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
-from .utils import as_bytes
 from .utils import as_string
-from .utils import close_fd
-from .utils import compact_traceback
 from .utils import decode_wait_status
-from .utils import get_path
-from .utils import real_exit
 from .processes import ProcessStateError
 from .spawning import ProcessSpawning
 from .spawning import ProcessSpawnError
@@ -81,7 +57,8 @@ class ProcessImpl(Process):
 
         self._context = context
         self._event_callbacks = event_callbacks
-        self._process_spawning_factory = process_spawning_factory
+
+        self._spawning = process_spawning_factory(self)
 
         #
 
@@ -145,7 +122,7 @@ class ProcessImpl(Process):
 
     #
 
-    def spawn_OLD_STUFF(self) -> ta.Optional[int]:
+    def spawn(self) -> ta.Optional[int]:
         process_name = as_string(self._config.name)
 
         if self.pid:
@@ -169,19 +146,25 @@ class ProcessImpl(Process):
 
         self.change_state(ProcessState.STARTING)
 
-        res = self._spawning.spawn()
-
-        if err:
+        try:
+            sp = self._spawning.spawn()
+        except ProcessSpawnError as err:
+            msg = err.args[0]
+            self._spawn_err = msg
+            log.error('Spawn error: %s', msg)
             self.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
+            return None
 
-        else:
-            log.info('spawned: \'%s\' with pid %s', as_string(self.name), pid)
+        log.info("spawned: \'%s\' with pid %s", as_string(self.name), sp.pid)
 
-            self._pid = pid
-            self._delay = time.time() + self.config.startsecs
+        self._pid = sp.pid
+        self._pipes = sp.pipes
+        self._dispatchers = sp.dispatchers
 
-            return pid
+        self._delay = time.time() + self.config.startsecs
+
+        return sp.pid
 
     def get_dispatchers(self) -> Dispatchers:
         return self._dispatchers

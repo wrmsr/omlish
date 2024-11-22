@@ -117,7 +117,7 @@ class ProcessSpawningImpl(ProcessSpawning):
             dispatchers = self._make_dispatchers(pipes)
         except Exception as exc:  # noqa
             close_pipes(pipes)
-            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}'") from exc
+            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
 
         try:
             pid = os.fork()
@@ -200,21 +200,21 @@ class ProcessSpawningImpl(ProcessSpawning):
 
         if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
-                self,
+                self.process,
                 ProcessCommunicationStdoutEvent,
                 pipes.stdout,
             ), OutputDispatcher))
 
         if pipes.stderr is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
-                self,
+                self.process,
                 ProcessCommunicationStderrEvent,
                 pipes.stderr,
             ), OutputDispatcher))
 
         if pipes.stdin is not None:
             dispatchers.append(check_isinstance(self._input_dispatcher_factory(
-                self,
+                self.process,
                 'stdin',
                 pipes.stdin,
             ), InputDispatcher))
