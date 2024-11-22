@@ -168,12 +168,12 @@ class ProcessSpawning:
         try:
             args = shlex.split(self.config.command)
         except ValueError as e:
-            raise BadCommandError(f"can't parse command {self.config.command!r}: {e}")  # noqa
+            raise BadCommandError(f"Can't parse command {self.config.command!r}: {e}")  # noqa
 
         if args:
             program = args[0]
         else:
-            raise BadCommandError('command is empty')
+            raise BadCommandError('Command is empty')
 
         if '/' in program:
             exe = program
@@ -264,7 +264,7 @@ class ProcessSpawning:
             setuid_msg = self._set_uid()
             if setuid_msg:
                 uid = self.config.uid
-                msg = f"couldn't setuid to {uid}: {setuid_msg}\n"
+                msg = f"Couldn't setuid to {uid}: {setuid_msg}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
@@ -284,9 +284,9 @@ class ProcessSpawning:
             try:
                 if cwd is not None:
                     os.chdir(os.path.expanduser(cwd))
-            except OSError as why:
-                code = errno.errorcode.get(why.args[0], why.args[0])
-                msg = f"couldn't chdir to {cwd}: {code}\n"
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't chdir to {cwd}: {code}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
@@ -297,22 +297,21 @@ class ProcessSpawning:
                     os.umask(self.config.umask)
                 os.execve(exe, list(argv), env)
 
-            except OSError as why:
-                code = errno.errorcode.get(why.args[0], why.args[0])
-                msg = f"couldn't exec {argv[0]}: {code}\n"
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't exec {argv[0]}: {code}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
 
             except Exception:  # noqa
-                (file, fun, line), t, v, tbinfo = compact_traceback()
-                error = f'{t}, {v}: file: {file} line: {line}'
-                msg = f"couldn't exec {exe}: {error}\n"
+                (file, fun, line), t, v, tb = compact_traceback()
+                msg = f"Couldn't exec {exe}: {t}, {v}: file: {file} line: {line}\n"
                 os.write(2, as_bytes('supervisor: ' + msg))
-
-            raise RuntimeError('Unreachable')
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
             real_exit(127)  # exit process with code for spawn failure
+
+        raise RuntimeError('Unreachable')
 
     def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
         os.dup2(check_not_none(pipes.child_stdin), 0)
