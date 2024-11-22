@@ -88,13 +88,13 @@ class SupervisorSetupImpl(SupervisorSetup):
         # this sets the options.logger object delay logger instantiation until after setuid
         if not self._config.nocleanup:
             # clean up old automatic logs
-            self._context.clear_auto_child_logdir()
+            self.clear_auto_child_logdir()
 
-        if not self._config.nodaemon and self._context.first:
-            self._context.daemonize()
+        if not self._config.nodaemon and self.first:
+            self.daemonize()
 
         # writing pid file needs to come *after* daemonizing or pid will be wrong
-        self._context.write_pidfile()
+        self.write_pidfile()
 
     @cached_nullary
     def cleanup(self) -> None:
@@ -202,8 +202,8 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     def clear_auto_child_logdir(self) -> None:
         # must be called after realize()
-        child_logdir = self.config.child_logdir
-        fnre = re.compile(rf'.+?---{self.config.identifier}-\S+\.log\.?\d{{0,4}}')
+        child_logdir = self._config.child_logdir
+        fnre = re.compile(rf'.+?---{self._config.identifier}-\S+\.log\.?\d{{0,4}}')
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
@@ -251,23 +251,20 @@ class SupervisorSetupImpl(SupervisorSetup):
 
         # Child
         log.info('daemonizing the supervisord process')
-        if self.config.directory:
+        if self._config.directory:
             try:
-                os.chdir(self.config.directory)
+                os.chdir(self._config.directory)
             except OSError as err:
-                log.critical("can't chdir into %r: %s", self.config.directory, err)
+                log.critical("can't chdir into %r: %s", self._config.directory, err)
             else:
-                log.info('set current directory: %r', self.config.directory)
+                log.info('set current directory: %r', self._config.directory)
 
         os.dup2(0, os.open('/dev/null', os.O_RDONLY))
         os.dup2(1, os.open('/dev/null', os.O_WRONLY))
         os.dup2(2, os.open('/dev/null', os.O_WRONLY))
 
-        os.setsid()
-
-        os.umask(self.config.umask)
-
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
         # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
-
+        os.setsid()
+        os.umask(self._config.umask)
