@@ -118,7 +118,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         process via usage() if privileges could not be dropped.
         """
 
-        if self.uid is None:
+        if self._user is None:
             if os.getuid() == 0:
                 warnings.warn(
                     'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
@@ -126,9 +126,9 @@ class SupervisorSetupImpl(SupervisorSetup):
                     'this message.',
                 )
         else:
-            msg = drop_privileges(self.uid)
+            msg = drop_privileges(self._user.uid)
             if msg is None:
-                log.info('Set uid to user %s succeeded', self.uid)
+                log.info('Set uid to user %s succeeded', self._user.uid)
             else:  # failed to drop privileges
                 raise RuntimeError(msg)
 
