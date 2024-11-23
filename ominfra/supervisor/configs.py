@@ -7,11 +7,21 @@ import typing as ta
 
 from ..configs import ConfigMapping
 from ..configs import build_config_named_children
-from .datatypes import logging_level
 from .utils.fs import check_existing_dir
 from .utils.fs import check_path_with_existing_dir
 from .utils.strings import parse_bytes_size
 from .utils.strings import parse_octal
+
+
+##
+
+
+class RestartWhenExitUnexpected:
+    pass
+
+
+class RestartUnconditionally:
+    pass
 
 
 ##
@@ -108,7 +118,7 @@ class ServerConfig:
             directory=check_existing_dir(directory) if directory is not None else None,
             logfile=check_path_with_existing_dir(logfile),
             logfile_maxbytes=parse_bytes_size(logfile_maxbytes),
-            loglevel=logging_level(loglevel),
+            loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
             **kwargs,
@@ -129,3 +139,16 @@ def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.An
     group_dcts = build_config_named_children(out.get('groups'))
     out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
     return out
+
+
+##
+
+
+def parse_logging_level(value: ta.Union[str, int]) -> int:
+    if isinstance(value, int):
+        return value
+    s = str(value).lower()
+    level = logging.getLevelNamesMapping().get(s.upper())
+    if level is None:
+        raise ValueError(f'bad logging level name {value!r}')
+    return level

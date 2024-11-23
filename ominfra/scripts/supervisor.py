@@ -1767,64 +1767,6 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 
 
 ########################################
-# ../datatypes.py
-
-
-class Automatic:
-    pass
-
-
-class Syslog:
-    """TODO deprecated; remove this special 'syslog' filename in the future"""
-
-
-LOGFILE_NONES = ('none', 'off', None)
-LOGFILE_AUTOS = (Automatic, 'auto')
-LOGFILE_SYSLOGS = (Syslog, 'syslog')
-
-
-def logfile_name(val):
-    if hasattr(val, 'lower'):
-        coerced = val.lower()
-    else:
-        coerced = val
-
-    if coerced in LOGFILE_NONES:
-        return None
-    elif coerced in LOGFILE_AUTOS:
-        return Automatic
-    elif coerced in LOGFILE_SYSLOGS:
-        return Syslog
-    else:
-        return check_path_with_existing_dir(val)
-
-
-##
-
-
-def logging_level(value: ta.Union[str, int]) -> int:
-    if isinstance(value, int):
-        return value
-    s = str(value).lower()
-    level = logging.getLevelNamesMapping().get(s.upper())
-    if level is None:
-        raise ValueError(f'bad logging level name {value!r}')
-    return level
-
-
-class RestartWhenExitUnexpected:
-    pass
-
-
-class RestartUnconditionally:
-    pass
-
-
-class ExitNow(Exception):  # noqa
-    pass
-
-
-########################################
 # ../events.py
 
 
@@ -4430,6 +4372,17 @@ class UnsupportedMethodHttpHandlerError(Exception):
 ##
 
 
+class RestartWhenExitUnexpected:
+    pass
+
+
+class RestartUnconditionally:
+    pass
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class ProcessConfig:
     name: str
@@ -4521,7 +4474,7 @@ class ServerConfig:
             directory=check_existing_dir(directory) if directory is not None else None,
             logfile=check_path_with_existing_dir(logfile),
             logfile_maxbytes=parse_bytes_size(logfile_maxbytes),
-            loglevel=logging_level(loglevel),
+            loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
             **kwargs,
@@ -4542,6 +4495,19 @@ def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.An
     group_dcts = build_config_named_children(out.get('groups'))
     out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
     return out
+
+
+##
+
+
+def parse_logging_level(value: ta.Union[str, int]) -> int:
+    if isinstance(value, int):
+        return value
+    s = str(value).lower()
+    level = logging.getLevelNamesMapping().get(s.upper())
+    if level is None:
+        raise ValueError(f'bad logging level name {value!r}')
+    return level
 
 
 ########################################
@@ -6428,6 +6394,10 @@ class ProcessSpawning:
 
 
 ##
+
+
+class ExitNow(Exception):  # noqa
+    pass
 
 
 def timeslice(period: int, when: float) -> int:

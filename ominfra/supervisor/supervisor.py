@@ -10,7 +10,6 @@ from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
-from .datatypes import ExitNow
 from .dispatchers import Dispatchers
 from .events import TICK_EVENTS
 from .events import EventCallbacks
@@ -30,6 +29,10 @@ from .utils.signals import sig_name
 
 
 ##
+
+
+class ExitNow(Exception):  # noqa
+    pass
 
 
 def timeslice(period: int, when: float) -> int:
