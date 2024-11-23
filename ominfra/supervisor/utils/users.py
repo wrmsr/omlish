@@ -3,11 +3,14 @@ import dataclasses as dc
 import grp
 import pwd
 
+from .ostypes import Gid
+from .ostypes import Uid
+
 
 ##
 
 
-def name_to_uid(name: str) -> int:
+def name_to_uid(name: str) -> Uid:
     try:
         uid = int(name)
     except ValueError:
@@ -21,10 +24,10 @@ def name_to_uid(name: str) -> int:
             pwd.getpwuid(uid)  # check if uid is valid
         except KeyError:
             raise ValueError(f'Invalid user id {name}')  # noqa
-    return uid
+    return Uid(uid)
 
 
-def name_to_gid(name: str) -> int:
+def name_to_gid(name: str) -> Gid:
     try:
         gid = int(name)
     except ValueError:
@@ -38,12 +41,12 @@ def name_to_gid(name: str) -> int:
             grp.getgrgid(gid)  # check if gid is valid
         except KeyError:
             raise ValueError(f'Invalid group id {name}')  # noqa
-    return gid
+    return Gid(gid)
 
 
-def gid_for_uid(uid: int) -> int:
+def gid_for_uid(uid: Uid) -> Gid:
     pwrec = pwd.getpwuid(uid)
-    return pwrec[3]
+    return Gid(pwrec[3])
 
 
 ##
@@ -52,8 +55,8 @@ def gid_for_uid(uid: int) -> int:
 @dc.dataclass(frozen=True)
 class User:
     name: str
-    uid: int
-    gid: int
+    uid: Uid
+    gid: Gid
 
 
 def get_user(name: str) -> User:
