@@ -6,6 +6,8 @@ import tempfile
 import types
 import typing as ta
 
+from .ostypes import Fd
+from .ostypes import Rc
 from .signals import sig_name
 
 
@@ -70,14 +72,14 @@ class ExitNow(Exception):  # noqa
     pass
 
 
-def real_exit(code: int) -> None:
+def real_exit(code: Rc) -> None:
     os._exit(code)  # noqa
 
 
 ##
 
 
-def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
+def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     """
     Decode the status returned by wait() or waitpid().
 
@@ -88,7 +90,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
         msg = f'exit status {es}'
-        return es, msg
+        return Rc(es), msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
         msg = f'terminated by {sig_name(sig)}'
@@ -98,16 +100,16 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
             iscore = bool(sts & 0x80)
         if iscore:
             msg += ' (core dumped)'
-        return -1, msg
+        return Rc(-1), msg
     else:
         msg = 'unknown termination cause 0x%04x' % sts  # noqa
-        return -1, msg
+        return Rc(-1), msg
 
 
 ##
 
 
-def read_fd(fd: int) -> bytes:
+def read_fd(fd: Fd) -> bytes:
     try:
         data = os.read(fd, 2 << 16)  # 128K
     except OSError as why:
@@ -125,7 +127,7 @@ def try_unlink(path: str) -> bool:
     return True
 
 
-def close_fd(fd: int) -> bool:
+def close_fd(fd: Fd) -> bool:
     try:
         os.close(fd)
     except OSError:
@@ -133,7 +135,7 @@ def close_fd(fd: int) -> bool:
     return True
 
 
-def is_fd_open(fd: int) -> bool:
+def is_fd_open(fd: Fd) -> bool:
     try:
         n = os.dup(fd)
     except OSError:
@@ -142,8 +144,8 @@ def is_fd_open(fd: int) -> bool:
     return True
 
 
-def get_open_fds(limit: int) -> ta.FrozenSet[int]:
-    return frozenset(filter(is_fd_open, range(limit)))
+def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
+    return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
 
 
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa

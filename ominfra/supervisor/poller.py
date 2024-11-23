@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish.lite.logs import log
 
+from .ostypes import Fd
 from .setup import DaemonizeListener
 
 
@@ -15,23 +16,23 @@ class Poller(DaemonizeListener, abc.ABC):
         super().__init__()
 
     @abc.abstractmethod
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         raise NotImplementedError
 
     def before_daemonize(self) -> None:  # noqa
@@ -48,37 +49,37 @@ class SelectPoller(Poller):
     def __init__(self) -> None:
         super().__init__()
 
-        self._readable: ta.Set[int] = set()
-        self._writable: ta.Set[int] = set()
+        self._readable: ta.Set[Fd] = set()
+        self._writable: ta.Set[Fd] = set()
 
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         self._readable.add(fd)
 
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         self._writable.add(fd)
 
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         self._readable.discard(fd)
 
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         self._writable.discard(fd)
 
     def unregister_all(self) -> None:
         self._readable.clear()
         self._writable.clear()
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         try:
             r, w, x = select.select(
                 self._readable,
                 self._writable,
                 [], timeout,
             )
-        except OSError as err:
-            if err.args[0] == errno.EINTR:
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
                 log.debug('EINTR encountered in poll')
                 return [], []
-            if err.args[0] == errno.EBADF:
+            if exc.args[0] == errno.EBADF:
                 log.debug('EBADF encountered in poll')
                 self.unregister_all()
                 return [], []
@@ -94,30 +95,30 @@ class PollPoller(Poller):
         super().__init__()
 
         self._poller = select.poll()
-        self._readable: set[int] = set()
-        self._writable: set[int] = set()
+        self._readable: set[Fd] = set()
+        self._writable: set[Fd] = set()
 
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         self._poller.register(fd, self._READ)
         self._readable.add(fd)
 
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         self._poller.register(fd, self._WRITE)
         self._writable.add(fd)
 
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         self._readable.discard(fd)
         self._poller.unregister(fd)
         if fd in self._writable:
             self._poller.register(fd, self._WRITE)
 
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         self._writable.discard(fd)
         self._poller.unregister(fd)
         if fd in self._readable:
             self._poller.register(fd, self._READ)
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         fds = self._poll_fds(timeout)  # type: ignore
         readable, writable = [], []
         for fd, eventmask in fds:
@@ -129,16 +130,16 @@ class PollPoller(Poller):
                 writable.append(fd)
         return readable, writable
 
-    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[int, int]]:
+    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[Fd, Fd]]:
         try:
-            return self._poller.poll(timeout * 1000)
-        except OSError as err:
-            if err.args[0] == errno.EINTR:
+            return self._poller.poll(timeout * 1000)  # type: ignore
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
                 log.debug('EINTR encountered in poll')
                 return []
             raise
 
-    def _ignore_invalid(self, fd: int, eventmask: int) -> bool:
+    def _ignore_invalid(self, fd: Fd, eventmask: int) -> bool:
         if eventmask & select.POLLNVAL:
             # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
             # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
@@ -157,30 +158,30 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             super().__init__()
 
             self._kqueue: ta.Optional[ta.Any] = select.kqueue()
-            self._readable: set[int] = set()
-            self._writable: set[int] = set()
+            self._readable: set[Fd] = set()
+            self._writable: set[Fd] = set()
 
-        def register_readable(self, fd: int) -> None:
+        def register_readable(self, fd: Fd) -> None:
             self._readable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
-        def register_writable(self, fd: int) -> None:
+        def register_writable(self, fd: Fd) -> None:
             self._writable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
-        def unregister_readable(self, fd: int) -> None:
+        def unregister_readable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
             self._readable.discard(fd)
             self._kqueue_control(fd, kevent)
 
-        def unregister_writable(self, fd: int) -> None:
+        def unregister_writable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
             self._writable.discard(fd)
             self._kqueue_control(fd, kevent)
 
-        def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
+        def _kqueue_control(self, fd: Fd, kevent: 'select.kevent') -> None:
             try:
                 self._kqueue.control([kevent], 0)  # type: ignore
             except OSError as error:
@@ -189,7 +190,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 else:
                     raise
 
-        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
             readable, writable = [], []  # type: ignore
 
             try:

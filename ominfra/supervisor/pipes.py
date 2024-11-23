@@ -4,24 +4,25 @@ import fcntl
 import os
 import typing as ta
 
+from .ostypes import Fd
 from .utils import close_fd
 
 
 @dc.dataclass(frozen=True)
 class ProcessPipes:
-    child_stdin: ta.Optional[int] = None
-    stdin: ta.Optional[int] = None
+    child_stdin: ta.Optional[Fd] = None
+    stdin: ta.Optional[Fd] = None
 
-    stdout: ta.Optional[int] = None
-    child_stdout: ta.Optional[int] = None
+    stdout: ta.Optional[Fd] = None
+    child_stdout: ta.Optional[Fd] = None
 
-    stderr: ta.Optional[int] = None
-    child_stderr: ta.Optional[int] = None
+    stderr: ta.Optional[Fd] = None
+    child_stderr: ta.Optional[Fd] = None
 
-    def child_fds(self) -> ta.List[int]:
+    def child_fds(self) -> ta.List[Fd]:
         return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
 
-    def parent_fds(self) -> ta.List[int]:
+    def parent_fds(self) -> ta.List[Fd]:
         return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
 
 
@@ -31,7 +32,7 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
     """
 
-    pipes: ta.Dict[str, ta.Optional[int]] = {
+    pipes: ta.Dict[str, ta.Optional[Fd]] = {
         'child_stdin': None,
         'stdin': None,
 
@@ -43,11 +44,11 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     }
 
     try:
-        pipes['child_stdin'], pipes['stdin'] = os.pipe()
-        pipes['stdout'], pipes['child_stdout'] = os.pipe()
+        pipes['child_stdin'], pipes['stdin'] = os.pipe()  # type: ignore
+        pipes['stdout'], pipes['child_stdout'] = os.pipe()  # type: ignore
 
         if stderr:
-            pipes['stderr'], pipes['child_stderr'] = os.pipe()
+            pipes['stderr'], pipes['child_stderr'] = os.pipe()  # type: ignore
 
         for fd in (
                 pipes['stdout'],

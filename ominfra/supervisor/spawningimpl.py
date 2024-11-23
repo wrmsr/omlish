@@ -20,12 +20,15 @@ from .exceptions import NoPermissionError
 from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
 from .exceptions import ProcessError
+from .ostypes import Fd
+from .ostypes import Pid
+from .ostypes import Rc
 from .pipes import ProcessPipes
 from .pipes import close_child_pipes
 from .pipes import close_pipes
 from .pipes import make_process_pipes
 from .privileges import drop_privileges
-from .processes import PidHistory
+from .process import PidHistory
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .spawning import SpawnedProcess
@@ -41,15 +44,15 @@ from .utils import get_path
 from .utils import real_exit
 
 
-class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):
     pass
 
 
-class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+class InputDispatcherFactory(Func3[Process, str, Fd, InputDispatcher]):
     pass
 
 
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[Fd])
 
 
 ##
@@ -120,7 +123,7 @@ class ProcessSpawningImpl(ProcessSpawning):
             raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
 
         try:
-            pid = os.fork()
+            pid = Pid(os.fork())
         except OSError as exc:
             code = exc.args[0]
             if code == errno.EAGAIN:
@@ -299,7 +302,7 @@ class ProcessSpawningImpl(ProcessSpawning):
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
-            real_exit(127)  # exit process with code for spawn failure
+            real_exit(Rc(127))  # exit process with code for spawn failure
 
         raise RuntimeError('Unreachable')
 
@@ -316,7 +319,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         for i in range(3, self._server_config.minfds):
             if i in self._inherited_fds:
                 continue
-            close_fd(i)
+            close_fd(Fd(i))
 
     def _set_uid(self) -> ta.Optional[str]:
         if self.config.uid is None:

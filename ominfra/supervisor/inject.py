@@ -15,9 +15,9 @@ from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
 from .poller import Poller
 from .poller import get_poller_impl
-from .processes import PidHistory
-from .processesimpl import ProcessImpl
-from .processesimpl import ProcessSpawningFactory
+from .process import PidHistory
+from .processimpl import ProcessImpl
+from .processimpl import ProcessSpawningFactory
 from .setup import DaemonizeListener
 from .setup import DaemonizeListeners
 from .setup import SupervisorUser

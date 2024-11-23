@@ -18,7 +18,7 @@ from .events import SupervisorStoppingEvent
 from .groups import ProcessGroup
 from .groups import ProcessGroupManager
 from .poller import Poller
-from .processes import PidHistory
+from .process import PidHistory
 from .setup import SupervisorSetup
 from .signals import SignalReceiver
 from .signals import sig_name

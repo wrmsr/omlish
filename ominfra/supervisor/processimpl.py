@@ -15,9 +15,11 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
+from .ostypes import Pid
+from .ostypes import Rc
 from .pipes import ProcessPipes
 from .pipes import close_parent_pipes
-from .processes import ProcessStateError
+from .process import ProcessStateError
 from .signals import sig_name
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
@@ -66,7 +68,7 @@ class ProcessImpl(Process):
         self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
-        self._pid = 0  # 0 when not running
+        self._pid = Pid(0)  # 0 when not running
 
         self._last_start = 0.  # Last time the subprocess was started; 0 if never
         self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
@@ -80,7 +82,7 @@ class ProcessImpl(Process):
 
         self._backoff = 0  # backoff counter (to startretries)
 
-        self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
+        self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
     #
@@ -103,7 +105,7 @@ class ProcessImpl(Process):
         return self._group
 
     @property
-    def pid(self) -> int:
+    def pid(self) -> Pid:
         return self._pid
 
     #
@@ -122,7 +124,7 @@ class ProcessImpl(Process):
 
     #
 
-    def spawn(self) -> ta.Optional[int]:
+    def spawn(self) -> ta.Optional[Pid]:
         process_name = as_string(self._config.name)
 
         if self.pid:
@@ -303,14 +305,14 @@ class ProcessImpl(Process):
         self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
 
-        pid = self.pid
+        kpid = int(self.pid)
         if killasgroup:
             # send to the whole process group instead
-            pid = -self.pid
+            kpid = -kpid
 
         try:
             try:
-                os.kill(pid, sig)
+                os.kill(kpid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', process_name, self.pid, str(exc))  # noqa
@@ -371,7 +373,7 @@ class ProcessImpl(Process):
 
         return None
 
-    def finish(self, sts: int) -> None:
+    def finish(self, sts: Rc) -> None:
         """The process was reaped and we need to report and manage its state."""
 
         self._dispatchers.drain()
@@ -402,7 +404,7 @@ class ProcessImpl(Process):
             # likely the result of a stop request implies STOPPING -> STOPPED
             self._killing = False
             self._delay = 0
-            self._exitstatus = es
+            self._exitstatus = Rc(es)
 
             fmt, args = 'stopped: %s (%s)', (process_name, msg)
             self.check_in_state(ProcessState.STOPPING)
@@ -444,7 +446,7 @@ class ProcessImpl(Process):
                 self.change_state(ProcessState.EXITED, expected=False)
                 log.warning('exited: %s (%s)', process_name, msg + '; not expected')
 
-        self._pid = 0
+        self._pid = Pid(0)
         close_parent_pipes(self._pipes)
         self._pipes = ProcessPipes()
         self._dispatchers = Dispatchers([])
