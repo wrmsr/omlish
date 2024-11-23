@@ -26,7 +26,6 @@ from .states import SupervisorState
 from .types import OutputDispatcher
 from .types import Process
 from .utils import ExitNow
-from .utils import as_string
 from .utils import decode_wait_status
 from .utils import timeslice
 
@@ -168,7 +167,7 @@ class Supervisor:
             # throttle 'waiting for x to die' reports
             now = time.time()
             if now > (self._last_shutdown_report + 3):  # every 3 secs
-                names = [as_string(p.config.name) for p in unstopped]
+                names = [p.config.name for p in unstopped]
                 namestr = ', '.join(names)
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
