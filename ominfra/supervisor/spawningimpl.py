@@ -20,9 +20,6 @@ from .exceptions import NoPermissionError
 from .exceptions import NotExecutableError
 from .exceptions import NotFoundError
 from .exceptions import ProcessError
-from .ostypes import Fd
-from .ostypes import Pid
-from .ostypes import Rc
 from .pipes import ProcessPipes
 from .pipes import close_child_pipes
 from .pipes import close_pipes
@@ -37,11 +34,14 @@ from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
-from .utils import as_bytes
-from .utils import close_fd
-from .utils import compact_traceback
-from .utils import get_path
-from .utils import real_exit
+from .utils.ostypes import Fd
+from .utils.ostypes import Pid
+from .utils.ostypes import Rc
+from .utils.utils import as_bytes
+from .utils.utils import close_fd
+from .utils.utils import compact_traceback
+from .utils.utils import get_path
+from .utils.utils import real_exit
 
 
 class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):

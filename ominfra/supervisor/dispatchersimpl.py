@@ -12,16 +12,16 @@ from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
-from .ostypes import Fd
 from .types import Dispatcher
 from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
-from .utils import as_bytes
-from .utils import compact_traceback
-from .utils import find_prefix_at_end
-from .utils import read_fd
-from .utils import strip_escapes
+from .utils.ostypes import Fd
+from .utils.utils import as_bytes
+from .utils.utils import compact_traceback
+from .utils.utils import find_prefix_at_end
+from .utils.utils import read_fd
+from .utils.utils import strip_escapes
 
 
 class BaseDispatcherImpl(Dispatcher, abc.ABC):
