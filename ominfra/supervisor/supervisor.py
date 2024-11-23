@@ -1,15 +1,16 @@
 # ruff: noqa: UP006 UP007
+import errno
+import os
 import signal
 import time
 import typing as ta
 
 from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
-from .context import ServerContextImpl
+from .configs import ServerConfig
 from .dispatchers import Dispatchers
 from .events import TICK_EVENTS
 from .events import EventCallbacks
@@ -23,7 +24,10 @@ from .setup import SupervisorSetup
 from .states import SupervisorState
 from .types import OutputDispatcher
 from .types import Process
+from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
+from .utils.ostypes import Pid
+from .utils.ostypes import Rc
 from .utils.signals import SignalReceiver
 from .utils.signals import sig_name
 
@@ -46,13 +50,13 @@ class SignalHandler:
     def __init__(
             self,
             *,
-            context: ServerContextImpl,
+            states: SupervisorStateManager,
             signal_receiver: SignalReceiver,
             process_groups: ProcessGroupManager,
     ) -> None:
         super().__init__()
 
-        self._context = context
+        self._states = states
         self._signal_receiver = signal_receiver
         self._process_groups = process_groups
 
@@ -73,14 +77,14 @@ class SignalHandler:
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
             log.warning('received %s indicating exit request', sig_name(sig))
-            self._context.set_state(SupervisorState.SHUTDOWN)
+            self._states.set_state(SupervisorState.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
-            if self._context.state == SupervisorState.SHUTDOWN:
+            if self._states.state == SupervisorState.SHUTDOWN:
                 log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
             else:
                 log.warning('received %s indicating restart request', sig_name(sig))  # noqa
-                self._context.set_state(SupervisorState.RESTARTING)
+                self._states.set_state(SupervisorState.RESTARTING)
 
         elif sig == signal.SIGCHLD:
             log.debug('received %s indicating a child quit', sig_name(sig))
@@ -100,6 +104,23 @@ class SignalHandler:
 ##
 
 
+class SupervisorStateManagerImpl(SupervisorStateManager):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._state: SupervisorState = SupervisorState.RUNNING
+
+    @property
+    def state(self) -> SupervisorState:
+        return self._state
+
+    def set_state(self, state: SupervisorState) -> None:
+        self._state = state
+
+
+##
+
+
 class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
     pass
 
@@ -108,7 +129,7 @@ class Supervisor:
     def __init__(
             self,
             *,
-            context: ServerContextImpl,
+            config: ServerConfig,
             poller: Poller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
@@ -116,10 +137,11 @@ class Supervisor:
             process_group_factory: ProcessGroupFactory,
             pid_history: PidHistory,
             setup: SupervisorSetup,
+            states: SupervisorStateManager,
     ) -> None:
         super().__init__()
 
-        self._context = context
+        self._config = config
         self._poller = poller
         self._process_groups = process_groups
         self._signal_handler = signal_handler
@@ -127,6 +149,7 @@ class Supervisor:
         self._process_group_factory = process_group_factory
         self._pid_history = pid_history
         self._setup = setup
+        self._states = states
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -136,11 +159,8 @@ class Supervisor:
     #
 
     @property
-    def context(self) -> ServerContextImpl:
-        return self._context
-
-    def get_state(self) -> SupervisorState:
-        return self._context.state
+    def state(self) -> SupervisorState:
+        return self._states.state
 
     #
 
@@ -181,7 +201,7 @@ class Supervisor:
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
                 for proc in unstopped:
-                    log.debug('%s state: %s', proc.config.name, proc.get_state().name)
+                    log.debug('%s state: %s', proc.config.name, proc.state.name)
 
         return unstopped
 
@@ -205,7 +225,7 @@ class Supervisor:
         self._event_callbacks.clear()
 
         try:
-            for config in self._context.config.groups or []:
+            for config in self._config.groups or []:
                 self.add_process_group(config)
 
             self._signal_handler.set_signals()
@@ -229,7 +249,7 @@ class Supervisor:
         self._signal_handler.handle_signals()
         self._tick()
 
-        if self._context.state < SupervisorState.RUNNING:
+        if self._states.state < SupervisorState.RUNNING:
             self._ordered_stop_groups_phase_2()
 
     def _ordered_stop_groups_phase_1(self) -> None:
@@ -261,7 +281,7 @@ class Supervisor:
         sorted_groups = list(self._process_groups)
         sorted_groups.sort()
 
-        if self._context.state < SupervisorState.RUNNING:
+        if self._states.state < SupervisorState.RUNNING:
             if not self._stopping:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
@@ -331,17 +351,17 @@ class Supervisor:
         if depth >= 100:
             return
 
-        pid, sts = self._context.waitpid()
-        if not pid:
+        wp = waitpid()
+        if wp is None or not wp.pid:
             return
 
-        process = self._pid_history.get(pid, None)
+        process = self._pid_history.get(wp.pid, None)
         if process is None:
-            _, msg = decode_wait_status(check_not_none(sts))
-            log.info('reaped unknown pid %s (%s)', pid, msg)
+            _, msg = decode_wait_status(wp.sts)
+            log.info('reaped unknown pid %s (%s)', wp.pid, msg)
         else:
-            process.finish(check_not_none(sts))
-            del self._pid_history[pid]
+            process.finish(wp.sts)
+            del self._pid_history[wp.pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
@@ -366,3 +386,28 @@ class Supervisor:
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
                 self._event_callbacks.notify(event(this_tick, self))
+
+
+class WaitedPid(ta.NamedTuple):
+    pid: Pid
+    sts: Rc
+
+
+def waitpid() -> ta.Optional[WaitedPid]:
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
+    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
+    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
+    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
+    # lying around.
+    try:
+        pid, sts = os.waitpid(-1, os.WNOHANG)
+    except OSError as exc:
+        code = exc.args[0]
+        if code not in (errno.ECHILD, errno.EINTR):
+            log.critical('waitpid error %r; a process may not be cleaned up properly', code)
+        if code == errno.EINTR:
+            log.debug('EINTR during reap')
+        return None
+    else:
+        return WaitedPid(pid, sts)  # type: ignore
