@@ -1494,6 +1494,30 @@ def check_not_equal(l: T, r: T) -> T:
     return l
 
 
+def check_is(l: T, r: T) -> T:
+    if l is not r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is_not(l: T, r: ta.Any) -> T:
+    if l is r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_in(v: T, c: ta.Container[T]) -> T:
+    if v not in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_not_in(v: T, c: ta.Container[T]) -> T:
+    if v in c:
+        raise ValueError(v, c)
+    return v
+
+
 def check_single(vs: ta.Iterable[T]) -> T:
     [v] = vs
     return v
@@ -2708,7 +2732,7 @@ class InjectorError(Exception):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class InjectorKeyError(InjectorError):
     key: InjectorKey
 
@@ -2716,13 +2740,15 @@ class InjectorKeyError(InjectorError):
     name: ta.Optional[str] = None
 
 
-@dc.dataclass(frozen=True)
 class UnboundInjectorKeyError(InjectorKeyError):
     pass
 
 
-@dc.dataclass(frozen=True)
 class DuplicateInjectorKeyError(InjectorKeyError):
+    pass
+
+
+class CyclicDependencyInjectorKeyError(InjectorKeyError):
     pass
 
 
@@ -3059,22 +3085,65 @@ class _Injector(Injector):
         if _INJECTOR_INJECTOR_KEY in self._pfm:
             raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
 
+        self.__cur_req: ta.Optional[_Injector._Request] = None
+
+    class _Request:
+        def __init__(self, injector: '_Injector') -> None:
+            super().__init__()
+            self._injector = injector
+            self._provisions: ta.Dict[InjectorKey, Maybe] = {}
+            self._seen_keys: ta.Set[InjectorKey] = set()
+
+        def handle_key(self, key: InjectorKey) -> Maybe[Maybe]:
+            try:
+                return Maybe.just(self._provisions[key])
+            except KeyError:
+                pass
+            if key in self._seen_keys:
+                raise CyclicDependencyInjectorKeyError(key)
+            self._seen_keys.add(key)
+            return Maybe.empty()
+
+        def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
+            check_in(key, self._seen_keys)
+            check_not_in(key, self._provisions)
+            self._provisions[key] = mv
+            return mv
+
+    @contextlib.contextmanager
+    def _current_request(self) -> ta.Generator[_Request, None, None]:
+        if (cr := self.__cur_req) is not None:
+            yield cr
+            return
+
+        cr = self._Request(self)
+        try:
+            self.__cur_req = cr
+            yield cr
+        finally:
+            self.__cur_req = None
+
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         key = as_injector_key(key)
 
-        if key == _INJECTOR_INJECTOR_KEY:
-            return Maybe.just(self)
+        cr: _Injector._Request
+        with self._current_request() as cr:
+            if (rv := cr.handle_key(key)).present:
+                return rv.must()
 
-        fn = self._pfm.get(key)
-        if fn is not None:
-            return Maybe.just(fn(self))
+            if key == _INJECTOR_INJECTOR_KEY:
+                return cr.handle_provision(key, Maybe.just(self))
 
-        if self._p is not None:
-            pv = self._p.try_provide(key)
-            if pv is not None:
-                return Maybe.empty()
+            fn = self._pfm.get(key)
+            if fn is not None:
+                return cr.handle_provision(key, Maybe.just(fn(self)))
 
-        return Maybe.empty()
+            if self._p is not None:
+                pv = self._p.try_provide(key)
+                if pv is not None:
+                    return cr.handle_provision(key, Maybe.empty())
+
+            return cr.handle_provision(key, Maybe.empty())
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)
@@ -5332,6 +5401,10 @@ class CoroHttpServerSocketHandler(SocketHandler):
 ##
 
 
+class ExitNow(Exception):  # noqa
+    pass
+
+
 ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
@@ -5413,6 +5486,23 @@ class Dispatcher(abc.ABC):
     def handle_write_event(self) -> None:
         raise TypeError
 
+    #
+
+    def handle_connect(self) -> None:
+        raise TypeError
+
+    def handle_close(self) -> None:
+        raise TypeError
+
+    def handle_accepted(self, sock, addr) -> None:
+        raise TypeError
+
+
+class HasDispatchers(abc.ABC):
+    @abc.abstractmethod
+    def get_dispatchers(self) -> 'Dispatchers':
+        raise NotImplementedError
+
 
 class ProcessDispatcher(Dispatcher, abc.ABC):
     @property
@@ -5444,7 +5534,11 @@ class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
 ##
 
 
-class Process(ConfigPriorityOrdered, abc.ABC):
+class Process(
+    ConfigPriorityOrdered,
+    HasDispatchers,
+    abc.ABC,
+):
     @property
     @abc.abstractmethod
     def name(self) -> str:
@@ -5490,10 +5584,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     @abc.abstractmethod
     def after_setuid(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
@@ -6313,49 +6403,86 @@ class SupervisorSetupImpl(SupervisorSetup):
 
 
 ########################################
-# ../spawning.py
+# ../io.py
 
 
-@dc.dataclass(frozen=True)
-class SpawnedProcess:
-    pid: Pid
-    pipes: ProcessPipes
-    dispatchers: Dispatchers
+##
 
 
-class ProcessSpawnError(RuntimeError):
-    pass
+class IoManager:
+    def __init__(
+            self,
+            *,
+            poller: Poller,
+            process_groups: ProcessGroupManager,
+    ) -> None:
+        super().__init__()
 
+        self._poller = poller
+        self._process_groups = process_groups
 
-class ProcessSpawning:
-    @property
-    @abc.abstractmethod
-    def process(self) -> Process:
-        raise NotImplementedError
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for p in self._process_groups.all_processes()
+            for d in p.get_dispatchers()
+        )
 
-    #
+    def poll(self) -> None:
+        dispatchers = self.get_dispatchers()
 
-    @abc.abstractmethod
-    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
-        raise NotImplementedError
+        for fd, dispatcher in dispatchers.items():
+            if dispatcher.readable():
+                self._poller.register_readable(fd)
+            if dispatcher.writable():
+                self._poller.register_writable(fd)
+
+        timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
+        r, w = self._poller.poll(timeout)
+
+        for fd in r:
+            if fd in dispatchers:
+                try:
+                    dispatcher = dispatchers[fd]
+                    log.debug('read event caused by %r', dispatcher)
+                    dispatcher.handle_read_event()
+                    if not dispatcher.readable():
+                        self._poller.unregister_readable(fd)
+                except ExitNow:
+                    raise
+                except Exception:  # noqa
+                    dispatchers[fd].handle_error()
+            else:
+                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
+                # time, which may cause 100% cpu usage
+                log.debug('unexpected read event from fd %r', fd)
+                try:
+                    self._poller.unregister_readable(fd)
+                except Exception:  # noqa
+                    pass
+
+        for fd in w:
+            if fd in dispatchers:
+                try:
+                    dispatcher = dispatchers[fd]
+                    log.debug('write event caused by %r', dispatcher)
+                    dispatcher.handle_write_event()
+                    if not dispatcher.writable():
+                        self._poller.unregister_writable(fd)
+                except ExitNow:
+                    raise
+                except Exception:  # noqa
+                    dispatchers[fd].handle_error()
+            else:
+                log.debug('unexpected write event from fd %r', fd)
+                try:
+                    self._poller.unregister_writable(fd)
+                except Exception:  # noqa
+                    pass
 
 
 ########################################
-# ../supervisor.py
-
-
-##
-
-
-class ExitNow(Exception):  # noqa
-    pass
-
-
-def timeslice(period: int, when: float) -> int:
-    return int(when - (when % period))
-
-
-##
+# ../signals.py
 
 
 class SignalHandler:
@@ -6413,316 +6540,32 @@ class SignalHandler:
             log.debug('received %s indicating nothing', sig_name(sig))
 
 
-##
+########################################
+# ../spawning.py
 
 
-class SupervisorStateManagerImpl(SupervisorStateManager):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._state: SupervisorState = SupervisorState.RUNNING
-
-    @property
-    def state(self) -> SupervisorState:
-        return self._state
-
-    def set_state(self, state: SupervisorState) -> None:
-        self._state = state
+@dc.dataclass(frozen=True)
+class SpawnedProcess:
+    pid: Pid
+    pipes: ProcessPipes
+    dispatchers: Dispatchers
 
 
-##
-
-
-class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+class ProcessSpawnError(RuntimeError):
     pass
 
 
-class Supervisor:
-    def __init__(
-            self,
-            *,
-            config: ServerConfig,
-            poller: Poller,
-            process_groups: ProcessGroupManager,
-            signal_handler: SignalHandler,
-            event_callbacks: EventCallbacks,
-            process_group_factory: ProcessGroupFactory,
-            pid_history: PidHistory,
-            setup: SupervisorSetup,
-            states: SupervisorStateManager,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-        self._poller = poller
-        self._process_groups = process_groups
-        self._signal_handler = signal_handler
-        self._event_callbacks = event_callbacks
-        self._process_group_factory = process_group_factory
-        self._pid_history = pid_history
-        self._setup = setup
-        self._states = states
-
-        self._ticks: ta.Dict[int, float] = {}
-        self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
-        self._stopping = False  # set after we detect that we are handling a stop request
-        self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
-
-    #
-
+class ProcessSpawning:
     @property
-    def state(self) -> SupervisorState:
-        return self._states.state
+    @abc.abstractmethod
+    def process(self) -> Process:
+        raise NotImplementedError
 
     #
 
-    def add_process_group(self, config: ProcessGroupConfig) -> bool:
-        if self._process_groups.get(config.name) is not None:
-            return False
-
-        group = check_isinstance(self._process_group_factory(config), ProcessGroup)
-        for process in group:
-            process.after_setuid()
-
-        self._process_groups.add(group)
-
-        return True
-
-    def remove_process_group(self, name: str) -> bool:
-        if self._process_groups[name].get_unstopped_processes():
-            return False
-
-        self._process_groups.remove(name)
-
-        return True
-
-    #
-
-    def shutdown_report(self) -> ta.List[Process]:
-        unstopped: ta.List[Process] = []
-
-        for group in self._process_groups:
-            unstopped.extend(group.get_unstopped_processes())
-
-        if unstopped:
-            # throttle 'waiting for x to die' reports
-            now = time.time()
-            if now > (self._last_shutdown_report + 3):  # every 3 secs
-                names = [p.config.name for p in unstopped]
-                namestr = ', '.join(names)
-                log.info('waiting for %s to die', namestr)
-                self._last_shutdown_report = now
-                for proc in unstopped:
-                    log.debug('%s state: %s', proc.config.name, proc.state.name)
-
-        return unstopped
-
-    #
-
-    def main(self, **kwargs: ta.Any) -> None:
-        self._setup.setup()
-        try:
-            self.run(**kwargs)
-        finally:
-            self._setup.cleanup()
-
-    def run(
-            self,
-            *,
-            callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
-    ) -> None:
-        self._process_groups.clear()
-        self._stop_groups = None  # clear
-
-        self._event_callbacks.clear()
-
-        try:
-            for config in self._config.groups or []:
-                self.add_process_group(config)
-
-            self._signal_handler.set_signals()
-
-            self._event_callbacks.notify(SupervisorRunningEvent())
-
-            while True:
-                if callback is not None and not callback(self):
-                    break
-
-                self._run_once()
-
-        finally:
-            self._poller.close()
-
-    #
-
-    def _run_once(self) -> None:
-        self._poll()
-        self._reap()
-        self._signal_handler.handle_signals()
-        self._tick()
-
-        if self._states.state < SupervisorState.RUNNING:
-            self._ordered_stop_groups_phase_2()
-
-    def _ordered_stop_groups_phase_1(self) -> None:
-        if self._stop_groups:
-            # stop the last group (the one with the "highest" priority)
-            self._stop_groups[-1].stop_all()
-
-    def _ordered_stop_groups_phase_2(self) -> None:
-        # after phase 1 we've transitioned and reaped, let's see if we can remove the group we stopped from the
-        # stop_groups queue.
-        if self._stop_groups:
-            # pop the last group (the one with the "highest" priority)
-            group = self._stop_groups.pop()
-            if group.get_unstopped_processes():
-                # if any processes in the group aren't yet in a stopped state, we're not yet done shutting this group
-                # down, so push it back on to the end of the stop group queue
-                self._stop_groups.append(group)
-
-    def get_dispatchers(self) -> Dispatchers:
-        return Dispatchers(
-            d
-            for p in self._process_groups.all_processes()
-            for d in p.get_dispatchers()
-        )
-
-    def _poll(self) -> None:
-        dispatchers = self.get_dispatchers()
-
-        sorted_groups = list(self._process_groups)
-        sorted_groups.sort()
-
-        if self._states.state < SupervisorState.RUNNING:
-            if not self._stopping:
-                # first time, set the stopping flag, do a notification and set stop_groups
-                self._stopping = True
-                self._stop_groups = sorted_groups[:]
-                self._event_callbacks.notify(SupervisorStoppingEvent())
-
-            self._ordered_stop_groups_phase_1()
-
-            if not self.shutdown_report():
-                # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
-                raise ExitNow
-
-        for fd, dispatcher in dispatchers.items():
-            if dispatcher.readable():
-                self._poller.register_readable(fd)
-            if dispatcher.writable():
-                self._poller.register_writable(fd)
-
-        timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        r, w = self._poller.poll(timeout)
-
-        for fd in r:
-            if fd in dispatchers:
-                try:
-                    dispatcher = dispatchers[fd]
-                    log.debug('read event caused by %r', dispatcher)
-                    dispatcher.handle_read_event()
-                    if not dispatcher.readable():
-                        self._poller.unregister_readable(fd)
-                except ExitNow:
-                    raise
-                except Exception:  # noqa
-                    dispatchers[fd].handle_error()
-            else:
-                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
-                # time, which may cause 100% cpu usage
-                log.debug('unexpected read event from fd %r', fd)
-                try:
-                    self._poller.unregister_readable(fd)
-                except Exception:  # noqa
-                    pass
-
-        for fd in w:
-            if fd in dispatchers:
-                try:
-                    dispatcher = dispatchers[fd]
-                    log.debug('write event caused by %r', dispatcher)
-                    dispatcher.handle_write_event()
-                    if not dispatcher.writable():
-                        self._poller.unregister_writable(fd)
-                except ExitNow:
-                    raise
-                except Exception:  # noqa
-                    dispatchers[fd].handle_error()
-            else:
-                log.debug('unexpected write event from fd %r', fd)
-                try:
-                    self._poller.unregister_writable(fd)
-                except Exception:  # noqa
-                    pass
-
-        for group in sorted_groups:
-            for process in group:
-                process.transition()
-
-    def _reap(self, *, once: bool = False, depth: int = 0) -> None:
-        if depth >= 100:
-            return
-
-        wp = waitpid()
-        if wp is None or not wp.pid:
-            return
-
-        process = self._pid_history.get(wp.pid, None)
-        if process is None:
-            _, msg = decode_wait_status(wp.sts)
-            log.info('reaped unknown pid %s (%s)', wp.pid, msg)
-        else:
-            process.finish(wp.sts)
-            del self._pid_history[wp.pid]
-
-        if not once:
-            # keep reaping until no more kids to reap, but don't recurse infinitely
-            self._reap(once=False, depth=depth + 1)
-
-    def _tick(self, now: ta.Optional[float] = None) -> None:
-        """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
-
-        if now is None:
-            # now won't be None in unit tests
-            now = time.time()
-
-        for event in TICK_EVENTS:
-            period = event.period
-
-            last_tick = self._ticks.get(period)
-            if last_tick is None:
-                # we just started up
-                last_tick = self._ticks[period] = timeslice(period, now)
-
-            this_tick = timeslice(period, now)
-            if this_tick != last_tick:
-                self._ticks[period] = this_tick
-                self._event_callbacks.notify(event(this_tick, self))
-
-
-class WaitedPid(ta.NamedTuple):
-    pid: Pid
-    sts: Rc
-
-
-def waitpid() -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
-    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-    # lying around.
-    try:
-        pid, sts = os.waitpid(-1, os.WNOHANG)
-    except OSError as exc:
-        code = exc.args[0]
-        if code not in (errno.ECHILD, errno.EINTR):
-            log.critical('waitpid error %r; a process may not be cleaned up properly', code)
-        if code == errno.EINTR:
-            log.debug('EINTR during reap')
-        return None
-    else:
-        return WaitedPid(pid, sts)  # type: ignore
+    @abc.abstractmethod
+    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
+        raise NotImplementedError
 
 
 ########################################
@@ -7517,6 +7360,278 @@ def check_execv_args(
 
 
 ########################################
+# ../supervisor.py
+
+
+##
+
+
+def timeslice(period: int, when: float) -> int:
+    return int(when - (when % period))
+
+
+##
+
+
+class SupervisorStateManagerImpl(SupervisorStateManager):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._state: SupervisorState = SupervisorState.RUNNING
+
+    @property
+    def state(self) -> SupervisorState:
+        return self._state
+
+    def set_state(self, state: SupervisorState) -> None:
+        self._state = state
+
+
+##
+
+
+class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+    pass
+
+
+class Supervisor:
+    def __init__(
+            self,
+            *,
+            config: ServerConfig,
+            poller: Poller,
+            process_groups: ProcessGroupManager,
+            signal_handler: SignalHandler,
+            event_callbacks: EventCallbacks,
+            process_group_factory: ProcessGroupFactory,
+            pid_history: PidHistory,
+            setup: SupervisorSetup,
+            states: SupervisorStateManager,
+            io: IoManager,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._poller = poller
+        self._process_groups = process_groups
+        self._signal_handler = signal_handler
+        self._event_callbacks = event_callbacks
+        self._process_group_factory = process_group_factory
+        self._pid_history = pid_history
+        self._setup = setup
+        self._states = states
+        self._io = io
+
+        self._ticks: ta.Dict[int, float] = {}
+        self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
+        self._stopping = False  # set after we detect that we are handling a stop request
+        self._last_shutdown_report = 0.  # throttle for delayed process error reports at stop
+
+    #
+
+    @property
+    def state(self) -> SupervisorState:
+        return self._states.state
+
+    #
+
+    def add_process_group(self, config: ProcessGroupConfig) -> bool:
+        if self._process_groups.get(config.name) is not None:
+            return False
+
+        group = check_isinstance(self._process_group_factory(config), ProcessGroup)
+        for process in group:
+            process.after_setuid()
+
+        self._process_groups.add(group)
+
+        return True
+
+    def remove_process_group(self, name: str) -> bool:
+        if self._process_groups[name].get_unstopped_processes():
+            return False
+
+        self._process_groups.remove(name)
+
+        return True
+
+    #
+
+    def shutdown_report(self) -> ta.List[Process]:
+        unstopped: ta.List[Process] = []
+
+        for group in self._process_groups:
+            unstopped.extend(group.get_unstopped_processes())
+
+        if unstopped:
+            # throttle 'waiting for x to die' reports
+            now = time.time()
+            if now > (self._last_shutdown_report + 3):  # every 3 secs
+                names = [p.config.name for p in unstopped]
+                namestr = ', '.join(names)
+                log.info('waiting for %s to die', namestr)
+                self._last_shutdown_report = now
+                for proc in unstopped:
+                    log.debug('%s state: %s', proc.config.name, proc.state.name)
+
+        return unstopped
+
+    #
+
+    def main(self, **kwargs: ta.Any) -> None:
+        self._setup.setup()
+        try:
+            self.run(**kwargs)
+        finally:
+            self._setup.cleanup()
+
+    def run(
+            self,
+            *,
+            callback: ta.Optional[ta.Callable[['Supervisor'], bool]] = None,
+    ) -> None:
+        self._process_groups.clear()
+        self._stop_groups = None  # clear
+
+        self._event_callbacks.clear()
+
+        try:
+            for config in self._config.groups or []:
+                self.add_process_group(config)
+
+            self._signal_handler.set_signals()
+
+            self._event_callbacks.notify(SupervisorRunningEvent())
+
+            while True:
+                if callback is not None and not callback(self):
+                    break
+
+                self._run_once()
+
+        finally:
+            self._poller.close()
+
+    #
+
+    def _run_once(self) -> None:
+        self._poll()
+        self._reap()
+        self._signal_handler.handle_signals()
+        self._tick()
+
+        if self._states.state < SupervisorState.RUNNING:
+            self._ordered_stop_groups_phase_2()
+
+    def _ordered_stop_groups_phase_1(self) -> None:
+        if self._stop_groups:
+            # stop the last group (the one with the "highest" priority)
+            self._stop_groups[-1].stop_all()
+
+    def _ordered_stop_groups_phase_2(self) -> None:
+        # after phase 1 we've transitioned and reaped, let's see if we can remove the group we stopped from the
+        # stop_groups queue.
+        if self._stop_groups:
+            # pop the last group (the one with the "highest" priority)
+            group = self._stop_groups.pop()
+            if group.get_unstopped_processes():
+                # if any processes in the group aren't yet in a stopped state, we're not yet done shutting this group
+                # down, so push it back on to the end of the stop group queue
+                self._stop_groups.append(group)
+
+    def _poll(self) -> None:
+        sorted_groups = list(self._process_groups)
+        sorted_groups.sort()
+
+        if self._states.state < SupervisorState.RUNNING:
+            if not self._stopping:
+                # first time, set the stopping flag, do a notification and set stop_groups
+                self._stopping = True
+                self._stop_groups = sorted_groups[:]
+                self._event_callbacks.notify(SupervisorStoppingEvent())
+
+            self._ordered_stop_groups_phase_1()
+
+            if not self.shutdown_report():
+                # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
+                raise ExitNow
+
+        self._io.poll()
+
+        for group in sorted_groups:
+            for process in group:
+                process.transition()
+
+    def _reap(self, *, once: bool = False, depth: int = 0) -> None:
+        if depth >= 100:
+            return
+
+        wp = waitpid()
+        if wp is None or not wp.pid:
+            return
+
+        process = self._pid_history.get(wp.pid, None)
+        if process is None:
+            _, msg = decode_wait_status(wp.sts)
+            log.info('reaped unknown pid %s (%s)', wp.pid, msg)
+        else:
+            process.finish(wp.sts)
+            del self._pid_history[wp.pid]
+
+        if not once:
+            # keep reaping until no more kids to reap, but don't recurse infinitely
+            self._reap(once=False, depth=depth + 1)
+
+    def _tick(self, now: ta.Optional[float] = None) -> None:
+        """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
+
+        if now is None:
+            # now won't be None in unit tests
+            now = time.time()
+
+        for event in TICK_EVENTS:
+            period = event.period
+
+            last_tick = self._ticks.get(period)
+            if last_tick is None:
+                # we just started up
+                last_tick = self._ticks[period] = timeslice(period, now)
+
+            this_tick = timeslice(period, now)
+            if this_tick != last_tick:
+                self._ticks[period] = this_tick
+                self._event_callbacks.notify(event(this_tick, self))
+
+
+##
+
+
+class WaitedPid(ta.NamedTuple):
+    pid: Pid
+    sts: Rc
+
+
+def waitpid() -> ta.Optional[WaitedPid]:
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
+    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
+    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
+    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
+    # lying around.
+    try:
+        pid, sts = os.waitpid(-1, os.WNOHANG)
+    except OSError as exc:
+        code = exc.args[0]
+        if code not in (errno.ECHILD, errno.EINTR):
+            log.critical('waitpid error %r; a process may not be cleaned up properly', code)
+        if code == errno.EINTR:
+            log.debug('EINTR during reap')
+        return None
+    else:
+        return WaitedPid(pid, sts)  # type: ignore
+
+
+########################################
 # ../inject.py
 
 
@@ -7540,7 +7655,10 @@ def bind_server(
 
         inj.bind(SignalReceiver, singleton=True),
 
+        inj.bind(IoManager, singleton=True),
+
         inj.bind(SignalHandler, singleton=True),
+
         inj.bind(ProcessGroupManager, singleton=True),
 
         inj.bind(Supervisor, singleton=True),

@@ -45,8 +45,8 @@ from .configs import prepare_server_config
 from .inject import bind_server
 from .spawningimpl import InheritedFds
 from .states import SupervisorState
-from .supervisor import ExitNow
 from .supervisor import Supervisor
+from .types import ExitNow
 from .types import ServerEpoch
 from .utils.fds import get_open_fds
 
