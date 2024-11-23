@@ -2630,7 +2630,6 @@ class HttpRequestParser:
 # ../../../omlish/lite/inject.py
 """
 TODO:
- - recursion detection
  - bind empty array
 """
 
