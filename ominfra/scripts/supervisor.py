@@ -2091,13 +2091,6 @@ def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
         return s.encode(encoding)
 
 
-def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
-    if isinstance(s, str):
-        return s
-    else:
-        return s.decode(encoding)
-
-
 def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
@@ -6542,7 +6535,7 @@ class Supervisor:
             # throttle 'waiting for x to die' reports
             now = time.time()
             if now > (self._last_shutdown_report + 3):  # every 3 secs
-                names = [as_string(p.config.name) for p in unstopped]
+                names = [p.config.name for p in unstopped]
                 namestr = ', '.join(names)
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
@@ -6830,10 +6823,8 @@ class ProcessImpl(Process):
     #
 
     def spawn(self) -> ta.Optional[Pid]:
-        process_name = as_string(self._config.name)
-
         if self.pid:
-            log.warning('process \'%s\' already running', process_name)
+            log.warning('process \'%s\' already running', self.name)
             return None
 
         self.check_in_state(
@@ -6956,7 +6947,7 @@ class ProcessImpl(Process):
             self._check_and_adjust_for_system_clock_rollback(now)
 
             if now > (self._last_stop_report + 2):  # every 2 seconds
-                log.info('waiting for %s to stop', as_string(self._config.name))
+                log.info('waiting for %s to stop', self.name)
                 self._last_stop_report = now
 
     def give_up(self) -> None:
@@ -6976,18 +6967,17 @@ class ProcessImpl(Process):
         """
         now = time.time()
 
-        process_name = as_string(self._config.name)
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
         # if startretries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
-            log.debug('Attempted to kill %s, which is in BACKOFF state.', process_name)
+            log.debug('Attempted to kill %s, which is in BACKOFF state.', self.name)
             self.change_state(ProcessState.STOPPED)
             return None
 
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (process_name, sig_name(sig))
+            fmt, args = "attempted to kill %s with sig %s but it wasn't running", (self.name, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
@@ -7001,7 +6991,7 @@ class ProcessImpl(Process):
         if killasgroup:
             as_group = 'process group '
 
-        log.debug('killing %s (pid %s) %s with signal %s', process_name, self.pid, as_group, sig_name(sig))
+        log.debug('killing %s (pid %s) %s with signal %s', self.name, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
@@ -7020,14 +7010,14 @@ class ProcessImpl(Process):
                 os.kill(kpid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
-                    log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', process_name, self.pid, str(exc))  # noqa
+                    log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', self.name, self.pid, str(exc))  # noqa
                     # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
                     # processing.
                     return None
                 raise
         except Exception:  # noqa
             tb = traceback.format_exc()
-            fmt, args = 'unknown problem killing %s (%s):%s', (process_name, self.pid, tb)
+            fmt, args = 'unknown problem killing %s (%s):%s', (self.name, self.pid, tb)
             log.critical(fmt, *args)
             self.change_state(ProcessState.UNKNOWN)
             self._killing = False
@@ -7043,14 +7033,13 @@ class ProcessImpl(Process):
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
-        process_name = as_string(self._config.name)
         args: tuple
         if not self.pid:
-            fmt, args = "attempted to send %s sig %s but it wasn't running", (process_name, sig_name(sig))
+            fmt, args = "Attempted to send %s sig %s but it wasn't running", (self.name, sig_name(sig))
             log.debug(fmt, *args)
             return fmt % args
 
-        log.debug('sending %s (pid %s) sig %s', process_name, self.pid, sig_name(sig))
+        log.debug('sending %s (pid %s) sig %s', self.name, self.pid, sig_name(sig))
 
         self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
@@ -7061,7 +7050,7 @@ class ProcessImpl(Process):
                 if exc.errno == errno.ESRCH:
                     log.debug(
                         'unable to signal %s (pid %s), it probably just now exited on its own: %s',
-                        process_name,
+                        self.name,
                         self.pid,
                         str(exc),
                     )
@@ -7071,7 +7060,7 @@ class ProcessImpl(Process):
                 raise
         except Exception:  # noqa
             tb = traceback.format_exc()
-            fmt, args = 'unknown problem sending sig %s (%s):%s', (process_name, self.pid, tb)
+            fmt, args = 'unknown problem sending sig %s (%s):%s', (self.name, self.pid, tb)
             log.critical(fmt, *args)
             self.change_state(ProcessState.UNKNOWN)
             return fmt % args
@@ -7090,7 +7079,6 @@ class ProcessImpl(Process):
         self._check_and_adjust_for_system_clock_rollback(now)
 
         self._last_stop = now
-        process_name = as_string(self._config.name)
 
         if now > self._last_start:
             too_quickly = now - self._last_start < self._config.startsecs
@@ -7099,7 +7087,7 @@ class ProcessImpl(Process):
             log.warning(
                 "process '%s' (%s) last_start time is in the future, don't know how long process was running so "
                 "assuming it did not exit too quickly",
-                process_name,
+                self.name,
                 self.pid,
             )
 
@@ -7111,7 +7099,7 @@ class ProcessImpl(Process):
             self._delay = 0
             self._exitstatus = Rc(es)
 
-            fmt, args = 'stopped: %s (%s)', (process_name, msg)
+            fmt, args = 'stopped: %s (%s)', (self.name, msg)
             self.check_in_state(ProcessState.STOPPING)
             self.change_state(ProcessState.STOPPED)
             if exit_expected:
@@ -7125,7 +7113,7 @@ class ProcessImpl(Process):
             self._spawn_err = 'Exited too quickly (process log may have details)'
             self.check_in_state(ProcessState.STARTING)
             self.change_state(ProcessState.BACKOFF)
-            log.warning('exited: %s (%s)', process_name, msg + '; not expected')
+            log.warning('exited: %s (%s)', self.name, msg + '; not expected')
 
         else:
             # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
@@ -7144,12 +7132,12 @@ class ProcessImpl(Process):
             if exit_expected:
                 # expected exit code
                 self.change_state(ProcessState.EXITED, expected=True)
-                log.info('exited: %s (%s)', process_name, msg + '; expected')
+                log.info('exited: %s (%s)', self.name, msg + '; expected')
             else:
                 # unexpected exit code
                 self._spawn_err = f'Bad exit code {es}'
                 self.change_state(ProcessState.EXITED, expected=False)
-                log.warning('exited: %s (%s)', process_name, msg + '; not expected')
+                log.warning('exited: %s (%s)', self.name, msg + '; not expected')
 
         self._pid = Pid(0)
         close_parent_pipes(self._pipes)
@@ -7189,7 +7177,6 @@ class ProcessImpl(Process):
                         # BACKOFF -> STARTING
                         self.spawn()
 
-        process_name = as_string(self._config.name)
         if state == ProcessState.STARTING:
             if now - self._last_start > self._config.startsecs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
@@ -7199,21 +7186,21 @@ class ProcessImpl(Process):
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
-                logger.info('success: %s %s', process_name, msg)
+                logger.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
             if self._backoff > self._config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
-                logger.info('gave up: %s %s', process_name, msg)
+                logger.info('gave up: %s %s', self.name, msg)
 
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
-                log.warning('killing \'%s\' (%s) with SIGKILL', process_name, self.pid)
+                log.warning('killing \'%s\' (%s) with SIGKILL', self.name, self.pid)
                 self.kill(signal.SIGKILL)
 
     def after_setuid(self) -> None:
