@@ -11,7 +11,7 @@ from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
 from .configs import ProcessConfig
-from .datatypes import RestartUnconditionally
+from .configs import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks

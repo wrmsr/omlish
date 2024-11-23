@@ -43,10 +43,10 @@ from .configs import ServerConfig
 from .configs import prepare_server_config
 from .context import ServerContextImpl
 from .context import ServerEpoch
-from .datatypes import ExitNow
 from .inject import bind_server
 from .spawningimpl import InheritedFds
 from .states import SupervisorState
+from .supervisor import ExitNow
 from .supervisor import Supervisor
 from .utils.fds import get_open_fds
 
