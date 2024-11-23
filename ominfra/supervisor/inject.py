@@ -12,6 +12,7 @@ from .events import EventCallbacks
 from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
+from .io import HasDispatchersList
 from .io import IoManager
 from .poller import Poller
 from .poller import get_poller_impl
@@ -31,6 +32,7 @@ from .spawningimpl import ProcessSpawningImpl
 from .supervisor import ProcessGroupFactory
 from .supervisor import Supervisor
 from .supervisor import SupervisorStateManagerImpl
+from .types import HasDispatchers
 from .types import ServerEpoch
 from .types import SupervisorStateManager
 from .utils.signals import SignalReceiver
@@ -58,10 +60,12 @@ def bind_server(
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(IoManager, singleton=True),
+        inj.bind_array_type(HasDispatchers, HasDispatchersList),
 
         inj.bind(SignalHandler, singleton=True),
 
         inj.bind(ProcessGroupManager, singleton=True),
+        inj.bind(HasDispatchers, array=True, to_key=ProcessGroupManager),
 
         inj.bind(Supervisor, singleton=True),
 

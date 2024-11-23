@@ -5986,79 +5986,6 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
 
 
 ########################################
-# ../groups.py
-
-
-class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):
-    def __init__(
-            self,
-            *,
-            event_callbacks: EventCallbacks,
-    ) -> None:
-        super().__init__()
-
-        self._event_callbacks = event_callbacks
-
-        self._by_name: ta.Dict[str, ProcessGroup] = {}
-
-    @property
-    def _by_key(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
-
-    #
-
-    def all_processes(self) -> ta.Iterator[Process]:
-        for g in self:
-            yield from g
-
-    #
-
-    def add(self, group: ProcessGroup) -> None:
-        if (name := group.name) in self._by_name:
-            raise KeyError(f'Process group already exists: {name}')
-
-        self._by_name[name] = group
-
-        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
-
-    def remove(self, name: str) -> None:
-        group = self._by_name[name]
-
-        group.before_remove()
-
-        del self._by_name[name]
-
-        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
-
-    def clear(self) -> None:
-        # FIXME: events?
-        self._by_name.clear()
-
-    #
-
-    class Diff(ta.NamedTuple):
-        added: ta.List[ProcessGroupConfig]
-        changed: ta.List[ProcessGroupConfig]
-        removed: ta.List[ProcessGroupConfig]
-
-    def diff(self, new: ta.Sequence[ProcessGroupConfig]) -> Diff:
-        cur = [group.config for group in self]
-
-        cur_by_name = {cfg.name: cfg for cfg in cur}
-        new_by_name = {cfg.name: cfg for cfg in new}
-
-        added = [cand for cand in new if cand.name not in cur_by_name]
-        removed = [cand for cand in cur if cand.name not in new_by_name]
-        changed = [cand for cand in new if cand != cur_by_name.get(cand.name, cand)]
-
-        return ProcessGroupManager.Diff(
-            added,
-            changed,
-            removed,
-        )
-
-
-########################################
 # ../groupsimpl.py
 
 
@@ -6403,29 +6330,118 @@ class SupervisorSetupImpl(SupervisorSetup):
 
 
 ########################################
+# ../groups.py
+
+
+class ProcessGroupManager(
+    KeyedCollectionAccessors[str, ProcessGroup],
+    HasDispatchers,
+):
+    def __init__(
+            self,
+            *,
+            event_callbacks: EventCallbacks,
+    ) -> None:
+        super().__init__()
+
+        self._event_callbacks = event_callbacks
+
+        self._by_name: ta.Dict[str, ProcessGroup] = {}
+
+    @property
+    def _by_key(self) -> ta.Mapping[str, ProcessGroup]:
+        return self._by_name
+
+    #
+
+    def all_processes(self) -> ta.Iterator[Process]:
+        for g in self:
+            yield from g
+
+    #
+
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for g in self
+            for p in g
+            for d in p.get_dispatchers()
+        )
+
+    #
+
+    def add(self, group: ProcessGroup) -> None:
+        if (name := group.name) in self._by_name:
+            raise KeyError(f'Process group already exists: {name}')
+
+        self._by_name[name] = group
+
+        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
+
+    def remove(self, name: str) -> None:
+        group = self._by_name[name]
+
+        group.before_remove()
+
+        del self._by_name[name]
+
+        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+
+    def clear(self) -> None:
+        # FIXME: events?
+        self._by_name.clear()
+
+    #
+
+    class Diff(ta.NamedTuple):
+        added: ta.List[ProcessGroupConfig]
+        changed: ta.List[ProcessGroupConfig]
+        removed: ta.List[ProcessGroupConfig]
+
+    def diff(self, new: ta.Sequence[ProcessGroupConfig]) -> Diff:
+        cur = [group.config for group in self]
+
+        cur_by_name = {cfg.name: cfg for cfg in cur}
+        new_by_name = {cfg.name: cfg for cfg in new}
+
+        added = [cand for cand in new if cand.name not in cur_by_name]
+        removed = [cand for cand in cur if cand.name not in new_by_name]
+        changed = [cand for cand in new if cand != cur_by_name.get(cand.name, cand)]
+
+        return ProcessGroupManager.Diff(
+            added,
+            changed,
+            removed,
+        )
+
+
+########################################
 # ../io.py
 
 
 ##
 
 
-class IoManager:
+HasDispatchersList = ta.NewType('HasDispatchersList', ta.Sequence[HasDispatchers])
+
+
+class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
             poller: Poller,
-            process_groups: ProcessGroupManager,
+            has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
 
         self._poller = poller
-        self._process_groups = process_groups
+        self._has_dispatchers_list = has_dispatchers_list
 
     def get_dispatchers(self) -> Dispatchers:
         return Dispatchers(
             d
-            for p in self._process_groups.all_processes()
-            for d in p.get_dispatchers()
+            for hd in self._has_dispatchers_list
+            for d in hd.get_dispatchers()
         )
 
     def poll(self) -> None:
@@ -6479,65 +6495,6 @@ class IoManager:
                     self._poller.unregister_writable(fd)
                 except Exception:  # noqa
                     pass
-
-
-########################################
-# ../signals.py
-
-
-class SignalHandler:
-    def __init__(
-            self,
-            *,
-            states: SupervisorStateManager,
-            signal_receiver: SignalReceiver,
-            process_groups: ProcessGroupManager,
-    ) -> None:
-        super().__init__()
-
-        self._states = states
-        self._signal_receiver = signal_receiver
-        self._process_groups = process_groups
-
-    def set_signals(self) -> None:
-        self._signal_receiver.install(
-            signal.SIGTERM,
-            signal.SIGINT,
-            signal.SIGQUIT,
-            signal.SIGHUP,
-            signal.SIGCHLD,
-            signal.SIGUSR2,
-        )
-
-    def handle_signals(self) -> None:
-        sig = self._signal_receiver.get_signal()
-        if not sig:
-            return
-
-        if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-            log.warning('received %s indicating exit request', sig_name(sig))
-            self._states.set_state(SupervisorState.SHUTDOWN)
-
-        elif sig == signal.SIGHUP:
-            if self._states.state == SupervisorState.SHUTDOWN:
-                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
-            else:
-                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
-                self._states.set_state(SupervisorState.RESTARTING)
-
-        elif sig == signal.SIGCHLD:
-            log.debug('received %s indicating a child quit', sig_name(sig))
-
-        elif sig == signal.SIGUSR2:
-            log.info('received %s indicating log reopen request', sig_name(sig))
-
-            for p in self._process_groups.all_processes():
-                for d in p.get_dispatchers():
-                    if isinstance(d, ProcessOutputDispatcher):
-                        d.reopen_logs()
-
-        else:
-            log.debug('received %s indicating nothing', sig_name(sig))
 
 
 ########################################
@@ -7047,6 +7004,65 @@ class ProcessImpl(Process):
         # if self.stderr_logfile is Automatic:
         #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
         pass
+
+
+########################################
+# ../signals.py
+
+
+class SignalHandler:
+    def __init__(
+            self,
+            *,
+            states: SupervisorStateManager,
+            signal_receiver: SignalReceiver,
+            process_groups: ProcessGroupManager,
+    ) -> None:
+        super().__init__()
+
+        self._states = states
+        self._signal_receiver = signal_receiver
+        self._process_groups = process_groups
+
+    def set_signals(self) -> None:
+        self._signal_receiver.install(
+            signal.SIGTERM,
+            signal.SIGINT,
+            signal.SIGQUIT,
+            signal.SIGHUP,
+            signal.SIGCHLD,
+            signal.SIGUSR2,
+        )
+
+    def handle_signals(self) -> None:
+        sig = self._signal_receiver.get_signal()
+        if not sig:
+            return
+
+        if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
+            log.warning('received %s indicating exit request', sig_name(sig))
+            self._states.set_state(SupervisorState.SHUTDOWN)
+
+        elif sig == signal.SIGHUP:
+            if self._states.state == SupervisorState.SHUTDOWN:
+                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
+            else:
+                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
+                self._states.set_state(SupervisorState.RESTARTING)
+
+        elif sig == signal.SIGCHLD:
+            log.debug('received %s indicating a child quit', sig_name(sig))
+
+        elif sig == signal.SIGUSR2:
+            log.info('received %s indicating log reopen request', sig_name(sig))
+
+            for p in self._process_groups.all_processes():
+                for d in p.get_dispatchers():
+                    if isinstance(d, ProcessOutputDispatcher):
+                        d.reopen_logs()
+
+        else:
+            log.debug('received %s indicating nothing', sig_name(sig))
 
 
 ########################################
@@ -7656,10 +7672,12 @@ def bind_server(
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(IoManager, singleton=True),
+        inj.bind_array_type(HasDispatchers, HasDispatchersList),
 
         inj.bind(SignalHandler, singleton=True),
 
         inj.bind(ProcessGroupManager, singleton=True),
+        inj.bind(HasDispatchers, array=True, to_key=ProcessGroupManager),
 
         inj.bind(Supervisor, singleton=True),
 
