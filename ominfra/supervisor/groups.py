@@ -2,15 +2,20 @@
 import typing as ta
 
 from .configs import ProcessGroupConfig
+from .dispatchers import Dispatchers
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
+from .types import HasDispatchers
 from .types import Process
 from .types import ProcessGroup
 from .utils.collections import KeyedCollectionAccessors
 
 
-class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):
+class ProcessGroupManager(
+    KeyedCollectionAccessors[str, ProcessGroup],
+    HasDispatchers,
+):
     def __init__(
             self,
             *,
@@ -31,6 +36,16 @@ class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):
     def all_processes(self) -> ta.Iterator[Process]:
         for g in self:
             yield from g
+
+    #
+
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for g in self
+            for p in g
+            for d in p.get_dispatchers()
+        )
 
     #
 

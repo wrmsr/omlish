@@ -1,32 +1,37 @@
 # ruff: noqa: UP006 UP007
+import typing as ta
+
 from omlish.lite.logs import log
 
 from .dispatchers import Dispatchers
-from .groups import ProcessGroupManager
 from .poller import Poller
 from .types import ExitNow
+from .types import HasDispatchers
 
 
 ##
 
 
-class IoManager:
+HasDispatchersList = ta.NewType('HasDispatchersList', ta.Sequence[HasDispatchers])
+
+
+class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
             poller: Poller,
-            process_groups: ProcessGroupManager,
+            has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
 
         self._poller = poller
-        self._process_groups = process_groups
+        self._has_dispatchers_list = has_dispatchers_list
 
     def get_dispatchers(self) -> Dispatchers:
         return Dispatchers(
             d
-            for p in self._process_groups.all_processes()
-            for d in p.get_dispatchers()
+            for hd in self._has_dispatchers_list
+            for d in hd.get_dispatchers()
         )
 
     def poll(self) -> None:
