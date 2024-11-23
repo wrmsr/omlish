@@ -34,14 +34,14 @@ from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
+from .utils.diag import compact_traceback
 from .utils.fds import close_fd
 from .utils.fs import get_path
+from .utils.os import real_exit
 from .utils.ostypes import Fd
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
 from .utils.strings import as_bytes
-from .utils.utils import compact_traceback
-from .utils.utils import real_exit
 
 
 class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):

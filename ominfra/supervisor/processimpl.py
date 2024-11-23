@@ -26,10 +26,10 @@ from .types import InputDispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
+from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
 from .utils.signals import sig_name
-from .utils.utils import decode_wait_status
 
 
 class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
