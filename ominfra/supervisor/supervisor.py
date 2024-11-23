@@ -20,14 +20,14 @@ from .groups import ProcessGroupManager
 from .poller import Poller
 from .process import PidHistory
 from .setup import SupervisorSetup
-from .signals import SignalReceiver
-from .signals import sig_name
 from .states import SupervisorState
 from .types import OutputDispatcher
 from .types import Process
-from .utils import ExitNow
-from .utils import decode_wait_status
-from .utils import timeslice
+from .utils.signals import SignalReceiver
+from .utils.signals import sig_name
+from .utils.utils import ExitNow
+from .utils.utils import decode_wait_status
+from .utils.utils import timeslice
 
 
 ##

@@ -2,7 +2,7 @@
 import abc
 import typing as ta
 
-from .users import User
+from .utils.users import User
 
 
 ##

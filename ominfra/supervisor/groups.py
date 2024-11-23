@@ -1,13 +1,13 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from .collections import KeyedCollectionAccessors
 from .configs import ProcessGroupConfig
 from .events import EventCallbacks
 from .events import ProcessGroupAddedEvent
 from .events import ProcessGroupRemovedEvent
 from .types import Process
 from .types import ProcessGroup
+from .utils.collections import KeyedCollectionAccessors
 
 
 class ProcessGroupManager(KeyedCollectionAccessors[str, ProcessGroup]):

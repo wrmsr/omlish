@@ -47,8 +47,8 @@ from .inject import bind_server
 from .spawningimpl import InheritedFds
 from .states import SupervisorState
 from .supervisor import Supervisor
-from .utils import ExitNow
-from .utils import get_open_fds
+from .utils.utils import ExitNow
+from .utils.utils import get_open_fds
 
 
 ##

@@ -6,13 +6,13 @@ import typing as ta
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
-from .ostypes import Pid
-from .ostypes import Rc
 from .poller import Poller
 from .states import SupervisorState
 from .types import ServerContext
 from .types import ServerEpoch
-from .utils import mktempfile
+from .utils.ostypes import Pid
+from .utils.ostypes import Rc
+from .utils.utils import mktempfile
 
 
 class ServerContextImpl(ServerContext):

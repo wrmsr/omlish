@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007
-from .collections import KeyedCollection
-from .ostypes import Fd
 from .types import Dispatcher
 from .types import OutputDispatcher
+from .utils.collections import KeyedCollection
+from .utils.ostypes import Fd
 
 
 class Dispatchers(KeyedCollection[Fd, Dispatcher]):
