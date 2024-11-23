@@ -24,13 +24,6 @@ def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
         return s.encode(encoding)
 
 
-def as_string(s: ta.Union[str, bytes], encoding: str = 'utf8') -> str:
-    if isinstance(s, str):
-        return s
-    else:
-        return s.decode(encoding)
-
-
 def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
