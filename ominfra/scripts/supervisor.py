@@ -95,7 +95,7 @@ TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
-# ../collections.py
+# ../utils/collections.py
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
@@ -953,55 +953,6 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 ########################################
-# ../collections.py
-
-
-class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
-    @property
-    @abc.abstractmethod
-    def _by_key(self) -> ta.Mapping[K, V]:
-        raise NotImplementedError
-
-    def __iter__(self) -> ta.Iterator[V]:
-        return iter(self._by_key.values())
-
-    def __len__(self) -> int:
-        return len(self._by_key)
-
-    def __contains__(self, key: K) -> bool:
-        return key in self._by_key
-
-    def __getitem__(self, key: K) -> V:
-        return self._by_key[key]
-
-    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
-        return self._by_key.get(key, default)
-
-    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
-        return iter(self._by_key.items())
-
-
-class KeyedCollection(KeyedCollectionAccessors[K, V]):
-    def __init__(self, items: ta.Iterable[V]) -> None:
-        super().__init__()
-
-        by_key: ta.Dict[K, V] = {}
-        for v in items:
-            if (k := self._key(v)) in by_key:
-                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
-            by_key[k] = v
-        self.__by_key = by_key
-
-    @property
-    def _by_key(self) -> ta.Mapping[K, V]:
-        return self.__by_key
-
-    @abc.abstractmethod
-    def _key(self, v: V) -> K:
-        raise NotImplementedError
-
-
-########################################
 # ../datatypes.py
 
 
@@ -1145,15 +1096,6 @@ class NoPermissionError(ProcessError):
 
 
 ########################################
-# ../ostypes.py
-
-
-Fd = ta.NewType('Fd', int)
-Pid = ta.NewType('Pid', int)
-Rc = ta.NewType('Rc', int)
-
-
-########################################
 # ../privileges.py
 
 
@@ -1218,67 +1160,6 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
 
 
 ########################################
-# ../signals.py
-
-
-##
-
-
-_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
-_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
-
-
-def sig_num(value: ta.Union[int, str]) -> int:
-    try:
-        num = int(value)
-
-    except (ValueError, TypeError):
-        name = value.strip().upper()  # type: ignore
-        if not name.startswith('SIG'):
-            name = f'SIG{name}'
-
-        if (sn := _SIGS_BY_NAME.get(name)) is None:
-            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
-        num = sn
-
-    if num not in _SIGS_BY_NUM:
-        raise ValueError(f'value {value!r} is not a valid signal number')
-
-    return num
-
-
-def sig_name(num: int) -> str:
-    if (sig := _SIGS_BY_NUM.get(num)) is not None:
-        return sig.name
-    return f'signal {sig}'
-
-
-##
-
-
-class SignalReceiver:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._signals_recvd: ta.List[int] = []
-
-    def receive(self, sig: int, frame: ta.Any = None) -> None:
-        if sig not in self._signals_recvd:
-            self._signals_recvd.append(sig)
-
-    def install(self, *sigs: int) -> None:
-        for sig in sigs:
-            signal.signal(sig, self.receive)
-
-    def get_signal(self) -> ta.Optional[int]:
-        if self._signals_recvd:
-            sig = self._signals_recvd.pop(0)
-        else:
-            sig = None
-        return sig
-
-
-########################################
 # ../states.py
 
 
@@ -1339,7 +1220,126 @@ class SupervisorState(enum.IntEnum):
 
 
 ########################################
-# ../users.py
+# ../utils/collections.py
+
+
+class KeyedCollectionAccessors(abc.ABC, ta.Generic[K, V]):
+    @property
+    @abc.abstractmethod
+    def _by_key(self) -> ta.Mapping[K, V]:
+        raise NotImplementedError
+
+    def __iter__(self) -> ta.Iterator[V]:
+        return iter(self._by_key.values())
+
+    def __len__(self) -> int:
+        return len(self._by_key)
+
+    def __contains__(self, key: K) -> bool:
+        return key in self._by_key
+
+    def __getitem__(self, key: K) -> V:
+        return self._by_key[key]
+
+    def get(self, key: K, default: ta.Optional[V] = None) -> ta.Optional[V]:
+        return self._by_key.get(key, default)
+
+    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:
+        return iter(self._by_key.items())
+
+
+class KeyedCollection(KeyedCollectionAccessors[K, V]):
+    def __init__(self, items: ta.Iterable[V]) -> None:
+        super().__init__()
+
+        by_key: ta.Dict[K, V] = {}
+        for v in items:
+            if (k := self._key(v)) in by_key:
+                raise KeyError(f'key {k} of {v} already registered by {by_key[k]}')
+            by_key[k] = v
+        self.__by_key = by_key
+
+    @property
+    def _by_key(self) -> ta.Mapping[K, V]:
+        return self.__by_key
+
+    @abc.abstractmethod
+    def _key(self, v: V) -> K:
+        raise NotImplementedError
+
+
+########################################
+# ../utils/ostypes.py
+
+
+Fd = ta.NewType('Fd', int)
+Pid = ta.NewType('Pid', int)
+Rc = ta.NewType('Rc', int)
+
+
+########################################
+# ../utils/signals.py
+
+
+##
+
+
+_SIGS_BY_NUM: ta.Mapping[int, signal.Signals] = {s.value: s for s in signal.Signals}
+_SIGS_BY_NAME: ta.Mapping[str, signal.Signals] = {s.name: s for s in signal.Signals}
+
+
+def sig_num(value: ta.Union[int, str]) -> int:
+    try:
+        num = int(value)
+
+    except (ValueError, TypeError):
+        name = value.strip().upper()  # type: ignore
+        if not name.startswith('SIG'):
+            name = f'SIG{name}'
+
+        if (sn := _SIGS_BY_NAME.get(name)) is None:
+            raise ValueError(f'value {value!r} is not a valid signal name')  # noqa
+        num = sn
+
+    if num not in _SIGS_BY_NUM:
+        raise ValueError(f'value {value!r} is not a valid signal number')
+
+    return num
+
+
+def sig_name(num: int) -> str:
+    if (sig := _SIGS_BY_NUM.get(num)) is not None:
+        return sig.name
+    return f'signal {sig}'
+
+
+##
+
+
+class SignalReceiver:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._signals_recvd: ta.List[int] = []
+
+    def receive(self, sig: int, frame: ta.Any = None) -> None:
+        if sig not in self._signals_recvd:
+            self._signals_recvd.append(sig)
+
+    def install(self, *sigs: int) -> None:
+        for sig in sigs:
+            signal.signal(sig, self.receive)
+
+    def get_signal(self) -> ta.Optional[int]:
+        if self._signals_recvd:
+            sig = self._signals_recvd.pop(0)
+        else:
+            sig = None
+        return sig
+
+
+########################################
+# ../utils/users.py
 
 
 ##
@@ -2078,7 +2078,7 @@ class SupervisorSetup(abc.ABC):
 
 
 ########################################
-# ../utils.py
+# ../utils/utils.py
 
 
 ##
