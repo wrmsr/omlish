@@ -105,17 +105,6 @@ class Dispatcher(abc.ABC):
     def handle_write_event(self) -> None:
         raise TypeError
 
-    #
-
-    def handle_connect(self) -> None:
-        raise TypeError
-
-    def handle_close(self) -> None:
-        raise TypeError
-
-    def handle_accepted(self, sock, addr) -> None:
-        raise TypeError
-
 
 class HasDispatchers(abc.ABC):
     @abc.abstractmethod
