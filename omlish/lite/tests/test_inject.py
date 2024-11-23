@@ -1,8 +1,9 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 PT027
 import dataclasses as dc
 import typing as ta  # noqa
 import unittest
 
+from ..inject import CyclicDependencyInjectorKeyError
 from ..inject import _do_injection_inspect  # noqa
 from ..inject import build_injection_kwargs_target
 from ..inject import inj
@@ -274,3 +275,21 @@ class TestInspect(unittest.TestCase):
     #
     #         kwt = build_injection_kwargs_target(functools.partial(o, x=0, y=0))
     #         self.assertEqual(kwt.kwargs, [ikw('x', int, True), ikw('y', str, True)])
+
+
+class TestRecursion(unittest.TestCase):
+    @dc.dataclass(frozen=True)
+    class Foo:
+        bar: 'TestRecursion.Bar'
+
+    @dc.dataclass(frozen=True)
+    class Bar:
+        foo: 'TestRecursion.Foo'
+
+    def test_recursion(self):
+        i = inj.create_injector(
+            inj.bind(TestRecursion.Foo),
+            inj.bind(TestRecursion.Bar),
+        )
+        with self.assertRaises(CyclicDependencyInjectorKeyError):
+            i.provide(TestRecursion.Foo)

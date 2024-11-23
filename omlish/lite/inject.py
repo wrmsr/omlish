@@ -5,6 +5,7 @@ TODO:
  - bind empty array
 """
 import abc
+import contextlib
 import dataclasses as dc
 import functools
 import inspect
@@ -12,7 +13,9 @@ import types
 import typing as ta
 import weakref
 
+from .check import check_in
 from .check import check_isinstance
+from .check import check_not_in
 from .check import check_not_isinstance
 from .check import check_not_none
 from .maybes import Maybe
@@ -129,7 +132,7 @@ class InjectorError(Exception):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class InjectorKeyError(InjectorError):
     key: InjectorKey
 
@@ -137,13 +140,15 @@ class InjectorKeyError(InjectorError):
     name: ta.Optional[str] = None
 
 
-@dc.dataclass(frozen=True)
 class UnboundInjectorKeyError(InjectorKeyError):
     pass
 
 
-@dc.dataclass(frozen=True)
 class DuplicateInjectorKeyError(InjectorKeyError):
+    pass
+
+
+class CyclicDependencyInjectorKeyError(InjectorKeyError):
     pass
 
 
@@ -480,22 +485,65 @@ class _Injector(Injector):
         if _INJECTOR_INJECTOR_KEY in self._pfm:
             raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
 
+        self.__cur_req: ta.Optional[_Injector._Request] = None
+
+    class _Request:
+        def __init__(self, injector: '_Injector') -> None:
+            super().__init__()
+            self._injector = injector
+            self._provisions: ta.Dict[InjectorKey, Maybe] = {}
+            self._seen_keys: ta.Set[InjectorKey] = set()
+
+        def handle_key(self, key: InjectorKey) -> Maybe[Maybe]:
+            try:
+                return Maybe.just(self._provisions[key])
+            except KeyError:
+                pass
+            if key in self._seen_keys:
+                raise CyclicDependencyInjectorKeyError(key)
+            self._seen_keys.add(key)
+            return Maybe.empty()
+
+        def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
+            check_in(key, self._seen_keys)
+            check_not_in(key, self._provisions)
+            self._provisions[key] = mv
+            return mv
+
+    @contextlib.contextmanager
+    def _current_request(self) -> ta.Generator[_Request, None, None]:
+        if (cr := self.__cur_req) is not None:
+            yield cr
+            return
+
+        cr = self._Request(self)
+        try:
+            self.__cur_req = cr
+            yield cr
+        finally:
+            self.__cur_req = None
+
     def try_provide(self, key: ta.Any) -> Maybe[ta.Any]:
         key = as_injector_key(key)
 
-        if key == _INJECTOR_INJECTOR_KEY:
-            return Maybe.just(self)
+        cr: _Injector._Request
+        with self._current_request() as cr:
+            if (rv := cr.handle_key(key)).present:
+                return rv.must()
 
-        fn = self._pfm.get(key)
-        if fn is not None:
-            return Maybe.just(fn(self))
+            if key == _INJECTOR_INJECTOR_KEY:
+                return cr.handle_provision(key, Maybe.just(self))
 
-        if self._p is not None:
-            pv = self._p.try_provide(key)
-            if pv is not None:
-                return Maybe.empty()
+            fn = self._pfm.get(key)
+            if fn is not None:
+                return cr.handle_provision(key, Maybe.just(fn(self)))
 
-        return Maybe.empty()
+            if self._p is not None:
+                pv = self._p.try_provide(key)
+                if pv is not None:
+                    return cr.handle_provision(key, Maybe.empty())
+
+            return cr.handle_provision(key, Maybe.empty())
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)

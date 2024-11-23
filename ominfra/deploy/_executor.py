@@ -189,6 +189,30 @@ def check_not_equal(l: T, r: T) -> T:
     return l
 
 
+def check_is(l: T, r: T) -> T:
+    if l is not r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is_not(l: T, r: ta.Any) -> T:
+    if l is r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_in(v: T, c: ta.Container[T]) -> T:
+    if v not in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_not_in(v: T, c: ta.Container[T]) -> T:
+    if v in c:
+        raise ValueError(v, c)
+    return v
+
+
 def check_single(vs: ta.Iterable[T]) -> T:
     [v] = vs
     return v
