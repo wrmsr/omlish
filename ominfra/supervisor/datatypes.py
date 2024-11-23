@@ -37,15 +37,6 @@ def logfile_name(val):
 ##
 
 
-def octal_type(arg: ta.Union[str, int]) -> int:
-    if isinstance(arg, int):
-        return arg
-    try:
-        return int(arg, 8)
-    except (TypeError, ValueError):
-        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
-
-
 def logging_level(value: ta.Union[str, int]) -> int:
     if isinstance(value, int):
         return value
@@ -61,4 +52,8 @@ class RestartWhenExitUnexpected:
 
 
 class RestartUnconditionally:
+    pass
+
+
+class ExitNow(Exception):  # noqa
     pass

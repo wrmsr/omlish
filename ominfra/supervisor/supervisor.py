@@ -10,6 +10,7 @@ from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
 from .context import ServerContextImpl
+from .datatypes import ExitNow
 from .dispatchers import Dispatchers
 from .events import TICK_EVENTS
 from .events import EventCallbacks
@@ -23,11 +24,16 @@ from .setup import SupervisorSetup
 from .states import SupervisorState
 from .types import OutputDispatcher
 from .types import Process
+from .utils.os import decode_wait_status
 from .utils.signals import SignalReceiver
 from .utils.signals import sig_name
-from .utils.utils import ExitNow
-from .utils.utils import decode_wait_status
-from .utils.utils import timeslice
+
+
+##
+
+
+def timeslice(period: int, when: float) -> int:
+    return int(when - (when % period))
 
 
 ##

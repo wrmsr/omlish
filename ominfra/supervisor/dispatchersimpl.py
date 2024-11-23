@@ -16,12 +16,12 @@ from .types import Dispatcher
 from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
+from .utils.diag import compact_traceback
 from .utils.fds import read_fd
 from .utils.ostypes import Fd
 from .utils.strings import as_bytes
 from .utils.strings import find_prefix_at_end
 from .utils.strings import strip_escapes
-from .utils.utils import compact_traceback
 
 
 class BaseDispatcherImpl(Dispatcher, abc.ABC):
