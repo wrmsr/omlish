@@ -22,9 +22,9 @@ from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .states import ProcessState
 from .states import SupervisorState
-from .types import InputDispatcher
 from .types import Process
 from .types import ProcessGroup
+from .types import ProcessInputDispatcher
 from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
@@ -171,7 +171,7 @@ class ProcessImpl(Process):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check_isinstance(self._dispatchers[stdin_fd], InputDispatcher)
+        dispatcher = check_isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 

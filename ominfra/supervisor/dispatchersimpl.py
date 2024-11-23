@@ -13,10 +13,10 @@ from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
-from .types import Dispatcher
-from .types import InputDispatcher
-from .types import OutputDispatcher
 from .types import Process
+from .types import ProcessDispatcher
+from .types import ProcessInputDispatcher
+from .types import ProcessOutputDispatcher
 from .utils.diag import compact_traceback
 from .utils.fds import read_fd
 from .utils.ostypes import Fd
@@ -25,7 +25,7 @@ from .utils.strings import find_prefix_at_end
 from .utils.strings import strip_escapes
 
 
-class BaseDispatcherImpl(Dispatcher, abc.ABC):
+class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
@@ -82,7 +82,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
         self.close()
 
 
-class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
+class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispatcher):
     """
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
@@ -301,7 +301,7 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
             self.close()
 
 
-class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
+class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatcher):
     def __init__(
             self,
             process: Process,

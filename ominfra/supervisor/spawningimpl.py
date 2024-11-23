@@ -30,10 +30,10 @@ from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .spawning import SpawnedProcess
 from .types import Dispatcher
-from .types import InputDispatcher
-from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
+from .types import ProcessInputDispatcher
+from .types import ProcessOutputDispatcher
 from .utils.diag import compact_traceback
 from .utils.fds import close_fd
 from .utils.fs import get_path
@@ -44,11 +44,11 @@ from .utils.ostypes import Rc
 from .utils.strings import as_bytes
 
 
-class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):
+class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
     pass
 
 
-class InputDispatcherFactory(Func3[Process, str, Fd, InputDispatcher]):
+class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
     pass
 
 
@@ -66,8 +66,8 @@ class ProcessSpawningImpl(ProcessSpawning):
             server_config: ServerConfig,
             pid_history: PidHistory,
 
-            output_dispatcher_factory: OutputDispatcherFactory,
-            input_dispatcher_factory: InputDispatcherFactory,
+            output_dispatcher_factory: ProcessOutputDispatcherFactory,
+            input_dispatcher_factory: ProcessInputDispatcherFactory,
 
             inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
@@ -207,21 +207,21 @@ class ProcessSpawningImpl(ProcessSpawning):
                 self.process,
                 ProcessCommunicationStdoutEvent,
                 pipes.stdout,
-            ), OutputDispatcher))
+            ), ProcessOutputDispatcher))
 
         if pipes.stderr is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self.process,
                 ProcessCommunicationStderrEvent,
                 pipes.stderr,
-            ), OutputDispatcher))
+            ), ProcessOutputDispatcher))
 
         if pipes.stdin is not None:
             dispatchers.append(check_isinstance(self._input_dispatcher_factory(
                 self.process,
                 'stdin',
                 pipes.stdin,
-            ), InputDispatcher))
+            ), ProcessInputDispatcher))
 
         return Dispatchers(dispatchers)
 

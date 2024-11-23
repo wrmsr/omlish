@@ -60,11 +60,6 @@ class SupervisorStateManager(abc.ABC):
 class Dispatcher(abc.ABC):
     @property
     @abc.abstractmethod
-    def process(self) -> 'Process':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def channel(self) -> str:
         raise NotImplementedError
 
@@ -107,7 +102,14 @@ class Dispatcher(abc.ABC):
         raise TypeError
 
 
-class OutputDispatcher(Dispatcher, abc.ABC):
+class ProcessDispatcher(Dispatcher, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+
+class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
     @abc.abstractmethod
     def remove_logs(self) -> None:
         raise NotImplementedError
@@ -117,7 +119,7 @@ class OutputDispatcher(Dispatcher, abc.ABC):
         raise NotImplementedError
 
 
-class InputDispatcher(Dispatcher, abc.ABC):
+class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
     @abc.abstractmethod
     def write(self, chars: ta.Union[bytes, str]) -> None:
         raise NotImplementedError

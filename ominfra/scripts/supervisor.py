@@ -4164,6 +4164,23 @@ def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
 
 
 ########################################
+# ../../../omlish/lite/runtime.py
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
 # ../../configs.py
 
 
@@ -5355,11 +5372,6 @@ class SupervisorStateManager(abc.ABC):
 class Dispatcher(abc.ABC):
     @property
     @abc.abstractmethod
-    def process(self) -> 'Process':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def channel(self) -> str:
         raise NotImplementedError
 
@@ -5402,7 +5414,14 @@ class Dispatcher(abc.ABC):
         raise TypeError
 
 
-class OutputDispatcher(Dispatcher, abc.ABC):
+class ProcessDispatcher(Dispatcher, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+
+class ProcessOutputDispatcher(ProcessDispatcher, abc.ABC):
     @abc.abstractmethod
     def remove_logs(self) -> None:
         raise NotImplementedError
@@ -5412,7 +5431,7 @@ class OutputDispatcher(Dispatcher, abc.ABC):
         raise NotImplementedError
 
 
-class InputDispatcher(Dispatcher, abc.ABC):
+class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
     @abc.abstractmethod
     def write(self, chars: ta.Union[bytes, str]) -> None:
         raise NotImplementedError
@@ -5539,12 +5558,12 @@ class Dispatchers(KeyedCollection[Fd, Dispatcher]):
 
     def remove_logs(self) -> None:
         for d in self:
-            if isinstance(d, OutputDispatcher):
+            if isinstance(d, ProcessOutputDispatcher):
                 d.remove_logs()
 
     def reopen_logs(self) -> None:
         for d in self:
-            if isinstance(d, OutputDispatcher):
+            if isinstance(d, ProcessOutputDispatcher):
                 d.reopen_logs()
 
 
@@ -5552,7 +5571,7 @@ class Dispatchers(KeyedCollection[Fd, Dispatcher]):
 # ../dispatchersimpl.py
 
 
-class BaseDispatcherImpl(Dispatcher, abc.ABC):
+class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
@@ -5609,7 +5628,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
         self.close()
 
 
-class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
+class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispatcher):
     """
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
@@ -5828,7 +5847,7 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
             self.close()
 
 
-class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
+class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatcher):
     def __init__(
             self,
             process: Process,
@@ -6387,7 +6406,7 @@ class SignalHandler:
 
             for p in self._process_groups.all_processes():
                 for d in p.get_dispatchers():
-                    if isinstance(d, OutputDispatcher):
+                    if isinstance(d, ProcessOutputDispatcher):
                         d.reopen_logs()
 
         else:
@@ -6849,7 +6868,7 @@ class ProcessImpl(Process):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check_isinstance(self._dispatchers[stdin_fd], InputDispatcher)
+        dispatcher = check_isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
@@ -7191,11 +7210,11 @@ class ProcessImpl(Process):
 # ../spawningimpl.py
 
 
-class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):
+class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
     pass
 
 
-class InputDispatcherFactory(Func3[Process, str, Fd, InputDispatcher]):
+class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
     pass
 
 
@@ -7213,8 +7232,8 @@ class ProcessSpawningImpl(ProcessSpawning):
             server_config: ServerConfig,
             pid_history: PidHistory,
 
-            output_dispatcher_factory: OutputDispatcherFactory,
-            input_dispatcher_factory: InputDispatcherFactory,
+            output_dispatcher_factory: ProcessOutputDispatcherFactory,
+            input_dispatcher_factory: ProcessInputDispatcherFactory,
 
             inherited_fds: ta.Optional[InheritedFds] = None,
     ) -> None:
@@ -7354,21 +7373,21 @@ class ProcessSpawningImpl(ProcessSpawning):
                 self.process,
                 ProcessCommunicationStdoutEvent,
                 pipes.stdout,
-            ), OutputDispatcher))
+            ), ProcessOutputDispatcher))
 
         if pipes.stderr is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
                 self.process,
                 ProcessCommunicationStderrEvent,
                 pipes.stderr,
-            ), OutputDispatcher))
+            ), ProcessOutputDispatcher))
 
         if pipes.stdin is not None:
             dispatchers.append(check_isinstance(self._input_dispatcher_factory(
                 self.process,
                 'stdin',
                 pipes.stdin,
-            ), InputDispatcher))
+            ), ProcessInputDispatcher))
 
         return Dispatchers(dispatchers)
 
@@ -7536,8 +7555,8 @@ def bind_server(
 
         inj.bind_factory(ProcessSpawningImpl, ProcessSpawningFactory),
 
-        inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
-        inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
+        inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
+        inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
     ]
 
     #
@@ -7594,7 +7613,7 @@ def main(
     if not no_logging:
         configure_standard_logging(
             'INFO',
-            handler_factory=journald_log_handler_factory if not args.no_journald else None,
+            handler_factory=journald_log_handler_factory if not (args.no_journald or is_debugger_attached()) else None,
         )
 
     #
