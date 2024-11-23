@@ -25,7 +25,7 @@ from .states import SupervisorState
 from .types import InputDispatcher
 from .types import Process
 from .types import ProcessGroup
-from .types import ServerContext
+from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
@@ -47,7 +47,7 @@ class ProcessImpl(Process):
             config: ProcessConfig,
             group: ProcessGroup,
             *,
-            context: ServerContext,
+            supervisor_states: SupervisorStateManager,
             event_callbacks: EventCallbacks,
             process_spawning_factory: ProcessSpawningFactory,
     ) -> None:
@@ -56,7 +56,7 @@ class ProcessImpl(Process):
         self._config = config
         self._group = group
 
-        self._context = context
+        self._supervisor_states = supervisor_states
         self._event_callbacks = event_callbacks
 
         self._spawning = process_spawning_factory(self)
@@ -87,7 +87,7 @@ class ProcessImpl(Process):
     #
 
     def __repr__(self) -> str:
-        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self._state.name}>'
 
     #
 
@@ -108,10 +108,6 @@ class ProcessImpl(Process):
         return self._pid
 
     #
-
-    @property
-    def context(self) -> ServerContext:
-        return self._context
 
     @property
     def state(self) -> ProcessState:
@@ -445,9 +441,6 @@ class ProcessImpl(Process):
         self._pipes = ProcessPipes()
         self._dispatchers = Dispatchers([])
 
-    def get_state(self) -> ProcessState:
-        return self._state
-
     def transition(self) -> None:
         now = time.time()
         state = self._state
@@ -456,7 +449,7 @@ class ProcessImpl(Process):
 
         logger = log
 
-        if self.context.state > SupervisorState.RESTARTING:
+        if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
                 if self._config.autorestart:

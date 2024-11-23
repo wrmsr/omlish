@@ -41,13 +41,12 @@ from omlish.lite.logs import configure_standard_logging
 from ..configs import read_config_file
 from .configs import ServerConfig
 from .configs import prepare_server_config
-from .context import ServerContextImpl
-from .context import ServerEpoch
 from .inject import bind_server
 from .spawningimpl import InheritedFds
 from .states import SupervisorState
 from .supervisor import ExitNow
 from .supervisor import Supervisor
+from .types import ServerEpoch
 from .utils.fds import get_open_fds
 
 
@@ -102,7 +101,6 @@ def main(
             inherited_fds=inherited_fds,
         ))
 
-        context = injector[ServerContextImpl]
         supervisor = injector[Supervisor]
 
         try:
@@ -110,7 +108,7 @@ def main(
         except ExitNow:
             pass
 
-        if context.state < SupervisorState.RESTARTING:
+        if supervisor.state < SupervisorState.RESTARTING:
             break
 
 
