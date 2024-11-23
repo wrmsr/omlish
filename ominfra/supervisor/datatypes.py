@@ -56,38 +56,6 @@ def logging_level(value: ta.Union[str, int]) -> int:
     return level
 
 
-class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
-    # are case insensitive.  Return values are in the fundamental unit.
-    def __init__(self, d, default=1):
-        super().__init__()
-        self._d = d
-        self._default = default
-        # all keys must be the same size
-        self._keysz = None
-        for k in d:
-            if self._keysz is None:
-                self._keysz = len(k)
-            elif self._keysz != len(k):  # type: ignore
-                raise ValueError(k)
-
-    def __call__(self, v: ta.Union[str, int]) -> int:
-        if isinstance(v, int):
-            return v
-        v = v.lower()
-        for s, m in self._d.items():
-            if v[-self._keysz:] == s:  # type: ignore
-                return int(v[:-self._keysz]) * m  # type: ignore
-        return int(v) * self._default
-
-
-byte_size = SuffixMultiplier({
-    'kb': 1024,
-    'mb': 1024 * 1024,
-    'gb': 1024 * 1024 * 1024,
-})
-
-
 class RestartWhenExitUnexpected:
     pass
 

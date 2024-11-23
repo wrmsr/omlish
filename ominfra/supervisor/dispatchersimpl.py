@@ -18,10 +18,10 @@ from .types import OutputDispatcher
 from .types import Process
 from .utils.fds import read_fd
 from .utils.ostypes import Fd
-from .utils.utils import as_bytes
+from .utils.strings import as_bytes
+from .utils.strings import find_prefix_at_end
+from .utils.strings import strip_escapes
 from .utils.utils import compact_traceback
-from .utils.utils import find_prefix_at_end
-from .utils.utils import strip_escapes
 
 
 class BaseDispatcherImpl(Dispatcher, abc.ABC):
