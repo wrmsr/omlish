@@ -1,11 +1,12 @@
 # ruff: noqa: UP006 UP007
 from .collections import KeyedCollection
+from .ostypes import Fd
 from .types import Dispatcher
 from .types import OutputDispatcher
 
 
-class Dispatchers(KeyedCollection[int, Dispatcher]):
-    def _key(self, v: Dispatcher) -> int:
+class Dispatchers(KeyedCollection[Fd, Dispatcher]):
+    def _key(self, v: Dispatcher) -> Fd:
         return v.fd
 
     #

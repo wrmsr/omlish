@@ -1145,6 +1145,15 @@ class NoPermissionError(ProcessError):
 
 
 ########################################
+# ../ostypes.py
+
+
+Fd = ta.NewType('Fd', int)
+Pid = ta.NewType('Pid', int)
+Rc = ta.NewType('Rc', int)
+
+
+########################################
 # ../privileges.py
 
 
@@ -2130,14 +2139,14 @@ class ExitNow(Exception):  # noqa
     pass
 
 
-def real_exit(code: int) -> None:
+def real_exit(code: Rc) -> None:
     os._exit(code)  # noqa
 
 
 ##
 
 
-def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
+def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     """
     Decode the status returned by wait() or waitpid().
 
@@ -2148,7 +2157,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
         msg = f'exit status {es}'
-        return es, msg
+        return Rc(es), msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
         msg = f'terminated by {sig_name(sig)}'
@@ -2158,16 +2167,16 @@ def decode_wait_status(sts: int) -> ta.Tuple[int, str]:
             iscore = bool(sts & 0x80)
         if iscore:
             msg += ' (core dumped)'
-        return -1, msg
+        return Rc(-1), msg
     else:
         msg = 'unknown termination cause 0x%04x' % sts  # noqa
-        return -1, msg
+        return Rc(-1), msg
 
 
 ##
 
 
-def read_fd(fd: int) -> bytes:
+def read_fd(fd: Fd) -> bytes:
     try:
         data = os.read(fd, 2 << 16)  # 128K
     except OSError as why:
@@ -2185,7 +2194,7 @@ def try_unlink(path: str) -> bool:
     return True
 
 
-def close_fd(fd: int) -> bool:
+def close_fd(fd: Fd) -> bool:
     try:
         os.close(fd)
     except OSError:
@@ -2193,7 +2202,7 @@ def close_fd(fd: int) -> bool:
     return True
 
 
-def is_fd_open(fd: int) -> bool:
+def is_fd_open(fd: Fd) -> bool:
     try:
         n = os.dup(fd)
     except OSError:
@@ -2202,8 +2211,8 @@ def is_fd_open(fd: int) -> bool:
     return True
 
 
-def get_open_fds(limit: int) -> ta.FrozenSet[int]:
-    return frozenset(filter(is_fd_open, range(limit)))
+def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
+    return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
 
 
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
@@ -4288,19 +4297,19 @@ def build_config_named_children(
 
 @dc.dataclass(frozen=True)
 class ProcessPipes:
-    child_stdin: ta.Optional[int] = None
-    stdin: ta.Optional[int] = None
+    child_stdin: ta.Optional[Fd] = None
+    stdin: ta.Optional[Fd] = None
 
-    stdout: ta.Optional[int] = None
-    child_stdout: ta.Optional[int] = None
+    stdout: ta.Optional[Fd] = None
+    child_stdout: ta.Optional[Fd] = None
 
-    stderr: ta.Optional[int] = None
-    child_stderr: ta.Optional[int] = None
+    stderr: ta.Optional[Fd] = None
+    child_stderr: ta.Optional[Fd] = None
 
-    def child_fds(self) -> ta.List[int]:
+    def child_fds(self) -> ta.List[Fd]:
         return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
 
-    def parent_fds(self) -> ta.List[int]:
+    def parent_fds(self) -> ta.List[Fd]:
         return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
 
 
@@ -4310,7 +4319,7 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
     """
 
-    pipes: ta.Dict[str, ta.Optional[int]] = {
+    pipes: ta.Dict[str, ta.Optional[Fd]] = {
         'child_stdin': None,
         'stdin': None,
 
@@ -4322,11 +4331,11 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     }
 
     try:
-        pipes['child_stdin'], pipes['stdin'] = os.pipe()
-        pipes['stdout'], pipes['child_stdout'] = os.pipe()
+        pipes['child_stdin'], pipes['stdin'] = os.pipe()  # type: ignore
+        pipes['stdout'], pipes['child_stdout'] = os.pipe()  # type: ignore
 
         if stderr:
-            pipes['stderr'], pipes['child_stderr'] = os.pipe()
+            pipes['stderr'], pipes['child_stderr'] = os.pipe()  # type: ignore
 
         for fd in (
                 pipes['stdout'],
@@ -4371,23 +4380,23 @@ class Poller(DaemonizeListener, abc.ABC):
         super().__init__()
 
     @abc.abstractmethod
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         raise NotImplementedError
 
     def before_daemonize(self) -> None:  # noqa
@@ -4404,37 +4413,37 @@ class SelectPoller(Poller):
     def __init__(self) -> None:
         super().__init__()
 
-        self._readable: ta.Set[int] = set()
-        self._writable: ta.Set[int] = set()
+        self._readable: ta.Set[Fd] = set()
+        self._writable: ta.Set[Fd] = set()
 
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         self._readable.add(fd)
 
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         self._writable.add(fd)
 
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         self._readable.discard(fd)
 
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         self._writable.discard(fd)
 
     def unregister_all(self) -> None:
         self._readable.clear()
         self._writable.clear()
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         try:
             r, w, x = select.select(
                 self._readable,
                 self._writable,
                 [], timeout,
             )
-        except OSError as err:
-            if err.args[0] == errno.EINTR:
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
                 log.debug('EINTR encountered in poll')
                 return [], []
-            if err.args[0] == errno.EBADF:
+            if exc.args[0] == errno.EBADF:
                 log.debug('EBADF encountered in poll')
                 self.unregister_all()
                 return [], []
@@ -4450,30 +4459,30 @@ class PollPoller(Poller):
         super().__init__()
 
         self._poller = select.poll()
-        self._readable: set[int] = set()
-        self._writable: set[int] = set()
+        self._readable: set[Fd] = set()
+        self._writable: set[Fd] = set()
 
-    def register_readable(self, fd: int) -> None:
+    def register_readable(self, fd: Fd) -> None:
         self._poller.register(fd, self._READ)
         self._readable.add(fd)
 
-    def register_writable(self, fd: int) -> None:
+    def register_writable(self, fd: Fd) -> None:
         self._poller.register(fd, self._WRITE)
         self._writable.add(fd)
 
-    def unregister_readable(self, fd: int) -> None:
+    def unregister_readable(self, fd: Fd) -> None:
         self._readable.discard(fd)
         self._poller.unregister(fd)
         if fd in self._writable:
             self._poller.register(fd, self._WRITE)
 
-    def unregister_writable(self, fd: int) -> None:
+    def unregister_writable(self, fd: Fd) -> None:
         self._writable.discard(fd)
         self._poller.unregister(fd)
         if fd in self._readable:
             self._poller.register(fd, self._READ)
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
         fds = self._poll_fds(timeout)  # type: ignore
         readable, writable = [], []
         for fd, eventmask in fds:
@@ -4485,16 +4494,16 @@ class PollPoller(Poller):
                 writable.append(fd)
         return readable, writable
 
-    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[int, int]]:
+    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[Fd, Fd]]:
         try:
-            return self._poller.poll(timeout * 1000)
-        except OSError as err:
-            if err.args[0] == errno.EINTR:
+            return self._poller.poll(timeout * 1000)  # type: ignore
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
                 log.debug('EINTR encountered in poll')
                 return []
             raise
 
-    def _ignore_invalid(self, fd: int, eventmask: int) -> bool:
+    def _ignore_invalid(self, fd: Fd, eventmask: int) -> bool:
         if eventmask & select.POLLNVAL:
             # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
             # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
@@ -4513,30 +4522,30 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             super().__init__()
 
             self._kqueue: ta.Optional[ta.Any] = select.kqueue()
-            self._readable: set[int] = set()
-            self._writable: set[int] = set()
+            self._readable: set[Fd] = set()
+            self._writable: set[Fd] = set()
 
-        def register_readable(self, fd: int) -> None:
+        def register_readable(self, fd: Fd) -> None:
             self._readable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
-        def register_writable(self, fd: int) -> None:
+        def register_writable(self, fd: Fd) -> None:
             self._writable.add(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
-        def unregister_readable(self, fd: int) -> None:
+        def unregister_readable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
             self._readable.discard(fd)
             self._kqueue_control(fd, kevent)
 
-        def unregister_writable(self, fd: int) -> None:
+        def unregister_writable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
             self._writable.discard(fd)
             self._kqueue_control(fd, kevent)
 
-        def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
+        def _kqueue_control(self, fd: Fd, kevent: 'select.kevent') -> None:
             try:
                 self._kqueue.control([kevent], 0)  # type: ignore
             except OSError as error:
@@ -4545,7 +4554,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 else:
                     raise
 
-        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[int], ta.List[int]]:
+        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
             readable, writable = [], []  # type: ignore
 
             try:
@@ -5351,11 +5360,6 @@ class ServerContext(abc.ABC):
     def set_state(self, state: SupervisorState) -> None:
         raise NotImplementedError
 
-    @property
-    @abc.abstractmethod
-    def pid_history(self) -> ta.Dict[int, 'Process']:
-        raise NotImplementedError
-
 
 ##
 
@@ -5373,7 +5377,7 @@ class Dispatcher(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def fd(self) -> int:
+    def fd(self) -> Fd:
         raise NotImplementedError
 
     @property
@@ -5451,7 +5455,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def pid(self) -> int:
+    def pid(self) -> Pid:
         raise NotImplementedError
 
     #
@@ -5462,7 +5466,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def finish(self, sts: int) -> None:
+    def finish(self, sts: Rc) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5546,7 +5550,6 @@ class ServerContextImpl(ServerContext):
         self._poller = poller
         self._epoch = epoch
 
-        self._pid_history: ta.Dict[int, Process] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
     @property
@@ -5568,13 +5571,9 @@ class ServerContextImpl(ServerContext):
     def set_state(self, state: SupervisorState) -> None:
         self._state = state
 
-    @property
-    def pid_history(self) -> ta.Dict[int, Process]:
-        return self._pid_history
-
     #
 
-    def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
+    def waitpid(self) -> ta.Tuple[ta.Optional[Pid], ta.Optional[Rc]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
         # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
@@ -5590,7 +5589,7 @@ class ServerContextImpl(ServerContext):
             if code == errno.EINTR:
                 log.debug('EINTR during reap')
             pid, sts = None, None
-        return pid, sts
+        return pid, sts  # type: ignore
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = f'{name}-{channel}---{identifier}-'
@@ -5606,8 +5605,8 @@ class ServerContextImpl(ServerContext):
 # ../dispatchers.py
 
 
-class Dispatchers(KeyedCollection[int, Dispatcher]):
-    def _key(self, v: Dispatcher) -> int:
+class Dispatchers(KeyedCollection[Fd, Dispatcher]):
+    def _key(self, v: Dispatcher) -> Fd:
         return v.fd
 
     #
@@ -5643,7 +5642,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
             self,
             process: Process,
             channel: str,
-            fd: int,
+            fd: Fd,
             *,
             event_callbacks: EventCallbacks,
     ) -> None:
@@ -5672,7 +5671,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
         return self._channel
 
     @property
-    def fd(self) -> int:
+    def fd(self) -> Fd:
         return self._fd
 
     @property
@@ -5706,7 +5705,7 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
             self,
             process: Process,
             event_type: ta.Type[ProcessCommunicationEvent],
-            fd: int,
+            fd: Fd,
             *,
             event_callbacks: EventCallbacks,
     ) -> None:
@@ -5916,7 +5915,7 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
             self,
             process: Process,
             channel: str,
-            fd: int,
+            fd: Fd,
             *,
             event_callbacks: EventCallbacks,
     ) -> None:
@@ -6110,7 +6109,7 @@ class ProcessGroupImpl(ProcessGroup):
 
 
 ########################################
-# ../processes.py
+# ../process.py
 
 
 ##
@@ -6123,7 +6122,7 @@ class ProcessStateError(RuntimeError):
 ##
 
 
-class PidHistory(ta.Dict[int, Process]):
+class PidHistory(ta.Dict[Pid, Process]):
     pass
 
 
@@ -6351,7 +6350,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         if pid != 0:
             # Parent
             log.debug('supervisord forked; parent exiting')
-            real_exit(0)
+            real_exit(Rc(0))
 
         # Child
         log.info('daemonizing the supervisord process')
@@ -6380,7 +6379,7 @@ class SupervisorSetupImpl(SupervisorSetup):
 
 @dc.dataclass(frozen=True)
 class SpawnedProcess:
-    pid: int
+    pid: Pid
     pipes: ProcessPipes
     dispatchers: Dispatchers
 
@@ -6736,7 +6735,7 @@ class Supervisor:
 
 
 ########################################
-# ../processesimpl.py
+# ../processimpl.py
 
 
 class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
@@ -6774,7 +6773,7 @@ class ProcessImpl(Process):
         self._pipes = ProcessPipes()
 
         self._state = ProcessState.STOPPED
-        self._pid = 0  # 0 when not running
+        self._pid = Pid(0)  # 0 when not running
 
         self._last_start = 0.  # Last time the subprocess was started; 0 if never
         self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
@@ -6788,7 +6787,7 @@ class ProcessImpl(Process):
 
         self._backoff = 0  # backoff counter (to startretries)
 
-        self._exitstatus: ta.Optional[int] = None  # status attached to dead process by finish()
+        self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
 
     #
@@ -6811,7 +6810,7 @@ class ProcessImpl(Process):
         return self._group
 
     @property
-    def pid(self) -> int:
+    def pid(self) -> Pid:
         return self._pid
 
     #
@@ -6830,7 +6829,7 @@ class ProcessImpl(Process):
 
     #
 
-    def spawn(self) -> ta.Optional[int]:
+    def spawn(self) -> ta.Optional[Pid]:
         process_name = as_string(self._config.name)
 
         if self.pid:
@@ -7011,14 +7010,14 @@ class ProcessImpl(Process):
         self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
 
-        pid = self.pid
+        kpid = int(self.pid)
         if killasgroup:
             # send to the whole process group instead
-            pid = -self.pid
+            kpid = -kpid
 
         try:
             try:
-                os.kill(pid, sig)
+                os.kill(kpid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', process_name, self.pid, str(exc))  # noqa
@@ -7079,7 +7078,7 @@ class ProcessImpl(Process):
 
         return None
 
-    def finish(self, sts: int) -> None:
+    def finish(self, sts: Rc) -> None:
         """The process was reaped and we need to report and manage its state."""
 
         self._dispatchers.drain()
@@ -7110,7 +7109,7 @@ class ProcessImpl(Process):
             # likely the result of a stop request implies STOPPING -> STOPPED
             self._killing = False
             self._delay = 0
-            self._exitstatus = es
+            self._exitstatus = Rc(es)
 
             fmt, args = 'stopped: %s (%s)', (process_name, msg)
             self.check_in_state(ProcessState.STOPPING)
@@ -7152,7 +7151,7 @@ class ProcessImpl(Process):
                 self.change_state(ProcessState.EXITED, expected=False)
                 log.warning('exited: %s (%s)', process_name, msg + '; not expected')
 
-        self._pid = 0
+        self._pid = Pid(0)
         close_parent_pipes(self._pipes)
         self._pipes = ProcessPipes()
         self._dispatchers = Dispatchers([])
@@ -7233,15 +7232,15 @@ class ProcessImpl(Process):
 # ../spawningimpl.py
 
 
-class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], int, OutputDispatcher]):
+class OutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, OutputDispatcher]):
     pass
 
 
-class InputDispatcherFactory(Func3[Process, str, int, InputDispatcher]):
+class InputDispatcherFactory(Func3[Process, str, Fd, InputDispatcher]):
     pass
 
 
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[int])
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[Fd])
 
 
 ##
@@ -7312,7 +7311,7 @@ class ProcessSpawningImpl(ProcessSpawning):
             raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
 
         try:
-            pid = os.fork()
+            pid = Pid(os.fork())
         except OSError as exc:
             code = exc.args[0]
             if code == errno.EAGAIN:
@@ -7491,7 +7490,7 @@ class ProcessSpawningImpl(ProcessSpawning):
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
-            real_exit(127)  # exit process with code for spawn failure
+            real_exit(Rc(127))  # exit process with code for spawn failure
 
         raise RuntimeError('Unreachable')
 
@@ -7508,7 +7507,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         for i in range(3, self._server_config.minfds):
             if i in self._inherited_fds:
                 continue
-            close_fd(i)
+            close_fd(Fd(i))
 
     def _set_uid(self) -> ta.Optional[str]:
         if self.config.uid is None:

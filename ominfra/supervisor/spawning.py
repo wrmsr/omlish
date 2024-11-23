@@ -3,13 +3,14 @@ import abc
 import dataclasses as dc
 
 from .dispatchers import Dispatchers
+from .ostypes import Pid
 from .pipes import ProcessPipes
 from .types import Process
 
 
 @dc.dataclass(frozen=True)
 class SpawnedProcess:
-    pid: int
+    pid: Pid
     pipes: ProcessPipes
     dispatchers: Dispatchers
 
