@@ -37,6 +37,7 @@ from omlish.lite.http.coroserver import CoroHttpServer
 from omlish.lite.inject import inj
 from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
+from omlish.lite.runtime import is_debugger_attached
 
 from ..configs import read_config_file
 from .configs import ServerConfig
@@ -78,7 +79,7 @@ def main(
     if not no_logging:
         configure_standard_logging(
             'INFO',
-            handler_factory=journald_log_handler_factory if not args.no_journald else None,
+            handler_factory=journald_log_handler_factory if not (args.no_journald or is_debugger_attached()) else None,
         )
 
     #

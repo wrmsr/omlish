@@ -22,8 +22,8 @@ from .poller import Poller
 from .process import PidHistory
 from .setup import SupervisorSetup
 from .states import SupervisorState
-from .types import OutputDispatcher
 from .types import Process
+from .types import ProcessOutputDispatcher
 from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
@@ -94,7 +94,7 @@ class SignalHandler:
 
             for p in self._process_groups.all_processes():
                 for d in p.get_dispatchers():
-                    if isinstance(d, OutputDispatcher):
+                    if isinstance(d, ProcessOutputDispatcher):
                         d.reopen_logs()
 
         else:

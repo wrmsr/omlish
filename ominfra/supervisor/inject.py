@@ -6,8 +6,8 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from .configs import ServerConfig
-from .dispatchersimpl import InputDispatcherImpl
-from .dispatchersimpl import OutputDispatcherImpl
+from .dispatchersimpl import ProcessInputDispatcherImpl
+from .dispatchersimpl import ProcessOutputDispatcherImpl
 from .events import EventCallbacks
 from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
@@ -23,8 +23,8 @@ from .setup import SupervisorUser
 from .setupimpl import SupervisorSetup
 from .setupimpl import SupervisorSetupImpl
 from .spawningimpl import InheritedFds
-from .spawningimpl import InputDispatcherFactory
-from .spawningimpl import OutputDispatcherFactory
+from .spawningimpl import ProcessInputDispatcherFactory
+from .spawningimpl import ProcessOutputDispatcherFactory
 from .spawningimpl import ProcessSpawningImpl
 from .supervisor import ProcessGroupFactory
 from .supervisor import SignalHandler
@@ -71,8 +71,8 @@ def bind_server(
 
         inj.bind_factory(ProcessSpawningImpl, ProcessSpawningFactory),
 
-        inj.bind_factory(OutputDispatcherImpl, OutputDispatcherFactory),
-        inj.bind_factory(InputDispatcherImpl, InputDispatcherFactory),
+        inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
+        inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
     ]
 
     #

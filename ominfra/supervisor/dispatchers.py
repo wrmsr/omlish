@@ -1,6 +1,6 @@
 # ruff: noqa: UP006 UP007
 from .types import Dispatcher
-from .types import OutputDispatcher
+from .types import ProcessOutputDispatcher
 from .utils.collections import KeyedCollection
 from .utils.ostypes import Fd
 
@@ -24,10 +24,10 @@ class Dispatchers(KeyedCollection[Fd, Dispatcher]):
 
     def remove_logs(self) -> None:
         for d in self:
-            if isinstance(d, OutputDispatcher):
+            if isinstance(d, ProcessOutputDispatcher):
                 d.remove_logs()
 
     def reopen_logs(self) -> None:
         for d in self:
-            if isinstance(d, OutputDispatcher):
+            if isinstance(d, ProcessOutputDispatcher):
                 d.reopen_logs()
