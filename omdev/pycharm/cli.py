@@ -5,14 +5,19 @@ TODO:
   - https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
   - w -oush
 """
+import dataclasses as dc
 import inspect
 import os.path
+import shlex
 import subprocess
 import sys
 import tempfile
 
 from omlish import argparse as ap
 from omlish.diag.pycharm import get_pycharm_version
+
+
+##
 
 
 _DARWIN_OPEN_SCRIPT = """
@@ -24,24 +29,51 @@ return
 """
 
 
-_LINUX_OPEN_SCRIPT = """
+##
+
+
+_LINUX_PYCHARM_WM_CLASS = 'jetbrains-pycharm.jetbrains-pycharm'
+_LINUX_CLION_WM_CLASS = 'jetbrains-clion.jetbrains-pycharm'
+
+
 # sudo apt install xdotool wmctrl
-
-# wmctrl -lx
-# 0x03000054  0 jetbrains-pycharm.jetbrains-pycharm  spinlock-ws omlish - cli.py
-# 0x0480004c  0 jetbrains-clion.jetbrains-clion  spinlock-ws cpython - ceval.c
-# wmctrl -i -a 0x03000054
-
-if pgrep -x "pycharm.sh" > /dev/null; then
-    # export DISPLAY=":1"
-    wmctrl -x -a jetbrains-pycharm.jetbrains-pycharm
-    xdotool key --delay 20 alt+f alt+o
-    xdotool type --delay 10 "$(pwd)"
-    xdotool key Return
-else
-    nohup pycharm.sh "$PROJECT_PATH" > /dev/null 2>&1 &
-fi
+# TODO: nohup pycharm.sh "$PROJECT_PATH" > /dev/null 2>&1 & ?
+_LINUX_OPEN_SCRIPT = """
+xdotool key --delay 1000 alt+f alt+o
+xdotool type --delay 1000 {dir}
+xdotool key Return
 """
+
+
+@dc.dataclass(frozen=True)
+class WmctrlLine:
+    window_id: str
+    desktop_id: str
+    pid: str
+    wm_class: str
+    user: str
+    title: str
+
+
+# TODO: https://stackoverflow.com/a/79016360
+def parse_wmctrl_lxp_line(l: str) -> WmctrlLine:
+    window_id, _, l = l.lstrip().partition(' ')
+    desktop_id, _, l = l.lstrip().partition(' ')
+    pid, _, l = l.lstrip().partition(' ')
+    wm_class, _, l = l.lstrip().partition(' ')
+    user, _, l = l.lstrip().partition(' ')
+    title = l.strip()
+    return WmctrlLine(
+        window_id,
+        desktop_id,
+        pid,
+        wm_class,
+        user,
+        title,
+    )
+
+
+##
 
 
 class Cli(ap.Cli):
@@ -90,7 +122,18 @@ class Cli(ap.Cli):
             subprocess.check_call(['osascript', scpt_file])
 
         elif plat == 'linux':
-            # FIXME:
+            env = os.environ
+            env.setdefault('DISPLAY', ':1')
+
+            wmc_out = subprocess.check_output(['wmctrl', '-lxp'], env=env).decode()
+            wls = [parse_wmctrl_lxp_line(l) for l in wmc_out.splitlines()]
+            tgt_wmc = _LINUX_CLION_WM_CLASS if self.args.clion else _LINUX_PYCHARM_WM_CLASS
+            tgt_wl = next(wl for wl in wls if wl.wm_class == tgt_wmc)
+            subprocess.check_call(['wmctrl', '-ia', tgt_wl.window_id], env=env)
+
+            scpt = _LINUX_OPEN_SCRIPT.format(dir=shlex.quote(os.path.expanduser(dir)))
+            print(scpt)
+            # subprocess.check_call(scpt, shell=True, env=env)  # noqa
             raise NotImplementedError
 
         else:
