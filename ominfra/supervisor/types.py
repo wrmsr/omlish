@@ -7,6 +7,9 @@ from .collections import KeyedCollectionAccessors
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
+from .ostypes import Fd
+from .ostypes import Pid
+from .ostypes import Rc
 from .states import ProcessState
 from .states import SupervisorState
 
@@ -56,11 +59,6 @@ class ServerContext(abc.ABC):
     def set_state(self, state: SupervisorState) -> None:
         raise NotImplementedError
 
-    @property
-    @abc.abstractmethod
-    def pid_history(self) -> ta.Dict[int, 'Process']:
-        raise NotImplementedError
-
 
 ##
 
@@ -78,7 +76,7 @@ class Dispatcher(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def fd(self) -> int:
+    def fd(self) -> Fd:
         raise NotImplementedError
 
     @property
@@ -156,7 +154,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def pid(self) -> int:
+    def pid(self) -> Pid:
         raise NotImplementedError
 
     #
@@ -167,7 +165,7 @@ class Process(ConfigPriorityOrdered, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def finish(self, sts: int) -> None:
+    def finish(self, sts: Rc) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod

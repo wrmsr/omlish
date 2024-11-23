@@ -9,6 +9,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
+from .ostypes import Rc
 from .privileges import drop_privileges
 from .setup import DaemonizeListeners
 from .setup import SupervisorSetup
@@ -238,7 +239,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         if pid != 0:
             # Parent
             log.debug('supervisord forked; parent exiting')
-            real_exit(0)
+            real_exit(Rc(0))
 
         # Child
         log.info('daemonizing the supervisord process')

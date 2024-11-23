@@ -6,9 +6,10 @@ import typing as ta
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
+from .ostypes import Pid
+from .ostypes import Rc
 from .poller import Poller
 from .states import SupervisorState
-from .types import Process
 from .types import ServerContext
 from .types import ServerEpoch
 from .utils import mktempfile
@@ -28,7 +29,6 @@ class ServerContextImpl(ServerContext):
         self._poller = poller
         self._epoch = epoch
 
-        self._pid_history: ta.Dict[int, Process] = {}
         self._state: SupervisorState = SupervisorState.RUNNING
 
     @property
@@ -50,13 +50,9 @@ class ServerContextImpl(ServerContext):
     def set_state(self, state: SupervisorState) -> None:
         self._state = state
 
-    @property
-    def pid_history(self) -> ta.Dict[int, Process]:
-        return self._pid_history
-
     #
 
-    def waitpid(self) -> ta.Tuple[ta.Optional[int], ta.Optional[int]]:
+    def waitpid(self) -> ta.Tuple[ta.Optional[Pid], ta.Optional[Rc]]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
         # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
@@ -72,7 +68,7 @@ class ServerContextImpl(ServerContext):
             if code == errno.EINTR:
                 log.debug('EINTR during reap')
             pid, sts = None, None
-        return pid, sts
+        return pid, sts  # type: ignore
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = f'{name}-{channel}---{identifier}-'
