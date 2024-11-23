@@ -9,14 +9,14 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
 
 from .configs import ServerConfig
-from .ostypes import Rc
 from .privileges import drop_privileges
 from .setup import DaemonizeListeners
 from .setup import SupervisorSetup
 from .setup import SupervisorUser
 from .types import ServerEpoch
-from .utils import real_exit
-from .utils import try_unlink
+from .utils.ostypes import Rc
+from .utils.utils import real_exit
+from .utils.utils import try_unlink
 
 
 ##

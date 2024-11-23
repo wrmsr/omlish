@@ -23,7 +23,6 @@ from .setup import DaemonizeListeners
 from .setup import SupervisorUser
 from .setupimpl import SupervisorSetup
 from .setupimpl import SupervisorSetupImpl
-from .signals import SignalReceiver
 from .spawningimpl import InheritedFds
 from .spawningimpl import InputDispatcherFactory
 from .spawningimpl import OutputDispatcherFactory
@@ -34,6 +33,7 @@ from .supervisor import Supervisor
 from .types import ServerContext
 from .types import ServerEpoch
 from .users import get_user
+from .utils.signals import SignalReceiver
 
 
 def bind_server(

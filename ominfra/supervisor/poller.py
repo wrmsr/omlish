@@ -7,8 +7,8 @@ import typing as ta
 
 from omlish.lite.logs import log
 
-from .ostypes import Fd
 from .setup import DaemonizeListener
+from .utils.ostypes import Fd
 
 
 class Poller(DaemonizeListener, abc.ABC):

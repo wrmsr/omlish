@@ -3,9 +3,9 @@ import abc
 import dataclasses as dc
 
 from .dispatchers import Dispatchers
-from .ostypes import Pid
 from .pipes import ProcessPipes
 from .types import Process
+from .utils.ostypes import Pid
 
 
 @dc.dataclass(frozen=True)

@@ -15,12 +15,9 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
-from .ostypes import Pid
-from .ostypes import Rc
 from .pipes import ProcessPipes
 from .pipes import close_parent_pipes
 from .process import ProcessStateError
-from .signals import sig_name
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .states import ProcessState
@@ -29,7 +26,10 @@ from .types import InputDispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ServerContext
-from .utils import decode_wait_status
+from .utils.ostypes import Pid
+from .utils.ostypes import Rc
+from .utils.signals import sig_name
+from .utils.utils import decode_wait_status
 
 
 class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):

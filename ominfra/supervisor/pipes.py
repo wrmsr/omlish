@@ -4,8 +4,8 @@ import fcntl
 import os
 import typing as ta
 
-from .ostypes import Fd
-from .utils import close_fd
+from .utils.ostypes import Fd
+from .utils.utils import close_fd
 
 
 @dc.dataclass(frozen=True)

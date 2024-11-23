@@ -3,15 +3,15 @@ import abc
 import functools
 import typing as ta
 
-from .collections import KeyedCollectionAccessors
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
-from .ostypes import Fd
-from .ostypes import Pid
-from .ostypes import Rc
 from .states import ProcessState
 from .states import SupervisorState
+from .utils.collections import KeyedCollectionAccessors
+from .utils.ostypes import Fd
+from .utils.ostypes import Pid
+from .utils.ostypes import Rc
 
 
 if ta.TYPE_CHECKING:
