@@ -11,23 +11,6 @@ from .signals import sig_name
 ##
 
 
-def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
-    if isinstance(s, bytes):
-        return s
-    else:
-        return s.encode(encoding)
-
-
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
-##
-
-
 def compact_traceback() -> ta.Tuple[
     ta.Tuple[str, str, int],
     ta.Type[BaseException],
@@ -94,35 +77,6 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     else:
         msg = 'unknown termination cause 0x%04x' % sts  # noqa
         return Rc(-1), msg
-
-
-##
-
-
-ANSI_ESCAPE_BEGIN = b'\x1b['
-ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
-
-
-def strip_escapes(s: bytes) -> bytes:
-    """Remove all ANSI color escapes from the given string."""
-
-    result = b''
-    show = 1
-    i = 0
-    l = len(s)
-    while i < l:
-        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
-            show = 1
-        elif show:
-            n = s.find(ANSI_ESCAPE_BEGIN, i)
-            if n == -1:
-                return result + s[i:]
-            else:
-                result = result + s[i:n]
-                i = n
-                show = 0
-        i += 1
-    return result
 
 
 ##

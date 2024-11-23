@@ -39,7 +39,7 @@ from .utils.fs import get_path
 from .utils.ostypes import Fd
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
-from .utils.utils import as_bytes
+from .utils.strings import as_bytes
 from .utils.utils import compact_traceback
 from .utils.utils import real_exit
 
