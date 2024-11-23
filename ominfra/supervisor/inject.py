@@ -6,7 +6,6 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from .configs import ServerConfig
-from .context import ServerContextImpl
 from .dispatchersimpl import InputDispatcherImpl
 from .dispatchersimpl import OutputDispatcherImpl
 from .events import EventCallbacks
@@ -30,8 +29,9 @@ from .spawningimpl import ProcessSpawningImpl
 from .supervisor import ProcessGroupFactory
 from .supervisor import SignalHandler
 from .supervisor import Supervisor
-from .types import ServerContext
+from .supervisor import SupervisorStateManagerImpl
 from .types import ServerEpoch
+from .types import SupervisorStateManager
 from .utils.signals import SignalReceiver
 from .utils.users import get_user
 
@@ -52,16 +52,17 @@ def bind_server(
 
         inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
-        inj.bind(ServerContextImpl, singleton=True),
-        inj.bind(ServerContext, to_key=ServerContextImpl),
-
         inj.bind(EventCallbacks, singleton=True),
 
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(SignalHandler, singleton=True),
         inj.bind(ProcessGroupManager, singleton=True),
+
         inj.bind(Supervisor, singleton=True),
+
+        inj.bind(SupervisorStateManagerImpl, singleton=True),
+        inj.bind(SupervisorStateManager, to_key=SupervisorStateManagerImpl),
 
         inj.bind(PidHistory()),
 

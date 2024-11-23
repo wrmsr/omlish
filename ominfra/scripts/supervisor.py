@@ -2604,6 +2604,11 @@ class HttpRequestParser:
 
 ########################################
 # ../../../omlish/lite/inject.py
+"""
+TODO:
+ - recursion detection
+ - bind empty array
+"""
 
 
 ###
@@ -5333,12 +5338,7 @@ class ConfigPriorityOrdered(abc.ABC):
 ##
 
 
-class ServerContext(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ServerConfig:
-        raise NotImplementedError
-
+class SupervisorStateManager(abc.ABC):
     @property
     @abc.abstractmethod
     def state(self) -> SupervisorState:
@@ -5448,11 +5448,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     #
 
-    @property
-    @abc.abstractmethod
-    def context(self) -> ServerContext:
-        raise NotImplementedError
-
     @abc.abstractmethod
     def finish(self, sts: Rc) -> None:
         raise NotImplementedError
@@ -5469,8 +5464,9 @@ class Process(ConfigPriorityOrdered, abc.ABC):
     def transition(self) -> None:
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
-    def get_state(self) -> ProcessState:
+    def state(self) -> ProcessState:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -5521,75 +5517,6 @@ class ProcessGroup(
 
 
 ########################################
-# ../context.py
-
-
-class ServerContextImpl(ServerContext):
-    def __init__(
-            self,
-            config: ServerConfig,
-            poller: Poller,
-            *,
-            epoch: ServerEpoch = ServerEpoch(0),
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-        self._poller = poller
-        self._epoch = epoch
-
-        self._state: SupervisorState = SupervisorState.RUNNING
-
-    @property
-    def config(self) -> ServerConfig:
-        return self._config
-
-    @property
-    def epoch(self) -> ServerEpoch:
-        return self._epoch
-
-    @property
-    def first(self) -> bool:
-        return not self._epoch
-
-    @property
-    def state(self) -> SupervisorState:
-        return self._state
-
-    def set_state(self, state: SupervisorState) -> None:
-        self._state = state
-
-    #
-
-    def waitpid(self) -> ta.Tuple[ta.Optional[Pid], ta.Optional[Rc]]:
-        # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
-        # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-        # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-        # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-        # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-        # lying around.
-        try:
-            pid, sts = os.waitpid(-1, os.WNOHANG)
-        except OSError as exc:
-            code = exc.args[0]
-            if code not in (errno.ECHILD, errno.EINTR):
-                log.critical('waitpid error %r; a process may not be cleaned up properly', code)
-            if code == errno.EINTR:
-                log.debug('EINTR during reap')
-            pid, sts = None, None
-        return pid, sts  # type: ignore
-
-    def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-        prefix = f'{name}-{channel}---{identifier}-'
-        logfile = mktempfile(
-            suffix='.log',
-            prefix=prefix,
-            dir=self.config.child_logdir,
-        )
-        return logfile
-
-
-########################################
 # ../dispatchers.py
 
 
@@ -5633,6 +5560,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__()
 
@@ -5640,6 +5568,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
         self._channel = channel  # 'stderr' or 'stdout'
         self._fd = fd
         self._event_callbacks = event_callbacks
+        self._server_config = server_config
 
         self._closed = False  # True if close() has been called
 
@@ -5696,12 +5625,14 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__(
             process,
             event_type.channel,
             fd,
             event_callbacks=event_callbacks,
+            server_config=server_config,
         )
 
         self._event_type = event_type
@@ -5725,11 +5656,10 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
 
         self._main_log_level = logging.DEBUG
 
-        self._log_to_main_log = process.context.config.loglevel <= self._main_log_level
+        self._log_to_main_log = self._server_config.loglevel <= self._main_log_level
 
-        config = self._process.config
-        self._stdout_events_enabled = config.stdout.events_enabled
-        self._stderr_events_enabled = config.stderr.events_enabled
+        self._stdout_events_enabled = self._process.config.stdout.events_enabled
+        self._stderr_events_enabled = self._process.config.stderr.events_enabled
 
     _child_log: ta.Optional[logging.Logger] = None  # the current logger (normal_log or capture_log)
     _normal_log: ta.Optional[logging.Logger] = None  # the "normal" (non-capture) logger
@@ -5800,7 +5730,7 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
         if not data:
             return
 
-        if self._process.context.config.strip_ansi:
+        if self._server_config.strip_ansi:
             data = strip_escapes(as_bytes(data))
 
         if self._child_log:
@@ -5906,12 +5836,14 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__(
             process,
             channel,
             fd,
             event_callbacks=event_callbacks,
+            server_config=server_config,
         )
 
         self._input_buffer = b''
@@ -6071,7 +6003,7 @@ class ProcessGroupImpl(ProcessGroup):
     #
 
     def get_unstopped_processes(self) -> ta.List[Process]:
-        return [x for x in self if not x.get_state().stopped]
+        return [x for x in self if not x.state.stopped]
 
     def stop_all(self) -> None:
         processes = list(self._by_name.values())
@@ -6079,7 +6011,7 @@ class ProcessGroupImpl(ProcessGroup):
         processes.reverse()  # stop in desc priority order
 
         for proc in processes:
-            state = proc.get_state()
+            state = proc.state
             if state == ProcessState.RUNNING:
                 # RUNNING -> STOPPING
                 proc.stop()
@@ -6411,13 +6343,13 @@ class SignalHandler:
     def __init__(
             self,
             *,
-            context: ServerContextImpl,
+            states: SupervisorStateManager,
             signal_receiver: SignalReceiver,
             process_groups: ProcessGroupManager,
     ) -> None:
         super().__init__()
 
-        self._context = context
+        self._states = states
         self._signal_receiver = signal_receiver
         self._process_groups = process_groups
 
@@ -6438,14 +6370,14 @@ class SignalHandler:
 
         if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
             log.warning('received %s indicating exit request', sig_name(sig))
-            self._context.set_state(SupervisorState.SHUTDOWN)
+            self._states.set_state(SupervisorState.SHUTDOWN)
 
         elif sig == signal.SIGHUP:
-            if self._context.state == SupervisorState.SHUTDOWN:
+            if self._states.state == SupervisorState.SHUTDOWN:
                 log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
             else:
                 log.warning('received %s indicating restart request', sig_name(sig))  # noqa
-                self._context.set_state(SupervisorState.RESTARTING)
+                self._states.set_state(SupervisorState.RESTARTING)
 
         elif sig == signal.SIGCHLD:
             log.debug('received %s indicating a child quit', sig_name(sig))
@@ -6465,6 +6397,23 @@ class SignalHandler:
 ##
 
 
+class SupervisorStateManagerImpl(SupervisorStateManager):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._state: SupervisorState = SupervisorState.RUNNING
+
+    @property
+    def state(self) -> SupervisorState:
+        return self._state
+
+    def set_state(self, state: SupervisorState) -> None:
+        self._state = state
+
+
+##
+
+
 class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
     pass
 
@@ -6473,7 +6422,7 @@ class Supervisor:
     def __init__(
             self,
             *,
-            context: ServerContextImpl,
+            config: ServerConfig,
             poller: Poller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
@@ -6481,10 +6430,11 @@ class Supervisor:
             process_group_factory: ProcessGroupFactory,
             pid_history: PidHistory,
             setup: SupervisorSetup,
+            states: SupervisorStateManager,
     ) -> None:
         super().__init__()
 
-        self._context = context
+        self._config = config
         self._poller = poller
         self._process_groups = process_groups
         self._signal_handler = signal_handler
@@ -6492,6 +6442,7 @@ class Supervisor:
         self._process_group_factory = process_group_factory
         self._pid_history = pid_history
         self._setup = setup
+        self._states = states
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -6501,11 +6452,8 @@ class Supervisor:
     #
 
     @property
-    def context(self) -> ServerContextImpl:
-        return self._context
-
-    def get_state(self) -> SupervisorState:
-        return self._context.state
+    def state(self) -> SupervisorState:
+        return self._states.state
 
     #
 
@@ -6546,7 +6494,7 @@ class Supervisor:
                 log.info('waiting for %s to die', namestr)
                 self._last_shutdown_report = now
                 for proc in unstopped:
-                    log.debug('%s state: %s', proc.config.name, proc.get_state().name)
+                    log.debug('%s state: %s', proc.config.name, proc.state.name)
 
         return unstopped
 
@@ -6570,7 +6518,7 @@ class Supervisor:
         self._event_callbacks.clear()
 
         try:
-            for config in self._context.config.groups or []:
+            for config in self._config.groups or []:
                 self.add_process_group(config)
 
             self._signal_handler.set_signals()
@@ -6594,7 +6542,7 @@ class Supervisor:
         self._signal_handler.handle_signals()
         self._tick()
 
-        if self._context.state < SupervisorState.RUNNING:
+        if self._states.state < SupervisorState.RUNNING:
             self._ordered_stop_groups_phase_2()
 
     def _ordered_stop_groups_phase_1(self) -> None:
@@ -6626,7 +6574,7 @@ class Supervisor:
         sorted_groups = list(self._process_groups)
         sorted_groups.sort()
 
-        if self._context.state < SupervisorState.RUNNING:
+        if self._states.state < SupervisorState.RUNNING:
             if not self._stopping:
                 # first time, set the stopping flag, do a notification and set stop_groups
                 self._stopping = True
@@ -6696,17 +6644,17 @@ class Supervisor:
         if depth >= 100:
             return
 
-        pid, sts = self._context.waitpid()
-        if not pid:
+        wp = waitpid()
+        if wp is None or not wp.pid:
             return
 
-        process = self._pid_history.get(pid, None)
+        process = self._pid_history.get(wp.pid, None)
         if process is None:
-            _, msg = decode_wait_status(check_not_none(sts))
-            log.info('reaped unknown pid %s (%s)', pid, msg)
+            _, msg = decode_wait_status(wp.sts)
+            log.info('reaped unknown pid %s (%s)', wp.pid, msg)
         else:
-            process.finish(check_not_none(sts))
-            del self._pid_history[pid]
+            process.finish(wp.sts)
+            del self._pid_history[wp.pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
@@ -6733,6 +6681,31 @@ class Supervisor:
                 self._event_callbacks.notify(event(this_tick, self))
 
 
+class WaitedPid(ta.NamedTuple):
+    pid: Pid
+    sts: Rc
+
+
+def waitpid() -> ta.Optional[WaitedPid]:
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
+    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
+    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
+    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
+    # lying around.
+    try:
+        pid, sts = os.waitpid(-1, os.WNOHANG)
+    except OSError as exc:
+        code = exc.args[0]
+        if code not in (errno.ECHILD, errno.EINTR):
+            log.critical('waitpid error %r; a process may not be cleaned up properly', code)
+        if code == errno.EINTR:
+            log.debug('EINTR during reap')
+        return None
+    else:
+        return WaitedPid(pid, sts)  # type: ignore
+
+
 ########################################
 # ../processimpl.py
 
@@ -6752,7 +6725,7 @@ class ProcessImpl(Process):
             config: ProcessConfig,
             group: ProcessGroup,
             *,
-            context: ServerContext,
+            supervisor_states: SupervisorStateManager,
             event_callbacks: EventCallbacks,
             process_spawning_factory: ProcessSpawningFactory,
     ) -> None:
@@ -6761,7 +6734,7 @@ class ProcessImpl(Process):
         self._config = config
         self._group = group
 
-        self._context = context
+        self._supervisor_states = supervisor_states
         self._event_callbacks = event_callbacks
 
         self._spawning = process_spawning_factory(self)
@@ -6792,7 +6765,7 @@ class ProcessImpl(Process):
     #
 
     def __repr__(self) -> str:
-        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self.get_state().name}>'
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self._state.name}>'
 
     #
 
@@ -6813,10 +6786,6 @@ class ProcessImpl(Process):
         return self._pid
 
     #
-
-    @property
-    def context(self) -> ServerContext:
-        return self._context
 
     @property
     def state(self) -> ProcessState:
@@ -7150,9 +7119,6 @@ class ProcessImpl(Process):
         self._pipes = ProcessPipes()
         self._dispatchers = Dispatchers([])
 
-    def get_state(self) -> ProcessState:
-        return self._state
-
     def transition(self) -> None:
         now = time.time()
         state = self._state
@@ -7161,7 +7127,7 @@ class ProcessImpl(Process):
 
         logger = log
 
-        if self.context.state > SupervisorState.RESTARTING:
+        if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
                 if self._config.autorestart:
@@ -7551,16 +7517,17 @@ def bind_server(
 
         inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
-        inj.bind(ServerContextImpl, singleton=True),
-        inj.bind(ServerContext, to_key=ServerContextImpl),
-
         inj.bind(EventCallbacks, singleton=True),
 
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(SignalHandler, singleton=True),
         inj.bind(ProcessGroupManager, singleton=True),
+
         inj.bind(Supervisor, singleton=True),
+
+        inj.bind(SupervisorStateManagerImpl, singleton=True),
+        inj.bind(SupervisorStateManager, to_key=SupervisorStateManagerImpl),
 
         inj.bind(PidHistory()),
 
@@ -7650,7 +7617,6 @@ def main(
             inherited_fds=inherited_fds,
         ))
 
-        context = injector[ServerContextImpl]
         supervisor = injector[Supervisor]
 
         try:
@@ -7658,7 +7624,7 @@ def main(
         except ExitNow:
             pass
 
-        if context.state < SupervisorState.RESTARTING:
+        if supervisor.state < SupervisorState.RESTARTING:
             break
 
 

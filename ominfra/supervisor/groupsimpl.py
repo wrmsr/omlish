@@ -61,7 +61,7 @@ class ProcessGroupImpl(ProcessGroup):
     #
 
     def get_unstopped_processes(self) -> ta.List[Process]:
-        return [x for x in self if not x.get_state().stopped]
+        return [x for x in self if not x.state.stopped]
 
     def stop_all(self) -> None:
         processes = list(self._by_name.values())
@@ -69,7 +69,7 @@ class ProcessGroupImpl(ProcessGroup):
         processes.reverse()  # stop in desc priority order
 
         for proc in processes:
-            state = proc.get_state()
+            state = proc.state
             if state == ProcessState.RUNNING:
                 # RUNNING -> STOPPING
                 proc.stop()

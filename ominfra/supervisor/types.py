@@ -5,7 +5,6 @@ import typing as ta
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
-from .configs import ServerConfig
 from .states import ProcessState
 from .states import SupervisorState
 from .utils.collections import KeyedCollectionAccessors
@@ -44,12 +43,7 @@ class ConfigPriorityOrdered(abc.ABC):
 ##
 
 
-class ServerContext(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ServerConfig:
-        raise NotImplementedError
-
+class SupervisorStateManager(abc.ABC):
     @property
     @abc.abstractmethod
     def state(self) -> SupervisorState:
@@ -159,11 +153,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     #
 
-    @property
-    @abc.abstractmethod
-    def context(self) -> ServerContext:
-        raise NotImplementedError
-
     @abc.abstractmethod
     def finish(self, sts: Rc) -> None:
         raise NotImplementedError
@@ -180,8 +169,9 @@ class Process(ConfigPriorityOrdered, abc.ABC):
     def transition(self) -> None:
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
-    def get_state(self) -> ProcessState:
+    def state(self) -> ProcessState:
         raise NotImplementedError
 
     @abc.abstractmethod

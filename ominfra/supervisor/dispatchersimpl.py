@@ -8,6 +8,7 @@ import typing as ta
 from omlish.lite.logs import log
 
 from .configs import ProcessConfig
+from .configs import ServerConfig
 from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
@@ -32,6 +33,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__()
 
@@ -39,6 +41,7 @@ class BaseDispatcherImpl(Dispatcher, abc.ABC):
         self._channel = channel  # 'stderr' or 'stdout'
         self._fd = fd
         self._event_callbacks = event_callbacks
+        self._server_config = server_config
 
         self._closed = False  # True if close() has been called
 
@@ -95,12 +98,14 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__(
             process,
             event_type.channel,
             fd,
             event_callbacks=event_callbacks,
+            server_config=server_config,
         )
 
         self._event_type = event_type
@@ -124,11 +129,10 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
 
         self._main_log_level = logging.DEBUG
 
-        self._log_to_main_log = process.context.config.loglevel <= self._main_log_level
+        self._log_to_main_log = self._server_config.loglevel <= self._main_log_level
 
-        config = self._process.config
-        self._stdout_events_enabled = config.stdout.events_enabled
-        self._stderr_events_enabled = config.stderr.events_enabled
+        self._stdout_events_enabled = self._process.config.stdout.events_enabled
+        self._stderr_events_enabled = self._process.config.stderr.events_enabled
 
     _child_log: ta.Optional[logging.Logger] = None  # the current logger (normal_log or capture_log)
     _normal_log: ta.Optional[logging.Logger] = None  # the "normal" (non-capture) logger
@@ -199,7 +203,7 @@ class OutputDispatcherImpl(BaseDispatcherImpl, OutputDispatcher):
         if not data:
             return
 
-        if self._process.context.config.strip_ansi:
+        if self._server_config.strip_ansi:
             data = strip_escapes(as_bytes(data))
 
         if self._child_log:
@@ -305,12 +309,14 @@ class InputDispatcherImpl(BaseDispatcherImpl, InputDispatcher):
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
+            server_config: ServerConfig,
     ) -> None:
         super().__init__(
             process,
             channel,
             fd,
             event_callbacks=event_callbacks,
+            server_config=server_config,
         )
 
         self._input_buffer = b''

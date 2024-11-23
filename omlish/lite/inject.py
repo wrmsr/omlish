@@ -1,4 +1,9 @@
 # ruff: noqa: UP006 UP007
+"""
+TODO:
+ - recursion detection
+ - bind empty array
+"""
 import abc
 import dataclasses as dc
 import functools
