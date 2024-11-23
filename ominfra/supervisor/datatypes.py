@@ -1,7 +1,8 @@
 # ruff: noqa: UP007
 import logging
-import os
 import typing as ta
+
+from .utils.fs import check_path_with_existing_dir
 
 
 class Automatic:
@@ -30,7 +31,7 @@ def logfile_name(val):
     elif coerced in LOGFILE_SYSLOGS:
         return Syslog
     else:
-        return existing_dirpath(val)
+        return check_path_with_existing_dir(val)
 
 
 ##
@@ -43,24 +44,6 @@ def octal_type(arg: ta.Union[str, int]) -> int:
         return int(arg, 8)
     except (TypeError, ValueError):
         raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
-
-
-def existing_directory(v: str) -> str:
-    nv = os.path.expanduser(v)
-    if os.path.isdir(nv):
-        return nv
-    raise ValueError(f'{v} is not an existing directory')
-
-
-def existing_dirpath(v: str) -> str:
-    nv = os.path.expanduser(v)
-    dir = os.path.dirname(nv)  # noqa
-    if not dir:
-        # relative pathname with no directory component
-        return nv
-    if os.path.isdir(dir):
-        return nv
-    raise ValueError(f'The directory named as part of the path {v} does not exist')
 
 
 def logging_level(value: ta.Union[str, int]) -> int:

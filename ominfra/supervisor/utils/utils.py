@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007
 import os
 import sys
-import tempfile
 import types
 import typing as ta
 
@@ -56,6 +55,9 @@ def compact_traceback() -> ta.Tuple[
     return (file, function, line), t, v, info  # type: ignore
 
 
+##
+
+
 class ExitNow(Exception):  # noqa
     pass
 
@@ -92,41 +94,6 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     else:
         msg = 'unknown termination cause 0x%04x' % sts  # noqa
         return Rc(-1), msg
-
-
-##
-
-
-def try_unlink(path: str) -> bool:
-    try:
-        os.unlink(path)
-    except OSError:
-        return False
-    return True
-
-
-def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
-    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
-    os.close(fd)
-    return filename
-
-
-##
-
-
-def get_path() -> ta.Sequence[str]:
-    """Return a list corresponding to $PATH, or a default."""
-
-    path = ['/bin', '/usr/bin', '/usr/local/bin']
-    if 'PATH' in os.environ:
-        p = os.environ['PATH']
-        if p:
-            path = p.split(os.pathsep)
-    return path
-
-
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
 
 
 ##
