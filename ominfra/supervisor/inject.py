@@ -32,8 +32,8 @@ from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .types import ServerContext
 from .types import ServerEpoch
-from .users import get_user
 from .utils.signals import SignalReceiver
+from .utils.users import get_user
 
 
 def bind_server(
