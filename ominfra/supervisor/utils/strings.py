@@ -91,3 +91,15 @@ parse_bytes_size = SuffixMultiplier({
     'mb': 1024 * 1024,
     'gb': 1024 * 1024 * 1024,
 })
+
+
+#
+
+
+def parse_octal(arg: ta.Union[str, int]) -> int:
+    if isinstance(arg, int):
+        return arg
+    try:
+        return int(arg, 8)
+    except (TypeError, ValueError):
+        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa

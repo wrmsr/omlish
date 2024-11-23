@@ -8,10 +8,10 @@ import typing as ta
 from ..configs import ConfigMapping
 from ..configs import build_config_named_children
 from .datatypes import logging_level
-from .datatypes import octal_type
 from .utils.fs import check_existing_dir
 from .utils.fs import check_path_with_existing_dir
 from .utils.strings import parse_bytes_size
+from .utils.strings import parse_octal
 
 
 ##
@@ -104,7 +104,7 @@ class ServerConfig:
             **kwargs: ta.Any,
     ) -> 'ServerConfig':
         return cls(
-            umask=octal_type(umask),
+            umask=parse_octal(umask),
             directory=check_existing_dir(directory) if directory is not None else None,
             logfile=check_path_with_existing_dir(logfile),
             logfile_maxbytes=parse_bytes_size(logfile_maxbytes),
