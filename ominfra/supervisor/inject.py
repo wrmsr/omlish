@@ -12,6 +12,7 @@ from .events import EventCallbacks
 from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
+from .io import IoManager
 from .poller import Poller
 from .poller import get_poller_impl
 from .process import PidHistory
@@ -22,12 +23,12 @@ from .setup import DaemonizeListeners
 from .setup import SupervisorUser
 from .setupimpl import SupervisorSetup
 from .setupimpl import SupervisorSetupImpl
+from .signals import SignalHandler
 from .spawningimpl import InheritedFds
 from .spawningimpl import ProcessInputDispatcherFactory
 from .spawningimpl import ProcessOutputDispatcherFactory
 from .spawningimpl import ProcessSpawningImpl
 from .supervisor import ProcessGroupFactory
-from .supervisor import SignalHandler
 from .supervisor import Supervisor
 from .supervisor import SupervisorStateManagerImpl
 from .types import ServerEpoch
@@ -56,7 +57,10 @@ def bind_server(
 
         inj.bind(SignalReceiver, singleton=True),
 
+        inj.bind(IoManager, singleton=True),
+
         inj.bind(SignalHandler, singleton=True),
+
         inj.bind(ProcessGroupManager, singleton=True),
 
         inj.bind(Supervisor, singleton=True),

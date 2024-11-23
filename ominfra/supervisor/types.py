@@ -20,6 +20,10 @@ if ta.TYPE_CHECKING:
 ##
 
 
+class ExitNow(Exception):  # noqa
+    pass
+
+
 ServerEpoch = ta.NewType('ServerEpoch', int)
 
 
@@ -101,6 +105,23 @@ class Dispatcher(abc.ABC):
     def handle_write_event(self) -> None:
         raise TypeError
 
+    #
+
+    def handle_connect(self) -> None:
+        raise TypeError
+
+    def handle_close(self) -> None:
+        raise TypeError
+
+    def handle_accepted(self, sock, addr) -> None:
+        raise TypeError
+
+
+class HasDispatchers(abc.ABC):
+    @abc.abstractmethod
+    def get_dispatchers(self) -> 'Dispatchers':
+        raise NotImplementedError
+
 
 class ProcessDispatcher(Dispatcher, abc.ABC):
     @property
@@ -132,7 +153,11 @@ class ProcessInputDispatcher(ProcessDispatcher, abc.ABC):
 ##
 
 
-class Process(ConfigPriorityOrdered, abc.ABC):
+class Process(
+    ConfigPriorityOrdered,
+    HasDispatchers,
+    abc.ABC,
+):
     @property
     @abc.abstractmethod
     def name(self) -> str:
@@ -178,10 +203,6 @@ class Process(ConfigPriorityOrdered, abc.ABC):
 
     @abc.abstractmethod
     def after_setuid(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 

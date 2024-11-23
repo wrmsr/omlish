@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007
 import errno
 import os
-import signal
 import time
 import typing as ta
 
@@ -11,94 +10,31 @@ from omlish.lite.typing import Func1
 
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
-from .dispatchers import Dispatchers
 from .events import TICK_EVENTS
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
 from .groups import ProcessGroup
 from .groups import ProcessGroupManager
+from .io import IoManager
 from .poller import Poller
 from .process import PidHistory
 from .setup import SupervisorSetup
+from .signals import SignalHandler
 from .states import SupervisorState
+from .types import ExitNow
 from .types import Process
-from .types import ProcessOutputDispatcher
 from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
-from .utils.signals import SignalReceiver
-from .utils.signals import sig_name
 
 
 ##
-
-
-class ExitNow(Exception):  # noqa
-    pass
 
 
 def timeslice(period: int, when: float) -> int:
     return int(when - (when % period))
-
-
-##
-
-
-class SignalHandler:
-    def __init__(
-            self,
-            *,
-            states: SupervisorStateManager,
-            signal_receiver: SignalReceiver,
-            process_groups: ProcessGroupManager,
-    ) -> None:
-        super().__init__()
-
-        self._states = states
-        self._signal_receiver = signal_receiver
-        self._process_groups = process_groups
-
-    def set_signals(self) -> None:
-        self._signal_receiver.install(
-            signal.SIGTERM,
-            signal.SIGINT,
-            signal.SIGQUIT,
-            signal.SIGHUP,
-            signal.SIGCHLD,
-            signal.SIGUSR2,
-        )
-
-    def handle_signals(self) -> None:
-        sig = self._signal_receiver.get_signal()
-        if not sig:
-            return
-
-        if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-            log.warning('received %s indicating exit request', sig_name(sig))
-            self._states.set_state(SupervisorState.SHUTDOWN)
-
-        elif sig == signal.SIGHUP:
-            if self._states.state == SupervisorState.SHUTDOWN:
-                log.warning('ignored %s indicating restart request (shutdown in progress)', sig_name(sig))  # noqa
-            else:
-                log.warning('received %s indicating restart request', sig_name(sig))  # noqa
-                self._states.set_state(SupervisorState.RESTARTING)
-
-        elif sig == signal.SIGCHLD:
-            log.debug('received %s indicating a child quit', sig_name(sig))
-
-        elif sig == signal.SIGUSR2:
-            log.info('received %s indicating log reopen request', sig_name(sig))
-
-            for p in self._process_groups.all_processes():
-                for d in p.get_dispatchers():
-                    if isinstance(d, ProcessOutputDispatcher):
-                        d.reopen_logs()
-
-        else:
-            log.debug('received %s indicating nothing', sig_name(sig))
 
 
 ##
@@ -138,6 +74,7 @@ class Supervisor:
             pid_history: PidHistory,
             setup: SupervisorSetup,
             states: SupervisorStateManager,
+            io: IoManager,
     ) -> None:
         super().__init__()
 
@@ -150,6 +87,7 @@ class Supervisor:
         self._pid_history = pid_history
         self._setup = setup
         self._states = states
+        self._io = io
 
         self._ticks: ta.Dict[int, float] = {}
         self._stop_groups: ta.Optional[ta.List[ProcessGroup]] = None  # list used for priority ordered shutdown
@@ -268,16 +206,7 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
-    def get_dispatchers(self) -> Dispatchers:
-        return Dispatchers(
-            d
-            for p in self._process_groups.all_processes()
-            for d in p.get_dispatchers()
-        )
-
     def _poll(self) -> None:
-        dispatchers = self.get_dispatchers()
-
         sorted_groups = list(self._process_groups)
         sorted_groups.sort()
 
@@ -294,54 +223,7 @@ class Supervisor:
                 # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
                 raise ExitNow
 
-        for fd, dispatcher in dispatchers.items():
-            if dispatcher.readable():
-                self._poller.register_readable(fd)
-            if dispatcher.writable():
-                self._poller.register_writable(fd)
-
-        timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        r, w = self._poller.poll(timeout)
-
-        for fd in r:
-            if fd in dispatchers:
-                try:
-                    dispatcher = dispatchers[fd]
-                    log.debug('read event caused by %r', dispatcher)
-                    dispatcher.handle_read_event()
-                    if not dispatcher.readable():
-                        self._poller.unregister_readable(fd)
-                except ExitNow:
-                    raise
-                except Exception:  # noqa
-                    dispatchers[fd].handle_error()
-            else:
-                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
-                # time, which may cause 100% cpu usage
-                log.debug('unexpected read event from fd %r', fd)
-                try:
-                    self._poller.unregister_readable(fd)
-                except Exception:  # noqa
-                    pass
-
-        for fd in w:
-            if fd in dispatchers:
-                try:
-                    dispatcher = dispatchers[fd]
-                    log.debug('write event caused by %r', dispatcher)
-                    dispatcher.handle_write_event()
-                    if not dispatcher.writable():
-                        self._poller.unregister_writable(fd)
-                except ExitNow:
-                    raise
-                except Exception:  # noqa
-                    dispatchers[fd].handle_error()
-            else:
-                log.debug('unexpected write event from fd %r', fd)
-                try:
-                    self._poller.unregister_writable(fd)
-                except Exception:  # noqa
-                    pass
+        self._io.poll()
 
         for group in sorted_groups:
             for process in group:
@@ -386,6 +268,9 @@ class Supervisor:
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
                 self._event_callbacks.notify(event(this_tick, self))
+
+
+##
 
 
 class WaitedPid(ta.NamedTuple):
