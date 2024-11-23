@@ -34,11 +34,11 @@ from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
 from .types import ProcessGroup
+from .utils.fds import close_fd
 from .utils.ostypes import Fd
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
 from .utils.utils import as_bytes
-from .utils.utils import close_fd
 from .utils.utils import compact_traceback
 from .utils.utils import get_path
 from .utils.utils import real_exit

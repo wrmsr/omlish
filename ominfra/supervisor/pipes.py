@@ -4,8 +4,9 @@ import fcntl
 import os
 import typing as ta
 
+from .utils.fds import close_fd
+from .utils.fds import make_pipe
 from .utils.ostypes import Fd
-from .utils.utils import close_fd
 
 
 @dc.dataclass(frozen=True)
@@ -44,11 +45,11 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     }
 
     try:
-        pipes['child_stdin'], pipes['stdin'] = os.pipe()  # type: ignore
-        pipes['stdout'], pipes['child_stdout'] = os.pipe()  # type: ignore
+        pipes['child_stdin'], pipes['stdin'] = make_pipe()
+        pipes['stdout'], pipes['child_stdout'] = make_pipe()
 
         if stderr:
-            pipes['stderr'], pipes['child_stderr'] = os.pipe()  # type: ignore
+            pipes['stderr'], pipes['child_stderr'] = make_pipe()
 
         for fd in (
                 pipes['stdout'],

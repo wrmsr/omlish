@@ -1276,6 +1276,9 @@ Fd = ta.NewType('Fd', int)
 Pid = ta.NewType('Pid', int)
 Rc = ta.NewType('Rc', int)
 
+Uid = ta.NewType('Uid', int)
+Gid = ta.NewType('Gid', int)
+
 
 ########################################
 # ../utils/signals.py
@@ -1336,70 +1339,6 @@ class SignalReceiver:
         else:
             sig = None
         return sig
-
-
-########################################
-# ../utils/users.py
-
-
-##
-
-
-def name_to_uid(name: str) -> int:
-    try:
-        uid = int(name)
-    except ValueError:
-        try:
-            pwdrec = pwd.getpwnam(name)
-        except KeyError:
-            raise ValueError(f'Invalid user name {name}')  # noqa
-        uid = pwdrec[2]
-    else:
-        try:
-            pwd.getpwuid(uid)  # check if uid is valid
-        except KeyError:
-            raise ValueError(f'Invalid user id {name}')  # noqa
-    return uid
-
-
-def name_to_gid(name: str) -> int:
-    try:
-        gid = int(name)
-    except ValueError:
-        try:
-            grprec = grp.getgrnam(name)
-        except KeyError:
-            raise ValueError(f'Invalid group name {name}')  # noqa
-        gid = grprec[2]
-    else:
-        try:
-            grp.getgrgid(gid)  # check if gid is valid
-        except KeyError:
-            raise ValueError(f'Invalid group id {name}')  # noqa
-    return gid
-
-
-def gid_for_uid(uid: int) -> int:
-    pwrec = pwd.getpwuid(uid)
-    return pwrec[3]
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class User:
-    name: str
-    uid: int
-    gid: int
-
-
-def get_user(name: str) -> User:
-    return User(
-        name=name,
-        uid=(uid := name_to_uid(name)),
-        gid=gid_for_uid(uid),
-    )
 
 
 ########################################
@@ -2041,40 +1980,111 @@ def get_event_name_by_type(requested):
 
 
 ########################################
-# ../setup.py
+# ../utils/fds.py
+
+
+class PipeFds(ta.NamedTuple):
+    r: Fd
+    w: Fd
+
+
+def make_pipe() -> PipeFds:
+    return PipeFds(*os.pipe())  # type: ignore
+
+
+def read_fd(fd: Fd) -> bytes:
+    try:
+        data = os.read(fd, 2 << 16)  # 128K
+    except OSError as why:
+        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
+            raise
+        data = b''
+    return data
+
+
+def close_fd(fd: Fd) -> bool:
+    try:
+        os.close(fd)
+    except OSError:
+        return False
+    return True
+
+
+def is_fd_open(fd: Fd) -> bool:
+    try:
+        n = os.dup(fd)
+    except OSError:
+        return False
+    os.close(n)
+    return True
+
+
+def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
+    return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
+
+
+########################################
+# ../utils/users.py
 
 
 ##
 
 
-SupervisorUser = ta.NewType('SupervisorUser', User)
+def name_to_uid(name: str) -> Uid:
+    try:
+        uid = int(name)
+    except ValueError:
+        try:
+            pwdrec = pwd.getpwnam(name)
+        except KeyError:
+            raise ValueError(f'Invalid user name {name}')  # noqa
+        uid = pwdrec[2]
+    else:
+        try:
+            pwd.getpwuid(uid)  # check if uid is valid
+        except KeyError:
+            raise ValueError(f'Invalid user id {name}')  # noqa
+    return Uid(uid)
+
+
+def name_to_gid(name: str) -> Gid:
+    try:
+        gid = int(name)
+    except ValueError:
+        try:
+            grprec = grp.getgrnam(name)
+        except KeyError:
+            raise ValueError(f'Invalid group name {name}')  # noqa
+        gid = grprec[2]
+    else:
+        try:
+            grp.getgrgid(gid)  # check if gid is valid
+        except KeyError:
+            raise ValueError(f'Invalid group id {name}')  # noqa
+    return Gid(gid)
+
+
+def gid_for_uid(uid: Uid) -> Gid:
+    pwrec = pwd.getpwuid(uid)
+    return Gid(pwrec[3])
 
 
 ##
 
 
-class DaemonizeListener(abc.ABC):  # noqa
-    def before_daemonize(self) -> None:  # noqa
-        pass
-
-    def after_daemonize(self) -> None:  # noqa
-        pass
-
-
-DaemonizeListeners = ta.NewType('DaemonizeListeners', ta.Sequence[DaemonizeListener])
+@dc.dataclass(frozen=True)
+class User:
+    name: str
+    uid: Uid
+    gid: Gid
 
 
-##
-
-
-class SupervisorSetup(abc.ABC):
-    @abc.abstractmethod
-    def setup(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def cleanup(self) -> None:
-        raise NotImplementedError
+def get_user(name: str) -> User:
+    return User(
+        name=name,
+        uid=(uid := name_to_uid(name)),
+        gid=gid_for_uid(uid),
+    )
 
 
 ########################################
@@ -2169,43 +2179,12 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
 ##
 
 
-def read_fd(fd: Fd) -> bytes:
-    try:
-        data = os.read(fd, 2 << 16)  # 128K
-    except OSError as why:
-        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
-            raise
-        data = b''
-    return data
-
-
 def try_unlink(path: str) -> bool:
     try:
         os.unlink(path)
     except OSError:
         return False
     return True
-
-
-def close_fd(fd: Fd) -> bool:
-    try:
-        os.close(fd)
-    except OSError:
-        return False
-    return True
-
-
-def is_fd_open(fd: Fd) -> bool:
-    try:
-        n = os.dup(fd)
-    except OSError:
-        return False
-    os.close(n)
-    return True
-
-
-def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
-    return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
 
 
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
@@ -4324,11 +4303,11 @@ def make_process_pipes(stderr=True) -> ProcessPipes:
     }
 
     try:
-        pipes['child_stdin'], pipes['stdin'] = os.pipe()  # type: ignore
-        pipes['stdout'], pipes['child_stdout'] = os.pipe()  # type: ignore
+        pipes['child_stdin'], pipes['stdin'] = make_pipe()
+        pipes['stdout'], pipes['child_stdout'] = make_pipe()
 
         if stderr:
-            pipes['stderr'], pipes['child_stderr'] = os.pipe()  # type: ignore
+            pipes['stderr'], pipes['child_stderr'] = make_pipe()
 
         for fd in (
                 pipes['stdout'],
@@ -4362,6 +4341,194 @@ def close_parent_pipes(pipes: ProcessPipes) -> None:
 def close_child_pipes(pipes: ProcessPipes) -> None:
     for fd in pipes.child_fds():
         close_fd(fd)
+
+
+########################################
+# ../setup.py
+
+
+##
+
+
+SupervisorUser = ta.NewType('SupervisorUser', User)
+
+
+##
+
+
+class DaemonizeListener(abc.ABC):  # noqa
+    def before_daemonize(self) -> None:  # noqa
+        pass
+
+    def after_daemonize(self) -> None:  # noqa
+        pass
+
+
+DaemonizeListeners = ta.NewType('DaemonizeListeners', ta.Sequence[DaemonizeListener])
+
+
+##
+
+
+class SupervisorSetup(abc.ABC):
+    @abc.abstractmethod
+    def setup(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def cleanup(self) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../../../omlish/lite/http/handlers.py
+
+
+@dc.dataclass(frozen=True)
+class HttpHandlerRequest:
+    client_address: SocketAddress
+    method: str
+    path: str
+    headers: HttpHeaders
+    data: ta.Optional[bytes]
+
+
+@dc.dataclass(frozen=True)
+class HttpHandlerResponse:
+    status: ta.Union[http.HTTPStatus, int]
+
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    data: ta.Optional[bytes] = None
+    close_connection: ta.Optional[bool] = None
+
+
+class HttpHandlerError(Exception):
+    pass
+
+
+class UnsupportedMethodHttpHandlerError(Exception):
+    pass
+
+
+########################################
+# ../configs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ProcessConfig:
+    name: str
+    command: str
+
+    uid: ta.Optional[int] = None
+    directory: ta.Optional[str] = None
+    umask: ta.Optional[int] = None
+    priority: int = 999
+
+    autostart: bool = True
+    autorestart: str = 'unexpected'
+
+    startsecs: int = 1
+    startretries: int = 3
+
+    numprocs: int = 1
+    numprocs_start: int = 0
+
+    @dc.dataclass(frozen=True)
+    class Log:
+        file: ta.Optional[str] = None
+        capture_maxbytes: ta.Optional[int] = None
+        events_enabled: bool = False
+        syslog: bool = False
+        backups: ta.Optional[int] = None
+        maxbytes: ta.Optional[int] = None
+
+    stdout: Log = Log()
+    stderr: Log = Log()
+
+    stopsignal: int = signal.SIGTERM
+    stopwaitsecs: int = 10
+    stopasgroup: bool = False
+
+    killasgroup: bool = False
+
+    exitcodes: ta.Sequence[int] = (0,)
+
+    redirect_stderr: bool = False
+
+    environment: ta.Optional[ta.Mapping[str, str]] = None
+
+
+@dc.dataclass(frozen=True)
+class ProcessGroupConfig:
+    name: str
+
+    priority: int = 999
+
+    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+
+@dc.dataclass(frozen=True)
+class ServerConfig:
+    user: ta.Optional[str] = None
+    nodaemon: bool = False
+    umask: int = 0o22
+    directory: ta.Optional[str] = None
+    logfile: str = 'supervisord.log'
+    logfile_maxbytes: int = 50 * 1024 * 1024
+    logfile_backups: int = 10
+    loglevel: int = logging.INFO
+    pidfile: str = 'supervisord.pid'
+    identifier: str = 'supervisor'
+    child_logdir: str = '/dev/null'
+    minfds: int = 1024
+    minprocs: int = 200
+    nocleanup: bool = False
+    strip_ansi: bool = False
+    silent: bool = False
+
+    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
+
+    @classmethod
+    def new(
+            cls,
+            umask: ta.Union[int, str] = 0o22,
+            directory: ta.Optional[str] = None,
+            logfile: str = 'supervisord.log',
+            logfile_maxbytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            loglevel: ta.Union[int, str] = logging.INFO,
+            pidfile: str = 'supervisord.pid',
+            child_logdir: ta.Optional[str] = None,
+            **kwargs: ta.Any,
+    ) -> 'ServerConfig':
+        return cls(
+            umask=octal_type(umask),
+            directory=existing_directory(directory) if directory is not None else None,
+            logfile=existing_dirpath(logfile),
+            logfile_maxbytes=byte_size(logfile_maxbytes),
+            loglevel=logging_level(loglevel),
+            pidfile=existing_dirpath(pidfile),
+            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
+            **kwargs,
+        )
+
+
+##
+
+
+def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
+    out = dict(dct)
+    out['processes'] = build_config_named_children(out.get('processes'))
+    return out
+
+
+def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+    out = dict(dct)
+    group_dcts = build_config_named_children(out.get('groups'))
+    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
+    return out
 
 
 ########################################
@@ -4595,157 +4762,6 @@ def get_poller_impl() -> ta.Type[Poller]:
         return PollPoller
     else:
         return SelectPoller
-
-
-########################################
-# ../../../omlish/lite/http/handlers.py
-
-
-@dc.dataclass(frozen=True)
-class HttpHandlerRequest:
-    client_address: SocketAddress
-    method: str
-    path: str
-    headers: HttpHeaders
-    data: ta.Optional[bytes]
-
-
-@dc.dataclass(frozen=True)
-class HttpHandlerResponse:
-    status: ta.Union[http.HTTPStatus, int]
-
-    headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[bytes] = None
-    close_connection: ta.Optional[bool] = None
-
-
-class HttpHandlerError(Exception):
-    pass
-
-
-class UnsupportedMethodHttpHandlerError(Exception):
-    pass
-
-
-########################################
-# ../configs.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ProcessConfig:
-    name: str
-    command: str
-
-    uid: ta.Optional[int] = None
-    directory: ta.Optional[str] = None
-    umask: ta.Optional[int] = None
-    priority: int = 999
-
-    autostart: bool = True
-    autorestart: str = 'unexpected'
-
-    startsecs: int = 1
-    startretries: int = 3
-
-    numprocs: int = 1
-    numprocs_start: int = 0
-
-    @dc.dataclass(frozen=True)
-    class Log:
-        file: ta.Optional[str] = None
-        capture_maxbytes: ta.Optional[int] = None
-        events_enabled: bool = False
-        syslog: bool = False
-        backups: ta.Optional[int] = None
-        maxbytes: ta.Optional[int] = None
-
-    stdout: Log = Log()
-    stderr: Log = Log()
-
-    stopsignal: int = signal.SIGTERM
-    stopwaitsecs: int = 10
-    stopasgroup: bool = False
-
-    killasgroup: bool = False
-
-    exitcodes: ta.Sequence[int] = (0,)
-
-    redirect_stderr: bool = False
-
-    environment: ta.Optional[ta.Mapping[str, str]] = None
-
-
-@dc.dataclass(frozen=True)
-class ProcessGroupConfig:
-    name: str
-
-    priority: int = 999
-
-    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
-
-
-@dc.dataclass(frozen=True)
-class ServerConfig:
-    user: ta.Optional[str] = None
-    nodaemon: bool = False
-    umask: int = 0o22
-    directory: ta.Optional[str] = None
-    logfile: str = 'supervisord.log'
-    logfile_maxbytes: int = 50 * 1024 * 1024
-    logfile_backups: int = 10
-    loglevel: int = logging.INFO
-    pidfile: str = 'supervisord.pid'
-    identifier: str = 'supervisor'
-    child_logdir: str = '/dev/null'
-    minfds: int = 1024
-    minprocs: int = 200
-    nocleanup: bool = False
-    strip_ansi: bool = False
-    silent: bool = False
-
-    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
-
-    @classmethod
-    def new(
-            cls,
-            umask: ta.Union[int, str] = 0o22,
-            directory: ta.Optional[str] = None,
-            logfile: str = 'supervisord.log',
-            logfile_maxbytes: ta.Union[int, str] = 50 * 1024 * 1024,
-            loglevel: ta.Union[int, str] = logging.INFO,
-            pidfile: str = 'supervisord.pid',
-            child_logdir: ta.Optional[str] = None,
-            **kwargs: ta.Any,
-    ) -> 'ServerConfig':
-        return cls(
-            umask=octal_type(umask),
-            directory=existing_directory(directory) if directory is not None else None,
-            logfile=existing_dirpath(logfile),
-            logfile_maxbytes=byte_size(logfile_maxbytes),
-            loglevel=logging_level(loglevel),
-            pidfile=existing_dirpath(pidfile),
-            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
-            **kwargs,
-        )
-
-
-##
-
-
-def prepare_process_group_config(dct: ConfigMapping) -> ConfigMapping:
-    out = dict(dct)
-    out['processes'] = build_config_named_children(out.get('processes'))
-    return out
-
-
-def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-    out = dict(dct)
-    group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
-    return out
 
 
 ########################################

@@ -1,17 +1,12 @@
 # ruff: noqa: UP006 UP007
-import errno
 import os
 import sys
 import tempfile
 import types
 import typing as ta
 
-from .ostypes import Fd
 from .ostypes import Rc
 from .signals import sig_name
-
-
-T = ta.TypeVar('T')
 
 
 ##
@@ -102,43 +97,12 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
 ##
 
 
-def read_fd(fd: Fd) -> bytes:
-    try:
-        data = os.read(fd, 2 << 16)  # 128K
-    except OSError as why:
-        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
-            raise
-        data = b''
-    return data
-
-
 def try_unlink(path: str) -> bool:
     try:
         os.unlink(path)
     except OSError:
         return False
     return True
-
-
-def close_fd(fd: Fd) -> bool:
-    try:
-        os.close(fd)
-    except OSError:
-        return False
-    return True
-
-
-def is_fd_open(fd: Fd) -> bool:
-    try:
-        n = os.dup(fd)
-    except OSError:
-        return False
-    os.close(n)
-    return True
-
-
-def get_open_fds(limit: int) -> ta.FrozenSet[Fd]:
-    return frozenset(fd for i in range(limit) if is_fd_open(fd := Fd(i)))
 
 
 def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa

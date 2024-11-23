@@ -13,7 +13,7 @@ from ..configs import prepare_server_config
 from ..inject import bind_server
 from ..spawningimpl import InheritedFds
 from ..supervisor import Supervisor
-from ..utils.utils import get_open_fds
+from ..utils.fds import get_open_fds
 
 
 class TestSupervisor(unittest.TestCase):

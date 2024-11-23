@@ -16,11 +16,11 @@ from .types import Dispatcher
 from .types import InputDispatcher
 from .types import OutputDispatcher
 from .types import Process
+from .utils.fds import read_fd
 from .utils.ostypes import Fd
 from .utils.utils import as_bytes
 from .utils.utils import compact_traceback
 from .utils.utils import find_prefix_at_end
-from .utils.utils import read_fd
 from .utils.utils import strip_escapes
 
 
