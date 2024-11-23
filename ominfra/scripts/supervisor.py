@@ -953,119 +953,6 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 ########################################
-# ../datatypes.py
-
-
-class Automatic:
-    pass
-
-
-class Syslog:
-    """TODO deprecated; remove this special 'syslog' filename in the future"""
-
-
-LOGFILE_NONES = ('none', 'off', None)
-LOGFILE_AUTOS = (Automatic, 'auto')
-LOGFILE_SYSLOGS = (Syslog, 'syslog')
-
-
-def logfile_name(val):
-    if hasattr(val, 'lower'):
-        coerced = val.lower()
-    else:
-        coerced = val
-
-    if coerced in LOGFILE_NONES:
-        return None
-    elif coerced in LOGFILE_AUTOS:
-        return Automatic
-    elif coerced in LOGFILE_SYSLOGS:
-        return Syslog
-    else:
-        return existing_dirpath(val)
-
-
-##
-
-
-def octal_type(arg: ta.Union[str, int]) -> int:
-    if isinstance(arg, int):
-        return arg
-    try:
-        return int(arg, 8)
-    except (TypeError, ValueError):
-        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
-
-
-def existing_directory(v: str) -> str:
-    nv = os.path.expanduser(v)
-    if os.path.isdir(nv):
-        return nv
-    raise ValueError(f'{v} is not an existing directory')
-
-
-def existing_dirpath(v: str) -> str:
-    nv = os.path.expanduser(v)
-    dir = os.path.dirname(nv)  # noqa
-    if not dir:
-        # relative pathname with no directory component
-        return nv
-    if os.path.isdir(dir):
-        return nv
-    raise ValueError(f'The directory named as part of the path {v} does not exist')
-
-
-def logging_level(value: ta.Union[str, int]) -> int:
-    if isinstance(value, int):
-        return value
-    s = str(value).lower()
-    level = logging.getLevelNamesMapping().get(s.upper())
-    if level is None:
-        raise ValueError(f'bad logging level name {value!r}')
-    return level
-
-
-class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
-    # are case insensitive.  Return values are in the fundamental unit.
-    def __init__(self, d, default=1):
-        super().__init__()
-        self._d = d
-        self._default = default
-        # all keys must be the same size
-        self._keysz = None
-        for k in d:
-            if self._keysz is None:
-                self._keysz = len(k)
-            elif self._keysz != len(k):  # type: ignore
-                raise ValueError(k)
-
-    def __call__(self, v: ta.Union[str, int]) -> int:
-        if isinstance(v, int):
-            return v
-        v = v.lower()
-        for s, m in self._d.items():
-            if v[-self._keysz:] == s:  # type: ignore
-                return int(v[:-self._keysz]) * m  # type: ignore
-        return int(v) * self._default
-
-
-byte_size = SuffixMultiplier({
-    'kb': 1024,
-    'mb': 1024 * 1024,
-    'gb': 1024 * 1024 * 1024,
-})
-
-
-class RestartWhenExitUnexpected:
-    pass
-
-
-class RestartUnconditionally:
-    pass
-
-
-########################################
 # ../exceptions.py
 
 
@@ -1266,6 +1153,53 @@ class KeyedCollection(KeyedCollectionAccessors[K, V]):
     @abc.abstractmethod
     def _key(self, v: V) -> K:
         raise NotImplementedError
+
+
+########################################
+# ../utils/fs.py
+
+
+def try_unlink(path: str) -> bool:
+    try:
+        os.unlink(path)
+    except OSError:
+        return False
+    return True
+
+
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
+    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
+    os.close(fd)
+    return filename
+
+
+def get_path() -> ta.Sequence[str]:
+    """Return a list corresponding to $PATH, or a default."""
+
+    path = ['/bin', '/usr/bin', '/usr/local/bin']
+    if 'PATH' in os.environ:
+        p = os.environ['PATH']
+        if p:
+            path = p.split(os.pathsep)
+    return path
+
+
+def check_existing_dir(v: str) -> str:
+    nv = os.path.expanduser(v)
+    if os.path.isdir(nv):
+        return nv
+    raise ValueError(f'{v} is not an existing directory')
+
+
+def check_path_with_existing_dir(v: str) -> str:
+    nv = os.path.expanduser(v)
+    dir = os.path.dirname(nv)  # noqa
+    if not dir:
+        # relative pathname with no directory component
+        return nv
+    if os.path.isdir(dir):
+        return nv
+    raise ValueError(f'The directory named as part of the path {v} does not exist')
 
 
 ########################################
@@ -1692,6 +1626,101 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 
     def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
         return self.fn(a0, a1, a2)
+
+
+########################################
+# ../datatypes.py
+
+
+class Automatic:
+    pass
+
+
+class Syslog:
+    """TODO deprecated; remove this special 'syslog' filename in the future"""
+
+
+LOGFILE_NONES = ('none', 'off', None)
+LOGFILE_AUTOS = (Automatic, 'auto')
+LOGFILE_SYSLOGS = (Syslog, 'syslog')
+
+
+def logfile_name(val):
+    if hasattr(val, 'lower'):
+        coerced = val.lower()
+    else:
+        coerced = val
+
+    if coerced in LOGFILE_NONES:
+        return None
+    elif coerced in LOGFILE_AUTOS:
+        return Automatic
+    elif coerced in LOGFILE_SYSLOGS:
+        return Syslog
+    else:
+        return check_path_with_existing_dir(val)
+
+
+##
+
+
+def octal_type(arg: ta.Union[str, int]) -> int:
+    if isinstance(arg, int):
+        return arg
+    try:
+        return int(arg, 8)
+    except (TypeError, ValueError):
+        raise ValueError(f'{arg} can not be converted to an octal type')  # noqa
+
+
+def logging_level(value: ta.Union[str, int]) -> int:
+    if isinstance(value, int):
+        return value
+    s = str(value).lower()
+    level = logging.getLevelNamesMapping().get(s.upper())
+    if level is None:
+        raise ValueError(f'bad logging level name {value!r}')
+    return level
+
+
+class SuffixMultiplier:
+    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
+    # are case insensitive.  Return values are in the fundamental unit.
+    def __init__(self, d, default=1):
+        super().__init__()
+        self._d = d
+        self._default = default
+        # all keys must be the same size
+        self._keysz = None
+        for k in d:
+            if self._keysz is None:
+                self._keysz = len(k)
+            elif self._keysz != len(k):  # type: ignore
+                raise ValueError(k)
+
+    def __call__(self, v: ta.Union[str, int]) -> int:
+        if isinstance(v, int):
+            return v
+        v = v.lower()
+        for s, m in self._d.items():
+            if v[-self._keysz:] == s:  # type: ignore
+                return int(v[:-self._keysz]) * m  # type: ignore
+        return int(v) * self._default
+
+
+byte_size = SuffixMultiplier({
+    'kb': 1024,
+    'mb': 1024 * 1024,
+    'gb': 1024 * 1024 * 1024,
+})
+
+
+class RestartWhenExitUnexpected:
+    pass
+
+
+class RestartUnconditionally:
+    pass
 
 
 ########################################
@@ -2138,6 +2167,9 @@ def compact_traceback() -> ta.Tuple[
     return (file, function, line), t, v, info  # type: ignore
 
 
+##
+
+
 class ExitNow(Exception):  # noqa
     pass
 
@@ -2174,41 +2206,6 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     else:
         msg = 'unknown termination cause 0x%04x' % sts  # noqa
         return Rc(-1), msg
-
-
-##
-
-
-def try_unlink(path: str) -> bool:
-    try:
-        os.unlink(path)
-    except OSError:
-        return False
-    return True
-
-
-def mktempfile(suffix: str, prefix: str, dir: str) -> str:  # noqa
-    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
-    os.close(fd)
-    return filename
-
-
-##
-
-
-def get_path() -> ta.Sequence[str]:
-    """Return a list corresponding to $PATH, or a default."""
-
-    path = ['/bin', '/usr/bin', '/usr/local/bin']
-    if 'PATH' in os.environ:
-        p = os.environ['PATH']
-        if p:
-            path = p.split(os.pathsep)
-    return path
-
-
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
 
 
 ##
@@ -4505,11 +4502,11 @@ class ServerConfig:
     ) -> 'ServerConfig':
         return cls(
             umask=octal_type(umask),
-            directory=existing_directory(directory) if directory is not None else None,
-            logfile=existing_dirpath(logfile),
+            directory=check_existing_dir(directory) if directory is not None else None,
+            logfile=check_path_with_existing_dir(logfile),
             logfile_maxbytes=byte_size(logfile_maxbytes),
             loglevel=logging_level(loglevel),
-            pidfile=existing_dirpath(pidfile),
+            pidfile=check_path_with_existing_dir(pidfile),
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
             **kwargs,
         )

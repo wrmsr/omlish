@@ -10,9 +10,9 @@ from .poller import Poller
 from .states import SupervisorState
 from .types import ServerContext
 from .types import ServerEpoch
+from .utils.fs import mktempfile
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
-from .utils.utils import mktempfile
 
 
 class ServerContextImpl(ServerContext):
