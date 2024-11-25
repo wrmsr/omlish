@@ -1,3 +1,4 @@
+import io
 import select
 import socket
 import typing as ta
@@ -67,18 +68,18 @@ class HttpServer:
             self,
             addr: SocketAddress,
             handler: HttpHandler,
-            io: IoManager,
+            io_mgr: IoManager,
     ) -> None:
         super().__init__()
 
         self._addr = addr
         self._handler = handler
-        self._io = io
+        self._io_mgr = io_mgr
 
         self._sock = socket.create_server(self._addr)
         self._sock.listen(1)
 
-        io.register(self._on_conn, r=[self._sock.fileno()])
+        io_mgr.register(self._on_conn, r=[self._sock.fileno()])
 
     def _on_conn(self) -> None:
         cli_sock, cli_addr = self._sock.accept()
@@ -86,7 +87,7 @@ class HttpServer:
             cli_addr,
             cli_sock,
             self._handler,
-            self._io,
+            self._io_mgr,
         )
 
 
@@ -96,7 +97,7 @@ class HttpServerConnection:
             addr: SocketAddress,
             sock: socket.socket,
             handler: HttpHandler,
-            io: IoManager,
+            io_mgr: IoManager,
             *,
             read_size: int = 0x10000,
     ) -> None:
@@ -105,7 +106,7 @@ class HttpServerConnection:
         self._addr = addr
         self._sock = sock
         self._handler = handler
-        self._io = io
+        self._io_mgr = io_mgr
         self._read_size = read_size
 
         self._coro_srv = CoroHttpServer(
@@ -115,10 +116,11 @@ class HttpServerConnection:
         self._srv_coro = self._coro_srv.coro_handle()
         self._cur_io = self._next_io(None)
 
-        self._buf = ReadableListBuffer()
+        self._read_buf = ReadableListBuffer()
+        self._write_buf: io.BytesIO | None = None
 
         sock.setblocking(False)
-        io.register(self._on_read, r=[sock.fileno()])
+        io_mgr.register(self._on_read, r=[sock.fileno()])
 
     def _next_io(self, d: bytes | None) -> CoroHttpServer.Io | None:  # noqa
         o: CoroHttpServer.Io | None
@@ -143,7 +145,7 @@ class HttpServerConnection:
         return o
 
     def _close(self) -> None:
-        self._io.unregister(r=[self._sock.fileno()])
+        self._io_mgr.unregister(r=[self._sock.fileno()])
         self._sock.close()
 
     def _on_read(self) -> None:
@@ -158,7 +160,7 @@ class HttpServerConnection:
             self._close()
             return
 
-        self._buf.feed(buf)
+        self._read_buf.feed(buf)
 
         ci = self._cur_io
         while True:
@@ -167,12 +169,12 @@ class HttpServerConnection:
                 return
 
             if isinstance(ci, CoroHttpServer.ReadIo):
-                if (d := self._buf.read(ci.sz)) is None:
+                if (d := self._read_buf.read(ci.sz)) is None:
                     return
                 ci = self._next_io(d)
 
             elif isinstance(ci, CoroHttpServer.ReadLineIo):
-                if (d := self._buf.read_until(b'\n')) is None:
+                if (d := self._read_buf.read_until(b'\n')) is None:
                     return
                 ci = self._next_io(d)
 
@@ -199,17 +201,17 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 
 
 def _main() -> None:
-    iom = IoManager()
+    io_mgr = IoManager()
 
     srv_addr = ('localhost', 9999)
     HttpServer(
         srv_addr,
         say_hi_handler,
-        iom,
+        io_mgr,
     )
 
     while True:
-        iom.poll()
+        io_mgr.poll()
 
 
 if __name__ == '__main__':
