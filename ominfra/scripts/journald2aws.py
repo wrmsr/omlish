@@ -59,6 +59,9 @@ TomlPos = int  # ta.TypeAlias
 # ../../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
+# ../../../../../omlish/lite/check.py
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+
 # ../../../../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 
@@ -997,6 +1000,18 @@ def check_single(vs: ta.Iterable[T]) -> T:
     return v
 
 
+def check_empty(v: SizedT) -> SizedT:
+    if len(v):
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty(v: SizedT) -> SizedT:
+    if not len(v):
+        raise ValueError(v)
+    return v
+
+
 ########################################
 # ../../../../../omlish/lite/json.py
 
@@ -1752,6 +1767,103 @@ class DelimitingBuffer:
             p = i + remaining_buf_capacity
             yield self.Incomplete(self._append_and_reset(data[i:p]))
             i = p
+
+
+class ReadableListBuffer:
+    def __init__(self) -> None:
+        super().__init__()
+        self._lst: list[bytes] = []
+
+    def feed(self, d: bytes) -> None:
+        if d:
+            self._lst.append(d)
+
+    def _chop(self, i: int, e: int) -> bytes:
+        lst = self._lst
+        d = lst[i]
+
+        o = b''.join([
+            *lst[:i],
+            d[:e],
+        ])
+
+        self._lst = [
+            *([d[e:]] if e < len(d) else []),
+            *lst[i + 1:],
+        ]
+
+        return o
+
+    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
+        if n is None:
+            o = b''.join(self._lst)
+            self._lst = []
+            return o
+
+        if not (lst := self._lst):
+            return None
+
+        c = 0
+        for i, d in enumerate(lst):
+            r = n - c
+            if (l := len(d)) >= r:
+                return self._chop(i, r)
+            c += l
+
+        return None
+
+    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+        if not (lst := self._lst):
+            return None
+
+        for i, d in enumerate(lst):
+            if (p := d.find(delim)) >= 0:
+                return self._chop(i, p + len(delim))
+
+        return None
+
+
+class IncrementalWriteBuffer:
+    def __init__(
+            self,
+            data: bytes,
+            *,
+            write_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        check_non_empty(data)
+        self._len = len(data)
+        self._write_size = write_size
+
+        self._lst = [
+            data[i:i + write_size]
+            for i in range(0, len(data), write_size)
+        ]
+        self._pos = 0
+
+    @property
+    def rem(self) -> int:
+        return self._len - self._pos
+
+    def write(self, fn: ta.Callable[[bytes], int]) -> int:
+        lst = check_non_empty(self._lst)
+
+        t = 0
+        for i, d in enumerate(lst):  # noqa
+            n = fn(check_non_empty(d))
+            if not n:
+                break
+            t += n
+
+        if t:
+            self._lst = [
+                *([d[n:]] if n < len(d) else []),
+                *lst[i + 1:],
+            ]
+            self._pos += t
+
+        return t
 
 
 ########################################
