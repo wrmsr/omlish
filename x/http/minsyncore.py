@@ -29,8 +29,8 @@ class DelimitingReader:
         ])
 
         self._lst = [
-            *(d[e:] if e < len(d) else []),
-            *lst[i:],
+            *([d[e:]] if e < len(d) else []),
+            *lst[i + 1:],
         ]
 
         return o
@@ -59,7 +59,7 @@ class DelimitingReader:
 
         for i, d in enumerate(lst):
             if (p := d.find(delim)) >= 0:
-                return self._chop(i, p + 1)
+                return self._chop(i, p + len(delim))
 
         return None
 
@@ -224,6 +224,8 @@ def _main() -> None:
     dr.feed(b'abcd\nef')
     dr.feed(b'ghi\njkl')
     print(dr.read(5))
+    print(dr.readline())
+    print(dr.readline())
 
 
     iom = IoManager()
