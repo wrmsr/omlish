@@ -27,15 +27,18 @@ class FdIoPoller(abc.ABC):
     #
 
     @property
+    @ta.final
     def readable(self) -> ta.AbstractSet[int]:
         return self._readable
 
     @property
+    @ta.final
     def writable(self) -> ta.AbstractSet[int]:
         return self._writable
 
     #
 
+    @ta.final
     def register_readable(self, fd: int) -> bool:
         if fd in self._readable:
             return False
@@ -43,6 +46,7 @@ class FdIoPoller(abc.ABC):
         self._register_readable(fd)
         return True
 
+    @ta.final
     def register_writable(self, fd: int) -> bool:
         if fd in self._writable:
             return False
@@ -50,6 +54,7 @@ class FdIoPoller(abc.ABC):
         self._register_writable(fd)
         return True
 
+    @ta.final
     def unregister_readable(self, fd: int) -> bool:
         if fd not in self._readable:
             return False
@@ -57,6 +62,7 @@ class FdIoPoller(abc.ABC):
         self._unregister_readable(fd)
         return True
 
+    @ta.final
     def unregister_writable(self, fd: int) -> bool:
         if fd not in self._writable:
             return False
