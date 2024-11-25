@@ -194,7 +194,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+        def poll(self, timeout: ta.Optional[float]) -> Poller.PollResult:
             readable, writable = [], []  # type: ignore
 
             try:
@@ -202,7 +202,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             except OSError as error:
                 if error.errno == errno.EINTR:
                     log.debug('EINTR encountered in poll')
-                    return readable, writable
+                    return Poller.PollResult(readable, writable)
                 raise
 
             for kevent in kevents:
@@ -211,7 +211,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 if kevent.filter == select.KQ_FILTER_WRITE:
                     writable.append(kevent.ident)
 
-            return readable, writable
+            return Poller.PollResult(readable, writable)
 
         def _kqueue_control(self, fd: Fd, kevent: 'select.kevent') -> None:
             try:

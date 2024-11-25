@@ -2643,10 +2643,6 @@ class HttpRequestParser:
 
 ########################################
 # ../../../omlish/lite/inject.py
-"""
-TODO:
- - bind empty array
-"""
 
 
 ###
@@ -2939,7 +2935,11 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 
     for b in bs.bindings():
         if b.key.array:
-            am.setdefault(b.key, []).append(b.provider)
+            al = am.setdefault(b.key, [])
+            if isinstance(b.provider, ArrayInjectorProvider):
+                al.extend(b.provider.ps)
+            else:
+                al.append(b.provider)
         else:
             if b.key in pm:
                 raise KeyError(b.key)
@@ -3360,6 +3360,26 @@ def make_injector_factory(
     return outer
 
 
+def bind_injector_array(
+        obj: ta.Any = None,
+        *,
+        tag: ta.Any = None,
+) -> InjectorBindingOrBindings:
+    key = as_injector_key(obj)
+    if tag is not None:
+        if key.tag is not None:
+            raise ValueError('Must not specify multiple tags')
+        key = dc.replace(key, tag=tag)
+
+    if key.array:
+        raise ValueError('Key must not be array')
+
+    return InjectorBinding(
+        dc.replace(key, array=True),
+        ArrayInjectorProvider([]),
+    )
+
+
 def make_injector_array_type(
         ele: ta.Union[InjectorKey, InjectorKeyCls],
         cls: U,
@@ -3461,6 +3481,15 @@ class Injection:
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
         return cls.bind(make_injector_factory(fn, cls_, ann))
+
+    @classmethod
+    def bind_array(
+            cls,
+            obj: ta.Any = None,
+            *,
+            tag: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return bind_injector_array(obj, tag=tag)
 
     @classmethod
     def bind_array_type(
@@ -4619,46 +4648,24 @@ def parse_logging_level(value: ta.Union[str, int]) -> int:
 # ../poller.py
 
 
-class Poller(DaemonizeListener, abc.ABC):
-    def __init__(self) -> None:
-        super().__init__()
-
-    @abc.abstractmethod
-    def register_readable(self, fd: Fd) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def register_writable(self, fd: Fd) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def unregister_readable(self, fd: Fd) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def unregister_writable(self, fd: Fd) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
-        raise NotImplementedError
-
-    def before_daemonize(self) -> None:  # noqa
-        pass
-
-    def after_daemonize(self) -> None:  # noqa
-        pass
-
-    def close(self) -> None:  # noqa
-        pass
-
-
-class SelectPoller(Poller):
+class Poller(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
         self._readable: ta.Set[Fd] = set()
         self._writable: ta.Set[Fd] = set()
+
+    #
+
+    @property
+    def readable(self) -> ta.AbstractSet[int]:
+        return self._readable
+
+    @property
+    def writable(self) -> ta.AbstractSet[int]:
+        return self._writable
+
+    #
 
     def register_readable(self, fd: Fd) -> None:
         self._readable.add(fd)
@@ -4672,27 +4679,52 @@ class SelectPoller(Poller):
     def unregister_writable(self, fd: Fd) -> None:
         self._writable.discard(fd)
 
-    def unregister_all(self) -> None:
+    #
+
+    def close(self) -> None:  # noqa
+        pass
+
+    #
+
+    class PollResult(ta.NamedTuple):
+        r: ta.List[Fd]
+        w: ta.List[Fd]
+
+    @abc.abstractmethod
+    def poll(self, timeout: ta.Optional[float]) -> PollResult:
+        raise NotImplementedError
+
+
+#
+
+
+class SelectPoller(Poller):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def _unregister_all(self) -> None:
         self._readable.clear()
         self._writable.clear()
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+    def poll(self, timeout: ta.Optional[float]) -> Poller.PollResult:
         try:
             r, w, x = select.select(
                 self._readable,
                 self._writable,
-                [], timeout,
+                [],
+                timeout,
             )
         except OSError as exc:
             if exc.args[0] == errno.EINTR:
                 log.debug('EINTR encountered in poll')
-                return [], []
-            if exc.args[0] == errno.EBADF:
+                return Poller.PollResult([], [])
+            elif exc.args[0] == errno.EBADF:
                 log.debug('EBADF encountered in poll')
-                self.unregister_all()
-                return [], []
-            raise
-        return r, w
+                self._unregister_all()
+                return Poller.PollResult([], [])
+            else:
+                raise
+        return Poller.PollResult(r, w)
 
 
 class PollPoller(Poller):
@@ -4703,30 +4735,32 @@ class PollPoller(Poller):
         super().__init__()
 
         self._poller = select.poll()
-        self._readable: set[Fd] = set()
-        self._writable: set[Fd] = set()
+
+    #
 
     def register_readable(self, fd: Fd) -> None:
+        super().register_readable(fd)
         self._poller.register(fd, self._READ)
-        self._readable.add(fd)
 
     def register_writable(self, fd: Fd) -> None:
+        super().register_writable(fd)
         self._poller.register(fd, self._WRITE)
-        self._writable.add(fd)
 
     def unregister_readable(self, fd: Fd) -> None:
-        self._readable.discard(fd)
+        super().unregister_readable(fd)
         self._poller.unregister(fd)
         if fd in self._writable:
             self._poller.register(fd, self._WRITE)
 
     def unregister_writable(self, fd: Fd) -> None:
-        self._writable.discard(fd)
+        super().unregister_writable(fd)
         self._poller.unregister(fd)
         if fd in self._readable:
             self._poller.register(fd, self._READ)
 
-    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+    #
+
+    def poll(self, timeout: ta.Optional[float]) -> Poller.PollResult:
         fds = self._poll_fds(timeout)  # type: ignore
         readable, writable = [], []
         for fd, eventmask in fds:
@@ -4736,7 +4770,7 @@ class PollPoller(Poller):
                 readable.append(fd)
             if eventmask & self._WRITE:
                 writable.append(fd)
-        return readable, writable
+        return Poller.PollResult(readable, writable)
 
     def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[Fd, Fd]]:
         try:
@@ -4759,35 +4793,62 @@ class PollPoller(Poller):
 
 
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-    class KqueuePoller(Poller):
+    class KqueuePoller(Poller, DaemonizeListener):
         max_events = 1000
 
         def __init__(self) -> None:
             super().__init__()
 
             self._kqueue: ta.Optional[ta.Any] = select.kqueue()
-            self._readable: set[Fd] = set()
-            self._writable: set[Fd] = set()
+
+        #
 
         def register_readable(self, fd: Fd) -> None:
-            self._readable.add(fd)
+            super().register_readable(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
         def register_writable(self, fd: Fd) -> None:
-            self._writable.add(fd)
+            super().register_writable(fd)
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
             self._kqueue_control(fd, kevent)
 
         def unregister_readable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-            self._readable.discard(fd)
+            super().unregister_readable(fd)
             self._kqueue_control(fd, kevent)
 
         def unregister_writable(self, fd: Fd) -> None:
             kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-            self._writable.discard(fd)
+            super().unregister_writable(fd)
             self._kqueue_control(fd, kevent)
+
+        #
+
+        def close(self) -> None:
+            self._kqueue.close()  # type: ignore
+            self._kqueue = None
+
+        #
+
+        def poll(self, timeout: ta.Optional[float]) -> Poller.PollResult:
+            readable, writable = [], []  # type: ignore
+
+            try:
+                kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EINTR:
+                    log.debug('EINTR encountered in poll')
+                    return Poller.PollResult(readable, writable)
+                raise
+
+            for kevent in kevents:
+                if kevent.filter == select.KQ_FILTER_READ:
+                    readable.append(kevent.ident)
+                if kevent.filter == select.KQ_FILTER_WRITE:
+                    writable.append(kevent.ident)
+
+            return Poller.PollResult(readable, writable)
 
         def _kqueue_control(self, fd: Fd, kevent: 'select.kevent') -> None:
             try:
@@ -4798,24 +4859,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 else:
                     raise
 
-        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
-            readable, writable = [], []  # type: ignore
-
-            try:
-                kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
-            except OSError as error:
-                if error.errno == errno.EINTR:
-                    log.debug('EINTR encountered in poll')
-                    return readable, writable
-                raise
-
-            for kevent in kevents:
-                if kevent.filter == select.KQ_FILTER_READ:
-                    readable.append(kevent.ident)
-                if kevent.filter == select.KQ_FILTER_WRITE:
-                    writable.append(kevent.ident)
-
-            return readable, writable
+        #
 
         def before_daemonize(self) -> None:
             self.close()
@@ -4826,10 +4870,6 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 self.register_readable(fd)
             for fd in self._writable:
                 self.register_writable(fd)
-
-        def close(self) -> None:
-            self._kqueue.close()  # type: ignore
-            self._kqueue = None
 
 else:
     KqueuePoller = None
@@ -5457,12 +5497,6 @@ class SupervisorStateManager(abc.ABC):
 
 
 class Dispatcher(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def channel(self) -> str:
-        raise NotImplementedError
-
-    @property
     @abc.abstractmethod
     def fd(self) -> Fd:
         raise NotImplementedError
@@ -5494,10 +5528,10 @@ class Dispatcher(abc.ABC):
 
     #
 
-    def handle_read_event(self) -> None:
+    def on_readable(self) -> None:
         raise TypeError
 
-    def handle_write_event(self) -> None:
+    def on_writable(self) -> None:
         raise TypeError
 
 
@@ -5508,6 +5542,11 @@ class HasDispatchers(abc.ABC):
 
 
 class ProcessDispatcher(Dispatcher, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def channel(self) -> str:
+        raise NotImplementedError
+
     @property
     @abc.abstractmethod
     def process(self) -> 'Process':
@@ -5634,7 +5673,7 @@ class ProcessGroup(
 
 class Dispatchers(KeyedCollection[Fd, Dispatcher]):
     def _key(self, v: Dispatcher) -> Fd:
-        return v.fd
+        return v.fd()
 
     #
 
@@ -5643,9 +5682,9 @@ class Dispatchers(KeyedCollection[Fd, Dispatcher]):
             # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
             # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if d.readable():
-                d.handle_read_event()
+                d.on_readable()
             if d.writable():
-                d.handle_write_event()
+                d.on_writable()
 
     #
 
@@ -5699,7 +5738,6 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def channel(self) -> str:
         return self._channel
 
-    @property
     def fd(self) -> Fd:
         return self._fd
 
@@ -5976,7 +6014,7 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
         sent = os.write(self._fd, as_bytes(self._input_buffer))
         self._input_buffer = self._input_buffer[sent:]
 
-    def handle_write_event(self) -> None:
+    def on_writable(self) -> None:
         if self._input_buffer:
             try:
                 self.flush()
@@ -6464,7 +6502,7 @@ class IoManager(HasDispatchers):
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
-                    dispatcher.handle_read_event()
+                    dispatcher.on_readable()
                     if not dispatcher.readable():
                         self._poller.unregister_readable(fd)
                 except ExitNow:
@@ -6485,7 +6523,7 @@ class IoManager(HasDispatchers):
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
-                    dispatcher.handle_write_event()
+                    dispatcher.on_writable()
                     if not dispatcher.writable():
                         self._poller.unregister_writable(fd)
                 except ExitNow:
@@ -7663,12 +7701,11 @@ def bind_server(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
+        inj.bind_array(DaemonizeListener),
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
 
         inj.bind(SupervisorSetupImpl, singleton=True),
         inj.bind(SupervisorSetup, to_key=SupervisorSetupImpl),
-
-        inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
         inj.bind(EventCallbacks, singleton=True),
 
@@ -7713,7 +7750,10 @@ def bind_server(
 
     #
 
-    lst.append(inj.bind(get_poller_impl(), key=Poller, singleton=True))
+    poller_impl = get_poller_impl()
+    lst.append(inj.bind(poller_impl, key=Poller, singleton=True))
+    if issubclass(poller_impl, DaemonizeListener):
+        inj.bind(DaemonizeListener, array=True, to_key=Poller)
 
     #
 

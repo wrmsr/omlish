@@ -48,6 +48,7 @@ def bind_server(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
+        inj.bind_array(DaemonizeListener),
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
 
         inj.bind(SupervisorSetupImpl, singleton=True),
@@ -99,7 +100,7 @@ def bind_server(
     poller_impl = get_poller_impl()
     lst.append(inj.bind(poller_impl, key=Poller, singleton=True))
     if issubclass(poller_impl, DaemonizeListener):
-        inj.bind(DaemonizeListener, array=True, to_key=Poller),
+        inj.bind(DaemonizeListener, array=True, to_key=Poller)
 
     #
 

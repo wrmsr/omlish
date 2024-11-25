@@ -1,8 +1,4 @@
 # ruff: noqa: UP006 UP007
-"""
-TODO:
- - bind empty array
-"""
 import abc
 import contextlib
 import dataclasses as dc
