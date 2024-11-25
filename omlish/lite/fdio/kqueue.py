@@ -25,34 +25,35 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def register_readable(self, fd: int) -> None:
-            super().register_readable(fd)
-            ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
-            self._kqueue_control(fd, ke)
+            if super().register_readable(fd):
+                ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
+                self._kqueue_control(fd, ke)
 
         def register_writable(self, fd: int) -> None:
-            super().register_writable(fd)
-            ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
-            self._kqueue_control(fd, ke)
+            if super().register_writable(fd):
+                ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
+                self._kqueue_control(fd, ke)
 
         def unregister_readable(self, fd: int) -> None:
-            super().unregister_readable(fd)
-            ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-            self._kqueue_control(fd, ke)
+            if super().unregister_readable(fd):
+                ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
+                self._kqueue_control(fd, ke)
 
         def unregister_writable(self, fd: int) -> None:
-            super().unregister_writable(fd)
-            ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-            self._kqueue_control(fd, ke)
+            if super().unregister_writable(fd):
+                ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
+                self._kqueue_control(fd, ke)
 
         #
 
         def close(self) -> None:
-            self._kqueue.close()  # type: ignore
-            self._kqueue = None
+            if self._kqueue is not None:
+                self._kqueue.close()
+                self._kqueue = None
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> Poller.PollResult:
+        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
             r: ta.List[int] = []
             w: ta.List[int] = []
 
