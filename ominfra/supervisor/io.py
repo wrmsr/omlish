@@ -1,12 +1,13 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
+from omlish.lite.fdio.pollers import FdIoPoller
 from omlish.lite.logs import log
 
 from .dispatchers import Dispatchers
-from .poller import Poller
 from .types import ExitNow
 from .types import HasDispatchers
+from .utils.ostypes import Fd
 
 
 ##
@@ -19,7 +20,7 @@ class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
-            poller: Poller,
+            poller: FdIoPoller,
             has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
@@ -44,9 +45,10 @@ class IoManager(HasDispatchers):
                 self._poller.register_writable(fd)
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        r, w = self._poller.poll(timeout)
+        polled = self._poller.poll(timeout)
 
-        for fd in r:
+        for r in polled.r:
+            fd = Fd(r)
             if fd in dispatchers:
                 try:
                     dispatcher = dispatchers[fd]
@@ -67,7 +69,8 @@ class IoManager(HasDispatchers):
                 except Exception:  # noqa
                     pass
 
-        for fd in w:
+        for w in polled.w:
+            fd = Fd(w)
             if fd in dispatchers:
                 try:
                     dispatcher = dispatchers[fd]
