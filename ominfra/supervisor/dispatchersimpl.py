@@ -60,7 +60,6 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def channel(self) -> str:
         return self._channel
 
-    @property
     def fd(self) -> Fd:
         return self._fd
 
@@ -337,7 +336,7 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
         sent = os.write(self._fd, as_bytes(self._input_buffer))
         self._input_buffer = self._input_buffer[sent:]
 
-    def handle_write_event(self) -> None:
+    def on_writable(self) -> None:
         if self._input_buffer:
             try:
                 self.flush()

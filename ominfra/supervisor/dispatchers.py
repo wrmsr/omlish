@@ -7,7 +7,7 @@ from .utils.ostypes import Fd
 
 class Dispatchers(KeyedCollection[Fd, Dispatcher]):
     def _key(self, v: Dispatcher) -> Fd:
-        return v.fd
+        return v.fd()
 
     #
 
@@ -16,9 +16,9 @@ class Dispatchers(KeyedCollection[Fd, Dispatcher]):
             # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
             # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if d.readable():
-                d.handle_read_event()
+                d.on_readable()
             if d.writable():
-                d.handle_write_event()
+                d.on_writable()
 
     #
 

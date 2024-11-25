@@ -324,7 +324,11 @@ def build_injector_provider_map(bs: InjectorBindings) -> ta.Mapping[InjectorKey,
 
     for b in bs.bindings():
         if b.key.array:
-            am.setdefault(b.key, []).append(b.provider)
+            al = am.setdefault(b.key, [])
+            if isinstance(b.provider, ArrayInjectorProvider):
+                al.extend(b.provider.ps)
+            else:
+                al.append(b.provider)
         else:
             if b.key in pm:
                 raise KeyError(b.key)
@@ -745,6 +749,26 @@ def make_injector_factory(
     return outer
 
 
+def bind_injector_array(
+        obj: ta.Any = None,
+        *,
+        tag: ta.Any = None,
+) -> InjectorBindingOrBindings:
+    key = as_injector_key(obj)
+    if tag is not None:
+        if key.tag is not None:
+            raise ValueError('Must not specify multiple tags')
+        key = dc.replace(key, tag=tag)
+
+    if key.array:
+        raise ValueError('Key must not be array')
+
+    return InjectorBinding(
+        dc.replace(key, array=True),
+        ArrayInjectorProvider([]),
+    )
+
+
 def make_injector_array_type(
         ele: ta.Union[InjectorKey, InjectorKeyCls],
         cls: U,
@@ -846,6 +870,15 @@ class Injection:
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
         return cls.bind(make_injector_factory(fn, cls_, ann))
+
+    @classmethod
+    def bind_array(
+            cls,
+            obj: ta.Any = None,
+            *,
+            tag: ta.Any = None,
+    ) -> InjectorBindingOrBindings:
+        return bind_injector_array(obj, tag=tag)
 
     @classmethod
     def bind_array_type(

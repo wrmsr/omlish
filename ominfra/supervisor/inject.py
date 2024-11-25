@@ -53,8 +53,6 @@ def bind_server(
         inj.bind(SupervisorSetupImpl, singleton=True),
         inj.bind(SupervisorSetup, to_key=SupervisorSetupImpl),
 
-        inj.bind(DaemonizeListener, array=True, to_key=Poller),
-
         inj.bind(EventCallbacks, singleton=True),
 
         inj.bind(SignalReceiver, singleton=True),
@@ -98,7 +96,10 @@ def bind_server(
 
     #
 
-    lst.append(inj.bind(get_poller_impl(), key=Poller, singleton=True))
+    poller_impl = get_poller_impl()
+    lst.append(inj.bind(poller_impl, key=Poller, singleton=True))
+    if issubclass(poller_impl, DaemonizeListener):
+        inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
     #
 

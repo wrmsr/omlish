@@ -103,16 +103,16 @@ class TestArrays(unittest.TestCase):
         p = i.provide(Ints)
         self.assertEqual(set(p), {420, 421})
 
-    # FIXME:
-    # def test_empty_array(self):
-    #     Ints = ta.NewType('Ints', ta.Sequence[int])  # noqa
-    #
-    #     bs = inj.as_bindings(
-    #         inj.bind_array_type(int, Ints),
-    #     )
-    #     i = inj.create_injector(bs)
-    #     p = i.provide(Ints)
-    #     self.assertEqual(len(p), 0)
+    def test_empty_array(self):
+        Ints = ta.NewType('Ints', ta.Sequence[int])  # noqa
+
+        bs = inj.as_bindings(
+            inj.bind_array(int),
+            inj.bind_array_type(int, Ints),
+        )
+        i = inj.create_injector(bs)
+        p = i.provide(Ints)
+        self.assertEqual(len(p), 0)
 
     def test_listener_array(self):
         on_foos: list = []
