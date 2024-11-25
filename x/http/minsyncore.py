@@ -89,20 +89,12 @@ class IoManager:
         rs = {d.fd(): d for d in ds if d.readable()}
         ws = {d.fd(): d for d in ds if d.writable()}
 
-        print(f'rs={sorted(rs)}')
-        print(f'ws={sorted(ws)}')
-        print()
-
         ra, wa, _ = select.select(
             rs,
             ws,
             [],
             timeout,
         )
-
-        print(f'ra={sorted(ra)}')
-        print(f'wa={sorted(wa)}')
-        print()
 
         for f in ra:
             if not (d := rs[f]).closed:

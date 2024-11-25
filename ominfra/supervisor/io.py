@@ -51,7 +51,7 @@ class IoManager(HasDispatchers):
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
-                    dispatcher.handle_read_event()
+                    dispatcher.on_readable()
                     if not dispatcher.readable():
                         self._poller.unregister_readable(fd)
                 except ExitNow:
@@ -72,7 +72,7 @@ class IoManager(HasDispatchers):
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
-                    dispatcher.handle_write_event()
+                    dispatcher.on_writable()
                     if not dispatcher.writable():
                         self._poller.unregister_writable(fd)
                 except ExitNow:
