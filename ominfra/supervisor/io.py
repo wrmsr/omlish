@@ -57,7 +57,7 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    dispatchers[fd].handle_error()
+                    dispatchers[fd].on_error()
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -78,7 +78,7 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    dispatchers[fd].handle_error()
+                    dispatchers[fd].on_error()
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:

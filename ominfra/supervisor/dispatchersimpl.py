@@ -74,7 +74,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
 
-    def handle_error(self) -> None:
+    def on_error(self) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
         log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
