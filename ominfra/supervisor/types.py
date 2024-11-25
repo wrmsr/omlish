@@ -14,6 +14,10 @@ from .utils.ostypes import Pid
 from .utils.ostypes import Rc
 
 
+if ta.TYPE_CHECKING:
+    from .dispatchers import Dispatchers
+
+
 ##
 
 
@@ -60,7 +64,7 @@ class SupervisorStateManager(abc.ABC):
 
 class HasDispatchers(abc.ABC):
     @abc.abstractmethod
-    def get_dispatchers(self) -> FdIoHandler:
+    def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
