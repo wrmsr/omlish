@@ -62,12 +62,6 @@ class SupervisorStateManager(abc.ABC):
 
 
 class Dispatcher(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def channel(self) -> str:
-        raise NotImplementedError
-
-    @property
     @abc.abstractmethod
     def fd(self) -> Fd:
         raise NotImplementedError
@@ -99,10 +93,10 @@ class Dispatcher(abc.ABC):
 
     #
 
-    def handle_read_event(self) -> None:
+    def on_readable(self) -> None:
         raise TypeError
 
-    def handle_write_event(self) -> None:
+    def on_writable(self) -> None:
         raise TypeError
 
 
@@ -113,6 +107,11 @@ class HasDispatchers(abc.ABC):
 
 
 class ProcessDispatcher(Dispatcher, abc.ABC):
+    @property
+    @abc.abstractmethod
+    def channel(self) -> str:
+        raise NotImplementedError
+
     @property
     @abc.abstractmethod
     def process(self) -> 'Process':
