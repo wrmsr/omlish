@@ -77,10 +77,6 @@ class Dispatcher(abc.ABC):
     def close(self) -> None:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def handle_error(self) -> None:
-        raise NotImplementedError
-
     #
 
     @abc.abstractmethod
@@ -98,6 +94,9 @@ class Dispatcher(abc.ABC):
 
     def on_writable(self) -> None:
         raise TypeError
+
+    def on_error(self) -> None:
+        pass
 
 
 class HasDispatchers(abc.ABC):
