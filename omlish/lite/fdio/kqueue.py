@@ -7,6 +7,9 @@ import typing as ta
 from .pollers import FdIoPoller
 
 
+KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+
+
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
     class KqueueFdIoPoller(FdIoPoller):
         DEFAULT_MAX_EVENTS = 1000
@@ -36,29 +39,43 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 self._kqueue.close()
                 self._kqueue = None
 
-        def reregister(self) -> None:
+        def reopen(self) -> None:
             for fd in self._readable:
-                self.register_readable(fd)
+                self._register_readable(fd)
             for fd in self._writable:
-                self.register_writable(fd)
+                self._register_writable(fd)
 
         #
 
         def register_readable(self, fd: int) -> None:
             if super().register_readable(fd):
-                self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
+                self._register_readable(fd)
 
         def register_writable(self, fd: int) -> None:
             if super().register_writable(fd):
-                self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+                self._register_writable(fd)
 
         def unregister_readable(self, fd: int) -> None:
             if super().unregister_readable(fd):
-                self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
+                self._unregister_readable(fd)
 
         def unregister_writable(self, fd: int) -> None:
             if super().unregister_writable(fd):
-                self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+                self._unregister_writable(fd)
+
+        #
+
+        def _register_readable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
+
+        def _register_writable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+
+        def _unregister_readable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
+
+        def _unregister_writable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
 
         def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
             ke = select.kevent(fd, filter=filter, flags=flags)
