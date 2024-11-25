@@ -447,8 +447,6 @@ class ProcessImpl(Process):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        logger = log
-
         if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
@@ -480,14 +478,14 @@ class ProcessImpl(Process):
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
-                logger.info('success: %s %s', self.name, msg)
+                log.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
             if self._backoff > self._config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
-                logger.info('gave up: %s %s', self.name, msg)
+                log.info('gave up: %s %s', self.name, msg)
 
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
