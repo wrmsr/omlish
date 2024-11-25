@@ -44,6 +44,22 @@ class Poller(abc.ABC):
 
     #
 
+    def update(
+            self,
+            r: ta.AbstractSet[Fd],
+            w: ta.AbstractSet[Fd],
+    ) -> None:
+        for f in r - self._readable:
+            self.register_readable(f)
+        for f in w - self._writable:
+            self.register_writable(f)
+        for f in self._readable - r:
+            self.unregister_readable(f)
+        for f in self._writable - w:
+            self.unregister_writable(f)
+
+    #
+
     def close(self) -> None:  # noqa
         pass
 
