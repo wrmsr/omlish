@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007
 import errno
 import select
-import typing as ta
 import sys
+import typing as ta
 
 from .pollers import FdIoPoller
 
@@ -69,7 +69,8 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 if error.errno == errno.EBADF:
                     # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
                     pass
-                raise
+                else:
+                    raise
 
         #
 
