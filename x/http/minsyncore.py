@@ -1,5 +1,3 @@
-import abc
-import select
 import socket
 import typing as ta
 
@@ -14,112 +12,25 @@ from omlish.lite.io import IncrementalWriteBuffer
 from omlish.lite.io import ReadableListBuffer
 from omlish.lite.socket import SocketAddress
 
-
-##
-
-
-class IoDispatcher(abc.ABC):
-    @abc.abstractmethod
-    def fd(self) -> int:
-        raise NotImplementedError
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def closed(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def close(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    def readable(self) -> bool:
-        return False
-
-    def writable(self) -> bool:
-        return False
-
-    #
-
-    def on_readable(self) -> None:
-        raise TypeError
-
-    def on_writable(self) -> None:
-        raise TypeError
-
-
-class SocketIoDispatcher(IoDispatcher, abc.ABC):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            sock: socket.socket,
-    ) -> None:
-        super().__init__()
-
-        self._addr = addr
-        self._sock: ta.Optional[socket.socket] = sock
-
-    def fd(self) -> int:
-        return check_not_none(self._sock).fileno()
-
-    @property
-    def closed(self) -> bool:
-        return self._sock is None
-
-    def close(self) -> None:
-        if self._sock is not None:
-            self._sock.close()
-        self._sock = None
-
-
-class IoManager:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._ds: list[IoDispatcher] = []
-
-    def register(self, d: IoDispatcher) -> None:
-        self._ds.append(d)
-
-    def poll(self, *, timeout: float = 1.) -> None:
-        ds = self._ds
-        rs = {d.fd(): d for d in ds if d.readable()}
-        ws = {d.fd(): d for d in ds if d.writable()}
-
-        ra, wa, _ = select.select(
-            rs,
-            ws,
-            [],
-            timeout,
-        )
-
-        for f in ra:
-            if not (d := rs[f]).closed:
-                d.on_readable()
-        for f in wa:
-            if not (d := ws[f]).closed:
-                d.on_writable()
-
-        self._ds = [d for d in ds if not d.closed]
+from .fdio import FdIoManager
+from .fdio import SelectFdIoPoller
+from .fdio import SocketFdIoHandler
 
 
 ##
 
 
-class HttpServer(SocketIoDispatcher):
+class HttpServer(SocketFdIoHandler):
     def __init__(
             self,
             addr: SocketAddress,
             handler: HttpHandler,
-            io_mgr: IoManager,
+            io: FdIoManager,
     ) -> None:
         super().__init__(addr, socket.create_server(addr))
 
         self._handler = handler
-        self._io_mgr = io_mgr
+        self._io = io
 
         sock = check_not_none(self._sock)
         sock.setblocking(False)
@@ -135,19 +46,19 @@ class HttpServer(SocketIoDispatcher):
             cli_addr,
             cli_sock,
             self._handler,
-            self._io_mgr,
+            self._io,
         )
 
-        self._io_mgr.register(conn)
+        self._io.register(conn)
 
 
-class HttpServerConnection(SocketIoDispatcher):
+class HttpServerConnection(SocketFdIoHandler):
     def __init__(
             self,
             addr: SocketAddress,
             sock: socket.socket,
             handler: HttpHandler,
-            io_mgr: IoManager,
+            io: FdIoManager,
             *,
             read_size: int = 0x10,
             write_size: int = 0x10,
@@ -155,7 +66,7 @@ class HttpServerConnection(SocketIoDispatcher):
         super().__init__(addr, sock)
 
         self._handler = handler
-        self._io_mgr = io_mgr
+        self._io = io
         self._read_size = read_size
         self._write_size = write_size
 
@@ -282,18 +193,19 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 
 
 def _main() -> None:
-    io_mgr = IoManager()
+    io_poller = SelectFdIoPoller()
+    io_manager = FdIoManager(io_poller)
 
     srv_addr = ('localhost', 8000)
     srv = HttpServer(
         srv_addr,
         say_hi_handler,
-        io_mgr,
+        io_manager,
     )
-    io_mgr.register(srv)
+    io_manager.register(srv)
 
     while True:
-        io_mgr.poll()
+        io_manager.poll()
 
 
 if __name__ == '__main__':
