@@ -8,10 +8,9 @@ from .pollers import FdIoPoller
 
 
 KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
-
-
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-    class KqueueFdIoPoller(FdIoPoller):
+
+    class _KqueueFdIoPoller(FdIoPoller):
         DEFAULT_MAX_EVENTS = 1000
 
         def __init__(
@@ -47,24 +46,6 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
         #
 
-        def register_readable(self, fd: int) -> None:
-            if super().register_readable(fd):
-                self._register_readable(fd)
-
-        def register_writable(self, fd: int) -> None:
-            if super().register_writable(fd):
-                self._register_writable(fd)
-
-        def unregister_readable(self, fd: int) -> None:
-            if super().unregister_readable(fd):
-                self._unregister_readable(fd)
-
-        def unregister_writable(self, fd: int) -> None:
-            if super().unregister_writable(fd):
-                self._unregister_writable(fd)
-
-        #
-
         def _register_readable(self, fd: int) -> None:
             self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
 
@@ -81,7 +62,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             ke = select.kevent(fd, filter=filter, flags=flags)
             kq = self._get_kqueue()
             try:
-                kq.control([ke], 0)  # type: ignore
+                kq.control([ke], 0)
             except OSError as error:
                 if error.errno == errno.EBADF:
                     # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
@@ -92,8 +73,9 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+            kq = self._get_kqueue()
             try:
-                kes = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
+                kes = kq.control(None, self._max_events, timeout)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
@@ -111,6 +93,6 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
             return FdIoPoller.PollResult(r, w)
 
-
+    KqueueFdIoPoller = _KqueueFdIoPoller
 else:
-    KqueuePoller = None
+    KqueueFdIoPoller = None

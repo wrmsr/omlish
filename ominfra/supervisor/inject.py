@@ -2,7 +2,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.fdio.kqueue import KqueuePoller
+from omlish.lite.fdio.kqueue import KqueueFdIoPoller
 from omlish.lite.fdio.pollers import FdIoPoller
 from omlish.lite.fdio.pollers import PollFdIoPoller
 from omlish.lite.fdio.pollers import SelectFdIoPoller
@@ -111,7 +111,7 @@ def bind_server(
 
     #
 
-    poller_impl = next(filter(None, [KqueuePoller, PollFdIoPoller, SelectFdIoPoller]))
+    poller_impl = next(filter(None, [KqueueFdIoPoller, PollFdIoPoller, SelectFdIoPoller]))
     lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
     inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
 

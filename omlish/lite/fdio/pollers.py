@@ -40,25 +40,43 @@ class FdIoPoller(abc.ABC):
         if fd in self._readable:
             return False
         self._readable.add(fd)
+        self._register_readable(fd)
         return True
 
     def register_writable(self, fd: int) -> bool:
         if fd in self._writable:
             return False
         self._writable.add(fd)
+        self._register_writable(fd)
         return True
 
     def unregister_readable(self, fd: int) -> bool:
         if fd not in self._readable:
             return False
         self._readable.discard(fd)
+        self._unregister_readable(fd)
         return True
 
     def unregister_writable(self, fd: int) -> bool:
         if fd not in self._writable:
             return False
         self._writable.discard(fd)
+        self._unregister_writable(fd)
         return True
+
+    #
+
+    def _register_readable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _register_writable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _unregister_readable(self, fd: int) -> None:  # noqa
+        pass
+
+    def _unregister_writable(self, fd: int) -> None:  # noqa
+        pass
 
     #
 
@@ -79,7 +97,7 @@ class FdIoPoller(abc.ABC):
     #
 
     @dc.dataclass(frozen=True)
-    class PollResult(ta.NamedTuple):
+    class PollResult:
         r: ta.Sequence[int] = ()
         w: ta.Sequence[int] = ()
 
@@ -119,10 +137,9 @@ class SelectFdIoPoller(FdIoPoller):
 
 
 PollFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
-
-
 if hasattr(select, 'poll'):
-    class PollFdIoPoller(FdIoPoller):
+
+    class _PollFdIoPoller(FdIoPoller):
         def __init__(self) -> None:
             super().__init__()
 
@@ -133,25 +150,21 @@ if hasattr(select, 'poll'):
         _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
         _WRITE = select.POLLOUT
 
-        def register_readable(self, fd: int) -> None:
-            if super().register_readable(fd):
-                self._poller.register(fd, self._READ)
+        def _register_readable(self, fd: int) -> None:
+            self._poller.register(fd, self._READ)
 
-        def register_writable(self, fd: int) -> None:
-            if super().register_writable(fd):
+        def _register_writable(self, fd: int) -> None:
+            self._poller.register(fd, self._WRITE)
+
+        def _unregister_readable(self, fd: int) -> None:
+            self._poller.unregister(fd)
+            if fd in self._writable:
                 self._poller.register(fd, self._WRITE)
 
-        def unregister_readable(self, fd: int) -> None:
-            if super().unregister_readable(fd):
-                self._poller.unregister(fd)
-                if fd in self._writable:
-                    self._poller.register(fd, self._WRITE)
-
-        def unregister_writable(self, fd: int) -> None:
-            if super().unregister_writable(fd):
-                self._poller.unregister(fd)
-                if fd in self._readable:
-                    self._poller.register(fd, self._READ)
+        def _unregister_writable(self, fd: int) -> None:
+            self._poller.unregister(fd)
+            if fd in self._readable:
+                self._poller.register(fd, self._READ)
 
         #
 
@@ -188,6 +201,6 @@ if hasattr(select, 'poll'):
 
             return False
 
-
+    PollFdIoPoller = _PollFdIoPoller
 else:
     PollFdIoPoller = None
