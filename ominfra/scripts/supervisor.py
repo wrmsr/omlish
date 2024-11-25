@@ -1563,15 +1563,18 @@ class FdIoPoller(abc.ABC):
     #
 
     @property
+    @ta.final
     def readable(self) -> ta.AbstractSet[int]:
         return self._readable
 
     @property
+    @ta.final
     def writable(self) -> ta.AbstractSet[int]:
         return self._writable
 
     #
 
+    @ta.final
     def register_readable(self, fd: int) -> bool:
         if fd in self._readable:
             return False
@@ -1579,6 +1582,7 @@ class FdIoPoller(abc.ABC):
         self._register_readable(fd)
         return True
 
+    @ta.final
     def register_writable(self, fd: int) -> bool:
         if fd in self._writable:
             return False
@@ -1586,6 +1590,7 @@ class FdIoPoller(abc.ABC):
         self._register_writable(fd)
         return True
 
+    @ta.final
     def unregister_readable(self, fd: int) -> bool:
         if fd not in self._readable:
             return False
@@ -1593,6 +1598,7 @@ class FdIoPoller(abc.ABC):
         self._unregister_readable(fd)
         return True
 
+    @ta.final
     def unregister_writable(self, fd: int) -> bool:
         if fd not in self._writable:
             return False
@@ -6048,7 +6054,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
             return False
         return True
 
-    def handle_read_event(self) -> None:
+    def on_readable(self) -> None:
         data = read_fd(self._fd)
         self._output_buffer += data
         self.record_output()
@@ -6084,9 +6090,6 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
     def writable(self) -> bool:
         if self._input_buffer and not self._closed:
             return True
-        return False
-
-    def readable(self) -> bool:
         return False
 
     def flush(self) -> None:
@@ -6576,6 +6579,10 @@ class IoManager(HasDispatchers):
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
         polled = self._poller.poll(timeout)
+        if polled.msg is not None:
+            log.error(polled.msg)
+        if polled.exc is not None:
+            log.error('Poll exception: %r', polled.exc)
 
         for r in polled.r:
             fd = Fd(r)
@@ -7067,8 +7074,6 @@ class ProcessImpl(Process):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        logger = log
-
         if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
@@ -7100,14 +7105,14 @@ class ProcessImpl(Process):
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
-                logger.info('success: %s %s', self.name, msg)
+                log.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
             if self._backoff > self._config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
-                logger.info('gave up: %s %s', self.name, msg)
+                log.info('gave up: %s %s', self.name, msg)
 
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
