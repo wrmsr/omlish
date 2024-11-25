@@ -3,6 +3,7 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
 
 def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -83,4 +84,16 @@ def check_not_in(v: T, c: ta.Container[T]) -> T:
 
 def check_single(vs: ta.Iterable[T]) -> T:
     [v] = vs
+    return v
+
+
+def check_empty(v: SizedT) -> SizedT:
+    if len(v):
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty(v: SizedT) -> SizedT:
+    if not len(v):
+        raise ValueError(v)
     return v
