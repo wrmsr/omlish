@@ -6,62 +6,8 @@ from omlish.lite.http.coroserver import CoroHttpServer
 from omlish.lite.http.handlers import HttpHandler
 from omlish.lite.http.handlers import HttpHandlerRequest
 from omlish.lite.http.handlers import HttpHandlerResponse
-from omlish.lite.io import DelimitingBuffer
+from omlish.lite.io import ReadableListBuffer
 from omlish.lite.socket import SocketAddress
-
-
-class DelimitingReader:
-    def __init__(self) -> None:
-        super().__init__()
-        self._lst: list[bytes] = []
-
-    def feed(self, d: bytes) -> None:
-        if d:
-            self._lst.append(d)
-
-    def _chop(self, i: int, e: int) -> bytes:
-        lst = self._lst
-        d = lst[i]
-
-        o = b''.join([
-            *lst[:i],
-            d[:e],
-        ])
-
-        self._lst = [
-            *([d[e:]] if e < len(d) else []),
-            *lst[i + 1:],
-        ]
-
-        return o
-
-    def read(self, n: int | None = None) -> bytes | None:
-        if n is None:
-            o = b''.join(self._lst)
-            self._lst = []
-            return o
-
-        if not (lst := self._lst):
-            return None
-
-        c = 0
-        for i, d in enumerate(lst):
-            r = n - c
-            if (l := len(d)) >= r:
-                return self._chop(i, r)
-            c += l
-
-        return None
-
-    def readline(self, delim: bytes = b'\n') -> bytes | None:
-        if not (lst := self._lst):
-            return None
-
-        for i, d in enumerate(lst):
-            if (p := d.find(delim)) >= 0:
-                return self._chop(i, p + len(delim))
-
-        return None
 
 
 class IoManager:
@@ -151,6 +97,8 @@ class HttpServerConnection:
             sock: socket.socket,
             handler: HttpHandler,
             io: IoManager,
+            *,
+            read_size: int = 0x10000,
     ) -> None:
         super().__init__()
 
@@ -158,6 +106,7 @@ class HttpServerConnection:
         self._sock = sock
         self._handler = handler
         self._io = io
+        self._read_size = read_size
 
         self._coro_srv = CoroHttpServer(
             addr,
@@ -166,7 +115,7 @@ class HttpServerConnection:
         self._srv_coro = self._coro_srv.coro_handle()
         self._cur_io = self._next_io(None)
 
-        self._line_buf = DelimitingBuffer(keep_ends=True)
+        self._buf = ReadableListBuffer()
 
         io.register(self._on_read, r=[sock.fileno()])
 
@@ -192,17 +141,40 @@ class HttpServerConnection:
         self._cur_io = o
         return o
 
+    def _close(self) -> None:
+        self._io.unregister(r=[self._sock.fileno()])
+        self._sock.close()
+
     def _on_read(self) -> None:
-        buf = self._sock.recv(1024)
-
-        for out in self._line_buf.feed(buf):
-            print(out)
-
+        buf = self._sock.recv(self._read_size)
         if not buf:
-            self._io.unregister(r=[self._sock.fileno()])
-            self._sock.close()
+            self._close()
             return
 
+        self._buf.feed(buf)
+
+        ci = self._cur_io
+        while True:
+            if ci is None:
+                self._close()
+                return
+
+            if isinstance(ci, CoroHttpServer.ReadIo):
+                if (d := self._buf.read(ci.sz)) is None:
+                    return
+                ci = self._next_io(d)
+
+            elif isinstance(ci, CoroHttpServer.ReadLineIo):
+                if (d := self._buf.read_until(b'\n')) is None:
+                    return
+                ci = self._next_io(d)
+
+            elif isinstance(ci, CoroHttpServer.WriteIo):
+                self._sock.send(ci.data)
+                ci = self._next_io(None)
+
+            else:
+                raise TypeError(ci)
 
 
 def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
@@ -220,14 +192,6 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 
 
 def _main() -> None:
-    dr = DelimitingReader()
-    dr.feed(b'abcd\nef')
-    dr.feed(b'ghi\njkl')
-    print(dr.read(5))
-    print(dr.readline())
-    print(dr.readline())
-
-
     iom = IoManager()
 
     srv_addr = ('localhost', 9999)
