@@ -2,6 +2,7 @@ import select
 import socket
 import typing as ta
 
+from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
 from omlish.lite.check import check_state
 from omlish.lite.http.coroserver import CoroHttpServer
@@ -102,6 +103,7 @@ class HttpServerConnection:
             io_mgr: IoManager,
             *,
             read_size: int = 0x10000,
+            write_size: int = 0x10000,
     ) -> None:
         super().__init__()
 
@@ -110,6 +112,7 @@ class HttpServerConnection:
         self._handler = handler
         self._io_mgr = io_mgr
         self._read_size = read_size
+        self._write_size = write_size
 
         self._coro_srv = CoroHttpServer(
             addr,
@@ -119,7 +122,7 @@ class HttpServerConnection:
         self._cur_io = self._next_io(None)
 
         self._read_buf = ReadableListBuffer()
-        self._write_bufs: list[bytes] = []
+        self._write_bufs: list[bytes] | None = None
 
         sock.setblocking(False)
         io_mgr.register(self._on_readable, r=[sock.fileno()])
@@ -134,12 +137,23 @@ class HttpServerConnection:
                 else:
                     o = next(self._srv_coro)
             except StopIteration:
+                self._close()
                 o = None
                 break
 
             if isinstance(o, CoroHttpServer.AnyLogIo):
                 print(o)
                 continue
+
+            elif isinstance(o, CoroHttpServer.WriteIo):
+                check_state(bool(o.data))
+                check_none(self._write_bufs)
+                self._write_bufs = [
+                    o.data[i:i + self._write_size]
+                    for i in range(0, len(o.data), self._write_size)
+                ]
+                self._io_mgr.register(self._on_writable, w=[self._sock.fileno()])
+                break
 
             break
 
@@ -169,29 +183,16 @@ class HttpServerConnection:
 
         ci = self._cur_io
         while True:
-            if ci is None:
-                self._close()
-                return
-
             if isinstance(ci, CoroHttpServer.ReadIo):
                 if (d := self._read_buf.read(ci.sz)) is None:
-                    return
-                ci = self._next_io(d)
-
+                    break
+                self._next_io(d)
             elif isinstance(ci, CoroHttpServer.ReadLineIo):
                 if (d := self._read_buf.read_until(b'\n')) is None:
-                    return
-                ci = self._next_io(d)
-
-            elif isinstance(ci, CoroHttpServer.WriteIo):
-                check_state(bool(ci.data))
-                if not self._write_bufs:
-                    self._io_mgr.register(self._on_writable, w=[self._sock.fileno()])
-                self._write_bufs.append(ci.data)
-                return
-
+                    break
+                self._next_io(d)
             else:
-                raise TypeError(ci)
+                break
 
     def _on_writable(self) -> None:
         check_state(bool(lst := self._write_bufs))
@@ -212,13 +213,17 @@ class HttpServerConnection:
         if not t:
             return
 
-        self._write_bufs = nwb = [
+        nwb = [
             *([d[n:]] if n < len(d) else []),
             *lst[i + 1:],
         ]
 
         if not nwb:
+            self._write_bufs = None
             self._io_mgr.unregister(w=[self._sock.fileno()])
+            self._next_io(None)
+        else:
+            self._write_size = nwb
 
 
 def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
