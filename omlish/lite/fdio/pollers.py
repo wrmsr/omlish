@@ -18,6 +18,11 @@ class FdIoPoller(abc.ABC):
 
     #
 
+    def close(self) -> None:  # noqa
+        pass
+
+    #
+
     @property
     def readable(self) -> ta.AbstractSet[int]:
         return self._readable
@@ -67,11 +72,6 @@ class FdIoPoller(abc.ABC):
             self.unregister_readable(f)
         for f in self._writable - w:
             self.unregister_writable(f)
-
-    #
-
-    def close(self) -> None:  # noqa
-        pass
 
     #
 
@@ -149,9 +149,10 @@ class PollFdIoPoller(FdIoPoller):
     #
 
     def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-        fds: ta.List[ta.Tuple[int, int]]
+        polled: ta.List[ta.Tuple[int, int]]
         try:
-            fds = self._poller.poll(timeout * 1000 if timeout is not None else None)
+            polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
+
         except OSError as exc:
             if exc.errno == errno.EINTR:
                 return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
@@ -160,15 +161,13 @@ class PollFdIoPoller(FdIoPoller):
 
         r: ta.List[int] = []
         w: ta.List[int] = []
-        for fd, mask in fds:
+        for fd, mask in polled:
             if self._ignore_invalid(fd, mask):
                 continue
-
             if mask & self._READ:
                 r.append(fd)
             if mask & self._WRITE:
                 w.append(fd)
-
         return FdIoPoller.PollResult(r, w)
 
     def _ignore_invalid(self, fd: int, mask: int) -> bool:

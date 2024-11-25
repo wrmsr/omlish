@@ -20,78 +20,79 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
             self._max_events = max_events
 
-            self._kqueue: ta.Optional[ta.Any] = select.kqueue()
+            self._kqueue: ta.Optional[ta.Any] = None
 
         #
 
-        def register_readable(self, fd: int) -> None:
-            if super().register_readable(fd):
-                ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
-                self._kqueue_control(fd, ke)
-
-        def register_writable(self, fd: int) -> None:
-            if super().register_writable(fd):
-                ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
-                self._kqueue_control(fd, ke)
-
-        def unregister_readable(self, fd: int) -> None:
-            if super().unregister_readable(fd):
-                ke = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-                self._kqueue_control(fd, ke)
-
-        def unregister_writable(self, fd: int) -> None:
-            if super().unregister_writable(fd):
-                ke = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-                self._kqueue_control(fd, ke)
-
-        #
+        def _get_kqueue(self) -> 'select.kqueue':
+            if (kq := self._kqueue) is not None:
+                return kq
+            kq = select.kqueue()
+            self._kqueue = kq
+            return kq
 
         def close(self) -> None:
             if self._kqueue is not None:
                 self._kqueue.close()
                 self._kqueue = None
 
-        #
-
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-            r: ta.List[int] = []
-            w: ta.List[int] = []
-
-            try:
-                kes = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
-            except OSError as exc:
-                if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-                raise
-
-            for ke in kes:
-                if ke.filter == select.KQ_FILTER_READ:
-                    r.append(ke.ident)
-                if ke.filter == select.KQ_FILTER_WRITE:
-                    writable.append(ke.ident)
-
-            return FdIoPoller.PollResult(r, writable)
-
-        def _kqueue_control(self, fd: int, ke: 'select.kevent') -> None:
-            try:
-                self._kqueue.control([ke], 0)  # type: ignore
-            except OSError as error:
-                if error.errno == errno.EBADF:
-                    log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
-                else:
-                    raise
-
-        #
-
-        def before_daemonize(self) -> None:
-            self.close()
-
-        def after_daemonize(self) -> None:
-            self._kqueue = select.kqueue()
+        def reregister(self) -> None:
             for fd in self._readable:
                 self.register_readable(fd)
             for fd in self._writable:
                 self.register_writable(fd)
+
+        #
+
+        def register_readable(self, fd: int) -> None:
+            if super().register_readable(fd):
+                self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
+
+        def register_writable(self, fd: int) -> None:
+            if super().register_writable(fd):
+                self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+
+        def unregister_readable(self, fd: int) -> None:
+            if super().unregister_readable(fd):
+                self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
+
+        def unregister_writable(self, fd: int) -> None:
+            if super().unregister_writable(fd):
+                self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+
+        def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
+            ke = select.kevent(fd, filter=filter, flags=flags)
+            kq = self._get_kqueue()
+            try:
+                kq.control([ke], 0)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EBADF:
+                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
+                    pass
+                raise
+
+        #
+
+        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+            try:
+                kes = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
+
+            except OSError as exc:
+                if exc.errno == errno.EINTR:
+                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                else:
+                    raise
+
+            r: ta.List[int] = []
+            w: ta.List[int] = []
+            for ke in kes:
+                if ke.filter == select.KQ_FILTER_READ:
+                    r.append(ke.ident)
+                if ke.filter == select.KQ_FILTER_WRITE:
+                    w.append(ke.ident)
+
+            return FdIoPoller.PollResult(r, w)
+
 
 else:
     KqueuePoller = None
