@@ -3,18 +3,15 @@ import abc
 import functools
 import typing as ta
 
+from omlish.lite.fdio.handlers import FdIoHandler
+
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .states import ProcessState
 from .states import SupervisorState
 from .utils.collections import KeyedCollectionAccessors
-from .utils.ostypes import Fd
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
-
-
-if ta.TYPE_CHECKING:
-    from .dispatchers import Dispatchers
 
 
 ##
@@ -61,51 +58,13 @@ class SupervisorStateManager(abc.ABC):
 ##
 
 
-class Dispatcher(abc.ABC):
-    @abc.abstractmethod
-    def fd(self) -> Fd:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def closed(self) -> bool:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def close(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def readable(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def writable(self) -> bool:
-        raise NotImplementedError
-
-    #
-
-    def on_readable(self) -> None:
-        raise TypeError
-
-    def on_writable(self) -> None:
-        raise TypeError
-
-    def on_error(self) -> None:
-        pass
-
-
 class HasDispatchers(abc.ABC):
     @abc.abstractmethod
-    def get_dispatchers(self) -> 'Dispatchers':
+    def get_dispatchers(self) -> FdIoHandler:
         raise NotImplementedError
 
 
-class ProcessDispatcher(Dispatcher, abc.ABC):
+class ProcessDispatcher(FdIoHandler, abc.ABC):
     @property
     @abc.abstractmethod
     def channel(self) -> str:

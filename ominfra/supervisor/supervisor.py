@@ -5,6 +5,7 @@ import time
 import typing as ta
 
 from omlish.lite.check import check_isinstance
+from omlish.lite.fdio.pollers import FdIoPoller
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
@@ -17,7 +18,6 @@ from .events import SupervisorStoppingEvent
 from .groups import ProcessGroup
 from .groups import ProcessGroupManager
 from .io import IoManager
-from .poller import Poller
 from .process import PidHistory
 from .setup import SupervisorSetup
 from .signals import SignalHandler
@@ -66,7 +66,7 @@ class Supervisor:
             self,
             *,
             config: ServerConfig,
-            poller: Poller,
+            poller: FdIoPoller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,

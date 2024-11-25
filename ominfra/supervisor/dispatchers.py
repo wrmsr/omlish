@@ -1,13 +1,14 @@
 # ruff: noqa: UP006 UP007
-from .types import Dispatcher
+from omlish.lite.fdio.handlers import FdIoHandler
+
 from .types import ProcessOutputDispatcher
 from .utils.collections import KeyedCollection
 from .utils.ostypes import Fd
 
 
-class Dispatchers(KeyedCollection[Fd, Dispatcher]):
-    def _key(self, v: Dispatcher) -> Fd:
-        return v.fd()
+class Dispatchers(KeyedCollection[Fd, FdIoHandler]):
+    def _key(self, v: FdIoHandler) -> Fd:
+        return Fd(v.fd())
 
     #
 

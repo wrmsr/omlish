@@ -1,6 +1,11 @@
 # ruff: noqa: UP006 UP007
+import dataclasses as dc
 import typing as ta
 
+from omlish.lite.fdio.kqueue import KqueuePoller
+from omlish.lite.fdio.pollers import FdIoPoller
+from omlish.lite.fdio.pollers import PollFdIoPoller
+from omlish.lite.fdio.pollers import SelectFdIoPoller
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
@@ -14,8 +19,6 @@ from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
 from .io import HasDispatchersList
 from .io import IoManager
-from .poller import Poller
-from .poller import get_poller_impl
 from .process import PidHistory
 from .processimpl import ProcessImpl
 from .processimpl import ProcessSpawningFactory
@@ -37,6 +40,17 @@ from .types import ServerEpoch
 from .types import SupervisorStateManager
 from .utils.signals import SignalReceiver
 from .utils.users import get_user
+
+
+@dc.dataclass(frozen=True)
+class _FdIoPollerDaemonizeListener(DaemonizeListener):
+    _poller: FdIoPoller
+
+    def before_daemonize(self) -> None:
+        self._poller.close()
+
+    def after_daemonize(self) -> None:
+        self._poller.reopen()
 
 
 def bind_server(
@@ -97,10 +111,9 @@ def bind_server(
 
     #
 
-    poller_impl = get_poller_impl()
-    lst.append(inj.bind(poller_impl, key=Poller, singleton=True))
-    if issubclass(poller_impl, DaemonizeListener):
-        inj.bind(DaemonizeListener, array=True, to_key=Poller)
+    poller_impl = next(filter(None, [KqueuePoller, PollFdIoPoller, SelectFdIoPoller]))
+    lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
+    inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
 
     #
 
