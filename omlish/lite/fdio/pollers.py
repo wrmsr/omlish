@@ -21,6 +21,9 @@ class FdIoPoller(abc.ABC):
     def close(self) -> None:  # noqa
         pass
 
+    def reopen(self) -> None:
+        pass
+
     #
 
     @property
@@ -115,68 +118,76 @@ class SelectFdIoPoller(FdIoPoller):
 ##
 
 
-class PollFdIoPoller(FdIoPoller):
-    def __init__(self) -> None:
-        super().__init__()
+PollFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
 
-        self._poller = select.poll()
 
-    #
+if hasattr(select, 'poll'):
+    class PollFdIoPoller(FdIoPoller):
+        def __init__(self) -> None:
+            super().__init__()
 
-    _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-    _WRITE = select.POLLOUT
+            self._poller = select.poll()
 
-    def register_readable(self, fd: int) -> None:
-        if super().register_readable(fd):
-            self._poller.register(fd, self._READ)
+        #
 
-    def register_writable(self, fd: int) -> None:
-        if super().register_writable(fd):
-            self._poller.register(fd, self._WRITE)
+        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+        _WRITE = select.POLLOUT
 
-    def unregister_readable(self, fd: int) -> None:
-        if super().unregister_readable(fd):
-            self._poller.unregister(fd)
-            if fd in self._writable:
-                self._poller.register(fd, self._WRITE)
-
-    def unregister_writable(self, fd: int) -> None:
-        if super().unregister_writable(fd):
-            self._poller.unregister(fd)
-            if fd in self._readable:
+        def register_readable(self, fd: int) -> None:
+            if super().register_readable(fd):
                 self._poller.register(fd, self._READ)
 
-    #
+        def register_writable(self, fd: int) -> None:
+            if super().register_writable(fd):
+                self._poller.register(fd, self._WRITE)
 
-    def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-        polled: ta.List[ta.Tuple[int, int]]
-        try:
-            polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
+        def unregister_readable(self, fd: int) -> None:
+            if super().unregister_readable(fd):
+                self._poller.unregister(fd)
+                if fd in self._writable:
+                    self._poller.register(fd, self._WRITE)
 
-        except OSError as exc:
-            if exc.errno == errno.EINTR:
-                return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-            else:
-                raise
+        def unregister_writable(self, fd: int) -> None:
+            if super().unregister_writable(fd):
+                self._poller.unregister(fd)
+                if fd in self._readable:
+                    self._poller.register(fd, self._READ)
 
-        r: ta.List[int] = []
-        w: ta.List[int] = []
-        for fd, mask in polled:
-            if self._ignore_invalid(fd, mask):
-                continue
-            if mask & self._READ:
-                r.append(fd)
-            if mask & self._WRITE:
-                w.append(fd)
-        return FdIoPoller.PollResult(r, w)
+        #
 
-    def _ignore_invalid(self, fd: int, mask: int) -> bool:
-        if mask & select.POLLNVAL:
-            # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
-            # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
-            self._poller.unregister(fd)
-            self._readable.discard(fd)
-            self._writable.discard(fd)
-            return True
+        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+            polled: ta.List[ta.Tuple[int, int]]
+            try:
+                polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
 
-        return False
+            except OSError as exc:
+                if exc.errno == errno.EINTR:
+                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                else:
+                    raise
+
+            r: ta.List[int] = []
+            w: ta.List[int] = []
+            for fd, mask in polled:
+                if self._ignore_invalid(fd, mask):
+                    continue
+                if mask & self._READ:
+                    r.append(fd)
+                if mask & self._WRITE:
+                    w.append(fd)
+            return FdIoPoller.PollResult(r, w)
+
+        def _ignore_invalid(self, fd: int, mask: int) -> bool:
+            if mask & select.POLLNVAL:
+                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
+                # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
+                self._poller.unregister(fd)
+                self._readable.discard(fd)
+                self._writable.discard(fd)
+                return True
+
+            return False
+
+
+else:
+    PollFdIoPoller = None

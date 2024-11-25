@@ -60,8 +60,8 @@ class HttpServerConnection(SocketFdIoHandler):
             handler: HttpHandler,
             io: FdIoManager,
             *,
-            read_size: int = 0x10,
-            write_size: int = 0x10,
+            read_size: int = 0x10000,
+            write_size: int = 0x10000,
     ) -> None:
         super().__init__(addr, sock)
 
