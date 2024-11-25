@@ -117,6 +117,7 @@ class HttpServerConnection:
 
         self._buf = ReadableListBuffer()
 
+        sock.setblocking(False)
         io.register(self._on_read, r=[sock.fileno()])
 
     def _next_io(self, d: bytes | None) -> CoroHttpServer.Io | None:  # noqa
@@ -146,7 +147,13 @@ class HttpServerConnection:
         self._sock.close()
 
     def _on_read(self) -> None:
-        buf = self._sock.recv(self._read_size)
+        try:
+            buf = self._sock.recv(self._read_size)
+        except BlockingIOError:
+            return
+        except ConnectionResetError:
+            self._close()
+            return
         if not buf:
             self._close()
             return
