@@ -290,7 +290,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
             return False
         return True
 
-    def handle_read_event(self) -> None:
+    def on_readable(self) -> None:
         data = read_fd(self._fd)
         self._output_buffer += data
         self.record_output()
@@ -326,9 +326,6 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
     def writable(self) -> bool:
         if self._input_buffer and not self._closed:
             return True
-        return False
-
-    def readable(self) -> bool:
         return False
 
     def flush(self) -> None:
