@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
+from omlish.lite.fdio.handlers import FdIoHandler
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
@@ -29,7 +30,6 @@ from .process import PidHistory
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .spawning import SpawnedProcess
-from .types import Dispatcher
 from .types import Process
 from .types import ProcessGroup
 from .types import ProcessInputDispatcher
@@ -200,7 +200,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         return exe, args
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
-        dispatchers: ta.List[Dispatcher] = []
+        dispatchers: ta.List[FdIoHandler] = []
 
         if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
