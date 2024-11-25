@@ -3,6 +3,7 @@ import io
 import typing as ta
 
 from .check import check_isinstance
+from .check import check_non_empty
 from .check import check_not_none
 from .strings import attr_repr
 
@@ -180,3 +181,46 @@ class ReadableListBuffer:
                 return self._chop(i, p + len(delim))
 
         return None
+
+
+class IncrementalWriteBuffer:
+    def __init__(
+            self,
+            data: bytes,
+            *,
+            write_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        check_non_empty(data)
+        self._len = len(data)
+        self._write_size = write_size
+
+        self._lst = [
+            data[i:i + write_size]
+            for i in range(0, len(data), write_size)
+        ]
+        self._pos = 0
+
+    @property
+    def rem(self) -> int:
+        return self._len - self._pos
+
+    def write(self, fn: ta.Callable[[bytes], int]) -> int:
+        lst = check_non_empty(self._lst)
+
+        t = 0
+        for i, d in enumerate(lst):  # noqa
+            n = fn(check_non_empty(d))
+            if not n:
+                break
+            t += n
+
+        if t:
+            self._lst = [
+                *([d[n:]] if n < len(d) else []),
+                *lst[i + 1:],
+            ]
+            self._pos += t
+
+        return t

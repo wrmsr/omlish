@@ -102,6 +102,9 @@ V = ta.TypeVar('V')
 # ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
+# ../../../omlish/lite/check.py
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+
 # ../../../omlish/lite/socket.py
 SocketAddress = ta.Any
 SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
@@ -1520,6 +1523,18 @@ def check_not_in(v: T, c: ta.Container[T]) -> T:
 
 def check_single(vs: ta.Iterable[T]) -> T:
     [v] = vs
+    return v
+
+
+def check_empty(v: SizedT) -> SizedT:
+    if len(v):
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty(v: SizedT) -> SizedT:
+    if not len(v):
+        raise ValueError(v)
     return v
 
 
