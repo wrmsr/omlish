@@ -21,7 +21,7 @@ class FdIoPoller(abc.ABC):
     def close(self) -> None:  # noqa
         pass
 
-    def reopen(self) -> None:
+    def reopen(self) -> None:  # noqa
         pass
 
     #
@@ -179,7 +179,7 @@ if hasattr(select, 'poll'):
 
         def _ignore_invalid(self, fd: int, mask: int) -> bool:
             if mask & select.POLLNVAL:
-                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
+                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is
                 # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
                 self._poller.unregister(fd)
                 self._readable.discard(fd)
