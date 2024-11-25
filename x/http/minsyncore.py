@@ -104,10 +104,14 @@ class IoManager:
         print(f'wa={sorted(wa)}')
         print()
 
-        for f in rs:
-            rs[f].on_readable()
-        for f in ws:
-            ws[f].on_writable()
+        for f in ra:
+            if not (d := rs[f]).closed:
+                d.on_readable()
+        for f in wa:
+            if not (d := ws[f]).closed:
+                d.on_writable()
+
+        self._ds = [d for d in ds if not d.closed]
 
 
 ##
@@ -132,7 +136,7 @@ class HttpServer(SocketIoDispatcher):
     def readable(self) -> bool:
         return True
 
-    def _on_readable(self) -> None:
+    def on_readable(self) -> None:
         cli_sock, cli_addr = self._sock.accept()
 
         conn = HttpServerConnection(
@@ -268,6 +272,9 @@ class HttpServerConnection(SocketIoDispatcher):
             self._next_io()
 
 
+##
+
+
 def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
     resp = '\n'.join([
         f'method: {req.method}',
@@ -286,11 +293,12 @@ def _main() -> None:
     io_mgr = IoManager()
 
     srv_addr = ('localhost', 8000)
-    HttpServer(
+    srv = HttpServer(
         srv_addr,
         say_hi_handler,
         io_mgr,
     )
+    io_mgr.register(srv)
 
     while True:
         io_mgr.poll()
