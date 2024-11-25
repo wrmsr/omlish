@@ -1,7 +1,5 @@
 # ruff: noqa: UP006 UP007
 import abc
-import errno
-import select
 import socket
 import typing as ta
 
