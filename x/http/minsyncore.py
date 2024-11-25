@@ -1,3 +1,4 @@
+import abc
 import select
 import socket
 import typing as ta
@@ -14,88 +15,137 @@ from omlish.lite.io import ReadableListBuffer
 from omlish.lite.socket import SocketAddress
 
 
+##
+
+
+class IoDispatcher(abc.ABC):
+    @abc.abstractmethod
+    def fd(self) -> int:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def close(self) -> None:
+        raise NotImplementedError
+
+    #
+
+    def readable(self) -> bool:
+        return False
+
+    def writable(self) -> bool:
+        return False
+
+    #
+
+    def on_readable(self) -> None:
+        raise TypeError
+
+    def on_writable(self) -> None:
+        raise TypeError
+
+
+class SocketIoDispatcher(IoDispatcher, abc.ABC):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            sock: socket.socket,
+    ) -> None:
+        super().__init__()
+
+        self._addr = addr
+        self._sock: ta.Optional[socket.socket] = sock
+
+    def fd(self) -> int:
+        return check_not_none(self._sock).fileno()
+
+    @property
+    def closed(self) -> bool:
+        return self._sock is None
+
+    def close(self) -> None:
+        if self._sock is not None:
+            self._sock.close()
+        self._sock = None
+
+
 class IoManager:
     def __init__(self) -> None:
         super().__init__()
 
-        self._read_callbacks: dict[int, ta.Callable[[], None]] = {}
-        self._write_callbacks: dict[int, ta.Callable[[], None]] = {}
+        self._ds: list[IoDispatcher] = []
 
-    def unregister(
-            self,
-            *,
-            r: ta.Iterable[int] = (),
-            w: ta.Iterable[int] = (),
-    ) -> None:
-        for f in r:
-            del self._read_callbacks[f]
-        for f in w:
-            del self._write_callbacks[f]
-
-    def register(
-            self,
-            fn: ta.Callable[[], None],
-            *,
-            r: ta.Iterable[int] = (),
-            w: ta.Iterable[int] = (),
-    ) -> None:
-        for f in r:
-            self._read_callbacks[f] = fn
-        for f in w:
-            self._write_callbacks[f] = fn
+    def register(self, d: IoDispatcher) -> None:
+        self._ds.append(d)
 
     def poll(self, *, timeout: float = 1.) -> None:
-        print(f'rd={sorted(self._read_callbacks)}')
-        print(f'wd={sorted(self._read_callbacks)}')
+        ds = self._ds
+        rs = {d.fd(): d for d in ds if d.readable()}
+        ws = {d.fd(): d for d in ds if d.writable()}
+
+        print(f'rs={sorted(rs)}')
+        print(f'ws={sorted(ws)}')
         print()
 
-        readable, writable, _ = select.select(
-            self._read_callbacks,
-            self._write_callbacks,
+        ra, wa, _ = select.select(
+            rs,
+            ws,
             [],
             timeout,
         )
 
-        print(f'rl={sorted(readable)}')
-        print(f'wl={sorted(writable)}')
+        print(f'ra={sorted(ra)}')
+        print(f'wa={sorted(wa)}')
         print()
 
-        for rf in readable:
-            self._read_callbacks[rf]()
-        for wf in writable:
-            self._write_callbacks[wf]()
+        for f in rs:
+            rs[f].on_readable()
+        for f in ws:
+            ws[f].on_writable()
 
 
-class HttpServer:
+##
+
+
+class HttpServer(SocketIoDispatcher):
     def __init__(
             self,
             addr: SocketAddress,
             handler: HttpHandler,
             io_mgr: IoManager,
     ) -> None:
-        super().__init__()
+        super().__init__(addr, socket.create_server(addr))
 
-        self._addr = addr
         self._handler = handler
         self._io_mgr = io_mgr
 
-        self._sock = sock = socket.create_server(self._addr)
+        sock = check_not_none(self._sock)
         sock.setblocking(False)
         sock.listen(1)
-        io_mgr.register(self._on_readable, r=[self._sock.fileno()])
+
+    def readable(self) -> bool:
+        return True
 
     def _on_readable(self) -> None:
         cli_sock, cli_addr = self._sock.accept()
 
-        HttpServerConnection(
+        conn = HttpServerConnection(
             cli_addr,
             cli_sock,
             self._handler,
             self._io_mgr,
         )
 
+        self._io_mgr.register(conn)
 
-class HttpServerConnection:
+
+class HttpServerConnection(SocketIoDispatcher):
     def __init__(
             self,
             addr: SocketAddress,
@@ -106,10 +156,8 @@ class HttpServerConnection:
             read_size: int = 0x10,
             write_size: int = 0x10,
     ) -> None:
-        super().__init__()
+        super().__init__(addr, sock)
 
-        self._addr = addr
-        self._sock = sock
         self._handler = handler
         self._io_mgr = io_mgr
         self._read_size = read_size
@@ -126,8 +174,10 @@ class HttpServerConnection:
         self._cur_io: CoroHttpServer.Io | None = None
         self._next_io()
 
+        sock = check_not_none(self._sock)
         sock.setblocking(False)
-        io_mgr.register(self._on_readable, r=[sock.fileno()])
+
+    #
 
     def _next_io(self) -> None:  # noqa
         coro = check_not_none(self._srv_coro)
@@ -143,7 +193,7 @@ class HttpServerConnection:
                     else:
                         o = next(coro)
                 except StopIteration:
-                    self._close()
+                    self.close()
                     o = None
                     break
 
@@ -164,7 +214,6 @@ class HttpServerConnection:
             elif isinstance(o, CoroHttpServer.WriteIo):
                 check_none(self._write_buf)
                 self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
-                self._io_mgr.register(self._on_writable, w=[self._sock.fileno()])
                 break
 
             else:
@@ -173,24 +222,24 @@ class HttpServerConnection:
         self._cur_io = o
         return o
 
-    def _close(self) -> None:
-        self._io_mgr.unregister(
-            r=[self._sock.fileno()],
-            w=[self._sock.fileno()] if self._write_buf is not None else [],
-        )
-        self._sock.close()
-        self._srv_coro = None
+    #
 
-    def _on_readable(self) -> None:
+    def readable(self) -> bool:
+        return True
+
+    def writable(self) -> bool:
+        return self._write_buf is not None
+
+    def on_readable(self) -> None:
         try:
             buf = self._sock.recv(self._read_size)
         except BlockingIOError:
             return
         except ConnectionResetError:
-            self._close()
+            self.close()
             return
         if not buf:
-            self._close()
+            self.close()
             return
 
         self._read_buf.feed(buf)
@@ -198,7 +247,7 @@ class HttpServerConnection:
         if isinstance(self._cur_io, CoroHttpServer.AnyReadIo):
             self._next_io()
 
-    def _on_writable(self) -> None:
+    def on_writable(self) -> None:
         check_isinstance(self._cur_io, CoroHttpServer.WriteIo)
         wb = check_not_none(self._write_buf)
         while wb.rem > 0:
@@ -206,7 +255,7 @@ class HttpServerConnection:
                 try:
                     return self._sock.send(d)
                 except ConnectionResetError:
-                    self._close()
+                    self.close()
                     return 0
                 except BlockingIOError:
                     return 0
@@ -214,7 +263,6 @@ class HttpServerConnection:
                 break
 
         if wb.rem < 1:
-            self._io_mgr.unregister(w=[self._sock.fileno()])
             self._write_buf = None
             self._cur_io = None
             self._next_io()
