@@ -42,16 +42,16 @@ class FdIoPoller(abc.ABC):
     def register_readable(self, fd: int) -> bool:
         if fd in self._readable:
             return False
-        self._readable.add(fd)
         self._register_readable(fd)
+        self._readable.add(fd)
         return True
 
     @ta.final
     def register_writable(self, fd: int) -> bool:
         if fd in self._writable:
             return False
-        self._writable.add(fd)
         self._register_writable(fd)
+        self._writable.add(fd)
         return True
 
     @ta.final
