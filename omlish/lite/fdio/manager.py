@@ -32,9 +32,9 @@ class FdIoManager:
 
         self._poller.update(set(rd), set(wd))
 
-        log.info(f'Polling: {sorted(rd)=} {sorted(wd)=}')
+        log.info(f'Polling: {sorted(rd)=} {sorted(wd)=}')  # noqa
         pr = self._poller.poll(timeout)
-        log.info(f'Polled: {pr=}')
+        log.info(f'Polled: {pr=}')  # noqa
 
         for f in pr.r:
             if not (h := rd[f]).closed:
@@ -47,7 +47,7 @@ class FdIoManager:
         nh = {}
         for h in hs:
             if h.closed:
-                log.info(f'Closed: {h}')
+                log.info(f'Closed: {h}')  # noqa
             else:
                 nh[id(h)] = h
         self._handlers = nh
