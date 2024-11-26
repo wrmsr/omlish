@@ -4,7 +4,6 @@ import select
 import sys
 import typing as ta
 
-from ..logs import log
 from .pollers import FdIoPoller
 
 
@@ -48,19 +47,15 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def _register_readable(self, fd: int) -> None:
-            log.info(f'Adding kq readable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
 
         def _register_writable(self, fd: int) -> None:
-            log.info(f'Adding kq writable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
 
         def _unregister_readable(self, fd: int) -> None:
-            log.info(f'Removing kq readable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
 
         def _unregister_writable(self, fd: int) -> None:
-            log.info(f'Removing kq writable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
 
         def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
@@ -68,6 +63,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             kq = self._get_kqueue()
             try:
                 kq.control([ke], 0)
+
             except OSError as exc:
                 if exc.errno == errno.EBADF:
                     # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
