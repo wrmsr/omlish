@@ -1577,16 +1577,16 @@ class FdIoPoller(abc.ABC):
     def register_readable(self, fd: int) -> bool:
         if fd in self._readable:
             return False
-        self._readable.add(fd)
         self._register_readable(fd)
+        self._readable.add(fd)
         return True
 
     @ta.final
     def register_writable(self, fd: int) -> bool:
         if fd in self._writable:
             return False
-        self._writable.add(fd)
         self._register_writable(fd)
+        self._writable.add(fd)
         return True
 
     @ta.final
@@ -2625,19 +2625,40 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def _register_readable(self, fd: int) -> None:
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
+            self._control(fd, 'read', 'add')
 
         def _register_writable(self, fd: int) -> None:
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+            self._control(fd, 'write', 'add')
 
         def _unregister_readable(self, fd: int) -> None:
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
+            self._control(fd, 'read', 'del')
 
         def _unregister_writable(self, fd: int) -> None:
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+            self._control(fd, 'write', 'del')
 
-        def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
-            ke = select.kevent(fd, filter=filter, flags=flags)
+        #
+
+        _CONTROL_FILTER_BY_READ_OR_WRITE: ta.ClassVar[ta.Mapping[ta.Literal['read', 'write'], int]] = {
+            'read': select.KQ_FILTER_READ,
+            'write': select.KQ_FILTER_WRITE,
+        }
+
+        _CONTROL_FLAGS_BY_ADD_OR_DEL: ta.ClassVar[ta.Mapping[ta.Literal['add', 'del'], int]] = {
+            'add': select.KQ_EV_ADD,
+            'del': select.KQ_EV_DELETE,
+        }
+
+        def _control(
+                self,
+                fd: int,
+                read_or_write: ta.Literal['read', 'write'],
+                add_or_del: ta.Literal['add', 'del'],
+        ) -> None:  # noqa
+            ke = select.kevent(
+                fd,
+                filter=self._CONTROL_FILTER_BY_READ_OR_WRITE[read_or_write],
+                flags=self._CONTROL_FLAGS_BY_ADD_OR_DEL[add_or_del],
+            )
             kq = self._get_kqueue()
             try:
                 kq.control([ke], 0)
@@ -2648,7 +2669,8 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                     pass
                 elif exc.errno == errno.ENOENT:
                     # Can happen when trying to remove an already closed socket
-                    pass
+                    if add_or_del == 'add':
+                        raise
                 else:
                     raise
 
