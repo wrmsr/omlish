@@ -82,10 +82,10 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../../omlish/lite/cached.py
+# ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../../../omlish/lite/check.py
+# ../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
 
