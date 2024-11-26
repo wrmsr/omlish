@@ -106,7 +106,7 @@ from .scopes import (  # noqa
     ScopeSeededProvider,
     SeededScope,
     Singleton,
-    Thread,
+    ThreadScope,
     bind_scope,
     bind_scope_seed,
     enter_seeded_scope,
