@@ -5,6 +5,18 @@ import enum
 
 
 class ProcessState(enum.IntEnum):
+    """
+    http://supervisord.org/subprocess.html
+
+    STOPPED -> STARTING
+    STARTING -> RUNNING, BACKOFF, STOPPING
+    RUNNING -> STOPPING, EXITED
+    BACKOFF -> STARTING, FATAL
+    STOPPING -> STOPPED
+    EXITED -> STARTING
+    FATAL -> STARTING
+    """
+
     STOPPED = 0
     STARTING = 10
     RUNNING = 20
