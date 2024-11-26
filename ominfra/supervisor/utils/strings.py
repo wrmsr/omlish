@@ -62,8 +62,8 @@ def strip_escapes(s: bytes) -> bytes:
 
 
 class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
-    # are case insensitive.  Return values are in the fundamental unit.
+    # d is a dictionary of suffixes to integer multipliers. If no suffixes match, default is the multiplier. Matches are
+    # case insensitive. Return values are in the fundamental unit.
     def __init__(self, d, default=1):
         super().__init__()
         self._d = d

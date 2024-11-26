@@ -991,9 +991,8 @@ class NoPermissionError(ProcessError):
 
 def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     """
-    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
-    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
-    dropped.
+    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
+    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
     """
 
     if user is None:
@@ -1017,9 +1016,8 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     current_uid = os.getuid()
 
     if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
-        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
-        # it.
+        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
+        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
         return None
 
     if current_uid != 0:
@@ -1373,8 +1371,8 @@ def strip_escapes(s: bytes) -> bytes:
 
 
 class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
-    # are case insensitive.  Return values are in the fundamental unit.
+    # d is a dictionary of suffixes to integer multipliers. If no suffixes match, default is the multiplier. Matches are
+    # case insensitive. Return values are in the fundamental unit.
     def __init__(self, d, default=1):
         super().__init__()
         self._d = d
@@ -2430,7 +2428,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     Decode the status returned by wait() or waitpid().
 
     Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
-    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
+    signal; and message is a message telling what happened. It is the caller's responsibility to display the message.
     """
 
     if os.WIFEXITED(sts):
@@ -5068,8 +5066,8 @@ class ProcessPipes:
 
 def make_process_pipes(stderr=True) -> ProcessPipes:
     """
-    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
-    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
+    Create pipes for parent to child stdin/stdout/stderr communications. Open fd in non-blocking mode so we can read
+    them in the mainloop without blocking. If stderr is False, don't create a pipe for stderr.
     """
 
     pipes: ta.Dict[str, ta.Optional[Fd]] = {
@@ -6385,7 +6383,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
 
     def _init_capture_log(self) -> None:
         """
-        Configure the capture log for this process.  This log is used to temporarily capture output when special output
+        Configure the capture log for this process. This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
         """
 
@@ -6508,7 +6506,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         self._output_buffer += data
         self.record_output()
         if not data:
-            # if we get no data back from the pipe, it means that the child process has ended.  See
+            # if we get no data back from the pipe, it means that the child process has ended. See
             # mail.python.org/pipermail/python-dev/2004-August/046850.html
             self.close()
 
@@ -6723,15 +6721,15 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     def _set_uid_or_exit(self) -> None:
         """
-        Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
+        Set the uid of the supervisord process. Called during supervisord startup only. No return value. Exits the
         process via usage() if privileges could not be dropped.
         """
 
         if self._user is None:
             if os.getuid() == 0:
                 warnings.warn(
-                    'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
-                    'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
+                    'Supervisor is running as root. Privileges were not dropped because no user is specified in the '
+                    'config file. If you intend to run as root, you can set user=root in the config file to avoid '
                     'this message.',
                 )
         else:
@@ -6745,8 +6743,8 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     def _set_rlimits_or_exit(self) -> None:
         """
-        Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
-        the process via usage() if any rlimits could not be set.
+        Set the rlimits of the supervisord process. Called during supervisord startup only. No return value. Exits the
+        process via usage() if any rlimits could not be set.
         """
 
         limits = []
@@ -6756,7 +6754,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                 'msg': (
                     'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
                     '"min_fds" command-line argument or config file setting. The current environment will only allow '
-                    'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
+                    'you to open %(hard)s file descriptors. Either raise the number of usable file descriptors in '
                     'your environment (see README.rst) or lower the min_fds setting in the config file to allow the '
                     'process to start.'
                 ),
@@ -6770,7 +6768,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                 'msg': (
                     'The minimum number of available processes required to run this program is %(min_limit)s as per '
                     'the "minprocs" command-line argument or config file setting. The current environment will only '
-                    'allow you to open %(hard)s processes.  Either raise the number of usable processes in your '
+                    'allow you to open %(hard)s processes. Either raise the number of usable processes in your '
                     'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
                     'program to start.'
                 ),
@@ -6860,11 +6858,11 @@ class SupervisorSetupImpl(SupervisorSetup):
             dl.after_daemonize()
 
     def _do_daemonize(self) -> None:
-        # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
-        # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
+        # To daemonize, we need to become the leader of our own session (process) group. If we do not, signals sent to
+        # our parent process will also be sent to us. This might be bad because signals such as SIGINT can be sent to
         # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
         # terminal window to escape from a logtail command. To disassociate ourselves from our parent's session group we
-        # use os.setsid.  It means "set session id", which has the effect of disassociating a process from is current
+        # use os.setsid. It means "set session id", which has the effect of disassociating a process from is current
         # session and process group and setting itself up as a new session leader.
         #
         # Unfortunately we cannot call setsid if we're already a session group leader, so we use "fork" to make a copy
@@ -6896,7 +6894,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         os.dup2(2, os.open('/dev/null', os.O_WRONLY))
 
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
-        # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
+        # file descriptors. In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
         os.setsid()
         os.umask(self._config.umask)
@@ -7452,7 +7450,7 @@ class ProcessImpl(Process):
 
     def kill(self, sig: int) -> ta.Optional[str]:
         """
-        Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
+        Send a signal to the subprocess with the intention to kill it (to make it exit). This may or may not actually
         kill it.
 
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
@@ -7460,7 +7458,7 @@ class ProcessImpl(Process):
         """
         now = time.time()
 
-        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
+        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED. This is needed because
         # if start_retries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
@@ -7504,7 +7502,7 @@ class ProcessImpl(Process):
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', self.name, self.pid, str(exc))  # noqa
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # we could change the state here but we intentionally do not. we will do it during normal SIGCHLD
                     # processing.
                     return None
                 raise
@@ -7547,7 +7545,7 @@ class ProcessImpl(Process):
                         self.pid,
                         str(exc),
                     )
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # we could change the state here but we intentionally do not. we will do it during normal SIGCHLD
                     # processing.
                     return None
                 raise
@@ -7687,7 +7685,7 @@ class ProcessImpl(Process):
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
             if time_left <= 0:
-                # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
+                # kill processes which are taking too long to stop with a final sigkill. if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
                 log.warning('killing \'%s\' (%s) with SIGKILL', self.name, self.pid)
                 self.kill(signal.SIGKILL)
@@ -8329,7 +8327,7 @@ class WaitedPid(ta.NamedTuple):
 
 
 def waitpid() -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
     # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
     # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
     # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted

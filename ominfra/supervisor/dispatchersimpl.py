@@ -172,7 +172,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
 
     def _init_capture_log(self) -> None:
         """
-        Configure the capture log for this process.  This log is used to temporarily capture output when special output
+        Configure the capture log for this process. This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
         """
 
@@ -295,7 +295,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         self._output_buffer += data
         self.record_output()
         if not data:
-            # if we get no data back from the pipe, it means that the child process has ended.  See
+            # if we get no data back from the pipe, it means that the child process has ended. See
             # mail.python.org/pipermail/python-dev/2004-August/046850.html
             self.close()
 
