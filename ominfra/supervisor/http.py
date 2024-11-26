@@ -1,9 +1,11 @@
 # ruff: noqa: U006 UP007
+import contextlib
 import json
 import socket
 import typing as ta
 
 from omlish.lite.check import check_not_none
+from omlish.lite.contextmanagers import defer
 from omlish.lite.fdio.corohttp import CoroHttpServerConnectionFdIoHandler
 from omlish.lite.fdio.handlers import SocketFdIoHandler
 from omlish.lite.http.handlers import HttpHandler
@@ -59,6 +61,8 @@ class HttpServer(HasDispatchers):
             self,
             handler: Handler,
             addr: Address = Address(('localhost', 8000)),
+            *,
+            exit_stack: contextlib.ExitStack,
     ) -> None:
         super().__init__()
 
@@ -68,6 +72,8 @@ class HttpServer(HasDispatchers):
         self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
 
         self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+
+        exit_stack.enter_context(defer(self._server.close))
 
     def get_dispatchers(self) -> Dispatchers:
         l = []

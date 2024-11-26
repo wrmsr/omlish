@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import contextlib
 import dataclasses as dc
 import typing as ta
 
@@ -56,6 +57,7 @@ class _FdIoPollerDaemonizeListener(DaemonizeListener):
 
 
 def bind_server(
+        exit_stack: contextlib.ExitStack,
         config: ServerConfig,
         *,
         server_epoch: ta.Optional[ServerEpoch] = None,
@@ -63,6 +65,8 @@ def bind_server(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
+
+        inj.bind(exit_stack),
 
         inj.bind_array(DaemonizeListener),
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
