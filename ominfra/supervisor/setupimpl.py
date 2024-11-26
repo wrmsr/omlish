@@ -83,15 +83,15 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     def _set_uid_or_exit(self) -> None:
         """
-        Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
+        Set the uid of the supervisord process. Called during supervisord startup only. No return value. Exits the
         process via usage() if privileges could not be dropped.
         """
 
         if self._user is None:
             if os.getuid() == 0:
                 warnings.warn(
-                    'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
-                    'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
+                    'Supervisor is running as root. Privileges were not dropped because no user is specified in the '
+                    'config file. If you intend to run as root, you can set user=root in the config file to avoid '
                     'this message.',
                 )
         else:
@@ -105,8 +105,8 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     def _set_rlimits_or_exit(self) -> None:
         """
-        Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
-        the process via usage() if any rlimits could not be set.
+        Set the rlimits of the supervisord process. Called during supervisord startup only. No return value. Exits the
+        process via usage() if any rlimits could not be set.
         """
 
         limits = []
@@ -116,7 +116,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                 'msg': (
                     'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
                     '"min_fds" command-line argument or config file setting. The current environment will only allow '
-                    'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
+                    'you to open %(hard)s file descriptors. Either raise the number of usable file descriptors in '
                     'your environment (see README.rst) or lower the min_fds setting in the config file to allow the '
                     'process to start.'
                 ),
@@ -130,7 +130,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                 'msg': (
                     'The minimum number of available processes required to run this program is %(min_limit)s as per '
                     'the "minprocs" command-line argument or config file setting. The current environment will only '
-                    'allow you to open %(hard)s processes.  Either raise the number of usable processes in your '
+                    'allow you to open %(hard)s processes. Either raise the number of usable processes in your '
                     'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
                     'program to start.'
                 ),
@@ -220,11 +220,11 @@ class SupervisorSetupImpl(SupervisorSetup):
             dl.after_daemonize()
 
     def _do_daemonize(self) -> None:
-        # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
-        # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
+        # To daemonize, we need to become the leader of our own session (process) group. If we do not, signals sent to
+        # our parent process will also be sent to us. This might be bad because signals such as SIGINT can be sent to
         # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
         # terminal window to escape from a logtail command. To disassociate ourselves from our parent's session group we
-        # use os.setsid.  It means "set session id", which has the effect of disassociating a process from is current
+        # use os.setsid. It means "set session id", which has the effect of disassociating a process from is current
         # session and process group and setting itself up as a new session leader.
         #
         # Unfortunately we cannot call setsid if we're already a session group leader, so we use "fork" to make a copy
@@ -256,7 +256,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         os.dup2(2, os.open('/dev/null', os.O_WRONLY))
 
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
-        # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
+        # file descriptors. In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
         os.setsid()
         os.umask(self._config.umask)

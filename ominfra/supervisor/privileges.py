@@ -7,9 +7,8 @@ import typing as ta
 
 def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     """
-    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
-    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
-    dropped.
+    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
+    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
     """
 
     if user is None:
@@ -33,9 +32,8 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     current_uid = os.getuid()
 
     if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
-        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
-        # it.
+        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
+        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
         return None
 
     if current_uid != 0:

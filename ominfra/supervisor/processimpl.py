@@ -256,7 +256,7 @@ class ProcessImpl(Process):
 
     def kill(self, sig: int) -> ta.Optional[str]:
         """
-        Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
+        Send a signal to the subprocess with the intention to kill it (to make it exit). This may or may not actually
         kill it.
 
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
@@ -264,7 +264,7 @@ class ProcessImpl(Process):
         """
         now = time.time()
 
-        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
+        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED. This is needed because
         # if start_retries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
@@ -308,7 +308,7 @@ class ProcessImpl(Process):
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', self.name, self.pid, str(exc))  # noqa
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # we could change the state here but we intentionally do not. we will do it during normal SIGCHLD
                     # processing.
                     return None
                 raise
@@ -351,7 +351,7 @@ class ProcessImpl(Process):
                         self.pid,
                         str(exc),
                     )
-                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # we could change the state here but we intentionally do not. we will do it during normal SIGCHLD
                     # processing.
                     return None
                 raise
@@ -491,7 +491,7 @@ class ProcessImpl(Process):
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
             if time_left <= 0:
-                # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
+                # kill processes which are taking too long to stop with a final sigkill. if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
                 log.warning('killing \'%s\' (%s) with SIGKILL', self.name, self.pid)
                 self.kill(signal.SIGKILL)

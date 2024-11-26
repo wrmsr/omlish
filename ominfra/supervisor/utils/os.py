@@ -21,7 +21,7 @@ def decode_wait_status(sts: int) -> ta.Tuple[Rc, str]:
     Decode the status returned by wait() or waitpid().
 
     Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
-    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
+    signal; and message is a message telling what happened. It is the caller's responsibility to display the message.
     """
 
     if os.WIFEXITED(sts):

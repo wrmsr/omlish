@@ -29,8 +29,8 @@ class ProcessPipes:
 
 def make_process_pipes(stderr=True) -> ProcessPipes:
     """
-    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
-    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
+    Create pipes for parent to child stdin/stdout/stderr communications. Open fd in non-blocking mode so we can read
+    them in the mainloop without blocking. If stderr is False, don't create a pipe for stderr.
     """
 
     pipes: ta.Dict[str, ta.Optional[Fd]] = {

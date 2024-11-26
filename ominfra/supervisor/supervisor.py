@@ -282,7 +282,7 @@ class WaitedPid(ta.NamedTuple):
 
 
 def waitpid() -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
     # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
     # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
     # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
