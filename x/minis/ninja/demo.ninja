@@ -1,0 +1,12 @@
+# Define rules
+rule cc
+  command = gcc -c $in -o $out
+
+rule link
+  command = gcc $in -o $out
+
+# Build targets
+build main.o : cc main.c
+build utils.o : cc utils.c
+build app : link main.o utils.o
+default app

@@ -3,8 +3,6 @@ Build File Syntax
 
 A simplified build file format (build.ninja) is used. Here’s an example:
 
-  ninja
-  Copy code
   # Define rules
   rule cc
     command = gcc -c $in -o $out
