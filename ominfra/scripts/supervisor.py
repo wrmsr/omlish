@@ -3549,12 +3549,8 @@ class _Injector(Injector):
 
         self.__cur_req: ta.Optional[_Injector._Request] = None
 
-        try:
-            eagers = self.provide(_INJECTOR_EAGER_ARRAY_KEY)
-        except UnboundLocalError:
-            pass
-        else:
-            for e in eagers:
+        if _INJECTOR_EAGER_ARRAY_KEY in self._pfm:
+            for e in self.provide(_INJECTOR_EAGER_ARRAY_KEY):
                 self.provide(e.key)
 
     class _Request:
