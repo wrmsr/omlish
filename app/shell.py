@@ -122,7 +122,7 @@ def run_shell(*args: inj.Elemental) -> None:
 
     if os.path.isfile('.env'):
         with open('.env') as f:
-            for eb in dotenv.parse_stream(f):
+            for eb in dotenv.parse_dotenv_stream(f):
                 if eb.key is not None and eb.value is not None:
                     os.environ[eb.key] = eb.value
 

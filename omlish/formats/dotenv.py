@@ -1,3 +1,5 @@
+# @omlish-lite
+# ruff: noqa: UP006 UP007 UP037
 # Copyright (c) 2014, Saurabh Kumar (python-dotenv), 2013, Ted Tieken (django-dotenv-rw), 2013, Jacob Kaplan-Moss
 # (django-dotenv)
 #
@@ -37,13 +39,7 @@ import typing as ta
 ##
 
 
-log = logging.getLogger(__name__)
-
-
-##
-
-
-_posix_variable: ta.Pattern[str] = re.compile(
+_dotenv_posix_variable_pat: ta.Pattern[str] = re.compile(
     r"""
     \$\{
         (?P<name>[^}:]*)
@@ -56,7 +52,7 @@ _posix_variable: ta.Pattern[str] = re.compile(
 )
 
 
-class Atom(metaclass=abc.ABCMeta):
+class DotenvAtom(metaclass=abc.ABCMeta):
     def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         if result is NotImplemented:
@@ -64,16 +60,16 @@ class Atom(metaclass=abc.ABCMeta):
         return not result
 
     @abc.abstractmethod
-    def resolve(self, env: ta.Mapping[str, str | None]) -> str: ...
+    def resolve(self, env: ta.Mapping[str, ta.Optional[str]]) -> str: ...
 
 
-class Literal(Atom):
+class DotenvLiteral(DotenvAtom):
     def __init__(self, value: str) -> None:
         super().__init__()
         self.value = value
 
     def __repr__(self) -> str:
-        return f'Literal(value={self.value})'
+        return f'DotenvLiteral(value={self.value})'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -83,18 +79,18 @@ class Literal(Atom):
     def __hash__(self) -> int:
         return hash((self.__class__, self.value))
 
-    def resolve(self, env: ta.Mapping[str, str | None]) -> str:
+    def resolve(self, env: ta.Mapping[str, ta.Optional[str]]) -> str:
         return self.value
 
 
-class Variable(Atom):
-    def __init__(self, name: str, default: str | None) -> None:
+class DotenvVariable(DotenvAtom):
+    def __init__(self, name: str, default: ta.Optional[str]) -> None:
         super().__init__()
         self.name = name
         self.default = default
 
     def __repr__(self) -> str:
-        return f'Variable(name={self.name}, default={self.default})'
+        return f'DotenvVariable(name={self.name}, default={self.default})'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -104,96 +100,96 @@ class Variable(Atom):
     def __hash__(self) -> int:
         return hash((self.__class__, self.name, self.default))
 
-    def resolve(self, env: ta.Mapping[str, str | None]) -> str:
+    def resolve(self, env: ta.Mapping[str, ta.Optional[str]]) -> str:
         default = self.default if self.default is not None else ''
         result = env.get(self.name, default)
         return result if result is not None else ''
 
 
-def parse_variables(value: str) -> ta.Iterator[Atom]:
+def parse_dotenv_variables(value: str) -> ta.Iterator[DotenvAtom]:
     cursor = 0
 
-    for match in _posix_variable.finditer(value):
+    for match in _dotenv_posix_variable_pat.finditer(value):
         (start, end) = match.span()
         name = match['name']
         default = match['default']
 
         if start > cursor:
-            yield Literal(value=value[cursor:start])
+            yield DotenvLiteral(value=value[cursor:start])
 
-        yield Variable(name=name, default=default)
+        yield DotenvVariable(name=name, default=default)
         cursor = end
 
     length = len(value)
     if cursor < length:
-        yield Literal(value=value[cursor:length])
+        yield DotenvLiteral(value=value[cursor:length])
 
 
 ##
 
 
-def _make_regex(string: str, extra_flags: int = 0) -> ta.Pattern[str]:
+def _make_dotenv_regex(string: str, extra_flags: int = 0) -> ta.Pattern[str]:
     return re.compile(string, re.UNICODE | extra_flags)
 
 
-_newline = _make_regex(r'(\r\n|\n|\r)')
-_multiline_whitespace = _make_regex(r'\s*', extra_flags=re.MULTILINE)
-_whitespace = _make_regex(r'[^\S\r\n]*')
-_export = _make_regex(r'(?:export[^\S\r\n]+)?')
-_single_quoted_key = _make_regex(r"'([^']+)'")
-_unquoted_key = _make_regex(r'([^=\#\s]+)')
-_equal_sign = _make_regex(r'(=[^\S\r\n]*)')
-_single_quoted_value = _make_regex(r"'((?:\\'|[^'])*)'")
-_double_quoted_value = _make_regex(r'"((?:\\"|[^"])*)"')
-_unquoted_value = _make_regex(r'([^\r\n]*)')
-_comment = _make_regex(r'(?:[^\S\r\n]*#[^\r\n]*)?')
-_end_of_line = _make_regex(r'[^\S\r\n]*(?:\r\n|\n|\r|$)')
-_rest_of_line = _make_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
-_double_quote_escapes = _make_regex(r"\\[\\'\"abfnrtv]")
-_single_quote_escapes = _make_regex(r"\\[\\']")
+_dotenv_newline_pat = _make_dotenv_regex(r'(\r\n|\n|\r)')
+_dotenv_multiline_whitespace_pat = _make_dotenv_regex(r'\s*', extra_flags=re.MULTILINE)
+_dotenv_whitespace_pat = _make_dotenv_regex(r'[^\S\r\n]*')
+_dotenv_export_pat = _make_dotenv_regex(r'(?:export[^\S\r\n]+)?')
+_dotenv_single_quoted_key_pat = _make_dotenv_regex(r"'([^']+)'")
+_dotenv_unquoted_key_pat = _make_dotenv_regex(r'([^=\#\s]+)')
+_dotenv_equal_sign_pat = _make_dotenv_regex(r'(=[^\S\r\n]*)')
+_dotenv_single_quoted_value_pat = _make_dotenv_regex(r"'((?:\\'|[^'])*)'")
+_dotenv_double_quoted_value_pat = _make_dotenv_regex(r'"((?:\\"|[^"])*)"')
+_dotenv_unquoted_value_pat = _make_dotenv_regex(r'([^\r\n]*)')
+_dotenv_comment_pat = _make_dotenv_regex(r'(?:[^\S\r\n]*#[^\r\n]*)?')
+_dotenv_end_of_line_pat = _make_dotenv_regex(r'[^\S\r\n]*(?:\r\n|\n|\r|$)')
+_dotenv_rest_of_line_pat = _make_dotenv_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
+_dotenv_double_quote_escapes_pat = _make_dotenv_regex(r"\\[\\'\"abfnrtv]")
+_dotenv_single_quote_escapes_pat = _make_dotenv_regex(r"\\[\\']")
 
 
-class Original(ta.NamedTuple):
+class DotenvOriginal(ta.NamedTuple):
     string: str
     line: int
 
 
-class Binding(ta.NamedTuple):
-    key: str | None
-    value: str | None
-    original: Original
+class DotenvBinding(ta.NamedTuple):
+    key: ta.Optional[str]
+    value: ta.Optional[str]
+    original: DotenvOriginal
     error: bool
 
 
-class _Position:
+class _DotenvPosition:
     def __init__(self, chars: int, line: int) -> None:
         super().__init__()
         self.chars = chars
         self.line = line
 
     @classmethod
-    def start(cls) -> '_Position':
+    def start(cls) -> '_DotenvPosition':
         return cls(chars=0, line=1)
 
-    def set(self, other: '_Position') -> None:
+    def set(self, other: '_DotenvPosition') -> None:
         self.chars = other.chars
         self.line = other.line
 
     def advance(self, string: str) -> None:
         self.chars += len(string)
-        self.line += len(re.findall(_newline, string))
+        self.line += len(re.findall(_dotenv_newline_pat, string))
 
 
-class Error(Exception):
+class DotenvError(Exception):
     pass
 
 
-class _Reader:
+class _DotenvReader:
     def __init__(self, stream: ta.IO[str]) -> None:
         super().__init__()
         self.string = stream.read()
-        self.position = _Position.start()
-        self.mark = _Position.start()
+        self.position = _DotenvPosition.start()
+        self.mark = _DotenvPosition.start()
 
     def has_next(self) -> bool:
         return self.position.chars < len(self.string)
@@ -201,8 +197,8 @@ class _Reader:
     def set_mark(self) -> None:
         self.mark.set(self.position)
 
-    def get_marked(self) -> Original:
-        return Original(
+    def get_marked(self) -> DotenvOriginal:
+        return DotenvOriginal(
             string=self.string[self.mark.chars:self.position.chars],
             line=self.mark.line,
         )
@@ -213,85 +209,85 @@ class _Reader:
     def read(self, count: int) -> str:
         result = self.string[self.position.chars:self.position.chars + count]
         if len(result) < count:
-            raise Error('read: End of string')
+            raise DotenvError('read: End of string')
         self.position.advance(result)
         return result
 
     def read_regex(self, regex: ta.Pattern[str]) -> ta.Sequence[str]:
         match = regex.match(self.string, self.position.chars)
         if match is None:
-            raise Error('read_regex: Pattern not found')
+            raise DotenvError('read_regex: Pattern not found')
         self.position.advance(self.string[match.start():match.end()])
         return match.groups()
 
 
-def _decode_escapes(regex: ta.Pattern[str], string: str) -> str:
+def _decode_dotenv_escapes(regex: ta.Pattern[str], string: str) -> str:
     def decode_match(match: ta.Match[str]) -> str:
         return codecs.decode(match.group(0), 'unicode-escape')
 
     return regex.sub(decode_match, string)
 
 
-def _parse_key(reader: _Reader) -> str | None:
+def _parse_dotenv_key(reader: _DotenvReader) -> ta.Optional[str]:
     char = reader.peek(1)
     if char == '#':
         return None
     elif char == "'":
-        (key,) = reader.read_regex(_single_quoted_key)
+        (key,) = reader.read_regex(_dotenv_single_quoted_key_pat)
     else:
-        (key,) = reader.read_regex(_unquoted_key)
+        (key,) = reader.read_regex(_dotenv_unquoted_key_pat)
     return key
 
 
-def _parse_unquoted_value(reader: _Reader) -> str:
-    (part,) = reader.read_regex(_unquoted_value)
+def _parse_dotenv_unquoted_value(reader: _DotenvReader) -> str:
+    (part,) = reader.read_regex(_dotenv_unquoted_value_pat)
     return re.sub(r'\s+#.*', '', part).rstrip()
 
 
-def _parse_value(reader: _Reader) -> str:
+def _parse_dotenv_value(reader: _DotenvReader) -> str:
     char = reader.peek(1)
     if char == "'":
-        (value,) = reader.read_regex(_single_quoted_value)
-        return _decode_escapes(_single_quote_escapes, value)
+        (value,) = reader.read_regex(_dotenv_single_quoted_value_pat)
+        return _decode_dotenv_escapes(_dotenv_single_quote_escapes_pat, value)
     elif char == '"':
-        (value,) = reader.read_regex(_double_quoted_value)
-        return _decode_escapes(_double_quote_escapes, value)
+        (value,) = reader.read_regex(_dotenv_double_quoted_value_pat)
+        return _decode_dotenv_escapes(_dotenv_double_quote_escapes_pat, value)
     elif char in ('', '\n', '\r'):
         return ''
     else:
-        return _parse_unquoted_value(reader)
+        return _parse_dotenv_unquoted_value(reader)
 
 
-def _parse_binding(reader: _Reader) -> Binding:
+def _parse_dotenv_binding(reader: _DotenvReader) -> DotenvBinding:
     reader.set_mark()
     try:
-        reader.read_regex(_multiline_whitespace)
+        reader.read_regex(_dotenv_multiline_whitespace_pat)
         if not reader.has_next():
-            return Binding(
+            return DotenvBinding(
                 key=None,
                 value=None,
                 original=reader.get_marked(),
                 error=False,
             )
-        reader.read_regex(_export)
-        key = _parse_key(reader)
-        reader.read_regex(_whitespace)
+        reader.read_regex(_dotenv_export_pat)
+        key = _parse_dotenv_key(reader)
+        reader.read_regex(_dotenv_whitespace_pat)
         if reader.peek(1) == '=':
-            reader.read_regex(_equal_sign)
-            value: str | None = _parse_value(reader)
+            reader.read_regex(_dotenv_equal_sign_pat)
+            value: ta.Optional[str] = _parse_dotenv_value(reader)
         else:
             value = None
-        reader.read_regex(_comment)
-        reader.read_regex(_end_of_line)
-        return Binding(
+        reader.read_regex(_dotenv_comment_pat)
+        reader.read_regex(_dotenv_end_of_line_pat)
+        return DotenvBinding(
             key=key,
             value=value,
             original=reader.get_marked(),
             error=False,
         )
-    except Error:
-        reader.read_regex(_rest_of_line)
-        return Binding(
+    except DotenvError:
+        reader.read_regex(_dotenv_rest_of_line_pat)
+        return DotenvBinding(
             key=None,
             value=None,
             original=reader.get_marked(),
@@ -299,54 +295,54 @@ def _parse_binding(reader: _Reader) -> Binding:
         )
 
 
-def parse_stream(stream: ta.IO[str]) -> ta.Iterator[Binding]:
-    reader = _Reader(stream)
+def parse_dotenv_stream(stream: ta.IO[str]) -> ta.Iterator[DotenvBinding]:
+    reader = _DotenvReader(stream)
     while reader.has_next():
-        yield _parse_binding(reader)
+        yield _parse_dotenv_binding(reader)
 
 
 ##
 
 
-# A type alias for a string path to be used for the paths in this file. These paths may flow to `open()` and
-# `shutil.move()`; `shutil.move()` only accepts string paths, not byte paths or file descriptors. See
-# https://github.com/python/typeshed/pull/6832.
-StrPath: ta.TypeAlias = ta.Union[str, 'os.PathLike[str]']
-
-
-def _with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[Binding]:
+def _dotenv_with_warn_for_invalid_lines(
+        mappings: ta.Iterator[DotenvBinding],
+        log: ta.Optional[logging.Logger] = None,
+) -> ta.Iterator[DotenvBinding]:
     for mapping in mappings:
         if mapping.error:
-            log.warning(
-                'dotenv could not parse statement starting at line %s',
-                mapping.original.line,
-            )
+            if log is not None:
+                log.warning(
+                    'dotenv could not parse statement starting at line %s',
+                    mapping.original.line,
+                )
         yield mapping
 
 
-StrMutableMappingT = ta.TypeVar('StrMutableMappingT', bound=ta.MutableMapping[str, str])
+StrStrMutableMappingT = ta.TypeVar('StrStrMutableMappingT', bound=ta.MutableMapping[str, str])
 
 
-class DotEnv:
+class Dotenv:
     def __init__(
         self,
-        path: StrPath | None = None,
-        stream: ta.IO[str] | None = None,
+        path: ta.Union[str, 'os.PathLike[str]', None] = None,
+        stream: ta.Optional[ta.IO[str]] = None,
         verbose: bool = False,
-        encoding: str | None = None,
+        encoding: ta.Optional[str] = None,
         interpolate: bool = True,
         override: bool = True,
-        env: ta.Mapping[str, str] | None = None,
+        env: ta.Optional[ta.Mapping[str, str]] = None,
+        log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
-        self.path: StrPath | None = path
-        self.stream: ta.IO[str] | None = stream
-        self._dict: dict[str, str | None] | None = None
+        self.path: ta.Union[str, 'os.PathLike[str]', None] = path
+        self.stream: ta.Optional[ta.IO[str]] = stream
+        self._dict: ta.Optional[ta.Dict[str, ta.Optional[str]]] = None
         self.verbose: bool = verbose
-        self.encoding: str | None = encoding
+        self.encoding: ta.Optional[str] = encoding
         self.interpolate: bool = interpolate
         self.override: bool = override
         self.env = env or {}
+        self.log = log
 
     @contextlib.contextmanager
     def _get_stream(self) -> ta.Iterator[ta.IO[str]]:
@@ -357,26 +353,27 @@ class DotEnv:
             yield self.stream
         else:
             if self.verbose:
-                log.info(
-                    'dotenv could not find configuration file %s.',
-                    self.path or '.env',
-                )
+                if self.log is not None:
+                    self.log.info(
+                        'dotenv could not find configuration file %s.',
+                        self.path or '.env',
+                    )
             yield io.StringIO('')
 
-    def dict(self) -> dict[str, str | None]:
+    def dict(self) -> ta.Dict[str, ta.Optional[str]]:
         if self._dict:
             return self._dict
 
         raw_values = self.parse()
 
         if self.interpolate:
-            self._dict = resolve_variables(raw_values, override=self.override, env=self.env)
+            self._dict = dotenv_resolve_variables(raw_values, override=self.override, env=self.env)
         else:
             self._dict = dict(raw_values)
 
         return self._dict
 
-    def apply_to(self, dst: StrMutableMappingT) -> StrMutableMappingT:
+    def apply_to(self, dst: StrStrMutableMappingT) -> StrStrMutableMappingT:
         for k, v in self.dict().items():
             if v is not None:
                 dst[k] = v
@@ -384,20 +381,21 @@ class DotEnv:
                 del dst[k]
         return dst
 
-    def parse(self) -> ta.Iterator[tuple[str, str | None]]:
+    def parse(self) -> ta.Iterator[ta.Tuple[str, ta.Optional[str]]]:
         with self._get_stream() as stream:
-            for mapping in _with_warn_for_invalid_lines(parse_stream(stream)):
+            for mapping in _dotenv_with_warn_for_invalid_lines(parse_dotenv_stream(stream), self.log):
                 if mapping.key is not None:
                     yield mapping.key, mapping.value
 
-    def get(self, key: str) -> str | None:
+    def get(self, key: str) -> ta.Optional[str]:
         data = self.dict()
 
         if key in data:
             return data[key]
 
         if self.verbose:
-            log.warning('Key %s not found in %s.', key, self.path)
+            if self.log is not None:
+                self.log.warning('Key %s not found in %s.', key, self.path)
 
         return None
 
@@ -405,25 +403,32 @@ class DotEnv:
 ##
 
 
-def get_key(
-    path: StrPath,
+def dotenv_get_key(
+    path: ta.Union[str, 'os.PathLike[str]'],
     key_to_get: str,
     *,
-    encoding: str | None = 'utf-8',
-) -> str | None:
+    encoding: ta.Optional[str] = 'utf-8',
+    log: ta.Optional[logging.Logger] = None,
+) -> ta.Optional[str]:
     """
     Get the value of a given key from the given .env.
 
     Returns `None` if the key isn't found or doesn't have a value.
     """
-    return DotEnv(path, verbose=True, encoding=encoding).get(key_to_get)
+
+    return Dotenv(
+        path,
+        verbose=True,
+        encoding=encoding,
+        log=log,
+    ).get(key_to_get)
 
 
 @contextlib.contextmanager
-def _rewrite(
-    path: StrPath,
-    encoding: str | None,
-) -> ta.Iterator[tuple[ta.IO[str], ta.IO[str]]]:
+def _dotenv_rewrite(
+    path: ta.Union[str, 'os.PathLike[str]'],
+    encoding: ta.Optional[str],
+) -> ta.Iterator[ta.Tuple[ta.IO[str], ta.IO[str]]]:
     pathlib.Path(path).touch()
 
     with tempfile.NamedTemporaryFile(mode='w', encoding=encoding, delete=False) as dest:
@@ -441,21 +446,23 @@ def _rewrite(
         raise error from None
 
 
-def set_key(
-    path: StrPath,
+def dotenv_set_key(
+    path: ta.Union[str, 'os.PathLike[str]'],
     key_to_set: str,
     value_to_set: str,
     *,
     quote_mode: str = 'always',
     export: bool = False,
-    encoding: str | None = 'utf-8',
-) -> tuple[bool | None, str, str]:
+    encoding: ta.Optional[str] = 'utf-8',
+    log: ta.Optional[logging.Logger] = None,
+) -> ta.Tuple[ta.Optional[bool], str, str]:
     """
     Adds or Updates a key/value to the given .env
 
     If the .env path given doesn't exist, fails instead of risking creating
     an orphan .env somewhere in the filesystem
     """
+
     if quote_mode not in ('always', 'auto', 'never'):
         raise ValueError(f'Unknown quote_mode: {quote_mode}')
 
@@ -473,10 +480,10 @@ def set_key(
     else:
         line_out = f'{key_to_set}={value_out}\n'
 
-    with _rewrite(path, encoding=encoding) as (source, dest):
+    with _dotenv_rewrite(path, encoding=encoding) as (source, dest):
         replaced = False
         missing_newline = False
-        for mapping in _with_warn_for_invalid_lines(parse_stream(source)):
+        for mapping in _dotenv_with_warn_for_invalid_lines(parse_dotenv_stream(source), log):
             if mapping.key == key_to_set:
                 dest.write(line_out)
                 replaced = True
@@ -491,51 +498,55 @@ def set_key(
     return True, key_to_set, value_to_set
 
 
-def unset_key(
-    path: StrPath,
+def dotenv_unset_key(
+    path: ta.Union[str, 'os.PathLike[str]'],
     key_to_unset: str,
     *,
     quote_mode: str = 'always',
-    encoding: str | None = 'utf-8',
-) -> tuple[bool | None, str]:
+    encoding: ta.Optional[str] = 'utf-8',
+    log: ta.Optional[logging.Logger] = None,
+) -> ta.Tuple[ta.Optional[bool], str]:
     """
     Removes a given key from the given `.env` file.
 
     If the .env path given doesn't exist, fails.
     If the given key doesn't exist in the .env, fails.
     """
+
     if not os.path.exists(path):
-        log.warning("Can't delete from %s - it doesn't exist.", path)
+        if log is not None:
+            log.warning("Can't delete from %s - it doesn't exist.", path)
         return None, key_to_unset
 
     removed = False
-    with _rewrite(path, encoding=encoding) as (source, dest):
-        for mapping in _with_warn_for_invalid_lines(parse_stream(source)):
+    with _dotenv_rewrite(path, encoding=encoding) as (source, dest):
+        for mapping in _dotenv_with_warn_for_invalid_lines(parse_dotenv_stream(source), log):
             if mapping.key == key_to_unset:
                 removed = True
             else:
                 dest.write(mapping.original.string)
 
     if not removed:
-        log.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, path)
+        if log is not None:
+            log.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, path)
         return None, key_to_unset
 
     return removed, key_to_unset
 
 
-def resolve_variables(
-        values: ta.Iterable[tuple[str, str | None]],
+def dotenv_resolve_variables(
+        values: ta.Iterable[ta.Tuple[str, ta.Optional[str]]],
         override: bool,
         env: ta.Mapping[str, str],
-) -> dict[str, str | None]:
-    new_values: dict[str, str | None] = {}
+) -> ta.Dict[str, ta.Optional[str]]:
+    new_values: ta.Dict[str, ta.Optional[str]] = {}
 
     for (name, value) in values:
         if value is None:
             result = None
         else:
-            atoms = parse_variables(value)
-            aenv: dict[str, str | None] = {}
+            atoms = parse_dotenv_variables(value)
+            aenv: ta.Dict[str, ta.Optional[str]] = {}
             if override:
                 aenv.update(env)
                 aenv.update(new_values)
@@ -550,14 +561,15 @@ def resolve_variables(
 
 
 def dotenv_values(
-    path: StrPath | None = None,
-    stream: ta.IO[str] | None = None,
+    path: ta.Union[str, 'os.PathLike[str]', None] = None,
+    stream: ta.Optional[ta.IO[str]] = None,
     *,
     verbose: bool = False,
     interpolate: bool = True,
-    encoding: str | None = 'utf-8',
-    env: ta.Mapping[str, str] | None = None,
-) -> dict[str, str | None]:
+    encoding: ta.Optional[str] = 'utf-8',
+    env: ta.Optional[ta.Mapping[str, str]] = None,
+    log: ta.Optional[logging.Logger] = None,
+) -> ta.Dict[str, ta.Optional[str]]:
     """
     Parse a .env file and return its content as a dict.
 
@@ -574,10 +586,11 @@ def dotenv_values(
     If both `path` and `stream` are `None`, `find_dotenv()` is used to find the
     .env file.
     """
+
     if path is None and stream is None:
         raise ValueError('must set path or stream')
 
-    return DotEnv(
+    return Dotenv(
         path=path,
         stream=stream,
         verbose=verbose,
@@ -585,4 +598,5 @@ def dotenv_values(
         override=True,
         encoding=encoding,
         env=env,
+        log=log,
     ).dict()
