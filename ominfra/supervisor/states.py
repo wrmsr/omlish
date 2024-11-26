@@ -5,18 +5,6 @@ import enum
 
 
 class ProcessState(enum.IntEnum):
-    """
-    http://supervisord.org/subprocess.html
-
-    STOPPED -> STARTING
-    STARTING -> RUNNING, BACKOFF, STOPPING
-    RUNNING -> STOPPING, EXITED
-    BACKOFF -> STARTING, FATAL
-    STOPPING -> STOPPED
-    EXITED -> STARTING
-    FATAL -> STARTING
-    """
-
     STOPPED = 0
     STARTING = 10
     RUNNING = 20
@@ -38,6 +26,17 @@ class ProcessState(enum.IntEnum):
     def signalable(self) -> bool:
         return self in SIGNALABLE_STATES
 
+
+# http://supervisord.org/subprocess.html
+STATE_TRANSITIONS = {
+    ProcessState.STOPPED: (ProcessState.STARTING,),
+    ProcessState.STARTING: (ProcessState.RUNNING, ProcessState.BACKOFF, ProcessState.STOPPING),
+    ProcessState.RUNNING: (ProcessState.STOPPING, ProcessState.EXITED),
+    ProcessState.BACKOFF: (ProcessState.STARTING, ProcessState.FATAL),
+    ProcessState.STOPPING: (ProcessState.STOPPED,),
+    ProcessState.EXITED: (ProcessState.STARTING,),
+    ProcessState.FATAL: (ProcessState.STARTING,),
+}
 
 STOPPED_STATES = (
     ProcessState.STOPPED,
