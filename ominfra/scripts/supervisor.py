@@ -7260,7 +7260,7 @@ class HttpServer(HasDispatchers):
 
         self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
 
-        exit_stack.enter_context(defer(self._server.close))
+        exit_stack.enter_context(defer(self._server.close))  # noqa
 
     def get_dispatchers(self) -> Dispatchers:
         l = []
@@ -7306,6 +7306,7 @@ class SupervisorHttpHandler:
                     'processes': {
                         p.name: {
                             'pid': p.pid,
+                            'state': p.state.name,
                         }
                         for p in g
                     },
