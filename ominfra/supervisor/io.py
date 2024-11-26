@@ -38,11 +38,10 @@ class IoManager(HasDispatchers):
     def poll(self) -> None:
         dispatchers = self.get_dispatchers()
 
-        for fd, dispatcher in dispatchers.items():
-            if dispatcher.readable():
-                self._poller.register_readable(fd)
-            if dispatcher.writable():
-                self._poller.register_writable(fd)
+        self._poller.update(
+            {fd for fd, d in dispatchers.items() if d.readable()},
+            {fd for fd, d in dispatchers.items() if d.writable()},
+        )
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
         log.info(f'Polling: {timeout=}')  # noqa
