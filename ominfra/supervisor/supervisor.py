@@ -233,10 +233,11 @@ class Supervisor:
             return
 
         wp = waitpid()
-        log.info(f'Waited pid: {wp}')  # noqa
+
         if wp is None or not wp.pid:
             return
 
+        log.info(f'Waited pid: {wp}')  # noqa
         process = self._pid_history.get(wp.pid, None)
         if process is None:
             _, msg = decode_wait_status(wp.sts)
