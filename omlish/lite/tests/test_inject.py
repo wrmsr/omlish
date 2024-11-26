@@ -293,3 +293,19 @@ class TestRecursion(unittest.TestCase):
         )
         with self.assertRaises(CyclicDependencyInjectorKeyError):
             i.provide(TestRecursion.Foo)
+
+
+class TestEager(unittest.TestCase):
+    def test_eager(self):
+        c = 0
+
+        def foo() -> int:
+            nonlocal c
+            c += 1
+            return 0
+
+        injector = inj.create_injector(
+            inj.bind(foo, eager=True),
+        )
+        assert c == 1
+        assert injector.provide(int) == 0
