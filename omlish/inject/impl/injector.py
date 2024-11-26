@@ -33,7 +33,7 @@ from ..listeners import ProvisionListener
 from ..listeners import ProvisionListenerBinding
 from ..scopes import ScopeBinding
 from ..scopes import Singleton
-from ..scopes import Thread
+from ..scopes import ThreadScope
 from ..types import Scope
 from ..types import Unscoped
 from .elements import ElementCollection
@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 DEFAULT_SCOPES: list[Scope] = [
     Unscoped(),
     Singleton(),
-    Thread(),
+    ThreadScope(),
 ]
 
 

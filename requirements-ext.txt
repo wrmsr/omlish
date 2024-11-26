@@ -205,7 +205,7 @@ langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.2
 langchain-ollama==0.2.0
-langchain-openai==0.2.9
+langchain-openai==0.2.10
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchain==0.3.8
@@ -248,14 +248,14 @@ usearch==2.16.6
 
 ##
 
-llama-index-core==0.12.1
+llama-index-core==0.12.2
 
 unstructured==0.16.6
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
 
-libtmux==0.37.0
+libtmux==0.39.0
 
 sqlite-vec==0.1.6
 
@@ -286,7 +286,7 @@ gguf==0.10.0
 
 pytesseract==0.3.13
 
-dspy==2.5.32
+dspy==2.5.40
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1

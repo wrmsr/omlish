@@ -92,9 +92,9 @@ docstring-to-markdown==0.15
 docstring_parser==0.16
 docutils==0.21.2
 docutils-stubs==0.0.22
-dspy==2.5.32
+dspy==2.5.40
 duckdb==1.1.3
-duckduckgo_search==6.3.6
+duckduckgo_search==6.3.7
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -199,7 +199,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 jusText==3.0.1
-keras==3.6.0
+keras==3.7.0
 keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
@@ -213,7 +213,7 @@ langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.2
 langchain-ollama==0.2.0
-langchain-openai==0.2.9
+langchain-openai==0.2.10
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchainhub==0.1.21
@@ -227,11 +227,11 @@ language_data==1.3.0
 lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.2.post1
-libtmux==0.37.0
+libtmux==0.39.0
 lightning-utilities==0.11.9
 litecli==1.12.3
 litellm==1.51.0
-llama-index-core==0.12.1
+llama-index-core==0.12.2
 llama_cpp_python==0.3.2
 llvmlite==0.43.0
 Logbook==1.8.0
@@ -318,7 +318,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@6a533b783dc757705df9f8698218abec40e54683
+peft @ git+https://github.com/huggingface/peft.git@d13d7a401ccf4808aaaf76480fea09a4cf4ac1f5
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -334,7 +334,7 @@ portalocker==2.8.2
 posthog==3.7.3
 pprintpp==0.4.0
 preshed==3.0.9
-primp==0.8.0
+primp==0.8.1
 priority==2.0.0
 prometheus_client==0.21.0
 prompt_toolkit==3.0.48
@@ -439,7 +439,7 @@ setuptools==75.6.0
 setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
-simsimd==6.1.1
+simsimd==6.2.0
 six==1.16.0
 smart-open==7.0.5
 smmap==5.0.1
@@ -482,7 +482,7 @@ tiktoken==0.8.0
 tinycss2==1.4.0
 tld==0.13
 tokenize_rt==6.1.0
-tokenizers==0.20.3
+tokenizers==0.20.4
 tomlkit==0.13.2
 torch==2.5.1
 torchinfo==1.8.0

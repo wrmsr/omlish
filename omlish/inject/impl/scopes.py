@@ -24,7 +24,7 @@ from ..providers import Provider
 from ..scopes import ScopeSeededProvider
 from ..scopes import SeededScope
 from ..scopes import Singleton
-from ..scopes import Thread
+from ..scopes import ThreadScope
 from ..types import Scope
 from ..types import Unscoped
 from .bindings import BindingImpl
@@ -86,8 +86,8 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
         self._local = threading.local()
 
     @property
-    def scope(self) -> Thread:
-        return Thread()
+    def scope(self) -> ThreadScope:
+        return ThreadScope()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
         dct: dict[BindingImpl, ta.Any]
@@ -190,7 +190,7 @@ class SeededScopeImpl(ScopeImpl):
 SCOPE_IMPLS_BY_SCOPE: dict[type[Scope], ta.Callable[..., ScopeImpl]] = {
     Unscoped: lambda _: UnscopedScopeImpl(),
     Singleton: lambda _: SingletonScopeImpl(),
-    Thread: lambda _: ThreadScopeImpl(),
+    ThreadScope: lambda _: ThreadScopeImpl(),
     SeededScope: lambda s: SeededScopeImpl(s),
 }
 
