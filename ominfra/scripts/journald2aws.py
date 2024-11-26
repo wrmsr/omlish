@@ -1628,6 +1628,14 @@ class ExitStacked:
 
 
 @contextlib.contextmanager
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.contextmanager
 def attr_setting(obj, attr, val, *, default=None):  # noqa
     not_set = object()
     orig = getattr(obj, attr, not_set)
