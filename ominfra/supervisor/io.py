@@ -44,9 +44,9 @@ class IoManager(HasDispatchers):
         )
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        log.info(f'Polling: {timeout=}')  # noqa
+
         polled = self._poller.poll(timeout)
-        log.info(f'Polled: {polled=}')  # noqa
+
         if polled.msg is not None:
             log.error(polled.msg)
         if polled.exc is not None:
