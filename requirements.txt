@@ -61,7 +61,7 @@ psutil==6.1.0
 ## json
 
 #> ujson==5.10.0
-orjson==3.10.11  # @omlish-venv !13t  # bug 'uninitialized object'
+orjson==3.10.12  # @omlish-venv !13t  # bug 'uninitialized object'
 
 ## pickle
 

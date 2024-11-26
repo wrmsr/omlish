@@ -2,7 +2,7 @@
 
 build>=1.2.2
 twine>=5.1.1
-wheel>=0.44.0
+wheel>=0.45.1
 
 uv>=0.5.4
 
@@ -26,7 +26,7 @@ types-ujson==5.10.0.20240515
 
 black==24.10.0
 mypy==1.13.0
-pipdeptree==2.23.4
+pipdeptree==2.24.0
 
 gprof2dot==2024.6.6
 guppy3==3.1.4.post1; python_version < "3.13"
