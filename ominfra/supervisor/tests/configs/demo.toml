@@ -10,7 +10,7 @@ command = 'sleep 600'
 stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true
 
-# [groups.default.processes.sleepx]
-# command = 'sleep 789'
-# stdout = {file = '/dev/fd/1', max_bytes = 0}
-# redirect_stderr = true
+[groups.default.processes.sleepx]
+command = 'sleep 789'
+stdout = {file = '/dev/fd/1', max_bytes = 0}
+redirect_stderr = true
