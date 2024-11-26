@@ -107,6 +107,8 @@ class FdIoPoller(abc.ABC):
         r: ta.Sequence[int] = ()
         w: ta.Sequence[int] = ()
 
+        inv: ta.Sequence[int] = ()
+
         msg: ta.Optional[str] = None
         exc: ta.Optional[BaseException] = None
 
@@ -191,25 +193,19 @@ if hasattr(select, 'poll'):
 
             r: ta.List[int] = []
             w: ta.List[int] = []
+            inv: ta.List[int] = []
             for fd, mask in polled:
-                if self._ignore_invalid(fd, mask):
+                if mask & select.POLLNVAL:
+                    self._poller.unregister(fd)
+                    self._readable.discard(fd)
+                    self._writable.discard(fd)
+                    inv.append(fd)
                     continue
                 if mask & self._READ:
                     r.append(fd)
                 if mask & self._WRITE:
                     w.append(fd)
-            return FdIoPoller.PollResult(r, w)
-
-        def _ignore_invalid(self, fd: int, mask: int) -> bool:
-            if mask & select.POLLNVAL:
-                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is
-                # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
-                self._poller.unregister(fd)
-                self._readable.discard(fd)
-                self._writable.discard(fd)
-                return True
-
-            return False
+            return FdIoPoller.PollResult(r, w, inv=inv)
 
     PollFdIoPoller = _PollFdIoPoller
 else:

@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from ..logs import log
 from .handlers import FdIoHandler
 from .pollers import FdIoPoller
 
@@ -32,9 +31,7 @@ class FdIoManager:
 
         self._poller.update(set(rd), set(wd))
 
-        log.info(f'Polling: {sorted(rd)=} {sorted(wd)=}')  # noqa
         pr = self._poller.poll(timeout)
-        log.info(f'Polled: {pr=}')  # noqa
 
         for f in pr.r:
             if not (h := rd[f]).closed:
@@ -46,8 +43,6 @@ class FdIoManager:
         hs = list(self._handlers.values())
         nh = {}
         for h in hs:
-            if h.closed:
-                log.info(f'Closed: {h}')  # noqa
-            else:
+            if not h.closed:
                 nh[id(h)] = h
         self._handlers = nh

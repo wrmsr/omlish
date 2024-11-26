@@ -1643,6 +1643,8 @@ class FdIoPoller(abc.ABC):
         r: ta.Sequence[int] = ()
         w: ta.Sequence[int] = ()
 
+        inv: ta.Sequence[int] = ()
+
         msg: ta.Optional[str] = None
         exc: ta.Optional[BaseException] = None
 
@@ -1727,25 +1729,19 @@ if hasattr(select, 'poll'):
 
             r: ta.List[int] = []
             w: ta.List[int] = []
+            inv: ta.List[int] = []
             for fd, mask in polled:
-                if self._ignore_invalid(fd, mask):
+                if mask & select.POLLNVAL:
+                    self._poller.unregister(fd)
+                    self._readable.discard(fd)
+                    self._writable.discard(fd)
+                    inv.append(fd)
                     continue
                 if mask & self._READ:
                     r.append(fd)
                 if mask & self._WRITE:
                     w.append(fd)
-            return FdIoPoller.PollResult(r, w)
-
-        def _ignore_invalid(self, fd: int, mask: int) -> bool:
-            if mask & select.POLLNVAL:
-                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is
-                # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
-                self._poller.unregister(fd)
-                self._readable.discard(fd)
-                self._writable.discard(fd)
-                return True
-
-            return False
+            return FdIoPoller.PollResult(r, w, inv=inv)
 
     PollFdIoPoller = _PollFdIoPoller
 else:
@@ -2517,6 +2513,105 @@ class SocketFdIoHandler(FdIoHandler, abc.ABC):
         if self._sock is not None:
             self._sock.close()
         self._sock = None
+
+
+########################################
+# ../../../omlish/lite/fdio/kqueue.py
+
+
+KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
+
+    class _KqueueFdIoPoller(FdIoPoller):
+        DEFAULT_MAX_EVENTS = 1000
+
+        def __init__(
+                self,
+                *,
+                max_events: int = DEFAULT_MAX_EVENTS,
+        ) -> None:
+            super().__init__()
+
+            self._max_events = max_events
+
+            self._kqueue: ta.Optional[ta.Any] = None
+
+        #
+
+        def _get_kqueue(self) -> 'select.kqueue':
+            if (kq := self._kqueue) is not None:
+                return kq
+            kq = select.kqueue()
+            self._kqueue = kq
+            return kq
+
+        def close(self) -> None:
+            if self._kqueue is not None:
+                self._kqueue.close()
+                self._kqueue = None
+
+        def reopen(self) -> None:
+            for fd in self._readable:
+                self._register_readable(fd)
+            for fd in self._writable:
+                self._register_writable(fd)
+
+        #
+
+        def _register_readable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
+
+        def _register_writable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+
+        def _unregister_readable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
+
+        def _unregister_writable(self, fd: int) -> None:
+            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+
+        def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
+            ke = select.kevent(fd, filter=filter, flags=flags)
+            kq = self._get_kqueue()
+            try:
+                kq.control([ke], 0)
+
+            except OSError as exc:
+                if exc.errno == errno.EBADF:
+                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
+                    pass
+                elif exc.errno == errno.ENOENT:
+                    # Can happen when trying to remove an already closed socket
+                    pass
+                else:
+                    raise
+
+        #
+
+        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+            kq = self._get_kqueue()
+            try:
+                kes = kq.control(None, self._max_events, timeout)
+
+            except OSError as exc:
+                if exc.errno == errno.EINTR:
+                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                else:
+                    raise
+
+            r: ta.List[int] = []
+            w: ta.List[int] = []
+            for ke in kes:
+                if ke.filter == select.KQ_FILTER_READ:
+                    r.append(ke.ident)
+                if ke.filter == select.KQ_FILTER_WRITE:
+                    w.append(ke.ident)
+
+            return FdIoPoller.PollResult(r, w)
+
+    KqueueFdIoPoller = _KqueueFdIoPoller
+else:
+    KqueueFdIoPoller = None
 
 
 ########################################
@@ -4748,108 +4843,6 @@ class SupervisorSetup(abc.ABC):
 
 
 ########################################
-# ../../../omlish/lite/fdio/kqueue.py
-
-
-KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
-if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-
-    class _KqueueFdIoPoller(FdIoPoller):
-        DEFAULT_MAX_EVENTS = 1000
-
-        def __init__(
-                self,
-                *,
-                max_events: int = DEFAULT_MAX_EVENTS,
-        ) -> None:
-            super().__init__()
-
-            self._max_events = max_events
-
-            self._kqueue: ta.Optional[ta.Any] = None
-
-        #
-
-        def _get_kqueue(self) -> 'select.kqueue':
-            if (kq := self._kqueue) is not None:
-                return kq
-            kq = select.kqueue()
-            self._kqueue = kq
-            return kq
-
-        def close(self) -> None:
-            if self._kqueue is not None:
-                self._kqueue.close()
-                self._kqueue = None
-
-        def reopen(self) -> None:
-            for fd in self._readable:
-                self._register_readable(fd)
-            for fd in self._writable:
-                self._register_writable(fd)
-
-        #
-
-        def _register_readable(self, fd: int) -> None:
-            log.info(f'Adding kq readable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
-
-        def _register_writable(self, fd: int) -> None:
-            log.info(f'Adding kq writable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
-
-        def _unregister_readable(self, fd: int) -> None:
-            log.info(f'Removing kq readable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
-
-        def _unregister_writable(self, fd: int) -> None:
-            log.info(f'Removing kq writable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
-
-        def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
-            ke = select.kevent(fd, filter=filter, flags=flags)
-            kq = self._get_kqueue()
-            try:
-                kq.control([ke], 0)
-            except OSError as exc:
-                if exc.errno == errno.EBADF:
-                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
-                    pass
-                elif exc.errno == errno.ENOENT:
-                    # Can happen when trying to remove an already closed socket
-                    pass
-                else:
-                    raise
-
-        #
-
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-            kq = self._get_kqueue()
-            try:
-                kes = kq.control(None, self._max_events, timeout)
-
-            except OSError as exc:
-                if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-                else:
-                    raise
-
-            r: ta.List[int] = []
-            w: ta.List[int] = []
-            for ke in kes:
-                if ke.filter == select.KQ_FILTER_READ:
-                    r.append(ke.ident)
-                if ke.filter == select.KQ_FILTER_WRITE:
-                    w.append(ke.ident)
-
-            return FdIoPoller.PollResult(r, w)
-
-    KqueueFdIoPoller = _KqueueFdIoPoller
-else:
-    KqueueFdIoPoller = None
-
-
-########################################
 # ../../../omlish/lite/http/handlers.py
 
 
@@ -6582,11 +6575,10 @@ class IoManager(HasDispatchers):
     def poll(self) -> None:
         dispatchers = self.get_dispatchers()
 
-        for fd, dispatcher in dispatchers.items():
-            if dispatcher.readable():
-                self._poller.register_readable(fd)
-            if dispatcher.writable():
-                self._poller.register_writable(fd)
+        self._poller.update(
+            {fd for fd, d in dispatchers.items() if d.readable()},
+            {fd for fd, d in dispatchers.items() if d.writable()},
+        )
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
         log.info(f'Polling: {timeout=}')  # noqa
@@ -7866,8 +7858,8 @@ def bind_server(
     #
 
     poller_impl = next(filter(None, [
-        # KqueueFdIoPoller,
-        # PollFdIoPoller,
+        KqueueFdIoPoller,
+        PollFdIoPoller,
         SelectFdIoPoller,
     ]))
     lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
