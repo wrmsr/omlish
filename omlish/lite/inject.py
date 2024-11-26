@@ -472,6 +472,14 @@ def build_injection_kwargs_target(
 _INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
 
 
+@dc.dataclass(frozen=True)
+class _InjectorEager:
+    key: InjectorKey
+
+
+_INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEager, array=True)
+
+
 class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
@@ -485,6 +493,14 @@ class _Injector(Injector):
             raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
 
         self.__cur_req: ta.Optional[_Injector._Request] = None
+
+        try:
+            eagers = self.provide(_INJECTOR_EAGER_ARRAY_KEY)
+        except UnboundLocalError:
+            pass
+        else:
+            for e in eagers:
+                self.provide(e.key)
 
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
@@ -643,6 +659,8 @@ class InjectorBinder:
             to_key: ta.Any = None,
 
             singleton: bool = False,
+
+            eager: bool = False,
     ) -> InjectorBindingOrBindings:
         if obj is None or obj is inspect.Parameter.empty:
             raise TypeError(obj)
@@ -716,13 +734,21 @@ class InjectorBinder:
         if singleton:
             provider = SingletonInjectorProvider(provider)
 
-        ##
-
         binding = InjectorBinding(key, provider)
 
         ##
 
-        return binding
+        extras: ta.List[InjectorBinding] = []
+
+        if eager:
+            extras.append(bind_injector_eager_key(key))
+
+        ##
+
+        if extras:
+            return as_injector_bindings(binding, *extras)
+        else:
+            return binding
 
 
 ###
@@ -786,6 +812,10 @@ def make_injector_array_type(
     return inner
 
 
+def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
+    return InjectorBinding(_INJECTOR_EAGER_ARRAY_KEY, ConstInjectorProvider(_InjectorEager(as_injector_key(key))))
+
+
 ##
 
 
@@ -840,6 +870,8 @@ class Injection:
             to_key: ta.Any = None,
 
             singleton: bool = False,
+
+            eager: bool = False,
     ) -> InjectorBindingOrBindings:
         return InjectorBinder.bind(
             obj,
@@ -854,6 +886,8 @@ class Injection:
             to_key=to_key,
 
             singleton=singleton,
+
+            eager=eager,
         )
 
     # helpers
