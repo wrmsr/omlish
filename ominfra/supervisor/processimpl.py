@@ -378,7 +378,6 @@ class ProcessImpl(Process):
         self._last_stop = now
 
         if now > self._last_start:
-            log.info(f'{now - self._last_start=}')  # noqa
             too_quickly = now - self._last_start < self._config.start_secs
         else:
             too_quickly = False
