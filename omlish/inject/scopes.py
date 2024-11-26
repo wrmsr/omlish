@@ -49,11 +49,11 @@ SCOPE_ALIASES['singleton'] = Singleton()
 ##
 
 
-class Thread(Scope, lang.Singleton, lang.Final):
+class ThreadScope(Scope, lang.Singleton, lang.Final):
     pass
 
 
-SCOPE_ALIASES['thread'] = Thread()
+SCOPE_ALIASES['thread'] = ThreadScope()
 
 
 ##
