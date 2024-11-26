@@ -182,11 +182,29 @@ class Supervisor:
     #
 
     def _run_once(self) -> None:
-        now = time.time()
-        self._poll()
-        log.info(f'Poll took {time.time() - now}')  # noqa
+        if self._states.state < SupervisorState.RUNNING:
+            if not self._stopping:
+                # first time, set the stopping flag, do a notification and set stop_groups
+                self._stopping = True
+                self._stop_groups = sorted(self._process_groups)
+                self._event_callbacks.notify(SupervisorStoppingEvent())
+
+            self._ordered_stop_groups_phase_1()
+
+            if not self.shutdown_report():
+                # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
+                raise ExitNow
+
+        self._io.poll()
+
+        for group in sorted(self._process_groups):
+            for process in group:
+                process.transition()
+
         self._reap()
+
         self._signal_handler.handle_signals()
+
         self._tick()
 
         if self._states.state < SupervisorState.RUNNING:
@@ -207,31 +225,6 @@ class Supervisor:
                 # if any processes in the group aren't yet in a stopped state, we're not yet done shutting this group
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
-
-    #
-
-    def _poll(self) -> None:
-        sorted_groups = list(self._process_groups)
-        sorted_groups.sort()
-
-        if self._states.state < SupervisorState.RUNNING:
-            if not self._stopping:
-                # first time, set the stopping flag, do a notification and set stop_groups
-                self._stopping = True
-                self._stop_groups = sorted_groups[:]
-                self._event_callbacks.notify(SupervisorStoppingEvent())
-
-            self._ordered_stop_groups_phase_1()
-
-            if not self.shutdown_report():
-                # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
-                raise ExitNow
-
-        self._io.poll()
-
-        for group in sorted_groups:
-            for process in group:
-                process.transition()
 
     #
 
