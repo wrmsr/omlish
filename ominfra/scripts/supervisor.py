@@ -90,50 +90,50 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../omdev/toml/parser.py
+# ../../omdev/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
-# ../utils/collections.py
+# utils/collections.py
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
-# ../../../omlish/lite/cached.py
+# ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../../omlish/lite/check.py
+# ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-# ../../../omlish/lite/socket.py
+# ../../omlish/lite/socket.py
 SocketAddress = ta.Any
 SocketHandlerFactory = ta.Callable[[SocketAddress, ta.BinaryIO, ta.BinaryIO], 'SocketHandler']
 
-# ../../../omlish/lite/typing.py
+# ../../omlish/lite/typing.py
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
 
-# ../events.py
+# events.py
 EventCallback = ta.Callable[['Event'], None]
 
-# ../../../omlish/lite/http/parsing.py
+# ../../omlish/lite/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
-# ../../../omlish/lite/inject.py
+# ../../omlish/lite/inject.py
 U = ta.TypeVar('U')
 InjectorKeyCls = ta.Union[type, ta.NewType]
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
-# ../../configs.py
+# ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
 
-# ../../../omlish/lite/http/handlers.py
+# ../../omlish/lite/http/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']
 
-# ../../../omlish/lite/http/coroserver.py
+# ../../omlish/lite/http/coroserver.py
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
 

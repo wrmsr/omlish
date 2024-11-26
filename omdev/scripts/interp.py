@@ -43,7 +43,7 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../packaging/versions.py
+# ../packaging/versions.py
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
@@ -51,13 +51,13 @@ VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalTy
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
-# ../../../omlish/lite/cached.py
+# ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../../omlish/lite/check.py
+# ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-# ../../packaging/specifiers.py
+# ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]

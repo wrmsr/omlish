@@ -526,7 +526,7 @@ def gen_amalg(
         if i:
             out.write('\n')
         if f is not mf:
-            rp = os.path.relpath(f.path, mf.path)
+            rp = os.path.relpath(f.path, os.path.dirname(mf.path))
         else:
             rp = os.path.basename(f.path)
         out.write(f'# {rp}\n')

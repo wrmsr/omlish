@@ -33,10 +33,10 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../../omlish/lite/cached.py
+# ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../base.py
+# base.py
 ConcernT = ta.TypeVar('ConcernT')
 ConfigT = ta.TypeVar('ConfigT')
 SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
