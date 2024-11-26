@@ -63,8 +63,8 @@ class IoManager(HasDispatchers):
                         self._poller.unregister_readable(fd)
                 except ExitNow:
                     raise
-                except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                except Exception as exc:  # noqa
+                    dispatchers[fd].on_error(exc)
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -85,8 +85,8 @@ class IoManager(HasDispatchers):
                         self._poller.unregister_writable(fd)
                 except ExitNow:
                     raise
-                except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                except Exception as exc:  # noqa
+                    dispatchers[fd].on_error(exc)
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:

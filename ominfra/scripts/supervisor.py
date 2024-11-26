@@ -2487,7 +2487,7 @@ class FdIoHandler(abc.ABC):
     def on_writable(self) -> None:
         raise TypeError
 
-    def on_error(self) -> None:  # noqa
+    def on_error(self, exc: ta.Optional[BaseException] = None) -> None:  # noqa
         pass
 
 
@@ -5842,7 +5842,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
 
-    def on_error(self) -> None:
+    def on_error(self, exc: ta.Optional[BaseException] = None) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
         log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
@@ -6600,8 +6600,8 @@ class IoManager(HasDispatchers):
                         self._poller.unregister_readable(fd)
                 except ExitNow:
                     raise
-                except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                except Exception as exc:  # noqa
+                    dispatchers[fd].on_error(exc)
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -6622,8 +6622,8 @@ class IoManager(HasDispatchers):
                         self._poller.unregister_writable(fd)
                 except ExitNow:
                     raise
-                except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                except Exception as exc:  # noqa
+                    dispatchers[fd].on_error(exc)
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
