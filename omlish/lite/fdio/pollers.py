@@ -155,9 +155,6 @@ if hasattr(select, 'poll'):
 
         #
 
-        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-        _WRITE = select.POLLOUT
-
         def _register_readable(self, fd: int) -> None:
             self._update_registration(fd)
 
@@ -169,6 +166,11 @@ if hasattr(select, 'poll'):
 
         def _unregister_writable(self, fd: int) -> None:
             self._update_registration(fd)
+
+        #
+
+        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+        _WRITE = select.POLLOUT
 
         def _update_registration(self, fd: int) -> None:
             r = fd in self._readable
