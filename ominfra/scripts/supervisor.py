@@ -1968,6 +1968,73 @@ class SocketHandler(abc.ABC):
 
 
 ########################################
+# ../../../omlish/lite/strings.py
+
+
+##
+
+
+def camel_case(name: str, lower: bool = False) -> str:
+    if not name:
+        return ''
+    s = ''.join(map(str.capitalize, name.split('_')))  # noqa
+    if lower:
+        s = s[0].lower() + s[1:]
+    return s
+
+
+def snake_case(name: str) -> str:
+    uppers: list[int | None] = [i for i, c in enumerate(name) if c.isupper()]
+    return '_'.join([name[l:r].lower() for l, r in zip([None, *uppers], [*uppers, None])]).strip('_')
+
+
+##
+
+
+def is_dunder(name: str) -> bool:
+    return (
+        name[:2] == name[-2:] == '__' and
+        name[2:3] != '_' and
+        name[-3:-2] != '_' and
+        len(name) > 4
+    )
+
+
+def is_sunder(name: str) -> bool:
+    return (
+        name[0] == name[-1] == '_' and
+        name[1:2] != '_' and
+        name[-2:-1] != '_' and
+        len(name) > 2
+    )
+
+
+##
+
+
+def attr_repr(obj: ta.Any, *attrs: str) -> str:
+    return f'{type(obj).__name__}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
+
+
+##
+
+
+FORMAT_NUM_BYTES_SUFFIXES: ta.Sequence[str] = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB']
+
+
+def format_num_bytes(num_bytes: int) -> str:
+    for i, suffix in enumerate(FORMAT_NUM_BYTES_SUFFIXES):
+        value = num_bytes / 1024 ** i
+        if num_bytes < 1024 ** (i + 1):
+            if value.is_integer():
+                return f'{int(value)}{suffix}'
+            else:
+                return f'{value:.2f}{suffix}'
+
+    return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
 # ../../../omlish/lite/typing.py
 
 
@@ -3460,6 +3527,14 @@ def build_injection_kwargs_target(
 _INJECTOR_INJECTOR_KEY: InjectorKey[Injector] = InjectorKey(Injector)
 
 
+@dc.dataclass(frozen=True)
+class _InjectorEager:
+    key: InjectorKey
+
+
+_INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEager, array=True)
+
+
 class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
@@ -3473,6 +3548,14 @@ class _Injector(Injector):
             raise DuplicateInjectorKeyError(_INJECTOR_INJECTOR_KEY)
 
         self.__cur_req: ta.Optional[_Injector._Request] = None
+
+        try:
+            eagers = self.provide(_INJECTOR_EAGER_ARRAY_KEY)
+        except UnboundLocalError:
+            pass
+        else:
+            for e in eagers:
+                self.provide(e.key)
 
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
@@ -3631,6 +3714,8 @@ class InjectorBinder:
             to_key: ta.Any = None,
 
             singleton: bool = False,
+
+            eager: bool = False,
     ) -> InjectorBindingOrBindings:
         if obj is None or obj is inspect.Parameter.empty:
             raise TypeError(obj)
@@ -3704,13 +3789,21 @@ class InjectorBinder:
         if singleton:
             provider = SingletonInjectorProvider(provider)
 
-        ##
-
         binding = InjectorBinding(key, provider)
 
         ##
 
-        return binding
+        extras: ta.List[InjectorBinding] = []
+
+        if eager:
+            extras.append(bind_injector_eager_key(key))
+
+        ##
+
+        if extras:
+            return as_injector_bindings(binding, *extras)
+        else:
+            return binding
 
 
 ###
@@ -3774,6 +3867,10 @@ def make_injector_array_type(
     return inner
 
 
+def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
+    return InjectorBinding(_INJECTOR_EAGER_ARRAY_KEY, ConstInjectorProvider(_InjectorEager(as_injector_key(key))))
+
+
 ##
 
 
@@ -3828,6 +3925,8 @@ class Injection:
             to_key: ta.Any = None,
 
             singleton: bool = False,
+
+            eager: bool = False,
     ) -> InjectorBindingOrBindings:
         return InjectorBinder.bind(
             obj,
@@ -3842,6 +3941,8 @@ class Injection:
             to_key=to_key,
 
             singleton=singleton,
+
+            eager=eager,
         )
 
     # helpers
@@ -3875,6 +3976,228 @@ class Injection:
 
 
 inj = Injection
+
+
+########################################
+# ../../../omlish/lite/io.py
+
+
+class DelimitingBuffer:
+    """
+    https://github.com/python-trio/trio/issues/796 :|
+    """
+
+    #
+
+    class Error(Exception):
+        def __init__(self, buffer: 'DelimitingBuffer') -> None:
+            super().__init__(buffer)
+            self.buffer = buffer
+
+        def __repr__(self) -> str:
+            return attr_repr(self, 'buffer')
+
+    class ClosedError(Error):
+        pass
+
+    #
+
+    DEFAULT_DELIMITERS: bytes = b'\n'
+
+    def __init__(
+            self,
+            delimiters: ta.Iterable[int] = DEFAULT_DELIMITERS,
+            *,
+            keep_ends: bool = False,
+            max_size: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        self._delimiters = frozenset(check_isinstance(d, int) for d in delimiters)
+        self._keep_ends = keep_ends
+        self._max_size = max_size
+
+        self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
+
+    #
+
+    @property
+    def is_closed(self) -> bool:
+        return self._buf is None
+
+    def tell(self) -> int:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+        return buf.tell()
+
+    def peek(self) -> bytes:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+        return buf.getvalue()
+
+    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[int]:
+        r = None  # type: int | None
+        for d in self._delimiters:
+            if (p := data.find(d, i)) >= 0:
+                if r is None or p < r:
+                    r = p
+        return r
+
+    def _append_and_reset(self, chunk: bytes) -> bytes:
+        buf = check_not_none(self._buf)
+        if not buf.tell():
+            return chunk
+
+        buf.write(chunk)
+        ret = buf.getvalue()
+        buf.seek(0)
+        buf.truncate()
+        return ret
+
+    class Incomplete(ta.NamedTuple):
+        b: bytes
+
+    def feed(self, data: ta.Union[bytes, bytearray]) -> ta.Generator[ta.Union[bytes, Incomplete], None, None]:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+
+        if not data:
+            self._buf = None
+
+            if buf.tell():
+                yield self.Incomplete(buf.getvalue())
+
+            return
+
+        l = len(data)
+        i = 0
+        while i < l:
+            if (p := self._find_delim(data, i)) is None:
+                break
+
+            n = p + 1
+            if self._keep_ends:
+                p = n
+
+            yield self._append_and_reset(data[i:p])
+
+            i = n
+
+        if i >= l:
+            return
+
+        if self._max_size is None:
+            buf.write(data[i:])
+            return
+
+        while i < l:
+            remaining_data_len = l - i
+            remaining_buf_capacity = self._max_size - buf.tell()
+
+            if remaining_data_len < remaining_buf_capacity:
+                buf.write(data[i:])
+                return
+
+            p = i + remaining_buf_capacity
+            yield self.Incomplete(self._append_and_reset(data[i:p]))
+            i = p
+
+
+class ReadableListBuffer:
+    def __init__(self) -> None:
+        super().__init__()
+        self._lst: list[bytes] = []
+
+    def feed(self, d: bytes) -> None:
+        if d:
+            self._lst.append(d)
+
+    def _chop(self, i: int, e: int) -> bytes:
+        lst = self._lst
+        d = lst[i]
+
+        o = b''.join([
+            *lst[:i],
+            d[:e],
+        ])
+
+        self._lst = [
+            *([d[e:]] if e < len(d) else []),
+            *lst[i + 1:],
+        ]
+
+        return o
+
+    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
+        if n is None:
+            o = b''.join(self._lst)
+            self._lst = []
+            return o
+
+        if not (lst := self._lst):
+            return None
+
+        c = 0
+        for i, d in enumerate(lst):
+            r = n - c
+            if (l := len(d)) >= r:
+                return self._chop(i, r)
+            c += l
+
+        return None
+
+    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+        if not (lst := self._lst):
+            return None
+
+        for i, d in enumerate(lst):
+            if (p := d.find(delim)) >= 0:
+                return self._chop(i, p + len(delim))
+
+        return None
+
+
+class IncrementalWriteBuffer:
+    def __init__(
+            self,
+            data: bytes,
+            *,
+            write_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        check_non_empty(data)
+        self._len = len(data)
+        self._write_size = write_size
+
+        self._lst = [
+            data[i:i + write_size]
+            for i in range(0, len(data), write_size)
+        ]
+        self._pos = 0
+
+    @property
+    def rem(self) -> int:
+        return self._len - self._pos
+
+    def write(self, fn: ta.Callable[[bytes], int]) -> int:
+        lst = check_non_empty(self._lst)
+
+        t = 0
+        for i, d in enumerate(lst):  # noqa
+            n = fn(check_non_empty(d))
+            if not n:
+                break
+            t += n
+
+        if t:
+            self._lst = [
+                *([d[n:]] if n < len(d) else []),
+                *lst[i + 1:],
+            ]
+            self._pos += t
+
+        return t
 
 
 ########################################
@@ -5758,6 +6081,132 @@ class ProcessGroup(
 
 
 ########################################
+# ../../../omlish/lite/fdio/corohttp.py
+
+
+class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            sock: socket.socket,
+            handler: HttpHandler,
+            *,
+            read_size: int = 0x10000,
+            write_size: int = 0x10000,
+    ) -> None:
+        check_state(not sock.getblocking())
+
+        super().__init__(addr, sock)
+
+        self._handler = handler
+        self._read_size = read_size
+        self._write_size = write_size
+
+        self._read_buf = ReadableListBuffer()
+        self._write_buf: IncrementalWriteBuffer | None = None
+
+        self._coro_srv = CoroHttpServer(
+            addr,
+            handler=self._handler,
+        )
+        self._srv_coro: ta.Optional[ta.Generator[CoroHttpServer.Io, ta.Optional[bytes], None]] = self._coro_srv.coro_handle()  # noqa
+
+        self._cur_io: CoroHttpServer.Io | None = None
+        self._next_io()
+
+    #
+
+    def _next_io(self) -> None:  # noqa
+        coro = check_not_none(self._srv_coro)
+
+        d: bytes | None = None
+        o = self._cur_io
+        while True:
+            if o is None:
+                try:
+                    if d is not None:
+                        o = coro.send(d)
+                        d = None
+                    else:
+                        o = next(coro)
+                except StopIteration:
+                    self.close()
+                    o = None
+                    break
+
+            if isinstance(o, CoroHttpServer.AnyLogIo):
+                print(o)
+                o = None
+
+            elif isinstance(o, CoroHttpServer.ReadIo):
+                if (d := self._read_buf.read(o.sz)) is None:
+                    break
+                o = None
+
+            elif isinstance(o, CoroHttpServer.ReadLineIo):
+                if (d := self._read_buf.read_until(b'\n')) is None:
+                    break
+                o = None
+
+            elif isinstance(o, CoroHttpServer.WriteIo):
+                check_none(self._write_buf)
+                self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
+                break
+
+            else:
+                raise TypeError(o)
+
+        self._cur_io = o
+
+    #
+
+    def readable(self) -> bool:
+        return True
+
+    def writable(self) -> bool:
+        return self._write_buf is not None
+
+    #
+
+    def on_readable(self) -> None:
+        try:
+            buf = check_not_none(self._sock).recv(self._read_size)
+        except BlockingIOError:
+            return
+        except ConnectionResetError:
+            self.close()
+            return
+        if not buf:
+            self.close()
+            return
+
+        self._read_buf.feed(buf)
+
+        if isinstance(self._cur_io, CoroHttpServer.AnyReadIo):
+            self._next_io()
+
+    def on_writable(self) -> None:
+        check_isinstance(self._cur_io, CoroHttpServer.WriteIo)
+        wb = check_not_none(self._write_buf)
+        while wb.rem > 0:
+            def send(d: bytes) -> int:
+                try:
+                    return check_not_none(self._sock).send(d)
+                except ConnectionResetError:
+                    self.close()
+                    return 0
+                except BlockingIOError:
+                    return 0
+            if not wb.write(send):
+                break
+
+        if wb.rem < 1:
+            self._write_buf = None
+            self._cur_io = None
+            self._next_io()
+
+
+########################################
 # ../dispatchers.py
 
 
@@ -6541,6 +6990,84 @@ class ProcessGroupManager(
             changed,
             removed,
         )
+
+
+########################################
+# ../http.py
+
+
+##
+
+
+class SocketServerFdIoHandler(SocketFdIoHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
+    ) -> None:
+        sock = socket.create_server(addr)
+        sock.setblocking(False)
+
+        super().__init__(addr, sock)
+
+        self._on_connect = on_connect
+
+        sock.listen(1)
+
+    def readable(self) -> bool:
+        return True
+
+    def on_readable(self) -> None:
+        cli_sock, cli_addr = check_not_none(self._sock).accept()
+        cli_sock.setblocking(False)
+
+        self._on_connect(cli_sock, cli_addr)
+
+
+##
+
+
+def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
+    resp = '\n'.join([
+        f'method: {req.method}',
+        f'path: {req.path}',
+        f'data: {len(req.data or b"")}',
+        '',
+    ])
+
+    return HttpHandlerResponse(
+        200,
+        data=resp.encode('utf-8'),
+    )
+
+
+##
+
+
+class HttpServer(HasDispatchers):
+    def __init__(
+            self,
+            addr: SocketAddress = ('localhost', 8000),
+            handler: HttpHandler = say_hi_handler,
+    ) -> None:
+        super().__init__()
+
+        self._addr = addr
+        self._handler = handler
+
+        self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
+
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers([self._server])
+
+    def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
+        conn = CoroHttpServerConnectionFdIoHandler(  # noqa
+            addr,
+            sock,
+            self._handler,
+        )
+
+        raise NotImplementedError
 
 
 ########################################
@@ -7819,6 +8346,7 @@ def bind_server(
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(IoManager, singleton=True),
+        inj.bind_array(HasDispatchers),
         inj.bind_array_type(HasDispatchers, HasDispatchersList),
 
         inj.bind(SignalHandler, singleton=True),
@@ -7840,6 +8368,9 @@ def bind_server(
 
         inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
         inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
+
+        inj.bind(HttpServer, singleton=True),
+        inj.bind(HasDispatchers, to_key=HttpServer),
     ]
 
     #

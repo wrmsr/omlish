@@ -1,6 +1,7 @@
 import socket
 import typing as ta
 
+from omlish.lite.check import check_not_none
 from omlish.lite.fdio.corohttp import CoroHttpServerConnectionFdIoHandler
 from omlish.lite.fdio.handlers import SocketFdIoHandler
 from omlish.lite.http.handlers import HttpHandler
@@ -34,7 +35,7 @@ class SocketServerFdIoHandler(SocketFdIoHandler):
         return True
 
     def on_readable(self) -> None:
-        cli_sock, cli_addr = self._sock.accept()
+        cli_sock, cli_addr = check_not_none(self._sock).accept()
         cli_sock.setblocking(False)
 
         self._on_connect(cli_sock, cli_addr)
@@ -77,10 +78,10 @@ class HttpServer(HasDispatchers):
         return Dispatchers([self._server])
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdIoHandler(
+        conn = CoroHttpServerConnectionFdIoHandler(  # noqa
             addr,
             sock,
-            self._handler
+            self._handler,
         )
 
         raise NotImplementedError
