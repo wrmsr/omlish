@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP006 UP007
-# @omlish-amalg ../scripts/supervisor.py
+# @omlish-amalg ../scripts/supervisor_old.py
 # Supervisor is licensed under the following license:
 #
 #  A copyright notice accompanies this license document that identifies the copyright holders.

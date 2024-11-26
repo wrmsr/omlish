@@ -2,9 +2,9 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.fdio.kqueue import KqueueFdIoPoller
+from omlish.lite.fdio.kqueue import KqueueFdIoPoller  # noqa
 from omlish.lite.fdio.pollers import FdIoPoller
-from omlish.lite.fdio.pollers import PollFdIoPoller
+from omlish.lite.fdio.pollers import PollFdIoPoller  # noqa
 from omlish.lite.fdio.pollers import SelectFdIoPoller
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings

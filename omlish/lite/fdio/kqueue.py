@@ -48,19 +48,19 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def _register_readable(self, fd: int) -> None:
-            log.info(f'Adding kq readable {fd=}')
+            log.info(f'Adding kq readable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
 
         def _register_writable(self, fd: int) -> None:
-            log.info(f'Adding kq writable {fd=}')
+            log.info(f'Adding kq writable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
 
         def _unregister_readable(self, fd: int) -> None:
-            log.info(f'Removing kq readable {fd=}')
+            log.info(f'Removing kq readable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
 
         def _unregister_writable(self, fd: int) -> None:
-            log.info(f'Removing kq writable {fd=}')
+            log.info(f'Removing kq writable {fd=}')  # noqa
             self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
 
         def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
