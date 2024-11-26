@@ -1,9 +1,16 @@
 import socket
 import typing as ta
 
+from omlish.lite.logs import configure_standard_logging
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
+from omlish.lite.fdio.handlers import SocketFdIoHandler
+from omlish.lite.fdio.kqueue import KqueueFdIoPoller
+from omlish.lite.fdio.manager import FdIoManager
+from omlish.lite.fdio.pollers import FdIoPoller
+from omlish.lite.fdio.pollers import PollFdIoPoller
+from omlish.lite.fdio.pollers import SelectFdIoPoller
 from omlish.lite.http.coroserver import CoroHttpServer
 from omlish.lite.http.handlers import HttpHandler
 from omlish.lite.http.handlers import HttpHandlerRequest
@@ -11,10 +18,6 @@ from omlish.lite.http.handlers import HttpHandlerResponse
 from omlish.lite.io import IncrementalWriteBuffer
 from omlish.lite.io import ReadableListBuffer
 from omlish.lite.socket import SocketAddress
-
-from .fdio import FdIoManager
-from .fdio import SelectFdIoPoller
-from .fdio import SocketFdIoHandler
 
 
 ##
@@ -193,7 +196,15 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
 
 
 def _main() -> None:
-    io_poller = SelectFdIoPoller()
+    configure_standard_logging('INFO')
+
+    io_poller_impl: type[FdIoPoller] = next(filter(None, [
+        # KqueueFdIoPoller,
+        PollFdIoPoller,
+        # SelectFdIoPoller,
+    ]))
+    io_poller = io_poller_impl()
+
     io_manager = FdIoManager(io_poller)
 
     srv_addr = ('localhost', 8000)

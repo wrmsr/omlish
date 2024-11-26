@@ -111,7 +111,11 @@ def bind_server(
 
     #
 
-    poller_impl = next(filter(None, [KqueueFdIoPoller, PollFdIoPoller, SelectFdIoPoller]))
+    poller_impl = next(filter(None, [
+        # KqueueFdIoPoller,
+        # PollFdIoPoller,
+        SelectFdIoPoller,
+    ]))
     lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
     inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
 

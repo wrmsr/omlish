@@ -182,7 +182,9 @@ class Supervisor:
     #
 
     def _run_once(self) -> None:
+        now = time.time()
         self._poll()
+        log.info(f'Poll took {time.time() - now}')
         self._reap()
         self._signal_handler.handle_signals()
         self._tick()
@@ -234,6 +236,7 @@ class Supervisor:
             return
 
         wp = waitpid()
+        log.info(f'Waited pid: {wp}')
         if wp is None or not wp.pid:
             return
 

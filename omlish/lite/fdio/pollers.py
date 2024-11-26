@@ -157,20 +157,24 @@ if hasattr(select, 'poll'):
         _WRITE = select.POLLOUT
 
         def _register_readable(self, fd: int) -> None:
-            self._poller.register(fd, self._READ)
+            self._update_registration(fd)
 
         def _register_writable(self, fd: int) -> None:
-            self._poller.register(fd, self._WRITE)
+            self._update_registration(fd)
 
         def _unregister_readable(self, fd: int) -> None:
-            self._poller.unregister(fd)
-            if fd in self._writable:
-                self._poller.register(fd, self._WRITE)
+            self._update_registration(fd)
 
         def _unregister_writable(self, fd: int) -> None:
-            self._poller.unregister(fd)
-            if fd in self._readable:
-                self._poller.register(fd, self._READ)
+            self._update_registration(fd)
+
+        def _update_registration(self, fd: int) -> None:
+            r = fd in self._readable
+            w = fd in self._writable
+            if r or w:
+                self._poller.register(fd, (self._READ if r else 0) | (self._WRITE if w else 0))
+            else:
+                self._poller.unregister(fd)
 
         #
 
