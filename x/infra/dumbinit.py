@@ -1,4 +1,3 @@
-import ctypes
 import os
 import signal
 import sys
@@ -69,8 +68,7 @@ class DumbInit:
 
         if self.use_setsid:
             try:
-                libc = ctypes.CDLL(None)
-                libc.setsid()
+                os.setsid()
                 self.log('Detached from controlling TTY.')
             except Exception as e:  # noqa
                 self.log('Failed to detach from controlling TTY: %s', str(e))
