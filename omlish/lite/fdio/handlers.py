@@ -39,7 +39,7 @@ class FdIoHandler(abc.ABC):
     def on_writable(self) -> None:
         raise TypeError
 
-    def on_error(self) -> None:  # noqa
+    def on_error(self, exc: ta.Optional[BaseException] = None) -> None:  # noqa
         pass
 
 
