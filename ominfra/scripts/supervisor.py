@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../supervisor/main.py
-# ruff: noqa: N802 UP006 UP007 UP012 UP036
+# ruff: noqa: N802 U006 UP006 UP007 UP012 UP036
 # Supervisor is licensed under the following license:
 #
 #  A copyright notice accompanies this license document that identifies the copyright holders.
@@ -6993,84 +6993,6 @@ class ProcessGroupManager(
 
 
 ########################################
-# ../http.py
-
-
-##
-
-
-class SocketServerFdIoHandler(SocketFdIoHandler):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
-    ) -> None:
-        sock = socket.create_server(addr)
-        sock.setblocking(False)
-
-        super().__init__(addr, sock)
-
-        self._on_connect = on_connect
-
-        sock.listen(1)
-
-    def readable(self) -> bool:
-        return True
-
-    def on_readable(self) -> None:
-        cli_sock, cli_addr = check_not_none(self._sock).accept()
-        cli_sock.setblocking(False)
-
-        self._on_connect(cli_sock, cli_addr)
-
-
-##
-
-
-def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
-    resp = '\n'.join([
-        f'method: {req.method}',
-        f'path: {req.path}',
-        f'data: {len(req.data or b"")}',
-        '',
-    ])
-
-    return HttpHandlerResponse(
-        200,
-        data=resp.encode('utf-8'),
-    )
-
-
-##
-
-
-class HttpServer(HasDispatchers):
-    def __init__(
-            self,
-            addr: SocketAddress = ('localhost', 8000),
-            handler: HttpHandler = say_hi_handler,
-    ) -> None:
-        super().__init__()
-
-        self._addr = addr
-        self._handler = handler
-
-        self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
-
-    def get_dispatchers(self) -> Dispatchers:
-        return Dispatchers([self._server])
-
-    def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdIoHandler(  # noqa
-            addr,
-            sock,
-            self._handler,
-        )
-
-        raise NotImplementedError
-
-
-########################################
 # ../io.py
 
 
@@ -7119,8 +7041,8 @@ class IoManager(HasDispatchers):
         for r in polled.r:
             fd = Fd(r)
             if fd in dispatchers:
+                dispatcher = dispatchers[fd]
                 try:
-                    dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.on_readable()
                     if not dispatcher.readable():
@@ -7128,7 +7050,8 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
-                    dispatchers[fd].on_error(exc)
+                    log.exception('Error in dispatcher: %r', dispatcher)
+                    dispatcher.on_error(exc)
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -7141,8 +7064,8 @@ class IoManager(HasDispatchers):
         for w in polled.w:
             fd = Fd(w)
             if fd in dispatchers:
+                dispatcher = dispatchers[fd]
                 try:
-                    dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.on_writable()
                     if not dispatcher.writable():
@@ -7150,7 +7073,8 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
-                    dispatchers[fd].on_error(exc)
+                    log.exception('Error in dispatcher: %r', dispatcher)
+                    dispatcher.on_error(exc)
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
@@ -7185,6 +7109,123 @@ class ProcessSpawning:
     @abc.abstractmethod
     def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
         raise NotImplementedError
+
+
+########################################
+# ../http.py
+
+
+##
+
+
+class SocketServerFdIoHandler(SocketFdIoHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
+    ) -> None:
+        sock = socket.create_server(addr)
+        sock.setblocking(False)
+
+        super().__init__(addr, sock)
+
+        self._on_connect = on_connect
+
+        sock.listen(1)
+
+    def readable(self) -> bool:
+        return True
+
+    def on_readable(self) -> None:
+        cli_sock, cli_addr = check_not_none(self._sock).accept()
+        cli_sock.setblocking(False)
+
+        self._on_connect(cli_sock, cli_addr)
+
+
+##
+
+
+class HttpServer(HasDispatchers):
+    class Address(ta.NamedTuple):
+        a: SocketAddress
+
+    class Handler(ta.NamedTuple):
+        h: HttpHandler
+
+    def __init__(
+            self,
+            handler: Handler,
+            addr: Address = Address(('localhost', 8000)),
+    ) -> None:
+        super().__init__()
+
+        self._handler = handler.h
+        self._addr = addr.a
+
+        self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
+
+        self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+
+    def get_dispatchers(self) -> Dispatchers:
+        l = []
+        for c in self._conns:
+            if not c.closed:
+                l.append(c)
+        self._conns = l
+        return Dispatchers([
+            self._server,
+            *l,
+        ])
+
+    def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
+        conn = CoroHttpServerConnectionFdIoHandler(
+            addr,
+            sock,
+            self._handler,
+        )
+
+        self._conns.append(conn)
+
+
+##
+
+
+class SupervisorHttpHandler:
+    def __init__(
+            self,
+            *,
+            groups: ProcessGroupManager,
+    ) -> None:
+        super().__init__()
+
+        self._groups = groups
+
+    def handle(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        dct = {
+            'method': req.method,
+            'path': req.path,
+            'data': len(req.data or b''),
+            'groups': {
+                g.name: {
+                    'processes': {
+                        p.name: {
+                            'pid': p.pid,
+                        }
+                        for p in g
+                    },
+                }
+                for g in self._groups
+            },
+        }
+
+        return HttpHandlerResponse(
+            200,
+            data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
+            headers={
+                'Content-Type': 'application/json',
+            },
+        )
 
 
 ########################################
@@ -8368,9 +8409,6 @@ def bind_server(
 
         inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
         inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
-
-        inj.bind(HttpServer, singleton=True),
-        inj.bind(HasDispatchers, to_key=HttpServer),
     ]
 
     #
@@ -8395,6 +8433,19 @@ def bind_server(
     ]))
     lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
     inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
+
+    #
+
+    def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
+        return HttpServer.Handler(s.handle)
+
+    lst.extend([
+        inj.bind(HttpServer, singleton=True, eager=True),
+        inj.bind(HasDispatchers, array=True, to_key=HttpServer),
+
+        inj.bind(SupervisorHttpHandler, singleton=True),
+        inj.bind(_provide_http_handler),
+    ])
 
     #
 
