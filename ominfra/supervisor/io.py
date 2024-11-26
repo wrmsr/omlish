@@ -55,8 +55,8 @@ class IoManager(HasDispatchers):
         for r in polled.r:
             fd = Fd(r)
             if fd in dispatchers:
+                dispatcher = dispatchers[fd]
                 try:
-                    dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.on_readable()
                     if not dispatcher.readable():
@@ -64,7 +64,8 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
-                    dispatchers[fd].on_error(exc)
+                    log.exception('Error in dispatcher: %r', dispatcher)
+                    dispatcher.on_error(exc)
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -77,8 +78,8 @@ class IoManager(HasDispatchers):
         for w in polled.w:
             fd = Fd(w)
             if fd in dispatchers:
+                dispatcher = dispatchers[fd]
                 try:
-                    dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.on_writable()
                     if not dispatcher.writable():
@@ -86,7 +87,8 @@ class IoManager(HasDispatchers):
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
-                    dispatchers[fd].on_error(exc)
+                    log.exception('Error in dispatcher: %r', dispatcher)
+                    dispatcher.on_error(exc)
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
