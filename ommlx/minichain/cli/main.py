@@ -205,7 +205,7 @@ def _main() -> None:
     #
 
     with open(os.path.join(os.path.expanduser('~/.omlish-llm/.env'))) as f:
-        dotenv.DotEnv(stream=f).apply_to(os.environ)
+        dotenv.Dotenv(stream=f).apply_to(os.environ)
 
     #
 
