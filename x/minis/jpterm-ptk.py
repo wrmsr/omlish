@@ -3,6 +3,7 @@ import json
 import sys
 
 from prompt_toolkit import Application
+from prompt_toolkit.input.defaults import create_input
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import HSplit
 from prompt_toolkit.layout import Layout
@@ -95,18 +96,18 @@ class JmespathDisplay:
         )
 
         return Layout(
-            HSplit(
-                [
-                    self.expression_input,
-                    main_content,
-                    self.status_bar,
-                ]
-            )
+            HSplit([
+                self.expression_input,
+                main_content,
+                self.status_bar,
+            ]),
         )
 
     def run(self):
         layout = self.create_layout()
+        input = create_input(sys.stdout)
         app = Application(
+            input=input,
             layout=layout,
             key_bindings=self.key_bindings,
             full_screen=True,
@@ -116,12 +117,19 @@ class JmespathDisplay:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('input')
     args = parser.parse_args()
 
-    input_json = {  # FIXME
-        'a': 'foo',
-        'b': 'bar',
-    }
+    if args.input == '-':
+        input_json = json.loads(sys.stdin.read())
+    else:
+        with open(args.input) as f:
+            input_json = json.load(f)
+
+    # input_json = {  # FIXME
+    #     'a': 'foo',
+    #     'b': 'bar',
+    # }
 
     display = JmespathDisplay(input_json)
     display.run()
