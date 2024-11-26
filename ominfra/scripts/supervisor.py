@@ -1690,9 +1690,6 @@ if hasattr(select, 'poll'):
 
         #
 
-        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-        _WRITE = select.POLLOUT
-
         def _register_readable(self, fd: int) -> None:
             self._update_registration(fd)
 
@@ -1704,6 +1701,11 @@ if hasattr(select, 'poll'):
 
         def _unregister_writable(self, fd: int) -> None:
             self._update_registration(fd)
+
+        #
+
+        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+        _WRITE = select.POLLOUT
 
         def _update_registration(self, fd: int) -> None:
             r = fd in self._readable
@@ -2625,16 +2627,16 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
         #
 
         def _register_readable(self, fd: int) -> None:
-            self._control(fd, 'read', 'add')
+            self._update_registration(fd, 'read', 'add')
 
         def _register_writable(self, fd: int) -> None:
-            self._control(fd, 'write', 'add')
+            self._update_registration(fd, 'write', 'add')
 
         def _unregister_readable(self, fd: int) -> None:
-            self._control(fd, 'read', 'del')
+            self._update_registration(fd, 'read', 'del')
 
         def _unregister_writable(self, fd: int) -> None:
-            self._control(fd, 'write', 'del')
+            self._update_registration(fd, 'write', 'del')
 
         #
 
@@ -2648,7 +2650,7 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
             'del': select.KQ_EV_DELETE,
         }
 
-        def _control(
+        def _update_registration(
                 self,
                 fd: int,
                 read_or_write: ta.Literal['read', 'write'],
