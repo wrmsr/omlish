@@ -7,6 +7,7 @@ from omlish.lite.fdio.handlers import FdIoHandler
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
+from .events import ProcessOutputChannel
 from .states import ProcessState
 from .states import SupervisorState
 from .utils.collections import KeyedCollectionAccessors
@@ -71,7 +72,7 @@ class HasDispatchers(abc.ABC):
 class ProcessDispatcher(FdIoHandler, abc.ABC):
     @property
     @abc.abstractmethod
-    def channel(self) -> str:
+    def channel(self) -> ProcessOutputChannel:
         raise NotImplementedError
 
     @property

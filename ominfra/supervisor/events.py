@@ -8,6 +8,9 @@ from .states import ProcessState
 EventCallback = ta.Callable[['Event'], None]
 
 
+ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
+
+
 ##
 
 
@@ -43,7 +46,7 @@ class EventCallbacks:
 
 
 class ProcessLogEvent(Event, abc.ABC):
-    channel: ta.Optional[str] = None
+    channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
         super().__init__()
@@ -68,7 +71,7 @@ class ProcessCommunicationEvent(Event, abc.ABC):
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
 
-    channel: ta.ClassVar[str]
+    channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
         super().__init__()
