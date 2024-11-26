@@ -208,6 +208,8 @@ class Supervisor:
                 # down, so push it back on to the end of the stop group queue
                 self._stop_groups.append(group)
 
+    #
+
     def _poll(self) -> None:
         sorted_groups = list(self._process_groups)
         sorted_groups.sort()
@@ -231,6 +233,8 @@ class Supervisor:
             for process in group:
                 process.transition()
 
+    #
+
     def _reap(self, *, once: bool = False, depth: int = 0) -> None:
         if depth >= 100:
             return
@@ -251,6 +255,8 @@ class Supervisor:
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
             self._reap(once=False, depth=depth + 1)
+
+    #
 
     def _tick(self, now: ta.Optional[float] = None) -> None:
         """Send one or more 'tick' events when the timeslice related to the period for the event type rolls over"""
