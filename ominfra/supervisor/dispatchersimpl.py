@@ -147,7 +147,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         channel = self._channel  # noqa
 
         logfile = self._lc.file
-        maxbytes = self._lc.maxbytes  # noqa
+        max_bytes = self._lc.max_bytes  # noqa
         backups = self._lc.backups  # noqa
         to_syslog = self._lc.syslog
 
@@ -159,8 +159,8 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         #         self.normal_log,
         #         filename=logfile,
         #         fmt='%(message)s',
-        #         rotating=bool(maxbytes),  # optimization
-        #         maxbytes=maxbytes,
+        #         rotating=bool(max_bytes),  # optimization
+        #         max_bytes=max_bytes,
         #         backups=backups,
         #     )
 
@@ -176,13 +176,13 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         is detected. Sets self.capture_log if capturing is enabled.
         """
 
-        capture_maxbytes = self._lc.capture_maxbytes
-        if capture_maxbytes:
+        capture_max_bytes = self._lc.capture_max_bytes
+        if capture_max_bytes:
             self._capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
             #     self._capture_log,
             #     fmt='%(message)s',
-            #     maxbytes=capture_maxbytes,
+            #     max_bytes=capture_max_bytes,
             # )
 
     def remove_logs(self) -> None:

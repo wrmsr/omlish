@@ -2,10 +2,10 @@ nodaemon = true
 
 [groups.default.processes.sleep]
 command = 'sleep 600'
-stdout = {file = '/dev/fd/1', maxbytes = 0}
+stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true
 
 [groups.default.processes.ls]
 command = 'ls -al'
-stdout = {file = '/dev/fd/1', maxbytes = 0}
+stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true

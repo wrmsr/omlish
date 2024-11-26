@@ -37,32 +37,32 @@ class ProcessConfig:
     umask: ta.Optional[int] = None
     priority: int = 999
 
-    autostart: bool = True
-    autorestart: str = 'unexpected'
+    auto_start: bool = True
+    auto_restart: str = 'unexpected'
 
-    startsecs: int = 1
-    startretries: int = 3
+    start_secs: int = 1
+    start_retries: int = 3
 
-    numprocs: int = 1
-    numprocs_start: int = 0
+    num_procs: int = 1
+    num_procs_start: int = 0
 
     @dc.dataclass(frozen=True)
     class Log:
         file: ta.Optional[str] = None
-        capture_maxbytes: ta.Optional[int] = None
+        capture_max_bytes: ta.Optional[int] = None
         events_enabled: bool = False
         syslog: bool = False
         backups: ta.Optional[int] = None
-        maxbytes: ta.Optional[int] = None
+        max_bytes: ta.Optional[int] = None
 
     stdout: Log = Log()
     stderr: Log = Log()
 
-    stopsignal: int = signal.SIGTERM
-    stopwaitsecs: int = 10
-    stopasgroup: bool = False
+    stop_signal: int = signal.SIGTERM
+    stop_wait_secs: int = 10
+    stop_as_group: bool = False
 
-    killasgroup: bool = False
+    kill_as_group: bool = False
 
     exitcodes: ta.Sequence[int] = (0,)
 
@@ -87,14 +87,14 @@ class ServerConfig:
     umask: int = 0o22
     directory: ta.Optional[str] = None
     logfile: str = 'supervisord.log'
-    logfile_maxbytes: int = 50 * 1024 * 1024
+    logfile_max_bytes: int = 50 * 1024 * 1024
     logfile_backups: int = 10
     loglevel: int = logging.INFO
     pidfile: str = 'supervisord.pid'
     identifier: str = 'supervisor'
     child_logdir: str = '/dev/null'
-    minfds: int = 1024
-    minprocs: int = 200
+    min_fds: int = 1024
+    min_procs: int = 200
     nocleanup: bool = False
     strip_ansi: bool = False
     silent: bool = False
@@ -107,7 +107,7 @@ class ServerConfig:
             umask: ta.Union[int, str] = 0o22,
             directory: ta.Optional[str] = None,
             logfile: str = 'supervisord.log',
-            logfile_maxbytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
             loglevel: ta.Union[int, str] = logging.INFO,
             pidfile: str = 'supervisord.pid',
             child_logdir: ta.Optional[str] = None,
@@ -117,7 +117,7 @@ class ServerConfig:
             umask=parse_octal(umask),
             directory=check_existing_dir(directory) if directory is not None else None,
             logfile=check_path_with_existing_dir(logfile),
-            logfile_maxbytes=parse_bytes_size(logfile_maxbytes),
+            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
             loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),

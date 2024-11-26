@@ -316,7 +316,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         else:
             os.dup2(check_not_none(pipes.child_stderr), 2)
 
-        for i in range(3, self._server_config.minfds):
+        for i in range(3, self._server_config.min_fds):
             if i in self._inherited_fds:
                 continue
             close_fd(Fd(i))

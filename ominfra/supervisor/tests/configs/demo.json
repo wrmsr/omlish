@@ -7,7 +7,7 @@
           "command": "sleep 600",
           "stdout": {
             "file": "/dev/fd/1",
-            "maxbytes": 0
+            "max_bytes": 0
           },
           "redirect_stderr": true
         },
@@ -15,7 +15,7 @@
           "command": "ls -al",
           "stdout": {
             "file": "/dev/fd/1",
-            "maxbytes": 0
+            "max_bytes": 0
           },
           "redirect_stderr": true
         }

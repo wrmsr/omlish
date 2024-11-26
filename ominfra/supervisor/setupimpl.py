@@ -77,7 +77,7 @@ class SupervisorSetupImpl(SupervisorSetup):
     def _cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
         start = 5
-        os.closerange(start, self._config.minfds)
+        os.closerange(start, self._config.min_fds)
 
     #
 
@@ -115,12 +115,12 @@ class SupervisorSetupImpl(SupervisorSetup):
             limits.append({
                 'msg': (
                     'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
-                    '"minfds" command-line argument or config file setting. The current environment will only allow '
+                    '"min_fds" command-line argument or config file setting. The current environment will only allow '
                     'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
-                    'your environment (see README.rst) or lower the minfds setting in the config file to allow the '
+                    'your environment (see README.rst) or lower the min_fds setting in the config file to allow the '
                     'process to start.'
                 ),
-                'min': self._config.minfds,
+                'min': self._config.min_fds,
                 'resource': resource.RLIMIT_NOFILE,
                 'name': 'RLIMIT_NOFILE',
             })
@@ -134,7 +134,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                     'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
                     'program to start.'
                 ),
-                'min': self._config.minprocs,
+                'min': self._config.min_procs,
                 'resource': resource.RLIMIT_NPROC,
                 'name': 'RLIMIT_NPROC',
             })

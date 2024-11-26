@@ -5219,32 +5219,32 @@ class ProcessConfig:
     umask: ta.Optional[int] = None
     priority: int = 999
 
-    autostart: bool = True
-    autorestart: str = 'unexpected'
+    auto_start: bool = True
+    auto_restart: str = 'unexpected'
 
-    startsecs: int = 1
-    startretries: int = 3
+    start_secs: int = 1
+    start_retries: int = 3
 
-    numprocs: int = 1
-    numprocs_start: int = 0
+    num_procs: int = 1
+    num_procs_start: int = 0
 
     @dc.dataclass(frozen=True)
     class Log:
         file: ta.Optional[str] = None
-        capture_maxbytes: ta.Optional[int] = None
+        capture_max_bytes: ta.Optional[int] = None
         events_enabled: bool = False
         syslog: bool = False
         backups: ta.Optional[int] = None
-        maxbytes: ta.Optional[int] = None
+        max_bytes: ta.Optional[int] = None
 
     stdout: Log = Log()
     stderr: Log = Log()
 
-    stopsignal: int = signal.SIGTERM
-    stopwaitsecs: int = 10
-    stopasgroup: bool = False
+    stop_signal: int = signal.SIGTERM
+    stop_wait_secs: int = 10
+    stop_as_group: bool = False
 
-    killasgroup: bool = False
+    kill_as_group: bool = False
 
     exitcodes: ta.Sequence[int] = (0,)
 
@@ -5269,14 +5269,14 @@ class ServerConfig:
     umask: int = 0o22
     directory: ta.Optional[str] = None
     logfile: str = 'supervisord.log'
-    logfile_maxbytes: int = 50 * 1024 * 1024
+    logfile_max_bytes: int = 50 * 1024 * 1024
     logfile_backups: int = 10
     loglevel: int = logging.INFO
     pidfile: str = 'supervisord.pid'
     identifier: str = 'supervisor'
     child_logdir: str = '/dev/null'
-    minfds: int = 1024
-    minprocs: int = 200
+    min_fds: int = 1024
+    min_procs: int = 200
     nocleanup: bool = False
     strip_ansi: bool = False
     silent: bool = False
@@ -5289,7 +5289,7 @@ class ServerConfig:
             umask: ta.Union[int, str] = 0o22,
             directory: ta.Optional[str] = None,
             logfile: str = 'supervisord.log',
-            logfile_maxbytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
             loglevel: ta.Union[int, str] = logging.INFO,
             pidfile: str = 'supervisord.pid',
             child_logdir: ta.Optional[str] = None,
@@ -5299,7 +5299,7 @@ class ServerConfig:
             umask=parse_octal(umask),
             directory=check_existing_dir(directory) if directory is not None else None,
             logfile=check_path_with_existing_dir(logfile),
-            logfile_maxbytes=parse_bytes_size(logfile_maxbytes),
+            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
             loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
             child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
@@ -6360,7 +6360,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         channel = self._channel  # noqa
 
         logfile = self._lc.file
-        maxbytes = self._lc.maxbytes  # noqa
+        max_bytes = self._lc.max_bytes  # noqa
         backups = self._lc.backups  # noqa
         to_syslog = self._lc.syslog
 
@@ -6372,8 +6372,8 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         #         self.normal_log,
         #         filename=logfile,
         #         fmt='%(message)s',
-        #         rotating=bool(maxbytes),  # optimization
-        #         maxbytes=maxbytes,
+        #         rotating=bool(max_bytes),  # optimization
+        #         max_bytes=max_bytes,
         #         backups=backups,
         #     )
 
@@ -6389,13 +6389,13 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         is detected. Sets self.capture_log if capturing is enabled.
         """
 
-        capture_maxbytes = self._lc.capture_maxbytes
-        if capture_maxbytes:
+        capture_max_bytes = self._lc.capture_max_bytes
+        if capture_max_bytes:
             self._capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
             #     self._capture_log,
             #     fmt='%(message)s',
-            #     maxbytes=capture_maxbytes,
+            #     max_bytes=capture_max_bytes,
             # )
 
     def remove_logs(self) -> None:
@@ -6717,7 +6717,7 @@ class SupervisorSetupImpl(SupervisorSetup):
     def _cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
         start = 5
-        os.closerange(start, self._config.minfds)
+        os.closerange(start, self._config.min_fds)
 
     #
 
@@ -6755,12 +6755,12 @@ class SupervisorSetupImpl(SupervisorSetup):
             limits.append({
                 'msg': (
                     'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
-                    '"minfds" command-line argument or config file setting. The current environment will only allow '
+                    '"min_fds" command-line argument or config file setting. The current environment will only allow '
                     'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
-                    'your environment (see README.rst) or lower the minfds setting in the config file to allow the '
+                    'your environment (see README.rst) or lower the min_fds setting in the config file to allow the '
                     'process to start.'
                 ),
-                'min': self._config.minfds,
+                'min': self._config.min_fds,
                 'resource': resource.RLIMIT_NOFILE,
                 'name': 'RLIMIT_NOFILE',
             })
@@ -6774,7 +6774,7 @@ class SupervisorSetupImpl(SupervisorSetup):
                     'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
                     'program to start.'
                 ),
-                'min': self._config.minprocs,
+                'min': self._config.min_procs,
                 'resource': resource.RLIMIT_NPROC,
                 'name': 'RLIMIT_NPROC',
             })
@@ -7275,7 +7275,7 @@ class ProcessImpl(Process):
 
         self._killing = False  # true if we are trying to kill this process
 
-        self._backoff = 0  # backoff counter (to startretries)
+        self._backoff = 0  # backoff counter (to start_retries)
 
         self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
@@ -7352,7 +7352,7 @@ class ProcessImpl(Process):
         self._pipes = sp.pipes
         self._dispatchers = sp.dispatchers
 
-        self._delay = time.time() + self.config.startsecs
+        self._delay = time.time() + self.config.start_secs
 
         return sp.pid
 
@@ -7410,17 +7410,17 @@ class ProcessImpl(Process):
 
         if self._state == ProcessState.STARTING:
             self._last_start = min(test_time, self._last_start)
-            if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
-                self._delay = test_time + self._config.startsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.start_secs):
+                self._delay = test_time + self._config.start_secs
 
         elif self._state == ProcessState.RUNNING:
-            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
-                self._last_start = test_time - self._config.startsecs
+            if test_time > self._last_start and test_time < (self._last_start + self._config.start_secs):
+                self._last_start = test_time - self._config.start_secs
 
         elif self._state == ProcessState.STOPPING:
             self._last_stop_report = min(test_time, self._last_stop_report)
-            if self._delay > 0 and test_time < (self._delay - self._config.stopwaitsecs):
-                self._delay = test_time + self._config.stopwaitsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.stop_wait_secs):
+                self._delay = test_time + self._config.stop_wait_secs
 
         elif self._state == ProcessState.BACKOFF:
             if self._delay > 0 and test_time < (self._delay - self._backoff):
@@ -7429,7 +7429,7 @@ class ProcessImpl(Process):
     def stop(self) -> ta.Optional[str]:
         self._administrative_stop = True
         self._last_stop_report = 0
-        return self.kill(self._config.stopsignal)
+        return self.kill(self._config.stop_signal)
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
@@ -7461,7 +7461,7 @@ class ProcessImpl(Process):
         now = time.time()
 
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
-        # if startretries is a large number and the process isn't starting successfully, the stop request would be
+        # if start_retries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', self.name)
@@ -7476,25 +7476,25 @@ class ProcessImpl(Process):
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
         if self._state == ProcessState.STOPPING:
-            killasgroup = self._config.killasgroup
+            kill_as_group = self._config.kill_as_group
         else:
-            killasgroup = self._config.stopasgroup
+            kill_as_group = self._config.stop_as_group
 
         as_group = ''
-        if killasgroup:
+        if kill_as_group:
             as_group = 'process group '
 
         log.debug('killing %s (pid %s) %s with signal %s', self.name, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
-        self._delay = now + self._config.stopwaitsecs
-        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
+        self._delay = now + self._config.stop_wait_secs
+        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stop_wait_secs
         self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
 
         kpid = int(self.pid)
-        if killasgroup:
+        if kill_as_group:
             # send to the whole process group instead
             kpid = -kpid
 
@@ -7575,7 +7575,7 @@ class ProcessImpl(Process):
 
         if now > self._last_start:
             log.info(f'{now - self._last_start=}')  # noqa
-            too_quickly = now - self._last_start < self._config.startsecs
+            too_quickly = now - self._last_start < self._config.start_secs
         else:
             too_quickly = False
             log.warning(
@@ -7647,8 +7647,8 @@ class ProcessImpl(Process):
         if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
-                if self._config.autorestart:
-                    if self._config.autorestart is RestartUnconditionally:
+                if self._config.auto_restart:
+                    if self._config.auto_restart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
                     elif self._exitstatus not in self._config.exitcodes:
@@ -7656,29 +7656,29 @@ class ProcessImpl(Process):
                         self.spawn()
 
             elif state == ProcessState.STOPPED and not self._last_start:
-                if self._config.autostart:
+                if self._config.auto_start:
                     # STOPPED -> STARTING
                     self.spawn()
 
             elif state == ProcessState.BACKOFF:
-                if self._backoff <= self._config.startretries:
+                if self._backoff <= self._config.start_retries:
                     if now > self._delay:
                         # BACKOFF -> STARTING
                         self.spawn()
 
         if state == ProcessState.STARTING:
-            if now - self._last_start > self._config.startsecs:
+            if now - self._last_start > self._config.start_secs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
-                # proc.config.startsecs,
+                # proc.config.start_secs,
                 self._delay = 0
                 self._backoff = 0
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
-                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
+                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (start_secs)' % self._config.start_secs)  # noqa
                 log.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
-            if self._backoff > self._config.startretries:
+            if self._backoff > self._config.start_retries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
@@ -8039,7 +8039,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         else:
             os.dup2(check_not_none(pipes.child_stderr), 2)
 
-        for i in range(3, self._server_config.minfds):
+        for i in range(3, self._server_config.min_fds):
             if i in self._inherited_fds:
                 continue
             close_fd(Fd(i))

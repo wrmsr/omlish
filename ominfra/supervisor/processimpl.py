@@ -79,7 +79,7 @@ class ProcessImpl(Process):
 
         self._killing = False  # true if we are trying to kill this process
 
-        self._backoff = 0  # backoff counter (to startretries)
+        self._backoff = 0  # backoff counter (to start_retries)
 
         self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
         self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
@@ -156,7 +156,7 @@ class ProcessImpl(Process):
         self._pipes = sp.pipes
         self._dispatchers = sp.dispatchers
 
-        self._delay = time.time() + self.config.startsecs
+        self._delay = time.time() + self.config.start_secs
 
         return sp.pid
 
@@ -214,17 +214,17 @@ class ProcessImpl(Process):
 
         if self._state == ProcessState.STARTING:
             self._last_start = min(test_time, self._last_start)
-            if self._delay > 0 and test_time < (self._delay - self._config.startsecs):
-                self._delay = test_time + self._config.startsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.start_secs):
+                self._delay = test_time + self._config.start_secs
 
         elif self._state == ProcessState.RUNNING:
-            if test_time > self._last_start and test_time < (self._last_start + self._config.startsecs):
-                self._last_start = test_time - self._config.startsecs
+            if test_time > self._last_start and test_time < (self._last_start + self._config.start_secs):
+                self._last_start = test_time - self._config.start_secs
 
         elif self._state == ProcessState.STOPPING:
             self._last_stop_report = min(test_time, self._last_stop_report)
-            if self._delay > 0 and test_time < (self._delay - self._config.stopwaitsecs):
-                self._delay = test_time + self._config.stopwaitsecs
+            if self._delay > 0 and test_time < (self._delay - self._config.stop_wait_secs):
+                self._delay = test_time + self._config.stop_wait_secs
 
         elif self._state == ProcessState.BACKOFF:
             if self._delay > 0 and test_time < (self._delay - self._backoff):
@@ -233,7 +233,7 @@ class ProcessImpl(Process):
     def stop(self) -> ta.Optional[str]:
         self._administrative_stop = True
         self._last_stop_report = 0
-        return self.kill(self._config.stopsignal)
+        return self.kill(self._config.stop_signal)
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
@@ -265,7 +265,7 @@ class ProcessImpl(Process):
         now = time.time()
 
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
-        # if startretries is a large number and the process isn't starting successfully, the stop request would be
+        # if start_retries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', self.name)
@@ -280,25 +280,25 @@ class ProcessImpl(Process):
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
         if self._state == ProcessState.STOPPING:
-            killasgroup = self._config.killasgroup
+            kill_as_group = self._config.kill_as_group
         else:
-            killasgroup = self._config.stopasgroup
+            kill_as_group = self._config.stop_as_group
 
         as_group = ''
-        if killasgroup:
+        if kill_as_group:
             as_group = 'process group '
 
         log.debug('killing %s (pid %s) %s with signal %s', self.name, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self._killing = True
-        self._delay = now + self._config.stopwaitsecs
-        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
+        self._delay = now + self._config.stop_wait_secs
+        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stop_wait_secs
         self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self.change_state(ProcessState.STOPPING)
 
         kpid = int(self.pid)
-        if killasgroup:
+        if kill_as_group:
             # send to the whole process group instead
             kpid = -kpid
 
@@ -379,7 +379,7 @@ class ProcessImpl(Process):
 
         if now > self._last_start:
             log.info(f'{now - self._last_start=}')  # noqa
-            too_quickly = now - self._last_start < self._config.startsecs
+            too_quickly = now - self._last_start < self._config.start_secs
         else:
             too_quickly = False
             log.warning(
@@ -451,8 +451,8 @@ class ProcessImpl(Process):
         if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
-                if self._config.autorestart:
-                    if self._config.autorestart is RestartUnconditionally:
+                if self._config.auto_restart:
+                    if self._config.auto_restart is RestartUnconditionally:
                         # EXITED -> STARTING
                         self.spawn()
                     elif self._exitstatus not in self._config.exitcodes:
@@ -460,29 +460,29 @@ class ProcessImpl(Process):
                         self.spawn()
 
             elif state == ProcessState.STOPPED and not self._last_start:
-                if self._config.autostart:
+                if self._config.auto_start:
                     # STOPPED -> STARTING
                     self.spawn()
 
             elif state == ProcessState.BACKOFF:
-                if self._backoff <= self._config.startretries:
+                if self._backoff <= self._config.start_retries:
                     if now > self._delay:
                         # BACKOFF -> STARTING
                         self.spawn()
 
         if state == ProcessState.STARTING:
-            if now - self._last_start > self._config.startsecs:
+            if now - self._last_start > self._config.start_secs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
-                # proc.config.startsecs,
+                # proc.config.start_secs,
                 self._delay = 0
                 self._backoff = 0
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
-                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
+                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (start_secs)' % self._config.start_secs)  # noqa
                 log.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
-            if self._backoff > self._config.startretries:
+            if self._backoff > self._config.start_retries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
