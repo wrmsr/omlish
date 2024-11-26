@@ -17,6 +17,7 @@ from .events import EventCallbacks
 from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
+from .http import HttpServer
 from .io import HasDispatchersList
 from .io import IoManager
 from .process import PidHistory
@@ -73,6 +74,7 @@ def bind_server(
         inj.bind(SignalReceiver, singleton=True),
 
         inj.bind(IoManager, singleton=True),
+        inj.bind_array(HasDispatchers),
         inj.bind_array_type(HasDispatchers, HasDispatchersList),
 
         inj.bind(SignalHandler, singleton=True),
@@ -94,6 +96,9 @@ def bind_server(
 
         inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
         inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
+
+        inj.bind(HttpServer, singleton=True),
+        inj.bind(HasDispatchers, to_key=HttpServer),
     ]
 
     #
