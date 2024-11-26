@@ -65,12 +65,11 @@ class HttpServer(HasDispatchers):
     def __init__(
             self,
             addr: SocketAddress = ('localhost', 8000),
-            handler: HttpHandler = say_hi_handler,
     ) -> None:
         super().__init__()
 
         self._addr = addr
-        self._handler = handler
+        self._handler = say_hi_handler
 
         self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
 

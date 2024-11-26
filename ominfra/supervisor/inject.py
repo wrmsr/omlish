@@ -97,8 +97,8 @@ def bind_server(
         inj.bind_factory(ProcessOutputDispatcherImpl, ProcessOutputDispatcherFactory),
         inj.bind_factory(ProcessInputDispatcherImpl, ProcessInputDispatcherFactory),
 
-        inj.bind(HttpServer, singleton=True),
-        inj.bind(HasDispatchers, to_key=HttpServer),
+        inj.bind(HttpServer, singleton=True, eager=True),
+        inj.bind(HasDispatchers, array=True, to_key=HttpServer),
     ]
 
     #
