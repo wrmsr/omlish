@@ -8,7 +8,7 @@
           "directory": "~/src/omlish2",
           "stderr": {
             "file": "/dev/fd/1",
-            "maxbytes": 0
+            "max_bytes": 0
           }
         }
       }
