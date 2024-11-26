@@ -1,4 +1,5 @@
 # ruff: noqa: PT009 UP006 UP007
+import contextlib
 import os.path
 import typing as ta
 import unittest
@@ -35,23 +36,25 @@ class TestSupervisor(unittest.TestCase):
 
         #
 
-        injector = inj.create_injector(bind_server(
-            config,
-            inherited_fds=inherited_fds,
-        ))
+        with contextlib.ExitStack() as es:
+            injector = inj.create_injector(bind_server(
+                es,
+                config,
+                inherited_fds=inherited_fds,
+            ))
 
-        supervisor = injector.provide(Supervisor)
+            supervisor = injector.provide(Supervisor)
 
-        #
+            #
 
-        n = 0
+            n = 0
 
-        def callback(_):
-            nonlocal n
-            n += 1
-            return n < 2
+            def callback(_):
+                nonlocal n
+                n += 1
+                return n < 2
 
-        supervisor.main(callback=callback)
+            supervisor.main(callback=callback)
 
-        # FIXME: reap lol
-        self.assertIsNotNone(supervisor)
+            # FIXME: reap lol
+            self.assertIsNotNone(supervisor)

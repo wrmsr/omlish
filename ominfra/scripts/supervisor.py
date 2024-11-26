@@ -118,6 +118,9 @@ A2 = ta.TypeVar('A2')
 EventCallback = ta.Callable[['Event'], None]
 ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 
+# ../../omlish/lite/contextmanagers.py
+ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
+
 # ../../omlish/lite/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
 
@@ -2517,6 +2520,64 @@ def get_user(name: str) -> User:
         uid=(uid := name_to_uid(name)),
         gid=gid_for_uid(uid),
     )
+
+
+########################################
+# ../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        check_state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.ExitStack()
+        es.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        self._exit_contexts()
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check_not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
 
 
 ########################################
@@ -7176,6 +7237,8 @@ class HttpServer(HasDispatchers):
             self,
             handler: Handler,
             addr: Address = Address(('localhost', 8000)),
+            *,
+            exit_stack: contextlib.ExitStack,
     ) -> None:
         super().__init__()
 
@@ -7185,6 +7248,8 @@ class HttpServer(HasDispatchers):
         self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
 
         self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+
+        exit_stack.enter_context(defer(self._server.close))
 
     def get_dispatchers(self) -> Dispatchers:
         l = []
@@ -8387,6 +8452,7 @@ class _FdIoPollerDaemonizeListener(DaemonizeListener):
 
 
 def bind_server(
+        exit_stack: contextlib.ExitStack,
         config: ServerConfig,
         *,
         server_epoch: ta.Optional[ServerEpoch] = None,
@@ -8394,6 +8460,8 @@ def bind_server(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
+
+        inj.bind(exit_stack),
 
         inj.bind_array(DaemonizeListener),
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
@@ -8520,18 +8588,20 @@ def main(
             prepare=prepare_server_config,
         )
 
-        injector = inj.create_injector(bind_server(
-            config,
-            server_epoch=ServerEpoch(epoch),
-            inherited_fds=inherited_fds,
-        ))
+        with contextlib.ExitStack() as es:
+            injector = inj.create_injector(bind_server(
+                es,
+                config,
+                server_epoch=ServerEpoch(epoch),
+                inherited_fds=inherited_fds,
+            ))
 
-        supervisor = injector[Supervisor]
+            supervisor = injector[Supervisor]
 
-        try:
-            supervisor.main()
-        except ExitNow:
-            pass
+            try:
+                supervisor.main()
+            except ExitNow:
+                pass
 
         if supervisor.state < SupervisorState.RESTARTING:
             break

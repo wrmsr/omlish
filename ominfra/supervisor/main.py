@@ -29,6 +29,7 @@
 #   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 #   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 #   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import contextlib
 import itertools
 import os.path
 import typing as ta
@@ -96,18 +97,20 @@ def main(
             prepare=prepare_server_config,
         )
 
-        injector = inj.create_injector(bind_server(
-            config,
-            server_epoch=ServerEpoch(epoch),
-            inherited_fds=inherited_fds,
-        ))
+        with contextlib.ExitStack() as es:
+            injector = inj.create_injector(bind_server(
+                es,
+                config,
+                server_epoch=ServerEpoch(epoch),
+                inherited_fds=inherited_fds,
+            ))
 
-        supervisor = injector[Supervisor]
+            supervisor = injector[Supervisor]
 
-        try:
-            supervisor.main()
-        except ExitNow:
-            pass
+            try:
+                supervisor.main()
+            except ExitNow:
+                pass
 
         if supervisor.state < SupervisorState.RESTARTING:
             break
