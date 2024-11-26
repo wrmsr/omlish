@@ -116,6 +116,7 @@ A2 = ta.TypeVar('A2')
 
 # events.py
 EventCallback = ta.Callable[['Event'], None]
+ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 
 # ../../omlish/lite/http/parsing.py
 HttpHeaders = http.client.HTTPMessage  # ta.TypeAlias
@@ -2119,7 +2120,7 @@ class EventCallbacks:
 
 
 class ProcessLogEvent(Event, abc.ABC):
-    channel: ta.Optional[str] = None
+    channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
         super().__init__()
@@ -2144,7 +2145,7 @@ class ProcessCommunicationEvent(Event, abc.ABC):
     BEGIN_TOKEN = b'<!--XSUPERVISOR:BEGIN-->'
     END_TOKEN = b'<!--XSUPERVISOR:END-->'
 
-    channel: ta.ClassVar[str]
+    channel: ta.ClassVar[ProcessOutputChannel]
 
     def __init__(self, process, pid, data):
         super().__init__()
@@ -5951,7 +5952,7 @@ class HasDispatchers(abc.ABC):
 class ProcessDispatcher(FdIoHandler, abc.ABC):
     @property
     @abc.abstractmethod
-    def channel(self) -> str:
+    def channel(self) -> ProcessOutputChannel:
         raise NotImplementedError
 
     @property
@@ -6240,7 +6241,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
-            channel: str,
+            channel: ProcessOutputChannel,
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
@@ -6268,7 +6269,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
         return self._process
 
     @property
-    def channel(self) -> str:
+    def channel(self) -> ProcessOutputChannel:
         return self._channel
 
     def fd(self) -> Fd:
@@ -6515,7 +6516,7 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
     def __init__(
             self,
             process: Process,
-            channel: str,
+            channel: ProcessOutputChannel,
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
