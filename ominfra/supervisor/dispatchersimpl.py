@@ -13,6 +13,7 @@ from .events import EventCallbacks
 from .events import ProcessCommunicationEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
+from .events import ProcessOutputChannel
 from .types import Process
 from .types import ProcessDispatcher
 from .types import ProcessInputDispatcher
@@ -29,7 +30,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def __init__(
             self,
             process: Process,
-            channel: str,
+            channel: ProcessOutputChannel,
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
@@ -57,7 +58,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
         return self._process
 
     @property
-    def channel(self) -> str:
+    def channel(self) -> ProcessOutputChannel:
         return self._channel
 
     def fd(self) -> Fd:
@@ -304,7 +305,7 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
     def __init__(
             self,
             process: Process,
-            channel: str,
+            channel: ProcessOutputChannel,
             fd: Fd,
             *,
             event_callbacks: EventCallbacks,
