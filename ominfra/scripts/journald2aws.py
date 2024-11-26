@@ -51,24 +51,24 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../../../omdev/toml/parser.py
+# ../../../../omdev/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
-# ../../../../../omlish/lite/cached.py
+# ../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../../../../omlish/lite/check.py
+# ../../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-# ../../../../../omlish/lite/contextmanagers.py
+# ../../../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 
-# ../../../../configs.py
+# ../../../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
 
-# ../../../../threadworkers.py
+# ../../../threadworkers.py
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
 
