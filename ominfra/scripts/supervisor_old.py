@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omlish-amalg-output ../supervisor/main.py
+# @omlish-amalg-output ../supervisor_old/main.py
 # ruff: noqa: N802 UP006 UP007 UP012 UP036
 # Supervisor is licensed under the following license:
 #
@@ -1539,220 +1539,6 @@ def check_non_empty(v: SizedT) -> SizedT:
 
 
 ########################################
-# ../../../omlish/lite/fdio/pollers.py
-
-
-##
-
-
-class FdIoPoller(abc.ABC):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._readable: ta.Set[int] = set()
-        self._writable: ta.Set[int] = set()
-
-    #
-
-    def close(self) -> None:  # noqa
-        pass
-
-    def reopen(self) -> None:  # noqa
-        pass
-
-    #
-
-    @property
-    @ta.final
-    def readable(self) -> ta.AbstractSet[int]:
-        return self._readable
-
-    @property
-    @ta.final
-    def writable(self) -> ta.AbstractSet[int]:
-        return self._writable
-
-    #
-
-    @ta.final
-    def register_readable(self, fd: int) -> bool:
-        if fd in self._readable:
-            return False
-        self._readable.add(fd)
-        self._register_readable(fd)
-        return True
-
-    @ta.final
-    def register_writable(self, fd: int) -> bool:
-        if fd in self._writable:
-            return False
-        self._writable.add(fd)
-        self._register_writable(fd)
-        return True
-
-    @ta.final
-    def unregister_readable(self, fd: int) -> bool:
-        if fd not in self._readable:
-            return False
-        self._readable.discard(fd)
-        self._unregister_readable(fd)
-        return True
-
-    @ta.final
-    def unregister_writable(self, fd: int) -> bool:
-        if fd not in self._writable:
-            return False
-        self._writable.discard(fd)
-        self._unregister_writable(fd)
-        return True
-
-    #
-
-    def _register_readable(self, fd: int) -> None:  # noqa
-        pass
-
-    def _register_writable(self, fd: int) -> None:  # noqa
-        pass
-
-    def _unregister_readable(self, fd: int) -> None:  # noqa
-        pass
-
-    def _unregister_writable(self, fd: int) -> None:  # noqa
-        pass
-
-    #
-
-    def update(
-            self,
-            r: ta.AbstractSet[int],
-            w: ta.AbstractSet[int],
-    ) -> None:
-        for f in r - self._readable:
-            self.register_readable(f)
-        for f in w - self._writable:
-            self.register_writable(f)
-        for f in self._readable - r:
-            self.unregister_readable(f)
-        for f in self._writable - w:
-            self.unregister_writable(f)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class PollResult:
-        r: ta.Sequence[int] = ()
-        w: ta.Sequence[int] = ()
-
-        msg: ta.Optional[str] = None
-        exc: ta.Optional[BaseException] = None
-
-    @abc.abstractmethod
-    def poll(self, timeout: ta.Optional[float]) -> PollResult:
-        raise NotImplementedError
-
-
-##
-
-
-class SelectFdIoPoller(FdIoPoller):
-    def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-        try:
-            r, w, x = select.select(
-                self._readable,
-                self._writable,
-                [],
-                timeout,
-            )
-
-        except OSError as exc:
-            if exc.errno == errno.EINTR:
-                return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-            elif exc.errno == errno.EBADF:
-                return FdIoPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
-            else:
-                raise
-
-        return FdIoPoller.PollResult(r, w)
-
-
-##
-
-
-PollFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
-if hasattr(select, 'poll'):
-
-    class _PollFdIoPoller(FdIoPoller):
-        def __init__(self) -> None:
-            super().__init__()
-
-            self._poller = select.poll()
-
-        #
-
-        _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-        _WRITE = select.POLLOUT
-
-        def _register_readable(self, fd: int) -> None:
-            self._update_registration(fd)
-
-        def _register_writable(self, fd: int) -> None:
-            self._update_registration(fd)
-
-        def _unregister_readable(self, fd: int) -> None:
-            self._update_registration(fd)
-
-        def _unregister_writable(self, fd: int) -> None:
-            self._update_registration(fd)
-
-        def _update_registration(self, fd: int) -> None:
-            r = fd in self._readable
-            w = fd in self._writable
-            if r or w:
-                self._poller.register(fd, (self._READ if r else 0) | (self._WRITE if w else 0))
-            else:
-                self._poller.unregister(fd)
-
-        #
-
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-            polled: ta.List[ta.Tuple[int, int]]
-            try:
-                polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
-
-            except OSError as exc:
-                if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-                else:
-                    raise
-
-            r: ta.List[int] = []
-            w: ta.List[int] = []
-            for fd, mask in polled:
-                if self._ignore_invalid(fd, mask):
-                    continue
-                if mask & self._READ:
-                    r.append(fd)
-                if mask & self._WRITE:
-                    w.append(fd)
-            return FdIoPoller.PollResult(r, w)
-
-        def _ignore_invalid(self, fd: int, mask: int) -> bool:
-            if mask & select.POLLNVAL:
-                # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is
-                # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
-                self._poller.unregister(fd)
-                self._readable.discard(fd)
-                self._writable.discard(fd)
-                return True
-
-            return False
-
-    PollFdIoPoller = _PollFdIoPoller
-else:
-    PollFdIoPoller = None
-
-
-########################################
 # ../../../omlish/lite/http/versions.py
 
 
@@ -2453,70 +2239,6 @@ def get_user(name: str) -> User:
         uid=(uid := name_to_uid(name)),
         gid=gid_for_uid(uid),
     )
-
-
-########################################
-# ../../../omlish/lite/fdio/handlers.py
-
-
-class FdIoHandler(abc.ABC):
-    @abc.abstractmethod
-    def fd(self) -> int:
-        raise NotImplementedError
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def closed(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def close(self) -> None:
-        raise NotImplementedError
-
-    #
-
-    def readable(self) -> bool:
-        return False
-
-    def writable(self) -> bool:
-        return False
-
-    #
-
-    def on_readable(self) -> None:
-        raise TypeError
-
-    def on_writable(self) -> None:
-        raise TypeError
-
-    def on_error(self) -> None:  # noqa
-        pass
-
-
-class SocketFdIoHandler(FdIoHandler, abc.ABC):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            sock: socket.socket,
-    ) -> None:
-        super().__init__()
-
-        self._addr = addr
-        self._sock: ta.Optional[socket.socket] = sock
-
-    def fd(self) -> int:
-        return check_not_none(self._sock).fileno()
-
-    @property
-    def closed(self) -> bool:
-        return self._sock is None
-
-    def close(self) -> None:
-        if self._sock is not None:
-            self._sock.close()
-        self._sock = None
 
 
 ########################################
@@ -4748,108 +4470,6 @@ class SupervisorSetup(abc.ABC):
 
 
 ########################################
-# ../../../omlish/lite/fdio/kqueue.py
-
-
-KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
-if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
-
-    class _KqueueFdIoPoller(FdIoPoller):
-        DEFAULT_MAX_EVENTS = 1000
-
-        def __init__(
-                self,
-                *,
-                max_events: int = DEFAULT_MAX_EVENTS,
-        ) -> None:
-            super().__init__()
-
-            self._max_events = max_events
-
-            self._kqueue: ta.Optional[ta.Any] = None
-
-        #
-
-        def _get_kqueue(self) -> 'select.kqueue':
-            if (kq := self._kqueue) is not None:
-                return kq
-            kq = select.kqueue()
-            self._kqueue = kq
-            return kq
-
-        def close(self) -> None:
-            if self._kqueue is not None:
-                self._kqueue.close()
-                self._kqueue = None
-
-        def reopen(self) -> None:
-            for fd in self._readable:
-                self._register_readable(fd)
-            for fd in self._writable:
-                self._register_writable(fd)
-
-        #
-
-        def _register_readable(self, fd: int) -> None:
-            log.info(f'Adding kq readable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_ADD)
-
-        def _register_writable(self, fd: int) -> None:
-            log.info(f'Adding kq writable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
-
-        def _unregister_readable(self, fd: int) -> None:
-            log.info(f'Removing kq readable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_READ, select.KQ_EV_DELETE)
-
-        def _unregister_writable(self, fd: int) -> None:
-            log.info(f'Removing kq writable {fd=}')  # noqa
-            self._control(fd, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
-
-        def _control(self, fd: int, filter: int, flags: int) -> None:  # noqa
-            ke = select.kevent(fd, filter=filter, flags=flags)
-            kq = self._get_kqueue()
-            try:
-                kq.control([ke], 0)
-            except OSError as exc:
-                if exc.errno == errno.EBADF:
-                    # log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', ke.ident)
-                    pass
-                elif exc.errno == errno.ENOENT:
-                    # Can happen when trying to remove an already closed socket
-                    pass
-                else:
-                    raise
-
-        #
-
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
-            kq = self._get_kqueue()
-            try:
-                kes = kq.control(None, self._max_events, timeout)
-
-            except OSError as exc:
-                if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
-                else:
-                    raise
-
-            r: ta.List[int] = []
-            w: ta.List[int] = []
-            for ke in kes:
-                if ke.filter == select.KQ_FILTER_READ:
-                    r.append(ke.ident)
-                if ke.filter == select.KQ_FILTER_WRITE:
-                    w.append(ke.ident)
-
-            return FdIoPoller.PollResult(r, w)
-
-    KqueueFdIoPoller = _KqueueFdIoPoller
-else:
-    KqueueFdIoPoller = None
-
-
-########################################
 # ../../../omlish/lite/http/handlers.py
 
 
@@ -5022,6 +4642,239 @@ def parse_logging_level(value: ta.Union[str, int]) -> int:
     if level is None:
         raise ValueError(f'bad logging level name {value!r}')
     return level
+
+
+########################################
+# ../poller.py
+
+
+class Poller(DaemonizeListener, abc.ABC):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @abc.abstractmethod
+    def register_readable(self, fd: Fd) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def register_writable(self, fd: Fd) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unregister_readable(self, fd: Fd) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unregister_writable(self, fd: Fd) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+        raise NotImplementedError
+
+    def before_daemonize(self) -> None:  # noqa
+        pass
+
+    def after_daemonize(self) -> None:  # noqa
+        pass
+
+    def close(self) -> None:  # noqa
+        pass
+
+
+class SelectPoller(Poller):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._readable: ta.Set[Fd] = set()
+        self._writable: ta.Set[Fd] = set()
+
+    def register_readable(self, fd: Fd) -> None:
+        self._readable.add(fd)
+
+    def register_writable(self, fd: Fd) -> None:
+        self._writable.add(fd)
+
+    def unregister_readable(self, fd: Fd) -> None:
+        self._readable.discard(fd)
+
+    def unregister_writable(self, fd: Fd) -> None:
+        self._writable.discard(fd)
+
+    def unregister_all(self) -> None:
+        self._readable.clear()
+        self._writable.clear()
+
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+        try:
+            r, w, x = select.select(
+                self._readable,
+                self._writable,
+                [], timeout,
+            )
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
+                log.debug('EINTR encountered in poll')
+                return [], []
+            if exc.args[0] == errno.EBADF:
+                log.debug('EBADF encountered in poll')
+                self.unregister_all()
+                return [], []
+            raise
+        return r, w
+
+
+class PollPoller(Poller):
+    _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+    _WRITE = select.POLLOUT
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._poller = select.poll()
+        self._readable: set[Fd] = set()
+        self._writable: set[Fd] = set()
+
+    def register_readable(self, fd: Fd) -> None:
+        self._poller.register(fd, self._READ)
+        self._readable.add(fd)
+
+    def register_writable(self, fd: Fd) -> None:
+        self._poller.register(fd, self._WRITE)
+        self._writable.add(fd)
+
+    def unregister_readable(self, fd: Fd) -> None:
+        self._readable.discard(fd)
+        self._poller.unregister(fd)
+        if fd in self._writable:
+            self._poller.register(fd, self._WRITE)
+
+    def unregister_writable(self, fd: Fd) -> None:
+        self._writable.discard(fd)
+        self._poller.unregister(fd)
+        if fd in self._readable:
+            self._poller.register(fd, self._READ)
+
+    def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+        fds = self._poll_fds(timeout)  # type: ignore
+        readable, writable = [], []
+        for fd, eventmask in fds:
+            if self._ignore_invalid(fd, eventmask):
+                continue
+            if eventmask & self._READ:
+                readable.append(fd)
+            if eventmask & self._WRITE:
+                writable.append(fd)
+        return readable, writable
+
+    def _poll_fds(self, timeout: float) -> ta.List[ta.Tuple[Fd, Fd]]:
+        try:
+            return self._poller.poll(timeout * 1000)  # type: ignore
+        except OSError as exc:
+            if exc.args[0] == errno.EINTR:
+                log.debug('EINTR encountered in poll')
+                return []
+            raise
+
+    def _ignore_invalid(self, fd: Fd, eventmask: int) -> bool:
+        if eventmask & select.POLLNVAL:
+            # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
+            # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
+            self._poller.unregister(fd)
+            self._readable.discard(fd)
+            self._writable.discard(fd)
+            return True
+        return False
+
+
+if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
+    class KqueuePoller(Poller):
+        max_events = 1000
+
+        def __init__(self) -> None:
+            super().__init__()
+
+            self._kqueue: ta.Optional[ta.Any] = select.kqueue()
+            self._readable: set[Fd] = set()
+            self._writable: set[Fd] = set()
+
+        def register_readable(self, fd: Fd) -> None:
+            self._readable.add(fd)
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
+            self._kqueue_control(fd, kevent)
+
+        def register_writable(self, fd: Fd) -> None:
+            self._writable.add(fd)
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
+            self._kqueue_control(fd, kevent)
+
+        def unregister_readable(self, fd: Fd) -> None:
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
+            self._readable.discard(fd)
+            self._kqueue_control(fd, kevent)
+
+        def unregister_writable(self, fd: Fd) -> None:
+            kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
+            self._writable.discard(fd)
+            self._kqueue_control(fd, kevent)
+
+        def _kqueue_control(self, fd: Fd, kevent: 'select.kevent') -> None:
+            try:
+                self._kqueue.control([kevent], 0)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EBADF:
+                    log.debug('EBADF encountered in kqueue. Invalid file descriptor %s', fd)
+                else:
+                    raise
+
+        def poll(self, timeout: ta.Optional[float]) -> ta.Tuple[ta.List[Fd], ta.List[Fd]]:
+            readable, writable = [], []  # type: ignore
+
+            try:
+                kevents = self._kqueue.control(None, self.max_events, timeout)  # type: ignore
+            except OSError as error:
+                if error.errno == errno.EINTR:
+                    log.debug('EINTR encountered in poll')
+                    return readable, writable
+                raise
+
+            for kevent in kevents:
+                if kevent.filter == select.KQ_FILTER_READ:
+                    readable.append(kevent.ident)
+                if kevent.filter == select.KQ_FILTER_WRITE:
+                    writable.append(kevent.ident)
+
+            return readable, writable
+
+        def before_daemonize(self) -> None:
+            self.close()
+
+        def after_daemonize(self) -> None:
+            self._kqueue = select.kqueue()
+            for fd in self._readable:
+                self.register_readable(fd)
+            for fd in self._writable:
+                self.register_writable(fd)
+
+        def close(self) -> None:
+            self._kqueue.close()  # type: ignore
+            self._kqueue = None
+
+else:
+    KqueuePoller = None
+
+
+def get_poller_impl() -> ta.Type[Poller]:
+    if (
+            (sys.platform == 'darwin' or sys.platform.startswith('freebsd')) and
+            hasattr(select, 'kqueue') and
+            KqueuePoller is not None
+    ):
+        return KqueuePoller
+    elif hasattr(select, 'poll'):
+        return PollPoller
+    else:
+        return SelectPoller
 
 
 ########################################
@@ -5632,18 +5485,58 @@ class SupervisorStateManager(abc.ABC):
 ##
 
 
+class Dispatcher(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def channel(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def fd(self) -> Fd:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def close(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def handle_error(self) -> None:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def readable(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def writable(self) -> bool:
+        raise NotImplementedError
+
+    #
+
+    def handle_read_event(self) -> None:
+        raise TypeError
+
+    def handle_write_event(self) -> None:
+        raise TypeError
+
+
 class HasDispatchers(abc.ABC):
     @abc.abstractmethod
     def get_dispatchers(self) -> 'Dispatchers':
         raise NotImplementedError
 
 
-class ProcessDispatcher(FdIoHandler, abc.ABC):
-    @property
-    @abc.abstractmethod
-    def channel(self) -> str:
-        raise NotImplementedError
-
+class ProcessDispatcher(Dispatcher, abc.ABC):
     @property
     @abc.abstractmethod
     def process(self) -> 'Process':
@@ -5768,9 +5661,9 @@ class ProcessGroup(
 # ../dispatchers.py
 
 
-class Dispatchers(KeyedCollection[Fd, FdIoHandler]):
-    def _key(self, v: FdIoHandler) -> Fd:
-        return Fd(v.fd())
+class Dispatchers(KeyedCollection[Fd, Dispatcher]):
+    def _key(self, v: Dispatcher) -> Fd:
+        return v.fd
 
     #
 
@@ -5779,9 +5672,9 @@ class Dispatchers(KeyedCollection[Fd, FdIoHandler]):
             # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
             # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if d.readable():
-                d.on_readable()
+                d.handle_read_event()
             if d.writable():
-                d.on_writable()
+                d.handle_write_event()
 
     #
 
@@ -5835,6 +5728,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
     def channel(self) -> str:
         return self._channel
 
+    @property
     def fd(self) -> Fd:
         return self._fd
 
@@ -5849,7 +5743,7 @@ class BaseProcessDispatcherImpl(ProcessDispatcher, abc.ABC):
             log.debug('fd %s closed, stopped monitoring %s', self._fd, self)
             self._closed = True
 
-    def on_error(self) -> None:
+    def handle_error(self) -> None:
         nil, t, v, tbinfo = compact_traceback()
 
         log.critical('uncaptured python exception, closing channel %s (%s:%s %s)', repr(self), t, v, tbinfo)
@@ -6065,7 +5959,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
             return False
         return True
 
-    def on_readable(self) -> None:
+    def handle_read_event(self) -> None:
         data = read_fd(self._fd)
         self._output_buffer += data
         self.record_output()
@@ -6103,12 +5997,15 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
             return True
         return False
 
+    def readable(self) -> bool:
+        return False
+
     def flush(self) -> None:
         # other code depends on this raising EPIPE if the pipe is closed
         sent = os.write(self._fd, as_bytes(self._input_buffer))
         self._input_buffer = self._input_buffer[sent:]
 
-    def on_writable(self) -> None:
+    def handle_write_event(self) -> None:
         if self._input_buffer:
             try:
                 self.flush()
@@ -6564,7 +6461,7 @@ class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
-            poller: FdIoPoller,
+            poller: Poller,
             has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
@@ -6589,27 +6486,20 @@ class IoManager(HasDispatchers):
                 self._poller.register_writable(fd)
 
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
-        log.info(f'Polling: {timeout=}')  # noqa
-        polled = self._poller.poll(timeout)
-        log.info(f'Polled: {polled=}')  # noqa
-        if polled.msg is not None:
-            log.error(polled.msg)
-        if polled.exc is not None:
-            log.error('Poll exception: %r', polled.exc)
+        r, w = self._poller.poll(timeout)
 
-        for r in polled.r:
-            fd = Fd(r)
+        for fd in r:
             if fd in dispatchers:
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('read event caused by %r', dispatcher)
-                    dispatcher.on_readable()
+                    dispatcher.handle_read_event()
                     if not dispatcher.readable():
                         self._poller.unregister_readable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                    dispatchers[fd].handle_error()
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
                 # time, which may cause 100% cpu usage
@@ -6619,19 +6509,18 @@ class IoManager(HasDispatchers):
                 except Exception:  # noqa
                     pass
 
-        for w in polled.w:
-            fd = Fd(w)
+        for fd in w:
             if fd in dispatchers:
                 try:
                     dispatcher = dispatchers[fd]
                     log.debug('write event caused by %r', dispatcher)
-                    dispatcher.on_writable()
+                    dispatcher.handle_write_event()
                     if not dispatcher.writable():
                         self._poller.unregister_writable(fd)
                 except ExitNow:
                     raise
                 except Exception:  # noqa
-                    dispatchers[fd].on_error()
+                    dispatchers[fd].handle_error()
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
@@ -7018,7 +6907,6 @@ class ProcessImpl(Process):
         self._last_stop = now
 
         if now > self._last_start:
-            log.info(f'{now - self._last_start=}')  # noqa
             too_quickly = now - self._last_start < self._config.startsecs
         else:
             too_quickly = False
@@ -7088,6 +6976,8 @@ class ProcessImpl(Process):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
+        logger = log
+
         if self._supervisor_states.state > SupervisorState.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
@@ -7119,14 +7009,14 @@ class ProcessImpl(Process):
                 self.check_in_state(ProcessState.STARTING)
                 self.change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self._config.startsecs)  # noqa
-                log.info('success: %s %s', self.name, msg)
+                logger.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
             if self._backoff > self._config.startretries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
-                log.info('gave up: %s %s', self.name, msg)
+                logger.info('gave up: %s %s', self.name, msg)
 
         elif state == ProcessState.STOPPING:
             time_left = self._delay - now
@@ -7367,7 +7257,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         return exe, args
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
-        dispatchers: ta.List[FdIoHandler] = []
+        dispatchers: ta.List[Dispatcher] = []
 
         if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
@@ -7557,7 +7447,7 @@ class Supervisor:
             self,
             *,
             config: ServerConfig,
-            poller: FdIoPoller,
+            poller: Poller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
@@ -7673,9 +7563,7 @@ class Supervisor:
     #
 
     def _run_once(self) -> None:
-        now = time.time()
         self._poll()
-        log.info(f'Poll took {time.time() - now}')  # noqa
         self._reap()
         self._signal_handler.handle_signals()
         self._tick()
@@ -7727,7 +7615,6 @@ class Supervisor:
             return
 
         wp = waitpid()
-        log.info(f'Waited pid: {wp}')  # noqa
         if wp is None or not wp.pid:
             return
 
@@ -7796,17 +7683,6 @@ def waitpid() -> ta.Optional[WaitedPid]:
 # ../inject.py
 
 
-@dc.dataclass(frozen=True)
-class _FdIoPollerDaemonizeListener(DaemonizeListener):
-    _poller: FdIoPoller
-
-    def before_daemonize(self) -> None:
-        self._poller.close()
-
-    def after_daemonize(self) -> None:
-        self._poller.reopen()
-
-
 def bind_server(
         config: ServerConfig,
         *,
@@ -7816,11 +7692,12 @@ def bind_server(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
-        inj.bind_array(DaemonizeListener),
         inj.bind_array_type(DaemonizeListener, DaemonizeListeners),
 
         inj.bind(SupervisorSetupImpl, singleton=True),
         inj.bind(SupervisorSetup, to_key=SupervisorSetupImpl),
+
+        inj.bind(DaemonizeListener, array=True, to_key=Poller),
 
         inj.bind(EventCallbacks, singleton=True),
 
@@ -7865,13 +7742,7 @@ def bind_server(
 
     #
 
-    poller_impl = next(filter(None, [
-        # KqueueFdIoPoller,
-        # PollFdIoPoller,
-        SelectFdIoPoller,
-    ]))
-    lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
-    inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
+    lst.append(inj.bind(get_poller_impl(), key=Poller, singleton=True))
 
     #
 
