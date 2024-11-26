@@ -1,12 +1,13 @@
+import json
 import socket
 import typing as ta
 
 from omlish.lite.check import check_not_none
 from omlish.lite.fdio.corohttp import CoroHttpServerConnectionFdIoHandler
 from omlish.lite.fdio.handlers import SocketFdIoHandler
-from omlish.lite.http.handlers import HttpHandler
 from omlish.lite.http.handlers import HttpHandlerRequest
 from omlish.lite.http.handlers import HttpHandlerResponse
+from omlish.lite.json import JSON_PRETTY_KWARGS
 from omlish.lite.socket import SocketAddress
 
 from .dispatchers import Dispatchers
@@ -44,23 +45,6 @@ class SocketServerFdIoHandler(SocketFdIoHandler):
 ##
 
 
-def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
-    resp = '\n'.join([
-        f'method: {req.method}',
-        f'path: {req.path}',
-        f'data: {len(req.data or b"")}',
-        '',
-    ])
-
-    return HttpHandlerResponse(
-        200,
-        data=resp.encode('utf-8'),
-    )
-
-
-##
-
-
 class HttpServer(HasDispatchers):
     def __init__(
             self,
@@ -69,18 +53,42 @@ class HttpServer(HasDispatchers):
         super().__init__()
 
         self._addr = addr
-        self._handler = say_hi_handler
 
         self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
 
+        self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+
     def get_dispatchers(self) -> Dispatchers:
-        return Dispatchers([self._server])
+        l = []
+        for c in self._conns:
+            if not c.closed:
+                l.append(c)
+        self._conns = l
+        return Dispatchers([
+            self._server,
+            *l,
+        ])
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdIoHandler(  # noqa
+        conn = CoroHttpServerConnectionFdIoHandler(
             addr,
             sock,
-            self._handler,
+            self._http_handler,
         )
 
-        raise NotImplementedError
+        self._conns.append(conn)
+
+    def _http_handler(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+        dct = {
+            'method': req.method,
+            'path': req.path,
+            'data': len(req.data or b''),
+        }
+
+        return HttpHandlerResponse(
+            200,
+            data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
+            headers={
+                'Content-Type': 'application/json',
+            }
+        )
