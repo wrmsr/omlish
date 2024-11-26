@@ -69,14 +69,14 @@ class ThreadWatcher:
     def watch(self, callback):
         if not self.is_watching():
             self._local.vigil = v = ThreadWatcher.Vigil()
-            on_death = partial(
-                self._on_death, id(v), callback)
+            on_death = partial(self._on_death, id(v), callback)
 
             ref = weakref.ref(v, on_death)
             self._refs[id(v)] = ref
 
     def is_watching(self):
-        "Is the current thread being watched?"
+        """Is the current thread being watched?"""
+
         try:
             v = self._local.vigil
             return id(v) in self._refs
@@ -92,28 +92,14 @@ class ThreadWatcher:
             pass
 
 
-try:
-    # Python 2
-    import thread
-
-
-    def get_ident():
-        return thread.get_ident()
-
-except ImportError:
-    # Python 3
-    def get_ident():
-        return threading.get_ident()
-
-
 class TestWatch(unittest.TestCase):
     def test_watch(self):
-        print('main', get_ident())
+        print("main", threading.get_ident())
         watcher = ThreadWatcher()
         callback_ran = [False]
 
         def callback():
-            print('callback', get_ident())
+            print("callback", threading.get_ident())
             callback_ran[0] = True
 
         def target():
@@ -129,7 +115,7 @@ class TestWatch(unittest.TestCase):
             if callback_ran[0]:
                 break
             else:
-                time.sleep(.1)
+                time.sleep(0.1)
         assert callback_ran[0]
         # id(v) removed from _refs
         assert not watcher._refs
@@ -192,10 +178,10 @@ class TestRefLeak(unittest.TestCase):
             if n_callbacks[0] == nthreads:
                 break
             else:
-                time.sleep(.1)
+                time.sleep(0.1)
 
         self.assertEqual(nthreads, n_callbacks[0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
