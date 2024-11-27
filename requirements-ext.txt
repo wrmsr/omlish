@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.69
+boto3>=1.35.71
 
 google-api-python-client==2.154.0
 google-cloud-compute==1.22.0
@@ -160,11 +160,11 @@ soco==0.30.6
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.42.0
-zigpy==0.72.0
+bellows==0.42.2
+zigpy==0.73.1
 
 # python-openzwave
-zwave-js-server-python==0.59.1
+zwave-js-server-python==0.60.0
 
 ##
 
@@ -181,7 +181,7 @@ mitogen==0.3.18
 
 ##
 
-openai==1.55.1
+openai==1.55.2
 
 trl==0.12.1
 tf-keras==2.17.0
@@ -208,7 +208,7 @@ langchain-ollama==0.2.0
 langchain-openai==0.2.10
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
-langchain==0.3.8
+langchain==0.3.9
 
 # langchain-nomic==0.2.0
 
@@ -216,7 +216,7 @@ langchainhub==0.1.21
 
 langgraph==0.2.53
 
-langsmith==0.1.146
+langsmith==0.1.147
 
 tavily-python==0.5.0
 
@@ -250,7 +250,7 @@ usearch==2.16.6
 
 llama-index-core==0.12.2
 
-unstructured==0.16.6
+unstructured==0.16.8
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
