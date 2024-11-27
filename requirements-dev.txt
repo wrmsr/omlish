@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=5.1.1
 wheel>=0.45.1
 
-uv>=0.5.4
+uv>=0.5.5
 
 pytest==8.3.3
 pytest-asyncio==0.24.0
@@ -58,7 +58,7 @@ lxml==5.3.0  # @omlish-venv !13t
 
 pytest-trio==0.8.0
 
-json5==0.9.28
+json5==0.10.0
 
 # pyrsistent
 # rpds-py
