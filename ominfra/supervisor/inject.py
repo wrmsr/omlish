@@ -123,8 +123,10 @@ def bind_server(
         PollFdIoPoller,
         SelectFdIoPoller,
     ]))
-    lst.append(inj.bind(poller_impl, key=FdIoPoller, singleton=True))
-    inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True)
+    lst.extend([
+        inj.bind(poller_impl, key=FdIoPoller, singleton=True),
+        inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True),
+    ])
 
     #
 
