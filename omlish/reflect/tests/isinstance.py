@@ -1,11 +1,11 @@
 import collections.abc
 import typing as ta
 
-from .ops import get_underlying
-from .types import Generic
-from .types import NewType
-from .types import Type
-from .types import Union
+from ..ops import get_underlying
+from ..types import Generic
+from ..types import NewType
+from ..types import Type
+from ..types import Union
 
 
 KNOWN_ISINSTANCE_GENERICS: ta.AbstractSet[type] = frozenset([
