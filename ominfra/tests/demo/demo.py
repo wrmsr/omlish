@@ -2,13 +2,13 @@
 FIXME:
  - ubuntu installs py3.10 lols
 """
-import json
+import dataclasses as dc
 import os.path
 import subprocess
 import typing as ta
 
 from omlish import check
-from omlish.lite.json import json_dumps_compact
+from omlish.formats import json
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
@@ -91,7 +91,7 @@ def _main():
             else:
                 raise TypeError(go)
 
-        print(f'{br=}')
+        print(json.dumps_pretty(dc.asdict(br)))
 
         ##
 
@@ -115,7 +115,7 @@ def _main():
             CommandRequest(cmd=['false']),
         ]
         for req in reqs:
-            stdin.write(json_dumps_compact(marshal_obj(req)).encode('utf-8'))
+            stdin.write(json.dumps_compact(marshal_obj(req)).encode('utf-8'))
             stdin.write(b'\n')
             stdin.flush()
 
