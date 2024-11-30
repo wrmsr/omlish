@@ -288,6 +288,9 @@ _PYREMOTE_BOOTSTRAP_IMPORTS = [
 
 
 def _pyremote_bootstrap_main(context_name: str) -> None:
+    # Get pid
+    pid = os.getpid()
+
     # Two copies of main src to be sent to parent
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
@@ -322,6 +325,9 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
 
         # Write first ack
         os.write(1, _PYREMOTE_BOOTSTRAP_ACK0)
+
+        # Write pid
+        os.write(1, struct.pack('<Q', pid))
 
         # Read main src from stdin
         main_z_len = struct.unpack('<I', os.read(0, 4))[0]
@@ -399,10 +405,16 @@ class PyremoteBootstrapDriver:
     class ProtocolError(Exception):
         pass
 
-    def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], None]:
+    class Result(ta.NamedTuple):
+        pid: int
+
+    def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
         d = check_isinstance((yield self.Read(8)), bytes)
         if d != _PYREMOTE_BOOTSTRAP_ACK0:
             raise self.ProtocolError
+
+        d = check_isinstance((yield self.Read(8)), bytes)
+        pid = struct.unpack('<Q', d)[0]
 
         check_none((yield self.Write(struct.pack('<I', len(self._main_z)))))
         check_none((yield self.Write(self._main_z)))
@@ -410,6 +422,8 @@ class PyremoteBootstrapDriver:
         d = check_isinstance((yield self.Read(8)), bytes)
         if d != _PYREMOTE_BOOTSTRAP_ACK1:
             raise self.ProtocolError
+
+        return self.Result(pid)
 
 
 ##

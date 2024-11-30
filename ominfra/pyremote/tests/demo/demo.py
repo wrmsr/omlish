@@ -79,7 +79,8 @@ def _main():
                     go = gen.send(gi)
                 else:
                     go = next(gen)
-            except StopIteration:
+            except StopIteration as e:
+                br = e.value
                 break
             if isinstance(go, prb.PyremoteBootstrapDriver.Read):
                 gi = stdout.read(go.sz)
@@ -89,6 +90,8 @@ def _main():
                 stdin.flush()
             else:
                 raise TypeError(go)
+
+        print(f'{br=}')
 
         ##
 
