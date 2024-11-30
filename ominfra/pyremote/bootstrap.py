@@ -135,13 +135,14 @@ def post_boostrap() -> PostBoostrap:
     # Restore original argv0
     sys.executable = os.environ.pop(_BOOTSTRAP_ARGV0_VAR)
 
-    # Reap boostrap child
-    os.waitpid(int(os.environ.pop(_BOOTSTRAP_CHILD_PID_VAR)), 0)
-
     # Read second copy of main src
     r1 = os.fdopen(_BOOTSTRAP_SRC_FD, 'rb', 0)
     main_src = r1.read().decode('utf-8')
     r1.close()
+
+    # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in a
+    # pipe at once.
+    os.waitpid(int(os.environ.pop(_BOOTSTRAP_CHILD_PID_VAR)), 0)
 
     return PostBoostrap(
         input=os.fdopen(_BOOTSTRAP_COMM_FD, 'rb', 0),
