@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../pyproject/cli.py
-# ruff: noqa: N802 TCH003 UP006 UP007 UP036
+# ruff: noqa: N802 TC003 UP006 UP007 UP036
 """
 TODO:
  - check / tests, src dir sets
