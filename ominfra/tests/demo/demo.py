@@ -48,7 +48,7 @@ def _main():
     ) as ctr_id:  # noqa
         context_name = f'docker:{ctr_id}'
 
-        with open(os.path.join(cur_dir, '..', '_runcommands.py')) as f:
+        with open(os.path.join(cur_dir, '..', 'runcommands', '_runcommands.py')) as f:
             real_main_src = f.read()
 
         main_src = '\n\n'.join([

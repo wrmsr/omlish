@@ -45,15 +45,15 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../omlish/lite/cached.py
+# ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../omlish/lite/check.py
+# ../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
 
 ########################################
-# ../../pyremote.py
+# ../../../pyremote.py
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
 """
@@ -294,6 +294,8 @@ class PyremoteBootstrapDriver:
         self._main_src = main_src
         self._main_z = zlib.compress(main_src.encode('utf-8'))
 
+    #
+
     @dc.dataclass(frozen=True)
     class Read:
         sz: int
@@ -310,7 +312,7 @@ class PyremoteBootstrapDriver:
         pid: int
         env_info: PyremoteEnvInfo
 
-    def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
+    def gen(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
         # Read first ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
 
@@ -360,6 +362,30 @@ class PyremoteBootstrapDriver:
         if i is not None:
             raise self.ProtocolError('Unexpected input after write')
 
+    #
+
+    def run(self, stdin: ta.IO, stdout: ta.IO) -> Result:
+        gen = self.gen()
+
+        gi: bytes | None = None
+        while True:
+            try:
+                if gi is not None:
+                    go = gen.send(gi)
+                else:
+                    go = next(gen)
+            except StopIteration as e:
+                return e.value
+
+            if isinstance(go, self.Read):
+                gi = stdout.read(go.sz)
+            elif isinstance(go, self.Write):
+                gi = None
+                stdin.write(go.d)
+                stdin.flush()
+            else:
+                raise TypeError(go)
+
 
 ##
 
@@ -405,7 +431,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
 
 ########################################
-# ../../../omlish/lite/cached.py
+# ../../../../omlish/lite/cached.py
 
 
 class _cached_nullary:  # noqa
@@ -430,7 +456,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../../omlish/lite/check.py
 
 
 def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -527,7 +553,7 @@ def check_non_empty(v: SizedT) -> SizedT:
 
 
 ########################################
-# ../../../omlish/lite/json.py
+# ../../../../omlish/lite/json.py
 
 
 ##
@@ -558,7 +584,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../../omlish/lite/reflect.py
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -613,7 +639,7 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
-# ../../../omlish/lite/logs.py
+# ../../../../omlish/lite/logs.py
 """
 TODO:
  - translate json keys
@@ -883,7 +909,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/lite/marshal.py
+# ../../../../omlish/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -1227,7 +1253,7 @@ def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
 
 
 ########################################
-# ../../../omlish/lite/runtime.py
+# ../../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -1244,7 +1270,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../../omlish/lite/subprocesses.py
+# ../../../../omlish/lite/subprocesses.py
 
 
 ##
