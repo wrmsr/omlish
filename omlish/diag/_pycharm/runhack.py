@@ -1278,7 +1278,7 @@ class HackRunner:
     def run(self) -> None:
         # breakpoint()
 
-        env = self._env()
+        env = self._env()  # type: RunEnv
         self._debug(env.as_json())
 
         if not self._is_enabled:
@@ -1292,6 +1292,10 @@ class HackRunner:
             self._debug('not pycharm hosted')
             return
 
+        if len(env.orig_argv) < 2:
+            self._debug('no enough interpreter arguments')
+            return
+
         exe = self._exe()
         dec = self._decider().decide(exe.target)
         if dec is None:
@@ -1300,7 +1304,6 @@ class HackRunner:
 
         self._debug(dec.as_json())
         self._apply(dec)
-
 
 ##
 
