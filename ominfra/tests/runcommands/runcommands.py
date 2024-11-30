@@ -13,7 +13,7 @@ from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
-from ..pyremote import pyremote_bootstrap_finalize
+from ...pyremote import pyremote_bootstrap_finalize
 
 
 @dc.dataclass(frozen=True)
