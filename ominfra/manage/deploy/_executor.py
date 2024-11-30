@@ -82,10 +82,10 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../omlish/lite/cached.py
+# ../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
-# ../../../omlish/lite/check.py
+# ../../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
 
@@ -112,7 +112,7 @@ class HostConfig:
 
 
 ########################################
-# ../../../../omlish/lite/cached.py
+# ../../../../../omlish/lite/cached.py
 
 
 class _cached_nullary:  # noqa
@@ -137,7 +137,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 
 
 ########################################
-# ../../../../omlish/lite/check.py
+# ../../../../../omlish/lite/check.py
 
 
 def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
@@ -234,7 +234,7 @@ def check_non_empty(v: SizedT) -> SizedT:
 
 
 ########################################
-# ../../../../omlish/lite/json.py
+# ../../../../../omlish/lite/json.py
 
 
 ##
@@ -265,7 +265,7 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
-# ../../../../omlish/lite/reflect.py
+# ../../../../../omlish/lite/reflect.py
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -320,7 +320,7 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
-# ../../../../omlish/lite/logs.py
+# ../../../../../omlish/lite/logs.py
 """
 TODO:
  - translate json keys
@@ -590,7 +590,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../../omlish/lite/marshal.py
+# ../../../../../omlish/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -934,7 +934,7 @@ def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
 
 
 ########################################
-# ../../../../omlish/lite/runtime.py
+# ../../../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -951,7 +951,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../../../omlish/lite/subprocesses.py
+# ../../../../../omlish/lite/subprocesses.py
 
 
 ##
