@@ -1,0 +1,183 @@
+# syntax of this file:
+# lines starting with # (or empty) are comments
+# regular lines are shell commands
+# if a shell command is followed with lines starting '> '
+# they contain output the preceding command must match
+
+spy 1
+spy --help
+spy --show-fragments 0
+spy -l 0
+spy --each-line 0
+spy --start 2 0
+spy -s 2 0
+spy --end 2 0
+spy -e 2 0
+spy spy
+spy spy.catcher
+spy 1+ 2+ 3
+> 6
+spy '1 + 2'
+> 3
+spy --prelude x=3 x
+> 3
+spy --prelude x=3 x+=1 x
+> 4
+spy -p x=3 x
+> 3
+spy --pipe-name=apple "'hello'" apple
+> hello
+! spy -l
+printf '1\n2\n3\n' | spy -c list
+> ['1', '2', '3']
+printf '1\n2\n3\n' | spy -rc list
+> ['1\n', '2\n', '3\n']
+printf '1\n2\n' | spy -l -c int 'pipe += 1'
+> 2
+> 3
+printf '1\n2\n' | spy -l -ma x=3 -c int pipe+x
+> 4
+> 5
+printf '5\n5\n' | spy -l -p x=3 -ma x+=3 -c int pipe+x
+> 11
+> 11
+spy -m '[1,2,3]' -m '[4,5,6]'
+> 4
+> 5
+> 6
+> 4
+> 5
+> 6
+> 4
+> 5
+> 6
+
+# make sure 12345 is blamed
+spy --callable 12345 2>&1 | grep 12345
+
+spy -lf 0 < test.txt | wc -l | xargs
+> 0
+
+# things that should not work
+! spy -c 0
+! spy -m 0
+
+# documented as equivalent
+printf '10\n20\n' | spy -lc repr
+> '10'
+> '20'
+printf '10\n20\n' | spy 'spy.many(pipe)' -c repr
+> '10'
+> '20'
+
+printf '1\n2\n3\n4\n5' | spy 'pipe[2]'
+> 3
+
+# the examples from doc/examples
+spy -mc sorted < test.txt
+> file
+> five
+> has
+> lines
+> this
+spy -mc reversed < test.txt
+> lines
+> five
+> has
+> file
+> this
+spy -l -f 'len(pipe) == 4' < test.txt
+> this
+> file
+> five
+spy -l -fc 'len == 4' < test.txt
+> this
+> file
+> five
+spy -m "['{}: {}'.format(n, v) for n, v in enumerate(pipe, 1)]" < test.txt
+> 1: this
+> 2: file
+> 3: has
+> 4: five
+> 5: lines
+spy -m 'enumerate(pipe, 1)' "'{}: {}'.format(*pipe)" < test.txt
+> 1: this
+> 2: file
+> 3: has
+> 4: five
+> 5: lines
+spy -m 'enumerate(pipe, 1)' -i '{}: {}' < test.txt
+> 1: this
+> 2: file
+> 3: has
+> 4: five
+> 5: lines
+spy -c csv.DictReader -c list -c json.dumps < test.csv
+cat books.json | spy -mc json.load -o author 'pipe.split()' -tk 'f"Firstname: {author[0]}\nLastname: {author[1]}\nTitle: {title}"'
+> Firstname: Alfred
+> Lastname: Someone
+> Title: A book
+cat books.json | spy -p 'd = collections.defaultdict(int)' -mc json.load -t 'd[pipe["author"]] += 1' -ac exhaust 'dict(d)' 'sorted(pipe.items())'
+> [('Alfred Someone', 1), ('Mike Other', 1), ('Writer', 1)]
+cat books.json | spy -mc json.load -k '[author]' -c collections.Counter -ac sum -c dict 'sorted(pipe.items())'
+> [('Alfred Someone', 1), ('Mike Other', 1), ('Writer', 1)]
+
+# error handling
+spy 3 -c None 2>&1 | sed '1d;$d;s/^ *//'
+> Fragment 2, in decorator spy.decorators.callable
+> --callable 'None'
+> input to fragment was 3
+spy 3 idonotexist 2>&1 | sed '1d;$d;s/^ *//'
+> Fragment 2
+> idonotexist
+> input to fragment was 3
+spy 3 -f 'None + 2' 2>&1 | sed '1d;$d;s/^ *//'
+> Fragment 2
+> --filter 'None + 2'
+> input to fragment was 3
+! spy -lf
+> spy: No value found after --filter
+> Usage: spy [OPTIONS] steps...
+echo foo | spy -lR foo -k this_variable_does_not_exist 2>&1 | grep -q this_variable_does_not_exist
+
+# format()
+spy 3 -i 'x{pipe}y'
+> x3y
+spy '"ll"' -i 'he{pipe}o'
+> hello
+
+# literals + autojoining
+spy -i 1+ 2
+> 2
+
+# -k
+spy '{"a": 1, "b": 2}' -ki '{a}'
+> 1
+spy '{"a": 1, "b": 2}' -k 'c = 3' 'sorted(pipe.keys())'
+> ['a', 'b', 'c']
+
+# focuses / decorator args
+! spy -OO 0 pipe
+> spy: No value found after --magnify
+> Usage: spy [OPTIONS] steps...
+spy -lO 2 pipe -ac "''.join" < test.txt
+> ilsvn
+spy -mc csv.DictReader -o 'Another Header' -c str.upper "pipe['Another Header']" < test.csv
+> BAR
+spy '[[1, 2, 3], [4, 5, 6], [7, 8, 9]]' -o 2 -o 0 'pipe *= 3'
+> [[1, 2, 3], [4, 5, 6], [21, 8, 9]]
+spy -l --magnify=2 pipe -ac "''.join" < test.txt
+> ilsvn
+spy -l --filter --magnify=1 "pipe == 'i'" < test.txt
+> file
+> five
+> lines
+spy -lR ''
+
+# examples from api docs
+spy '[1,2,3,4,5,6]' -o 1::2 'pipe * 7'
+> [1, 14, 3, 28, 5, 42]
+spy '["abc", "def"]' -o '_.Each()[1]' -c str.upper
+> ['aBc', 'dEf']
+spy -lt "pipe[3]" "list(spy.collect())" < test.txt
+> ['s', 'e', 'e', 'e']
