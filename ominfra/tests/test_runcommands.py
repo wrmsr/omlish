@@ -8,9 +8,9 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from ..runcommands import CommandRequest
-from ..runcommands import CommandResponse
-from ..runcommands import _run_commands_loop  # noqa
+from .runcommands import CommandRequest
+from .runcommands import CommandResponse
+from .runcommands import _run_commands_loop  # noqa
 
 
 class TestPayload(unittest.TestCase):

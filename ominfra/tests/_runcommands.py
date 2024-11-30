@@ -258,7 +258,7 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
-# ../bootstrap.py
+# ../../pyremote.py
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
 """
@@ -275,6 +275,7 @@ _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
 _PYREMOTE_BOOTSTRAP_ACK1 = b'OPYR001\n'
+_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR001\n'
 
 _PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
 
@@ -409,9 +410,7 @@ class PyremoteBootstrapDriver:
         pid: int
 
     def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
-        d = check_isinstance((yield self.Read(8)), bytes)
-        if d != _PYREMOTE_BOOTSTRAP_ACK0:
-            raise self.ProtocolError
+        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
 
         d = check_isinstance((yield self.Read(8)), bytes)
         pid = struct.unpack('<Q', d)[0]
@@ -419,11 +418,15 @@ class PyremoteBootstrapDriver:
         check_none((yield self.Write(struct.pack('<I', len(self._main_z)))))
         check_none((yield self.Write(self._main_z)))
 
-        d = check_isinstance((yield self.Read(8)), bytes)
-        if d != _PYREMOTE_BOOTSTRAP_ACK1:
-            raise self.ProtocolError
+        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
+        yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK2)
 
         return self.Result(pid)
+
+    def _expect(self, e: bytes) -> ta.Generator[Read, bytes, None]:
+        d = check_isinstance((yield self.Read(len(e))), bytes)
+        if d != e:
+            raise self.ProtocolError
 
 
 ##
@@ -446,6 +449,9 @@ def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
     # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in a
     # pipe at once.
     os.waitpid(int(os.environ.pop(_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR)), 0)
+
+    # Write third ack
+    os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
 
     return PyremoteBootstrapPayloadRuntime(
         input=os.fdopen(_PYREMOTE_BOOTSTRAP_COMM_FD, 'rb', 0),
