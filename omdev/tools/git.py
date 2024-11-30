@@ -6,6 +6,7 @@ import urllib.parse
 
 from omlish import argparse as ap
 from omlish import check
+from omlish import lang
 from omlish import logs
 from omlish.formats import json
 
@@ -180,7 +181,8 @@ class Cli(ap.Cli):
     # Lazy helpers
 
     @ap.command(
-        ap.arg('-m', '--message', default='--'),
+        ap.arg('-m', '--message', nargs='?'),
+        ap.arg('--time-fmt', default='%Y-%m-%dT%H:%M:%SZ'),
         aliases=['acp'],
     )
     def add_commit_push(self) -> None:
@@ -190,7 +192,11 @@ class Cli(ap.Cli):
             subprocess.check_call(['git', 'add', '.'])
 
         if st.has_staged or st.has_dirty:
-            subprocess.check_call(['git', 'commit', '-m', self.args.message])
+            if self.args.message is not None:
+                msg = self.args.message
+            else:
+                msg = lang.utcnow().strftime(self.args.time_fmt)
+            subprocess.check_call(['git', 'commit', '-m', msg])
 
         subprocess.check_call(['git', 'push'])
 

@@ -12,7 +12,7 @@
 # thinc
 ##
 
-matplotlib==3.9.2
+matplotlib==3.9.3
 
 evaluate==0.4.3
 
@@ -24,9 +24,9 @@ llvmlite==0.43.0
 
 # pycuda==2023.1; sys_platform != "darwin"
 
-pyobjc-core==10.3.1; sys_platform == "darwin"
-pyobjc-framework-libdispatch==10.3.1; sys_platform == "darwin"
-pyobjc-framework-metal==10.3.1; sys_platform == "darwin"
+pyobjc-core==10.3.2; sys_platform == "darwin"
+pyobjc-framework-libdispatch==10.3.2; sys_platform == "darwin"
+pyobjc-framework-metal==10.3.2; sys_platform == "darwin"
 
 ##
 
@@ -65,7 +65,7 @@ sympy>=1.13.1  # FIXME: torch :|
 
 wgpu==0.19.2
 
-hypothesis==6.119.4
+hypothesis==6.112.0
 
 hexdump==3.3
 
@@ -181,12 +181,12 @@ mitogen==0.3.18
 
 ##
 
-openai==1.55.2
+openai==1.55.3
 
 trl==0.12.1
 tf-keras==2.17.0
 
-polars==1.15.0
+polars==1.16.0
 
 pyzmq==26.2.0
 
@@ -204,13 +204,13 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.2
-langchain-ollama==0.2.0
 langchain-openai==0.2.10
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchain==0.3.9
 
 # langchain-nomic==0.2.0
+# langchain-ollama==0.2.0
 
 langchainhub==0.1.21
 
@@ -238,7 +238,7 @@ faiss-cpu==1.9.0.post1
 
 tantivy==0.22
 
-neo4j==5.26.0
+neo4j==5.27.0
 
 pypdf==5.1.0
 
@@ -259,7 +259,7 @@ libtmux==0.39.0
 
 sqlite-vec==0.1.6
 
-anthropic==0.39.0
+anthropic==0.40.0
 
 apsw==3.47.1.0
 
@@ -286,7 +286,7 @@ gguf==0.10.0
 
 pytesseract==0.3.13
 
-dspy==2.5.40
+dspy==2.5.41
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
