@@ -13,7 +13,7 @@ from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
-from .bootstrap import post_boostrap
+from .bootstrap import pyremote_bootstrap_finalize
 
 
 @dc.dataclass(frozen=True)
@@ -52,5 +52,5 @@ def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buff
 
 
 def run_commands_main() -> None:
-    bs = post_boostrap()
+    bs = pyremote_bootstrap_finalize()
     _run_commands_loop(bs.input)
