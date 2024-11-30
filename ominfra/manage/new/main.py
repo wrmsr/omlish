@@ -29,10 +29,15 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
     class Input(Command.Input):
         args: ta.Sequence[str]
 
-        stdin: ta.Optional[bytes] = None
+        input: ta.Optional[bytes] = None
+        timeout: ta.Optional[float] = None
 
         capture_stdout: bool = False
         capture_stderr: bool = False
+
+        def __post_init__(self) -> None:
+            if isinstance(self.args, str):
+                raise TypeError(self.args)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -50,7 +55,10 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
             **(dict(stderr=subprocess.PIPE) if inp.capture_stderr else {}),
         )
 
-        stdout, stderr = proc.communicate()
+        stdout, stderr = proc.communicate(
+            input=inp.input,
+            timeout=inp.timeout,
+        )
 
         return SubprocessCommand.Output(
             rc=proc.returncode,
@@ -62,7 +70,11 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
 
 
 def _main() -> None:
-    i = SubprocessCommand.Input(args=['uname'], capture_stdout=True)
+    i = SubprocessCommand.Input(
+        args=['echo'],
+        input=b'hi',
+        capture_stdout=True,
+    )
     o = SubprocessCommand()._execute(i)  # noqa
     print(o)
 
