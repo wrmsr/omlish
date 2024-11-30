@@ -17,9 +17,6 @@ import textwrap
 import typing as ta
 import zlib
 
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_none
-
 
 ##
 
@@ -32,8 +29,8 @@ _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
 _PYREMOTE_BOOTSTRAP_ACK1 = b'OPYR001\n'
-_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR001\n'
-_PYREMOTE_BOOTSTRAP_ACK3 = b'OPYR001\n'
+_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR002\n'
+_PYREMOTE_BOOTSTRAP_ACK3 = b'OPYR003\n'
 
 _PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
 
@@ -281,8 +278,8 @@ class PyremoteBootstrapDriver:
         pid = struct.unpack('<Q', d)[0]
 
         # Write main src
-        check_none((yield self.Write(struct.pack('<I', len(self._main_z)))))
-        check_none((yield self.Write(self._main_z)))
+        yield from self._write(struct.pack('<I', len(self._main_z)))
+        yield from self._write(self._main_z)
 
         # Read second and third ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
@@ -305,7 +302,9 @@ class PyremoteBootstrapDriver:
         )
 
     def _read(self, sz: int) -> ta.Generator[Read, bytes, bytes]:
-        d = check_isinstance((yield self.Read(sz)), bytes)
+        d = yield self.Read(sz)
+        if not isinstance(d, bytes):
+            raise self.ProtocolError(f'Expected bytes after read, got {d!r}')
         if len(d) != sz:
             raise self.ProtocolError(f'Read {len(d)} bytes, expected {sz}')
         return d
@@ -315,17 +314,23 @@ class PyremoteBootstrapDriver:
         if d != e:
             raise self.ProtocolError(f'Read {d!r}, expected {e!r}')
 
+    def _write(self, d: bytes) -> ta.Generator[Write, ta.Optional[bytes], None]:
+        i = yield self.Write(d)
+        if i is not None:
+            raise self.ProtocolError('Unexpected input after write')
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PyremoteBootstrapPayloadRuntime:
+class PyremotePayloadRuntime:
     input: ta.BinaryIO
     main_src: str
+    env_info: PyremoteEnvInfo
 
 
-def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
+def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     # Restore original argv0
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
 
@@ -351,7 +356,8 @@ def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK3)
 
     # Return
-    return PyremoteBootstrapPayloadRuntime(
+    return PyremotePayloadRuntime(
         input=os.fdopen(_PYREMOTE_BOOTSTRAP_COMM_FD, 'rb', 0),
         main_src=main_src,
+        env_info=env_info,
     )
