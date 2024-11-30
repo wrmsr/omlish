@@ -253,6 +253,8 @@ class PyremoteBootstrapDriver:
         self._main_src = main_src
         self._main_z = zlib.compress(main_src.encode('utf-8'))
 
+    #
+
     @dc.dataclass(frozen=True)
     class Read:
         sz: int
@@ -269,7 +271,7 @@ class PyremoteBootstrapDriver:
         pid: int
         env_info: PyremoteEnvInfo
 
-    def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
+    def gen(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
         # Read first ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
 
@@ -318,6 +320,30 @@ class PyremoteBootstrapDriver:
         i = yield self.Write(d)
         if i is not None:
             raise self.ProtocolError('Unexpected input after write')
+
+    #
+
+    def run(self, stdin: ta.IO, stdout: ta.IO) -> Result:
+        gen = self.gen()
+
+        gi: bytes | None = None
+        while True:
+            try:
+                if gi is not None:
+                    go = gen.send(gi)
+                else:
+                    go = next(gen)
+            except StopIteration as e:
+                return e.value
+
+            if isinstance(go, self.Read):
+                gi = stdout.read(go.sz)
+            elif isinstance(go, self.Write):
+                gi = None
+                stdin.write(go.d)
+                stdin.flush()
+            else:
+                raise TypeError(go)
 
 
 ##

@@ -71,25 +71,7 @@ def _main():
 
         ##
 
-        gen = pyremote.PyremoteBootstrapDriver(main_src)()
-        gi: bytes | None = None
-        while True:
-            try:
-                if gi is not None:
-                    go = gen.send(gi)
-                else:
-                    go = next(gen)
-            except StopIteration as e:
-                br = e.value
-                break
-            if isinstance(go, pyremote.PyremoteBootstrapDriver.Read):
-                gi = stdout.read(go.sz)
-            elif isinstance(go, pyremote.PyremoteBootstrapDriver.Write):
-                gi = None
-                stdin.write(go.d)
-                stdin.flush()
-            else:
-                raise TypeError(go)
+        br = pyremote.PyremoteBootstrapDriver(main_src).run(stdin, stdout)
 
         print(json.dumps_pretty(dc.asdict(br)))
 
