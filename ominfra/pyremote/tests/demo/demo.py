@@ -4,10 +4,8 @@ FIXME:
 """
 import json
 import os.path
-import struct
 import subprocess
 import typing as ta
-import zlib
 
 from omlish import check
 from omlish.lite.json import json_dumps_compact
@@ -15,9 +13,7 @@ from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
 from ....manage.deploy.tests import utils as u
-from ...bootstrap import BOOTSTRAP_ACK0
-from ...bootstrap import BOOTSTRAP_ACK1
-from ...bootstrap import build_bootstrap_cmd
+from ... import bootstrap as prb
 from ...runcommands import CommandRequest
 from ...runcommands import CommandResponse
 
@@ -54,17 +50,16 @@ def _main():
 
         with open(os.path.join(cur_dir, '../..', '_runcommands.py')) as f:
             real_main_src = f.read()
+
         main_src = '\n\n'.join([
             real_main_src,
             'run_commands_main()',
-
         ])
-        main_z = zlib.compress(main_src.encode('utf-8'))
 
         proc = subprocess.Popen(
             [
                 'docker', 'exec', '-i', ctr_id,
-                'python3', '-c', build_bootstrap_cmd(context_name),
+                'python3', '-c', prb.pyremote_build_bootstrap_cmd(context_name),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -74,13 +69,26 @@ def _main():
         stdout = check.not_none(proc.stdout)
         stderr = check.not_none(proc.stderr)  # noqa
 
-        check.equal(stdout.read(8), BOOTSTRAP_ACK0)
+        ##
 
-        stdin.write(struct.pack('<I', len(main_z)))
-        stdin.write(main_z)
-        stdin.flush()
-
-        check.equal(stdout.read(8), BOOTSTRAP_ACK1)
+        gen = prb.PyremoteBootstrapDriver(main_src)()
+        gi: bytes | None = None
+        while True:
+            try:
+                if gi is not None:
+                    go = gen.send(gi)
+                else:
+                    go = next(gen)
+            except StopIteration:
+                break
+            if isinstance(go, prb.PyremoteBootstrapDriver.Read):
+                gi = stdout.read(go.sz)
+            elif isinstance(go, prb.PyremoteBootstrapDriver.Write):
+                gi = None
+                stdin.write(go.d)
+                stdin.flush()
+            else:
+                raise TypeError(go)
 
         ##
 
