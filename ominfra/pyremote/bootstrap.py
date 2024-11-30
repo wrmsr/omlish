@@ -4,6 +4,7 @@ Basically this: https://mitogen.networkgenomics.com/howitworks.html
 import base64
 import inspect
 import os
+import struct
 import sys
 import textwrap
 import typing as ta
@@ -27,12 +28,13 @@ _BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
 _BOOTSTRAP_IMPORTS = [
     'base64',
     'os',
+    'struct',
     'sys',
     'zlib',
 ]
 
 
-def _bootstrap_main(context_name: str, main_z_len: int) -> None:
+def _bootstrap_main(context_name: str) -> None:
     # Two copies of main src to be sent to parent
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
@@ -69,6 +71,7 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
         os.write(1, BOOTSTRAP_ACK0)
 
         # Read main src from stdin
+        main_z_len = struct.unpack('<I', os.read(0, 4))[0]
         main_src = zlib.decompress(os.fdopen(0, 'rb').read(main_z_len))
 
         # Write both copies of main src
@@ -86,7 +89,7 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
 #
 
 
-def bootstrap_payload(context_name: str, main_z_len: int) -> str:
+def build_bootstrap_cmd(context_name: str) -> str:
     bs_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
 
     for gl in [
@@ -116,7 +119,7 @@ def bootstrap_payload(context_name: str, main_z_len: int) -> str:
     stmts = [
         f'import {", ".join(_BOOTSTRAP_IMPORTS)}',
         f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
-        f'_bootstrap_main({context_name!r}, {main_z_len})',
+        f'_bootstrap_main({context_name!r})',
     ]
 
     cmd = '; '.join(stmts)

@@ -4,6 +4,7 @@ FIXME:
 """
 import json
 import os.path
+import struct
 import subprocess
 import typing as ta
 import zlib
@@ -16,7 +17,7 @@ from omlish.lite.marshal import unmarshal_obj
 from ....manage.deploy.tests import utils as u
 from ...bootstrap import BOOTSTRAP_ACK0
 from ...bootstrap import BOOTSTRAP_ACK1
-from ...bootstrap import bootstrap_payload
+from ...bootstrap import build_bootstrap_cmd
 from ...runcommands import CommandRequest
 from ...runcommands import CommandResponse
 
@@ -63,7 +64,7 @@ def _main():
         proc = subprocess.Popen(
             [
                 'docker', 'exec', '-i', ctr_id,
-                'python3', '-c', bootstrap_payload(context_name, len(main_z)),
+                'python3', '-c', build_bootstrap_cmd(context_name),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -73,10 +74,12 @@ def _main():
         stdout = check.not_none(proc.stdout)
         stderr = check.not_none(proc.stderr)  # noqa
 
+        check.equal(stdout.read(8), BOOTSTRAP_ACK0)
+
+        stdin.write(struct.pack('<I', len(main_z)))
         stdin.write(main_z)
         stdin.flush()
 
-        check.equal(stdout.read(8), BOOTSTRAP_ACK0)
         check.equal(stdout.read(8), BOOTSTRAP_ACK1)
 
         ##
