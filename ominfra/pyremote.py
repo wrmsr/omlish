@@ -326,7 +326,7 @@ class PyremoteBootstrapDriver:
     def run(self, stdin: ta.IO, stdout: ta.IO) -> Result:
         gen = self.gen()
 
-        gi: bytes | None = None
+        gi: ta.Optional[bytes] = None
         while True:
             try:
                 if gi is not None:
