@@ -8,12 +8,12 @@ import subprocess
 import typing as ta
 import zlib
 
-from ominfra.deploy.tests import utils as u
 from omlish import check
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
+from ....manage.deploy.tests import utils as u
 from ...bootstrap import BOOTSTRAP_ACK0
 from ...bootstrap import BOOTSTRAP_ACK1
 from ...bootstrap import bootstrap_payload

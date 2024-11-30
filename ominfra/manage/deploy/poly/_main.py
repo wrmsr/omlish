@@ -33,7 +33,7 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../../omlish/lite/cached.py
+# ../../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
 # base.py
@@ -84,7 +84,7 @@ class DeployConfig:
 
 
 ########################################
-# ../../../../omlish/lite/cached.py
+# ../../../../../omlish/lite/cached.py
 
 
 class _cached_nullary:  # noqa
@@ -109,7 +109,7 @@ def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 
 
 ########################################
-# ../../../../omlish/lite/json.py
+# ../../../../../omlish/lite/json.py
 
 
 ##
@@ -301,7 +301,7 @@ class Deploy(ConcernsContainer[DeployConcern, DeployConfig]):
 
 
 ########################################
-# ../../../../omlish/lite/logs.py
+# ../../../../../omlish/lite/logs.py
 """
 TODO:
  - translate json keys
@@ -571,7 +571,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../../omlish/lite/runtime.py
+# ../../../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -708,7 +708,7 @@ class SiteImpl(Site):
 
 
 ########################################
-# ../../../../omlish/lite/subprocesses.py
+# ../../../../../omlish/lite/subprocesses.py
 
 
 ##

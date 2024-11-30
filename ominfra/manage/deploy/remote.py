@@ -23,7 +23,7 @@ import tempfile
 
 from omlish import check
 
-from .. import cmds
+from ... import cmds
 
 
 def render_script(*cs: list[str] | tuple[str, ...]) -> str:
