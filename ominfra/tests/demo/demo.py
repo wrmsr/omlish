@@ -14,8 +14,8 @@ from omlish.lite.marshal import unmarshal_obj
 
 from ... import pyremote
 from ...manage.deploy.tests import utils as u
-from ..runcommands import CommandRequest
-from ..runcommands import CommandResponse
+from ..runcommands.runcommands import CommandRequest
+from ..runcommands.runcommands import CommandResponse
 
 
 class LineReader:
