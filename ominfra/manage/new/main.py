@@ -3,8 +3,10 @@
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
+import inspect
 import os
 import subprocess
+import sys
 import time
 import typing as ta
 
@@ -13,6 +15,9 @@ from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
+
+
+##
 
 
 class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
@@ -27,6 +32,9 @@ class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
     @abc.abstractmethod
     def _execute(self, inp: CommandInputT) -> CommandOutputT:
         raise NotImplementedError
+
+
+##
 
 
 class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Output']):
@@ -89,7 +97,10 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
         )
 
 
-def _main() -> None:
+##
+
+
+def _run_a_command() -> None:
     i = SubprocessCommand.Input(
         args=['python3', '-'],
         input=b'print(1)\n',
@@ -97,6 +108,35 @@ def _main() -> None:
     )
     o = SubprocessCommand()._execute(i)  # noqa
     print(o)
+
+
+def _remote_main() -> None:
+    pass
+
+
+def _main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    args = parser.parse_args()
+
+    #
+
+    with open(os.path.join(os.path.dirname(__file__), '_manage.py')) as f:
+        amalg_src = f.read()
+
+    # amalg_src = inspect.getsource(sys.modules[__name__])
+
+    #
+
+    remote_src = '\n\n'.join([
+        '__name__ = "__remote__"',
+        amalg_src,
+        '_remote_main()',
+    ])
+
+    print(remote_src)
 
 
 if __name__ == '__main__':
