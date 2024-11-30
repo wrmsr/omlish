@@ -33,10 +33,6 @@ class TestPyremote(unittest.TestCase):
             ),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            env={
-                **os.environ,
-                'OMLISH_PYCHARM_RUNHACK_ENABLED': '0',
-            },
         )
 
         stdin = check_not_none(proc.stdin)
