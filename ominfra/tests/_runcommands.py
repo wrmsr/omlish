@@ -19,7 +19,10 @@ import io
 import json
 import logging
 import os
+import platform
+import pwd
 import shlex
+import site
 import struct
 import subprocess
 import sys
@@ -345,6 +348,7 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Write second ack
         os.write(1, _PYREMOTE_BOOTSTRAP_ACK1)
 
+        # Exit child
         sys.exit(0)
 
 
@@ -393,12 +397,98 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
 @dc.dataclass(frozen=True)
 class PyremoteEnvInfo:
-    platform: str
+    sys_base_prefix: str
+    sys_byteorder: str
+    sys_defaultencoding: str
+    sys_exec_prefix: str
+    sys_executable: str
+    sys_implementation_name: str
+    sys_path: ta.List[str]
+    sys_platform: str
+    sys_prefix: str
+    sys_version: str
+    sys_version_info: ta.List[ta.Union[int, str]]
+
+    platform_architecture: ta.List[str]
+    platform_machine: str
+    platform_platform: str
+    platform_processor: str
+    platform_system: str
+    platform_release: str
+    platform_version: str
+
+    site_userbase: str
+
+    os_cwd: str
+    os_gid: int
+    os_loadavg: ta.List[float]
+    os_login: ta.Optional[str]
+    os_pgrp: int
+    os_pid: int
+    os_ppid: int
+    os_uid: int
+
+    pw_name: str
+    pw_uid: int
+    pw_gid: int
+    pw_gecos: str
+    pw_dir: str
+    pw_shell: str
+
+    env_path: ta.Optional[str]
 
 
 def _get_pyremote_env_info() -> PyremoteEnvInfo:
+    os_uid = os.getuid()
+
+    pw = pwd.getpwuid(os_uid)
+
+    os_login: ta.Optional[str]
+    try:
+        os_login = os.getlogin()
+    except OSError:
+        os_login = None
+
     return PyremoteEnvInfo(
-        platform=sys.platform,
+        sys_base_prefix=sys.base_prefix,
+        sys_byteorder=sys.byteorder,
+        sys_defaultencoding=sys.getdefaultencoding(),
+        sys_exec_prefix=sys.exec_prefix,
+        sys_executable=sys.executable,
+        sys_implementation_name=sys.implementation.name,
+        sys_path=sys.path,
+        sys_platform=sys.platform,
+        sys_prefix=sys.prefix,
+        sys_version=sys.version,
+        sys_version_info=list(sys.version_info),
+
+        platform_architecture=list(platform.architecture()),
+        platform_machine=platform.machine(),
+        platform_platform=platform.platform(),
+        platform_processor=platform.processor(),
+        platform_system=platform.system(),
+        platform_release=platform.release(),
+        platform_version=platform.version(),
+
+        site_userbase=site.getuserbase(),
+
+        os_cwd=os.getcwd(),
+        os_gid=os.getgid(),
+        os_loadavg=list(os.getloadavg()),
+        os_login=os_login,
+        os_pgrp=os.getpgrp(),
+        os_pid=os.getpid(),
+        os_ppid=os.getppid(),
+        os_uid=os_uid,
+
+        pw_name=pw.pw_name,
+        pw_uid=pw.pw_uid,
+        pw_gid=pw.pw_gid,
+        pw_gecos=pw.pw_gecos,
+        pw_dir=pw.pw_dir,
+        pw_shell=pw.pw_shell,
+
+        env_path=os.environ.get('PATH'),
     )
 
 
@@ -429,37 +519,47 @@ class PyremoteBootstrapDriver:
         env_info: PyremoteEnvInfo
 
     def __call__(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
+        # Read first ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
 
+        # Read pid
         d = yield from self._read(8)
         pid = struct.unpack('<Q', d)[0]
 
+        # Write main src
         check_none((yield self.Write(struct.pack('<I', len(self._main_z)))))
         check_none((yield self.Write(self._main_z)))
 
+        # Read second and third ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK2)
 
+        # Read env info
         d = yield from self._read(4)
         env_info_json_len = struct.unpack('<I', d)[0]
         d = yield from self._read(env_info_json_len)
         env_info_json = d.decode('utf-8')
         env_info = PyremoteEnvInfo(**json.loads(env_info_json))
 
+        # Read fourth ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK3)
 
+        # Return
         return self.Result(
             pid=pid,
             env_info=env_info,
         )
 
-    def _expect(self, e: bytes) -> ta.Generator[Read, bytes, None]:
-        d = check_isinstance((yield self.Read(len(e))), bytes)
-        if d != e:
-            raise self.ProtocolError
-
     def _read(self, sz: int) -> ta.Generator[Read, bytes, bytes]:
-        return check_isinstance((yield self.Read(sz)), bytes)
+        d = check_isinstance((yield self.Read(sz)), bytes)
+        if len(d) != sz:
+            raise self.ProtocolError(f'Read {len(d)} bytes, expected {sz}')
+        return d
+
+    def _expect(self, e: bytes) -> ta.Generator[Read, bytes, None]:
+        d = yield from self._read(len(e))
+        if d != e:
+            raise self.ProtocolError(f'Read {d!r}, expected {e!r}')
 
 
 ##
@@ -487,14 +587,16 @@ def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
     # Write third ack
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
 
+    # Write env info
     env_info = _get_pyremote_env_info()
-    env_info_json = json.dumps(dc.asdict(env_info), indent=None, separators=(',', ':'))
+    env_info_json = json.dumps(dc.asdict(env_info), indent=None, separators=(',', ':'))  # noqa
     os.write(1, struct.pack('<I', len(env_info_json)))
     os.write(1, env_info_json.encode('utf-8'))
 
     # Write fourth ack
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK3)
 
+    # Return
     return PyremoteBootstrapPayloadRuntime(
         input=os.fdopen(_PYREMOTE_BOOTSTRAP_COMM_FD, 'rb', 0),
         main_src=main_src,
