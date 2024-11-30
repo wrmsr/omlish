@@ -12,10 +12,10 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from ....manage.deploy.tests import utils as u
-from ... import bootstrap as prb
-from ...runcommands import CommandRequest
-from ...runcommands import CommandResponse
+from ... import pyremote
+from ...manage.deploy.tests import utils as u
+from ..runcommands import CommandRequest
+from ..runcommands import CommandResponse
 
 
 class LineReader:
@@ -48,7 +48,7 @@ def _main():
     ) as ctr_id:  # noqa
         context_name = f'docker:{ctr_id}'
 
-        with open(os.path.join(cur_dir, '../..', '_runcommands.py')) as f:
+        with open(os.path.join(cur_dir, '..', '_runcommands.py')) as f:
             real_main_src = f.read()
 
         main_src = '\n\n'.join([
@@ -59,7 +59,7 @@ def _main():
         proc = subprocess.Popen(
             [
                 'docker', 'exec', '-i', ctr_id,
-                'python3', '-c', prb.pyremote_build_bootstrap_cmd(context_name),
+                'python3', '-c', pyremote.pyremote_build_bootstrap_cmd(context_name),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -71,7 +71,7 @@ def _main():
 
         ##
 
-        gen = prb.PyremoteBootstrapDriver(main_src)()
+        gen = pyremote.PyremoteBootstrapDriver(main_src)()
         gi: bytes | None = None
         while True:
             try:
@@ -82,9 +82,9 @@ def _main():
             except StopIteration as e:
                 br = e.value
                 break
-            if isinstance(go, prb.PyremoteBootstrapDriver.Read):
+            if isinstance(go, pyremote.PyremoteBootstrapDriver.Read):
                 gi = stdout.read(go.sz)
-            elif isinstance(go, prb.PyremoteBootstrapDriver.Write):
+            elif isinstance(go, pyremote.PyremoteBootstrapDriver.Write):
                 gi = None
                 stdin.write(go.d)
                 stdin.flush()
