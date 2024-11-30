@@ -10,7 +10,12 @@ import sys
 import time
 import typing as ta
 
+from omlish.lite.check import check_not_none
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
+
+from ...pyremote import PyremoteBootstrapDriver
+from ...pyremote import pyremote_bootstrap_finalize
+from ...pyremote import pyremote_build_bootstrap_cmd
 
 
 CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
@@ -106,12 +111,15 @@ def _run_a_command() -> None:
         input=b'print(1)\n',
         capture_stdout=True,
     )
+
     o = SubprocessCommand()._execute(i)  # noqa
     print(o)
 
 
 def _remote_main() -> None:
-    pass
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    _run_a_command()
 
 
 def _main() -> None:
@@ -119,14 +127,29 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--_amalg-file')
+
     args = parser.parse_args()
 
     #
 
-    with open(os.path.join(os.path.dirname(__file__), '_manage.py')) as f:
-        amalg_src = f.read()
+    self_src = inspect.getsource(sys.modules[__name__])
+    self_src_lines = self_src.splitlines()
+    for l in self_src_lines:
+        if l.startswith('# @omlish-amalg-output '):
+            is_self_amalg = True
+            break
+    else:
+        is_self_amalg = False
 
-    # amalg_src = inspect.getsource(sys.modules[__name__])
+    if is_self_amalg:
+        amalg_src = self_src
+    else:
+        amalg_file = args._amalg_file  # noqa
+        if amalg_file is None:
+            amalg_file = os.path.join(os.path.dirname(__file__), '_manage.py')
+        with open(amalg_file) as f:
+            amalg_src = f.read()
 
     #
 
@@ -137,6 +160,26 @@ def _main() -> None:
     ])
 
     print(remote_src)
+
+    #
+
+    proc = subprocess.Popen(
+        subprocess_maybe_shell_wrap_exec(
+            sys.executable,
+            '-c',
+            pyremote_build_bootstrap_cmd(__package__),
+        ),
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+
+    stdin = check_not_none(proc.stdin)
+    stdout = check_not_none(proc.stdout)
+
+    res = PyremoteBootstrapDriver(remote_src).run(stdin, stdout)
+    print(res)
+
+    proc.wait()
 
 
 if __name__ == '__main__':
