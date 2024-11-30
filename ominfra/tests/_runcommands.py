@@ -53,214 +53,6 @@ SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
 
 ########################################
-# ../../../omlish/lite/cached.py
-
-
-class _cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _cached_nullary(fn)
-
-
-########################################
-# ../../../omlish/lite/check.py
-
-
-def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_none(v: T) -> None:
-    if v is not None:
-        raise ValueError(v)
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-def check_non_empty_str(v: ta.Optional[str]) -> str:
-    if not v:
-        raise ValueError
-    return v
-
-
-def check_state(v: bool, msg: str = 'Illegal state') -> None:
-    if not v:
-        raise ValueError(msg)
-
-
-def check_equal(l: T, r: T) -> T:
-    if l != r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_not_equal(l: T, r: T) -> T:
-    if l == r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is(l: T, r: T) -> T:
-    if l is not r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is_not(l: T, r: ta.Any) -> T:
-    if l is r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_in(v: T, c: ta.Container[T]) -> T:
-    if v not in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_not_in(v: T, c: ta.Container[T]) -> T:
-    if v in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_single(vs: ta.Iterable[T]) -> T:
-    [v] = vs
-    return v
-
-
-def check_empty(v: SizedT) -> SizedT:
-    if len(v):
-        raise ValueError(v)
-    return v
-
-
-def check_non_empty(v: SizedT) -> SizedT:
-    if not len(v):
-        raise ValueError(v)
-    return v
-
-
-########################################
-# ../../../omlish/lite/json.py
-
-
-##
-
-
-JSON_PRETTY_INDENT = 2
-
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-########################################
-# ../../../omlish/lite/reflect.py
-
-
-_GENERIC_ALIAS_TYPES = (
-    ta._GenericAlias,  # type: ignore  # noqa
-    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
-)
-
-
-def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
-    return (
-        isinstance(obj, _GENERIC_ALIAS_TYPES) and
-        (origin is None or ta.get_origin(obj) is origin)
-    )
-
-
-is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
-
-
-def is_optional_alias(spec: ta.Any) -> bool:
-    return (
-        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
-        ta.get_origin(spec) is ta.Union and
-        len(ta.get_args(spec)) == 2 and
-        any(a in (None, type(None)) for a in ta.get_args(spec))
-    )
-
-
-def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
-    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
-    return it
-
-
-def is_new_type(spec: ta.Any) -> bool:
-    if isinstance(ta.NewType, type):
-        return isinstance(spec, ta.NewType)
-    else:
-        # Before https://github.com/python/cpython/commit/c2f33dfc83ab270412bf243fb21f724037effa1a
-        return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
-
-
-def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
-    seen = set()
-    todo = list(reversed(cls.__subclasses__()))
-    while todo:
-        cur = todo.pop()
-        if cur in seen:
-            continue
-        seen.add(cur)
-        yield cur
-        todo.extend(reversed(cur.__subclasses__()))
-
-
-########################################
 # ../../pyremote.py
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
@@ -278,8 +70,8 @@ _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
 _PYREMOTE_BOOTSTRAP_ACK1 = b'OPYR001\n'
-_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR001\n'
-_PYREMOTE_BOOTSTRAP_ACK3 = b'OPYR001\n'
+_PYREMOTE_BOOTSTRAP_ACK2 = b'OPYR002\n'
+_PYREMOTE_BOOTSTRAP_ACK3 = b'OPYR003\n'
 
 _PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
 
@@ -527,8 +319,8 @@ class PyremoteBootstrapDriver:
         pid = struct.unpack('<Q', d)[0]
 
         # Write main src
-        check_none((yield self.Write(struct.pack('<I', len(self._main_z)))))
-        check_none((yield self.Write(self._main_z)))
+        yield from self._write(struct.pack('<I', len(self._main_z)))
+        yield from self._write(self._main_z)
 
         # Read second and third ack
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
@@ -551,7 +343,9 @@ class PyremoteBootstrapDriver:
         )
 
     def _read(self, sz: int) -> ta.Generator[Read, bytes, bytes]:
-        d = check_isinstance((yield self.Read(sz)), bytes)
+        d = yield self.Read(sz)
+        if not isinstance(d, bytes):
+            raise self.ProtocolError(f'Expected bytes after read, got {d!r}')
         if len(d) != sz:
             raise self.ProtocolError(f'Read {len(d)} bytes, expected {sz}')
         return d
@@ -561,17 +355,23 @@ class PyremoteBootstrapDriver:
         if d != e:
             raise self.ProtocolError(f'Read {d!r}, expected {e!r}')
 
+    def _write(self, d: bytes) -> ta.Generator[Write, ta.Optional[bytes], None]:
+        i = yield self.Write(d)
+        if i is not None:
+            raise self.ProtocolError('Unexpected input after write')
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PyremoteBootstrapPayloadRuntime:
+class PyremotePayloadRuntime:
     input: ta.BinaryIO
     main_src: str
+    env_info: PyremoteEnvInfo
 
 
-def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
+def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     # Restore original argv0
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
 
@@ -597,10 +397,219 @@ def pyremote_bootstrap_finalize() -> PyremoteBootstrapPayloadRuntime:
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK3)
 
     # Return
-    return PyremoteBootstrapPayloadRuntime(
+    return PyremotePayloadRuntime(
         input=os.fdopen(_PYREMOTE_BOOTSTRAP_COMM_FD, 'rb', 0),
         main_src=main_src,
+        env_info=env_info,
     )
+
+
+########################################
+# ../../../omlish/lite/cached.py
+
+
+class _cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _cached_nullary(fn)
+
+
+########################################
+# ../../../omlish/lite/check.py
+
+
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_none(v: T) -> None:
+    if v is not None:
+        raise ValueError(v)
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty_str(v: ta.Optional[str]) -> str:
+    if not v:
+        raise ValueError
+    return v
+
+
+def check_state(v: bool, msg: str = 'Illegal state') -> None:
+    if not v:
+        raise ValueError(msg)
+
+
+def check_equal(l: T, r: T) -> T:
+    if l != r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_not_equal(l: T, r: T) -> T:
+    if l == r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is(l: T, r: T) -> T:
+    if l is not r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is_not(l: T, r: ta.Any) -> T:
+    if l is r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_in(v: T, c: ta.Container[T]) -> T:
+    if v not in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_not_in(v: T, c: ta.Container[T]) -> T:
+    if v in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_single(vs: ta.Iterable[T]) -> T:
+    [v] = vs
+    return v
+
+
+def check_empty(v: SizedT) -> SizedT:
+    if len(v):
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty(v: SizedT) -> SizedT:
+    if not len(v):
+        raise ValueError(v)
+    return v
+
+
+########################################
+# ../../../omlish/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../omlish/lite/reflect.py
+
+
+_GENERIC_ALIAS_TYPES = (
+    ta._GenericAlias,  # type: ignore  # noqa
+    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
+)
+
+
+def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
+    return (
+        isinstance(obj, _GENERIC_ALIAS_TYPES) and
+        (origin is None or ta.get_origin(obj) is origin)
+    )
+
+
+is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+
+
+def is_optional_alias(spec: ta.Any) -> bool:
+    return (
+        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
+        ta.get_origin(spec) is ta.Union and
+        len(ta.get_args(spec)) == 2 and
+        any(a in (None, type(None)) for a in ta.get_args(spec))
+    )
+
+
+def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
+    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
+    return it
+
+
+def is_new_type(spec: ta.Any) -> bool:
+    if isinstance(ta.NewType, type):
+        return isinstance(spec, ta.NewType)
+    else:
+        # Before https://github.com/python/cpython/commit/c2f33dfc83ab270412bf243fb21f724037effa1a
+        return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
+
+
+def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
+    seen = set()
+    todo = list(reversed(cls.__subclasses__()))
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        yield cur
+        todo.extend(reversed(cur.__subclasses__()))
 
 
 ########################################
