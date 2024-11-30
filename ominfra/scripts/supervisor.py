@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../supervisor/main.py
-# ruff: noqa: N802 U006 UP006 UP007 UP012 UP036
+# ruff: noqa: N802 UP006 UP007 UP012 UP036
 # Supervisor is licensed under the following license:
 #
 #  A copyright notice accompanies this license document that identifies the copyright holders.

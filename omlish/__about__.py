@@ -51,7 +51,7 @@ class Project(ProjectBase):
         ],
 
         'diag': [
-            'asttokens ~= 2.4',
+            'asttokens ~= 3.0',
             'executing ~= 2.1',
 
             'psutil ~= 6.0',
@@ -71,7 +71,7 @@ class Project(ProjectBase):
         ],
 
         'http': [
-            'httpx[http2] ~= 0.27',
+            'httpx[http2] ~= 0.28',
         ],
 
         'misc': [

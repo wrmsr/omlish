@@ -1,4 +1,4 @@
-# ruff: noqa: U006 UP007
+# ruff: noqa: UP006 UP007
 import contextlib
 import json
 import socket
