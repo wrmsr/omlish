@@ -62,10 +62,10 @@ Basically this: https://mitogen.networkgenomics.com/howitworks.html
 ##
 
 
-_PYREMOTE_BOOTSTRAP_COMM_FD = 100
+_PYREMOTE_BOOTSTRAP_INPUT_FD = 100
 _PYREMOTE_BOOTSTRAP_SRC_FD = 101
 
-_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CPID'
+_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CHILD_PID'
 _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
@@ -96,7 +96,7 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Parent process
 
         # Dup original stdin to comm_fd for use as comm channel
-        os.dup2(0, _PYREMOTE_BOOTSTRAP_COMM_FD)
+        os.dup2(0, _PYREMOTE_BOOTSTRAP_INPUT_FD)
 
         # Overwrite stdin (fed to python repl) with first copy of src
         os.dup2(r0, 0)
@@ -154,7 +154,7 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
     bs_src = textwrap.dedent(inspect.getsource(_pyremote_bootstrap_main))
 
     for gl in [
-        '_PYREMOTE_BOOTSTRAP_COMM_FD',
+        '_PYREMOTE_BOOTSTRAP_INPUT_FD',
         '_PYREMOTE_BOOTSTRAP_SRC_FD',
 
         '_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR',
@@ -430,7 +430,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
     # Return
     return PyremotePayloadRuntime(
-        input=os.fdopen(_PYREMOTE_BOOTSTRAP_COMM_FD, 'rb', 0),
+        input=os.fdopen(_PYREMOTE_BOOTSTRAP_INPUT_FD, 'rb', 0),
         main_src=main_src,
         env_info=env_info,
     )
