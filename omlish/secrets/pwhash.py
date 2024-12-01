@@ -28,7 +28,7 @@ import secrets
 
 
 SALT_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-DEFAULT_PBKDF2_ITERATIONS = 600000
+DEFAULT_PBKDF2_ITERATIONS = 600_000
 
 
 def gen_salt(length: int) -> str:
