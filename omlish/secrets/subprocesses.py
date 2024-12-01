@@ -32,7 +32,9 @@ def pipe_fd_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInput
     try:
         if hasattr(fcntl, 'F_SETPIPE_SZ'):
             fcntl.fcntl(wfd, fcntl.F_SETPIPE_SZ, max(len(buf), 0x1000))
-        os.write(wfd, buf)
+        n = os.write(wfd, buf)
+        if n != len(buf):
+            raise OSError(f'Failed to write data to pipe: {n=} {len(buf)=}')
         os.close(wfd)
         closed_wfd = True
         yield SubprocessFileInput(f'/dev/fd/{rfd}', [rfd])
