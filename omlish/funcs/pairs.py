@@ -20,7 +20,7 @@ import codecs
 import dataclasses as dc
 import typing as ta
 
-from . import lang
+from .. import lang
 
 
 if ta.TYPE_CHECKING:
@@ -39,7 +39,7 @@ if ta.TYPE_CHECKING:
     import yaml as _yaml
     import zstandard as _zstandard
 
-    from .formats import json as _json
+    from ..formats import json as _json
 
 else:
     _bz2 = lang.proxy_import('bz2')
@@ -57,7 +57,7 @@ else:
     _yaml = lang.proxy_import('yaml')
     _zstandard = lang.proxy_import('zstandard')
 
-    _json = lang.proxy_import('.formats.json', __package__)
+    _json = lang.proxy_import('..formats.json', __package__)
 
 
 ##

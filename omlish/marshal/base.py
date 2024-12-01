@@ -89,8 +89,8 @@ from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
-from .. import matchfns as mfs
 from .. import reflect as rfl
+from ..funcs import match as mfs
 from .exceptions import UnhandledTypeError
 from .factories import RecursiveTypeFactory
 from .factories import TypeCacheFactory
