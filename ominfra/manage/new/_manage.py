@@ -1155,7 +1155,6 @@ def _main() -> None:
     if args.ssh is not None:
         sh_src = ' '.join([args.python, '-c', shlex.quote(bs_src)])
         sh_cmd = f'{args.ssh} {shlex.quote(sh_src)}'
-        print(sh_cmd)
         cmd = [sh_cmd]
         shell = True
     else:
