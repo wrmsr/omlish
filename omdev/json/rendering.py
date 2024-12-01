@@ -2,11 +2,11 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from .... import lang
-from .... import term
-from ..render import JsonRenderer
-from ..stream.parse import JsonStreamParserEvent
-from ..stream.render import StreamJsonRenderer
+from omlish import lang
+from omlish import term
+from omlish.formats.json.render import JsonRenderer
+from omlish.formats.json.stream.parse import JsonStreamParserEvent
+from omlish.formats.json.stream.render import StreamJsonRenderer
 
 
 ##
