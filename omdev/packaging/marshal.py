@@ -7,8 +7,8 @@ import typing as ta
 
 from omlish import lang
 from omlish import marshal as msh
-from omlish import matchfns as mfs
 from omlish import reflect as rfl
+from omlish.funcs import match as mfs
 
 from .requires import RequiresMarkerItem
 from .requires import RequiresMarkerList

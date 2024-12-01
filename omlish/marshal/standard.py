@@ -1,4 +1,4 @@
-from .. import matchfns as mfs
+from ..funcs import match as mfs
 from .any import ANY_MARSHALER_FACTORY
 from .any import ANY_UNMARSHALER_FACTORY
 from .base import MarshalerFactory

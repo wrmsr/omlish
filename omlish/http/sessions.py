@@ -8,9 +8,9 @@ import time
 import typing as ta
 import zlib
 
-from .. import fnpairs as fpa
 from .. import lang
 from .. import secrets as sec
+from ..funcs import pairs as fpa
 from .cookies import dump_cookie
 from .cookies import parse_cookie
 from .json import JSON_TAGGER

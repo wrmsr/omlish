@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish import lang
 from omlish import marshal as msh
-from omlish import matchfns as mfs
 from omlish import reflect as rfl
+from omlish.funcs import match as mfs
 
 from .content import Content
 from .content import ExtendedContent
