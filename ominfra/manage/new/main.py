@@ -2,12 +2,18 @@
 # @omlish-amalg ./_manage.py
 # ruff: noqa: UP006 UP007
 import inspect
+import json
 import os
 import shlex
+import struct
 import subprocess
 import sys
+import typing as ta
 
 from omlish.lite.check import check_not_none
+from omlish.lite.json import json_dumps_compact
+from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ...pyremote import PyremoteBootstrapDriver
@@ -19,21 +25,42 @@ from .commands.subprocess import SubprocessCommand
 ##
 
 
-def _run_a_command() -> None:
-    i = SubprocessCommand.Input(
-        args=['python3', '-'],
-        input=b'print(1)\n',
-        capture_stdout=True,
-    )
+def _send_obj(f: ta.IO, o: ta.Any) -> None:
+    j = json_dumps_compact(marshal_obj(o))
+    d = j.encode('utf-8')
 
-    o = SubprocessCommand()._execute(i)  # noqa
-    print(o)
+    f.write(struct.pack('<I', len(d)))
+    f.write(d)
+    f.flush()
+
+
+def _recv_obj(f: ta.IO, ty: type) -> ta.Any:
+    d = f.read(4)
+    if not d:
+        return None
+    if len(d) != 4:
+        raise Exception
+
+    sz = struct.unpack('<I', d)[0]
+    d = f.read(sz)
+    if not d:
+        raise Exception
+
+    j = json.loads(d.decode('utf-8'))
+    return unmarshal_obj(j, ty)
 
 
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
-    _run_a_command()
+    while True:
+        i = _recv_obj(rt.input, SubprocessCommand.Input)
+        if i is None:
+            break
+
+        o = SubprocessCommand()._execute(i)  # noqa
+
+        _send_obj(sys.stdout.buffer, o)
 
 
 def _main() -> None:
@@ -101,7 +128,30 @@ def _main() -> None:
     res = PyremoteBootstrapDriver(remote_src).run(stdin, stdout)
     print(res)
 
-    print(stdout.read())
+    #
+
+    for ci in [
+        SubprocessCommand.Input(
+            args=['python3', '-'],
+            input=b'print(1)\n',
+            capture_stdout=True,
+        ),
+        SubprocessCommand.Input(
+            args=['uname'],
+            capture_stdout=True,
+        ),
+    ]:
+        _send_obj(stdin, ci)
+
+        o = _recv_obj(stdout, SubprocessCommand.Output)
+
+        print(o)
+
+    try:
+        stdin.close()
+    except BrokenPipeError:
+        pass
+
     proc.wait()
 
 

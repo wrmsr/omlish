@@ -165,6 +165,13 @@ class PolymorphicObjMarshaler(ObjMarshaler):
     impls_by_ty: ta.Mapping[type, Impl]
     impls_by_tag: ta.Mapping[str, Impl]
 
+    @classmethod
+    def of(cls, impls: ta.Iterable[Impl]) -> 'PolymorphicObjMarshaler':
+        return cls(
+            {i.ty: i for i in impls},
+            {i.tag: i for i in impls},
+        )
+
     def marshal(self, o: ta.Any) -> ta.Any:
         impl = self.impls_by_ty[type(o)]
         return {impl.tag: impl.m.marshal(o)}
@@ -252,7 +259,7 @@ def _make_obj_marshaler(
 ) -> ObjMarshaler:
     if isinstance(ty, type):
         if abc.ABC in ty.__bases__:
-            impls = [  # type: ignore
+            return PolymorphicObjMarshaler.of([  # type: ignore
                 PolymorphicObjMarshaler.Impl(
                     ity,
                     ity.__qualname__,
@@ -260,11 +267,7 @@ def _make_obj_marshaler(
                 )
                 for ity in deep_subclasses(ty)
                 if abc.ABC not in ity.__bases__
-            ]
-            return PolymorphicObjMarshaler(
-                {i.ty: i for i in impls},
-                {i.tag: i for i in impls},
-            )
+            ])
 
         if issubclass(ty, enum.Enum):
             return EnumObjMarshaler(ty)
