@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 # @omlish-amalg ./_manage.py
 # ruff: noqa: UP006 UP007
-import abc
-import dataclasses as dc
 import inspect
 import os
+import shlex
 import subprocess
 import sys
-import time
-import typing as ta
 
 from omlish.lite.check import check_not_none
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
@@ -16,90 +13,7 @@ from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import pyremote_bootstrap_finalize
 from ...pyremote import pyremote_build_bootstrap_cmd
-
-
-CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
-CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
-
-
-##
-
-
-class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
-    @dc.dataclass(frozen=True)
-    class Input(abc.ABC):  # noqa
-        pass
-
-    @dc.dataclass(frozen=True)
-    class Output(abc.ABC):  # noqa
-        pass
-
-    @abc.abstractmethod
-    def _execute(self, inp: CommandInputT) -> CommandOutputT:
-        raise NotImplementedError
-
-
-##
-
-
-class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Output']):
-    @dc.dataclass(frozen=True)
-    class Input(Command.Input):
-        args: ta.Sequence[str]
-
-        shell: bool = False
-        cwd: ta.Optional[str] = None
-        env: ta.Optional[ta.Mapping[str, str]] = None
-
-        capture_stdout: bool = False
-        capture_stderr: bool = False
-
-        input: ta.Optional[bytes] = None
-        timeout: ta.Optional[float] = None
-
-        def __post_init__(self) -> None:
-            if isinstance(self.args, str):
-                raise TypeError(self.args)
-
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        rc: int
-        pid: int
-
-        elapsed_s: float
-
-        stdout: ta.Optional[bytes] = None
-        stderr: ta.Optional[bytes] = None
-
-    def _execute(self, inp: Input) -> Output:
-        proc = subprocess.Popen(
-            subprocess_maybe_shell_wrap_exec(*inp.args),
-
-            shell=inp.shell,
-            cwd=inp.cwd,
-            env={**os.environ, **(inp.env or {})},
-
-            stdin=subprocess.PIPE if inp.input is not None else None,
-            stdout=subprocess.PIPE if inp.capture_stdout else None,
-            stderr=subprocess.PIPE if inp.capture_stderr else None,
-        )
-
-        start_time = time.time()
-        stdout, stderr = proc.communicate(
-            input=inp.input,
-            timeout=inp.timeout,
-        )
-        end_time = time.time()
-
-        return SubprocessCommand.Output(
-            rc=proc.returncode,
-            pid=proc.pid,
-
-            elapsed_s=end_time - start_time,
-
-            stdout=stdout,  # noqa
-            stderr=stderr,  # noqa
-        )
+from .commands.subprocess import SubprocessCommand
 
 
 ##
@@ -127,6 +41,8 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--ssh')
+    parser.add_argument('--python', default='python3')
     parser.add_argument('--_amalg-file')
 
     args = parser.parse_args()
@@ -159,16 +75,23 @@ def _main() -> None:
         '_remote_main()',
     ])
 
-    print(remote_src)
-
     #
 
+    bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    if args.ssh is not None:
+        sh_src = ' '.join([args.python, '-c', shlex.quote(bs_src)])
+        sh_cmd = f'{args.ssh} {shlex.quote(sh_src)}'
+        print(sh_cmd)
+        cmd = [sh_cmd]
+        shell = True
+    else:
+        cmd = [args.python, '-c', bs_src]
+        shell = False
+
     proc = subprocess.Popen(
-        subprocess_maybe_shell_wrap_exec(
-            sys.executable,
-            '-c',
-            pyremote_build_bootstrap_cmd(__package__),
-        ),
+        subprocess_maybe_shell_wrap_exec(*cmd),
+        shell=shell,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
@@ -179,6 +102,7 @@ def _main() -> None:
     res = PyremoteBootstrapDriver(remote_src).run(stdin, stdout)
     print(res)
 
+    print(stdout.read())
     proc.wait()
 
 

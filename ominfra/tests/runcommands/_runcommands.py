@@ -148,6 +148,9 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
 
 
 def pyremote_build_bootstrap_cmd(context_name: str) -> str:
+    if any(c in context_name for c in '\'"'):
+        raise NameError(context_name)
+
     bs_src = textwrap.dedent(inspect.getsource(_pyremote_bootstrap_main))
 
     for gl in [
@@ -173,6 +176,9 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
     bs_z = zlib.compress(bs_src.encode('utf-8'))
     bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
+
+    def dq_repr(o: ta.Any) -> str:
+        return '"' + repr(o)[1:-1] + '"'
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
