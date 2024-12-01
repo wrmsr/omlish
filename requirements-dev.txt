@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build>=1.2.2
-twine>=5.1.1
+twine>=6.0.1
 wheel>=0.45.1
 
 uv>=0.5.5

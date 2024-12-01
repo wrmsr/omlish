@@ -6185,6 +6185,7 @@ class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
             *,
             read_size: int = 0x10000,
             write_size: int = 0x10000,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
         check_state(not sock.getblocking())
 
@@ -6193,6 +6194,7 @@ class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
         self._handler = handler
         self._read_size = read_size
         self._write_size = write_size
+        self._log_handler = log_handler
 
         self._read_buf = ReadableListBuffer()
         self._write_buf: IncrementalWriteBuffer | None = None
@@ -6227,7 +6229,8 @@ class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
                     break
 
             if isinstance(o, CoroHttpServer.AnyLogIo):
-                print(o)
+                if self._log_handler is not None:
+                    self._log_handler(self._coro_srv, o)
                 o = None
 
             elif isinstance(o, CoroHttpServer.ReadIo):
