@@ -7,7 +7,7 @@ import enum
 import json
 import typing as ta
 
-from .... import lang
+from omlish import lang
 
 
 if ta.TYPE_CHECKING:
@@ -17,9 +17,9 @@ if ta.TYPE_CHECKING:
 
     import yaml
 
-    from ... import dotenv
-    from ... import props
-    from ... import xml
+    from omlish.formats import dotenv
+    from omlish.formats import props
+    from omlish.formats import xml
 
 else:
     ast = lang.proxy_import('ast')
@@ -28,9 +28,9 @@ else:
 
     yaml = lang.proxy_import('yaml')
 
-    dotenv = lang.proxy_import('...dotenv', __package__)
-    props = lang.proxy_import('...props', __package__)
-    xml = lang.proxy_import('...xml', __package__)
+    dotenv = lang.proxy_import('omlish.formats.dotenv')
+    props = lang.proxy_import('omlish.formats.props')
+    xml = lang.proxy_import('omlish.formats.xml')
 
 
 ##

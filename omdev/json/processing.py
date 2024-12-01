@@ -1,13 +1,13 @@
 import dataclasses as dc
 import typing as ta
 
-from .... import lang
+from omlish import lang
 
 
 if ta.TYPE_CHECKING:
-    from ....specs import jmespath
+    from omlish.specs import jmespath
 else:
-    jmespath = lang.proxy_import('....specs.jmespath', __package__)
+    jmespath = lang.proxy_import('omlish.specs.jmespath')
 
 
 ##

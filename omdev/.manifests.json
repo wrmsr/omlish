@@ -96,6 +96,21 @@
     }
   },
   {
+    "module": ".json.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/json/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": [
+          "json",
+          "j"
+        ],
+        "mod_name": "omdev.json.__main__"
+      }
+    }
+  },
+  {
     "module": ".magic.find",
     "attr": "_CLI_MODULE",
     "file": "omdev/magic/find.py",

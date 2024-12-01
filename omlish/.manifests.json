@@ -24,18 +24,6 @@
     }
   },
   {
-    "module": ".formats.json.cli.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omlish/formats/json/cli/__main__.py",
-    "line": 1,
-    "value": {
-      "$omdev.cli.types.CliModule": {
-        "cmd_name": "json",
-        "mod_name": "omlish.formats.json.cli.__main__"
-      }
-    }
-  },
-  {
     "module": ".secrets.pwgen",
     "attr": "_CLI_MODULE",
     "file": "omlish/secrets/pwgen.py",
