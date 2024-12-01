@@ -38,15 +38,36 @@ if sys.version_info < (3, 8):
 ########################################
 
 
+# commands/base.py
+CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
+CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
+
 # ../../../omlish/lite/cached.py
 T = ta.TypeVar('T')
 
 # ../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-# main.py
-CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
-CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
+
+########################################
+# ../commands/base.py
+
+
+##
+
+
+class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
+    @dc.dataclass(frozen=True)
+    class Input(abc.ABC):  # noqa
+        pass
+
+    @dc.dataclass(frozen=True)
+    class Output(abc.ABC):  # noqa
+        pass
+
+    @abc.abstractmethod
+    def _execute(self, inp: CommandInputT) -> CommandOutputT:
+        raise NotImplementedError
 
 
 ########################################
@@ -145,6 +166,9 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
 
 
 def pyremote_build_bootstrap_cmd(context_name: str) -> str:
+    if any(c in context_name for c in '\'"'):
+        raise NameError(context_name)
+
     bs_src = textwrap.dedent(inspect.getsource(_pyremote_bootstrap_main))
 
     for gl in [
@@ -170,6 +194,9 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
     bs_z = zlib.compress(bs_src.encode('utf-8'))
     bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
+
+    def dq_repr(o: ta.Any) -> str:
+        return '"' + repr(o)[1:-1] + '"'
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
@@ -992,24 +1019,7 @@ def subprocess_close(
 
 
 ########################################
-# main.py
-
-
-##
-
-
-class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
-    @dc.dataclass(frozen=True)
-    class Input(abc.ABC):  # noqa
-        pass
-
-    @dc.dataclass(frozen=True)
-    class Output(abc.ABC):  # noqa
-        pass
-
-    @abc.abstractmethod
-    def _execute(self, inp: CommandInputT) -> CommandOutputT:
-        raise NotImplementedError
+# ../commands/subprocess.py
 
 
 ##
@@ -1075,6 +1085,10 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
         )
 
 
+########################################
+# main.py
+
+
 ##
 
 
@@ -1100,6 +1114,8 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--ssh')
+    parser.add_argument('--python', default='python3')
     parser.add_argument('--_amalg-file')
 
     args = parser.parse_args()
@@ -1132,16 +1148,23 @@ def _main() -> None:
         '_remote_main()',
     ])
 
-    print(remote_src)
-
     #
 
+    bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    if args.ssh is not None:
+        sh_src = ' '.join([args.python, '-c', shlex.quote(bs_src)])
+        sh_cmd = f'{args.ssh} {shlex.quote(sh_src)}'
+        print(sh_cmd)
+        cmd = [sh_cmd]
+        shell = True
+    else:
+        cmd = [args.python, '-c', bs_src]
+        shell = False
+
     proc = subprocess.Popen(
-        subprocess_maybe_shell_wrap_exec(
-            sys.executable,
-            '-c',
-            pyremote_build_bootstrap_cmd(__package__),
-        ),
+        subprocess_maybe_shell_wrap_exec(*cmd),
+        shell=shell,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
@@ -1152,6 +1175,7 @@ def _main() -> None:
     res = PyremoteBootstrapDriver(remote_src).run(stdin, stdout)
     print(res)
 
+    print(stdout.read())
     proc.wait()
 
 
