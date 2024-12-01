@@ -2,13 +2,14 @@ import codecs
 import io
 import typing as ta
 
-from .... import check
-from .... import lang
-from ....lite.io import DelimitingBuffer
-from ..stream.build import JsonObjectBuilder
-from ..stream.lex import JsonStreamLexer
-from ..stream.parse import JsonStreamParser
-from ..stream.parse import JsonStreamParserEvent
+from omlish import check
+from omlish import lang
+from omlish.formats.json.stream.build import JsonObjectBuilder
+from omlish.formats.json.stream.lex import JsonStreamLexer
+from omlish.formats.json.stream.parse import JsonStreamParser
+from omlish.formats.json.stream.parse import JsonStreamParserEvent
+from omlish.lite.io import DelimitingBuffer
+
 from .formats import Format
 
 
