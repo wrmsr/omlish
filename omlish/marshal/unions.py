@@ -4,8 +4,8 @@ from .. import cached
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import matchfns as mfs
 from .. import reflect as rfl
+from ..funcs import match as mfs
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory

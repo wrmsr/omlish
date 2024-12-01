@@ -1,7 +1,7 @@
 import operator
 
-from .. import fnpipes as fp
-from .. import lang
+from ... import lang
+from .. import pipes as fp
 
 
 def test_fnpipes():

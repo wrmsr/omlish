@@ -4,8 +4,8 @@ from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
-from ... import matchfns as mfs
 from ... import reflect as rfl
+from ...funcs import match as mfs
 from .openapi import Reference
 
 

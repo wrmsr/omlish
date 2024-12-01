@@ -1,7 +1,7 @@
 import pytest
 
-from .. import fnpairs as fpa
-from ..testing import pytest as ptu
+from ...testing import pytest as ptu
+from .. import pairs as fpa
 
 
 def test_simple():

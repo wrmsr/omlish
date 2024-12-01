@@ -8,8 +8,8 @@ import functools
 import typing as ta
 
 from .. import check
-from .. import matchfns as mfs
 from .. import reflect as rfl
+from ..funcs import match as mfs
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactoryMatchClass

@@ -47,8 +47,8 @@ import sys
 import typing as ta
 
 from .... import check
-from .... import fnpipes as fp
 from .... import lang
+from ....funcs import pipes as fp
 from .formats import FORMATS_BY_NAME
 from .formats import Format
 from .formats import Formats

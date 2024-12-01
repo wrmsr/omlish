@@ -2,7 +2,7 @@ import typing as ta
 
 import pytest
 
-from .. import matchfns as mf
+from .. import match as mf
 
 
 ##
