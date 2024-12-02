@@ -6,7 +6,7 @@ wheel>=0.45.1
 
 uv>=0.5.5
 
-pytest==8.3.3
+pytest==8.3.4
 pytest-asyncio==0.24.0
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1

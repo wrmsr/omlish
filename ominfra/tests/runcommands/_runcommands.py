@@ -399,6 +399,7 @@ class PyremoteBootstrapDriver:
 @dc.dataclass(frozen=True)
 class PyremotePayloadRuntime:
     input: ta.BinaryIO
+    output: ta.BinaryIO
     main_src: str
     env_info: PyremoteEnvInfo
 
@@ -425,12 +426,19 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     os.write(1, struct.pack('<I', len(env_info_json)))
     os.write(1, env_info_json.encode('utf-8'))
 
+    # Setup IO
+    input = os.fdopen(_PYREMOTE_BOOTSTRAP_INPUT_FD, 'rb', 0)  # noqa
+    output = os.fdopen(os.dup(1), 'wb', 0)  # noqa
+    os.dup2(nfd := os.open('/dev/null', os.O_WRONLY), 1)
+    os.close(nfd)
+
     # Write fourth ack
-    os.write(1, _PYREMOTE_BOOTSTRAP_ACK3)
+    output.write(_PYREMOTE_BOOTSTRAP_ACK3)
 
     # Return
     return PyremotePayloadRuntime(
-        input=os.fdopen(_PYREMOTE_BOOTSTRAP_INPUT_FD, 'rb', 0),
+        input=input,
+        output=output,
         main_src=main_src,
         env_info=env_info,
     )
@@ -1420,7 +1428,7 @@ class CommandResponse:
     err: bytes
 
 
-def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buffer) -> None:  # noqa
+def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
@@ -1443,4 +1451,4 @@ def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buff
 
 def run_commands_main() -> None:
     bs = pyremote_bootstrap_finalize()
-    _run_commands_loop(bs.input)
+    _run_commands_loop(bs.input, bs.output)

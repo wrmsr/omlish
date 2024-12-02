@@ -5,7 +5,6 @@ import dataclasses as dc
 import io
 import json
 import subprocess
-import sys
 import typing as ta
 
 from omlish.lite.json import json_dumps_compact
@@ -30,7 +29,7 @@ class CommandResponse:
     err: bytes
 
 
-def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buffer) -> None:  # noqa
+def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
@@ -53,4 +52,4 @@ def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buff
 
 def run_commands_main() -> None:
     bs = pyremote_bootstrap_finalize()
-    _run_commands_loop(bs.input)
+    _run_commands_loop(bs.input, bs.output)

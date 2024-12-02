@@ -10,8 +10,8 @@ import typing as ta
 
 from omlish import cached
 from omlish import lang
-from omlish.genmachine import GenMachine
-from omlish.genmachine import IllegalStateError
+from omlish.funcs.genmachine import GenMachine
+from omlish.funcs.genmachine import IllegalStateError
 
 
 ##
