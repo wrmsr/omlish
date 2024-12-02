@@ -68,7 +68,8 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--ssh')
+    parser.add_argument('-s', '--shell')
+    parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
     parser.add_argument('--_amalg-file')
 
@@ -106,9 +107,11 @@ def _main() -> None:
 
     bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
 
-    if args.ssh is not None:
-        sh_src = ' '.join([args.python, '-c', shlex.quote(bs_src)])
-        sh_cmd = f'{args.ssh} {shlex.quote(sh_src)}'
+    if args.shell is not None:
+        sh_src = f'{args.python} -c {shlex.quote(bs_src)}'
+        if args.shell_quote:
+            sh_src = shlex.quote(sh_src)
+        sh_cmd = f'{args.shell} {sh_src}'
         cmd = [sh_cmd]
         shell = True
     else:
