@@ -1,7 +1,7 @@
 import typing as ta
 
 from .... import lang
-from ....genmachine import GenMachine
+from ....funcs.genmachine import GenMachine
 from .lex import SCALAR_VALUE_TYPES
 from .lex import VALUE_TOKEN_KINDS
 from .lex import ScalarValue

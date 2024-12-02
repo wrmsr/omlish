@@ -11,7 +11,7 @@ import re
 import typing as ta
 
 from .... import check
-from ....genmachine import GenMachine
+from ....funcs.genmachine import GenMachine
 
 
 ##
