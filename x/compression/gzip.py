@@ -297,3 +297,8 @@ class GzipWriter:
             self._offset += length
 
         return length
+
+
+##
+
+
