@@ -60,7 +60,7 @@ def _remote_main() -> None:
 
         o = SubprocessCommand()._execute(i)  # noqa
 
-        _send_obj(sys.stdout.buffer, o)
+        _send_obj(rt.output, o)
 
 
 def _main() -> None:

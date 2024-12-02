@@ -2,7 +2,7 @@ import typing as ta
 
 import pytest
 
-from .. import check
+from ... import check
 from ..genmachine import GenMachine
 
 

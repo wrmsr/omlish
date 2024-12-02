@@ -20,7 +20,7 @@ class TestPyremote(unittest.TestCase):
             pyr_src,
             'rt = pyremote_bootstrap_finalize()',
             'b = rt.input.read()',
-            'os.write(1, b"!" + b + b"!")',
+            'rt.output.write(b"!" + b + b"!")',
         ])
 
         #
