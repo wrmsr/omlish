@@ -14,6 +14,41 @@ COMPRESS_LEVEL_BEST = 9
 ##
 
 
+class BufferedBytesReaderGenerator:
+    def __init__(self) -> None:
+        super().__init__()
+        self._buffer: list[bytes] = []
+
+    def read(self, sz: int) -> ta.Generator[int, bytes, bytes]:
+        if not self._buffer:
+            d = yield sz
+            return d
+        l: list[bytes] = []
+        r = sz
+        while r > 0 and self._buffer:
+            c = self._buffer[0]
+            if len(c) > r:
+                l.append(c[:r])
+                self._buffer[0] = c[r:]
+                return b''.join(l)
+            l.append(c)
+            r -= len(c)
+            self._buffer.pop(0)
+        if r:
+            c = yield sz
+            if not c:
+                return b''
+            l.append(c)
+        return b''.join(l)
+
+    def inject(self, d: bytes) -> None:
+        self._buffer.append(d)
+        raise NotImplementedError
+
+
+##
+
+
 class IncrementalGzipReader:
     def __init__(self) -> None:
         super().__init__()
@@ -23,50 +58,55 @@ class IncrementalGzipReader:
             wbits=-zlib.MAX_WBITS,
         )
 
-    def _read_gzip_header(self) -> ta.Generator[int, bytes, int | None]:
-        magic = yield 2
+    def _read_gzip_header(self, rdr: BufferedBytesReaderGenerator) -> ta.Generator[int, bytes, int | None]:
+        magic = yield from rdr.read(2)
         if magic == b'':
             return None
 
         if magic != b'\037\213':
             raise gzip.BadGzipFile('Not a gzipped file (%r)' % magic)
 
-        buf = yield 8
+        buf = yield from rdr.read(8)
         method, flag, last_mtime = struct.unpack('<BBIxx', buf)
         if method != 8:
             raise gzip.BadGzipFile('Unknown compression method')
 
         if flag & gzip.FEXTRA:
             # Read & discard the extra field, if present
-            buf = yield 2
+            buf = yield from rdr.read(2)
             extra_len, = struct.unpack('<H', buf)
             if extra_len:
-                yield extra_len
+                yield from rdr.read(extra_len)
 
         if flag & gzip.FNAME:
             # Read and discard a null-terminated string containing the filename
             while True:
-                s = yield 1
+                s = yield from rdr.read(1)
                 if not s or s == b'\000':
                     break
 
         if flag & gzip.FCOMMENT:
             # Read and discard a null-terminated string containing a comment
             while True:
-                s = yield 1
+                s = yield from rdr.read(1)
                 if not s or s==b'\000':
                     break
 
         if flag & gzip.FHCRC:
-            yield 2  # Read & discard the 16-bit header CRC
+            yield from rdr.read(2)  # Read & discard the 16-bit header CRC
 
         return last_mtime
 
-    def _read_eof(self, crc: int, stream_size: int) -> ta.Generator[int, bytes, bytes]:
+    def _read_eof(
+            self,
+            rdr: BufferedBytesReaderGenerator,
+            crc: int,
+            stream_size: int,
+    ) -> ta.Generator[int, bytes, int | None]:
         # We've read to the end of the file.
         # We check that the computed CRC and size of the uncompressed data matches the stored values. Note that the size
         # stored is the true file size mod 2**32.
-        buf = yield 8
+        buf = yield from rdr.read(8)
         crc32, isize = struct.unpack('<II', buf)
         if crc32 != crc:
             raise gzip.BadGzipFile(f'CRC check failed {hex(crc32)} != {hex(crc)}')
@@ -77,24 +117,21 @@ class IncrementalGzipReader:
         # to the first non-zero byte. See http://www.gzip.org/#faq8
         c = b'\x00'
         while c == b'\x00':
-            c = yield 1
+            c = yield from rdr.read(1)
         if c:
-            return c
+            return c[0]
         else:
-            return b''
+            return None
 
     def gen(self) -> ta.Generator[int | bytes, bytes, None]:
-        eof = False
+        rdr = BufferedBytesReaderGenerator()
+
         pos = 0  # Current offset in decompressed stream
         size = -1
 
         crc = zlib.crc32(b'')
         stream_size = 0  # Decompressed size of unconcatenated stream
-
         new_member = True
-        last_mtime = yield from self._read_gzip_header()
-        if last_mtime is None:
-            return
 
         decompressor = self._decomp_factory(**self._decomp_args)
 
@@ -105,7 +142,7 @@ class IncrementalGzipReader:
                 if decompressor.eof:
                     # Ending case: we've come to the end of a member in the file, so finish up this member, and read a new
                     # gzip header. Check the CRC and file size, and set the flag so we read a new member
-                    read_eof()
+                    yield from self._read_eof(rdr, crc, stream_size)
                     new_member = True
                     decompressor = self._decomp_factory(**self._decomp_args)
 
@@ -113,13 +150,14 @@ class IncrementalGzipReader:
                     # If the _new_member flag is set, we have to jump to the next member, if there is one.
                     crc = zlib.crc32(b'')
                     stream_size = 0  # Decompressed size of unconcatenated stream
-                    if not read_gzip_header():
+                    last_mtime = yield from self._read_gzip_header(rdr)
+                    if not last_mtime:
                         return
                     new_member = False
 
                 # Read a chunk of data from the file
                 if decompressor.needs_input:
-                    buf = yield 4096
+                    buf = yield from rdr.read(4096)
                     uncompress = decompressor.decompress(buf, size)
                 else:
                     uncompress = decompressor.decompress(b'', size)
@@ -127,7 +165,7 @@ class IncrementalGzipReader:
                 if decompressor.unused_data != b'':
                     # Prepend the already read bytes to the fileobj so they can be seen by _read_eof() and
                     # _read_gzip_header()
-                    fp.prepend(decompressor.unused_data)
+                    rdr.inject(decompressor.unused_data)
 
                 if uncompress != b'':
                     break
@@ -137,7 +175,7 @@ class IncrementalGzipReader:
             crc = zlib.crc32(uncompress, crc)
             stream_size += len(uncompress)
             pos += len(uncompress)
-            yield uncompress
+            yield from rdr.read(uncompress)
 
 
 class IncrementalGzipWriter:
