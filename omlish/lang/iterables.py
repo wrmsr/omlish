@@ -9,6 +9,7 @@ T = ta.TypeVar('T')
 I = ta.TypeVar('I')
 O = ta.TypeVar('O')
 R = ta.TypeVar('R')
+GeneratorT = ta.TypeVar('GeneratorT', bound=ta.Generator)
 
 
 BUILTIN_SCALAR_ITERABLE_TYPES: tuple[type, ...] = (
@@ -59,6 +60,11 @@ class IterGen(ta.Generic[T]):
 
 
 itergen = IterGen
+
+
+def nextgen(g: GeneratorT) -> GeneratorT:
+    next(g)
+    return g
 
 
 def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:

@@ -201,13 +201,11 @@ def _main() -> None:
     assert UTF8.new().encode('hi') == b'hi'
     assert UTF8.new(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
 
-    g = check.not_none(UTF8.new_incremental)().iterencode()
-    next(g)
+    g = lang.nextgen(check.not_none(UTF8.new_incremental)().iterencode())
     print(g.send('hi'))
     print(g.send(''))
 
-    g = check.not_none(UTF8.new_incremental)().iterdecode()
-    next(g)
+    g = lang.nextgen(check.not_none(UTF8.new_incremental)().iterdecode())
     print(g.send(b'hi'))
     print(g.send(b''))
 
