@@ -51,9 +51,9 @@ def test_bz2_inc_compressor():
         else:
             while True:
                 if o is None:
-                    break
-                elif not o:
                     raise TypeError(o)
+                elif not o:
+                    break
                 else:
                     ow.write(o)
                 try:
