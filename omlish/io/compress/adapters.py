@@ -43,6 +43,25 @@ from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
 
 
+##
+
+
+class CompressorIncrementalAdapter:
+    def __init__(
+            self,
+            factory: ta.Callable[..., Compressor],
+    ) -> None:
+        super().__init__()
+
+        self._factory = factory
+
+    def __call__(self) -> IncrementalCompressor:
+        raise NotImplementedError
+
+
+##
+
+
 class DecompressorIncrementalAdapter:
     def __init__(
             self,
@@ -111,16 +130,3 @@ class DecompressorIncrementalAdapter:
 
             pos += len(data)
             yield data
-
-
-class CompressorIncrementalAdapter:
-    def __init__(
-            self,
-            factory: ta.Callable[..., Compressor],
-    ) -> None:
-        super().__init__()
-
-        self._factory = factory
-
-    def __call__(self) -> IncrementalCompressor:
-        raise NotImplementedError

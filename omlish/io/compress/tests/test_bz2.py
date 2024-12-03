@@ -28,3 +28,7 @@ def test_bz2_inc_decompressor():
         else:
             raise TypeError(o)
     assert ow.getvalue() == _DEC_DATA
+
+
+def test_bz2_inc_compressor():
+    pass
