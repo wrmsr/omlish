@@ -1,11 +1,35 @@
 import bz2
 import io
 
+from ..bz2 import IncrementalBz2Compressor
 from ..bz2 import IncrementalBz2Decompressor
 
 
 _DEC_DATA = b'foobar' * 128
 _ENC_DATA = bz2.compress(_DEC_DATA)
+
+
+def test_bz2_inc_compressor():
+    igw = IncrementalBz2Compressor()
+    ir = io.BytesIO(_DEC_DATA)
+    ow = io.BytesIO()
+    g = igw()
+    i = None
+    sz = 13
+
+    while True:
+        o = g.send(i)
+        i = None
+        if o is None:
+            i = ir.read(sz)
+            if len(i) != sz:
+                break
+        elif not o:
+            raise TypeError(o)
+        else:
+            ow.write(o)
+
+    assert ow.getvalue() == _ENC_DATA
 
 
 def test_bz2_inc_decompressor():
@@ -28,7 +52,3 @@ def test_bz2_inc_decompressor():
         else:
             raise TypeError(o)
     assert ow.getvalue() == _DEC_DATA
-
-
-def test_bz2_inc_compressor():
-    pass
