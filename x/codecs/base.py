@@ -64,19 +64,67 @@ class Codec(lang.Final):
 ##
 
 
+TextEncodingErrors: ta.TypeAlias = ta.Literal[
+    # Raise UnicodeError (or a subclass), this is the default. Implemented in strict_errors().
+    'strict',
+
+    # Ignore the malformed data and continue without further notice. Implemented in ignore_errors().
+    'ignore',
+
+    # Replace with a replacement marker. On encoding, use ? (ASCII character). On decoding, use � (U+FFFD, the official
+    # REPLACEMENT CHARACTER). Implemented in replace_errors().
+    'replace',
+
+    # Replace with backslashed escape sequences. On encoding, use hexadecimal form of Unicode code point with formats
+    # \xhh \uxxxx \Uxxxxxxxx. On decoding, use hexadecimal form of byte value with format \xhh. Implemented in
+    # backslashreplace_errors().
+    'backslashreplace',
+
+    # On decoding, replace byte with individual surrogate code ranging from U+DC80 to U+DCFF. This code will then be
+    # turned back into the same byte when the 'surrogateescape' error handler is used when encoding the data. (See PEP
+    # 383 for more.)
+    'surrogateescape',
+
+    # The following error handlers are only applicable to encoding (within text encodings):
+
+    # Replace with XML/HTML numeric character reference, which is a decimal form of Unicode code point with format
+    # &#num;. Implemented in xmlcharrefreplace_errors().
+    'xmlcharrefreplace',
+
+    # Replace with \N{...} escape sequences, what appears in the braces is the Name property from Unicode Character
+    # Database. Implemented in namereplace_errors().
+    'namereplace',
+
+    # In addition, the following error handler is specific to the given codecs:
+    # utf-8, utf-16, utf-32, utf-16-be, utf-16-le, utf-32-be, utf-32-le
+
+    # Allow encoding and decoding surrogate code point (U+D800 - U+DFFF) as normal code point. Otherwise these codecs
+    # treat the presence of surrogate code point in str as an error.
+    'surrogatepass',
+]
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class TextCodecOptions:
-    errors: str = 'strict'
+class TextEncodingCodecOptions:
+    errors: TextEncodingErrors = 'strict'
 
 
-class TextComboCodec(EagerCodec[str, bytes]):
-    def __init__(self, info: codecs.CodecInfo, options: TextCodecOptions = TextCodecOptions()) -> None:
+class TextEncodingComboCodec(EagerCodec[str, bytes]):
+    def __init__(
+            self,
+            info: codecs.CodecInfo,
+            options: TextEncodingCodecOptions = TextEncodingCodecOptions(),
+    ) -> None:
         super().__init__()
         self._info = info
         self._opts = options
 
     @classmethod
-    def lookup(cls, name: str, options: TextCodecOptions = TextCodecOptions()) -> 'TextComboCodec':
+    def lookup(
+            cls,
+            name: str,
+            options: TextEncodingCodecOptions = TextEncodingCodecOptions(),
+    ) -> 'TextEncodingComboCodec':
         return cls(codecs.lookup(name), options)
 
     def encode(self, i: str) -> bytes:
@@ -99,9 +147,6 @@ def make_text_encoding_codec(
         *,
         aliases: ta.Collection[str] | None = None,
 ) -> Codec:
-    def new(options: TextCodecOptions = TextCodecOptions()) -> EagerCodec:
-        return TextComboCodec(codecs.lookup(name), options)
-
     return Codec(
         name=name,
         aliases=aliases,
@@ -109,8 +154,8 @@ def make_text_encoding_codec(
         input=str,
         output=bytes,
 
-        new=functools.partial(TextComboCodec.lookup, name),
-        new_incremental=functools.partial(TextComboCodec.lookup, name),
+        new=functools.partial(TextEncodingComboCodec.lookup, name),
+        new_incremental=functools.partial(TextEncodingComboCodec.lookup, name),
     )
 
 
