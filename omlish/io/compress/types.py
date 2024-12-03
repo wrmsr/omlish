@@ -2,11 +2,10 @@
 import typing as ta
 
 
-IncrementalDecompressor: ta.TypeAlias = ta.Generator[
+IncrementalCompressor: ta.TypeAlias = ta.Generator[
     ta.Union[
-        int,  # Need exactly n bytes
-        None,  # Need any amount of bytes
-        bytes,  # Uncompressed output
+        bytes,  # Compressed output
+        None,  # Need input
     ],
     ta.Union[
         bytes,  # Input bytes
@@ -16,10 +15,11 @@ IncrementalDecompressor: ta.TypeAlias = ta.Generator[
 ]
 
 
-IncrementalCompressor: ta.TypeAlias = ta.Generator[
+IncrementalDecompressor: ta.TypeAlias = ta.Generator[
     ta.Union[
-        bytes,  # Compressed output
-        None,  # Need input
+        int,  # Need exactly n bytes
+        None,  # Need any amount of bytes
+        bytes,  # Uncompressed output
     ],
     ta.Union[
         bytes,  # Input bytes

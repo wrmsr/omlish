@@ -55,6 +55,104 @@ _ZERO_CRC = zlib.crc32(b'')
 ##
 
 
+class IncrementalGzipCompressor:
+    def __init__(
+            self,
+            *,
+            compresslevel: int = COMPRESS_LEVEL_BEST,
+            name: str | bytes | None = None,
+            mtime: float | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._name = name or ''
+        self._compresslevel = compresslevel
+        self._mtime = mtime
+
+    def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
+        yield b'\037\213'  # magic header
+        yield b'\010'  # compression method
+
+        try:
+            # RFC 1952 requires the FNAME field to be Latin-1. Do not include filenames that cannot be represented that
+            # way.
+            fname = os.path.basename(self._name)
+            if not isinstance(fname, bytes):
+                fname = fname.encode('latin-1')
+            if fname.endswith(b'.gz'):
+                fname = fname[:-3]
+        except UnicodeEncodeError:
+            fname = b''
+
+        flags = 0
+        if fname:
+            flags = gzip.FNAME
+        yield chr(flags).encode('latin-1')
+
+        mtime = self._mtime
+        if mtime is None:
+            mtime = time.time()
+        yield struct.pack('<L', int(mtime))
+
+        if self._compresslevel == COMPRESS_LEVEL_BEST:
+            xfl = b'\002'
+        elif self._compresslevel == COMPRESS_LEVEL_FAST:
+            xfl = b'\004'
+        else:
+            xfl = b'\000'
+        yield xfl
+
+        yield b'\377'
+
+        if fname:
+            yield fname + b'\000'
+
+    def __call__(self) -> IncrementalCompressor:
+        crc = _ZERO_CRC
+        size = 0
+        offset = 0  # Current file offset for seek(), tell(), etc
+
+        compress = zlib.compressobj(
+            self._compresslevel,
+            zlib.DEFLATED,
+            -zlib.MAX_WBITS,
+            zlib.DEF_MEM_LEVEL,
+            0,
+        )
+
+        yield from self._write_gzip_header()
+
+        while True:
+            data: ta.Any = yield None
+            if not data:
+                break
+
+            # Called by our self._buffer underlying BufferedWriterDelegate.
+            if isinstance(data, (bytes, bytearray)):
+                length = len(data)
+            else:
+                # accept any data that supports the buffer protocol
+                data = memoryview(data)
+                length = data.nbytes
+
+            if length > 0:
+                if (fl := compress.compress(data)):
+                    yield fl
+                size += length
+                crc = zlib.crc32(data, crc)
+                offset += length
+
+        if (fl := compress.flush()):
+            yield fl
+
+        yield struct.pack('<L', crc)
+        # size may exceed 2 GiB, or even 4 GiB
+        yield struct.pack('<L', size & 0xffffffff)
+
+
+##
+
+
 class IncrementalGzipDecompressor:
     def __init__(self) -> None:
         super().__init__()
@@ -183,101 +281,3 @@ class IncrementalGzipDecompressor:
             stream_size += len(uncompress)
             pos += len(uncompress)
             yield uncompress
-
-
-##
-
-
-class IncrementalGzipCompressor:
-    def __init__(
-            self,
-            *,
-            compresslevel: int = COMPRESS_LEVEL_BEST,
-            name: str | bytes | None = None,
-            mtime: float | None = None,
-    ) -> None:
-        super().__init__()
-
-        self._name = name or ''
-        self._compresslevel = compresslevel
-        self._mtime = mtime
-
-    def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
-        yield b'\037\213'  # magic header
-        yield b'\010'  # compression method
-
-        try:
-            # RFC 1952 requires the FNAME field to be Latin-1. Do not include filenames that cannot be represented that
-            # way.
-            fname = os.path.basename(self._name)
-            if not isinstance(fname, bytes):
-                fname = fname.encode('latin-1')
-            if fname.endswith(b'.gz'):
-                fname = fname[:-3]
-        except UnicodeEncodeError:
-            fname = b''
-
-        flags = 0
-        if fname:
-            flags = gzip.FNAME
-        yield chr(flags).encode('latin-1')
-
-        mtime = self._mtime
-        if mtime is None:
-            mtime = time.time()
-        yield struct.pack('<L', int(mtime))
-
-        if self._compresslevel == COMPRESS_LEVEL_BEST:
-            xfl = b'\002'
-        elif self._compresslevel == COMPRESS_LEVEL_FAST:
-            xfl = b'\004'
-        else:
-            xfl = b'\000'
-        yield xfl
-
-        yield b'\377'
-
-        if fname:
-            yield fname + b'\000'
-
-    def __call__(self) -> IncrementalCompressor:
-        crc = _ZERO_CRC
-        size = 0
-        offset = 0  # Current file offset for seek(), tell(), etc
-
-        compress = zlib.compressobj(
-            self._compresslevel,
-            zlib.DEFLATED,
-            -zlib.MAX_WBITS,
-            zlib.DEF_MEM_LEVEL,
-            0,
-        )
-
-        yield from self._write_gzip_header()
-
-        while True:
-            data: ta.Any = yield None
-            if not data:
-                break
-
-            # Called by our self._buffer underlying BufferedWriterDelegate.
-            if isinstance(data, (bytes, bytearray)):
-                length = len(data)
-            else:
-                # accept any data that supports the buffer protocol
-                data = memoryview(data)
-                length = data.nbytes
-
-            if length > 0:
-                if (fl := compress.compress(data)):
-                    yield fl
-                size += length
-                crc = zlib.crc32(data, crc)
-                offset += length
-
-        if (fl := compress.flush()):
-            yield fl
-
-        yield struct.pack('<L', crc)
-        # size may exceed 2 GiB, or even 4 GiB
-        yield struct.pack('<L', size & 0xffffffff)
