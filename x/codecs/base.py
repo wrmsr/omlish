@@ -149,7 +149,14 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
 
     def iterdecode(self) -> ta.Generator[bytes, str | None, None]:
         x = self._info.incrementaldecoder(self._opts.errors)
-        raise NotImplementedError
+        i = yield
+        while True:
+            if not i:
+                break
+            o = x.decode(i)
+            i = yield o
+        o = x.decode(i, final=True)
+        yield o
 
 
 def normalize_encoding_name(s: str) -> str:
@@ -198,6 +205,11 @@ def _main() -> None:
     next(g)
     print(g.send('hi'))
     print(g.send(''))
+
+    g = check.not_none(UTF8.new_incremental)().iterdecode()
+    next(g)
+    print(g.send(b'hi'))
+    print(g.send(b''))
 
 
 if __name__ == '__main__':
