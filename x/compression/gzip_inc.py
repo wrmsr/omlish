@@ -5,8 +5,6 @@ import time
 import typing as ta
 import zlib
 
-from .utils import read_exact
-
 
 COMPRESS_LEVEL_FAST = 1
 COMPRESS_LEVEL_TRADEOFF = 6
@@ -17,13 +15,15 @@ COMPRESS_LEVEL_BEST = 9
 
 
 class IncrementalGzipReader:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._decomp_factory = zlib._ZlibDecompressor  # noqa  # FIXME: zlib.decompressobj
+        self._decomp_args = dict(
+            wbits=-zlib.MAX_WBITS,
+        )
+
     def _read_gzip_header(self) -> ta.Generator[int, bytes, int | None]:
-        """
-        Read a gzip header from `fp` and progress to the end of the header.
-
-        Returns last mtime if header was present or None otherwise.
-        """
-
         magic = yield 2
         if magic == b'':
             return None
@@ -61,6 +61,83 @@ class IncrementalGzipReader:
             yield 2  # Read & discard the 16-bit header CRC
 
         return last_mtime
+
+    def _read_eof(self, crc: int, stream_size: int) -> ta.Generator[int, bytes, bytes]:
+        # We've read to the end of the file.
+        # We check that the computed CRC and size of the uncompressed data matches the stored values. Note that the size
+        # stored is the true file size mod 2**32.
+        buf = yield 8
+        crc32, isize = struct.unpack('<II', buf)
+        if crc32 != crc:
+            raise gzip.BadGzipFile(f'CRC check failed {hex(crc32)} != {hex(crc)}')
+        elif isize != (stream_size & 0xffffffff):
+            raise gzip.BadGzipFile('Incorrect length of data produced')
+
+        # Gzip files can be padded with zeroes and still have archives. Consume all zero bytes and set the file position
+        # to the first non-zero byte. See http://www.gzip.org/#faq8
+        c = b'\x00'
+        while c == b'\x00':
+            c = yield 1
+        if c:
+            return c
+        else:
+            return b''
+
+    def gen(self) -> ta.Generator[bytes, bytes | None, None]:
+        eof = False
+        pos = 0  # Current offset in decompressed stream
+        size = -1
+
+        crc = zlib.crc32(b'')
+        stream_size = 0  # Decompressed size of unconcatenated stream
+
+        new_member = True
+        last_mtime = yield from self._read_gzip_header()
+        if last_mtime is None:
+            return
+
+        decompressor = self._decomp_factory(**self._decomp_args)
+
+        while True:
+            # For certain input data, a single call to decompress() may not return any data. In this case, retry until we
+            # get some data or reach EOF.
+            while True:
+                if decompressor.eof:
+                    # Ending case: we've come to the end of a member in the file, so finish up this member, and read a new
+                    # gzip header. Check the CRC and file size, and set the flag so we read a new member
+                    read_eof()
+                    new_member = True
+                    decompressor = self._decomp_factory(**self._decomp_args)
+
+                if new_member:
+                    # If the _new_member flag is set, we have to jump to the next member, if there is one.
+                    crc = zlib.crc32(b'')
+                    stream_size = 0  # Decompressed size of unconcatenated stream
+                    if not read_gzip_header():
+                        return
+                    new_member = False
+
+                # Read a chunk of data from the file
+                if decompressor.needs_input:
+                    buf = yield 4096
+                    uncompress = decompressor.decompress(buf, size)
+                else:
+                    uncompress = decompressor.decompress(b'', size)
+
+                if decompressor.unused_data != b'':
+                    # Prepend the already read bytes to the fileobj so they can be seen by _read_eof() and
+                    # _read_gzip_header()
+                    fp.prepend(decompressor.unused_data)
+
+                if uncompress != b'':
+                    break
+                if buf == b'':
+                    raise EOFError('Compressed file ended before the end-of-stream marker was reached')
+
+            crc = zlib.crc32(uncompress, crc)
+            stream_size += len(uncompress)
+            pos += len(uncompress)
+            yield uncompress
 
 
 class IncrementalGzipWriter:
@@ -155,5 +232,3 @@ class IncrementalGzipWriter:
         yield struct.pack('<L', crc)
         # size may exceed 2 GiB, or even 4 GiB
         yield struct.pack('<L', size & 0xffffffff)
-
-        yield b''
