@@ -4,6 +4,7 @@ import dataclasses as dc
 import functools
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import reflect as rfl
 
@@ -142,14 +143,19 @@ class TextEncodingComboCodec(EagerCodec[str, bytes]):
         raise NotImplementedError
 
 
+def normalize_encoding_name(s: str) -> str:
+    if ' ' in s:
+        raise NameError(s)
+    return s.lower().replace('_', '-')
+
+
 def make_text_encoding_codec(
         name: str,
-        *,
         aliases: ta.Collection[str] | None = None,
 ) -> Codec:
     return Codec(
-        name=name,
-        aliases=aliases,
+        name=check.equal(name, normalize_encoding_name(name)),
+        aliases=check.not_isinstance(aliases, str),
 
         input=str,
         output=bytes,
@@ -159,7 +165,20 @@ def make_text_encoding_codec(
     )
 
 
-UTF8 = make_text_encoding_codec('utf8', aliases=['utf-8'])
+ASCII = make_text_encoding_codec('ascii', ['646', 'us-ascii'])
+LATIN1 = make_text_encoding_codec('latin-1', ['iso-8859-1', 'iso8859-1', '8859', 'cp819', 'latin', 'latin1', 'l1'])
+UTF32 = make_text_encoding_codec('utf-32', ['u32', 'utf32'])
+UTF32BE = make_text_encoding_codec('utf-32-be', ['utf-32be'])
+UTF32LE = make_text_encoding_codec('utf-32-le', ['utf-32le'])
+UTF16 = make_text_encoding_codec('utf-16', ['u16', 'utf16'])
+UTF16BE = make_text_encoding_codec('utf-16-be', ['utf-16be'])
+UTF16LE = make_text_encoding_codec('utf-16-le', ['utf-16le'])
+UTF7 = make_text_encoding_codec('utf-7', ['u7', 'unicode-1-1-utf-7'])
+UTF8 = make_text_encoding_codec('utf-8', ['u8', 'utf', 'utf8', 'cp65001'])
+UTF8SIG = make_text_encoding_codec('utf-8-sig')
+
+
+##
 
 
 def _main() -> None:
