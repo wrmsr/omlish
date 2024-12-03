@@ -1,19 +1,17 @@
 import io
 import gzip
 
-from ..gzip import GzipReader
 from ..gzip_inc import IncrementalGzipReader
+from ..gzip_inc import IncrementalGzipWriter
 
 
-def test_gzip_inc():
-    dec_data = b'foobar' * 128
-    enc_data = gzip.compress(dec_data)
-    print(enc_data)
+_DEC_DATA = b'foobar' * 128
+_ENC_DATA = gzip.compress(_DEC_DATA)
 
-    gr = GzipReader(io.BytesIO(enc_data))
-    print(gr.read())
 
-    ir = io.BytesIO(enc_data)
+def test_gzip_inc_reader():
+    ir = io.BytesIO(_ENC_DATA)
+    ow = io.BytesIO()
     igr = IncrementalGzipReader()
     g = igr.gen()
     o = next(g)
@@ -21,11 +19,20 @@ def test_gzip_inc():
         if isinstance(o, int):
             o = g.send(ir.read(o))
         elif o is None:
-            o = g.send(ir.read(4096))
+            o = g.send(ir.read(13))
         elif isinstance(o, bytes):
-            print(o)
             if not o:
                 break
+            ow.write(o)
             o = g.send(None)
         else:
             raise TypeError(o)
+    assert ow.getvalue() == _DEC_DATA
+
+
+def test_gzip_inc_writer():
+    igw = IncrementalGzipWriter()
+    g2 = igw.gen()
+    o = io
+    for b in _DEC_DATA:
+        pass

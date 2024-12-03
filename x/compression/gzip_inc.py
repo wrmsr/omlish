@@ -1,3 +1,4 @@
+import functools
 import gzip
 import os.path
 import struct
@@ -66,10 +67,11 @@ class IncrementalGzipReader:
     def __init__(self) -> None:
         super().__init__()
 
-        self._decomp_factory = zlib.decompressobj
-        self._decomp_args = dict(
+        self._kwargs = dict(
             wbits=-zlib.MAX_WBITS,
         )
+
+        self._factory = functools.partial(zlib.decompressobj, **self._kwargs)
 
     def _read_gzip_header(self, rdr: BufferedBytesReaderGenerator) -> ta.Generator[int, bytes, int | None]:
         magic = yield from rdr.read(2)
@@ -158,7 +160,7 @@ class IncrementalGzipReader:
         stream_size = 0  # Decompressed size of unconcatenated stream
         new_member = True
 
-        decompressor = self._decomp_factory(**self._decomp_args)
+        decompressor = self._factory()
 
         while True:
             # For certain input data, a single call to decompress() may not return any data. In this case, retry until we
@@ -169,7 +171,7 @@ class IncrementalGzipReader:
                     # gzip header. Check the CRC and file size, and set the flag so we read a new member
                     yield from self._read_eof(rdr, crc, stream_size)
                     new_member = True
-                    decompressor = self._decomp_factory(**self._decomp_args)
+                    decompressor = self._factory()
 
                 if new_member:
                     # If the _new_member flag is set, we have to jump to the next member, if there is one.
