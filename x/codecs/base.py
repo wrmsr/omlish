@@ -1,5 +1,7 @@
 import abc
+import codecs
 import dataclasses as dc
+import functools
 import typing as ta
 
 from omlish import lang
@@ -33,6 +35,15 @@ class IncrementalCodec(lang.Abstract, ta.Generic[I, O]):
         raise NotImplementedError
 
 
+class ComboCodec(  # noqa
+    EagerCodec[I, O],
+    IncrementalCodec[I, O],
+    lang.Abstract,
+    ta.Generic[I, O],
+):
+    pass
+
+
 ##
 
 
@@ -44,11 +55,60 @@ class Codec(lang.Final):
     input: rfl.Type
     output: rfl.Type
 
+    options: type | None = None
+
     new: ta.Callable[..., EagerCodec] | None = None
     new_incremental: ta.Callable[..., IncrementalCodec] | None = None
 
 
 ##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class TextCodecOptions:
+    errors: str = 'strict'
+
+
+class TextComboCodec(EagerCodec[str, bytes]):
+    def __init__(self, info: codecs.CodecInfo, options: TextCodecOptions = TextCodecOptions()) -> None:
+        super().__init__()
+        self._info = info
+        self._opts = options
+
+    @classmethod
+    def lookup(cls, name: str, options: TextCodecOptions = TextCodecOptions()) -> 'TextComboCodec':
+        return cls(codecs.lookup(name), options)
+
+    def encode(self, i: str) -> bytes:
+        o, _ = self._info.encode(i, errors=self._opts.errors)
+        return o
+
+    def decode(self, o: bytes) -> str:
+        i, _ = self._info.decode(o, errors=self._opts.errors)
+        return i
+
+
+def make_text_encoding_codec(
+        name: str,
+        *,
+        aliases: ta.Collection[str] | None = None,
+) -> Codec:
+    def new(options: TextCodecOptions = TextCodecOptions()) -> EagerCodec:
+        return TextComboCodec(codecs.lookup(name), options)
+
+    return Codec(
+        name=name,
+        aliases=aliases,
+
+        input=str,
+        output=bytes,
+
+        new=functools.partial(TextComboCodec.lookup, name),
+        new_incremental=functools.partial(TextComboCodec.lookup, name),
+    )
+
+
+UTF8 = make_text_encoding_codec('utf8', aliases=['utf-8'])
 
 
 def _main() -> None:
