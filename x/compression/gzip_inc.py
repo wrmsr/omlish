@@ -221,8 +221,8 @@ class IncrementalGzipWriter:
         self._mtime = mtime
 
     def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
-        yield '\037\213'  # magic header
-        yield '\010'  # compression method
+        yield b'\037\213'  # magic header
+        yield b'\010'  # compression method
 
         try:
             # RFC 1952 requires the FNAME field to be Latin-1. Do not include filenames that cannot be represented that
@@ -258,7 +258,7 @@ class IncrementalGzipWriter:
         if fname:
             yield fname + b'\000'
 
-    def gen(self) -> ta.Generator[bytes, bytes | None, None]:
+    def gen(self) -> ta.Generator[bytes | None, bytes | None, None]:
         crc = zlib.crc32(b'')
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
@@ -287,7 +287,8 @@ class IncrementalGzipWriter:
                 length = data.nbytes
 
             if length > 0:
-                yield compress.compress(data)
+                if (fl := compress.compress(data)):
+                    yield fl
                 size += length
                 crc = zlib.crc32(data, crc)
                 offset += length
