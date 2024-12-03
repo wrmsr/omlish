@@ -15,49 +15,49 @@ COMPRESS_LEVEL_BEST = 9
 ##
 
 
-class BufferedBytesReaderGenerator:
+class PrependableBytesReaderGenerator:
     def __init__(self) -> None:
         super().__init__()
-        self._buffer: list[bytes] = []
+        self._p: list[bytes] = []
 
     class ReadError(Exception):
         pass
 
     def read(self, sz: int | None) -> ta.Generator[int | None, bytes, bytes]:
-        if not self._buffer:
+        if not self._p:
             d = yield sz
             return d
 
         if sz is None:
-            return self._buffer.pop(0)
+            return self._p.pop(0)
 
         l: list[bytes] = []
         r = sz
-        while r > 0 and self._buffer:
-            c = self._buffer[0]
+        while r > 0 and self._p:
+            c = self._p[0]
 
             if len(c) > r:
                 l.append(c[:r])
-                self._buffer[0] = c[r:]
+                self._p[0] = c[r:]
                 return b''.join(l)
 
             l.append(c)
             r -= len(c)
-            self._buffer.pop(0)
+            self._p.pop(0)
 
         if r:
             c = yield r
             if not c:
                 return b''
             if len(c) != r:
-                raise self.ReadError(f'Buffered reader got {len(c)} bytes, expected {r}')
+                raise self.ReadError(f'Reader got {len(c)} bytes, expected {r}')
             l.append(c)
 
         return b''.join(l)
 
     def inject(self, d: bytes) -> None:
         if d:
-            self._buffer.append(d)
+            self._p.append(d)
 
 
 ##
@@ -73,7 +73,7 @@ class IncrementalGzipReader:
 
         self._factory = functools.partial(zlib.decompressobj, **self._kwargs)
 
-    def _read_gzip_header(self, rdr: BufferedBytesReaderGenerator) -> ta.Generator[int, bytes, int | None]:
+    def _read_gzip_header(self, rdr: PrependableBytesReaderGenerator) -> ta.Generator[int, bytes, int | None]:
         magic = yield from rdr.read(2)
         if magic == b'':
             return None
@@ -114,7 +114,7 @@ class IncrementalGzipReader:
 
     def _read_eof(
             self,
-            rdr: BufferedBytesReaderGenerator,
+            rdr: PrependableBytesReaderGenerator,
             crc: int,
             stream_size: int,
     ) -> ta.Generator[int, bytes, int | None]:
@@ -152,7 +152,7 @@ class IncrementalGzipReader:
         ],
         None,
     ]:
-        rdr = BufferedBytesReaderGenerator()
+        rdr = PrependableBytesReaderGenerator()
 
         pos = 0  # Current offset in decompressed stream
 
