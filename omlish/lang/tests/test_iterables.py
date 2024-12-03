@@ -1,6 +1,9 @@
+import typing as ta
+
 import pytest
 
 from ..iterables import Generator
+from ..iterables import corogen
 from ..iterables import itergen
 from ..iterables import peek
 from ..iterables import prodrange
@@ -71,3 +74,36 @@ def test_generator_send():
         next(gen)
 
     assert gen.value == 6
+
+
+def test_corogen():
+    def foo(n: int) -> ta.Generator[int, int, int]:
+        c = 0
+        x = yield  # type: ignore
+        for _ in range(n):
+            c += x
+            x = yield x * 2
+        return c + x
+
+    #
+
+    # g = foo(3)
+    # next(g)
+    # assert g.send(2) == 4
+    # assert g.send(3) == 6
+    # assert g.send(4) == 8
+    # try:
+    #     g.send(5)
+    # except StopIteration as e:
+    #     assert e.value == 14  # noqa
+    # else:
+    #     raise RuntimeError
+
+    #
+
+    with corogen(foo(3)) as g:
+        g.send()
+        assert g.send(2) == corogen.Yield(4)
+        assert g.send(3) == corogen.Yield(6)
+        assert g.send(4) == corogen.Yield(8)
+        assert g.send(5) == corogen.Return(14)

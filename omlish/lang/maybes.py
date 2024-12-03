@@ -50,11 +50,11 @@ class Maybe(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def or_else(self, other: T) -> T:
+    def or_else(self, other: T | U) -> T | U:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def or_else_get(self, supplier: ta.Callable[[], T]) -> T:
+    def or_else_get(self, supplier: ta.Callable[[], U]) -> T | U:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -109,10 +109,10 @@ class _Maybe(Maybe[T], tuple):
             return value
         return _empty  # noqa
 
-    def or_else(self, other: T) -> T:
+    def or_else(self, other: T | U) -> T | U:
         return self.must() if self else other
 
-    def or_else_get(self, supplier: ta.Callable[[], T]) -> T:
+    def or_else_get(self, supplier: ta.Callable[[], T | U]) -> T | U:
         return self.must() if self else supplier()
 
     def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
