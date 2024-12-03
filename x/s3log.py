@@ -1,5 +1,5 @@
 """
-https://github.com/avinassh/s3-log
+https:#github.com/avinassh/s3-log
 """
 # MIT License
 #
@@ -52,7 +52,7 @@ func (w *S3WAL) getObjectKey(offset uint64) string {
 }
 
 func (w *S3WAL) getOffsetFromKey(key string) (uint64, error) {
-    // skip the `w.prefix` and "/"
+    # skip the `w.prefix` and "/"
     numStr := key[len(w.prefix)+1:]
     return strconv.ParseUint(numStr, 10, 64)
 }
@@ -69,7 +69,7 @@ func validateChecksum(data []byte) bool {
 }
 
 func prepareBody(offset uint64, data []byte) ([]byte, error) {
-    // 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
+    # 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
     bufferLen := 8 + len(data) + 32
     buf := bytes.NewBuffer(make([]byte, 0, bufferLen))
     if err := binary.Write(buf, binary.BigEndian, offset); err != nil {
@@ -182,10 +182,10 @@ func generateRandomStr() string {
 }
 
 func setupMinioClient() *s3.Client {
-    // https://stackoverflow.com/a/78815403
-    // thank you lurenyang
+    # https:#stackoverflow.com/a/78815403
+    # thank you lurenyang
     return s3.NewFromConfig(aws.Config{Region: "us-east-1"}, func(o *s3.Options) {
-        o.BaseEndpoint = aws.String("http://127.0.0.1:9000")
+        o.BaseEndpoint = aws.String("http:#127.0.0.1:9000")
         o.Credentials = credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
     })
 }
@@ -194,7 +194,7 @@ func setupBucket(client *s3.Client, bucketName string) error {
     _, err := client.CreateBucket(context.Background(), &s3.CreateBucketInput{
         Bucket: aws.String(bucketName),
     })
-    // if the bucket already exists, ignore the error
+    # if the bucket already exists, ignore the error
     var bae *types.BucketAlreadyExists
     var boe *types.BucketAlreadyOwnedByYou
     if err != nil && !errors.As(err, &bae) && !errors.As(err, &boe) {
@@ -203,7 +203,7 @@ func setupBucket(client *s3.Client, bucketName string) error {
     return nil
 }
 
-// emptyBucket deletes the bucket because dumbass AWS does not have a direct API
+# emptyBucket deletes the bucket because dumbass AWS does not have a direct API
 func emptyBucket(ctx context.Context, client *s3.Client, bucketName, prefix string) error {
     input := &s3.ListObjectsV2Input{
         Bucket: aws.String(bucketName),
@@ -396,14 +396,14 @@ func TestSameOffset(t *testing.T) {
     wal, cleanup := getWAL(t)
     defer cleanup()
     ctx := context.Background()
-    // https://x.com/iavins/status/1860299083056849098
+    # https:#x.com/iavins/status/1860299083056849098
     data := []byte("threads are evil")
     _, err := wal.Append(ctx, data)
     if err != nil {
         t.Fatalf("failed to append first record: %v", err)
     }
 
-    // reset the WAL counter so that it uses the same offset
+    # reset the WAL counter so that it uses the same offset
     wal.length = 0
     _, err = wal.Append(ctx, data)
     if err == nil {
