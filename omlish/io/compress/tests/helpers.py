@@ -43,6 +43,7 @@ def feed_inc_compressor(
             o = g.send(b'')
         except StopIteration:
             pass
+
         else:
             while True:
                 if o is None:
