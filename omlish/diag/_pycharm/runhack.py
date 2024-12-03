@@ -3,7 +3,10 @@
 .venv/bin/python $(curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omlish/diag/_pycharm/runhack.py -o $(mktemp) && echo "$_") install
 
 ==
+TODO:
+ - check for existing files - can't run regular dep entrypoints now
 
+==
 See:
  - https://github.com/JetBrains/intellij-community/blob/6400f70dde6f743e39a257a5a78cc51b644c835e/python/helpers/pycharm/_jb_pytest_runner.py
  - https://github.com/JetBrains/intellij-community/blob/5a4e584aa59767f2e7cf4bd377adfaaf7503984b/python/helpers/pycharm/_jb_runner_tools.py
