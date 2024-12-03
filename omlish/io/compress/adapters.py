@@ -56,7 +56,21 @@ class CompressorIncrementalAdapter:
         self._factory = factory
 
     def __call__(self) -> IncrementalCompressor:
-        raise NotImplementedError
+        compressor = self._factory()
+
+        while True:
+            data = check.isinstance((yield None), bytes)
+            if not data:
+                break
+
+            compressed = compressor.compress(data)
+            if compressed:
+                yield compressed
+
+        if (fl := compressor.flush()):
+            yield fl
+
+        yield b''
 
 
 ##
