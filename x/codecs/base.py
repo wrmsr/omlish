@@ -28,11 +28,11 @@ class EagerCodec(lang.Abstract, ta.Generic[I, O]):
 
 class IncrementalCodec(lang.Abstract, ta.Generic[I, O]):
     @abc.abstractmethod
-    def iterencode(self) -> ta.Generator[I | None, O | None, None]:
+    def iterencode(self) -> ta.Generator[I, O | None, None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def iterdecode(self) -> ta.Generator[O | None, I | None, None]:
+    def iterdecode(self) -> ta.Generator[O, I | None, None]:
         raise NotImplementedError
 
 
@@ -136,11 +136,18 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
         i, _ = self._info.decode(o, self._opts.errors)
         return i
 
-    def iterencode(self) -> ta.Generator[str | None, bytes | None, None]:
+    def iterencode(self) -> ta.Generator[str, bytes | None, None]:
         x = self._info.incrementalencoder(self._opts.errors)
-        raise NotImplementedError
+        i = yield
+        while True:
+            if not i:
+                break
+            o = x.encode(i)
+            i = yield o
+        o = x.encode(i, final=True)
+        yield o
 
-    def iterdecode(self) -> ta.Generator[bytes | None, str | None, None]:
+    def iterdecode(self) -> ta.Generator[bytes, str | None, None]:
         x = self._info.incrementaldecoder(self._opts.errors)
         raise NotImplementedError
 
@@ -188,8 +195,9 @@ def _main() -> None:
     assert UTF8.new(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
 
     g = check.not_none(UTF8.new_incremental)().iterencode()
+    next(g)
     print(g.send('hi'))
-    print(g.send(None))
+    print(g.send(''))
 
 
 if __name__ == '__main__':
