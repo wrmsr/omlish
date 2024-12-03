@@ -5,8 +5,9 @@ from ..gzip import IncrementalGzipCompressor
 from ..gzip import IncrementalGzipDecompressor
 
 
+_MTIME = 1733266027
 _DEC_DATA = b'foobar' * 128
-_ENC_DATA = gzip.compress(_DEC_DATA)
+_ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 
 
 def test_gzip_inc_reader():
@@ -32,7 +33,7 @@ def test_gzip_inc_reader():
 
 
 def test_gzip_inc_writer():
-    igw = IncrementalGzipCompressor()
+    igw = IncrementalGzipCompressor(mtime=_MTIME)
     ir = io.BytesIO(_DEC_DATA)
     ow = io.BytesIO()
     g = igw()
