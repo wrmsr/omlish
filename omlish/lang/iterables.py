@@ -9,6 +9,9 @@ T = ta.TypeVar('T')
 I = ta.TypeVar('I')
 O = ta.TypeVar('O')
 R = ta.TypeVar('R')
+I_contra = ta.TypeVar('I_contra', contravariant=True)
+O_co = ta.TypeVar('O_co', covariant=True)
+R_co = ta.TypeVar('R_co', covariant=True)
 GeneratorT = ta.TypeVar('GeneratorT', bound=ta.Generator)
 
 
@@ -105,6 +108,18 @@ def prodrange(*dims: Rangeable) -> ta.Iterable[ta.Sequence[int]]:
     if not dims:
         return []
     return itertools.product(*map(asrange, dims))
+
+
+##
+
+
+@ta.runtime_checkable
+class GeneratorLike(ta.Protocol[O_co, I_contra, R_co]):
+    def send(self, i: I_contra | None) -> O_co:  # Raises[StopIteration[R_co]]
+        ...
+
+    def close(self) -> None:
+        ...
 
 
 ##

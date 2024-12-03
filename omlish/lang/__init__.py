@@ -138,6 +138,7 @@ from .iterables import (  # noqa
     BUILTIN_SCALAR_ITERABLE_TYPES,
     CoroutineGenerator,
     Generator,
+    GeneratorLike,
     asrange,
     corogen,
     exhaust,
