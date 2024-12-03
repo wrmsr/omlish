@@ -55,7 +55,7 @@ class PrependableBytesReaderGenerator:
 
         return b''.join(l)
 
-    def inject(self, d: bytes) -> None:
+    def prepend(self, d: bytes) -> None:
         if d:
             self._p.append(d)
 
@@ -117,7 +117,7 @@ class IncrementalGzipReader:
             rdr: PrependableBytesReaderGenerator,
             crc: int,
             stream_size: int,
-    ) -> ta.Generator[int, bytes, int | None]:
+    ) -> ta.Generator[int, bytes, None]:
         # We've read to the end of the file.
         # We check that the computed CRC and size of the uncompressed data matches the stored values. Note that the size
         # stored is the true file size mod 2**32.
@@ -134,9 +134,7 @@ class IncrementalGzipReader:
         while c == b'\x00':
             c = yield from rdr.read(1)
         if c:
-            return c[0]
-        else:
-            return None
+            rdr.prepend(c)
 
     _ZERO_CRC = zlib.crc32(b'')
 
@@ -193,7 +191,7 @@ class IncrementalGzipReader:
                 if decompressor.unused_data != b'':
                     # Prepend the already read bytes to the fileobj so they can be seen by _read_eof() and
                     # _read_gzip_header()
-                    rdr.inject(decompressor.unused_data)
+                    rdr.prepend(decompressor.unused_data)
 
                 if uncompress != b'':
                     break
