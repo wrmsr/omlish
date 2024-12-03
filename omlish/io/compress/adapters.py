@@ -65,12 +65,12 @@ class CompressorIncrementalAdapter:
 
             compressed = compressor.compress(data)
             if compressed:
-                yield compressed
+                check.none((yield compressed))
 
         if (fl := compressor.flush()):
-            yield fl
+            check.none((yield fl))
 
-        yield b''
+        check.none((yield b''))
 
 
 ##
@@ -139,8 +139,8 @@ class DecompressorIncrementalAdapter:
                     break
 
             if not data:
-                yield b''
+                check.none((yield b''))
                 return
 
             pos += len(data)
-            yield data
+            check.none((yield data))
