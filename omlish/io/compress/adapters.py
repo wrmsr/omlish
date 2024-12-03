@@ -37,13 +37,14 @@ import typing as ta
 
 from ... import check
 from ._abc import NeedsInputDecompressor
+from ._abc import UnconsumedTailDecompressor
 from .types import IncrementalDecompressor
 
 
 class DecompressorIncrementalAdapter:
     def __init__(
             self,
-            factory: ta.Callable[..., NeedsInputDecompressor],
+            factory: ta.Callable[..., NeedsInputDecompressor | UnconsumedTailDecompressor],
             *,
             trailing_error: type[BaseException] | tuple[type[BaseException], ...] = (),
     ) -> None:
@@ -80,12 +81,22 @@ class DecompressorIncrementalAdapter:
                         break
 
                 else:
-                    if decompressor.needs_input:
-                        rawblock = check.isinstance((yield None), bytes)
-                        if not rawblock:
-                            raise EOFError('Compressed file ended before the end-of-stream marker was reached')
+                    if hasattr(decompressor, 'needs_input'):
+                        if decompressor.needs_input:
+                            rawblock = check.isinstance((yield None), bytes)
+                            if not rawblock:
+                                raise EOFError('Compressed file ended before the end-of-stream marker was reached')
+                        else:
+                            rawblock = b''
+
+                    elif hasattr(decompressor, 'unconsumed_tail'):
+                        if not (rawblock := decompressor.unconsumed_tail):
+                            rawblock = check.isinstance((yield None), bytes)
+                            if not rawblock:
+                                raise EOFError('Compressed file ended before the end-of-stream marker was reached')
+
                     else:
-                        rawblock = b''
+                        raise TypeError(decompressor)
 
                     data = decompressor.decompress(rawblock)
 

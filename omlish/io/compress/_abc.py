@@ -41,6 +41,23 @@ class Decompressor(abc.ABC):
         raise NotImplementedError
 
 
+class NeedsInputDecompressor(Decompressor):
+    """
+    Used by:
+     - bz2.BZ2Decompressor
+     - lzma.LZMADecompressor
+    """
+
+    @property
+    @abc.abstractmethod
+    def needs_input(self) -> bool:
+        """
+        False if the decompress() method can provide more decompressed data before requiring new uncompressed input.
+        """
+
+        raise NotImplementedError
+
+
 class UnconsumedTailDecompressor(Decompressor):
     """
     Used by:
@@ -55,23 +72,6 @@ class UnconsumedTailDecompressor(Decompressor):
         the limit for the uncompressed data buffer. This data has not yet been seen by the zlib machinery, so you must
         feed it (possibly with further data concatenated to it) back to a subsequent decompress() method call in order
         to get correct output.
-        """
-
-        raise NotImplementedError
-
-
-class NeedsInputDecompressor(Decompressor):
-    """
-    Used by:
-     - bz2.BZ2Decompressor
-     - lzma.LZMADecompressor
-    """
-
-    @property
-    @abc.abstractmethod
-    def needs_input(self) -> bool:
-        """
-        False if the decompress() method can provide more decompressed data before requiring new uncompressed input.
         """
 
         raise NotImplementedError
