@@ -150,6 +150,8 @@ class IncrementalGzipCompressor:
         # size may exceed 2 GiB, or even 4 GiB
         yield struct.pack('<L', size & 0xffffffff)
 
+        yield b''
+
 
 ##
 
