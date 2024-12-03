@@ -83,7 +83,7 @@ class IncrementalGzipReader:
         else:
             return b''
 
-    def gen(self) -> ta.Generator[bytes, bytes | None, None]:
+    def gen(self) -> ta.Generator[int | bytes, bytes, None]:
         eof = False
         pos = 0  # Current offset in decompressed stream
         size = -1
