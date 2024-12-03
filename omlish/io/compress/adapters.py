@@ -36,8 +36,10 @@
 import typing as ta
 
 from ... import check
-from ._abc import NeedsInputDecompressor
-from ._abc import UnconsumedTailDecompressor
+from .abc import Compressor
+from .abc import NeedsInputDecompressor
+from .abc import UnconsumedTailDecompressor
+from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
 
 
@@ -109,3 +111,16 @@ class DecompressorIncrementalAdapter:
 
             pos += len(data)
             yield data
+
+
+class CompressorIncrementalAdapter:
+    def __init__(
+            self,
+            factory: ta.Callable[..., Compressor],
+    ) -> None:
+        super().__init__()
+
+        self._factory = factory
+
+    def __call__(self) -> IncrementalCompressor:
+        raise NotImplementedError
