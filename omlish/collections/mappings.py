@@ -86,7 +86,7 @@ class DynamicTypeMap(ta.Generic[V]):
         self._items = list(items)
         self._weak = bool(weak)
 
-        self._cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
+        self._cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary() if weak else {}
 
     @property
     def items(self) -> ta.Sequence[V]:

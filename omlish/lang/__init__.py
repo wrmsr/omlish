@@ -136,8 +136,10 @@ from .imports import (  # noqa
 
 from .iterables import (  # noqa
     BUILTIN_SCALAR_ITERABLE_TYPES,
+    CoroutineGenerator,
     Generator,
     asrange,
+    corogen,
     exhaust,
     flatmap,
     flatten,
