@@ -146,6 +146,7 @@ from .iterables import (  # noqa
     ilen,
     interleave,
     itergen,
+    nextgen,
     peek,
     prodrange,
     renumerate,
