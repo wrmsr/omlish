@@ -209,6 +209,11 @@ def _main() -> None:
     print(g.send(b'hi'))
     print(g.send(b''))
 
+    g = lang.nextgen(check.not_none(UTF8.new_incremental)().iterdecode())
+    for b in UTF8.new().encode('☃'):
+        print(g.send(bytes([b])))
+    print(g.send(b''))
+
 
 if __name__ == '__main__':
     _main()
