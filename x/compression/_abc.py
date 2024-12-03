@@ -1,6 +1,7 @@
 """
 https://docs.python.org/3/library/bz2.html#bz2.BZ2Compressor
 https://docs.python.org/3/library/zlib.html#zlib.decompressobj
+https://docs.python.org/3/library/lzma.html#lzma.LZMADecompressor
 """
 import abc
 
@@ -41,7 +42,10 @@ class Decompressor(abc.ABC):
 
 
 class UnconsumedTailDecompressor(Decompressor):
-    """zlib style"""
+    """
+    Used by:
+     - zlib.decompressobj
+    """
 
     @property
     @abc.abstractmethod
@@ -57,7 +61,11 @@ class UnconsumedTailDecompressor(Decompressor):
 
 
 class NeedsInputDecompressor(Decompressor):
-    """bz2 style"""
+    """
+    Used by:
+     - bz2.BZ2Decompressor
+     - lzma.LZMADecompressor
+    """
 
     @property
     @abc.abstractmethod
