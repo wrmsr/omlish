@@ -40,6 +40,7 @@ import time
 import typing as ta
 import zlib
 
+from ... import check
 from ..generators import PrependableBytesGeneratorReader
 from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
@@ -70,8 +71,8 @@ class IncrementalGzipCompressor:
         self._mtime = mtime
 
     def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
-        yield b'\037\213'  # magic header
-        yield b'\010'  # compression method
+        check.none((yield b'\037\213'))  # magic header
+        check.none((yield b'\010'))  # compression method
 
         try:
             # RFC 1952 requires the FNAME field to be Latin-1. Do not include filenames that cannot be represented that
@@ -87,12 +88,12 @@ class IncrementalGzipCompressor:
         flags = 0
         if fname:
             flags = gzip.FNAME
-        yield chr(flags).encode('latin-1')
+        check.none((yield chr(flags).encode('latin-1')))
 
         mtime = self._mtime
         if mtime is None:
             mtime = time.time()
-        yield struct.pack('<L', int(mtime))
+        check.none((yield struct.pack('<L', int(mtime))))
 
         if self._compresslevel == COMPRESS_LEVEL_BEST:
             xfl = b'\002'
@@ -100,12 +101,12 @@ class IncrementalGzipCompressor:
             xfl = b'\004'
         else:
             xfl = b'\000'
-        yield xfl
+        check.none((yield xfl))
 
-        yield b'\377'
+        check.none((yield b'\377'))
 
         if fname:
-            yield fname + b'\000'
+            check.none((yield fname + b'\000'))
 
     def __call__(self) -> IncrementalCompressor:
         crc = _ZERO_CRC
@@ -123,7 +124,7 @@ class IncrementalGzipCompressor:
         yield from self._write_gzip_header()
 
         while True:
-            data: ta.Any = yield None
+            data: ta.Any = check.isinstance((yield None), bytes)
             if not data:
                 break
 
@@ -137,13 +138,13 @@ class IncrementalGzipCompressor:
 
             if length > 0:
                 if (fl := compress.compress(data)):
-                    yield fl
+                    check.none((yield fl))
                 size += length
                 crc = zlib.crc32(data, crc)
                 offset += length
 
         if (fl := compress.flush()):
-            yield fl
+            check.none((yield fl))
 
         yield struct.pack('<L', crc)
         # size may exceed 2 GiB, or even 4 GiB
@@ -256,7 +257,7 @@ class IncrementalGzipDecompressor:
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
                     if not last_mtime:
-                        yield b''
+                        check.none((yield b''))
                         return
                     new_member = False
 
@@ -280,4 +281,4 @@ class IncrementalGzipDecompressor:
             crc = zlib.crc32(uncompress, crc)
             stream_size += len(uncompress)
             pos += len(uncompress)
-            yield uncompress
+            check.none((yield uncompress))

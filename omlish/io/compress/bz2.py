@@ -21,7 +21,7 @@ class IncrementalBz2Compressor:
         return CompressorIncrementalAdapter(
             functools.partial(
                 bz2.BZ2Compressor,  # type: ignore
-                compresslevel=self._compresslevel,
+                self._compresslevel,
             ),
         )()
 

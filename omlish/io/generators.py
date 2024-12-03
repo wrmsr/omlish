@@ -1,5 +1,7 @@
 import typing as ta
 
+from .. import check
+
 
 class PrependableBytesGeneratorReader:
     def __init__(self) -> None:
@@ -11,7 +13,7 @@ class PrependableBytesGeneratorReader:
 
     def read(self, sz: int | None) -> ta.Generator[int | None, bytes, bytes]:
         if not self._p:
-            d = yield sz
+            d = check.isinstance((yield sz), bytes)
             return d
 
         if sz is None:
@@ -32,7 +34,7 @@ class PrependableBytesGeneratorReader:
             self._p.pop(0)
 
         if r:
-            c = yield r
+            c = check.isinstance((yield r), bytes)
             if not c:
                 return b''
             if len(c) != r:
