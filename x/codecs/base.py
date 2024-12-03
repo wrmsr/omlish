@@ -143,7 +143,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
             if not i:
                 break
             o = x.encode(i)
-            i = yield o
+            i = yield o or None
         o = x.encode(i, final=True)
         yield o
 
@@ -154,7 +154,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
             if not i:
                 break
             o = x.decode(i)
-            i = yield o
+            i = yield o or None
         o = x.decode(i, final=True)
         yield o
 
