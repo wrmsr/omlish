@@ -1,3 +1,7 @@
+"""
+https://docs.python.org/3/library/bz2.html#bz2.BZ2Compressor
+https://docs.python.org/3/library/zlib.html#zlib.decompressobj
+"""
 import abc
 import typing as ta
 
@@ -70,6 +74,40 @@ class Decompressor(abc.ABC):
         """
         Returns a copy of the decompression object. This can be used to save the state of the decompressor midway
         through the data stream in order to speed up random seeks into the stream at a future point.
+        """
+
+        raise NotImplementedError
+
+
+class Compressor(abc.ABC):
+    @abc.abstractmethod
+    def compress(self, data: bytes) -> bytes:
+        """
+        Compress data, returning a bytes object containing compressed data for at least part of the data in data. This
+        data should be concatenated to the output produced by any preceding calls to the compress() method. Some input
+        may be kept in internal buffers for later processing.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self, *mode: int) -> bytes:
+        """
+        All pending input is processed, and a bytes object containing the remaining compressed output is returned. mode
+        can be selected from the constants Z_NO_FLUSH, Z_PARTIAL_FLUSH, Z_SYNC_FLUSH, Z_FULL_FLUSH, Z_BLOCK
+        (zlib 1.2.3.4), or Z_FINISH, defaulting to Z_FINISH. Except Z_FINISH, all constants allow compressing further
+        bytestrings of data, while Z_FINISH finishes the compressed stream and prevents compressing any more data. After
+        calling flush() with mode set to Z_FINISH, the compress() method cannot be called again; the only realistic
+        action is to delete the object.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def copy(self) -> ta.Self:
+        """
+        Returns a copy of the compression object. This can be used to efficiently compress a set of data that share a
+        common initial prefix.
         """
 
         raise NotImplementedError
