@@ -42,8 +42,8 @@ class BufferedBytesReaderGenerator:
         return b''.join(l)
 
     def inject(self, d: bytes) -> None:
-        self._buffer.append(d)
-        raise NotImplementedError
+        if d:
+            self._buffer.append(d)
 
 
 ##
@@ -123,7 +123,7 @@ class IncrementalGzipReader:
         else:
             return None
 
-    def gen(self) -> ta.Generator[int | bytes, bytes, None]:
+    def gen(self) -> ta.Generator[int | bytes, bytes | None, None]:
         rdr = BufferedBytesReaderGenerator()
 
         pos = 0  # Current offset in decompressed stream
@@ -152,6 +152,7 @@ class IncrementalGzipReader:
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
                     if not last_mtime:
+                        yield b''
                         return
                     new_member = False
 
@@ -169,13 +170,13 @@ class IncrementalGzipReader:
 
                 if uncompress != b'':
                     break
-                if buf == b'':
+                if buf == b'':  # noqa
                     raise EOFError('Compressed file ended before the end-of-stream marker was reached')
 
             crc = zlib.crc32(uncompress, crc)
             stream_size += len(uncompress)
             pos += len(uncompress)
-            yield from rdr.read(uncompress)
+            yield uncompress
 
 
 class IncrementalGzipWriter:

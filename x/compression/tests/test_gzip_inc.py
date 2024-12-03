@@ -22,6 +22,8 @@ def test_gzip_inc():
             o = g.send(ir.read(o))
         elif isinstance(o, bytes):
             print(o)
+            if not o:
+                break
             o = g.send(None)
         else:
             raise TypeError(o)
