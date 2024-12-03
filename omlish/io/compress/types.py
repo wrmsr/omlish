@@ -17,9 +17,9 @@ IncrementalCompressor: ta.TypeAlias = ta.Generator[
 
 IncrementalDecompressor: ta.TypeAlias = ta.Generator[
     ta.Union[
+        bytes,  # Uncompressed output
         int,  # Need exactly n bytes
         None,  # Need any amount of bytes
-        bytes,  # Uncompressed output
     ],
     ta.Union[
         bytes,  # Input bytes
