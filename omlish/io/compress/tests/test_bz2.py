@@ -29,6 +29,38 @@ def test_bz2_inc_compressor():
         else:
             ow.write(o)
 
+    o = g.send(i)
+    while True:
+        if o is None:
+            break
+        elif not o:
+            raise TypeError(o)
+        else:
+            ow.write(o)
+        try:
+            o = g.send(None)
+        except StopIteration:
+            if i:
+                raise RuntimeError  # noqa
+
+    if i:
+        try:
+            o = g.send(b'')
+        except StopIteration:
+            pass
+        else:
+            while True:
+                if o is None:
+                    break
+                elif not o:
+                    raise TypeError(o)
+                else:
+                    ow.write(o)
+                try:
+                    o = g.send(None)
+                except StopIteration:
+                    break
+
     assert ow.getvalue() == _ENC_DATA
 
 
