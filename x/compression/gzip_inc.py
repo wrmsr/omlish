@@ -19,6 +19,9 @@ class BufferedBytesReaderGenerator:
         super().__init__()
         self._buffer: list[bytes] = []
 
+    class ReadError(Exception):
+        pass
+
     def read(self, sz: int | None) -> ta.Generator[int | None, bytes, bytes]:
         if not self._buffer:
             d = yield sz
@@ -42,9 +45,11 @@ class BufferedBytesReaderGenerator:
             self._buffer.pop(0)
 
         if r:
-            c = yield sz
+            c = yield r
             if not c:
                 return b''
+            if len(c) != r:
+                raise self.ReadError(f'Buffered reader got {len(c)} bytes, expected {r}')
             l.append(c)
 
         return b''.join(l)
@@ -133,7 +138,18 @@ class IncrementalGzipReader:
 
     _ZERO_CRC = zlib.crc32(b'')
 
-    def gen(self) -> ta.Generator[bytes | int | None, bytes | None, None]:
+    def gen(self) -> ta.Generator[
+        ta.Union[
+            int,  # Read exactly n bytes
+            None,  # Read any amount of bytes
+            bytes,  # Uncompressed output
+        ],
+        ta.Union[
+            bytes,  # Bytes read
+            None,  # Next output
+        ],
+        None,
+    ]:
         rdr = BufferedBytesReaderGenerator()
 
         pos = 0  # Current offset in decompressed stream
