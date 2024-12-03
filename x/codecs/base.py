@@ -80,12 +80,18 @@ class TextComboCodec(EagerCodec[str, bytes]):
         return cls(codecs.lookup(name), options)
 
     def encode(self, i: str) -> bytes:
-        o, _ = self._info.encode(i, errors=self._opts.errors)
+        o, _ = self._info.encode(i, self._opts.errors)
         return o
 
     def decode(self, o: bytes) -> str:
-        i, _ = self._info.decode(o, errors=self._opts.errors)
+        i, _ = self._info.decode(o, self._opts.errors)
         return i
+
+    def iterencode(self) -> ta.Generator[I | None, O | None, None]:
+        raise NotImplementedError
+
+    def iterdecode(self) -> ta.Generator[O | None, I | None, None]:
+        raise NotImplementedError
 
 
 def make_text_encoding_codec(
@@ -112,7 +118,7 @@ UTF8 = make_text_encoding_codec('utf8', aliases=['utf-8'])
 
 
 def _main() -> None:
-    pass
+    assert UTF8.new().encode('hi') == b'hi'
 
 
 if __name__ == '__main__':
