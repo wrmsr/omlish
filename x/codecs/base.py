@@ -110,7 +110,7 @@ class TextEncodingOptions:
     errors: TextEncodingErrors = 'strict'
 
 
-class TextEncodingComboCodec(EagerCodec[str, bytes]):
+class TextEncodingComboCodec(ComboCodec[str, bytes]):
     def __init__(
             self,
             info: codecs.CodecInfo,
@@ -182,8 +182,8 @@ UTF8SIG = make_text_encoding_codec('utf-8-sig')
 
 
 def _main() -> None:
-    assert UTF8.new().encode('hi') == b'hi'
-    assert UTF8.new(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
+    assert check.not_none(UTF8.new)().encode('hi') == b'hi'
+    assert check.not_none(UTF8.new)(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
 
 
 if __name__ == '__main__':
