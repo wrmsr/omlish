@@ -12,7 +12,11 @@ _ENC_DATA = bz2.compress(_DEC_DATA)
 
 def test_bz2_inc_compressor():
     ow = io.BytesIO()
-    for b in feed_inc_compressor(IncrementalBz2Compressor()(), io.BytesIO(_DEC_DATA), read_size=13):
+    for b in feed_inc_compressor(
+            IncrementalBz2Compressor()(),
+            io.BytesIO(_DEC_DATA),
+            read_size=13,
+    ):
         ow.write(b)
 
     assert ow.getvalue() == _ENC_DATA
