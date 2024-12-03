@@ -53,7 +53,7 @@ class IncrementalGzipReader:
     def __init__(self) -> None:
         super().__init__()
 
-        self._decomp_factory = zlib._ZlibDecompressor  # noqa  # FIXME: zlib.decompressobj
+        self._decomp_factory = zlib.decompressobj
         self._decomp_args = dict(
             wbits=-zlib.MAX_WBITS,
         )
@@ -127,7 +127,6 @@ class IncrementalGzipReader:
         rdr = BufferedBytesReaderGenerator()
 
         pos = 0  # Current offset in decompressed stream
-        size = -1
 
         crc = zlib.crc32(b'')
         stream_size = 0  # Decompressed size of unconcatenated stream
@@ -157,11 +156,11 @@ class IncrementalGzipReader:
                     new_member = False
 
                 # Read a chunk of data from the file
-                if decompressor.needs_input:
+                if not decompressor.unconsumed_tail:
                     buf = yield from rdr.read(4096)
-                    uncompress = decompressor.decompress(buf, size)
+                    uncompress = decompressor.decompress(buf)
                 else:
-                    uncompress = decompressor.decompress(b'', size)
+                    uncompress = decompressor.decompress(b'')
 
                 if decompressor.unused_data != b'':
                     # Prepend the already read bytes to the fileobj so they can be seen by _read_eof() and
