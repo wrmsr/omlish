@@ -3,13 +3,13 @@
 # ruff: noqa: UP006 UP007
 import inspect
 import json
-import os
 import shlex
 import struct
 import subprocess
 import sys
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
@@ -50,6 +50,9 @@ def _recv_obj(f: ta.IO, ty: type) -> ta.Any:
     return unmarshal_obj(j, ty)
 
 
+##
+
+
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
@@ -61,6 +64,41 @@ def _remote_main() -> None:
         o = SubprocessCommand()._execute(i)  # noqa
 
         _send_obj(rt.output, o)
+
+
+##
+
+
+@cached_nullary
+def _get_self_src() -> str:
+    return inspect.getsource(sys.modules[__name__])
+
+
+def _is_src_amalg(src: str) -> bool:
+    for l in src.splitlines():  # noqa
+        if l.startswith('# @omlish-amalg-output '):
+            return True
+    return False
+
+
+@cached_nullary
+def _is_self_amalg() -> bool:
+    return _is_src_amalg(_get_self_src())
+
+
+def _get_amalg_src(*, amalg_file: ta.Optional[str]) -> str:
+    if amalg_file is not None:
+        with open(amalg_file) as f:
+            return f.read()
+
+    if _is_self_amalg():
+        return _get_self_src()
+
+    import importlib.resources
+    return importlib.resources.read_text(__package__, '_manage.py')
+
+
+##
 
 
 def _main() -> None:
@@ -77,23 +115,7 @@ def _main() -> None:
 
     #
 
-    self_src = inspect.getsource(sys.modules[__name__])
-    self_src_lines = self_src.splitlines()
-    for l in self_src_lines:
-        if l.startswith('# @omlish-amalg-output '):
-            is_self_amalg = True
-            break
-    else:
-        is_self_amalg = False
-
-    if is_self_amalg:
-        amalg_src = self_src
-    else:
-        amalg_file = args._amalg_file  # noqa
-        if amalg_file is None:
-            amalg_file = os.path.join(os.path.dirname(__file__), '_manage.py')
-        with open(amalg_file) as f:
-            amalg_src = f.read()
+    amalg_src = _get_amalg_src(amalg_file=args._amalg_file)  # noqa
 
     #
 
