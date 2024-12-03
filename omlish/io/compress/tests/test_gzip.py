@@ -13,7 +13,11 @@ _ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 
 def test_compressor():
     ow = io.BytesIO()
-    for b in feed_inc_compressor(IncrementalGzipCompressor(mtime=_MTIME)(), io.BytesIO(_DEC_DATA), read_size=13):
+    for b in feed_inc_compressor(
+            IncrementalGzipCompressor(mtime=_MTIME)(),
+            io.BytesIO(_DEC_DATA),
+            read_size=13,
+    ):
         ow.write(b)
 
     assert ow.getvalue() == _ENC_DATA
