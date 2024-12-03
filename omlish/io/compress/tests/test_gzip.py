@@ -10,7 +10,7 @@ _DEC_DATA = b'foobar' * 128
 _ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 
 
-def test_gzip_inc_reader():
+def test_decompressor():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
     igr = IncrementalGzipDecompressor()
@@ -32,7 +32,7 @@ def test_gzip_inc_reader():
     assert ow.getvalue() == _DEC_DATA
 
 
-def test_gzip_inc_writer():
+def test_compressor():
     igw = IncrementalGzipCompressor(mtime=_MTIME)
     ir = io.BytesIO(_DEC_DATA)
     ow = io.BytesIO()
