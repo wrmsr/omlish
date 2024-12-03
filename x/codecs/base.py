@@ -105,7 +105,7 @@ TextEncodingErrors: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class TextEncodingCodecOptions:
+class TextEncodingOptions:
     errors: TextEncodingErrors = 'strict'
 
 
@@ -113,7 +113,7 @@ class TextEncodingComboCodec(EagerCodec[str, bytes]):
     def __init__(
             self,
             info: codecs.CodecInfo,
-            options: TextEncodingCodecOptions = TextEncodingCodecOptions(),
+            options: TextEncodingOptions = TextEncodingOptions(),
     ) -> None:
         super().__init__()
         self._info = info
@@ -123,7 +123,7 @@ class TextEncodingComboCodec(EagerCodec[str, bytes]):
     def lookup(
             cls,
             name: str,
-            options: TextEncodingCodecOptions = TextEncodingCodecOptions(),
+            options: TextEncodingOptions = TextEncodingOptions(),
     ) -> 'TextEncodingComboCodec':
         return cls(codecs.lookup(name), options)
 
@@ -164,6 +164,7 @@ UTF8 = make_text_encoding_codec('utf8', aliases=['utf-8'])
 
 def _main() -> None:
     assert UTF8.new().encode('hi') == b'hi'
+    assert UTF8.new(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
 
 
 if __name__ == '__main__':
