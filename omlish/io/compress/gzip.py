@@ -225,8 +225,8 @@ class IncrementalGzipDecompressor:
 
         # Gzip files can be padded with zeroes and still have archives. Consume all zero bytes and set the file position
         # to the first non-zero byte. See http://www.gzip.org/#faq8
-        c = b'\x00'
-        while c == b'\x00':
+        c = b'\0'
+        while c == b'\0':
             c = yield from rdr.read(1)
         if c:
             rdr.prepend(c)
