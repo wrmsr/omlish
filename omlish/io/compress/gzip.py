@@ -1,5 +1,4 @@
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
-# --------------------------------------------
 #
 # 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
 # ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
@@ -41,32 +40,40 @@ import time
 import typing as ta
 import zlib
 
+from ..generators import PrependableBytesGeneratorReader
+from .types import IncrementalCompressor
+from .types import IncrementalDecompressor
+
 
 COMPRESS_LEVEL_FAST = 1
 COMPRESS_LEVEL_TRADEOFF = 6
 COMPRESS_LEVEL_BEST = 9
 
+_ZERO_CRC = zlib.crc32(b'')
+
 
 ##
 
 
-class IncrementalGzipReader:
+class IncrementalGzipDecompressor:
     def __init__(self) -> None:
         super().__init__()
 
-        self._kwargs = dict(
+        self._factory = functools.partial(
+            zlib.decompressobj,
             wbits=-zlib.MAX_WBITS,
         )
 
-        self._factory = functools.partial(zlib.decompressobj, **self._kwargs)
-
-    def _read_gzip_header(self, rdr: PrependableBytesReaderGenerator) -> ta.Generator[int, bytes, int | None]:
+    def _read_gzip_header(
+            self,
+            rdr: PrependableBytesGeneratorReader,
+    ) -> ta.Generator[int | None, bytes, int | None]:
         magic = yield from rdr.read(2)
         if magic == b'':
             return None
 
         if magic != b'\037\213':
-            raise gzip.BadGzipFile('Not a gzipped file (%r)' % magic)
+            raise gzip.BadGzipFile(f'Not a gzipped file ({magic!r})')
 
         buf = yield from rdr.read(8)
         method, flag, last_mtime = struct.unpack('<BBIxx', buf)
@@ -91,7 +98,7 @@ class IncrementalGzipReader:
             # Read and discard a null-terminated string containing a comment
             while True:
                 s = yield from rdr.read(1)
-                if not s or s==b'\000':
+                if not s or s == b'\000':
                     break
 
         if flag & gzip.FHCRC:
@@ -101,10 +108,10 @@ class IncrementalGzipReader:
 
     def _read_eof(
             self,
-            rdr: PrependableBytesReaderGenerator,
+            rdr: PrependableBytesGeneratorReader,
             crc: int,
             stream_size: int,
-    ) -> ta.Generator[int, bytes, None]:
+    ) -> ta.Generator[int | None, bytes, None]:
         # We've read to the end of the file.
         # We check that the computed CRC and size of the uncompressed data matches the stored values. Note that the size
         # stored is the true file size mod 2**32.
@@ -123,44 +130,31 @@ class IncrementalGzipReader:
         if c:
             rdr.prepend(c)
 
-    _ZERO_CRC = zlib.crc32(b'')
-
-    def gen(self) -> ta.Generator[
-        ta.Union[
-            int,  # Read exactly n bytes
-            None,  # Read any amount of bytes
-            bytes,  # Uncompressed output
-        ],
-        ta.Union[
-            bytes,  # Bytes read
-            None,  # Next output
-        ],
-        None,
-    ]:
-        rdr = PrependableBytesReaderGenerator()
+    def __call__(self) -> IncrementalDecompressor:
+        rdr = PrependableBytesGeneratorReader()
 
         pos = 0  # Current offset in decompressed stream
 
-        crc = self._ZERO_CRC
+        crc = _ZERO_CRC
         stream_size = 0  # Decompressed size of unconcatenated stream
         new_member = True
 
         decompressor = self._factory()
 
         while True:
-            # For certain input data, a single call to decompress() may not return any data. In this case, retry until we
-            # get some data or reach EOF.
+            # For certain input data, a single call to decompress() may not return any data. In this case, retry until
+            # we get some data or reach EOF.
             while True:
                 if decompressor.eof:
-                    # Ending case: we've come to the end of a member in the file, so finish up this member, and read a new
-                    # gzip header. Check the CRC and file size, and set the flag so we read a new member
+                    # Ending case: we've come to the end of a member in the file, so finish up this member, and read a
+                    # new gzip header. Check the CRC and file size, and set the flag so we read a new member
                     yield from self._read_eof(rdr, crc, stream_size)
                     new_member = True
                     decompressor = self._factory()
 
                 if new_member:
                     # If the _new_member flag is set, we have to jump to the next member, if there is one.
-                    crc = self._ZERO_CRC
+                    crc = _ZERO_CRC
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
                     if not last_mtime:
@@ -191,12 +185,15 @@ class IncrementalGzipReader:
             yield uncompress
 
 
-class IncrementalGzipWriter:
+##
+
+
+class IncrementalGzipCompressor:
     def __init__(
             self,
             *,
             compresslevel: int = COMPRESS_LEVEL_BEST,
-            name: str | None = None,
+            name: str | bytes | None = None,
             mtime: float | None = None,
     ) -> None:
         super().__init__()
@@ -243,8 +240,8 @@ class IncrementalGzipWriter:
         if fname:
             yield fname + b'\000'
 
-    def gen(self) -> ta.Generator[bytes | None, bytes | None, None]:
-        crc = zlib.crc32(b'')
+    def __call__(self) -> IncrementalCompressor:
+        crc = _ZERO_CRC
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
 
@@ -259,7 +256,7 @@ class IncrementalGzipWriter:
         yield from self._write_gzip_header()
 
         while True:
-            data = yield
+            data: ta.Any = yield None
             if not data:
                 break
 

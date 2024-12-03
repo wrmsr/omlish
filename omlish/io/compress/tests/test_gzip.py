@@ -1,8 +1,8 @@
-import io
 import gzip
+import io
 
-from ..gzip_inc import IncrementalGzipReader
-from ..gzip_inc import IncrementalGzipWriter
+from ..gzip import IncrementalGzipCompressor
+from ..gzip import IncrementalGzipDecompressor
 
 
 _DEC_DATA = b'foobar' * 128
@@ -12,8 +12,8 @@ _ENC_DATA = gzip.compress(_DEC_DATA)
 def test_gzip_inc_reader():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
-    igr = IncrementalGzipReader()
-    g = igr.gen()
+    igr = IncrementalGzipDecompressor()
+    g = igr()
     o = next(g)
     sz = 13
     while True:
@@ -32,10 +32,10 @@ def test_gzip_inc_reader():
 
 
 def test_gzip_inc_writer():
-    igw = IncrementalGzipWriter()
+    igw = IncrementalGzipCompressor()
     ir = io.BytesIO(_DEC_DATA)
     ow = io.BytesIO()
-    g = igw.gen()
+    g = igw()
     i = None
     sz = 13
 
@@ -63,7 +63,7 @@ def test_gzip_inc_writer():
             o = g.send(None)
         except StopIteration:
             if i:
-                raise RuntimeError
+                raise RuntimeError  # noqa
 
     if i:
         try:
