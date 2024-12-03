@@ -1,4 +1,5 @@
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+# --------------------------------------------
 #
 # 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
 # ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
