@@ -58,7 +58,7 @@ class Codec(lang.Final):
 
     options: type | None = None
 
-    new: ta.Callable[..., EagerCodec] | None = None
+    new: ta.Callable[..., EagerCodec]
     new_incremental: ta.Callable[..., IncrementalCodec] | None = None
 
 
@@ -136,10 +136,12 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
         i, _ = self._info.decode(o, self._opts.errors)
         return i
 
-    def iterencode(self) -> ta.Generator[I | None, O | None, None]:
+    def iterencode(self) -> ta.Generator[str | None, bytes | None, None]:
+        x = self._info.incrementalencoder(self._opts.errors)
         raise NotImplementedError
 
-    def iterdecode(self) -> ta.Generator[O | None, I | None, None]:
+    def iterdecode(self) -> ta.Generator[bytes | None, str | None, None]:
+        x = self._info.incrementaldecoder(self._opts.errors)
         raise NotImplementedError
 
 
@@ -182,8 +184,12 @@ UTF8SIG = make_text_encoding_codec('utf-8-sig')
 
 
 def _main() -> None:
-    assert check.not_none(UTF8.new)().encode('hi') == b'hi'
-    assert check.not_none(UTF8.new)(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
+    assert UTF8.new().encode('hi') == b'hi'
+    assert UTF8.new(TextEncodingOptions(errors='ignore')).encode('hi') == b'hi'
+
+    g = check.not_none(UTF8.new_incremental)().iterencode()
+    print(g.send('hi'))
+    print(g.send(None))
 
 
 if __name__ == '__main__':
