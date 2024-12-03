@@ -9,6 +9,33 @@ import abc
 ##
 
 
+class Compressor(abc.ABC):
+    @abc.abstractmethod
+    def compress(self, data: bytes) -> bytes:
+        """
+        Provide data to the compressor object. Returns a chunk of compressed data if possible, or an empty byte string
+        otherwise.
+
+        When you have finished providing data to the compressor, call the flush() method to finish the compression
+        process.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> bytes:
+        """
+        Finish the compression process. Returns the compressed data left in internal buffers.
+
+        The compressor object may not be used after this method has been called.
+        """
+
+        raise NotImplementedError
+
+
+##
+
+
 class Decompressor(abc.ABC):
     @property
     @abc.abstractmethod
@@ -72,33 +99,6 @@ class UnconsumedTailDecompressor(Decompressor):
         the limit for the uncompressed data buffer. This data has not yet been seen by the zlib machinery, so you must
         feed it (possibly with further data concatenated to it) back to a subsequent decompress() method call in order
         to get correct output.
-        """
-
-        raise NotImplementedError
-
-
-##
-
-
-class Compressor(abc.ABC):
-    @abc.abstractmethod
-    def compress(self, data: bytes) -> bytes:
-        """
-        Provide data to the compressor object. Returns a chunk of compressed data if possible, or an empty byte string
-        otherwise.
-
-        When you have finished providing data to the compressor, call the flush() method to finish the compression
-        process.
-        """
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def flush(self) -> bytes:
-        """
-        Finish the compression process. Returns the compressed data left in internal buffers.
-
-        The compressor object may not be used after this method has been called.
         """
 
         raise NotImplementedError

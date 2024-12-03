@@ -10,28 +10,6 @@ _DEC_DATA = b'foobar' * 128
 _ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 
 
-def test_decompressor():
-    ir = io.BytesIO(_ENC_DATA)
-    ow = io.BytesIO()
-    igr = IncrementalGzipDecompressor()
-    g = igr()
-    o = next(g)
-    sz = 13
-    while True:
-        if isinstance(o, int):
-            o = g.send(ir.read(o))
-        elif o is None:
-            o = g.send(ir.read(sz))
-        elif isinstance(o, bytes):
-            if not o:
-                break
-            ow.write(o)
-            o = g.send(None)
-        else:
-            raise TypeError(o)
-    assert ow.getvalue() == _DEC_DATA
-
-
 def test_compressor():
     igw = IncrementalGzipCompressor(mtime=_MTIME)
     ir = io.BytesIO(_DEC_DATA)
@@ -85,3 +63,25 @@ def test_compressor():
                     break
 
     assert ow.getvalue() == _ENC_DATA
+
+
+def test_decompressor():
+    ir = io.BytesIO(_ENC_DATA)
+    ow = io.BytesIO()
+    igr = IncrementalGzipDecompressor()
+    g = igr()
+    o = next(g)
+    sz = 13
+    while True:
+        if isinstance(o, int):
+            o = g.send(ir.read(o))
+        elif o is None:
+            o = g.send(ir.read(sz))
+        elif isinstance(o, bytes):
+            if not o:
+                break
+            ow.write(o)
+            o = g.send(None)
+        else:
+            raise TypeError(o)
+    assert ow.getvalue() == _DEC_DATA
