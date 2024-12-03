@@ -20,6 +20,8 @@ def test_gzip_inc():
     while True:
         if isinstance(o, int):
             o = g.send(ir.read(o))
+        elif o is None:
+            o = g.send(ir.read(4096))
         elif isinstance(o, bytes):
             print(o)
             if not o:

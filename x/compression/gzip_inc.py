@@ -19,26 +19,34 @@ class BufferedBytesReaderGenerator:
         super().__init__()
         self._buffer: list[bytes] = []
 
-    def read(self, sz: int) -> ta.Generator[int, bytes, bytes]:
+    def read(self, sz: int | None) -> ta.Generator[int | None, bytes, bytes]:
         if not self._buffer:
             d = yield sz
             return d
+
+        if sz is None:
+            return self._buffer.pop(0)
+
         l: list[bytes] = []
         r = sz
         while r > 0 and self._buffer:
             c = self._buffer[0]
+
             if len(c) > r:
                 l.append(c[:r])
                 self._buffer[0] = c[r:]
                 return b''.join(l)
+
             l.append(c)
             r -= len(c)
             self._buffer.pop(0)
+
         if r:
             c = yield sz
             if not c:
                 return b''
             l.append(c)
+
         return b''.join(l)
 
     def inject(self, d: bytes) -> None:
@@ -123,12 +131,14 @@ class IncrementalGzipReader:
         else:
             return None
 
-    def gen(self) -> ta.Generator[int | bytes, bytes | None, None]:
+    _ZERO_CRC = zlib.crc32(b'')
+
+    def gen(self) -> ta.Generator[bytes | int | None, bytes | None, None]:
         rdr = BufferedBytesReaderGenerator()
 
         pos = 0  # Current offset in decompressed stream
 
-        crc = zlib.crc32(b'')
+        crc = self._ZERO_CRC
         stream_size = 0  # Decompressed size of unconcatenated stream
         new_member = True
 
@@ -147,7 +157,7 @@ class IncrementalGzipReader:
 
                 if new_member:
                     # If the _new_member flag is set, we have to jump to the next member, if there is one.
-                    crc = zlib.crc32(b'')
+                    crc = self._ZERO_CRC
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
                     if not last_mtime:
@@ -157,7 +167,7 @@ class IncrementalGzipReader:
 
                 # Read a chunk of data from the file
                 if not decompressor.unconsumed_tail:
-                    buf = yield from rdr.read(4096)
+                    buf = yield from rdr.read(None)
                     uncompress = decompressor.decompress(buf)
                 else:
                     uncompress = decompressor.decompress(b'')
