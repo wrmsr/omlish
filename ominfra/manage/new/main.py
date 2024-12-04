@@ -12,21 +12,58 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.marshal import PolymorphicObjMarshaler
+from omlish.lite.marshal import get_obj_marshaler
 from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import register_opj_marshaler
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import pyremote_bootstrap_finalize
 from ...pyremote import pyremote_build_bootstrap_cmd
+from .commands.base import Command
 from .commands.subprocess import SubprocessCommand
 
 
 ##
 
 
-def _send_obj(f: ta.IO, o: ta.Any) -> None:
-    j = json_dumps_compact(marshal_obj(o))
+_COMMAND_TYPES = {
+    'subprocess': SubprocessCommand,
+}
+
+
+register_opj_marshaler(
+    Command.Input,
+    PolymorphicObjMarshaler.of([
+        PolymorphicObjMarshaler.Impl(
+            cty.Input,
+            k,
+            get_obj_marshaler(cty.Input),
+        )
+        for k, cty in _COMMAND_TYPES.items()
+    ]),
+)
+
+register_opj_marshaler(
+    Command.Output,
+    PolymorphicObjMarshaler.of([
+        PolymorphicObjMarshaler.Impl(
+            cty.Output,
+            k,
+            get_obj_marshaler(cty.Output),
+        )
+        for k, cty in _COMMAND_TYPES.items()
+    ]),
+)
+
+
+##
+
+
+def _send_obj(f: ta.IO, o: ta.Any, ty: ta.Any = None) -> None:
+    j = json_dumps_compact(marshal_obj(o, ty))
     d = j.encode('utf-8')
 
     f.write(struct.pack('<I', len(d)))
@@ -34,7 +71,7 @@ def _send_obj(f: ta.IO, o: ta.Any) -> None:
     f.flush()
 
 
-def _recv_obj(f: ta.IO, ty: type) -> ta.Any:
+def _recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
     d = f.read(4)
     if not d:
         return None
@@ -57,13 +94,16 @@ def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     while True:
-        i = _recv_obj(rt.input, SubprocessCommand.Input)
+        i = _recv_obj(rt.input, Command.Input)
         if i is None:
             break
 
-        o = SubprocessCommand()._execute(i)  # noqa
+        if isinstance(i, SubprocessCommand.Input):
+            o = SubprocessCommand()._execute(i)  # noqa
+        else:
+            raise TypeError(i)
 
-        _send_obj(rt.output, o)
+        _send_obj(rt.output, o, Command.Output)
 
 
 ##
@@ -166,9 +206,9 @@ def _main() -> None:
             capture_stdout=True,
         ),
     ]:
-        _send_obj(stdin, ci)
+        _send_obj(stdin, ci, Command.Input)
 
-        o = _recv_obj(stdout, SubprocessCommand.Output)
+        o = _recv_obj(stdout, Command.Output)
 
         print(o)
 
