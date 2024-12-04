@@ -16,22 +16,26 @@ def buffer_generator_writer(
         g: ta.Generator[O | None, I | None, R],
         *,
         terminator: lang.Maybe[O] = lang.empty(),
-) -> ta.Generator[O, list[I], R]:
+) -> ta.Generator[list[O], I, R]:
     l: list[O]
-    i = yield
+    i: I | None = yield  # type: ignore
     while True:
         l = []
         while True:
             try:
                 o = g.send(i)
             except StopIteration as e:
+                if l:
+                    yield l
                 return e.value
             i = None
             if o is None:
                 break
             l.append(o)
             if terminator.present and o == terminator.must():
-                break
+                if l:
+                    yield l
+                raise StopIteration
         i = yield l
 
 
