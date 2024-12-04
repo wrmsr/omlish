@@ -3,6 +3,8 @@ import functools
 import typing as ta
 
 from .maybes import Maybe
+from .maybes import empty
+from .maybes import just
 
 
 T = ta.TypeVar('T')
@@ -191,3 +193,50 @@ class CoroutineGenerator(ta.Generic[O, I, R]):
 
 
 corogen = CoroutineGenerator
+
+
+##
+
+
+class GeneratorMappedIterator(ta.Generic[O, I, R]):
+    """
+    Like `map` but takes a generator instead of a function. Provided generator *must* yield outputs 1:1 with inputs.
+
+    Generator return value will be captured on `value` property - if present generator stopped, it absent iterator
+    stopped.
+    """
+
+    def __init__(self, g: ta.Generator[O, I, R], it: ta.Iterator[I]) -> None:
+        super().__init__()
+
+        self._g = g
+        self._it = it
+        self._value: Maybe[R] = empty()
+
+    @property
+    def g(self) -> ta.Generator[O, I, R]:
+        return self._g
+
+    @property
+    def it(self) -> ta.Iterator[I]:
+        return self._it
+
+    @property
+    def value(self) -> Maybe[R]:
+        return self._value
+
+    def __iter__(self) -> ta.Iterator[O]:
+        return self
+
+    def __next__(self) -> O:
+        i = next(self._it)
+        try:
+            o = self._g.send(i)
+        except StopIteration as e:
+            self._value = just(e.value)
+            raise StopIteration from e
+        return o
+
+
+def genmap(g: ta.Generator[O, I, R], it: ta.Iterable[I]) -> GeneratorMappedIterator[O, I, R]:
+    return GeneratorMappedIterator(g, iter(it))
