@@ -5,7 +5,9 @@ import pytest
 from ..generators import Generator
 from ..generators import GeneratorLike_
 from ..generators import adapt_generator_like
+from ..generators import autostart
 from ..generators import corogen
+from ..generators import genmap
 from ..generators import nextgen
 
 
@@ -103,3 +105,21 @@ def test_generator_like():
         assert e.value == 14  # noqa
     else:
         assert False  # noqa
+
+
+def test_genmap():
+    @autostart
+    def f():
+        i = yield
+        while True:
+            if i == 42:
+                return '!'
+            i = yield i + 1
+
+    it = genmap(f(), range(3))
+    assert list(it) == [1, 2, 3]
+    assert not it.value.present
+
+    it = genmap(f(), range(40, 50))
+    assert list(it) == [41, 42]
+    assert it.value.must() == '!'
