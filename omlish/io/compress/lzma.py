@@ -25,7 +25,6 @@ class IncrementalLzmaCompressor:
 
 
 class IncrementalLzmaDecompressor:
-    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         return DecompressorIncrementalAdapter(
             lzma.LZMADecompressor,  # type: ignore

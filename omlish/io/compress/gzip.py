@@ -128,6 +128,7 @@ class IncrementalGzipCompressor:
         crc = _zero_crc()
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
+        wrote_header = False
 
         compress = zlib.compressobj(
             self._compresslevel,
@@ -140,8 +141,9 @@ class IncrementalGzipCompressor:
         while True:
             data: ta.Any = check.isinstance((yield None), bytes)
 
-            if not offset:
+            if not wrote_header:
                 yield from self._write_gzip_header()
+                wrote_header = True
 
             if not data:
                 break
@@ -249,7 +251,6 @@ class IncrementalGzipDecompressor:
         if c:
             rdr.prepend(c)
 
-    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         rdr = PrependableBytesGeneratorReader()
 
