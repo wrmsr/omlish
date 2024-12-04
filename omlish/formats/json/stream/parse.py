@@ -1,3 +1,4 @@
+import dataclasses as dc
 import typing as ta
 
 from .... import lang
@@ -5,6 +6,7 @@ from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
 from .lex import SCALAR_VALUE_TYPES
 from .lex import VALUE_TOKEN_KINDS
+from .lex import Position
 from .lex import ScalarValue
 from .lex import Token
 
@@ -80,8 +82,11 @@ def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None
 ##
 
 
+@dc.dataclass()
 class JsonStreamParseError(JsonStreamError):
-    pass
+    message: str
+
+    pos: Position | None = None
 
 
 class JsonStreamObject(list):
@@ -105,20 +110,20 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         if tt == 'KEY':
             self._stack.pop()
             if not self._stack:
-                raise JsonStreamParseError
+                raise JsonStreamParseError('Unexpected key')
 
             tt2 = self._stack[-1]
             if tt2 == 'OBJECT':
                 return ((v,), self._do_after_pair())
 
             else:
-                raise JsonStreamParseError
+                raise JsonStreamParseError('Unexpected key')
 
         elif tt == 'ARRAY':
             return ((v,), self._do_after_element())
 
         else:
-            raise JsonStreamParseError
+            raise JsonStreamParseError(f'Unexpected value: {v!r}')
 
     #
 
@@ -127,7 +132,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             tok = yield None
         except GeneratorExit:
             if self._stack:
-                raise JsonStreamParseError from None
+                raise JsonStreamParseError('Expected value') from None
             else:
                 raise
 
@@ -147,7 +152,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         elif must_be_present:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected value', tok.pos)
 
         elif tok.kind == 'RBRACKET':
             y, r = self._emit_end_array()
@@ -155,7 +160,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected value', tok.pos)
 
     #
 
@@ -165,11 +170,11 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _emit_end_object(self):
         if not self._stack:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Unexpected end object')
 
         tt = self._stack.pop()
         if tt != 'OBJECT':
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Unexpected end object')
 
         return self._emit_event(EndObject)
 
@@ -177,7 +182,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise JsonStreamParseError from None
+            raise JsonStreamParseError('Expected object body') from None
 
         if tok.kind == 'STRING':
             k = tok.value
@@ -185,16 +190,16 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             try:
                 tok = yield None
             except GeneratorExit:
-                raise JsonStreamParseError from None
+                raise JsonStreamParseError('Expected key') from None
             if tok.kind != 'COLON':
-                raise JsonStreamParseError
+                raise JsonStreamParseError('Expected colon', tok.pos)
 
             yield (Key(k),)
             self._stack.append('KEY')
             return self._do_value()
 
         elif must_be_present:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected value', tok.pos)
 
         elif tok.kind == 'RBRACE':
             y, r = self._emit_end_object()
@@ -202,13 +207,13 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected value', tok.pos)
 
     def _do_after_pair(self):
         try:
             tok = yield None
         except GeneratorExit:
-            raise JsonStreamParseError from None
+            raise JsonStreamParseError('Expected continuation') from None
 
         if tok.kind == 'COMMA':
             return self._do_object_body(must_be_present=True)
@@ -219,7 +224,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected continuation', tok.pos)
 
     #
 
@@ -229,11 +234,11 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _emit_end_array(self):
         if not self._stack:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected end array')
 
         tt = self._stack.pop()
         if tt != 'ARRAY':
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Unexpected end array')
 
         return self._emit_event(EndArray)
 
@@ -241,7 +246,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise JsonStreamParseError from None
+            raise JsonStreamParseError('Expected continuation') from None
 
         if tok.kind == 'COMMA':
             return self._do_value(must_be_present=True)
@@ -252,4 +257,4 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise JsonStreamParseError
+            raise JsonStreamParseError('Expected continuation', tok.pos)
