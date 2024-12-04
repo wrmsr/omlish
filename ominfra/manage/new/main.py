@@ -20,6 +20,7 @@ from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ...pyremote import PyremoteBootstrapDriver
+from ...pyremote import PyremoteBootstrapOptions
 from ...pyremote import pyremote_bootstrap_finalize
 from ...pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
@@ -190,8 +191,13 @@ def _main() -> None:
     stdin = check_not_none(proc.stdin)
     stdout = check_not_none(proc.stdout)
 
-    res = PyremoteBootstrapDriver(remote_src).run(stdin, stdout)
-    print(res)
+    res = PyremoteBootstrapDriver(  # noqa
+        remote_src,
+        PyremoteBootstrapOptions(
+            # debug=True,
+        ),
+    ).run(stdin, stdout)
+    # print(res)
 
     #
 
