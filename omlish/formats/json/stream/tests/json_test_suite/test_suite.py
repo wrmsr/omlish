@@ -2,6 +2,7 @@ import os.path
 import typing as ta
 
 from ...build import JsonObjectBuilder
+from ...errors import JsonStreamError
 from ...lex import JsonStreamLexer
 from ...parse import JsonStreamParser
 
@@ -78,7 +79,7 @@ def test_suite():
     ])
 
     only_names: frozenset[str] = frozenset([
-
+        # 'n_structure_object_with_trailing_garbage.json',
     ])
 
     d = os.path.join(os.path.dirname(__file__), 'parsing')
@@ -99,7 +100,7 @@ def test_suite():
         v: ta.Any
         try:
             v = parse(s)
-        except Exception as e:  # noqa
+        except JsonStreamError as e:  # noqa
             v = e
 
         if (
