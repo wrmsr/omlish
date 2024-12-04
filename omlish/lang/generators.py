@@ -200,7 +200,8 @@ corogen = CoroutineGenerator
 
 class GeneratorMappedIterator(ta.Generic[O, I, R]):
     """
-    Like `map` but takes a generator instead of a function. Provided generator *must* yield outputs 1:1 with inputs.
+    Like a `map` iterator but takes a generator instead of a function. Provided generator *must* yield outputs 1:1 with
+    inputs.
 
     Generator return value will be captured on `value` property - if present generator stopped, it absent iterator
     stopped.
