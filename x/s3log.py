@@ -93,7 +93,7 @@ class S3ListObjectsV2Paginator(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class Record:
+class WalRecord:
     offset: int
     data: bytes
 
@@ -104,11 +104,11 @@ class Wal(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def read(self, offset: int) -> Record:
+    def read(self, offset: int) -> WalRecord:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def last_record(self) -> Record:
+    def last_record(self) -> WalRecord:
         raise NotImplementedError
 
 
@@ -172,7 +172,7 @@ class S3Wal(Wal):
         self._length = next_offset
         return next_offset
 
-    def read(self, offset: int) -> Record:
+    def read(self, offset: int) -> WalRecord:
         key = self._get_object_key(offset)
 
         result = self._client.get_object(S3GetObjectInput(
@@ -190,12 +190,12 @@ class S3Wal(Wal):
         if not self._validate_checksum(data):
             raise Exception('checksum mismatch')
 
-        return Record(
+        return WalRecord(
             offset=stored_offset,
             data=data[8:-32],
         )
 
-    def last_record(self) -> Record:
+    def last_record(self) -> WalRecord:
         paginator = S3ListObjectsV2Paginator(
             self._client,
             S3ListObjectsV2Input(
