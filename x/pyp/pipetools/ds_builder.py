@@ -1,7 +1,7 @@
 from functools import partial
 
-from pipetools.main import XObject, StringFormatter
-from pipetools.compat import string_types, dict_items
+from .main import StringFormatter
+from .main import XObject
 
 
 class NoBuilder(ValueError):
@@ -22,7 +22,7 @@ def SequenceBuilder(cls, definition):
 def DictBuilder(definition):
     return lambda x: dict(
         (ds_item(key_def, x), ds_item(val_def, x))
-        for key_def, val_def in dict_items(definition))
+        for key_def, val_def in definition.items())
 
 
 builders = {
@@ -33,7 +33,7 @@ builders = {
 
 
 def select_builder(definition):
-    for cls, builder in dict_items(builders):
+    for cls, builder in builders.items():
         if isinstance(definition, cls):
             return builder
 
@@ -41,7 +41,7 @@ def select_builder(definition):
 def ds_item(definition, data):
     if isinstance(definition, XObject):
         return (~definition)(data)
-    if isinstance(definition, string_types):
+    if isinstance(definition, str):
         return StringFormatter(definition)(data)
     if callable(definition):
         return definition(data)

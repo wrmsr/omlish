@@ -1,13 +1,11 @@
-from pipetools.utils import foreach
+from .utils import foreach
+
 
 __version__ = VERSION = 1, 1, 0
-__versionstr__ = VERSION > foreach(str) | '.'.join
+__versionstr__ = foreach(str) | '.'.join < VERSION
 
-from pipetools.main import pipe, X, maybe, xpartial
-from pipetools.utils import *
-
-# prevent namespace pollution
-import pipetools.compat
-for symbol in dir(pipetools.compat):
-    if globals().get(symbol) is getattr(pipetools.compat, symbol):
-        globals().pop(symbol)
+from .main import X
+from .main import maybe
+from .main import pipe
+from .main import xpartial
+from .utils import *

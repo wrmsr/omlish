@@ -1,18 +1,25 @@
-from __future__ import print_function
 try:
     from collections.abc import Mapping
 except ImportError:
-    from collections import Mapping
+    from collections.abc import Mapping
 
-from functools import partial, wraps
-from itertools import islice, takewhile, dropwhile
 import operator
+from functools import partial
+from functools import wraps
+from itertools import dropwhile
+from itertools import islice
+from itertools import takewhile
 
-from pipetools.compat import map, filter, range, dict_items
-from pipetools.debug import set_name, repr_args, get_name
-from pipetools.decorators import data_structure_builder, regex_condition
-from pipetools.decorators import pipe_util, auto_string_formatter
-from pipetools.main import pipe, X, _iterable
+from .debug import get_name
+from .debug import repr_args
+from .debug import set_name
+from .decorators import auto_string_formatter
+from .decorators import data_structure_builder
+from .decorators import pipe_util
+from .decorators import regex_condition
+from .main import X
+from .main import _iterable
+from .main import pipe
 
 
 KEY, VALUE = X[0], X[1]
@@ -273,7 +280,7 @@ def group_by(function):
         result = {}
         for item in seq:
             result.setdefault(function(item), []).append(item)
-        return dict_items(result)
+        return result.items()
 
     return _group_by
 

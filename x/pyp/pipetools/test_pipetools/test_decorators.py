@@ -1,5 +1,7 @@
-from pipetools import foreach, sort_by, X, unless
-from pipetools.compat import range
+from .. import X
+from .. import foreach
+from .. import sort_by
+from .. import unless
 
 
 def my_func(*args, **kwargs):
@@ -22,7 +24,7 @@ class TestPipeUtilsRepr:
         assert repr(f) == 'foreach(my_func, 42, kwarg=2)'
 
     def test_string_formatting(self):
-        f = foreach("{0} asdf {1} jk;l")
+        f = foreach('{0} asdf {1} jk;l')
         assert repr(f) == "foreach('{0} asdf {1} jk;l')"
 
     def test_ds_builder(self):
@@ -31,10 +33,10 @@ class TestPipeUtilsRepr:
 
     def test_repr_doesnt_get_called_when_not_necessary(self):
 
-        class Something(object):
+        class Something:
 
             def __repr__(self):
-                assert False, "__repr__ called when not necessary"
+                assert False, '__repr__ called when not necessary'
 
         foreach(Something())
         unless(Exception, Something())

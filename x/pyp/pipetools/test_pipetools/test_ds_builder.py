@@ -1,8 +1,7 @@
 import pytest
 
-from pipetools.ds_builder import DSBuilder
-from pipetools.main import X
-from pipetools.compat import range
+from ..ds_builder import DSBuilder
+from ..main import X
 
 
 def test_build_tuple():

@@ -1,7 +1,5 @@
 from itertools import chain
 
-from pipetools.compat import map, dict_items
-
 
 def set_name(name, f):
     try:
@@ -12,7 +10,7 @@ def set_name(name, f):
 
 
 def get_name(f):
-    from pipetools.main import Pipe
+    from .main import Pipe
     pipetools_name = getattr(f, '__pipetools__name__', None)
     if pipetools_name:
         return pipetools_name() if callable(pipetools_name) else pipetools_name
@@ -26,4 +24,4 @@ def get_name(f):
 def repr_args(*args, **kwargs):
     return ', '.join(chain(
         map('{0!r}'.format, args),
-        map('{0[0]}={0[1]!r}'.format, dict_items(kwargs))))
+        map('{0[0]}={0[1]!r}'.format, kwargs.items())))

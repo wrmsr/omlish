@@ -1,6 +1,16 @@
-from pipetools import X, sort_by, take_first, foreach, where, select_first, group_by
-from pipetools import unless, flatten, take_until, as_kwargs, drop_first, tee
-from pipetools.compat import range
+from .. import X
+from .. import as_kwargs
+from .. import drop_first
+from .. import flatten
+from .. import foreach
+from .. import group_by
+from .. import select_first
+from .. import sort_by
+from .. import take_first
+from .. import take_until
+from .. import tee
+from .. import unless
+from .. import where
 
 
 class TestPipeUtil:
@@ -44,27 +54,27 @@ class TestSortBy:
 class TestTakeFirst:
 
     def test_take_first(self):
-        assert [0, 1, 2] == list(take_first(3)(range(10)))
+        assert list(take_first(3)(range(10))) == [0, 1, 2]
 
 
 class TestTupleMaker:
 
     def test_make_tuple(self):
-        result = [1, 2, 3] > foreach((X, X % 2)) | list
+        result = foreach((X, X % 2)) | list < [1, 2, 3]
         assert result == [(1, 1), (2, 0), (3, 1)]
 
 
 class TestListMaker:
 
     def test_make_list(self):
-        result = [1, 2, 3] > foreach([X, X % 2]) | list
+        result = foreach([X, X % 2]) | list < [1, 2, 3]
         assert result == [[1, 1], [2, 0], [3, 1]]
 
 
 class TestDictMaker:
 
     def test_make_dict(self):
-        result = [1, 2] > foreach({'num': X, 'str': str}) | list
+        result = foreach({'num': X, 'str': str}) | list < [1, 2]
         assert result == [{'num': 1, 'str': '1'}, {'num': 2, 'str': '2'}]
 
 
@@ -85,7 +95,7 @@ class TestSelectFirst:
 class TestAutoStringFormatter:
 
     def test_foreach_format(self):
-        result = [1, 2] > foreach("Number {0}") | list
+        result = foreach('Number {0}') | list < [1, 2]
         assert result == ['Number 1', 'Number 2']
 
 
@@ -93,7 +103,7 @@ class TestUnless:
 
     def test_ok(self):
         f = unless(AttributeError, foreach(X.lower())) | list
-        assert f("ABC") == ['a', 'b', 'c']
+        assert f('ABC') == ['a', 'b', 'c']
 
     def test_with_exception(self):
         f = unless(AttributeError, foreach(X.lower()) | list)
@@ -143,11 +153,11 @@ class TestTakeUntil:
 
     def test_including(self):
         f = take_until(X > 5).including
-        assert ([1, 2, 3, 1, 6, 1, 3] > f | list) == [1, 2, 3, 1, 6]
+        assert (f | list < [1, 2, 3, 1, 6, 1, 3]) == [1, 2, 3, 1, 6]
 
     def test_including_all(self):
         f = take_until(X > 50).including
-        assert ([1, 2, 3, 1, 6, 1, 3] > f | list) == [1, 2, 3, 1, 6, 1, 3]
+        assert (f | list < [1, 2, 3, 1, 6, 1, 3]) == [1, 2, 3, 1, 6, 1, 3]
 
 
 class TestAsKwargs:
@@ -213,7 +223,7 @@ class TestTee:
     def test_tee(self):
         store = []
 
-        result = "input" > X | tee(X | reversed | "".join | store.append) | X[2:]
+        result = X | tee(X | reversed | ''.join | store.append) | X[2:] < 'input'
 
-        assert store == ["tupni"]
-        assert result == "put"
+        assert store == ['tupni']
+        assert result == 'put'

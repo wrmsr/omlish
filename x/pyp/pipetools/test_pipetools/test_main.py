@@ -1,9 +1,10 @@
-# encoding: utf-8
 import pytest
 
-from pipetools import pipe, X, maybe, xpartial
-from pipetools.main import StringFormatter
-from pipetools.compat import range
+from .. import X
+from .. import maybe
+from .. import pipe
+from .. import xpartial
+from ..main import StringFormatter
 
 
 class Bunch:
@@ -11,7 +12,7 @@ class Bunch:
         self.__dict__.update(kwargs)
 
 
-class TestPipe(object):
+class TestPipe:
 
     pipe = property(lambda self: pipe)
 
@@ -27,7 +28,7 @@ class TestPipe(object):
         assert f([1, 2, 3]) == '6'
 
     def test_pipe_input(self):
-        result = [1, 2, 3] > self.pipe | sum
+        result = self.pipe | sum < [1, 2, 3]
 
         assert result == 6
 
@@ -42,12 +43,12 @@ class TestPipe(object):
         assert f(42) == 'The answer is 42.'
 
     def test_unicode_formatting(self):
-        f = self.pipe | u'That will be £ {0}, please.'
-        assert f(42) == u'That will be £ 42, please.'
+        f = self.pipe | 'That will be £ {0}, please.'
+        assert f(42) == 'That will be £ 42, please.'
 
     def test_makes_a_bound_method(self):
 
-        class SomeClass(object):
+        class SomeClass:
             attr = 'foo bar'
             method = X.attr.split() | reversed | ' '.join
 
@@ -90,7 +91,7 @@ class TestX:
     def test_gt(self):
 
         f = ~(X > 5)
-        g = ~(6 > X)
+        g = ~(X < 6)
 
         assert f(6)
         assert not g(6)
@@ -100,7 +101,7 @@ class TestX:
     def test_gte(self):
 
         f = ~(X >= 5)
-        g = ~(4 >= X)
+        g = ~(X <= 4)
 
         assert f(5)
         assert not g(5)
@@ -110,7 +111,7 @@ class TestX:
     def test_lt(self):
 
         f = ~(X < 5)
-        g = ~(4 < X)
+        g = ~(X > 4)
 
         assert f(4)
         assert not g(4)
@@ -120,7 +121,7 @@ class TestX:
     def test_lte(self):
 
         f = ~(X <= 5)
-        g = ~(6 <= X)
+        g = ~(X >= 6)
 
         assert f(5)
         assert not g(5)
@@ -246,13 +247,13 @@ class TestX:
         assert repr(f) == "X.attr | X(1, 2, three='four')"
 
     def test_repr_unicode(self):
-        f = ~(X + u"Žluťoučký kůň")
+        f = ~(X + 'Žluťoučký kůň')
         # in this case I'll just consider not throwing an error a success
         assert repr(f)
 
     def test_repr_tuple(self):
         f = ~(X + (1, 2))
-        assert repr(f) == "X + (1, 2)"
+        assert repr(f) == 'X + (1, 2)'
 
 
 class TestStringFormatter:
@@ -279,11 +280,11 @@ class TestStringFormatter:
 
     def test_unicode(self):
         f = StringFormatter('Asdf {0}')
-        assert f(u'Žluťoučký kůň') == u'Asdf Žluťoučký kůň'
+        assert f('Žluťoučký kůň') == 'Asdf Žluťoučký kůň'
 
     def test_unicode2(self):
-        f = StringFormatter(u'Asdf {0}')
-        assert f(u'Žluťoučký kůň') == u'Asdf Žluťoučký kůň'
+        f = StringFormatter('Asdf {0}')
+        assert f('Žluťoučký kůň') == 'Asdf Žluťoučký kůň'
 
 
 class TestMaybe(TestPipe):
@@ -297,7 +298,7 @@ class TestMaybe(TestPipe):
         assert f() is None
 
     def test_none_input(self):
-        assert (None > maybe | sum) is None
+        assert (maybe | sum < None) is None
 
     def test_none_input_call(self):
         assert (maybe | sum)(None) is None
@@ -343,7 +344,7 @@ class TestXPartial:
 
     def test_x_destructuring(self):
         xf = xpartial(dummy, X['name'], number=X['number'])
-        d = {'name': "Fred", 'number': 42, 'something': 'else'}
+        d = {'name': 'Fred', 'number': 42, 'something': 'else'}
         assert xf(d) == (('Fred',), {'number': 42})
 
     def test_repr(self):
@@ -357,9 +358,9 @@ class TestXPartial:
             xf()
 
     def test_can_xpartial_any_callable(self):
-        class my_callable(object):
+        class my_callable:
             def __call__(self, x):
-                return "hello %s" % x
+                return 'hello %s' % x
 
-        f = xpartial(my_callable(), (X + "!"))
-        assert f("x") == "hello x!"
+        f = xpartial(my_callable(), (X + '!'))
+        assert f('x') == 'hello x!'

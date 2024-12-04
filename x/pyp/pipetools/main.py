@@ -1,15 +1,14 @@
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
+from collections.abc import Iterable
+from functools import WRAPPER_ASSIGNMENTS
+from functools import partial
+from functools import wraps
 
-from functools import partial, wraps, WRAPPER_ASSIGNMENTS
+from .debug import get_name
+from .debug import repr_args
+from .debug import set_name
 
-from pipetools.debug import get_name, set_name, repr_args
-from pipetools.compat import text_type, string_types, dict_items
 
-
-class Pipe(object):
+class Pipe:
     """
     Pipe-style combinator.
 
@@ -31,7 +30,7 @@ class Pipe(object):
 
     @staticmethod
     def compose(first, second):
-        name = lambda: '{0} | {1}'.format(get_name(first), get_name(second))
+        name = lambda: f'{get_name(first)} | {get_name(second)}'
 
         def composite(*args, **kwargs):
             return second(first(*args, **kwargs))
@@ -72,7 +71,7 @@ class Maybe(Pipe):
 
     @staticmethod
     def compose(first, second):
-        name = lambda: '{0} ?| {1}'.format(get_name(first), get_name(second))
+        name = lambda: f'{get_name(first)} ?| {get_name(second)}'
 
         def composite(*args, **kwargs):
             result = first(*args, **kwargs)
@@ -99,7 +98,7 @@ def prepare_function_for_pipe(thing):
         return ~thing
     if isinstance(thing, tuple):
         return xpartial(*thing)
-    if isinstance(thing, string_types):
+    if isinstance(thing, str):
         return StringFormatter(thing)
     if callable(thing):
         return thing
@@ -108,7 +107,7 @@ def prepare_function_for_pipe(thing):
 
 def StringFormatter(template):
 
-    f = text_type(template).format
+    f = str(template).format
 
     def format(content):
         if isinstance(content, dict):
@@ -122,10 +121,10 @@ def StringFormatter(template):
 
 def _iterable(obj):
     "Iterable but not a string"
-    return isinstance(obj, Iterable) and not isinstance(obj, string_types)
+    return isinstance(obj, Iterable) and not isinstance(obj, str)
 
 
-class XObject(object):
+class XObject:
 
     def __init__(self, func=None):
         self._func = func
@@ -149,28 +148,28 @@ class XObject(object):
         return super(XObject, self).__hash__()
 
     def __eq__(self, other):
-        return self.bind(lambda: 'X == {0!r}'.format(other), lambda x: x == other)
+        return self.bind(lambda: f'X == {other!r}', lambda x: x == other)
 
     def __getattr__(self, name):
-        return self.bind(lambda: 'X.{0}'.format(name), lambda x: getattr(x, name))
+        return self.bind(lambda: f'X.{name}', lambda x: getattr(x, name))
 
     def __getitem__(self, item):
-        return self.bind(lambda: 'X[{0!r}]'.format(item), lambda x: x[item])
+        return self.bind(lambda: f'X[{item!r}]', lambda x: x[item])
 
     def __gt__(self, other):
-        return self.bind(lambda: 'X > {0!r}'.format(other), lambda x: x > other)
+        return self.bind(lambda: f'X > {other!r}', lambda x: x > other)
 
     def __ge__(self, other):
-        return self.bind(lambda: 'X >= {0!r}'.format(other), lambda x: x >= other)
+        return self.bind(lambda: f'X >= {other!r}', lambda x: x >= other)
 
     def __lt__(self, other):
-        return self.bind(lambda: 'X < {0!r}'.format(other), lambda x: x < other)
+        return self.bind(lambda: f'X < {other!r}', lambda x: x < other)
 
     def __le__(self, other):
-        return self.bind(lambda: 'X <= {0!r}'.format(other), lambda x: x <= other)
+        return self.bind(lambda: f'X <= {other!r}', lambda x: x <= other)
 
     def __ne__(self, other):
-        return self.bind(lambda: 'X != {0!r}'.format(other), lambda x: x != other)
+        return self.bind(lambda: f'X != {other!r}', lambda x: x != other)
 
     def __pos__(self):
         return self.bind(lambda: '+X', lambda x: +x)
@@ -179,85 +178,85 @@ class XObject(object):
         return self.bind(lambda: '-X', lambda x: -x)
 
     def __mul__(self, other):
-        return self.bind(lambda: 'X * {0!r}'.format(other), lambda x: x * other)
+        return self.bind(lambda: f'X * {other!r}', lambda x: x * other)
 
     def __rmul__(self, other):
-        return self.bind(lambda: '{0!r} * X'.format(other), lambda x: other * x)
+        return self.bind(lambda: f'{other!r} * X', lambda x: other * x)
 
     def __matmul__(self, other):
         # prevent syntax error on legacy interpretors
         from operator import matmul
-        return self.bind(lambda: 'X @ {0!r}'.format(other), lambda x: matmul(x, other))
+        return self.bind(lambda: f'X @ {other!r}', lambda x: matmul(x, other))
 
     def __rmatmul__(self, other):
         from operator import matmul
-        return self.bind(lambda: '{0!r} @ X'.format(other), lambda x: matmul(other, x))
+        return self.bind(lambda: f'{other!r} @ X', lambda x: matmul(other, x))
 
     def __div__(self, other):
-        return self.bind(lambda: 'X / {0!r}'.format(other), lambda x: x / other)
+        return self.bind(lambda: f'X / {other!r}', lambda x: x / other)
 
     def __rdiv__(self, other):
-        return self.bind(lambda: '{0!r} / X'.format(other), lambda x: other / x)
+        return self.bind(lambda: f'{other!r} / X', lambda x: other / x)
 
     def __truediv__(self, other):
-        return self.bind(lambda: 'X / {0!r}'.format(other), lambda x: x / other)
+        return self.bind(lambda: f'X / {other!r}', lambda x: x / other)
 
     def __rtruediv__(self, other):
-        return self.bind(lambda: '{0!r} / X'.format(other), lambda x: other / x)
+        return self.bind(lambda: f'{other!r} / X', lambda x: other / x)
 
     def __floordiv__(self, other):
-        return self.bind(lambda: 'X // {0!r}'.format(other), lambda x: x // other)
+        return self.bind(lambda: f'X // {other!r}', lambda x: x // other)
 
     def __rfloordiv__(self, other):
-        return self.bind(lambda: '{0!r} // X'.format(other), lambda x: other // x)
+        return self.bind(lambda: f'{other!r} // X', lambda x: other // x)
 
     def __mod__(self, other):
-        return self.bind(lambda: 'X % {0!r}'.format(other), lambda x: x % other)
+        return self.bind(lambda: f'X % {other!r}', lambda x: x % other)
 
     def __rmod__(self, other):
-        return self.bind(lambda: '{0!r} % X'.format(other), lambda x: other % x)
+        return self.bind(lambda: f'{other!r} % X', lambda x: other % x)
 
     def __add__(self, other):
-        return self.bind(lambda: 'X + {0!r}'.format(other), lambda x: x + other)
+        return self.bind(lambda: f'X + {other!r}', lambda x: x + other)
 
     def __radd__(self, other):
-        return self.bind(lambda: '{0!r} + X'.format(other), lambda x: other + x)
+        return self.bind(lambda: f'{other!r} + X', lambda x: other + x)
 
     def __sub__(self, other):
-        return self.bind(lambda: 'X - {0!r}'.format(other), lambda x: x - other)
+        return self.bind(lambda: f'X - {other!r}', lambda x: x - other)
 
     def __rsub__(self, other):
-        return self.bind(lambda: '{0!r} - X'.format(other), lambda x: other - x)
+        return self.bind(lambda: f'{other!r} - X', lambda x: other - x)
 
     def __pow__(self, other):
-        return self.bind(lambda: 'X ** {0!r}'.format(other), lambda x: x ** other)
+        return self.bind(lambda: f'X ** {other!r}', lambda x: x ** other)
 
     def __rpow__(self, other):
-        return self.bind(lambda: '{0!r} ** X'.format(other), lambda x: other ** x)
+        return self.bind(lambda: f'{other!r} ** X', lambda x: other ** x)
 
     def __lshift__(self, other):
-        return self.bind(lambda: 'X << {0!r}'.format(other), lambda x: x << other)
+        return self.bind(lambda: f'X << {other!r}', lambda x: x << other)
 
     def __rlshift__(self, other):
-        return self.bind(lambda: '{0!r} << X'.format(other), lambda x: other << x)
+        return self.bind(lambda: f'{other!r} << X', lambda x: other << x)
 
     def __rshift__(self, other):
-        return self.bind(lambda: 'X >> {0!r}'.format(other), lambda x: x >> other)
+        return self.bind(lambda: f'X >> {other!r}', lambda x: x >> other)
 
     def __rrshift__(self, other):
-        return self.bind(lambda: '{0!r} >> X'.format(other), lambda x: other >> x)
+        return self.bind(lambda: f'{other!r} >> X', lambda x: other >> x)
 
     def __and__(self, other):
-        return self.bind(lambda: 'X & {0!r}'.format(other), lambda x: x & other)
+        return self.bind(lambda: f'X & {other!r}', lambda x: x & other)
 
     def __rand__(self, other):
-        return self.bind(lambda: '{0!r} & X'.format(other), lambda x: other & x)
+        return self.bind(lambda: f'{other!r} & X', lambda x: other & x)
 
     def __xor__(self, other):
-        return self.bind(lambda: 'X ^ {0!r}'.format(other), lambda x: x ^ other)
+        return self.bind(lambda: f'X ^ {other!r}', lambda x: x ^ other)
 
     def __rxor__(self, other):
-        return self.bind(lambda: '{0!r} ^ X'.format(other), lambda x: other ^ x)
+        return self.bind(lambda: f'{other!r} ^ X', lambda x: other ^ x)
 
     def __ror__(self, func):
         return pipe | func | self
@@ -268,7 +267,7 @@ class XObject(object):
         return pipe | self | func
 
     def _in_(self, y):
-        return self.bind(lambda: 'X._in_({0!r})'.format(y), lambda x: x in y)
+        return self.bind(lambda: f'X._in_({y!r})', lambda x: x in y)
 
 
 X = XObject()
@@ -314,7 +313,7 @@ def xpartial(func, *xargs, **xkwargs):
             first = func_args[0]
             rest = func_args[1:]
             args = tuple(use(x, first) for x in xargs) + rest
-            kwargs = dict((k, use(x, first)) for k, x in dict_items(xkwargs))
+            kwargs = dict((k, use(x, first)) for k, x in xkwargs.items())
             kwargs.update(func_kwargs)
         else:
             args = xargs + func_args
