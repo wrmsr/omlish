@@ -4,20 +4,24 @@ from .... import lang
 from ..types import IncrementalCompressor
 
 
+T = ta.TypeVar('T')
 I = ta.TypeVar('I')
 O = ta.TypeVar('O')
+OF = ta.TypeVar('OF')
+OT = ta.TypeVar('OT')
 R = ta.TypeVar('R')
 
 
 ##
 
 
-def buffer_generator_writer(
-        g: ta.Generator[O | None, I | None, R],
+def flatmap_generator_writer(
+        fn: ta.Callable[[list[OF]], OT],
+        g: ta.Generator[OF | None, I | None, R],
         *,
-        terminator: lang.Maybe[O] = lang.empty(),
-) -> ta.Generator[list[O], I, R]:
-    l: list[O]
+        terminator: lang.Maybe[OF] = lang.empty(),
+) -> ta.Generator[OT, I, R]:
+    l: list[OF]
     i: I | None = yield  # type: ignore
     while True:
         l = []
@@ -26,7 +30,7 @@ def buffer_generator_writer(
                 o = g.send(i)
             except StopIteration as e:
                 if l:
-                    yield l
+                    yield fn(l)
                 return e.value
             i = None
             if o is None:
@@ -34,9 +38,9 @@ def buffer_generator_writer(
             l.append(o)
             if terminator.present and o == terminator.must():
                 if l:
-                    yield l
+                    yield fn(l)
                 raise StopIteration
-        i = yield l
+        i = yield fn(l)
 
 
 ##
