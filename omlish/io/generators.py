@@ -1,3 +1,7 @@
+"""
+TODO:
+ - BufferedBytesGeneratorReader
+"""
 import typing as ta
 
 from .. import check
@@ -6,6 +10,7 @@ from .. import check
 class PrependableBytesGeneratorReader:
     def __init__(self) -> None:
         super().__init__()
+
         self._p: list[bytes] = []
 
     class ReadError(Exception):
