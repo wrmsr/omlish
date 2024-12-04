@@ -2,7 +2,7 @@
 # noinspection DuplicatedCode
 # @omlish-lite
 # @omlish-script
-# @omlish-amalg-output main.py
+# @omlish-amalg-output ../manage/new/main.py
 # ruff: noqa: N802 UP006 UP007 UP036
 """
 manage.py -s 'docker run -i python:3.12'
@@ -1671,7 +1671,7 @@ def _get_amalg_src(*, amalg_file: ta.Optional[str]) -> str:
         return _get_self_src()
 
     import importlib.resources
-    return importlib.resources.read_text(__package__, '_manage.py')
+    return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
 
 
 ##
