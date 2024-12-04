@@ -1,26 +1,31 @@
 import typing as ta
 
+from .... import check
 from .... import lang
 from .helpers import flatmap_generator_writer
+from .helpers import join_str
 
 
 def test_fmg():
+    @lang.autostart
     def f():
         for _ in range(3):
-            s = yield
-            yield s + '?'
-            yield s + '!'
+            s = check.isinstance((yield), str)
+            check.none((yield s + '?'))
+            check.none((yield s + '!'))
 
-    g = f()
+    g: ta.Any = flatmap_generator_writer(lang.identity, f())
     for s in 'abc':
-        next(g)
         print(g.send(s))
-        print(next(g))
 
-    bg: ta.Any = lang.nextgen(flatmap_generator_writer(lang.identity, lang.nextgen(f())))
+    g = flatmap_generator_writer(lang.identity, f(), terminator=lang.just('c?'))
     for s in 'abc':
-        print(bg.send(s))
+        print(g.send(s))
 
-    bg = lang.nextgen(flatmap_generator_writer(lang.identity, lang.nextgen(f()), terminator=lang.just('c?')))
+    g = flatmap_generator_writer(''.join, f(), terminator=lang.just('c?'))
     for s in 'abc':
-        print(bg.send(s))
+        print(g.send(s))
+
+    g = flatmap_generator_writer(join_str, f(), terminator=lang.just('c?'))
+    for s in 'abc':
+        print(g.send(s))
