@@ -124,8 +124,10 @@ from .generators import (  # noqa
     CoroutineGenerator,
     Generator,
     GeneratorLike,
+    GeneratorMappedIterator,
     autostart,
     corogen,
+    genmap,
     nextgen,
 )
 
