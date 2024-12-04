@@ -3,16 +3,24 @@ import typing as ta
 from ... import lang
 
 
+T = ta.TypeVar('T')
 I = ta.TypeVar('I')
+O = ta.TypeVar('O')
 OF = ta.TypeVar('OF')
 OT = ta.TypeVar('OT')
 R = ta.TypeVar('R')
 
 
+SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
+
+
+##
+
+
 @lang.autostart
 def flatmap_stepped_generator(
         fn: ta.Callable[[list[OF]], OT],
-        g: ta.Generator[OF | None, I | None, R],
+        g: SteppedGenerator[OF, I, R],
         *,
         terminate: ta.Callable[[OF], bool] | None = None,
 ) -> ta.Generator[OT, I, lang.Maybe[R]]:
@@ -54,3 +62,43 @@ def flatmap_stepped_generator(
                 return lang.empty()
 
         i = yield fn(l)
+
+
+##
+
+
+def _join_bytes(l: ta.Sequence[bytes]) -> bytes:
+    if not l:
+        return b''
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return b''.join(l)
+
+
+def _join_str(l: ta.Sequence[str]) -> str:
+    if not l:
+        return ''
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return ''.join(l)
+
+
+def _is_empty(o: T) -> bool:
+    return len(o) < 1  # type: ignore
+
+
+##
+
+
+def joined_bytes_stepped_generator(
+        g: ta.Generator[bytes | None, bytes | None, R],
+) -> ta.Generator[bytes, bytes, R]:
+    return flatmap_stepped_generator(_join_bytes, g, terminate=_is_empty)
+
+
+def joined_str_stepped_generator(
+        g: ta.Generator[str | None, str | None, R],
+) -> ta.Generator[str, str, R]:
+    return flatmap_stepped_generator(_join_str, g, terminate=_is_empty)

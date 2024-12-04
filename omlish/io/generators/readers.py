@@ -11,7 +11,19 @@ from ... import check
 
 
 T = ta.TypeVar('T')
+I = ta.TypeVar('I')
+R = ta.TypeVar('R')
 AnyT = ta.TypeVar('AnyT', bound=ta.Any)
+
+
+ReaderGenerator: ta.TypeAlias = ta.Generator[int | None, I, R]
+ExactReaderGenerator: ta.TypeAlias = ta.Generator[int, I, R]
+
+BytesReaderGenerator: ta.TypeAlias = ReaderGenerator[bytes, R]
+BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
+
+StrReaderGenerator: ta.TypeAlias = ReaderGenerator[str, R]
+StrExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[str, R]
 
 
 ##
