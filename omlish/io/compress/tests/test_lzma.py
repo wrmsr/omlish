@@ -1,20 +1,19 @@
-import gzip
 import io
+import lzma
 
-from ..gzip import IncrementalGzipCompressor
-from ..gzip import IncrementalGzipDecompressor
+from ..lzma import IncrementalLzmaCompressor
+from ..lzma import IncrementalLzmaDecompressor
 from .helpers import feed_inc_compressor
 
 
-_MTIME = 1733266027
 _DEC_DATA = b'foobar' * 128
-_ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
+_ENC_DATA = lzma.compress(_DEC_DATA)
 
 
-def test_gzip_inc_compressor():
+def test_lzma_inc_compressor():
     ow = io.BytesIO()
     for b in feed_inc_compressor(
-            IncrementalGzipCompressor(mtime=_MTIME)(),
+            IncrementalLzmaCompressor()(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
     ):
@@ -23,10 +22,10 @@ def test_gzip_inc_compressor():
     assert ow.getvalue() == _ENC_DATA
 
 
-def test_gzip_inc_decompressor():
+def test_lzma_inc_decompressor():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
-    igr = IncrementalGzipDecompressor()
+    igr = IncrementalLzmaDecompressor()
     g = igr()
     o = next(g)
     sz = 13
