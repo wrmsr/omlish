@@ -38,8 +38,7 @@ def flatmap_generator_writer(
                 break
             l.append(o)
             if terminator.present and o == terminator.must():
-                if l:
-                    yield fn(l)
+                yield fn(l)
                 raise StopIteration
         i = yield fn(l)
 
