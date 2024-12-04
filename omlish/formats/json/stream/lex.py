@@ -3,6 +3,7 @@ TODO:
  - max buf size
  - max recursion depth
  - mark start pos of tokens, currently returning end
+ - _do_string inner loop optimization somehow
 """
 import dataclasses as dc
 import io
