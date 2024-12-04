@@ -17,57 +17,70 @@ https:#github.com/avinassh/s3-log
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-type Record struct {
-    Offset uint64
-    Data   []byte
-}
+import abc
+import dataclasses as dc
+import hashlib
+import typing as ta
 
-type WAL interface {
-    Append(ctx context.Context, data []byte) (uint64, error)
-    Read(ctx context.Context, offset uint64) (Record, error)
-    LastRecord(ctx context.Context) (Record, error)
-}
+
+@dc.dataclass()
+class Record:
+    offset: int
+    data: bytes
+
+
+class Wal(abc.ABC):
+    @abc.abstractmethod
+    def append(self, data: bytes) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def read(self, offset: int) -> Record:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def last_record(self) -> Record:
+        raise NotImplementedError
+
 
 ##
 
-type S3WAL struct {
-    client     *s3.Client
-    bucketName string
-    prefix     string
-    length     uint64
-}
 
-func NewS3WAL(client *s3.Client, bucketName, prefix string) *S3WAL {
-    return &S3WAL{
-        client:     client,
-        bucketName: bucketName,
-        prefix:     prefix,
-        length:     0,
-    }
-}
+class S3Wal(Wal):
+    def __init__(
+        self,
+        client: s3.Client,
+        bucket_name: str,
+        prefix: str,
+    ) -> None:
+        super().__init__()
+        
+        self._client = client
+        self._bucket_name = bucket_name
+        self._prefix = prefix
+        
+        self._length = 0
 
-func (w *S3WAL) getObjectKey(offset uint64) string {
-    return w.prefix + "/" + fmt.Sprintf("%020d", offset)
-}
+    def _get_object_key(self, offset: int) -> str:
+        return self._prefix + '/' + ('%020d' % (offset,))
 
-func (w *S3WAL) getOffsetFromKey(key string) (uint64, error) {
-    # skip the `w.prefix` and "/"
-    numStr := key[len(w.prefix)+1:]
-    return strconv.ParseUint(numStr, 10, 64)
-}
+    def _get_offset_from_key(self, key: str) -> int:
+        # skip the `w.prefix` and "/"
+        num_str = key[len(w._prefix)+1:]
+        return int(num_str, 10, 64)
 
-func calculateChecksum(buf *bytes.Buffer) [32]byte {
-    return sha256.Sum256(buf.Bytes())
-}
+    def _calculate_checksum(self, buf: bytes) -> bytes:
+        hash_obj = hashlib.sha256()
+        hash_obj.update(buf)
+        return hash_obj.digest()
 
-func validateChecksum(data []byte) bool {
-    var storedChecksum [32]byte
-    copy(storedChecksum[:], data[len(data)-32:])
-    recordData := data[:len(data)-32]
-    return storedChecksum == calculateChecksum(bytes.NewBuffer(recordData))
-}
+    def _validate_checksum(self, data: bytes) -> bool:
+        stored_checksum = data[-32:]
+        record_data = data[:-32]
+        return stored_checksum == self._calculate_checksum(record_data)
 
+
+"""
 func prepareBody(offset uint64, data []byte) ([]byte, error) {
     # 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
     bufferLen := 8 + len(data) + 32
