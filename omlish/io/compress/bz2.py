@@ -1,10 +1,17 @@
-import bz2
 import functools
+import typing as ta
 
+from ... import lang
 from .adapters import CompressorIncrementalAdapter
 from .adapters import DecompressorIncrementalAdapter
 from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
+
+
+if ta.TYPE_CHECKING:
+    import bz2
+else:
+    bz2 = lang.proxy_import('bz2')
 
 
 class IncrementalBz2Compressor:

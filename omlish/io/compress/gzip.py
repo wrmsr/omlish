@@ -34,24 +34,38 @@
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
 import functools
-import gzip
 import os.path
 import struct
 import time
 import typing as ta
-import zlib
 
+from ... import cached
 from ... import check
+from ... import lang
 from ..generators import PrependableBytesGeneratorReader
 from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
+
+
+if ta.TYPE_CHECKING:
+    import gzip
+    import zlib
+else:
+    gzip = lang.proxy_import('gzip')
+    zlib = lang.proxy_import('zlib')
+
+
+##
 
 
 COMPRESS_LEVEL_FAST = 1
 COMPRESS_LEVEL_TRADEOFF = 6
 COMPRESS_LEVEL_BEST = 9
 
-_ZERO_CRC = zlib.crc32(b'')
+
+@cached.function
+def _zero_crc() -> int:
+    return zlib.crc32(b'')
 
 
 ##
@@ -110,7 +124,7 @@ class IncrementalGzipCompressor:
             check.none((yield fname + b'\000'))
 
     def __call__(self) -> IncrementalCompressor:
-        crc = _ZERO_CRC
+        crc = _zero_crc()
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
 
@@ -237,7 +251,7 @@ class IncrementalGzipDecompressor:
 
         pos = 0  # Current offset in decompressed stream
 
-        crc = _ZERO_CRC
+        crc = _zero_crc()
         stream_size = 0  # Decompressed size of unconcatenated stream
         new_member = True
 
@@ -256,7 +270,7 @@ class IncrementalGzipDecompressor:
 
                 if new_member:
                     # If the _new_member flag is set, we have to jump to the next member, if there is one.
-                    crc = _ZERO_CRC
+                    crc = _zero_crc()
                     stream_size = 0  # Decompressed size of unconcatenated stream
                     last_mtime = yield from self._read_gzip_header(rdr)
                     if not last_mtime:
