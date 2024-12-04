@@ -1,8 +1,6 @@
 import os.path
 import typing as ta
 
-import pytest
-
 from ...build import JsonObjectBuilder
 from ...lex import JsonStreamLexer
 from ...parse import JsonStreamParser
@@ -55,12 +53,39 @@ EXPECTATION_MAP: ta.Mapping[str, Expectation] = {
 }
 
 
-@pytest.mark.xfail(reason='fixme')
 def test_suite():
-    fails = []
+    fails: list[str] = []
+
+    xfail_names = frozenset([
+        # May decide to make strict
+        'n_array_extra_comma.json',
+        'n_array_number_and_comma.json',
+        'n_object_trailing_comma.json',
+
+        # Special numbers are explicitly supported
+        'n_number_NaN.json',
+        'n_number_infinity.json',
+        'n_number_minus_infinity.json',
+
+        # Supported because streaming
+        'n_single_space.json',
+        'n_structure_whitespace_formfeed.json',
+        'n_structure_no_data.json',
+        'n_structure_double_array.json',
+
+        # FIXME:
+        'n_structure_object_with_trailing_garbage.json',
+    ])
+
+    only_names: frozenset[str] = frozenset([
+
+    ])
 
     d = os.path.join(os.path.dirname(__file__), 'parsing')
     for n in sorted(os.listdir(d)):
+        if only_names and n not in only_names:
+            continue
+
         with open(os.path.join(d, n), 'rb') as f:
             b = f.read()
 
@@ -82,13 +107,21 @@ def test_suite():
             (x == 'reject' and isinstance(v, Exception)) or
             x == 'either'
         ):
+            if n in xfail_names:
+                raise Exception(f'Expected failure did not fail: {n}')
             continue
 
-        fails.append(n)
+        if n in xfail_names:
+            continue
 
-        print(f'{f=}')
-        print(f'{x=}')
-        print(f'{v=}')
-        print()
+        if not fails:
+            print()
+        print(n)
+
+        # print(f'{x=}')
+        # print(f'{v=}')
+        # print()
+
+        fails.append(n)
 
     assert len(fails) == 0
