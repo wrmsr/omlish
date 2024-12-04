@@ -55,8 +55,6 @@ EXPECTATION_MAP: ta.Mapping[str, Expectation] = {
 
 
 def test_suite():
-    fails: list[str] = []
-
     xfail_names = frozenset([
         # May decide to make strict
         'n_array_extra_comma.json',
@@ -73,14 +71,19 @@ def test_suite():
         'n_structure_whitespace_formfeed.json',
         'n_structure_no_data.json',
         'n_structure_double_array.json',
-
-        # FIXME:
         'n_structure_object_with_trailing_garbage.json',
     ])
 
     only_names: frozenset[str] = frozenset([
-        # 'n_structure_object_with_trailing_garbage.json',
+
     ])
+
+    verbose = False
+    # verbose = True
+
+    #
+
+    fails: list[str] = []
 
     d = os.path.join(os.path.dirname(__file__), 'parsing')
     for n in sorted(os.listdir(d)):
@@ -99,7 +102,7 @@ def test_suite():
 
         v: ta.Any
         try:
-            v = parse(s)
+            v = parse(s, verbose=verbose)
         except JsonStreamError as e:  # noqa
             v = e
 
