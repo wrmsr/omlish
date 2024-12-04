@@ -54,7 +54,7 @@ EXPECTATION_MAP: ta.Mapping[str, Expectation] = {
 }
 
 
-def test_suite():
+def test_parsing():
     xfail_names = frozenset([
         # Special numbers are explicitly supported
         'n_number_NaN.json',
@@ -126,3 +126,17 @@ def test_suite():
             fails.append(n)
 
         assert len(fails) == 0
+
+
+def test_transform():
+    d = os.path.join(os.path.dirname(__file__), 'transform')
+    for n in sorted(os.listdir(d)):
+        with open(os.path.join(d, n), 'rb') as f:
+            b = f.read()
+
+        try:
+            s = b.decode('utf-8')
+        except UnicodeDecodeError:
+            continue
+
+        parse(s)
