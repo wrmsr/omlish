@@ -26,7 +26,6 @@ import site
 import struct
 import subprocess
 import sys
-import textwrap
 import threading
 import types
 import typing as ta
@@ -153,6 +152,8 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
     if any(c in context_name for c in '\'"'):
         raise NameError(context_name)
 
+    import inspect
+    import textwrap
     bs_src = textwrap.dedent(inspect.getsource(_pyremote_bootstrap_main))
 
     for gl in [
@@ -178,9 +179,6 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
     bs_z = zlib.compress(bs_src.encode('utf-8'))
     bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
-
-    def dq_repr(o: ta.Any) -> str:
-        return '"' + repr(o)[1:-1] + '"'
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
@@ -297,7 +295,7 @@ def _get_pyremote_env_info() -> PyremoteEnvInfo:
 
 @dc.dataclass(frozen=True)
 class PyremoteBootstrapOptions:
-    pass
+    debug: bool = False
 
 
 class PyremoteBootstrapDriver:
