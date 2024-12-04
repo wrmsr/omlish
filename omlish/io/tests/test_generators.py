@@ -1,10 +1,14 @@
+from ... import lang
 from .. import generators as gs
 
 
 def test_reader0():
     def f():
         rdr = gs.PrependableStrGeneratorReader()
-        yield from rdr.read(2)
+        i = yield from rdr.read(2)
+        assert i == 'ab'
+        return 'done'
 
-    g = f()
-    assert next(g) == 2
+    cg = lang.corogen(f())
+    assert cg.send() == cg.Yield(2)
+    assert cg.send('ab') == cg.Return('done')
