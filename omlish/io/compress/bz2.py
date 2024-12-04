@@ -24,6 +24,7 @@ class IncrementalBz2Compressor:
 
         self._compresslevel = compresslevel
 
+    @lang.autostart
     def __call__(self) -> IncrementalCompressor:
         return CompressorIncrementalAdapter(
             functools.partial(
@@ -34,6 +35,7 @@ class IncrementalBz2Compressor:
 
 
 class IncrementalBz2Decompressor:
+    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         return DecompressorIncrementalAdapter(
             bz2.BZ2Decompressor,  # type: ignore

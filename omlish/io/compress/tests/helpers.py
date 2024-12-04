@@ -2,6 +2,7 @@ import functools
 import typing as ta
 
 from .... import lang
+from ...generators.processors import joined_bytes_generator_processor
 from ..types import IncrementalCompressor
 
 
