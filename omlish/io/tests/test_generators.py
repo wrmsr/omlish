@@ -28,3 +28,17 @@ def test_prependable_generator_reader():
     assert cg.send('ab') == cg.Yield(2)
     assert cg.send('de') == cg.Yield(1)
     assert cg.send('i') == cg.Return('done')
+
+
+def test_buffered_generator_reader():
+    def f():
+        rdr = gs.BufferedStrGeneratorReader(4)
+
+        i = yield from rdr.read(2)
+        assert i == 'ab'
+
+        return 'done'
+
+    cg = lang.corogen(f())
+    assert cg.send() == cg.Yield(2)
+    assert cg.send('ab') == cg.Return('done')
