@@ -4,6 +4,10 @@
 # @omlish-script
 # @omlish-amalg-output main.py
 # ruff: noqa: N802 UP006 UP007 UP036
+"""
+manage.py -s 'docker run -i python:3.12'
+manage.py -qs 'ssh -i foo/bar foo@bar.baz' --python=python3.8
+"""
 import abc
 import base64
 import collections.abc

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # @omlish-amalg ./_manage.py
 # ruff: noqa: UP006 UP007
+"""
+manage.py -s 'docker run -i python:3.12'
+manage.py -qs 'ssh -i foo/bar foo@bar.baz' --python=python3.8
+"""
 import inspect
 import json
 import shlex
