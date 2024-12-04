@@ -67,7 +67,7 @@ class S3Wal(Wal):
         return self._prefix + '/' + ('%020d' % (offset,))
 
     def _get_offset_from_key(self, key: str) -> int:
-        # skip the `w.prefix` and "/"
+        # skip the `w.prefix` and '/'
         num_str = key[len(self._prefix)+1:]
         return int(num_str, 10, 64)
 
@@ -107,57 +107,51 @@ class S3Wal(Wal):
         self._length = next_offset
         return next_offset
 
-    """
     def read(self, offset: int) -> Record:
-        key := self._get_object_key(offset)
-        input := &s3.GetObjectInput{
-            Bucket: aws.String(self._bucket_name),
-            Key:    aws.String(key),
+        key = self._get_object_key(offset)
+        input = s3.GetObjectInput(
+            bucket=self._bucket_name,
+            key=key,
+        )
 
-        result, err := self._client.get_object(input)
-        if err != nil:
-            return Record{}, fmt.Errorf("failed to get object from S3: %w", err)
-        defer result.Body.Close()
+        result = self._client.get_object(input)
+        data = result.body
 
-        data, err := io.ReadAll(result.Body)
-        if err != nil:
-            return Record{}, fmt.Errorf("failed to read object body: %w", err)
         if len(data) < 40:
-            return Record{}, fmt.Errorf("invalid record: data too short")
+            raise Exception('invalid record: data too short')
 
-        stored_offset: int
-        if err = binary.Read(bytes.NewReader(data[:8]), binary.BigEndian, &stored_offset); err != nil:
-            return Record{}, err
+        stored_offset = struct.unpack('>Q', data[:8])[0]
         if stored_offset != offset:
-            return Record{}, fmt.Errorf("offset mismatch: expected %d, got %d", offset, stored_offset)
-        if !validateChecksum(data):
-            return Record{}, fmt.Errorf("checksum mismatch")
-        return Record{
-            Offset: stored_offset,
-            Data:   data[8 : len(data)-32],
-        }, nil
+            raise Exception(f'offset mismatch: expected {offset}, got {stored_offset}')
+        if not self._validate_checksum(data):
+            raise Exception('checksum mismatch')
+
+        return Record(
+            offset=stored_offset,
+            data=data[8: -32],
+        )
 
     def last_record(self) -> Record:
-        input := &s3.ListObjectsV2Input{
-            Bucket: aws.String(self._bucket_name),
-            Prefix: aws.String(self._prefix + "/"),
-        paginator := s3.NewListObjectsV2Paginator(self._client, input)
+        input = s3.ListObjectsV2Input(
+            bucket=self._bucket_name,
+            prefix=self._prefix + '/',
+        )
+        paginator = s3.ListObjectsV2Paginator(
+            self._client,
+            input,
+        )
 
         max_offset: int = 0
-        for paginator.HasMorePages():
-            output, err := paginator.NextPage()
-            if err != nil:
-                return Record{}, fmt.Errorf("failed to list objects from S3: %w", err)
-            for _, obj := range output.Contents:
-                key := *obj.Key
-                offset, err := self._get_offset_from_key(key)
-                if err != nil:
-                    return Record{}, fmt.Errorf("failed to parse offset from key: %w", err)
+        while paginator.has_more_pages():
+            output = paginator.next_page()
+            for obj in output.contents:
+                key = obj.key
+                offset = self._get_offset_from_key(key)
                 if offset > max_offset:
                     max_offset = offset
 
         if max_offset == 0:
-            return Record{}, fmt.Errorf("WAL is empty")
+            raise Exception('wal is empty')
 
         self._length = max_offset
         return self.read(max_offset)
@@ -166,6 +160,7 @@ class S3Wal(Wal):
 ##
 
 
+"""
 func generateRandomStr() string {
     b := make([]byte, 8)
     rand.Read(b)
