@@ -33,6 +33,7 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+# ~> https://github.com/python/cpython/blob/f19c50a4817ffebb26132182ed8cec6a72342cc0/Lib/_compression.py
 import typing as ta
 
 from ... import check
