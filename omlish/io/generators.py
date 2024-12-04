@@ -49,33 +49,33 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
     def __init__(self) -> None:
         super().__init__()
 
-        self._lst: list[AnyT] = []
+        self._queue: list[tuple[AnyT, int]] = []
 
     @abc.abstractmethod
     def _join(self, lst: list[AnyT]) -> AnyT:
         raise NotImplementedError
 
     def read(self, sz: int | None) -> ta.Generator[int | None, AnyT, AnyT]:
-        if not self._lst:
+        if not self._queue:
             d: AnyT = check.not_none((yield sz))
             return d
 
         if sz is None:
-            return self._lst.pop(0)
+            return self._queue.pop(0)[0]
 
         lst: list[AnyT] = []
         rem = sz
-        while rem > 0 and self._lst:
-            c = self._lst[0]
+        while rem > 0 and self._queue:
+            c, p = self._queue[0]
 
-            if len(c) > rem:
-                lst.append(c[:rem])
-                self._lst[0] = c[rem:]
+            if len(c) - p > rem:
+                lst.append(c[p:p + rem])
+                self._queue[0] = (c, p + rem)
                 return self._join(lst)
 
-            lst.append(c)
-            rem -= len(c)
-            self._lst.pop(0)
+            lst.append(c[p:])
+            rem -= len(c) - p
+            self._queue.pop(0)
 
         if rem:
             d = check.not_none((yield rem))
@@ -89,7 +89,7 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
 
     def prepend(self, d: AnyT) -> None:
         if d:
-            self._lst.insert(0, d)
+            self._queue.insert(0, (d, 0))
 
 
 class PrependableBytesGeneratorReader(
@@ -131,7 +131,7 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
             except StopIteration as e:
                 return e.value
 
-            check.state(not self._lst)
+            check.state(not self._queue)
 
             if q is None:
                 i = check.not_none((yield None))
