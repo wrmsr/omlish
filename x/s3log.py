@@ -25,7 +25,74 @@ import struct
 import typing as ta
 
 
-@dc.dataclass()
+##
+
+
+@dc.dataclass(frozen=True)
+class S3PutObjectInput:
+    bucket: str
+    key: str
+    body: bytes
+
+    _: dc.KW_ONLY
+
+    if_none_match: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class S3GetObjectInput:
+    bucket: str
+    key: str
+
+
+@dc.dataclass(frozen=True)
+class S3GetObjectResult:
+    body: bytes
+
+
+@dc.dataclass(frozen=True)
+class S3ListObjectsV2Input:
+    bucket: str
+    prefix: str
+
+
+class S3Client(abc.ABC):
+    @abc.abstractmethod
+    def put_object(self, input: S3PutObjectInput) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_object(self, input: S3GetObjectInput) -> S3GetObjectResult:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class S3ListObjectsV2PaginatorItem:
+    key: str
+
+
+@dc.dataclass(frozen=True)
+class S3ListObjectsV2PaginatorPage:
+    @property
+    @abc.abstractmethod
+    def contents(self) -> ta.Sequence[S3ListObjectsV2PaginatorItem]:
+        raise NotImplementedError
+
+
+class S3ListObjectsV2Paginator(abc.ABC):
+    @abc.abstractmethod
+    def has_more_pages(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def next_page(self) -> S3ListObjectsV2PaginatorPage:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class Record:
     offset: int
     data: bytes
@@ -51,7 +118,7 @@ class Wal(abc.ABC):
 class S3Wal(Wal):
     def __init__(
         self,
-        client: s3.Client,
+        client: S3Client,
         bucket_name: str,
         prefix: str,
     ) -> None:
@@ -95,26 +162,23 @@ class S3Wal(Wal):
 
         buf = self._prepare_body(next_offset, data)
 
-        input = s3.PutObjectInput(
+        self._client.put_object(S3PutObjectInput(
             bucket=self._bucket_name,
             key=self._get_object_key(next_offset),
             body=buf,
             if_none_match='*',
-        )
-
-        self._client.put_object(input)
+        ))
 
         self._length = next_offset
         return next_offset
 
     def read(self, offset: int) -> Record:
         key = self._get_object_key(offset)
-        input = s3.GetObjectInput(
+
+        result = self._client.get_object(S3GetObjectInput(
             bucket=self._bucket_name,
             key=key,
-        )
-
-        result = self._client.get_object(input)
+        ))
         data = result.body
 
         if len(data) < 40:
@@ -132,13 +196,12 @@ class S3Wal(Wal):
         )
 
     def last_record(self) -> Record:
-        input = s3.ListObjectsV2Input(
-            bucket=self._bucket_name,
-            prefix=self._prefix + '/',
-        )
-        paginator = s3.ListObjectsV2Paginator(
+        paginator = S3ListObjectsV2Paginator(
             self._client,
-            input,
+            S3ListObjectsV2Input(
+                bucket=self._bucket_name,
+                prefix=self._prefix + '/',
+            ),
         )
 
         max_offset: int = 0
