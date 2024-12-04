@@ -19,6 +19,7 @@ class Pipe:
         p(x) == H(G(F(x)))
 
     """
+
     def __init__(self, func=None):
         self.func = func
         self.__name__ = 'Pipe'
@@ -44,8 +45,8 @@ class Pipe:
             cls.compose(first, second))
 
     def __or__(self, next_func):
-        # Handle multiple pipes in pipe definition and also changing pipe type to e.g. Maybe
-        # this is needed because of evaluation order
+        # Handle multiple pipes in pipe definition and also changing pipe type to e.g. Maybe this is needed because of
+        # evaluation order
         pipe_in_a_pipe = isinstance(next_func, Pipe) and next_func.func is None
         new_cls = type(next_func) if pipe_in_a_pipe else None
         next = None if pipe_in_a_pipe else prepare_function_for_pipe(next_func)
@@ -68,7 +69,6 @@ pipe = Pipe()
 
 
 class Maybe(Pipe):
-
     @staticmethod
     def compose(first, second):
         name = lambda: f'{get_name(first)} ?| {get_name(second)}'
@@ -106,7 +106,6 @@ def prepare_function_for_pipe(thing):
 
 
 def StringFormatter(template):
-
     f = str(template).format
 
     def format(content):
@@ -120,12 +119,12 @@ def StringFormatter(template):
 
 
 def _iterable(obj):
-    "Iterable but not a string"
+    """Iterable but not a string."""
+
     return isinstance(obj, Iterable) and not isinstance(obj, str)
 
 
 class XObject:
-
     def __init__(self, func=None):
         self._func = func
         set_name(lambda: get_name(func) if func else 'X', self)
@@ -300,6 +299,7 @@ def xpartial(func, *xargs, **xkwargs):
     which will bind to classes (like the ``curry`` function from
     ``django.utils.functional``).
     """
+
     any_x = any(isinstance(a, XObject) for a in xargs + tuple(xkwargs.values()))
     use = lambda x, value: (~x)(value) if isinstance(x, XObject) else x
 

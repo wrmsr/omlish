@@ -1,9 +1,5 @@
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections.abc import Mapping
-
 import operator
+from collections.abc import Mapping
 from functools import partial
 from functools import wraps
 from itertools import dropwhile
@@ -36,6 +32,7 @@ def foreach(function):
     >>> range(5) > foreach(factorial) | list
     [1, 1, 2, 6, 24]
     """
+
     return partial(map, function)
 
 
@@ -52,6 +49,7 @@ def foreach_do(function):
     -- With :func:`foreach` nothing would happen (except an itetrator being
     created)
     """
+
     def f(iterable):
         for item in iterable:
             function(item)
@@ -68,17 +66,16 @@ def where(condition):
     >>> odd_range = range | where(X % 2) | list
     >>> odd_range(10)
     [1, 3, 5, 7, 9]
-
     """
+
     return partial(filter, condition)
 
 
 @pipe_util
 @regex_condition
 def where_not(condition):
-    """
-    Inverted :func:`where`.
-    """
+    """Inverted :func:`where`."""
+
     return partial(filter, pipe | condition | operator.not_)
 
 
@@ -105,6 +102,7 @@ def sort_by(function):
     >>> 'asdfaSfa' > sort_by(X.lower()).descending
     ['s', 'S', 'f', 'f', 'd', 'a', 'a', 'a']
     """
+
     f = partial(sorted, key=function)
     f.attrs = {'descending': _descending_sort_by(function)}
     return f
@@ -134,6 +132,7 @@ def debug_print(function):
             | foreach(debug_print("attr is: {0.attr}"))
             | etc)
     """
+
     def debug(thing):
         print(function(thing))
         return thing
@@ -142,9 +141,8 @@ def debug_print(function):
 
 @pipe_util
 def tee(function):
-    """
-    Sends a copy of the input into function - like a T junction.
-    """
+    """Sends a copy of the input into function - like a T junction."""
+
     def _tee(thing):
         function(thing)
         return thing
@@ -160,14 +158,14 @@ def as_args(function):
 
         some_lists > as_args(izip)
     """
+
     return lambda x: function(*x)
 
 
 @pipe_util
 def as_kwargs(function):
-    """
-    Applies the dictionary in the input as keyword arguments to `function`.
-    """
+    """Applies the dictionary in the input as keyword arguments to `function`."""
+
     return lambda x: function(**x)
 
 
@@ -178,8 +176,8 @@ def take_first(count):
 
     >>> range(9000) > where(X % 100 == 0) | take_first(5) | tuple
     (0, 100, 200, 300, 400)
-
     """
+
     def _take_first(iterable):
         return islice(iterable, count)
     return pipe | set_name('take_first(%s)' % count, _take_first)
@@ -193,6 +191,7 @@ def drop_first(count):
     >>> range(10) > drop_first(5) | tuple
     (5, 6, 7, 8, 9)
     """
+
     def _drop_first(iterable):
         g = (x for x in range(1, count + 1))
         return dropwhile(
@@ -211,6 +210,7 @@ def unless(exception_class_or_tuple, func, *args, **kwargs):
     >>> f([1, 2, 3])
     None
     """
+
     @pipe_util
     @auto_string_formatter
     @data_structure_builder
@@ -253,6 +253,7 @@ def select_first(condition):
     >>> first_of([])
     None
     """
+
     return where(condition) | unless(StopIteration, next)
 
 
@@ -276,6 +277,7 @@ def group_by(function):
     >>> [1, 2, 3, 4, 5, 6] > group_by(X % 2) | list
     [(0, [2, 4, 6]), (1, [1, 3, 5])]
     """
+
     def _group_by(seq):
         result = {}
         for item in seq:
@@ -313,15 +315,18 @@ def flatten(*args):
     >>> 'stuff' > flatten | list
     ['stuff']
     """
+
     return _flatten(args)
+
+
 flatten = wraps(flatten)(pipe | flatten)
 
 
 def count(iterable):
-    """
-    Returns the number of items in `iterable`.
-    """
+    """Returns the number of items in `iterable`."""
     return sum(1 for whatever in iterable)
+
+
 count = wraps(count)(pipe | count)
 
 
@@ -335,6 +340,7 @@ def take_until(condition):
     >>> [1, 4, 6, 4, 1] > take_until(X > 5).including | list
     [1, 4, 6]
     """
+
     f = partial(takewhile, pipe | condition | operator.not_)
     f.attrs = {'including': take_until_including(condition)}
     return f
@@ -347,6 +353,7 @@ def take_until_including(condition):
     >>> [1, 4, 6, 4, 1] > take_until_including(X > 5) | list
     [1, 4, 6]
     """
+
     def take_until_including_(interable):
         for i in interable:
             if not condition(i):

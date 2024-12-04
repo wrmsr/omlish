@@ -18,6 +18,7 @@ def pipe_util(func):
     """
     Decorator that handles X objects and partial application for pipe-utils.
     """
+
     @wraps(func)
     def pipe_util_wrapper(function, *args, **kwargs):
         if isinstance(function, XObject):
@@ -53,6 +54,7 @@ def auto_string_formatter(func):
     By converting a string argument to a function that does formatting on said
     string.
     """
+
     @wraps(func)
     def auto_string_formatter_wrapper(function, *args, **kwargs):
         if isinstance(function, str):
@@ -67,6 +69,7 @@ def data_structure_builder(func):
     """
     Decorator to handle automatic data structure creation for pipe-utils.
     """
+
     @wraps(func)
     def ds_builder_wrapper(function, *args, **kwargs):
         try:
@@ -83,6 +86,7 @@ def regex_condition(func):
     If a condition is given as string instead of a function, it is turned
     into a regex-matching function.
     """
+
     @wraps(func)
     def regex_condition_wrapper(condition, *args, **kwargs):
         if isinstance(condition, str):

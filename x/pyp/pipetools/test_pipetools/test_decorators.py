@@ -14,7 +14,6 @@ def test_pipe_util_xpartial():
 
 
 class TestPipeUtilsRepr:
-
     def test_basic(self):
         f = foreach(my_func)
         assert repr(f) == 'foreach(my_func)'
@@ -32,9 +31,7 @@ class TestPipeUtilsRepr:
         assert repr(f) == 'sort_by([X.attr, X * 2])'
 
     def test_repr_doesnt_get_called_when_not_necessary(self):
-
         class Something:
-
             def __repr__(self):
                 assert False, '__repr__ called when not necessary'
 

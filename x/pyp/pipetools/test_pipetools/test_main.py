@@ -13,7 +13,6 @@ class Bunch:
 
 
 class TestPipe:
-
     pipe = property(lambda self: pipe)
 
     def test_pipe(self):
@@ -47,7 +46,6 @@ class TestPipe:
         assert f(42) == 'That will be £ 42, please.'
 
     def test_makes_a_bound_method(self):
-
         class SomeClass:
             attr = 'foo bar'
             method = X.attr.split() | reversed | ' '.join
@@ -56,16 +54,13 @@ class TestPipe:
 
 
 class TestX:
-
     def test_basic(self):
-
         f = ~X.startswith('Hello')
 
         assert f('Hello world')
         assert not f('Goodbye world')
 
     def test_chained(self):
-
         f = ~X.get('item', '').startswith('Hello')
 
         assert f({'item': 'Hello world'})
@@ -73,13 +68,11 @@ class TestX:
         assert not f({})
 
     def test_passthrough(self):
-
         f = ~X
 
         assert f(42) == 42
 
     def test_mod(self):
-
         f = ~(X % 2)
         g = ~(9 % X)
 
@@ -89,7 +82,6 @@ class TestX:
         assert not f(2)
 
     def test_gt(self):
-
         f = ~(X > 5)
         g = ~(X < 6)
 
@@ -99,7 +91,6 @@ class TestX:
         assert not f(5)
 
     def test_gte(self):
-
         f = ~(X >= 5)
         g = ~(X <= 4)
 
@@ -109,7 +100,6 @@ class TestX:
         assert not f(4)
 
     def test_lt(self):
-
         f = ~(X < 5)
         g = ~(X > 4)
 
@@ -119,7 +109,6 @@ class TestX:
         assert not f(5)
 
     def test_lte(self):
-
         f = ~(X <= 5)
         g = ~(X >= 6)
 
@@ -129,64 +118,54 @@ class TestX:
         assert not f(6)
 
     def test_chained_gt(self):
-
         f = ~(X.thing > 5)
 
         assert f(Bunch(thing=6))
         assert not f(Bunch(thing=4))
 
     def test_index(self):
-
         f = ~(X['item'])
 
         assert f({'item': 42}) == 42
 
     def test_eq(self):
-
         f = ~(X == 42)
 
         assert f(42)
         assert not f('whatever')
 
     def test_neq(self):
-
         f = ~(X != 42)
 
         assert not f(42)
         assert f('whatever')
 
     def test_pos(self):
-
         f = ~+X
 
         assert f(4) == 4
 
     def test_neg(self):
-
         f = ~-X
 
         assert f(5) == -5
 
     def test_pipe_right(self):
-
         f = str | X[0]
 
         assert f(10) == '1'
 
     def test_pipe_left(self):
-
         f = X[0] | int
 
         assert f('10') == 1
 
     def test_call(self):
-
         f = ~X(42)
 
         assert f(lambda n: n / 2) == 21
 
     def test_mul(self):
-
         f = ~(X * 3)
         g = ~(3 * X)
 
@@ -257,7 +236,6 @@ class TestX:
 
 
 class TestStringFormatter:
-
     def test_format_tuple(self):
         f = StringFormatter('{0} + {0} = {1}')
         assert f((1, 2)) == '1 + 1 = 2'
@@ -288,7 +266,6 @@ class TestStringFormatter:
 
 
 class TestMaybe(TestPipe):
-
     # maybe should also pass default pipe tests
     pipe = property(lambda self: maybe)
 
@@ -305,7 +282,6 @@ class TestMaybe(TestPipe):
 
 
 class TestPipeInAPipe:
-
     def test_maybe_in_a_pipe_catches_none(self):
         f = pipe | str | int | (lambda x: None) | maybe | X.hello
         assert f(3) is None
@@ -329,7 +305,6 @@ def dummy(*args, **kwargs):
 
 
 class TestXPartial:
-
     def test_should_behave_like_partial(self):
         xf = xpartial(dummy, 1, kwarg='kwarg')
         assert xf(2, foo='bar') == ((1, 2), {'kwarg': 'kwarg', 'foo': 'bar'})
