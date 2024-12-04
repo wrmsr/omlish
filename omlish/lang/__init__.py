@@ -124,6 +124,7 @@ from .generators import (  # noqa
     CoroutineGenerator,
     Generator,
     GeneratorLike,
+    autostart,
     corogen,
     nextgen,
 )

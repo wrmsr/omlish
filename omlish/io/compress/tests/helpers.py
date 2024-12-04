@@ -15,6 +15,7 @@ R = ta.TypeVar('R')
 ##
 
 
+@lang.autostart
 def flatmap_generator_writer(
         fn: ta.Callable[[list[OF]], OT],
         g: ta.Generator[OF | None, I | None, R],
@@ -41,6 +42,27 @@ def flatmap_generator_writer(
                     yield fn(l)
                 raise StopIteration
         i = yield fn(l)
+
+
+##
+
+
+def join_bytes(l: ta.Sequence[bytes]) -> bytes:
+    if not l:
+        return b''
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return b''.join(l)
+
+
+def join_str(l: ta.Sequence[str]) -> str:
+    if not l:
+        return ''
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return ''.join(l)
 
 
 ##
