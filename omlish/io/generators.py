@@ -2,6 +2,7 @@
 TODO:
  - BufferedBytesGeneratorReader
  - docstrings
+ - memoryviews
 """
 import abc
 import typing as ta
@@ -33,6 +34,12 @@ class GeneratorReader(abc.ABC, ta.Generic[T]):
     @abc.abstractmethod
     def read(self, sz: int | None) -> ta.Generator[int | None, T, T]:
         raise NotImplementedError
+
+    def read_exact(self, sz: int) -> ta.Generator[int | None, T, T]:
+        d = yield from self.read(sz)
+        if len(d) != rem:  # type: ignore[unreachable]
+            raise EOFError(f'GeneratorReader got {len(d)}, expected {sz}')
+        return d
 
 
 ##
@@ -71,12 +78,8 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
             self._lst.pop(0)
 
         if rem:
-            d = check.not_none((yield rem))
-            if not d:
-                return self._join([])  # type: ignore[unreachable]
-            if len(d) != rem:  # type: ignore[unreachable]
-                raise EOFError(f'Reader got {len(d)}, expected {rem}')
-            lst.append(d)
+            if (d := check.not_none((yield rem))):
+                lst.append(d)
 
         if len(lst) == 1:
             return lst[0]
@@ -85,7 +88,7 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
 
     def prepend(self, d: AnyT) -> None:
         if d:
-            self._lst.append(d)
+            self._lst.insert(0, d)
 
 
 class PrependableBytesGeneratorReader(
@@ -119,7 +122,23 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
         self._buffer_size = buffer_size
 
     def read(self, sz: int | None) -> ta.Generator[int | None, AnyT, AnyT]:
-        return super().read(sz)
+        g = super().read(sz)
+        i: ta.Any = None
+        while True:
+            try:
+                rem = g.send(i)
+            except StopIteration as e:
+                return e.value
+
+            check.state(not self._lst)
+
+            r = max(rem or 0, self._buffer_size)
+            d: AnyT = check.not_none((yield r))
+            if not d:
+                i = d
+                continue
+
+            raise NotImplementedError
 
 
 class BufferedBytesGeneratorReader(
