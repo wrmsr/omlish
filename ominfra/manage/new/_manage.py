@@ -153,7 +153,9 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
 
         # Read main src from stdin
         main_z_len = struct.unpack('<I', os.read(0, 4))[0]
-        main_src = zlib.decompress(os.fdopen(0, 'rb').read(main_z_len))
+        if len(main_z := os.fdopen(0, 'rb').read(main_z_len)) != main_z_len:
+            raise EOFError
+        main_src = zlib.decompress(main_z)
 
         # Write both copies of main src. Must write to w0 (parent stdin) before w1 (copy pipe) as pipe will likely fill
         # and block and need to be drained by pyremote_bootstrap_finalize running in parent.
@@ -318,12 +320,20 @@ def _get_pyremote_env_info() -> PyremoteEnvInfo:
 ##
 
 
+@dc.dataclass(frozen=True)
+class PyremoteBootstrapOptions:
+    pass
+
+
 class PyremoteBootstrapDriver:
-    def __init__(self, main_src: str) -> None:
+    def __init__(self, main_src: str, options: PyremoteBootstrapOptions = PyremoteBootstrapOptions()) -> None:
         super().__init__()
 
         self._main_src = main_src
         self._main_z = zlib.compress(main_src.encode('utf-8'))
+
+        self._options = options
+        self._options_json = json.dumps(dc.asdict(options), indent=None, separators=(',', ':')).encode('utf-8')  # noqa
 
     #
 
@@ -344,7 +354,7 @@ class PyremoteBootstrapDriver:
         env_info: PyremoteEnvInfo
 
     def gen(self) -> ta.Generator[ta.Union[Read, Write], ta.Optional[bytes], Result]:
-        # Read first ack
+        # Read first ack (after fork)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK0)
 
         # Read pid
@@ -355,8 +365,14 @@ class PyremoteBootstrapDriver:
         yield from self._write(struct.pack('<I', len(self._main_z)))
         yield from self._write(self._main_z)
 
-        # Read second and third ack
+        # Read second ack (after writing src copies)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
+
+        # Write options
+        yield from self._write(struct.pack('<I', len(self._options_json)))
+        yield from self._write(self._options_json)
+
+        # Read third ack (after reaping child process)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK2)
 
         # Read env info
@@ -366,7 +382,7 @@ class PyremoteBootstrapDriver:
         env_info_json = d.decode('utf-8')
         env_info = PyremoteEnvInfo(**json.loads(env_info_json))
 
-        # Read fourth ack
+        # Read fourth ack (after finalization completed)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK3)
 
         # Return
@@ -426,21 +442,28 @@ class PyremotePayloadRuntime:
     input: ta.BinaryIO
     output: ta.BinaryIO
     main_src: str
+    options: PyremoteBootstrapOptions
     env_info: PyremoteEnvInfo
 
 
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
-    # Restore original argv0
-    sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
-
     # Read second copy of main src
     r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
     main_src = r1.read().decode('utf-8')
     r1.close()
 
+    # Read options
+    options_json_len = struct.unpack('<I', os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, 4))[0]
+    if len(options_json := os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, options_json_len)) != options_json_len:
+        raise EOFError
+    options = PyremoteBootstrapOptions(**json.loads(options_json.decode('utf-8')))
+
     # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in a
     # pipe at once.
     os.waitpid(int(os.environ.pop(_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR)), 0)
+
+    # Restore original argv0
+    sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
 
     # Write third ack
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
@@ -465,6 +488,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         input=input,
         output=output,
         main_src=main_src,
+        options=options,
         env_info=env_info,
     )
 
