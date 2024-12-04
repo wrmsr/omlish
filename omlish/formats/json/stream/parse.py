@@ -2,6 +2,7 @@ import typing as ta
 
 from .... import lang
 from ....funcs.genmachine import GenMachine
+from .errors import JsonStreamError
 from .lex import SCALAR_VALUE_TYPES
 from .lex import VALUE_TOKEN_KINDS
 from .lex import ScalarValue
@@ -79,6 +80,10 @@ def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent, None
 ##
 
 
+class JsonStreamParseError(JsonStreamError):
+    pass
+
+
 class JsonStreamObject(list):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({super().__repr__()})'
@@ -100,20 +105,20 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         if tt == 'KEY':
             self._stack.pop()
             if not self._stack:
-                raise self.StateError
+                raise JsonStreamParseError
 
             tt2 = self._stack[-1]
             if tt2 == 'OBJECT':
                 return ((v,), self._do_after_pair())
 
             else:
-                raise self.StateError
+                raise JsonStreamParseError
 
         elif tt == 'ARRAY':
             return ((v,), self._do_after_element())
 
         else:
-            raise self.StateError
+            raise JsonStreamParseError
 
     #
 
@@ -122,7 +127,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             tok = yield None
         except GeneratorExit:
             if self._stack:
-                raise self.StateError from None
+                raise JsonStreamParseError from None
             else:
                 raise
 
@@ -147,7 +152,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise self.StateError
+            raise JsonStreamParseError
 
     #
 
@@ -157,11 +162,11 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _emit_end_object(self):
         if not self._stack:
-            raise self.StateError
+            raise JsonStreamParseError
 
         tt = self._stack.pop()
         if tt != 'OBJECT':
-            raise self.StateError
+            raise JsonStreamParseError
 
         return self._emit_event(EndObject)
 
@@ -169,7 +174,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError from None
+            raise JsonStreamParseError from None
 
         if tok.kind == 'STRING':
             k = tok.value
@@ -177,9 +182,9 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             try:
                 tok = yield None
             except GeneratorExit:
-                raise self.StateError from None
+                raise JsonStreamParseError from None
             if tok.kind != 'COLON':
-                raise self.StateError
+                raise JsonStreamParseError
 
             yield (Key(k),)
             self._stack.append('KEY')
@@ -191,13 +196,13 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise self.StateError
+            raise JsonStreamParseError
 
     def _do_after_pair(self):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError from None
+            raise JsonStreamParseError from None
 
         if tok.kind == 'COMMA':
             return self._do_object_body()
@@ -208,7 +213,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise self.StateError
+            raise JsonStreamParseError
 
     #
 
@@ -218,11 +223,11 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     def _emit_end_array(self):
         if not self._stack:
-            raise self.StateError
+            raise JsonStreamParseError
 
         tt = self._stack.pop()
         if tt != 'ARRAY':
-            raise self.StateError
+            raise JsonStreamParseError
 
         return self._emit_event(EndArray)
 
@@ -230,7 +235,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         try:
             tok = yield None
         except GeneratorExit:
-            raise self.StateError from None
+            raise JsonStreamParseError from None
 
         if tok.kind == 'COMMA':
             return self._do_value()
@@ -241,4 +246,4 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             return r
 
         else:
-            raise self.StateError
+            raise JsonStreamParseError

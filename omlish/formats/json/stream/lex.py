@@ -12,6 +12,7 @@ import typing as ta
 
 from .... import check
 from ....funcs.genmachine import GenMachine
+from .errors import JsonStreamError
 
 
 ##
@@ -95,7 +96,7 @@ CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
 
 
 @dc.dataclass()
-class JsonLexError(Exception):
+class JsonStreamLexError(JsonStreamError):
     message: str
 
     pos: Position
@@ -160,8 +161,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
         self._buf.truncate()
         return raw
 
-    def _raise(self, msg: str) -> ta.NoReturn:
-        raise JsonLexError(msg, self.pos)
+    def _raise(self, msg: str, src: Exception | None = None) -> ta.NoReturn:
+        raise JsonStreamLexError(msg, self.pos) from src
 
     def _do_main(self):
         while True:
@@ -202,7 +203,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise('Unexpected end of input')
 
             if not c:
-                raise NotImplementedError
+                self._raise(f'Unterminated string literal: {self._buf.getvalue()}')
 
             self._buf.write(c)
             if c == '"' and last != '\\':
@@ -210,7 +211,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
             last = c
 
         raw = self._flip_buf()
-        sv = json.loads(raw)
+        try:
+            sv = json.loads(raw)
+        except json.JSONDecodeError as e:
+            self._raise(f'Invalid string literal: {raw!r}', e)
+
         yield self._make_tok('STRING', sv, raw, pos)
 
         return self._do_main()
