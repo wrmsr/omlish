@@ -66,6 +66,7 @@ _PYREMOTE_BOOTSTRAP_SRC_FD = 101
 
 _PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CHILD_PID'
 _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
+_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR = '_OPYR_OPTIONS_JSON'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
 _PYREMOTE_BOOTSTRAP_ACK1 = b'OPYR001\n'
@@ -420,20 +421,45 @@ class PyremotePayloadRuntime:
 
 
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
-    # Read second copy of main src
-    r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
-    main_src = r1.read().decode('utf-8')
-    r1.close()
+    # If json options var is not present we need to do initial finalization
+    if _PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR not in os.environ:
+        # Read second copy of main src
+        r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
+        main_src = r1.read().decode('utf-8')
+        r1.close()
 
-    # Read options
-    options_json_len = struct.unpack('<I', os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, 4))[0]
-    if len(options_json := os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, options_json_len)) != options_json_len:
-        raise EOFError
-    options = PyremoteBootstrapOptions(**json.loads(options_json.decode('utf-8')))
+        # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in
+        # a pipe at once.
+        os.waitpid(int(os.environ.pop(_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR)), 0)
 
-    # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in a
-    # pipe at once.
-    os.waitpid(int(os.environ.pop(_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR)), 0)
+        # Read options
+        options_json_len = struct.unpack('<I', os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, 4))[0]
+        if len(options_json := os.read(_PYREMOTE_BOOTSTRAP_INPUT_FD, options_json_len)) != options_json_len:
+            raise EOFError
+        options = PyremoteBootstrapOptions(**json.loads(options_json.decode('utf-8')))
+
+        # If debugging, re-exec as file
+        if options.debug:
+            # Write temp source file
+            import tempfile
+            tfd, tfn = tempfile.mkstemp('-pyremote.py')
+            os.write(tfd, main_src.encode('utf-8'))
+            os.close(tfd)
+
+            # Set json options var
+            os.environ[_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR] = options_json.decode('utf-8')
+
+            # Re-exec temp file
+            os.execl(os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR], sys.orig_argv[0], tfn)
+
+    else:
+        # Load options json var
+        options_json_str = os.environ.pop(_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR)
+        options = PyremoteBootstrapOptions(**json.loads(options_json_str))
+
+        # Read temp source file
+        with open(sys.orig_argv[1]) as sf:
+            main_src = sf.read()
 
     # Restore original argv0
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
