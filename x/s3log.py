@@ -20,6 +20,8 @@ https:#github.com/avinassh/s3-log
 import abc
 import dataclasses as dc
 import hashlib
+import io
+import struct
 import typing as ta
 
 
@@ -80,37 +82,32 @@ class S3Wal(Wal):
         return stored_checksum == self._calculate_checksum(record_data)
 
 
-"""
     def _prepare_body(self, offset: int, data: bytes) -> bytes:
-        # 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
-        buffer_len = 8 + len(data) + 32
-        buf = bytes.NewBuffer(make([]byte, 0, buffer_len))
-        if err := binary.Write(buf, binary.BigEndian, offset); err != nil:
-            return nil, err
-        if _, err := buf.Write(data); err != nil:
-            return nil, err
-        checksum = self._calculate_checksum(buf)
-        _, err := buf.Write(checksum[:])
-        return buf.Bytes(), err
+        buf = io.BytesIO()
+        buf.write(struct.pack('>Q', offset))
+        buf.write(data)
+        checksum = self._calculate_checksum(buf.getvalue())
+        buf.write(checksum)
+        return buf.getvalue()
 
     def append(self, data: bytes) -> int:
         next_offset = self._length + 1
 
-        buf, err := prepareBody(nextOffset, data)
-        if err != nil:
-            return 0, fmt.Errorf("failed to prepare object body: %w", err)
+        buf = self._prepare_body(next_offset, data)
 
-        input := &s3.PutObjectInput{
-            Bucket:      aws.String(self._bucket_name),
-            Key:         aws.String(self._get_object_key(nextOffset)),
-            Body:        bytes.NewReader(buf),
-            IfNoneMatch: aws.String("*"),
+        input = s3.PutObjectInput(
+            bucket=self._bucket_name,
+            key=self._get_object_key(next_offset),
+            body=buf,
+            if_none_match='*',
+        )
 
-        if _, err = self._client.put_object(input); err != nil:
-            return 0, fmt.Errorf("failed to put object to S3: %w", err)
-        self._length = nextOffset
-        return nextOffset, nil
+        self._client.put_object(input)
 
+        self._length = next_offset
+        return next_offset
+
+    """
     def read(self, offset: int) -> Record:
         key := self._get_object_key(offset)
         input := &s3.GetObjectInput{
