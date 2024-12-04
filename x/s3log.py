@@ -128,7 +128,7 @@ class S3Wal(Wal):
 
         return Record(
             offset=stored_offset,
-            data=data[8: -32],
+            data=data[8:-32],
         )
 
     def last_record(self) -> Record:
