@@ -82,7 +82,6 @@ def identity(obj: T) -> T:
 
 
 class constant(ta.Generic[T]):  # noqa
-
     def __init__(self, obj: T) -> None:
         super().__init__()
 
@@ -116,7 +115,6 @@ class VoidError(Exception):
 
 
 class Void:
-
     def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> None:  # type: ignore  # noqa
         raise VoidError
 

@@ -1,6 +1,7 @@
 import bz2
 import io
 
+from .... import lang
 from ..bz2 import IncrementalBz2Compressor
 from ..bz2 import IncrementalBz2Decompressor
 from .helpers import feed_inc_compressor
@@ -13,7 +14,7 @@ _ENC_DATA = bz2.compress(_DEC_DATA)
 def test_bz2_inc_compressor():
     ow = io.BytesIO()
     for b in feed_inc_compressor(
-            IncrementalBz2Compressor()(),
+            lang.nextgen(IncrementalBz2Compressor()()),
             io.BytesIO(_DEC_DATA),
             read_size=13,
     ):
