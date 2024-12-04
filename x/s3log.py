@@ -66,7 +66,7 @@ class S3Wal(Wal):
 
     def _get_offset_from_key(self, key: str) -> int:
         # skip the `w.prefix` and "/"
-        num_str = key[len(w._prefix)+1:]
+        num_str = key[len(self._prefix)+1:]
         return int(num_str, 10, 64)
 
     def _calculate_checksum(self, buf: bytes) -> bytes:
@@ -81,112 +81,93 @@ class S3Wal(Wal):
 
 
 """
-func prepareBody(offset uint64, data []byte) ([]byte, error) {
-    # 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
-    bufferLen := 8 + len(data) + 32
-    buf := bytes.NewBuffer(make([]byte, 0, bufferLen))
-    if err := binary.Write(buf, binary.BigEndian, offset); err != nil {
-        return nil, err
-    }
-    if _, err := buf.Write(data); err != nil {
-        return nil, err
-    }
-    checksum := calculateChecksum(buf)
-    _, err := buf.Write(checksum[:])
-    return buf.Bytes(), err
-}
+    def _prepare_body(self, offset: int, data: bytes) -> bytes:
+        # 8 bytes for offset, len(data) bytes for data, 32 bytes for checksum
+        buffer_len = 8 + len(data) + 32
+        buf = bytes.NewBuffer(make([]byte, 0, buffer_len))
+        if err := binary.Write(buf, binary.BigEndian, offset); err != nil:
+            return nil, err
+        if _, err := buf.Write(data); err != nil:
+            return nil, err
+        checksum = self._calculate_checksum(buf)
+        _, err := buf.Write(checksum[:])
+        return buf.Bytes(), err
 
-func (w *S3WAL) Append(ctx context.Context, data []byte) (uint64, error) {
-    nextOffset := w.length + 1
+    def append(self, data: bytes) -> int:
+        next_offset = self._length + 1
 
-    buf, err := prepareBody(nextOffset, data)
-    if err != nil {
-        return 0, fmt.Errorf("failed to prepare object body: %w", err)
-    }
+        buf, err := prepareBody(nextOffset, data)
+        if err != nil:
+            return 0, fmt.Errorf("failed to prepare object body: %w", err)
 
-    input := &s3.PutObjectInput{
-        Bucket:      aws.String(w.bucketName),
-        Key:         aws.String(w.getObjectKey(nextOffset)),
-        Body:        bytes.NewReader(buf),
-        IfNoneMatch: aws.String("*"),
-    }
+        input := &s3.PutObjectInput{
+            Bucket:      aws.String(self._bucket_name),
+            Key:         aws.String(self._get_object_key(nextOffset)),
+            Body:        bytes.NewReader(buf),
+            IfNoneMatch: aws.String("*"),
 
-    if _, err = w.client.PutObject(ctx, input); err != nil {
-        return 0, fmt.Errorf("failed to put object to S3: %w", err)
-    }
-    w.length = nextOffset
-    return nextOffset, nil
-}
+        if _, err = self._client.put_object(input); err != nil:
+            return 0, fmt.Errorf("failed to put object to S3: %w", err)
+        self._length = nextOffset
+        return nextOffset, nil
 
-func (w *S3WAL) Read(ctx context.Context, offset uint64) (Record, error) {
-    key := w.getObjectKey(offset)
-    input := &s3.GetObjectInput{
-        Bucket: aws.String(w.bucketName),
-        Key:    aws.String(key),
-    }
+    def read(self, offset: int) -> Record:
+        key := self._get_object_key(offset)
+        input := &s3.GetObjectInput{
+            Bucket: aws.String(self._bucket_name),
+            Key:    aws.String(key),
 
-    result, err := w.client.GetObject(ctx, input)
-    if err != nil {
-        return Record{}, fmt.Errorf("failed to get object from S3: %w", err)
-    }
-    defer result.Body.Close()
+        result, err := self._client.get_object(input)
+        if err != nil:
+            return Record{}, fmt.Errorf("failed to get object from S3: %w", err)
+        defer result.Body.Close()
 
-    data, err := io.ReadAll(result.Body)
-    if err != nil {
-        return Record{}, fmt.Errorf("failed to read object body: %w", err)
-    }
-    if len(data) < 40 {
-        return Record{}, fmt.Errorf("invalid record: data too short")
-    }
+        data, err := io.ReadAll(result.Body)
+        if err != nil:
+            return Record{}, fmt.Errorf("failed to read object body: %w", err)
+        if len(data) < 40:
+            return Record{}, fmt.Errorf("invalid record: data too short")
 
-    var storedOffset uint64
-    if err = binary.Read(bytes.NewReader(data[:8]), binary.BigEndian, &storedOffset); err != nil {
-        return Record{}, err
-    }
-    if storedOffset != offset {
-        return Record{}, fmt.Errorf("offset mismatch: expected %d, got %d", offset, storedOffset)
-    }
-    if !validateChecksum(data) {
-        return Record{}, fmt.Errorf("checksum mismatch")
-    }
-    return Record{
-        Offset: storedOffset,
-        Data:   data[8 : len(data)-32],
-    }, nil
-}
+        stored_offset: int
+        if err = binary.Read(bytes.NewReader(data[:8]), binary.BigEndian, &stored_offset); err != nil:
+            return Record{}, err
+        if stored_offset != offset:
+            return Record{}, fmt.Errorf("offset mismatch: expected %d, got %d", offset, stored_offset)
+        if !validateChecksum(data):
+            return Record{}, fmt.Errorf("checksum mismatch")
+        return Record{
+            Offset: stored_offset,
+            Data:   data[8 : len(data)-32],
+        }, nil
 
-func (w *S3WAL) LastRecord(ctx context.Context) (Record, error) {
-    input := &s3.ListObjectsV2Input{
-        Bucket: aws.String(w.bucketName),
-        Prefix: aws.String(w.prefix + "/"),
-    }
-    paginator := s3.NewListObjectsV2Paginator(w.client, input)
+    def last_record(self) -> Record:
+        input := &s3.ListObjectsV2Input{
+            Bucket: aws.String(self._bucket_name),
+            Prefix: aws.String(self._prefix + "/"),
+        paginator := s3.NewListObjectsV2Paginator(self._client, input)
 
-    var maxOffset uint64 = 0
-    for paginator.HasMorePages() {
-        output, err := paginator.NextPage(ctx)
-        if err != nil {
-            return Record{}, fmt.Errorf("failed to list objects from S3: %w", err)
-        }
-        for _, obj := range output.Contents {
-            key := *obj.Key
-            offset, err := w.getOffsetFromKey(key)
-            if err != nil {
-                return Record{}, fmt.Errorf("failed to parse offset from key: %w", err)
-            }
-            if offset > maxOffset {
-                maxOffset = offset
-            }
-        }
-    }
-    if maxOffset == 0 {
-        return Record{}, fmt.Errorf("WAL is empty")
-    }
-    w.length = maxOffset
-    return w.Read(ctx, maxOffset)
-}
+        max_offset: int = 0
+        for paginator.HasMorePages():
+            output, err := paginator.NextPage()
+            if err != nil:
+                return Record{}, fmt.Errorf("failed to list objects from S3: %w", err)
+            for _, obj := range output.Contents:
+                key := *obj.Key
+                offset, err := self._get_offset_from_key(key)
+                if err != nil:
+                    return Record{}, fmt.Errorf("failed to parse offset from key: %w", err)
+                if offset > max_offset:
+                    max_offset = offset
+
+        if max_offset == 0:
+            return Record{}, fmt.Errorf("WAL is empty")
+
+        self._length = max_offset
+        return self.read(max_offset)
+
 
 ##
+
 
 func generateRandomStr() string {
     b := make([]byte, 8)
