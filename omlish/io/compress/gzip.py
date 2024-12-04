@@ -42,7 +42,7 @@ import typing as ta
 from ... import cached
 from ... import check
 from ... import lang
-from ..generators import PrependableBytesGeneratorReader
+from ..generators.readers import PrependableBytesGeneratorReader
 from .types import IncrementalCompressor
 from .types import IncrementalDecompressor
 
@@ -123,6 +123,7 @@ class IncrementalGzipCompressor:
         if fname:
             check.none((yield fname + b'\000'))
 
+    @lang.autostart
     def __call__(self) -> IncrementalCompressor:
         crc = _zero_crc()
         size = 0
@@ -136,10 +137,12 @@ class IncrementalGzipCompressor:
             0,
         )
 
-        yield from self._write_gzip_header()
-
         while True:
             data: ta.Any = check.isinstance((yield None), bytes)
+
+            if not offset:
+                yield from self._write_gzip_header()
+
             if not data:
                 break
 
@@ -246,6 +249,7 @@ class IncrementalGzipDecompressor:
         if c:
             rdr.prepend(c)
 
+    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         rdr = PrependableBytesGeneratorReader()
 

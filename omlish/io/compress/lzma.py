@@ -17,6 +17,7 @@ class IncrementalLzmaCompressor:
     def __init__(self) -> None:
         super().__init__()
 
+    @lang.autostart
     def __call__(self) -> IncrementalCompressor:
         return CompressorIncrementalAdapter(
             lzma.LZMACompressor,  # type: ignore
@@ -24,6 +25,7 @@ class IncrementalLzmaCompressor:
 
 
 class IncrementalLzmaDecompressor:
+    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         return DecompressorIncrementalAdapter(
             lzma.LZMADecompressor,  # type: ignore
