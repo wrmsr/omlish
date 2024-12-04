@@ -130,7 +130,7 @@ class Flattening:
                             .split(self._index_close + self._index_open):
                         yield int(p)
                 else:
-                    check.state(')' not in part)
+                    check.state(self._index_close not in part)
                     yield part
 
         for fk, v in flattened.items():

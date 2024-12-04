@@ -24,7 +24,11 @@ def test_flattening():
             ],
         ],
     }
-    for f in [flattening_.Flattening(), flattening_.Flattening(index_open='((', index_close='))')]:
+    for f in [
+        flattening_.Flattening(),
+        flattening_.Flattening(index_open='[', index_close=']'),
+        flattening_.Flattening(index_open='((', index_close='))'),
+    ]:
         fl = f.flatten(m)
         ufl = f.unflatten(fl)
         assert ufl == m
