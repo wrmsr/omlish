@@ -2,8 +2,7 @@ import typing as ta
 
 from .... import check
 from .... import lang
-from .helpers import flatmap_stepped_generator
-from .helpers import join_str
+from ..stepped import flatmap_stepped_generator
 
 
 T = ta.TypeVar('T')
@@ -41,17 +40,17 @@ def test_fmg():
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(join_str, f(), terminate=of_equal_to(''))
+    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to(''))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(join_str, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to('c?'))
     for s in 'abc':
         print(repr(g.send(s)))
     print()
 
-    g = flatmap_stepped_generator(join_str, f(), terminate=of_equal_to('c?'))
+    g = flatmap_stepped_generator(''.join, f(), terminate=of_equal_to('c?'))
     for o in lang.genmap(g, 'abc'):
         print(repr(o))
     print()

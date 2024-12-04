@@ -7,7 +7,7 @@ TODO:
 import abc
 import typing as ta
 
-from .. import check
+from ... import check
 
 
 T = ta.TypeVar('T')
@@ -106,6 +106,10 @@ class PrependableStrGeneratorReader(
     pass
 
 
+prependable_bytes_generator_reader = PrependableBytesGeneratorReader
+prependable_str_generator_reader = PrependableStrGeneratorReader
+
+
 ##
 
 
@@ -161,3 +165,7 @@ class BufferedStrGeneratorReader(
     PrependableGeneratorReader[str],
 ):
     pass
+
+
+buffered_bytes_generator_reader = BufferedBytesGeneratorReader
+buffered_str_generator_reader = BufferedStrGeneratorReader

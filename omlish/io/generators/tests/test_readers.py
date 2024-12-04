@@ -1,5 +1,5 @@
-from ... import lang
-from .. import generators as gs
+from .... import lang
+from .. import readers as gs
 
 
 def test_prependable_generator_reader():
