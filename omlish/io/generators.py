@@ -106,6 +106,18 @@ class PrependableStrGeneratorReader(
 
 
 class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
+    DEFAULT_BUFFER_SIZE = 4 * 0x1000
+
+    def __init__(
+            self,
+            buffer_size: int = DEFAULT_BUFFER_SIZE,
+    ) -> None:
+        check.arg(buffer_size > 0)
+
+        super().__init__()
+
+        self._buffer_size = buffer_size
+
     def read(self, sz: int | None) -> ta.Generator[int | None, AnyT, AnyT]:
         return super().read(sz)
 
