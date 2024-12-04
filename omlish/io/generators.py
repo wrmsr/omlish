@@ -87,9 +87,9 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
         else:
             return self._join(lst)
 
-    def prepend(self, d: AnyT) -> None:
+    def prepend(self, d: AnyT, p: int | None = None) -> None:
         if d:
-            self._queue.insert(0, (d, 0))
+            self._queue.insert(0, (d, p or 0))
 
 
 class PrependableBytesGeneratorReader(
@@ -144,7 +144,7 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
                 continue
 
             i = d[:q]
-            self.prepend(d[q:])
+            self.prepend(d, q)
 
 
 class BufferedBytesGeneratorReader(
