@@ -10,9 +10,9 @@ builtins and thus not distinguish it from a normal property.
 
 """
 from .lang.cached import _CachedProperty  # noqa
-from .lang.cached import cached_function
+from .lang.cached import cached_function as _cached_function
 
-function = cached_function
+function = _cached_function
 
 property = property  # noqa
 
