@@ -126,19 +126,24 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
         i: ta.Any = None
         while True:
             try:
-                rem = g.send(i)
+                q = g.send(i)
             except StopIteration as e:
                 return e.value
 
             check.state(not self._lst)
 
-            r = max(rem or 0, self._buffer_size)
+            if q is None:
+                i = check.not_none((yield None))
+                continue
+
+            r = max(q, self._buffer_size)
             d: AnyT = check.not_none((yield r))
-            if not d:
+            if len(d) < q:
                 i = d
                 continue
 
-            raise NotImplementedError
+            i = d[:q]
+            self.prepend(d[q:])
 
 
 class BufferedBytesGeneratorReader(
