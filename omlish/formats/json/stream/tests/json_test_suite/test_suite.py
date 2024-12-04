@@ -56,11 +56,6 @@ EXPECTATION_MAP: ta.Mapping[str, Expectation] = {
 
 def test_suite():
     xfail_names = frozenset([
-        # May decide to make strict
-        'n_array_extra_comma.json',
-        'n_array_number_and_comma.json',
-        'n_object_trailing_comma.json',
-
         # Special numbers are explicitly supported
         'n_number_NaN.json',
         'n_number_infinity.json',
@@ -75,57 +70,59 @@ def test_suite():
     ])
 
     only_names: frozenset[str] = frozenset([
-
     ])
 
-    verbose = False
-    # verbose = True
+    verbose = bool(only_names)
 
     #
 
     fails: list[str] = []
 
-    d = os.path.join(os.path.dirname(__file__), 'parsing')
-    for n in sorted(os.listdir(d)):
-        if only_names and n not in only_names:
-            continue
+    for dn in [
+        'parsing',
+        'parsing_extra',
+    ]:
+        d = os.path.join(os.path.dirname(__file__), dn)
+        for n in sorted(os.listdir(d)):
+            if only_names and n not in only_names:
+                continue
 
-        with open(os.path.join(d, n), 'rb') as f:
-            b = f.read()
+            with open(os.path.join(d, n), 'rb') as f:
+                b = f.read()
 
-        try:
-            s = b.decode('utf-8')
-        except UnicodeDecodeError:
-            continue
+            try:
+                s = b.decode('utf-8')
+            except UnicodeDecodeError:
+                continue
 
-        x = EXPECTATION_MAP[n[0]]
+            x = EXPECTATION_MAP[n[0]]
 
-        v: ta.Any
-        try:
-            v = parse(s, verbose=verbose)
-        except JsonStreamError as e:  # noqa
-            v = e
+            v: ta.Any
+            try:
+                v = parse(s, verbose=verbose)
+            except JsonStreamError as e:  # noqa
+                v = e
 
-        if (
-            (x == 'accept' and not isinstance(v, Exception)) or
-            (x == 'reject' and isinstance(v, Exception)) or
-            x == 'either'
-        ):
+            if (
+                (x == 'accept' and not isinstance(v, Exception)) or
+                (x == 'reject' and isinstance(v, Exception)) or
+                x == 'either'
+            ):
+                if n in xfail_names:
+                    raise Exception(f'Expected failure did not fail: {n}')
+                continue
+
             if n in xfail_names:
-                raise Exception(f'Expected failure did not fail: {n}')
-            continue
+                continue
 
-        if n in xfail_names:
-            continue
+            if not fails:
+                print()
+            print(n)
 
-        if not fails:
-            print()
-        print(n)
+            # print(f'{x=}')
+            # print(f'{v=}')
+            # print()
 
-        # print(f'{x=}')
-        # print(f'{v=}')
-        # print()
+            fails.append(n)
 
-        fails.append(n)
-
-    assert len(fails) == 0
+        assert len(fails) == 0

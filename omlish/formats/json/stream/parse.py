@@ -122,7 +122,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
     #
 
-    def _do_value(self):
+    def _do_value(self, *, must_be_present: bool = False):
         try:
             tok = yield None
         except GeneratorExit:
@@ -145,6 +145,9 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             y, r = self._emit_begin_array()
             yield y
             return r
+
+        elif must_be_present:
+            raise JsonStreamParseError
 
         elif tok.kind == 'RBRACKET':
             y, r = self._emit_end_array()
@@ -170,7 +173,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
         return self._emit_event(EndObject)
 
-    def _do_object_body(self):
+    def _do_object_body(self, *, must_be_present: bool = False):
         try:
             tok = yield None
         except GeneratorExit:
@@ -190,6 +193,9 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             self._stack.append('KEY')
             return self._do_value()
 
+        elif must_be_present:
+            raise JsonStreamParseError
+
         elif tok.kind == 'RBRACE':
             y, r = self._emit_end_object()
             yield y
@@ -205,7 +211,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             raise JsonStreamParseError from None
 
         if tok.kind == 'COMMA':
-            return self._do_object_body()
+            return self._do_object_body(must_be_present=True)
 
         elif tok.kind == 'RBRACE':
             y, r = self._emit_end_object()
@@ -238,7 +244,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             raise JsonStreamParseError from None
 
         if tok.kind == 'COMMA':
-            return self._do_value()
+            return self._do_value(must_be_present=True)
 
         elif tok.kind == 'RBRACKET':
             y, r = self._emit_end_array()
