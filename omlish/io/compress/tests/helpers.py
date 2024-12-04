@@ -1,6 +1,41 @@
 import typing as ta
 
+from .... import lang
 from ..types import IncrementalCompressor
+
+
+I = ta.TypeVar('I')
+O = ta.TypeVar('O')
+R = ta.TypeVar('R')
+
+
+##
+
+
+def buffer_generator_writer(
+        g: ta.Generator[O | None, I | None, R],
+        *,
+        terminator: lang.Maybe[O] = lang.empty(),
+) -> ta.Generator[O, list[I], R]:
+    l: list[O]
+    i = yield
+    while True:
+        l = []
+        while True:
+            try:
+                o = g.send(i)
+            except StopIteration as e:
+                return e.value
+            i = None
+            if o is None:
+                break
+            l.append(o)
+            if terminator.present and o == terminator.must():
+                break
+        i = yield l
+
+
+##
 
 
 def _yield_read_chunks(
