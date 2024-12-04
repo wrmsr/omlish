@@ -35,7 +35,6 @@ class IncrementalBz2Compressor:
 
 
 class IncrementalBz2Decompressor:
-    @lang.autostart
     def __call__(self) -> IncrementalDecompressor:
         return DecompressorIncrementalAdapter(
             bz2.BZ2Decompressor,  # type: ignore
