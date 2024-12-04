@@ -17,8 +17,8 @@ class Cli(ap.Cli):
         ap.arg('file'),
         ap.arg('out-file', nargs='?'),
         ap.arg('-w', '--write', action='store_true'),
-        ap.arg('-o', '--overwrite', action='store_true'),
-        ap.arg('-O', '--open', action='store_true'),
+        ap.arg('-o', '--open', action='store_true'),
+        ap.arg('-O', '--overwrite', action='store_true'),
     )
     def pstats_pdf(self) -> None:
         out_file = self.args.out_file
