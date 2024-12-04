@@ -486,7 +486,8 @@ class PyremoteBootstrapDriver:
                 return e.value
 
             if isinstance(go, self.Read):
-                gi = stdout.read(go.sz)
+                if len(gi := stdout.read(go.sz)) != go.sz:
+                    raise EOFError
             elif isinstance(go, self.Write):
                 gi = None
                 stdin.write(go.d)

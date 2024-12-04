@@ -81,12 +81,12 @@ def _recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
     if not d:
         return None
     if len(d) != 4:
-        raise Exception
+        raise EOFError
 
     sz = struct.unpack('<I', d)[0]
     d = f.read(sz)
-    if not d:
-        raise Exception
+    if len(d) != sz:
+        raise EOFError
 
     j = json.loads(d.decode('utf-8'))
     return unmarshal_obj(j, ty)
