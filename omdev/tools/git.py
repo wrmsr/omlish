@@ -106,7 +106,7 @@ class Cli(ap.Cli):
     @ap.command(
         ap.arg('rev', nargs='?', default='HEAD'),
         ap.arg('-d', '--diff', action='store_true'),
-        ap.arg('-s', '--diff-stat', action='store_true'),
+        ap.arg('-s', '--stat', action='store_true'),
         ap.arg('-g', '--github', action='store_true'),
         ap.arg('-o', '--open', action='store_true'),
     )
