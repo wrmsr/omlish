@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-amalg ./_manage.py
+# @omlish-amalg ../../scripts/manage.py
 # ruff: noqa: UP006 UP007
 """
 manage.py -s 'docker run -i python:3.12'
@@ -140,7 +140,7 @@ def _get_amalg_src(*, amalg_file: ta.Optional[str]) -> str:
         return _get_self_src()
 
     import importlib.resources
-    return importlib.resources.read_text(__package__, '_manage.py')
+    return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
 
 
 ##
