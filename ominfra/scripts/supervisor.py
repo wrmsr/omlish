@@ -7382,7 +7382,7 @@ class ProcessImpl(Process):
         self._backoff = 0  # backoff counter (to start_retries)
 
         self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
-        self._spawn_err: ta.Optional[str] = None  # error message attached by spawn() if any
+        self._spawn_err: ta.Optional[str] = None  # error message attached by _spawn() if any
 
     #
 
@@ -7419,12 +7419,12 @@ class ProcessImpl(Process):
 
     #
 
-    def spawn(self) -> ta.Optional[Pid]:
+    def _spawn(self) -> ta.Optional[Pid]:
         if self.pid:
             log.warning('process \'%s\' already running', self.name)
             return None
 
-        self.check_in_state(
+        self._check_in_state(
             ProcessState.EXITED,
             ProcessState.FATAL,
             ProcessState.BACKOFF,
@@ -7439,15 +7439,15 @@ class ProcessImpl(Process):
 
         self._last_start = time.time()
 
-        self.change_state(ProcessState.STARTING)
+        self._change_state(ProcessState.STARTING)
 
         try:
             sp = self._spawning.spawn()
         except ProcessSpawnError as err:
             log.exception('Spawn error')
             self._spawn_err = err.args[0]
-            self.check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self._change_state(ProcessState.BACKOFF)
             return None
 
         log.info("Spawned: '%s' with pid %s", self.name, sp.pid)
@@ -7480,7 +7480,7 @@ class ProcessImpl(Process):
 
     #
 
-    def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
+    def _change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
         old_state = self._state
         if new_state is old_state:
             return False
@@ -7498,7 +7498,7 @@ class ProcessImpl(Process):
 
         return True
 
-    def check_in_state(self, *states: ProcessState) -> None:
+    def _check_in_state(self, *states: ProcessState) -> None:
         if self._state not in states:
             raise ProcessStateError(
                 f'Check failed for {self._config.name}: '
@@ -7507,7 +7507,7 @@ class ProcessImpl(Process):
 
     #
 
-    def _check_and_adjust_for_system_clock_rollback(self, test_time):
+    def _check_and_adjust_for_system_clock_rollback(self, test_time: float) -> None:
         """
         Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
         """
@@ -7551,8 +7551,8 @@ class ProcessImpl(Process):
         self._delay = 0
         self._backoff = 0
         self._system_stop = True
-        self.check_in_state(ProcessState.BACKOFF)
-        self.change_state(ProcessState.FATAL)
+        self._check_in_state(ProcessState.BACKOFF)
+        self._change_state(ProcessState.FATAL)
 
     def kill(self, sig: int) -> ta.Optional[str]:
         """
@@ -7562,6 +7562,7 @@ class ProcessImpl(Process):
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
+
         now = time.time()
 
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED. This is needed because
@@ -7569,7 +7570,7 @@ class ProcessImpl(Process):
         # blocked for a long time waiting for the retries.
         if self._state == ProcessState.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', self.name)
-            self.change_state(ProcessState.STOPPED)
+            self._change_state(ProcessState.STOPPED)
             return None
 
         args: tuple
@@ -7594,8 +7595,8 @@ class ProcessImpl(Process):
         self._killing = True
         self._delay = now + self._config.stop_wait_secs
         # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stop_wait_secs
-        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
-        self.change_state(ProcessState.STOPPING)
+        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self._change_state(ProcessState.STOPPING)
 
         kpid = int(self.pid)
         if kill_as_group:
@@ -7616,7 +7617,7 @@ class ProcessImpl(Process):
             tb = traceback.format_exc()
             fmt, args = 'unknown problem killing %s (%s):%s', (self.name, self.pid, tb)
             log.critical(fmt, *args)
-            self.change_state(ProcessState.UNKNOWN)
+            self._change_state(ProcessState.UNKNOWN)
             self._killing = False
             self._delay = 0
             return fmt % args
@@ -7638,7 +7639,7 @@ class ProcessImpl(Process):
 
         log.debug('sending %s (pid %s) sig %s', self.name, self.pid, sig_name(sig))
 
-        self.check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
+        self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
 
         try:
             try:
@@ -7659,7 +7660,7 @@ class ProcessImpl(Process):
             tb = traceback.format_exc()
             fmt, args = 'unknown problem sending sig %s (%s):%s', (self.name, self.pid, tb)
             log.critical(fmt, *args)
-            self.change_state(ProcessState.UNKNOWN)
+            self._change_state(ProcessState.UNKNOWN)
             return fmt % args
 
         return None
@@ -7697,8 +7698,8 @@ class ProcessImpl(Process):
             self._exitstatus = Rc(es)
 
             fmt, args = 'stopped: %s (%s)', (self.name, msg)
-            self.check_in_state(ProcessState.STOPPING)
-            self.change_state(ProcessState.STOPPED)
+            self._check_in_state(ProcessState.STOPPING)
+            self._change_state(ProcessState.STOPPED)
             if exit_expected:
                 log.info(fmt, *args)
             else:
@@ -7708,8 +7709,8 @@ class ProcessImpl(Process):
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
             self._exitstatus = None
             self._spawn_err = 'Exited too quickly (process log may have details)'
-            self.check_in_state(ProcessState.STARTING)
-            self.change_state(ProcessState.BACKOFF)
+            self._check_in_state(ProcessState.STARTING)
+            self._change_state(ProcessState.BACKOFF)
             log.warning('exited: %s (%s)', self.name, msg + '; not expected')
 
         else:
@@ -7722,18 +7723,18 @@ class ProcessImpl(Process):
             # if the process was STARTING but a system time change causes self.last_start to be in the future, the
             # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
             if self._state == ProcessState.STARTING:
-                self.change_state(ProcessState.RUNNING)
+                self._change_state(ProcessState.RUNNING)
 
-            self.check_in_state(ProcessState.RUNNING)
+            self._check_in_state(ProcessState.RUNNING)
 
             if exit_expected:
                 # expected exit code
-                self.change_state(ProcessState.EXITED, expected=True)
+                self._change_state(ProcessState.EXITED, expected=True)
                 log.info('exited: %s (%s)', self.name, msg + '; expected')
             else:
                 # unexpected exit code
                 self._spawn_err = f'Bad exit code {es}'
-                self.change_state(ProcessState.EXITED, expected=False)
+                self._change_state(ProcessState.EXITED, expected=False)
                 log.warning('exited: %s (%s)', self.name, msg + '; not expected')
 
         self._pid = Pid(0)
@@ -7753,21 +7754,21 @@ class ProcessImpl(Process):
                 if self._config.auto_restart:
                     if self._config.auto_restart is RestartUnconditionally:
                         # EXITED -> STARTING
-                        self.spawn()
+                        self._spawn()
                     elif self._exitstatus not in self._config.exitcodes:
                         # EXITED -> STARTING
-                        self.spawn()
+                        self._spawn()
 
             elif state == ProcessState.STOPPED and not self._last_start:
                 if self._config.auto_start:
                     # STOPPED -> STARTING
-                    self.spawn()
+                    self._spawn()
 
             elif state == ProcessState.BACKOFF:
                 if self._backoff <= self._config.start_retries:
                     if now > self._delay:
                         # BACKOFF -> STARTING
-                        self.spawn()
+                        self._spawn()
 
         if state == ProcessState.STARTING:
             if now - self._last_start > self._config.start_secs:
@@ -7775,8 +7776,8 @@ class ProcessImpl(Process):
                 # proc.config.start_secs,
                 self._delay = 0
                 self._backoff = 0
-                self.check_in_state(ProcessState.STARTING)
-                self.change_state(ProcessState.RUNNING)
+                self._check_in_state(ProcessState.STARTING)
+                self._change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (start_secs)' % self._config.start_secs)  # noqa
                 log.info('success: %s %s', self.name, msg)
 
