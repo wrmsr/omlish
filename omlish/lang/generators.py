@@ -1,4 +1,5 @@
 import abc
+import functools
 import typing as ta
 
 from .maybes import Maybe
@@ -19,6 +20,16 @@ R_co = ta.TypeVar('R_co', covariant=True)
 def nextgen(g: T) -> T:
     next(g)  # type: ignore
     return g
+
+
+def autostart(fn):
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        g = fn(*args, **kwargs)
+        if (o := next(g)) is not None:
+            raise TypeError(o)
+        return g
+    return inner
 
 
 ##
