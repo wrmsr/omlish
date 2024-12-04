@@ -13,8 +13,8 @@ def test_prependable_generator_reader():
         i = yield from rdr.read(3)
         assert i == 'cde'
 
-        rdr.prepend('f')
         rdr.prepend('gh')
+        rdr.prepend('f')
         i = yield from rdr.read(2)
         assert i == 'fg'
 
@@ -40,5 +40,5 @@ def test_buffered_generator_reader():
         return 'done'
 
     cg = lang.corogen(f())
-    assert cg.send() == cg.Yield(2)
-    assert cg.send('ab') == cg.Return('done')
+    assert cg.send() == cg.Yield(4)
+    assert cg.send('abcd') == cg.Return('done')
