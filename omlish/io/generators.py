@@ -1,6 +1,7 @@
 """
 TODO:
  - BufferedBytesGeneratorReader
+ - docstrings
 """
 import abc
 import typing as ta
