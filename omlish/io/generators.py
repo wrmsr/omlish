@@ -36,8 +36,8 @@ class GeneratorReader(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     def read_exact(self, sz: int) -> ta.Generator[int | None, T, T]:
-        d = yield from self.read(sz)
-        if len(d) != rem:  # type: ignore[unreachable]
+        d: ta.Any = yield from self.read(sz)
+        if len(d) != sz:
             raise EOFError(f'GeneratorReader got {len(d)}, expected {sz}')
         return d
 
@@ -78,8 +78,9 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
             self._lst.pop(0)
 
         if rem:
-            if (d := check.not_none((yield rem))):
-                lst.append(d)
+            d = check.not_none((yield rem))
+            if d:
+                lst.append(d)  # type: ignore[unreachable]
 
         if len(lst) == 1:
             return lst[0]

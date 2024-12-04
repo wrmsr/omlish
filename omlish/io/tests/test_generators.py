@@ -37,8 +37,26 @@ def test_buffered_generator_reader():
         i = yield from rdr.read(2)
         assert i == 'ab'
 
+        i = yield from rdr.read(2)
+        assert i == 'cd'
+
+        i = yield from rdr.read(1)
+        assert i == 'e'
+
+        i = yield from rdr.read(2)
+        assert i == 'fg'
+
+        i = yield from rdr.read(2)
+        assert i == 'hi'
+
+        i = yield from rdr.read(8)
+        assert i == 'jklmnopq'
+
         return 'done'
 
     cg = lang.corogen(f())
     assert cg.send() == cg.Yield(4)
-    assert cg.send('abcd') == cg.Return('done')
+    assert cg.send('abcd') == cg.Yield(4)
+    assert cg.send('efgh') == cg.Yield(4)
+    assert cg.send('ijkl') == cg.Yield(5)
+    assert cg.send('mnopq') == cg.Return('done')
