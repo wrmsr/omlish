@@ -13,9 +13,6 @@ class PrependableBytesGeneratorReader:
 
         self._p: list[bytes] = []
 
-    class ReadError(Exception):
-        pass
-
     def read(self, sz: int | None) -> ta.Generator[int | None, bytes, bytes]:
         if not self._p:
             d = check.isinstance((yield sz), bytes)
@@ -43,7 +40,7 @@ class PrependableBytesGeneratorReader:
             if not c:
                 return b''
             if len(c) != r:
-                raise self.ReadError(f'Reader got {len(c)} bytes, expected {r}')
+                raise EOFError(f'Reader got {len(c)} bytes, expected {r}')
             l.append(c)
 
         return b''.join(l)
