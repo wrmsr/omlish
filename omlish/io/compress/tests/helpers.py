@@ -2,7 +2,7 @@ import functools
 import typing as ta
 
 from .... import lang
-from ...generators.processors import joined_bytes_generator_processor
+from ...generators.stepped import joined_bytes_stepped_generator
 from ..types import IncrementalCompressor
 
 
@@ -13,6 +13,6 @@ def feed_inc_compressor(
         read_size: int = 4096,
 ) -> ta.Iterator[bytes]:
     fi = iter(functools.partial(f.read, read_size), None)
-    fg = joined_bytes_generator_processor(g)
+    fg = joined_bytes_stepped_generator(g)
     mi = lang.GeneratorMappedIterator(fg, fi)
     yield from mi
