@@ -12,7 +12,7 @@ import typing as ta
 I = ta.TypeVar('I')
 O = ta.TypeVar('O')
 
-# MachineGen: ta.TypeAlias = ta.Generator[ta.Iterable[O] | None, I, ta.Optional[MachineGen[I, O]]]
+# MachineGen: ta.TypeAlias = ta.Generator[ta.Iterable[O] | None, I | None, ta.Optional[MachineGen[I, O]]]
 MachineGen: ta.TypeAlias = ta.Generator[ta.Any, ta.Any, ta.Any]
 
 
@@ -93,8 +93,10 @@ class GenMachine(ta.Generic[I, O]):
         if self._gen is None:
             raise GenMachine.ClosedError
 
+        gi: I | None = i
         try:
-            while (o := self._gen.send(i)) is not None:
+            while (o := self._gen.send(gi)) is not None:
+                gi = None
                 yield from o
 
         except StopIteration as s:
