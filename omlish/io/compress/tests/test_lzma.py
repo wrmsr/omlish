@@ -1,9 +1,9 @@
 import io
 import lzma
 
+from ...generators.stepped import read_into_bytes_stepped_generator
 from ..lzma import IncrementalLzmaCompressor
 from ..lzma import IncrementalLzmaDecompressor
-from .helpers import feed_inc_compressor
 
 
 _DEC_DATA = b'foobar' * 128
@@ -12,7 +12,7 @@ _ENC_DATA = lzma.compress(_DEC_DATA)
 
 def test_lzma_inc_compressor():
     ow = io.BytesIO()
-    for b in feed_inc_compressor(
+    for b in read_into_bytes_stepped_generator(
             IncrementalLzmaCompressor()(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
