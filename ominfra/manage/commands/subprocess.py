@@ -8,29 +8,29 @@ import typing as ta
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .base import Command
+from .base import CommandExecutor
 
 
 ##
 
 
-class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Output']):
-    @dc.dataclass(frozen=True)
-    class Input(Command.Input):
-        args: ta.Sequence[str]
+@dc.dataclass(frozen=True)
+class SubprocessCommand(Command['SubprocessCommand.Output']):
+    args: ta.Sequence[str]
 
-        shell: bool = False
-        cwd: ta.Optional[str] = None
-        env: ta.Optional[ta.Mapping[str, str]] = None
+    shell: bool = False
+    cwd: ta.Optional[str] = None
+    env: ta.Optional[ta.Mapping[str, str]] = None
 
-        capture_stdout: bool = False
-        capture_stderr: bool = False
+    capture_stdout: bool = False
+    capture_stderr: bool = False
 
-        input: ta.Optional[bytes] = None
-        timeout: ta.Optional[float] = None
+    input: ta.Optional[bytes] = None
+    timeout: ta.Optional[float] = None
 
-        def __post_init__(self) -> None:
-            if isinstance(self.args, str):
-                raise TypeError(self.args)
+    def __post_init__(self) -> None:
+        if isinstance(self.args, str):
+            raise TypeError(self.args)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -42,7 +42,12 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
         stdout: ta.Optional[bytes] = None
         stderr: ta.Optional[bytes] = None
 
-    def _execute(self, inp: Input) -> Output:
+
+##
+
+
+class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
+    def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
         proc = subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*inp.args),
 

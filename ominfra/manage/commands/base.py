@@ -4,22 +4,24 @@ import dataclasses as dc
 import typing as ta
 
 
-CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
+CommandT = ta.TypeVar('CommandT', bound='Command')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 
 ##
 
 
-class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
-    @dc.dataclass(frozen=True)
-    class Input(abc.ABC):  # noqa
-        pass
-
+@dc.dataclass(frozen=True)
+class Command(abc.ABC, ta.Generic[CommandOutputT]):
     @dc.dataclass(frozen=True)
     class Output(abc.ABC):  # noqa
         pass
 
+
+##
+
+
+class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def _execute(self, inp: CommandInputT) -> CommandOutputT:
+    def execute(self, i: CommandT) -> CommandOutputT:
         raise NotImplementedError

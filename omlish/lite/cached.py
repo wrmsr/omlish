@@ -4,6 +4,8 @@ import typing as ta
 
 T = ta.TypeVar('T')
 
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
 
 class _cached_nullary:  # noqa
     def __init__(self, fn):
@@ -24,3 +26,9 @@ class _cached_nullary:  # noqa
 
 def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
     return _cached_nullary(fn)
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_nullary(fn)
+    fn()
+    return fn

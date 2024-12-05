@@ -49,11 +49,12 @@ if sys.version_info < (3, 8):
 
 
 # commands/base.py
-CommandInputT = ta.TypeVar('CommandInputT', bound='Command.Input')
+CommandT = ta.TypeVar('CommandT', bound='Command')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
@@ -66,17 +67,19 @@ SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 ##
 
 
-class Command(abc.ABC, ta.Generic[CommandInputT, CommandOutputT]):
-    @dc.dataclass(frozen=True)
-    class Input(abc.ABC):  # noqa
-        pass
-
+@dc.dataclass(frozen=True)
+class Command(abc.ABC, ta.Generic[CommandOutputT]):
     @dc.dataclass(frozen=True)
     class Output(abc.ABC):  # noqa
         pass
 
+
+##
+
+
+class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def _execute(self, inp: CommandInputT) -> CommandOutputT:
+    def execute(self, i: CommandT) -> CommandOutputT:
         raise NotImplementedError
 
 
@@ -548,6 +551,12 @@ class _cached_nullary:  # noqa
 
 def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
     return _cached_nullary(fn)
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_nullary(fn)
+    fn()
+    return fn
 
 
 ########################################
@@ -1498,24 +1507,23 @@ def subprocess_close(
 ##
 
 
-class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Output']):
-    @dc.dataclass(frozen=True)
-    class Input(Command.Input):
-        args: ta.Sequence[str]
+@dc.dataclass(frozen=True)
+class SubprocessCommand(Command['SubprocessCommand.Output']):
+    args: ta.Sequence[str]
 
-        shell: bool = False
-        cwd: ta.Optional[str] = None
-        env: ta.Optional[ta.Mapping[str, str]] = None
+    shell: bool = False
+    cwd: ta.Optional[str] = None
+    env: ta.Optional[ta.Mapping[str, str]] = None
 
-        capture_stdout: bool = False
-        capture_stderr: bool = False
+    capture_stdout: bool = False
+    capture_stderr: bool = False
 
-        input: ta.Optional[bytes] = None
-        timeout: ta.Optional[float] = None
+    input: ta.Optional[bytes] = None
+    timeout: ta.Optional[float] = None
 
-        def __post_init__(self) -> None:
-            if isinstance(self.args, str):
-                raise TypeError(self.args)
+    def __post_init__(self) -> None:
+        if isinstance(self.args, str):
+            raise TypeError(self.args)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -1527,7 +1535,12 @@ class SubprocessCommand(Command['SubprocessCommand.Input', 'SubprocessCommand.Ou
         stdout: ta.Optional[bytes] = None
         stderr: ta.Optional[bytes] = None
 
-    def _execute(self, inp: Input) -> Output:
+
+##
+
+
+class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
+    def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
         proc = subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*inp.args),
 
@@ -1570,29 +1583,23 @@ _COMMAND_TYPES = {
 }
 
 
-register_opj_marshaler(
-    Command.Input,
-    PolymorphicObjMarshaler.of([
-        PolymorphicObjMarshaler.Impl(
-            cty.Input,
-            k,
-            get_obj_marshaler(cty.Input),
+@static_init
+def _register_command_marshaling() -> None:
+    for fn in [
+        lambda c: c,
+        lambda c: c.Output,
+    ]:
+        register_opj_marshaler(
+            fn(Command),
+            PolymorphicObjMarshaler.of([
+                PolymorphicObjMarshaler.Impl(
+                    fn(cty),
+                    k,
+                    get_obj_marshaler(fn(cty)),
+                )
+                for k, cty in _COMMAND_TYPES.items()
+            ]),
         )
-        for k, cty in _COMMAND_TYPES.items()
-    ]),
-)
-
-register_opj_marshaler(
-    Command.Output,
-    PolymorphicObjMarshaler.of([
-        PolymorphicObjMarshaler.Impl(
-            cty.Output,
-            k,
-            get_obj_marshaler(cty.Output),
-        )
-        for k, cty in _COMMAND_TYPES.items()
-    ]),
-)
 
 
 ##
@@ -1630,12 +1637,12 @@ def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     while True:
-        i = _recv_obj(rt.input, Command.Input)
+        i = _recv_obj(rt.input, Command)
         if i is None:
             break
 
-        if isinstance(i, SubprocessCommand.Input):
-            o = SubprocessCommand()._execute(i)  # noqa
+        if isinstance(i, SubprocessCommand):
+            o = SubprocessCommandExecutor().execute(i)  # noqa
         else:
             raise TypeError(i)
 
@@ -1737,17 +1744,17 @@ def _main() -> None:
     #
 
     for ci in [
-        SubprocessCommand.Input(
+        SubprocessCommand(
             args=['python3', '-'],
             input=b'print(1)\n',
             capture_stdout=True,
         ),
-        SubprocessCommand.Input(
+        SubprocessCommand(
             args=['uname'],
             capture_stdout=True,
         ),
     ]:
-        _send_obj(stdin, ci, Command.Input)
+        _send_obj(stdin, ci, Command)
 
         o = _recv_obj(stdout, Command.Output)
 
