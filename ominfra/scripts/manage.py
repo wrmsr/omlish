@@ -6,7 +6,7 @@
 # ruff: noqa: N802 UP006 UP007 UP036
 """
 manage.py -s 'docker run -i python:3.12'
-manage.py -qs 'ssh -i foo/bar foo@bar.baz' --python=python3.8
+manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import abc
 import base64
@@ -206,6 +206,8 @@ _PYREMOTE_BOOTSTRAP_SRC_FD = 101
 
 _PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CHILD_PID'
 _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
+_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR = '_OPYR_CONTEXT_NAME'
+_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR = '_OPYR_SRC_FILE'
 _PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR = '_OPYR_OPTIONS_JSON'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
@@ -248,11 +250,10 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         for f in [r0, w0, r1, w1]:
             os.close(f)
 
-        # Save child pid to close after relaunch
+        # Save vars
         os.environ[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
-
-        # Save original argv0
         os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = sys.executable
+        os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
 
         # Start repl reading stdin from r0
         os.execl(sys.executable, sys.executable + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
@@ -303,6 +304,7 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
         '_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR',
         '_PYREMOTE_BOOTSTRAP_ARGV0_VAR',
+        '_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR',
 
         '_PYREMOTE_BOOTSTRAP_ACK0',
         '_PYREMOTE_BOOTSTRAP_ACK1',
@@ -338,14 +340,15 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 class PyremotePayloadRuntime:
     input: ta.BinaryIO
     output: ta.BinaryIO
+    context_name: str
     main_src: str
     options: PyremoteBootstrapOptions
     env_info: PyremoteEnvInfo
 
 
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
-    # If json options var is not present we need to do initial finalization
-    if _PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR not in os.environ:
+    # If src file var is not present we need to do initial finalization
+    if _PYREMOTE_BOOTSTRAP_SRC_FILE_VAR not in os.environ:
         # Read second copy of main src
         r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
         main_src = r1.read().decode('utf-8')
@@ -369,11 +372,14 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
             os.write(tfd, main_src.encode('utf-8'))
             os.close(tfd)
 
-            # Set json options var
+            # Set vars
+            os.environ[_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR] = tfn
             os.environ[_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR] = options_json.decode('utf-8')
 
             # Re-exec temp file
-            os.execl(os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR], sys.orig_argv[0], tfn)
+            exe = os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR]
+            context_name = os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR]
+            os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)), tfn)
 
     else:
         # Load options json var
@@ -381,11 +387,14 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         options = PyremoteBootstrapOptions(**json.loads(options_json_str))
 
         # Read temp source file
-        with open(sys.orig_argv[1]) as sf:
+        with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
             main_src = sf.read()
 
     # Restore original argv0
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
+
+    # Grab context name
+    context_name = os.environ.pop(_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR)
 
     # Write third ack
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
@@ -409,6 +418,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     return PyremotePayloadRuntime(
         input=input,
         output=output,
+        context_name=context_name,
         main_src=main_src,
         options=options,
         env_info=env_info,
@@ -1605,6 +1615,101 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 
 ########################################
+# ../spawning.py
+
+
+class PySpawner:
+    DEFAULT_PYTHON = 'python3'
+
+    def __init__(
+            self,
+            src: str,
+            *,
+            shell: ta.Optional[str] = None,
+            shell_quote: bool = False,
+            python: str = DEFAULT_PYTHON,
+            stderr: ta.Optional[ta.Literal['pipe', 'stdout', 'devnull']] = None,
+    ) -> None:
+        super().__init__()
+
+        self._src = src
+        self._shell = shell
+        self._shell_quote = shell_quote
+        self._python = python
+        self._stderr = stderr
+
+    #
+
+    class _PreparedCmd(ta.NamedTuple):
+        cmd: ta.Sequence[str]
+        shell: bool
+
+    def _prepare_cmd(self) -> _PreparedCmd:
+        if self._shell is not None:
+            sh_src = f'{self._python} -c {shlex.quote(self._src)}'
+            if self._shell_quote:
+                sh_src = shlex.quote(sh_src)
+            sh_cmd = f'{self._shell} {sh_src}'
+            return PySpawner._PreparedCmd(
+                cmd=[sh_cmd],
+                shell=True,
+            )
+
+        else:
+            return PySpawner._PreparedCmd(
+                cmd=[self._python, '-c', self._src],
+                shell=False,
+            )
+
+    #
+
+    _STDERR_KWARG_MAP: ta.Mapping[str, int] = {
+        'pipe': subprocess.PIPE,
+        'stdout': subprocess.STDOUT,
+        'devnull': subprocess.DEVNULL,
+    }
+
+    @dc.dataclass(frozen=True)
+    class Spawned:
+        stdin: ta.IO
+        stdout: ta.IO
+        stderr: ta.Optional[ta.IO]
+
+    @contextlib.contextmanager
+    def spawn(
+            self,
+            *,
+            timeout: ta.Optional[float] = None,
+    ) -> ta.Generator[Spawned, None, None]:
+        pc = self._prepare_cmd()
+
+        with subprocess.Popen(
+            subprocess_maybe_shell_wrap_exec(*pc.cmd),
+            shell=pc.shell,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=self._STDERR_KWARG_MAP[self._stderr] if self._stderr is not None else None,
+        ) as proc:
+            stdin = check_not_none(proc.stdin)
+            stdout = check_not_none(proc.stdout)
+
+            try:
+                yield PySpawner.Spawned(
+                    stdin=stdin,
+                    stdout=stdout,
+                    stderr=proc.stderr,
+                )
+
+            finally:
+                try:
+                    stdin.close()
+                except BrokenPipeError:
+                    pass
+
+                proc.wait(timeout)
+
+
+########################################
 # main.py
 
 
@@ -1714,60 +1819,41 @@ def _main() -> None:
 
     bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
 
-    if args.shell is not None:
-        sh_src = f'{args.python} -c {shlex.quote(bs_src)}'
-        if args.shell_quote:
-            sh_src = shlex.quote(sh_src)
-        sh_cmd = f'{args.shell} {sh_src}'
-        cmd = [sh_cmd]
-        shell = True
-    else:
-        cmd = [args.python, '-c', bs_src]
-        shell = False
-
-    proc = subprocess.Popen(
-        subprocess_maybe_shell_wrap_exec(*cmd),
-        shell=shell,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-
-    stdin = check_not_none(proc.stdin)
-    stdout = check_not_none(proc.stdout)
-
-    res = PyremoteBootstrapDriver(  # noqa
-        remote_src,
-        PyremoteBootstrapOptions(
-            debug=args.debug,
-        ),
-    ).run(stdin, stdout)
-    # print(res)
-
     #
 
-    for ci in [
-        SubprocessCommand(
-            args=['python3', '-'],
-            input=b'print(1)\n',
-            capture_stdout=True,
-        ),
-        SubprocessCommand(
-            args=['uname'],
-            capture_stdout=True,
-        ),
-    ]:
-        _send_obj(stdin, ci, Command)
+    spawner = PySpawner(
+        bs_src,
+        shell=args.shell,
+        shell_quote=args.shell_quote,
+        python=args.python,
+    )
+    with spawner.spawn() as proc:
+        res = PyremoteBootstrapDriver(  # noqa
+            remote_src,
+            PyremoteBootstrapOptions(
+                debug=args.debug,
+            ),
+        ).run(proc.stdin, proc.stdout)
+        # print(res)
 
-        o = _recv_obj(stdout, Command.Output)
+        #
 
-        print(o)
+        for ci in [
+            SubprocessCommand(
+                args=['python3', '-'],
+                input=b'print(1)\n',
+                capture_stdout=True,
+            ),
+            SubprocessCommand(
+                args=['uname'],
+                capture_stdout=True,
+            ),
+        ]:
+            _send_obj(proc.stdin, ci, Command)
 
-    try:
-        stdin.close()
-    except BrokenPipeError:
-        pass
+            o = _recv_obj(proc.stdout, Command.Output)
 
-    proc.wait()
+            print(o)
 
 
 if __name__ == '__main__':

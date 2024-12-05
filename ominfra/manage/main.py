@@ -3,23 +3,19 @@
 # ruff: noqa: UP006 UP007
 """
 manage.py -s 'docker run -i python:3.12'
-manage.py -qs 'ssh -i foo/bar foo@bar.baz' --python=python3.8
+manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import json
-import shlex
 import struct
-import subprocess
 import typing as ta
 
 from omlish.lite.cached import static_init
-from omlish.lite.check import check_not_none
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import PolymorphicObjMarshaler
 from omlish.lite.marshal import get_obj_marshaler
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import register_opj_marshaler
 from omlish.lite.marshal import unmarshal_obj
-from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
@@ -29,6 +25,7 @@ from .commands.base import Command
 from .commands.subprocess import SubprocessCommand
 from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
+from .spawning import PySpawner
 
 
 ##
@@ -137,64 +134,41 @@ def _main() -> None:
 
     bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
 
-    if args.shell is not None:
-        sh_src = f'{args.python} -c {shlex.quote(bs_src)}'
-        if args.shell_quote:
-            sh_src = shlex.quote(sh_src)
-        sh_cmd = f'{args.shell} {sh_src}'
-        cmd = [sh_cmd]
-        shell = True
-    else:
-        cmd = [args.python, '-c', bs_src]
-        shell = False
-
     #
 
-    proc = subprocess.Popen(
-        subprocess_maybe_shell_wrap_exec(*cmd),
-        shell=shell,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+    spawner = PySpawner(
+        bs_src,
+        shell=args.shell,
+        shell_quote=args.shell_quote,
+        python=args.python,
     )
+    with spawner.spawn() as proc:
+        res = PyremoteBootstrapDriver(  # noqa
+            remote_src,
+            PyremoteBootstrapOptions(
+                debug=args.debug,
+            ),
+        ).run(proc.stdin, proc.stdout)
+        # print(res)
 
-    stdin = check_not_none(proc.stdin)
-    stdout = check_not_none(proc.stdout)
+        #
 
-    #
+        for ci in [
+            SubprocessCommand(
+                args=['python3', '-'],
+                input=b'print(1)\n',
+                capture_stdout=True,
+            ),
+            SubprocessCommand(
+                args=['uname'],
+                capture_stdout=True,
+            ),
+        ]:
+            _send_obj(proc.stdin, ci, Command)
 
-    res = PyremoteBootstrapDriver(  # noqa
-        remote_src,
-        PyremoteBootstrapOptions(
-            debug=args.debug,
-        ),
-    ).run(stdin, stdout)
-    # print(res)
+            o = _recv_obj(proc.stdout, Command.Output)
 
-    #
-
-    for ci in [
-        SubprocessCommand(
-            args=['python3', '-'],
-            input=b'print(1)\n',
-            capture_stdout=True,
-        ),
-        SubprocessCommand(
-            args=['uname'],
-            capture_stdout=True,
-        ),
-    ]:
-        _send_obj(stdin, ci, Command)
-
-        o = _recv_obj(stdout, Command.Output)
-
-        print(o)
-
-    try:
-        stdin.close()
-    except BrokenPipeError:
-        pass
-
-    proc.wait()
+            print(o)
 
 
 if __name__ == '__main__':
