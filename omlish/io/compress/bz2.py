@@ -29,7 +29,7 @@ class Bz2Compression(Compression):
         return bz2.compress(d, self._level)
 
     def decompress(self, d: bytes) -> bytes:
-        return bz2.decompress(d, self._level)
+        return bz2.decompress(d)
 
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
         return lang.nextgen(CompressorObjectIncrementalAdapter(
