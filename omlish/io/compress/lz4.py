@@ -4,7 +4,6 @@ import typing as ta
 from ... import check
 from ... import lang
 from ..generators import BytesSteppedGenerator
-from ..generators import BytesSteppedReaderGenerator
 from .base import Compression
 
 
@@ -40,8 +39,15 @@ class Lz4Compression(Compression):
                 if (o := compressor.compress(i)):
                     yield o
 
-    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
-        # with lz4_frame.LZ4FrameDecompressor() as decompressor:
-        #     decompressed = decompressor.decompress(compressed[:len(compressed) // 2])
-        #     decompressed += decompressor.decompress(compressed[len(compressed) // 2:])
-        raise NotImplementedError
+    @lang.autostart
+    def decompress_incremental(self) -> BytesSteppedGenerator[None]:
+        # lz4 lib does internal buffering so this is simply a BytesSteppedGenerator not a BytesSteppedReaderGenerator as
+        # it only yields None, accepting any number of bytes at a time.
+        with lz4_frame.LZ4FrameDecompressor() as decompressor:
+            while True:
+                i = check.isinstance((yield None), bytes)
+                if not i:
+                    yield b''
+                    return
+                if (o := decompressor.decompress(i)):
+                    yield o
