@@ -144,6 +144,8 @@ def _raise(
 
 
 def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
+    if _isinstance(spec, type):
+        return (spec,)
     if not _isinstance(spec, tuple):
         spec = (spec,)
     if None in spec:

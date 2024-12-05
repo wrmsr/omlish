@@ -1,3 +1,4 @@
+import dataclasses as dc
 import functools
 import typing as ta
 
@@ -6,6 +7,7 @@ from ..generators import BytesSteppedGenerator
 from ..generators import BytesSteppedReaderGenerator
 from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
+from .base import Compression
 
 
 if ta.TYPE_CHECKING:
@@ -14,28 +16,25 @@ else:
     zlib = lang.proxy_import('zlib')
 
 
-class IncrementalZlibCompressor:
-    def __init__(
-            self,
-            *,
-            compresslevel: int = 9,
-    ) -> None:
-        super().__init__()
+@dc.dataclass(frozen=True, kw_only=True)
+class ZlibCompression(Compression):
+    level: int = 9
 
-        self._compresslevel = compresslevel
+    def compress(self, d: bytes) -> bytes:
+        return zlib.compress(d, self.level)
 
-    @lang.autostart
-    def __call__(self) -> BytesSteppedGenerator:
-        return CompressorObjectIncrementalAdapter(
+    def decompress(self, d: bytes) -> bytes:
+        return zlib.decompress(d)
+
+    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+        return lang.nextgen(CompressorObjectIncrementalAdapter(
             functools.partial(
                 zlib.compressobj,  # type: ignore
-                self._compresslevel,
+                self.level,
             ),
-        )()
+        )())
 
-
-class IncrementalZlibDecompressor:
-    def __call__(self) -> BytesSteppedReaderGenerator:
+    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
         return DecompressorObjectIncrementalAdapter(
             zlib.decompressobj,  # type: ignore
             trailing_error=OSError,

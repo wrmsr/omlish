@@ -33,6 +33,7 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
+import dataclasses as dc
 import functools
 import os.path
 import struct
@@ -45,6 +46,7 @@ from ... import lang
 from ..generators import BytesSteppedGenerator
 from ..generators import BytesSteppedReaderGenerator
 from ..generators.readers import PrependableBytesGeneratorReader
+from .base import Compression
 
 
 if ta.TYPE_CHECKING:
@@ -63,6 +65,30 @@ COMPRESS_LEVEL_TRADEOFF = 6
 COMPRESS_LEVEL_BEST = 9
 
 
+@dc.dataclass(frozen=True, kw_only=True)
+class GzipCompression(Compression):
+    level: int = COMPRESS_LEVEL_BEST
+    mtime: float | None = None
+
+    def compress(self, d: bytes) -> bytes:
+        return gzip.compress(d, self.level, mtime=self.mtime)
+
+    def decompress(self, d: bytes) -> bytes:
+        return gzip.decompress(d)
+
+    def compress_incremental(self) -> BytesSteppedGenerator[None]:
+        return lang.nextgen(IncrementalGzipCompressor(
+            level=self.level,
+            mtime=self.mtime,
+        )())
+
+    def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
+        return IncrementalGzipDecompressor()()
+
+
+##
+
+
 @cached.function
 def _zero_crc() -> int:
     return zlib.crc32(b'')
@@ -75,14 +101,14 @@ class IncrementalGzipCompressor:
     def __init__(
             self,
             *,
-            compresslevel: int = COMPRESS_LEVEL_BEST,
+            level: int = COMPRESS_LEVEL_BEST,
             name: str | bytes | None = None,
             mtime: float | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name or ''
-        self._compresslevel = compresslevel
+        self._level = level
         self._mtime = mtime
 
     def _write_gzip_header(self) -> ta.Generator[bytes, None, None]:
@@ -110,9 +136,9 @@ class IncrementalGzipCompressor:
             mtime = time.time()
         check.none((yield struct.pack('<L', int(mtime))))
 
-        if self._compresslevel == COMPRESS_LEVEL_BEST:
+        if self._level == COMPRESS_LEVEL_BEST:
             xfl = b'\002'
-        elif self._compresslevel == COMPRESS_LEVEL_FAST:
+        elif self._level == COMPRESS_LEVEL_FAST:
             xfl = b'\004'
         else:
             xfl = b'\000'
@@ -123,7 +149,6 @@ class IncrementalGzipCompressor:
         if fname:
             check.none((yield fname + b'\000'))
 
-    @lang.autostart
     def __call__(self) -> BytesSteppedGenerator:
         crc = _zero_crc()
         size = 0
@@ -131,7 +156,7 @@ class IncrementalGzipCompressor:
         wrote_header = False
 
         compress = zlib.compressobj(
-            self._compresslevel,
+            self._level,
             zlib.DEFLATED,
             -zlib.MAX_WBITS,
             zlib.DEF_MEM_LEVEL,

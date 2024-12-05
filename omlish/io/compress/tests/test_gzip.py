@@ -2,8 +2,7 @@ import gzip
 import io
 
 from ...generators.stepped import read_into_bytes_stepped_generator
-from ..gzip import IncrementalGzipCompressor
-from ..gzip import IncrementalGzipDecompressor
+from ..gzip import GzipCompression
 
 
 _MTIME = 1733266027
@@ -14,7 +13,7 @@ _ENC_DATA = gzip.compress(_DEC_DATA, mtime=_MTIME)
 def test_gzip_inc_compressor():
     ow = io.BytesIO()
     for b in read_into_bytes_stepped_generator(
-            IncrementalGzipCompressor(mtime=_MTIME)(),
+            GzipCompression(mtime=_MTIME).compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
     ):
@@ -26,8 +25,7 @@ def test_gzip_inc_compressor():
 def test_gzip_inc_decompressor():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
-    igr = IncrementalGzipDecompressor()
-    g = igr()
+    g = GzipCompression().decompress_incremental()
     o = next(g)
     sz = 13
     while True:
