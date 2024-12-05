@@ -17,15 +17,38 @@ else:
 class Lz4Compression(Compression):
     level: int = 0
 
+    block_size: int = 0
+    block_linked: bool = True
+    block_checksum: bool = False
+    content_checksum: bool = False
+    store_size: bool = True
+    auto_flush: bool = False
+
     def compress(self, d: bytes) -> bytes:
-        return lz4_frame.compress(d, compression_level=self.level)
+        return lz4_frame.compress(
+            d,
+            compression_level=self.level,
+            block_size=self.block_size,
+            content_checksum=self.content_checksum,
+            block_linked=self.block_linked,
+            store_size=self.store_size,
+        )
 
     def decompress(self, d: bytes) -> bytes:
-        return lz4_frame.decompress(d)
+        return lz4_frame.decompress(
+            d,
+        )
 
     @lang.autostart
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
-        with lz4_frame.LZ4FrameCompressor() as compressor:
+        with lz4_frame.LZ4FrameCompressor(
+                compression_level=self.level,
+                block_size=self.block_size,
+                block_linked=self.block_linked,
+                block_checksum=self.block_checksum,
+                content_checksum=self.content_checksum,
+                auto_flush=self.auto_flush,
+        ) as compressor:
             started = False
             while True:
                 i = check.isinstance((yield None), bytes)
