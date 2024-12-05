@@ -1,3 +1,4 @@
+# @omlish-lite
 """
 Jobs:
  - globals

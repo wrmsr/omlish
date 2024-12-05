@@ -23,10 +23,10 @@ from omlish.lite.marshal import register_opj_marshaler
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
-from ...pyremote import PyremoteBootstrapDriver
-from ...pyremote import PyremoteBootstrapOptions
-from ...pyremote import pyremote_bootstrap_finalize
-from ...pyremote import pyremote_build_bootstrap_cmd
+from ..pyremote import PyremoteBootstrapDriver
+from ..pyremote import PyremoteBootstrapOptions
+from ..pyremote import pyremote_bootstrap_finalize
+from ..pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
 from .commands.subprocess import SubprocessCommand
 
