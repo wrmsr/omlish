@@ -8,6 +8,7 @@ import abc
 import typing as ta
 
 from ... import check
+from .consts import DEFAULT_BUFFER_SIZE
 
 
 T = ta.TypeVar('T')
@@ -126,8 +127,6 @@ prependable_str_generator_reader = PrependableStrGeneratorReader
 
 
 class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
-    DEFAULT_BUFFER_SIZE = 4 * 0x1000
-
     def __init__(
             self,
             buffer_size: int = DEFAULT_BUFFER_SIZE,
