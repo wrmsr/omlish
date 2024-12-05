@@ -1,10 +1,10 @@
 import typing as ta
 
 from ... import lang
-from .adapters import CompressorIncrementalAdapter
-from .adapters import DecompressorIncrementalAdapter
-from .types import IncrementalCompressor
-from .types import IncrementalDecompressor
+from ..generators import BytesSteppedGenerator
+from ..generators import BytesSteppedReaderGenerator
+from .adapters import CompressorObjectIncrementalAdapter
+from .adapters import DecompressorObjectIncrementalAdapter
 
 
 if ta.TYPE_CHECKING:
@@ -18,15 +18,15 @@ class IncrementalLzmaCompressor:
         super().__init__()
 
     @lang.autostart
-    def __call__(self) -> IncrementalCompressor:
-        return CompressorIncrementalAdapter(
+    def __call__(self) -> BytesSteppedGenerator:
+        return CompressorObjectIncrementalAdapter(
             lzma.LZMACompressor,  # type: ignore
         )()
 
 
 class IncrementalLzmaDecompressor:
-    def __call__(self) -> IncrementalDecompressor:
-        return DecompressorIncrementalAdapter(
+    def __call__(self) -> BytesSteppedReaderGenerator:
+        return DecompressorObjectIncrementalAdapter(
             lzma.LZMADecompressor,  # type: ignore
             trailing_error=lzma.LZMAError,
         )()

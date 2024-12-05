@@ -9,7 +9,7 @@ import abc
 ##
 
 
-class Compressor(abc.ABC):
+class CompressorObject(abc.ABC):
     @abc.abstractmethod
     def compress(self, data: bytes) -> bytes:
         """
@@ -36,7 +36,7 @@ class Compressor(abc.ABC):
 ##
 
 
-class Decompressor(abc.ABC):
+class DecompressorObject(abc.ABC):
     @property
     @abc.abstractmethod
     def unused_data(self) -> bytes:
@@ -68,7 +68,7 @@ class Decompressor(abc.ABC):
         raise NotImplementedError
 
 
-class NeedsInputDecompressor(Decompressor):
+class NeedsInputDecompressorObject(DecompressorObject):
     """
     Used by:
      - bz2.BZ2Decompressor
@@ -85,7 +85,7 @@ class NeedsInputDecompressor(Decompressor):
         raise NotImplementedError
 
 
-class UnconsumedTailDecompressor(Decompressor):
+class UnconsumedTailDecompressorObject(DecompressorObject):
     """
     Used by:
      - zlib.decompressobj

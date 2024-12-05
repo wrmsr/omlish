@@ -42,9 +42,9 @@ import typing as ta
 from ... import cached
 from ... import check
 from ... import lang
+from ..generators import BytesSteppedGenerator
+from ..generators import BytesSteppedReaderGenerator
 from ..generators.readers import PrependableBytesGeneratorReader
-from .types import IncrementalCompressor
-from .types import IncrementalDecompressor
 
 
 if ta.TYPE_CHECKING:
@@ -124,7 +124,7 @@ class IncrementalGzipCompressor:
             check.none((yield fname + b'\000'))
 
     @lang.autostart
-    def __call__(self) -> IncrementalCompressor:
+    def __call__(self) -> BytesSteppedGenerator:
         crc = _zero_crc()
         size = 0
         offset = 0  # Current file offset for seek(), tell(), etc
@@ -251,7 +251,7 @@ class IncrementalGzipDecompressor:
         if c:
             rdr.prepend(c)
 
-    def __call__(self) -> IncrementalDecompressor:
+    def __call__(self) -> BytesSteppedReaderGenerator:
         rdr = PrependableBytesGeneratorReader()
 
         pos = 0  # Current offset in decompressed stream

@@ -118,3 +118,15 @@ def read_into_bytes_stepped_generator(
         joined_bytes_stepped_generator(g),
         lang.readiter(f, read_size),
     )
+
+
+def read_into_str_stepped_generator(
+        g: StrSteppedGenerator,
+        f: ta.TextIO,
+        *,
+        read_size: int = DEFAULT_BUFFER_SIZE,
+) -> ta.Iterator[str]:
+    yield from lang.genmap(
+        joined_str_stepped_generator(g),
+        lang.readiter(f, read_size),
+    )

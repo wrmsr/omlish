@@ -37,26 +37,26 @@
 import typing as ta
 
 from ... import check
-from .abc import Compressor
-from .abc import NeedsInputDecompressor
-from .abc import UnconsumedTailDecompressor
-from .types import IncrementalCompressor
-from .types import IncrementalDecompressor
+from ..generators import BytesSteppedGenerator
+from ..generators import BytesSteppedReaderGenerator
+from .abc import CompressorObject
+from .abc import NeedsInputDecompressorObject
+from .abc import UnconsumedTailDecompressorObject
 
 
 ##
 
 
-class CompressorIncrementalAdapter:
+class CompressorObjectIncrementalAdapter:
     def __init__(
             self,
-            factory: ta.Callable[..., Compressor],
+            factory: ta.Callable[..., CompressorObject],
     ) -> None:
         super().__init__()
 
         self._factory = factory
 
-    def __call__(self) -> IncrementalCompressor:
+    def __call__(self) -> BytesSteppedGenerator:
         compressor = self._factory()
 
         while True:
@@ -77,10 +77,10 @@ class CompressorIncrementalAdapter:
 ##
 
 
-class DecompressorIncrementalAdapter:
+class DecompressorObjectIncrementalAdapter:
     def __init__(
             self,
-            factory: ta.Callable[..., NeedsInputDecompressor | UnconsumedTailDecompressor],
+            factory: ta.Callable[..., NeedsInputDecompressorObject | UnconsumedTailDecompressorObject],
             *,
             trailing_error: type[BaseException] | tuple[type[BaseException], ...] = (),
     ) -> None:
@@ -89,7 +89,7 @@ class DecompressorIncrementalAdapter:
         self._factory = factory
         self._trailing_error = trailing_error
 
-    def __call__(self) -> IncrementalDecompressor:
+    def __call__(self) -> BytesSteppedReaderGenerator:
         pos = 0
 
         data = None  # Default if EOF is encountered
