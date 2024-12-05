@@ -4,9 +4,9 @@ import typing as ta
 from ... import lang
 from ..generators import BytesSteppedGenerator
 from ..generators import BytesSteppedReaderGenerator
-from .base import Compression
 from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
+from .base import Compression
 
 
 if ta.TYPE_CHECKING:
