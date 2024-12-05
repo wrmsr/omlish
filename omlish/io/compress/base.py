@@ -1,7 +1,7 @@
 import abc
 
-from ..generators.readers import BytesSteppedReaderGenerator
-from ..generators.stepped import BytesSteppedGenerator
+from ..generators import BytesSteppedReaderGenerator
+from ..generators import BytesSteppedGenerator
 
 
 class Compression(abc.ABC):

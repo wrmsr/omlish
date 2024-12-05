@@ -18,10 +18,6 @@ from .readers import (  # noqa
     BytesExactReaderGenerator,
     StrExactReaderGenerator,
 
-    SteppedReaderGenerator,
-    BytesSteppedReaderGenerator,
-    StrSteppedReaderGenerator,
-
     GeneratorReader,
 
     PrependableGeneratorReader,
@@ -41,6 +37,10 @@ from .stepped import (  # noqa
     SteppedGenerator,
     BytesSteppedGenerator,
     StrSteppedGenerator,
+
+    SteppedReaderGenerator,
+    BytesSteppedReaderGenerator,
+    StrSteppedReaderGenerator,
 
     flatmap_stepped_generator,
 

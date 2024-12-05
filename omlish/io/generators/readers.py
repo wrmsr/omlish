@@ -34,13 +34,6 @@ BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
 StrExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[str, R]
 
 
-# Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
-SteppedReaderGenerator: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
-
-BytesSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[bytes, bytes, R]
-StrSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[str, str, R]
-
-
 ##
 
 
