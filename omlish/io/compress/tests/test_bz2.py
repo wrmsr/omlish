@@ -2,8 +2,7 @@ import bz2
 import io
 
 from ...generators.stepped import read_into_bytes_stepped_generator
-from ..bz2 import IncrementalBz2Compressor
-from ..bz2 import IncrementalBz2Decompressor
+from ..bz2 import Bz2Compression
 
 
 _DEC_DATA = b'foobar' * 128
@@ -13,7 +12,7 @@ _ENC_DATA = bz2.compress(_DEC_DATA)
 def test_bz2_inc_compressor():
     ow = io.BytesIO()
     for b in read_into_bytes_stepped_generator(
-            IncrementalBz2Compressor()(),
+            Bz2Compression().compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
     ):
@@ -25,8 +24,7 @@ def test_bz2_inc_compressor():
 def test_bz2_inc_decompressor():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
-    igr = IncrementalBz2Decompressor()
-    g = igr()
+    g = Bz2Compression().decompress_incremental()
     o = next(g)
     sz = 13
     while True:
