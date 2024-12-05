@@ -1,3 +1,4 @@
+import dataclasses as dc
 import functools
 import typing as ta
 
@@ -15,18 +16,12 @@ else:
     bz2 = lang.proxy_import('bz2')
 
 
+@dc.dataclass(frozen=True, kw_only=True)
 class Bz2Compression(Compression):
-    def __init__(
-            self,
-            *,
-            level: int = 9,
-    ) -> None:
-        super().__init__()
-
-        self._level = level
+    level: int = 9
 
     def compress(self, d: bytes) -> bytes:
-        return bz2.compress(d, self._level)
+        return bz2.compress(d, self.level)
 
     def decompress(self, d: bytes) -> bytes:
         return bz2.decompress(d)
@@ -35,7 +30,7 @@ class Bz2Compression(Compression):
         return lang.nextgen(CompressorObjectIncrementalAdapter(
             functools.partial(
                 bz2.BZ2Compressor,  # type: ignore
-                self._level,
+                self.level,
             ),
         )())
 

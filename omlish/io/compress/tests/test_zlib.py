@@ -2,8 +2,7 @@ import io
 import zlib
 
 from ...generators.stepped import read_into_bytes_stepped_generator
-from ..zlib import IncrementalZlibCompressor
-from ..zlib import IncrementalZlibDecompressor
+from ..zlib import ZlibCompression
 
 
 _DEC_DATA = b'foobar' * 128
@@ -13,7 +12,7 @@ _ENC_DATA = zlib.compress(_DEC_DATA)
 def test_zlib_inc_compressor():
     ow = io.BytesIO()
     for b in read_into_bytes_stepped_generator(
-            IncrementalZlibCompressor()(),
+            ZlibCompression().compress_incremental(),
             io.BytesIO(_DEC_DATA),
             read_size=13,
     ):
@@ -25,8 +24,7 @@ def test_zlib_inc_compressor():
 def test_zlib_inc_decompressor():
     ir = io.BytesIO(_ENC_DATA)
     ow = io.BytesIO()
-    igr = IncrementalZlibDecompressor()
-    g = igr()
+    g = ZlibCompression().decompress_incremental()
     o = next(g)
     sz = 13
     while True:
