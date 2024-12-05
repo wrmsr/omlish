@@ -3,6 +3,7 @@ import typing as ta
 from .... import check
 from .... import lang
 from ..stepped import flatmap_stepped_generator
+from ..stepped import buffer_bytes_stepped_reader_generator
 
 
 T = ta.TypeVar('T')
@@ -54,3 +55,13 @@ def test_fmg():
     for o in lang.genmap(g, 'abc'):
         print(repr(o))
     print()
+
+
+def test_buffer():
+    def f():
+        assert (yield 1) == b'a'
+        assert (yield 2) == b'bc'
+        assert (yield 1) == b'd'
+
+    g = buffer_bytes_stepped_reader_generator(f())
+    g.send(b'abcd')

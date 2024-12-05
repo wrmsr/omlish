@@ -25,6 +25,13 @@ BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
 StrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, str, R]
 
 
+# Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
+SteppedReaderGenerator: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
+
+BytesSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[bytes, bytes, R]
+StrSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[str, str, R]
+
+
 ##
 
 
@@ -131,3 +138,19 @@ def read_into_str_stepped_generator(
         joined_str_stepped_generator(g),
         lang.readiter(f, read_size),
     )
+
+
+##
+
+
+@lang.autostart
+def buffer_bytes_stepped_reader_generator(
+        g: BytesSteppedReaderGenerator,
+        *,
+        buffer_size: int = DEFAULT_BUFFER_SIZE,
+) -> BytesSteppedGenerator:
+    while True:
+        i = yield
+        o = g.send(None)
+        # if o is None:
+        raise NotImplementedError
