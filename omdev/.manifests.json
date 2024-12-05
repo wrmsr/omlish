@@ -231,6 +231,18 @@
     }
   },
   {
+    "module": ".tools.cloc",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/cloc.py",
+    "line": 133,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "cloc",
+        "mod_name": "omdev.tools.cloc"
+      }
+    }
+  },
+  {
     "module": ".tools.doc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/doc.py",
