@@ -2,16 +2,22 @@ import typing as ta
 
 from ... import lang
 from .consts import DEFAULT_BUFFER_SIZE
+from .direct import BytesDirectGenerator
+from .direct import StrDirectGenerator
 
 
 T = ta.TypeVar('T')
-I = ta.TypeVar('I')
+
 O = ta.TypeVar('O')
-OF = ta.TypeVar('OF')
-OT = ta.TypeVar('OT')
+I = ta.TypeVar('I')
 R = ta.TypeVar('R')
 
+OF = ta.TypeVar('OF')
+OT = ta.TypeVar('OT')
 
+
+# Stepped generators accept a non-None input, then in response yield zero or more non-None outputs, until yielding None
+# to signal they need more input again.
 SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
 
 BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
@@ -29,10 +35,8 @@ def flatmap_stepped_generator(
         terminate: ta.Callable[[OF], bool] | None = None,
 ) -> ta.Generator[OT, I, lang.Maybe[R]]:
     """
-    Given a 'stepped generator' - a generator which accepts input items and yields zero or more non-None values in
-    response until it signals it's ready for the next input by yielding None - and a function taking a list, returns a
-    1:1 generator which accepts input, builds a list of yielded generator output, calls the given function with that
-    list, and yields the result.
+    Given a stepped generator and a function taking a list, returns a direct (1:1) generator which accepts input, builds
+    a list of yielded generator output, calls the given function with that list, and yields the result.
 
     An optional terminate function may be provided which will cause this function to return early if it returns true for
     an encountered yielded value. The encountered value causing termination will be included in the list sent to the
@@ -93,15 +97,11 @@ def _is_empty(o: T) -> bool:
     return len(o) < 1  # type: ignore
 
 
-def joined_bytes_stepped_generator(
-        g: ta.Generator[bytes | None, bytes | None, R],
-) -> ta.Generator[bytes, bytes, R]:
+def joined_bytes_stepped_generator(g: BytesSteppedGenerator[R]) -> BytesDirectGenerator[R]:
     return flatmap_stepped_generator(_join_bytes, g, terminate=_is_empty)
 
 
-def joined_str_stepped_generator(
-        g: ta.Generator[str | None, str | None, R],
-) -> ta.Generator[str, str, R]:
+def joined_str_stepped_generator(g: StrSteppedGenerator[R]) -> StrDirectGenerator[R]:
     return flatmap_stepped_generator(_join_str, g, terminate=_is_empty)
 
 

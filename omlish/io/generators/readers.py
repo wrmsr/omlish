@@ -12,18 +12,24 @@ from .consts import DEFAULT_BUFFER_SIZE
 
 
 T = ta.TypeVar('T')
+
 I = ta.TypeVar('I')
 R = ta.TypeVar('R')
+
 AnyT = ta.TypeVar('AnyT', bound=ta.Any)
 
 
+# Reader generators yield ints of amounts of data needed, or None for needing any amount of data.
 ReaderGenerator: ta.TypeAlias = ta.Generator[int | None, I, R]
-ExactReaderGenerator: ta.TypeAlias = ta.Generator[int, I, R]
 
 BytesReaderGenerator: ta.TypeAlias = ReaderGenerator[bytes, R]
-BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
-
 StrReaderGenerator: ta.TypeAlias = ReaderGenerator[str, R]
+
+
+# Exact reader generators always specify read sizes.
+ExactReaderGenerator: ta.TypeAlias = ta.Generator[int, I, R]
+
+BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
 StrExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[str, R]
 
 
