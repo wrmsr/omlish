@@ -23,3 +23,13 @@ def test_lz4():
         ow.write(b)
     d = Lz4Compression().decompress(ow.getvalue())
     assert d == _DEC_DATA
+
+    ow = io.BytesIO()
+    for b in read_into_bytes_stepped_generator(
+            Lz4Compression().decompress_incremental(),
+            io.BytesIO(c),
+            read_size=13,
+    ):
+        ow.write(b)
+    d = ow.getvalue()
+    assert d == _DEC_DATA
