@@ -1,7 +1,7 @@
 import json
 import os.path
 
-from .. import utils as u
+from ... import utils as u
 
 
 TIMEBOMB_DELAY_S = 20 * 60
