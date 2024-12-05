@@ -234,7 +234,7 @@
     "module": ".tools.cloc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/cloc.py",
-    "line": 133,
+    "line": 144,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "cloc",
