@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-amalg ../../scripts/manage.py
+# @omlish-amalg ../scripts/manage.py
 # ruff: noqa: UP006 UP007
 """
 manage.py -s 'docker run -i python:3.12'
