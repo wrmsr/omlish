@@ -45,7 +45,7 @@ https://gist.github.com/si458/98aa940837784e9ef9bff9e24a7a8bfd
 """
 import os.path
 
-from .. import utils as u
+from ... import utils as u
 
 
 TIMEBOMB_DELAY_S = 20 * 60

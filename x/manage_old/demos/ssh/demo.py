@@ -8,7 +8,7 @@ import os.path
 from ..... import cmds
 from ..... import ssh
 from ...remote import do_remote_deploy
-from .. import utils as u
+from ... import utils as u
 
 
 TIMEBOMB_DELAY_S = 20 * 60

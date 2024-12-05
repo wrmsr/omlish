@@ -11,7 +11,7 @@ PYCHARM_DEBUG = False
 
 
 def _main() -> None:
-    img_name = 'wrmsr/omlish-sup-demo'
+    img_name = 'wrmsr/omlish-docker-demo'
     cur_dir = os.path.dirname(__file__)
 
     u.build_docker_image(img_name, cur_dir)
