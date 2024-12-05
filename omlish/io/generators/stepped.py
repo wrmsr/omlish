@@ -150,7 +150,8 @@ def buffer_bytes_stepped_reader_generator(
         buffer_size: int = DEFAULT_BUFFER_SIZE,
 ) -> BytesSteppedGenerator:
     while True:
-        i = yield
-        o = g.send(None)
+        # i = yield
+        # o = g.send(None)
         # if o is None:
         raise NotImplementedError
+        yield
