@@ -145,3 +145,4 @@ class DecompressorIncrementalAdapter:
 
             pos += len(data)
             check.none((yield data))
+            data = None
