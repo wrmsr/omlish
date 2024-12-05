@@ -51,10 +51,10 @@ class _StrJoiner:
 
 class GeneratorReader(abc.ABC, ta.Generic[T]):
     @abc.abstractmethod
-    def read(self, sz: int | None) -> ta.Generator[int | None, T, T]:
+    def read(self, sz: int | None) -> ReaderGenerator[T, T]:
         raise NotImplementedError
 
-    def read_exact(self, sz: int) -> ta.Generator[int | None, T, T]:
+    def read_exact(self, sz: int) -> ReaderGenerator[T, T]:
         d: ta.Any = yield from self.read(sz)
         if len(d) != sz:
             raise EOFError(f'GeneratorReader got {len(d)}, expected {sz}')
@@ -74,7 +74,7 @@ class PrependableGeneratorReader(GeneratorReader[AnyT]):
     def _join(self, lst: list[AnyT]) -> AnyT:
         raise NotImplementedError
 
-    def read(self, sz: int | None) -> ta.Generator[int | None, AnyT, AnyT]:
+    def read(self, sz: int | None) -> ReaderGenerator[AnyT, AnyT]:
         if not self._queue:
             d: AnyT = check.not_none((yield sz))
             return d
@@ -143,7 +143,7 @@ class BufferedGeneratorReader(PrependableGeneratorReader[AnyT], abc.ABC):
 
         self._buffer_size = buffer_size
 
-    def read(self, sz: int | None) -> ta.Generator[int | None, AnyT, AnyT]:
+    def read(self, sz: int | None) -> ReaderGenerator[AnyT, AnyT]:
         g = super().read(sz)
         i: ta.Any = None
         while True:
