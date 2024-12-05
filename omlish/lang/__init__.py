@@ -156,6 +156,7 @@ from .iterables import (  # noqa
     itergen,
     peek,
     prodrange,
+    readiter,
     renumerate,
     take,
 )

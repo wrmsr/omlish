@@ -1,4 +1,5 @@
 import dataclasses as dc
+import functools
 import itertools
 import typing as ta
 
@@ -44,6 +45,25 @@ def interleave(vs: ta.Iterable[T], d: T) -> ta.Iterable[T]:
         if i:
             yield d
         yield v
+
+
+@ta.overload
+def readiter(f: ta.TextIO, sz: int) -> ta.Iterator[str]:
+    ...
+
+
+@ta.overload
+def readiter(f: ta.BinaryIO, sz: int) -> ta.Iterator[bytes]:
+    ...
+
+
+@ta.overload
+def readiter(f: ta.IO, sz: int) -> ta.Iterator[ta.AnyStr]:
+    ...
+
+
+def readiter(f, sz):
+    return iter(functools.partial(f.read, sz), None)
 
 
 @dc.dataclass(frozen=True)

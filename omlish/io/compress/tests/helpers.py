@@ -1,4 +1,3 @@
-import functools
 import typing as ta
 
 from .... import lang
@@ -12,7 +11,7 @@ def feed_inc_compressor(
         *,
         read_size: int = 4096,
 ) -> ta.Iterator[bytes]:
-    fi = iter(functools.partial(f.read, read_size), None)
-    fg = joined_bytes_stepped_generator(g)
-    mi = lang.GeneratorMappedIterator(fg, fi)
-    yield from mi
+    yield from lang.genmap(
+        joined_bytes_stepped_generator(g),
+        lang.readiter(f, read_size),
+    )
