@@ -1,0 +1,18 @@
+{
+  "args": [
+    "tank/home/james"
+  ],
+  "kwargs": {
+    "present": true,
+    "compression": "lz4"
+  },
+  "facts": {
+    "zfs.Datasets": {
+        "tank/home/james": {
+            "compression": "lz4"
+        }
+    }
+  },
+  "commands": [],
+  "noop_description": "tank/home/james is already present"
+}

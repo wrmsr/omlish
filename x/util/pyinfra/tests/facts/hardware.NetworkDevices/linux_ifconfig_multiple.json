@@ -1,0 +1,197 @@
+{
+    "command": "ip addr show 2> /dev/null || ifconfig -a",
+    "output": [
+        "myvlan: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 10.42.13.147  netmask 255.255.255.0  broadcast 10.42.13.255",
+        "        inet6 fe80::3cd2:56ff:fe4d:1af2  prefixlen 64  scopeid 0x20<link>",
+        "        ether 3e:d2:56:4d:1a:f2  txqueuelen 1000  (Ethernet)",
+        "        RX packets 115016  bytes 28450084 (27.1 MiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 53310  bytes 9803632 (9.3 MiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 10.42.6.142  netmask 255.255.255.0  broadcast 10.42.6.255",
+        "        inet6 fe80::3cd2:56ff:fe4d:1af1  prefixlen 64  scopeid 0x20<link>",
+        "        ether 3e:d2:56:4d:1a:f1  txqueuelen 1000  (Ethernet)",
+        "        RX packets 5097072  bytes 4315873036 (4.0 GiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 3897172  bytes 1574206075 (1.4 GiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536",
+        "        inet 127.0.0.1  netmask 255.0.0.0",
+        "        inet6 ::1  prefixlen 128  scopeid 0x10<host>",
+        "        loop  txqueuelen 1000  (Local Loopback)",
+        "        RX packets 9470290  bytes 4905913998 (4.5 GiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 9470290  bytes 4905913998 (4.5 GiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "my-vpn: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1300",
+        "        inet 10.66.7.3  netmask 255.255.255.0  destination 10.66.7.3",
+        "        inet6 fe80::c9fc:e8d5:12d8:cfb2  prefixlen 64  scopeid 0x20<link>",
+        "        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)",
+        "        RX packets 59069  bytes 22687707 (21.6 MiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 55603  bytes 8340765 (7.9 MiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "some-br: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 192.168.101.1  netmask 255.255.255.0  broadcast 0.0.0.0",
+        "        inet6 fe80::f884:69ff:fe0a:a073  prefixlen 64  scopeid 0x20<link>",
+        "        ether 8e:15:02:8a:7f:ee  txqueuelen 1000  (Ethernet)",
+        "        RX packets 1315769  bytes 616685980 (588.1 MiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 1434638  bytes 628356665 (599.2 MiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "some-tap: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet6 fe80::f884:69ff:fe0a:a073  prefixlen 64  scopeid 0x20<link>",
+        "        ether fa:84:69:0a:a0:73  txqueuelen 1000  (Ethernet)",
+        "        RX packets 1315769  bytes 635106746 (605.6 MiB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 1450904  bytes 631656508 (602.3 MiB)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "vmbr0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500",
+        "        inet 172.20.0.2  netmask 255.255.255.0  broadcast 172.20.0.255",
+        "        ether 7a:c8:eb:21:98:98  txqueuelen 1000  (Ethernet)",
+        "        RX packets 0  bytes 0 (0.0 B)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 0  bytes 0 (0.0 B)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "vmbr0-veth: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500",
+        "        ether 52:a5:03:cb:ee:31  txqueuelen 1000  (Ethernet)",
+        "        RX packets 0  bytes 0 (0.0 B)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 0  bytes 0 (0.0 B)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "vmbr0-veth-end: flags=4098<BROADCAST,MULTICAST>  mtu 1500",
+        "        ether 96:1d:5c:3b:20:9e  txqueuelen 1000  (Ethernet)",
+        "        RX packets 0  bytes 0 (0.0 B)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 0  bytes 0 (0.0 B)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        "",
+        "wlp6s0: flags=4098<BROADCAST,MULTICAST>  mtu 1500",
+        "        ether b8:4c:68:59:45:7d  txqueuelen 1000  (Ethernet)",
+        "        RX packets 0  bytes 0 (0.0 B)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 0  bytes 0 (0.0 B)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        ""
+    ],
+    "fact": {
+        "lo": {
+            "mtu": 65536,
+            "state": "UP",
+            "ipv4": {
+                "address": "127.0.0.1",
+                "mask_bits": 8,
+                "netmask": "255.0.0.0",
+                "broadcast": null
+            },
+            "ipv6": {
+                "address": "::1",
+                "mask_bits": 128
+            }
+        },
+        "eno1": {
+            "ether": "3e:d2:56:4d:1a:f1",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.42.6.142",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "10.42.6.255"
+            },
+            "ipv6": {
+                "address": "fe80::3cd2:56ff:fe4d:1af1",
+                "mask_bits": 64
+            }
+        },
+        "wlp6s0": {
+            "ether": "b8:4c:68:59:45:7d",
+            "mtu": 1500,
+            "state": "UNKNOWN"
+        },
+        "myvlan": {
+            "ether": "3e:d2:56:4d:1a:f2",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.42.13.147",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "10.42.13.255"
+            },
+            "ipv6": {
+                "address": "fe80::3cd2:56ff:fe4d:1af2",
+                "mask_bits": 64
+            }
+        },
+        "vmbr0": {
+            "ether": "7a:c8:eb:21:98:98",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "172.20.0.2",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "172.20.0.255"
+            }
+        },
+        "vmbr0-veth-end": {
+            "ether": "96:1d:5c:3b:20:9e",
+            "mtu": 1500,
+            "state": "UNKNOWN"
+        },
+        "vmbr0-veth": {
+            "ether": "52:a5:03:cb:ee:31",
+            "mtu": 1500,
+            "state": "UP"
+        },
+        "some-tap": {
+            "ether": "fa:84:69:0a:a0:73",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv6": {
+                "address": "fe80::f884:69ff:fe0a:a073",
+                "mask_bits": 64
+            }
+        },
+        "some-br": {
+            "ether": "8e:15:02:8a:7f:ee",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "192.168.101.1",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "0.0.0.0"
+            },
+            "ipv6": {
+                "address": "fe80::f884:69ff:fe0a:a073",
+                "mask_bits": 64
+            }
+        },
+        "my-vpn": {
+            "mtu": 1300,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.66.7.3",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": null
+            },
+            "ipv6": {
+                "address": "fe80::c9fc:e8d5:12d8:cfb2",
+                "mask_bits": 64
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "args": [
+    "tank/home/james"
+  ],
+  "kwargs": {
+    "present": false
+  },
+  "facts": {
+    "zfs.Datasets": {}
+  },
+  "commands": [],
+  "noop_description": "tank/home/james is already absent"
+}

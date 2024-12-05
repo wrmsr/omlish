@@ -1,0 +1,10 @@
+{
+    "command": "pip freeze --all",
+    "requires_command": "pip",
+    "output": [
+        "pydash==3.48"
+    ],
+    "fact": {
+        "pydash": ["3.48"]
+    }
+}

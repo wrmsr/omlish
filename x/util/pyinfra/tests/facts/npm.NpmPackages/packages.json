@@ -1,0 +1,12 @@
+{
+    "command": "npm list -g --depth=0",
+    "requires_command": "npm",
+    "output": [
+        "├── pydash@3.48",
+        "└── thing@1.9"
+    ],
+    "fact": {
+        "pydash": ["3.48"],
+        "thing": ["1.9"]
+    }
+}

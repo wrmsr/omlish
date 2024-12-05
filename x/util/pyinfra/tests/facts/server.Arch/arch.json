@@ -1,0 +1,5 @@
+{
+    "command": "uname -m",
+    "output": ["x86_64"],
+    "fact": "x86_64"
+}

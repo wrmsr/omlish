@@ -1,0 +1,13 @@
+{
+    "command": "(! test -f /etc/dnf.conf || cat /etc/dnf.conf) && (cat /etc/dnf.repos.d/*.repo || true) && (cat /etc/yum.repos.d/*.repo || true)",
+    "requires_command": "dnf",
+    "output": [
+        "[rhel-atomic-7-cdk-3.6-source-rpms]",
+        "name = Red Hat Container Development Kit 3.6 /(Source RPMs)"
+    ],
+    "fact": [
+        {
+            "name": "Red Hat Container Development Kit 3.6 /(Source RPMs)"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "command": "xbps-query -l",
+    "requires_command": "xbps-query",
+    "output": [
+        "ii vim-8.2.0891_1                             Vim editor (vi clone)"
+    ],
+    "fact": {
+        "vim": ["8.2.0891_1"]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "command": "ls /usr/bin/*session || true",
+    "output": [
+        "/usr/bin/gnome-session"
+    ],
+    "fact": ["GNOME"]
+}

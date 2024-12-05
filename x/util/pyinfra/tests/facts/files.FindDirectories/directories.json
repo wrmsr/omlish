@@ -1,0 +1,10 @@
+{
+    "arg": "mydir",
+    "command": "find mydir -type d || true",
+    "output": [
+        "anotherdir"
+    ],
+    "fact": [
+        "anotherdir"
+    ]
+}

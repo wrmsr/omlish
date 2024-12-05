@@ -1,0 +1,6 @@
+{
+    "arg": ["some_user"],
+    "command": "echo ~some_user",
+    "output": ["/home/some_user"],
+    "fact": "/home/some_user"
+}

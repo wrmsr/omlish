@@ -1,0 +1,10 @@
+{
+    "command": "sestatus",
+    "requires_command": "sestatus",
+    "output": [
+        ""
+    ],
+    "fact": {
+        "mode": null
+    }
+}

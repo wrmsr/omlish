@@ -1,0 +1,8 @@
+{
+    "command": "cd /etc/ && for file in $(ls -pdL *-release | grep -v /); do echo \"/etc/${file}\"; cat \"/etc/${file}\"; echo ---; done",
+    "output": [
+        "/etc/os-release",
+        "NAME=\"Ubuntu\""
+    ],
+    "fact": "Ubuntu"
+}

@@ -1,0 +1,6 @@
+{
+    "arg": ["root"],
+    "command": "echo ~root",
+    "output": ["/root"],
+    "fact": "/root"
+}

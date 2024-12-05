@@ -1,0 +1,9 @@
+{
+    "arg": "myrepo",
+    "command": "! test -d myrepo || (cd myrepo && git describe --all)",
+    "requires_command": "git",
+    "output": [
+        "heads/develop"
+    ],
+    "fact": "develop"
+}

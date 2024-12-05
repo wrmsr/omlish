@@ -1,0 +1,6 @@
+{
+    "arg": "python",
+    "command": "command -v python || true",
+    "output": ["/usr/local/bin/python"],
+    "fact": "/usr/local/bin/python"
+}

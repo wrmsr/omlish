@@ -1,0 +1,11 @@
+{
+    "arg": ["agetty-tty1", "/var/service"],
+    "command": "SVDIR=\"/var/service\" sv status \"agetty-tty1\"",
+    "requires_command": "sv",
+    "output": [
+        "run: agetty-tty1: (pid 1160) 1214497s"
+    ],
+    "fact": {
+        "agetty-tty1": true
+    }
+}

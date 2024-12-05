@@ -1,0 +1,160 @@
+{
+    "command": "ip addr show 2> /dev/null || ifconfig -a",
+    "output": [
+        "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000",
+        "    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00",
+        "    inet 127.0.0.1/8 scope host lo",
+        "       valid_lft forever preferred_lft forever",
+        "    inet6 ::1/128 scope host noprefixroute ",
+        "       valid_lft forever preferred_lft forever",
+        "2: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000",
+        "    link/ether 3e:d2:56:4d:1a:f1 brd ff:ff:ff:ff:ff:ff",
+        "    altname enp4s0",
+        "    inet 10.42.6.142/24 brd 10.42.6.255 scope global dynamic noprefixroute eno1",
+        "       valid_lft 53778sec preferred_lft 53778sec",
+        "    inet6 fe80::3cd2:56ff:fe4d:1af1/64 scope link proto kernel_ll ",
+        "       valid_lft forever preferred_lft forever",
+        "3: wlp6s0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000",
+        "    link/ether b8:4c:68:59:45:7d brd ff:ff:ff:ff:ff:ff permaddr 64:5d:24:b6:ad:5c",
+        "4: myvlan@eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000",
+        "    link/ether 3e:d2:56:4d:1a:f2 brd ff:ff:ff:ff:ff:ff",
+        "    inet 10.42.13.147/24 brd 10.42.13.255 scope global dynamic noprefixroute myvlan",
+        "       valid_lft 58557sec preferred_lft 58557sec",
+        "    inet6 fe80::3cd2:56ff:fe4d:1af2/64 scope link proto kernel_ll ",
+        "       valid_lft forever preferred_lft forever",
+        "5: vmbr0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default qlen 1000",
+        "    link/ether 7a:c8:eb:21:98:98 brd ff:ff:ff:ff:ff:ff",
+        "    inet 172.20.0.2/24 brd 172.20.0.255 scope global noprefixroute vmbr0",
+        "       valid_lft forever preferred_lft forever",
+        "6: vmbr0-veth-end@vmbr0-veth: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000",
+        "    link/ether 96:1d:5c:3b:20:9e brd ff:ff:ff:ff:ff:ff",
+        "7: vmbr0-veth@vmbr0-veth-end: <NO-CARRIER,BROADCAST,MULTICAST,UP,M-DOWN> mtu 1500 qdisc noqueue state LOWERLAYERDOWN group default qlen 1000",
+        "    link/ether 52:a5:03:cb:ee:31 brd ff:ff:ff:ff:ff:ff",
+        "8: some-tap: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master some-br state UNKNOWN group default qlen 1000",
+        "    link/ether fa:84:69:0a:a0:73 brd ff:ff:ff:ff:ff:ff",
+        "    inet6 fe80::f884:69ff:fe0a:a073/64 scope link proto kernel_ll ",
+        "       valid_lft forever preferred_lft forever",
+        "9: some-br: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000",
+        "    link/ether 8e:15:02:8a:7f:ee brd ff:ff:ff:ff:ff:ff",
+        "    inet 192.168.101.1/24 scope global some-br",
+        "       valid_lft forever preferred_lft forever",
+        "    inet6 fe80::f884:69ff:fe0a:a073/64 scope link proto kernel_ll ",
+        "       valid_lft forever preferred_lft forever",
+        "14: my-vpn: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1300 qdisc fq_codel state UNKNOWN group default qlen 500",
+        "    link/none ",
+        "    inet 10.66.7.3/24 scope global my-vpn",
+        "       valid_lft forever preferred_lft forever",
+        "    inet6 fe80::c9fc:e8d5:12d8:cfb2/64 scope link stable-privacy proto kernel_ll ",
+        "       valid_lft forever preferred_lft forever"
+    ],
+    "fact": {
+        "lo": {
+            "mtu": 65536,
+            "state": "UP",
+            "ipv4": {
+                "address": "127.0.0.1",
+                "mask_bits": 8,
+                "netmask": "255.0.0.0",
+                "broadcast": null
+            },
+            "ipv6": {
+                "address": "::1",
+                "mask_bits": 128
+            }
+        },
+        "eno1": {
+            "ether": "3e:d2:56:4d:1a:f1",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.42.6.142",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "10.42.6.255"
+            },
+            "ipv6": {
+                "address": "fe80::3cd2:56ff:fe4d:1af1",
+                "mask_bits": 64
+            }
+        },
+        "wlp6s0": {
+            "ether": "b8:4c:68:59:45:7d",
+            "mtu": 1500,
+            "state": "DOWN"
+        },
+        "myvlan@eno1": {
+            "ether": "3e:d2:56:4d:1a:f2",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.42.13.147",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "10.42.13.255"
+            },
+            "ipv6": {
+                "address": "fe80::3cd2:56ff:fe4d:1af2",
+                "mask_bits": 64
+            }
+        },
+        "vmbr0": {
+            "ether": "7a:c8:eb:21:98:98",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "172.20.0.2",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": "172.20.0.255"
+            }
+        },
+        "vmbr0-veth-end@vmbr0-veth": {
+            "ether": "96:1d:5c:3b:20:9e",
+            "mtu": 1500,
+            "state": "DOWN"
+        },
+        "vmbr0-veth@vmbr0-veth-end": {
+            "ether": "52:a5:03:cb:ee:31",
+            "mtu": 1500,
+            "state": "UP"
+        },
+        "some-tap": {
+            "ether": "fa:84:69:0a:a0:73",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv6": {
+                "address": "fe80::f884:69ff:fe0a:a073",
+                "mask_bits": 64
+            }
+        },
+        "some-br": {
+            "ether": "8e:15:02:8a:7f:ee",
+            "mtu": 1500,
+            "state": "UP",
+            "ipv4": {
+                "address": "192.168.101.1",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": null
+            },
+            "ipv6": {
+                "address": "fe80::f884:69ff:fe0a:a073",
+                "mask_bits": 64
+            }
+        },
+        "my-vpn": {
+            "mtu": 1300,
+            "state": "UP",
+            "ipv4": {
+                "address": "10.66.7.3",
+                "mask_bits": 24,
+                "netmask": "255.255.255.0",
+                "broadcast": null
+            },
+            "ipv6": {
+                "address": "fe80::c9fc:e8d5:12d8:cfb2",
+                "mask_bits": 64
+            }
+        }
+    }
+}

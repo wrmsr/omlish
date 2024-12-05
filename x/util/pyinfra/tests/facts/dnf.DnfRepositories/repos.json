@@ -1,0 +1,20 @@
+{
+    "command": "(! test -f /etc/dnf.conf || cat /etc/dnf.conf) && (cat /etc/dnf.repos.d/*.repo || true) && (cat /etc/yum.repos.d/*.repo || true)",
+    "requires_command": "dnf",
+    "output": [
+        "",
+        "[somerepo]",
+        "baseurl=abc",
+        "",
+        "[anotherrepo]"
+    ],
+    "fact": [
+        {
+            "name": "somerepo",
+            "baseurl": "abc"
+        },
+        {
+            "name": "anotherrepo"
+        }
+    ]
+}

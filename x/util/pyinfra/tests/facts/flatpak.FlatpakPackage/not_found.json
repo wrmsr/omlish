@@ -1,0 +1,9 @@
+{
+    "arg": "not_found.test.test",
+    "command": "flatpak info not_found.test.test",
+    "requires_command": "flatpak",
+    "output": [
+        "error: not_found.test.test/*unspecified*/*unspecified* not installed"
+    ],
+    "fact": {}
+}

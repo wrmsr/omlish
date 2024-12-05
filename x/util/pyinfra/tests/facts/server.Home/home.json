@@ -1,0 +1,5 @@
+{
+    "command": "echo ~",
+    "output": ["/home/pyinfra"],
+    "fact": "/home/pyinfra"
+}

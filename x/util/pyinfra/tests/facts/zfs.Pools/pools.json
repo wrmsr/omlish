@@ -1,0 +1,13 @@
+{
+    "command": "zpool get -H all",
+    "output": [
+        "tank\tcompression\tlz4\t-",
+        "tank\tashift\t12\tlocal"
+    ],
+    "fact": {
+        "tank": {
+            "compression": "lz4",
+            "ashift": "12"
+        }
+    }
+}

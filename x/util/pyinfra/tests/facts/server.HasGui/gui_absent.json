@@ -1,0 +1,5 @@
+{
+    "command": "ls /usr/bin/*session || true",
+    "output": [],
+    "fact": false
+}

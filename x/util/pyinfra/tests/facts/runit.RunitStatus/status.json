@@ -1,0 +1,23 @@
+{
+    "arg": [null, "/var/service"],
+    "command": "export SVDIR=\"/var/service\" && cd \"$SVDIR\" && find * -maxdepth 0 -exec sv status {} + 2>/dev/null",
+    "requires_command": "sv",
+    "output": [
+        "run: agetty-tty1: (pid 1160) 1214497s",
+        "run: agetty-tty2: (pid 1159) 1214497s",
+        "run: agetty-tty3: (pid 1163) 1214497s",
+        "run: agetty-tty4: (pid 1161) 1214497s",
+        "down: agetty-tty5: 1214497s",
+        "fail: foo: unable to change to service directory: file does not exist",
+        "fail: bar: runsv not running"
+    ],
+    "fact": {
+        "agetty-tty1": true,
+        "agetty-tty2": true,
+        "agetty-tty3": true,
+        "agetty-tty4": true,
+        "agetty-tty5": false,
+        "foo": null,
+        "bar": null
+    }
+}

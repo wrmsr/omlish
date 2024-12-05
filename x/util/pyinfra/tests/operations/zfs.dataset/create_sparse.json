@@ -1,0 +1,17 @@
+{
+  "args": [
+    "tank/myzvol"
+  ],
+  "kwargs": {
+    "present": true,
+    "sparse": true,
+    "compression": "lz4",
+    "volume_size": "5G"
+  },
+  "facts": {
+    "zfs.Datasets": {}
+  },
+  "commands": [
+    "zfs create -V 5G -o compression=lz4 -s tank/myzvol"
+  ]
+}

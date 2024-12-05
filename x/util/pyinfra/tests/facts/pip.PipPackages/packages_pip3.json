@@ -1,0 +1,11 @@
+{
+    "arg": "pip3",
+    "command": "pip3 freeze --all",
+    "requires_command": "pip3",
+    "output": [
+        "pydash==3.48"
+    ],
+    "fact": {
+        "pydash": ["3.48"]
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "arg": ["True", "testmachine", "testuser"],
+    "command": "systemctl --user --machine=testuser@testmachine show --all --property Id --property SubState '*'",
+    "requires_command": "systemctl",
+    "output": [
+        "Id=lvm2-activation.service",
+        "SubState=dead",
+        "",
+        "Id=lvm2-lvmetad.service",
+        "SubState=running",
+        "",
+        "Id=lvm2-lvmpolld.service",
+        "SubState=dead",
+        "",
+        "Id=ebtables.timer",
+        "SubState=exited"
+    ],
+    "fact":  {
+        "lvm2-activation.service": false,
+        "lvm2-lvmetad.service": true,
+        "lvm2-lvmpolld.service": false,
+        "ebtables.timer": true
+    }
+}

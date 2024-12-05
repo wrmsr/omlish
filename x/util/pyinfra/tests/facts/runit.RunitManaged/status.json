@@ -1,0 +1,21 @@
+{
+    "arg": [null, "/var/service"],
+    "command": "cd \"/var/service\" && find -mindepth 1 -maxdepth 1 -type l -printf \"%f\n\"",
+    "requires_command": "sv",
+    "output": [
+        "agetty-tty1",
+        "agetty-tty2",
+        "agetty-tty3",
+        "agetty-tty4",
+        "agetty-tty5",
+        "bar"
+    ],
+    "fact": [
+        "agetty-tty1",
+        "agetty-tty2",
+        "agetty-tty3",
+        "agetty-tty4",
+        "agetty-tty5",
+        "bar"
+    ]
+}

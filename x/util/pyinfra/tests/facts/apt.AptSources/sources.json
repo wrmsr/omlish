@@ -1,0 +1,44 @@
+{
+    "output": [
+        "deb http://archive.ubuntu.com/ubuntu trusty restricted",
+        "deb-src [arch=amd64,i386] http://archive.ubuntu.com/ubuntu trusty main",
+        "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse",
+        "nope"
+    ],
+    "command": "(! test -f /etc/apt/sources.list || cat /etc/apt/sources.list) && (cat /etc/apt/sources.list.d/*.list || true)",
+    "requires_command": "apt",
+    "fact": [
+        {
+            "url": "http://archive.ubuntu.com/ubuntu",
+            "distribution": "trusty",
+            "type": "deb",
+            "components": [
+                "restricted"
+            ],
+            "options": {}
+        },
+        {
+            "url": "http://archive.ubuntu.com/ubuntu",
+            "distribution": "trusty",
+            "type": "deb-src",
+            "components": [
+                "main"
+            ],
+            "options": {
+                "arch": ["amd64", "i386"]
+            }
+        },
+        {
+            "url": "https://repo.mongodb.org/apt/ubuntu",
+            "distribution": "jammy/mongodb-org/7.0",
+            "type": "deb",
+            "components": [
+                "multiverse"
+            ],
+            "options": {
+                "arch": ["amd64", "arm64"],
+                "signed-by": "/usr/share/keyrings/mongodb-server-7.0.gpg"
+            }
+        }
+    ]
+}

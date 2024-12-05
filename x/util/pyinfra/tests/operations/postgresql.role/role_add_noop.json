@@ -1,0 +1,12 @@
+{
+    "args": ["testuser"],
+    "facts": {
+        "postgres.PostgresRoles": {
+            "psql_database=None, psql_host=None, psql_password=None, psql_port=None, psql_user=None": {
+                "testuser": {}
+            }
+        }
+    },
+    "commands": [],
+    "noop_description": "postgresql role testuser exists"
+}

@@ -1,0 +1,12 @@
+{
+    "output": [
+        "rpcsvcgssd=0",
+        "rsyslog=4",
+        "saslauthd=3"
+    ],
+    "fact": {
+        "rpcsvcgssd": true,
+        "rsyslog": null,
+        "saslauthd": false
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "command": "crontab -l || true",
+    "requires_command": "crontab",
+    "output": [
+        "* * * * * apt update",
+        "# this is a comment",
+        "# another line in the comment, wut!",
+        "0 0 * * * apt install -fy"
+    ],
+    "fact": [
+        {
+            "command": "apt update",
+            "minute": "*",
+            "hour": "*",
+            "month": "*",
+            "day_of_month": "*",
+            "day_of_week": "*",
+            "comments": []
+        },
+        {
+            "command": "apt install -fy",
+            "minute": 0,
+            "hour": 0,
+            "month": "*",
+            "day_of_month": "*",
+            "day_of_week": "*",
+            "comments": [
+                "# this is a comment",
+                "# another line in the comment, wut!"
+            ]
+        }
+    ]
+}

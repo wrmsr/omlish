@@ -1,0 +1,21 @@
+{
+    "command": "cd /etc/ && for file in $(ls -pdL *-release | grep -v /); do echo \"/etc/${file}\"; cat \"/etc/${file}\"; echo ---; done",
+    "output": [
+        "/etc/os-release",
+        "NAME=\"Ubuntu\"",
+        "VERSION=\"20.04 LTS (Focal Fossa)\"",
+        "VERSION_ID=\"20.04\"",
+        "---"
+    ],
+    "fact": {
+        "name": "Ubuntu",
+        "major": 20,
+        "minor": 4,
+        "release_meta": {
+            "NAME": "Ubuntu",
+            "VERSION": "20.04 LTS (Focal Fossa)",
+            "VERSION_ID": "20.04",
+            "CODENAME": "Focal Fossa"
+        }
+    }
+}

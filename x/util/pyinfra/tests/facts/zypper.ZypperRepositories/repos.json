@@ -1,0 +1,17 @@
+{
+    "command": "cat /etc/zypp/repos.d/*.repo || true",
+    "requires_command": "zypper",
+    "output": [
+        "# comment line",
+        " # comment line with whitespaces",
+        "[somerepo]",
+        "baseurl=abc"
+
+    ],
+    "fact": [
+        {
+            "name": "somerepo",
+            "baseurl": "abc"
+        }
+    ]
+}

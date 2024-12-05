@@ -1,0 +1,29 @@
+{
+    "arg": "someuser",
+    "command": "crontab -l -u someuser || true",
+    "requires_command": "crontab",
+    "output": [
+        "* * * * * apt update",
+        "0 0 * * * apt install -fy"
+    ],
+    "fact": [
+        {
+            "command": "apt update",
+            "minute": "*",
+            "hour": "*",
+            "month": "*",
+            "day_of_month": "*",
+            "day_of_week": "*",
+            "comments": []
+        },
+        {
+            "command": "apt install -fy",
+            "minute": 0,
+            "hour": 0,
+            "month": "*",
+            "day_of_month": "*",
+            "day_of_week": "*",
+            "comments": []
+        }
+    ]
+}

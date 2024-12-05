@@ -1,0 +1,11 @@
+{
+    "arg": ["agetty-tty1", "/var/service"],
+    "command": "cd \"/var/service\" && test -h \"agetty-tty1\" && echo \"agetty-tty1\" || true",
+    "requires_command": "sv",
+    "output": [
+        "agetty-tty1"
+    ],
+    "fact": [
+        "agetty-tty1"
+    ]
+}
