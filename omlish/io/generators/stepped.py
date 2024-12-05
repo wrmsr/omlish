@@ -20,6 +20,7 @@ OT = ta.TypeVar('OT')
 # to signal they need more input again.
 SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
 
+# Conventionally, these are sent and themselves yield an empty value to signify termination.
 BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
 StrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, str, R]
 
