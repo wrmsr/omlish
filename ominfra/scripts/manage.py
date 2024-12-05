@@ -743,6 +743,39 @@ def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
 
 
 ########################################
+# ../payload.py
+
+
+@cached_nullary
+def _get_self_src() -> str:
+    return inspect.getsource(sys.modules[__name__])
+
+
+def _is_src_amalg(src: str) -> bool:
+    for l in src.splitlines():  # noqa
+        if l.startswith('# @omlish-amalg-output '):
+            return True
+    return False
+
+
+@cached_nullary
+def _is_self_amalg() -> bool:
+    return _is_src_amalg(_get_self_src())
+
+
+def get_payload_src(*, file: ta.Optional[str]) -> str:
+    if file is not None:
+        with open(file) as f:
+            return f.read()
+
+    if _is_self_amalg():
+        return _get_self_src()
+
+    import importlib.resources
+    return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
+
+
+########################################
 # ../../../omlish/lite/logs.py
 """
 TODO:
@@ -1652,38 +1685,6 @@ def _remote_main() -> None:
 ##
 
 
-@cached_nullary
-def _get_self_src() -> str:
-    return inspect.getsource(sys.modules[__name__])
-
-
-def _is_src_amalg(src: str) -> bool:
-    for l in src.splitlines():  # noqa
-        if l.startswith('# @omlish-amalg-output '):
-            return True
-    return False
-
-
-@cached_nullary
-def _is_self_amalg() -> bool:
-    return _is_src_amalg(_get_self_src())
-
-
-def _get_amalg_src(*, amalg_file: ta.Optional[str]) -> str:
-    if amalg_file is not None:
-        with open(amalg_file) as f:
-            return f.read()
-
-    if _is_self_amalg():
-        return _get_self_src()
-
-    import importlib.resources
-    return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
-
-
-##
-
-
 def _main() -> None:
     import argparse
 
@@ -1692,19 +1693,20 @@ def _main() -> None:
     parser.add_argument('-s', '--shell')
     parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
-    parser.add_argument('--_amalg-file')
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--_payload-file')
 
     args = parser.parse_args()
 
     #
 
-    amalg_src = _get_amalg_src(amalg_file=args._amalg_file)  # noqa
+    payload_src = get_payload_src(file=args._payload_file)  # noqa
 
     #
 
     remote_src = '\n\n'.join([
         '__name__ = "__remote__"',
-        amalg_src,
+        payload_src,
         '_remote_main()',
     ])
 
@@ -1736,7 +1738,7 @@ def _main() -> None:
     res = PyremoteBootstrapDriver(  # noqa
         remote_src,
         PyremoteBootstrapOptions(
-            # debug=True,
+            debug=args.debug,
         ),
     ).run(stdin, stdout)
     # print(res)
