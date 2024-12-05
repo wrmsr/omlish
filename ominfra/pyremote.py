@@ -132,6 +132,8 @@ _PYREMOTE_BOOTSTRAP_SRC_FD = 101
 
 _PYREMOTE_BOOTSTRAP_CHILD_PID_VAR = '_OPYR_CHILD_PID'
 _PYREMOTE_BOOTSTRAP_ARGV0_VAR = '_OPYR_ARGV0'
+_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR = '_OPYR_CONTEXT_NAME'
+_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR = '_OPYR_SRC_FILE'
 _PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR = '_OPYR_OPTIONS_JSON'
 
 _PYREMOTE_BOOTSTRAP_ACK0 = b'OPYR000\n'
@@ -174,11 +176,10 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         for f in [r0, w0, r1, w1]:
             os.close(f)
 
-        # Save child pid to close after relaunch
+        # Save vars
         os.environ[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
-
-        # Save original argv0
         os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = sys.executable
+        os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
 
         # Start repl reading stdin from r0
         os.execl(sys.executable, sys.executable + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
@@ -229,6 +230,7 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 
         '_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR',
         '_PYREMOTE_BOOTSTRAP_ARGV0_VAR',
+        '_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR',
 
         '_PYREMOTE_BOOTSTRAP_ACK0',
         '_PYREMOTE_BOOTSTRAP_ACK1',
@@ -264,14 +266,15 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
 class PyremotePayloadRuntime:
     input: ta.BinaryIO
     output: ta.BinaryIO
+    context_name: str
     main_src: str
     options: PyremoteBootstrapOptions
     env_info: PyremoteEnvInfo
 
 
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
-    # If json options var is not present we need to do initial finalization
-    if _PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR not in os.environ:
+    # If src file var is not present we need to do initial finalization
+    if _PYREMOTE_BOOTSTRAP_SRC_FILE_VAR not in os.environ:
         # Read second copy of main src
         r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
         main_src = r1.read().decode('utf-8')
@@ -295,11 +298,14 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
             os.write(tfd, main_src.encode('utf-8'))
             os.close(tfd)
 
-            # Set json options var
+            # Set vars
+            os.environ[_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR] = tfn
             os.environ[_PYREMOTE_BOOTSTRAP_OPTIONS_JSON_VAR] = options_json.decode('utf-8')
 
             # Re-exec temp file
-            os.execl(os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR], sys.orig_argv[0], tfn)
+            exe = os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR]
+            context_name = os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR]
+            os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)), tfn)
 
     else:
         # Load options json var
@@ -307,11 +313,14 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         options = PyremoteBootstrapOptions(**json.loads(options_json_str))
 
         # Read temp source file
-        with open(sys.orig_argv[1]) as sf:
+        with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
             main_src = sf.read()
 
     # Restore original argv0
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
+
+    # Grab context name
+    context_name = os.environ.pop(_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR)
 
     # Write third ack
     os.write(1, _PYREMOTE_BOOTSTRAP_ACK2)
@@ -335,6 +344,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     return PyremotePayloadRuntime(
         input=input,
         output=output,
+        context_name=context_name,
         main_src=main_src,
         options=options,
         env_info=env_info,
