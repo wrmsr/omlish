@@ -101,6 +101,7 @@ V = ta.TypeVar('V')
 
 # ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
@@ -1452,6 +1453,12 @@ class _cached_nullary:  # noqa
 
 def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
     return _cached_nullary(fn)
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_nullary(fn)
+    fn()
+    return fn
 
 
 ########################################
