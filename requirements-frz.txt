@@ -9,7 +9,7 @@ aiosqlite==0.20.0
 alembic==1.14.0
 annotated-types==0.7.0
 anthropic==0.40.0
-anyio==4.6.2.post1
+anyio==4.7.0
 appdirs==1.4.4
 appnope==0.1.4
 apsw==3.47.1.0
@@ -31,13 +31,13 @@ backoff==2.2.1
 bayesian-optimization==1.4.0
 bcrypt==4.2.1
 beautifulsoup4==4.12.3
-bellows==0.42.2
+bellows==0.42.3
 bitsandbytes==0.42.0
 black==24.10.0
 bleach==6.2.0
 blis==0.7.11
-boto3==1.35.72
-botocore==1.35.72
+boto3==1.35.76
+botocore==1.35.76
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.2.post1
@@ -106,7 +106,7 @@ execnet==2.1.1
 executing==2.1.0
 fairscale==0.4.13
 faiss-cpu==1.9.0.post1
-fastapi==0.115.5
+fastapi==0.115.6
 fastjsonschema==2.21.1
 filelock==3.16.1
 filetype==1.2.0
@@ -114,7 +114,7 @@ fire==0.6.0
 flake8==7.1.1
 Flake8-pyproject==1.2.3
 flatbuffers==24.3.25
-fonttools==4.55.0
+fonttools==4.55.2
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -182,7 +182,7 @@ jiter==0.5.0
 jmespath==1.0.1
 joblib==1.4.2
 json5==0.10.0
-json_repair==0.30.2
+json_repair==0.30.3
 jsonpatch==1.33
 jsonpath-python==1.0.6
 jsonpointer==3.0.0
@@ -195,7 +195,7 @@ jupyter_client==8.6.3
 jupyter_core==5.7.2
 jupyter_server==2.14.2
 jupyter_server_terminals==0.5.3
-jupyterlab==4.2.6
+jupyterlab==4.3.2
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
@@ -213,15 +213,15 @@ langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.3
-langchain-openai==0.2.10
+langchain-openai==0.2.11
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.53
-langgraph-checkpoint==2.0.7
-langgraph-sdk==0.1.40
+langgraph==0.2.56
+langgraph-checkpoint==2.0.8
+langgraph-sdk==0.1.43
 langsmith==0.1.147
 language_data==1.3.0
 lazy_loader==0.4
@@ -243,7 +243,7 @@ lxml==5.3.0
 lxml_html_clean==0.4.1
 lz4==4.3.3
 magicattr==0.1.6
-Mako==1.3.6
+Mako==1.3.7
 marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
@@ -282,7 +282,7 @@ networkx==3.4.2
 nevergrad==1.0.8
 nh3==0.2.19
 nltk==3.9.1
-notebook==7.2.2
+notebook==7.3.1
 notebook_shim==0.2.4
 numba==0.60.0
 numpy==1.26.4
@@ -292,7 +292,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.55.3
+openai==1.57.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.28.2
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
@@ -316,7 +316,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@3f9ce553e21569e21269b5ba91d7390f7229199a
+peft @ git+https://github.com/huggingface/peft.git@860f7838c885ada7d48bb91fbc65b5f1843b9bc6
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -334,7 +334,7 @@ pprintpp==0.4.0
 preshed==3.0.9
 primp==0.8.1
 priority==2.0.0
-prometheus_client==0.21.0
+prometheus_client==0.21.1
 prompt_toolkit==3.0.48
 propcache==0.2.1
 proto-plus==1.25.0
@@ -403,7 +403,7 @@ qdrant-client==1.12.1
 qtconsole==5.5.1
 QtPy==2.4.2
 RapidFuzz==3.10.1
-rapidocr-onnxruntime==1.4.0
+rapidocr-onnxruntime==1.4.1
 rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==44.0
@@ -417,10 +417,10 @@ rfc3339-validator==0.1.4
 rfc3986==2.0.0
 rfc3986-validator==0.1.1
 rich==13.9.4
-rpds-py==0.22.0
+rpds-py==0.22.3
 rsa==4.9
 rubicon-objc==0.4.9
-ruff==0.8.1
+ruff==0.8.2
 s3transfer==0.10.4
 safetensors==0.4.5
 scikit-image==0.24.0
@@ -438,12 +438,12 @@ setuptools-scm==8.1.0
 shapely==2.0.6
 shellingham==1.5.4
 simsimd==6.2.1
-six==1.16.0
+six==1.17.0
 smart-open==7.0.5
 smmap==5.0.1
 sniffio==1.3.1
-snowflake-connector-python==3.12.3
-snowflake-sqlalchemy==1.7.0
+snowflake-connector-python==3.12.4
+snowflake-sqlalchemy==1.7.1
 soco==0.30.6
 sortedcontainers==2.4.0
 sounddevice==0.5.1
@@ -456,7 +456,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.36
 sqlean.py==3.47.0
-sqlglot==25.32.1
+sqlglot==25.33.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.4.8
@@ -480,7 +480,7 @@ tiktoken==0.8.0
 tinycss2==1.4.0
 tld==0.13
 tokenize_rt==6.1.0
-tokenizers==0.20.3
+tokenizers==0.21.0
 tomlkit==0.13.2
 torch==2.5.1
 torchinfo==1.8.0
@@ -491,14 +491,14 @@ tornado==6.4.2
 tqdm==4.67.1
 trafilatura==1.12.2
 traitlets==5.14.3
-transformers==4.46.3
+transformers==4.47.0
 tree-sitter==0.23.2
-tree-sitter-python==0.23.4
+tree-sitter-python==0.23.5
 trio==0.27.0
 trio_asyncio==0.15.0
 trl==0.12.1
 twine==6.0.1
-typer==0.14.0
+typer==0.15.1
 types-Markdown==3.7.0.20240822
 types-paramiko==3.5.0.20240928
 types-python-dateutil==2.9.0.20241003
@@ -510,7 +510,7 @@ typing_extensions==4.12.2
 tzdata==2024.2
 tzlocal==5.2
 ujson==5.10.0
-unstructured==0.16.8
+unstructured==0.16.9
 unstructured-client==0.28.1
 uri-template==1.3.0
 uritemplate==4.1.1
@@ -518,7 +518,7 @@ urllib3==2.2.3
 urwid==2.6.16
 urwid_readline==0.15.1
 usearch==2.16.6
-uv==0.5.5
+uv==0.5.6
 uvicorn==0.32.1
 uvloop==0.21.0
 voluptuous==0.15.2

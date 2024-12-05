@@ -85,15 +85,17 @@ def count_lines_in_directory(directory: str) -> ta.Mapping[str, FileLineCount]:
 
 def display_results(results: ta.Mapping[str, FileLineCount]) -> None:
     total_loc = total_blanks = total_comments = 0
+    file_width = max(map(len, results))
+    dash_width = 41 + file_width
 
     print(
-        f"{'File':<40} "
+        f"{'File'.ljust(file_width)} "
         f"{'LOC':<10} "
         f"{'Blank Lines':<15} "
         f"{'Comment Lines':<15}",
     )
 
-    print('-' * 80)
+    print('-' * dash_width)
 
     for file, counts in sorted(results.items()):
         loc, blanks, comments = counts.loc, counts.blanks, counts.comments
@@ -101,16 +103,25 @@ def display_results(results: ta.Mapping[str, FileLineCount]) -> None:
         total_blanks += blanks
         total_comments += comments
         print(
-            f'{file:<40} '
+            f'{file.ljust(file_width)} '
             f'{loc:<10} '
             f'{blanks:<15} '
             f'{comments:<15}',
         )
 
-    print('-' * 80)
+    print('-' * dash_width)
 
     print(
-        f"{'Total':<40} "
+        f"{' ' * file_width} "
+        f"{'LOC':<10} "
+        f"{'Blank Lines':<15} "
+        f"{'Comment Lines':<15}",
+    )
+
+    print('-' * dash_width)
+
+    print(
+        f"{'Total'.ljust(file_width)} "
         f"{total_loc:<10} "
         f"{total_blanks:<15} "
         f"{total_comments:<15}",
