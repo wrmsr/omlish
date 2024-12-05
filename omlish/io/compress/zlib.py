@@ -36,6 +36,8 @@ class ZlibCompression(Compression):
 
     def decompress_incremental(self) -> BytesSteppedReaderGenerator[None]:
         return DecompressorObjectIncrementalAdapter(
-            zlib.decompressobj,  # type: ignore
+            functools.partial(  # type: ignore
+                zlib.decompressobj,
+            ),
             trailing_error=OSError,
         )()
