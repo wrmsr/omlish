@@ -13,6 +13,7 @@ from .consts import DEFAULT_BUFFER_SIZE
 
 T = ta.TypeVar('T')
 
+O = ta.TypeVar('O')
 I = ta.TypeVar('I')
 R = ta.TypeVar('R')
 
@@ -31,6 +32,13 @@ ExactReaderGenerator: ta.TypeAlias = ta.Generator[int, I, R]
 
 BytesExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[bytes, R]
 StrExactReaderGenerator: ta.TypeAlias = ExactReaderGenerator[str, R]
+
+
+# Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
+SteppedReaderGenerator: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
+
+BytesSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[bytes, bytes, R]
+StrSteppedReaderGenerator: ta.TypeAlias = SteppedReaderGenerator[str, str, R]
 
 
 ##
