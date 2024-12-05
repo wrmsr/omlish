@@ -1,6 +1,7 @@
 import typing as ta
 
 from ... import lang
+from .consts import DEFAULT_BUFFER_SIZE
 
 
 T = ta.TypeVar('T')
@@ -12,6 +13,9 @@ R = ta.TypeVar('R')
 
 
 SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
+
+BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
+StrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, str, R]
 
 
 ##
@@ -89,9 +93,6 @@ def _is_empty(o: T) -> bool:
     return len(o) < 1  # type: ignore
 
 
-##
-
-
 def joined_bytes_stepped_generator(
         g: ta.Generator[bytes | None, bytes | None, R],
 ) -> ta.Generator[bytes, bytes, R]:
@@ -102,3 +103,18 @@ def joined_str_stepped_generator(
         g: ta.Generator[str | None, str | None, R],
 ) -> ta.Generator[str, str, R]:
     return flatmap_stepped_generator(_join_str, g, terminate=_is_empty)
+
+
+##
+
+
+def read_into_bytes_stepped_generator(
+        g: BytesSteppedGenerator,
+        f: ta.IO,
+        *,
+        read_size: int = DEFAULT_BUFFER_SIZE,
+) -> ta.Iterator[bytes]:
+    yield from lang.genmap(  # type: ignore[misc]
+        joined_bytes_stepped_generator(g),
+        lang.readiter(f, read_size),
+    )
