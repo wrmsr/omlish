@@ -1,0 +1,12 @@
+Host myhost
+    User neighbor
+    Port 664
+    IdentityFile neighbor.pub
+
+Host myalias
+    HostName otherhost
+
+Host *
+    User satan
+    Port 666
+    IdentityFile foobar.pub
