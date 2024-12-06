@@ -142,7 +142,11 @@ def _main() -> None:
 
     ##
 
-    config = MainConfig()
+    config = MainConfig(
+        log_level='DEBUG' if args.debug else 'INFO',
+
+        debug=bool(args.debug),
+    )
 
     bootstrap = MainBootstrap(
         main_config=config,
