@@ -3,19 +3,19 @@ import dataclasses as dc
 import functools
 import typing as ta
 
-from omlish.lite.inject import inj
 from omlish.lite.inject import Injector
 from omlish.lite.inject import InjectorBindings
+from omlish.lite.inject import inj
 
 from ..marshal import ObjMarshalerInstaller
 from .base import Command
 from .base import CommandExecutor
-from .base import CommandNameMap
-from .base import build_command_name_map
-from .base import CommandRegistration
-from .base import CommandRegistrations
 from .base import CommandExecutorRegistration
 from .base import CommandExecutorRegistrations
+from .base import CommandNameMap
+from .base import CommandRegistration
+from .base import CommandRegistrations
+from .base import build_command_name_map
 from .execution import CommandExecutionService
 from .execution import CommandExecutorMap
 from .marshal import install_command_marshaling
