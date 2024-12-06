@@ -442,7 +442,7 @@ class PyremoteBootstrapDriver:
 
     #
 
-    def run(self, stdin: ta.IO, stdout: ta.IO) -> Result:
+    def run(self, input: ta.IO, output: ta.IO) -> Result:  # noqa
         gen = self.gen()
 
         gi: ta.Optional[bytes] = None
@@ -456,11 +456,11 @@ class PyremoteBootstrapDriver:
                 return e.value
 
             if isinstance(go, self.Read):
-                if len(gi := stdout.read(go.sz)) != go.sz:
+                if len(gi := input.read(go.sz)) != go.sz:
                     raise EOFError
             elif isinstance(go, self.Write):
                 gi = None
-                stdin.write(go.d)
-                stdin.flush()
+                output.write(go.d)
+                output.flush()
             else:
                 raise TypeError(go)

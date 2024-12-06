@@ -18,8 +18,7 @@ from .commands.base import Command
 from .commands.subprocess import SubprocessCommand
 from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
-from .protocol import recv_obj
-from .protocol import send_obj
+from .protocol import Channel
 from .spawning import PySpawner
 
 
@@ -53,14 +52,12 @@ def _register_command_marshaling() -> None:
 ##
 
 
-##
-
-
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
+    chan = Channel(rt.input, rt.output)
 
     while True:
-        i = recv_obj(rt.input, Command)
+        i = chan.recv_obj(Command)
         if i is None:
             break
 
@@ -69,7 +66,7 @@ def _remote_main() -> None:
         else:
             raise TypeError(i)
 
-        send_obj(rt.output, o, Command.Output)
+        chan.send_obj(o, Command.Output)
 
 
 ##
@@ -108,15 +105,16 @@ def _main() -> None:
         shell_quote=args.shell_quote,
         python=args.python,
     )
+
     with spawner.spawn() as proc:
         res = PyremoteBootstrapDriver(  # noqa
             remote_src,
             PyremoteBootstrapOptions(
                 debug=args.debug,
             ),
-        ).run(proc.stdin, proc.stdout)
+        ).run(proc.stdout, proc.stdin)
 
-        # print(res)
+        chan = Channel(proc.stdout, proc.stdin)
 
         #
 
@@ -131,9 +129,9 @@ def _main() -> None:
                 capture_stdout=True,
             ),
         ]:
-            send_obj(proc.stdin, ci, Command)
+            chan.send_obj(ci, Command)
 
-            o = recv_obj(proc.stdout, Command.Output)
+            o = chan.recv_obj(Command.Output)
 
             print(o)
 
