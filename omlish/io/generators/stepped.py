@@ -148,11 +148,7 @@ def read_into_str_stepped_generator(
 
 
 @lang.autostart
-def buffer_bytes_stepped_reader_generator(
-        g: BytesSteppedReaderGenerator,
-        *,
-        buffer_size: int = DEFAULT_BUFFER_SIZE,
-) -> BytesSteppedGenerator:
+def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> BytesSteppedGenerator:
     o = g.send(None)
     buf = None
 

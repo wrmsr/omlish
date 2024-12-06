@@ -47,6 +47,7 @@ from ..generators import BytesSteppedGenerator
 from ..generators import BytesSteppedReaderGenerator
 from ..generators.readers import PrependableBytesGeneratorReader
 from .base import Compression
+from .base import IncrementalCompression
 
 
 if ta.TYPE_CHECKING:
@@ -66,7 +67,7 @@ COMPRESS_LEVEL_BEST = 9
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class GzipCompression(Compression):
+class GzipCompression(Compression, IncrementalCompression):
     level: int = COMPRESS_LEVEL_BEST
 
     mtime: float | None = None

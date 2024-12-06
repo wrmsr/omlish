@@ -5,6 +5,7 @@ from ... import check
 from ... import lang
 from ..generators import BytesSteppedGenerator
 from .base import Compression
+from .base import IncrementalCompression
 
 
 if ta.TYPE_CHECKING:
@@ -14,7 +15,7 @@ else:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Lz4Compression(Compression):
+class Lz4Compression(Compression, IncrementalCompression):
     level: int = 0
 
     block_size: int = 0

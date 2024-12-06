@@ -13,6 +13,8 @@ class Compression(abc.ABC):
     def decompress(self, d: bytes) -> bytes:
         raise NotImplementedError
 
+
+class IncrementalCompression(abc.ABC):
     @abc.abstractmethod
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
         raise NotImplementedError
