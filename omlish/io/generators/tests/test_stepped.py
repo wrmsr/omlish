@@ -60,8 +60,17 @@ def test_fmg():
 def test_buffer():
     def f():
         assert (yield 1) == b'a'
+        assert (yield b'A') is None
         assert (yield 2) == b'bc'
+        assert (yield b'B') is None
+        assert (yield b'C') is None
         assert (yield 1) == b'd'
+        assert (yield b'D') is None
+        assert (yield b'') is None
 
     g = buffer_bytes_stepped_reader_generator(f())
-    g.send(b'abcd')
+    assert g.send(b'abcd') == b'A'
+    assert next(g) == b'B'
+    assert next(g) == b'C'
+    assert next(g) == b'D'
+    assert next(g) == b''

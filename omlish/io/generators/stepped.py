@@ -1,5 +1,6 @@
 import typing as ta
 
+from ... import check
 from ... import lang
 from .consts import DEFAULT_BUFFER_SIZE
 from .direct import BytesDirectGenerator
@@ -152,9 +153,27 @@ def buffer_bytes_stepped_reader_generator(
         *,
         buffer_size: int = DEFAULT_BUFFER_SIZE,
 ) -> BytesSteppedGenerator:
+    o = g.send(None)
+    buf = None
+
     while True:
-        # i = yield
-        # o = g.send(None)
-        # if o is None:
-        raise NotImplementedError
-        yield
+        if not buf:
+            buf = check.isinstance((yield), bytes)
+
+        if o is None or not buf:
+            i = buf
+        elif isinstance(o, int):
+            if len(buf) < o:
+                raise NotImplementedError
+            i = buf[:o]
+            buf = buf[o:]
+        else:
+            raise TypeError(o)
+
+        while True:
+            o = g.send(i)
+            i = None
+            if isinstance(o, bytes):
+                check.none((yield o))
+            else:
+                break
