@@ -21,12 +21,6 @@ def timebomb_payload(delay_s: float, name: str = _DEFAULT_TIMEBOMB_NAME) -> str:
 ##
 
 
-DOCKER_FOR_MAC_HOSTNAME = 'docker.for.mac.localhost'
-
-
-##
-
-
 # Set by pyproject, docker-dev script
 DOCKER_HOST_PLATFORM_KEY = 'DOCKER_HOST_PLATFORM'
 

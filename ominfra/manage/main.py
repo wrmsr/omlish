@@ -5,9 +5,13 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
+import dataclasses as dc
+import typing as ta
+
 from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import PolymorphicObjMarshaler
+from omlish.lite.pycharm import pycharm_debug_connect
 
 from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
@@ -56,9 +60,24 @@ register_command_marshaling(OBJ_MARSHALER_MANAGER)
 ##
 
 
+@dc.dataclass(frozen=True)
+class RemoteContext:
+    pycharm_debug_port: ta.Optional[int] = None
+    pycharm_debug_host: ta.Optional[str] = None
+    pycharm_debug_version: ta.Optional[str] = None
+
+
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
     chan = Channel(rt.input, rt.output)
+    ctx = chan.recv_obj(RemoteContext)
+
+    if ctx.pycharm_debug_port is not None:
+        pycharm_debug_connect(
+            ctx.pycharm_debug_port,
+            **(dict(host=ctx.pycharm_debug_host) if ctx.pycharm_debug_host is not None else {}),
+            **(dict(install_version=ctx.pycharm_debug_version) if ctx.pycharm_debug_version is not None else {}),
+        )
 
     while True:
         i = chan.recv_obj(Command)
@@ -86,6 +105,10 @@ def _main() -> None:
     parser.add_argument('-s', '--shell')
     parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
+
+    parser.add_argument('--pycharm-debug-port', type=int)
+    parser.add_argument('--pycharm-debug-host')
+    parser.add_argument('--pycharm-debug-version')
 
     parser.add_argument('--debug', action='store_true')
 
@@ -119,6 +142,16 @@ def _main() -> None:
         ).run(proc.stdout, proc.stdin)
 
         chan = Channel(proc.stdout, proc.stdin)
+
+        #
+
+        ctx = RemoteContext(
+            pycharm_debug_port=args.pycharm_debug_port,
+            pycharm_debug_host=args.pycharm_debug_host,
+            pycharm_debug_version=args.pycharm_debug_version,
+        )
+
+        chan.send_obj(ctx)
 
         #
 
