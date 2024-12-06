@@ -8568,6 +8568,7 @@ def bind_server(
     lst.extend([
         inj.bind(poller_impl, key=FdIoPoller, singleton=True),
         inj.bind(_FdIoPollerDaemonizeListener, array=True, singleton=True),
+        inj.bind(DaemonizeListener, array=True, to_key=_FdIoPollerDaemonizeListener),
     ])
 
     #
