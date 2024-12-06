@@ -34,9 +34,13 @@ from .remote import RemoteSpawning
 class RemoteContext:
     main_bootstrap: MainBootstrap
 
-    pycharm_debug_port: ta.Optional[int] = None
-    pycharm_debug_host: ta.Optional[str] = None
-    pycharm_debug_version: ta.Optional[str] = None
+    @dc.dataclass(frozen=True)
+    class PycharmDebug:
+        port: int
+        host: ta.Optional[str] = None
+        install_version: ta.Optional[str] = None
+
+    pycharm_debug: ta.Optional[PycharmDebug] = None
 
 
 @dc.dataclass(frozen=True)
@@ -57,11 +61,11 @@ def _remote_main() -> None:
 
     #
 
-    if ctx.pycharm_debug_port is not None:
+    if (pd := ctx.pycharm_debug) is not None:
         pycharm_debug_connect(
-            ctx.pycharm_debug_port,
-            **(dict(host=ctx.pycharm_debug_host) if ctx.pycharm_debug_host is not None else {}),
-            **(dict(install_version=ctx.pycharm_debug_version) if ctx.pycharm_debug_version is not None else {}),
+            pd.port,
+            **(dict(host=pd.host) if pd.host is not None else {}),
+            **(dict(install_version=pd.install_version) if pd.install_version is not None else {}),
         )
 
     #
@@ -189,9 +193,11 @@ def _main() -> None:
         ctx = RemoteContext(
             main_bootstrap=bootstrap,
 
-            pycharm_debug_port=args.pycharm_debug_port,
-            pycharm_debug_host=args.pycharm_debug_host,
-            pycharm_debug_version=args.pycharm_debug_version,
+            pycharm_debug=RemoteContext.PycharmDebug(
+                port=args.pycharm_debug_port,
+                host=args.pycharm_debug_host,
+                install_version=args.pycharm_debug_version,
+            ) if args.pycharm_debug_port is not None else None,
         )
 
         chan.send_obj(ctx)
