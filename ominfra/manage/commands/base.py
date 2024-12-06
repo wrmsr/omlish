@@ -37,19 +37,45 @@ class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
 ##
 
 
+@dc.dataclass(frozen=True)
+class CommandRegistration:
+    command_cls: ta.Type[Command]
+
+    name: ta.Optional[str] = None
+
+    @property
+    def name_or_default(self) -> str:
+        if not (cls_name := self.command_cls.__name__).endswith('Command'):
+            raise NameError(cls_name)
+        return snake_case(cls_name[:-len('Command')])
+
+
+CommandRegistrations = ta.NewType('CommandRegistrations', ta.Sequence[CommandRegistration])
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CommandExecutorRegistration:
+    command_cls: ta.Type[Command]
+    executor_cls: ta.Type[CommandExecutor]
+
+
+CommandExecutorRegistrations = ta.NewType('CommandExecutorRegistrations', ta.Sequence[CommandExecutorRegistration])
+
+
+##
+
+
 CommandNameMap = ta.NewType('CommandNameMap', ta.Mapping[str, ta.Type[Command]])
 
 
-def build_command_name_map(cmds: ta.Iterable[ta.Type[Command]]) -> CommandNameMap:
-    dct = {}
-    for cmd in cmds:
-        if not (cls_name := cmd.__name__).endswith('Command'):
-            raise NameError(cls_name)
-
-        name = snake_case(cls_name[:-len('Command')])
-        if name in dct:
-            raise
-
-        dct[name] = cmd
-
+def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
+    dct: ta.Dict[str, ta.Type[Command]] = {}
+    cr: CommandRegistration
+    for cr in crs:
+        if (name := cr.name_or_default) in dct:
+            raise NameError(name)
+        dct[name] = cr.command_cls
     return CommandNameMap(dct)

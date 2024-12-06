@@ -1,51 +1,43 @@
-import dataclasses as dc
 import typing as ta
 
 from omlish.lite.inject import inj
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.pycharm import pycharm_debug_connect
 
-from ..pyremote import PyremoteBootstrapDriver
-from ..pyremote import PyremoteBootstrapOptions
-from ..pyremote import pyremote_bootstrap_finalize
-from ..pyremote import pyremote_build_bootstrap_cmd
-from .commands.base import Command
-from .commands.base import CommandExecutor
-from .commands.base import build_command_name_map
-from .commands.subprocess import SubprocessCommand
-from .commands.subprocess import SubprocessCommandExecutor
-from .payload import get_payload_src
-from .protocol import Channel
-from .spawning import PySpawner
-from .marshal import install_command_marshaling
+from .commands.inject import bind_commands
+from .config import MainConfig
+from .marshal import ObjMarshalerInstaller
+from .marshal import ObjMarshalerInstallers
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class ManageMainConfig:
-    pass
-
-
-def bind_manage_main(
-        config: ManageMainConfig,
+def bind_main(
+        config: MainConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(config),
 
+        bind_commands(),
     ]
 
     #
 
-    def build_obj_marshaler_manager(cmds: CommandBindings) -> ObjMarshalerManager:
+    def build_obj_marshaler_manager(insts: ObjMarshalerInstallers) -> ObjMarshalerManager:
         msh = ObjMarshalerManager()
-        install_command_marshaling(msh, build_command_name_map(cmds))
+        inst: ObjMarshalerInstaller
+        for inst in insts:
+            inst.fn(msh)
         return msh
 
-    lst.append(inj.bind(build_obj_marshaler_manager, singleton=True))
+    lst.extend([
+        inj.bind(build_obj_marshaler_manager, singleton=True),
+
+        inj.bind_array(ObjMarshalerInstaller),
+        inj.bind_array_type(ObjMarshalerInstaller, ObjMarshalerInstallers),
+    ])
 
     #
 

@@ -9,8 +9,6 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.inject import inj
-from omlish.lite.inject import InjectorBindingOrBindings
-from omlish.lite.inject import InjectorBindings
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
 
@@ -20,13 +18,14 @@ from ..pyremote import pyremote_bootstrap_finalize
 from ..pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
 from .commands.base import CommandExecutor
-from .commands.base import build_command_name_map
+from .commands.base import CommandNameMap
 from .commands.subprocess import SubprocessCommand
 from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
 from .protocol import Channel
 from .spawning import PySpawner
-from .marshal import install_command_marshaling
+from .config import MainConfig
+from .inject import bind_main
 
 
 ##
@@ -90,7 +89,15 @@ def _main() -> None:
 
     args = parser.parse_args()
 
-    #
+    ####
+
+    injector = inj.create_injector(bind_main(
+        MainConfig(),
+    ))
+    print(injector[CommandNameMap])
+    print(injector[ObjMarshalerManager])
+
+    ####
 
     payload_src = get_payload_src(file=args._payload_file)  # noqa
 
