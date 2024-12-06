@@ -18,11 +18,11 @@ from ..pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.subprocess import SubprocessCommand
+from .config import MainConfig
+from .inject import bind_main
 from .payload import get_payload_src
 from .protocol import Channel
 from .spawning import PySpawner
-from .config import MainConfig
-from .inject import bind_main
 
 
 ##
