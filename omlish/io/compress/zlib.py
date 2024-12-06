@@ -20,17 +20,31 @@ else:
 class ZlibCompression(Compression):
     level: int = 9
 
+    wbits: int | None = None
+    strategy: int | None = None
+    zdict: bytes | None = None
+
     def compress(self, d: bytes) -> bytes:
-        return zlib.compress(d, self.level)
+        return zlib.compress(
+            d,
+            self.level,
+            **(dict(wbits=self.wbits) if self.wbits is not None else {}),
+        )
 
     def decompress(self, d: bytes) -> bytes:
-        return zlib.decompress(d)
+        return zlib.decompress(
+            d,
+            **(dict(wbits=self.wbits) if self.wbits is not None else {}),
+        )
 
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
         return lang.nextgen(CompressorObjectIncrementalAdapter(
             functools.partial(
                 zlib.compressobj,  # type: ignore
                 self.level,
+                **(dict(wbits=self.wbits) if self.wbits is not None else {}),
+                **(dict(strategy=self.strategy) if self.strategy is not None else {}),
+                **(dict(zdict=self.zdict) if self.zdict is not None else {}),
             ),
         )())
 
@@ -38,6 +52,8 @@ class ZlibCompression(Compression):
         return DecompressorObjectIncrementalAdapter(
             functools.partial(  # type: ignore
                 zlib.decompressobj,
+                **(dict(wbits=self.wbits) if self.wbits is not None else {}),
+                **(dict(zdict=self.zdict) if self.zdict is not None else {}),
             ),
             trailing_error=OSError,
         )()
