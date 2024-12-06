@@ -59,6 +59,9 @@ CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
+# ../../omlish/lite/subprocesses.py
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+
 
 ########################################
 # ../commands/base.py
@@ -1494,6 +1497,16 @@ class Channel:
 ##
 
 
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
+
+
+##
+
+
 _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
@@ -1620,21 +1633,21 @@ def subprocess_close(
 
 @dc.dataclass(frozen=True)
 class SubprocessCommand(Command['SubprocessCommand.Output']):
-    args: ta.Sequence[str]
+    cmd: ta.Sequence[str]
 
     shell: bool = False
     cwd: ta.Optional[str] = None
     env: ta.Optional[ta.Mapping[str, str]] = None
 
-    capture_stdout: bool = False
-    capture_stderr: bool = False
+    stdout: str = 'pipe'  # SubprocessChannelOption
+    stderr: str = 'pipe'  # SubprocessChannelOption
 
     input: ta.Optional[bytes] = None
     timeout: ta.Optional[float] = None
 
     def __post_init__(self) -> None:
-        if isinstance(self.args, str):
-            raise TypeError(self.args)
+        if isinstance(self.cmd, str):
+            raise TypeError(self.cmd)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -1653,15 +1666,15 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
         with subprocess.Popen(
-            subprocess_maybe_shell_wrap_exec(*inp.args),
+            subprocess_maybe_shell_wrap_exec(*inp.cmd),
 
             shell=inp.shell,
             cwd=inp.cwd,
             env={**os.environ, **(inp.env or {})},
 
             stdin=subprocess.PIPE if inp.input is not None else None,
-            stdout=subprocess.PIPE if inp.capture_stdout else None,
-            stderr=subprocess.PIPE if inp.capture_stderr else None,
+            stdout=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stdout)],
+            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stderr)],
         ) as proc:
             start_time = time.time()
             stdout, stderr = proc.communicate(
@@ -1695,7 +1708,7 @@ class PySpawner:
             shell: ta.Optional[str] = None,
             shell_quote: bool = False,
             python: str = DEFAULT_PYTHON,
-            stderr: ta.Optional[ta.Literal['pipe', 'stdout', 'devnull']] = None,
+            stderr: ta.Optional[SubprocessChannelOption] = None,
     ) -> None:
         super().__init__()
 
@@ -1730,12 +1743,6 @@ class PySpawner:
 
     #
 
-    _STDERR_KWARG_MAP: ta.Mapping[str, int] = {
-        'pipe': subprocess.PIPE,
-        'stdout': subprocess.STDOUT,
-        'devnull': subprocess.DEVNULL,
-    }
-
     @dc.dataclass(frozen=True)
     class Spawned:
         stdin: ta.IO
@@ -1755,7 +1762,7 @@ class PySpawner:
             shell=pc.shell,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=self._STDERR_KWARG_MAP[self._stderr] if self._stderr is not None else None,
+            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[self._stderr] if self._stderr is not None else None,
         ) as proc:
             stdin = check_not_none(proc.stdin)
             stdout = check_not_none(proc.stdout)
@@ -1882,15 +1889,8 @@ def _main() -> None:
         #
 
         for ci in [
-            SubprocessCommand(
-                args=['python3', '-'],
-                input=b'print(1)\n',
-                capture_stdout=True,
-            ),
-            SubprocessCommand(
-                args=['uname'],
-                capture_stdout=True,
-            ),
+            SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
+            SubprocessCommand(['uname']),
         ]:
             chan.send_obj(ci, Command)
 
