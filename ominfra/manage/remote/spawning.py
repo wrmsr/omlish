@@ -22,10 +22,7 @@ class RemoteSpawning:
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
 
-    def __init__(
-            self,
-            opts: Options,
-    ) -> None:
+    def __init__(self, opts: Options) -> None:
         super().__init__()
 
         self._opts = opts

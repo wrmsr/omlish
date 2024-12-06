@@ -785,48 +785,45 @@ Maybe._empty = tuple.__new__(_Maybe, ())  # noqa
 DEFAULT_PYCHARM_VERSION = '242.23726.102'
 
 
-def pycharm_debug_connect(
-        port: int,
-        *,
-        host: str = 'localhost',
-        install_version: ta.Optional[str] = DEFAULT_PYCHARM_VERSION,
-):
-    if install_version is not None:
+@dc.dataclass(frozen=True)
+class PycharmRemoteDebug:
+    port: int
+    host: ta.Optional[str] = 'localhost'
+    install_version: ta.Optional[str] = DEFAULT_PYCHARM_VERSION
+
+
+def pycharm_debug_connect(prd: PycharmRemoteDebug) -> None:
+    if prd.install_version is not None:
         import subprocess
         import sys
         subprocess.check_call([
             sys.executable,
             '-mpip',
             'install',
-            f'pydevd-pycharm~={install_version}',
+            f'pydevd-pycharm~={prd.install_version}',
         ])
 
     pydevd_pycharm = __import__('pydevd_pycharm')  # noqa
     pydevd_pycharm.settrace(
-        host,
-        port=port,
+        prd.host,
+        port=prd.port,
         stdoutToServer=True,
         stderrToServer=True,
     )
 
 
-def pycharm_debug_preamble(
-        port: int,
-        *,
-        host: str = 'localhost',
-        install_version: ta.Optional[str] = DEFAULT_PYCHARM_VERSION,
-) -> str:
+def pycharm_debug_preamble(prd: PycharmRemoteDebug) -> str:
     import inspect
     import textwrap
 
     return textwrap.dedent(f"""
         {inspect.getsource(pycharm_debug_connect)}
 
-        pycharm_debug_connect(
-            {port},
-            host={host!r},
-            install_version={install_version!r},
-        )
+        pycharm_debug_connect(PycharmRemoteDebug(
+            {prd.port!r},
+            host={prd.host!r},
+            install_version={prd.install_version!r},
+        ))
     """)
 
 
@@ -2745,10 +2742,10 @@ ObjMarshalerInstallers = ta.NewType('ObjMarshalerInstallers', ta.Sequence[ObjMar
 
 
 ########################################
-# ../protocol.py
+# ../remote/channel.py
 
 
-class Channel:
+class RemoteChannel:
     def __init__(
             self,
             input: ta.IO,  # noqa
@@ -2773,7 +2770,7 @@ class Channel:
         self._output.write(d)
         self._output.flush()
 
-    def recv_obj(self, ty: ta.Any) -> ta.Any:
+    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         d = self._input.read(4)
         if not d:
             return None
@@ -2994,7 +2991,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 
 ########################################
-# ../remote.py
+# ../remote/spawning.py
 
 
 class RemoteSpawning:
@@ -3008,10 +3005,7 @@ class RemoteSpawning:
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
 
-    def __init__(
-            self,
-            opts: Options,
-    ) -> None:
+    def __init__(self, opts: Options) -> None:
         super().__init__()
 
         self._opts = opts
@@ -3186,6 +3180,18 @@ def bind_commands(
 
 
 ########################################
+# ../remote/inject.py
+
+
+def bind_remote() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(RemoteSpawning, singleton=True),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
 # ../inject.py
 
 
@@ -3199,11 +3205,10 @@ def bind_main(
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
-
         inj.bind(remote_spawning_options),
-        inj.bind(RemoteSpawning, singleton=True),
 
         bind_commands(main_config),
+        bind_remote(),
     ]
 
     #
@@ -3254,43 +3259,30 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 
 ########################################
-# main.py
-
-
-##
+# ../remote/main.py
 
 
 @dc.dataclass(frozen=True)
 class RemoteContext:
     main_bootstrap: MainBootstrap
 
-    @dc.dataclass(frozen=True)
-    class PycharmDebug:
-        port: int
-        host: ta.Optional[str] = None
-        install_version: ta.Optional[str] = None
-
-    pycharm_debug: ta.Optional[PycharmDebug] = None
+    pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
 
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
-    chan = Channel(
+    chan = RemoteChannel(
         rt.input,
         rt.output,
     )
 
-    ctx = chan.recv_obj(RemoteContext)
+    ctx = check_not_none(chan.recv_obj(RemoteContext))
 
     #
 
-    if (pd := ctx.pycharm_debug) is not None:
-        pycharm_debug_connect(
-            pd.port,
-            **(dict(host=pd.host) if pd.host is not None else {}),
-            **(dict(install_version=pd.install_version) if pd.install_version is not None else {}),
-        )
+    if (prd := ctx.pycharm_remote_debug) is not None:
+        pycharm_debug_connect(prd)
 
     #
 
@@ -3318,6 +3310,10 @@ def _remote_main() -> None:
         )
 
         chan.send_obj(r)
+
+
+########################################
+# main.py
 
 
 ##
@@ -3369,7 +3365,7 @@ def _main() -> None:
     cmds = [
         SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
         SubprocessCommand(['uname']),
-        # SubprocessCommand(['barf']),
+        SubprocessCommand(['barf']),
     ]
 
     ce = injector[CommandExecutor]
@@ -3404,7 +3400,7 @@ def _main() -> None:
             proc.stdin,
         )
 
-        chan = Channel(
+        chan = RemoteChannel(
             proc.stdout,
             proc.stdin,
             msh=injector[ObjMarshalerManager],
@@ -3415,7 +3411,7 @@ def _main() -> None:
         ctx = RemoteContext(
             main_bootstrap=bootstrap,
 
-            pycharm_debug=RemoteContext.PycharmDebug(
+            pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
                 host=args.pycharm_debug_host,
                 install_version=args.pycharm_debug_version,
@@ -3429,7 +3425,7 @@ def _main() -> None:
         for cmd in cmds:
             chan.send_obj(cmd, Command)
 
-            r = chan.recv_obj(CommandOutputOrExceptionData)
+            r = check_not_none(chan.recv_obj(CommandOutputOrExceptionData))
 
             print(r)
 

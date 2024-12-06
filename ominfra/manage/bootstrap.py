@@ -6,7 +6,7 @@ from omlish.lite.logs import configure_standard_logging
 
 from .config import MainConfig
 from .inject import bind_main
-from .remote import RemoteSpawning
+from .remote.spawning import RemoteSpawning
 
 
 ##

@@ -5,16 +5,12 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
-import dataclasses as dc
-import typing as ta
-
-from omlish.lite.logs import log
+from omlish.lite.check import check_not_none
 from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.pycharm import pycharm_debug_connect
+from omlish.lite.pycharm import PycharmRemoteDebug
 
 from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
-from ..pyremote import pyremote_bootstrap_finalize
 from ..pyremote import pyremote_build_bootstrap_cmd
 from .bootstrap import MainBootstrap
 from .bootstrap import main_bootstrap
@@ -24,71 +20,9 @@ from .commands.base import CommandOutputOrExceptionData
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .payload import get_payload_src
-from .protocol import Channel
-from .remote import RemoteSpawning
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class RemoteContext:
-    main_bootstrap: MainBootstrap
-
-    @dc.dataclass(frozen=True)
-    class PycharmDebug:
-        port: int
-        host: ta.Optional[str] = None
-        install_version: ta.Optional[str] = None
-
-    pycharm_debug: ta.Optional[PycharmDebug] = None
-
-
-def _remote_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    chan = Channel(
-        rt.input,
-        rt.output,
-    )
-
-    ctx = chan.recv_obj(RemoteContext)
-
-    #
-
-    if (pd := ctx.pycharm_debug) is not None:
-        pycharm_debug_connect(
-            pd.port,
-            **(dict(host=pd.host) if pd.host is not None else {}),
-            **(dict(install_version=pd.install_version) if pd.install_version is not None else {}),
-        )
-
-    #
-
-    injector = main_bootstrap(ctx.main_bootstrap)
-
-    #
-
-    chan.set_marshaler(injector[ObjMarshalerManager])
-
-    #
-
-    ce = injector[CommandExecutor]
-
-    #
-
-    while True:
-        i = chan.recv_obj(Command)
-        if i is None:
-            break
-
-        r = ce.try_execute(
-            i,
-            log=log,
-            omit_exc_object=True,
-        )
-
-        chan.send_obj(r)
+from .remote.channel import RemoteChannel
+from .remote.main import RemoteContext
+from .remote.spawning import RemoteSpawning
 
 
 ##
@@ -140,7 +74,7 @@ def _main() -> None:
     cmds = [
         SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
         SubprocessCommand(['uname']),
-        # SubprocessCommand(['barf']),
+        SubprocessCommand(['barf']),
     ]
 
     ce = injector[CommandExecutor]
@@ -175,7 +109,7 @@ def _main() -> None:
             proc.stdin,
         )
 
-        chan = Channel(
+        chan = RemoteChannel(
             proc.stdout,
             proc.stdin,
             msh=injector[ObjMarshalerManager],
@@ -186,7 +120,7 @@ def _main() -> None:
         ctx = RemoteContext(
             main_bootstrap=bootstrap,
 
-            pycharm_debug=RemoteContext.PycharmDebug(
+            pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
                 host=args.pycharm_debug_host,
                 install_version=args.pycharm_debug_version,
@@ -200,7 +134,7 @@ def _main() -> None:
         for cmd in cmds:
             chan.send_obj(cmd, Command)
 
-            r = chan.recv_obj(CommandOutputOrExceptionData)
+            r = check_not_none(chan.recv_obj(CommandOutputOrExceptionData))
 
             print(r)
 
