@@ -48,6 +48,8 @@ class Project(ProjectBase):
             'python-snappy ~= 0.7',
 
             'zstandard ~= 0.23',
+
+            'brotli ~= 1.1',
         ],
 
         'diag': [

@@ -10,9 +10,9 @@ TODO:
 
 Compression choice:
  - lzma if-available minimal-space
- - lz4 if-available write-once
+ - lz4 if-available read-heavy
  - zstd if-available
- - bz2 write-once (but no parallel decompress)
+ - bz2 read-heavy (but no parallel decompress)
  - gz
 """
 import abc

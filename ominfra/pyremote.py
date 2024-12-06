@@ -177,12 +177,14 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
             os.close(f)
 
         # Save vars
-        os.environ[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
-        os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = sys.executable
-        os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
+        env = os.environ
+        exe = sys.executable
+        env[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
+        env[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = exe
+        env[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
 
         # Start repl reading stdin from r0
-        os.execl(sys.executable, sys.executable + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
+        os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
 
     else:
         # Child process
@@ -246,12 +248,12 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
         if cl.strip()
     )
 
-    bs_z = zlib.compress(bs_src.encode('utf-8'))
-    bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
+    bs_z = zlib.compress(bs_src.encode('utf-8'), 9)
+    bs_z85 = base64.b85encode(bs_z).replace(b'\n', b'')
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
-        f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
+        f'exec(zlib.decompress(base64.b85decode({bs_z85!r})))',
         f'_pyremote_bootstrap_main({context_name!r})',
     ]
 

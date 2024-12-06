@@ -5,17 +5,10 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
-import json
-import struct
-import typing as ta
-
 from omlish.lite.cached import static_init
-from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import PolymorphicObjMarshaler
 from omlish.lite.marshal import get_obj_marshaler
-from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import register_opj_marshaler
-from omlish.lite.marshal import unmarshal_obj
 
 from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
@@ -25,6 +18,8 @@ from .commands.base import Command
 from .commands.subprocess import SubprocessCommand
 from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
+from .protocol import recv_obj
+from .protocol import send_obj
 from .spawning import PySpawner
 
 
@@ -58,31 +53,6 @@ def _register_command_marshaling() -> None:
 ##
 
 
-def _send_obj(f: ta.IO, o: ta.Any, ty: ta.Any = None) -> None:
-    j = json_dumps_compact(marshal_obj(o, ty))
-    d = j.encode('utf-8')
-
-    f.write(struct.pack('<I', len(d)))
-    f.write(d)
-    f.flush()
-
-
-def _recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
-    d = f.read(4)
-    if not d:
-        return None
-    if len(d) != 4:
-        raise EOFError
-
-    sz = struct.unpack('<I', d)[0]
-    d = f.read(sz)
-    if len(d) != sz:
-        raise EOFError
-
-    j = json.loads(d.decode('utf-8'))
-    return unmarshal_obj(j, ty)
-
-
 ##
 
 
@@ -90,7 +60,7 @@ def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     while True:
-        i = _recv_obj(rt.input, Command)
+        i = recv_obj(rt.input, Command)
         if i is None:
             break
 
@@ -99,7 +69,7 @@ def _remote_main() -> None:
         else:
             raise TypeError(i)
 
-        _send_obj(rt.output, o, Command.Output)
+        send_obj(rt.output, o, Command.Output)
 
 
 ##
@@ -110,19 +80,19 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--_payload-file')
+
     parser.add_argument('-s', '--shell')
     parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
+
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--_payload-file')
 
     args = parser.parse_args()
 
     #
 
     payload_src = get_payload_src(file=args._payload_file)  # noqa
-
-    #
 
     remote_src = '\n\n'.join([
         '__name__ = "__remote__"',
@@ -132,12 +102,8 @@ def _main() -> None:
 
     #
 
-    bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
     spawner = PySpawner(
-        bs_src,
+        pyremote_build_bootstrap_cmd(__package__ or 'manage'),
         shell=args.shell,
         shell_quote=args.shell_quote,
         python=args.python,
@@ -149,6 +115,7 @@ def _main() -> None:
                 debug=args.debug,
             ),
         ).run(proc.stdin, proc.stdout)
+
         # print(res)
 
         #
@@ -164,9 +131,9 @@ def _main() -> None:
                 capture_stdout=True,
             ),
         ]:
-            _send_obj(proc.stdin, ci, Command)
+            send_obj(proc.stdin, ci, Command)
 
-            o = _recv_obj(proc.stdout, Command.Output)
+            o = recv_obj(proc.stdout, Command.Output)
 
             print(o)
 
