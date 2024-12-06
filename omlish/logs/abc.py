@@ -1,7 +1,6 @@
 # ruff: noqa: A002
 # ruff: noqa: N802
 # ruff: noqa: N815
-
 import types
 import typing as ta
 
