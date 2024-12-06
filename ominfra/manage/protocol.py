@@ -21,6 +21,9 @@ class Channel:
         self._output = output
         self._msh = msh
 
+    def set_marshaler(self, msh: ObjMarshalerManager) -> None:
+        self._msh = msh
+
     def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
