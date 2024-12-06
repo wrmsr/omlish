@@ -3430,6 +3430,13 @@ class ObjMarshalerManager:
     def unmarshal_obj(self, o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
         return self.get_obj_marshaler(ty).unmarshal(o)
 
+    def roundtrip_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Any:
+        if ty is None:
+            ty = type(o)
+        m: ta.Any = self.marshal_obj(o, ty)
+        u: ta.Any = self.unmarshal_obj(m, ty)
+        return u
+
 
 ##
 

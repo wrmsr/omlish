@@ -170,15 +170,13 @@ def _main() -> None:
         # SubprocessCommand(['barf']),
     ]
 
-    # ce = injector[CommandExecutor]
-    # msh = injector[ObjMarshalerManager]
-    # for cmd in cmds:
-    #     mc = msh.marshal_obj(cmd, Command)
-    #     uc = msh.unmarshal_obj(mc, Command)
-    #     o = ce.execute(uc)
-    #     mo = msh.marshal_obj(o, Command.Output)
-    #     uo = msh.unmarshal_obj(mo, Command.Output)
-    #     print(uo)
+    ce = injector[CommandExecutor]
+    msh = injector[ObjMarshalerManager]
+    for cmd in cmds:
+        mc = msh.roundtrip_obj(cmd, Command)
+        o = ce.execute(mc)
+        mo = msh.roundtrip_obj(o, Command.Output)
+        print(mo)
 
     ##
 
