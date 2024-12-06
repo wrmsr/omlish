@@ -5,7 +5,6 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
-from omlish.lite.check import check_not_none
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import PycharmRemoteDebug
 
@@ -21,7 +20,8 @@ from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .payload import get_payload_src
 from .remote.channel import RemoteChannel
-from .remote.main import RemoteContext
+from .remote.execution import RemoteCommandExecutor
+from .remote.execution import RemoteExecutionContext
 from .remote.spawning import RemoteSpawning
 
 
@@ -91,7 +91,7 @@ def _main() -> None:
 
     remote_src = [
         payload_src,
-        '_remote_main()',
+        '_remote_execution_main()',
     ]
 
     spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
@@ -117,7 +117,7 @@ def _main() -> None:
 
         #
 
-        ctx = RemoteContext(
+        ctx = RemoteExecutionContext(
             main_bootstrap=bootstrap,
 
             pycharm_remote_debug=PycharmRemoteDebug(
@@ -131,10 +131,10 @@ def _main() -> None:
 
         #
 
-        for cmd in cmds:
-            chan.send_obj(cmd, Command)
+        rce = RemoteCommandExecutor(chan)
 
-            r = check_not_none(chan.recv_obj(CommandOutputOrExceptionData))
+        for cmd in cmds:
+            r = rce.try_execute(cmd)
 
             print(r)
 

@@ -31,6 +31,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import types
 import typing as ta
 import uuid
@@ -974,6 +975,7 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 class CommandException:
     name: str
     repr: str
+    traceback: str
 
     exc: ta.Optional[ta.Any] = None  # Exception
 
@@ -991,6 +993,7 @@ class CommandException:
         return CommandException(
             name=type(exc).__qualname__,
             repr=repr(exc),
+            traceback=''.join(traceback.format_exception(exc)),
 
             exc=None if omit_exc_object else exc,
 
@@ -1038,6 +1041,7 @@ class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
             return CommandOutputOrExceptionData(exception=CommandException.of(
                 e,
                 omit_exc_object=omit_exc_object,
+                cmd=cmd,
             ))
 
         else:
@@ -3259,17 +3263,17 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 
 ########################################
-# ../remote/main.py
+# ../remote/execution.py
 
 
 @dc.dataclass(frozen=True)
-class RemoteContext:
+class RemoteExecutionContext:
     main_bootstrap: MainBootstrap
 
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
 
-def _remote_main() -> None:
+def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     chan = RemoteChannel(
@@ -3277,7 +3281,7 @@ def _remote_main() -> None:
         rt.output,
     )
 
-    ctx = check_not_none(chan.recv_obj(RemoteContext))
+    ctx = check_not_none(chan.recv_obj(RemoteExecutionContext))
 
     #
 
@@ -3310,6 +3314,58 @@ def _remote_main() -> None:
         )
 
         chan.send_obj(r)
+
+
+@dc.dataclass()
+class RemoteCommandError(Exception):
+    e: CommandException
+
+
+class RemoteCommandExecutor(CommandExecutor):
+    def __init__(self, chan: RemoteChannel) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+    def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
+        self._chan.send_obj(cmd, Command)
+
+        if (r := self._chan.recv_obj(CommandOutputOrExceptionData)) is None:
+            raise EOFError
+
+        return r
+
+    # @ta.override
+    def execute(self, cmd: Command) -> Command.Output:
+        r = self._remote_execute(cmd)
+        if (e := r.exception) is not None:
+            raise RemoteCommandError(e)
+        else:
+            return check_not_none(r.output)
+
+    # @ta.override
+    def try_execute(
+            self,
+            cmd: Command,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException:
+        try:
+            r = self._remote_execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing remote command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+                cmd=cmd,
+            ))
+
+        else:
+            return r
 
 
 ########################################
@@ -3382,7 +3438,7 @@ def _main() -> None:
 
     remote_src = [
         payload_src,
-        '_remote_main()',
+        '_remote_execution_main()',
     ]
 
     spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
@@ -3408,7 +3464,7 @@ def _main() -> None:
 
         #
 
-        ctx = RemoteContext(
+        ctx = RemoteExecutionContext(
             main_bootstrap=bootstrap,
 
             pycharm_remote_debug=PycharmRemoteDebug(
@@ -3422,10 +3478,10 @@ def _main() -> None:
 
         #
 
-        for cmd in cmds:
-            chan.send_obj(cmd, Command)
+        rce = RemoteCommandExecutor(chan)
 
-            r = check_not_none(chan.recv_obj(CommandOutputOrExceptionData))
+        for cmd in cmds:
+            r = rce.try_execute(cmd)
 
             print(r)
 
