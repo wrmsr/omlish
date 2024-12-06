@@ -1,41 +1,22 @@
-import dataclasses as dc
+import functools
 import typing as ta
 
 from omlish.lite.inject import inj
-from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.pycharm import pycharm_debug_connect
 
+from ..marshal import ObjMarshalerInstaller
 from .base import Command
 from .base import CommandExecutor
 from .base import CommandNameMap
 from .base import build_command_name_map
+from .base import CommandRegistration
+from .base import CommandRegistrations
+from .base import CommandExecutorRegistration
+from .base import CommandExecutorRegistrations
+from .execution import CommandExecutionService
+from .marshal import install_command_marshaling
 from .subprocess import SubprocessCommand
 from .subprocess import SubprocessCommandExecutor
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CommandBinding:
-    command_cls: ta.Type[Command]
-
-
-CommandBindings = ta.NewType('CommandBindings', ta.Sequence[CommandBinding])
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CommandExecutorBinding:
-    command_cls: ta.Type[Command]
-    executor_cls: ta.Type[CommandExecutor]
-
-
-CommandExecutorBindings = ta.NewType('CommandExecutorBindings', ta.Sequence[CommandExecutorBinding])
 
 
 ##
@@ -46,13 +27,13 @@ def bind_command(
         executor_cls: ta.Optional[ta.Type[CommandExecutor]],
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindings] = [
-        inj.bind(CommandBinding(command_cls), array=True),
+        inj.bind(CommandRegistration(command_cls), array=True),
     ]
 
     if executor_cls is not None:
-        lst.append(inj.bind(CommandExecutorBinding(executor_cls), array=True))
+        lst.append(inj.bind(CommandExecutorRegistration(command_cls, executor_cls), array=True))
 
-    return inj.bind(*lst)
+    return inj.as_bindings(*lst)
 
 
 ##
@@ -60,18 +41,24 @@ def bind_command(
 
 def bind_commands() -> InjectorBindings:
     lst: ta.List[InjectorBindings] = [
-        inj.bind_array(CommandBinding),
-        inj.bind_array_type(CommandBinding, CommandBindings),
+        inj.bind_array(CommandRegistration),
+        inj.bind_array_type(CommandRegistration, CommandRegistrations),
 
-        inj.bind_array(CommandExecutorBinding),
-        inj.bind_array_type(CommandExecutorBinding, CommandExecutorBindings),
+        inj.bind_array(CommandExecutorRegistration),
+        inj.bind_array_type(CommandExecutorRegistration, CommandExecutorRegistrations),
+
+        inj.bind(build_command_name_map, singleton=True),
+
+        inj.bind(CommandExecutionService, singleton=True),
+        inj.bind(CommandExecutor, to_key=CommandExecutionService),
     ]
 
     #
 
-    def provide_command_name_map(cbs: CommandBindings) -> CommandNameMap:
-        return build_command_name_map([b.command_cls for b in cbs])
-    lst.append(inj.bind(provide_command_name_map, singleton=True))
+    def provide_obj_marshaler_installer(cmds: CommandNameMap) -> ObjMarshalerInstaller:
+        return ObjMarshalerInstaller(functools.partial(install_command_marshaling, cmds))
+
+    lst.append(inj.bind(provide_obj_marshaler_installer, array=True))
 
     #
 
