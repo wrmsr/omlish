@@ -22,7 +22,7 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 
     @ta.final
     def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check_isinstance(executor.execute(self), self.Output)
+        return check_isinstance(executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
 ##
