@@ -9,7 +9,6 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.inject import inj
-from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
 
 from ..pyremote import PyremoteBootstrapDriver
@@ -18,9 +17,7 @@ from ..pyremote import pyremote_bootstrap_finalize
 from ..pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
 from .commands.base import CommandExecutor
-from .commands.base import CommandNameMap
 from .commands.subprocess import SubprocessCommand
-from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
 from .protocol import Channel
 from .spawning import PySpawner
@@ -33,6 +30,8 @@ from .inject import bind_main
 
 @dc.dataclass(frozen=True)
 class RemoteContext:
+    main_config: MainConfig
+
     pycharm_debug_port: ta.Optional[int] = None
     pycharm_debug_host: ta.Optional[str] = None
     pycharm_debug_version: ta.Optional[str] = None
@@ -54,15 +53,20 @@ def _remote_main() -> None:
 
     #
 
+    injector = inj.create_injector(bind_main(  # noqa
+        ctx.main_config,
+    ))
+
+    ce = injector[CommandExecutor]
+
+    #
+
     while True:
         i = chan.recv_obj(Command)
         if i is None:
             break
 
-        if isinstance(i, SubprocessCommand):
-            o = i.execute(SubprocessCommandExecutor())
-        else:
-            raise TypeError(i)
+        o = ce.execute(i)
 
         chan.send_obj(o, Command.Output)
 
@@ -89,15 +93,15 @@ def _main() -> None:
 
     args = parser.parse_args()
 
-    ####
+    ##
 
-    injector = inj.create_injector(bind_main(
-        MainConfig(),
+    config = MainConfig()
+
+    injector = inj.create_injector(bind_main(  # noqa
+        config,
     ))
-    print(injector[CommandNameMap])
-    print(injector[ObjMarshalerManager])
 
-    ####
+    ##
 
     payload_src = get_payload_src(file=args._payload_file)  # noqa
 
@@ -129,6 +133,8 @@ def _main() -> None:
         #
 
         ctx = RemoteContext(
+            main_config=config,
+
             pycharm_debug_port=args.pycharm_debug_port,
             pycharm_debug_host=args.pycharm_debug_host,
             pycharm_debug_version=args.pycharm_debug_version,
