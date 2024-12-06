@@ -12,6 +12,7 @@ from omlish.lite.inject import Injector
 from omlish.lite.inject import inj
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
+from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
 
 from ..pyremote import PyremoteBootstrapDriver
@@ -70,7 +71,12 @@ class CommandResponse:
 
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
-    chan = Channel(rt.input, rt.output)
+
+    chan = Channel(
+        rt.input,
+        rt.output,
+    )
+
     ctx = chan.recv_obj(RemoteContext)
 
     #
@@ -85,6 +91,10 @@ def _remote_main() -> None:
     #
 
     injector = main_bootstrap(ctx.main_bootstrap)
+
+    #
+
+    chan.set_marshaler(injector[ObjMarshalerManager])
 
     #
 
@@ -144,19 +154,36 @@ def _main() -> None:
         ),
     )
 
-    injector = main_bootstrap(  # noqa
+    injector = main_bootstrap(
         bootstrap,
     )
 
     ##
 
+    cmds = [
+        SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
+        SubprocessCommand(['uname']),
+        # SubprocessCommand(['barf']),
+    ]
+
+    # ce = injector[CommandExecutor]
+    # msh = injector[ObjMarshalerManager]
+    # for cmd in cmds:
+    #     mc = msh.marshal_obj(cmd, Command)
+    #     uc = msh.unmarshal_obj(mc, Command)
+    #     o = ce.execute(uc)
+    #     mo = msh.marshal_obj(o, Command.Output)
+    #     uo = msh.unmarshal_obj(mo, Command.Output)
+    #     print(uo)
+
+    ##
+
     payload_src = get_payload_src(file=args._payload_file)  # noqa
 
-    remote_src = '\n\n'.join([
-        '__name__ = "__remote__"',
+    remote_src = [
         payload_src,
         '_remote_main()',
-    ])
+    ]
 
     spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
 
@@ -168,9 +195,16 @@ def _main() -> None:
             PyremoteBootstrapOptions(
                 debug=args.debug,
             ),
-        ).run(proc.stdout, proc.stdin)
+        ).run(
+            proc.stdout,
+            proc.stdin,
+        )
 
-        chan = Channel(proc.stdout, proc.stdin)
+        chan = Channel(
+            proc.stdout,
+            proc.stdin,
+            msh=injector[ObjMarshalerManager],
+        )
 
         #
 
@@ -186,12 +220,8 @@ def _main() -> None:
 
         #
 
-        for ci in [
-            SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
-            SubprocessCommand(['uname']),
-            SubprocessCommand(['barf']),
-        ]:
-            chan.send_obj(ci, Command)
+        for cmd in cmds:
+            chan.send_obj(cmd, Command)
 
             r = chan.recv_obj(CommandResponse)
 

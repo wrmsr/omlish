@@ -93,6 +93,9 @@ Basically this: https://mitogen.networkgenomics.com/howitworks.html
 class PyremoteBootstrapOptions:
     debug: bool = False
 
+    DEFAULT_MAIN_NAME_OVERRIDE: ta.ClassVar[str] = '__pyremote__'
+    main_name_override: ta.Optional[str] = DEFAULT_MAIN_NAME_OVERRIDE
+
 
 ##
 
@@ -409,6 +412,10 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     os.dup2(nfd := os.open('/dev/null', os.O_WRONLY), 1)
     os.close(nfd)
 
+    if (mn := options.main_name_override) is not None:
+        # Inspections like typing.get_type_hints need an entry in sys.modules.
+        sys.modules[mn] = sys.modules['__main__']
+
     # Write fourth ack
     output.write(_PYREMOTE_BOOTSTRAP_ACK3)
 
@@ -427,14 +434,41 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
 
 class PyremoteBootstrapDriver:
-    def __init__(self, main_src: str, options: PyremoteBootstrapOptions = PyremoteBootstrapOptions()) -> None:
+    def __init__(
+            self,
+            main_src: ta.Union[str, ta.Sequence[str]],
+            options: PyremoteBootstrapOptions = PyremoteBootstrapOptions(),
+    ) -> None:
         super().__init__()
 
         self._main_src = main_src
-        self._main_z = zlib.compress(main_src.encode('utf-8'))
-
         self._options = options
+
+        self._prepared_main_src = self._prepare_main_src(main_src, options)
+        self._main_z = zlib.compress(self._prepared_main_src.encode('utf-8'))
+
         self._options_json = json.dumps(dc.asdict(options), indent=None, separators=(',', ':')).encode('utf-8')  # noqa
+    #
+
+    @classmethod
+    def _prepare_main_src(
+            cls,
+            main_src: ta.Union[str, ta.Sequence[str]],
+            options: PyremoteBootstrapOptions,
+    ) -> str:
+        parts: ta.List[str]
+        if isinstance(main_src, str):
+            parts = [main_src]
+        else:
+            parts = list(main_src)
+
+        if (mn := options.main_name_override) is not None:
+            parts.insert(0, f'__name__ = {mn!r}')
+
+        if len(parts) == 1:
+            return parts[0]
+        else:
+            return '\n\n'.join(parts)
 
     #
 
@@ -2648,6 +2682,9 @@ class Channel:
         self._output = output
         self._msh = msh
 
+    def set_marshaler(self, msh: ObjMarshalerManager) -> None:
+        self._msh = msh
+
     def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
@@ -3142,7 +3179,12 @@ class CommandResponse:
 
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
-    chan = Channel(rt.input, rt.output)
+
+    chan = Channel(
+        rt.input,
+        rt.output,
+    )
+
     ctx = chan.recv_obj(RemoteContext)
 
     #
@@ -3157,6 +3199,10 @@ def _remote_main() -> None:
     #
 
     injector = main_bootstrap(ctx.main_bootstrap)
+
+    #
+
+    chan.set_marshaler(injector[ObjMarshalerManager])
 
     #
 
@@ -3216,19 +3262,36 @@ def _main() -> None:
         ),
     )
 
-    injector = main_bootstrap(  # noqa
+    injector = main_bootstrap(
         bootstrap,
     )
 
     ##
 
+    cmds = [
+        SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
+        SubprocessCommand(['uname']),
+        # SubprocessCommand(['barf']),
+    ]
+
+    # ce = injector[CommandExecutor]
+    # msh = injector[ObjMarshalerManager]
+    # for cmd in cmds:
+    #     mc = msh.marshal_obj(cmd, Command)
+    #     uc = msh.unmarshal_obj(mc, Command)
+    #     o = ce.execute(uc)
+    #     mo = msh.marshal_obj(o, Command.Output)
+    #     uo = msh.unmarshal_obj(mo, Command.Output)
+    #     print(uo)
+
+    ##
+
     payload_src = get_payload_src(file=args._payload_file)  # noqa
 
-    remote_src = '\n\n'.join([
-        '__name__ = "__remote__"',
+    remote_src = [
         payload_src,
         '_remote_main()',
-    ])
+    ]
 
     spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
 
@@ -3240,9 +3303,16 @@ def _main() -> None:
             PyremoteBootstrapOptions(
                 debug=args.debug,
             ),
-        ).run(proc.stdout, proc.stdin)
+        ).run(
+            proc.stdout,
+            proc.stdin,
+        )
 
-        chan = Channel(proc.stdout, proc.stdin)
+        chan = Channel(
+            proc.stdout,
+            proc.stdin,
+            msh=injector[ObjMarshalerManager],
+        )
 
         #
 
@@ -3258,12 +3328,8 @@ def _main() -> None:
 
         #
 
-        for ci in [
-            SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
-            SubprocessCommand(['uname']),
-            SubprocessCommand(['barf']),
-        ]:
-            chan.send_obj(ci, Command)
+        for cmd in cmds:
+            chan.send_obj(cmd, Command)
 
             r = chan.recv_obj(CommandResponse)
 
