@@ -72,6 +72,9 @@ ConfigMapping = ta.Mapping[str, ta.Any]
 # ../../../threadworkers.py
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
+# ../../../../omlish/lite/subprocesses.py
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+
 
 ########################################
 # ../../../../../omdev/toml/parser.py
@@ -3077,6 +3080,16 @@ class ThreadWorkerGroup:
 
 ########################################
 # ../../../../../omlish/lite/subprocesses.py
+
+
+##
+
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
 
 
 ##

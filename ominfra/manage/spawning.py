@@ -6,6 +6,8 @@ import subprocess
 import typing as ta
 
 from omlish.lite.check import check_not_none
+from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
+from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
@@ -19,7 +21,7 @@ class PySpawner:
             shell: ta.Optional[str] = None,
             shell_quote: bool = False,
             python: str = DEFAULT_PYTHON,
-            stderr: ta.Optional[ta.Literal['pipe', 'stdout', 'devnull']] = None,
+            stderr: ta.Optional[SubprocessChannelOption] = None,
     ) -> None:
         super().__init__()
 
@@ -54,12 +56,6 @@ class PySpawner:
 
     #
 
-    _STDERR_KWARG_MAP: ta.Mapping[str, int] = {
-        'pipe': subprocess.PIPE,
-        'stdout': subprocess.STDOUT,
-        'devnull': subprocess.DEVNULL,
-    }
-
     @dc.dataclass(frozen=True)
     class Spawned:
         stdin: ta.IO
@@ -79,7 +75,7 @@ class PySpawner:
             shell=pc.shell,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=self._STDERR_KWARG_MAP[self._stderr] if self._stderr is not None else None,
+            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[self._stderr] if self._stderr is not None else None,
         ) as proc:
             stdin = check_not_none(proc.stdin)
             stdout = check_not_none(proc.stdout)
