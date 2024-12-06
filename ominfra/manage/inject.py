@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 from omlish.lite.inject import inj
