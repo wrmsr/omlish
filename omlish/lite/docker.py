@@ -2,6 +2,9 @@ import re
 import sys
 
 
+DOCKER_FOR_MAC_HOSTNAME = 'docker.for.mac.localhost'
+
+
 _LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/(docker|desktop-containerd)/')
 
 

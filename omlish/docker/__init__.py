@@ -14,7 +14,6 @@ from .compose import (  # noqa
 )
 
 from .helpers import (  # noqa
-    DOCKER_FOR_MAC_HOSTNAME,
     DOCKER_HOST_PLATFORM_KEY,
     get_docker_host_platform,
     timebomb_payload,
@@ -32,5 +31,7 @@ from .hub import (  # noqa
 
 
 from ..lite.docker import (  # noqa
+    DOCKER_FOR_MAC_HOSTNAME,
+
     is_likely_in_docker,
 )
