@@ -6,3 +6,5 @@ import typing as ta
 @dc.dataclass(frozen=True)
 class MainConfig:
     log_level: ta.Optional[str] = 'INFO'
+
+    debug: bool = False

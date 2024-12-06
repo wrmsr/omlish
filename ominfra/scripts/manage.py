@@ -78,6 +78,8 @@ SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
 class MainConfig:
     log_level: ta.Optional[str] = 'INFO'
 
+    debug: bool = False
+
 
 ########################################
 # ../../pyremote.py
@@ -3043,7 +3045,9 @@ class _FactoryCommandExecutor(CommandExecutor):
 ##
 
 
-def bind_commands() -> InjectorBindings:
+def bind_commands(
+        main_config: MainConfig,
+) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(CommandRegistration),
         inj.bind_array_type(CommandRegistration, CommandRegistrations),
@@ -3063,19 +3067,31 @@ def bind_commands() -> InjectorBindings:
 
     #
 
-    def provide_command_executor_map(injector: Injector, crs: CommandExecutorRegistrations) -> CommandExecutorMap:
+    def provide_command_executor_map(
+            injector: Injector,
+            crs: CommandExecutorRegistrations,
+    ) -> CommandExecutorMap:
         dct: ta.Dict[ta.Type[Command], CommandExecutor] = {}
+
         cr: CommandExecutorRegistration
         for cr in crs:
             if cr.command_cls in dct:
                 raise KeyError(cr.command_cls)
-            dct[cr.command_cls] = _FactoryCommandExecutor(functools.partial(injector.provide, cr.executor_cls))
+
+            factory = functools.partial(injector.provide, cr.executor_cls)
+            if main_config.debug:
+                ce = factory()
+            else:
+                ce = _FactoryCommandExecutor(factory)
+
+            dct[cr.command_cls] = ce
+
         return CommandExecutorMap(dct)
 
     lst.extend([
         inj.bind(provide_command_executor_map, singleton=True),
 
-        inj.bind(CommandExecutionService, singleton=True),
+        inj.bind(CommandExecutionService, singleton=True, eager=main_config.debug),
         inj.bind(CommandExecutor, to_key=CommandExecutionService),
     ])
 
@@ -3109,7 +3125,7 @@ def bind_main(
         inj.bind(spawner_options),
         inj.bind(PySpawner, singleton=True),
 
-        bind_commands(),
+        bind_commands(main_config),
     ]
 
     #
@@ -3250,7 +3266,11 @@ def _main() -> None:
 
     ##
 
-    config = MainConfig()
+    config = MainConfig(
+        log_level='DEBUG' if args.debug else 'INFO',
+
+        debug=bool(args.debug),
+    )
 
     bootstrap = MainBootstrap(
         main_config=config,

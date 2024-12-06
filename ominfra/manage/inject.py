@@ -27,7 +27,7 @@ def bind_main(
         inj.bind(spawner_options),
         inj.bind(PySpawner, singleton=True),
 
-        bind_commands(),
+        bind_commands(main_config),
     ]
 
     #
