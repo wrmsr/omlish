@@ -37,6 +37,8 @@ from .stepped import (  # noqa
     SteppedGenerator,
     BytesSteppedGenerator,
     StrSteppedGenerator,
+    BytesToStrSteppedGenerator,
+    StrToBytesSteppedGenerator,
 
     SteppedReaderGenerator,
     BytesSteppedReaderGenerator,
