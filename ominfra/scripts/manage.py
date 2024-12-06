@@ -2577,6 +2577,13 @@ class ObjMarshalerManager:
     def unmarshal_obj(self, o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
         return self.get_obj_marshaler(ty).unmarshal(o)
 
+    def roundtrip_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Any:
+        if ty is None:
+            ty = type(o)
+        m: ta.Any = self.marshal_obj(o, ty)
+        u: ta.Any = self.unmarshal_obj(m, ty)
+        return u
+
 
 ##
 
@@ -3294,15 +3301,13 @@ def _main() -> None:
         # SubprocessCommand(['barf']),
     ]
 
-    # ce = injector[CommandExecutor]
-    # msh = injector[ObjMarshalerManager]
-    # for cmd in cmds:
-    #     mc = msh.marshal_obj(cmd, Command)
-    #     uc = msh.unmarshal_obj(mc, Command)
-    #     o = ce.execute(uc)
-    #     mo = msh.marshal_obj(o, Command.Output)
-    #     uo = msh.unmarshal_obj(mo, Command.Output)
-    #     print(uo)
+    ce = injector[CommandExecutor]
+    msh = injector[ObjMarshalerManager]
+    for cmd in cmds:
+        mc = msh.roundtrip_obj(cmd, Command)
+        o = ce.execute(mc)
+        mo = msh.roundtrip_obj(o, Command.Output)
+        print(mo)
 
     ##
 
