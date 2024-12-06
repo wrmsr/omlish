@@ -2923,10 +2923,10 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 
 ########################################
-# ../spawning.py
+# ../remote.py
 
 
-class PySpawner:
+class RemoteSpawning:
     @dc.dataclass(frozen=True)
     class Options:
         shell: ta.Optional[str] = None
@@ -2957,13 +2957,13 @@ class PySpawner:
             if self._opts.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{self._opts.shell} {sh_src}'
-            return PySpawner._PreparedCmd(
+            return RemoteSpawning._PreparedCmd(
                 cmd=[sh_cmd],
                 shell=True,
             )
 
         else:
-            return PySpawner._PreparedCmd(
+            return RemoteSpawning._PreparedCmd(
                 cmd=[self._opts.python, '-c', src],
                 shell=False,
             )
@@ -2999,7 +2999,7 @@ class PySpawner:
             stdout = check_not_none(proc.stdout)
 
             try:
-                yield PySpawner.Spawned(
+                yield RemoteSpawning.Spawned(
                     stdin=stdin,
                     stdout=stdout,
                     stderr=proc.stderr,
@@ -3124,13 +3124,13 @@ def bind_commands(
 def bind_main(
         *,
         main_config: MainConfig,
-        spawner_options: PySpawner.Options,
+        remote_spawning_options: RemoteSpawning.Options,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
 
-        inj.bind(spawner_options),
-        inj.bind(PySpawner, singleton=True),
+        inj.bind(remote_spawning_options),
+        inj.bind(RemoteSpawning, singleton=True),
 
         bind_commands(main_config),
     ]
@@ -3157,7 +3157,7 @@ def bind_main(
 
 
 ########################################
-# main.py
+# ../bootstrap.py
 
 
 ##
@@ -3167,7 +3167,7 @@ def bind_main(
 class MainBootstrap:
     main_config: MainConfig
 
-    spawner_options: PySpawner.Options
+    remote_spawning_options: RemoteSpawning.Options
 
 
 def main_bootstrap(bs: MainBootstrap) -> Injector:
@@ -3176,10 +3176,14 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
-        spawner_options=bs.spawner_options,
+        remote_spawning_options=bs.remote_spawning_options,
     ))
 
     return injector
+
+
+########################################
+# main.py
 
 
 ##
@@ -3282,7 +3286,7 @@ def _main() -> None:
     bootstrap = MainBootstrap(
         main_config=config,
 
-        spawner_options=PySpawner.Options(
+        remote_spawning_options=RemoteSpawning.Options(
             shell=args.shell,
             shell_quote=args.shell_quote,
             python=args.python,
@@ -3322,7 +3326,7 @@ def _main() -> None:
 
     #
 
-    with injector[PySpawner].spawn(spawn_src) as proc:
+    with injector[RemoteSpawning].spawn(spawn_src) as proc:
         res = PyremoteBootstrapDriver(  # noqa
             remote_src,
             PyremoteBootstrapOptions(

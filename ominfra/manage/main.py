@@ -8,9 +8,6 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.inject import Injector
-from omlish.lite.inject import inj
-from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
@@ -19,36 +16,15 @@ from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
 from ..pyremote import pyremote_bootstrap_finalize
 from ..pyremote import pyremote_build_bootstrap_cmd
+from .bootstrap import MainBootstrap
+from .bootstrap import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
-from .inject import bind_main
 from .payload import get_payload_src
 from .protocol import Channel
-from .spawning import PySpawner
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig
-
-    spawner_options: PySpawner.Options
-
-
-def main_bootstrap(bs: MainBootstrap) -> Injector:
-    if (log_level := bs.main_config.log_level) is not None:
-        configure_standard_logging(log_level)
-
-    injector = inj.create_injector(bind_main(  # noqa
-        main_config=bs.main_config,
-        spawner_options=bs.spawner_options,
-    ))
-
-    return injector
+from .remote import RemoteSpawning
 
 
 ##
@@ -151,7 +127,7 @@ def _main() -> None:
     bootstrap = MainBootstrap(
         main_config=config,
 
-        spawner_options=PySpawner.Options(
+        remote_spawning_options=RemoteSpawning.Options(
             shell=args.shell,
             shell_quote=args.shell_quote,
             python=args.python,
@@ -191,7 +167,7 @@ def _main() -> None:
 
     #
 
-    with injector[PySpawner].spawn(spawn_src) as proc:
+    with injector[RemoteSpawning].spawn(spawn_src) as proc:
         res = PyremoteBootstrapDriver(  # noqa
             remote_src,
             PyremoteBootstrapOptions(
