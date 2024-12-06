@@ -8,9 +8,10 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
+from omlish.lite.inject import inj
+from omlish.lite.inject import InjectorBindingOrBindings
+from omlish.lite.inject import InjectorBindings
 from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.marshal import PolymorphicObjMarshaler
 from omlish.lite.pycharm import pycharm_debug_connect
 
 from ..pyremote import PyremoteBootstrapDriver
@@ -18,43 +19,14 @@ from ..pyremote import PyremoteBootstrapOptions
 from ..pyremote import pyremote_bootstrap_finalize
 from ..pyremote import pyremote_build_bootstrap_cmd
 from .commands.base import Command
+from .commands.base import CommandExecutor
+from .commands.base import build_command_name_map
 from .commands.subprocess import SubprocessCommand
 from .commands.subprocess import SubprocessCommandExecutor
 from .payload import get_payload_src
 from .protocol import Channel
 from .spawning import PySpawner
-
-
-##
-
-
-_COMMAND_TYPES = {
-    'subprocess': SubprocessCommand,
-}
-
-
-##
-
-
-def register_command_marshaling(msh: ObjMarshalerManager) -> None:
-    for fn in [
-        lambda c: c,
-        lambda c: c.Output,
-    ]:
-        msh.register_opj_marshaler(
-            fn(Command),
-            PolymorphicObjMarshaler.of([
-                PolymorphicObjMarshaler.Impl(
-                    fn(cty),
-                    k,
-                    msh.get_obj_marshaler(fn(cty)),
-                )
-                for k, cty in _COMMAND_TYPES.items()
-            ]),
-        )
-
-
-register_command_marshaling(OBJ_MARSHALER_MANAGER)
+from .marshal import install_command_marshaling
 
 
 ##
@@ -89,7 +61,7 @@ def _remote_main() -> None:
             break
 
         if isinstance(i, SubprocessCommand):
-            o = SubprocessCommandExecutor().execute(i)  # noqa
+            o = i.execute(SubprocessCommandExecutor())
         else:
             raise TypeError(i)
 
