@@ -1788,23 +1788,28 @@ _COMMAND_TYPES = {
 }
 
 
-@static_init
-def _register_command_marshaling() -> None:
+##
+
+
+def register_command_marshaling(msh: ObjMarshalerManager) -> None:
     for fn in [
         lambda c: c,
         lambda c: c.Output,
     ]:
-        register_opj_marshaler(
+        msh.register_opj_marshaler(
             fn(Command),
             PolymorphicObjMarshaler.of([
                 PolymorphicObjMarshaler.Impl(
                     fn(cty),
                     k,
-                    get_obj_marshaler(fn(cty)),
+                    msh.get_obj_marshaler(fn(cty)),
                 )
                 for k, cty in _COMMAND_TYPES.items()
             ]),
         )
+
+
+register_command_marshaling(OBJ_MARSHALER_MANAGER)
 
 
 ##

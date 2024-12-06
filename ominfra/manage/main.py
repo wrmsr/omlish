@@ -5,10 +5,9 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
-from omlish.lite.cached import static_init
+from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
+from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import PolymorphicObjMarshaler
-from omlish.lite.marshal import get_obj_marshaler
-from omlish.lite.marshal import register_opj_marshaler
 
 from ..pyremote import PyremoteBootstrapDriver
 from ..pyremote import PyremoteBootstrapOptions
@@ -30,23 +29,28 @@ _COMMAND_TYPES = {
 }
 
 
-@static_init
-def _register_command_marshaling() -> None:
+##
+
+
+def register_command_marshaling(msh: ObjMarshalerManager) -> None:
     for fn in [
         lambda c: c,
         lambda c: c.Output,
     ]:
-        register_opj_marshaler(
+        msh.register_opj_marshaler(
             fn(Command),
             PolymorphicObjMarshaler.of([
                 PolymorphicObjMarshaler.Impl(
                     fn(cty),
                     k,
-                    get_obj_marshaler(fn(cty)),
+                    msh.get_obj_marshaler(fn(cty)),
                 )
                 for k, cty in _COMMAND_TYPES.items()
             ]),
         )
+
+
+register_command_marshaling(OBJ_MARSHALER_MANAGER)
 
 
 ##
