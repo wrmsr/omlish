@@ -1,20 +1,23 @@
+# ruff: noqa: UP006 UP007
+import typing as ta
+
 from .base import Command
 from .base import CommandExecutor
-from .base import CommandExecutorRegistrations
-from .base import CommandRegistrations
+
+
+CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
 
 
 class CommandExecutionService(CommandExecutor):
     def __init__(
             self,
             *,
-            command_registrations: CommandRegistrations,
-            command_executor_registrations: CommandExecutorRegistrations,
+            command_executors: CommandExecutorMap,
     ) -> None:
         super().__init__()
 
-        self._command_registrations = command_registrations
-        self._command_executor_registrations = command_executor_registrations
+        self._command_executors = command_executors
 
     def execute(self, i: Command) -> Command.Output:
-        raise NotImplementedError
+        e: CommandExecutor = self._command_executors[type(i)]
+        return e.execute(i)
