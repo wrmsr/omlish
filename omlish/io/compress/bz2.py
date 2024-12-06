@@ -8,6 +8,7 @@ from ..generators import BytesSteppedReaderGenerator
 from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
 from .base import Compression
+from .base import IncrementalCompression
 
 
 if ta.TYPE_CHECKING:
@@ -17,7 +18,7 @@ else:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Bz2Compression(Compression):
+class Bz2Compression(Compression, IncrementalCompression):
     level: int = 9
 
     def compress(self, d: bytes) -> bytes:
