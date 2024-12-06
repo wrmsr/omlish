@@ -703,6 +703,58 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
+# ../../../omlish/lite/pycharm.py
+
+
+DEFAULT_PYCHARM_VERSION = '242.23726.102'
+
+
+def pycharm_debug_connect(
+        port: int,
+        *,
+        host: str = 'localhost',
+        install_version: ta.Optional[str] = DEFAULT_PYCHARM_VERSION,
+):
+    if install_version is not None:
+        import subprocess
+        import sys
+        subprocess.check_call([
+            sys.executable,
+            '-mpip',
+            'install',
+            f'pydevd-pycharm~={install_version}',
+        ])
+
+    pydevd_pycharm = __import__('pydevd_pycharm')  # noqa
+    pydevd_pycharm.settrace(
+        host,
+        port=port,
+        stdoutToServer=True,
+        stderrToServer=True,
+    )
+
+
+def pycharm_debug_preamble(
+        port: int,
+        *,
+        host: str = 'localhost',
+        install_version: ta.Optional[str] = DEFAULT_PYCHARM_VERSION,
+) -> str:
+    import inspect
+    import textwrap
+
+    return textwrap.dedent(f"""
+        {inspect.getsource(pycharm_debug_connect)}
+
+        pycharm_debug_connect(
+            {port},
+            host={host!r},
+            install_version={install_version!r},
+        )
+    """)
+
+
+########################################
 # ../../../omlish/lite/reflect.py
 
 
@@ -1822,9 +1874,24 @@ register_command_marshaling(OBJ_MARSHALER_MANAGER)
 ##
 
 
+@dc.dataclass(frozen=True)
+class RemoteContext:
+    pycharm_debug_port: ta.Optional[int] = None
+    pycharm_debug_host: ta.Optional[str] = None
+    pycharm_debug_version: ta.Optional[str] = None
+
+
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
     chan = Channel(rt.input, rt.output)
+    ctx = chan.recv_obj(RemoteContext)
+
+    if ctx.pycharm_debug_port is not None:
+        pycharm_debug_connect(
+            ctx.pycharm_debug_port,
+            **(dict(host=ctx.pycharm_debug_host) if ctx.pycharm_debug_host is not None else {}),
+            **(dict(install_version=ctx.pycharm_debug_version) if ctx.pycharm_debug_version is not None else {}),
+        )
 
     while True:
         i = chan.recv_obj(Command)
@@ -1852,6 +1919,10 @@ def _main() -> None:
     parser.add_argument('-s', '--shell')
     parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
+
+    parser.add_argument('--pycharm-debug-port', type=int)
+    parser.add_argument('--pycharm-debug-host')
+    parser.add_argument('--pycharm-debug-version')
 
     parser.add_argument('--debug', action='store_true')
 
@@ -1885,6 +1956,16 @@ def _main() -> None:
         ).run(proc.stdout, proc.stdin)
 
         chan = Channel(proc.stdout, proc.stdin)
+
+        #
+
+        ctx = RemoteContext(
+            pycharm_debug_port=args.pycharm_debug_port,
+            pycharm_debug_host=args.pycharm_debug_host,
+            pycharm_debug_version=args.pycharm_debug_version,
+        )
+
+        chan.send_obj(ctx)
 
         #
 

@@ -1,7 +1,6 @@
 import contextlib
 import os.path
 import subprocess
-import textwrap
 import traceback
 import typing as ta
 
@@ -87,19 +86,3 @@ def write_docker_temp_file(ctr_id: str, data: bytes, suffix: str = 'omlish') -> 
     ], input=data, check=True)
 
     return fname
-
-
-def pycharm_debug_preamble(port: int, version: str = '241.18034.82') -> str:
-    return textwrap.dedent(f"""
-        import subprocess
-        import sys
-        subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={version}'])
-
-        import pydevd_pycharm  # noqa
-        pydevd_pycharm.settrace(
-            'docker.for.mac.localhost',
-            port={port},
-            stdoutToServer=True,
-            stderrToServer=True,
-        )
-    """)
