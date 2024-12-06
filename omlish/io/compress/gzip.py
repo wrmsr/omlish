@@ -68,13 +68,20 @@ COMPRESS_LEVEL_BEST = 9
 @dc.dataclass(frozen=True, kw_only=True)
 class GzipCompression(Compression):
     level: int = COMPRESS_LEVEL_BEST
+
     mtime: float | None = None
 
     def compress(self, d: bytes) -> bytes:
-        return gzip.compress(d, self.level, mtime=self.mtime)
+        return gzip.compress(
+            d,
+            self.level,
+            mtime=self.mtime,
+        )
 
     def decompress(self, d: bytes) -> bytes:
-        return gzip.decompress(d)
+        return gzip.decompress(
+            d,
+        )
 
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
         return lang.nextgen(IncrementalGzipCompressor(
