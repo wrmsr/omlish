@@ -9,6 +9,7 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.lite.inject import inj
+from omlish.lite.logs import log
 from omlish.lite.pycharm import pycharm_debug_connect
 
 from ..pyremote import PyremoteBootstrapDriver
@@ -37,6 +38,12 @@ class RemoteContext:
     pycharm_debug_version: ta.Optional[str] = None
 
 
+@dc.dataclass(frozen=True)
+class CommandResponse:
+    output: ta.Optional[Command.Output] = None
+    exception: ta.Optional[str] = None
+
+
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
     chan = Channel(rt.input, rt.output)
@@ -57,6 +64,8 @@ def _remote_main() -> None:
         ctx.main_config,
     ))
 
+    #
+
     ce = injector[CommandExecutor]
 
     #
@@ -66,9 +75,15 @@ def _remote_main() -> None:
         if i is None:
             break
 
-        o = ce.execute(i)
+        try:
+            o = ce.execute(i)
+        except Exception as e:  # noqa
+            log.exception('Error executing command: %r', type(i))
+            r = CommandResponse(exception=repr(e))
+        else:
+            r = CommandResponse(output=o)
 
-        chan.send_obj(o, Command.Output)
+        chan.send_obj(r, CommandResponse)
 
 
 ##
@@ -147,12 +162,13 @@ def _main() -> None:
         for ci in [
             SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
             SubprocessCommand(['uname']),
+            SubprocessCommand(['barf']),
         ]:
             chan.send_obj(ci, Command)
 
-            o = chan.recv_obj(Command.Output)
+            r = chan.recv_obj(CommandResponse)
 
-            print(o)
+            print(r)
 
 
 if __name__ == '__main__':
