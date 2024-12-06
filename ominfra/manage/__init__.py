@@ -10,4 +10,14 @@ Jobs:
  - system service manager - systemd / supervisor
  - users
  - firewall
+
+Deploy:
+ - User
+ - Dirs
+ - GlobalNginx
+ - GlobalSupervisor
+ - Repo
+ - Venv
+ - Supervisor
+ - Nginx
 """
