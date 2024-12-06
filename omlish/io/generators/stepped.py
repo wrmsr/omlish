@@ -24,6 +24,9 @@ SteppedGenerator: ta.TypeAlias = ta.Generator[O | None, I | None, R]
 BytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, bytes, R]
 StrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, str, R]
 
+BytesToStrSteppedGenerator: ta.TypeAlias = SteppedGenerator[str, bytes, R]
+StrToBytesSteppedGenerator: ta.TypeAlias = SteppedGenerator[bytes, str, R]
+
 
 # Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
 SteppedReaderGenerator: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
