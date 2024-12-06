@@ -2,6 +2,7 @@
 import abc
 import dataclasses as dc
 import logging
+import traceback
 import typing as ta
 
 from omlish.lite.check import check_isinstance
@@ -33,6 +34,7 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 class CommandException:
     name: str
     repr: str
+    traceback: str
 
     exc: ta.Optional[ta.Any] = None  # Exception
 
@@ -50,6 +52,7 @@ class CommandException:
         return CommandException(
             name=type(exc).__qualname__,
             repr=repr(exc),
+            traceback=''.join(traceback.format_exception(exc)),
 
             exc=None if omit_exc_object else exc,
 
