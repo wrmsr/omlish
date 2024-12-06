@@ -1,14 +1,12 @@
 import logging
-import os.path
+import os
 
 import flask
 
 
 app = flask.Flask(__name__)
 
-app.template_folder = (
-    'views',
-)
+app.template_folder = 'views'
 
 
 @app.route('/')
@@ -27,12 +25,10 @@ def default():
     table.append('</tbody></table>')
     env['req_data'] = '\n'.join(table)
 
-    return flask.reresultnder_template('base.html.j2', **env)
+    return flask.render_template('base.html.j2', **env)
 
 
 if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
-
     logging.basicConfig(level=logging.DEBUG)
 
     HTTP_PORT = int(os.environ.get('PORT', 8000))
