@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import json
 import struct
 import typing as ta
@@ -7,7 +8,10 @@ from omlish.lite.marshal import OBJ_MARSHALER_MANAGER
 from omlish.lite.marshal import ObjMarshalerManager
 
 
-class Channel:
+T = ta.TypeVar('T')
+
+
+class RemoteChannel:
     def __init__(
             self,
             input: ta.IO,  # noqa
@@ -32,7 +36,7 @@ class Channel:
         self._output.write(d)
         self._output.flush()
 
-    def recv_obj(self, ty: ta.Any) -> ta.Any:
+    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         d = self._input.read(4)
         if not d:
             return None
