@@ -20,6 +20,7 @@ from .bootstrap import MainBootstrap
 from .bootstrap import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
+from .commands.base import CommandOutputOrExceptionData
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .payload import get_payload_src
@@ -41,12 +42,6 @@ class RemoteContext:
         install_version: ta.Optional[str] = None
 
     pycharm_debug: ta.Optional[PycharmDebug] = None
-
-
-@dc.dataclass(frozen=True)
-class CommandResponse:
-    output: ta.Optional[Command.Output] = None
-    exception: ta.Optional[str] = None
 
 
 def _remote_main() -> None:
@@ -87,15 +82,13 @@ def _remote_main() -> None:
         if i is None:
             break
 
-        try:
-            o = ce.execute(i)
-        except Exception as e:  # noqa
-            log.exception('Error executing command: %r', type(i))
-            r = CommandResponse(exception=repr(e))
-        else:
-            r = CommandResponse(output=o)
+        r = ce.try_execute(
+            i,
+            log=log,
+            omit_exc_object=True,
+        )
 
-        chan.send_obj(r, CommandResponse)
+        chan.send_obj(r)
 
 
 ##
@@ -154,9 +147,9 @@ def _main() -> None:
     msh = injector[ObjMarshalerManager]
     for cmd in cmds:
         mc = msh.roundtrip_obj(cmd, Command)
-        o = ce.execute(mc)
-        mo = msh.roundtrip_obj(o, Command.Output)
-        print(mo)
+        r = ce.try_execute(mc)
+        mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
+        print(mr)
 
     ##
 
@@ -207,7 +200,7 @@ def _main() -> None:
         for cmd in cmds:
             chan.send_obj(cmd, Command)
 
-            r = chan.recv_obj(CommandResponse)
+            r = chan.recv_obj(CommandOutputOrExceptionData)
 
             print(r)
 

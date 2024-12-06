@@ -85,6 +85,9 @@ class MainConfig:
 # ../../pyremote.py
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
+
+TODO:
+ - log: ta.Optional[logging.Logger] = None + log.debug's
 """
 
 
@@ -970,10 +973,78 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 ##
 
 
+@dc.dataclass(frozen=True)
+class CommandException:
+    name: str
+    repr: str
+
+    exc: ta.Optional[ta.Any] = None  # Exception
+
+    cmd: ta.Optional[Command] = None
+
+    @classmethod
+    def of(
+            cls,
+            exc: Exception,
+            *,
+            omit_exc_object: bool = False,
+
+            cmd: ta.Optional[Command] = None,
+    ) -> 'CommandException':
+        return CommandException(
+            name=type(exc).__qualname__,
+            repr=repr(exc),
+
+            exc=None if omit_exc_object else exc,
+
+            cmd=cmd,
+        )
+
+
+class CommandOutputOrException(abc.ABC, ta.Generic[CommandOutputT]):
+    @property
+    @abc.abstractmethod
+    def output(self) -> ta.Optional[CommandOutputT]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exception(self) -> ta.Optional[CommandException]:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class CommandOutputOrExceptionData(CommandOutputOrException):
+    output: ta.Optional[Command.Output] = None
+    exception: ta.Optional[CommandException] = None
+
+
 class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def execute(self, i: CommandT) -> CommandOutputT:
+    def execute(self, cmd: CommandT) -> CommandOutputT:
         raise NotImplementedError
+
+    def try_execute(
+            self,
+            cmd: CommandT,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException[CommandOutputT]:
+        try:
+            o = self.execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+            ))
+
+        else:
+            return CommandOutputOrExceptionData(output=o)
 
 
 ##
@@ -2631,9 +2702,9 @@ class CommandExecutionService(CommandExecutor):
 
         self._command_executors = command_executors
 
-    def execute(self, i: Command) -> Command.Output:
-        e: CommandExecutor = self._command_executors[type(i)]
-        return e.execute(i)
+    def execute(self, cmd: Command) -> Command.Output:
+        ce: CommandExecutor = self._command_executors[type(cmd)]
+        return ce.execute(cmd)
 
 
 ########################################
@@ -3202,12 +3273,6 @@ class RemoteContext:
     pycharm_debug: ta.Optional[PycharmDebug] = None
 
 
-@dc.dataclass(frozen=True)
-class CommandResponse:
-    output: ta.Optional[Command.Output] = None
-    exception: ta.Optional[str] = None
-
-
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
@@ -3246,15 +3311,13 @@ def _remote_main() -> None:
         if i is None:
             break
 
-        try:
-            o = ce.execute(i)
-        except Exception as e:  # noqa
-            log.exception('Error executing command: %r', type(i))
-            r = CommandResponse(exception=repr(e))
-        else:
-            r = CommandResponse(output=o)
+        r = ce.try_execute(
+            i,
+            log=log,
+            omit_exc_object=True,
+        )
 
-        chan.send_obj(r, CommandResponse)
+        chan.send_obj(r)
 
 
 ##
@@ -3313,9 +3376,9 @@ def _main() -> None:
     msh = injector[ObjMarshalerManager]
     for cmd in cmds:
         mc = msh.roundtrip_obj(cmd, Command)
-        o = ce.execute(mc)
-        mo = msh.roundtrip_obj(o, Command.Output)
-        print(mo)
+        r = ce.try_execute(mc)
+        mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
+        print(mr)
 
     ##
 
@@ -3366,7 +3429,7 @@ def _main() -> None:
         for cmd in cmds:
             chan.send_obj(cmd, Command)
 
-            r = chan.recv_obj(CommandResponse)
+            r = chan.recv_obj(CommandOutputOrExceptionData)
 
             print(r)
 
