@@ -11,7 +11,7 @@ from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
-class PySpawner:
+class RemoteSpawning:
     @dc.dataclass(frozen=True)
     class Options:
         shell: ta.Optional[str] = None
@@ -42,13 +42,13 @@ class PySpawner:
             if self._opts.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{self._opts.shell} {sh_src}'
-            return PySpawner._PreparedCmd(
+            return RemoteSpawning._PreparedCmd(
                 cmd=[sh_cmd],
                 shell=True,
             )
 
         else:
-            return PySpawner._PreparedCmd(
+            return RemoteSpawning._PreparedCmd(
                 cmd=[self._opts.python, '-c', src],
                 shell=False,
             )
@@ -84,7 +84,7 @@ class PySpawner:
             stdout = check_not_none(proc.stdout)
 
             try:
-                yield PySpawner.Spawned(
+                yield RemoteSpawning.Spawned(
                     stdin=stdin,
                     stdout=stdout,
                     stderr=proc.stderr,
