@@ -4660,7 +4660,8 @@ DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
         '-k',
     ],
     conf_opts=[
-        # '--enable-loadable-sqlite-extensions',
+        # FIXME: breaks on mac for older py's
+        '--enable-loadable-sqlite-extensions',
 
         # '--enable-shared',
 

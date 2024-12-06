@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
+import logging
 import typing as ta
 
 from omlish.lite.check import check_isinstance
@@ -28,10 +29,78 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 ##
 
 
+@dc.dataclass(frozen=True)
+class CommandException:
+    name: str
+    repr: str
+
+    exc: ta.Optional[ta.Any] = None  # Exception
+
+    cmd: ta.Optional[Command] = None
+
+    @classmethod
+    def of(
+            cls,
+            exc: Exception,
+            *,
+            omit_exc_object: bool = False,
+
+            cmd: ta.Optional[Command] = None,
+    ) -> 'CommandException':
+        return CommandException(
+            name=type(exc).__qualname__,
+            repr=repr(exc),
+
+            exc=None if omit_exc_object else exc,
+
+            cmd=cmd,
+        )
+
+
+class CommandOutputOrException(abc.ABC, ta.Generic[CommandOutputT]):
+    @property
+    @abc.abstractmethod
+    def output(self) -> ta.Optional[CommandOutputT]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def exception(self) -> ta.Optional[CommandException]:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class CommandOutputOrExceptionData(CommandOutputOrException):
+    output: ta.Optional[Command.Output] = None
+    exception: ta.Optional[CommandException] = None
+
+
 class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def execute(self, i: CommandT) -> CommandOutputT:
+    def execute(self, cmd: CommandT) -> CommandOutputT:
         raise NotImplementedError
+
+    def try_execute(
+            self,
+            cmd: CommandT,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException[CommandOutputT]:
+        try:
+            o = self.execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+            ))
+
+        else:
+            return CommandOutputOrExceptionData(output=o)
 
 
 ##
