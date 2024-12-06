@@ -1,28 +1,14 @@
-from collections import deque
-from os import chmod
-from os import environ
-from os import makedirs
-from os import stat
-from os.path import basename
-from os.path import dirname
-from os.path import exists
-from os.path import join
-from os.path import splitext
-from re import match
-from re import sub
-from shutil import which
-from socket import AF_INET
-from socket import SOCK_STREAM
-from socket import socket
-from stat import S_IRUSR
-from stat import S_IWUSR
-from stat import S_IXUSR
-from subprocess import STDOUT
-from subprocess import check_output
-from sys import exit
-from time import sleep
+import collections
+import os.path
+import re
+import shutil
+import socket
+import stat
+import subprocess
+import sys
+import time
 
-from click import secho as echo
+import click
 
 from .env import APP_ROOT
 
@@ -38,16 +24,16 @@ def exit_if_invalid(app):
     """Utility function for error checking upon command startup."""
 
     app = sanitize_app_name(app)
-    if not exists(join(APP_ROOT, app)):
-        echo("Error: app '{}' not found.".format(app), fg='red')
-        exit(1)
+    if not os.path.exists(os.path.join(APP_ROOT, app)):
+        click.secho("Error: app '{}' not found.".format(app), fg='red')
+        sys.exit(1)
     return app
 
 
 def get_free_port(address=""):
     """Find a free TCP port (entirely at random)"""
 
-    s = socket(AF_INET, SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((address, 0))  # lgtm [py/bind-socket-all-network-interfaces]
     port = s.getsockname()[1]
     s.close()
@@ -72,9 +58,9 @@ def write_config(filename, bag, separator='='):
 def setup_authorized_keys(ssh_fingerprint, script_path, pubkey):
     """Sets up an authorized_keys file to redirect SSH commands"""
 
-    authorized_keys = join(environ['HOME'], '.ssh', 'authorized_keys')
-    if not exists(dirname(authorized_keys)):
-        makedirs(dirname(authorized_keys))
+    authorized_keys = os.path.join(os.environ['HOME'], '.ssh', 'authorized_keys')
+    if not os.path.exists(os.path.dirname(authorized_keys)):
+        os.makedirs(os.path.dirname(authorized_keys))
     # Restrict features and force all SSH commands to go through our script
     with open(authorized_keys, 'a') as h:
         h.write(
@@ -83,8 +69,8 @@ def setup_authorized_keys(ssh_fingerprint, script_path, pubkey):
                 "no-agent-forwarding,no-user-rc,no-X11-forwarding,no-port-forwarding {pubkey:s}\n",
             ]).format(**locals()),
         )
-    chmod(dirname(authorized_keys), S_IRUSR | S_IWUSR | S_IXUSR)
-    chmod(authorized_keys, S_IRUSR | S_IWUSR)
+    os.chmod(os.path.dirname(authorized_keys), stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+    os.chmod(authorized_keys, stat.S_IRUSR | stat.S_IWUSR)
 
 
 CRON_REGEXP = r"^((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) (.*)$"  # noqa
@@ -94,7 +80,7 @@ def parse_procfile(filename):
     """Parses a Procfile and returns the worker types. Only one worker of each type is allowed."""
 
     workers = {}
-    if not exists(filename):
+    if not os.path.exists(filename):
         return None
 
     with open(filename, 'r') as procfile:
@@ -107,7 +93,7 @@ def parse_procfile(filename):
                 # Check for cron patterns
                 if kind == "cron":
                     limits = [59, 24, 31, 12, 7]
-                    res = match(CRON_REGEXP, command)
+                    res = re.match(CRON_REGEXP, command)
                     if res:
                         matches = res.groups()
                         for i in range(len(limits)):
@@ -115,13 +101,13 @@ def parse_procfile(filename):
                                 raise ValueError
                 workers[kind] = command
             except Exception:
-                echo("Warning: misformatted Procfile entry '{}' at line {}".format(line, line_number), fg='yellow')
+                click.secho("Warning: misformatted Procfile entry '{}' at line {}".format(line, line_number), fg='yellow')
     if len(workers) == 0:
         return {}
     # WSGI trumps regular web workers
     if 'wsgi' in workers:
         if 'web' in workers:
-            echo("Warning: found both 'wsgi' and 'web' workers, disabling 'web'", fg='yellow')
+            click.secho("Warning: found both 'wsgi' and 'web' workers, disabling 'web'", fg='yellow')
             del workers['web']
     return workers
 
@@ -133,14 +119,14 @@ def expandvars(buffer, env, default=None, skip_escaped=False):
         return env.get(match.group(2) or match.group(1), match.group(0) if default is None else default)
 
     pattern = (r'(?<!\\)' if skip_escaped else '') + r'\$(\w+|\{([^}]*)\})'
-    return sub(pattern, replace_var, buffer)
+    return re.sub(pattern, replace_var, buffer)
 
 
 def command_output(cmd):
     """executes a command and grabs its output, if any"""
     try:
-        env = environ
-        return str(check_output(cmd, stderr=STDOUT, env=env, shell=True))
+        env = os.environ
+        return str(subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env, shell=True))
     except Exception:
         return ""
 
@@ -148,7 +134,7 @@ def command_output(cmd):
 def parse_settings(filename, env={}):
     """Parses a settings file and returns a dict with environment variables"""
 
-    if not exists(filename):
+    if not os.path.exists(filename):
         return {}
 
     with open(filename, 'r') as settings:
@@ -159,7 +145,7 @@ def parse_settings(filename, env={}):
                 k, v = map(lambda x: x.strip(), line.split("=", 1))
                 env[k] = expandvars(v, env)
             except Exception:
-                echo("Error: malformed setting '{}', ignoring file.".format(line), fg='red')
+                click.secho("Error: malformed setting '{}', ignoring file.".format(line), fg='red')
                 return {}
     return env
 
@@ -167,9 +153,9 @@ def parse_settings(filename, env={}):
 def check_requirements(binaries):
     """Checks if all the binaries exist and are executable"""
 
-    echo("-----> Checking requirements: {}".format(binaries), fg='green')
-    requirements = list(map(which, binaries))
-    echo(str(requirements))
+    click.secho("-----> Checking requirements: {}".format(binaries), fg='green')
+    requirements = list(map(shutil.which, binaries))
+    click.secho(str(requirements))
 
     if None in requirements:
         return False
@@ -194,16 +180,16 @@ def multi_tail(app, filenames, catch_up=20):
 
     # Set up current state for each log file
     for f in filenames:
-        prefixes[f] = splitext(basename(f))[0]
+        prefixes[f] = os.path.splitext(os.path.basename(f))[0]
         files[f] = open(f, "rt", encoding="utf-8", errors="ignore")
-        inodes[f] = stat(f).st_ino
+        inodes[f] = os.stat(f).st_ino
         files[f].seek(0, 2)
 
     longest = max(map(len, prefixes.values()))
 
     # Grab a little history (if any)
     for f in filenames:
-        for line in deque(open(f, "rt", encoding="utf-8", errors="ignore"), catch_up):
+        for line in collections.deque(open(f, "rt", encoding="utf-8", errors="ignore"), catch_up):
             yield "{} | {}".format(prefixes[f].ljust(longest), line)
 
     while True:
@@ -216,13 +202,13 @@ def multi_tail(app, filenames, catch_up=20):
                 yield "{} | {}".format(prefixes[f].ljust(longest), line)
 
         if not updated:
-            sleep(1)
+            time.sleep(1)
             # Check if logs rotated
             for f in filenames:
-                if exists(f):
-                    if stat(f).st_ino != inodes[f]:
+                if os.path.exists(f):
+                    if os.stat(f).st_ino != inodes[f]:
                         files[f] = open(f)
-                        inodes[f] = stat(f).st_ino
+                        inodes[f] = os.stat(f).st_ino
                 else:
                     filenames.remove(f)
 

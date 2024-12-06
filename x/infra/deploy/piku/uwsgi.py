@@ -1,12 +1,9 @@
-from grp import getgrgid
-from os import getgid
-from os import getuid
-from os.path import exists
-from os.path import join
-from pwd import getpwuid
-from shutil import copyfile
+import grp
+import os.path
+import pwd
+import shutil
 
-from click import secho as echo
+import click
 
 from .env import UWSGI_AVAILABLE
 from .env import UWSGI_LOG_MAXSIZE
@@ -23,15 +20,15 @@ def spawn_worker(app, kind, command, env, ordinal=1):
 
     # pylint: disable=unused-variable
     env['PROC_TYPE'] = kind
-    env_path = join(ENV_ROOT, app)
-    available = join(UWSGI_AVAILABLE, '{app:s}_{kind:s}.{ordinal:d}.ini'.format(**locals()))
-    enabled = join(UWSGI_ENABLED, '{app:s}_{kind:s}.{ordinal:d}.ini'.format(**locals()))
-    log_file = join(LOG_ROOT, app, kind)
+    env_path = os.path.join(ENV_ROOT, app)
+    available = os.path.join(UWSGI_AVAILABLE, '{app:s}_{kind:s}.{ordinal:d}.ini'.format(**locals()))
+    enabled = os.path.join(UWSGI_ENABLED, '{app:s}_{kind:s}.{ordinal:d}.ini'.format(**locals()))
+    log_file = os.path.join(LOG_ROOT, app, kind)
 
     settings = [
-        ('chdir', join(APP_ROOT, app)),
-        ('uid', getpwuid(getuid()).pw_name),
-        ('gid', getgrgid(getgid()).gr_name),
+        ('chdir', os.path.join(APP_ROOT, app)),
+        ('uid', pwd.getpwuid(os.getuid()).pw_name),
+        ('gid', grp.getgrgid(os.getgid()).gr_name),
         ('master', 'true'),
         ('project', app),
         ('max-requests', env.get('UWSGI_MAX_REQUESTS', '1024')),
@@ -41,14 +38,14 @@ def spawn_worker(app, kind, command, env, ordinal=1):
         ('enable-threads', env.get('UWSGI_ENABLE_THREADS', 'true').lower()),
         ('log-x-forwarded-for', env.get('UWSGI_LOG_X_FORWARDED_FOR', 'false').lower()),
         ('log-maxsize', env.get('UWSGI_LOG_MAXSIZE', UWSGI_LOG_MAXSIZE)),
-        ('logfile-chown', '%s:%s' % (getpwuid(getuid()).pw_name, getgrgid(getgid()).gr_name)),
+        ('logfile-chown', '%s:%s' % (pwd.getpwuid(os.getuid()).pw_name, grp.getgrgid(os.getgid()).gr_name)),
         ('logfile-chmod', '640'),
         ('logto2', '{log_file:s}.{ordinal:d}.log'.format(**locals())),
         ('log-backupname', '{log_file:s}.{ordinal:d}.log.old'.format(**locals())),
     ]
 
     # only add virtualenv to uwsgi if it's a real virtualenv
-    if exists(join(env_path, "bin", "activate_this.py")):
+    if os.path.exists(os.path.join(env_path, "bin", "activate_this.py")):
         settings.append(('virtualenv', env_path))
 
     if 'UWSGI_IDLE' in env:
@@ -59,9 +56,9 @@ def spawn_worker(app, kind, command, env, ordinal=1):
                 ('cheap', 'True'),
                 ('die-on-idle', 'True')
             ])
-            echo("-----> uwsgi will start workers on demand and kill them after {}s of inactivity".format(idle_timeout), fg='yellow')
+            click.secho("-----> uwsgi will start workers on demand and kill them after {}s of inactivity".format(idle_timeout), fg='yellow')
         except Exception:
-            echo("Error: malformed setting 'UWSGI_IDLE', ignoring it.".format(), fg='red')
+            click.secho("Error: malformed setting 'UWSGI_IDLE', ignoring it.".format(), fg='red')
             pass
 
     if kind == 'cron':
@@ -87,32 +84,32 @@ def spawn_worker(app, kind, command, env, ordinal=1):
                     ('plugin', 'asyncio_python3'),
                     ('async', tasks),
                 ])
-                echo("-----> uwsgi will support {} async tasks".format(tasks), fg='yellow')
+                click.secho("-----> uwsgi will support {} async tasks".format(tasks), fg='yellow')
             except ValueError:
-                echo("Error: malformed setting 'UWSGI_ASYNCIO', ignoring it.".format(), fg='red')
+                click.secho("Error: malformed setting 'UWSGI_ASYNCIO', ignoring it.".format(), fg='red')
 
         # If running under nginx, don't expose a port at all
         if 'NGINX_SERVER_NAME' in env:
-            sock = join(NGINX_ROOT, "{}.sock".format(app))
-            echo("-----> nginx will talk to uWSGI via {}".format(sock), fg='yellow')
+            sock = os.path.join(NGINX_ROOT, "{}.sock".format(app))
+            click.secho("-----> nginx will talk to uWSGI via {}".format(sock), fg='yellow')
             settings.extend([
                 ('socket', sock),
                 ('chmod-socket', '664'),
             ])
         else:
-            echo("-----> nginx will talk to uWSGI via {BIND_ADDRESS:s}:{PORT:s}".format(**env), fg='yellow')
+            click.secho("-----> nginx will talk to uWSGI via {BIND_ADDRESS:s}:{PORT:s}".format(**env), fg='yellow')
             settings.extend([
                 ('http', '{BIND_ADDRESS:s}:{PORT:s}'.format(**env)),
                 ('http-use-socket', '{BIND_ADDRESS:s}:{PORT:s}'.format(**env)),
                 ('http-socket', '{BIND_ADDRESS:s}:{PORT:s}'.format(**env)),
             ])
     elif kind == 'web':
-        echo("-----> nginx will talk to the 'web' process via {BIND_ADDRESS:s}:{PORT:s}".format(**env), fg='yellow')
+        click.secho("-----> nginx will talk to the 'web' process via {BIND_ADDRESS:s}:{PORT:s}".format(**env), fg='yellow')
         settings.append(('attach-daemon', command))
     elif kind == 'static':
-        echo("-----> nginx serving static files only".format(**env), fg='yellow')
+        click.secho("-----> nginx serving static files only".format(**env), fg='yellow')
     elif kind == 'cron':
-        echo("-----> uwsgi scheduled cron for {command}".format(**locals()), fg='yellow')
+        click.secho("-----> uwsgi scheduled cron for {command}".format(**locals()), fg='yellow')
     else:
         settings.append(('attach-daemon', command))
 
@@ -125,7 +122,7 @@ def spawn_worker(app, kind, command, env, ordinal=1):
             del env[k]
 
     # insert user defined uwsgi settings if set
-    settings += parse_settings(join(APP_ROOT, app, env.get("UWSGI_INCLUDE_FILE"))).items() if env.get("UWSGI_INCLUDE_FILE") else []
+    settings += parse_settings(os.path.join(APP_ROOT, app, env.get("UWSGI_INCLUDE_FILE"))).items() if env.get("UWSGI_INCLUDE_FILE") else []
 
     for k, v in env.items():
         settings.append(('env', '{k:s}={v}'.format(**locals())))
@@ -136,4 +133,4 @@ def spawn_worker(app, kind, command, env, ordinal=1):
             for k, v in settings:
                 h.write("{k:s} = {v}\n".format(**locals()))
 
-        copyfile(available, enabled)
+        shutil.copyfile(available, enabled)

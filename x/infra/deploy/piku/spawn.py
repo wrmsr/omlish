@@ -1,13 +1,8 @@
-from collections import defaultdict
-from glob import glob
-from os import environ
-from os import remove
-from os import unlink
-from os.path import dirname
-from os.path import exists
-from os.path import join
+import collections
+import glob
+import os.path
 
-from click import secho as echo
+import click
 
 from .env import APP_ROOT
 from .env import ENV_ROOT
@@ -26,37 +21,37 @@ def spawn_app(app, deltas={}):
     """Create all workers for an app"""
 
     # pylint: disable=unused-variable
-    app_path = join(APP_ROOT, app)
-    procfile = join(app_path, 'Procfile')
+    app_path = os.path.join(APP_ROOT, app)
+    procfile = os.path.join(app_path, 'Procfile')
     workers = parse_procfile(procfile)
     workers.pop("preflight", None)
     workers.pop("release", None)
-    ordinals = defaultdict(lambda: 1)
+    ordinals = collections.defaultdict(lambda: 1)
     worker_count = {k: 1 for k in workers.keys()}
 
     # the Python virtualenv
-    virtualenv_path = join(ENV_ROOT, app)
+    virtualenv_path = os.path.join(ENV_ROOT, app)
 
     # Settings shipped with the app
-    env_file = join(APP_ROOT, app, 'ENV')
+    env_file = os.path.join(APP_ROOT, app, 'ENV')
 
     # Custom overrides
-    settings = join(ENV_ROOT, app, 'ENV')
+    settings = os.path.join(ENV_ROOT, app, 'ENV')
 
     # Live settings
-    live = join(ENV_ROOT, app, 'LIVE_ENV')
+    live = os.path.join(ENV_ROOT, app, 'LIVE_ENV')
 
     # Scaling
-    scaling = join(ENV_ROOT, app, 'SCALING')
+    scaling = os.path.join(ENV_ROOT, app, 'SCALING')
 
     # Bootstrap environment
     env = {
         'APP': app,
         'LOG_ROOT': LOG_ROOT,
-        'HOME': environ['HOME'],
-        'USER': environ['USER'],
-        'PATH': ':'.join([join(virtualenv_path, 'bin'), environ['PATH']]),
-        'PWD': dirname(env_file),
+        'HOME': os.environ['HOME'],
+        'USER': os.environ['USER'],
+        'PATH': ':'.join([os.path.join(virtualenv_path, 'bin'), os.environ['PATH']]),
+        'PWD': os.path.dirname(env_file),
         'VIRTUAL_ENV': virtualenv_path,
     }
 
@@ -67,33 +62,33 @@ def spawn_app(app, deltas={}):
     }
 
     # add node path if present
-    node_path = join(virtualenv_path, "node_modules")
-    if exists(node_path):
+    node_path = os.path.join(virtualenv_path, "node_modules")
+    if os.path.exists(node_path):
         env["NODE_PATH"] = node_path
-        env["PATH"] = ':'.join([join(node_path, ".bin"), env['PATH']])
+        env["PATH"] = ':'.join([os.path.join(node_path, ".bin"), env['PATH']])
 
     # Load environment variables shipped with repo (if any)
-    if exists(env_file):
+    if os.path.exists(env_file):
         env.update(parse_settings(env_file, env))
 
     # Override with custom settings (if any)
-    if exists(settings):
+    if os.path.exists(settings):
         env.update(parse_settings(settings, env))  # lgtm [py/modification-of-default-value]
 
     if 'web' in workers or 'wsgi' in workers or 'static' in workers:
         # Pick a port if none defined
         if 'PORT' not in env:
             env['PORT'] = str(get_free_port())
-            echo("-----> picking free port {PORT}".format(**env))
+            click.secho("-----> picking free port {PORT}".format(**env))
 
         if get_boolean(env.get('DISABLE_IPV6', 'false')):
             safe_defaults.pop('NGINX_IPV6_ADDRESS', None)
-            echo("-----> nginx will NOT use IPv6".format(**locals()))
+            click.secho("-----> nginx will NOT use IPv6".format(**locals()))
 
         # Safe defaults for addressing
         for k, v in safe_defaults.items():
             if k not in env:
-                echo("-----> nginx {k:s} will be set to {v}".format(**locals()))
+                click.secho("-----> nginx {k:s} will be set to {v}".format(**locals()))
                 env[k] = v
 
         # Set up nginx if we have NGINX_SERVER_NAME set
@@ -106,7 +101,7 @@ def spawn_app(app, deltas={}):
             )
 
     # Configured worker count
-    if exists(scaling):
+    if os.path.exists(scaling):
         worker_count.update({k: int(v) for k, v in parse_procfile(scaling).items() if k in workers})
 
     to_create = {}
@@ -129,26 +124,26 @@ def spawn_app(app, deltas={}):
     write_config(scaling, worker_count, ':')
 
     if get_boolean(env.get('PIKU_AUTO_RESTART', 'true')):
-        config = glob(join(UWSGI_ENABLED, '{}*.ini'.format(app)))
+        config = glob.glob(os.path.join(UWSGI_ENABLED, '{}*.ini'.format(app)))
         if len(config):
-            echo("-----> Removing uwsgi configs to trigger auto-restart.")
+            click.secho("-----> Removing uwsgi configs to trigger auto-restart.")
             for c in config:
-                remove(c)
+                os.remove(c)
 
     # Create new workers
     for k, v in to_create.items():
         for w in v:
-            enabled = join(UWSGI_ENABLED, '{app:s}_{k:s}.{w:d}.ini'.format(**locals()))
-            if not exists(enabled):
-                echo("-----> spawning '{app:s}:{k:s}.{w:d}'".format(**locals()), fg='green')
+            enabled = os.path.join(UWSGI_ENABLED, '{app:s}_{k:s}.{w:d}.ini'.format(**locals()))
+            if not os.path.exists(enabled):
+                click.secho("-----> spawning '{app:s}:{k:s}.{w:d}'".format(**locals()), fg='green')
                 spawn_worker(app, k, workers[k], env, w)
 
     # Remove unnecessary workers (leave logfiles)
     for k, v in to_destroy.items():
         for w in v:  # lgtm [py/unused-loop-variable]
-            enabled = join(UWSGI_ENABLED, '{app:s}_{k:s}.{w:d}.ini'.format(**locals()))
-            if exists(enabled):
-                echo("-----> terminating '{app:s}:{k:s}.{w:d}'".format(**locals()), fg='yellow')
-                unlink(enabled)
+            enabled = os.path.join(UWSGI_ENABLED, '{app:s}_{k:s}.{w:d}.ini'.format(**locals()))
+            if os.path.exists(enabled):
+                click.secho("-----> terminating '{app:s}:{k:s}.{w:d}'".format(**locals()), fg='yellow')
+                os.unlink(enabled)
 
     return env
