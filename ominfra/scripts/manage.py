@@ -516,7 +516,7 @@ class PyremoteBootstrapDriver:
 
     #
 
-    def run(self, stdin: ta.IO, stdout: ta.IO) -> Result:
+    def run(self, input: ta.IO, output: ta.IO) -> Result:  # noqa
         gen = self.gen()
 
         gi: ta.Optional[bytes] = None
@@ -530,12 +530,12 @@ class PyremoteBootstrapDriver:
                 return e.value
 
             if isinstance(go, self.Read):
-                if len(gi := stdout.read(go.sz)) != go.sz:
+                if len(gi := input.read(go.sz)) != go.sz:
                     raise EOFError
             elif isinstance(go, self.Write):
                 gi = None
-                stdin.write(go.d)
-                stdin.flush()
+                output.write(go.d)
+                output.flush()
             else:
                 raise TypeError(go)
 
@@ -1288,120 +1288,144 @@ _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
 }
 
 
-def _make_obj_marshaler(
-        ty: ta.Any,
-        rec: ta.Callable[[ta.Any], ObjMarshaler],
-        *,
-        nonstrict_dataclasses: bool = False,
-) -> ObjMarshaler:
-    if isinstance(ty, type):
-        if abc.ABC in ty.__bases__:
-            return PolymorphicObjMarshaler.of([  # type: ignore
-                PolymorphicObjMarshaler.Impl(
-                    ity,
-                    ity.__qualname__,
-                    rec(ity),
-                )
-                for ity in deep_subclasses(ty)
-                if abc.ABC not in ity.__bases__
-            ])
-
-        if issubclass(ty, enum.Enum):
-            return EnumObjMarshaler(ty)
-
-        if dc.is_dataclass(ty):
-            return DataclassObjMarshaler(
-                ty,
-                {f.name: rec(f.type) for f in dc.fields(ty)},
-                nonstrict=nonstrict_dataclasses,
-            )
-
-    if is_generic_alias(ty):
-        try:
-            mt = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES[ta.get_origin(ty)]
-        except KeyError:
-            pass
-        else:
-            k, v = ta.get_args(ty)
-            return MappingObjMarshaler(mt, rec(k), rec(v))
-
-        try:
-            st = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES[ta.get_origin(ty)]
-        except KeyError:
-            pass
-        else:
-            [e] = ta.get_args(ty)
-            return IterableObjMarshaler(st, rec(e))
-
-        if is_union_alias(ty):
-            return OptionalObjMarshaler(rec(get_optional_alias_arg(ty)))
-
-    raise TypeError(ty)
-
-
 ##
 
 
-_OBJ_MARSHALERS_LOCK = threading.RLock()
+class ObjMarshalerManager:
+    def __init__(
+            self,
+            *,
+            default_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = _DEFAULT_OBJ_MARSHALERS,  # noqa
+            generic_mapping_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES,  # noqa
+            generic_iterable_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES,  # noqa
+    ) -> None:
+        super().__init__()
 
-_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+        self._obj_marshalers = dict(default_obj_marshalers)
+        self._generic_mapping_types = generic_mapping_types
+        self._generic_iterable_types = generic_iterable_types
 
-_OBJ_MARSHALER_PROXIES: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
+        self._lock = threading.RLock()
+        self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+        self._proxies: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
 
+    #
 
-def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
-    with _OBJ_MARSHALERS_LOCK:
-        if ty in _OBJ_MARSHALERS:
-            raise KeyError(ty)
-        _OBJ_MARSHALERS[ty] = m
+    def make_obj_marshaler(
+            self,
+            ty: ta.Any,
+            rec: ta.Callable[[ta.Any], ObjMarshaler],
+            *,
+            nonstrict_dataclasses: bool = False,
+    ) -> ObjMarshaler:
+        if isinstance(ty, type):
+            if abc.ABC in ty.__bases__:
+                return PolymorphicObjMarshaler.of([  # type: ignore
+                    PolymorphicObjMarshaler.Impl(
+                        ity,
+                        ity.__qualname__,
+                        rec(ity),
+                    )
+                    for ity in deep_subclasses(ty)
+                    if abc.ABC not in ity.__bases__
+                ])
 
+            if issubclass(ty, enum.Enum):
+                return EnumObjMarshaler(ty)
 
-def get_obj_marshaler(
-        ty: ta.Any,
-        *,
-        no_cache: bool = False,
-        **kwargs: ta.Any,
-) -> ObjMarshaler:
-    with _OBJ_MARSHALERS_LOCK:
-        if not no_cache:
+            if dc.is_dataclass(ty):
+                return DataclassObjMarshaler(
+                    ty,
+                    {f.name: rec(f.type) for f in dc.fields(ty)},
+                    nonstrict=nonstrict_dataclasses,
+                )
+
+        if is_generic_alias(ty):
             try:
-                return _OBJ_MARSHALERS[ty]
+                mt = self._generic_mapping_types[ta.get_origin(ty)]
+            except KeyError:
+                pass
+            else:
+                k, v = ta.get_args(ty)
+                return MappingObjMarshaler(mt, rec(k), rec(v))
+
+            try:
+                st = self._generic_iterable_types[ta.get_origin(ty)]
+            except KeyError:
+                pass
+            else:
+                [e] = ta.get_args(ty)
+                return IterableObjMarshaler(st, rec(e))
+
+            if is_union_alias(ty):
+                return OptionalObjMarshaler(rec(get_optional_alias_arg(ty)))
+
+        raise TypeError(ty)
+
+    #
+
+    def register_opj_marshaler(self, ty: ta.Any, m: ObjMarshaler) -> None:
+        with self._lock:
+            if ty in self._obj_marshalers:
+                raise KeyError(ty)
+            self._obj_marshalers[ty] = m
+
+    def get_obj_marshaler(
+            self,
+            ty: ta.Any,
+            *,
+            no_cache: bool = False,
+            **kwargs: ta.Any,
+    ) -> ObjMarshaler:
+        with self._lock:
+            if not no_cache:
+                try:
+                    return self._obj_marshalers[ty]
+                except KeyError:
+                    pass
+
+            try:
+                return self._proxies[ty]
             except KeyError:
                 pass
 
-        try:
-            return _OBJ_MARSHALER_PROXIES[ty]
-        except KeyError:
-            pass
+            rec = functools.partial(
+                self.get_obj_marshaler,
+                no_cache=no_cache,
+                **kwargs,
+            )
 
-        rec = functools.partial(
-            get_obj_marshaler,
-            no_cache=no_cache,
-            **kwargs,
-        )
+            p = ProxyObjMarshaler()
+            self._proxies[ty] = p
+            try:
+                m = self.make_obj_marshaler(ty, rec, **kwargs)
+            finally:
+                del self._proxies[ty]
+            p.m = m
 
-        p = ProxyObjMarshaler()
-        _OBJ_MARSHALER_PROXIES[ty] = p
-        try:
-            m = _make_obj_marshaler(ty, rec, **kwargs)
-        finally:
-            del _OBJ_MARSHALER_PROXIES[ty]
-        p.m = m
+            if not no_cache:
+                self._obj_marshalers[ty] = m
+            return m
 
-        if not no_cache:
-            _OBJ_MARSHALERS[ty] = m
-        return m
+    #
+
+    def marshal_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Any:
+        return self.get_obj_marshaler(ty if ty is not None else type(o)).marshal(o)
+
+    def unmarshal_obj(self, o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
+        return self.get_obj_marshaler(ty).unmarshal(o)
 
 
 ##
 
 
-def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
-    return get_obj_marshaler(ty if ty is not None else type(o)).marshal(o)
+OBJ_MARSHALER_MANAGER = ObjMarshalerManager()
 
+register_opj_marshaler = OBJ_MARSHALER_MANAGER.register_opj_marshaler
+get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
 
-def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
-    return get_obj_marshaler(ty).unmarshal(o)
+marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
+unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 
 
 ########################################
@@ -1425,29 +1449,42 @@ def check_runtime_version() -> None:
 # ../protocol.py
 
 
-def send_obj(f: ta.IO, o: ta.Any, ty: ta.Any = None) -> None:
-    j = json_dumps_compact(marshal_obj(o, ty))
-    d = j.encode('utf-8')
+class Channel:
+    def __init__(
+            self,
+            input: ta.IO,  # noqa
+            output: ta.IO,
+            *,
+            msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
+    ) -> None:
+        super().__init__()
 
-    f.write(struct.pack('<I', len(d)))
-    f.write(d)
-    f.flush()
+        self._input = input
+        self._output = output
+        self._msh = msh
 
+    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+        j = json_dumps_compact(self._msh.marshal_obj(o, ty))
+        d = j.encode('utf-8')
 
-def recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
-    d = f.read(4)
-    if not d:
-        return None
-    if len(d) != 4:
-        raise EOFError
+        self._output.write(struct.pack('<I', len(d)))
+        self._output.write(d)
+        self._output.flush()
 
-    sz = struct.unpack('<I', d)[0]
-    d = f.read(sz)
-    if len(d) != sz:
-        raise EOFError
+    def recv_obj(self, ty: ta.Any) -> ta.Any:
+        d = self._input.read(4)
+        if not d:
+            return None
+        if len(d) != 4:
+            raise EOFError
 
-    j = json.loads(d.decode('utf-8'))
-    return unmarshal_obj(j, ty)
+        sz = struct.unpack('<I', d)[0]
+        d = self._input.read(sz)
+        if len(d) != sz:
+            raise EOFError
+
+        j = json.loads(d.decode('utf-8'))
+        return self._msh.unmarshal_obj(j, ty)
 
 
 ########################################
@@ -1615,7 +1652,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        proc = subprocess.Popen(
+        with subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*inp.args),
 
             shell=inp.shell,
@@ -1625,14 +1662,13 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             stdin=subprocess.PIPE if inp.input is not None else None,
             stdout=subprocess.PIPE if inp.capture_stdout else None,
             stderr=subprocess.PIPE if inp.capture_stderr else None,
-        )
-
-        start_time = time.time()
-        stdout, stderr = proc.communicate(
-            input=inp.input,
-            timeout=inp.timeout,
-        )
-        end_time = time.time()
+        ) as proc:
+            start_time = time.time()
+            stdout, stderr = proc.communicate(
+                input=inp.input,
+                timeout=inp.timeout,
+            )
+            end_time = time.time()
 
         return SubprocessCommand.Output(
             rc=proc.returncode,
@@ -1774,14 +1810,12 @@ def _register_command_marshaling() -> None:
 ##
 
 
-##
-
-
 def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
+    chan = Channel(rt.input, rt.output)
 
     while True:
-        i = recv_obj(rt.input, Command)
+        i = chan.recv_obj(Command)
         if i is None:
             break
 
@@ -1790,7 +1824,7 @@ def _remote_main() -> None:
         else:
             raise TypeError(i)
 
-        send_obj(rt.output, o, Command.Output)
+        chan.send_obj(o, Command.Output)
 
 
 ##
@@ -1829,15 +1863,16 @@ def _main() -> None:
         shell_quote=args.shell_quote,
         python=args.python,
     )
+
     with spawner.spawn() as proc:
         res = PyremoteBootstrapDriver(  # noqa
             remote_src,
             PyremoteBootstrapOptions(
                 debug=args.debug,
             ),
-        ).run(proc.stdin, proc.stdout)
+        ).run(proc.stdout, proc.stdin)
 
-        # print(res)
+        chan = Channel(proc.stdout, proc.stdin)
 
         #
 
@@ -1852,9 +1887,9 @@ def _main() -> None:
                 capture_stdout=True,
             ),
         ]:
-            send_obj(proc.stdin, ci, Command)
+            chan.send_obj(ci, Command)
 
-            o = recv_obj(proc.stdout, Command.Output)
+            o = chan.recv_obj(Command.Output)
 
             print(o)
 

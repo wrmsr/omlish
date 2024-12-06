@@ -41,7 +41,7 @@ class TestPyremote(unittest.TestCase):
         res = pyremote.PyremoteBootstrapDriver(
             main_src,
             opts,
-        ).run(stdin, stdout)
+        ).run(stdout, stdin)
         self.assertEqual(res.pid, proc.pid)
 
         stdin.write(b'foo')
