@@ -1886,12 +1886,16 @@ def _remote_main() -> None:
     chan = Channel(rt.input, rt.output)
     ctx = chan.recv_obj(RemoteContext)
 
+    #
+
     if ctx.pycharm_debug_port is not None:
         pycharm_debug_connect(
             ctx.pycharm_debug_port,
             **(dict(host=ctx.pycharm_debug_host) if ctx.pycharm_debug_host is not None else {}),
             **(dict(install_version=ctx.pycharm_debug_version) if ctx.pycharm_debug_version is not None else {}),
         )
+
+    #
 
     while True:
         i = chan.recv_obj(Command)
