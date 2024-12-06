@@ -8,7 +8,9 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.inject import Injector
 from omlish.lite.inject import inj
+from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 from omlish.lite.pycharm import pycharm_debug_connect
 
@@ -30,8 +32,30 @@ from .spawning import PySpawner
 
 
 @dc.dataclass(frozen=True)
-class RemoteContext:
+class MainBootstrap:
     main_config: MainConfig
+
+    spawner_options: PySpawner.Options
+
+
+def main_bootstrap(bs: MainBootstrap) -> Injector:
+    if (log_level := bs.main_config.log_level) is not None:
+        configure_standard_logging(log_level)
+
+    injector = inj.create_injector(bind_main(  # noqa
+        main_config=bs.main_config,
+        spawner_options=bs.spawner_options,
+    ))
+
+    return injector
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class RemoteContext:
+    main_bootstrap: MainBootstrap
 
     pycharm_debug_port: ta.Optional[int] = None
     pycharm_debug_host: ta.Optional[str] = None
@@ -60,9 +84,7 @@ def _remote_main() -> None:
 
     #
 
-    injector = inj.create_injector(bind_main(  # noqa
-        ctx.main_config,
-    ))
+    injector = main_bootstrap(ctx.main_bootstrap)
 
     #
 
@@ -112,9 +134,19 @@ def _main() -> None:
 
     config = MainConfig()
 
-    injector = inj.create_injector(bind_main(  # noqa
-        config,
-    ))
+    bootstrap = MainBootstrap(
+        main_config=config,
+
+        spawner_options=PySpawner.Options(
+            shell=args.shell,
+            shell_quote=args.shell_quote,
+            python=args.python,
+        ),
+    )
+
+    injector = main_bootstrap(  # noqa
+        bootstrap,
+    )
 
     ##
 
@@ -126,16 +158,11 @@ def _main() -> None:
         '_remote_main()',
     ])
 
+    spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
     #
 
-    spawner = PySpawner(
-        pyremote_build_bootstrap_cmd(__package__ or 'manage'),
-        shell=args.shell,
-        shell_quote=args.shell_quote,
-        python=args.python,
-    )
-
-    with spawner.spawn() as proc:
+    with injector[PySpawner].spawn(spawn_src) as proc:
         res = PyremoteBootstrapDriver(  # noqa
             remote_src,
             PyremoteBootstrapOptions(
@@ -148,7 +175,7 @@ def _main() -> None:
         #
 
         ctx = RemoteContext(
-            main_config=config,
+            main_bootstrap=bootstrap,
 
             pycharm_debug_port=args.pycharm_debug_port,
             pycharm_debug_host=args.pycharm_debug_host,

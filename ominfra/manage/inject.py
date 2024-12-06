@@ -10,16 +10,22 @@ from .commands.inject import bind_commands
 from .config import MainConfig
 from .marshal import ObjMarshalerInstaller
 from .marshal import ObjMarshalerInstallers
+from .spawning import PySpawner
 
 
 ##
 
 
 def bind_main(
-        config: MainConfig,
+        *,
+        main_config: MainConfig,
+        spawner_options: PySpawner.Options,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(config),
+        inj.bind(main_config),
+
+        inj.bind(spawner_options),
+        inj.bind(PySpawner, singleton=True),
 
         bind_commands(),
     ]
