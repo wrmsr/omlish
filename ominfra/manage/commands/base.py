@@ -34,7 +34,8 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 class CommandException:
     name: str
     repr: str
-    traceback: str
+
+    traceback: ta.Optional[str] = None
 
     exc: ta.Optional[ta.Any] = None  # Exception
 
@@ -52,7 +53,11 @@ class CommandException:
         return CommandException(
             name=type(exc).__qualname__,
             repr=repr(exc),
-            traceback=''.join(traceback.format_exception(exc)),
+
+            traceback=(
+                ''.join(traceback.format_tb(exc.__traceback__))
+                if getattr(exc, '__traceback__', None) is not None else None
+            ),
 
             exc=None if omit_exc_object else exc,
 
