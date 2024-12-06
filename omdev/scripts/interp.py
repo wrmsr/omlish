@@ -63,6 +63,9 @@ UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
 
+# ../../omlish/lite/subprocesses.py
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+
 
 ########################################
 # ../../packaging/versions.py
@@ -1654,6 +1657,16 @@ class Interp:
 
 ########################################
 # ../../../omlish/lite/subprocesses.py
+
+
+##
+
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
 
 
 ##

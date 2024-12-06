@@ -10,6 +10,19 @@ from .logs import log
 from .runtime import is_debugger_attached
 
 
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+
+
+##
+
+
+SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
+    'pipe': subprocess.PIPE,
+    'stdout': subprocess.STDOUT,
+    'devnull': subprocess.DEVNULL,
+}
+
+
 ##
 
 

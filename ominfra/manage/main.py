@@ -123,15 +123,8 @@ def _main() -> None:
         #
 
         for ci in [
-            SubprocessCommand(
-                args=['python3', '-'],
-                input=b'print(1)\n',
-                capture_stdout=True,
-            ),
-            SubprocessCommand(
-                args=['uname'],
-                capture_stdout=True,
-            ),
+            SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
+            SubprocessCommand(['uname']),
         ]:
             chan.send_obj(ci, Command)
 
