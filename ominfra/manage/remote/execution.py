@@ -15,11 +15,9 @@ from ..bootstrap import main_bootstrap
 from ..commands.base import Command
 from ..commands.base import CommandException
 from ..commands.base import CommandExecutor
-from ..commands.base import CommandOutputT
-from ..commands.base import CommandT
-from .channel import RemoteChannel
 from ..commands.base import CommandOutputOrException
 from ..commands.base import CommandOutputOrExceptionData
+from .channel import RemoteChannel
 
 
 @dc.dataclass(frozen=True)
@@ -92,21 +90,21 @@ class RemoteCommandExecutor(CommandExecutor):
         return r
 
     # @ta.override
-    def execute(self, cmd: CommandT) -> CommandOutputT:
+    def execute(self, cmd: Command) -> Command.Output:
         r = self._remote_execute(cmd)
         if (e := r.exception) is not None:
             raise RemoteCommandError(e)
         else:
-            return ta.cast(CommandOutputT, r.output)
+            return check_not_none(r.output)
 
     # @ta.override
     def try_execute(
             self,
-            cmd: CommandT,
+            cmd: Command,
             *,
             log: ta.Optional[logging.Logger] = None,
             omit_exc_object: bool = False,
-    ) -> CommandOutputOrException[CommandOutputT]:
+    ) -> CommandOutputOrException:
         try:
             r = self._remote_execute(cmd)
 
