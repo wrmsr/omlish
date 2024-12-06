@@ -32,7 +32,7 @@ class LzmaCompression(Compression):
             format=self.format if self.format is not None else lzma.FORMAT_XZ,
             check=self.check,
             preset=self.preset,
-            filters=self.filters,
+            filters=self.filters,  # type: ignore[arg-type]
         )
 
     def decompress(self, d: bytes) -> bytes:
@@ -40,7 +40,7 @@ class LzmaCompression(Compression):
             d,
             format=self.format if self.format is not None else lzma.FORMAT_AUTO,
             memlimit=self.mem_limit,
-            filters=self.filters,
+            filters=self.filters,  # type: ignore[arg-type]
         )
 
     def compress_incremental(self) -> BytesSteppedGenerator[None]:
@@ -50,7 +50,7 @@ class LzmaCompression(Compression):
                 format=self.format if self.format is not None else lzma.FORMAT_XZ,
                 check=self.check,
                 preset=self.preset,
-                filters=self.filters,
+                filters=self.filters,  # type: ignore[arg-type]
             ),
         )())
 
@@ -60,7 +60,7 @@ class LzmaCompression(Compression):
                 lzma.LZMADecompressor,
                 format=self.format if self.format is not None else lzma.FORMAT_AUTO,
                 memlimit=self.mem_limit,
-                filters=self.filters,
+                filters=self.filters,  # type: ignore[arg-type]
             ),
             trailing_error=lzma.LZMAError,
         )()

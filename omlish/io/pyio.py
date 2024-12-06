@@ -4,7 +4,7 @@
 """
 Python implementation of the io module.
 
-https://github.com/python/cpython/blob/8fa4dc4ba8646c59f945f2451c53e2919f066065/Lib/_pyio.py
+https://github.com/python/cpython/blob/8b3cccf3f9508572d85b0044519f2bd5715dacad/Lib/_pyio.py
 """
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -2580,8 +2580,11 @@ class TextIOWrapper(TextIOBase):
         decoder = self._decoder or self._get_decoder()
 
         if size < 0:
+            chunk = self.buffer.read()
+            if chunk is None:
+                raise BlockingIOError("Read returned None.")
             # Read everything.
-            result = self._get_decoded_chars() + decoder.decode(self.buffer.read(), final=True)
+            result = self._get_decoded_chars() + decoder.decode(chunk, final=True)
             if self._snapshot is not None:
                 self._set_decoded_chars('')
                 self._snapshot = None
