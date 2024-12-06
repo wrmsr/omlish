@@ -5,6 +5,7 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
+from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import PycharmRemoteDebug
 
@@ -20,8 +21,8 @@ from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .payload import get_payload_src
 from .remote.channel import RemoteChannel
+from .remote.config import RemoteConfig
 from .remote.execution import RemoteCommandExecutor
-from .remote.execution import RemoteExecutionContext
 from .remote.spawning import RemoteSpawning
 
 
@@ -49,24 +50,30 @@ def _main() -> None:
 
     ##
 
-    config = MainConfig(
-        log_level='DEBUG' if args.debug else 'INFO',
+    bs = MainBootstrap(
+        main_config=MainConfig(
+            log_level='DEBUG' if args.debug else 'INFO',
 
-        debug=bool(args.debug),
-    )
+            debug=bool(args.debug),
+        ),
 
-    bootstrap = MainBootstrap(
-        main_config=config,
+        remote_config=RemoteConfig(
+            spawning=RemoteSpawning.Options(
+                shell=args.shell,
+                shell_quote=args.shell_quote,
+                python=args.python,
+            ),
 
-        remote_spawning_options=RemoteSpawning.Options(
-            shell=args.shell,
-            shell_quote=args.shell_quote,
-            python=args.python,
+            pycharm_remote_debug=PycharmRemoteDebug(
+                port=args.pycharm_debug_port,
+                host=args.pycharm_debug_host,
+                install_version=args.pycharm_debug_version,
+            ) if args.pycharm_debug_port is not None else None,
         ),
     )
 
     injector = main_bootstrap(
-        bootstrap,
+        bs,
     )
 
     ##
@@ -81,7 +88,11 @@ def _main() -> None:
     msh = injector[ObjMarshalerManager]
     for cmd in cmds:
         mc = msh.roundtrip_obj(cmd, Command)
-        r = ce.try_execute(mc)
+        r = ce.try_execute(
+            mc,
+            log=log,
+            omit_exc_object=True,
+        )
         mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
         print(mr)
 
@@ -117,17 +128,7 @@ def _main() -> None:
 
         #
 
-        ctx = RemoteExecutionContext(
-            main_bootstrap=bootstrap,
-
-            pycharm_remote_debug=PycharmRemoteDebug(
-                port=args.pycharm_debug_port,
-                host=args.pycharm_debug_host,
-                install_version=args.pycharm_debug_version,
-            ) if args.pycharm_debug_port is not None else None,
-        )
-
-        chan.send_obj(ctx)
+        chan.send_obj(bs)
 
         #
 

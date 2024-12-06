@@ -6,7 +6,7 @@ from omlish.lite.logs import configure_standard_logging
 
 from .config import MainConfig
 from .inject import bind_main
-from .remote.spawning import RemoteSpawning
+from .remote.config import RemoteConfig
 
 
 ##
@@ -14,9 +14,9 @@ from .remote.spawning import RemoteSpawning
 
 @dc.dataclass(frozen=True)
 class MainBootstrap:
-    main_config: MainConfig
+    main_config: MainConfig = MainConfig()
 
-    remote_spawning_options: RemoteSpawning.Options
+    remote_config: RemoteConfig = RemoteConfig()
 
 
 def main_bootstrap(bs: MainBootstrap) -> Injector:
@@ -25,7 +25,7 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
-        remote_spawning_options=bs.remote_spawning_options,
+        remote_config=bs.remote_config,
     ))
 
     return injector

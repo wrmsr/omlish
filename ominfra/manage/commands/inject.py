@@ -60,6 +60,7 @@ class _FactoryCommandExecutor(CommandExecutor):
 
 
 def bind_commands(
+        *,
         main_config: MainConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
