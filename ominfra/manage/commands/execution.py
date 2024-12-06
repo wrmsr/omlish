@@ -18,6 +18,6 @@ class CommandExecutionService(CommandExecutor):
 
         self._command_executors = command_executors
 
-    def execute(self, i: Command) -> Command.Output:
-        e: CommandExecutor = self._command_executors[type(i)]
-        return e.execute(i)
+    def execute(self, cmd: Command) -> Command.Output:
+        ce: CommandExecutor = self._command_executors[type(cmd)]
+        return ce.execute(cmd)

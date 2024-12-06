@@ -2,6 +2,9 @@
 # @omlish-lite
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
+
+TODO:
+ - log: ta.Optional[logging.Logger] = None + log.debug's
 """
 import base64
 import dataclasses as dc
