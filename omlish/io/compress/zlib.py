@@ -42,9 +42,9 @@ class ZlibCompression(Compression):
             functools.partial(
                 zlib.compressobj,  # type: ignore
                 self.level,
-                **(dict(wbits=self.wbits) if self.wbits is not None else {}),
-                **(dict(strategy=self.strategy) if self.strategy is not None else {}),
-                **(dict(zdict=self.zdict) if self.zdict is not None else {}),
+                **(dict(wbits=self.wbits) if self.wbits is not None else {}),  # type: ignore[arg-type]
+                **(dict(strategy=self.strategy) if self.strategy is not None else {}),  # type: ignore[arg-type]
+                **(dict(zdict=self.zdict) if self.zdict is not None else {}),  # type: ignore[arg-type]
             ),
         )())
 
@@ -52,8 +52,8 @@ class ZlibCompression(Compression):
         return DecompressorObjectIncrementalAdapter(
             functools.partial(  # type: ignore
                 zlib.decompressobj,
-                **(dict(wbits=self.wbits) if self.wbits is not None else {}),
-                **(dict(zdict=self.zdict) if self.zdict is not None else {}),
+                **(dict(wbits=self.wbits) if self.wbits is not None else {}),  # type: ignore[arg-type]
+                **(dict(zdict=self.zdict) if self.zdict is not None else {}),  # type: ignore[arg-type]
             ),
             trailing_error=OSError,
         )()

@@ -2,8 +2,8 @@ import typing as ta
 
 from .... import check
 from .... import lang
-from ..stepped import flatmap_stepped_generator
 from ..stepped import buffer_bytes_stepped_reader_generator
+from ..stepped import flatmap_stepped_generator
 
 
 T = ta.TypeVar('T')
