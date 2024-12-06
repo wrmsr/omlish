@@ -48,7 +48,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        proc = subprocess.Popen(
+        with subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*inp.args),
 
             shell=inp.shell,
@@ -58,14 +58,13 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             stdin=subprocess.PIPE if inp.input is not None else None,
             stdout=subprocess.PIPE if inp.capture_stdout else None,
             stderr=subprocess.PIPE if inp.capture_stderr else None,
-        )
-
-        start_time = time.time()
-        stdout, stderr = proc.communicate(
-            input=inp.input,
-            timeout=inp.timeout,
-        )
-        end_time = time.time()
+        ) as proc:
+            start_time = time.time()
+            stdout, stderr = proc.communicate(
+                input=inp.input,
+                timeout=inp.timeout,
+            )
+            end_time = time.time()
 
         return SubprocessCommand.Output(
             rc=proc.returncode,
