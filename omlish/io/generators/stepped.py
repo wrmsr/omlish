@@ -150,11 +150,11 @@ def read_into_str_stepped_generator(
 @lang.autostart
 def buffer_bytes_stepped_reader_generator(g: BytesSteppedReaderGenerator) -> BytesSteppedGenerator:
     o = g.send(None)
-    buf = None
+    buf: ta.Any = None
 
     while True:
         if not buf:
-            buf = check.isinstance((yield), bytes)
+            buf = check.isinstance((yield None), bytes)
 
         if o is None or not buf:
             i = buf
