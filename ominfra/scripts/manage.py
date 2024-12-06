@@ -251,12 +251,14 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
             os.close(f)
 
         # Save vars
-        os.environ[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
-        os.environ[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = sys.executable
-        os.environ[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
+        env = os.environ
+        exe = sys.executable
+        env[_PYREMOTE_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
+        env[_PYREMOTE_BOOTSTRAP_ARGV0_VAR] = exe
+        env[_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR] = context_name
 
         # Start repl reading stdin from r0
-        os.execl(sys.executable, sys.executable + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
+        os.execl(exe, exe + (_PYREMOTE_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
 
     else:
         # Child process
@@ -320,12 +322,12 @@ def pyremote_build_bootstrap_cmd(context_name: str) -> str:
         if cl.strip()
     )
 
-    bs_z = zlib.compress(bs_src.encode('utf-8'))
-    bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
+    bs_z = zlib.compress(bs_src.encode('utf-8'), 9)
+    bs_z85 = base64.b85encode(bs_z).replace(b'\n', b'')
 
     stmts = [
         f'import {", ".join(_PYREMOTE_BOOTSTRAP_IMPORTS)}',
-        f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
+        f'exec(zlib.decompress(base64.b85decode({bs_z85!r})))',
         f'_pyremote_bootstrap_main({context_name!r})',
     ]
 
@@ -1420,6 +1422,35 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# ../protocol.py
+
+
+def send_obj(f: ta.IO, o: ta.Any, ty: ta.Any = None) -> None:
+    j = json_dumps_compact(marshal_obj(o, ty))
+    d = j.encode('utf-8')
+
+    f.write(struct.pack('<I', len(d)))
+    f.write(d)
+    f.flush()
+
+
+def recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
+    d = f.read(4)
+    if not d:
+        return None
+    if len(d) != 4:
+        raise EOFError
+
+    sz = struct.unpack('<I', d)[0]
+    d = f.read(sz)
+    if len(d) != sz:
+        raise EOFError
+
+    j = json.loads(d.decode('utf-8'))
+    return unmarshal_obj(j, ty)
+
+
+########################################
 # ../../../omlish/lite/subprocesses.py
 
 
@@ -1743,31 +1774,6 @@ def _register_command_marshaling() -> None:
 ##
 
 
-def _send_obj(f: ta.IO, o: ta.Any, ty: ta.Any = None) -> None:
-    j = json_dumps_compact(marshal_obj(o, ty))
-    d = j.encode('utf-8')
-
-    f.write(struct.pack('<I', len(d)))
-    f.write(d)
-    f.flush()
-
-
-def _recv_obj(f: ta.IO, ty: ta.Any) -> ta.Any:
-    d = f.read(4)
-    if not d:
-        return None
-    if len(d) != 4:
-        raise EOFError
-
-    sz = struct.unpack('<I', d)[0]
-    d = f.read(sz)
-    if len(d) != sz:
-        raise EOFError
-
-    j = json.loads(d.decode('utf-8'))
-    return unmarshal_obj(j, ty)
-
-
 ##
 
 
@@ -1775,7 +1781,7 @@ def _remote_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     while True:
-        i = _recv_obj(rt.input, Command)
+        i = recv_obj(rt.input, Command)
         if i is None:
             break
 
@@ -1784,7 +1790,7 @@ def _remote_main() -> None:
         else:
             raise TypeError(i)
 
-        _send_obj(rt.output, o, Command.Output)
+        send_obj(rt.output, o, Command.Output)
 
 
 ##
@@ -1795,19 +1801,19 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--_payload-file')
+
     parser.add_argument('-s', '--shell')
     parser.add_argument('-q', '--shell-quote', action='store_true')
     parser.add_argument('--python', default='python3')
+
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--_payload-file')
 
     args = parser.parse_args()
 
     #
 
     payload_src = get_payload_src(file=args._payload_file)  # noqa
-
-    #
 
     remote_src = '\n\n'.join([
         '__name__ = "__remote__"',
@@ -1817,12 +1823,8 @@ def _main() -> None:
 
     #
 
-    bs_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
     spawner = PySpawner(
-        bs_src,
+        pyremote_build_bootstrap_cmd(__package__ or 'manage'),
         shell=args.shell,
         shell_quote=args.shell_quote,
         python=args.python,
@@ -1834,6 +1836,7 @@ def _main() -> None:
                 debug=args.debug,
             ),
         ).run(proc.stdin, proc.stdout)
+
         # print(res)
 
         #
@@ -1849,9 +1852,9 @@ def _main() -> None:
                 capture_stdout=True,
             ),
         ]:
-            _send_obj(proc.stdin, ci, Command)
+            send_obj(proc.stdin, ci, Command)
 
-            o = _recv_obj(proc.stdout, Command.Output)
+            o = recv_obj(proc.stdout, Command.Output)
 
             print(o)
 

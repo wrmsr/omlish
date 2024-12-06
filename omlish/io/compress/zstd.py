@@ -11,7 +11,7 @@ else:
     zstandard = lang.proxy_import('zstandard')
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ZstdCompression(Compression):
     level: int | None = None
 
