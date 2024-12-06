@@ -97,6 +97,7 @@ class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
             return CommandOutputOrExceptionData(exception=CommandException.of(
                 e,
                 omit_exc_object=omit_exc_object,
+                cmd=cmd,
             ))
 
         else:
