@@ -10,8 +10,8 @@ from .commands.inject import bind_commands
 from .config import MainConfig
 from .marshal import ObjMarshalerInstaller
 from .marshal import ObjMarshalerInstallers
+from .remote.config import RemoteConfig
 from .remote.inject import bind_remote
-from .remote.spawning import RemoteSpawning
 
 
 ##
@@ -20,14 +20,18 @@ from .remote.spawning import RemoteSpawning
 def bind_main(
         *,
         main_config: MainConfig,
-        remote_spawning_options: RemoteSpawning.Options,
+        remote_config: RemoteConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
-        inj.bind(remote_spawning_options),
 
-        bind_commands(main_config),
-        bind_remote(),
+        bind_commands(
+            main_config=main_config,
+        ),
+
+        bind_remote(
+            remote_config=remote_config,
+        ),
     ]
 
     #

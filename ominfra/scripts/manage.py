@@ -975,7 +975,8 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 class CommandException:
     name: str
     repr: str
-    traceback: str
+
+    traceback: ta.Optional[str] = None
 
     exc: ta.Optional[ta.Any] = None  # Exception
 
@@ -993,7 +994,11 @@ class CommandException:
         return CommandException(
             name=type(exc).__qualname__,
             repr=repr(exc),
-            traceback=''.join(traceback.format_exception(exc)),
+
+            traceback=(
+                ''.join(traceback.format_tb(exc.__traceback__))
+                if getattr(exc, '__traceback__', None) is not None else None
+            ),
 
             exc=None if omit_exc_object else exc,
 
@@ -3122,6 +3127,7 @@ class _FactoryCommandExecutor(CommandExecutor):
 
 
 def bind_commands(
+        *,
         main_config: MainConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
@@ -3184,11 +3190,29 @@ def bind_commands(
 
 
 ########################################
+# ../remote/config.py
+
+
+@dc.dataclass(frozen=True)
+class RemoteConfig:
+    spawning: RemoteSpawning.Options = RemoteSpawning.Options()
+
+    pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
+
+
+########################################
 # ../remote/inject.py
 
 
-def bind_remote() -> InjectorBindings:
+def bind_remote(
+        *,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(remote_config),
+
+        inj.bind(remote_config.spawning),
+
         inj.bind(RemoteSpawning, singleton=True),
     ]
 
@@ -3205,14 +3229,18 @@ def bind_remote() -> InjectorBindings:
 def bind_main(
         *,
         main_config: MainConfig,
-        remote_spawning_options: RemoteSpawning.Options,
+        remote_config: RemoteConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
-        inj.bind(remote_spawning_options),
 
-        bind_commands(main_config),
-        bind_remote(),
+        bind_commands(
+            main_config=main_config,
+        ),
+
+        bind_remote(
+            remote_config=remote_config,
+        ),
     ]
 
     #
@@ -3245,9 +3273,9 @@ def bind_main(
 
 @dc.dataclass(frozen=True)
 class MainBootstrap:
-    main_config: MainConfig
+    main_config: MainConfig = MainConfig()
 
-    remote_spawning_options: RemoteSpawning.Options
+    remote_config: RemoteConfig = RemoteConfig()
 
 
 def main_bootstrap(bs: MainBootstrap) -> Injector:
@@ -3256,7 +3284,7 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
-        remote_spawning_options=bs.remote_spawning_options,
+        remote_config=bs.remote_config,
     ))
 
     return injector
@@ -3264,13 +3292,6 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
 ########################################
 # ../remote/execution.py
-
-
-@dc.dataclass(frozen=True)
-class RemoteExecutionContext:
-    main_bootstrap: MainBootstrap
-
-    pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
 
 def _remote_execution_main() -> None:
@@ -3281,16 +3302,16 @@ def _remote_execution_main() -> None:
         rt.output,
     )
 
-    ctx = check_not_none(chan.recv_obj(RemoteExecutionContext))
+    bs = check_not_none(chan.recv_obj(MainBootstrap))
 
     #
 
-    if (prd := ctx.pycharm_remote_debug) is not None:
+    if (prd := bs.remote_config.pycharm_remote_debug) is not None:
         pycharm_debug_connect(prd)
 
     #
 
-    injector = main_bootstrap(ctx.main_bootstrap)
+    injector = main_bootstrap(bs)
 
     #
 
@@ -3396,24 +3417,30 @@ def _main() -> None:
 
     ##
 
-    config = MainConfig(
-        log_level='DEBUG' if args.debug else 'INFO',
+    bs = MainBootstrap(
+        main_config=MainConfig(
+            log_level='DEBUG' if args.debug else 'INFO',
 
-        debug=bool(args.debug),
-    )
+            debug=bool(args.debug),
+        ),
 
-    bootstrap = MainBootstrap(
-        main_config=config,
+        remote_config=RemoteConfig(
+            spawning=RemoteSpawning.Options(
+                shell=args.shell,
+                shell_quote=args.shell_quote,
+                python=args.python,
+            ),
 
-        remote_spawning_options=RemoteSpawning.Options(
-            shell=args.shell,
-            shell_quote=args.shell_quote,
-            python=args.python,
+            pycharm_remote_debug=PycharmRemoteDebug(
+                port=args.pycharm_debug_port,
+                host=args.pycharm_debug_host,
+                install_version=args.pycharm_debug_version,
+            ) if args.pycharm_debug_port is not None else None,
         ),
     )
 
     injector = main_bootstrap(
-        bootstrap,
+        bs,
     )
 
     ##
@@ -3428,7 +3455,11 @@ def _main() -> None:
     msh = injector[ObjMarshalerManager]
     for cmd in cmds:
         mc = msh.roundtrip_obj(cmd, Command)
-        r = ce.try_execute(mc)
+        r = ce.try_execute(
+            mc,
+            log=log,
+            omit_exc_object=True,
+        )
         mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
         print(mr)
 
@@ -3464,17 +3495,7 @@ def _main() -> None:
 
         #
 
-        ctx = RemoteExecutionContext(
-            main_bootstrap=bootstrap,
-
-            pycharm_remote_debug=PycharmRemoteDebug(
-                port=args.pycharm_debug_port,
-                host=args.pycharm_debug_host,
-                install_version=args.pycharm_debug_version,
-            ) if args.pycharm_debug_port is not None else None,
-        )
-
-        chan.send_obj(ctx)
+        chan.send_obj(bs)
 
         #
 
