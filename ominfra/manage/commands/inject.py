@@ -8,6 +8,7 @@ from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
+from ..config import MainConfig
 from ..marshal import ObjMarshalerInstaller
 from .base import Command
 from .base import CommandExecutor
@@ -58,7 +59,9 @@ class _FactoryCommandExecutor(CommandExecutor):
 ##
 
 
-def bind_commands() -> InjectorBindings:
+def bind_commands(
+        main_config: MainConfig,
+) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind_array(CommandRegistration),
         inj.bind_array_type(CommandRegistration, CommandRegistrations),
@@ -78,19 +81,31 @@ def bind_commands() -> InjectorBindings:
 
     #
 
-    def provide_command_executor_map(injector: Injector, crs: CommandExecutorRegistrations) -> CommandExecutorMap:
+    def provide_command_executor_map(
+            injector: Injector,
+            crs: CommandExecutorRegistrations,
+    ) -> CommandExecutorMap:
         dct: ta.Dict[ta.Type[Command], CommandExecutor] = {}
+
         cr: CommandExecutorRegistration
         for cr in crs:
             if cr.command_cls in dct:
                 raise KeyError(cr.command_cls)
-            dct[cr.command_cls] = _FactoryCommandExecutor(functools.partial(injector.provide, cr.executor_cls))
+
+            factory = functools.partial(injector.provide, cr.executor_cls)
+            if main_config.debug:
+                ce = factory()
+            else:
+                ce = _FactoryCommandExecutor(factory)
+
+            dct[cr.command_cls] = ce
+
         return CommandExecutorMap(dct)
 
     lst.extend([
         inj.bind(provide_command_executor_map, singleton=True),
 
-        inj.bind(CommandExecutionService, singleton=True),
+        inj.bind(CommandExecutionService, singleton=True, eager=main_config.debug),
         inj.bind(CommandExecutor, to_key=CommandExecutionService),
     ])
 

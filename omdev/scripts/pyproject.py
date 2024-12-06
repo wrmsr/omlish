@@ -4653,7 +4653,7 @@ DEFAULT_PYENV_INSTALL_OPTS = PyenvInstallOpts(
         '-k',
     ],
     conf_opts=[
-        '--enable-loadable-sqlite-extensions',
+        # '--enable-loadable-sqlite-extensions',
 
         # '--enable-shared',
 
