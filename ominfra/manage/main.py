@@ -6,6 +6,7 @@ manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import contextlib
+import typing as ta
 
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
@@ -14,9 +15,11 @@ from omlish.lite.pycharm import PycharmRemoteDebug
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
+from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
+from .deploy.command import DeployCommand
 from .remote.config import RemoteConfig
 from .remote.execution import RemoteExecution
 from .remote.spawning import RemoteSpawning
@@ -74,10 +77,12 @@ def _main() -> None:
 
     #
 
-    cmds = [
-        SubprocessCommand([c])
-        for c in args.command
-    ]
+    cmds: ta.List[Command] = []
+    for c in args.command:
+        if c == 'deploy':
+            cmds.append(DeployCommand())
+        else:
+            cmds.append(SubprocessCommand([c]))
 
     #
 

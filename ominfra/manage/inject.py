@@ -8,6 +8,7 @@ from omlish.lite.marshal import ObjMarshalerManager
 
 from .commands.inject import bind_commands
 from .config import MainConfig
+from .deploy.inject import bind_deploy
 from .marshal import ObjMarshalerInstaller
 from .marshal import ObjMarshalerInstallers
 from .remote.config import RemoteConfig
@@ -32,6 +33,8 @@ def bind_main(
         bind_remote(
             remote_config=remote_config,
         ),
+
+        bind_deploy(),
     ]
 
     #
