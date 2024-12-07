@@ -20,6 +20,7 @@ from ..commands.base import CommandException
 from ..commands.base import CommandExecutor
 from ..commands.base import CommandOutputOrException
 from ..commands.base import CommandOutputOrExceptionData
+from ..commands.execution import LocalCommandExecutor
 from .channel import RemoteChannel
 from .payload import RemoteExecutionPayloadFile
 from .payload import get_remote_payload_src
@@ -52,7 +53,7 @@ def _remote_execution_main() -> None:
 
     chan.set_marshaler(injector[ObjMarshalerManager])
 
-    ce = injector[CommandExecutor]
+    ce = injector[LocalCommandExecutor]
 
     while True:
         i = chan.recv_obj(Command)
