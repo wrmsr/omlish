@@ -114,7 +114,7 @@ class TestMarshalDataclasses(AbstractTestMarshal):
             msh.unmarshal_obj(dict(i=24, j=25), Foo)
 
         m = dc.replace(msh.get_obj_marshaler(Foo), nonstrict=True)  # type: ignore
-        u = m.unmarshal(dict(i=24, j=25))
+        u = m.unmarshal(dict(i=24, j=25), msh.ObjMarshalOptions())
         assert isinstance(u, Foo)
         assert u.i == 24
 

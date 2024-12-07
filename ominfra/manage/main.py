@@ -5,6 +5,7 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
+from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import PycharmRemoteDebug
@@ -41,9 +42,11 @@ def _main() -> None:
 
     parser.add_argument('--debug', action='store_true')
 
+    parser.add_argument('command', nargs='+')
+
     args = parser.parse_args()
 
-    ##
+    #
 
     bs = MainBootstrap(
         main_config=MainConfig(
@@ -67,12 +70,14 @@ def _main() -> None:
         bs,
     )
 
-    ##
+    #
 
     cmds = [
-        SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
-        SubprocessCommand(['uname']),
-        SubprocessCommand(['barf']),
+        # SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
+        # SubprocessCommand(['uname']),
+        # SubprocessCommand(['barf']),
+        SubprocessCommand([c])
+        for c in args.command
     ]
 
     ce = injector[CommandExecutor]
@@ -87,7 +92,7 @@ def _main() -> None:
         mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
         print(mr)
 
-    ##
+    #
 
     tgt = RemoteSpawning.Target(
         shell=args.shell,
@@ -99,7 +104,7 @@ def _main() -> None:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
-            print(r)
+            print(json_dumps_pretty(msh.marshal_obj(r)))
 
     #
 
