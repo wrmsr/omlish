@@ -4737,7 +4737,7 @@ TODO:
 
 @dc.dataclass(frozen=True)
 class ObjMarshalOptions:
-    pass
+    raw_bytes: bool = False
 
 
 class ObjMarshaler(abc.ABC):
@@ -4797,6 +4797,21 @@ class Base64ObjMarshaler(ObjMarshaler):
 
     def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
         return self.ty(base64.b64decode(o))
+
+
+@dc.dataclass(frozen=True)
+class BytesSwitchedObjMarshaler(ObjMarshaler):
+    m: ObjMarshaler
+
+    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+        if opts.raw_bytes:
+            return o
+        return self.m.marshal(o, opts)
+
+    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+        if opts.raw_bytes:
+            return o
+        return self.m.unmarshal(o, opts)
 
 
 @dc.dataclass(frozen=True)
@@ -4933,7 +4948,7 @@ class UuidObjMarshaler(ObjMarshaler):
 _DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in (type(None),)},
     **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
-    **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
+    **{t: BytesSwitchedObjMarshaler(Base64ObjMarshaler(t)) for t in (bytes, bytearray)},
     **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
