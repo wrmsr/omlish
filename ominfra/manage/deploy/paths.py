@@ -121,13 +121,17 @@ class ConstDeployPathFile(ConstDeployPathPart, DeployPathFile):
 #
 
 
-class SpecDeployPathDir(DeployPathPart, DeployPathDir):
+class SpecDeployPathPart(DeployPathPart, abc.ABC):
+    pass
+
+
+class SpecDeployPathDir(SpecDeployPathPart, DeployPathDir):
     def render(self) -> str:
         return DEPLOY_PATH_SPEC_PLACEHOLDER
 
 
 @dc.dataclass(frozen=True)
-class SpecDeployPathFile(DeployPathPart, DeployPathFile):
+class SpecDeployPathFile(SpecDeployPathPart, DeployPathFile):
     suffix: str
 
     def __post_init__(self) -> None:
@@ -157,8 +161,8 @@ class DeployPath:
 
     def render(self) -> str:
         return os.path.join(  # noqa
-            *[p.render() for p in self.parts]
-            *([''] if self.kind == 'dir' else []),  # noqa
+            *[p.render() for p in self.parts],
+            *([''] if self.kind == 'dir' else []),
         )
 
     @classmethod
