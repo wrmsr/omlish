@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from omlish.lite.fdio.pollers import FdIoPoller
+from omlish.lite.fdio.pollers import FdioPoller
 from omlish.lite.logs import log
 
 from .dispatchers import Dispatchers
@@ -20,7 +20,7 @@ class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
-            poller: FdIoPoller,
+            poller: FdioPoller,
             has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
