@@ -9,20 +9,15 @@ from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import PycharmRemoteDebug
 
-from ..pyremote import PyremoteBootstrapDriver
-from ..pyremote import PyremoteBootstrapOptions
-from ..pyremote import pyremote_build_bootstrap_cmd
 from .bootstrap import MainBootstrap
-from .bootstrap import main_bootstrap
+from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.base import CommandOutputOrExceptionData
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
-from .payload import get_payload_src
-from .remote.channel import RemoteChannel
 from .remote.config import RemoteConfig
-from .remote.execution import RemoteCommandExecutor
+from .remote.execution import RemoteExecution
 from .remote.spawning import RemoteSpawning
 
 
@@ -58,11 +53,7 @@ def _main() -> None:
         ),
 
         remote_config=RemoteConfig(
-            spawning=RemoteSpawning.Options(
-                shell=args.shell,
-                shell_quote=args.shell_quote,
-                python=args.python,
-            ),
+            payload_file=args._payload_file,  # noqa
 
             pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
@@ -98,46 +89,21 @@ def _main() -> None:
 
     ##
 
-    payload_src = get_payload_src(file=args._payload_file)  # noqa
+    tgt = RemoteSpawning.Target(
+        shell=args.shell,
+        shell_quote=args.shell_quote,
+        python=args.python,
+    )
 
-    remote_src = [
-        payload_src,
-        '_remote_execution_main()',
-    ]
-
-    spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
-    with injector[RemoteSpawning].spawn(spawn_src) as proc:
-        res = PyremoteBootstrapDriver(  # noqa
-            remote_src,
-            PyremoteBootstrapOptions(
-                debug=args.debug,
-            ),
-        ).run(
-            proc.stdout,
-            proc.stdin,
-        )
-
-        chan = RemoteChannel(
-            proc.stdout,
-            proc.stdin,
-            msh=injector[ObjMarshalerManager],
-        )
-
-        #
-
-        chan.send_obj(bs)
-
-        #
-
-        rce = RemoteCommandExecutor(chan)
-
+    with injector[RemoteExecution].connect(tgt, bs) as rce:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
             print(r)
+
+    #
+
+    print('Success')
 
 
 if __name__ == '__main__':

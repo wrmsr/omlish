@@ -6,6 +6,8 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from .config import RemoteConfig
+from .execution import RemoteExecution
+from .payload import RemoteExecutionPayloadFile
 from .spawning import RemoteSpawning
 
 
@@ -16,9 +18,12 @@ def bind_remote(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(remote_config),
 
-        inj.bind(remote_config.spawning),
-
         inj.bind(RemoteSpawning, singleton=True),
+
+        inj.bind(RemoteExecution, singleton=True),
     ]
+
+    if (pf := remote_config.payload_file) is not None:
+        lst.append(inj.bind(pf, to_key=RemoteExecutionPayloadFile))
 
     return inj.as_bindings(*lst)

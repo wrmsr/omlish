@@ -1101,7 +1101,21 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 
 
 ########################################
-# ../payload.py
+# ../remote/config.py
+
+
+@dc.dataclass(frozen=True)
+class RemoteConfig:
+    payload_file: ta.Optional[str] = None
+
+    pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
+
+
+########################################
+# ../remote/payload.py
+
+
+RemoteExecutionPayloadFile = ta.NewType('RemoteExecutionPayloadFile', str)
 
 
 @cached_nullary
@@ -1121,7 +1135,10 @@ def _is_self_amalg() -> bool:
     return _is_src_amalg(_get_self_src())
 
 
-def get_payload_src(*, file: ta.Optional[str]) -> str:
+def get_remote_payload_src(
+        *,
+        file: ta.Optional[RemoteExecutionPayloadFile],
+) -> str:
     if file is not None:
         with open(file) as f:
             return f.read()
@@ -2692,6 +2709,17 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# ../bootstrap.py
+
+
+@dc.dataclass(frozen=True)
+class MainBootstrap:
+    main_config: MainConfig = MainConfig()
+
+    remote_config: RemoteConfig = RemoteConfig()
+
+
+########################################
 # ../commands/execution.py
 
 
@@ -3005,7 +3033,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
 class RemoteSpawning:
     @dc.dataclass(frozen=True)
-    class Options:
+    class Target:
         shell: ta.Optional[str] = None
         shell_quote: bool = False
 
@@ -3014,23 +3042,22 @@ class RemoteSpawning:
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
 
-    def __init__(self, opts: Options) -> None:
-        super().__init__()
-
-        self._opts = opts
-
     #
 
     class _PreparedCmd(ta.NamedTuple):
         cmd: ta.Sequence[str]
         shell: bool
 
-    def _prepare_cmd(self, src: str) -> _PreparedCmd:
-        if self._opts.shell is not None:
-            sh_src = f'{self._opts.python} -c {shlex.quote(src)}'
-            if self._opts.shell_quote:
+    def _prepare_cmd(
+            self,
+            tgt: Target,
+            src: str,
+    ) -> _PreparedCmd:
+        if tgt.shell is not None:
+            sh_src = f'{tgt.python} -c {shlex.quote(src)}'
+            if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
-            sh_cmd = f'{self._opts.shell} {sh_src}'
+            sh_cmd = f'{tgt.shell} {sh_src}'
             return RemoteSpawning._PreparedCmd(
                 cmd=[sh_cmd],
                 shell=True,
@@ -3038,7 +3065,7 @@ class RemoteSpawning:
 
         else:
             return RemoteSpawning._PreparedCmd(
-                cmd=[self._opts.python, '-c', src],
+                cmd=[tgt.python, '-c', src],
                 shell=False,
             )
 
@@ -3053,11 +3080,12 @@ class RemoteSpawning:
     @contextlib.contextmanager
     def spawn(
             self,
+            tgt: Target,
             src: str,
             *,
             timeout: ta.Optional[float] = None,
     ) -> ta.Generator[Spawned, None, None]:
-        pc = self._prepare_cmd(src)
+        pc = self._prepare_cmd(tgt, src)
 
         with subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*pc.cmd),
@@ -3065,8 +3093,8 @@ class RemoteSpawning:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=(
-                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, self._opts.stderr)]
-                if self._opts.stderr is not None else None
+                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
+                if tgt.stderr is not None else None
             ),
         ) as proc:
             stdin = check_not_none(proc.stdin)
@@ -3190,108 +3218,10 @@ def bind_commands(
 
 
 ########################################
-# ../remote/config.py
-
-
-@dc.dataclass(frozen=True)
-class RemoteConfig:
-    spawning: RemoteSpawning.Options = RemoteSpawning.Options()
-
-    pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
-
-
-########################################
-# ../remote/inject.py
-
-
-def bind_remote(
-        *,
-        remote_config: RemoteConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(remote_config),
-
-        inj.bind(remote_config.spawning),
-
-        inj.bind(RemoteSpawning, singleton=True),
-    ]
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../inject.py
-
-
-##
-
-
-def bind_main(
-        *,
-        main_config: MainConfig,
-        remote_config: RemoteConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(main_config),
-
-        bind_commands(
-            main_config=main_config,
-        ),
-
-        bind_remote(
-            remote_config=remote_config,
-        ),
-    ]
-
-    #
-
-    def build_obj_marshaler_manager(insts: ObjMarshalerInstallers) -> ObjMarshalerManager:
-        msh = ObjMarshalerManager()
-        inst: ObjMarshalerInstaller
-        for inst in insts:
-            inst.fn(msh)
-        return msh
-
-    lst.extend([
-        inj.bind(build_obj_marshaler_manager, singleton=True),
-
-        inj.bind_array(ObjMarshalerInstaller),
-        inj.bind_array_type(ObjMarshalerInstaller, ObjMarshalerInstallers),
-    ])
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../bootstrap.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig = MainConfig()
-
-    remote_config: RemoteConfig = RemoteConfig()
-
-
-def main_bootstrap(bs: MainBootstrap) -> Injector:
-    if (log_level := bs.main_config.log_level) is not None:
-        configure_standard_logging(log_level)
-
-    injector = inj.create_injector(bind_main(  # noqa
-        main_config=bs.main_config,
-        remote_config=bs.remote_config,
-    ))
-
-    return injector
-
-
-########################################
 # ../remote/execution.py
+
+
+##
 
 
 def _remote_execution_main() -> None:
@@ -3304,24 +3234,14 @@ def _remote_execution_main() -> None:
 
     bs = check_not_none(chan.recv_obj(MainBootstrap))
 
-    #
-
     if (prd := bs.remote_config.pycharm_remote_debug) is not None:
         pycharm_debug_connect(prd)
 
-    #
-
     injector = main_bootstrap(bs)
-
-    #
 
     chan.set_marshaler(injector[ObjMarshalerManager])
 
-    #
-
     ce = injector[CommandExecutor]
-
-    #
 
     while True:
         i = chan.recv_obj(Command)
@@ -3335,6 +3255,9 @@ def _remote_execution_main() -> None:
         )
 
         chan.send_obj(r)
+
+
+##
 
 
 @dc.dataclass()
@@ -3389,6 +3312,159 @@ class RemoteCommandExecutor(CommandExecutor):
             return r
 
 
+##
+
+
+class RemoteExecution:
+    def __init__(
+            self,
+            *,
+            spawning: RemoteSpawning,
+            msh: ObjMarshalerManager,
+            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spawning = spawning
+        self._msh = msh
+        self._payload_file = payload_file
+
+    #
+
+    @cached_nullary
+    def _payload_src(self) -> str:
+        return get_remote_payload_src(file=self._payload_file)
+
+    @cached_nullary
+    def _remote_src(self) -> ta.Sequence[str]:
+        return [
+            self._payload_src(),
+            '_remote_execution_main()',
+        ]
+
+    @cached_nullary
+    def _spawn_src(self) -> str:
+        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    #
+
+    @contextlib.contextmanager
+    def connect(
+            self,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.Generator[RemoteCommandExecutor, None, None]:
+        spawn_src = self._spawn_src()
+        remote_src = self._remote_src()
+
+        with self._spawning.spawn(
+                tgt,
+                spawn_src,
+        ) as proc:
+            res = PyremoteBootstrapDriver(  # noqa
+                remote_src,
+                PyremoteBootstrapOptions(
+                    debug=bs.main_config.debug,
+                ),
+            ).run(
+                proc.stdout,
+                proc.stdin,
+            )
+
+            chan = RemoteChannel(
+                proc.stdout,
+                proc.stdin,
+                msh=self._msh,
+            )
+
+            chan.send_obj(bs)
+
+            yield RemoteCommandExecutor(chan)
+
+
+########################################
+# ../remote/inject.py
+
+
+def bind_remote(
+        *,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(remote_config),
+
+        inj.bind(RemoteSpawning, singleton=True),
+
+        inj.bind(RemoteExecution, singleton=True),
+    ]
+
+    if (pf := remote_config.payload_file) is not None:
+        lst.append(inj.bind(pf, to_key=RemoteExecutionPayloadFile))
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../inject.py
+
+
+##
+
+
+def bind_main(
+        *,
+        main_config: MainConfig,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(main_config),
+
+        bind_commands(
+            main_config=main_config,
+        ),
+
+        bind_remote(
+            remote_config=remote_config,
+        ),
+    ]
+
+    #
+
+    def build_obj_marshaler_manager(insts: ObjMarshalerInstallers) -> ObjMarshalerManager:
+        msh = ObjMarshalerManager()
+        inst: ObjMarshalerInstaller
+        for inst in insts:
+            inst.fn(msh)
+        return msh
+
+    lst.extend([
+        inj.bind(build_obj_marshaler_manager, singleton=True),
+
+        inj.bind_array(ObjMarshalerInstaller),
+        inj.bind_array_type(ObjMarshalerInstaller, ObjMarshalerInstallers),
+    ])
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../bootstrap_.py
+
+
+def main_bootstrap(bs: MainBootstrap) -> Injector:
+    if (log_level := bs.main_config.log_level) is not None:
+        configure_standard_logging(log_level)
+
+    injector = inj.create_injector(bind_main(  # noqa
+        main_config=bs.main_config,
+        remote_config=bs.remote_config,
+    ))
+
+    return injector
+
+
 ########################################
 # main.py
 
@@ -3425,11 +3501,7 @@ def _main() -> None:
         ),
 
         remote_config=RemoteConfig(
-            spawning=RemoteSpawning.Options(
-                shell=args.shell,
-                shell_quote=args.shell_quote,
-                python=args.python,
-            ),
+            payload_file=args._payload_file,  # noqa
 
             pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
@@ -3465,46 +3537,21 @@ def _main() -> None:
 
     ##
 
-    payload_src = get_payload_src(file=args._payload_file)  # noqa
+    tgt = RemoteSpawning.Target(
+        shell=args.shell,
+        shell_quote=args.shell_quote,
+        python=args.python,
+    )
 
-    remote_src = [
-        payload_src,
-        '_remote_execution_main()',
-    ]
-
-    spawn_src = pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
-    with injector[RemoteSpawning].spawn(spawn_src) as proc:
-        res = PyremoteBootstrapDriver(  # noqa
-            remote_src,
-            PyremoteBootstrapOptions(
-                debug=args.debug,
-            ),
-        ).run(
-            proc.stdout,
-            proc.stdin,
-        )
-
-        chan = RemoteChannel(
-            proc.stdout,
-            proc.stdin,
-            msh=injector[ObjMarshalerManager],
-        )
-
-        #
-
-        chan.send_obj(bs)
-
-        #
-
-        rce = RemoteCommandExecutor(chan)
-
+    with injector[RemoteExecution].connect(tgt, bs) as rce:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
             print(r)
+
+    #
+
+    print('Success')
 
 
 if __name__ == '__main__':

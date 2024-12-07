@@ -366,11 +366,22 @@ def make_src_file(
             ])
 
         elif is_root_level_if_type_checking_block(line):
-            while True:
-                nl = cls[i]
-                if nl and nl[0].name != 'INDENT':
-                    break
+            def skip_block():
+                nonlocal i
+                while True:
+                    nl = cls[i]
+                    if nl and nl[0].name != 'INDENT':
+                        return nl
+                    i += 1
+
+            nl = skip_block()
+
+            if tks.match_toks(nl, [
+                ('DEDENT', None),
+                ('NAME', 'else'),
+            ]):
                 i += 1
+                skip_block()
 
         else:
             ctls.append(line)

@@ -4,11 +4,9 @@ import typing as ta
 
 from omlish.lite.pycharm import PycharmRemoteDebug
 
-from .spawning import RemoteSpawning
-
 
 @dc.dataclass(frozen=True)
 class RemoteConfig:
-    spawning: RemoteSpawning.Options = RemoteSpawning.Options()
+    payload_file: ta.Optional[str] = None
 
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None

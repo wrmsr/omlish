@@ -13,7 +13,7 @@ from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 class RemoteSpawning:
     @dc.dataclass(frozen=True)
-    class Options:
+    class Target:
         shell: ta.Optional[str] = None
         shell_quote: bool = False
 
@@ -22,23 +22,22 @@ class RemoteSpawning:
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
 
-    def __init__(self, opts: Options) -> None:
-        super().__init__()
-
-        self._opts = opts
-
     #
 
     class _PreparedCmd(ta.NamedTuple):
         cmd: ta.Sequence[str]
         shell: bool
 
-    def _prepare_cmd(self, src: str) -> _PreparedCmd:
-        if self._opts.shell is not None:
-            sh_src = f'{self._opts.python} -c {shlex.quote(src)}'
-            if self._opts.shell_quote:
+    def _prepare_cmd(
+            self,
+            tgt: Target,
+            src: str,
+    ) -> _PreparedCmd:
+        if tgt.shell is not None:
+            sh_src = f'{tgt.python} -c {shlex.quote(src)}'
+            if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
-            sh_cmd = f'{self._opts.shell} {sh_src}'
+            sh_cmd = f'{tgt.shell} {sh_src}'
             return RemoteSpawning._PreparedCmd(
                 cmd=[sh_cmd],
                 shell=True,
@@ -46,7 +45,7 @@ class RemoteSpawning:
 
         else:
             return RemoteSpawning._PreparedCmd(
-                cmd=[self._opts.python, '-c', src],
+                cmd=[tgt.python, '-c', src],
                 shell=False,
             )
 
@@ -61,11 +60,12 @@ class RemoteSpawning:
     @contextlib.contextmanager
     def spawn(
             self,
+            tgt: Target,
             src: str,
             *,
             timeout: ta.Optional[float] = None,
     ) -> ta.Generator[Spawned, None, None]:
-        pc = self._prepare_cmd(src)
+        pc = self._prepare_cmd(tgt, src)
 
         with subprocess.Popen(
             subprocess_maybe_shell_wrap_exec(*pc.cmd),
@@ -73,8 +73,8 @@ class RemoteSpawning:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=(
-                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, self._opts.stderr)]
-                if self._opts.stderr is not None else None
+                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
+                if tgt.stderr is not None else None
             ),
         ) as proc:
             stdin = check_not_none(proc.stdin)
