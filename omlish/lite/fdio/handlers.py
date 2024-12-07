@@ -7,7 +7,7 @@ from ..check import check_not_none
 from ..socket import SocketAddress
 
 
-class FdIoHandler(abc.ABC):
+class FdioHandler(abc.ABC):
     @abc.abstractmethod
     def fd(self) -> int:
         raise NotImplementedError
@@ -43,7 +43,7 @@ class FdIoHandler(abc.ABC):
         pass
 
 
-class SocketFdIoHandler(FdIoHandler, abc.ABC):
+class SocketFdioHandler(FdioHandler, abc.ABC):
     def __init__(
             self,
             addr: SocketAddress,

@@ -6,8 +6,8 @@ import typing as ta
 
 from omlish.lite.check import check_not_none
 from omlish.lite.contextmanagers import defer
-from omlish.lite.fdio.corohttp import CoroHttpServerConnectionFdIoHandler
-from omlish.lite.fdio.handlers import SocketFdIoHandler
+from omlish.lite.fdio.corohttp import CoroHttpServerConnectionFdioHandler
+from omlish.lite.fdio.handlers import SocketFdioHandler
 from omlish.lite.http.handlers import HttpHandler
 from omlish.lite.http.handlers import HttpHandlerRequest
 from omlish.lite.http.handlers import HttpHandlerResponse
@@ -22,7 +22,7 @@ from .types import HasDispatchers
 ##
 
 
-class SocketServerFdIoHandler(SocketFdIoHandler):
+class SocketServerFdioHandler(SocketFdioHandler):
     def __init__(
             self,
             addr: SocketAddress,
@@ -69,9 +69,9 @@ class HttpServer(HasDispatchers):
         self._handler = handler.h
         self._addr = addr.a
 
-        self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
+        self._server = SocketServerFdioHandler(self._addr, self._on_connect)
 
-        self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+        self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
 
         exit_stack.enter_context(defer(self._server.close))  # noqa
 
@@ -87,7 +87,7 @@ class HttpServer(HasDispatchers):
         ])
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdIoHandler(
+        conn = CoroHttpServerConnectionFdioHandler(
             addr,
             sock,
             self._handler,

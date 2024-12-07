@@ -7,7 +7,7 @@ import typing as ta
 
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
-from omlish.lite.fdio.handlers import FdIoHandler
+from omlish.lite.fdio.handlers import FdioHandler
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
@@ -200,7 +200,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         return exe, args
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
-        dispatchers: ta.List[FdIoHandler] = []
+        dispatchers: ta.List[FdioHandler] = []
 
         if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(

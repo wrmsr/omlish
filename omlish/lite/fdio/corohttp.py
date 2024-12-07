@@ -11,10 +11,10 @@ from ..http.handlers import HttpHandler
 from ..io import IncrementalWriteBuffer
 from ..io import ReadableListBuffer
 from ..socket import SocketAddress
-from .handlers import SocketFdIoHandler
+from .handlers import SocketFdioHandler
 
 
-class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
+class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     def __init__(
             self,
             addr: SocketAddress,

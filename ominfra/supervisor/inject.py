@@ -3,10 +3,10 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.fdio.kqueue import KqueueFdIoPoller  # noqa
-from omlish.lite.fdio.pollers import FdIoPoller
-from omlish.lite.fdio.pollers import PollFdIoPoller  # noqa
-from omlish.lite.fdio.pollers import SelectFdIoPoller
+from omlish.lite.fdio.kqueue import KqueueFdioPoller  # noqa
+from omlish.lite.fdio.pollers import FdioPoller
+from omlish.lite.fdio.pollers import PollFdioPoller  # noqa
+from omlish.lite.fdio.pollers import SelectFdioPoller
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
@@ -46,8 +46,8 @@ from .utils.users import get_user
 
 
 @dc.dataclass(frozen=True)
-class _FdIoPollerDaemonizeListener(DaemonizeListener):
-    _poller: FdIoPoller
+class _FdioPollerDaemonizeListener(DaemonizeListener):
+    _poller: FdioPoller
 
     def before_daemonize(self) -> None:
         self._poller.close()
@@ -119,14 +119,14 @@ def bind_server(
     #
 
     poller_impl = next(filter(None, [
-        KqueueFdIoPoller,
-        PollFdIoPoller,
-        SelectFdIoPoller,
+        KqueueFdioPoller,
+        PollFdioPoller,
+        SelectFdioPoller,
     ]))
     lst.extend([
-        inj.bind(poller_impl, key=FdIoPoller, singleton=True),
-        inj.bind(_FdIoPollerDaemonizeListener, singleton=True),
-        inj.bind(DaemonizeListener, array=True, to_key=_FdIoPollerDaemonizeListener),
+        inj.bind(poller_impl, key=FdioPoller, singleton=True),
+        inj.bind(_FdioPollerDaemonizeListener, singleton=True),
+        inj.bind(DaemonizeListener, array=True, to_key=_FdioPollerDaemonizeListener),
     ])
 
     #

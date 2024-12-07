@@ -5,7 +5,7 @@ import time
 import typing as ta
 
 from omlish.lite.check import check_isinstance
-from omlish.lite.fdio.pollers import FdIoPoller
+from omlish.lite.fdio.pollers import FdioPoller
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
@@ -66,7 +66,7 @@ class Supervisor:
             self,
             *,
             config: ServerConfig,
-            poller: FdIoPoller,
+            poller: FdioPoller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,

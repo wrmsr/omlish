@@ -1565,7 +1565,7 @@ def check_non_empty(v: SizedT) -> SizedT:
 ##
 
 
-class FdIoPoller(abc.ABC):
+class FdioPoller(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
@@ -1676,8 +1676,8 @@ class FdIoPoller(abc.ABC):
 ##
 
 
-class SelectFdIoPoller(FdIoPoller):
-    def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+class SelectFdioPoller(FdioPoller):
+    def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
         try:
             r, w, x = select.select(
                 self._readable,
@@ -1688,22 +1688,22 @@ class SelectFdIoPoller(FdIoPoller):
 
         except OSError as exc:
             if exc.errno == errno.EINTR:
-                return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
             elif exc.errno == errno.EBADF:
-                return FdIoPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
+                return FdioPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
             else:
                 raise
 
-        return FdIoPoller.PollResult(r, w)
+        return FdioPoller.PollResult(r, w)
 
 
 ##
 
 
-PollFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+PollFdioPoller: ta.Optional[ta.Type[FdioPoller]]
 if hasattr(select, 'poll'):
 
-    class _PollFdIoPoller(FdIoPoller):
+    class _PollFdioPoller(FdioPoller):
         def __init__(self) -> None:
             super().__init__()
 
@@ -1736,14 +1736,14 @@ if hasattr(select, 'poll'):
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
             polled: ta.List[ta.Tuple[int, int]]
             try:
                 polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
                 else:
                     raise
 
@@ -1761,11 +1761,11 @@ if hasattr(select, 'poll'):
                     r.append(fd)
                 if mask & self._WRITE:
                     w.append(fd)
-            return FdIoPoller.PollResult(r, w, inv=inv)
+            return FdioPoller.PollResult(r, w, inv=inv)
 
-    PollFdIoPoller = _PollFdIoPoller
+    PollFdioPoller = _PollFdioPoller
 else:
-    PollFdIoPoller = None
+    PollFdioPoller = None
 
 
 ########################################
@@ -2600,7 +2600,7 @@ def attr_setting(obj, attr, val, *, default=None):  # noqa
 # ../../../omlish/lite/fdio/handlers.py
 
 
-class FdIoHandler(abc.ABC):
+class FdioHandler(abc.ABC):
     @abc.abstractmethod
     def fd(self) -> int:
         raise NotImplementedError
@@ -2636,7 +2636,7 @@ class FdIoHandler(abc.ABC):
         pass
 
 
-class SocketFdIoHandler(FdIoHandler, abc.ABC):
+class SocketFdioHandler(FdioHandler, abc.ABC):
     def __init__(
             self,
             addr: SocketAddress,
@@ -2664,10 +2664,10 @@ class SocketFdIoHandler(FdIoHandler, abc.ABC):
 # ../../../omlish/lite/fdio/kqueue.py
 
 
-KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
-    class _KqueueFdIoPoller(FdIoPoller):
+    class _KqueueFdioPoller(FdioPoller):
         DEFAULT_MAX_EVENTS = 1000
 
         def __init__(
@@ -2755,14 +2755,14 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
             kq = self._get_kqueue()
             try:
                 kes = kq.control(None, self._max_events, timeout)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
                 else:
                     raise
 
@@ -2774,11 +2774,11 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 if ke.filter == select.KQ_FILTER_WRITE:
                     w.append(ke.ident)
 
-            return FdIoPoller.PollResult(r, w)
+            return FdioPoller.PollResult(r, w)
 
-    KqueueFdIoPoller = _KqueueFdIoPoller
+    KqueueFdioPoller = _KqueueFdioPoller
 else:
-    KqueueFdIoPoller = None
+    KqueueFdioPoller = None
 
 
 ########################################
@@ -6145,7 +6145,7 @@ class HasDispatchers(abc.ABC):
         raise NotImplementedError
 
 
-class ProcessDispatcher(FdIoHandler, abc.ABC):
+class ProcessDispatcher(FdioHandler, abc.ABC):
     @property
     @abc.abstractmethod
     def channel(self) -> ProcessOutputChannel:
@@ -6275,7 +6275,7 @@ class ProcessGroup(
 # ../../../omlish/lite/fdio/corohttp.py
 
 
-class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
+class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     def __init__(
             self,
             addr: SocketAddress,
@@ -6404,8 +6404,8 @@ class CoroHttpServerConnectionFdIoHandler(SocketFdIoHandler):
 # ../dispatchers.py
 
 
-class Dispatchers(KeyedCollection[Fd, FdIoHandler]):
-    def _key(self, v: FdIoHandler) -> Fd:
+class Dispatchers(KeyedCollection[Fd, FdioHandler]):
+    def _key(self, v: FdioHandler) -> Fd:
         return Fd(v.fd())
 
     #
@@ -7200,7 +7200,7 @@ class IoManager(HasDispatchers):
     def __init__(
             self,
             *,
-            poller: FdIoPoller,
+            poller: FdioPoller,
             has_dispatchers_list: HasDispatchersList,
     ) -> None:
         super().__init__()
@@ -7312,7 +7312,7 @@ class ProcessSpawning:
 ##
 
 
-class SocketServerFdIoHandler(SocketFdIoHandler):
+class SocketServerFdioHandler(SocketFdioHandler):
     def __init__(
             self,
             addr: SocketAddress,
@@ -7359,9 +7359,9 @@ class HttpServer(HasDispatchers):
         self._handler = handler.h
         self._addr = addr.a
 
-        self._server = SocketServerFdIoHandler(self._addr, self._on_connect)
+        self._server = SocketServerFdioHandler(self._addr, self._on_connect)
 
-        self._conns: ta.List[CoroHttpServerConnectionFdIoHandler] = []
+        self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
 
         exit_stack.enter_context(defer(self._server.close))  # noqa
 
@@ -7377,7 +7377,7 @@ class HttpServer(HasDispatchers):
         ])
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdIoHandler(
+        conn = CoroHttpServerConnectionFdioHandler(
             addr,
             sock,
             self._handler,
@@ -8126,7 +8126,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         return exe, args
 
     def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
-        dispatchers: ta.List[FdIoHandler] = []
+        dispatchers: ta.List[FdioHandler] = []
 
         if pipes.stdout is not None:
             dispatchers.append(check_isinstance(self._output_dispatcher_factory(
@@ -8316,7 +8316,7 @@ class Supervisor:
             self,
             *,
             config: ServerConfig,
-            poller: FdIoPoller,
+            poller: FdioPoller,
             process_groups: ProcessGroupManager,
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
@@ -8556,8 +8556,8 @@ def waitpid() -> ta.Optional[WaitedPid]:
 
 
 @dc.dataclass(frozen=True)
-class _FdIoPollerDaemonizeListener(DaemonizeListener):
-    _poller: FdIoPoller
+class _FdioPollerDaemonizeListener(DaemonizeListener):
+    _poller: FdioPoller
 
     def before_daemonize(self) -> None:
         self._poller.close()
@@ -8629,14 +8629,14 @@ def bind_server(
     #
 
     poller_impl = next(filter(None, [
-        KqueueFdIoPoller,
-        PollFdIoPoller,
-        SelectFdIoPoller,
+        KqueueFdioPoller,
+        PollFdioPoller,
+        SelectFdioPoller,
     ]))
     lst.extend([
-        inj.bind(poller_impl, key=FdIoPoller, singleton=True),
-        inj.bind(_FdIoPollerDaemonizeListener, singleton=True),
-        inj.bind(DaemonizeListener, array=True, to_key=_FdIoPollerDaemonizeListener),
+        inj.bind(poller_impl, key=FdioPoller, singleton=True),
+        inj.bind(_FdioPollerDaemonizeListener, singleton=True),
+        inj.bind(DaemonizeListener, array=True, to_key=_FdioPollerDaemonizeListener),
     ])
 
     #
