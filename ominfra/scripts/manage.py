@@ -3561,9 +3561,6 @@ def _main() -> None:
     #
 
     cmds = [
-        # SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
-        # SubprocessCommand(['uname']),
-        # SubprocessCommand(['barf']),
         SubprocessCommand([c])
         for c in args.command
     ]
