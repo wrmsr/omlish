@@ -2808,6 +2808,28 @@ def install_command_marshaling(
 
 
 ########################################
+# ../deploy/command.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployCommand(Command['DeployCommand.Output']):
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        pass
+
+
+##
+
+
+class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
+    def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+        return DeployCommand.Output()
+
+
+########################################
 # ../marshal.py
 
 
@@ -3424,6 +3446,19 @@ class RemoteExecution:
 
 
 ########################################
+# ../deploy/inject.py
+
+
+def bind_deploy(
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        bind_command(DeployCommand, DeployCommandExecutor),
+    ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
 # ../remote/inject.py
 
 
@@ -3467,6 +3502,8 @@ def bind_main(
         bind_remote(
             remote_config=remote_config,
         ),
+
+        bind_deploy(),
     ]
 
     #
@@ -3562,10 +3599,12 @@ def _main() -> None:
 
     #
 
-    cmds = [
-        SubprocessCommand([c])
-        for c in args.command
-    ]
+    cmds: ta.List[Command] = []
+    for c in args.command:
+        if c == 'deploy':
+            cmds.append(DeployCommand())
+        else:
+            cmds.append(SubprocessCommand([c]))
 
     #
 
