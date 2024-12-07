@@ -98,7 +98,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==1.1.1
+accelerate==1.2.0
 
 pytorch-lightning==2.4.0
 
@@ -168,7 +168,7 @@ zwave-js-server-python==0.60.0
 
 ##
 
-python-telegram-bot==21.8
+python-telegram-bot==21.9
 discord.py==2.4.0
 
 ##
@@ -198,8 +198,8 @@ customtkinter==5.2.2
 
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
-langchain-community==0.3.9
-langchain-core==0.3.21
+langchain-community==0.3.10
+langchain-core==0.3.22
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -207,7 +207,7 @@ langchain-mistralai==0.2.3
 langchain-openai==0.2.11
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
-langchain==0.3.9
+langchain==0.3.10
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
@@ -248,9 +248,9 @@ usearch==2.16.6
 
 ##
 
-llama-index-core==0.12.2
+llama-index-core==0.12.3
 
-unstructured==0.16.9
+unstructured==0.16.10
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -291,7 +291,7 @@ wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
 
-mlx==0.21.0; sys_platform == "darwin"
+mlx==0.21.1; sys_platform == "darwin"
 mlx-lm==0.20.1; sys_platform == "darwin"
 
 flask==3.1.0
