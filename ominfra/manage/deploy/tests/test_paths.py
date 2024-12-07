@@ -2,13 +2,15 @@
 from omlish.lite import marshal as msh
 from omlish.lite.json import json_dumps_pretty
 
-from ..paths import DeployPathDir
+from ..paths import DeployPath
+from ..paths import ConstDeployPathDir
+from ..paths import SpecDeployPathDir
 
 
 def test_marshal():
     dp = DeployPath([
-        DeployConstDir('logs'),
-        DeploySpecDir(),
+        ConstDeployPathDir('logs'),
+        SpecDeployPathDir(),
     ])
 
     print()
