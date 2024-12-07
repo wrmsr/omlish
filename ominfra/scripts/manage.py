@@ -3530,6 +3530,8 @@ def _main() -> None:
 
     parser.add_argument('--debug', action='store_true')
 
+    parser.add_argument('--local', action='store_true')
+
     parser.add_argument('command', nargs='+')
 
     args = parser.parse_args()
@@ -3567,21 +3569,25 @@ def _main() -> None:
 
     #
 
-    tgt = RemoteSpawning.Target(
-        shell=args.shell,
-        shell_quote=args.shell_quote,
-        python=args.python,
-    )
+    with contextlib.ExitStack() as es:
+        ce: CommandExecutor
 
-    with injector[RemoteExecution].connect(tgt, bs) as rce:
+        if args.local:
+            ce = injector[CommandExecutor]
+
+        else:
+            tgt = RemoteSpawning.Target(
+                shell=args.shell,
+                shell_quote=args.shell_quote,
+                python=args.python,
+            )
+
+            ce = es.enter_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
+
         for cmd in cmds:
-            r = rce.try_execute(cmd)
+            r = ce.try_execute(cmd)
 
             print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
-
-    #
-
-    print('Success')
 
 
 if __name__ == '__main__':
