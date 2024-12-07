@@ -5,6 +5,8 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
+import contextlib
+
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.marshal import ObjMarshalerManager
@@ -12,6 +14,7 @@ from omlish.lite.pycharm import PycharmRemoteDebug
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
+from .commands.base import CommandExecutor
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .remote.config import RemoteConfig
@@ -38,6 +41,8 @@ def _main() -> None:
     parser.add_argument('--pycharm-debug-version')
 
     parser.add_argument('--debug', action='store_true')
+
+    parser.add_argument('--local', action='store_true')
 
     parser.add_argument('command', nargs='+')
 
@@ -76,19 +81,25 @@ def _main() -> None:
 
     #
 
-    tgt = RemoteSpawning.Target(
-        shell=args.shell,
-        shell_quote=args.shell_quote,
-        python=args.python,
-    )
+    with contextlib.ExitStack() as es:
+        ce: CommandExecutor
 
-    with injector[RemoteExecution].connect(tgt, bs) as rce:
+        if args.local:
+            ce = injector[CommandExecutor]
+
+        else:
+            tgt = RemoteSpawning.Target(
+                shell=args.shell,
+                shell_quote=args.shell_quote,
+                python=args.python,
+            )
+
+            ce = es.enter_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
+
         for cmd in cmds:
-            r = rce.try_execute(cmd)
+            r = ce.try_execute(cmd)
 
             print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
-
-    #
 
     print('Success')
 
