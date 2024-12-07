@@ -6,6 +6,9 @@ import typing as ta
 from omlish.lite.cached import cached_nullary
 
 
+RemoteExecutionPayloadFile = ta.NewType('RemoteExecutionPayloadFile', str)
+
+
 @cached_nullary
 def _get_self_src() -> str:
     return inspect.getsource(sys.modules[__name__])
@@ -23,7 +26,10 @@ def _is_self_amalg() -> bool:
     return _is_src_amalg(_get_self_src())
 
 
-def get_payload_src(*, file: ta.Optional[str]) -> str:
+def get_remote_payload_src(
+        *,
+        file: ta.Optional[RemoteExecutionPayloadFile],
+) -> str:
     if file is not None:
         with open(file) as f:
             return f.read()
