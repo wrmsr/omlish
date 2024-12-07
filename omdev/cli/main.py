@@ -13,8 +13,8 @@ import typing as ta
 
 from omlish import check
 from omlish.lite.cached import cached_nullary
+from omlish.manifests.load import ManifestLoader
 
-from ..manifests.load import ManifestLoader
 from .types import CliCmd
 from .types import CliFunc
 from .types import CliModule

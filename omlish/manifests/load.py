@@ -1,10 +1,10 @@
+# ruff: noqa: UP006 UP007
 """
 Should be kept somewhat lightweight - used in cli entrypoints.
 
 TODO:
  - persisted caching support - {pkg_name: manifests}
 """
-# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import importlib.machinery
 import importlib.resources
