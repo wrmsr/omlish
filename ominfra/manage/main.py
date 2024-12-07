@@ -12,9 +12,6 @@ from omlish.lite.pycharm import PycharmRemoteDebug
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
-from .commands.base import Command
-from .commands.base import CommandExecutor
-from .commands.base import CommandOutputOrExceptionData
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .remote.config import RemoteConfig
@@ -73,24 +70,9 @@ def _main() -> None:
     #
 
     cmds = [
-        # SubprocessCommand(['python3', '-'], input=b'print(1)\n'),
-        # SubprocessCommand(['uname']),
-        # SubprocessCommand(['barf']),
         SubprocessCommand([c])
         for c in args.command
     ]
-
-    ce = injector[CommandExecutor]
-    msh = injector[ObjMarshalerManager]
-    for cmd in cmds:
-        mc = msh.roundtrip_obj(cmd, Command)
-        r = ce.try_execute(
-            mc,
-            log=log,
-            omit_exc_object=True,
-        )
-        mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
-        print(mr)
 
     #
 
@@ -104,7 +86,7 @@ def _main() -> None:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
-            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+            print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 
     #
 
