@@ -3087,23 +3087,24 @@ TODO:
 @dc.dataclass(frozen=True)
 class ObjMarshalOptions:
     raw_bytes: bool = False
+    nonstrict_dataclasses: bool = False
 
 
 class ObjMarshaler(abc.ABC):
     @abc.abstractmethod
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         raise NotImplementedError
 
 
 class NopObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
 
@@ -3111,29 +3112,29 @@ class NopObjMarshaler(ObjMarshaler):
 class ProxyObjMarshaler(ObjMarshaler):
     m: ta.Optional[ObjMarshaler] = None
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return check_not_none(self.m).marshal(o, opts)
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check_not_none(self.m).marshal(o, ctx)
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return check_not_none(self.m).unmarshal(o, opts)
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check_not_none(self.m).unmarshal(o, ctx)
 
 
 @dc.dataclass(frozen=True)
 class CastObjMarshaler(ObjMarshaler):
     ty: type
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return self.ty(o)
 
 
 class DynamicObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return marshal_obj(o)
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return ctx.manager.marshal_obj(o, ctx.options)
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
 
 
@@ -3141,10 +3142,10 @@ class DynamicObjMarshaler(ObjMarshaler):
 class Base64ObjMarshaler(ObjMarshaler):
     ty: type
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return base64.b64encode(o).decode('ascii')
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return self.ty(base64.b64decode(o))
 
 
@@ -3152,25 +3153,25 @@ class Base64ObjMarshaler(ObjMarshaler):
 class BytesSwitchedObjMarshaler(ObjMarshaler):
     m: ObjMarshaler
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        if opts.raw_bytes:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if ctx.options.raw_bytes:
             return o
-        return self.m.marshal(o, opts)
+        return self.m.marshal(o, ctx)
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        if opts.raw_bytes:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if ctx.options.raw_bytes:
             return o
-        return self.m.unmarshal(o, opts)
+        return self.m.unmarshal(o, ctx)
 
 
 @dc.dataclass(frozen=True)
 class EnumObjMarshaler(ObjMarshaler):
     ty: type
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.name
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return self.ty.__members__[o]  # type: ignore
 
 
@@ -3178,15 +3179,15 @@ class EnumObjMarshaler(ObjMarshaler):
 class OptionalObjMarshaler(ObjMarshaler):
     item: ObjMarshaler
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.marshal(o, opts)
+        return self.item.marshal(o, ctx)
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         if o is None:
             return None
-        return self.item.unmarshal(o, opts)
+        return self.item.unmarshal(o, ctx)
 
 
 @dc.dataclass(frozen=True)
@@ -3195,11 +3196,11 @@ class MappingObjMarshaler(ObjMarshaler):
     km: ObjMarshaler
     vm: ObjMarshaler
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return {self.km.marshal(k, opts): self.vm.marshal(v, opts) for k, v in o.items()}
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return {self.km.marshal(k, ctx): self.vm.marshal(v, ctx) for k, v in o.items()}
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return self.ty((self.km.unmarshal(k, opts), self.vm.unmarshal(v, opts)) for k, v in o.items())
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.ty((self.km.unmarshal(k, ctx), self.vm.unmarshal(v, ctx)) for k, v in o.items())
 
 
 @dc.dataclass(frozen=True)
@@ -3207,11 +3208,11 @@ class IterableObjMarshaler(ObjMarshaler):
     ty: type
     item: ObjMarshaler
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return [self.item.marshal(e, opts) for e in o]
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return [self.item.marshal(e, ctx) for e in o]
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return self.ty(self.item.unmarshal(e, opts) for e in o)
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.ty(self.item.unmarshal(e, ctx) for e in o)
 
 
 @dc.dataclass(frozen=True)
@@ -3220,11 +3221,18 @@ class DataclassObjMarshaler(ObjMarshaler):
     fs: ta.Mapping[str, ObjMarshaler]
     nonstrict: bool = False
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return {k: m.marshal(getattr(o, k), opts) for k, m in self.fs.items()}
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return {
+            k: m.marshal(getattr(o, k), ctx)
+            for k, m in self.fs.items()
+        }
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
-        return self.ty(**{k: self.fs[k].unmarshal(v, opts) for k, v in o.items() if not self.nonstrict or k in self.fs})
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self.ty(**{
+            k: self.fs[k].unmarshal(v, ctx)
+            for k, v in o.items()
+            if not (self.nonstrict or ctx.options.nonstrict_dataclasses) or k in self.fs
+        })
 
 
 @dc.dataclass(frozen=True)
@@ -3244,50 +3252,50 @@ class PolymorphicObjMarshaler(ObjMarshaler):
             {i.tag: i for i in impls},
         )
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         impl = self.impls_by_ty[type(o)]
-        return {impl.tag: impl.m.marshal(o, opts)}
+        return {impl.tag: impl.m.marshal(o, ctx)}
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         [(t, v)] = o.items()
         impl = self.impls_by_tag[t]
-        return impl.m.unmarshal(v, opts)
+        return impl.m.unmarshal(v, ctx)
 
 
 @dc.dataclass(frozen=True)
 class DatetimeObjMarshaler(ObjMarshaler):
     ty: type
 
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o.isoformat()
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return self.ty.fromisoformat(o)  # type: ignore
 
 
 class DecimalObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return str(check_isinstance(o, decimal.Decimal))
 
-    def unmarshal(self, v: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return decimal.Decimal(check_isinstance(v, str))
 
 
 class FractionObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         fr = check_isinstance(o, fractions.Fraction)
         return [fr.numerator, fr.denominator]
 
-    def unmarshal(self, v: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         num, denom = check_isinstance(v, list)
         return fractions.Fraction(num, denom)
 
 
 class UuidObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return str(o)
 
-    def unmarshal(self, o: ta.Any, opts: ObjMarshalOptions) -> ta.Any:
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return uuid.UUID(o)
 
 
@@ -3448,6 +3456,12 @@ class ObjMarshalerManager:
 
     #
 
+    def _make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
+        return ObjMarshalContext(
+            options=opts or self._default_options,
+            manager=self,
+        )
+
     def marshal_obj(
             self,
             o: ta.Any,
@@ -3455,7 +3469,7 @@ class ObjMarshalerManager:
             opts: ta.Optional[ObjMarshalOptions] = None,
     ) -> ta.Any:
         m = self.get_obj_marshaler(ty if ty is not None else type(o))
-        return m.marshal(o, opts or self._default_options)
+        return m.marshal(o, self._make_context(opts))
 
     def unmarshal_obj(
             self,
@@ -3464,7 +3478,7 @@ class ObjMarshalerManager:
             opts: ta.Optional[ObjMarshalOptions] = None,
     ) -> T:
         m = self.get_obj_marshaler(ty)
-        return m.unmarshal(o, opts or self._default_options)
+        return m.unmarshal(o, self._make_context(opts))
 
     def roundtrip_obj(
             self,
@@ -3477,6 +3491,12 @@ class ObjMarshalerManager:
         m: ta.Any = self.marshal_obj(o, ty, opts)
         u: ta.Any = self.unmarshal_obj(m, ty, opts)
         return u
+
+
+@dc.dataclass(frozen=True)
+class ObjMarshalContext:
+    options: ObjMarshalOptions
+    manager: ObjMarshalerManager
 
 
 ##
