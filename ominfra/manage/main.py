@@ -8,8 +8,8 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import contextlib
 
 from omlish.lite.logs import log  # noqa
-from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.marshal import ObjMarshalerManager
+from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.pycharm import PycharmRemoteDebug
 
 from .bootstrap import MainBootstrap
@@ -100,8 +100,6 @@ def _main() -> None:
             r = ce.try_execute(cmd)
 
             print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
-
-    print('Success')
 
 
 if __name__ == '__main__':
