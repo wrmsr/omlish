@@ -5,8 +5,8 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
-from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import log  # noqa
+from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import PycharmRemoteDebug
 
@@ -104,7 +104,7 @@ def _main() -> None:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
-            print(json_dumps_pretty(msh.marshal_obj(r)))
+            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 
     #
 
