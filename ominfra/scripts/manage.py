@@ -2767,7 +2767,7 @@ class MainBootstrap:
 CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
 
 
-class CommandExecutionService(CommandExecutor):
+class LocalCommandExecutor(CommandExecutor):
     def __init__(
             self,
             *,
@@ -3264,8 +3264,7 @@ def bind_commands(
     lst.extend([
         inj.bind(provide_command_executor_map, singleton=True),
 
-        inj.bind(CommandExecutionService, singleton=True, eager=main_config.debug),
-        inj.bind(CommandExecutor, to_key=CommandExecutionService),
+        inj.bind(LocalCommandExecutor, singleton=True, eager=main_config.debug),
     ])
 
     #
@@ -3304,7 +3303,7 @@ def _remote_execution_main() -> None:
 
     chan.set_marshaler(injector[ObjMarshalerManager])
 
-    ce = injector[CommandExecutor]
+    ce = injector[LocalCommandExecutor]
 
     while True:
         i = chan.recv_obj(Command)
@@ -3612,7 +3611,7 @@ def _main() -> None:
         ce: CommandExecutor
 
         if args.local:
-            ce = injector[CommandExecutor]
+            ce = injector[LocalCommandExecutor]
 
         else:
             tgt = RemoteSpawning.Target(

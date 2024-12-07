@@ -18,8 +18,8 @@ from .base import CommandNameMap
 from .base import CommandRegistration
 from .base import CommandRegistrations
 from .base import build_command_name_map
-from .execution import CommandExecutionService
 from .execution import CommandExecutorMap
+from .execution import LocalCommandExecutor
 from .marshal import install_command_marshaling
 from .subprocess import SubprocessCommand
 from .subprocess import SubprocessCommandExecutor
@@ -106,8 +106,7 @@ def bind_commands(
     lst.extend([
         inj.bind(provide_command_executor_map, singleton=True),
 
-        inj.bind(CommandExecutionService, singleton=True, eager=main_config.debug),
-        inj.bind(CommandExecutor, to_key=CommandExecutionService),
+        inj.bind(LocalCommandExecutor, singleton=True, eager=main_config.debug),
     ])
 
     #

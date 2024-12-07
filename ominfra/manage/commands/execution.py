@@ -8,7 +8,7 @@ from .base import CommandExecutor
 CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
 
 
-class CommandExecutionService(CommandExecutor):
+class LocalCommandExecutor(CommandExecutor):
     def __init__(
             self,
             *,

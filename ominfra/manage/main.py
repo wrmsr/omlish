@@ -17,6 +17,7 @@ from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
+from .commands.execution import LocalCommandExecutor
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .deploy.command import DeployCommand
@@ -90,7 +91,7 @@ def _main() -> None:
         ce: CommandExecutor
 
         if args.local:
-            ce = injector[CommandExecutor]
+            ce = injector[LocalCommandExecutor]
 
         else:
             tgt = RemoteSpawning.Target(
