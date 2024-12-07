@@ -51,63 +51,56 @@ class CacheImpl(Cache[K, V]):
     https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html
     """
 
-    try:
-        if not ta.TYPE_CHECKING:
-            from ..._ext.cy.collections.cache import CacheLink as Link
-        else:
-            raise ImportError  # noqa
+    class Link:
+        __slots__ = [
+            'seq',
+            'ins_prev',
+            'ins_next',
+            'lru_prev',
+            'lru_next',
+            'lfu_prev',
+            'lfu_next',
+            'key',
+            'value',
+            'weight',
+            'written',
+            'accessed',
+            'hits',
+            'unlinked',
+        ]
 
-    except ImportError:
-        class Link:
-            __slots__ = [
-                'seq',
-                'ins_prev',
-                'ins_next',
-                'lru_prev',
-                'lru_next',
-                'lfu_prev',
-                'lfu_next',
-                'key',
-                'value',
-                'weight',
-                'written',
-                'accessed',
-                'hits',
-                'unlinked',
-            ]
+        seq: int
+        ins_prev: 'CacheImpl.Link'
+        ins_next: 'CacheImpl.Link'
+        lru_prev: 'CacheImpl.Link'
+        lru_next: 'CacheImpl.Link'
+        lfu_prev: 'CacheImpl.Link'
+        lfu_next: 'CacheImpl.Link'
+        key: ta.Any | weakref.ref
+        value: ta.Any | weakref.ref
+        weight: float
+        written: float
+        accessed: float
+        hits: int
+        unlinked: bool
 
-            seq: int
-            ins_prev: 'CacheImpl.Link'
-            ins_next: 'CacheImpl.Link'
-            lru_prev: 'CacheImpl.Link'
-            lru_next: 'CacheImpl.Link'
-            lfu_prev: 'CacheImpl.Link'
-            lfu_next: 'CacheImpl.Link'
-            key: ta.Any | weakref.ref
-            value: ta.Any | weakref.ref
-            weight: float
-            written: float
-            accessed: float
-            hits: int
-            unlinked: bool
-
-            def __repr__(self) -> str:
-                return (
-                    f'Link@{self.seq!s}('
-                    f'ins_prev={("@" + str(self.ins_prev.seq)) if self.ins_prev is not None else None}, '
-                    f'ins_next={("@" + str(self.ins_next.seq)) if self.ins_next is not None else None}, '
-                    f'lru_prev={("@" + str(self.lru_prev.seq)) if self.lru_prev is not None else None}, '
-                    f'lru_next={("@" + str(self.lru_next.seq)) if self.lru_next is not None else None}, '
-                    f'lfu_prev={("@" + str(self.lfu_prev.seq)) if self.lfu_prev is not None else None}, '
-                    f'lfu_next={("@" + str(self.lfu_next.seq)) if self.lfu_next is not None else None}, '
-                    f'key={self.key!r}, '
-                    f'value={self.value!r}, '
-                    f'weight={self.weight}, '
-                    f'written={self.written}, '
-                    f'accessed={self.accessed}, '
-                    f'hits={self.hits}, '
-                    f'unlinked={self.unlinked})'
-                )
+        def __repr__(self) -> str:
+            return (
+                f'Link@{self.seq!s}('
+                f'ins_prev={("@" + str(self.ins_prev.seq)) if self.ins_prev is not None else None}, '
+                f'ins_next={("@" + str(self.ins_next.seq)) if self.ins_next is not None else None}, '
+                f'lru_prev={("@" + str(self.lru_prev.seq)) if self.lru_prev is not None else None}, '
+                f'lru_next={("@" + str(self.lru_next.seq)) if self.lru_next is not None else None}, '
+                f'lfu_prev={("@" + str(self.lfu_prev.seq)) if self.lfu_prev is not None else None}, '
+                f'lfu_next={("@" + str(self.lfu_next.seq)) if self.lfu_next is not None else None}, '
+                f'key={self.key!r}, '
+                f'value={self.value!r}, '
+                f'weight={self.weight}, '
+                f'written={self.written}, '
+                f'accessed={self.accessed}, '
+                f'hits={self.hits}, '
+                f'unlinked={self.unlinked})'
+            )
 
     _cache: ta.MutableMapping[ta.Any, Link]
 
