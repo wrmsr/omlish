@@ -3568,18 +3568,6 @@ def _main() -> None:
         for c in args.command
     ]
 
-    ce = injector[CommandExecutor]
-    msh = injector[ObjMarshalerManager]
-    for cmd in cmds:
-        mc = msh.roundtrip_obj(cmd, Command)
-        r = ce.try_execute(
-            mc,
-            log=log,
-            omit_exc_object=True,
-        )
-        mr = msh.roundtrip_obj(r, CommandOutputOrExceptionData)
-        print(mr)
-
     #
 
     tgt = RemoteSpawning.Target(
@@ -3592,7 +3580,7 @@ def _main() -> None:
         for cmd in cmds:
             r = rce.try_execute(cmd)
 
-            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+            print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 
     #
 
