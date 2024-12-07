@@ -199,7 +199,7 @@ def abstract_method(cls_dct, *names):
 
 @lang.cls_dct_fn()
 def abstract_property(cls_dct, *names):
-    return not_implemented(cls_dct, *names, wrapper=abc.abstractmethod)
+    return not_implemented(cls_dct, *names, wrapper=lambda o: property(abc.abstractmethod(o)))
 
 
 @lang.cls_dct_fn()
