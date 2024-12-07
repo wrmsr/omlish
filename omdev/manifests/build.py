@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - separate build from cli
@@ -10,7 +11,6 @@ See (entry_points):
  - https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/
  - [project.entry-points.omlish-manifests] \n omdev = omdev
 """
-# ruff: noqa: UP006 UP007
 import argparse
 import asyncio
 import collections
@@ -31,11 +31,11 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_pretty
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
+from omlish.manifests.load import ManifestLoader
+from omlish.manifests.types import Manifest
+from omlish.manifests.types import ManifestOrigin
 
 from .. import magic
-from .load import ManifestLoader
-from .types import Manifest
-from .types import ManifestOrigin
 
 
 T = ta.TypeVar('T')
