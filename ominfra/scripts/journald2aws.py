@@ -2214,7 +2214,7 @@ class CastObjMarshaler(ObjMarshaler):
 
 class DynamicObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return ctx.manager.marshal_obj(o, ctx.options)
+        return ctx.manager.marshal_obj(o, opts=ctx.options)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return o
