@@ -3,7 +3,7 @@ import abc
 import functools
 import typing as ta
 
-from omlish.lite.fdio.handlers import FdIoHandler
+from omlish.lite.fdio.handlers import FdioHandler
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
@@ -69,7 +69,7 @@ class HasDispatchers(abc.ABC):
         raise NotImplementedError
 
 
-class ProcessDispatcher(FdIoHandler, abc.ABC):
+class ProcessDispatcher(FdioHandler, abc.ABC):
     @property
     @abc.abstractmethod
     def channel(self) -> ProcessOutputChannel:

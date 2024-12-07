@@ -4,13 +4,13 @@ import select
 import sys
 import typing as ta
 
-from .pollers import FdIoPoller
+from .pollers import FdioPoller
 
 
-KqueueFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]
 if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
-    class _KqueueFdIoPoller(FdIoPoller):
+    class _KqueueFdioPoller(FdioPoller):
         DEFAULT_MAX_EVENTS = 1000
 
         def __init__(
@@ -98,14 +98,14 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
             kq = self._get_kqueue()
             try:
                 kes = kq.control(None, self._max_events, timeout)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
                 else:
                     raise
 
@@ -117,8 +117,8 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
                 if ke.filter == select.KQ_FILTER_WRITE:
                     w.append(ke.ident)
 
-            return FdIoPoller.PollResult(r, w)
+            return FdioPoller.PollResult(r, w)
 
-    KqueueFdIoPoller = _KqueueFdIoPoller
+    KqueueFdioPoller = _KqueueFdioPoller
 else:
-    KqueueFdIoPoller = None
+    KqueueFdioPoller = None

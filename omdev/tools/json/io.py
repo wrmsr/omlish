@@ -53,7 +53,7 @@
 #
 #
 # @dc.dataclass(frozen=True)
-# class FdIo(Input, Output):
+# class Fdio(Input, Output):
 #     fd: int
 #
 #     default_read_sz: int = DEFAULT_READ_SZ

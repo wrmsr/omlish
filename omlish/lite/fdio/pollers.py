@@ -9,7 +9,7 @@ import typing as ta
 ##
 
 
-class FdIoPoller(abc.ABC):
+class FdioPoller(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
@@ -120,8 +120,8 @@ class FdIoPoller(abc.ABC):
 ##
 
 
-class SelectFdIoPoller(FdIoPoller):
-    def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+class SelectFdioPoller(FdioPoller):
+    def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
         try:
             r, w, x = select.select(
                 self._readable,
@@ -132,22 +132,22 @@ class SelectFdIoPoller(FdIoPoller):
 
         except OSError as exc:
             if exc.errno == errno.EINTR:
-                return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
             elif exc.errno == errno.EBADF:
-                return FdIoPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
+                return FdioPoller.PollResult(msg='EBADF encountered in poll', exc=exc)
             else:
                 raise
 
-        return FdIoPoller.PollResult(r, w)
+        return FdioPoller.PollResult(r, w)
 
 
 ##
 
 
-PollFdIoPoller: ta.Optional[ta.Type[FdIoPoller]]
+PollFdioPoller: ta.Optional[ta.Type[FdioPoller]]
 if hasattr(select, 'poll'):
 
-    class _PollFdIoPoller(FdIoPoller):
+    class _PollFdioPoller(FdioPoller):
         def __init__(self) -> None:
             super().__init__()
 
@@ -180,14 +180,14 @@ if hasattr(select, 'poll'):
 
         #
 
-        def poll(self, timeout: ta.Optional[float]) -> FdIoPoller.PollResult:
+        def poll(self, timeout: ta.Optional[float]) -> FdioPoller.PollResult:
             polled: ta.List[ta.Tuple[int, int]]
             try:
                 polled = self._poller.poll(timeout * 1000 if timeout is not None else None)
 
             except OSError as exc:
                 if exc.errno == errno.EINTR:
-                    return FdIoPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
+                    return FdioPoller.PollResult(msg='EINTR encountered in poll', exc=exc)
                 else:
                     raise
 
@@ -205,8 +205,8 @@ if hasattr(select, 'poll'):
                     r.append(fd)
                 if mask & self._WRITE:
                     w.append(fd)
-            return FdIoPoller.PollResult(r, w, inv=inv)
+            return FdioPoller.PollResult(r, w, inv=inv)
 
-    PollFdIoPoller = _PollFdIoPoller
+    PollFdioPoller = _PollFdioPoller
 else:
-    PollFdIoPoller = None
+    PollFdioPoller = None

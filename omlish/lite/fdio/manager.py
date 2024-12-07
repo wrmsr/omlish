@@ -1,27 +1,27 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from .handlers import FdIoHandler
-from .pollers import FdIoPoller
+from .handlers import FdioHandler
+from .pollers import FdioPoller
 
 
-class FdIoManager:
+class FdioManager:
     def __init__(
             self,
-            poller: FdIoPoller,
+            poller: FdioPoller,
     ) -> None:
         super().__init__()
 
         self._poller = poller
 
-        self._handlers: ta.Dict[int, FdIoHandler] = {}  # Preserves insertion order
+        self._handlers: ta.Dict[int, FdioHandler] = {}  # Preserves insertion order
 
-    def register(self, h: FdIoHandler) -> None:
+    def register(self, h: FdioHandler) -> None:
         if (hid := id(h)) in self._handlers:
             raise KeyError(h)
         self._handlers[hid] = h
 
-    def unregister(self, h: FdIoHandler) -> None:
+    def unregister(self, h: FdioHandler) -> None:
         del self._handlers[id(h)]
 
     def poll(self, *, timeout: float = 1.) -> None:
