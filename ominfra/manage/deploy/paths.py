@@ -38,6 +38,8 @@ import typing as ta
 
 from omlish.lite.check import check_equal
 from omlish.lite.check import check_non_empty
+from omlish.lite.check import check_non_empty_str
+from omlish.lite.check import check_not_in
 
 
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
@@ -47,7 +49,6 @@ DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
 
 
 DEPLOY_PATH_SPEC_PLACEHOLDER = '@'
-
 
 
 @dc.dataclass(frozen=True)
@@ -62,6 +63,9 @@ class DeployPathPart(abc.ABC):  # noqa
         raise NotImplementedError
 
 
+#
+
+
 class DeployPathDir(DeployPathPart, abc.ABC):
     @property
     def kind(self) -> DeployPathKind:
@@ -69,7 +73,11 @@ class DeployPathDir(DeployPathPart, abc.ABC):
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathDir':
-        raise NotImplementedError
+        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
+            check_equal(s, DEPLOY_PATH_SPEC_PLACEHOLDER)
+            return SpecDeployPathDir()
+        else:
+            return ConstDeployPathDir(s)
 
 
 class DeployPathFile(DeployPathPart, abc.ABC):
@@ -79,36 +87,59 @@ class DeployPathFile(DeployPathPart, abc.ABC):
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPathFile':
-        raise NotImplementedError
+        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
+            check_equal(s[0], DEPLOY_PATH_SPEC_PLACEHOLDER)
+            return SpecDeployPathFile(s[1:])
+        else:
+            return ConstDeployPathFile(s)
+
+
+#
 
 
 @dc.dataclass(frozen=True)
 class ConstDeployPathPart(DeployPathPart, abc.ABC):
     name: str
 
+    def __post_init__(self) -> None:
+        check_non_empty_str(self.name)
+        check_not_in('/', self.name)
+        check_not_in(DEPLOY_PATH_SPEC_PLACEHOLDER, self.name)
+
     def render(self) -> str:
         return self.name
 
 
-class DeployConstDir(ConstDeployPathPart, DeployPathDir):
+class ConstDeployPathDir(ConstDeployPathPart, DeployPathDir):
     pass
 
 
-class DeployConstFile(ConstDeployPathPart, DeployPathFile):
+class ConstDeployPathFile(ConstDeployPathPart, DeployPathFile):
     pass
 
 
-class DeploySpecDir(DeployPathPart, DeployPathDir):
+#
+
+
+class SpecDeployPathDir(DeployPathPart, DeployPathDir):
     def render(self) -> str:
         return DEPLOY_PATH_SPEC_PLACEHOLDER
 
 
 @dc.dataclass(frozen=True)
-class DeploySpecFile(DeployPathPart, DeployPathFile):
-    suffix: ta.Optional[str] = None
+class SpecDeployPathFile(DeployPathPart, DeployPathFile):
+    suffix: str
+
+    def __post_init__(self) -> None:
+        check_non_empty_str(self.suffix)
+        check_not_in('/', self.suffix)
+        check_not_in(DEPLOY_PATH_SPEC_PLACEHOLDER, self.suffix)
 
     def render(self) -> str:
         return DEPLOY_PATH_SPEC_PLACEHOLDER + self.suffix
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -125,7 +156,10 @@ class DeployPath:
         return self.parts[-1].kind
 
     def render(self) -> str:
-        return os.path.join(*[p.render() for p in self.parts])  # noqa
+        return os.path.join(  # noqa
+            *[p.render() for p in self.parts]
+            *([''] if self.kind == 'dir' else []),  # noqa
+        )
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
