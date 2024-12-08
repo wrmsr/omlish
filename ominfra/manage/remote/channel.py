@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import json
 import struct
+import threading
 import typing as ta
 
 from omlish.lite.json import json_dumps_compact
@@ -25,10 +26,12 @@ class RemoteChannel:
         self._output = output
         self._msh = msh
 
+        self._lock = threading.RLock()
+
     def set_marshaler(self, msh: ObjMarshalerManager) -> None:
         self._msh = msh
 
-    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+    def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
 
@@ -36,7 +39,11 @@ class RemoteChannel:
         self._output.write(d)
         self._output.flush()
 
-    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+        with self._lock:
+            return self._send_obj(o, ty)
+
+    def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         d = self._input.read(4)
         if not d:
             return None
@@ -50,3 +57,7 @@ class RemoteChannel:
 
         j = json.loads(d.decode('utf-8'))
         return self._msh.unmarshal_obj(j, ty)
+
+    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        with self._lock:
+            return self._recv_obj(ty)
