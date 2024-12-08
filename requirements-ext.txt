@@ -295,3 +295,5 @@ mlx==0.21.1; sys_platform == "darwin"
 mlx-lm==0.20.1; sys_platform == "darwin"
 
 flask==3.1.0
+
+pyinfra==3.1.1
