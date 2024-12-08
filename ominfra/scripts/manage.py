@@ -4208,8 +4208,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
     timeout: ta.Optional[float] = None
 
     def __post_init__(self) -> None:
-        if isinstance(self.cmd, str):
-            raise TypeError(self.cmd)
+        check_not_isinstance(self.cmd, str)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -5572,18 +5571,15 @@ def _main() -> None:
 
     #
 
+    msh = injector[ObjMarshalerManager]
+
     cmds: ta.List[Command] = []
-    i = 0
-    while i < len(args.command):
-        c = args.command[i]
-        i += 1
-        if c == 'deploy':
-            cmds.append(DeployCommand())
-        elif c == 'interp':
-            cmds.append(InterpCommand(args.command[i]))
-            i += 1
-        else:
-            cmds.append(SubprocessCommand([c]))
+    cmd: Command
+    for c in args.command:
+        if not c.startswith('{'):
+            c = json.dumps({c: {}})
+        cmd = msh.unmarshal_obj(json.loads(c), Command)
+        cmds.append(cmd)
 
     #
 
@@ -5609,7 +5605,7 @@ def _main() -> None:
                 omit_exc_object=True,
             )
 
-            print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 
 
 if __name__ == '__main__':

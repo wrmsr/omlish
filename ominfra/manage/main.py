@@ -6,6 +6,7 @@ manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import contextlib
+import json
 import typing as ta
 
 from omlish.lite.logs import log  # noqa
@@ -18,10 +19,7 @@ from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.execution import LocalCommandExecutor
-from .commands.interp import InterpCommand
-from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
-from .deploy.command import DeployCommand
 from .remote.config import RemoteConfig
 from .remote.execution import RemoteExecution
 from .remote.spawning import RemoteSpawning
@@ -79,18 +77,15 @@ def _main() -> None:
 
     #
 
+    msh = injector[ObjMarshalerManager]
+
     cmds: ta.List[Command] = []
-    i = 0
-    while i < len(args.command):
-        c = args.command[i]
-        i += 1
-        if c == 'deploy':
-            cmds.append(DeployCommand())
-        elif c == 'interp':
-            cmds.append(InterpCommand(args.command[i]))
-            i += 1
-        else:
-            cmds.append(SubprocessCommand([c]))
+    cmd: Command
+    for c in args.command:
+        if not c.startswith('{'):
+            c = json.dumps({c: {}})
+        cmd = msh.unmarshal_obj(json.loads(c), Command)
+        cmds.append(cmd)
 
     #
 
@@ -116,7 +111,7 @@ def _main() -> None:
                 omit_exc_object=True,
             )
 
-            print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 
 
 if __name__ == '__main__':
