@@ -243,7 +243,7 @@
     "module": ".tools.docker",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/docker.py",
-    "line": 236,
+    "line": 249,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "docker",
@@ -255,7 +255,7 @@
     "module": ".tools.git",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/git.py",
-    "line": 211,
+    "line": 215,
     "value": {
       "$.cli.types.CliModule": {
         "cmd_name": "git",
