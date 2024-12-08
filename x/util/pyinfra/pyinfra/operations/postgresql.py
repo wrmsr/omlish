@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ...api import operation
+from ..api import operation
 
 from . import postgres
 
