@@ -287,6 +287,7 @@ def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
 
 
 class RootLevelResourcesRead(ta.NamedTuple):
+    variable: str
     kind: ta.Literal['binary', 'text']
     resource: str
 
@@ -307,6 +308,7 @@ def is_root_level_resources_read(lts: Tokens) -> RootLevelResourcesRead | None:
         return None
 
     return RootLevelResourcesRead(
+        wts[0].src,
         'binary' if wts[2].src == 'read_package_resource_binary' else 'text',
         ast.literal_eval(wts[6].src),
     )
@@ -423,7 +425,15 @@ def make_src_file(
             elif rsrc.kind == 'text':
                 with open(rf) as tf:
                     rt = tf.read()  # noqa
-                raise NotImplementedError
+                ctls.append([
+                    trt.Token(name='NAME', src=rsrc.variable),
+                    trt.Token(name='UNIMPORTANT_WS', src=' '),
+                    trt.Token(name='OP', src='='),
+                    trt.Token(name='UNIMPORTANT_WS', src=' '),
+                    trt.Token(name='STRING', src='"""\\\nfoo"""\n'),
+                    trt.Token(name='NEWLINE', src=''),
+                    trt.Token(name='ENDMARKER', src=''),
+                ])
 
             else:
                 raise ValueError(rsrc.kind)
