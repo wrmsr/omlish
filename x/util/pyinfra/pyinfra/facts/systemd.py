@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Dict, Iterable
 
-from pyinfra.api import FactBase, QuoteString, StringCommand
+from ..api import FactBase, QuoteString, StringCommand
 
 # Valid unit names consist of a "name prefix" and a dot and a suffix specifying the unit type.
 # The "unit prefix" must consist of one or more valid characters

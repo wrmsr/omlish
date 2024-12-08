@@ -7,19 +7,19 @@ from __future__ import annotations
 from datetime import timedelta
 from urllib.parse import urlparse
 
-from pyinfra import host
-from pyinfra.api import OperationError, operation
-from pyinfra.facts.apt import (
+from .. import host
+from ..api import OperationError, operation
+from ..facts.apt import (
     AptKeys,
     AptSources,
     SimulateOperationWillChange,
     noninteractive_apt,
     parse_apt_repo,
 )
-from pyinfra.facts.deb import DebPackage, DebPackages
-from pyinfra.facts.files import File
-from pyinfra.facts.gpg import GpgKey
-from pyinfra.facts.server import Date
+from ..facts.deb import DebPackage, DebPackages
+from ..facts.files import File
+from ..facts.gpg import GpgKey
+from ..facts.server import Date
 
 from . import files
 from .util.packaging import ensure_packages

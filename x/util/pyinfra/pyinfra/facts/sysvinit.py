@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 
 class InitdStatus(FactBase):

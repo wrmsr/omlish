@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import shlex
 
-from pyinfra.api import Host
+from ...api import Host
 
 
 def handle_service_control(

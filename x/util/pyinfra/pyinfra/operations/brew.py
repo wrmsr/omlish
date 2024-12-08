@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import urllib.parse
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.brew import BrewCasks, BrewPackages, BrewTaps, BrewVersion, new_cask_cli
+from .. import host
+from ..api import operation
+from ..facts.brew import BrewCasks, BrewPackages, BrewTaps, BrewVersion, new_cask_cli
 
 from .util.packaging import ensure_packages
 

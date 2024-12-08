@@ -4,9 +4,9 @@ Manage pacman packages. (Arch Linux package manager)
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.pacman import PacmanPackages, PacmanUnpackGroup
+from .. import host
+from ..api import operation
+from ..facts.pacman import PacmanPackages, PacmanUnpackGroup
 
 from .util.packaging import ensure_packages
 

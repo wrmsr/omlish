@@ -19,9 +19,9 @@ from uuid import uuid4
 import click
 from typing_extensions import Unpack
 
-from pyinfra import logger
-from pyinfra.connectors.base import BaseConnector
-from pyinfra.connectors.util import CommandOutput, remove_any_sudo_askpass_file
+from .. import logger
+from ..connectors.base import BaseConnector
+from ..connectors.util import CommandOutput, remove_any_sudo_askpass_file
 
 from .connectors import get_execution_connector
 from .exceptions import ConnectError
@@ -29,9 +29,9 @@ from .facts import FactBase, ShortFactBase, get_host_fact
 from .util import memoize, sha1_hash
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import AllArguments
-    from pyinfra.api.inventory import Inventory
-    from pyinfra.api.state import State
+    from .arguments import AllArguments
+    from .inventory import Inventory
+    from .state import State
 
 
 def extract_callable_datas(
@@ -313,7 +313,7 @@ class Host:
         if temp_directory is None:
             # Unfortunate, but very hard to avoid, circular dependency, this method is memoized so
             # performance isn't a concern.
-            from pyinfra.facts.server import TmpDir
+            from ..facts.server import TmpDir
 
             temp_directory = self.get_fact(TmpDir)
 

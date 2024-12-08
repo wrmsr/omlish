@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import re
 
-from pyinfra import logger
-from pyinfra.api import FactBase
+from .. import logger
+from ..api import FactBase
 
 from .util.packaging import parse_packages
 

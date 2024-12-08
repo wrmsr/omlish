@@ -1,4 +1,4 @@
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 
 class RunitStatus(FactBase):

@@ -4,9 +4,9 @@ Manage flatpak packages. See https://www.flatpak.org/
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.flatpak import FlatpakPackages
+from .. import host
+from ..api import operation
+from ..facts.flatpak import FlatpakPackages
 
 
 @operation()

@@ -11,12 +11,12 @@ from os import path
 from time import sleep
 from typing import TYPE_CHECKING
 
-from pyinfra import host, logger, state
-from pyinfra.api import FunctionCommand, OperationError, StringCommand, operation
-from pyinfra.api.util import try_int
-from pyinfra.connectors.util import remove_any_sudo_askpass_file
-from pyinfra.facts.files import Directory, FindInFile, Link
-from pyinfra.facts.server import (
+from .. import host, logger, state
+from ..api import FunctionCommand, OperationError, StringCommand, operation
+from ..api.util import try_int
+from ..connectors.util import remove_any_sudo_askpass_file
+from ..facts.files import Directory, FindInFile, Link
+from ..facts.server import (
     Groups,
     Home,
     Hostname,
@@ -28,7 +28,7 @@ from pyinfra.facts.server import (
     Users,
     Which,
 )
-from pyinfra.operations import crontab as crontab_
+from ..operations import crontab as crontab_
 
 from . import (
     apk,
@@ -51,7 +51,7 @@ from . import (
 from .util.files import chmod
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments_typed import PyinfraOperation
+    from ..api.arguments_typed import PyinfraOperation
 
 
 @operation(is_idempotent=False)

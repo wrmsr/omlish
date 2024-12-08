@@ -4,10 +4,10 @@ The iptables modules handles iptables rules
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.api.exceptions import OperationError
-from pyinfra.facts.iptables import Ip6tablesChains, Ip6tablesRules, IptablesChains, IptablesRules
+from .. import host
+from ..api import operation
+from ..api.exceptions import OperationError
+from ..facts.iptables import Ip6tablesChains, Ip6tablesRules, IptablesChains, IptablesRules
 
 
 @operation()

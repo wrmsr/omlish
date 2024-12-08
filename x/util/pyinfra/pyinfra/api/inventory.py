@@ -8,7 +8,7 @@ from .exceptions import NoConnectorError, NoGroupError, NoHostError
 from .host import Host
 
 if TYPE_CHECKING:
-    from pyinfra.api.state import State
+    from .state import State
 
 
 def extract_name_data(names: list[Any]):

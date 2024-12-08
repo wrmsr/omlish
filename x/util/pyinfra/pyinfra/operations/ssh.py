@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import shlex
 
-from pyinfra import host
-from pyinfra.api import OperationError, operation
-from pyinfra.facts.files import File, FindInFile
-from pyinfra.facts.server import Home
+from .. import host
+from ..api import OperationError, operation
+from ..facts.files import File, FindInFile
+from ..facts.server import Home
 
 from . import files
 

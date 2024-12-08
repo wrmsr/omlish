@@ -4,11 +4,11 @@ Manage BSD packages and repositories. Note that BSD package names are case-sensi
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.files import File
-from pyinfra.facts.pkg import PkgPackages
-from pyinfra.facts.server import Arch, Os, OsVersion, Which
+from .. import host
+from ..api import operation
+from ..facts.files import File
+from ..facts.pkg import PkgPackages
+from ..facts.server import Arch, Os, OsVersion, Which
 
 from .util.packaging import ensure_packages
 

@@ -5,20 +5,20 @@ from typing import TYPE_CHECKING
 import click
 from typing_extensions import Unpack
 
-from pyinfra import logger
-from pyinfra.api import QuoteString, StringCommand
-from pyinfra.api.exceptions import ConnectError, InventoryError, PyinfraError
-from pyinfra.api.util import get_file_io, memoize
-from pyinfra.progress import progress_spinner
+from .. import logger
+from ..api import QuoteString, StringCommand
+from ..api.exceptions import ConnectError, InventoryError, PyinfraError
+from ..api.util import get_file_io, memoize
+from ..progress import progress_spinner
 
 from .base import BaseConnector
 from .ssh import SSHConnector
 from .util import extract_control_arguments, make_unix_command_for_host
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from ..api.arguments import ConnectorArguments
+    from ..api.host import Host
+    from ..api.state import State
 
 
 @memoize

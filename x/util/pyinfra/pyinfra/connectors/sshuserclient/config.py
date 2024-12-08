@@ -11,7 +11,7 @@ import paramiko.config
 from gevent.subprocess import CalledProcessError, check_call
 from paramiko import SSHConfig as ParamikoSSHConfig
 
-from pyinfra import logger
+from ... import logger
 
 SETTINGS_REGEX = re.compile(r"(\w+)(?:\s*=\s*|\s+)(.+)")
 

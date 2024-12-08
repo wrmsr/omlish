@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pyinfra.api import operation
+from ..api import operation
 
 
 @operation(is_idempotent=False)

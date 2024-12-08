@@ -15,7 +15,7 @@ from typing import (
 from typing_extensions import ParamSpec, Protocol
 
 if TYPE_CHECKING:
-    from pyinfra.api.operation import OperationMeta
+    from .operation import OperationMeta
 
 P = ParamSpec("P")
 

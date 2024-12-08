@@ -11,14 +11,14 @@ from typing import TYPE_CHECKING, Callable, Iterable, Optional, Union
 import click
 import gevent
 
-from pyinfra import logger
-from pyinfra.api import MaskString, QuoteString, StringCommand
-from pyinfra.api.util import memoize
+from .. import logger
+from ..api import MaskString, QuoteString, StringCommand
+from ..api.util import memoize
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from ..api.arguments import ConnectorArguments
+    from ..api.host import Host
+    from ..api.state import State
 
 
 SUDO_ASKPASS_ENV_VAR = "PYINFRA_SUDO_PASSWORD"

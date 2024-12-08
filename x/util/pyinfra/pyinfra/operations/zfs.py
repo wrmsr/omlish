@@ -2,9 +2,9 @@
 Manage ZFS filesystems.
 """
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.zfs import Datasets, Snapshots
+from .. import host
+from ..api import operation
+from ..facts.zfs import Datasets, Snapshots
 
 
 @operation()

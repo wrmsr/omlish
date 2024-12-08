@@ -12,12 +12,12 @@ from paramiko import (
     SSHException,
 )
 
-import pyinfra
-from pyinfra.api.exceptions import ConnectError, PyinfraError
+from ... import pyinfra
+from ..api.exceptions import ConnectError, PyinfraError
 
 if TYPE_CHECKING:
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from ..api.host import Host
+    from ..api.state import State
 
 
 def raise_connect_error(host: "Host", message, data):

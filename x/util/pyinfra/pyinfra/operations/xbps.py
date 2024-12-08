@@ -4,9 +4,9 @@ Manage XBPS packages and repositories. Note that XBPS package names are case-sen
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.xbps import XbpsPackages
+from .. import host
+from ..api import operation
+from ..facts.xbps import XbpsPackages
 
 from .util.packaging import ensure_packages
 

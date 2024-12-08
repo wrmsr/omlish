@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 from .util import make_cat_files_command
 from .util.packaging import parse_zypper_repositories

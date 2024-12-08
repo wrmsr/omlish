@@ -10,17 +10,17 @@ from typing import TYPE_CHECKING, Callable, Iterator, Optional
 from gevent.pool import Pool
 from paramiko import PKey
 
-from pyinfra import logger
+from .. import logger
 
 from .config import Config
 from .exceptions import PyinfraError
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import AllArguments
-    from pyinfra.api.command import PyinfraCommand
-    from pyinfra.api.host import Host
-    from pyinfra.api.inventory import Inventory
-    from pyinfra.api.operation import OperationMeta
+    from .arguments import AllArguments
+    from .command import PyinfraCommand
+    from .host import Host
+    from .inventory import Inventory
+    from .operation import OperationMeta
 
 
 # Work out the max parallel we can achieve with the open files limit of the user/process,

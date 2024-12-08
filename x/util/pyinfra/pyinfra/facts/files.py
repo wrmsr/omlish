@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from typing_extensions import Literal, NotRequired, TypedDict
 
-from pyinfra.api import StringCommand
-from pyinfra.api.command import QuoteString, make_formatted_string_command
-from pyinfra.api.facts import FactBase
-from pyinfra.api.util import try_int
-from pyinfra.facts.util.units import parse_size
+from ..api import StringCommand
+from ..api.command import QuoteString, make_formatted_string_command
+from ..api.facts import FactBase
+from ..api.util import try_int
+from ..facts.util.units import parse_size
 
 LINUX_STAT_COMMAND = "stat -c 'user=%U group=%G mode=%A atime=%X mtime=%Y ctime=%Z size=%s %N'"
 BSD_STAT_COMMAND = "stat -f 'user=%Su group=%Sg mode=%Sp atime=%a mtime=%m ctime=%c size=%z %N%SY'"

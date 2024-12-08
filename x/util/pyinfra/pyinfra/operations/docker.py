@@ -2,9 +2,9 @@
 Manager Docker Containers, Volumes and Networks
 """
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.docker import DockerContainer, DockerNetwork, DockerVolume
+from .. import host
+from ..api import operation
+from ..facts.docker import DockerContainer, DockerNetwork, DockerVolume
 
 from .util.docker import handle_docker
 

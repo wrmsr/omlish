@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING
 from gevent.local import local
 
 if TYPE_CHECKING:
-    from pyinfra.api.config import Config
-    from pyinfra.api.host import Host
-    from pyinfra.api.inventory import Inventory
-    from pyinfra.api.state import State
+    from .api.config import Config
+    from .api.host import Host
+    from .api.inventory import Inventory
+    from .api.state import State
 
 
 class container:
@@ -121,7 +121,7 @@ host: "Host" = ctx_host.context
 
 
 def init_base_classes() -> None:
-    from pyinfra.api import Config, Host, Inventory, State
+    from .api import Config, Host, Inventory, State
 
     ctx_config.set_base(Config)
     ctx_inventory.set_base(Inventory)

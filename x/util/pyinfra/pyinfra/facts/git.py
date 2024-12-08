@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from pyinfra.api.facts import FactBase
+from ..api.facts import FactBase
 
 
 class GitFactBase(FactBase):

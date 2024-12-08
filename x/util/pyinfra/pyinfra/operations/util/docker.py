@@ -1,4 +1,4 @@
-from pyinfra.api import OperationError
+from ..api import OperationError
 
 
 def _create_container(**kwargs):

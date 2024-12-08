@@ -4,9 +4,9 @@ Manage dnf packages and repositories. Note that dnf package names are case-sensi
 
 from __future__ import annotations
 
-from pyinfra import host, state
-from pyinfra.api import operation
-from pyinfra.facts.rpm import RpmPackageProvides, RpmPackages
+from .. import host, state
+from ..api import operation
+from ..facts.rpm import RpmPackageProvides, RpmPackages
 
 from .util.packaging import ensure_packages, ensure_rpm, ensure_yum_repo
 

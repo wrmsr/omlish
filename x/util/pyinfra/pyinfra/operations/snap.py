@@ -4,9 +4,9 @@ Manage snap packages. See https://snapcraft.io/
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.snap import SnapPackage, SnapPackages
+from .. import host
+from ..api import operation
+from ..facts.snap import SnapPackage, SnapPackages
 
 
 @operation()

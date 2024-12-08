@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.lxd import LxdContainers
+from .. import host
+from ..api import operation
+from ..facts.lxd import LxdContainers
 
 
 def get_container_named(name: str, containers: list[dict[str, Any]]) -> dict[str, Any] | None:

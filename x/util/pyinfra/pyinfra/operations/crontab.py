@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import shlex
 
-from pyinfra import host
-from pyinfra.api import StringCommand, operation
-from pyinfra.api.util import try_int
-from pyinfra.facts.crontab import Crontab, CrontabFile
-from pyinfra.operations.util.files import sed_replace
+from .. import host
+from ..api import StringCommand, operation
+from ..api.util import try_int
+from ..facts.crontab import Crontab, CrontabFile
+from ..operations.util.files import sed_replace
 
 
 @operation()

@@ -9,10 +9,10 @@ import click
 import gevent
 from paramiko import SSHException
 
-from pyinfra import logger
-from pyinfra.connectors.util import CommandOutput, OutputLine
-from pyinfra.context import ctx_host, ctx_state
-from pyinfra.progress import progress_spinner
+from .. import logger
+from ..connectors.util import CommandOutput, OutputLine
+from ..context import ctx_host, ctx_state
+from ..progress import progress_spinner
 
 from .arguments import CONNECTOR_ARGUMENT_KEYS, ConnectorArguments
 from .command import FunctionCommand, PyinfraCommand, StringCommand

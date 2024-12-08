@@ -15,8 +15,8 @@ from paramiko import (
 )
 from paramiko.agent import AgentRequestHandler
 
-from pyinfra import logger
-from pyinfra.api.util import memoize
+from .. import logger
+from ..api.util import memoize
 
 from .config import SSHConfig
 

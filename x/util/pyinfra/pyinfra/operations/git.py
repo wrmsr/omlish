@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import re
 
-from pyinfra import host
-from pyinfra.api import OperationError, operation
-from pyinfra.facts.files import Directory, File
-from pyinfra.facts.git import GitBranch, GitConfig, GitTrackingBranch
+from .. import host
+from ..api import OperationError, operation
+from ..facts.files import Directory, File
+from ..facts.git import GitBranch, GitConfig, GitTrackingBranch
 
 from . import files, ssh
 from .util.files import chown, unix_path_join

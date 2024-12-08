@@ -16,9 +16,9 @@ See example/postgresql.py for detailed example
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import MaskString, QuoteString, StringCommand, operation
-from pyinfra.facts.postgres import (
+from .. import host
+from ..api import MaskString, QuoteString, StringCommand, operation
+from ..facts.postgres import (
     PostgresDatabases,
     PostgresRoles,
     make_execute_psql_command,

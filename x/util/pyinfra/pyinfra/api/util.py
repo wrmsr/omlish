@@ -13,13 +13,13 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from paramiko import SSHException
 from typeguard import TypeCheckError, check_type
 
-import pyinfra
-from pyinfra import logger
+from ... import pyinfra
+from .. import logger
 
 if TYPE_CHECKING:
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State, StateOperationMeta
-    from pyinfra.connectors.util import CommandOutput
+    from .host import Host
+    from .state import State, StateOperationMeta
+    from ..connectors.util import CommandOutput
 
 # 64kb chunks
 BLOCKSIZE = 65536

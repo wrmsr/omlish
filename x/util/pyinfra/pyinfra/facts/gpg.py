@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 
 class GpgFactBase(FactBase):

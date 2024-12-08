@@ -11,9 +11,9 @@ from dateutil.parser import parse as parse_date
 from distro import distro
 from typing_extensions import TypedDict
 
-from pyinfra.api import FactBase, ShortFactBase
-from pyinfra.api.util import try_int
-from pyinfra.facts import crontab
+from ..api import FactBase, ShortFactBase
+from ..api.util import try_int
+from ..facts import crontab
 
 ISO_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
 

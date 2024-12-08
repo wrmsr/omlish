@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 FIELDS = ["user", "role", "type", "level"]  # order is significant, do not change
 

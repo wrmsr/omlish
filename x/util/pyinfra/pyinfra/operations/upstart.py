@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from io import StringIO
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.upstart import UpstartStatus
+from .. import host
+from ..api import operation
+from ..facts.upstart import UpstartStatus
 
 from . import files
 from .util.service import handle_service_control

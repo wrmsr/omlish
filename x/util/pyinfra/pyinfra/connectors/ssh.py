@@ -11,10 +11,10 @@ import click
 from paramiko import AuthenticationException, BadHostKeyException, SFTPClient, SSHException
 from typing_extensions import TypedDict, Unpack
 
-from pyinfra import logger
-from pyinfra.api.command import QuoteString, StringCommand
-from pyinfra.api.exceptions import ConnectError
-from pyinfra.api.util import get_file_io, memoize
+from .. import logger
+from ..api.command import QuoteString, StringCommand
+from ..api.exceptions import ConnectError
+from ..api.util import get_file_io, memoize
 
 from .base import BaseConnector, DataMeta
 from .ssh_util import get_private_key, raise_connect_error
@@ -29,7 +29,7 @@ from .util import (
 )
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
+    from ..api.arguments import ConnectorArguments
 
 
 class ConnectorData(TypedDict):

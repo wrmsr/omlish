@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from pyinfra.api import QuoteString, StringCommand
+from ..api import QuoteString, StringCommand
 
 
 def unix_path_join(*parts) -> str:

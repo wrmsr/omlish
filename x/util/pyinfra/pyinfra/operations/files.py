@@ -16,8 +16,8 @@ from typing import IO, Any, Union
 
 from jinja2 import TemplateRuntimeError, TemplateSyntaxError, UndefinedError
 
-from pyinfra import host, logger, state
-from pyinfra.api import (
+from .. import host, logger, state
+from ..api import (
     FileDownloadCommand,
     FileUploadCommand,
     OperationError,
@@ -28,8 +28,8 @@ from pyinfra.api import (
     StringCommand,
     operation,
 )
-from pyinfra.api.command import make_formatted_string_command
-from pyinfra.api.util import (
+from ..api.command import make_formatted_string_command
+from ..api.util import (
     get_call_location,
     get_file_io,
     get_file_sha1,
@@ -37,7 +37,7 @@ from pyinfra.api.util import (
     get_template,
     memoize,
 )
-from pyinfra.facts.files import (
+from ..facts.files import (
     MARKER_BEGIN_DEFAULT,
     MARKER_DEFAULT,
     MARKER_END_DEFAULT,
@@ -52,7 +52,7 @@ from pyinfra.facts.files import (
     Sha1File,
     Sha256File,
 )
-from pyinfra.facts.server import Date, Which
+from ..facts.server import Date, Which
 
 from .util import files as file_utils
 from .util.files import adjust_regex, ensure_mode_int, get_timestamp, sed_replace, unix_path_join

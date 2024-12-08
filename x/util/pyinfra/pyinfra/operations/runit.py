@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.files import File
-from pyinfra.facts.runit import RunitManaged, RunitStatus
+from .. import host
+from ..api import operation
+from ..facts.files import File
+from ..facts.runit import RunitManaged, RunitStatus
 
 from .files import file, link
 from .util.service import handle_service_control

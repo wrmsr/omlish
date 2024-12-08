@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 
 class LxdContainers(FactBase):

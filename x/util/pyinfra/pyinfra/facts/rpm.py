@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import shlex
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 from .util.packaging import parse_packages
 

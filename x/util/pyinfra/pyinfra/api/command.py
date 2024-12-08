@@ -8,13 +8,13 @@ from typing import IO, TYPE_CHECKING, Callable, Union
 import gevent
 from typing_extensions import Unpack
 
-from pyinfra.context import ctx_config, ctx_host
+from ..context import ctx_config, ctx_host
 
 from .arguments import ConnectorArguments
 
 if TYPE_CHECKING:
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from .host import Host
+    from .state import State
 
 
 def make_formatted_string_command(string: str, *args, **kwargs) -> "StringCommand":

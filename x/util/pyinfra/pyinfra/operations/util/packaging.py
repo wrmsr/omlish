@@ -6,10 +6,10 @@ from io import StringIO
 from typing import Callable
 from urllib.parse import urlparse
 
-from pyinfra.api import Host, State
-from pyinfra.facts.files import File
-from pyinfra.facts.rpm import RpmPackage
-from pyinfra.operations import files
+from ...api import Host, State
+from ...facts.files import File
+from ...facts.rpm import RpmPackage
+from ...operations import files
 
 
 def _package_name(package: list[str] | str) -> str:

@@ -4,9 +4,9 @@ Manage OpenVZ containers with ``vzctl``.
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import OperationError, operation
-from pyinfra.facts.vzctl import OpenvzContainers
+from .. import host
+from ..api import OperationError, operation
+from ..facts.vzctl import OpenvzContainers
 
 
 @operation(is_idempotent=False)

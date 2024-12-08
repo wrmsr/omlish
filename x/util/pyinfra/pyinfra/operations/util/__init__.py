@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from pyinfra.api.operation import OperationMeta
+    from ..api.operation import OperationMeta
 
 
 def any_changed(*args: "OperationMeta") -> Callable[[], bool]:

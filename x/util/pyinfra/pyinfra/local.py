@@ -3,12 +3,12 @@ from typing import Optional
 
 import click
 
-import pyinfra
-from pyinfra import config, host, logger, state
-from pyinfra.api.exceptions import PyinfraError
-from pyinfra.api.util import get_file_path
-from pyinfra.connectors.util import run_local_process
-from pyinfra.context import ctx_state
+from .. import pyinfra
+from . import config, host, logger, state
+from .api.exceptions import PyinfraError
+from .api.util import get_file_path
+from .connectors.util import run_local_process
+from .context import ctx_state
 
 
 def include(filename: str, data: Optional[dict] = None):
@@ -32,7 +32,7 @@ def include(filename: str, data: Optional[dict] = None):
         # to maintain backwards compatibility and the nicer public import
         # (ideally users never need to import from `pyinfra_cli`).
 
-        from pyinfra_cli.util import exec_file
+        from ..pyinfra_cli.util import exec_file
 
         with host.deploy(path.relpath(filename, state.cwd), None, data, in_deploy=False):
             exec_file(filename)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 
 class LaunchdStatus(FactBase):

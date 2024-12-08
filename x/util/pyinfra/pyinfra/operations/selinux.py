@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pyinfra import host
-from pyinfra.api import OperationValueError, QuoteString, StringCommand, operation
-from pyinfra.facts.selinux import FileContext, FileContextMapping, SEBoolean, SEPort, SEPorts
-from pyinfra.facts.server import Which
+from .. import host
+from ..api import OperationValueError, QuoteString, StringCommand, operation
+from ..facts.selinux import FileContext, FileContextMapping, SEBoolean, SEPort, SEPorts
+from ..facts.server import Which
 
 
 class Boolean(Enum):

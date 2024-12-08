@@ -4,9 +4,9 @@ Manage launchd services.
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.launchd import LaunchdStatus
+from .. import host
+from ..api import operation
+from ..facts.launchd import LaunchdStatus
 
 from .util.service import handle_service_control
 

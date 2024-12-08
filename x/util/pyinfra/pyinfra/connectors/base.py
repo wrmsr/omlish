@@ -17,14 +17,14 @@ from typing import (
 
 from typing_extensions import TypedDict, Unpack
 
-from pyinfra.api.exceptions import ConnectorDataTypeError
-from pyinfra.api.util import raise_if_bad_type
+from ..api.exceptions import ConnectorDataTypeError
+from ..api.util import raise_if_bad_type
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
-    from pyinfra.api.command import StringCommand
-    from pyinfra.api.host import Host, HostData
-    from pyinfra.api.state import State
+    from ..api.arguments import ConnectorArguments
+    from ..api.command import StringCommand
+    from ..api.host import Host, HostData
+    from ..api.state import State
 
     from .util import CommandOutput
 

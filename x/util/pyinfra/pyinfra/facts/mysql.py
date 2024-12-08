@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from pyinfra.api import FactBase, MaskString, QuoteString, StringCommand
-from pyinfra.api.util import try_int
+from ..api import FactBase, MaskString, QuoteString, StringCommand
+from ..api.util import try_int
 
 from .util.databases import parse_columns_and_rows
 

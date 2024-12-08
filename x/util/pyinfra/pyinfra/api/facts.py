@@ -20,24 +20,24 @@ import click
 import gevent
 from paramiko import SSHException
 
-from pyinfra import logger
-from pyinfra.api import StringCommand
-from pyinfra.api.arguments import all_global_arguments, pop_global_arguments
-from pyinfra.api.util import (
+from .. import logger
+from . import StringCommand
+from .arguments import all_global_arguments, pop_global_arguments
+from .util import (
     get_kwargs_str,
     log_error_or_warning,
     log_host_command_error,
     print_host_combined_output,
 )
-from pyinfra.connectors.util import CommandOutput
-from pyinfra.context import ctx_host, ctx_state
-from pyinfra.progress import progress_spinner
+from ..connectors.util import CommandOutput
+from ..context import ctx_host, ctx_state
+from ..progress import progress_spinner
 
 from .arguments import CONNECTOR_ARGUMENT_KEYS
 
 if TYPE_CHECKING:
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from .host import Host
+    from .state import State
 
 SUDO_REGEX = r"^sudo: unknown user"
 SU_REGEXES = (

@@ -4,10 +4,10 @@ Manage BSD init services (``/etc/rc.d``, ``/usr/local/etc/rc.d``).
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.bsdinit import RcdStatus
-from pyinfra.facts.server import Os
+from .. import host
+from ..api import operation
+from ..facts.bsdinit import RcdStatus
+from ..facts.server import Os
 
 from . import files
 from .util.service import handle_service_control

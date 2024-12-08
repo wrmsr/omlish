@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from pyinfra.api import FunctionCommand, operation
+from ..api import FunctionCommand, operation
 
 
 @operation(is_idempotent=False, _set_in_op=False)

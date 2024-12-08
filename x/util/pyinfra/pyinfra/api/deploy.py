@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, cast
 from typing_extensions import ParamSpec
 
 import pyinfra
-from pyinfra import context
-from pyinfra.context import ctx_host, ctx_state
+from .. import context
+from ..context import ctx_host, ctx_state
 
 from .arguments import pop_global_arguments
 from .arguments_typed import PyinfraOperation
@@ -20,7 +20,7 @@ from .host import Host
 from .util import get_call_location
 
 if TYPE_CHECKING:
-    from pyinfra.api.state import State
+    from .state import State
 
 
 def add_deploy(state: "State", deploy_func: Callable[..., Any], *args, **kwargs) -> None:

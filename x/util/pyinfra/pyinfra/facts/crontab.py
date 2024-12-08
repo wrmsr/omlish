@@ -3,8 +3,8 @@ from typing import Dict, List, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired
 
-from pyinfra.api import FactBase
-from pyinfra.api.util import try_int
+from ..api import FactBase
+from ..api.util import try_int
 
 
 class CrontabDict(TypedDict):

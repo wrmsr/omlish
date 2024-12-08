@@ -4,7 +4,7 @@ import re
 
 from typing_extensions import TypedDict
 
-from pyinfra.api import FactBase
+from ..api import FactBase
 
 from .gpg import GpgFactBase
 from .util import make_cat_files_command

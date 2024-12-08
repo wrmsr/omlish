@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Tuple
 import click
 from typing_extensions import Unpack
 
-from pyinfra import logger
-from pyinfra.api.command import QuoteString, StringCommand
-from pyinfra.api.exceptions import InventoryError
-from pyinfra.api.util import get_file_io
+from .. import logger
+from ..api.command import QuoteString, StringCommand
+from ..api.exceptions import InventoryError
+from ..api.util import get_file_io
 
 from .base import BaseConnector
 from .util import (
@@ -20,7 +20,7 @@ from .util import (
 )
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
+    from ..api.arguments import ConnectorArguments
 
 
 class LocalConnector(BaseConnector):

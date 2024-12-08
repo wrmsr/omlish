@@ -4,11 +4,11 @@ Manage sysvinit services (``/etc/init.d``).
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.files import FindLinks
-from pyinfra.facts.server import LinuxDistribution
-from pyinfra.facts.sysvinit import InitdStatus
+from .. import host
+from ..api import operation
+from ..facts.files import FindLinks
+from ..facts.server import LinuxDistribution
+from ..facts.sysvinit import InitdStatus
 
 from . import files
 from .util.service import handle_service_control

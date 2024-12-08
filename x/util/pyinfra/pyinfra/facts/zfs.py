@@ -2,7 +2,7 @@
 Manage ZFS filesystems.
 """
 
-from pyinfra.api import FactBase, ShortFactBase
+from ..api import FactBase, ShortFactBase
 
 
 def _process_zfs_props_table(output):

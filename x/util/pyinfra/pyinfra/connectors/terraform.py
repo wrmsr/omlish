@@ -1,9 +1,9 @@
 import json
 
-from pyinfra import local, logger
-from pyinfra.api.exceptions import InventoryError
-from pyinfra.api.util import memoize
-from pyinfra.progress import progress_spinner
+from .. import local, logger
+from ..api.exceptions import InventoryError
+from ..api.util import memoize
+from ..progress import progress_spinner
 
 from .base import BaseConnector
 

@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 import gevent
 
-from pyinfra.progress import progress_spinner
+from ..progress import progress_spinner
 
 if TYPE_CHECKING:
-    from pyinfra.api.state import State
+    from .state import State
 
 
 def connect_all(state: "State"):

@@ -5,10 +5,10 @@ a virtualenv (virtual environment).
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.files import File
-from pyinfra.facts.pip import PipPackages
+from .. import host
+from ..api import operation
+from ..facts.files import File
+from ..facts.pip import PipPackages
 
 from . import files
 from .util.packaging import ensure_packages

@@ -4,9 +4,9 @@ Manage pkgin packages.
 
 from __future__ import annotations
 
-from pyinfra import host
-from pyinfra.api import operation
-from pyinfra.facts.pkgin import PkginPackages
+from .. import host
+from ..api import operation
+from ..facts.pkgin import PkginPackages
 
 from .util.packaging import ensure_packages
 

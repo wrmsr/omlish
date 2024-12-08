@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from pyinfra.api import FactBase, ShortFactBase
+from ..api import FactBase, ShortFactBase
 
 
 class Cpus(FactBase[int]):

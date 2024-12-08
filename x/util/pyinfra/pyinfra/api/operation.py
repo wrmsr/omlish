@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING, Any, Callable, Generator, Iterator, Optional, 
 
 from typing_extensions import ParamSpec
 
-import pyinfra
-from pyinfra import context, logger
-from pyinfra.context import ctx_host, ctx_state
+from ... import pyinfra
+from .. import context, logger
+from ..context import ctx_host, ctx_state
 
 from .arguments import EXECUTION_KWARG_KEYS, AllArguments, pop_global_arguments
 from .arguments_typed import PyinfraOperation
@@ -37,7 +37,7 @@ from .util import (
 op_meta_default = object()
 
 if TYPE_CHECKING:
-    from pyinfra.connectors.util import CommandOutput
+    from ..connectors.util import CommandOutput
 
 
 class OperationMeta:

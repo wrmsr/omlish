@@ -8,20 +8,20 @@ from typing import TYPE_CHECKING
 import click
 from typing_extensions import TypedDict, Unpack
 
-from pyinfra import local, logger
-from pyinfra.api import QuoteString, StringCommand
-from pyinfra.api.exceptions import ConnectError, InventoryError, PyinfraError
-from pyinfra.api.util import get_file_io
-from pyinfra.progress import progress_spinner
+from .. import local, logger
+from ..api import QuoteString, StringCommand
+from ..api.exceptions import ConnectError, InventoryError, PyinfraError
+from ..api.util import get_file_io
+from ..progress import progress_spinner
 
 from .base import BaseConnector, DataMeta
 from .local import LocalConnector
 from .util import CommandOutput, extract_control_arguments, make_unix_command_for_host
 
 if TYPE_CHECKING:
-    from pyinfra.api.arguments import ConnectorArguments
-    from pyinfra.api.host import Host
-    from pyinfra.api.state import State
+    from ..api.arguments import ConnectorArguments
+    from ..api.host import Host
+    from ..api.state import State
 
 
 class ConnectorData(TypedDict):

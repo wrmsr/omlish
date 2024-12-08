@@ -18,14 +18,14 @@ from typing import (
 
 from typing_extensions import TypedDict
 
-from pyinfra import context
-from pyinfra.api.exceptions import ArgumentTypeError
-from pyinfra.api.state import State
-from pyinfra.api.util import raise_if_bad_type
+from .. import context
+from .exceptions import ArgumentTypeError
+from .state import State
+from .util import raise_if_bad_type
 
 if TYPE_CHECKING:
-    from pyinfra.api.config import Config
-    from pyinfra.api.host import Host
+    from .config import Config
+    from .host import Host
 
 T = TypeVar("T")
 default_sentinel = object()

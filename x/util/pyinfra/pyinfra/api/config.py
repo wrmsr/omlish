@@ -10,7 +10,7 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
-from pyinfra import __version__, state
+from .. import __version__, state
 
 from .exceptions import PyinfraError
 
