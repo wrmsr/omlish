@@ -1,3 +1,7 @@
+"""
+TODO:
+ - https://github.com/vegardit/bash-funk/blob/main/docs/git.md
+"""
 import os
 import re
 import subprocess
