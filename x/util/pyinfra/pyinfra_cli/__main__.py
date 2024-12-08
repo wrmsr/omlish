@@ -39,5 +39,4 @@ except AttributeError:
 signal.signal(signal.SIGINT, _handle_interrupt)  # print the message and exit main
 
 
-if __name__ == "pyinfra_cli.__main__":
-    cli()
+cli()
