@@ -61,7 +61,7 @@ def join_lines(ls: ta.Iterable[Tokens]) -> str:
 
 def match_toks(
         ts: ta.Iterable['trt.Token'],
-        pat: ta.Sequence[tuple[str | None, str | None]],
+        pat: ta.Sequence[tuple[str | None, str | tuple[str, ...] | None]],
 ) -> bool:
     it = iter(ts)
     for pn, ps in pat:
@@ -71,6 +71,13 @@ def match_toks(
             return False
         if pn is not None and t.name != pn:
             return False
-        if ps is not None and t.src != ps:
-            return False
+        if ps is not None:
+            if isinstance(ps, str):
+                if t.src != ps:
+                    return False
+            elif isinstance(ps, tuple):
+                if t.src not in ps:
+                    return False
+            else:
+                raise TypeError(ps)
     return True

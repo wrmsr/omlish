@@ -1,4 +1,8 @@
 # ruff: noqa: UP006 UP007
+"""
+TODO:
+ - yum/rpm
+"""
 import abc
 import dataclasses as dc
 import json
@@ -97,20 +101,6 @@ class AptSystemPackageManager(SystemPackageManager):
                 version=v,
             )
         return d
-
-
-class YumSystemPackageManager(SystemPackageManager):
-    def update(self) -> None:
-        raise NotImplementedError
-
-    def upgrade(self) -> None:
-        raise NotImplementedError
-
-    def install(self, *packages: SystemPackageOrStr) -> None:
-        raise NotImplementedError
-
-    def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
-        raise NotImplementedError
 
 
 def _main() -> None:
