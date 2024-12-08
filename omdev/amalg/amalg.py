@@ -425,12 +425,14 @@ def make_src_file(
             elif rsrc.kind == 'text':
                 with open(rf) as tf:
                     rt = tf.read()  # noqa
+                rt = rt.replace('\\', '\\\\')  # Escape backslashes
+                rt = rt.replace('"""', r'\"\"\"')
                 ctls.append([
                     trt.Token(name='NAME', src=rsrc.variable),
                     trt.Token(name='UNIMPORTANT_WS', src=' '),
                     trt.Token(name='OP', src='='),
                     trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    trt.Token(name='STRING', src='"""\\\nfoo"""\n'),
+                    trt.Token(name='STRING', src=f'"""\\\n{rt}"""\n'),
                     trt.Token(name='NEWLINE', src=''),
                     trt.Token(name='ENDMARKER', src=''),
                 ])
