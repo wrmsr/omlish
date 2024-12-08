@@ -2846,6 +2846,8 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
     def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+        log.info('Deploying!')
+
         return DeployCommand.Output()
 
 
@@ -2879,10 +2881,12 @@ class RemoteChannel:
         self._output = output
         self._msh = msh
 
+        self._lock = threading.RLock()
+
     def set_marshaler(self, msh: ObjMarshalerManager) -> None:
         self._msh = msh
 
-    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+    def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
 
@@ -2890,7 +2894,11 @@ class RemoteChannel:
         self._output.write(d)
         self._output.flush()
 
-    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+        with self._lock:
+            return self._send_obj(o, ty)
+
+    def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         d = self._input.read(4)
         if not d:
             return None
@@ -2904,6 +2912,10 @@ class RemoteChannel:
 
         j = json.loads(d.decode('utf-8'))
         return self._msh.unmarshal_obj(j, ty)
+
+    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        with self._lock:
+            return self._recv_obj(ty)
 
 
 ########################################
@@ -3306,6 +3318,16 @@ def bind_commands(
 ##
 
 
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
 @dc.dataclass(frozen=True)
 class _RemoteExecutionRequest:
     c: Command
@@ -3313,7 +3335,7 @@ class _RemoteExecutionRequest:
 
 @dc.dataclass(frozen=True)
 class _RemoteExecutionLog:
-    pass
+    s: str
 
 
 @dc.dataclass(frozen=True)
@@ -3339,6 +3361,21 @@ def _remote_execution_main() -> None:
 
     chan.set_marshaler(injector[ObjMarshalerManager])
 
+    #
+
+    log_lock = threading.RLock()
+    send_logs = False
+
+    def log_fn(s: str) -> None:
+        with log_lock:
+            if send_logs:
+                chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+
+    log_handler = _RemoteExecutionLogHandler(log_fn)
+    logging.root.addHandler(log_handler)
+
+    #
+
     ce = injector[LocalCommandExecutor]
 
     while True:
@@ -3346,11 +3383,17 @@ def _remote_execution_main() -> None:
         if req is None:
             break
 
+        with log_lock:
+            send_logs = True
+
         r = ce.try_execute(
             req.c,
             log=log,
             omit_exc_object=True,
         )
+
+        with log_lock:
+            send_logs = False
 
         chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
             output=r.output,
@@ -3375,10 +3418,15 @@ class RemoteCommandExecutor(CommandExecutor):
     def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
         self._chan.send_obj(_RemoteExecutionRequest(cmd))
 
-        if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
-            raise EOFError
+        while True:
+            if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+                raise EOFError
 
-        return check_not_none(r.r)
+            if r.l is not None:
+                log.info(r.l.s)
+
+            if r.r is not None:
+                return r.r
 
     # @ta.override
     def execute(self, cmd: Command) -> Command.Output:

@@ -2,6 +2,7 @@
 import contextlib
 import dataclasses as dc
 import logging
+import threading
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -36,6 +37,16 @@ else:
 ##
 
 
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
 @dc.dataclass(frozen=True)
 class _RemoteExecutionRequest:
     c: Command
@@ -43,7 +54,7 @@ class _RemoteExecutionRequest:
 
 @dc.dataclass(frozen=True)
 class _RemoteExecutionLog:
-    pass
+    s: str
 
 
 @dc.dataclass(frozen=True)
@@ -69,6 +80,21 @@ def _remote_execution_main() -> None:
 
     chan.set_marshaler(injector[ObjMarshalerManager])
 
+    #
+
+    log_lock = threading.RLock()
+    send_logs = False
+
+    def log_fn(s: str) -> None:
+        with log_lock:
+            if send_logs:
+                chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+
+    log_handler = _RemoteExecutionLogHandler(log_fn)
+    logging.root.addHandler(log_handler)
+
+    #
+
     ce = injector[LocalCommandExecutor]
 
     while True:
@@ -76,11 +102,17 @@ def _remote_execution_main() -> None:
         if req is None:
             break
 
+        with log_lock:
+            send_logs = True
+
         r = ce.try_execute(
             req.c,
             log=log,
             omit_exc_object=True,
         )
+
+        with log_lock:
+            send_logs = False
 
         chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
             output=r.output,
@@ -105,10 +137,15 @@ class RemoteCommandExecutor(CommandExecutor):
     def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
         self._chan.send_obj(_RemoteExecutionRequest(cmd))
 
-        if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
-            raise EOFError
+        while True:
+            if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+                raise EOFError
 
-        return check_not_none(r.r)
+            if r.l is not None:
+                log.info(r.l.s)
+
+            if r.r is not None:
+                return r.r
 
     # @ta.override
     def execute(self, cmd: Command) -> Command.Output:
