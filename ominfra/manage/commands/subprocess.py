@@ -5,6 +5,7 @@ import subprocess
 import time
 import typing as ta
 
+from omlish.lite.check import check_not_isinstance
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
@@ -31,8 +32,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
     timeout: ta.Optional[float] = None
 
     def __post_init__(self) -> None:
-        if isinstance(self.cmd, str):
-            raise TypeError(self.cmd)
+        check_not_isinstance(self.cmd, str)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
