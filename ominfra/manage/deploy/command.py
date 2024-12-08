@@ -1,6 +1,8 @@
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 
+from omlish.lite.logs import log
+
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
 
@@ -20,4 +22,6 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
     def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+        log.info('Deploying!')
+
         return DeployCommand.Output()
