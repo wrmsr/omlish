@@ -18,6 +18,7 @@ from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
 from .commands.execution import LocalCommandExecutor
+from .commands.interp import InterpCommand
 from .commands.subprocess import SubprocessCommand
 from .config import MainConfig
 from .deploy.command import DeployCommand
@@ -79,9 +80,15 @@ def _main() -> None:
     #
 
     cmds: ta.List[Command] = []
-    for c in args.command:
+    i = 0
+    while i < len(args.command):
+        c = args.command[i]
+        i += 1
         if c == 'deploy':
             cmds.append(DeployCommand())
+        elif c == 'interp':
+            cmds.append(InterpCommand(args.command[i]))
+            i += 1
         else:
             cmds.append(SubprocessCommand([c]))
 
@@ -103,7 +110,11 @@ def _main() -> None:
             ce = es.enter_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
 
         for cmd in cmds:
-            r = ce.try_execute(cmd)
+            r = ce.try_execute(
+                cmd,
+                log=log,
+                omit_exc_object=True,
+            )
 
             print(injector[ObjMarshalerManager].marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
 

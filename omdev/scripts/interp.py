@@ -2530,7 +2530,7 @@ class InterpResolver:
             if spec.contains(si)
         ]
 
-        slst = sorted(lst, key=lambda t: (-t[0], t[1]))
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
         if not slst:
             return None
 
