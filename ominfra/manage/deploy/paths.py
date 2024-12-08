@@ -167,4 +167,14 @@ class DeployPath:
 
     @classmethod
     def parse(cls, s: str) -> 'DeployPath':
-        raise NotImplementedError
+        tail_parse: ta.Callable[[str], DeployPathPart]
+        if s.endswith('/'):
+            tail_parse = DeployPathDir.parse
+            s = s[:-1]
+        else:
+            tail_parse = DeployPathFile.parse
+        ps = check_non_empty_str(s).split('/')
+        return cls([
+            *([DeployPathDir.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
+            tail_parse(ps[-1]),
+        ])
