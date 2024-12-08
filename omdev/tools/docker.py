@@ -1,6 +1,6 @@
 """
 TODO:
- - check for updates
+ - https://github.com/zeromake/docker-debug
 """
 import os
 import re
@@ -231,6 +231,19 @@ class Cli(ap.Cli):
                 continue
 
             print(f'{svc_name}: {lt}')
+
+    @ap.command()
+    def dockly(self) -> None:
+        os.execl(
+            exe := docker_exe(),
+            exe,
+            'run',
+            '-it',
+            '--rm',
+            '-v',
+            '/var/run/docker.sock:/var/run/docker.sock',
+            'lirantal/dockly',
+        )
 
 
 # @omlish-manifest

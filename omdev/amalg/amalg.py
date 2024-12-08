@@ -286,6 +286,35 @@ def is_root_level_if_type_checking_block(lts: Tokens) -> bool:
 ##
 
 
+class RootLevelResourcesRead(ta.NamedTuple):
+    kind: ta.Literal['binary', 'text']
+    resource: str
+
+
+def is_root_level_resources_read(lts: Tokens) -> RootLevelResourcesRead | None:
+    wts = list(tks.ignore_ws(lts, keep=['INDENT']))
+
+    if not tks.match_toks(wts, [
+        ('NAME', None),
+        ('OP', '='),
+        ('NAME', ('read_package_resource_binary', 'read_package_resource_text')),
+        ('OP', '('),
+        ('NAME', '__package__'),
+        ('OP', ','),
+        ('STRING', None),
+        ('OP', ')'),
+    ]):
+        return None
+
+    return RootLevelResourcesRead(
+        'binary' if wts[2].src == 'read_package_resource_binary' else 'text',
+        ast.literal_eval(wts[6].src),
+    )
+
+
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class SrcFile:
     path: str
@@ -382,6 +411,22 @@ def make_src_file(
             ]):
                 i += 1
                 skip_block()
+
+        elif (rsrc := is_root_level_resources_read(line)) is not None:
+            rf = os.path.join(os.path.dirname(path), rsrc.resource)
+
+            if rsrc.kind == 'binary':
+                with open(rf, 'rb') as bf:
+                    rb = bf.read()  # noqa
+                raise NotImplementedError
+
+            elif rsrc.kind == 'text':
+                with open(rf) as tf:
+                    rt = tf.read()  # noqa
+                raise NotImplementedError
+
+            else:
+                raise ValueError(rsrc.kind)
 
         else:
             ctls.append(line)
