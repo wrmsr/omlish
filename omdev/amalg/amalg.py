@@ -25,8 +25,10 @@ Targets:
 """
 import argparse
 import ast
+import base64
 import dataclasses as dc
 import io
+import itertools
 import logging
 import os.path
 import re
@@ -332,6 +334,8 @@ class SrcFile:
 
     ruff_noqa: ta.AbstractSet[str] = dc.field(repr=False)
 
+    has_binary_resources: bool = False
+
 
 def make_src_file(
         path: str,
@@ -352,6 +356,8 @@ def make_src_file(
     imps: list[Import] = []
     tys: list[Typing] = []
     ctls: list[Tokens] = []
+
+    has_binary_resources = False
 
     i = 0
     while i < len(cls):
@@ -420,7 +426,33 @@ def make_src_file(
             if rsrc.kind == 'binary':
                 with open(rf, 'rb') as bf:
                     rb = bf.read()  # noqa
-                raise NotImplementedError
+
+                ctls.append([
+                    trt.Token(name='NAME', src=rsrc.variable),
+                    trt.Token(name='UNIMPORTANT_WS', src=' '),
+                    trt.Token(name='OP', src='='),
+                    trt.Token(name='UNIMPORTANT_WS', src=' '),
+                    trt.Token(name='NAME', src='base64'),
+                    trt.Token(name='OP', src='.'),
+                    trt.Token(name='NAME', src='b64decode'),
+                    trt.Token(name='OP', src='('),
+                    trt.Token(name='NL', src='\n'),
+                ])
+
+                rb64 = base64.b64encode(rb).decode('ascii')
+                for chunk in itertools.batched(rb64, 96):
+                    ctls.append([
+                        trt.Token(name='UNIMPORTANT_WS', src='    '),
+                        trt.Token(name='STRING', src=f"'{''.join(chunk)}'"),
+                        trt.Token(name='NL', src='\n'),
+                    ])
+
+                ctls.append([
+                    trt.Token(name='OP', src=')'),
+                    trt.Token(name='NEWLINE', src='\n'),
+                ])
+
+                has_binary_resources = True
 
             elif rsrc.kind == 'text':
                 with open(rf) as tf:
@@ -434,7 +466,6 @@ def make_src_file(
                     trt.Token(name='UNIMPORTANT_WS', src=' '),
                     trt.Token(name='STRING', src=f'"""\\\n{rt}"""\n'),
                     trt.Token(name='NEWLINE', src=''),
-                    trt.Token(name='ENDMARKER', src=''),
                 ])
 
             else:
@@ -456,6 +487,8 @@ def make_src_file(
         content_lines=ctls,
 
         ruff_noqa=set(lang.flatten(tks.join_toks(l).strip().split()[3:] for l in rnls)),  # noqa
+
+        has_binary_resources=has_binary_resources,
     )
 
 
@@ -545,6 +578,8 @@ def gen_amalg(
     dct: dict = {
         ('sys', None, None): ['import sys\n'],
     }
+    if any(sf.has_binary_resources for sf in src_files.values()):
+        dct[('base64', None, None)] = ['import base64\n']
     for imp in gl_imps:
         dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
     for _, l in sorted(dct.items()):
