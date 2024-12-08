@@ -11,6 +11,8 @@ class ForthInterpreter:
             'swap': self.swap,
             'over': self.over,
         }
+        self.user_words = {}  # Dictionary for user-defined words
+        self.defining_word = None  # Current word being defined
 
     def run(self, code):
         """Runs Forth code."""
@@ -20,10 +22,26 @@ class ForthInterpreter:
 
     def process_token(self, token):
         """Process a single token."""
-        if token.isdigit():  # If it's a number, push it onto the stack
+        if self.defining_word == ':':
+            self.defining_word = token
+            self.user_words[self.defining_word] = []
+        elif self.defining_word is not None:
+            # Add tokens to the current definition until ';' is encountered
+            if token == ";":
+                self.defining_word = None
+            else:
+                self.user_words[self.defining_word].append(token)
+        elif token == ":":
+            # Begin defining a new word
+            if self.defining_word is not None:
+                raise ValueError("Cannot define a word inside another definition.")
+            self.defining_word = ':'
+        elif token.isdigit():  # If it's a number, push it onto the stack
             self.stack.append(int(token))
-        elif token in self.words:  # If it's a known word, execute it
+        elif token in self.words:  # If it's a built-in word, execute it
             self.words[token]()
+        elif token in self.user_words:  # If it's a user-defined word, execute its definition
+            self.run(" ".join(self.user_words[token]))
         else:
             raise ValueError(f"Unknown token: {token}")
 
@@ -72,8 +90,11 @@ class ForthInterpreter:
 if __name__ == "__main__":
     interpreter = ForthInterpreter()
 
-    # Example Forth code
-    code = "3 4 + 5 * dup -"
-    print(f"Running code: {code}")
+    # Example Forth code with a user-defined word
+    code = """
+    : square dup * ;
+    5 square
+    """
+    print(f"Running code:\n{code}")
     interpreter.run(code)
     print(interpreter)
