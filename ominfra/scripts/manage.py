@@ -3306,6 +3306,22 @@ def bind_commands(
 ##
 
 
+@dc.dataclass(frozen=True)
+class _RemoteExecutionRequest:
+    c: Command
+
+
+@dc.dataclass(frozen=True)
+class _RemoteExecutionLog:
+    pass
+
+
+@dc.dataclass(frozen=True)
+class _RemoteExecutionResponse:
+    r: ta.Optional[CommandOutputOrExceptionData] = None
+    l: ta.Optional[_RemoteExecutionLog] = None
+
+
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
@@ -3326,17 +3342,20 @@ def _remote_execution_main() -> None:
     ce = injector[LocalCommandExecutor]
 
     while True:
-        i = chan.recv_obj(Command)
-        if i is None:
+        req = chan.recv_obj(_RemoteExecutionRequest)
+        if req is None:
             break
 
         r = ce.try_execute(
-            i,
+            req.c,
             log=log,
             omit_exc_object=True,
         )
 
-        chan.send_obj(r)
+        chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
+            output=r.output,
+            exception=r.exception,
+        )))
 
 
 ##
@@ -3354,12 +3373,12 @@ class RemoteCommandExecutor(CommandExecutor):
         self._chan = chan
 
     def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        self._chan.send_obj(cmd, Command)
+        self._chan.send_obj(_RemoteExecutionRequest(cmd))
 
-        if (r := self._chan.recv_obj(CommandOutputOrExceptionData)) is None:
+        if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
             raise EOFError
 
-        return r
+        return check_not_none(r.r)
 
     # @ta.override
     def execute(self, cmd: Command) -> Command.Output:
