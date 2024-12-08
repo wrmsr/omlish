@@ -2,8 +2,8 @@ import logging
 
 import click
 
-from pyinfra import logger, state
-from pyinfra.context import ctx_state
+from ..pyinfra import logger, state
+from ..pyinfra.context import ctx_state
 
 
 class LogHandler(logging.Handler):

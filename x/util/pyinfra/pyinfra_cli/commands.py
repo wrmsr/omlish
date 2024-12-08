@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from pyinfra.api.facts import FactBase
+from ..pyinfra.api.facts import FactBase
 
 from .exceptions import CliError
 from .util import parse_cli_arg, try_import_module_attribute

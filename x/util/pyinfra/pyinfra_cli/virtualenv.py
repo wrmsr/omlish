@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from pyinfra import logger
+from ..pyinfra import logger
 
 
 def init_virtualenv():

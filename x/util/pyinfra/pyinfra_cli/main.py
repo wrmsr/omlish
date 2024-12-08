@@ -7,16 +7,16 @@ from typing import Iterable, List, Tuple, Union
 
 import click
 
-from pyinfra import __version__, logger, state
-from pyinfra.api import Config, State
-from pyinfra.api.connect import connect_all, disconnect_all
-from pyinfra.api.exceptions import NoGroupError, PyinfraError
-from pyinfra.api.facts import get_facts
-from pyinfra.api.operations import run_ops
-from pyinfra.api.state import StateStage
-from pyinfra.api.util import get_kwargs_str
-from pyinfra.context import ctx_config, ctx_inventory, ctx_state
-from pyinfra.operations import server
+from ..pyinfra import __version__, logger, state
+from ..pyinfra.api import Config, State
+from ..pyinfra.api.connect import connect_all, disconnect_all
+from ..pyinfra.api.exceptions import NoGroupError, PyinfraError
+from ..pyinfra.api.facts import get_facts
+from ..pyinfra.api.operations import run_ops
+from ..pyinfra.api.state import StateStage
+from ..pyinfra.api.util import get_kwargs_str
+from ..pyinfra.context import ctx_config, ctx_inventory, ctx_state
+from ..pyinfra.operations import server
 
 from .commands import get_facts_and_args, get_func_and_args
 from .exceptions import CliError, UnexpectedExternalError, UnexpectedInternalError, WrappedError

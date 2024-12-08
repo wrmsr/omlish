@@ -4,10 +4,10 @@ from os import listdir, path
 from types import GeneratorType
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
-from pyinfra import logger
-from pyinfra.api.inventory import Inventory
-from pyinfra.connectors.sshuserclient.client import get_ssh_config
-from pyinfra.context import ctx_inventory
+from ..pyinfra import logger
+from ..pyinfra.api.inventory import Inventory
+from ..pyinfra.connectors.sshuserclient.client import get_ssh_config
+from ..pyinfra.context import ctx_inventory
 
 from .exceptions import CliError
 from .util import exec_file, try_import_module_attribute

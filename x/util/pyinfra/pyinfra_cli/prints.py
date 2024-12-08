@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING, Callable, Dict, Iterator, List, Tuple, Union
 
 import click
 
-from pyinfra import __version__, logger
-from pyinfra.api.host import Host
+from ..pyinfra import __version__, logger
+from ..pyinfra.api.host import Host
 
 from .util import json_encode
 
 if TYPE_CHECKING:
-    from pyinfra.api.state import State
+    from ..pyinfra.api.state import State
 
 
 ANSI_RE = re.compile(r"\033\[((?:\d|;)*)([a-zA-Z])")

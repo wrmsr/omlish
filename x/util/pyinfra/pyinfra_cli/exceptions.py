@@ -6,14 +6,14 @@ from types import TracebackType
 
 import click
 
-from pyinfra import logger
-from pyinfra.api.exceptions import (
+from ..pyinfra import logger
+from ..pyinfra.api.exceptions import (
     ArgumentTypeError,
     ConnectorDataTypeError,
     OperationError,
     PyinfraError,
 )
-from pyinfra.api.util import PYINFRA_INSTALL_DIR
+from ..pyinfra.api.util import PYINFRA_INSTALL_DIR
 
 
 def get_frame_line_from_tb(tb: TracebackType):

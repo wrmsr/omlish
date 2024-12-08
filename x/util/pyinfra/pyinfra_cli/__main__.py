@@ -4,7 +4,7 @@ import sys
 import click
 import gevent
 
-import pyinfra
+from .. import pyinfra
 
 from .main import cli
 
