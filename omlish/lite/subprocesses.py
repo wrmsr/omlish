@@ -40,7 +40,7 @@ def subprocess_maybe_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
         return args
 
 
-def _prepare_subprocess_invocation(
+def prepare_subprocess_invocation(
         *args: str,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -70,12 +70,12 @@ def _prepare_subprocess_invocation(
 
 
 def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
-    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
 def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
-    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
     return subprocess.check_output(args, **kwargs)
 
 
