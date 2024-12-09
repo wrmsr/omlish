@@ -3278,13 +3278,20 @@ def subprocess_common_context(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[No
 ##
 
 
-def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+def subprocess_check_call(
+        *args: str,
+        stdout: ta.Any = sys.stderr,
+        **kwargs: ta.Any,
+) -> None:
     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     with subprocess_common_context(*args, **kwargs):
         return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
-def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
+def subprocess_check_output(
+        *args: str,
+        **kwargs: ta.Any,
+) -> bytes:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
     with subprocess_common_context(*args, **kwargs):
         return subprocess.check_output(args, **kwargs)
