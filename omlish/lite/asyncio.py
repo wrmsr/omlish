@@ -2,9 +2,12 @@
 import asyncio.subprocess
 import contextlib
 import functools
+import subprocess
 import typing as ta
 
+from .check import check_not_none
 from .check import check_single
+from .subprocesses import prepare_subprocess_invocation
 
 
 ##
@@ -87,12 +90,50 @@ async def asyncio_subprocess_popen(
 
 async def asyncio_subprocess_communicate(
         proc: asyncio.subprocess.Process,
-        *args: ta.Any,
+        input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
-        **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-    fn: ta.Any = proc.communicate(*args, **kwargs)
+    fn: ta.Any = proc.communicate(input)
     if timeout is not None:
         fn = asyncio.wait_for(fn, timeout)
     stdout, stderr = await fn
     return stdout, stderr
+
+
+#
+
+
+# async def asyncio_subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+#     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+#     return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+async def asyncio_subprocess_check_output(
+        *args: str,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> bytes:
+    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
+
+    proc: asyncio.subprocess.Process
+    async with asyncio_subprocess_popen(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        **kwargs,
+    ) as proc:
+        stdout, stderr = await asyncio_subprocess_communicate(input, timeout)
+
+    if proc.returncode:
+        raise subprocess.CalledProcessError(
+            proc.returncode,
+            args,
+            output=stdout,
+            stderr=stderr,
+        )
+
+    return check_not_none(stdout)
+
+
+async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
+    return (await asyncio_subprocess_check_output(*args, **kwargs)).decode().strip()
