@@ -68,7 +68,8 @@ class _RemoteExecutionProtocol:
 
     @dc.dataclass(frozen=True)
     class CommandRequest(Request):
-        c: Command
+        seq: int
+        cmd: Command
 
     #
 
@@ -83,7 +84,8 @@ class _RemoteExecutionProtocol:
 
     @dc.dataclass(frozen=True)
     class CommandResponse(Response):
-        r: CommandOutputOrExceptionData
+        seq: int
+        res: CommandOutputOrExceptionData
 
 
 ##
@@ -135,24 +137,36 @@ async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
 
         ce = injector[LocalCommandExecutor]
 
+        cmd_futs_by_seq: ta.Dict[int, asyncio.Future] = {}
+
+        async def handle_cmd(req: _RemoteExecutionProtocol.CommandRequest) -> None:
+            res = await ce.try_execute(
+                req.cmd,
+                log=log,
+                omit_exc_object=True,
+            )
+
+            await _RemoteExecutionProtocol.CommandResponse(
+                seq=req.seq,
+                res=CommandOutputOrExceptionData(
+                    output=res.output,
+                    exception=res.exception,
+                ),
+            ).send(chan)
+
+            cmd_futs_by_seq.pop(req.seq)  # noqa
+
         while True:
             req = await _RemoteExecutionProtocol.Request.recv(chan)
             if req is None:
                 break
 
             if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
-                r = await ce.try_execute(
-                    req.c,
-                    log=log,
-                    omit_exc_object=True,
-                )
+                fut = asyncio.create_task(handle_cmd(req))
+                cmd_futs_by_seq[req.seq] = fut
+
             else:
                 raise TypeError(req)
-
-            await _RemoteExecutionProtocol.CommandResponse(CommandOutputOrExceptionData(
-                output=r.output,
-                exception=r.exception,
-            )).send(chan)
 
 
 def _remote_execution_main() -> None:
@@ -202,37 +216,55 @@ class RemoteCommandExecutor(CommandExecutor):
     async def _loop(self) -> None:
         stop_task = asyncio.create_task(self._stop.wait())
         queue_task: ta.Optional[asyncio.Task] = None
+        recv_task: ta.Optional[asyncio.Task] = None
+
+        reqs_by_seq: ta.Dict[int, RemoteCommandExecutor._Request] = {}
 
         while not self._stop.is_set():
             if queue_task is None:
                 queue_task = asyncio.create_task(self._queue.get())
+            if recv_task is None:
+                recv_task = asyncio.create_task(_RemoteExecutionProtocol.Response.recv(self._chan))
 
             done, pending = await asyncio.wait([
-                queue_task,
                 stop_task,
+                queue_task,
+                recv_task,
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if queue_task in done:
                 req = check_isinstance(queue_task.result(), RemoteCommandExecutor._Request)
                 queue_task = None
 
-                await _RemoteExecutionProtocol.CommandRequest(req.cmd).send(self._chan)
+                reqs_by_seq[req.seq] = req
 
-                while True:
-                    if (r := await _RemoteExecutionProtocol.Response.recv(self._chan)) is None:
-                        raise EOFError
+                await _RemoteExecutionProtocol.CommandRequest(
+                    seq=req.seq,
+                    cmd=req.cmd,
+                ).send(self._chan)
 
-                    if isinstance(r, _RemoteExecutionProtocol.LogResponse):
-                        log.info(r.s)
+            if recv_task in done:
+                resp = check_isinstance(recv_task.result(), _RemoteExecutionProtocol.Response)
+                recv_task = None
 
-                    elif isinstance(r, _RemoteExecutionProtocol.CommandResponse):
-                        req.fut.set_result(r.r)
-                        break
+                if resp is None:
+                    raise EOFError
 
-                    else:
-                        raise TypeError(r)
+                if isinstance(resp, _RemoteExecutionProtocol.LogResponse):
+                    log.info(resp.s)
 
-        for task in [stop_task, queue_task]:
+                elif isinstance(resp, _RemoteExecutionProtocol.CommandResponse):
+                    req = reqs_by_seq.pop(resp.seq)
+                    req.fut.set_result(resp.res)
+
+                else:
+                    raise TypeError(resp)
+
+        for task in [
+            stop_task,
+            queue_task,
+            recv_task,
+        ]:
             if task is not None and not task.done():
                 task.cancel()
 
@@ -328,6 +360,7 @@ class RemoteExecution:
         async with self._spawning.spawn(
                 tgt,
                 spawn_src,
+                debug=bs.main_config.debug,
         ) as proc:
             res = await PyremoteBootstrapDriver(  # noqa
                 remote_src,
