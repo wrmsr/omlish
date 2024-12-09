@@ -20,7 +20,6 @@ from omlish.lite.pycharm import pycharm_debug_connect
 
 from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions
-from ...pyremote import PyremotePayloadRuntime
 from ...pyremote import pyremote_bootstrap_finalize
 from ...pyremote import pyremote_build_bootstrap_cmd
 from ..bootstrap import MainBootstrap
@@ -101,11 +100,11 @@ class _RemoteExecutionLogHandler(logging.Handler):
         self._fn(msg)
 
 
-async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
+async def _async_remote_execution_main(
+        input: asyncio.StreamReader,  # noqa
+        output: asyncio.StreamWriter,
+) -> None:
     async with contextlib.AsyncExitStack() as es:  # noqa
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)  # noqa
-
         chan = RemoteChannel(
             input,
             output,
@@ -172,7 +171,16 @@ async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
-    asyncio.run(_async_remote_execution_main(rt))
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        await _async_remote_execution_main(
+            input,
+            output,
+        )
+
+    asyncio.run(inner())
 
 
 ##
