@@ -21,7 +21,7 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
-    def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+    async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
         log.info('Deploying!')
 
         return DeployCommand.Output()
