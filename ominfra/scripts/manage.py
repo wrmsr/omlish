@@ -4160,13 +4160,20 @@ def subprocess_common_context(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[No
 ##
 
 
-def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+def subprocess_check_call(
+        *args: str,
+        stdout: ta.Any = sys.stderr,
+        **kwargs: ta.Any,
+) -> None:
     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     with subprocess_common_context(*args, **kwargs):
         return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
-def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
+def subprocess_check_output(
+        *args: str,
+        **kwargs: ta.Any,
+) -> bytes:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
     with subprocess_common_context(*args, **kwargs):
         return subprocess.check_output(args, **kwargs)
@@ -4252,101 +4259,6 @@ def subprocess_close(
         proc.stdin.close()
 
     proc.wait(timeout)
-
-
-########################################
-# ../../../omdev/interp/inspect.py
-
-
-@dc.dataclass(frozen=True)
-class InterpInspection:
-    exe: str
-    version: Version
-
-    version_str: str
-    config_vars: ta.Mapping[str, str]
-    prefix: str
-    base_prefix: str
-
-    @property
-    def opts(self) -> InterpOpts:
-        return InterpOpts(
-            threaded=bool(self.config_vars.get('Py_GIL_DISABLED')),
-            debug=bool(self.config_vars.get('Py_DEBUG')),
-        )
-
-    @property
-    def iv(self) -> InterpVersion:
-        return InterpVersion(
-            version=self.version,
-            opts=self.opts,
-        )
-
-    @property
-    def is_venv(self) -> bool:
-        return self.prefix != self.base_prefix
-
-
-class InterpInspector:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
-
-    _RAW_INSPECTION_CODE = """
-    __import__('json').dumps(dict(
-        version_str=__import__('sys').version,
-        prefix=__import__('sys').prefix,
-        base_prefix=__import__('sys').base_prefix,
-        config_vars=__import__('sysconfig').get_config_vars(),
-    ))"""
-
-    _INSPECTION_CODE = ''.join(l.strip() for l in _RAW_INSPECTION_CODE.splitlines())
-
-    @staticmethod
-    def _build_inspection(
-            exe: str,
-            output: str,
-    ) -> InterpInspection:
-        dct = json.loads(output)
-
-        version = Version(dct['version_str'].split()[0])
-
-        return InterpInspection(
-            exe=exe,
-            version=version,
-            **{k: dct[k] for k in (
-                'version_str',
-                'prefix',
-                'base_prefix',
-                'config_vars',
-            )},
-        )
-
-    @classmethod
-    def running(cls) -> 'InterpInspection':
-        return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
-
-    async def _inspect(self, exe: str) -> InterpInspection:
-        output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
-        return self._build_inspection(exe, output.decode())
-
-    async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
-        try:
-            return self._cache[exe]
-        except KeyError:
-            ret: ta.Optional[InterpInspection]
-            try:
-                ret = await self._inspect(exe)
-            except Exception as e:  # noqa
-                if log.isEnabledFor(logging.DEBUG):
-                    log.exception('Failed to inspect interp: %s', exe)
-                ret = None
-            self._cache[exe] = ret
-            return ret
-
-
-INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
@@ -4514,46 +4426,16 @@ async def asyncio_subprocess_communicate(
 ##
 
 
-# async def asyncio_subprocess_check_call(
-#         *args: str,
-#         stdout: ta.Any = 'stderr',
-#         input: ta.Any = None,  # noqa
-#         timeout: ta.Optional[float] = None,
-#         **kwargs: ta.Any,
-# ) -> None:
-#     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
-#
-#     proc: asyncio.subprocess.Process
-#     async with asyncio_subprocess_popen(
-#             *args,
-#             stdout=stdout,
-#             **kwargs,
-#     ) as proc:
-#         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
-#
-#     if proc.returncode:
-#         raise subprocess.CalledProcessError(
-#             proc.returncode,
-#             args,
-#             output=stdout,
-#             stderr=stderr,
-#         )
-
-
-async def asyncio_subprocess_check_output(
+async def _asyncio_subprocess_check_run(
         *args: str,
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
-) -> bytes:
+) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
 
     proc: asyncio.subprocess.Process
-    async with asyncio_subprocess_popen(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            **kwargs,
-    ) as proc:
+    async with asyncio_subprocess_popen(*args, **kwargs) as proc:
         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
     if proc.returncode:
@@ -4563,6 +4445,39 @@ async def asyncio_subprocess_check_output(
             output=stdout,
             stderr=stderr,
         )
+
+    return stdout, stderr
+
+
+async def asyncio_subprocess_check_call(
+        *args: str,
+        stdout: ta.Any = sys.stderr,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> None:
+    _, _ = await _asyncio_subprocess_check_run(
+        *args,
+        stdout=stdout,
+        input=input,
+        timeout=timeout,
+        **kwargs,
+    )
+
+
+async def asyncio_subprocess_check_output(
+        *args: str,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> bytes:
+    stdout, stderr = await _asyncio_subprocess_check_run(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        input=input,
+        timeout=timeout,
+        **kwargs,
+    )
 
     return check_not_none(stdout)
 
@@ -4574,17 +4489,50 @@ async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> s
 ##
 
 
+async def _asyncio_subprocess_try_run(
+        fn: ta.Callable[..., ta.Awaitable[T]],
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Union[T, Exception]:
+    try:
+        return await fn(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return e
+
+
+async def asyncio_subprocess_try_call(
+        *args: str,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> bool:
+    if isinstance(await _asyncio_subprocess_try_run(
+            asyncio_subprocess_check_call,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
+        return False
+    else:
+        return True
+
+
 async def asyncio_subprocess_try_output(
         *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
-    try:
-        return await asyncio_subprocess_check_output(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(ret := await _asyncio_subprocess_try_run(
+            asyncio_subprocess_check_output,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return None
+    else:
+        return ret
 
 
 async def asyncio_subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
@@ -4593,64 +4541,98 @@ async def asyncio_subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.
 
 
 ########################################
-# ../../../omdev/interp/providers.py
-"""
-TODO:
- - backends
-  - local builds
-  - deadsnakes?
-  - uv
- - loose versions
-"""
+# ../../../omdev/interp/inspect.py
 
 
-##
+@dc.dataclass(frozen=True)
+class InterpInspection:
+    exe: str
+    version: Version
 
+    version_str: str
+    config_vars: ta.Mapping[str, str]
+    prefix: str
+    base_prefix: str
 
-class InterpProvider(abc.ABC):
-    name: ta.ClassVar[str]
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
-            sfx = 'InterpProvider'
-            if not cls.__name__.endswith(sfx):
-                raise NameError(cls)
-            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
-
-    @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
-        raise NotImplementedError
-
-    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    async def install_version(self, version: InterpVersion) -> Interp:
-        raise TypeError
-
-
-##
-
-
-class RunningInterpProvider(InterpProvider):
-    @cached_nullary
-    def version(self) -> InterpVersion:
-        return InterpInspector.running().iv
-
-    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [self.version()]
-
-    async def get_installed_version(self, version: InterpVersion) -> Interp:
-        if version != self.version():
-            raise KeyError(version)
-        return Interp(
-            exe=sys.executable,
-            version=self.version(),
+    @property
+    def opts(self) -> InterpOpts:
+        return InterpOpts(
+            threaded=bool(self.config_vars.get('Py_GIL_DISABLED')),
+            debug=bool(self.config_vars.get('Py_DEBUG')),
         )
+
+    @property
+    def iv(self) -> InterpVersion:
+        return InterpVersion(
+            version=self.version,
+            opts=self.opts,
+        )
+
+    @property
+    def is_venv(self) -> bool:
+        return self.prefix != self.base_prefix
+
+
+class InterpInspector:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
+
+    _RAW_INSPECTION_CODE = """
+    __import__('json').dumps(dict(
+        version_str=__import__('sys').version,
+        prefix=__import__('sys').prefix,
+        base_prefix=__import__('sys').base_prefix,
+        config_vars=__import__('sysconfig').get_config_vars(),
+    ))"""
+
+    _INSPECTION_CODE = ''.join(l.strip() for l in _RAW_INSPECTION_CODE.splitlines())
+
+    @staticmethod
+    def _build_inspection(
+            exe: str,
+            output: str,
+    ) -> InterpInspection:
+        dct = json.loads(output)
+
+        version = Version(dct['version_str'].split()[0])
+
+        return InterpInspection(
+            exe=exe,
+            version=version,
+            **{k: dct[k] for k in (
+                'version_str',
+                'prefix',
+                'base_prefix',
+                'config_vars',
+            )},
+        )
+
+    @classmethod
+    def running(cls) -> 'InterpInspection':
+        return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
+
+    async def _inspect(self, exe: str) -> InterpInspection:
+        output = await asyncio_subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
+        return self._build_inspection(exe, output.decode())
+
+    async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
+        try:
+            return self._cache[exe]
+        except KeyError:
+            ret: ta.Optional[InterpInspection]
+            try:
+                ret = await self._inspect(exe)
+            except Exception as e:  # noqa
+                if log.isEnabledFor(logging.DEBUG):
+                    log.exception('Failed to inspect interp: %s', exe)
+                ret = None
+            self._cache[exe] = ret
+            return ret
+
+
+INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
@@ -4808,6 +4790,301 @@ class RemoteSpawning:
 
 
 ########################################
+# ../../../omdev/interp/providers.py
+"""
+TODO:
+ - backends
+  - local builds
+  - deadsnakes?
+  - uv
+ - loose versions
+"""
+
+
+##
+
+
+class InterpProvider(abc.ABC):
+    name: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if abc.ABC not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
+    @abc.abstractmethod
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
+        raise NotImplementedError
+
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def install_version(self, version: InterpVersion) -> Interp:
+        raise TypeError
+
+
+##
+
+
+class RunningInterpProvider(InterpProvider):
+    @cached_nullary
+    def version(self) -> InterpVersion:
+        return InterpInspector.running().iv
+
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return [self.version()]
+
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        if version != self.version():
+            raise KeyError(version)
+        return Interp(
+            exe=sys.executable,
+            version=self.version(),
+        )
+
+
+########################################
+# ../remote/execution.py
+
+
+##
+
+
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
+@dc.dataclass(frozen=True)
+class _RemoteExecutionRequest:
+    c: Command
+
+
+@dc.dataclass(frozen=True)
+class _RemoteExecutionLog:
+    s: str
+
+
+@dc.dataclass(frozen=True)
+class _RemoteExecutionResponse:
+    r: ta.Optional[CommandOutputOrExceptionData] = None
+    l: ta.Optional[_RemoteExecutionLog] = None
+
+
+async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
+    async with contextlib.AsyncExitStack() as es:  # noqa
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)  # noqa
+
+        chan = RemoteChannel(
+            input,
+            output,
+        )
+
+        bs = check_not_none(await chan.recv_obj(MainBootstrap))
+
+        if (prd := bs.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        injector = main_bootstrap(bs)
+
+        chan.set_marshaler(injector[ObjMarshalerManager])
+
+        #
+
+        log_lock = asyncio.Lock()
+
+        send_logs = False
+
+        def log_fn(s: str) -> None:
+            async def inner():
+                async with log_lock:
+                    if send_logs:
+                        await chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+
+            loop = asyncio.get_running_loop()
+            if loop is not None:
+                asyncio.run_coroutine_threadsafe(inner(), loop)
+
+        log_handler = _RemoteExecutionLogHandler(log_fn)
+        logging.root.addHandler(log_handler)
+
+        #
+
+        ce = injector[LocalCommandExecutor]
+
+        while True:
+            req = await chan.recv_obj(_RemoteExecutionRequest)
+            if req is None:
+                break
+
+            async with log_lock:
+                send_logs = True
+
+            r = await ce.try_execute(
+                req.c,
+                log=log,
+                omit_exc_object=True,
+            )
+
+            async with log_lock:
+                send_logs = False
+
+            await chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
+                output=r.output,
+                exception=r.exception,
+            )))
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    asyncio.run(_async_remote_execution_main(rt))
+
+
+##
+
+
+@dc.dataclass()
+class RemoteCommandError(Exception):
+    e: CommandException
+
+
+class RemoteCommandExecutor(CommandExecutor):
+    def __init__(self, chan: RemoteChannel) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
+        await self._chan.send_obj(_RemoteExecutionRequest(cmd))
+
+        while True:
+            if (r := await self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+                raise EOFError
+
+            if r.l is not None:
+                log.info(r.l.s)
+
+            if r.r is not None:
+                return r.r
+
+    # @ta.override
+    async def execute(self, cmd: Command) -> Command.Output:
+        r = await self._remote_execute(cmd)
+        if (e := r.exception) is not None:
+            raise RemoteCommandError(e)
+        else:
+            return check_not_none(r.output)
+
+    # @ta.override
+    async def try_execute(
+            self,
+            cmd: Command,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            omit_exc_object: bool = False,
+    ) -> CommandOutputOrException:
+        try:
+            r = await self._remote_execute(cmd)
+
+        except Exception as e:  # noqa
+            if log is not None:
+                log.exception('Exception executing remote command: %r', type(cmd))
+
+            return CommandOutputOrExceptionData(exception=CommandException.of(
+                e,
+                omit_exc_object=omit_exc_object,
+                cmd=cmd,
+            ))
+
+        else:
+            return r
+
+
+##
+
+
+class RemoteExecution:
+    def __init__(
+            self,
+            *,
+            spawning: RemoteSpawning,
+            msh: ObjMarshalerManager,
+            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spawning = spawning
+        self._msh = msh
+        self._payload_file = payload_file
+
+    #
+
+    @cached_nullary
+    def _payload_src(self) -> str:
+        return get_remote_payload_src(file=self._payload_file)
+
+    @cached_nullary
+    def _remote_src(self) -> ta.Sequence[str]:
+        return [
+            self._payload_src(),
+            '_remote_execution_main()',
+        ]
+
+    @cached_nullary
+    def _spawn_src(self) -> str:
+        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def connect(
+            self,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        spawn_src = self._spawn_src()
+        remote_src = self._remote_src()
+
+        async with self._spawning.spawn(
+                tgt,
+                spawn_src,
+        ) as proc:
+            res = await PyremoteBootstrapDriver(  # noqa
+                remote_src,
+                PyremoteBootstrapOptions(
+                    debug=bs.main_config.debug,
+                ),
+            ).async_run(
+                proc.stdout,
+                proc.stdin,
+            )
+
+            chan = RemoteChannel(
+                proc.stdout,
+                proc.stdin,
+                msh=self._msh,
+            )
+
+            await chan.send_obj(bs)
+
+            yield RemoteCommandExecutor(chan)
+
+
+########################################
 # ../../../omdev/interp/pyenv.py
 """
 TODO:
@@ -4888,7 +5165,7 @@ class Pyenv:
             return False
         if not os.path.isdir(os.path.join(root, '.git')):
             return False
-        subprocess_check_call('git', 'pull', cwd=root)
+        await asyncio_subprocess_check_call('git', 'pull', cwd=root)
         return True
 
 
@@ -5114,7 +5391,7 @@ class PyenvVersionInstaller:
                 *conf_args,
             ]
 
-        subprocess_check_call(
+        await asyncio_subprocess_check_call(
             *full_args,
             env=env,
         )
@@ -5365,237 +5642,25 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
-# ../remote/execution.py
+# ../remote/inject.py
 
 
-##
+def bind_remote(
+        *,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(remote_config),
 
+        inj.bind(RemoteSpawning, singleton=True),
 
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
-        self._fn = fn
+        inj.bind(RemoteExecution, singleton=True),
+    ]
 
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
+    if (pf := remote_config.payload_file) is not None:
+        lst.append(inj.bind(pf, to_key=RemoteExecutionPayloadFile))
 
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionRequest:
-    c: Command
-
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionLog:
-    s: str
-
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionResponse:
-    r: ta.Optional[CommandOutputOrExceptionData] = None
-    l: ta.Optional[_RemoteExecutionLog] = None
-
-
-async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
-    async with contextlib.AsyncExitStack() as es:  # noqa
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)  # noqa
-
-        chan = RemoteChannel(
-            input,
-            output,
-        )
-
-        bs = check_not_none(await chan.recv_obj(MainBootstrap))
-
-        if (prd := bs.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        injector = main_bootstrap(bs)
-
-        chan.set_marshaler(injector[ObjMarshalerManager])
-
-        #
-
-        log_lock = asyncio.Lock()
-
-        send_logs = False
-
-        def log_fn(s: str) -> None:
-            async def inner():
-                async with log_lock:
-                    if send_logs:
-                        await chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
-
-            loop = asyncio.get_running_loop()
-            if loop is not None:
-                asyncio.run_coroutine_threadsafe(inner(), loop)
-
-        log_handler = _RemoteExecutionLogHandler(log_fn)
-        logging.root.addHandler(log_handler)
-
-        #
-
-        ce = injector[LocalCommandExecutor]
-
-        while True:
-            req = await chan.recv_obj(_RemoteExecutionRequest)
-            if req is None:
-                break
-
-            async with log_lock:
-                send_logs = True
-
-            r = await ce.try_execute(
-                req.c,
-                log=log,
-                omit_exc_object=True,
-            )
-
-            async with log_lock:
-                send_logs = False
-
-            await chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
-                output=r.output,
-                exception=r.exception,
-            )))
-
-
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    asyncio.run(_async_remote_execution_main(rt))
-
-
-##
-
-
-@dc.dataclass()
-class RemoteCommandError(Exception):
-    e: CommandException
-
-
-class RemoteCommandExecutor(CommandExecutor):
-    def __init__(self, chan: RemoteChannel) -> None:
-        super().__init__()
-
-        self._chan = chan
-
-    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        await self._chan.send_obj(_RemoteExecutionRequest(cmd))
-
-        while True:
-            if (r := await self._chan.recv_obj(_RemoteExecutionResponse)) is None:
-                raise EOFError
-
-            if r.l is not None:
-                log.info(r.l.s)
-
-            if r.r is not None:
-                return r.r
-
-    # @ta.override
-    async def execute(self, cmd: Command) -> Command.Output:
-        r = await self._remote_execute(cmd)
-        if (e := r.exception) is not None:
-            raise RemoteCommandError(e)
-        else:
-            return check_not_none(r.output)
-
-    # @ta.override
-    async def try_execute(
-            self,
-            cmd: Command,
-            *,
-            log: ta.Optional[logging.Logger] = None,
-            omit_exc_object: bool = False,
-    ) -> CommandOutputOrException:
-        try:
-            r = await self._remote_execute(cmd)
-
-        except Exception as e:  # noqa
-            if log is not None:
-                log.exception('Exception executing remote command: %r', type(cmd))
-
-            return CommandOutputOrExceptionData(exception=CommandException.of(
-                e,
-                omit_exc_object=omit_exc_object,
-                cmd=cmd,
-            ))
-
-        else:
-            return r
-
-
-##
-
-
-class RemoteExecution:
-    def __init__(
-            self,
-            *,
-            spawning: RemoteSpawning,
-            msh: ObjMarshalerManager,
-            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
-    ) -> None:
-        super().__init__()
-
-        self._spawning = spawning
-        self._msh = msh
-        self._payload_file = payload_file
-
-    #
-
-    @cached_nullary
-    def _payload_src(self) -> str:
-        return get_remote_payload_src(file=self._payload_file)
-
-    @cached_nullary
-    def _remote_src(self) -> ta.Sequence[str]:
-        return [
-            self._payload_src(),
-            '_remote_execution_main()',
-        ]
-
-    @cached_nullary
-    def _spawn_src(self) -> str:
-        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
-    @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        spawn_src = self._spawn_src()
-        remote_src = self._remote_src()
-
-        async with self._spawning.spawn(
-                tgt,
-                spawn_src,
-        ) as proc:
-            res = await PyremoteBootstrapDriver(  # noqa
-                remote_src,
-                PyremoteBootstrapOptions(
-                    debug=bs.main_config.debug,
-                ),
-            ).async_run(
-                proc.stdout,
-                proc.stdin,
-            )
-
-            chan = RemoteChannel(
-                proc.stdout,
-                proc.stdin,
-                msh=self._msh,
-            )
-
-            await chan.send_obj(bs)
-
-            yield RemoteCommandExecutor(chan)
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -5693,28 +5758,6 @@ DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
 
     SystemInterpProvider(),
 ]])
-
-
-########################################
-# ../remote/inject.py
-
-
-def bind_remote(
-        *,
-        remote_config: RemoteConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(remote_config),
-
-        inj.bind(RemoteSpawning, singleton=True),
-
-        inj.bind(RemoteExecution, singleton=True),
-    ]
-
-    if (pf := remote_config.payload_file) is not None:
-        lst.append(inj.bind(pf, to_key=RemoteExecutionPayloadFile))
-
-    return inj.as_bindings(*lst)
 
 
 ########################################

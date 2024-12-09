@@ -18,13 +18,13 @@ import shutil
 import sys
 import typing as ta
 
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output_str
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_try_output
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
-from omlish.lite.subprocesses import subprocess_check_call
 
 from ..packaging.versions import InvalidVersion
 from ..packaging.versions import Version
@@ -103,7 +103,7 @@ class Pyenv:
             return False
         if not os.path.isdir(os.path.join(root, '.git')):
             return False
-        subprocess_check_call('git', 'pull', cwd=root)
+        await asyncio_subprocess_check_call('git', 'pull', cwd=root)
         return True
 
 
@@ -329,7 +329,7 @@ class PyenvVersionInstaller:
                 *conf_args,
             ]
 
-        subprocess_check_call(
+        await asyncio_subprocess_check_call(
             *full_args,
             env=env,
         )
