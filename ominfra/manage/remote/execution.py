@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import asyncio
 import contextlib
 import dataclasses as dc
 import logging
@@ -13,6 +14,7 @@ from omlish.lite.pycharm import pycharm_debug_connect
 
 from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions
+from ...pyremote import PyremotePayloadRuntime
 from ...pyremote import pyremote_bootstrap_finalize
 from ...pyremote import pyremote_build_bootstrap_cmd
 from ..bootstrap import MainBootstrap
@@ -63,9 +65,7 @@ class _RemoteExecutionResponse:
     l: ta.Optional[_RemoteExecutionLog] = None
 
 
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
+async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
     chan = RemoteChannel(
         rt.input,
         rt.output,
@@ -118,6 +118,12 @@ def _remote_execution_main() -> None:
             output=r.output,
             exception=r.exception,
         )))
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    asyncio.run(_async_remote_execution_main(rt))
 
 
 ##
@@ -221,7 +227,7 @@ class RemoteExecution:
             self,
             tgt: RemoteSpawning.Target,
             bs: MainBootstrap,
-    ) -> ta.Generator[RemoteCommandExecutor, None, None]:
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
         spawn_src = self._spawn_src()
         remote_src = self._remote_src()
 
