@@ -10,6 +10,7 @@ import typing as ta
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
 from omlish.lite.check import check_state
@@ -212,28 +213,39 @@ class RemoteCommandExecutor(CommandExecutor):
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if queue_task in done:
-                print(queue_task)
+                req = check_isinstance(queue_task.result(), RemoteCommandExecutor._Request)
                 queue_task = None
+
+                await _RemoteExecutionProtocol.CommandRequest(req.cmd).send(self._chan)
+
+                while True:
+                    if (r := await _RemoteExecutionProtocol.Response.recv(self._chan)) is None:
+                        raise EOFError
+
+                    if isinstance(r, _RemoteExecutionProtocol.LogResponse):
+                        log.info(r.s)
+
+                    elif isinstance(r, _RemoteExecutionProtocol.CommandResponse):
+                        req.fut.set_result(r.r)
+                        break
+
+                    else:
+                        raise TypeError(r)
 
         for task in [stop_task, queue_task]:
             if task is not None and not task.done():
                 task.cancel()
 
     async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        await _RemoteExecutionProtocol.CommandRequest(cmd).send(self._chan)
+        req = RemoteCommandExecutor._Request(
+            seq=next(self._cmd_seq),
+            cmd=cmd,
+            fut=asyncio.Future(),
+        )
 
-        while True:
-            if (r := await _RemoteExecutionProtocol.Response.recv(self._chan)) is None:
-                raise EOFError
+        await self._queue.put(req)
 
-            if isinstance(r, _RemoteExecutionProtocol.LogResponse):
-                log.info(r.s)
-
-            elif isinstance(r, _RemoteExecutionProtocol.CommandResponse):
-                return r.r
-
-            else:
-                raise TypeError(r)
+        return await req.fut
 
     # @ta.override
     async def execute(self, cmd: Command) -> Command.Output:
