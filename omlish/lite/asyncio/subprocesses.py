@@ -5,6 +5,7 @@ import contextlib
 import functools
 import logging
 import subprocess
+import sys
 import typing as ta
 
 from ..check import check_equal
@@ -16,6 +17,9 @@ from ..subprocesses import DEFAULT_SUBPROCESS_TRY_EXCEPTIONS
 from ..subprocesses import prepare_subprocess_invocation
 from ..subprocesses import subprocess_common_context
 from .asyncio import asyncio_maybe_timeout
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -179,46 +183,16 @@ async def asyncio_subprocess_communicate(
 ##
 
 
-# async def asyncio_subprocess_check_call(
-#         *args: str,
-#         stdout: ta.Any = 'stderr',
-#         input: ta.Any = None,  # noqa
-#         timeout: ta.Optional[float] = None,
-#         **kwargs: ta.Any,
-# ) -> None:
-#     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
-#
-#     proc: asyncio.subprocess.Process
-#     async with asyncio_subprocess_popen(
-#             *args,
-#             stdout=stdout,
-#             **kwargs,
-#     ) as proc:
-#         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
-#
-#     if proc.returncode:
-#         raise subprocess.CalledProcessError(
-#             proc.returncode,
-#             args,
-#             output=stdout,
-#             stderr=stderr,
-#         )
-
-
-async def asyncio_subprocess_check_output(
+async def _asyncio_subprocess_check_run(
         *args: str,
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
-) -> bytes:
+) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
 
     proc: asyncio.subprocess.Process
-    async with asyncio_subprocess_popen(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            **kwargs,
-    ) as proc:
+    async with asyncio_subprocess_popen(*args, **kwargs) as proc:
         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
     if proc.returncode:
@@ -228,6 +202,39 @@ async def asyncio_subprocess_check_output(
             output=stdout,
             stderr=stderr,
         )
+
+    return stdout, stderr
+
+
+async def asyncio_subprocess_check_call(
+        *args: str,
+        stdout: ta.Any = sys.stderr,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> None:
+    _, _ = await _asyncio_subprocess_check_run(
+        *args,
+        stdout=stdout,
+        input=input,
+        timeout=timeout,
+        **kwargs,
+    )
+
+
+async def asyncio_subprocess_check_output(
+        *args: str,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> bytes:
+    stdout, stderr = await _asyncio_subprocess_check_run(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        input=input,
+        timeout=timeout,
+        **kwargs,
+    )
 
     return check_not_none(stdout)
 
@@ -239,17 +246,50 @@ async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> s
 ##
 
 
+async def _asyncio_subprocess_try_run(
+        fn: ta.Callable[..., ta.Awaitable[T]],
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Union[T, Exception]:
+    try:
+        return await fn(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return e
+
+
+async def asyncio_subprocess_try_call(
+        *args: str,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> bool:
+    if isinstance(await _asyncio_subprocess_try_run(
+            asyncio_subprocess_check_call,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
+        return False
+    else:
+        return True
+
+
 async def asyncio_subprocess_try_output(
         *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
-    try:
-        return await asyncio_subprocess_check_output(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(ret := await _asyncio_subprocess_try_run(
+            asyncio_subprocess_check_output,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return None
+    else:
+        return ret
 
 
 async def asyncio_subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
