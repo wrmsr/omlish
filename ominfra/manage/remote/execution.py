@@ -3,9 +3,10 @@ import asyncio
 import contextlib
 import dataclasses as dc
 import logging
-import threading
 import typing as ta
 
+from omlish.lite.asyncio import asyncio_open_stream_reader
+from omlish.lite.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
@@ -66,58 +67,68 @@ class _RemoteExecutionResponse:
 
 
 async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
-    chan = RemoteChannel(
-        rt.input,
-        rt.output,
-    )
+    async with contextlib.AsyncExitStack() as es:  # noqa
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)  # noqa
 
-    bs = check_not_none(chan.recv_obj(MainBootstrap))
-
-    if (prd := bs.remote_config.pycharm_remote_debug) is not None:
-        pycharm_debug_connect(prd)
-
-    injector = main_bootstrap(bs)
-
-    chan.set_marshaler(injector[ObjMarshalerManager])
-
-    #
-
-    log_lock = threading.RLock()
-    send_logs = False
-
-    def log_fn(s: str) -> None:
-        with log_lock:
-            if send_logs:
-                chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
-
-    log_handler = _RemoteExecutionLogHandler(log_fn)
-    logging.root.addHandler(log_handler)
-
-    #
-
-    ce = injector[LocalCommandExecutor]
-
-    while True:
-        req = chan.recv_obj(_RemoteExecutionRequest)
-        if req is None:
-            break
-
-        with log_lock:
-            send_logs = True
-
-        r = ce.try_execute(
-            req.c,
-            log=log,
-            omit_exc_object=True,
+        chan = RemoteChannel(
+            input,
+            output,
         )
 
-        with log_lock:
-            send_logs = False
+        bs = check_not_none(await chan.recv_obj(MainBootstrap))
 
-        chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
-            output=r.output,
-            exception=r.exception,
-        )))
+        if (prd := bs.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        injector = main_bootstrap(bs)
+
+        chan.set_marshaler(injector[ObjMarshalerManager])
+
+        #
+
+        log_lock = asyncio.Lock()
+
+        send_logs = False
+
+        def log_fn(s: str) -> None:
+            async def inner():
+                async with log_lock:
+                    if send_logs:
+                        await chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+
+            loop = asyncio.get_running_loop()
+            if loop is not None:
+                asyncio.run_coroutine_threadsafe(inner(), loop)
+
+        log_handler = _RemoteExecutionLogHandler(log_fn)
+        logging.root.addHandler(log_handler)
+
+        #
+
+        ce = injector[LocalCommandExecutor]
+
+        while True:
+            req = await chan.recv_obj(_RemoteExecutionRequest)
+            if req is None:
+                break
+
+            async with log_lock:
+                send_logs = True
+
+            r = await ce.try_execute(
+                req.c,
+                log=log,
+                omit_exc_object=True,
+            )
+
+            async with log_lock:
+                send_logs = False
+
+            await chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
+                output=r.output,
+                exception=r.exception,
+            )))
 
 
 def _remote_execution_main() -> None:

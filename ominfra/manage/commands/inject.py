@@ -54,7 +54,7 @@ def bind_command(
 class _FactoryCommandExecutor(CommandExecutor):
     factory: ta.Callable[[], CommandExecutor]
 
-    def execute(self, i: Command) -> Command.Output:
+    def execute(self, i: Command) -> ta.Awaitable[Command.Output]:
         return self.factory().execute(i)
 
 
