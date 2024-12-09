@@ -2209,13 +2209,13 @@ async def asyncio_subprocess_popen(
     fac: ta.Any
     if shell:
         fac = functools.partial(
-            asyncio.create_subprocess_exec,
-            *cmd,
+            asyncio.create_subprocess_shell,
+            check_single(cmd),
         )
     else:
         fac = functools.partial(
-            asyncio.create_subprocess_shell,
-            check_single(cmd),
+            asyncio.create_subprocess_exec,
+            *cmd,
         )
 
     proc: asyncio.subprocess.Process
@@ -5664,31 +5664,7 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 ##
 
 
-async def _async_main() -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--_payload-file')
-
-    parser.add_argument('-s', '--shell')
-    parser.add_argument('-q', '--shell-quote', action='store_true')
-    parser.add_argument('--python', default='python3')
-
-    parser.add_argument('--pycharm-debug-port', type=int)
-    parser.add_argument('--pycharm-debug-host')
-    parser.add_argument('--pycharm-debug-version')
-
-    parser.add_argument('--debug', action='store_true')
-
-    parser.add_argument('--local', action='store_true')
-
-    parser.add_argument('command', nargs='+')
-
-    args = parser.parse_args()
-
-    #
-
+async def _async_main(args: ta.Any) -> None:
     bs = MainBootstrap(
         main_config=MainConfig(
             log_level='DEBUG' if args.debug else 'INFO',
@@ -5753,7 +5729,31 @@ async def _async_main() -> None:
 
 
 def _main() -> None:
-    asyncio.run(_async_main())
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--_payload-file')
+
+    parser.add_argument('-s', '--shell')
+    parser.add_argument('-q', '--shell-quote', action='store_true')
+    parser.add_argument('--python', default='python3')
+
+    parser.add_argument('--pycharm-debug-port', type=int)
+    parser.add_argument('--pycharm-debug-host')
+    parser.add_argument('--pycharm-debug-version')
+
+    parser.add_argument('--debug', action='store_true')
+
+    parser.add_argument('--local', action='store_true')
+
+    parser.add_argument('command', nargs='+')
+
+    args = parser.parse_args()
+
+    #
+
+    asyncio.run(_async_main(args))
 
 
 if __name__ == '__main__':
