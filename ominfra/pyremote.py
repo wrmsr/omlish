@@ -499,3 +499,30 @@ class PyremoteBootstrapDriver:
                 output.flush()
             else:
                 raise TypeError(go)
+
+    async def async_run(
+            self,
+            input: ta.Any,  # asyncio.StreamWriter  # noqa
+            output: ta.Any,  # asyncio.StreamReader
+    ) -> Result:
+        gen = self.gen()
+
+        gi: ta.Optional[bytes] = None
+        while True:
+            try:
+                if gi is not None:
+                    go = gen.send(gi)
+                else:
+                    go = next(gen)
+            except StopIteration as e:
+                return e.value
+
+            if isinstance(go, self.Read):
+                if len(gi := await input.read(go.sz)) != go.sz:
+                    raise EOFError
+            elif isinstance(go, self.Write):
+                gi = None
+                output.write(go.d)
+                await output.drain()
+            else:
+                raise TypeError(go)

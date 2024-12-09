@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import asyncio
 import json
 import struct
 import threading
@@ -15,8 +16,8 @@ T = ta.TypeVar('T')
 class RemoteChannel:
     def __init__(
             self,
-            input: ta.IO,  # noqa
-            output: ta.IO,
+            input: asyncio.StreamReader,  # noqa
+            output: asyncio.StreamWriter,
             *,
             msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
     ) -> None:
@@ -26,38 +27,42 @@ class RemoteChannel:
         self._output = output
         self._msh = msh
 
-        self._lock = threading.RLock()
+        self._lock = asyncio.Lock()
 
     def set_marshaler(self, msh: ObjMarshalerManager) -> None:
         self._msh = msh
 
-    def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+    #
+
+    async def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
 
         self._output.write(struct.pack('<I', len(d)))
         self._output.write(d)
-        self._output.flush()
+        await self._output.drain()  # FIXME: FLUSH UNDERLYING
 
-    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
-        with self._lock:
-            return self._send_obj(o, ty)
+    async def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+        async with self._lock:
+            return await self._send_obj(o, ty)
 
-    def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        d = self._input.read(4)
+    #
+
+    async def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        d = await self._input.read(4)
         if not d:
             return None
         if len(d) != 4:
             raise EOFError
 
         sz = struct.unpack('<I', d)[0]
-        d = self._input.read(sz)
+        d = await self._input.read(sz)
         if len(d) != sz:
             raise EOFError
 
         j = json.loads(d.decode('utf-8'))
         return self._msh.unmarshal_obj(j, ty)
 
-    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        with self._lock:
-            return self._recv_obj(ty)
+    async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        async with self._lock:
+            return await self._recv_obj(ty)

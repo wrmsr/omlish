@@ -134,11 +134,11 @@ class RemoteCommandExecutor(CommandExecutor):
 
         self._chan = chan
 
-    def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        self._chan.send_obj(_RemoteExecutionRequest(cmd))
+    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
+        await self._chan.send_obj(_RemoteExecutionRequest(cmd))
 
         while True:
-            if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+            if (r := await self._chan.recv_obj(_RemoteExecutionResponse)) is None:
                 raise EOFError
 
             if r.l is not None:
@@ -148,15 +148,15 @@ class RemoteCommandExecutor(CommandExecutor):
                 return r.r
 
     # @ta.override
-    def execute(self, cmd: Command) -> Command.Output:
-        r = self._remote_execute(cmd)
+    async def execute(self, cmd: Command) -> Command.Output:
+        r = await self._remote_execute(cmd)
         if (e := r.exception) is not None:
             raise RemoteCommandError(e)
         else:
             return check_not_none(r.output)
 
     # @ta.override
-    def try_execute(
+    async def try_execute(
             self,
             cmd: Command,
             *,
@@ -164,7 +164,7 @@ class RemoteCommandExecutor(CommandExecutor):
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:
-            r = self._remote_execute(cmd)
+            r = await self._remote_execute(cmd)
 
         except Exception as e:  # noqa
             if log is not None:
@@ -216,8 +216,8 @@ class RemoteExecution:
 
     #
 
-    @contextlib.contextmanager
-    def connect(
+    @contextlib.asynccontextmanager
+    async def connect(
             self,
             tgt: RemoteSpawning.Target,
             bs: MainBootstrap,
@@ -225,16 +225,16 @@ class RemoteExecution:
         spawn_src = self._spawn_src()
         remote_src = self._remote_src()
 
-        with self._spawning.spawn(
+        async with self._spawning.spawn(
                 tgt,
                 spawn_src,
         ) as proc:
-            res = PyremoteBootstrapDriver(  # noqa
+            res = await PyremoteBootstrapDriver(  # noqa
                 remote_src,
                 PyremoteBootstrapOptions(
                     debug=bs.main_config.debug,
                 ),
-            ).run(
+            ).async_run(
                 proc.stdout,
                 proc.stdin,
             )
@@ -245,6 +245,6 @@ class RemoteExecution:
                 msh=self._msh,
             )
 
-            chan.send_obj(bs)
+            await chan.send_obj(bs)
 
             yield RemoteCommandExecutor(chan)

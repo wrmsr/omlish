@@ -29,9 +29,9 @@ class InterpCommand(Command['InterpCommand.Output']):
 
 
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
-    def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
+    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
         i = InterpSpecifier.parse(check_not_none(cmd.spec))
-        o = check_not_none(DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        o = check_not_none(DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))  # FIXME: async
         return InterpCommand.Output(
             exe=o.exe,
             version=str(o.version.version),
