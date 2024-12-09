@@ -1088,7 +1088,7 @@ def asyncio_maybe_timeout(
         timeout: ta.Optional[float] = None,
 ) -> AwaitableT:
     if timeout is not None:
-        fut = asyncio.wait_for(fut, timeout)
+        fut = asyncio.wait_for(fut, timeout)  # type: ignore
     return fut
 
 
@@ -4116,9 +4116,9 @@ def prepare_subprocess_invocation(
         shell: bool = False,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
-    log.debug(args)
+    log.debug('prepare_subprocess_invocation: args=%r', args)
     if extra_env:
-        log.debug(extra_env)
+        log.debug('prepare_subprocess_invocation: extra_env=%r', extra_env)
 
     if extra_env:
         env = {**(env if env is not None else os.environ), **extra_env}
@@ -4137,14 +4137,39 @@ def prepare_subprocess_invocation(
     )
 
 
+##
+
+
+@contextlib.contextmanager
+def subprocess_common_context(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[None]:
+    start_time = time.time()
+    try:
+        log.debug('subprocess_common_context.try: args=%r', args)
+        yield
+
+    except Exception as exc:  # noqa
+        log.debug('subprocess_common_context.except: exc=%r', exc)
+        raise
+
+    finally:
+        end_time = time.time()
+        elapsed_s = end_time - start_time
+        log.debug('subprocess_common_context.finally: elapsed_s=%f args=%r', elapsed_s, args)
+
+
+##
+
+
 def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
-    return subprocess.check_call(args, **kwargs)  # type: ignore
+    with subprocess_common_context(*args, **kwargs):
+        return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
 def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
-    return subprocess.check_output(args, **kwargs)
+    with subprocess_common_context(*args, **kwargs):
+        return subprocess.check_output(args, **kwargs)
 
 
 def subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
@@ -4160,16 +4185,31 @@ DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
 )
 
 
+def _subprocess_try_run(
+        fn: ta.Callable[..., T],
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Union[T, Exception]:
+    try:
+        return fn(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return e
+
+
 def subprocess_try_call(
         *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> bool:
-    try:
-        subprocess_check_call(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(_subprocess_try_run(
+            subprocess_check_call,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return False
     else:
         return True
@@ -4180,12 +4220,15 @@ def subprocess_try_output(
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
-    try:
-        return subprocess_check_output(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(ret := _subprocess_try_run(
+            subprocess_check_output,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return None
+    else:
+        return ret
 
 
 def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
@@ -4332,13 +4375,19 @@ async def asyncio_subprocess_popen(
             *cmd,
         )
 
-    proc: asyncio.subprocess.Process
-    proc = await fac(**kwargs)
-    try:
-        yield proc
+    with subprocess_common_context(
+            *cmd,
+            shell=shell,
+            timeout=timeout,
+            **kwargs,
+    ):
+        proc: asyncio.subprocess.Process
+        proc = await fac(**kwargs)
+        try:
+            yield proc
 
-    finally:
-        await asyncio_maybe_timeout(proc.wait(), timeout)
+        finally:
+            await asyncio_maybe_timeout(proc.wait(), timeout)
 
 
 ##
@@ -4363,47 +4412,50 @@ class AsyncioProcessCommunicator:
             asyncio.base_subprocess.BaseSubprocessTransport,
         )
 
+    @property
+    def _debug(self) -> bool:
+        return self._loop.get_debug()
 
     async def _feed_stdin(self, input: bytes) -> None:  # noqa
-        debug = self._loop.get_debug()
+        stdin = check_not_none(self._proc.stdin)
         try:
             if input is not None:
-                self._proc.stdin.write(input)
-                if debug:
+                stdin.write(input)
+                if self._debug:
                     log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
 
-            await self._proc.stdin.drain()
+            await stdin.drain()
 
         except (BrokenPipeError, ConnectionResetError) as exc:
             # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
             # exceptions.
-            if debug:
+            if self._debug:
                 log.debug('%r communicate: stdin got %r', self, exc)
 
-        if debug:
+        if self._debug:
             log.debug('%r communicate: close stdin', self)
 
-        self._proc.stdin.close()
+        stdin.close()
 
     async def _noop(self) -> None:
         return None
 
     async def _read_stream(self, fd: int) -> bytes:
-        transport = self._transport.get_pipe_transport(fd)
+        transport: ta.Any = check_not_none(self._transport.get_pipe_transport(fd))
 
         if fd == 2:
-            stream = self._proc.stderr
+            stream = check_not_none(self._proc.stderr)
         else:
             check_equal(fd, 1)
-            stream = self._proc.stdout
+            stream = check_not_none(self._proc.stdout)
 
-        if self._loop.get_debug():
+        if self._debug:
             name = 'stdout' if fd == 1 else 'stderr'
             log.debug('%r communicate: read %s', self, name)
 
         output = await stream.read()
 
-        if self._loop.get_debug():
+        if self._debug:
             name = 'stdout' if fd == 1 else 'stderr'
             log.debug('%r communicate: close %s', self, name)
 
@@ -4419,26 +4471,29 @@ class AsyncioProcessCommunicator:
             self,
             input: ta.Any = None,  # noqa
     ) -> Communication:
+        stdin_fut: ta.Any
         if self._proc.stdin is not None:
-            stdin = self._feed_stdin(input)
+            stdin_fut = self._feed_stdin(input)
         else:
-            stdin = self._noop()
+            stdin_fut = self._noop()
 
+        stdout_fut: ta.Any
         if self._proc.stdout is not None:
-            stdout = self._read_stream(1)
+            stdout_fut = self._read_stream(1)
         else:
-            stdout = self._noop()
+            stdout_fut = self._noop()
 
+        stderr_fut: ta.Any
         if self._proc.stderr is not None:
-            stderr = self._read_stream(2)
+            stderr_fut = self._read_stream(2)
         else:
-            stderr = self._noop()
+            stderr_fut = self._noop()
 
-        stdin, stdout, stderr = await asyncio.gather(stdin, stdout, stderr)
+        stdin_res, stdout_res, stderr_res = await asyncio.gather(stdin_fut, stdout_fut, stderr_fut)
 
         await self._proc.wait()
 
-        return AsyncioProcessCommunicator.Communication(stdout, stderr)
+        return AsyncioProcessCommunicator.Communication(stdout_res, stderr_res)
 
     async def communicate(
             self,
@@ -4453,7 +4508,7 @@ async def asyncio_subprocess_communicate(
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # type: ignore
+    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
 
 ##

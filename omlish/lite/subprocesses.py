@@ -1,15 +1,18 @@
 # ruff: noqa: UP006 UP007
+import contextlib
 import logging
 import os
 import shlex
 import subprocess
 import sys
+import time
 import typing as ta
 
 from .logs import log
 from .runtime import is_debugger_attached
 
 
+T = ta.TypeVar('T')
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
 
 
@@ -48,9 +51,9 @@ def prepare_subprocess_invocation(
         shell: bool = False,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
-    log.debug(args)
+    log.debug('prepare_subprocess_invocation: args=%r', args)
     if extra_env:
-        log.debug(extra_env)
+        log.debug('prepare_subprocess_invocation: extra_env=%r', extra_env)
 
     if extra_env:
         env = {**(env if env is not None else os.environ), **extra_env}
@@ -69,14 +72,39 @@ def prepare_subprocess_invocation(
     )
 
 
+##
+
+
+@contextlib.contextmanager
+def subprocess_common_context(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[None]:
+    start_time = time.time()
+    try:
+        log.debug('subprocess_common_context.try: args=%r', args)
+        yield
+
+    except Exception as exc:  # noqa
+        log.debug('subprocess_common_context.except: exc=%r', exc)
+        raise
+
+    finally:
+        end_time = time.time()
+        elapsed_s = end_time - start_time
+        log.debug('subprocess_common_context.finally: elapsed_s=%f args=%r', elapsed_s, args)
+
+
+##
+
+
 def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
-    return subprocess.check_call(args, **kwargs)  # type: ignore
+    with subprocess_common_context(*args, **kwargs):
+        return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
 def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
-    return subprocess.check_output(args, **kwargs)
+    with subprocess_common_context(*args, **kwargs):
+        return subprocess.check_output(args, **kwargs)
 
 
 def subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
@@ -92,16 +120,31 @@ DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
 )
 
 
+def _subprocess_try_run(
+        fn: ta.Callable[..., T],
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Union[T, Exception]:
+    try:
+        return fn(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return e
+
+
 def subprocess_try_call(
         *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> bool:
-    try:
-        subprocess_check_call(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(_subprocess_try_run(
+            subprocess_check_call,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return False
     else:
         return True
@@ -112,12 +155,15 @@ def subprocess_try_output(
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
-    try:
-        return subprocess_check_output(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
+    if isinstance(ret := _subprocess_try_run(
+            subprocess_check_output,
+            *args,
+            try_exceptions=try_exceptions,
+            **kwargs,
+    ), Exception):
         return None
+    else:
+        return ret
 
 
 def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
