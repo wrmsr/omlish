@@ -18,13 +18,13 @@ import shutil
 import sys
 import typing as ta
 
-from omlish.lite.asyncio import asyncio_subprocess_check_output_str
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output_str
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_try_output
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_check_call
-from omlish.lite.subprocesses import subprocess_try_output
 
 from ..packaging.versions import InvalidVersion
 from ..packaging.versions import Version
@@ -204,7 +204,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @async_cached_nullary
     async def brew_tcl_opts(self) -> PyenvInstallOpts:
-        if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
+        if await asyncio_subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
         tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')

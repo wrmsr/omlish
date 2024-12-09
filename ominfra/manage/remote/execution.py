@@ -5,8 +5,8 @@ import dataclasses as dc
 import logging
 import typing as ta
 
-from omlish.lite.asyncio import asyncio_open_stream_reader
-from omlish.lite.asyncio import asyncio_open_stream_writer
+from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
+from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
