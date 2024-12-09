@@ -278,10 +278,10 @@ async def _venv_cmd(args) -> None:
 
     cmd = args.cmd
     if not cmd:
-        venv.create()
+        await venv.create()
 
     elif cmd == 'python':
-        venv.create()
+        await venv.create()
         os.execl(
             (exe := venv.exe()),
             exe,
@@ -289,12 +289,12 @@ async def _venv_cmd(args) -> None:
         )
 
     elif cmd == 'exe':
-        venv.create()
+        await venv.create()
         check_not(args.args)
         print(venv.exe())
 
     elif cmd == 'run':
-        venv.create()
+        await venv.create()
         sh = check_not_none(shutil.which('bash'))
         script = ' '.join(args.args)
         if not script:
@@ -311,7 +311,7 @@ async def _venv_cmd(args) -> None:
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':
-        venv.create()
+        await venv.create()
         subprocess_check_call(venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs())
 
     else:

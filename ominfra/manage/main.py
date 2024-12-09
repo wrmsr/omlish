@@ -29,7 +29,7 @@ from .remote.spawning import RemoteSpawning
 ##
 
 
-async def _async_main(args: ta.Any) -> None:
+async def _async_main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()

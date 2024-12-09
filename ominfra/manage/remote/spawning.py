@@ -1,13 +1,12 @@
 # ruff: noqa: UP006 UP007
-import abc
 import asyncio
 import contextlib
 import dataclasses as dc
-import functools
 import shlex
 import subprocess
 import typing as ta
 
+from omlish.lite.asyncio import asyncio_subprocess_popen
 from omlish.lite.check import check_not_none
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
@@ -27,16 +26,9 @@ class RemoteSpawning:
 
     #
 
-    class _PreparedCmd(abc.ABC):  # noqa
-        pass
-
-    @dc.dataclass(frozen=True)
-    class _ExecPreparedCmd(_PreparedCmd):
+    class _PreparedCmd(ta.NamedTuple):  # noqa
         cmd: ta.Sequence[str]
-
-    @dc.dataclass(frozen=True)
-    class _ShellPreparedCmd(_PreparedCmd):
-        cmd: str
+        shell: bool
 
     def _prepare_cmd(
             self,
@@ -48,10 +40,10 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._ShellPreparedCmd(sh_cmd)
+            return RemoteSpawning._PreparedCmd([sh_cmd], shell=False)
 
         else:
-            return RemoteSpawning._ExecPreparedCmd([tgt.python, '-c', src])
+            return RemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
 
     #
 
@@ -70,30 +62,17 @@ class RemoteSpawning:
             timeout: ta.Optional[float] = None,
     ) -> ta.AsyncGenerator[Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
-        fac: ta.Any
-        if isinstance(pc, RemoteSpawning._ExecPreparedCmd):
-            fac = functools.partial(
-                asyncio.create_subprocess_exec,
+        async with asyncio_subprocess_popen(
                 *subprocess_maybe_shell_wrap_exec(*pc.cmd),
-            )
-        elif isinstance(pc, RemoteSpawning._ShellPreparedCmd):
-            fac = functools.partial(
-                asyncio.create_subprocess_shell,
-                pc.cmd,
-            )
-        else:
-            raise TypeError(pc)
-
-        proc: asyncio.subprocess.Process
-        proc = await fac(
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=(
-                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
-                if tgt.stderr is not None else None
-            ),
-        )
-        try:
+                shell=pc.shell,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=(
+                    SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
+                    if tgt.stderr is not None else None
+                ),
+                timeout=timeout,
+        ) as proc:
             stdin = check_not_none(proc.stdin)
             stdout = check_not_none(proc.stdout)
 
@@ -109,9 +88,3 @@ class RemoteSpawning:
                     stdin.close()
                 except BrokenPipeError:
                     pass
-
-        finally:
-            if timeout:
-                await asyncio.wait_for(proc.wait(), timeout=timeout)
-            else:
-                await proc.wait()
