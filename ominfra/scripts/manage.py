@@ -4759,10 +4759,16 @@ class RemoteSpawning:
             src: str,
             *,
             timeout: ta.Optional[float] = None,
+            debug: bool = False,
     ) -> ta.AsyncGenerator[Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
+
+        cmd = pc.cmd
+        if not debug:
+            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
         async with asyncio_subprocess_popen(
-                *subprocess_maybe_shell_wrap_exec(*pc.cmd),
+                *cmd,
                 shell=pc.shell,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -4910,11 +4916,11 @@ class _RemoteExecutionLogHandler(logging.Handler):
         self._fn(msg)
 
 
-async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
+async def _async_remote_execution_main(
+        input: asyncio.StreamReader,  # noqa
+        output: asyncio.StreamWriter,
+) -> None:
     async with contextlib.AsyncExitStack() as es:  # noqa
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)  # noqa
-
         chan = RemoteChannel(
             input,
             output,
@@ -4981,7 +4987,16 @@ async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
-    asyncio.run(_async_remote_execution_main(rt))
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        await _async_remote_execution_main(
+            input,
+            output,
+        )
+
+    asyncio.run(inner())
 
 
 ##
@@ -5169,6 +5184,7 @@ class RemoteExecution:
         async with self._spawning.spawn(
                 tgt,
                 spawn_src,
+                debug=bs.main_config.debug,
         ) as proc:
             res = await PyremoteBootstrapDriver(  # noqa
                 remote_src,
