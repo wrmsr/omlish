@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-amalg-output ../manage/main.py
-# ruff: noqa: N802 UP006 UP007 UP036
+# ruff: noqa: N802 TC003 UP006 UP007 UP036
 """
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
@@ -2230,6 +2230,19 @@ async def asyncio_subprocess_popen(
             await proc.wait()
 
 
+async def asyncio_subprocess_communicate(
+        proc: asyncio.subprocess.Process,
+        *args: ta.Any,
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+    fn: ta.Any = proc.communicate(*args, **kwargs)
+    if timeout is not None:
+        fn = asyncio.wait_for(fn, timeout)
+    stdout, stderr = await fn
+    return stdout, stderr
+
+
 ########################################
 # ../../../omlish/lite/inject.py
 
@@ -4363,27 +4376,31 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
-    async def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        with subprocess.Popen(  # noqa
-            subprocess_maybe_shell_wrap_exec(*inp.cmd),
+    async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
+        proc: asyncio.subprocess.Process
+        async with asyncio_subprocess_popen(  # noqa
+            *subprocess_maybe_shell_wrap_exec(*cmd.cmd),
 
-            shell=inp.shell,
-            cwd=inp.cwd,
-            env={**os.environ, **(inp.env or {})},
+            shell=cmd.shell,
+            cwd=cmd.cwd,
+            env={**os.environ, **(cmd.env or {})},
 
-            stdin=subprocess.PIPE if inp.input is not None else None,
-            stdout=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stdout)],
-            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stderr)],
+            stdin=subprocess.PIPE if cmd.input is not None else None,
+            stdout=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, cmd.stdout)],
+            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, cmd.stderr)],
+
+            timeout=cmd.timeout,
         ) as proc:
             start_time = time.time()
-            stdout, stderr = proc.communicate(
-                input=inp.input,
-                timeout=inp.timeout,
+            stdout, stderr = await asyncio_subprocess_communicate(
+                proc,
+                input=cmd.input,
+                timeout=cmd.timeout,
             )
             end_time = time.time()
 
         return SubprocessCommand.Output(
-            rc=proc.returncode,
+            rc=check_not_none(proc.returncode),
             pid=proc.pid,
 
             elapsed_s=end_time - start_time,
@@ -4424,7 +4441,7 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._PreparedCmd([sh_cmd], shell=False)
+            return RemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
             return RemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)

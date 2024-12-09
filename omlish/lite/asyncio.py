@@ -83,3 +83,16 @@ async def asyncio_subprocess_popen(
             await asyncio.wait_for(proc.wait(), timeout=timeout)
         else:
             await proc.wait()
+
+
+async def asyncio_subprocess_communicate(
+        proc: asyncio.subprocess.Process,
+        *args: ta.Any,
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+    fn: ta.Any = proc.communicate(*args, **kwargs)
+    if timeout is not None:
+        fn = asyncio.wait_for(fn, timeout)
+    stdout, stderr = await fn
+    return stdout, stderr

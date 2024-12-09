@@ -1,11 +1,15 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: TC003 UP006 UP007
+import asyncio.subprocess
 import dataclasses as dc
 import os
 import subprocess
 import time
 import typing as ta
 
+from omlish.lite.asyncio import asyncio_subprocess_communicate
+from omlish.lite.asyncio import asyncio_subprocess_popen
 from omlish.lite.check import check_not_isinstance
+from omlish.lite.check import check_not_none
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
@@ -49,27 +53,31 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
-    async def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        with subprocess.Popen(  # noqa
-            subprocess_maybe_shell_wrap_exec(*inp.cmd),
+    async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
+        proc: asyncio.subprocess.Process
+        async with asyncio_subprocess_popen(  # noqa
+            *subprocess_maybe_shell_wrap_exec(*cmd.cmd),
 
-            shell=inp.shell,
-            cwd=inp.cwd,
-            env={**os.environ, **(inp.env or {})},
+            shell=cmd.shell,
+            cwd=cmd.cwd,
+            env={**os.environ, **(cmd.env or {})},
 
-            stdin=subprocess.PIPE if inp.input is not None else None,
-            stdout=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stdout)],
-            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, inp.stderr)],
+            stdin=subprocess.PIPE if cmd.input is not None else None,
+            stdout=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, cmd.stdout)],
+            stderr=SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, cmd.stderr)],
+
+            timeout=cmd.timeout,
         ) as proc:
             start_time = time.time()
-            stdout, stderr = proc.communicate(
-                input=inp.input,
-                timeout=inp.timeout,
+            stdout, stderr = await asyncio_subprocess_communicate(
+                proc,
+                input=cmd.input,
+                timeout=cmd.timeout,
             )
             end_time = time.time()
 
         return SubprocessCommand.Output(
-            rc=proc.returncode,
+            rc=check_not_none(proc.returncode),
             pid=proc.pid,
 
             elapsed_s=end_time - start_time,
