@@ -108,6 +108,18 @@
     }
   },
   {
+    "module": ".manifests.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/manifests/__main__.py",
+    "line": 4,
+    "value": {
+      "$.cli.types.CliModule": {
+        "cmd_name": "manifests",
+        "mod_name": "omdev.manifests.__main__"
+      }
+    }
+  },
+  {
     "module": ".precheck.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/precheck/__main__.py",
