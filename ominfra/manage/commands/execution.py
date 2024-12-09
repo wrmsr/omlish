@@ -18,6 +18,6 @@ class LocalCommandExecutor(CommandExecutor):
 
         self._command_executors = command_executors
 
-    def execute(self, cmd: Command) -> Command.Output:
+    async def execute(self, cmd: Command) -> Command.Output:
         ce: CommandExecutor = self._command_executors[type(cmd)]
-        return ce.execute(cmd)
+        return await ce.execute(cmd)

@@ -1,6 +1,9 @@
 # ruff: noqa: UP006 UP007
+import abc
+import asyncio
 import contextlib
 import dataclasses as dc
+import functools
 import shlex
 import subprocess
 import typing as ta
@@ -24,9 +27,16 @@ class RemoteSpawning:
 
     #
 
-    class _PreparedCmd(ta.NamedTuple):
+    class _PreparedCmd(abc.ABC):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class _ExecPreparedCmd(_PreparedCmd):
         cmd: ta.Sequence[str]
-        shell: bool
+
+    @dc.dataclass(frozen=True)
+    class _ShellPreparedCmd(_PreparedCmd):
+        cmd: str
 
     def _prepare_cmd(
             self,
@@ -38,27 +48,21 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._PreparedCmd(
-                cmd=[sh_cmd],
-                shell=True,
-            )
+            return RemoteSpawning._ShellPreparedCmd(sh_cmd)
 
         else:
-            return RemoteSpawning._PreparedCmd(
-                cmd=[tgt.python, '-c', src],
-                shell=False,
-            )
+            return RemoteSpawning._ExecPreparedCmd([tgt.python, '-c', src])
 
     #
 
     @dc.dataclass(frozen=True)
     class Spawned:
-        stdin: ta.IO
-        stdout: ta.IO
-        stderr: ta.Optional[ta.IO]
+        stdin: asyncio.StreamWriter
+        stdout: asyncio.StreamReader
+        stderr: ta.Optional[asyncio.StreamReader]
 
-    @contextlib.contextmanager
-    def spawn(
+    @contextlib.asynccontextmanager
+    async def spawn(
             self,
             tgt: Target,
             src: str,
@@ -66,17 +70,30 @@ class RemoteSpawning:
             timeout: ta.Optional[float] = None,
     ) -> ta.Generator[Spawned, None, None]:
         pc = self._prepare_cmd(tgt, src)
+        fac: ta.Any
+        if isinstance(pc, RemoteSpawning._ExecPreparedCmd):
+            fac = functools.partial(
+                asyncio.create_subprocess_exec,
+                *subprocess_maybe_shell_wrap_exec(*pc.cmd),
+            )
+        elif isinstance(pc, RemoteSpawning._ShellPreparedCmd):
+            fac = functools.partial(
+                asyncio.create_subprocess_shell,
+                pc.cmd,
+            )
+        else:
+            raise TypeError(pc)
 
-        with subprocess.Popen(
-            subprocess_maybe_shell_wrap_exec(*pc.cmd),
-            shell=pc.shell,
+        proc: asyncio.subprocess.Process
+        proc = await fac(
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=(
                 SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
                 if tgt.stderr is not None else None
             ),
-        ) as proc:
+        )
+        try:
             stdin = check_not_none(proc.stdin)
             stdout = check_not_none(proc.stdout)
 
@@ -93,4 +110,8 @@ class RemoteSpawning:
                 except BrokenPipeError:
                     pass
 
-                proc.wait(timeout)
+        finally:
+            if timeout:
+                await asyncio.wait_for(proc.wait(), timeout=timeout)
+            else:
+                await proc.wait()

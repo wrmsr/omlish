@@ -5,6 +5,7 @@
 manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
+import asyncio
 import contextlib
 import json
 import typing as ta
@@ -28,7 +29,7 @@ from .remote.spawning import RemoteSpawning
 ##
 
 
-def _main() -> None:
+async def _async_main(args: ta.Any) -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -71,6 +72,8 @@ def _main() -> None:
         ),
     )
 
+    #
+
     injector = main_bootstrap(
         bs,
     )
@@ -89,7 +92,7 @@ def _main() -> None:
 
     #
 
-    with contextlib.ExitStack() as es:
+    async with contextlib.AsyncExitStack() as es:
         ce: CommandExecutor
 
         if args.local:
@@ -102,16 +105,20 @@ def _main() -> None:
                 python=args.python,
             )
 
-            ce = es.enter_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
+            ce = await es.enter_async_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
 
         for cmd in cmds:
-            r = ce.try_execute(
+            r = await ce.try_execute(
                 cmd,
                 log=log,
                 omit_exc_object=True,
             )
 
             print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+
+
+def _main() -> None:
+    asyncio.run(_async_main())
 
 
 if __name__ == '__main__':

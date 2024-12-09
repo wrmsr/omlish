@@ -23,8 +23,8 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
         pass
 
     @ta.final
-    def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check_isinstance(executor.execute(self), self.Output)  # type: ignore[return-value]
+    async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
+        return check_isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
 ##
@@ -85,10 +85,10 @@ class CommandOutputOrExceptionData(CommandOutputOrException):
 
 class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def execute(self, cmd: CommandT) -> CommandOutputT:
+    def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
         raise NotImplementedError
 
-    def try_execute(
+    async def try_execute(
             self,
             cmd: CommandT,
             *,
@@ -96,7 +96,7 @@ class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException[CommandOutputT]:
         try:
-            o = self.execute(cmd)
+            o = await self.execute(cmd)
 
         except Exception as e:  # noqa
             if log is not None:
