@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import asyncio
 import contextlib
 import dataclasses as dc
@@ -37,6 +38,50 @@ else:
     main_bootstrap: ta.Any = None
 
 
+T = ta.TypeVar('T')
+
+
+##
+
+
+class _RemoteExecutionProtocol:
+    class Message(abc.ABC):
+        _message_cls: ta.ClassVar[ta.Type['_RemoteExecutionProtocol.Message']]
+
+        async def send(self, chan: RemoteChannel) -> None:
+            await chan.send_obj(self, self._message_cls)
+
+        @classmethod
+        async def recv(cls: ta.Type[T], chan: RemoteChannel) -> ta.Optional[T]:
+            return await chan.recv_obj(cls._message_cls)  # type: ignore
+
+    #
+
+    class Request(Message, abc.ABC):  # noqa
+        pass
+
+    Request._message_cls = Request  # noqa
+
+    @dc.dataclass(frozen=True)
+    class CommandRequest(Request):
+        c: Command
+
+    #
+
+    class Response(Message, abc.ABC):  # noqa
+        pass
+
+    Response._message_cls = Response  # noqa
+
+    @dc.dataclass(frozen=True)
+    class LogResponse(Response):
+        s: str
+
+    @dc.dataclass(frozen=True)
+    class CommandResponse(Response):
+        r: CommandOutputOrExceptionData
+
+
 ##
 
 
@@ -48,22 +93,6 @@ class _RemoteExecutionLogHandler(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         self._fn(msg)
-
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionRequest:
-    c: Command
-
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionLog:
-    s: str
-
-
-@dc.dataclass(frozen=True)
-class _RemoteExecutionResponse:
-    r: ta.Optional[CommandOutputOrExceptionData] = None
-    l: ta.Optional[_RemoteExecutionLog] = None
 
 
 async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
@@ -87,15 +116,9 @@ async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
 
         #
 
-        log_lock = asyncio.Lock()
-
-        send_logs = False
-
         def log_fn(s: str) -> None:
             async def inner():
-                async with log_lock:
-                    if send_logs:
-                        await chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+                await _RemoteExecutionProtocol.LogResponse(s).send(chan)
 
             loop = asyncio.get_running_loop()
             if loop is not None:
@@ -109,26 +132,23 @@ async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
         ce = injector[LocalCommandExecutor]
 
         while True:
-            req = await chan.recv_obj(_RemoteExecutionRequest)
+            req = await _RemoteExecutionProtocol.Request.recv(chan)
             if req is None:
                 break
 
-            async with log_lock:
-                send_logs = True
+            if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
+                r = await ce.try_execute(
+                    req.c,
+                    log=log,
+                    omit_exc_object=True,
+                )
+            else:
+                raise TypeError(req)
 
-            r = await ce.try_execute(
-                req.c,
-                log=log,
-                omit_exc_object=True,
-            )
-
-            async with log_lock:
-                send_logs = False
-
-            await chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
+            await _RemoteExecutionProtocol.CommandResponse(CommandOutputOrExceptionData(
                 output=r.output,
                 exception=r.exception,
-            )))
+            )).send(chan)
 
 
 def _remote_execution_main() -> None:
@@ -152,17 +172,20 @@ class RemoteCommandExecutor(CommandExecutor):
         self._chan = chan
 
     async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        await self._chan.send_obj(_RemoteExecutionRequest(cmd))
+        await _RemoteExecutionProtocol.CommandRequest(cmd).send(self._chan)
 
         while True:
-            if (r := await self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+            if (r := await _RemoteExecutionProtocol.Response.recv(self._chan)) is None:
                 raise EOFError
 
-            if r.l is not None:
-                log.info(r.l.s)
+            if isinstance(r, _RemoteExecutionProtocol.LogResponse):
+                log.info(r.s)
 
-            if r.r is not None:
+            elif isinstance(r, _RemoteExecutionProtocol.CommandResponse):
                 return r.r
+
+            else:
+                raise TypeError(r)
 
     # @ta.override
     async def execute(self, cmd: Command) -> Command.Output:
