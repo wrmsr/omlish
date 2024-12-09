@@ -64,13 +64,13 @@ async def asyncio_subprocess_popen(
     fac: ta.Any
     if shell:
         fac = functools.partial(
-            asyncio.create_subprocess_exec,
-            *cmd,
+            asyncio.create_subprocess_shell,
+            check_single(cmd),
         )
     else:
         fac = functools.partial(
-            asyncio.create_subprocess_shell,
-            check_single(cmd),
+            asyncio.create_subprocess_exec,
+            *cmd,
         )
 
     proc: asyncio.subprocess.Process
