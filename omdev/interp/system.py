@@ -87,7 +87,7 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
+    async def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
         if not self.inspect:
             s = os.path.basename(exe)
             if s.startswith('python'):
@@ -97,13 +97,13 @@ class SystemInterpProvider(InterpProvider):
                     return InterpVersion.parse(s)
                 except InvalidVersion:
                     pass
-        ii = self.inspector.inspect(exe)
+        ii = await self.inspector.inspect(exe)
         return ii.iv if ii is not None else None
 
-    def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
+    async def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
         lst = []
         for e in self.exes():
-            if (ev := self.get_exe_version(e)) is None:
+            if (ev := await self.get_exe_version(e)) is None:
                 log.debug('Invalid system version: %s', e)
                 continue
             lst.append((e, ev))
@@ -112,10 +112,10 @@ class SystemInterpProvider(InterpProvider):
     #
 
     async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [ev for e, ev in self.exe_versions()]
+        return [ev for e, ev in await self.exe_versions()]
 
     async def get_installed_version(self, version: InterpVersion) -> Interp:
-        for e, ev in self.exe_versions():
+        for e, ev in await self.exe_versions():
             if ev != version:
                 continue
             return Interp(
