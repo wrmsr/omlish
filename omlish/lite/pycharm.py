@@ -36,7 +36,6 @@ def pycharm_debug_connect(prd: PycharmRemoteDebug) -> None:
 def pycharm_debug_preamble(prd: PycharmRemoteDebug) -> str:
     import inspect
     import textwrap
-
     return textwrap.dedent(f"""
         {inspect.getsource(pycharm_debug_connect)}
 

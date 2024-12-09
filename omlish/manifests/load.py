@@ -31,6 +31,8 @@ class ManifestLoader:
         self._cls_cache: ta.Dict[str, type] = {}
         self._raw_cache: ta.Dict[str, ta.Optional[ta.Sequence[Manifest]]] = {}
 
+    #
+
     @classmethod
     def from_entry_point(
             cls,
@@ -51,6 +53,8 @@ class ManifestLoader:
                 rm[spec.name] = '__main__'
 
         return cls(module_remap=rm, **kwargs)
+
+    #
 
     def load_cls(self, key: str) -> type:
         try:
@@ -152,6 +156,8 @@ class ManifestLoader:
                 lst.append(manifest)
 
         return lst
+
+    #
 
     ENTRY_POINT_GROUP = 'omlish.manifests'
 
