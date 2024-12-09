@@ -27,7 +27,7 @@ class RemoteSpawning:
 
     #
 
-    class _PreparedCmd(abc.ABC):
+    class _PreparedCmd(abc.ABC):  # noqa
         pass
 
     @dc.dataclass(frozen=True)
@@ -68,7 +68,7 @@ class RemoteSpawning:
             src: str,
             *,
             timeout: ta.Optional[float] = None,
-    ) -> ta.Generator[Spawned, None, None]:
+    ) -> ta.AsyncGenerator[Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
         fac: ta.Any
         if isinstance(pc, RemoteSpawning._ExecPreparedCmd):
