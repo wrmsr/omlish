@@ -6,8 +6,8 @@ import subprocess
 import time
 import typing as ta
 
-from omlish.lite.asyncio import asyncio_subprocess_communicate
-from omlish.lite.asyncio import asyncio_subprocess_popen
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_communicate
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_popen
 from omlish.lite.check import check_not_isinstance
 from omlish.lite.check import check_not_none
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES

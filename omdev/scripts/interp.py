@@ -13,6 +13,7 @@ TODO:
 import abc
 import argparse
 import asyncio
+import asyncio.base_subprocess
 import asyncio.subprocess
 import collections
 import contextlib
@@ -52,6 +53,9 @@ _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['Negative
 VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+
+# ../../omlish/lite/asyncio/asyncio.py
+AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
 # ../../omlish/lite/cached.py
 T = ta.TypeVar('T')
@@ -474,6 +478,66 @@ def canonicalize_version(
         parts.append(f'+{parsed.local}')
 
     return ''.join(parts)
+
+
+########################################
+# ../../../omlish/lite/asyncio/asyncio.py
+
+
+##
+
+
+ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
+
+
+async def asyncio_open_stream_reader(
+        f: ta.IO,
+        loop: ta.Any = None,
+        *,
+        limit: int = ASYNCIO_DEFAULT_BUFFER_LIMIT,
+) -> asyncio.StreamReader:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    reader = asyncio.StreamReader(limit=limit, loop=loop)
+    await loop.connect_read_pipe(
+        lambda: asyncio.StreamReaderProtocol(reader, loop=loop),
+        f,
+    )
+
+    return reader
+
+
+async def asyncio_open_stream_writer(
+        f: ta.IO,
+        loop: ta.Any = None,
+) -> asyncio.StreamWriter:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    writer_transport, writer_protocol = await loop.connect_write_pipe(
+        lambda: asyncio.streams.FlowControlMixin(loop=loop),
+        f,
+    )
+
+    return asyncio.streams.StreamWriter(
+        writer_transport,
+        writer_protocol,
+        None,
+        loop,
+    )
+
+
+##
+
+
+def asyncio_maybe_timeout(
+        fut: AwaitableT,
+        timeout: ta.Optional[float] = None,
+) -> AwaitableT:
+    if timeout is not None:
+        fut = asyncio.wait_for(fut, timeout)
+    return fut
 
 
 ########################################
@@ -1914,51 +1978,7 @@ INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
-# ../../../omlish/lite/asyncio.py
-
-
-##
-
-
-ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
-
-
-async def asyncio_open_stream_reader(
-        f: ta.IO,
-        loop: ta.Any = None,
-        *,
-        limit: int = ASYNCIO_DEFAULT_BUFFER_LIMIT,
-) -> asyncio.StreamReader:
-    if loop is None:
-        loop = asyncio.get_running_loop()
-
-    reader = asyncio.StreamReader(limit=limit, loop=loop)
-    await loop.connect_read_pipe(
-        lambda: asyncio.StreamReaderProtocol(reader, loop=loop),
-        f,
-    )
-
-    return reader
-
-
-async def asyncio_open_stream_writer(
-        f: ta.IO,
-        loop: ta.Any = None,
-) -> asyncio.StreamWriter:
-    if loop is None:
-        loop = asyncio.get_running_loop()
-
-    writer_transport, writer_protocol = await loop.connect_write_pipe(
-        lambda: asyncio.streams.FlowControlMixin(loop=loop),
-        f,
-    )
-
-    return asyncio.streams.StreamWriter(
-        writer_transport,
-        writer_protocol,
-        None,
-        loop,
-    )
+# ../../../omlish/lite/asyncio/subprocesses.py
 
 
 ##
@@ -1989,10 +2009,114 @@ async def asyncio_subprocess_popen(
         yield proc
 
     finally:
-        if timeout:
-            await asyncio.wait_for(proc.wait(), timeout=timeout)
+        await asyncio_maybe_timeout(proc.wait(), timeout)
+
+
+##
+
+
+class AsyncioProcessCommunicator:
+    def __init__(
+            self,
+            proc: asyncio.subprocess.Process,
+            loop: ta.Optional[ta.Any] = None,
+    ) -> None:
+        super().__init__()
+
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        self._proc = proc
+        self._loop = loop
+
+        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check_isinstance(
+            proc._transport,  # type: ignore  # noqa
+            asyncio.base_subprocess.BaseSubprocessTransport,
+        )
+
+
+    async def _feed_stdin(self, input: bytes) -> None:  # noqa
+        debug = self._loop.get_debug()
+        try:
+            if input is not None:
+                self._proc.stdin.write(input)
+                if debug:
+                    log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
+
+            await self._proc.stdin.drain()
+
+        except (BrokenPipeError, ConnectionResetError) as exc:
+            # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
+            # exceptions.
+            if debug:
+                log.debug('%r communicate: stdin got %r', self, exc)
+
+        if debug:
+            log.debug('%r communicate: close stdin', self)
+
+        self._proc.stdin.close()
+
+    async def _noop(self) -> None:
+        return None
+
+    async def _read_stream(self, fd: int) -> bytes:
+        transport = self._transport.get_pipe_transport(fd)
+
+        if fd == 2:
+            stream = self._proc.stderr
         else:
-            await proc.wait()
+            check_equal(fd, 1)
+            stream = self._proc.stdout
+
+        if self._loop.get_debug():
+            name = 'stdout' if fd == 1 else 'stderr'
+            log.debug('%r communicate: read %s', self, name)
+
+        output = await stream.read()
+
+        if self._loop.get_debug():
+            name = 'stdout' if fd == 1 else 'stderr'
+            log.debug('%r communicate: close %s', self, name)
+
+        transport.close()
+
+        return output
+
+    class Communication(ta.NamedTuple):
+        stdout: ta.Optional[bytes]
+        stderr: ta.Optional[bytes]
+
+    async def _communicate(
+            self,
+            input: ta.Any = None,  # noqa
+    ) -> Communication:
+        if self._proc.stdin is not None:
+            stdin = self._feed_stdin(input)
+        else:
+            stdin = self._noop()
+
+        if self._proc.stdout is not None:
+            stdout = self._read_stream(1)
+        else:
+            stdout = self._noop()
+
+        if self._proc.stderr is not None:
+            stderr = self._read_stream(2)
+        else:
+            stderr = self._noop()
+
+        stdin, stdout, stderr = await asyncio.gather(stdin, stdout, stderr)
+
+        await self._proc.wait()
+
+        return AsyncioProcessCommunicator.Communication(stdout, stderr)
+
+    async def communicate(
+            self,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+    ) -> Communication:
+        return await asyncio_maybe_timeout(self._communicate(input), timeout)
 
 
 async def asyncio_subprocess_communicate(
@@ -2000,19 +2124,36 @@ async def asyncio_subprocess_communicate(
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-    fn: ta.Any = proc.communicate(input)
-    if timeout is not None:
-        fn = asyncio.wait_for(fn, timeout)
-    stdout, stderr = await fn
-    return stdout, stderr
+    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # type: ignore
 
 
+##
+
+
+# async def asyncio_subprocess_check_call(
+#         *args: str,
+#         stdout: ta.Any = 'stderr',
+#         input: ta.Any = None,  # noqa
+#         timeout: ta.Optional[float] = None,
+#         **kwargs: ta.Any,
+# ) -> None:
+#     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
 #
-
-
-# async def asyncio_subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
-#     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
-#     return subprocess.check_call(args, **kwargs)  # type: ignore
+#     proc: asyncio.subprocess.Process
+#     async with asyncio_subprocess_popen(
+#             *args,
+#             stdout=stdout,
+#             **kwargs,
+#     ) as proc:
+#         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
+#
+#     if proc.returncode:
+#         raise subprocess.CalledProcessError(
+#             proc.returncode,
+#             args,
+#             output=stdout,
+#             stderr=stderr,
+#         )
 
 
 async def asyncio_subprocess_check_output(
@@ -2025,9 +2166,9 @@ async def asyncio_subprocess_check_output(
 
     proc: asyncio.subprocess.Process
     async with asyncio_subprocess_popen(
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        **kwargs,
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            **kwargs,
     ) as proc:
         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
@@ -2044,6 +2185,27 @@ async def asyncio_subprocess_check_output(
 
 async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
     return (await asyncio_subprocess_check_output(*args, **kwargs)).decode().strip()
+
+
+##
+
+
+async def asyncio_subprocess_try_output(
+        *args: str,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Optional[bytes]:
+    try:
+        return await asyncio_subprocess_check_output(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return None
+
+
+async def asyncio_subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
+    out = await asyncio_subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else None
 
 
 ########################################
@@ -2289,7 +2451,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @async_cached_nullary
     async def brew_tcl_opts(self) -> PyenvInstallOpts:
-        if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
+        if await asyncio_subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
         tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
