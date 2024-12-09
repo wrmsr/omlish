@@ -24,7 +24,7 @@ from .types import InterpSpecifier
 async def _list_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    r.list(s)
+    await r.list(s)
 
 
 async def _resolve_cmd(args) -> None:
@@ -34,7 +34,7 @@ async def _resolve_cmd(args) -> None:
     else:
         r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    print(check_not_none(r.resolve(s, install=bool(args.install))).exe)
+    print(check_not_none(await r.resolve(s, install=bool(args.install))).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
