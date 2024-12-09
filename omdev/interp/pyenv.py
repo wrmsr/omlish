@@ -259,20 +259,8 @@ class PyenvVersionInstaller:
     ) -> None:
         super().__init__()
 
-        if no_default_opts:
-            if opts is None:
-                opts = PyenvInstallOpts()
-        else:
-            lst = [opts if opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
-            if interp_opts.debug:
-                lst.append(DEBUG_PYENV_INSTALL_OPTS)
-            if interp_opts.threaded:
-                lst.append(THREADED_PYENV_INSTALL_OPTS)
-            lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
-            opts = PyenvInstallOpts().merge(*lst)
-
         self._version = version
-        self._opts = opts
+        self._given_opts = opts
         self._interp_opts = interp_opts
         self._given_install_name = install_name
 
@@ -283,9 +271,21 @@ class PyenvVersionInstaller:
     def version(self) -> str:
         return self._version
 
-    @property
-    def opts(self) -> PyenvInstallOpts:
-        return self._opts
+    @async_cached_nullary
+    async def opts(self) -> PyenvInstallOpts:
+        opts = self._given_opts
+        if self._no_default_opts:
+            if opts is None:
+                opts = PyenvInstallOpts()
+        else:
+            lst = [self._given_opts if self._given_opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
+            if self._interp_opts.debug:
+                lst.append(DEBUG_PYENV_INSTALL_OPTS)
+            if self._interp_opts.threaded:
+                lst.append(THREADED_PYENV_INSTALL_OPTS)
+            lst.append(await PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
+            opts = PyenvInstallOpts().merge(*lst)
+        return opts
 
     @cached_nullary
     def install_name(self) -> str:
@@ -299,11 +299,12 @@ class PyenvVersionInstaller:
 
     @async_cached_nullary
     async def install(self) -> str:
-        env = {**os.environ, **self._opts.env}
+        opts = await self.opts()
+        env = {**os.environ, **opts.env}
         for k, l in [
-            ('CFLAGS', self._opts.cflags),
-            ('LDFLAGS', self._opts.ldflags),
-            ('PYTHON_CONFIGURE_OPTS', self._opts.conf_opts),
+            ('CFLAGS', opts.cflags),
+            ('LDFLAGS', opts.ldflags),
+            ('PYTHON_CONFIGURE_OPTS', opts.conf_opts),
         ]:
             v = ' '.join(l)
             if k in os.environ:
@@ -311,13 +312,13 @@ class PyenvVersionInstaller:
             env[k] = v
 
         conf_args = [
-            *self._opts.opts,
+            *opts.opts,
             self._version,
         ]
 
         if self._given_install_name is not None:
             full_args = [
-                os.path.join(check_not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),
+                os.path.join(check_not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
                 self.install_dir(),
             ]

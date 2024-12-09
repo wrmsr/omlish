@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 
 
@@ -47,18 +46,17 @@ class TestCached(unittest.TestCase):
         assert c1.f() == 'c1'
         assert c == 2
 
-    def test_cached_nullary_async(self):
-        async def _inner():
-            c = 0
 
-            @cached.async_cached_nullary
-            async def f():
-                nonlocal c
-                c += 1
-                return 'f'
+class TestCachedAsync(unittest.IsolatedAsyncioTestCase):
+    async def test_cached_nullary_async(self):
+        c = 0
 
-            for _ in range(2):
-                assert await f() == 'f'
-                assert c == 1
+        @cached.async_cached_nullary
+        async def f():
+            nonlocal c
+            c += 1
+            return 'f'
 
-        asyncio.run(_inner())
+        for _ in range(2):
+            assert await f() == 'f'
+            assert c == 1
