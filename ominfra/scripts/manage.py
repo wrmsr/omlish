@@ -9,6 +9,8 @@ manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import abc
+import asyncio
+import asyncio.subprocess
 import base64
 import collections
 import collections.abc
@@ -998,12 +1000,42 @@ class PyremoteBootstrapDriver:
             else:
                 raise TypeError(go)
 
+    async def async_run(
+            self,
+            input: ta.Any,  # asyncio.StreamWriter  # noqa
+            output: ta.Any,  # asyncio.StreamReader
+    ) -> Result:
+        gen = self.gen()
+
+        gi: ta.Optional[bytes] = None
+        while True:
+            try:
+                if gi is not None:
+                    go = gen.send(gi)
+                else:
+                    go = next(gen)
+            except StopIteration as e:
+                return e.value
+
+            if isinstance(go, self.Read):
+                if len(gi := await input.read(go.sz)) != go.sz:
+                    raise EOFError
+            elif isinstance(go, self.Write):
+                gi = None
+                output.write(go.d)
+                await output.drain()
+            else:
+                raise TypeError(go)
+
 
 ########################################
 # ../../../omlish/lite/cached.py
 
 
-class _cached_nullary:  # noqa
+##
+
+
+class _AbstractCachedNullary:
     def __init__(self, fn):
         super().__init__()
         self._fn = fn
@@ -1011,23 +1043,45 @@ class _cached_nullary:  # noqa
         functools.update_wrapper(self, fn)
 
     def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
+        raise TypeError
 
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 
 
+##
+
+
+class _CachedNullary(_AbstractCachedNullary):
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+
 def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _cached_nullary(fn)
+    return _CachedNullary(fn)
 
 
 def static_init(fn: CallableT) -> CallableT:
     fn = cached_nullary(fn)
     fn()
     return fn
+
+
+##
+
+
+class _AsyncCachedNullary(_AbstractCachedNullary):
+    async def __call__(self, *args, **kwargs):
+        if self._value is self._missing:
+            self._value = await self._fn()
+        return self._value
+
+
+def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _AsyncCachedNullary(fn)
 
 
 ########################################
@@ -1908,8 +1962,8 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
         pass
 
     @ta.final
-    def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check_isinstance(executor.execute(self), self.Output)  # type: ignore[return-value]
+    async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
+        return check_isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
 ##
@@ -1970,10 +2024,10 @@ class CommandOutputOrExceptionData(CommandOutputOrException):
 
 class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
     @abc.abstractmethod
-    def execute(self, cmd: CommandT) -> CommandOutputT:
+    def execute(self, cmd: CommandT) -> ta.Awaitable[CommandOutputT]:
         raise NotImplementedError
 
-    def try_execute(
+    async def try_execute(
             self,
             cmd: CommandT,
             *,
@@ -1981,7 +2035,7 @@ class CommandExecutor(abc.ABC, ta.Generic[CommandT, CommandOutputT]):
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException[CommandOutputT]:
         try:
-            o = self.execute(cmd)
+            o = await self.execute(cmd)
 
         except Exception as e:  # noqa
             if log is not None:
@@ -2092,6 +2146,88 @@ def get_remote_payload_src(
 
     import importlib.resources
     return importlib.resources.files(__package__.split('.')[0] + '.scripts').joinpath('manage.py').read_text()
+
+
+########################################
+# ../../../omlish/lite/asyncio.py
+
+
+##
+
+
+ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
+
+
+async def asyncio_open_stream_reader(
+        f: ta.IO,
+        loop: ta.Any = None,
+        *,
+        limit: int = ASYNCIO_DEFAULT_BUFFER_LIMIT,
+) -> asyncio.StreamReader:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    reader = asyncio.StreamReader(limit=limit, loop=loop)
+    await loop.connect_read_pipe(
+        lambda: asyncio.StreamReaderProtocol(reader, loop=loop),
+        f,
+    )
+
+    return reader
+
+
+async def asyncio_open_stream_writer(
+        f: ta.IO,
+        loop: ta.Any = None,
+) -> asyncio.StreamWriter:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    writer_transport, writer_protocol = await loop.connect_write_pipe(
+        lambda: asyncio.streams.FlowControlMixin(loop=loop),
+        f,
+    )
+
+    return asyncio.streams.StreamWriter(
+        writer_transport,
+        writer_protocol,
+        None,
+        loop,
+    )
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def asyncio_subprocess_popen(
+        *cmd: str,
+        shell: bool = False,
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
+    fac: ta.Any
+    if shell:
+        fac = functools.partial(
+            asyncio.create_subprocess_exec,
+            *cmd,
+        )
+    else:
+        fac = functools.partial(
+            asyncio.create_subprocess_shell,
+            check_single(cmd),
+        )
+
+    proc: asyncio.subprocess.Process
+    proc = await fac(**kwargs)
+    try:
+        yield proc
+
+    finally:
+        if timeout:
+            await asyncio.wait_for(proc.wait(), timeout=timeout)
+        else:
+            await proc.wait()
 
 
 ########################################
@@ -3834,9 +3970,9 @@ class LocalCommandExecutor(CommandExecutor):
 
         self._command_executors = command_executors
 
-    def execute(self, cmd: Command) -> Command.Output:
+    async def execute(self, cmd: Command) -> Command.Output:
         ce: CommandExecutor = self._command_executors[type(cmd)]
-        return ce.execute(cmd)
+        return await ce.execute(cmd)
 
 
 ########################################
@@ -3882,7 +4018,7 @@ class DeployCommand(Command['DeployCommand.Output']):
 
 
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
-    def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+    async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
         log.info('Deploying!')
 
         return DeployCommand.Output()
@@ -3907,8 +4043,8 @@ ObjMarshalerInstallers = ta.NewType('ObjMarshalerInstallers', ta.Sequence[ObjMar
 class RemoteChannel:
     def __init__(
             self,
-            input: ta.IO,  # noqa
-            output: ta.IO,
+            input: asyncio.StreamReader,  # noqa
+            output: asyncio.StreamWriter,
             *,
             msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
     ) -> None:
@@ -3918,41 +4054,45 @@ class RemoteChannel:
         self._output = output
         self._msh = msh
 
-        self._lock = threading.RLock()
+        self._lock = asyncio.Lock()
 
     def set_marshaler(self, msh: ObjMarshalerManager) -> None:
         self._msh = msh
 
-    def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+    #
+
+    async def _send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
 
         self._output.write(struct.pack('<I', len(d)))
         self._output.write(d)
-        self._output.flush()
+        await self._output.drain()  # FIXME: FLUSH UNDERLYING
 
-    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
-        with self._lock:
-            return self._send_obj(o, ty)
+    async def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
+        async with self._lock:
+            return await self._send_obj(o, ty)
 
-    def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        d = self._input.read(4)
+    #
+
+    async def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        d = await self._input.read(4)
         if not d:
             return None
         if len(d) != 4:
             raise EOFError
 
         sz = struct.unpack('<I', d)[0]
-        d = self._input.read(sz)
+        d = await self._input.read(sz)
         if len(d) != sz:
             raise EOFError
 
         j = json.loads(d.decode('utf-8'))
         return self._msh.unmarshal_obj(j, ty)
 
-    def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        with self._lock:
-            return self._recv_obj(ty)
+    async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        async with self._lock:
+            return await self._recv_obj(ty)
 
 
 ########################################
@@ -4123,7 +4263,6 @@ class InterpInspection:
 
 
 class InterpInspector:
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -4163,17 +4302,17 @@ class InterpInspector:
     def running(cls) -> 'InterpInspection':
         return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
 
-    def _inspect(self, exe: str) -> InterpInspection:
+    async def _inspect(self, exe: str) -> InterpInspection:
         output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
         return self._build_inspection(exe, output.decode())
 
-    def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
+    async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
         try:
             return self._cache[exe]
         except KeyError:
             ret: ta.Optional[InterpInspection]
             try:
-                ret = self._inspect(exe)
+                ret = await self._inspect(exe)
             except Exception as e:  # noqa
                 if log.isEnabledFor(logging.DEBUG):
                     log.exception('Failed to inspect interp: %s', exe)
@@ -4224,8 +4363,8 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
-    def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        with subprocess.Popen(
+    async def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
+        with subprocess.Popen(  # noqa
             subprocess_maybe_shell_wrap_exec(*inp.cmd),
 
             shell=inp.shell,
@@ -4271,7 +4410,7 @@ class RemoteSpawning:
 
     #
 
-    class _PreparedCmd(ta.NamedTuple):
+    class _PreparedCmd(ta.NamedTuple):  # noqa
         cmd: ta.Sequence[str]
         shell: bool
 
@@ -4285,44 +4424,38 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._PreparedCmd(
-                cmd=[sh_cmd],
-                shell=True,
-            )
+            return RemoteSpawning._PreparedCmd([sh_cmd], shell=False)
 
         else:
-            return RemoteSpawning._PreparedCmd(
-                cmd=[tgt.python, '-c', src],
-                shell=False,
-            )
+            return RemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
 
     #
 
     @dc.dataclass(frozen=True)
     class Spawned:
-        stdin: ta.IO
-        stdout: ta.IO
-        stderr: ta.Optional[ta.IO]
+        stdin: asyncio.StreamWriter
+        stdout: asyncio.StreamReader
+        stderr: ta.Optional[asyncio.StreamReader]
 
-    @contextlib.contextmanager
-    def spawn(
+    @contextlib.asynccontextmanager
+    async def spawn(
             self,
             tgt: Target,
             src: str,
             *,
             timeout: ta.Optional[float] = None,
-    ) -> ta.Generator[Spawned, None, None]:
+    ) -> ta.AsyncGenerator[Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
-
-        with subprocess.Popen(
-            subprocess_maybe_shell_wrap_exec(*pc.cmd),
-            shell=pc.shell,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=(
-                SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
-                if tgt.stderr is not None else None
-            ),
+        async with asyncio_subprocess_popen(
+                *subprocess_maybe_shell_wrap_exec(*pc.cmd),
+                shell=pc.shell,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=(
+                    SUBPROCESS_CHANNEL_OPTION_VALUES[ta.cast(SubprocessChannelOption, tgt.stderr)]
+                    if tgt.stderr is not None else None
+                ),
+                timeout=timeout,
         ) as proc:
             stdin = check_not_none(proc.stdin)
             stdout = check_not_none(proc.stdout)
@@ -4339,8 +4472,6 @@ class RemoteSpawning:
                     stdin.close()
                 except BrokenPipeError:
                     pass
-
-                proc.wait(timeout)
 
 
 ########################################
@@ -4370,17 +4501,17 @@ class InterpProvider(abc.ABC):
             setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
 
     @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
         raise NotImplementedError
 
-    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return []
 
-    def install_version(self, version: InterpVersion) -> Interp:
+    async def install_version(self, version: InterpVersion) -> Interp:
         raise TypeError
 
 
@@ -4392,10 +4523,10 @@ class RunningInterpProvider(InterpProvider):
     def version(self) -> InterpVersion:
         return InterpInspector.running().iv
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
         if version != self.version():
             raise KeyError(version)
         return Interp(
@@ -4437,61 +4568,75 @@ class _RemoteExecutionResponse:
     l: ta.Optional[_RemoteExecutionLog] = None
 
 
+async def _async_remote_execution_main(rt: PyremotePayloadRuntime) -> None:
+    async with contextlib.AsyncExitStack() as es:  # noqa
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)  # noqa
+
+        chan = RemoteChannel(
+            input,
+            output,
+        )
+
+        bs = check_not_none(await chan.recv_obj(MainBootstrap))
+
+        if (prd := bs.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        injector = main_bootstrap(bs)
+
+        chan.set_marshaler(injector[ObjMarshalerManager])
+
+        #
+
+        log_lock = asyncio.Lock()
+
+        send_logs = False
+
+        def log_fn(s: str) -> None:
+            async def inner():
+                async with log_lock:
+                    if send_logs:
+                        await chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
+
+            loop = asyncio.get_running_loop()
+            if loop is not None:
+                asyncio.run_coroutine_threadsafe(inner(), loop)
+
+        log_handler = _RemoteExecutionLogHandler(log_fn)
+        logging.root.addHandler(log_handler)
+
+        #
+
+        ce = injector[LocalCommandExecutor]
+
+        while True:
+            req = await chan.recv_obj(_RemoteExecutionRequest)
+            if req is None:
+                break
+
+            async with log_lock:
+                send_logs = True
+
+            r = await ce.try_execute(
+                req.c,
+                log=log,
+                omit_exc_object=True,
+            )
+
+            async with log_lock:
+                send_logs = False
+
+            await chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
+                output=r.output,
+                exception=r.exception,
+            )))
+
+
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
-    chan = RemoteChannel(
-        rt.input,
-        rt.output,
-    )
-
-    bs = check_not_none(chan.recv_obj(MainBootstrap))
-
-    if (prd := bs.remote_config.pycharm_remote_debug) is not None:
-        pycharm_debug_connect(prd)
-
-    injector = main_bootstrap(bs)
-
-    chan.set_marshaler(injector[ObjMarshalerManager])
-
-    #
-
-    log_lock = threading.RLock()
-    send_logs = False
-
-    def log_fn(s: str) -> None:
-        with log_lock:
-            if send_logs:
-                chan.send_obj(_RemoteExecutionResponse(l=_RemoteExecutionLog(s)))
-
-    log_handler = _RemoteExecutionLogHandler(log_fn)
-    logging.root.addHandler(log_handler)
-
-    #
-
-    ce = injector[LocalCommandExecutor]
-
-    while True:
-        req = chan.recv_obj(_RemoteExecutionRequest)
-        if req is None:
-            break
-
-        with log_lock:
-            send_logs = True
-
-        r = ce.try_execute(
-            req.c,
-            log=log,
-            omit_exc_object=True,
-        )
-
-        with log_lock:
-            send_logs = False
-
-        chan.send_obj(_RemoteExecutionResponse(r=CommandOutputOrExceptionData(
-            output=r.output,
-            exception=r.exception,
-        )))
+    asyncio.run(_async_remote_execution_main(rt))
 
 
 ##
@@ -4508,11 +4653,11 @@ class RemoteCommandExecutor(CommandExecutor):
 
         self._chan = chan
 
-    def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
-        self._chan.send_obj(_RemoteExecutionRequest(cmd))
+    async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
+        await self._chan.send_obj(_RemoteExecutionRequest(cmd))
 
         while True:
-            if (r := self._chan.recv_obj(_RemoteExecutionResponse)) is None:
+            if (r := await self._chan.recv_obj(_RemoteExecutionResponse)) is None:
                 raise EOFError
 
             if r.l is not None:
@@ -4522,15 +4667,15 @@ class RemoteCommandExecutor(CommandExecutor):
                 return r.r
 
     # @ta.override
-    def execute(self, cmd: Command) -> Command.Output:
-        r = self._remote_execute(cmd)
+    async def execute(self, cmd: Command) -> Command.Output:
+        r = await self._remote_execute(cmd)
         if (e := r.exception) is not None:
             raise RemoteCommandError(e)
         else:
             return check_not_none(r.output)
 
     # @ta.override
-    def try_execute(
+    async def try_execute(
             self,
             cmd: Command,
             *,
@@ -4538,7 +4683,7 @@ class RemoteCommandExecutor(CommandExecutor):
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:
-            r = self._remote_execute(cmd)
+            r = await self._remote_execute(cmd)
 
         except Exception as e:  # noqa
             if log is not None:
@@ -4590,25 +4735,25 @@ class RemoteExecution:
 
     #
 
-    @contextlib.contextmanager
-    def connect(
+    @contextlib.asynccontextmanager
+    async def connect(
             self,
             tgt: RemoteSpawning.Target,
             bs: MainBootstrap,
-    ) -> ta.Generator[RemoteCommandExecutor, None, None]:
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
         spawn_src = self._spawn_src()
         remote_src = self._remote_src()
 
-        with self._spawning.spawn(
+        async with self._spawning.spawn(
                 tgt,
                 spawn_src,
         ) as proc:
-            res = PyremoteBootstrapDriver(  # noqa
+            res = await PyremoteBootstrapDriver(  # noqa
                 remote_src,
                 PyremoteBootstrapOptions(
                     debug=bs.main_config.debug,
                 ),
-            ).run(
+            ).async_run(
                 proc.stdout,
                 proc.stdin,
             )
@@ -4619,7 +4764,7 @@ class RemoteExecution:
                 msh=self._msh,
             )
 
-            chan.send_obj(bs)
+            await chan.send_obj(bs)
 
             yield RemoteCommandExecutor(chan)
 
@@ -4643,7 +4788,6 @@ TODO:
 
 
 class Pyenv:
-
     def __init__(
             self,
             *,
@@ -4656,8 +4800,8 @@ class Pyenv:
 
         self._root_kw = root
 
-    @cached_nullary
-    def root(self) -> ta.Optional[str]:
+    @async_cached_nullary
+    async def root(self) -> ta.Optional[str]:
         if self._root_kw is not None:
             return self._root_kw
 
@@ -4670,12 +4814,12 @@ class Pyenv:
 
         return None
 
-    @cached_nullary
-    def exe(self) -> str:
-        return os.path.join(check_not_none(self.root()), 'bin', 'pyenv')
+    @async_cached_nullary
+    async def exe(self) -> str:
+        return os.path.join(check_not_none(await self.root()), 'bin', 'pyenv')
 
-    def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
-        if (root := self.root()) is None:
+    async def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
+        if (root := await self.root()) is None:
             return []
         ret = []
         vp = os.path.join(root, 'versions')
@@ -4687,11 +4831,11 @@ class Pyenv:
                 ret.append((dn, ep))
         return ret
 
-    def installable_versions(self) -> ta.List[str]:
-        if self.root() is None:
+    async def installable_versions(self) -> ta.List[str]:
+        if await self.root() is None:
             return []
         ret = []
-        s = subprocess_check_output_str(self.exe(), 'install', '--list')
+        s = subprocess_check_output_str(await self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -4701,8 +4845,8 @@ class Pyenv:
             ret.append(l)
         return ret
 
-    def update(self) -> bool:
-        if (root := self.root()) is None:
+    async def update(self) -> bool:
+        if (root := await self.root()) is None:
             return False
         if not os.path.isdir(os.path.join(root, '.git')):
             return False
@@ -4767,17 +4911,16 @@ THREADED_PYENV_INSTALL_OPTS = PyenvInstallOpts(conf_opts=['--disable-gil'])
 
 class PyenvInstallOptsProvider(abc.ABC):
     @abc.abstractmethod
-    def opts(self) -> PyenvInstallOpts:
+    def opts(self) -> ta.Awaitable[PyenvInstallOpts]:
         raise NotImplementedError
 
 
 class LinuxPyenvInstallOpts(PyenvInstallOptsProvider):
-    def opts(self) -> PyenvInstallOpts:
+    async def opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts()
 
 
 class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
-
     @cached_nullary
     def framework_opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts(conf_opts=['--enable-framework'])
@@ -4793,8 +4936,8 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         'zlib',
     ]
 
-    @cached_nullary
-    def brew_deps_opts(self) -> PyenvInstallOpts:
+    @async_cached_nullary
+    async def brew_deps_opts(self) -> PyenvInstallOpts:
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
@@ -4806,8 +4949,8 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
             ldflags=ldflags,
         )
 
-    @cached_nullary
-    def brew_tcl_opts(self) -> PyenvInstallOpts:
+    @async_cached_nullary
+    async def brew_tcl_opts(self) -> PyenvInstallOpts:
         if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
@@ -4827,11 +4970,11 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
     #         pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
     #     return PyenvInstallOpts(env={'PKG_CONFIG_PATH': pkg_config_path})
 
-    def opts(self) -> PyenvInstallOpts:
+    async def opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts().merge(
             self.framework_opts(),
-            self.brew_deps_opts(),
-            self.brew_tcl_opts(),
+            await self.brew_deps_opts(),
+            await self.brew_tcl_opts(),
             # self.brew_ssl_opts(),
         )
 
@@ -4863,20 +5006,8 @@ class PyenvVersionInstaller:
     ) -> None:
         super().__init__()
 
-        if no_default_opts:
-            if opts is None:
-                opts = PyenvInstallOpts()
-        else:
-            lst = [opts if opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
-            if interp_opts.debug:
-                lst.append(DEBUG_PYENV_INSTALL_OPTS)
-            if interp_opts.threaded:
-                lst.append(THREADED_PYENV_INSTALL_OPTS)
-            lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
-            opts = PyenvInstallOpts().merge(*lst)
-
         self._version = version
-        self._opts = opts
+        self._given_opts = opts
         self._interp_opts = interp_opts
         self._given_install_name = install_name
 
@@ -4887,9 +5018,21 @@ class PyenvVersionInstaller:
     def version(self) -> str:
         return self._version
 
-    @property
-    def opts(self) -> PyenvInstallOpts:
-        return self._opts
+    @async_cached_nullary
+    async def opts(self) -> PyenvInstallOpts:
+        opts = self._given_opts
+        if self._no_default_opts:
+            if opts is None:
+                opts = PyenvInstallOpts()
+        else:
+            lst = [self._given_opts if self._given_opts is not None else DEFAULT_PYENV_INSTALL_OPTS]
+            if self._interp_opts.debug:
+                lst.append(DEBUG_PYENV_INSTALL_OPTS)
+            if self._interp_opts.threaded:
+                lst.append(THREADED_PYENV_INSTALL_OPTS)
+            lst.append(await PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
+            opts = PyenvInstallOpts().merge(*lst)
+        return opts
 
     @cached_nullary
     def install_name(self) -> str:
@@ -4897,17 +5040,18 @@ class PyenvVersionInstaller:
             return self._given_install_name
         return self._version + ('-debug' if self._interp_opts.debug else '')
 
-    @cached_nullary
-    def install_dir(self) -> str:
-        return str(os.path.join(check_not_none(self._pyenv.root()), 'versions', self.install_name()))
+    @async_cached_nullary
+    async def install_dir(self) -> str:
+        return str(os.path.join(check_not_none(await self._pyenv.root()), 'versions', self.install_name()))
 
-    @cached_nullary
-    def install(self) -> str:
-        env = {**os.environ, **self._opts.env}
+    @async_cached_nullary
+    async def install(self) -> str:
+        opts = await self.opts()
+        env = {**os.environ, **opts.env}
         for k, l in [
-            ('CFLAGS', self._opts.cflags),
-            ('LDFLAGS', self._opts.ldflags),
-            ('PYTHON_CONFIGURE_OPTS', self._opts.conf_opts),
+            ('CFLAGS', opts.cflags),
+            ('LDFLAGS', opts.ldflags),
+            ('PYTHON_CONFIGURE_OPTS', opts.conf_opts),
         ]:
             v = ' '.join(l)
             if k in os.environ:
@@ -4915,13 +5059,13 @@ class PyenvVersionInstaller:
             env[k] = v
 
         conf_args = [
-            *self._opts.opts,
+            *opts.opts,
             self._version,
         ]
 
         if self._given_install_name is not None:
             full_args = [
-                os.path.join(check_not_none(self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),
+                os.path.join(check_not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
                 self.install_dir(),
             ]
@@ -4937,7 +5081,7 @@ class PyenvVersionInstaller:
             env=env,
         )
 
-        exe = os.path.join(self.install_dir(), 'bin', 'python')
+        exe = os.path.join(await self.install_dir(), 'bin', 'python')
         if not os.path.isfile(exe):
             raise RuntimeError(f'Interpreter not found: {exe}')
         return exe
@@ -4947,7 +5091,6 @@ class PyenvVersionInstaller:
 
 
 class PyenvInterpProvider(InterpProvider):
-
     def __init__(
             self,
             pyenv: Pyenv = Pyenv(),
@@ -4990,11 +5133,11 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
+    async def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
         iv: ta.Optional[InterpVersion]
         if self._inspect:
             try:
-                iv = check_not_none(self._inspector.inspect(ep)).iv
+                iv = check_not_none(await self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 return None
         else:
@@ -5007,10 +5150,10 @@ class PyenvInterpProvider(InterpProvider):
             version=iv,
         )
 
-    def installed(self) -> ta.Sequence[Installed]:
+    async def installed(self) -> ta.Sequence[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
-        for vn, ep in self._pyenv.version_exes():
-            if (i := self._make_installed(vn, ep)) is None:
+        for vn, ep in await self._pyenv.version_exes():
+            if (i := await self._make_installed(vn, ep)) is None:
                 log.debug('Invalid pyenv version: %s', vn)
                 continue
             ret.append(i)
@@ -5018,11 +5161,11 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [i.version for i in self.installed()]
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return [i.version for i in await self.installed()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
-        for i in self.installed():
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        for i in await self.installed():
             if i.version == version:
                 return Interp(
                     exe=i.exe,
@@ -5032,10 +5175,10 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def _get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def _get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         lst = []
 
-        for vs in self._pyenv.installable_versions():
+        for vs in await self._pyenv.installable_versions():
             if (iv := self.guess_version(vs)) is None:
                 continue
             if iv.opts.debug:
@@ -5045,16 +5188,16 @@ class PyenvInterpProvider(InterpProvider):
 
         return lst
 
-    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        lst = self._get_installable_versions(spec)
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        lst = await self._get_installable_versions(spec)
 
         if self._try_update and not any(v in spec for v in lst):
             if self._pyenv.update():
-                lst = self._get_installable_versions(spec)
+                lst = await self._get_installable_versions(spec)
 
         return lst
 
-    def install_version(self, version: InterpVersion) -> Interp:
+    async def install_version(self, version: InterpVersion) -> Interp:
         inst_version = str(version.version)
         inst_opts = version.opts
         if inst_opts.threaded:
@@ -5066,7 +5209,7 @@ class PyenvInterpProvider(InterpProvider):
             interp_opts=inst_opts,
         )
 
-        exe = installer.install()
+        exe = await installer.install()
         return Interp(exe, version)
 
 
@@ -5145,7 +5288,7 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
+    async def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
         if not self.inspect:
             s = os.path.basename(exe)
             if s.startswith('python'):
@@ -5155,13 +5298,13 @@ class SystemInterpProvider(InterpProvider):
                     return InterpVersion.parse(s)
                 except InvalidVersion:
                     pass
-        ii = self.inspector.inspect(exe)
+        ii = await self.inspector.inspect(exe)
         return ii.iv if ii is not None else None
 
-    def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
+    async def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
         lst = []
         for e in self.exes():
-            if (ev := self.get_exe_version(e)) is None:
+            if (ev := await self.get_exe_version(e)) is None:
                 log.debug('Invalid system version: %s', e)
                 continue
             lst.append((e, ev))
@@ -5169,11 +5312,11 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [ev for e, ev in self.exe_versions()]
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return [ev for e, ev in await self.exe_versions()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
-        for e, ev in self.exe_versions():
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
+        for e, ev in await self.exe_versions():
             if ev != version:
                 continue
             return Interp(
@@ -5222,11 +5365,11 @@ class InterpResolver:
         super().__init__()
         self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
 
-    def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
         lst = [
             (i, si)
             for i, p in enumerate(self._providers.values())
-            for si in p.get_installed_versions(spec)
+            for si in await p.get_installed_versions(spec)
             if spec.contains(si)
         ]
 
@@ -5238,16 +5381,16 @@ class InterpResolver:
         bp = list(self._providers.values())[bi]
         return (bp, bv)
 
-    def resolve(
+    async def resolve(
             self,
             spec: InterpSpecifier,
             *,
             install: bool = False,
     ) -> ta.Optional[Interp]:
-        tup = self._resolve_installed(spec)
+        tup = await self._resolve_installed(spec)
         if tup is not None:
             bp, bv = tup
-            return bp.get_installed_version(bv)
+            return await bp.get_installed_version(bv)
 
         if not install:
             return None
@@ -5255,21 +5398,21 @@ class InterpResolver:
         tp = list(self._providers.values())[0]  # noqa
 
         sv = sorted(
-            [s for s in tp.get_installable_versions(spec) if s in spec],
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
             key=lambda s: s.version,
         )
         if not sv:
             return None
 
         bv = sv[-1]
-        return tp.install_version(bv)
+        return await tp.install_version(bv)
 
-    def list(self, spec: InterpSpecifier) -> None:
+    async def list(self, spec: InterpSpecifier) -> None:
         print('installed:')
         for n, p in self._providers.items():
             lst = [
                 si
-                for si in p.get_installed_versions(spec)
+                for si in await p.get_installed_versions(spec)
                 if spec.contains(si)
             ]
             if lst:
@@ -5283,7 +5426,7 @@ class InterpResolver:
         for n, p in self._providers.items():
             lst = [
                 si
-                for si in p.get_installable_versions(spec)
+                for si in await p.get_installable_versions(spec)
                 if spec.contains(si)
             ]
             if lst:
@@ -5325,9 +5468,9 @@ class InterpCommand(Command['InterpCommand.Output']):
 
 
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
-    def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
+    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
         i = InterpSpecifier.parse(check_not_none(cmd.spec))
-        o = check_not_none(DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        o = check_not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
         return InterpCommand.Output(
             exe=o.exe,
             version=str(o.version.version),
@@ -5366,7 +5509,7 @@ def bind_command(
 class _FactoryCommandExecutor(CommandExecutor):
     factory: ta.Callable[[], CommandExecutor]
 
-    def execute(self, i: Command) -> Command.Output:
+    def execute(self, i: Command) -> ta.Awaitable[Command.Output]:
         return self.factory().execute(i)
 
 
@@ -5521,7 +5664,7 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 ##
 
 
-def _main() -> None:
+async def _async_main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -5564,6 +5707,8 @@ def _main() -> None:
         ),
     )
 
+    #
+
     injector = main_bootstrap(
         bs,
     )
@@ -5582,7 +5727,7 @@ def _main() -> None:
 
     #
 
-    with contextlib.ExitStack() as es:
+    async with contextlib.AsyncExitStack() as es:
         ce: CommandExecutor
 
         if args.local:
@@ -5595,16 +5740,20 @@ def _main() -> None:
                 python=args.python,
             )
 
-            ce = es.enter_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
+            ce = await es.enter_async_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
 
         for cmd in cmds:
-            r = ce.try_execute(
+            r = await ce.try_execute(
                 cmd,
                 log=log,
                 omit_exc_object=True,
             )
 
             print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+
+
+def _main() -> None:
+    asyncio.run(_async_main())
 
 
 if __name__ == '__main__':
