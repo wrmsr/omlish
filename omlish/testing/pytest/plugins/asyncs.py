@@ -142,7 +142,12 @@ class AsyncsPlugin:
         if len(bes) > 1 and set(bes) != {'trio', 'trio_asyncio'}:
             raise Exception(f'{item.nodeid}: multiple async backends specified: {bes}')
         elif is_async_function(item.obj) and not bes:
-            raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
+            from _pytest.unittest import UnitTestCase  # noqa
+            if isinstance(item.parent, UnitTestCase):
+                # unittest handles these itself.
+                pass
+            else:
+                raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
 
         if 'trio_asyncio' in bes:
             obj = item.obj
