@@ -415,10 +415,10 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [i.version for i in self.installed()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
         for i in self.installed():
             if i.version == version:
                 return Interp(
@@ -442,7 +442,7 @@ class PyenvInterpProvider(InterpProvider):
 
         return lst
 
-    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         lst = self._get_installable_versions(spec)
 
         if self._try_update and not any(v in spec for v in lst):
@@ -451,7 +451,7 @@ class PyenvInterpProvider(InterpProvider):
 
         return lst
 
-    def install_version(self, version: InterpVersion) -> Interp:
+    async def install_version(self, version: InterpVersion) -> Interp:
         inst_version = str(version.version)
         inst_opts = version.opts
         if inst_opts.threaded:

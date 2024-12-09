@@ -111,10 +111,10 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [ev for e, ev in self.exe_versions()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
         for e, ev in self.exe_versions():
             if ev != version:
                 continue

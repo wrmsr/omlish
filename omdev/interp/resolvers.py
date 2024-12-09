@@ -27,11 +27,11 @@ class InterpResolver:
         super().__init__()
         self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
 
-    def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
         lst = [
             (i, si)
             for i, p in enumerate(self._providers.values())
-            for si in p.get_installed_versions(spec)
+            for si in await p.get_installed_versions(spec)
             if spec.contains(si)
         ]
 
@@ -43,16 +43,16 @@ class InterpResolver:
         bp = list(self._providers.values())[bi]
         return (bp, bv)
 
-    def resolve(
+    async def resolve(
             self,
             spec: InterpSpecifier,
             *,
             install: bool = False,
     ) -> ta.Optional[Interp]:
-        tup = self._resolve_installed(spec)
+        tup = await self._resolve_installed(spec)
         if tup is not None:
             bp, bv = tup
-            return bp.get_installed_version(bv)
+            return await bp.get_installed_version(bv)
 
         if not install:
             return None
@@ -69,7 +69,7 @@ class InterpResolver:
         bv = sv[-1]
         return tp.install_version(bv)
 
-    def list(self, spec: InterpSpecifier) -> None:
+    async def list(self, spec: InterpSpecifier) -> None:
         print('installed:')
         for n, p in self._providers.items():
             lst = [

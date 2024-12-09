@@ -8,6 +8,7 @@ TODO:
  - colon sep provider name prefix - pyenv:3.12
 """
 import argparse
+import asyncio
 import typing as ta
 
 from omlish.lite.check import check_not_none
@@ -20,13 +21,13 @@ from .resolvers import InterpResolver
 from .types import InterpSpecifier
 
 
-def _list_cmd(args) -> None:
+async def _list_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
     r.list(s)
 
 
-def _resolve_cmd(args) -> None:
+async def _resolve_cmd(args) -> None:
     if args.provider:
         p = INTERP_PROVIDER_TYPES_BY_NAME[args.provider]()
         r = InterpResolver([(p.name, p)])
@@ -56,7 +57,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
     configure_standard_logging()
 
@@ -65,7 +66,11 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if not getattr(args, 'func', None):
         parser.print_help()
     else:
-        args.func(args)
+        await args.func(args)
+
+
+def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+    asyncio.run(_async_main(argv))
 
 
 if __name__ == '__main__':

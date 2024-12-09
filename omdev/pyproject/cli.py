@@ -21,6 +21,7 @@ See:
  - https://github.com/tox-dev/tox/
 """
 import argparse
+import asyncio
 import concurrent.futures as cf
 import dataclasses as dc
 import functools
@@ -239,7 +240,7 @@ class Run:
 ##
 
 
-def _venv_cmd(args) -> None:
+async def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.cfg.docker) is not None and sd != (cd := args._docker_container):  # noqa
         script = ' '.join([
@@ -319,7 +320,7 @@ def _venv_cmd(args) -> None:
 ##
 
 
-def _pkg_cmd(args) -> None:
+async def _pkg_cmd(args) -> None:
     run = Run()
 
     cmd = args.cmd
@@ -406,7 +407,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
     configure_standard_logging()
 
@@ -415,7 +416,11 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if not getattr(args, 'func', None):
         parser.print_help()
     else:
-        args.func(args)
+        await args.func(args)
+
+
+def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+    asyncio.run(_async_main(argv))
 
 
 if __name__ == '__main__':
