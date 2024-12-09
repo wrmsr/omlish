@@ -60,10 +60,16 @@ class RemoteSpawning:
             src: str,
             *,
             timeout: ta.Optional[float] = None,
+            debug: bool = False,
     ) -> ta.AsyncGenerator[Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
+
+        cmd = pc.cmd
+        if not debug:
+            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
         async with asyncio_subprocess_popen(
-                *subprocess_maybe_shell_wrap_exec(*pc.cmd),
+                *cmd,
                 shell=pc.shell,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
