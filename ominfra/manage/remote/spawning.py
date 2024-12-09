@@ -40,7 +40,7 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._PreparedCmd([sh_cmd], shell=False)
+            return RemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
             return RemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
