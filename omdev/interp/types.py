@@ -77,6 +77,8 @@ class InterpSpecifier:
         s, o = InterpOpts.parse_suffix(s)
         if not any(s.startswith(o) for o in Specifier.OPERATORS):
             s = '~=' + s
+            if s.count('.') < 2:
+                s += '.0'
         return cls(
             specifier=Specifier(s),
             opts=o,

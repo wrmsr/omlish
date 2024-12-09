@@ -5183,6 +5183,33 @@ def check_runtime_version() -> None:
 # ../../configs.py
 
 
+def parse_config_file(
+        name: str,
+        f: ta.TextIO,
+) -> ConfigMapping:
+    if name.endswith('.toml'):
+        return toml_loads(f.read())
+
+    elif any(name.endswith(e) for e in ('.yml', '.yaml')):
+        yaml = __import__('yaml')
+        return yaml.safe_load(f)
+
+    elif name.endswith('.ini'):
+        import configparser
+        cp = configparser.ConfigParser()
+        cp.read_file(f)
+        config_dct: ta.Dict[str, ta.Any] = {}
+        for sec in cp.sections():
+            cd = config_dct
+            for k in sec.split('.'):
+                cd = cd.setdefault(k, {})
+            cd.update(cp.items(sec))
+        return config_dct
+
+    else:
+        return json.loads(f.read())
+
+
 def read_config_file(
         path: str,
         cls: ta.Type[T],
@@ -5190,13 +5217,10 @@ def read_config_file(
         prepare: ta.Optional[ta.Callable[[ConfigMapping], ConfigMapping]] = None,
 ) -> T:
     with open(path) as cf:
-        if path.endswith('.toml'):
-            config_dct = toml_loads(cf.read())
-        else:
-            config_dct = json.loads(cf.read())
+        config_dct = parse_config_file(os.path.basename(path), cf)
 
     if prepare is not None:
-        config_dct = prepare(config_dct)  # type: ignore
+        config_dct = prepare(config_dct)
 
     return unmarshal_obj(config_dct, cls)
 
