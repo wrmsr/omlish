@@ -50,7 +50,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     async def execute(self, inp: SubprocessCommand) -> SubprocessCommand.Output:
-        with subprocess.Popen(
+        with subprocess.Popen(  # noqa
             subprocess_maybe_shell_wrap_exec(*inp.cmd),
 
             shell=inp.shell,

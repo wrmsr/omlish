@@ -155,6 +155,7 @@ ignore = [
     'ARG001',  # unused-function-argument
     'ARG002',  # unused-method-argument
     'ARG005',  # unused-lambda-argument
+    'ASYNC109',  # async-function-with-timeout
     'ASYNC115',  # async-zero-sleep (bugged)
     'B008',  # function-call-in-default-argument
     'B009',  # get-attr-with-constant

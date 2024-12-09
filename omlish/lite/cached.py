@@ -49,7 +49,7 @@ def static_init(fn: CallableT) -> CallableT:
 
 
 class _AsyncCachedNullary(_AbstractCachedNullary):
-     async def __call__(self, *args, **kwargs):
+    async def __call__(self, *args, **kwargs):
         if self._value is self._missing:
             self._value = await self._fn()
         return self._value
