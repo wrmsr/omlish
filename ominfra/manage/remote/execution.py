@@ -3,13 +3,16 @@ import abc
 import asyncio
 import contextlib
 import dataclasses as dc
+import itertools
 import logging
 import typing as ta
 
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
+from omlish.lite.check import check_state
 from omlish.lite.logs import log
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
@@ -170,6 +173,51 @@ class RemoteCommandExecutor(CommandExecutor):
         super().__init__()
 
         self._chan = chan
+        self._cmd_seq = itertools.count()
+        self._queue: asyncio.Queue = asyncio.Queue()
+        self._stop = asyncio.Event()
+        self._loop_task: ta.Optional[asyncio.Task] = None
+
+    #
+
+    async def start(self) -> None:
+        check_none(self._loop_task)
+        check_state(not self._stop.is_set())
+        self._loop_task = asyncio.create_task(self._loop())
+
+    async def aclose(self) -> None:
+        self._stop.set()
+        if self._loop_task is not None:
+            await self._loop_task
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class _Request:
+        seq: int
+        cmd: Command
+        fut: asyncio.Future
+
+    async def _loop(self) -> None:
+        stop_task = asyncio.create_task(self._stop.wait())
+        queue_task: ta.Optional[asyncio.Task] = None
+
+        while not self._stop.is_set():
+            if queue_task is None:
+                queue_task = asyncio.create_task(self._queue.get())
+
+            done, pending = await asyncio.wait([
+                queue_task,
+                stop_task,
+            ], return_when=asyncio.FIRST_COMPLETED)
+
+            if queue_task in done:
+                print(queue_task)
+                queue_task = None
+
+        for task in [stop_task, queue_task]:
+            if task is not None and not task.done():
+                task.cancel()
 
     async def _remote_execute(self, cmd: Command) -> CommandOutputOrException:
         await _RemoteExecutionProtocol.CommandRequest(cmd).send(self._chan)
@@ -287,4 +335,8 @@ class RemoteExecution:
 
             await chan.send_obj(bs)
 
-            yield RemoteCommandExecutor(chan)
+            rce: RemoteCommandExecutor
+            async with contextlib.aclosing(RemoteCommandExecutor(chan)) as rce:
+                await rce.start()
+
+                yield rce
