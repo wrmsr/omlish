@@ -34,17 +34,17 @@ class InterpProvider(abc.ABC):
             setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
 
     @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
         raise NotImplementedError
 
-    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return []
 
-    def install_version(self, version: InterpVersion) -> Interp:
+    async def install_version(self, version: InterpVersion) -> Interp:
         raise TypeError
 
 
@@ -56,10 +56,10 @@ class RunningInterpProvider(InterpProvider):
     def version(self) -> InterpVersion:
         return InterpInspector.running().iv
 
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    async def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def get_installed_version(self, version: InterpVersion) -> Interp:
+    async def get_installed_version(self, version: InterpVersion) -> Interp:
         if version != self.version():
             raise KeyError(version)
         return Interp(
