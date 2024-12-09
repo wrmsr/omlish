@@ -34,6 +34,7 @@ import shutil
 import sys
 import typing as ta
 
+from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not
 from omlish.lite.check import check_not_none
@@ -121,10 +122,10 @@ class Venv:
     def dir_name(self) -> str:
         return os.path.join(self.DIR_NAME, self._name)
 
-    @cached_nullary
-    def interp_exe(self) -> str:
+    @async_cached_nullary
+    async def interp_exe(self) -> str:
         i = InterpSpecifier.parse(check_not_none(self._cfg.interp))
-        return check_not_none(DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
+        return check_not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
 
     @cached_nullary
     def exe(self) -> str:
@@ -133,14 +134,14 @@ class Venv:
             raise Exception(f'venv exe {ve} does not exist or is not a file!')
         return ve
 
-    @cached_nullary
-    def create(self) -> bool:
+    @async_cached_nullary
+    async def create(self) -> bool:
         if os.path.exists(dn := self.dir_name):
             if not os.path.isdir(dn):
                 raise Exception(f'{dn} exists but is not a directory!')
             return False
 
-        log.info('Using interpreter %s', (ie := self.interp_exe()))
+        log.info('Using interpreter %s', (ie := await self.interp_exe()))
         subprocess_check_call(ie, '-m', 'venv', dn)
 
         ve = self.exe()

@@ -43,7 +43,6 @@ class InterpInspection:
 
 
 class InterpInspector:
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -83,17 +82,17 @@ class InterpInspector:
     def running(cls) -> 'InterpInspection':
         return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
 
-    def _inspect(self, exe: str) -> InterpInspection:
+    async def _inspect(self, exe: str) -> InterpInspection:
         output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
         return self._build_inspection(exe, output.decode())
 
-    def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
+    async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
         try:
             return self._cache[exe]
         except KeyError:
             ret: ta.Optional[InterpInspection]
             try:
-                ret = self._inspect(exe)
+                ret = await self._inspect(exe)
             except Exception as e:  # noqa
                 if log.isEnabledFor(logging.DEBUG):
                     log.exception('Failed to inspect interp: %s', exe)

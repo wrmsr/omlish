@@ -60,21 +60,21 @@ class InterpResolver:
         tp = list(self._providers.values())[0]  # noqa
 
         sv = sorted(
-            [s for s in tp.get_installable_versions(spec) if s in spec],
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
             key=lambda s: s.version,
         )
         if not sv:
             return None
 
         bv = sv[-1]
-        return tp.install_version(bv)
+        return await tp.install_version(bv)
 
     async def list(self, spec: InterpSpecifier) -> None:
         print('installed:')
         for n, p in self._providers.items():
             lst = [
                 si
-                for si in p.get_installed_versions(spec)
+                for si in await p.get_installed_versions(spec)
                 if spec.contains(si)
             ]
             if lst:
@@ -88,7 +88,7 @@ class InterpResolver:
         for n, p in self._providers.items():
             lst = [
                 si
-                for si in p.get_installable_versions(spec)
+                for si in await p.get_installable_versions(spec)
                 if spec.contains(si)
             ]
             if lst:
