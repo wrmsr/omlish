@@ -324,10 +324,8 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
             main_src = sf.read()
 
-    # Restore original argv0
+    # Restore vars
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
-
-    # Grab context name
     context_name = os.environ.pop(_PYREMOTE_BOOTSTRAP_CONTEXT_NAME_VAR)
 
     # Write third ack
