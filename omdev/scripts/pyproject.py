@@ -26,6 +26,7 @@ See:
 import abc
 import argparse
 import asyncio
+import asyncio.subprocess
 import base64
 import collections
 import collections.abc
@@ -3853,7 +3854,7 @@ def subprocess_maybe_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
         return args
 
 
-def _prepare_subprocess_invocation(
+def prepare_subprocess_invocation(
         *args: str,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -3883,12 +3884,12 @@ def _prepare_subprocess_invocation(
 
 
 def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
-    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
 def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
-    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
     return subprocess.check_output(args, **kwargs)
 
 
@@ -4453,6 +4454,139 @@ INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
+# ../../../omlish/lite/asyncio.py
+
+
+##
+
+
+ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
+
+
+async def asyncio_open_stream_reader(
+        f: ta.IO,
+        loop: ta.Any = None,
+        *,
+        limit: int = ASYNCIO_DEFAULT_BUFFER_LIMIT,
+) -> asyncio.StreamReader:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    reader = asyncio.StreamReader(limit=limit, loop=loop)
+    await loop.connect_read_pipe(
+        lambda: asyncio.StreamReaderProtocol(reader, loop=loop),
+        f,
+    )
+
+    return reader
+
+
+async def asyncio_open_stream_writer(
+        f: ta.IO,
+        loop: ta.Any = None,
+) -> asyncio.StreamWriter:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    writer_transport, writer_protocol = await loop.connect_write_pipe(
+        lambda: asyncio.streams.FlowControlMixin(loop=loop),
+        f,
+    )
+
+    return asyncio.streams.StreamWriter(
+        writer_transport,
+        writer_protocol,
+        None,
+        loop,
+    )
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def asyncio_subprocess_popen(
+        *cmd: str,
+        shell: bool = False,
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
+    fac: ta.Any
+    if shell:
+        fac = functools.partial(
+            asyncio.create_subprocess_shell,
+            check_single(cmd),
+        )
+    else:
+        fac = functools.partial(
+            asyncio.create_subprocess_exec,
+            *cmd,
+        )
+
+    proc: asyncio.subprocess.Process
+    proc = await fac(**kwargs)
+    try:
+        yield proc
+
+    finally:
+        if timeout:
+            await asyncio.wait_for(proc.wait(), timeout=timeout)
+        else:
+            await proc.wait()
+
+
+async def asyncio_subprocess_communicate(
+        proc: asyncio.subprocess.Process,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+    fn: ta.Any = proc.communicate(input)
+    if timeout is not None:
+        fn = asyncio.wait_for(fn, timeout)
+    stdout, stderr = await fn
+    return stdout, stderr
+
+
+#
+
+
+# async def asyncio_subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+#     args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+#     return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+async def asyncio_subprocess_check_output(
+        *args: str,
+        input: ta.Any = None,  # noqa
+        timeout: ta.Optional[float] = None,
+        **kwargs: ta.Any,
+) -> bytes:
+    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
+
+    proc: asyncio.subprocess.Process
+    async with asyncio_subprocess_popen(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        **kwargs,
+    ) as proc:
+        stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
+
+    if proc.returncode:
+        raise subprocess.CalledProcessError(
+            proc.returncode,
+            args,
+            output=stdout,
+            stderr=stderr,
+        )
+
+    return check_not_none(stdout)
+
+
+async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
+    return (await asyncio_subprocess_check_output(*args, **kwargs)).decode().strip()
+
+
+########################################
 # ../../interp/providers.py
 """
 TODO:
@@ -4670,7 +4804,7 @@ class Pyenv:
             return self._root_kw
 
         if shutil.which('pyenv'):
-            return subprocess_check_output_str('pyenv', 'root')
+            return await asyncio_subprocess_check_output_str('pyenv', 'root')
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -4699,7 +4833,7 @@ class Pyenv:
         if await self.root() is None:
             return []
         ret = []
-        s = subprocess_check_output_str(await self.exe(), 'install', '--list')
+        s = await asyncio_subprocess_check_output_str(await self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -4805,7 +4939,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
-            dep_prefix = subprocess_check_output_str('brew', '--prefix', dep)
+            dep_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', dep)
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts(
@@ -4818,8 +4952,8 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
-        tcl_tk_prefix = subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
-        tcl_tk_ver_str = subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
+        tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
+        tcl_tk_ver_str = await asyncio_subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts(conf_opts=[

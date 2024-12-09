@@ -18,12 +18,12 @@ import shutil
 import sys
 import typing as ta
 
+from omlish.lite.asyncio import asyncio_subprocess_check_output_str
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_not_none
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_check_call
-from omlish.lite.subprocesses import subprocess_check_output_str
 from omlish.lite.subprocesses import subprocess_try_output
 
 from ..packaging.versions import InvalidVersion
@@ -59,7 +59,7 @@ class Pyenv:
             return self._root_kw
 
         if shutil.which('pyenv'):
-            return subprocess_check_output_str('pyenv', 'root')
+            return await asyncio_subprocess_check_output_str('pyenv', 'root')
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -88,7 +88,7 @@ class Pyenv:
         if await self.root() is None:
             return []
         ret = []
-        s = subprocess_check_output_str(await self.exe(), 'install', '--list')
+        s = await asyncio_subprocess_check_output_str(await self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -194,7 +194,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
-            dep_prefix = subprocess_check_output_str('brew', '--prefix', dep)
+            dep_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', dep)
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts(
@@ -207,8 +207,8 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
-        tcl_tk_prefix = subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
-        tcl_tk_ver_str = subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
+        tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
+        tcl_tk_ver_str = await asyncio_subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts(conf_opts=[
