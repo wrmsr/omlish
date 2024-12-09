@@ -14,6 +14,7 @@ from ..check import check_single
 from ..logs import log
 from ..subprocesses import DEFAULT_SUBPROCESS_TRY_EXCEPTIONS
 from ..subprocesses import prepare_subprocess_invocation
+from ..subprocesses import subprocess_common_context
 from .asyncio import asyncio_maybe_timeout
 
 
@@ -39,13 +40,19 @@ async def asyncio_subprocess_popen(
             *cmd,
         )
 
-    proc: asyncio.subprocess.Process
-    proc = await fac(**kwargs)
-    try:
-        yield proc
+    with subprocess_common_context(
+            *cmd,
+            shell=shell,
+            timeout=timeout,
+            **kwargs,
+    ):
+        proc: asyncio.subprocess.Process
+        proc = await fac(**kwargs)
+        try:
+            yield proc
 
-    finally:
-        await asyncio_maybe_timeout(proc.wait(), timeout)
+        finally:
+            await asyncio_maybe_timeout(proc.wait(), timeout)
 
 
 ##
@@ -129,32 +136,29 @@ class AsyncioProcessCommunicator:
             self,
             input: ta.Any = None,  # noqa
     ) -> Communication:
+        stdin_fut: ta.Any
         if self._proc.stdin is not None:
-            stdin = self._feed_stdin(input)
+            stdin_fut = self._feed_stdin(input)
         else:
-            stdin = self._noop()
+            stdin_fut = self._noop()
 
+        stdout_fut: ta.Any
         if self._proc.stdout is not None:
-            stdout = self._read_stream(1)
+            stdout_fut = self._read_stream(1)
         else:
-            stdout = self._noop()
+            stdout_fut = self._noop()
 
+        stderr_fut: ta.Any
         if self._proc.stderr is not None:
-            stderr = self._read_stream(2)
+            stderr_fut = self._read_stream(2)
         else:
-            stderr = self._noop()
+            stderr_fut = self._noop()
 
-        # Need to 'tuple' this to work around a mypy bug:
-        # File "mypy/checker.py", line 3911, in check_multi_assignment_from_tuple
-        #   assert isinstance(reinferred_rvalue_type, TupleType)
-        # AssertionError:
-        # (Pdb) pp reinferred_rvalue_type
-        # builtins.list[Union[builtins.bytes, None]]
-        stdin, stdout, stderr = tuple(await asyncio.gather(stdin, stdout, stderr))
+        stdin_res, stdout_res, stderr_res = await asyncio.gather(stdin_fut, stdout_fut, stderr_fut)
 
         await self._proc.wait()
 
-        return AsyncioProcessCommunicator.Communication(stdout, stderr)
+        return AsyncioProcessCommunicator.Communication(stdout_res, stderr_res)
 
     async def communicate(
             self,
@@ -169,7 +173,7 @@ async def asyncio_subprocess_communicate(
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # type: ignore
+    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
 
 ##
