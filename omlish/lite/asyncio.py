@@ -122,7 +122,7 @@ async def asyncio_subprocess_check_output(
         stdout=asyncio.subprocess.PIPE,
         **kwargs,
     ) as proc:
-        stdout, stderr = await asyncio_subprocess_communicate(input, timeout)
+        stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
     if proc.returncode:
         raise subprocess.CalledProcessError(
