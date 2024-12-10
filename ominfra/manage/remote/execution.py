@@ -143,7 +143,7 @@ class _RemoteCommandHandler:
 
         while not self._stop.is_set():
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Response.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Request.recv(self._chan))
 
             done, pending = await asyncio.wait([
                 stop_task,
