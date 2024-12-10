@@ -4,11 +4,16 @@ TODO:
  - yum/rpm
 """
 import abc
+import asyncio
 import dataclasses as dc
 import json
 import os
-import subprocess
 import typing as ta
+
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_run
+from omlish.lite.check import check
 
 
 SystemPackageOrStr = ta.Union['SystemPackage', str]
@@ -22,41 +27,41 @@ class SystemPackage:
 
 class SystemPackageManager(abc.ABC):
     @abc.abstractmethod
-    def update(self) -> None:
+    def update(self) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upgrade(self) -> None:
+    def upgrade(self) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def install(self, *packages: SystemPackageOrStr) -> None:
+    def install(self, *packages: SystemPackageOrStr) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+    def query(self, *packages: SystemPackageOrStr) -> ta.Awaitable[ta.Mapping[str, SystemPackage]]:
         raise NotImplementedError
 
 
 class BrewSystemPackageManager(SystemPackageManager):
-    def update(self) -> None:
-        subprocess.check_call(['brew', 'update'])
+    async def update(self) -> None:
+        await asyncio_subprocess_check_call('brew', 'update')
 
-    def upgrade(self) -> None:
-        subprocess.check_call(['brew', 'upgrade'])
+    async def upgrade(self) -> None:
+        await asyncio_subprocess_check_call('brew', 'upgrade')
 
-    def install(self, *packages: SystemPackageOrStr) -> None:
+    async def install(self, *packages: SystemPackageOrStr) -> None:
         es: ta.List[str] = []
         for p in packages:
             if isinstance(p, SystemPackage):
                 es.append(p.name + (f'@{p.version}' if p.version is not None else ''))
             else:
                 es.append(p)
-        subprocess.check_call(['brew', 'install', *es])
+        await asyncio_subprocess_check_call('brew', 'install', *es)
 
-    def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+    async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
-        o = subprocess.check_output(['brew', 'info', '--json', *pns])
+        o = await asyncio_subprocess_check_output('brew', 'info', '--json', *pns)
         j = json.loads(o.decode())
         d: ta.Dict[str, SystemPackage] = {}
         for e in j:
@@ -74,27 +79,26 @@ class AptSystemPackageManager(SystemPackageManager):
         'DEBIAN_FRONTEND': 'noninteractive',
     }
 
-    def update(self) -> None:
-        subprocess.check_call(['apt', 'update'], env={**os.environ, **self._APT_ENV})
+    async def update(self) -> None:
+        await asyncio_subprocess_check_call('apt', 'update', env={**os.environ, **self._APT_ENV})
 
-    def upgrade(self) -> None:
-        subprocess.check_call(['apt', 'upgrade', '-y'], env={**os.environ, **self._APT_ENV})
+    async def upgrade(self) -> None:
+        await asyncio_subprocess_check_call('apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
 
-    def install(self, *packages: SystemPackageOrStr) -> None:
+    async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        subprocess.check_call(['apt', 'upgrade', '-y', *pns], env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocess_check_call('apt', 'upgrade', '-y', *pns, env={**os.environ, **self._APT_ENV})
 
-    def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+    async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
         cmd = ['dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns]
-        res = subprocess.run(
-            cmd,
+        stdout, stderr = await asyncio_subprocess_run(
+            *cmd,
             capture_output=True,
-            text=True,
             check=False,
         )
         d: ta.Dict[str, SystemPackage] = {}
-        for l in res.stdout.strip().splitlines():
+        for l in check.not_none(stdout).decode('utf-8').strip().splitlines():
             n, v = l.split('=', 1)
             d[n] = SystemPackage(
                 name=n,
@@ -103,11 +107,11 @@ class AptSystemPackageManager(SystemPackageManager):
         return d
 
 
-def _main() -> None:
+async def _async_main() -> None:
     spm = BrewSystemPackageManager()
-    print(spm.query('jq', 'gcc', 'gfortran'))
-    spm.install('cowsay')
+    print(await spm.query('jq', 'gcc', 'gfortran'))
+    await spm.install('cowsay')
 
 
 if __name__ == '__main__':
-    _main()
+    asyncio.run(_async_main())
