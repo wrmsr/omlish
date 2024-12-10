@@ -123,12 +123,13 @@ async def _async_remote_execution_main(
         #
 
         def log_fn(s: str) -> None:
-            async def inner():
-                await _RemoteExecutionProtocol.LogResponse(s).send(chan)
-
-            loop = asyncio.get_running_loop()
-            if loop is not None:
-                asyncio.run_coroutine_threadsafe(inner(), loop)
+            # async def inner():
+            #     await _RemoteExecutionProtocol.LogResponse(s).send(chan)
+            #
+            # loop = asyncio.get_running_loop()
+            # if loop is not None:
+            #     asyncio.run_coroutine_threadsafe(inner(), loop)
+            pass
 
         log_handler = _RemoteExecutionLogHandler(log_fn)
         logging.root.addHandler(log_handler)
@@ -179,6 +180,8 @@ def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     async def inner() -> None:
+        sys.stderr.write(f'{rt.input.fileno()=}')
+        sys.stderr.write(f'{rt.output.fileno()=}')
         input = await asyncio_open_stream_reader(rt.input)  # noqa
         output = await asyncio_open_stream_writer(rt.output)
 
