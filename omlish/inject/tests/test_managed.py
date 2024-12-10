@@ -4,10 +4,10 @@ import typing as ta
 import anyio
 import pytest
 
-from ... import asyncs as au
 from ... import dataclasses as dc  # noqa
 from ... import inject as inj
 from ... import lang  # noqa
+from ...asyncs import all as au
 from ...testing import pytest as ptu
 
 

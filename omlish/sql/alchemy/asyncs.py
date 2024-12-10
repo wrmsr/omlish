@@ -9,7 +9,7 @@ import typing as ta
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
 
-from ... import asyncs as au
+from ...asyncs import all as au
 
 
 T = ta.TypeVar('T')

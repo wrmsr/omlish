@@ -14,9 +14,9 @@ from .injector import create_injector
 
 
 if ta.TYPE_CHECKING:
-    from .. import asyncs as _asyncs
+    from ..asyncs import all as _asyncs
 else:
-    _asyncs = lang.proxy_import('..asyncs', __package__)
+    _asyncs = lang.proxy_import('..asyncs.all', __package__)
 
 
 T = ta.TypeVar('T')
