@@ -174,12 +174,15 @@ class ArgparseCli:
         #
 
         subparsers = parser.add_subparsers()
+
         for att, obj in objs.items():
             if isinstance(obj, ArgparseCommand):
                 if obj.parent is not None:
                     raise NotImplementedError
+
                 for cn in [obj.name, *(obj.aliases or [])]:
-                    cparser = subparsers.add_parser(cn)
+                    subparser = subparsers.add_parser(cn)
+
                     for arg in (obj.args or []):
                         if (
                                 len(arg.args) == 1 and
@@ -187,24 +190,27 @@ class ArgparseCli:
                                 not (n := check.isinstance(arg.args[0], str)).startswith('-') and
                                 'metavar' not in arg.kwargs
                         ):
-                            cparser.add_argument(
+                            subparser.add_argument(
                                 n.replace('-', '_'),
                                 **arg.kwargs,
                                 metavar=n,
                             )
                         else:
-                            cparser.add_argument(*arg.args, **arg.kwargs)
-                    cparser.set_defaults(_cmd=obj)
+                            subparser.add_argument(*arg.args, **arg.kwargs)
+
+                    subparser.set_defaults(_cmd=obj)
 
             elif isinstance(obj, ArgparseArg):
                 if att in anns:
-                    akwargs = _get_argparse_arg_ann_kwargs(anns[att])
-                    obj.kwargs = {**akwargs, **obj.kwargs}
+                    ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
+                    obj.kwargs = {**ann_kwargs, **obj.kwargs}
+
                 if not obj.dest:
                     if 'dest' in obj.kwargs:
                         obj.dest = obj.kwargs['dest']
                     else:
                         obj.dest = obj.kwargs['dest'] = att  # type: ignore
+
                 parser.add_argument(*obj.args, **obj.kwargs)
 
             else:
