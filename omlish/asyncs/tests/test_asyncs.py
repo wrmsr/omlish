@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from ... import asyncs as ay
+from ...asyncs import all as ay
 
 
 def test_no_import_backend():
