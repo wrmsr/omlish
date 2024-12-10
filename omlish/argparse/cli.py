@@ -21,6 +21,9 @@ from ..lite.check import check_not_isinstance
 T = ta.TypeVar('T')
 
 
+ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
+
+
 ##
 
 
@@ -41,9 +44,6 @@ def argparse_arg(*args, **kwargs) -> ArgparseArg:
 
 
 #
-
-
-ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
 
 @dc.dataclass(eq=False)
