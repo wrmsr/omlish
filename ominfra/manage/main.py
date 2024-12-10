@@ -22,7 +22,7 @@ from .commands.base import CommandExecutor
 from .commands.execution import LocalCommandExecutor
 from .config import MainConfig
 from .remote.config import RemoteConfig
-from .remote.execution import RemoteExecution
+from .remote.connection import RemoteExecutionConnector
 from .remote.spawning import RemoteSpawning
 
 
@@ -81,7 +81,7 @@ async def _async_main(args: ta.Any) -> None:
                 python=args.python,
             )
 
-            ce = await es.enter_async_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
+            ce = await es.enter_async_context(injector[RemoteExecutionConnector].connect(tgt, bs))  # noqa
 
         async def run_command(cmd: Command) -> None:
             res = await ce.try_execute(
