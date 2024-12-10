@@ -158,13 +158,9 @@ async def _async_remote_execution_main(
             cmd_futs_by_seq.pop(req.seq)  # noqa
 
         while True:
-            sys.stderr.write('loop entered\n')
-
             req = await _RemoteExecutionProtocol.Request.recv(chan)
             if req is None:
                 break
-
-            sys.stderr.write(repr(req) + '\n')
 
             if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
                 fut = asyncio.create_task(handle_cmd(req))
@@ -173,15 +169,11 @@ async def _async_remote_execution_main(
             else:
                 raise TypeError(req)
 
-        sys.stderr.write('loop exited\n')
-
 
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
 
     async def inner() -> None:
-        sys.stderr.write(f'{rt.input.fileno()=}')
-        sys.stderr.write(f'{rt.output.fileno()=}')
         input = await asyncio_open_stream_reader(rt.input)  # noqa
         output = await asyncio_open_stream_writer(rt.output)
 
@@ -193,7 +185,6 @@ def _remote_execution_main() -> None:
     try:
         asyncio.run(inner())
     except Exception as exc:
-        sys.stderr.write(repr(exc) + '\n')
         raise
 
 
