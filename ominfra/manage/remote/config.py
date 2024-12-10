@@ -9,6 +9,10 @@ from omlish.lite.pycharm import PycharmRemoteDebug
 class RemoteConfig:
     payload_file: ta.Optional[str] = None
 
+    set_pgid: bool = True
+
+    deathsig: ta.Optional[str] = 'KILL'
+
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
     forward_logging: bool = True

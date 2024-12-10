@@ -131,13 +131,19 @@ class _RemoteCommandHandler:
 
         self._cmd_futs_by_seq.pop(req.seq)  # noqa
 
-    async def _handle_request(self, req: _RemoteProtocol.Request) -> None:
-        if isinstance(req, _RemoteProtocol.CommandRequest):
-            fut = asyncio.create_task(self._handle_command_request(req))
-            self._cmd_futs_by_seq[req.seq] = fut
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.CommandRequest):
+            fut = asyncio.create_task(self._handle_command_request(msg))
+            self._cmd_futs_by_seq[msg.seq] = fut
 
         else:
-            raise TypeError(req)
+            raise TypeError(msg)
 
     async def run(self) -> None:
         stop_task = asyncio.create_task(self._stop.wait())
@@ -153,16 +159,16 @@ class _RemoteCommandHandler:
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if recv_task in done:
-                req: ta.Optional[_RemoteProtocol.Request] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
                     recv_task.result(),
-                    (_RemoteProtocol.Request, type(None)),
+                    (_RemoteProtocol.Message, type(None)),
                 )
                 recv_task = None
 
-                if req is None:
+                if msg is None:
                     break
 
-                await self._handle_request(req)
+                await self._handle_message(msg)
 
 
 ##
@@ -214,7 +220,7 @@ class RemoteCommandExecutor(CommandExecutor):
             if queue_task is None:
                 queue_task = asyncio.create_task(self._queue.get())
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Response.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
             done, pending = await asyncio.wait([
                 stop_task,
@@ -228,12 +234,16 @@ class RemoteCommandExecutor(CommandExecutor):
                 await self._handle_request(req)
 
             if recv_task in done:
-                resp: ta.Optional[_RemoteProtocol.Response] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
                     recv_task.result(),
-                    (_RemoteProtocol.Response, type(None)),
+                    (_RemoteProtocol.Message, type(None)),
                 )
                 recv_task = None
-                await self._handle_response(resp)
+
+                if msg is None:
+                    raise EOFError
+
+                await self._handle_message(msg)
 
         for task in [
             stop_task,
@@ -251,19 +261,22 @@ class RemoteCommandExecutor(CommandExecutor):
             cmd=req.cmd,
         ).send(self._chan)
 
-    async def _handle_response(self, resp: ta.Optional[_RemoteProtocol.Response]) -> None:
-        if resp is None:
-            raise EOFError
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
 
-        if isinstance(resp, _RemoteProtocol.LogResponse):
-            log.info(resp.s)
+        elif isinstance(msg, _RemoteProtocol.LogResponse):
+            log.info(msg.s)
 
-        elif isinstance(resp, _RemoteProtocol.CommandResponse):
-            req = self._reqs_by_seq.pop(resp.seq)
-            req.fut.set_result(resp.res)
+        elif isinstance(msg, _RemoteProtocol.CommandResponse):
+            req = self._reqs_by_seq.pop(msg.seq)
+            req.fut.set_result(msg.res)
 
         else:
-            raise TypeError(resp)
+            raise TypeError(msg)
 
     #
 
