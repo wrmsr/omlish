@@ -3,7 +3,7 @@ import io
 import typing as ta
 
 from .check import check_isinstance
-from .check import check_non_empty
+from .check import check_not_empty
 from .check import check_not_none
 from .strings import attr_repr
 
@@ -192,7 +192,7 @@ class IncrementalWriteBuffer:
     ) -> None:
         super().__init__()
 
-        check_non_empty(data)
+        check_not_empty(data)
         self._len = len(data)
         self._write_size = write_size
 
@@ -207,11 +207,11 @@ class IncrementalWriteBuffer:
         return self._len - self._pos
 
     def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check_non_empty(self._lst)
+        lst = check_not_empty(self._lst)
 
         t = 0
         for i, d in enumerate(lst):  # noqa
-            n = fn(check_non_empty(d))
+            n = fn(check_not_empty(d))
             if not n:
                 break
             t += n
