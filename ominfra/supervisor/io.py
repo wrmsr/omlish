@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from omlish.lite.fdio.pollers import FdioPoller
+from omlish.io.fdio.pollers import FdioPoller
 from omlish.lite.logs import log
 
 from .dispatchers import Dispatchers

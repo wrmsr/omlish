@@ -8,7 +8,7 @@ from omlish.formats.json.stream.build import JsonObjectBuilder
 from omlish.formats.json.stream.lex import JsonStreamLexer
 from omlish.formats.json.stream.parse import JsonStreamParser
 from omlish.formats.json.stream.parse import JsonStreamParserEvent
-from omlish.lite.io import DelimitingBuffer
+from omlish.io.buffers import DelimitingBuffer
 
 from .formats import Format
 

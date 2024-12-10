@@ -4,6 +4,7 @@ Conventions:
  - must import 'from' items for local modules
 
 TODO:
+ - !! check only importing lite code
  - !! strip manifests? or relegate them to a separate tiny module ala __main__.py?
   - # @omlish-no-amalg ? in cli.types? will strip stmt (more than 1 line) following @manifest, so shouldn't import
  - more sanity checks lol

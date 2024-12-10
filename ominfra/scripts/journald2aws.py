@@ -989,6 +989,11 @@ def check_non_empty_str(v: ta.Optional[str]) -> str:
     return v
 
 
+def check_arg(v: bool, msg: str = 'Illegal argument') -> None:
+    if not v:
+        raise ValueError(msg)
+
+
 def check_state(v: bool, msg: str = 'Illegal state') -> None:
     if not v:
         raise ValueError(msg)
@@ -1041,7 +1046,7 @@ def check_empty(v: SizedT) -> SizedT:
     return v
 
 
-def check_non_empty(v: SizedT) -> SizedT:
+def check_not_empty(v: SizedT) -> SizedT:
     if not len(v):
         raise ValueError(v)
     return v
@@ -1630,65 +1635,7 @@ class AwsDataclassMeta:
 
 
 ########################################
-# ../../../../../omlish/lite/contextmanagers.py
-
-
-##
-
-
-class ExitStacked:
-    _exit_stack: ta.Optional[contextlib.ExitStack] = None
-
-    def __enter__(self: ExitStackedT) -> ExitStackedT:
-        check_state(self._exit_stack is None)
-        es = self._exit_stack = contextlib.ExitStack()
-        es.__enter__()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        self._exit_contexts()
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _exit_contexts(self) -> None:
-        pass
-
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check_not_none(self._exit_stack)
-        return es.enter_context(cm)
-
-
-##
-
-
-@contextlib.contextmanager
-def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
-    try:
-        yield fn
-    finally:
-        fn()
-
-
-@contextlib.contextmanager
-def attr_setting(obj, attr, val, *, default=None):  # noqa
-    not_set = object()
-    orig = getattr(obj, attr, not_set)
-    try:
-        setattr(obj, attr, val)
-        if orig is not not_set:
-            yield orig
-        else:
-            yield default
-    finally:
-        if orig is not_set:
-            delattr(obj, attr)
-        else:
-            setattr(obj, attr, orig)
-
-
-########################################
-# ../../../../../omlish/lite/io.py
+# ../../../../../omlish/io/buffers.py
 
 
 class DelimitingBuffer:
@@ -1875,7 +1822,7 @@ class IncrementalWriteBuffer:
     ) -> None:
         super().__init__()
 
-        check_non_empty(data)
+        check_not_empty(data)
         self._len = len(data)
         self._write_size = write_size
 
@@ -1890,11 +1837,11 @@ class IncrementalWriteBuffer:
         return self._len - self._pos
 
     def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check_non_empty(self._lst)
+        lst = check_not_empty(self._lst)
 
         t = 0
         for i, d in enumerate(lst):  # noqa
-            n = fn(check_non_empty(d))
+            n = fn(check_not_empty(d))
             if not n:
                 break
             t += n
@@ -1907,6 +1854,64 @@ class IncrementalWriteBuffer:
             self._pos += t
 
         return t
+
+
+########################################
+# ../../../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        check_state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.ExitStack()
+        es.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        self._exit_contexts()
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check_not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
 
 
 ########################################
