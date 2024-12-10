@@ -10,8 +10,8 @@ import pytest
 
 from .... import check
 from .... import collections as col
-from .... import docker
 from .... import lang
+from ....docker import all as docker
 from ._registry import register
 
 
