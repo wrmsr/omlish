@@ -41,8 +41,8 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.logs import log
-from omlish.lite.pidfile import Pidfile
 from omlish.lite.runtime import is_debugger_attached
+from omlish.os.pidfile import Pidfile
 
 from ....journald.messages import JournalctlMessage  # noqa
 from ....journald.tailer import JournalctlTailerWorker

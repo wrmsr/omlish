@@ -1,4 +1,5 @@
 # ruff: noqa: UP007
+# @omlish-lite
 import fcntl
 import os
 import signal

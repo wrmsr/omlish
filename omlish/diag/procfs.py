@@ -13,8 +13,8 @@ import typing as ta
 
 from .. import iterators as it
 from .. import lang
-from .. import os as oos
 from ..formats import json
+from ..os.sizes import PAGE_SIZE
 from .procstats import ProcStats
 
 
@@ -239,8 +239,8 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
     """https://www.kernel.org/doc/Documentation/vm/pagemap.txt"""
 
     _check_linux()
-    offset = (start // oos.PAGE_SIZE) * 8
-    npages = ((end - start) // oos.PAGE_SIZE)
+    offset = (start // PAGE_SIZE) * 8
+    npages = ((end - start) // PAGE_SIZE)
     size = npages * 8
     with open(f'/proc/{pid}/pagemap', 'rb') as pagemap_file:
         pagemap_file.seek(offset)
@@ -251,7 +251,7 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
     for pagenum in range(npages):
         [packed] = _struct_unpack('Q', pagemap_buf[pagenum * 8:(pagenum + 1) * 8])
         yield {
-            'address': start + (pagenum * oos.PAGE_SIZE),
+            'address': start + (pagenum * PAGE_SIZE),
             'pfn': (packed & ((1 << (54 + 1)) - 1)),
             'swap_type': (packed & ((1 << (4 + 1)) - 1)),
             'swap_offset': (packed & ((1 << (54 + 1)) - 1)) >> 5,
@@ -280,7 +280,7 @@ def _dump_cmd(args: ta.Any) -> None:
         sys.stdout.write('\n')
         for pm in get_process_range_pagemaps(m['address'], m['end_address'], args.pid):
             if pm['pte_soft_dirty']:
-                dirty_total += oos.PAGE_SIZE
+                dirty_total += PAGE_SIZE
             sys.stdout.write(json.dumps({'page': tuple(pm[k] for k in PAGEMAP_KEYS)}))
             sys.stdout.write('\n')
     dct = {
@@ -326,11 +326,11 @@ def _cmp_cmd(args: ta.Any) -> None:
     r_pages += c_pages
     dct = {
         'l_pages': l_pages,
-        'l_bytes': l_pages * oos.PAGE_SIZE,
+        'l_bytes': l_pages * PAGE_SIZE,
         'r_pages': r_pages,
-        'r_bytes': r_pages * oos.PAGE_SIZE,
+        'r_bytes': r_pages * PAGE_SIZE,
         'c_pages': c_pages,
-        'c_bytes': c_pages * oos.PAGE_SIZE,
+        'c_bytes': c_pages * PAGE_SIZE,
     }
     sys.stdout.write(json.dumps(dct))
     sys.stdout.write('\n')
