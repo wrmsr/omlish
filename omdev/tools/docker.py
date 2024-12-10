@@ -252,4 +252,4 @@ _CLI_MODULE = CliModule('docker', __name__)
 
 if __name__ == '__main__':
     logs.configure_standard_logging('INFO')
-    Cli().call_and_exit()
+    Cli()(exit=True)

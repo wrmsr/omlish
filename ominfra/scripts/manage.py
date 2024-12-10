@@ -103,7 +103,7 @@ InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 
 # ../../omlish/lite/subprocesses.py
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ########################################
@@ -2737,11 +2737,12 @@ class ArgparseCli:
 
         self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
 
+    #
+
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         ns = cls.__dict__
-
         objs = {}
         mro = cls.__mro__[::-1]
         for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
@@ -2754,16 +2755,22 @@ class ArgparseCli:
                 elif k in objs:
                     del [k]
 
+        #
+
         anns = ta.get_type_hints(_ArgparseCliAnnotationBox({
             **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
             **ns.get('__annotations__', {}),
         }), globalns=ns.get('__globals__', {}))
+
+        #
 
         if '_parser' in ns:
             parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
         else:
             parser = argparse.ArgumentParser()
             setattr(cls, '_parser', parser)
+
+        #
 
         subparsers = parser.add_subparsers()
         for att, obj in objs.items():
@@ -2802,6 +2809,8 @@ class ArgparseCli:
             else:
                 raise TypeError(obj)
 
+    #
+
     _parser: ta.ClassVar[argparse.ArgumentParser]
 
     @classmethod
@@ -2820,10 +2829,12 @@ class ArgparseCli:
     def unknown_args(self) -> ta.Sequence[str]:
         return self._unknown_args
 
-    def _run_cmd(self, cmd: ArgparseCommand) -> ta.Optional[int]:
-        return cmd.__get__(self, type(self))()
+    #
 
-    def __call__(self) -> ta.Optional[int]:
+    def _bind_cli_cmd(self, cmd: ArgparseCommand) -> ta.Callable:
+        return cmd.__get__(self, type(self))
+
+    def prepare_cli_run(self) -> ta.Optional[ta.Callable]:
         cmd = getattr(self.args, '_cmd', None)
 
         if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
@@ -2835,12 +2846,26 @@ class ArgparseCli:
 
         if cmd is None:
             self.get_parser().print_help()
+            return None
+
+        return self._bind_cli_cmd(cmd)
+
+    #
+
+    def cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
             return 0
 
-        return self._run_cmd(cmd)
+        return fn()
 
-    def call_and_exit(self) -> ta.NoReturn:
-        sys.exit(rc if isinstance(rc := self(), int) else 0)
+    def cli_run_and_exit(self) -> ta.NoReturn:
+        sys.exit(rc if isinstance(rc := self.cli_run(), int) else 0)
+
+    def __call__(self, *, exit: bool = False) -> ta.Optional[int]:  # noqa
+        if exit:
+            return self.cli_run_and_exit()
+        else:
+            return self.cli_run()
 
 
 ########################################
@@ -7068,7 +7093,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    MainCli().call_and_exit()
+    MainCli()(exit=True)
 
 
 if __name__ == '__main__':

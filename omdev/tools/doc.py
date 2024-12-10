@@ -105,4 +105,4 @@ _CLI_MODULE = CliModule('doc', __name__)
 
 
 if __name__ == '__main__':
-    Cli().call_and_exit()
+    Cli()(exit=True)
