@@ -6,8 +6,8 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from ..commands.inject import bind_command
-from .command import DeployCommand
-from .command import DeployCommandExecutor
+from .commands import DeployCommand
+from .commands import DeployCommandExecutor
 
 
 def bind_deploy(
