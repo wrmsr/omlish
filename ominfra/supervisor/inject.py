@@ -3,10 +3,10 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.fdio.kqueue import KqueueFdioPoller  # noqa
-from omlish.lite.fdio.pollers import FdioPoller
-from omlish.lite.fdio.pollers import PollFdioPoller  # noqa
-from omlish.lite.fdio.pollers import SelectFdioPoller
+from omlish.io.fdio.kqueue import KqueueFdioPoller  # noqa
+from omlish.io.fdio.pollers import FdioPoller
+from omlish.io.fdio.pollers import PollFdioPoller  # noqa
+from omlish.io.fdio.pollers import SelectFdioPoller
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj

@@ -4,8 +4,8 @@ import dataclasses as dc
 import json
 import typing as ta
 
+from omlish.io.buffers import DelimitingBuffer
 from omlish.lite.check import check_isinstance
-from omlish.lite.io import DelimitingBuffer
 from omlish.lite.logs import log
 
 

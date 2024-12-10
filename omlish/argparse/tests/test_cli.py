@@ -5,12 +5,12 @@ import unittest
 from .. import cli
 
 
-class JunkCli(cli.Cli):
+class JunkCli(cli.ArgparseCli):
     num_runs = 0
 
-    @cli.command(
-        cli.arg('foo', metavar='foo'),
-        cli.arg('--bar', dest='bar', action='store_true'),
+    @cli.argparse_command(
+        cli.argparse_arg('foo', metavar='foo'),
+        cli.argparse_arg('--bar', dest='bar', action='store_true'),
     )
     def run(self) -> None:
         self.num_runs += 1

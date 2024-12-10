@@ -3,8 +3,8 @@ import abc
 import socket
 import typing as ta
 
-from ..check import check_not_none
-from ..socket import SocketAddress
+from ...lite.check import check_not_none
+from ...lite.socket import SocketAddress
 
 
 class FdioHandler(abc.ABC):
