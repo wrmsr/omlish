@@ -63,9 +63,9 @@ sympy>=1.13.1  # FIXME: torch :|
 # triton-nightly; platform_machine == "x86_64"
 # triton==2.3.1; platform_machine == "x86_64"
 
-wgpu==0.19.2
+wgpu==0.19.3
 
-hypothesis==6.122.1
+hypothesis==6.122.3
 
 hexdump==3.3
 
@@ -78,7 +78,7 @@ loralib==0.1.2
 git+https://github.com/huggingface/peft.git
 
 scipy==1.14.1
-scikit-learn==1.5.2
+scikit-learn==1.6.0
 scikit-image==0.24.0
 
 simsimd>=5.9.11
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.76
+boto3>=1.35.77
 
 google-api-python-client==2.154.0
 google-cloud-compute==1.22.0
@@ -160,7 +160,7 @@ soco==0.30.6
 sounddevice==0.5.1
 # vosk==0.3.45
 
-bellows==0.42.3
+bellows==0.42.5
 zigpy==0.73.1
 
 # python-openzwave
@@ -181,12 +181,12 @@ mitogen==0.3.19
 
 ##
 
-openai==1.57.0
+openai==1.57.2
 
 trl==0.12.1
 tf-keras==2.17.0
 
-polars==1.16.0
+polars==1.17.1
 
 pyzmq==26.2.0
 
@@ -199,12 +199,12 @@ customtkinter==5.2.2
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
 langchain-community==0.3.10
-langchain-core==0.3.22
+langchain-core==0.3.23
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
 langchain-mistralai==0.2.3
-langchain-openai==0.2.11
+langchain-openai==0.2.12
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
 langchain==0.3.10
@@ -214,9 +214,9 @@ langchain==0.3.10
 
 langchainhub==0.1.21
 
-langgraph==0.2.56
+langgraph==0.2.57
 
-langsmith==0.1.147
+langsmith==0.1.125
 
 tavily-python==0.5.0
 
@@ -248,9 +248,9 @@ usearch==2.16.6
 
 ##
 
-llama-index-core==0.12.3
+llama-index-core==0.12.5
 
-unstructured==0.16.10
+unstructured==0.16.11
 
 # google-generativeai==0.8.2
 # google-ai-generativelanguage==0.6.10
@@ -261,7 +261,7 @@ sqlite-vec==0.1.6
 
 anthropic==0.40.0
 
-apsw==3.47.1.0
+apsw==3.47.2.0
 
 jedi==0.19.2
 jedi-language-server==0.42.0
@@ -280,19 +280,19 @@ instructor>=1.5.2  # FIXME: INSTRUCTOR.
 
 docopt==0.6.2
 
-rapidocr_onnxruntime==1.4.1
+rapidocr_onnxruntime==1.4.2
 
 gguf==0.10.0
 
 pytesseract==0.3.13
 
-dspy==2.5.41
+dspy==2.5.42
 wikipedia==1.4.0
 trafilatura==1.12.2
 qdrant-client==1.12.1
 
 mlx==0.21.1; sys_platform == "darwin"
-mlx-lm==0.20.1; sys_platform == "darwin"
+mlx-lm==0.20.2; sys_platform == "darwin"
 
 flask==3.1.0
 
