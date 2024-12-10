@@ -1,39 +1,23 @@
 # ruff: noqa: UP006 UP007
 import abc
 import asyncio
-import contextlib
 import dataclasses as dc
 import itertools
 import logging
 import typing as ta
 
-from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
-from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
 from omlish.lite.check import check_state
-from omlish.lite.inject import Injector
 from omlish.lite.logs import log
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.pycharm import pycharm_debug_connect
 
-from ...pyremote import pyremote_bootstrap_finalize
-from ..bootstrap import MainBootstrap
 from ..commands.base import Command
 from ..commands.base import CommandException
 from ..commands.base import CommandExecutor
 from ..commands.base import CommandOutputOrException
 from ..commands.base import CommandOutputOrExceptionData
-from ..commands.execution import LocalCommandExecutor
 from .channel import RemoteChannel
-
-
-if ta.TYPE_CHECKING:
-    from ..bootstrap_ import main_bootstrap
-else:
-    main_bootstrap: ta.Any = None
 
 
 T = ta.TypeVar('T')
@@ -42,9 +26,9 @@ T = ta.TypeVar('T')
 ##
 
 
-class _RemoteExecutionProtocol:
+class _RemoteProtocol:
     class Message(abc.ABC):
-        _message_cls: ta.ClassVar[ta.Type['_RemoteExecutionProtocol.Message']]
+        _message_cls: ta.ClassVar[ta.Type['_RemoteProtocol.Message']]
 
         async def send(self, chan: RemoteChannel) -> None:
             await chan.send_obj(self, self._message_cls)
@@ -85,6 +69,33 @@ class _RemoteExecutionProtocol:
 ##
 
 
+class _RemoteLogHandler(logging.Handler):
+    def __init__(
+            self,
+            chan: RemoteChannel,
+            loop: ta.Any = None,
+    ) -> None:
+        super().__init__()
+
+        self._chan = chan
+        self._loop = loop
+
+    def emit(self, record):
+        msg = self.format(record)
+
+        async def inner():
+            await _RemoteProtocol.LogResponse(msg).send(self._chan)
+
+        loop = self._loop
+        if loop is None:
+            loop = asyncio.get_running_loop()
+        if loop is not None:
+            asyncio.run_coroutine_threadsafe(inner(), loop)
+
+
+##
+
+
 class _RemoteCommandHandler:
     def __init__(
             self,
@@ -101,14 +112,14 @@ class _RemoteCommandHandler:
 
         self._cmd_futs_by_seq: ta.Dict[int, asyncio.Future] = {}
 
-    async def _handle_command_request(self, req: _RemoteExecutionProtocol.CommandRequest) -> None:
+    async def _handle_command_request(self, req: _RemoteProtocol.CommandRequest) -> None:
         res = await self._executor.try_execute(
             req.cmd,
             log=log,
             omit_exc_object=True,
         )
 
-        await _RemoteExecutionProtocol.CommandResponse(
+        await _RemoteProtocol.CommandResponse(
             seq=req.seq,
             res=CommandOutputOrExceptionData(
                 output=res.output,
@@ -116,10 +127,10 @@ class _RemoteCommandHandler:
             ),
         ).send(self._chan)
 
-        cmd_futs_by_seq.pop(req.seq)  # noqa
+        self._cmd_futs_by_seq.pop(req.seq)  # noqa
 
-    async def _handle_request(self, req: _RemoteExecutionProtocol.CommandRequest) -> None:
-        if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
+    async def _handle_request(self, req: _RemoteProtocol.Request) -> None:
+        if isinstance(req, _RemoteProtocol.CommandRequest):
             fut = asyncio.create_task(self._handle_command_request(req))
             self._cmd_futs_by_seq[req.seq] = fut
 
@@ -132,7 +143,7 @@ class _RemoteCommandHandler:
 
         while not self._stop.is_set():
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteExecutionProtocol.Response.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Response.recv(self._chan))
 
             done, pending = await asyncio.wait([
                 stop_task,
@@ -140,7 +151,10 @@ class _RemoteCommandHandler:
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if recv_task in done:
-                req = check_isinstance(recv_task.result(), (_RemoteExecutionProtocol.Request, type(None)))
+                req: ta.Optional[_RemoteProtocol.Request] = check_isinstance(
+                    recv_task.result(),
+                    (_RemoteProtocol.Request, type(None)),
+                )
                 recv_task = None
 
                 if req is None:
@@ -198,7 +212,7 @@ class RemoteCommandExecutor(CommandExecutor):
             if queue_task is None:
                 queue_task = asyncio.create_task(self._queue.get())
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteExecutionProtocol.Response.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Response.recv(self._chan))
 
             done, pending = await asyncio.wait([
                 stop_task,
@@ -212,7 +226,10 @@ class RemoteCommandExecutor(CommandExecutor):
                 await self._handle_request(req)
 
             if recv_task in done:
-                resp = check_isinstance(recv_task.result(), (_RemoteExecutionProtocol.Response, type(None)))
+                resp: ta.Optional[_RemoteProtocol.Response] = check_isinstance(
+                    recv_task.result(),
+                    (_RemoteProtocol.Response, type(None)),
+                )
                 recv_task = None
                 await self._handle_response(resp)
 
@@ -227,19 +244,19 @@ class RemoteCommandExecutor(CommandExecutor):
     async def _handle_request(self, req: _Request) -> None:
         self._reqs_by_seq[req.seq] = req
 
-        await _RemoteExecutionProtocol.CommandRequest(
+        await _RemoteProtocol.CommandRequest(
             seq=req.seq,
             cmd=req.cmd,
         ).send(self._chan)
 
-    async def _handle_response(self, resp: ta.Optional[_RemoteExecutionProtocol.Response]) -> None:
+    async def _handle_response(self, resp: ta.Optional[_RemoteProtocol.Response]) -> None:
         if resp is None:
             raise EOFError
 
-        if isinstance(resp, _RemoteExecutionProtocol.LogResponse):
+        if isinstance(resp, _RemoteProtocol.LogResponse):
             log.info(resp.s)
 
-        elif isinstance(resp, _RemoteExecutionProtocol.CommandResponse):
+        elif isinstance(resp, _RemoteProtocol.CommandResponse):
             req = self._reqs_by_seq.pop(resp.seq)
             req.fut.set_result(resp.res)
 

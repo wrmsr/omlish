@@ -25,7 +25,7 @@ class RemoteChannel(abc.ABC):
     def recv_obj(self, ty: ta.Type[T]) -> ta.Awaitable[ta.Optional[T]]:
         raise NotImplementedError
 
-    def set_marshaler(self, msh: ObjMarshalerManager) -> None:
+    def set_marshaler(self, msh: ObjMarshalerManager) -> None:  # noqa
         pass
 
 

@@ -10,7 +10,8 @@ from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions
 from ...pyremote import pyremote_build_bootstrap_cmd
 from ..bootstrap import MainBootstrap
-from .channel import RemoteChannel
+from ._main import _remote_execution_main  # noqa
+from .channel import RemoteChannelImpl
 from .execution import RemoteCommandExecutor
 from .payload import RemoteExecutionPayloadFile
 from .payload import get_remote_payload_src
@@ -90,7 +91,7 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
                 proc.stdin,
             )
 
-            chan = RemoteChannel(
+            chan = RemoteChannelImpl(
                 proc.stdout,
                 proc.stdin,
                 msh=self._msh,
