@@ -83,14 +83,19 @@ async def _async_main(args: ta.Any) -> None:
 
             ce = await es.enter_async_context(injector[RemoteExecution].connect(tgt, bs))  # noqa
 
-        for cmd in cmds:
-            r = await ce.try_execute(
+        async def run_command(cmd: Command) -> None:
+            res = await ce.try_execute(
                 cmd,
                 log=log,
                 omit_exc_object=True,
             )
 
-            print(msh.marshal_obj(r, opts=ObjMarshalOptions(raw_bytes=True)))
+            print(msh.marshal_obj(res, opts=ObjMarshalOptions(raw_bytes=True)))
+
+        await asyncio.gather(*[
+            run_command(cmd)
+            for cmd in cmds
+        ])
 
 
 def _main() -> None:
