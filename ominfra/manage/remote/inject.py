@@ -27,7 +27,11 @@ def bind_remote(
         inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
     ]
 
+    #
+
     if (pf := remote_config.payload_file) is not None:
         lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
+
+    #
 
     return inj.as_bindings(*lst)
