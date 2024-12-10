@@ -1,4 +1,4 @@
-from omlish import argparse as ap
+from omlish.argparse import all as ap
 from omlish.formats import json
 
 from . import metadata

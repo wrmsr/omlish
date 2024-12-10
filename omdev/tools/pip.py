@@ -7,8 +7,8 @@ import os.path
 import sys
 import typing as ta
 
-from omlish import argparse as ap
 from omlish import marshal as msh
+from omlish.argparse import all as ap
 from omlish.formats import json
 
 from ..cli import CliModule

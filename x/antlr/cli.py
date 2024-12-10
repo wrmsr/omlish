@@ -19,7 +19,7 @@ import re
 import typing as ta
 
 from omdev.cache import data as dcache
-from omlish import argparse as ap
+from omlish.argparse import all as ap
 from omlish import cached
 from omlish import concurrent as cu
 from omlish import lang

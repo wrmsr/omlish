@@ -5,7 +5,7 @@ TODO:
 import logging
 import sys
 
-from omlish import argparse as oap
+from omlish.argparse import all as ap
 from omlish import logs
 import jinja2
 
@@ -13,10 +13,10 @@ import jinja2
 log = logging.getLogger(__name__)
 
 
-class Cli(oap.Cli):
+class Cli(ap.Cli):
 
-    @oap.command(
-        oap.arg('file'),
+    @ap.command(
+        ap.arg('file'),
     )
     def render(self) -> None:
         if self.args.file == '-':

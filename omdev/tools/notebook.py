@@ -11,8 +11,8 @@ import sys
 import urllib.parse
 import urllib.request
 
-from omlish import argparse as ap
 from omlish import check
+from omlish.argparse import all as ap
 
 from ..cli import CliModule
 

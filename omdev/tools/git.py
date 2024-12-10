@@ -8,10 +8,10 @@ import subprocess
 import typing as ta
 import urllib.parse
 
-from omlish import argparse as ap
 from omlish import check
 from omlish import lang
 from omlish import logs
+from omlish.argparse import all as ap
 from omlish.formats import json
 
 from ..cli import CliModule

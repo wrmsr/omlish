@@ -1,4 +1,4 @@
-from .. import argparse as ap
+from .. import all as ap
 
 
 class JunkCli(ap.Cli):

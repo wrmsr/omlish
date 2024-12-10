@@ -9,8 +9,11 @@ import functools
 import sys
 import typing as ta
 
-from . import c3
-from . import check
+from ..lite.check import check_arg
+from ..lite.check import check_isinstance
+from ..lite.check import check_not_empty
+from ..lite.check import check_not_in
+from ..lite.check import check_not_isinstance
 
 
 T = ta.TypeVar('T')
@@ -87,18 +90,18 @@ class Command:
 
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
-            check.isinstance(s, str)
-            check.not_in('_', s)
-            check.not_empty(s)
+            check_isinstance(s, str)
+            check_not_in('_', s)
+            check_not_empty(s)
         check_name(self.name)
-        check.not_isinstance(self.aliases, str)
+        check_not_isinstance(self.aliases, str)
         for a in self.aliases or []:
             check_name(a)
 
-        check.callable(self.fn)
-        check.arg(all(isinstance(a, Arg) for a in self.args))
-        check.isinstance(self.parent, (Command, None))
-        check.isinstance(self.accepts_unknown, bool)
+        check_arg(callable(self.fn))
+        check_arg(all(isinstance(a, Arg) for a in self.args))
+        check_isinstance(self.parent, (Command, type(None)))
+        check_isinstance(self.accepts_unknown, bool)
 
         functools.update_wrapper(self, self.fn)
 
@@ -119,10 +122,10 @@ def command(
         accepts_unknown: bool = False,
 ) -> ta.Any:  # ta.Callable[[CommandFn], Command]:  # FIXME
     for arg in args:
-        check.isinstance(arg, Arg)
-    check.isinstance(name, (str, None))
-    check.isinstance(parent, (Command, None))
-    check.not_isinstance(aliases, str)
+        check_isinstance(arg, Arg)
+    check_isinstance(name, (str, type(None)))
+    check_isinstance(parent, (Command, type(None)))
+    check_not_isinstance(aliases, str)
 
     def inner(fn):
         return Command(
@@ -154,28 +157,31 @@ def get_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
 
 
 class _AnnotationBox:
-
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
         self.__annotations__ = annotations  # type: ignore
 
 
-class _CliMeta(type):
+class Cli:
+    def __init__(self, argv: ta.Sequence[str] | None = None) -> None:
+        super().__init__()
 
-    def __new__(mcls, name: str, bases: ta.Sequence[type], namespace: ta.Mapping[str, ta.Any]) -> type:
-        if not bases:
-            return super().__new__(mcls, name, tuple(bases), dict(namespace))
+        self._argv = argv if argv is not None else sys.argv[1:]
 
-        bases = list(bases)
-        namespace = dict(namespace)
+        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        ns = cls.__dict__
 
         objs = {}
-        mro = c3.merge([list(b.__mro__) for b in bases])
-        for bns in [bcls.__dict__ for bcls in reversed(mro)] + [namespace]:
+        mro = cls.__mro__[::-1]
+        for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
             bseen = set()  # type: ignore
             for k, v in bns.items():
                 if isinstance(v, (Command, Arg)):
-                    check.not_in(v, bseen)
+                    check_not_in(v, bseen)
                     bseen.add(v)
                     objs[k] = v
                 elif k in objs:
@@ -183,14 +189,14 @@ class _CliMeta(type):
 
         anns = ta.get_type_hints(_AnnotationBox({
             **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
-            **namespace.get('__annotations__', {}),
-        }), globalns=namespace.get('__globals__', {}))
+            **ns.get('__annotations__', {}),
+        }), globalns=ns.get('__globals__', {}))
 
-        if 'parser' in namespace:
-            parser = check.isinstance(namespace.pop('parser'), ArgumentParser)
+        if '_parser' in ns:
+            parser = check_isinstance(ns['_parser'], ArgumentParser)
         else:
             parser = ArgumentParser()
-        namespace['_parser'] = parser
+            setattr(cls, '_parser', parser)
 
         subparsers = parser.add_subparsers()
         for att, obj in objs.items():
@@ -203,7 +209,7 @@ class _CliMeta(type):
                         if (
                                 len(arg.args) == 1 and
                                 isinstance(arg.args[0], str) and
-                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                                not (n := check_isinstance(arg.args[0], str)).startswith('-') and
                                 'metavar' not in arg.kwargs
                         ):
                             cparser.add_argument(
@@ -228,18 +234,6 @@ class _CliMeta(type):
 
             else:
                 raise TypeError(obj)
-
-        return super().__new__(mcls, name, tuple(bases), namespace)
-
-
-class Cli(metaclass=_CliMeta):
-
-    def __init__(self, argv: ta.Sequence[str] | None = None) -> None:
-        super().__init__()
-
-        self._argv = argv if argv is not None else sys.argv[1:]
-
-        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
 
     _parser: ta.ClassVar[ArgumentParser]
 
