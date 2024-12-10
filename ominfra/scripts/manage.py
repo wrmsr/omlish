@@ -77,6 +77,11 @@ CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]  # ta.TypeAlias
+CheckLateConfigureFn = ta.Callable[['Checks'], None]
+CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
+CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
+CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 # ../../omdev/packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]
@@ -1156,104 +1161,446 @@ def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 
 ########################################
 # ../../../omlish/lite/check.py
+"""
+TODO:
+ - def maybe(v: lang.Maybe[T])
+ - patch / override lite.check ?
+  - checker interface?
+"""
 
 
-def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
+##
 
 
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
+class Checks:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._config_lock = threading.RLock()
+        self._on_raise_fns: ta.Sequence[CheckOnRaiseFn] = []
+        self._exception_factory: CheckExceptionFactory = Checks.default_exception_factory
+        self._args_renderer: ta.Optional[CheckArgsRenderer] = None
+        self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
+
+    #
+
+    def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
+        with self._config_lock:
+            self._on_raise_fns = [*self._on_raise_fns, fn]
+
+    def unregister_on_raise(self, fn: CheckOnRaiseFn) -> None:
+        with self._config_lock:
+            self._on_raise_fns = [e for e in self._on_raise_fns if e != fn]
+
+    #
+
+    def register_late_configure(self, fn: CheckLateConfigureFn) -> None:
+        with self._config_lock:
+            self._late_configure_fns = [*self._late_configure_fns, fn]
+
+    def _late_configure(self) -> None:
+        if not self._late_configure_fns:
+            return
+
+        with self._config_lock:
+            if not (lc := self._late_configure_fns):
+                return
+
+            for fn in lc:
+                fn(self)
+
+            self._late_configure_fns = []
+
+    #
+
+    class _ArgsKwargs:
+        def __init__(self, *args, **kwargs):
+            self.args = args
+            self.kwargs = kwargs
+
+    def _raise(
+            self,
+            exception_type: ta.Type[Exception],
+            default_message: str,
+            message: CheckMessage,
+            ak: _ArgsKwargs = _ArgsKwargs(),
+            *,
+            render_fmt: ta.Optional[str] = None,
+    ) -> ta.NoReturn:
+        exc_args = ()
+        if callable(message):
+            message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
+            if isinstance(message, tuple):
+                message, *exc_args = message  # type: ignore
+
+        if message is None:
+            message = default_message
+
+        if render_fmt is not None and (af := self._args_renderer) is not None:
+            rendered_args = af(render_fmt, *ak.args)
+            if rendered_args is not None:
+                message = f'{message} : {rendered_args}'
+
+        self._late_configure()
+
+        exc = self._exception_factory(
+            exception_type,
+            message,
+            *exc_args,
+            *ak.args,
+            **ak.kwargs,
+        )
+
+        for fn in self._on_raise_fns:
+            fn(exc)
+
+        raise exc
+
+    #
+
+    def _unpack_isinstance_spec(self, spec: ta.Any) -> tuple:
+        if isinstance(spec, type):
+            return (spec,)
+        if not isinstance(spec, tuple):
+            spec = (spec,)
+        if None in spec:
+            spec = tuple(filter(None, spec)) + (None.__class__,)  # noqa
+        if ta.Any in spec:
+            spec = (object,)
+        return spec
+
+    def isinstance(self, v: ta.Any, spec: ta.Union[ta.Type[T], tuple], msg: CheckMessage = None) -> T:  # noqa
+        if not isinstance(v, self._unpack_isinstance_spec(spec)):
+            self._raise(
+                TypeError,
+                'Must be instance',
+                msg,
+                Checks._ArgsKwargs(v, spec),
+                render_fmt='not isinstance(%s, %s)',
+            )
+
+        return v
+
+    def of_isinstance(self, spec: ta.Union[ta.Type[T], tuple], msg: CheckMessage = None) -> ta.Callable[[ta.Any], T]:
+        def inner(v):
+            return self.isinstance(v, self._unpack_isinstance_spec(spec), msg)
+
+        return inner
+
+    def cast(self, v: ta.Any, cls: ta.Type[T], msg: CheckMessage = None) -> T:  # noqa
+        if not isinstance(v, cls):
+            self._raise(
+                TypeError,
+                'Must be instance',
+                msg,
+                Checks._ArgsKwargs(v, cls),
+            )
+
+        return v
+
+    def of_cast(self, cls: ta.Type[T], msg: CheckMessage = None) -> ta.Callable[[T], T]:
+        def inner(v):
+            return self.cast(v, cls, msg)
+
+        return inner
+
+    def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None) -> T:  # noqa
+        if isinstance(v, self._unpack_isinstance_spec(spec)):
+            self._raise(
+                TypeError,
+                'Must not be instance',
+                msg,
+                Checks._ArgsKwargs(v, spec),
+                render_fmt='isinstance(%s, %s)',
+            )
+
+        return v
+
+    def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[T], T]:
+        def inner(v):
+            return self.not_isinstance(v, self._unpack_isinstance_spec(spec), msg)
+
+        return inner
+
+    ##
+
+    def issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+        if not issubclass(v, spec):
+            self._raise(
+                TypeError,
+                'Must be subclass',
+                msg,
+                Checks._ArgsKwargs(v, spec),
+                render_fmt='not issubclass(%s, %s)',
+            )
+
+        return v
+
+    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+        if issubclass(v, spec):
+            self._raise(
+                TypeError,
+                'Must not be subclass',
+                msg,
+                Checks._ArgsKwargs(v, spec),
+                render_fmt='issubclass(%s, %s)',
+            )
+
+        return v
+
+    #
+
+    def in_(self, v: T, c: ta.Container[T], msg: CheckMessage = None) -> T:
+        if v not in c:
+            self._raise(
+                ValueError,
+                'Must be in',
+                msg,
+                Checks._ArgsKwargs(v, c),
+                render_fmt='%s not in %s',
+            )
+
+        return v
+
+    def not_in(self, v: T, c: ta.Container[T], msg: CheckMessage = None) -> T:
+        if v in c:
+            self._raise(
+                ValueError,
+                'Must not be in',
+                msg,
+                Checks._ArgsKwargs(v, c),
+                render_fmt='%s in %s',
+            )
+
+        return v
+
+    def empty(self, v: SizedT, msg: CheckMessage = None) -> SizedT:
+        if len(v) != 0:
+            self._raise(
+                ValueError,
+                'Must be empty',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v
+
+    def iterempty(self, v: ta.Iterable[T], msg: CheckMessage = None) -> ta.Iterable[T]:
+        it = iter(v)
+        try:
+            next(it)
+        except StopIteration:
+            pass
+        else:
+            self._raise(
+                ValueError,
+                'Must be empty',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v
+
+    def not_empty(self, v: SizedT, msg: CheckMessage = None) -> SizedT:
+        if len(v) == 0:
+            self._raise(
+                ValueError,
+                'Must not be empty',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v
+
+    def unique(self, it: ta.Iterable[T], msg: CheckMessage = None) -> ta.Iterable[T]:
+        dupes = [e for e, c in collections.Counter(it).items() if c > 1]
+        if dupes:
+            self._raise(
+                ValueError,
+                'Must be unique',
+                msg,
+                Checks._ArgsKwargs(it, dupes),
+            )
+
+        return it
+
+    def single(self, obj: ta.Iterable[T], message: CheckMessage = None) -> T:
+        try:
+            [value] = obj
+        except ValueError:
+            self._raise(
+                ValueError,
+                'Must be single',
+                message,
+                Checks._ArgsKwargs(obj),
+                render_fmt='%s',
+            )
+
+        return value
+
+    def opt_single(self, obj: ta.Iterable[T], message: CheckMessage = None) -> ta.Optional[T]:
+        it = iter(obj)
+        try:
+            value = next(it)
+        except StopIteration:
+            return None
+
+        try:
+            next(it)
+        except StopIteration:
+            return value  # noqa
+
+        self._raise(
+            ValueError,
+            'Must be empty or single',
+            message,
+            Checks._ArgsKwargs(obj),
+            render_fmt='%s',
+        )
+
+        raise RuntimeError  # noqa
+
+    #
+
+    def none(self, v: ta.Any, msg: CheckMessage = None) -> None:
+        if v is not None:
+            self._raise(
+                ValueError,
+                'Must be None',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+    def not_none(self, v: ta.Optional[T], msg: CheckMessage = None) -> T:
+        if v is None:
+            self._raise(
+                ValueError,
+                'Must not be None',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v
+
+    #
+
+    def equal(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+        if o != v:
+            self._raise(
+                ValueError,
+                'Must be equal',
+                msg,
+                Checks._ArgsKwargs(v, o),
+                render_fmt='%s != %s',
+            )
+
+        return v
+
+    def is_(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+        if o is not v:
+            self._raise(
+                ValueError,
+                'Must be the same',
+                msg,
+                Checks._ArgsKwargs(v, o),
+                render_fmt='%s is not %s',
+            )
+
+        return v
+
+    def is_not(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+        if o is v:
+            self._raise(
+                ValueError,
+                'Must not be the same',
+                msg,
+                Checks._ArgsKwargs(v, o),
+                render_fmt='%s is %s',
+            )
+
+        return v
+
+    def callable(self, v: T, msg: CheckMessage = None) -> T:  # noqa
+        if not callable(v):
+            self._raise(
+                TypeError,
+                'Must be callable',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v  # type: ignore
+
+    def non_empty_str(self, v: ta.Optional[str], msg: CheckMessage = None) -> str:
+        if not isinstance(v, str) or not v:
+            self._raise(
+                ValueError,
+                'Must be non-empty str',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+        return v
+
+    def replacing(self, expected: ta.Any, old: ta.Any, new: T, msg: CheckMessage = None) -> T:
+        if old != expected:
+            self._raise(
+                ValueError,
+                'Must be replacing',
+                msg,
+                Checks._ArgsKwargs(expected, old, new),
+                render_fmt='%s -> %s -> %s',
+            )
+
+        return new
+
+    def replacing_none(self, old: ta.Any, new: T, msg: CheckMessage = None) -> T:
+        if old is not None:
+            self._raise(
+                ValueError,
+                'Must be replacing None',
+                msg,
+                Checks._ArgsKwargs(old, new),
+                render_fmt='%s -> %s',
+            )
+
+        return new
+
+    #
+
+    def arg(self, v: bool, msg: CheckMessage = None) -> None:
+        if not v:
+            self._raise(
+                RuntimeError,
+                'Argument condition not met',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
+
+    def state(self, v: bool, msg: CheckMessage = None) -> None:
+        if not v:
+            self._raise(
+                RuntimeError,
+                'State condition not met',
+                msg,
+                Checks._ArgsKwargs(v),
+                render_fmt='%s',
+            )
 
 
-def check_none(v: T) -> None:
-    if v is not None:
-        raise ValueError(v)
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-def check_non_empty_str(v: ta.Optional[str]) -> str:
-    if not v:
-        raise ValueError
-    return v
-
-
-def check_arg(v: bool, msg: str = 'Illegal argument') -> None:
-    if not v:
-        raise ValueError(msg)
-
-
-def check_state(v: bool, msg: str = 'Illegal state') -> None:
-    if not v:
-        raise ValueError(msg)
-
-
-def check_equal(l: T, r: T) -> T:
-    if l != r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_not_equal(l: T, r: T) -> T:
-    if l == r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is(l: T, r: T) -> T:
-    if l is not r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is_not(l: T, r: ta.Any) -> T:
-    if l is r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_in(v: T, c: ta.Container[T]) -> T:
-    if v not in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_not_in(v: T, c: ta.Container[T]) -> T:
-    if v in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_single(vs: ta.Iterable[T]) -> T:
-    [v] = vs
-    return v
-
-
-def check_empty(v: SizedT) -> SizedT:
-    if len(v):
-        raise ValueError(v)
-    return v
-
-
-def check_not_empty(v: SizedT) -> SizedT:
-    if not len(v):
-        raise ValueError(v)
-    return v
+check = Checks()
 
 
 ########################################
@@ -2062,7 +2409,7 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 
     @ta.final
     async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check_isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
+        return check.isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
 ##
@@ -2302,18 +2649,18 @@ class ArgparseCommand:
 
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
-            check_isinstance(s, str)
-            check_not_in('_', s)
-            check_not_empty(s)
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
         check_name(self.name)
-        check_not_isinstance(self.aliases, str)
+        check.not_isinstance(self.aliases, str)
         for a in self.aliases or []:
             check_name(a)
 
-        check_arg(callable(self.fn))
-        check_arg(all(isinstance(a, ArgparseArg) for a in self.args))
-        check_isinstance(self.parent, (ArgparseCommand, type(None)))
-        check_isinstance(self.accepts_unknown, bool)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+        check.isinstance(self.parent, (ArgparseCommand, type(None)))
+        check.isinstance(self.accepts_unknown, bool)
 
         functools.update_wrapper(self, self.fn)
 
@@ -2334,10 +2681,10 @@ def argparse_command(
         accepts_unknown: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCommandFn], ArgparseCommand]:  # FIXME
     for arg in args:
-        check_isinstance(arg, ArgparseArg)
-    check_isinstance(name, (str, type(None)))
-    check_isinstance(parent, (ArgparseCommand, type(None)))
-    check_not_isinstance(aliases, str)
+        check.isinstance(arg, ArgparseArg)
+    check.isinstance(name, (str, type(None)))
+    check.isinstance(parent, (ArgparseCommand, type(None)))
+    check.not_isinstance(aliases, str)
 
     def inner(fn):
         return ArgparseCommand(
@@ -2393,7 +2740,7 @@ class ArgparseCli:
             bseen = set()  # type: ignore
             for k, v in bns.items():
                 if isinstance(v, (ArgparseCommand, ArgparseArg)):
-                    check_not_in(v, bseen)
+                    check.not_in(v, bseen)
                     bseen.add(v)
                     objs[k] = v
                 elif k in objs:
@@ -2405,7 +2752,7 @@ class ArgparseCli:
         }), globalns=ns.get('__globals__', {}))
 
         if '_parser' in ns:
-            parser = check_isinstance(ns['_parser'], argparse.ArgumentParser)
+            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
         else:
             parser = argparse.ArgumentParser()
             setattr(cls, '_parser', parser)
@@ -2421,7 +2768,7 @@ class ArgparseCli:
                         if (
                                 len(arg.args) == 1 and
                                 isinstance(arg.args[0], str) and
-                                not (n := check_isinstance(arg.args[0], str)).startswith('-') and
+                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
                                 'metavar' not in arg.kwargs
                         ):
                             cparser.add_argument(
@@ -2632,7 +2979,7 @@ class FnInjectorProvider(InjectorProvider):
     fn: ta.Any
 
     def __post_init__(self) -> None:
-        check_not_isinstance(self.fn, type)
+        check.not_isinstance(self.fn, type)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -2646,7 +2993,7 @@ class CtorInjectorProvider(InjectorProvider):
     cls_: type
 
     def __post_init__(self) -> None:
-        check_isinstance(self.cls_, type)
+        check.isinstance(self.cls_, type)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -2668,7 +3015,7 @@ class SingletonInjectorProvider(InjectorProvider):
     p: InjectorProvider
 
     def __post_init__(self) -> None:
-        check_isinstance(self.p, InjectorProvider)
+        check.isinstance(self.p, InjectorProvider)
 
     def provider_fn(self) -> InjectorProviderFn:
         v = not_set = object()
@@ -2688,7 +3035,7 @@ class LinkInjectorProvider(InjectorProvider):
     k: InjectorKey
 
     def __post_init__(self) -> None:
-        check_isinstance(self.k, InjectorKey)
+        check.isinstance(self.k, InjectorKey)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -2885,7 +3232,7 @@ def build_injection_kwargs_target(
 
     skip_names: ta.Set[str] = set()
     if skip_kwargs is not None:
-        skip_names.update(check_not_isinstance(skip_kwargs, str))
+        skip_names.update(check.not_isinstance(skip_kwargs, str))
 
     seen: ta.Set[InjectorKey] = set()
     kws: ta.List[InjectionKwarg] = []
@@ -2946,8 +3293,8 @@ class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
-        self._bs = check_isinstance(bs, InjectorBindings)
-        self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
+        self._bs = check.isinstance(bs, InjectorBindings)
+        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, type(None)))
 
         self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
 
@@ -2978,8 +3325,8 @@ class _Injector(Injector):
             return Maybe.empty()
 
         def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
-            check_in(key, self._seen_keys)
-            check_not_in(key, self._provisions)
+            check.in_(key, self._seen_keys)
+            check.not_in(key, self._provisions)
             self._provisions[key] = mv
             return mv
 
@@ -3093,7 +3440,7 @@ class InjectorBinder:
 
     @classmethod
     def bind_as_fn(cls, icls: ta.Type[T]) -> ta.Type[T]:
-        check_isinstance(icls, type)
+        check.isinstance(icls, type)
         if icls not in cls._FN_TYPES:
             cls._FN_TYPES = (*cls._FN_TYPES, icls)
         return icls
@@ -3150,7 +3497,7 @@ class InjectorBinder:
             to_fn = obj
             if key is None:
                 insp = _injection_inspect(obj)
-                key_cls: ta.Any = check_valid_injector_key_cls(check_not_none(insp.type_hints.get('return')))
+                key_cls: ta.Any = check_valid_injector_key_cls(check.not_none(insp.type_hints.get('return')))
                 key = InjectorKey(key_cls)
         else:
             if to_const is not None:
@@ -3692,10 +4039,10 @@ class ProxyObjMarshaler(ObjMarshaler):
     m: ta.Optional[ObjMarshaler] = None
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check_not_none(self.m).marshal(o, ctx)
+        return check.not_none(self.m).marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check_not_none(self.m).unmarshal(o, ctx)
+        return check.not_none(self.m).unmarshal(o, ctx)
 
 
 @dc.dataclass(frozen=True)
@@ -3854,19 +4201,19 @@ class DatetimeObjMarshaler(ObjMarshaler):
 
 class DecimalObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return str(check_isinstance(o, decimal.Decimal))
+        return str(check.isinstance(o, decimal.Decimal))
 
     def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return decimal.Decimal(check_isinstance(v, str))
+        return decimal.Decimal(check.isinstance(v, str))
 
 
 class FractionObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        fr = check_isinstance(o, fractions.Fraction)
+        fr = check.isinstance(o, fractions.Fraction)
         return [fr.numerator, fr.denominator]
 
     def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        num, denom = check_isinstance(v, list)
+        num, denom = check.isinstance(v, list)
         return fractions.Fraction(num, denom)
 
 
@@ -4671,7 +5018,7 @@ class _RemoteCommandHandler:
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
                     recv_task.result(),
                     (_RemoteProtocol.Message, type(None)),
                 )
@@ -4740,8 +5087,8 @@ class RemoteCommandExecutor(CommandExecutor):
     #
 
     async def start(self) -> None:
-        check_none(self._loop_task)
-        check_state(not self._stop.is_set())
+        check.none(self._loop_task)
+        check.state(not self._stop.is_set())
         self._loop_task = asyncio.create_task(self._loop())
 
     async def aclose(self) -> None:
@@ -4777,12 +5124,12 @@ class RemoteCommandExecutor(CommandExecutor):
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if queue_task in done:
-                req = check_isinstance(queue_task.result(), RemoteCommandExecutor._Request)
+                req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
                 queue_task = None
                 await self._handle_request(req)
 
             if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
                     recv_task.result(),
                     (_RemoteProtocol.Message, type(None)),
                 )
@@ -4850,7 +5197,7 @@ class RemoteCommandExecutor(CommandExecutor):
         if (e := r.exception) is not None:
             raise RemoteCommandError(e)
         else:
-            return check_not_none(r.output)
+            return check.not_none(r.output)
 
     # @ta.override
     async def try_execute(
@@ -4895,7 +5242,7 @@ async def asyncio_subprocess_popen(
     if shell:
         fac = functools.partial(
             asyncio.create_subprocess_shell,
-            check_single(cmd),
+            check.single(cmd),
         )
     else:
         fac = functools.partial(
@@ -4935,7 +5282,7 @@ class AsyncioProcessCommunicator:
         self._proc = proc
         self._loop = loop
 
-        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check_isinstance(
+        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
             proc._transport,  # type: ignore  # noqa
             asyncio.base_subprocess.BaseSubprocessTransport,
         )
@@ -4945,7 +5292,7 @@ class AsyncioProcessCommunicator:
         return self._loop.get_debug()
 
     async def _feed_stdin(self, input: bytes) -> None:  # noqa
-        stdin = check_not_none(self._proc.stdin)
+        stdin = check.not_none(self._proc.stdin)
         try:
             if input is not None:
                 stdin.write(input)
@@ -4969,13 +5316,13 @@ class AsyncioProcessCommunicator:
         return None
 
     async def _read_stream(self, fd: int) -> bytes:
-        transport: ta.Any = check_not_none(self._transport.get_pipe_transport(fd))
+        transport: ta.Any = check.not_none(self._transport.get_pipe_transport(fd))
 
         if fd == 2:
-            stream = check_not_none(self._proc.stderr)
+            stream = check.not_none(self._proc.stderr)
         else:
-            check_equal(fd, 1)
-            stream = check_not_none(self._proc.stdout)
+            check.equal(fd, 1)
+            stream = check.not_none(self._proc.stdout)
 
         if self._debug:
             name = 'stdout' if fd == 1 else 'stderr'
@@ -5095,7 +5442,7 @@ async def asyncio_subprocess_check_output(
         **kwargs,
     )
 
-    return check_not_none(stdout)
+    return check.not_none(stdout)
 
 
 async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
@@ -5273,7 +5620,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
     timeout: ta.Optional[float] = None
 
     def __post_init__(self) -> None:
-        check_not_isinstance(self.cmd, str)
+        check.not_isinstance(self.cmd, str)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -5314,7 +5661,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             end_time = time.time()
 
         return SubprocessCommand.Output(
-            rc=check_not_none(proc.returncode),
+            rc=check.not_none(proc.returncode),
             pid=proc.pid,
 
             elapsed_s=end_time - start_time,
@@ -5358,11 +5705,11 @@ class _RemoteExecutionMain:
 
     @property
     def _bootstrap(self) -> MainBootstrap:
-        return check_not_none(self.__bootstrap)
+        return check.not_none(self.__bootstrap)
 
     @property
     def _injector(self) -> Injector:
-        return check_not_none(self.__injector)
+        return check.not_none(self.__injector)
 
     #
 
@@ -5406,12 +5753,12 @@ class _RemoteExecutionMain:
     #
 
     async def _setup(self) -> None:
-        check_none(self.__bootstrap)
-        check_none(self.__injector)
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
 
         # Bootstrap
 
-        self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
             pycharm_debug_connect(prd)
@@ -5553,8 +5900,8 @@ class SubprocessRemoteSpawning(RemoteSpawning):
                 ),
                 timeout=timeout,
         ) as proc:
-            stdin = check_not_none(proc.stdin)
-            stdout = check_not_none(proc.stdout)
+            stdin = check.not_none(proc.stdin)
+            stdout = check.not_none(proc.stdout)
 
             try:
                 yield RemoteSpawning.Spawned(
@@ -5770,7 +6117,7 @@ class Pyenv:
 
     @async_cached_nullary
     async def exe(self) -> str:
-        return os.path.join(check_not_none(await self.root()), 'bin', 'pyenv')
+        return os.path.join(check.not_none(await self.root()), 'bin', 'pyenv')
 
     async def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
         if (root := await self.root()) is None:
@@ -5996,7 +6343,7 @@ class PyenvVersionInstaller:
 
     @async_cached_nullary
     async def install_dir(self) -> str:
-        return str(os.path.join(check_not_none(await self._pyenv.root()), 'versions', self.install_name()))
+        return str(os.path.join(check.not_none(await self._pyenv.root()), 'versions', self.install_name()))
 
     @async_cached_nullary
     async def install(self) -> str:
@@ -6019,7 +6366,7 @@ class PyenvVersionInstaller:
 
         if self._given_install_name is not None:
             full_args = [
-                os.path.join(check_not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
+                os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
                 self.install_dir(),
             ]
@@ -6091,7 +6438,7 @@ class PyenvInterpProvider(InterpProvider):
         iv: ta.Optional[InterpVersion]
         if self._inspect:
             try:
-                iv = check_not_none(await self._inspector.inspect(ep)).iv
+                iv = check.not_none(await self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 return None
         else:
@@ -6426,8 +6773,8 @@ class InterpCommand(Command['InterpCommand.Output']):
 
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
     async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
-        i = InterpSpecifier.parse(check_not_none(cmd.spec))
-        o = check_not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        i = InterpSpecifier.parse(check.not_none(cmd.spec))
+        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
         return InterpCommand.Output(
             exe=o.exe,
             version=str(o.version.version),
