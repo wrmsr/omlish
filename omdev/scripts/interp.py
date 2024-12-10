@@ -76,7 +76,7 @@ UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 # ../../omlish/lite/subprocesses.py
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ########################################

@@ -13,7 +13,7 @@ from .runtime import is_debugger_attached
 
 
 T = ta.TypeVar('T')
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ##

@@ -124,7 +124,7 @@ def _main() -> None:
 
             print(resp.data.link)
 
-    Cli().call_and_exit()
+    Cli()(exit=True)
 
 
 # @omlish-manifest

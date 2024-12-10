@@ -124,7 +124,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    MainCli().call_and_exit()
+    MainCli()(exit=True)
 
 
 if __name__ == '__main__':

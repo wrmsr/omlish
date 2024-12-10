@@ -79,7 +79,7 @@ ConfigMapping = ta.Mapping[str, ta.Any]
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
 # ../../../../omlish/lite/subprocesses.py
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ########################################

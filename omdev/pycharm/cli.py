@@ -141,7 +141,7 @@ class Cli(ap.Cli):
 
 
 def _main() -> None:
-    Cli().call_and_exit()
+    Cli()(exit=True)
 
 
 if __name__ == '__main__':
