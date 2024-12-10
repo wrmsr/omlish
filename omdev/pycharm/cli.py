@@ -13,7 +13,7 @@ import subprocess
 import sys
 import tempfile
 
-from omlish import argparse as ap
+from omlish.argparse import all as ap
 from omlish.diag.pycharm import get_pycharm_version
 
 

@@ -6,7 +6,7 @@ import urllib.parse
 import urllib.request
 
 from omlish import __about__
-from omlish import argparse as ap
+from omlish.argparse import all as ap
 
 from ..pip import get_root_dists
 from ..pip import lookup_latest_package_version

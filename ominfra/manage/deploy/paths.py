@@ -37,8 +37,8 @@ import os.path
 import typing as ta
 
 from omlish.lite.check import check_equal
-from omlish.lite.check import check_non_empty
 from omlish.lite.check import check_non_empty_str
+from omlish.lite.check import check_not_empty
 from omlish.lite.check import check_not_in
 
 
@@ -151,7 +151,7 @@ class DeployPath:
     parts: ta.Sequence[DeployPathPart]
 
     def __post_init__(self) -> None:
-        check_non_empty(self.parts)
+        check_not_empty(self.parts)
         for p in self.parts[:-1]:
             check_equal(p.kind, 'dir')
 

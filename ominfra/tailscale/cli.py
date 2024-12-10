@@ -4,13 +4,13 @@ import sys
 import typing as ta
 
 from omdev.cli import CliModule
-from omlish import argparse as ap
 from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish.argparse import all as ap
 from omlish.formats import json
 
 

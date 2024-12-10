@@ -8,10 +8,10 @@ import warnings
 
 import yaml
 
-from omlish import argparse as ap
 from omlish import check
 from omlish import lang
 from omlish import logs
+from omlish.argparse import all as ap
 
 from ..cli import CliModule
 

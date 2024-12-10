@@ -104,7 +104,7 @@ def upload_image(
 
 
 def _main() -> None:
-    from omlish import argparse as ap
+    from omlish.argparse import all as ap
 
     class Cli(ap.Cli):
         @ap.command(

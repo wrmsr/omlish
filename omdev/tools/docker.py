@@ -8,12 +8,12 @@ import shutil
 import subprocess
 import typing as ta
 
-from omlish import argparse as ap
 from omlish import check
 from omlish import docker as dck
 from omlish import lang
 from omlish import logs
 from omlish import marshal as msh
+from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.formats import yaml
 

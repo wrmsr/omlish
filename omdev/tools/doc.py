@@ -10,9 +10,9 @@ import sys
 import tempfile
 import typing as ta
 
-from omlish import argparse as ap
 from omlish import check
 from omlish import lang
+from omlish.argparse import all as ap
 
 from ..cli import CliModule
 
