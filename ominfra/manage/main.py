@@ -10,6 +10,9 @@ import contextlib
 import json
 import typing as ta
 
+from omlish.argparse.cli import ArgparseCli
+from omlish.argparse.cli import argparse_arg
+from omlish.argparse.cli import argparse_command
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import ObjMarshalOptions
@@ -26,108 +29,102 @@ from .remote.connection import RemoteExecutionConnector
 from .remote.spawning import RemoteSpawning
 
 
-##
+class MainCli(ArgparseCli):
+    @argparse_command(
+        argparse_arg('--payload-file'),
 
+        argparse_arg('-s', '--shell'),
+        argparse_arg('-q', '--shell-quote', action='store_true'),
+        argparse_arg('--python', default='python3'),
 
-async def _async_main(args: ta.Any) -> None:
-    bs = MainBootstrap(
-        main_config=MainConfig(
-            log_level='DEBUG' if args.debug else 'INFO',
+        argparse_arg('--pycharm-debug-port', type=int),
+        argparse_arg('--pycharm-debug-host'),
+        argparse_arg('--pycharm-debug-version'),
 
-            debug=bool(args.debug),
-        ),
+        argparse_arg('--remote-timebomb-delay-s', type=float),
 
-        remote_config=RemoteConfig(
-            payload_file=args._payload_file,  # noqa
+        argparse_arg('--debug', action='store_true'),
 
-            pycharm_remote_debug=PycharmRemoteDebug(
-                port=args.pycharm_debug_port,
-                **(dict(host=args.pycharm_debug_host) if args.pycharm_debug_host is not None else {}),
-                install_version=args.pycharm_debug_version,
-            ) if args.pycharm_debug_port is not None else None,
+        argparse_arg('--local', action='store_true'),
 
-            timebomb_delay_s=args.remote_timebomb_delay_s,
-        ),
+        argparse_arg('command', nargs='+'),
     )
+    def run(self) -> None:
+        asyncio.run(self._async_run())
 
-    #
+    async def _async_run(self) -> None:
+        bs = MainBootstrap(
+            main_config=MainConfig(
+                log_level='DEBUG' if self.args.debug else 'INFO',
 
-    injector = main_bootstrap(
-        bs,
-    )
+                debug=bool(self.args.debug),
+            ),
 
-    #
+            remote_config=RemoteConfig(
+                payload_file=self.args.payload_file,  # noqa
 
-    msh = injector[ObjMarshalerManager]
+                pycharm_remote_debug=PycharmRemoteDebug(
+                    port=self.args.pycharm_debug_port,
+                    **(dict(host=self.args.pycharm_debug_host) if self.args.pycharm_debug_host is not None else {}),
+                    install_version=self.args.pycharm_debug_version,
+                ) if self.args.pycharm_debug_port is not None else None,
 
-    cmds: ta.List[Command] = []
-    cmd: Command
-    for c in args.command:
-        if not c.startswith('{'):
-            c = json.dumps({c: {}})
-        cmd = msh.unmarshal_obj(json.loads(c), Command)
-        cmds.append(cmd)
+                timebomb_delay_s=self.args.remote_timebomb_delay_s,
+            ),
+        )
 
-    #
+        #
 
-    async with contextlib.AsyncExitStack() as es:
-        ce: CommandExecutor
+        injector = main_bootstrap(
+            bs,
+        )
 
-        if args.local:
-            ce = injector[LocalCommandExecutor]
+        #
 
-        else:
-            tgt = RemoteSpawning.Target(
-                shell=args.shell,
-                shell_quote=args.shell_quote,
-                python=args.python,
-            )
+        msh = injector[ObjMarshalerManager]
 
-            ce = await es.enter_async_context(injector[RemoteExecutionConnector].connect(tgt, bs))  # noqa
+        cmds: ta.List[Command] = []
+        cmd: Command
+        for c in self.args.command:
+            if not c.startswith('{'):
+                c = json.dumps({c: {}})
+            cmd = msh.unmarshal_obj(json.loads(c), Command)
+            cmds.append(cmd)
 
-        async def run_command(cmd: Command) -> None:
-            res = await ce.try_execute(
-                cmd,
-                log=log,
-                omit_exc_object=True,
-            )
+        #
 
-            print(msh.marshal_obj(res, opts=ObjMarshalOptions(raw_bytes=True)))
+        async with contextlib.AsyncExitStack() as es:
+            ce: CommandExecutor
 
-        await asyncio.gather(*[
-            run_command(cmd)
-            for cmd in cmds
-        ])
+            if self.args.local:
+                ce = injector[LocalCommandExecutor]
+
+            else:
+                tgt = RemoteSpawning.Target(
+                    shell=self.args.shell,
+                    shell_quote=self.args.shell_quote,
+                    python=self.args.python,
+                )
+
+                ce = await es.enter_async_context(injector[RemoteExecutionConnector].connect(tgt, bs))  # noqa
+
+            async def run_command(cmd: Command) -> None:
+                res = await ce.try_execute(
+                    cmd,
+                    log=log,
+                    omit_exc_object=True,
+                )
+
+                print(msh.marshal_obj(res, opts=ObjMarshalOptions(raw_bytes=True)))
+
+            await asyncio.gather(*[
+                run_command(cmd)
+                for cmd in cmds
+            ])
 
 
 def _main() -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--_payload-file')
-
-    parser.add_argument('-s', '--shell')
-    parser.add_argument('-q', '--shell-quote', action='store_true')
-    parser.add_argument('--python', default='python3')
-
-    parser.add_argument('--pycharm-debug-port', type=int)
-    parser.add_argument('--pycharm-debug-host')
-    parser.add_argument('--pycharm-debug-version')
-
-    parser.add_argument('--remote-timebomb-delay-s', type=float)
-
-    parser.add_argument('--debug', action='store_true')
-
-    parser.add_argument('--local', action='store_true')
-
-    parser.add_argument('command', nargs='+')
-
-    args = parser.parse_args()
-
-    #
-
-    asyncio.run(_async_main(args))
+    MainCli().call_and_exit()
 
 
 if __name__ == '__main__':
