@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import asyncio
 import json
 import struct
@@ -12,7 +13,26 @@ from omlish.lite.marshal import ObjMarshalerManager
 T = ta.TypeVar('T')
 
 
-class RemoteChannel:
+##
+
+
+class RemoteChannel(abc.ABC):
+    @abc.abstractmethod
+    def send_obj(self, o: ta.Any, ty: ta.Any = None) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def recv_obj(self, ty: ta.Type[T]) -> ta.Awaitable[ta.Optional[T]]:
+        raise NotImplementedError
+
+    def set_marshaler(self, msh: ObjMarshalerManager) -> None:
+        pass
+
+
+##
+
+
+class RemoteChannelImpl(RemoteChannel):
     def __init__(
             self,
             input: asyncio.StreamReader,  # noqa

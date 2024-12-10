@@ -10,3 +10,5 @@ class RemoteConfig:
     payload_file: ta.Optional[str] = None
 
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
+
+    forward_logging: bool = True
