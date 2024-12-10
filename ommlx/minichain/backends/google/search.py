@@ -8,7 +8,7 @@ import urllib.parse
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import http
+from omlish.http import all as http
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json

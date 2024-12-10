@@ -3,7 +3,7 @@ import time
 import typing as ta
 
 from omlish import check
-from omlish import http
+from omlish.http import all as http
 from omlish.http import jwt
 
 

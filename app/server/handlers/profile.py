@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import check
-from omlish import http as hu
+from omlish.http import all as hu
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend

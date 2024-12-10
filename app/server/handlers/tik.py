@@ -4,7 +4,7 @@ import typing as ta
 
 import anyio.to_thread
 
-from omlish import http as hu
+from omlish.http import all as hu
 from omlish import lang
 from omlish.asyncs import anyio as anu
 from omlish.formats import json

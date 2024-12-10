@@ -3,7 +3,7 @@ import json
 import pytest
 
 from omlish import check
-from omlish import http
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.testing import pytest as ptu
 
