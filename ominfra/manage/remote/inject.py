@@ -19,10 +19,10 @@ def bind_remote(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(remote_config),
 
-        inj.bind(RemoteSpawning, singleton=True),
-
         inj.bind(PyremoteRemoteSpawning, singleton=True),
-        inj.bind(RemoteExecution, to_key=PyremoteRemoteSpawning),
+        inj.bind(RemoteSpawning, to_key=PyremoteRemoteSpawning),
+
+        inj.bind(RemoteExecution, singleton=True),
     ]
 
     if (pf := remote_config.payload_file) is not None:
