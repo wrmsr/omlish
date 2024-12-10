@@ -5,6 +5,7 @@ import contextlib
 import dataclasses as dc
 import itertools
 import logging
+import sys
 import typing as ta
 
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
@@ -156,9 +157,13 @@ async def _async_remote_execution_main(
             cmd_futs_by_seq.pop(req.seq)  # noqa
 
         while True:
+            sys.stderr.write('loop entered\n')
+
             req = await _RemoteExecutionProtocol.Request.recv(chan)
             if req is None:
                 break
+
+            sys.stderr.write(repr(req) + '\n')
 
             if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
                 fut = asyncio.create_task(handle_cmd(req))
@@ -166,6 +171,8 @@ async def _async_remote_execution_main(
 
             else:
                 raise TypeError(req)
+
+        sys.stderr.write('loop exited\n')
 
 
 def _remote_execution_main() -> None:
@@ -180,7 +187,11 @@ def _remote_execution_main() -> None:
             output,
         )
 
-    asyncio.run(inner())
+    try:
+        asyncio.run(inner())
+    except Exception as exc:
+        sys.stderr.write(repr(exc) + '\n')
+        raise
 
 
 ##
