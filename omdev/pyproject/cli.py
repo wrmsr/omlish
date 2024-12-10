@@ -33,11 +33,14 @@ import shutil
 import sys
 import typing as ta
 
+from omlish.argparse.cli import ArgparseCli
+from omlish.argparse.cli import argparse_arg
+from omlish.argparse.cli import argparse_command
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
-from omlish.lite.subprocesses import subprocess_check_call
 
 from ..toml.parser import toml_loads
 from .configs import PyprojectConfig
@@ -135,183 +138,160 @@ class Run:
 ##
 
 
-async def _venv_cmd(args) -> None:
-    venv = Run().venvs()[args.name]
-    if (sd := venv.cfg.docker) is not None and sd != (cd := args._docker_container):  # noqa
-        script = ' '.join([
-            'python3',
-            shlex.quote(_script_rel_path()),
-            f'--_docker_container={shlex.quote(sd)}',
-            *map(shlex.quote, sys.argv[1:]),
-        ])
+class PyprojectCli(ArgparseCli):
+    _docker_container = argparse_arg('--_docker_container', help=argparse.SUPPRESS)
 
-        docker_env = {
-            'DOCKER_HOST_PLATFORM': os.environ.get('DOCKER_HOST_PLATFORM', sys.platform),
-        }
-        for e in args.docker_env or []:
-            if '=' in e:
-                k, _, v = e.split('=')
-                docker_env[k] = v
-            else:
-                docker_env[e] = os.environ.get(e, '')
+    @argparse_command(
+        argparse_arg('name'),
+        argparse_arg('-e', '--docker-env', action='append'),
+        argparse_arg('cmd', nargs='?'),
+        argparse_arg('args', nargs=argparse.REMAINDER),
+    )
+    async def venv(self) -> None:
+        venv = Run().venvs()[self.args.name]
+        if (sd := venv.cfg.docker) is not None and sd != (cd := self.args._docker_container):  # noqa
+            script = ' '.join([
+                'python3',
+                shlex.quote(_script_rel_path()),
+                f'--_docker_container={shlex.quote(sd)}',
+                *map(shlex.quote, sys.argv[1:]),
+            ])
 
-        subprocess_check_call(
-            'docker',
-            'compose',
-            '-f', 'docker/compose.yml',
-            'exec',
-            *itertools.chain.from_iterable(
-                ('-e', f'{k}={v}')
-                for k, v in docker_env.items()
-            ),
-            '-it', sd,
-            'bash', '--login', '-c', script,
-        )
+            docker_env = {
+                'DOCKER_HOST_PLATFORM': os.environ.get('DOCKER_HOST_PLATFORM', sys.platform),
+            }
+            for e in self.args.docker_env or []:
+                if '=' in e:
+                    k, _, v = e.split('=')
+                    docker_env[k] = v
+                else:
+                    docker_env[e] = os.environ.get(e, '')
 
-        return
-
-    cmd = args.cmd
-    if not cmd:
-        await venv.create()
-
-    elif cmd == 'python':
-        await venv.create()
-        os.execl(
-            (exe := venv.exe()),
-            exe,
-            *args.args,
-        )
-
-    elif cmd == 'exe':
-        await venv.create()
-        check.arg(not args.args)
-        print(venv.exe())
-
-    elif cmd == 'run':
-        await venv.create()
-        sh = check.not_none(shutil.which('bash'))
-        script = ' '.join(args.args)
-        if not script:
-            script = sh
-        os.execl(
-            (bash := check.not_none(sh)),
-            bash,
-            '-c',
-            f'. {venv.dir_name}/bin/activate && ' + script,
-        )
-
-    elif cmd == 'srcs':
-        check.arg(not args.args)
-        print('\n'.join(venv.srcs()))
-
-    elif cmd == 'test':
-        await venv.create()
-        subprocess_check_call(venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs())
-
-    else:
-        raise Exception(f'unknown subcommand: {cmd}')
-
-
-##
-
-
-async def _pkg_cmd(args) -> None:
-    run = Run()
-
-    cmd = args.cmd
-    if not cmd:
-        raise Exception('must specify command')
-
-    elif cmd == 'gen':
-        pkgs_root = os.path.join('.pkg')
-
-        if os.path.exists(pkgs_root):
-            shutil.rmtree(pkgs_root)
-
-        build_output_dir = 'dist'
-        run_build = bool(args.build)
-        add_revision = bool(args.revision)
-
-        if run_build:
-            os.makedirs(build_output_dir, exist_ok=True)
-
-        pgs: ta.List[BasePyprojectPackageGenerator] = [
-            PyprojectPackageGenerator(
-                dir_name,
-                pkgs_root,
+            await asyncio_subprocess_check_call(
+                'docker',
+                'compose',
+                '-f', 'docker/compose.yml',
+                'exec',
+                *itertools.chain.from_iterable(
+                    ('-e', f'{k}={v}')
+                    for k, v in docker_env.items()
+                ),
+                '-it', sd,
+                'bash', '--login', '-c', script,
             )
-            for dir_name in run.cfg().pkgs
-        ]
-        pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
 
-        num_threads = args.jobs or int(max(mp.cpu_count() // 1.5, 1))
-        futs: ta.List[cf.Future]
-        with cf.ThreadPoolExecutor(num_threads) as ex:
-            futs = [ex.submit(pg.gen) for pg in pgs]
-            for fut in futs:
-                fut.result()
+            return
+
+        cmd = self.args.cmd
+        if not cmd:
+            await venv.create()
+
+        elif cmd == 'python':
+            await venv.create()
+            os.execl(
+                (exe := venv.exe()),
+                exe,
+                *self.args.args,
+            )
+
+        elif cmd == 'exe':
+            await venv.create()
+            check.arg(not self.args.args)
+            print(venv.exe())
+
+        elif cmd == 'run':
+            await venv.create()
+            sh = check.not_none(shutil.which('bash'))
+            script = ' '.join(self.args.args)
+            if not script:
+                script = sh
+            os.execl(
+                (bash := check.not_none(sh)),
+                bash,
+                '-c',
+                f'. {venv.dir_name}/bin/activate && ' + script,
+            )
+
+        elif cmd == 'srcs':
+            check.arg(not self.args.args)
+            print('\n'.join(venv.srcs()))
+
+        elif cmd == 'test':
+            await venv.create()
+            await asyncio_subprocess_check_call(venv.exe(), '-m', 'pytest', *(self.args.args or []), *venv.srcs())
+
+        else:
+            raise Exception(f'unknown subcommand: {cmd}')
+
+    @argparse_command(
+        argparse_arg('-b', '--build', action='store_true'),
+        argparse_arg('-r', '--revision', action='store_true'),
+        argparse_arg('-j', '--jobs', type=int),
+        argparse_arg('cmd', nargs='?'),
+        argparse_arg('args', nargs=argparse.REMAINDER),
+    )
+    async def pkg(self) -> None:
+        run = Run()
+
+        cmd = self.args.cmd
+        if not cmd:
+            raise Exception('must specify command')
+
+        elif cmd == 'gen':
+            pkgs_root = os.path.join('.pkg')
+
+            if os.path.exists(pkgs_root):
+                shutil.rmtree(pkgs_root)
+
+            build_output_dir = 'dist'
+            run_build = bool(self.args.build)
+            add_revision = bool(self.args.revision)
 
             if run_build:
-                futs = [
-                    ex.submit(functools.partial(
-                        pg.build,
-                        build_output_dir,
-                        BasePyprojectPackageGenerator.BuildOpts(
-                            add_revision=add_revision,
-                        ),
-                    ))
-                    for pg in pgs
-                ]
+                os.makedirs(build_output_dir, exist_ok=True)
+
+            pgs: ta.List[BasePyprojectPackageGenerator] = [
+                PyprojectPackageGenerator(
+                    dir_name,
+                    pkgs_root,
+                )
+                for dir_name in run.cfg().pkgs
+            ]
+            pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
+
+            num_threads = self.args.jobs or int(max(mp.cpu_count() // 1.5, 1))
+            futs: ta.List[cf.Future]
+            with cf.ThreadPoolExecutor(num_threads) as ex:
+                futs = [ex.submit(pg.gen) for pg in pgs]
                 for fut in futs:
                     fut.result()
 
-    else:
-        raise Exception(f'unknown subcommand: {cmd}')
+                if run_build:
+                    futs = [
+                        ex.submit(functools.partial(
+                            pg.build,
+                            build_output_dir,
+                            BasePyprojectPackageGenerator.BuildOpts(
+                                add_revision=add_revision,
+                            ),
+                        ))
+                        for pg in pgs
+                    ]
+                    for fut in futs:
+                        fut.result()
+
+        else:
+            raise Exception(f'unknown subcommand: {cmd}')
 
 
 ##
-
-
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--_docker_container', help=argparse.SUPPRESS)
-
-    subparsers = parser.add_subparsers()
-
-    #
-
-    parser_venv = subparsers.add_parser('venv')
-    parser_venv.add_argument('name')
-    parser_venv.add_argument('-e', '--docker-env', action='append')
-    parser_venv.add_argument('cmd', nargs='?')
-    parser_venv.add_argument('args', nargs=argparse.REMAINDER)
-    parser_venv.set_defaults(func=_venv_cmd)
-
-    #
-
-    parser_pkg = subparsers.add_parser('pkg')
-    parser_pkg.add_argument('-b', '--build', action='store_true')
-    parser_pkg.add_argument('-r', '--revision', action='store_true')
-    parser_pkg.add_argument('-j', '--jobs', type=int)
-    parser_pkg.add_argument('cmd', nargs='?')
-    parser_pkg.add_argument('args', nargs=argparse.REMAINDER)
-    parser_pkg.set_defaults(func=_pkg_cmd)
-
-    #
-
-    return parser
 
 
 async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
     configure_standard_logging()
 
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-    if not getattr(args, 'func', None):
-        parser.print_help()
-    else:
-        await args.func(args)
+    await PyprojectCli(argv).async_cli_run()
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:

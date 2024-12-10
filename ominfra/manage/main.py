@@ -32,7 +32,7 @@ from .remote.spawning import RemoteSpawning
 
 class MainCli(ArgparseCli):
     @argparse_command(
-        argparse_arg('--payload-file'),
+        argparse_arg('--_payload-file'),
 
         argparse_arg('-s', '--shell'),
         argparse_arg('-q', '--shell-quote', action='store_true'),
@@ -59,7 +59,7 @@ class MainCli(ArgparseCli):
             ),
 
             remote_config=RemoteConfig(
-                payload_file=self.args.payload_file,  # noqa
+                payload_file=self.args._payload_file,  # noqa
 
                 pycharm_remote_debug=PycharmRemoteDebug(
                     port=self.args.pycharm_debug_port,
