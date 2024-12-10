@@ -12,7 +12,7 @@ import typing as ta
 T = ta.TypeVar('T')
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-Message: ta.TypeAlias = str | ta.Callable[..., str | None] | None
+Message: ta.TypeAlias = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]
 
 _NONE_TYPE = type(None)
 
@@ -46,7 +46,7 @@ def unregister_on_raise(fn: OnRaiseFn) -> None:
 #
 
 
-_ARGS_RENDERER: ta.Callable[..., str | None] | None = None
+_ARGS_RENDERER: ta.Optional[ta.Callable[..., ta.Optional[str]]] = None
 
 
 def _try_enable_args_rendering() -> bool:
@@ -62,7 +62,7 @@ def _try_enable_args_rendering() -> bool:
     except Exception:  # noqa
         return False
 
-    def _real_render_args(fmt: str, *args: ta.Any) -> str | None:
+    def _real_render_args(fmt: str, *args: ta.Any) -> ta.Optional[str]:
         ra = ArgsRenderer(back=3).render_args(*args)
         if ra is None:
             return None
@@ -73,7 +73,7 @@ def _try_enable_args_rendering() -> bool:
     return True
 
 
-_TRIED_ENABLED_ARGS_RENDERING: bool | None = None
+_TRIED_ENABLED_ARGS_RENDERING: ta.Optional[bool] = None
 
 
 def try_enable_args_rendering() -> bool:
@@ -91,7 +91,7 @@ def try_enable_args_rendering() -> bool:
 ##
 
 
-def _default_exception_factory(exc_cls: type[Exception], *args, **kwargs) -> Exception:
+def _default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
     return exc_cls(*args, **kwargs)  # noqa
 
 
@@ -110,12 +110,12 @@ class _ArgsKwargs:
 class Checks:
     def _raise(
             self,
-            exception_type: type[Exception],
+            exception_type: ta.Type[Exception],
             default_message: str,
             message: Message,
             ak: _ArgsKwargs = _ArgsKwargs(),
             *,
-            render_fmt: str | None = None,
+            render_fmt: ta.Optional[str] = None,
     ) -> ta.NoReturn:
         exc_args = ()
         if _callable(message):
@@ -159,7 +159,7 @@ class Checks:
             spec = (object,)
         return spec
 
-    def isinstance(self, v: ta.Any, spec: type[T] | tuple, msg: Message = None) -> T:  # noqa
+    def isinstance(self, v: ta.Any, spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> T:  # noqa
         if not isinstance(v, self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
@@ -171,13 +171,13 @@ class Checks:
 
         return v
 
-    def of_isinstance(self, spec: type[T] | tuple, msg: Message = None) -> ta.Callable[[ta.Any], T]:
+    def of_isinstance(self, spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
         def inner(v):
             return isinstance(v, self._unpack_isinstance_spec(spec), msg)
 
         return inner
 
-    def cast(self, v: ta.Any, cls: type[T], msg: Message = None) -> T:  # noqa
+    def cast(self, v: ta.Any, cls: ta.Type[T], msg: Message = None) -> T:  # noqa
         if not isinstance(v, cls):
             self._raise(
                 TypeError,
@@ -188,7 +188,7 @@ class Checks:
 
         return v
 
-    def of_cast(self, cls: type[T], msg: Message = None) -> ta.Callable[[T], T]:
+    def of_cast(self, cls: ta.Type[T], msg: Message = None) -> ta.Callable[[T], T]:
         def inner(v):
             return isinstance(v, cls, msg)
 
@@ -214,7 +214,7 @@ class Checks:
 
     ##
 
-    def issubclass(self, v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
+    def issubclass(self, v: ta.Type[T], spec: ta.Any, msg: Message = None) -> ta.Type[T]:  # noqa
         if not issubclass(v, spec):
             self._raise(
                 TypeError,
@@ -226,7 +226,7 @@ class Checks:
 
         return v
 
-    def not_issubclass(self, v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
+    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: Message = None) -> ta.Type[T]:  # noqa
         if issubclass(v, spec):
             self._raise(
                 TypeError,
@@ -331,7 +331,7 @@ class Checks:
 
         return value
 
-    def opt_single(self, obj: ta.Iterable[T], message: Message = None) -> T | None:
+    def opt_single(self, obj: ta.Iterable[T], message: Message = None) -> ta.Optional[T]:
         it = iter(obj)
         try:
             value = next(it)
@@ -363,7 +363,7 @@ class Checks:
                 render_fmt='%s',
             )
 
-    def not_none(self, v: T | None, msg: Message = None) -> T:
+    def not_none(self, v: ta.Optional[T], msg: Message = None) -> T:
         if v is None:
             self._raise(
                 ValueError,
@@ -425,7 +425,7 @@ class Checks:
 
         return v  # type: ignore
 
-    def non_empty_str(self, v: str | None, msg: Message = None) -> str:
+    def non_empty_str(self, v: ta.Optional[str], msg: Message = None) -> str:
         if not isinstance(v, str) or not v:
             self._raise(
                 ValueError,
