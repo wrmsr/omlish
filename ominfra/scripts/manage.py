@@ -525,6 +525,22 @@ class MainConfig:
 
 
 ########################################
+# ../system/config.py
+
+
+@dc.dataclass(frozen=True)
+class SystemConfig:
+    platform: ta.Optional[str] = None
+
+
+########################################
+# ../system/types.py
+
+
+SystemPlatform = ta.NewType('SystemPlatform', str)
+
+
+########################################
 # ../../pyremote.py
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
@@ -4606,6 +4622,8 @@ class MainBootstrap:
 
     remote_config: RemoteConfig = RemoteConfig()
 
+    system_config: SystemConfig = SystemConfig()
+
 
 ########################################
 # ../commands/execution.py
@@ -4767,6 +4785,24 @@ class RemoteChannelImpl(RemoteChannel):
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         async with self._input_lock:
             return await self._recv_obj(ty)
+
+
+########################################
+# ../system/inject.py
+
+
+def bind_system(
+        *,
+        system_config: SystemConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(system_config),
+    ]
+
+    platform = system_config.platform or sys.platform
+    lst.append(inj.bind(platform, key=SystemPlatform))
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -5435,22 +5471,25 @@ async def asyncio_subprocess_communicate(
     return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
 
-##
-
-
-async def _asyncio_subprocess_check_run(
+async def asyncio_subprocess_run(
         *args: str,
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
+        check: bool = False,  # noqa
+        capture_output: ta.Optional[bool] = None,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+    if capture_output:
+        kwargs.setdefault('stdout', subprocess.PIPE)
+        kwargs.setdefault('stderr', subprocess.PIPE)
+
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
 
     proc: asyncio.subprocess.Process
     async with asyncio_subprocess_popen(*args, **kwargs) as proc:
         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
-    if proc.returncode:
+    if check and proc.returncode:
         raise subprocess.CalledProcessError(
             proc.returncode,
             args,
@@ -5461,6 +5500,9 @@ async def _asyncio_subprocess_check_run(
     return stdout, stderr
 
 
+##
+
+
 async def asyncio_subprocess_check_call(
         *args: str,
         stdout: ta.Any = sys.stderr,
@@ -5468,11 +5510,12 @@ async def asyncio_subprocess_check_call(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> None:
-    _, _ = await _asyncio_subprocess_check_run(
+    _, _ = await asyncio_subprocess_run(
         *args,
         stdout=stdout,
         input=input,
         timeout=timeout,
+        check=True,
         **kwargs,
     )
 
@@ -5483,11 +5526,12 @@ async def asyncio_subprocess_check_output(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> bytes:
-    stdout, stderr = await _asyncio_subprocess_check_run(
+    stdout, stderr = await asyncio_subprocess_run(
         *args,
         stdout=asyncio.subprocess.PIPE,
         input=input,
         timeout=timeout,
+        check=True,
         **kwargs,
     )
 
@@ -6695,7 +6739,7 @@ def bind_remote(
     ]
 
     if (pf := remote_config.payload_file) is not None:
-        lst.append(inj.bind(pf, to_key=RemoteExecutionPayloadFile))
+        lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
 
     return inj.as_bindings(*lst)
 
@@ -6958,6 +7002,7 @@ def bind_main(
         *,
         main_config: MainConfig,
         remote_config: RemoteConfig,
+        system_config: SystemConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
@@ -6966,11 +7011,15 @@ def bind_main(
             main_config=main_config,
         ),
 
+        bind_deploy(),
+
         bind_remote(
             remote_config=remote_config,
         ),
 
-        bind_deploy(),
+        bind_system(
+            system_config=system_config,
+        ),
     ]
 
     #
@@ -7005,6 +7054,7 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
         remote_config=bs.remote_config,
+        system_config=bs.system_config,
     ))
 
     return injector

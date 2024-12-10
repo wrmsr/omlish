@@ -2455,22 +2455,25 @@ async def asyncio_subprocess_communicate(
     return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
 
-##
-
-
-async def _asyncio_subprocess_check_run(
+async def asyncio_subprocess_run(
         *args: str,
         input: ta.Any = None,  # noqa
         timeout: ta.Optional[float] = None,
+        check: bool = False,  # noqa
+        capture_output: ta.Optional[bool] = None,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+    if capture_output:
+        kwargs.setdefault('stdout', subprocess.PIPE)
+        kwargs.setdefault('stderr', subprocess.PIPE)
+
     args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
 
     proc: asyncio.subprocess.Process
     async with asyncio_subprocess_popen(*args, **kwargs) as proc:
         stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
 
-    if proc.returncode:
+    if check and proc.returncode:
         raise subprocess.CalledProcessError(
             proc.returncode,
             args,
@@ -2481,6 +2484,9 @@ async def _asyncio_subprocess_check_run(
     return stdout, stderr
 
 
+##
+
+
 async def asyncio_subprocess_check_call(
         *args: str,
         stdout: ta.Any = sys.stderr,
@@ -2488,11 +2494,12 @@ async def asyncio_subprocess_check_call(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> None:
-    _, _ = await _asyncio_subprocess_check_run(
+    _, _ = await asyncio_subprocess_run(
         *args,
         stdout=stdout,
         input=input,
         timeout=timeout,
+        check=True,
         **kwargs,
     )
 
@@ -2503,11 +2510,12 @@ async def asyncio_subprocess_check_output(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> bytes:
-    stdout, stderr = await _asyncio_subprocess_check_run(
+    stdout, stderr = await asyncio_subprocess_run(
         *args,
         stdout=asyncio.subprocess.PIPE,
         input=input,
         timeout=timeout,
+        check=True,
         **kwargs,
     )
 
