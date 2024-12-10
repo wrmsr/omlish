@@ -178,6 +178,10 @@ ruff-fix: venv
 	fi
 	${PYTHON} -m ruff check --fix ${SRCS}
 
+.PHONY: ruff-fix-imports
+ruff-fix-imports: venv
+	${PYTHON} -m ruff check --select I001 --fix ${SRCS}
+
 .PHONY: mypy
 mypy: venv
 	${PYTHON} -m mypy --check-untyped-defs ${SRCS}
