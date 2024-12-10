@@ -88,7 +88,7 @@ class AptSystemPackageManager(SystemPackageManager):
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        await asyncio_subprocess_check_call('apt', 'upgrade', '-y', *pns, env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocess_check_call('apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
