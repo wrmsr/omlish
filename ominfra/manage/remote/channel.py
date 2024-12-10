@@ -1,9 +1,7 @@
 # ruff: noqa: UP006 UP007
 import asyncio
 import json
-import os
 import struct
-import sys
 import typing as ta
 
 from omlish.lite.json import json_dumps_compact

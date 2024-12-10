@@ -5,7 +5,6 @@ import contextlib
 import dataclasses as dc
 import itertools
 import logging
-import sys
 import typing as ta
 
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
@@ -182,10 +181,7 @@ def _remote_execution_main() -> None:
             output,
         )
 
-    try:
-        asyncio.run(inner())
-    except Exception as exc:
-        raise
+    asyncio.run(inner())
 
 
 ##
