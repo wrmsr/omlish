@@ -215,7 +215,7 @@ pre-commit:
 PYTEST_OPTS=
 
 .PHONY: test-all
-test-all: test test-docker test-13 test-lite
+test-all: test test-docker test-13 test-13t test-lite
 
 .PHONY: test
 test:
