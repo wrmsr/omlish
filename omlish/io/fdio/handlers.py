@@ -3,7 +3,7 @@ import abc
 import socket
 import typing as ta
 
-from ...lite.check import check_not_none
+from ...lite.check import check
 from ...lite.socket import SocketAddress
 
 
@@ -55,7 +55,7 @@ class SocketFdioHandler(FdioHandler, abc.ABC):
         self._sock: ta.Optional[socket.socket] = sock
 
     def fd(self) -> int:
-        return check_not_none(self._sock).fileno()
+        return check.not_none(self._sock).fileno()
 
     @property
     def closed(self) -> bool:

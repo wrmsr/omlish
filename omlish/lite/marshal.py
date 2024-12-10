@@ -18,8 +18,7 @@ import typing as ta
 import uuid
 import weakref  # noqa
 
-from .check import check_isinstance
-from .check import check_not_none
+from .check import check
 from .reflect import deep_subclasses
 from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
@@ -61,10 +60,10 @@ class ProxyObjMarshaler(ObjMarshaler):
     m: ta.Optional[ObjMarshaler] = None
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check_not_none(self.m).marshal(o, ctx)
+        return check.not_none(self.m).marshal(o, ctx)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check_not_none(self.m).unmarshal(o, ctx)
+        return check.not_none(self.m).unmarshal(o, ctx)
 
 
 @dc.dataclass(frozen=True)
@@ -223,19 +222,19 @@ class DatetimeObjMarshaler(ObjMarshaler):
 
 class DecimalObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return str(check_isinstance(o, decimal.Decimal))
+        return str(check.isinstance(o, decimal.Decimal))
 
     def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return decimal.Decimal(check_isinstance(v, str))
+        return decimal.Decimal(check.isinstance(v, str))
 
 
 class FractionObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        fr = check_isinstance(o, fractions.Fraction)
+        fr = check.isinstance(o, fractions.Fraction)
         return [fr.numerator, fr.denominator]
 
     def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        num, denom = check_isinstance(v, list)
+        num, denom = check.isinstance(v, list)
         return fractions.Fraction(num, denom)
 
 

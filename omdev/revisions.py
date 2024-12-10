@@ -14,7 +14,7 @@ import typing as ta
 import zipfile
 
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_non_empty_str
+from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 
@@ -39,7 +39,7 @@ class GitRevisionAdder:
     def revision(self) -> str:
         if self._given_revision is not None:
             return self._given_revision
-        return check_non_empty_str(get_git_revision())
+        return check.non_empty_str(get_git_revision())
 
     REVISION_ATTR = '__revision__'
 

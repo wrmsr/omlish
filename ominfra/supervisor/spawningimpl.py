@@ -6,8 +6,7 @@ import stat
 import typing as ta
 
 from omlish.io.fdio.handlers import FdioHandler
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig
@@ -203,21 +202,21 @@ class ProcessSpawningImpl(ProcessSpawning):
         dispatchers: ta.List[FdioHandler] = []
 
         if pipes.stdout is not None:
-            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
                 self.process,
                 ProcessCommunicationStdoutEvent,
                 pipes.stdout,
             ), ProcessOutputDispatcher))
 
         if pipes.stderr is not None:
-            dispatchers.append(check_isinstance(self._output_dispatcher_factory(
+            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
                 self.process,
                 ProcessCommunicationStderrEvent,
                 pipes.stderr,
             ), ProcessOutputDispatcher))
 
         if pipes.stdin is not None:
-            dispatchers.append(check_isinstance(self._input_dispatcher_factory(
+            dispatchers.append(check.isinstance(self._input_dispatcher_factory(
                 self.process,
                 'stdin',
                 pipes.stdin,
@@ -307,14 +306,14 @@ class ProcessSpawningImpl(ProcessSpawning):
         raise RuntimeError('Unreachable')
 
     def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
-        os.dup2(check_not_none(pipes.child_stdin), 0)
+        os.dup2(check.not_none(pipes.child_stdin), 0)
 
-        os.dup2(check_not_none(pipes.child_stdout), 1)
+        os.dup2(check.not_none(pipes.child_stdout), 1)
 
         if self.config.redirect_stderr:
-            os.dup2(check_not_none(pipes.child_stdout), 2)
+            os.dup2(check.not_none(pipes.child_stdout), 2)
         else:
-            os.dup2(check_not_none(pipes.child_stderr), 2)
+            os.dup2(check.not_none(pipes.child_stderr), 2)
 
         for i in range(3, self._server_config.min_fds):
             if i in self._inherited_fds:

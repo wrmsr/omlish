@@ -4,7 +4,7 @@ import dataclasses as dc
 from omdev.interp.resolvers import DEFAULT_INTERP_RESOLVER
 from omdev.interp.types import InterpOpts
 from omdev.interp.types import InterpSpecifier
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor
@@ -30,8 +30,8 @@ class InterpCommand(Command['InterpCommand.Output']):
 
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
     async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
-        i = InterpSpecifier.parse(check_not_none(cmd.spec))
-        o = check_not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        i = InterpSpecifier.parse(check.not_none(cmd.spec))
+        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
         return InterpCommand.Output(
             exe=o.exe,
             version=str(o.version.version),

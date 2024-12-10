@@ -32,7 +32,7 @@ import urllib.parse
 import urllib.request
 
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import log
 
 
@@ -143,7 +143,7 @@ class StandalonePythons:
         python_versions: ta.Dict[str, str] = {}
         for link in available_python_links:
             match = self.PYTHON_VERSION_REGEX.search(link)
-            python_version = check_not_none(match)[1]
+            python_version = check.not_none(match)[1]
             # Don't override already found versions, as they are in order of preference
             if python_version in python_versions:
                 continue

@@ -23,7 +23,7 @@ from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output_str
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_try_output
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import log
 
 from ..packaging.versions import InvalidVersion
@@ -69,7 +69,7 @@ class Pyenv:
 
     @async_cached_nullary
     async def exe(self) -> str:
-        return os.path.join(check_not_none(await self.root()), 'bin', 'pyenv')
+        return os.path.join(check.not_none(await self.root()), 'bin', 'pyenv')
 
     async def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
         if (root := await self.root()) is None:
@@ -295,7 +295,7 @@ class PyenvVersionInstaller:
 
     @async_cached_nullary
     async def install_dir(self) -> str:
-        return str(os.path.join(check_not_none(await self._pyenv.root()), 'versions', self.install_name()))
+        return str(os.path.join(check.not_none(await self._pyenv.root()), 'versions', self.install_name()))
 
     @async_cached_nullary
     async def install(self) -> str:
@@ -318,7 +318,7 @@ class PyenvVersionInstaller:
 
         if self._given_install_name is not None:
             full_args = [
-                os.path.join(check_not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
+                os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
                 *conf_args,
                 self.install_dir(),
             ]
@@ -390,7 +390,7 @@ class PyenvInterpProvider(InterpProvider):
         iv: ta.Optional[InterpVersion]
         if self._inspect:
             try:
-                iv = check_not_none(await self._inspector.inspect(ep)).iv
+                iv = check.not_none(await self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 return None
         else:

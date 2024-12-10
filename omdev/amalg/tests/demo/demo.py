@@ -9,7 +9,7 @@ import typing as ta  # noqa
 
 from omlish.os import PAGE_SIZE
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
@@ -31,7 +31,7 @@ def _main() -> None:
     log.info('hi')
 
     # Comment
-    check_not_none(_foo())  # Inline comment
+    check.not_none(_foo())  # Inline comment
 
     pprint.pprint(foo())
 

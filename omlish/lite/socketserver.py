@@ -3,7 +3,7 @@ import socket
 import socketserver
 import typing as ta
 
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 
 from .socket import SocketAddress
 from .socket import SocketHandlerFactory
@@ -58,7 +58,7 @@ class SocketHandlerSocketServerStreamRequestHandler(  # type: ignore[misc]
         )
 
     def handle(self) -> None:
-        target = check_not_none(self.socket_handler_factory)(
+        target = check.not_none(self.socket_handler_factory)(
             self.client_address,
             self.rfile,  # type: ignore[arg-type]
             self.wfile,  # type: ignore[arg-type]

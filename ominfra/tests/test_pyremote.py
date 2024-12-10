@@ -5,7 +5,7 @@ import subprocess
 import sys
 import unittest
 
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .. import pyremote
@@ -35,8 +35,8 @@ class TestPyremote(unittest.TestCase):
             stdout=subprocess.PIPE,
         )
 
-        stdin = check_not_none(proc.stdin)
-        stdout = check_not_none(proc.stdout)
+        stdin = check.not_none(proc.stdin)
+        stdout = check.not_none(proc.stdout)
 
         res = pyremote.PyremoteBootstrapDriver(
             main_src,

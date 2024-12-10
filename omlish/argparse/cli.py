@@ -11,11 +11,7 @@ import functools
 import sys
 import typing as ta
 
-from ..lite.check import check_arg
-from ..lite.check import check_isinstance
-from ..lite.check import check_not_empty
-from ..lite.check import check_not_in
-from ..lite.check import check_not_isinstance
+from ..lite.check import check
 
 
 T = ta.TypeVar('T')
@@ -60,18 +56,18 @@ class ArgparseCommand:
 
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
-            check_isinstance(s, str)
-            check_not_in('_', s)
-            check_not_empty(s)
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
         check_name(self.name)
-        check_not_isinstance(self.aliases, str)
+        check.not_isinstance(self.aliases, str)
         for a in self.aliases or []:
             check_name(a)
 
-        check_arg(callable(self.fn))
-        check_arg(all(isinstance(a, ArgparseArg) for a in self.args))
-        check_isinstance(self.parent, (ArgparseCommand, type(None)))
-        check_isinstance(self.accepts_unknown, bool)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+        check.isinstance(self.parent, (ArgparseCommand, type(None)))
+        check.isinstance(self.accepts_unknown, bool)
 
         functools.update_wrapper(self, self.fn)
 
@@ -92,10 +88,10 @@ def argparse_command(
         accepts_unknown: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCommandFn], ArgparseCommand]:  # FIXME
     for arg in args:
-        check_isinstance(arg, ArgparseArg)
-    check_isinstance(name, (str, type(None)))
-    check_isinstance(parent, (ArgparseCommand, type(None)))
-    check_not_isinstance(aliases, str)
+        check.isinstance(arg, ArgparseArg)
+    check.isinstance(name, (str, type(None)))
+    check.isinstance(parent, (ArgparseCommand, type(None)))
+    check.not_isinstance(aliases, str)
 
     def inner(fn):
         return ArgparseCommand(
@@ -151,7 +147,7 @@ class ArgparseCli:
             bseen = set()  # type: ignore
             for k, v in bns.items():
                 if isinstance(v, (ArgparseCommand, ArgparseArg)):
-                    check_not_in(v, bseen)
+                    check.not_in(v, bseen)
                     bseen.add(v)
                     objs[k] = v
                 elif k in objs:
@@ -163,7 +159,7 @@ class ArgparseCli:
         }), globalns=ns.get('__globals__', {}))
 
         if '_parser' in ns:
-            parser = check_isinstance(ns['_parser'], argparse.ArgumentParser)
+            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
         else:
             parser = argparse.ArgumentParser()
             setattr(cls, '_parser', parser)
@@ -179,7 +175,7 @@ class ArgparseCli:
                         if (
                                 len(arg.args) == 1 and
                                 isinstance(arg.args[0], str) and
-                                not (n := check_isinstance(arg.args[0], str)).startswith('-') and
+                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
                                 'metavar' not in arg.kwargs
                         ):
                             cparser.add_argument(

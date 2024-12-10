@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007
 import typing as ta
 
-from omlish.lite.check import check_isinstance
+from omlish.lite.check import check
 from omlish.lite.typing import Func2
 
 from .configs import ProcessConfig
@@ -29,7 +29,7 @@ class ProcessGroupImpl(ProcessGroup):
 
         by_name: ta.Dict[str, Process] = {}
         for pconfig in self._config.processes or []:
-            p = check_isinstance(self._process_factory(pconfig, self), Process)
+            p = check.isinstance(self._process_factory(pconfig, self), Process)
             if p.name in by_name:
                 raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
             by_name[pconfig.name] = p

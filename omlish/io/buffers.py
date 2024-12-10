@@ -3,9 +3,7 @@
 import io
 import typing as ta
 
-from ..lite.check import check_isinstance
-from ..lite.check import check_not_empty
-from ..lite.check import check_not_none
+from ..lite.check import check
 from ..lite.strings import attr_repr
 
 
@@ -40,7 +38,7 @@ class DelimitingBuffer:
     ) -> None:
         super().__init__()
 
-        self._delimiters = frozenset(check_isinstance(d, int) for d in delimiters)
+        self._delimiters = frozenset(check.isinstance(d, int) for d in delimiters)
         self._keep_ends = keep_ends
         self._max_size = max_size
 
@@ -71,7 +69,7 @@ class DelimitingBuffer:
         return r
 
     def _append_and_reset(self, chunk: bytes) -> bytes:
-        buf = check_not_none(self._buf)
+        buf = check.not_none(self._buf)
         if not buf.tell():
             return chunk
 
@@ -193,7 +191,7 @@ class IncrementalWriteBuffer:
     ) -> None:
         super().__init__()
 
-        check_not_empty(data)
+        check.not_empty(data)
         self._len = len(data)
         self._write_size = write_size
 
@@ -208,11 +206,11 @@ class IncrementalWriteBuffer:
         return self._len - self._pos
 
     def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check_not_empty(self._lst)
+        lst = check.not_empty(self._lst)
 
         t = 0
         for i, d in enumerate(lst):  # noqa
-            n = fn(check_not_empty(d))
+            n = fn(check.not_empty(d))
             if not n:
                 break
             t += n

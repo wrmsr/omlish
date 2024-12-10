@@ -3,7 +3,7 @@ import subprocess
 import unittest
 
 from .. import subprocesses as su
-from ..check import check_not_none
+from ..check import check
 
 
 class TestSubprocesses(unittest.TestCase):
@@ -23,5 +23,5 @@ class TestSubprocesses(unittest.TestCase):
             pass
         else:
             raise Exception('Expected exception')
-        self.assertEqual(check_not_none(su.subprocess_try_output('echo', 'hi')).decode(), 'hi\n')
+        self.assertEqual(check.not_none(su.subprocess_try_output('echo', 'hi')).decode(), 'hi\n')
         self.assertIsNone(su.subprocess_try_output('xcho', 'hi'))

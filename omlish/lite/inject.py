@@ -8,11 +8,7 @@ import types
 import typing as ta
 import weakref
 
-from .check import check_in
-from .check import check_isinstance
-from .check import check_not_in
-from .check import check_not_isinstance
-from .check import check_not_none
+from .check import check
 from .maybes import Maybe
 from .reflect import get_optional_alias_arg
 from .reflect import is_new_type
@@ -170,7 +166,7 @@ class FnInjectorProvider(InjectorProvider):
     fn: ta.Any
 
     def __post_init__(self) -> None:
-        check_not_isinstance(self.fn, type)
+        check.not_isinstance(self.fn, type)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -184,7 +180,7 @@ class CtorInjectorProvider(InjectorProvider):
     cls_: type
 
     def __post_init__(self) -> None:
-        check_isinstance(self.cls_, type)
+        check.isinstance(self.cls_, type)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -206,7 +202,7 @@ class SingletonInjectorProvider(InjectorProvider):
     p: InjectorProvider
 
     def __post_init__(self) -> None:
-        check_isinstance(self.p, InjectorProvider)
+        check.isinstance(self.p, InjectorProvider)
 
     def provider_fn(self) -> InjectorProviderFn:
         v = not_set = object()
@@ -226,7 +222,7 @@ class LinkInjectorProvider(InjectorProvider):
     k: InjectorKey
 
     def __post_init__(self) -> None:
-        check_isinstance(self.k, InjectorKey)
+        check.isinstance(self.k, InjectorKey)
 
     def provider_fn(self) -> InjectorProviderFn:
         def pfn(i: Injector) -> ta.Any:
@@ -423,7 +419,7 @@ def build_injection_kwargs_target(
 
     skip_names: ta.Set[str] = set()
     if skip_kwargs is not None:
-        skip_names.update(check_not_isinstance(skip_kwargs, str))
+        skip_names.update(check.not_isinstance(skip_kwargs, str))
 
     seen: ta.Set[InjectorKey] = set()
     kws: ta.List[InjectionKwarg] = []
@@ -484,8 +480,8 @@ class _Injector(Injector):
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
-        self._bs = check_isinstance(bs, InjectorBindings)
-        self._p: ta.Optional[Injector] = check_isinstance(p, (Injector, type(None)))
+        self._bs = check.isinstance(bs, InjectorBindings)
+        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, type(None)))
 
         self._pfm = {k: v.provider_fn() for k, v in build_injector_provider_map(bs).items()}
 
@@ -516,8 +512,8 @@ class _Injector(Injector):
             return Maybe.empty()
 
         def handle_provision(self, key: InjectorKey, mv: Maybe) -> Maybe:
-            check_in(key, self._seen_keys)
-            check_not_in(key, self._provisions)
+            check.in_(key, self._seen_keys)
+            check.not_in(key, self._provisions)
             self._provisions[key] = mv
             return mv
 
@@ -631,7 +627,7 @@ class InjectorBinder:
 
     @classmethod
     def bind_as_fn(cls, icls: ta.Type[T]) -> ta.Type[T]:
-        check_isinstance(icls, type)
+        check.isinstance(icls, type)
         if icls not in cls._FN_TYPES:
             cls._FN_TYPES = (*cls._FN_TYPES, icls)
         return icls
@@ -688,7 +684,7 @@ class InjectorBinder:
             to_fn = obj
             if key is None:
                 insp = _injection_inspect(obj)
-                key_cls: ta.Any = check_valid_injector_key_cls(check_not_none(insp.type_hints.get('return')))
+                key_cls: ta.Any = check_valid_injector_key_cls(check.not_none(insp.type_hints.get('return')))
                 key = InjectorKey(key_cls)
         else:
             if to_const is not None:

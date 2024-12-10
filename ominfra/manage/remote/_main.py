@@ -11,8 +11,7 @@ import typing as ta
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_none
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.deathsig import set_process_deathsig
 from omlish.lite.inject import Injector
 from omlish.lite.logs import log
@@ -64,11 +63,11 @@ class _RemoteExecutionMain:
 
     @property
     def _bootstrap(self) -> MainBootstrap:
-        return check_not_none(self.__bootstrap)
+        return check.not_none(self.__bootstrap)
 
     @property
     def _injector(self) -> Injector:
-        return check_not_none(self.__injector)
+        return check.not_none(self.__injector)
 
     #
 
@@ -112,12 +111,12 @@ class _RemoteExecutionMain:
     #
 
     async def _setup(self) -> None:
-        check_none(self.__bootstrap)
-        check_none(self.__injector)
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
 
         # Bootstrap
 
-        self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
             pycharm_debug_connect(prd)

@@ -19,8 +19,7 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish.lite.check import check_non_empty_str
-from omlish.lite.check import check_single
+from omlish.lite.check import check
 
 from .auth import AwsSigner
 from .auth import V4AwsSigner
@@ -97,8 +96,8 @@ class AwsLogMessageBuilder:
     ) -> None:
         super().__init__()
 
-        self._log_group_name = check_non_empty_str(log_group_name)
-        self._log_stream_name = check_non_empty_str(log_stream_name)
+        self._log_group_name = check.non_empty_str(log_group_name)
+        self._log_stream_name = check.non_empty_str(log_stream_name)
 
         if url is None:
             url = self.DEFAULT_URL.format(region_name=region_name)
@@ -172,7 +171,7 @@ class AwsLogMessageBuilder:
 
         post = AwsLogMessageBuilder.Post(
             url=self._url,
-            headers={k: check_single(v) for k, v in sig_req.headers.items()},
+            headers={k: check.single(v) for k, v in sig_req.headers.items()},
             data=sig_req.payload,
         )
 

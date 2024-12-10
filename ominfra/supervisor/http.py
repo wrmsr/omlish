@@ -6,7 +6,7 @@ import typing as ta
 
 from omlish.io.fdio.corohttp import CoroHttpServerConnectionFdioHandler
 from omlish.io.fdio.handlers import SocketFdioHandler
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer
 from omlish.lite.http.handlers import HttpHandler
 from omlish.lite.http.handlers import HttpHandlerRequest
@@ -41,7 +41,7 @@ class SocketServerFdioHandler(SocketFdioHandler):
         return True
 
     def on_readable(self) -> None:
-        cli_sock, cli_addr = check_not_none(self._sock).accept()
+        cli_sock, cli_addr = check.not_none(self._sock).accept()
         cli_sock.setblocking(False)
 
         self._on_connect(cli_sock, cli_addr)

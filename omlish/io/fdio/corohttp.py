@@ -2,10 +2,7 @@
 import socket
 import typing as ta
 
-from ...lite.check import check_isinstance
-from ...lite.check import check_none
-from ...lite.check import check_not_none
-from ...lite.check import check_state
+from ...lite.check import check
 from ...lite.http.coroserver import CoroHttpServer
 from ...lite.http.handlers import HttpHandler
 from ...lite.socket import SocketAddress
@@ -25,7 +22,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             write_size: int = 0x10000,
             log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
     ) -> None:
-        check_state(not sock.getblocking())
+        check.state(not sock.getblocking())
 
         super().__init__(addr, sock)
 
@@ -49,7 +46,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     #
 
     def _next_io(self) -> None:  # noqa
-        coro = check_not_none(self._srv_coro)
+        coro = check.not_none(self._srv_coro)
 
         d: bytes | None = None
         o = self._cur_io
@@ -82,7 +79,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
                 o = None
 
             elif isinstance(o, CoroHttpServer.WriteIo):
-                check_none(self._write_buf)
+                check.none(self._write_buf)
                 self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
                 break
 
@@ -103,7 +100,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
 
     def on_readable(self) -> None:
         try:
-            buf = check_not_none(self._sock).recv(self._read_size)
+            buf = check.not_none(self._sock).recv(self._read_size)
         except BlockingIOError:
             return
         except ConnectionResetError:
@@ -119,12 +116,12 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             self._next_io()
 
     def on_writable(self) -> None:
-        check_isinstance(self._cur_io, CoroHttpServer.WriteIo)
-        wb = check_not_none(self._write_buf)
+        check.isinstance(self._cur_io, CoroHttpServer.WriteIo)
+        wb = check.not_none(self._write_buf)
         while wb.rem > 0:
             def send(d: bytes) -> int:
                 try:
-                    return check_not_none(self._sock).send(d)
+                    return check.not_none(self._sock).send(d)
                 except ConnectionResetError:
                     self.close()
                     return 0

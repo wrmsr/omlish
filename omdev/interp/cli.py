@@ -11,7 +11,7 @@ import argparse
 import asyncio
 import typing as ta
 
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 
@@ -34,7 +34,7 @@ async def _resolve_cmd(args) -> None:
     else:
         r = DEFAULT_INTERP_RESOLVER
     s = InterpSpecifier.parse(args.version)
-    print(check_not_none(await r.resolve(s, install=bool(args.install))).exe)
+    print(check.not_none(await r.resolve(s, install=bool(args.install))).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -6,7 +6,7 @@ import time
 import traceback
 import typing as ta
 
-from omlish.lite.check import check_isinstance
+from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
@@ -171,7 +171,7 @@ class ProcessImpl(Process):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check_isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
+        dispatcher = check.isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 

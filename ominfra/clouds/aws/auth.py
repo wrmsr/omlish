@@ -17,9 +17,7 @@ import hmac
 import typing as ta
 import urllib.parse
 
-from omlish.lite.check import check_equal
-from omlish.lite.check import check_non_empty_str
-from omlish.lite.check import check_not_isinstance
+from omlish.lite.check import check
 
 
 ##
@@ -60,7 +58,7 @@ class AwsSigner:
     @staticmethod
     def _host_from_url(url: str) -> str:
         url_parts = urllib.parse.urlsplit(url)
-        host = check_non_empty_str(url_parts.hostname)
+        host = check.non_empty_str(url_parts.hostname)
         default_ports = {
             'http': 80,
             'https': 443,
@@ -74,7 +72,7 @@ class AwsSigner:
     def _lower_case_http_map(d: ta.Mapping[str, ta.Sequence[str]]) -> ta.Mapping[str, ta.Sequence[str]]:
         o: ta.Dict[str, ta.List[str]] = {}
         for k, vs in d.items():
-            o.setdefault(k.lower(), []).extend(check_not_isinstance(vs, str))
+            o.setdefault(k.lower(), []).extend(check.not_isinstance(vs, str))
         return o
 
     #
@@ -107,12 +105,12 @@ class AwsSigner:
     ])
 
     def _validate_request(self, req: Request) -> None:
-        check_non_empty_str(req.method)
-        check_equal(req.method.upper(), req.method)
+        check.non_empty_str(req.method)
+        check.equal(req.method.upper(), req.method)
         for k, vs in req.headers.items():
-            check_equal(k.strip(), k)
+            check.equal(k.strip(), k)
             for v in vs:
-                check_equal(v.strip(), v)
+                check.equal(v.strip(), v)
 
 
 AwsSigner._EMPTY_SHA256 = AwsSigner._sha256(b'')  # noqa
