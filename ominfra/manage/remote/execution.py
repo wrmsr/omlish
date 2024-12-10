@@ -27,34 +27,32 @@ T = ta.TypeVar('T')
 
 
 class _RemoteProtocol:
-    class Message(abc.ABC):
-        _message_cls: ta.ClassVar[ta.Type['_RemoteProtocol.Message']]
-
+    class Message(abc.ABC):  # noqa
         async def send(self, chan: RemoteChannel) -> None:
-            await chan.send_obj(self, self._message_cls)
+            await chan.send_obj(self, _RemoteProtocol.Message)
 
         @classmethod
         async def recv(cls: ta.Type[T], chan: RemoteChannel) -> ta.Optional[T]:
-            return await chan.recv_obj(cls._message_cls)  # type: ignore
+            return await chan.recv_obj(cls)
 
     #
 
     class Request(Message, abc.ABC):  # noqa
         pass
 
-    Request._message_cls = Request  # noqa
-
     @dc.dataclass(frozen=True)
     class CommandRequest(Request):
         seq: int
         cmd: Command
 
+    @dc.dataclass(frozen=True)
+    class PingRequest(Request):
+        time: float
+
     #
 
     class Response(Message, abc.ABC):  # noqa
         pass
-
-    Response._message_cls = Response  # noqa
 
     @dc.dataclass(frozen=True)
     class LogResponse(Response):
@@ -64,6 +62,10 @@ class _RemoteProtocol:
     class CommandResponse(Response):
         seq: int
         res: CommandOutputOrExceptionData
+
+    @dc.dataclass(frozen=True)
+    class PingResponse(Response):
+        time: float
 
 
 ##

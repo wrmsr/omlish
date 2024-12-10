@@ -16,6 +16,7 @@ import base64
 import collections
 import collections.abc
 import contextlib
+import ctypes as ct
 import dataclasses as dc
 import datetime
 import decimal
@@ -33,6 +34,7 @@ import pwd
 import re
 import shlex
 import shutil
+import signal
 import site
 import struct
 import subprocess
@@ -670,6 +672,8 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
+    os.setpgid(0, 0)
+
     if (cp := os.fork()):
         # Parent process
 
@@ -1243,6 +1247,30 @@ def check_non_empty(v: SizedT) -> SizedT:
     if not len(v):
         raise ValueError(v)
     return v
+
+
+########################################
+# ../../../omlish/lite/deathsig.py
+
+
+LINUX_PR_SET_PDEATHSIG = 1  # Second arg is a signal
+LINUX_PR_GET_PDEATHSIG = 2  # Second arg is a ptr to return the signal
+
+
+def set_process_deathsig(sig: int) -> bool:
+    if sys.platform == 'linux':
+        libc = ct.CDLL('libc.so.6')
+
+        # int prctl(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5);
+        libc.prctl.restype = ct.c_int
+        libc.prctl.argtypes = [ct.c_int, ct.c_ulong, ct.c_ulong, ct.c_ulong, ct.c_ulong]
+
+        libc.prctl(LINUX_PR_SET_PDEATHSIG, sig, 0, 0, 0, 0)
+
+        return True
+
+    else:
+        return False
 
 
 ########################################
@@ -2173,6 +2201,10 @@ class RemoteConfig:
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
     forward_logging: bool = True
+
+    timebomb_delay_s: ta.Optional[float] = 60 * 60.
+
+    heartbeat_interval_s: float = 3.
 
 
 ########################################
@@ -4291,34 +4323,32 @@ def subprocess_close(
 
 
 class _RemoteProtocol:
-    class Message(abc.ABC):
-        _message_cls: ta.ClassVar[ta.Type['_RemoteProtocol.Message']]
-
+    class Message(abc.ABC):  # noqa
         async def send(self, chan: RemoteChannel) -> None:
-            await chan.send_obj(self, self._message_cls)
+            await chan.send_obj(self, _RemoteProtocol.Message)
 
         @classmethod
         async def recv(cls: ta.Type[T], chan: RemoteChannel) -> ta.Optional[T]:
-            return await chan.recv_obj(cls._message_cls)  # type: ignore
+            return await chan.recv_obj(cls)
 
     #
 
     class Request(Message, abc.ABC):  # noqa
         pass
 
-    Request._message_cls = Request  # noqa
-
     @dc.dataclass(frozen=True)
     class CommandRequest(Request):
         seq: int
         cmd: Command
 
+    @dc.dataclass(frozen=True)
+    class PingRequest(Request):
+        time: float
+
     #
 
     class Response(Message, abc.ABC):  # noqa
         pass
-
-    Response._message_cls = Response  # noqa
 
     @dc.dataclass(frozen=True)
     class LogResponse(Response):
@@ -4328,6 +4358,10 @@ class _RemoteProtocol:
     class CommandResponse(Response):
         seq: int
         res: CommandOutputOrExceptionData
+
+    @dc.dataclass(frozen=True)
+    class PingResponse(Response):
+        time: float
 
 
 ##
@@ -5062,6 +5096,37 @@ class _RemoteExecutionMain:
 
     #
 
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        return thr
+
+    #
+
     @cached_nullary
     def _log_handler(self) -> _RemoteLogHandler:
         return _RemoteLogHandler(self._chan)
@@ -5075,6 +5140,8 @@ class _RemoteExecutionMain:
         # Bootstrap
 
         self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
+
+        self._timebomb_thread()
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
             pycharm_debug_connect(prd)
@@ -5102,6 +5169,8 @@ class _RemoteExecutionMain:
 
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
+
+    set_process_deathsig(signal.SIGKILL)
 
     async def inner() -> None:
         input = await asyncio_open_stream_reader(rt.input)  # noqa
@@ -6288,6 +6357,8 @@ async def _async_main(args: ta.Any) -> None:
                 **(dict(host=args.pycharm_debug_host) if args.pycharm_debug_host is not None else {}),
                 install_version=args.pycharm_debug_version,
             ) if args.pycharm_debug_port is not None else None,
+
+            timebomb_delay_s=args.remote_timebomb_delay_s,
         ),
     )
 
@@ -6355,6 +6426,8 @@ def _main() -> None:
     parser.add_argument('--pycharm-debug-port', type=int)
     parser.add_argument('--pycharm-debug-host')
     parser.add_argument('--pycharm-debug-version')
+
+    parser.add_argument('--remote-timebomb-delay-s', type=float)
 
     parser.add_argument('--debug', action='store_true')
 
