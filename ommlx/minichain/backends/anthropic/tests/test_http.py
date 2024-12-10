@@ -3,7 +3,7 @@ https://docs.anthropic.com/en/api/getting-started
 """
 import pytest
 
-from omlish import http as hu
+from omlish.http import all as hu
 from omlish.formats import json
 from omlish.secrets.tests.harness import HarnessSecrets
 

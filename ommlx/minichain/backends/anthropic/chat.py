@@ -9,7 +9,7 @@ import os
 import typing as ta
 
 from omlish import check
-from omlish import http
+from omlish.http import all as http
 from omlish.formats import json
 from omlish.secrets import Secret
 

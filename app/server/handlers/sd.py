@@ -22,7 +22,7 @@ import typing as ta
 import anyio.to_thread
 import httpx
 
-from omlish import http as hu
+from omlish.http import all as hu
 from omlish import lang
 from omlish import secrets as sec
 from omlish.formats import json
