@@ -1198,6 +1198,14 @@ class Checks:
 
     #
 
+    def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
+        self._exception_factory = factory
+
+    def set_args_renderer(self, renderer: ta.Optional[CheckArgsRenderer]) -> None:
+        self._args_renderer = renderer
+
+    #
+
     def register_late_configure(self, fn: CheckLateConfigureFn) -> None:
         with self._config_lock:
             self._late_configure_fns = [*self._late_configure_fns, fn]
@@ -1240,12 +1248,12 @@ class Checks:
         if message is None:
             message = default_message
 
+        self._late_configure()
+
         if render_fmt is not None and (af := self._args_renderer) is not None:
             rendered_args = af(render_fmt, *ak.args)
             if rendered_args is not None:
                 message = f'{message} : {rendered_args}'
-
-        self._late_configure()
 
         exc = self._exception_factory(
             exception_type,
