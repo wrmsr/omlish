@@ -1,4 +1,5 @@
 # ruff: noqa: PT009
+# @omlish-lite
 """
 See:
  - https://github.com/mosquito/cysystemd/tree/master/cysystemd

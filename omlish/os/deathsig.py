@@ -1,3 +1,4 @@
+# @omlish-lite
 import ctypes as ct
 import sys
 
