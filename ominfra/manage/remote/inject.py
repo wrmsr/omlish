@@ -8,6 +8,7 @@ from omlish.lite.inject import inj
 from .config import RemoteConfig
 from .execution import RemoteExecution
 from .payload import RemoteExecutionPayloadFile
+from .spawning import PyremoteRemoteSpawning
 from .spawning import RemoteSpawning
 
 
@@ -20,7 +21,8 @@ def bind_remote(
 
         inj.bind(RemoteSpawning, singleton=True),
 
-        inj.bind(RemoteExecution, singleton=True),
+        inj.bind(PyremoteRemoteSpawning, singleton=True),
+        inj.bind(RemoteExecution, to_key=PyremoteRemoteSpawning),
     ]
 
     if (pf := remote_config.payload_file) is not None:
