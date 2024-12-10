@@ -672,8 +672,6 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
-    os.setpgid(0, 0)
-
     if (cp := os.fork()):
         # Parent process
 
@@ -2197,6 +2195,10 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 @dc.dataclass(frozen=True)
 class RemoteConfig:
     payload_file: ta.Optional[str] = None
+
+    set_pgid: bool = True
+
+    deathsig: ta.Optional[str] = 'KILL'
 
     pycharm_remote_debug: ta.Optional[PycharmRemoteDebug] = None
 
@@ -4427,13 +4429,19 @@ class _RemoteCommandHandler:
 
         self._cmd_futs_by_seq.pop(req.seq)  # noqa
 
-    async def _handle_request(self, req: _RemoteProtocol.Request) -> None:
-        if isinstance(req, _RemoteProtocol.CommandRequest):
-            fut = asyncio.create_task(self._handle_command_request(req))
-            self._cmd_futs_by_seq[req.seq] = fut
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.CommandRequest):
+            fut = asyncio.create_task(self._handle_command_request(msg))
+            self._cmd_futs_by_seq[msg.seq] = fut
 
         else:
-            raise TypeError(req)
+            raise TypeError(msg)
 
     async def run(self) -> None:
         stop_task = asyncio.create_task(self._stop.wait())
@@ -4449,16 +4457,16 @@ class _RemoteCommandHandler:
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if recv_task in done:
-                req: ta.Optional[_RemoteProtocol.Request] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
                     recv_task.result(),
-                    (_RemoteProtocol.Request, type(None)),
+                    (_RemoteProtocol.Message, type(None)),
                 )
                 recv_task = None
 
-                if req is None:
+                if msg is None:
                     break
 
-                await self._handle_request(req)
+                await self._handle_message(msg)
 
 
 ##
@@ -4510,7 +4518,7 @@ class RemoteCommandExecutor(CommandExecutor):
             if queue_task is None:
                 queue_task = asyncio.create_task(self._queue.get())
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Response.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
             done, pending = await asyncio.wait([
                 stop_task,
@@ -4524,12 +4532,16 @@ class RemoteCommandExecutor(CommandExecutor):
                 await self._handle_request(req)
 
             if recv_task in done:
-                resp: ta.Optional[_RemoteProtocol.Response] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
                     recv_task.result(),
-                    (_RemoteProtocol.Response, type(None)),
+                    (_RemoteProtocol.Message, type(None)),
                 )
                 recv_task = None
-                await self._handle_response(resp)
+
+                if msg is None:
+                    raise EOFError
+
+                await self._handle_message(msg)
 
         for task in [
             stop_task,
@@ -4547,19 +4559,22 @@ class RemoteCommandExecutor(CommandExecutor):
             cmd=req.cmd,
         ).send(self._chan)
 
-    async def _handle_response(self, resp: ta.Optional[_RemoteProtocol.Response]) -> None:
-        if resp is None:
-            raise EOFError
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
 
-        if isinstance(resp, _RemoteProtocol.LogResponse):
-            log.info(resp.s)
+        elif isinstance(msg, _RemoteProtocol.LogResponse):
+            log.info(msg.s)
 
-        elif isinstance(resp, _RemoteProtocol.CommandResponse):
-            req = self._reqs_by_seq.pop(resp.seq)
-            req.fut.set_result(resp.res)
+        elif isinstance(msg, _RemoteProtocol.CommandResponse):
+            req = self._reqs_by_seq.pop(msg.seq)
+            req.fut.set_result(msg.res)
 
         else:
-            raise TypeError(resp)
+            raise TypeError(msg)
 
     #
 
@@ -5123,6 +5138,8 @@ class _RemoteExecutionMain:
 
         thr.start()
 
+        log.debug('Started timebomb thread: %r', thr)
+
         return thr
 
     #
@@ -5141,12 +5158,23 @@ class _RemoteExecutionMain:
 
         self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
 
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
         self._timebomb_thread()
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            log.debug('Connecting to pycharm: %r', prd)
             pycharm_debug_connect(prd)
 
         if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
             logging.root.addHandler(self._log_handler())
 
         # Injector
@@ -5169,8 +5197,6 @@ class _RemoteExecutionMain:
 
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
-
-    set_process_deathsig(signal.SIGKILL)
 
     async def inner() -> None:
         input = await asyncio_open_stream_reader(rt.input)  # noqa

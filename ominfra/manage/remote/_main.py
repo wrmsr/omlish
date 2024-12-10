@@ -15,6 +15,7 @@ from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
 from omlish.lite.deathsig import set_process_deathsig
 from omlish.lite.inject import Injector
+from omlish.lite.logs import log
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
 
@@ -98,6 +99,8 @@ class _RemoteExecutionMain:
 
         thr.start()
 
+        log.debug('Started timebomb thread: %r', thr)
+
         return thr
 
     #
@@ -116,12 +119,23 @@ class _RemoteExecutionMain:
 
         self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
 
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
         self._timebomb_thread()
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            log.debug('Connecting to pycharm: %r', prd)
             pycharm_debug_connect(prd)
 
         if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
             logging.root.addHandler(self._log_handler())
 
         # Injector
@@ -144,8 +158,6 @@ class _RemoteExecutionMain:
 
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
-
-    set_process_deathsig(signal.SIGKILL)
 
     async def inner() -> None:
         input = await asyncio_open_stream_reader(rt.input)  # noqa
