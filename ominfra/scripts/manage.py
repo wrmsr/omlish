@@ -4410,38 +4410,12 @@ class _RemoteCommandHandler:
         self._executor = executor
         self._stop = stop if stop is not None else asyncio.Event()
 
-        self._cmd_futs_by_seq: ta.Dict[int, asyncio.Future] = {}
+        self._cmds_by_seq: ta.Dict[int, _RemoteCommandHandler._Command] = {}
 
-    async def _handle_command_request(self, req: _RemoteProtocol.CommandRequest) -> None:
-        res = await self._executor.try_execute(
-            req.cmd,
-            log=log,
-            omit_exc_object=True,
-        )
-
-        await _RemoteProtocol.CommandResponse(
-            seq=req.seq,
-            res=CommandOutputOrExceptionData(
-                output=res.output,
-                exception=res.exception,
-            ),
-        ).send(self._chan)
-
-        self._cmd_futs_by_seq.pop(req.seq)  # noqa
-
-    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
-        if isinstance(msg, _RemoteProtocol.PingRequest):
-            log.debug('Ping: %r', msg)
-            await _RemoteProtocol.PingResponse(
-                time=msg.time,
-            ).send(self._chan)
-
-        elif isinstance(msg, _RemoteProtocol.CommandRequest):
-            fut = asyncio.create_task(self._handle_command_request(msg))
-            self._cmd_futs_by_seq[msg.seq] = fut
-
-        else:
-            raise TypeError(msg)
+    @dc.dataclass(frozen=True)
+    class _Command:
+        req: _RemoteProtocol.CommandRequest
+        fut: asyncio.Future
 
     async def run(self) -> None:
         stop_task = asyncio.create_task(self._stop.wait())
@@ -4467,6 +4441,40 @@ class _RemoteCommandHandler:
                     break
 
                 await self._handle_message(msg)
+
+    async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
+        if isinstance(msg, _RemoteProtocol.PingRequest):
+            log.debug('Ping: %r', msg)
+            await _RemoteProtocol.PingResponse(
+                time=msg.time,
+            ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.CommandRequest):
+            fut = asyncio.create_task(self._handle_command_request(msg))
+            self._cmds_by_seq[msg.seq] = _RemoteCommandHandler._Command(
+                req=msg,
+                fut=fut,
+            )
+
+        else:
+            raise TypeError(msg)
+
+    async def _handle_command_request(self, req: _RemoteProtocol.CommandRequest) -> None:
+        res = await self._executor.try_execute(
+            req.cmd,
+            log=log,
+            omit_exc_object=True,
+        )
+
+        await _RemoteProtocol.CommandResponse(
+            seq=req.seq,
+            res=CommandOutputOrExceptionData(
+                output=res.output,
+                exception=res.exception,
+            ),
+        ).send(self._chan)
+
+        self._cmds_by_seq.pop(req.seq)  # noqa
 
 
 ##
@@ -4510,6 +4518,8 @@ class RemoteCommandExecutor(CommandExecutor):
         fut: asyncio.Future
 
     async def _loop(self) -> None:
+        log.debug('RemoteCommandExecutor loop start: %r', self)
+
         stop_task = asyncio.create_task(self._stop.wait())
         queue_task: ta.Optional[asyncio.Task] = None
         recv_task: ta.Optional[asyncio.Task] = None
@@ -4539,9 +4549,12 @@ class RemoteCommandExecutor(CommandExecutor):
                 recv_task = None
 
                 if msg is None:
-                    raise EOFError
+                    log.debug('RemoteCommandExecutor got eof: %r', self)
+                    break
 
                 await self._handle_message(msg)
+
+        log.debug('RemoteCommandExecutor loop stopping: %r', self)
 
         for task in [
             stop_task,
@@ -4551,9 +4564,13 @@ class RemoteCommandExecutor(CommandExecutor):
             if task is not None and not task.done():
                 task.cancel()
 
+        for req in self._reqs_by_seq.values():
+            req.fut.cancel()
+
+        log.debug('RemoteCommandExecutor loop exited: %r', self)
+
     async def _handle_request(self, req: _Request) -> None:
         self._reqs_by_seq[req.seq] = req
-
         await _RemoteProtocol.CommandRequest(
             seq=req.seq,
             cmd=req.cmd,
@@ -4584,9 +4601,7 @@ class RemoteCommandExecutor(CommandExecutor):
             cmd=cmd,
             fut=asyncio.Future(),
         )
-
         await self._queue.put(req)
-
         return await req.fut
 
     # @ta.override
