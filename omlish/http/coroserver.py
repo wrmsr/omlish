@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
@@ -62,9 +63,9 @@ import textwrap
 import time
 import typing as ta
 
-from ..check import check
-from ..socket import SocketAddress
-from ..socket import SocketHandler
+from ..lite.check import check
+from ..lite.socket import SocketAddress
+from ..lite.socket import SocketHandler
 from .handlers import HttpHandler
 from .handlers import HttpHandlerRequest
 from .handlers import UnsupportedMethodHttpHandlerError

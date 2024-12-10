@@ -1,9 +1,10 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import dataclasses as dc
 import http.server
 import typing as ta
 
-from ..socket import SocketAddress
+from ..lite.socket import SocketAddress
 from .parsing import HttpHeaders
 
 

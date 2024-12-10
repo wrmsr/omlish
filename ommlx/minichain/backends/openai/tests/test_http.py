@@ -20,8 +20,8 @@ import typing as ta
 import pytest
 
 from omlish import dataclasses as dc
-from omlish.http import all as hu
 from omlish.formats import json
+from omlish.http import all as hu
 from omlish.secrets.tests.harness import HarnessSecrets
 
 

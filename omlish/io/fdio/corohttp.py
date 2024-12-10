@@ -2,9 +2,9 @@
 import socket
 import typing as ta
 
+from ...http.coroserver import CoroHttpServer
+from ...http.handlers import HttpHandler
 from ...lite.check import check
-from ...lite.http.coroserver import CoroHttpServer
-from ...lite.http.handlers import HttpHandler
 from ...lite.socket import SocketAddress
 from ..buffers import IncrementalWriteBuffer
 from ..buffers import ReadableListBuffer
