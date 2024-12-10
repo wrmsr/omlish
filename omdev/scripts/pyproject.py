@@ -6157,6 +6157,7 @@ class InterpResolver:
             providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
     ) -> None:
         super().__init__()
+
         self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
 
     async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
