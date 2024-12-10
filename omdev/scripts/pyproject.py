@@ -112,6 +112,9 @@ UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
 
+# ../../omlish/argparse/cli.py
+ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
+
 # ../../omlish/lite/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
@@ -3251,6 +3254,278 @@ class SpecifierSet(BaseSpecifier):
                 return iter(found_prereleases)
 
             return iter(filtered)
+
+
+########################################
+# ../../../omlish/argparse/cli.py
+"""
+TODO:
+ - default command
+ - auto match all underscores to hyphens
+ - pre-run, post-run hooks
+ - exitstack?
+"""
+
+
+##
+
+
+@dc.dataclass(eq=False)
+class ArgparseArg:
+    args: ta.Sequence[ta.Any]
+    kwargs: ta.Mapping[str, ta.Any]
+    dest: ta.Optional[str] = None
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return getattr(instance.args, self.dest)  # type: ignore
+
+
+def argparse_arg(*args, **kwargs) -> ArgparseArg:
+    return ArgparseArg(args, kwargs)
+
+
+#
+
+
+@dc.dataclass(eq=False)
+class ArgparseCommand:
+    name: str
+    fn: ArgparseCommandFn
+    args: ta.Sequence[ArgparseArg] = ()  # noqa
+
+    # _: dc.KW_ONLY
+
+    aliases: ta.Optional[ta.Sequence[str]] = None
+    parent: ta.Optional['ArgparseCommand'] = None
+    accepts_unknown: bool = False
+
+    def __post_init__(self) -> None:
+        def check_name(s: str) -> None:
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
+        check_name(self.name)
+        check.not_isinstance(self.aliases, str)
+        for a in self.aliases or []:
+            check_name(a)
+
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+        check.isinstance(self.parent, (ArgparseCommand, type(None)))
+        check.isinstance(self.accepts_unknown, bool)
+
+        functools.update_wrapper(self, self.fn)
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
+
+    def __call__(self, *args, **kwargs) -> ta.Optional[int]:
+        return self.fn(*args, **kwargs)
+
+
+def argparse_command(
+        *args: ArgparseArg,
+        name: ta.Optional[str] = None,
+        aliases: ta.Optional[ta.Iterable[str]] = None,
+        parent: ta.Optional[ArgparseCommand] = None,
+        accepts_unknown: bool = False,
+) -> ta.Any:  # ta.Callable[[ArgparseCommandFn], ArgparseCommand]:  # FIXME
+    for arg in args:
+        check.isinstance(arg, ArgparseArg)
+    check.isinstance(name, (str, type(None)))
+    check.isinstance(parent, (ArgparseCommand, type(None)))
+    check.not_isinstance(aliases, str)
+
+    def inner(fn):
+        return ArgparseCommand(
+            (name if name is not None else fn.__name__).replace('_', '-'),
+            fn,
+            args,
+            aliases=tuple(aliases) if aliases is not None else None,
+            parent=parent,
+            accepts_unknown=accepts_unknown,
+        )
+
+    return inner
+
+
+##
+
+
+def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
+    if ann is str:
+        return {}
+    elif ann is int:
+        return {'type': int}
+    elif ann is bool:
+        return {'action': 'store_true'}
+    elif ann is list:
+        return {'action': 'append'}
+    else:
+        raise TypeError(ann)
+
+
+class _ArgparseCliAnnotationBox:
+    def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
+        super().__init__()
+        self.__annotations__ = annotations  # type: ignore
+
+
+class ArgparseCli:
+    def __init__(self, argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+        super().__init__()
+
+        self._argv = argv if argv is not None else sys.argv[1:]
+
+        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
+
+    #
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        ns = cls.__dict__
+        objs = {}
+        mro = cls.__mro__[::-1]
+        for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
+            bseen = set()  # type: ignore
+            for k, v in bns.items():
+                if isinstance(v, (ArgparseCommand, ArgparseArg)):
+                    check.not_in(v, bseen)
+                    bseen.add(v)
+                    objs[k] = v
+                elif k in objs:
+                    del [k]
+
+        #
+
+        anns = ta.get_type_hints(_ArgparseCliAnnotationBox({
+            **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
+            **ns.get('__annotations__', {}),
+        }), globalns=ns.get('__globals__', {}))
+
+        #
+
+        if '_parser' in ns:
+            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
+        else:
+            parser = argparse.ArgumentParser()
+            setattr(cls, '_parser', parser)
+
+        #
+
+        subparsers = parser.add_subparsers()
+
+        for att, obj in objs.items():
+            if isinstance(obj, ArgparseCommand):
+                if obj.parent is not None:
+                    raise NotImplementedError
+
+                for cn in [obj.name, *(obj.aliases or [])]:
+                    subparser = subparsers.add_parser(cn)
+
+                    for arg in (obj.args or []):
+                        if (
+                                len(arg.args) == 1 and
+                                isinstance(arg.args[0], str) and
+                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                                'metavar' not in arg.kwargs
+                        ):
+                            subparser.add_argument(
+                                n.replace('-', '_'),
+                                **arg.kwargs,
+                                metavar=n,
+                            )
+                        else:
+                            subparser.add_argument(*arg.args, **arg.kwargs)
+
+                    subparser.set_defaults(_cmd=obj)
+
+            elif isinstance(obj, ArgparseArg):
+                if att in anns:
+                    ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
+                    obj.kwargs = {**ann_kwargs, **obj.kwargs}
+
+                if not obj.dest:
+                    if 'dest' in obj.kwargs:
+                        obj.dest = obj.kwargs['dest']
+                    else:
+                        obj.dest = obj.kwargs['dest'] = att  # type: ignore
+
+                parser.add_argument(*obj.args, **obj.kwargs)
+
+            else:
+                raise TypeError(obj)
+
+    #
+
+    _parser: ta.ClassVar[argparse.ArgumentParser]
+
+    @classmethod
+    def get_parser(cls) -> argparse.ArgumentParser:
+        return cls._parser
+
+    @property
+    def argv(self) -> ta.Sequence[str]:
+        return self._argv
+
+    @property
+    def args(self) -> argparse.Namespace:
+        return self._args
+
+    @property
+    def unknown_args(self) -> ta.Sequence[str]:
+        return self._unknown_args
+
+    #
+
+    def _bind_cli_cmd(self, cmd: ArgparseCommand) -> ta.Callable:
+        return cmd.__get__(self, type(self))
+
+    def prepare_cli_run(self) -> ta.Optional[ta.Callable]:
+        cmd = getattr(self.args, '_cmd', None)
+
+        if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
+            msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
+            if (parser := self.get_parser()).exit_on_error:  # type: ignore
+                parser.error(msg)
+            else:
+                raise argparse.ArgumentError(None, msg)
+
+        if cmd is None:
+            self.get_parser().print_help()
+            return None
+
+        return self._bind_cli_cmd(cmd)
+
+    #
+
+    def cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        return fn()
+
+    def cli_run_and_exit(self) -> ta.NoReturn:
+        sys.exit(rc if isinstance(rc := self.cli_run(), int) else 0)
+
+    def __call__(self, *, exit: bool = False) -> ta.Optional[int]:  # noqa
+        if exit:
+            return self.cli_run_and_exit()
+        else:
+            return self.cli_run()
+
+    #
+
+    async def async_cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        return await fn()
 
 
 ########################################
@@ -6601,6 +6876,109 @@ DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
 
 
 ########################################
+# ../venvs.py
+
+
+##
+
+
+class Venv:
+    def __init__(
+            self,
+            name: str,
+            cfg: VenvConfig,
+    ) -> None:
+        super().__init__()
+        self._name = name
+        self._cfg = cfg
+
+    @property
+    def cfg(self) -> VenvConfig:
+        return self._cfg
+
+    DIR_NAME = '.venvs'
+
+    @property
+    def dir_name(self) -> str:
+        return os.path.join(self.DIR_NAME, self._name)
+
+    @async_cached_nullary
+    async def interp_exe(self) -> str:
+        i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
+        return check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
+
+    @cached_nullary
+    def exe(self) -> str:
+        ve = os.path.join(self.dir_name, 'bin/python')
+        if not os.path.isfile(ve):
+            raise Exception(f'venv exe {ve} does not exist or is not a file!')
+        return ve
+
+    @async_cached_nullary
+    async def create(self) -> bool:
+        if os.path.exists(dn := self.dir_name):
+            if not os.path.isdir(dn):
+                raise Exception(f'{dn} exists but is not a directory!')
+            return False
+
+        log.info('Using interpreter %s', (ie := await self.interp_exe()))
+        await asyncio_subprocess_check_call(ie, '-m', 'venv', dn)
+
+        ve = self.exe()
+        uv = self._cfg.use_uv
+
+        await asyncio_subprocess_check_call(
+            ve,
+            '-m', 'pip',
+            'install', '-v', '--upgrade',
+            'pip',
+            'setuptools',
+            'wheel',
+            *(['uv'] if uv else []),
+        )
+
+        if sr := self._cfg.requires:
+            rr = RequirementsRewriter(self._name)
+            reqs = [rr.rewrite(req) for req in sr]
+
+            # TODO: automatically try slower uv download when it fails? lol
+            #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
+            #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
+
+            await asyncio_subprocess_check_call(
+                ve,
+                '-m',
+                *(['uv'] if uv else []),
+                'pip',
+                'install',
+                *([] if uv else ['-v']),
+                *reqs,
+            )
+
+        return True
+
+    @staticmethod
+    def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:
+        out: list[str] = []
+        seen: ta.Set[str] = set()
+        for r in raw:
+            es: list[str]
+            if any(c in r for c in '*?'):
+                es = list(glob.glob(r, recursive=True))
+            else:
+                es = [r]
+            for e in es:
+                if e not in seen:
+                    seen.add(e)
+                    out.append(e)
+        return out
+
+    @cached_nullary
+    def srcs(self) -> ta.Sequence[str]:
+        return self._resolve_srcs(self._cfg.srcs or [])
+
+
+########################################
 # cli.py
 
 
@@ -6652,105 +7030,6 @@ def _script_rel_path() -> str:
 ##
 
 
-class Venv:
-    def __init__(
-            self,
-            name: str,
-            cfg: VenvConfig,
-    ) -> None:
-        super().__init__()
-        self._name = name
-        self._cfg = cfg
-
-    @property
-    def cfg(self) -> VenvConfig:
-        return self._cfg
-
-    DIR_NAME = '.venvs'
-
-    @property
-    def dir_name(self) -> str:
-        return os.path.join(self.DIR_NAME, self._name)
-
-    @async_cached_nullary
-    async def interp_exe(self) -> str:
-        i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
-        return check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
-
-    @cached_nullary
-    def exe(self) -> str:
-        ve = os.path.join(self.dir_name, 'bin/python')
-        if not os.path.isfile(ve):
-            raise Exception(f'venv exe {ve} does not exist or is not a file!')
-        return ve
-
-    @async_cached_nullary
-    async def create(self) -> bool:
-        if os.path.exists(dn := self.dir_name):
-            if not os.path.isdir(dn):
-                raise Exception(f'{dn} exists but is not a directory!')
-            return False
-
-        log.info('Using interpreter %s', (ie := await self.interp_exe()))
-        subprocess_check_call(ie, '-m', 'venv', dn)
-
-        ve = self.exe()
-        uv = self._cfg.use_uv
-
-        subprocess_check_call(
-            ve,
-            '-m', 'pip',
-            'install', '-v', '--upgrade',
-            'pip',
-            'setuptools',
-            'wheel',
-            *(['uv'] if uv else []),
-        )
-
-        if sr := self._cfg.requires:
-            rr = RequirementsRewriter(self._name)
-            reqs = [rr.rewrite(req) for req in sr]
-
-            # TODO: automatically try slower uv download when it fails? lol
-            #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
-            #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
-
-            subprocess_check_call(
-                ve,
-                '-m',
-                *(['uv'] if uv else []),
-                'pip',
-                'install',
-                *([] if uv else ['-v']),
-                *reqs,
-            )
-
-        return True
-
-    @staticmethod
-    def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:
-        out: list[str] = []
-        seen: ta.Set[str] = set()
-        for r in raw:
-            es: list[str]
-            if any(c in r for c in '*?'):
-                es = list(glob.glob(r, recursive=True))
-            else:
-                es = [r]
-            for e in es:
-                if e not in seen:
-                    seen.add(e)
-                    out.append(e)
-        return out
-
-    @cached_nullary
-    def srcs(self) -> ta.Sequence[str]:
-        return self._resolve_srcs(self._cfg.srcs or [])
-
-
-##
-
-
 class Run:
     def __init__(
             self,
@@ -6791,183 +7070,160 @@ class Run:
 ##
 
 
-async def _venv_cmd(args) -> None:
-    venv = Run().venvs()[args.name]
-    if (sd := venv.cfg.docker) is not None and sd != (cd := args._docker_container):  # noqa
-        script = ' '.join([
-            'python3',
-            shlex.quote(_script_rel_path()),
-            f'--_docker_container={shlex.quote(sd)}',
-            *map(shlex.quote, sys.argv[1:]),
-        ])
+class PyprojectCli(ArgparseCli):
+    _docker_container = argparse_arg('--_docker_container', help=argparse.SUPPRESS)
 
-        docker_env = {
-            'DOCKER_HOST_PLATFORM': os.environ.get('DOCKER_HOST_PLATFORM', sys.platform),
-        }
-        for e in args.docker_env or []:
-            if '=' in e:
-                k, _, v = e.split('=')
-                docker_env[k] = v
-            else:
-                docker_env[e] = os.environ.get(e, '')
+    @argparse_command(
+        argparse_arg('name'),
+        argparse_arg('-e', '--docker-env', action='append'),
+        argparse_arg('cmd', nargs='?'),
+        argparse_arg('args', nargs=argparse.REMAINDER),
+    )
+    async def venv(self) -> None:
+        venv = Run().venvs()[self.args.name]
+        if (sd := venv.cfg.docker) is not None and sd != (cd := self.args._docker_container):  # noqa
+            script = ' '.join([
+                'python3',
+                shlex.quote(_script_rel_path()),
+                f'--_docker_container={shlex.quote(sd)}',
+                *map(shlex.quote, sys.argv[1:]),
+            ])
 
-        subprocess_check_call(
-            'docker',
-            'compose',
-            '-f', 'docker/compose.yml',
-            'exec',
-            *itertools.chain.from_iterable(
-                ('-e', f'{k}={v}')
-                for k, v in docker_env.items()
-            ),
-            '-it', sd,
-            'bash', '--login', '-c', script,
-        )
+            docker_env = {
+                'DOCKER_HOST_PLATFORM': os.environ.get('DOCKER_HOST_PLATFORM', sys.platform),
+            }
+            for e in self.args.docker_env or []:
+                if '=' in e:
+                    k, _, v = e.split('=')
+                    docker_env[k] = v
+                else:
+                    docker_env[e] = os.environ.get(e, '')
 
-        return
-
-    cmd = args.cmd
-    if not cmd:
-        await venv.create()
-
-    elif cmd == 'python':
-        await venv.create()
-        os.execl(
-            (exe := venv.exe()),
-            exe,
-            *args.args,
-        )
-
-    elif cmd == 'exe':
-        await venv.create()
-        check.arg(not args.args)
-        print(venv.exe())
-
-    elif cmd == 'run':
-        await venv.create()
-        sh = check.not_none(shutil.which('bash'))
-        script = ' '.join(args.args)
-        if not script:
-            script = sh
-        os.execl(
-            (bash := check.not_none(sh)),
-            bash,
-            '-c',
-            f'. {venv.dir_name}/bin/activate && ' + script,
-        )
-
-    elif cmd == 'srcs':
-        check.arg(not args.args)
-        print('\n'.join(venv.srcs()))
-
-    elif cmd == 'test':
-        await venv.create()
-        subprocess_check_call(venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs())
-
-    else:
-        raise Exception(f'unknown subcommand: {cmd}')
-
-
-##
-
-
-async def _pkg_cmd(args) -> None:
-    run = Run()
-
-    cmd = args.cmd
-    if not cmd:
-        raise Exception('must specify command')
-
-    elif cmd == 'gen':
-        pkgs_root = os.path.join('.pkg')
-
-        if os.path.exists(pkgs_root):
-            shutil.rmtree(pkgs_root)
-
-        build_output_dir = 'dist'
-        run_build = bool(args.build)
-        add_revision = bool(args.revision)
-
-        if run_build:
-            os.makedirs(build_output_dir, exist_ok=True)
-
-        pgs: ta.List[BasePyprojectPackageGenerator] = [
-            PyprojectPackageGenerator(
-                dir_name,
-                pkgs_root,
+            await asyncio_subprocess_check_call(
+                'docker',
+                'compose',
+                '-f', 'docker/compose.yml',
+                'exec',
+                *itertools.chain.from_iterable(
+                    ('-e', f'{k}={v}')
+                    for k, v in docker_env.items()
+                ),
+                '-it', sd,
+                'bash', '--login', '-c', script,
             )
-            for dir_name in run.cfg().pkgs
-        ]
-        pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
 
-        num_threads = args.jobs or int(max(mp.cpu_count() // 1.5, 1))
-        futs: ta.List[cf.Future]
-        with cf.ThreadPoolExecutor(num_threads) as ex:
-            futs = [ex.submit(pg.gen) for pg in pgs]
-            for fut in futs:
-                fut.result()
+            return
+
+        cmd = self.args.cmd
+        if not cmd:
+            await venv.create()
+
+        elif cmd == 'python':
+            await venv.create()
+            os.execl(
+                (exe := venv.exe()),
+                exe,
+                *self.args.args,
+            )
+
+        elif cmd == 'exe':
+            await venv.create()
+            check.arg(not self.args.args)
+            print(venv.exe())
+
+        elif cmd == 'run':
+            await venv.create()
+            sh = check.not_none(shutil.which('bash'))
+            script = ' '.join(self.args.args)
+            if not script:
+                script = sh
+            os.execl(
+                (bash := check.not_none(sh)),
+                bash,
+                '-c',
+                f'. {venv.dir_name}/bin/activate && ' + script,
+            )
+
+        elif cmd == 'srcs':
+            check.arg(not self.args.args)
+            print('\n'.join(venv.srcs()))
+
+        elif cmd == 'test':
+            await venv.create()
+            await asyncio_subprocess_check_call(venv.exe(), '-m', 'pytest', *(self.args.args or []), *venv.srcs())
+
+        else:
+            raise Exception(f'unknown subcommand: {cmd}')
+
+    @argparse_command(
+        argparse_arg('-b', '--build', action='store_true'),
+        argparse_arg('-r', '--revision', action='store_true'),
+        argparse_arg('-j', '--jobs', type=int),
+        argparse_arg('cmd', nargs='?'),
+        argparse_arg('args', nargs=argparse.REMAINDER),
+    )
+    async def pkg(self) -> None:
+        run = Run()
+
+        cmd = self.args.cmd
+        if not cmd:
+            raise Exception('must specify command')
+
+        elif cmd == 'gen':
+            pkgs_root = os.path.join('.pkg')
+
+            if os.path.exists(pkgs_root):
+                shutil.rmtree(pkgs_root)
+
+            build_output_dir = 'dist'
+            run_build = bool(self.args.build)
+            add_revision = bool(self.args.revision)
 
             if run_build:
-                futs = [
-                    ex.submit(functools.partial(
-                        pg.build,
-                        build_output_dir,
-                        BasePyprojectPackageGenerator.BuildOpts(
-                            add_revision=add_revision,
-                        ),
-                    ))
-                    for pg in pgs
-                ]
+                os.makedirs(build_output_dir, exist_ok=True)
+
+            pgs: ta.List[BasePyprojectPackageGenerator] = [
+                PyprojectPackageGenerator(
+                    dir_name,
+                    pkgs_root,
+                )
+                for dir_name in run.cfg().pkgs
+            ]
+            pgs = list(itertools.chain.from_iterable([pg, *pg.children()] for pg in pgs))
+
+            num_threads = self.args.jobs or int(max(mp.cpu_count() // 1.5, 1))
+            futs: ta.List[cf.Future]
+            with cf.ThreadPoolExecutor(num_threads) as ex:
+                futs = [ex.submit(pg.gen) for pg in pgs]
                 for fut in futs:
                     fut.result()
 
-    else:
-        raise Exception(f'unknown subcommand: {cmd}')
+                if run_build:
+                    futs = [
+                        ex.submit(functools.partial(
+                            pg.build,
+                            build_output_dir,
+                            BasePyprojectPackageGenerator.BuildOpts(
+                                add_revision=add_revision,
+                            ),
+                        ))
+                        for pg in pgs
+                    ]
+                    for fut in futs:
+                        fut.result()
+
+        else:
+            raise Exception(f'unknown subcommand: {cmd}')
 
 
 ##
-
-
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--_docker_container', help=argparse.SUPPRESS)
-
-    subparsers = parser.add_subparsers()
-
-    #
-
-    parser_venv = subparsers.add_parser('venv')
-    parser_venv.add_argument('name')
-    parser_venv.add_argument('-e', '--docker-env', action='append')
-    parser_venv.add_argument('cmd', nargs='?')
-    parser_venv.add_argument('args', nargs=argparse.REMAINDER)
-    parser_venv.set_defaults(func=_venv_cmd)
-
-    #
-
-    parser_pkg = subparsers.add_parser('pkg')
-    parser_pkg.add_argument('-b', '--build', action='store_true')
-    parser_pkg.add_argument('-r', '--revision', action='store_true')
-    parser_pkg.add_argument('-j', '--jobs', type=int)
-    parser_pkg.add_argument('cmd', nargs='?')
-    parser_pkg.add_argument('args', nargs=argparse.REMAINDER)
-    parser_pkg.set_defaults(func=_pkg_cmd)
-
-    #
-
-    return parser
 
 
 async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
     configure_standard_logging()
 
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-    if not getattr(args, 'func', None):
-        parser.print_help()
-    else:
-        await args.func(args)
+    await PyprojectCli(argv).async_cli_run()
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
