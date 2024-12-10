@@ -166,6 +166,8 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
+    os.setpgid(0, 0)
+
     if (cp := os.fork()):
         # Parent process
 

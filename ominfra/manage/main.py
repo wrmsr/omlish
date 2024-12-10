@@ -45,6 +45,8 @@ async def _async_main(args: ta.Any) -> None:
                 **(dict(host=args.pycharm_debug_host) if args.pycharm_debug_host is not None else {}),
                 install_version=args.pycharm_debug_version,
             ) if args.pycharm_debug_port is not None else None,
+
+            timebomb_delay_s=args.remote_timebomb_delay_s,
         ),
     )
 
@@ -112,6 +114,8 @@ def _main() -> None:
     parser.add_argument('--pycharm-debug-port', type=int)
     parser.add_argument('--pycharm-debug-host')
     parser.add_argument('--pycharm-debug-version')
+
+    parser.add_argument('--remote-timebomb-delay-s', type=float)
 
     parser.add_argument('--debug', action='store_true')
 

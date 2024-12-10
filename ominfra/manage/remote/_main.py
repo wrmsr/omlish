@@ -1,6 +1,11 @@
 # ruff: noqa: UP006 UP007
 import asyncio
+import functools
 import logging
+import os
+import signal
+import threading
+import time
 import typing as ta
 
 from omlish.lite.asyncio.asyncio import asyncio_open_stream_reader
@@ -8,6 +13,7 @@ from omlish.lite.asyncio.asyncio import asyncio_open_stream_writer
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check_none
 from omlish.lite.check import check_not_none
+from omlish.lite.deathsig import set_process_deathsig
 from omlish.lite.inject import Injector
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.pycharm import pycharm_debug_connect
@@ -65,6 +71,37 @@ class _RemoteExecutionMain:
 
     #
 
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        return thr
+
+    #
+
     @cached_nullary
     def _log_handler(self) -> _RemoteLogHandler:
         return _RemoteLogHandler(self._chan)
@@ -78,6 +115,8 @@ class _RemoteExecutionMain:
         # Bootstrap
 
         self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
+
+        self._timebomb_thread()
 
         if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
             pycharm_debug_connect(prd)
@@ -105,6 +144,8 @@ class _RemoteExecutionMain:
 
 def _remote_execution_main() -> None:
     rt = pyremote_bootstrap_finalize()  # noqa
+
+    set_process_deathsig(signal.SIGKILL)
 
     async def inner() -> None:
         input = await asyncio_open_stream_reader(rt.input)  # noqa
