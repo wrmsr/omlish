@@ -119,6 +119,15 @@ class _RemoteExecutionMain:
 
         self.__bootstrap = check_not_none(await self._chan.recv_obj(MainBootstrap))
 
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
         if self._bootstrap.remote_config.set_pgid:
             if os.getpgid(0) != os.getpid():
                 log.debug('Setting pgid')
@@ -130,19 +139,9 @@ class _RemoteExecutionMain:
 
         self._timebomb_thread()
 
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            log.debug('Connecting to pycharm: %r', prd)
-            pycharm_debug_connect(prd)
-
         if self._bootstrap.remote_config.forward_logging:
             log.debug('Installing log forwarder')
             logging.root.addHandler(self._log_handler())
-
-        # Injector
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
 
     #
 
