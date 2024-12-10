@@ -4344,13 +4344,12 @@ async def _async_remote_execution_main(
         #
 
         def log_fn(s: str) -> None:
-            # async def inner():
-            #     await _RemoteExecutionProtocol.LogResponse(s).send(chan)
-            #
-            # loop = asyncio.get_running_loop()
-            # if loop is not None:
-            #     asyncio.run_coroutine_threadsafe(inner(), loop)
-            pass
+            async def inner():
+                await _RemoteExecutionProtocol.LogResponse(s).send(chan)
+
+            loop = asyncio.get_running_loop()
+            if loop is not None:
+                asyncio.run_coroutine_threadsafe(inner(), loop)
 
         log_handler = _RemoteExecutionLogHandler(log_fn)
         logging.root.addHandler(log_handler)
