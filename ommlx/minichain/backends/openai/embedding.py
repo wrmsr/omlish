@@ -1,8 +1,8 @@
 import os
 
 from omlish import check
-from omlish.http import all as http
 from omlish.formats import json
+from omlish.http import all as http
 from omlish.secrets import Secret
 
 from ...vectors import EmbeddingModel
