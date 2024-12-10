@@ -2,8 +2,8 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ...docker import get_compose_port
-from ...docker import is_likely_in_docker
+from ...docker.all import get_compose_port
+from ...docker.all import is_likely_in_docker
 from ...docker.tests.services import ComposeServices
 from ...testing.pytest import inject as pti
 from ..dbs import DbSpec

@@ -1,8 +1,23 @@
+# ruff: noqa: UP006 UP007
+# @omlish-lite
+import os
 import re
 import sys
+import typing as ta
 
 
-DOCKER_FOR_MAC_HOSTNAME = 'docker.for.mac.localhost'
+##
+
+
+# Set by pyproject, docker-dev script
+DOCKER_HOST_PLATFORM_KEY = 'DOCKER_HOST_PLATFORM'
+
+
+def get_docker_host_platform() -> ta.Optional[str]:
+    return os.environ.get(DOCKER_HOST_PLATFORM_KEY)
+
+
+##
 
 
 _LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/(docker|desktop-containerd)/')
