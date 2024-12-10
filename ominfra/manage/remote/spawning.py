@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+import abc
 import asyncio
 import contextlib
 import dataclasses as dc
@@ -13,7 +14,10 @@ from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
-class RemoteSpawning:
+##
+
+
+class RemoteSpawning(abc.ABC):
     @dc.dataclass(frozen=True)
     class Target:
         shell: ta.Optional[str] = None
@@ -24,15 +28,35 @@ class RemoteSpawning:
 
         stderr: ta.Optional[str] = None  # SubprocessChannelOption
 
-    #
+    @dc.dataclass(frozen=True)
+    class Spawned:
+        stdin: asyncio.StreamWriter
+        stdout: asyncio.StreamReader
+        stderr: ta.Optional[asyncio.StreamReader]
 
+    @abc.abstractmethod
+    def spawn(
+            self,
+            tgt: Target,
+            src: str,
+            *,
+            timeout: ta.Optional[float] = None,
+            debug: bool = False,
+    ) -> ta.AsyncContextManager[Spawned]:
+        raise NotImplementedError
+
+
+##
+
+
+class PyremoteRemoteSpawning(RemoteSpawning):
     class _PreparedCmd(ta.NamedTuple):  # noqa
         cmd: ta.Sequence[str]
         shell: bool
 
     def _prepare_cmd(
             self,
-            tgt: Target,
+            tgt: RemoteSpawning.Target,
             src: str,
     ) -> _PreparedCmd:
         if tgt.shell is not None:
@@ -40,28 +64,22 @@ class RemoteSpawning:
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return RemoteSpawning._PreparedCmd([sh_cmd], shell=True)
+            return PyremoteRemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
-            return RemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
+            return PyremoteRemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
 
     #
-
-    @dc.dataclass(frozen=True)
-    class Spawned:
-        stdin: asyncio.StreamWriter
-        stdout: asyncio.StreamReader
-        stderr: ta.Optional[asyncio.StreamReader]
 
     @contextlib.asynccontextmanager
     async def spawn(
             self,
-            tgt: Target,
+            tgt: RemoteSpawning.Target,
             src: str,
             *,
             timeout: ta.Optional[float] = None,
             debug: bool = False,
-    ) -> ta.AsyncGenerator[Spawned, None]:
+    ) -> ta.AsyncGenerator[RemoteSpawning.Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
 
         cmd = pc.cmd
