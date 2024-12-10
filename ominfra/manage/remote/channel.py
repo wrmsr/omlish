@@ -28,7 +28,8 @@ class RemoteChannel:
         self._output = output
         self._msh = msh
 
-        self._lock = asyncio.Lock()
+        self._input_lock = asyncio.Lock()
+        self._output_lock = asyncio.Lock()
 
     def set_marshaler(self, msh: ObjMarshalerManager) -> None:
         self._msh = msh
@@ -39,40 +40,31 @@ class RemoteChannel:
         j = json_dumps_compact(self._msh.marshal_obj(o, ty))
         d = j.encode('utf-8')
 
-        sys.stderr.write('_send_obj\n')
-        sys.stderr.write(repr(d) + '\n')
         self._output.write(struct.pack('<I', len(d)))
         self._output.write(d)
         await self._output.drain()
-        sys.stderr.write('-_send_obj\n')
 
     async def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
-        async with self._lock:
+        async with self._output_lock:
             return await self._send_obj(o, ty)
 
     #
 
     async def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        sys.stderr.write(f'_recv_obj: {os.getpid()}\n')
         d = await self._input.read(4)
-        sys.stderr.write(repr(d) + '\n')
         if not d:
             return None
         if len(d) != 4:
             raise EOFError
 
         sz = struct.unpack('<I', d)[0]
-        sys.stderr.write(repr(sz) + '\n')
         d = await self._input.read(sz)
-        sys.stderr.write(repr(d) + '\n')
         if len(d) != sz:
             raise EOFError
 
         j = json.loads(d.decode('utf-8'))
-        sys.stderr.write(repr(j) + '\n')
-        sys.stderr.write(f'-_recv_obj: {os.getpid()}\n')
         return self._msh.unmarshal_obj(j, ty)
 
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        async with self._lock:
+        async with self._input_lock:
             return await self._recv_obj(ty)
