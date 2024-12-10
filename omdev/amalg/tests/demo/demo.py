@@ -7,7 +7,7 @@ import os.path  # noqa
 import pprint
 import typing as ta  # noqa
 
-from omlish.os import PAGE_SIZE
+from omlish.os.sizes import PAGE_SIZE
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log

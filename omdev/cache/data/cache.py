@@ -24,8 +24,8 @@ import urllib.request
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
-from omlish import os as osu
 from omlish.formats import json
+from omlish.os.files import touch
 
 from ... import git
 from .actions import Action
@@ -262,7 +262,7 @@ class Cache:
         if not os.path.isdir(item_dir):
             self._fetch_item(spec, item_dir)
 
-        osu.touch(os.path.join(item_dir, 'accessed'))
+        touch(os.path.join(item_dir, 'accessed'))
 
         data_dir = os.path.join(item_dir, 'data')
         return self._return_val(spec, data_dir)

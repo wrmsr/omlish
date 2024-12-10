@@ -1,4 +1,5 @@
 # ruff: noqa: UP007 UP012
+# @omlish-lite
 import ctypes as ct
 import logging
 import sys
@@ -6,7 +7,7 @@ import syslog
 import threading
 import typing as ta
 
-from .cached import cached_nullary
+from ..lite.cached import cached_nullary
 
 
 ##

@@ -36,9 +36,9 @@ import typing as ta
 
 from omlish.http.coroserver import CoroHttpServer
 from omlish.lite.inject import inj
-from omlish.lite.journald import journald_log_handler_factory
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import is_debugger_attached
+from omlish.os.journald import journald_log_handler_factory
 
 from ..configs import read_config_file
 from .configs import ServerConfig
