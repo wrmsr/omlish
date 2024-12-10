@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import asyncio
 import json
+import os
 import struct
 import sys
 import typing as ta
@@ -52,7 +53,7 @@ class RemoteChannel:
     #
 
     async def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        sys.stderr.write('_recv_obj\n')
+        sys.stderr.write(f'_recv_obj: {os.getpid()}\n')
         d = await self._input.read(4)
         sys.stderr.write(repr(d) + '\n')
         if not d:
@@ -69,6 +70,7 @@ class RemoteChannel:
 
         j = json.loads(d.decode('utf-8'))
         sys.stderr.write(repr(j) + '\n')
+        sys.stderr.write(f'-_recv_obj: {os.getpid()}\n')
         return self._msh.unmarshal_obj(j, ty)
 
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
