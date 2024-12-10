@@ -8,6 +8,7 @@ import asyncio
 import dataclasses as dc
 import json
 import os
+import sys
 import typing as ta
 
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
@@ -108,7 +109,12 @@ class AptSystemPackageManager(SystemPackageManager):
 
 
 async def _async_main() -> None:
-    spm = BrewSystemPackageManager()
+    if sys.platform == 'darwin':
+        spm = BrewSystemPackageManager()
+    elif sys.platform == 'linux':
+        spm = AptSystemPackageManager()
+    else:
+        raise OSError(sys.platform)
     print(await spm.query('jq', 'gcc', 'gfortran'))
     await spm.install('cowsay')
 
