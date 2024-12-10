@@ -6,10 +6,11 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 
 from .config import RemoteConfig
-from .execution import RemoteExecution
+from .connection import PyremoteRemoteExecutionConnector
+from .connection import RemoteExecutionConnector
 from .payload import RemoteExecutionPayloadFile
-from .spawning import PyremoteRemoteSpawning
 from .spawning import RemoteSpawning
+from .spawning import SubprocessRemoteSpawning
 
 
 def bind_remote(
@@ -19,10 +20,11 @@ def bind_remote(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(remote_config),
 
-        inj.bind(PyremoteRemoteSpawning, singleton=True),
-        inj.bind(RemoteSpawning, to_key=PyremoteRemoteSpawning),
+        inj.bind(SubprocessRemoteSpawning, singleton=True),
+        inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
 
-        inj.bind(RemoteExecution, singleton=True),
+        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+        inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
     ]
 
     if (pf := remote_config.payload_file) is not None:

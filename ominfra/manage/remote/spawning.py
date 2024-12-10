@@ -49,7 +49,7 @@ class RemoteSpawning(abc.ABC):
 ##
 
 
-class PyremoteRemoteSpawning(RemoteSpawning):
+class SubprocessRemoteSpawning(RemoteSpawning):
     class _PreparedCmd(ta.NamedTuple):  # noqa
         cmd: ta.Sequence[str]
         shell: bool
@@ -64,10 +64,10 @@ class PyremoteRemoteSpawning(RemoteSpawning):
             if tgt.shell_quote:
                 sh_src = shlex.quote(sh_src)
             sh_cmd = f'{tgt.shell} {sh_src}'
-            return PyremoteRemoteSpawning._PreparedCmd([sh_cmd], shell=True)
+            return SubprocessRemoteSpawning._PreparedCmd([sh_cmd], shell=True)
 
         else:
-            return PyremoteRemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
+            return SubprocessRemoteSpawning._PreparedCmd([tgt.python, '-c', src], shell=False)
 
     #
 
