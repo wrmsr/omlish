@@ -2618,6 +2618,8 @@ def get_remote_payload_src(
 TODO:
  - default command
  - auto match all underscores to hyphens
+ - pre-run, post-run hooks
+ - exitstack?
 """
 
 
@@ -2866,6 +2868,14 @@ class ArgparseCli:
             return self.cli_run_and_exit()
         else:
             return self.cli_run()
+
+    #
+
+    async def async_cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        return await fn()
 
 
 ########################################
@@ -7018,10 +7028,7 @@ class MainCli(ArgparseCli):
 
         argparse_arg('command', nargs='+'),
     )
-    def run(self) -> None:
-        asyncio.run(self._async_run())
-
-    async def _async_run(self) -> None:
+    async def run(self) -> None:
         bs = MainBootstrap(
             main_config=MainConfig(
                 log_level='DEBUG' if self.args.debug else 'INFO',
@@ -7093,7 +7100,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    MainCli()(exit=True)
+    sys.exit(asyncio.run(MainCli().async_cli_run()))
 
 
 if __name__ == '__main__':

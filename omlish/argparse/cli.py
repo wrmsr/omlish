@@ -267,3 +267,11 @@ class ArgparseCli:
             return self.cli_run_and_exit()
         else:
             return self.cli_run()
+
+    #
+
+    async def async_cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        return await fn()

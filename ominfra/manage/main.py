@@ -8,6 +8,7 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import asyncio
 import contextlib
 import json
+import sys
 import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
@@ -49,10 +50,7 @@ class MainCli(ArgparseCli):
 
         argparse_arg('command', nargs='+'),
     )
-    def run(self) -> None:
-        asyncio.run(self._async_run())
-
-    async def _async_run(self) -> None:
+    async def run(self) -> None:
         bs = MainBootstrap(
             main_config=MainConfig(
                 log_level='DEBUG' if self.args.debug else 'INFO',
@@ -124,7 +122,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    MainCli()(exit=True)
+    sys.exit(asyncio.run(MainCli().async_cli_run()))
 
 
 if __name__ == '__main__':
