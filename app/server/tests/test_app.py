@@ -8,10 +8,10 @@ import anyio
 import httpx
 import pytest
 
-from omlish import asyncs as au
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
+from omlish.asyncs import all as au
 from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
 from omserv.server.config import Config
