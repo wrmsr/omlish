@@ -8,8 +8,7 @@ import typing as ta
 
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_communicate
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_popen
-from omlish.lite.check import check_not_isinstance
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
@@ -36,7 +35,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
     timeout: ta.Optional[float] = None
 
     def __post_init__(self) -> None:
-        check_not_isinstance(self.cmd, str)
+        check.not_isinstance(self.cmd, str)
 
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
@@ -77,7 +76,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             end_time = time.time()
 
         return SubprocessCommand.Output(
-            rc=check_not_none(proc.returncode),
+            rc=check.not_none(proc.returncode),
             pid=proc.pid,
 
             elapsed_s=end_time - start_time,

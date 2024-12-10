@@ -8,10 +8,7 @@ import subprocess
 import sys
 import typing as ta
 
-from ..check import check_equal
-from ..check import check_isinstance
-from ..check import check_not_none
-from ..check import check_single
+from ..check import check
 from ..logs import log
 from ..subprocesses import DEFAULT_SUBPROCESS_TRY_EXCEPTIONS
 from ..subprocesses import prepare_subprocess_invocation
@@ -36,7 +33,7 @@ async def asyncio_subprocess_popen(
     if shell:
         fac = functools.partial(
             asyncio.create_subprocess_shell,
-            check_single(cmd),
+            check.single(cmd),
         )
     else:
         fac = functools.partial(
@@ -76,7 +73,7 @@ class AsyncioProcessCommunicator:
         self._proc = proc
         self._loop = loop
 
-        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check_isinstance(
+        self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
             proc._transport,  # type: ignore  # noqa
             asyncio.base_subprocess.BaseSubprocessTransport,
         )
@@ -86,7 +83,7 @@ class AsyncioProcessCommunicator:
         return self._loop.get_debug()
 
     async def _feed_stdin(self, input: bytes) -> None:  # noqa
-        stdin = check_not_none(self._proc.stdin)
+        stdin = check.not_none(self._proc.stdin)
         try:
             if input is not None:
                 stdin.write(input)
@@ -110,13 +107,13 @@ class AsyncioProcessCommunicator:
         return None
 
     async def _read_stream(self, fd: int) -> bytes:
-        transport: ta.Any = check_not_none(self._transport.get_pipe_transport(fd))
+        transport: ta.Any = check.not_none(self._transport.get_pipe_transport(fd))
 
         if fd == 2:
-            stream = check_not_none(self._proc.stderr)
+            stream = check.not_none(self._proc.stderr)
         else:
-            check_equal(fd, 1)
-            stream = check_not_none(self._proc.stdout)
+            check.equal(fd, 1)
+            stream = check.not_none(self._proc.stdout)
 
         if self._debug:
             name = 'stdout' if fd == 1 else 'stderr'
@@ -236,7 +233,7 @@ async def asyncio_subprocess_check_output(
         **kwargs,
     )
 
-    return check_not_none(stdout)
+    return check.not_none(stdout)
 
 
 async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:

@@ -8,7 +8,7 @@ import subprocess
 import typing as ta
 
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_popen
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
@@ -97,8 +97,8 @@ class SubprocessRemoteSpawning(RemoteSpawning):
                 ),
                 timeout=timeout,
         ) as proc:
-            stdin = check_not_none(proc.stdin)
-            stdout = check_not_none(proc.stdout)
+            stdin = check.not_none(proc.stdin)
+            stdout = check.not_none(proc.stdout)
 
             try:
                 yield RemoteSpawning.Spawned(

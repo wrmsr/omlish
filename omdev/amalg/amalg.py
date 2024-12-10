@@ -234,7 +234,7 @@ def _is_typing(
     if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
         return True
 
-    wts = list(tks.ignore_ws(lts))
+    wts = list(tks.ignore_ws(lts, keep=['INDENT', 'UNINDENT']))
     if not tks.match_toks(wts, [
         ('NAME', None),
         ('OP', '='),

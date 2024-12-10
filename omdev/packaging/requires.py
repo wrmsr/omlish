@@ -28,8 +28,7 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omlish.lite.check import check_not_none
-from omlish.lite.check import check_state
+from omlish.lite.check import check
 
 from .specifiers import Specifier
 
@@ -130,8 +129,8 @@ class RequiresTokenizer:
             self.read()
 
     def check(self, name: str, *, peek: bool = False) -> bool:
-        check_state(self.next_token is None, f'Cannot check for {name!r}, already have {self.next_token!r}')
-        check_state(name in self.rules, f'Unknown token name: {name!r}')
+        check.state(self.next_token is None, f'Cannot check for {name!r}, already have {self.next_token!r}')
+        check.state(name in self.rules, f'Unknown token name: {name!r}')
 
         expression = self.rules[name]
 
@@ -149,12 +148,12 @@ class RequiresTokenizer:
 
     def read(self) -> RequiresToken:
         token = self.next_token
-        check_state(token is not None)
+        check.state(token is not None)
 
-        self.position += len(check_not_none(token).text)
+        self.position += len(check.not_none(token).text)
         self.next_token = None
 
-        return check_not_none(token)
+        return check.not_none(token)
 
     def raise_syntax_error(
         self,

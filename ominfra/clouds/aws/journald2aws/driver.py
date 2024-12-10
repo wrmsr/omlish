@@ -38,7 +38,7 @@ import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_non_empty_str
+from omlish.lite.check import check
 from omlish.lite.contextmanagers import ExitStacked
 from omlish.lite.logs import log
 from omlish.lite.pidfile import Pidfile
@@ -126,15 +126,15 @@ class JournalctlToAwsDriver(ExitStacked):
             return None
 
         return AwsSigner.Credentials(
-            access_key_id=check_non_empty_str(self._config.aws_access_key_id),
-            secret_access_key=check_non_empty_str(self._config.aws_secret_access_key),
+            access_key_id=check.non_empty_str(self._config.aws_access_key_id),
+            secret_access_key=check.non_empty_str(self._config.aws_secret_access_key),
         )
 
     @cached_nullary
     def _aws_log_message_builder(self) -> AwsLogMessageBuilder:
         return AwsLogMessageBuilder(
             log_group_name=self._config.aws_log_group_name,
-            log_stream_name=check_non_empty_str(self._config.aws_log_stream_name),
+            log_stream_name=check.non_empty_str(self._config.aws_log_stream_name),
             region_name=self._config.aws_region_name,
             credentials=self._aws_credentials(),
         )

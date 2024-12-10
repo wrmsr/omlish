@@ -36,8 +36,7 @@ import typing as ta
 
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_not
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
 from omlish.lite.runtime import check_runtime_version
@@ -124,8 +123,8 @@ class Venv:
 
     @async_cached_nullary
     async def interp_exe(self) -> str:
-        i = InterpSpecifier.parse(check_not_none(self._cfg.interp))
-        return check_not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
+        i = InterpSpecifier.parse(check.not_none(self._cfg.interp))
+        return check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=True)).exe
 
     @cached_nullary
     def exe(self) -> str:
@@ -290,24 +289,24 @@ async def _venv_cmd(args) -> None:
 
     elif cmd == 'exe':
         await venv.create()
-        check_not(args.args)
+        check.arg(not args.args)
         print(venv.exe())
 
     elif cmd == 'run':
         await venv.create()
-        sh = check_not_none(shutil.which('bash'))
+        sh = check.not_none(shutil.which('bash'))
         script = ' '.join(args.args)
         if not script:
             script = sh
         os.execl(
-            (bash := check_not_none(sh)),
+            (bash := check.not_none(sh)),
             bash,
             '-c',
             f'. {venv.dir_name}/bin/activate && ' + script,
         )
 
     elif cmd == 'srcs':
-        check_not(args.args)
+        check.arg(not args.args)
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':

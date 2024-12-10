@@ -5,7 +5,7 @@ import json
 import typing as ta
 
 from omlish.io.buffers import DelimitingBuffer
-from omlish.lite.check import check_isinstance
+from omlish.lite.check import check
 from omlish.lite.logs import log
 
 
@@ -74,5 +74,5 @@ class JournalctlMessageBuilder:
     def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         for line in self._buf.feed(data):
-            ret.append(self._make_message(check_isinstance(line, bytes)))
+            ret.append(self._make_message(check.isinstance(line, bytes)))
         return ret
