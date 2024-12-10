@@ -25,7 +25,7 @@ def get_secret_db_url() -> str:
 
 
 def get_docker_db_url() -> str:
-    from omlish import docker
+    import omlish.docker.all as docker
     cc = docker.ComposeConfig('omlish-', file_path='docker/compose.yml')
     svc = cc.get_services()['postgres']
     port = docker.get_compose_port(svc, 5432)
