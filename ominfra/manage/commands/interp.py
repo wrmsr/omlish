@@ -25,9 +25,6 @@ class InterpCommand(Command['InterpCommand.Output']):
         opts: InterpOpts
 
 
-##
-
-
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
     async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
         i = InterpSpecifier.parse(check.not_none(cmd.spec))

@@ -105,6 +105,9 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 # ../../omlish/lite/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
+# system/packages.py
+SystemPackageOrStr = ta.Union['SystemPackage', str]
+
 
 ########################################
 # ../../../omdev/packaging/versions.py
@@ -4673,7 +4676,7 @@ def install_command_marshaling(
 
 
 ########################################
-# ../deploy/command.py
+# ../deploy/commands.py
 
 
 ##
@@ -4684,9 +4687,6 @@ class DeployCommand(Command['DeployCommand.Output']):
     @dc.dataclass(frozen=True)
     class Output(Command.Output):
         pass
-
-
-##
 
 
 class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
@@ -4788,21 +4788,24 @@ class RemoteChannelImpl(RemoteChannel):
 
 
 ########################################
-# ../system/inject.py
+# ../system/commands.py
 
 
-def bind_system(
-        *,
-        system_config: SystemConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(system_config),
-    ]
+##
 
-    platform = system_config.platform or sys.platform
-    lst.append(inj.bind(platform, key=SystemPlatform))
 
-    return inj.as_bindings(*lst)
+@dc.dataclass(frozen=True)
+class CheckSystemPackageCommand(Command['CheckSystemPackageCommand.Output']):
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        pass
+
+
+class CheckSystemPackageCommandExecutor(CommandExecutor[CheckSystemPackageCommand, CheckSystemPackageCommand.Output]):
+    async def execute(self, cmd: CheckSystemPackageCommand) -> CheckSystemPackageCommand.Output:
+        log.info('Checking system package!')
+
+        return CheckSystemPackageCommand.Output()
 
 
 ########################################
@@ -5726,9 +5729,6 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
         stderr: ta.Optional[bytes] = None
 
 
-##
-
-
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
         proc: asyncio.subprocess.Process
@@ -6008,6 +6008,102 @@ class SubprocessRemoteSpawning(RemoteSpawning):
                     stdin.close()
                 except BrokenPipeError:
                     pass
+
+
+########################################
+# ../system/packages.py
+"""
+TODO:
+ - yum/rpm
+"""
+
+
+@dc.dataclass(frozen=True)
+class SystemPackage:
+    name: str
+    version: ta.Optional[str] = None
+
+
+class SystemPackageManager(abc.ABC):
+    @abc.abstractmethod
+    def update(self) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upgrade(self) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def install(self, *packages: SystemPackageOrStr) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def query(self, *packages: SystemPackageOrStr) -> ta.Awaitable[ta.Mapping[str, SystemPackage]]:
+        raise NotImplementedError
+
+
+class BrewSystemPackageManager(SystemPackageManager):
+    async def update(self) -> None:
+        await asyncio_subprocess_check_call('brew', 'update')
+
+    async def upgrade(self) -> None:
+        await asyncio_subprocess_check_call('brew', 'upgrade')
+
+    async def install(self, *packages: SystemPackageOrStr) -> None:
+        es: ta.List[str] = []
+        for p in packages:
+            if isinstance(p, SystemPackage):
+                es.append(p.name + (f'@{p.version}' if p.version is not None else ''))
+            else:
+                es.append(p)
+        await asyncio_subprocess_check_call('brew', 'install', *es)
+
+    async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+        pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
+        o = await asyncio_subprocess_check_output('brew', 'info', '--json', *pns)
+        j = json.loads(o.decode())
+        d: ta.Dict[str, SystemPackage] = {}
+        for e in j:
+            if not e['installed']:
+                continue
+            d[e['name']] = SystemPackage(
+                name=e['name'],
+                version=e['installed'][0]['version'],
+            )
+        return d
+
+
+class AptSystemPackageManager(SystemPackageManager):
+    _APT_ENV: ta.ClassVar[ta.Mapping[str, str]] = {
+        'DEBIAN_FRONTEND': 'noninteractive',
+    }
+
+    async def update(self) -> None:
+        await asyncio_subprocess_check_call('apt', 'update', env={**os.environ, **self._APT_ENV})
+
+    async def upgrade(self) -> None:
+        await asyncio_subprocess_check_call('apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
+
+    async def install(self, *packages: SystemPackageOrStr) -> None:
+        pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
+        await asyncio_subprocess_check_call('apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
+
+    async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+        pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
+        cmd = ['dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns]
+        stdout, stderr = await asyncio_subprocess_run(
+            *cmd,
+            capture_output=True,
+            check=False,
+        )
+        d: ta.Dict[str, SystemPackage] = {}
+        for l in check.not_none(stdout).decode('utf-8').strip().splitlines():
+            n, v = l.split('=', 1)
+            d[n] = SystemPackage(
+                name=n,
+                version=v,
+            )
+        return d
 
 
 ########################################
@@ -6738,8 +6834,12 @@ def bind_remote(
         inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
     ]
 
+    #
+
     if (pf := remote_config.payload_file) is not None:
         lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
+
+    #
 
     return inj.as_bindings(*lst)
 
@@ -6859,9 +6959,6 @@ class InterpCommand(Command['InterpCommand.Output']):
         exe: str
         version: str
         opts: InterpOpts
-
-
-##
 
 
 class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
@@ -6987,6 +7084,48 @@ def bind_deploy(
     lst: ta.List[InjectorBindingOrBindings] = [
         bind_command(DeployCommand, DeployCommandExecutor),
     ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../system/inject.py
+
+
+def bind_system(
+        *,
+        system_config: SystemConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(system_config),
+    ]
+
+    #
+
+    platform = system_config.platform or sys.platform
+    lst.append(inj.bind(platform, key=SystemPlatform))
+
+    #
+
+    if platform == 'linux':
+        lst.extend([
+            inj.bind(AptSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
+        ])
+
+    elif platform == 'darwin':
+        lst.extend([
+            inj.bind(BrewSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=BrewSystemPackageManager),
+        ])
+
+    #
+
+    lst.extend([
+        bind_command(CheckSystemPackageCommand, CheckSystemPackageCommandExecutor),
+    ])
+
+    #
 
     return inj.as_bindings(*lst)
 

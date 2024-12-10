@@ -48,9 +48,6 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
         stderr: ta.Optional[bytes] = None
 
 
-##
-
-
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
         proc: asyncio.subprocess.Process
