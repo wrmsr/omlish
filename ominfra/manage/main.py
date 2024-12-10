@@ -42,7 +42,7 @@ async def _async_main(args: ta.Any) -> None:
 
             pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
-                host=args.pycharm_debug_host,
+                **(dict(host=args.pycharm_debug_host) if args.pycharm_debug_host is not None else {}),
                 install_version=args.pycharm_debug_version,
             ) if args.pycharm_debug_port is not None else None,
         ),

@@ -4049,7 +4049,7 @@ class RemoteChannel:
 
         self._output.write(struct.pack('<I', len(d)))
         self._output.write(d)
-        await self._output.drain()  # FIXME: FLUSH UNDERLYING
+        await self._output.drain()
 
     async def send_obj(self, o: ta.Any, ty: ta.Any = None) -> None:
         async with self._lock:
@@ -4058,18 +4058,23 @@ class RemoteChannel:
     #
 
     async def _recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        sys.stderr.write('_recv_obj\n')
         d = await self._input.read(4)
+        sys.stderr.write(repr(d) + '\n')
         if not d:
             return None
         if len(d) != 4:
             raise EOFError
 
         sz = struct.unpack('<I', d)[0]
+        sys.stderr.write(repr(sz) + '\n')
         d = await self._input.read(sz)
+        sys.stderr.write(repr(d) + '\n')
         if len(d) != sz:
             raise EOFError
 
         j = json.loads(d.decode('utf-8'))
+        sys.stderr.write(repr(j) + '\n')
         return self._msh.unmarshal_obj(j, ty)
 
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
@@ -4972,9 +4977,13 @@ async def _async_remote_execution_main(
             cmd_futs_by_seq.pop(req.seq)  # noqa
 
         while True:
+            sys.stderr.write('loop entered\n')
+
             req = await _RemoteExecutionProtocol.Request.recv(chan)
             if req is None:
                 break
+
+            sys.stderr.write(repr(req) + '\n')
 
             if isinstance(req, _RemoteExecutionProtocol.CommandRequest):
                 fut = asyncio.create_task(handle_cmd(req))
@@ -4982,6 +4991,8 @@ async def _async_remote_execution_main(
 
             else:
                 raise TypeError(req)
+
+        sys.stderr.write('loop exited\n')
 
 
 def _remote_execution_main() -> None:
@@ -4996,7 +5007,11 @@ def _remote_execution_main() -> None:
             output,
         )
 
-    asyncio.run(inner())
+    try:
+        asyncio.run(inner())
+    except Exception as exc:
+        sys.stderr.write(repr(exc) + '\n')
+        raise
 
 
 ##
@@ -6119,7 +6134,7 @@ async def _async_main(args: ta.Any) -> None:
 
             pycharm_remote_debug=PycharmRemoteDebug(
                 port=args.pycharm_debug_port,
-                host=args.pycharm_debug_host,
+                **(dict(host=args.pycharm_debug_host) if args.pycharm_debug_host is not None else {}),
                 install_version=args.pycharm_debug_version,
             ) if args.pycharm_debug_port is not None else None,
         ),
