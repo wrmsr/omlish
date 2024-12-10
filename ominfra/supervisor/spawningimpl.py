@@ -5,9 +5,9 @@ import shlex
 import stat
 import typing as ta
 
+from omlish.io.fdio.handlers import FdioHandler
 from omlish.lite.check import check_isinstance
 from omlish.lite.check import check_not_none
-from omlish.lite.fdio.handlers import FdioHandler
 from omlish.lite.typing import Func3
 
 from .configs import ProcessConfig

@@ -1431,160 +1431,7 @@ def parse_octal(arg: ta.Union[str, int]) -> int:
 
 
 ########################################
-# ../../../omlish/lite/cached.py
-
-
-##
-
-
-class _AbstractCachedNullary:
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        raise TypeError
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-##
-
-
-class _CachedNullary(_AbstractCachedNullary):
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
-
-
-def static_init(fn: CallableT) -> CallableT:
-    fn = cached_nullary(fn)
-    fn()
-    return fn
-
-
-##
-
-
-class _AsyncCachedNullary(_AbstractCachedNullary):
-    async def __call__(self, *args, **kwargs):
-        if self._value is self._missing:
-            self._value = await self._fn()
-        return self._value
-
-
-def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _AsyncCachedNullary(fn)
-
-
-########################################
-# ../../../omlish/lite/check.py
-
-
-def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_none(v: T) -> None:
-    if v is not None:
-        raise ValueError(v)
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-def check_non_empty_str(v: ta.Optional[str]) -> str:
-    if not v:
-        raise ValueError
-    return v
-
-
-def check_state(v: bool, msg: str = 'Illegal state') -> None:
-    if not v:
-        raise ValueError(msg)
-
-
-def check_equal(l: T, r: T) -> T:
-    if l != r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_not_equal(l: T, r: T) -> T:
-    if l == r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is(l: T, r: T) -> T:
-    if l is not r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_is_not(l: T, r: ta.Any) -> T:
-    if l is r:
-        raise ValueError(l, r)
-    return l
-
-
-def check_in(v: T, c: ta.Container[T]) -> T:
-    if v not in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_not_in(v: T, c: ta.Container[T]) -> T:
-    if v in c:
-        raise ValueError(v, c)
-    return v
-
-
-def check_single(vs: ta.Iterable[T]) -> T:
-    [v] = vs
-    return v
-
-
-def check_empty(v: SizedT) -> SizedT:
-    if len(v):
-        raise ValueError(v)
-    return v
-
-
-def check_non_empty(v: SizedT) -> SizedT:
-    if not len(v):
-        raise ValueError(v)
-    return v
-
-
-########################################
-# ../../../omlish/lite/fdio/pollers.py
+# ../../../omlish/io/fdio/pollers.py
 
 
 ##
@@ -1791,6 +1638,164 @@ if hasattr(select, 'poll'):
     PollFdioPoller = _PollFdioPoller
 else:
     PollFdioPoller = None
+
+
+########################################
+# ../../../omlish/lite/cached.py
+
+
+##
+
+
+class _AbstractCachedNullary:
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+##
+
+
+class _CachedNullary(_AbstractCachedNullary):
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+
+def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _CachedNullary(fn)
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_nullary(fn)
+    fn()
+    return fn
+
+
+##
+
+
+class _AsyncCachedNullary(_AbstractCachedNullary):
+    async def __call__(self, *args, **kwargs):
+        if self._value is self._missing:
+            self._value = await self._fn()
+        return self._value
+
+
+def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
+    return _AsyncCachedNullary(fn)
+
+
+########################################
+# ../../../omlish/lite/check.py
+
+
+def check_isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_none(v: T) -> None:
+    if v is not None:
+        raise ValueError(v)
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+def check_non_empty_str(v: ta.Optional[str]) -> str:
+    if not v:
+        raise ValueError
+    return v
+
+
+def check_arg(v: bool, msg: str = 'Illegal argument') -> None:
+    if not v:
+        raise ValueError(msg)
+
+
+def check_state(v: bool, msg: str = 'Illegal state') -> None:
+    if not v:
+        raise ValueError(msg)
+
+
+def check_equal(l: T, r: T) -> T:
+    if l != r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_not_equal(l: T, r: T) -> T:
+    if l == r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is(l: T, r: T) -> T:
+    if l is not r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_is_not(l: T, r: ta.Any) -> T:
+    if l is r:
+        raise ValueError(l, r)
+    return l
+
+
+def check_in(v: T, c: ta.Container[T]) -> T:
+    if v not in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_not_in(v: T, c: ta.Container[T]) -> T:
+    if v in c:
+        raise ValueError(v, c)
+    return v
+
+
+def check_single(vs: ta.Iterable[T]) -> T:
+    [v] = vs
+    return v
+
+
+def check_empty(v: SizedT) -> SizedT:
+    if len(v):
+        raise ValueError(v)
+    return v
+
+
+def check_not_empty(v: SizedT) -> SizedT:
+    if not len(v):
+        raise ValueError(v)
+    return v
 
 
 ########################################
@@ -2564,65 +2569,229 @@ def get_user(name: str) -> User:
 
 
 ########################################
-# ../../../omlish/lite/contextmanagers.py
+# ../../../omlish/io/buffers.py
 
 
-##
+class DelimitingBuffer:
+    """
+    https://github.com/python-trio/trio/issues/796 :|
+    """
 
+    #
 
-class ExitStacked:
-    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+    class Error(Exception):
+        def __init__(self, buffer: 'DelimitingBuffer') -> None:
+            super().__init__(buffer)
+            self.buffer = buffer
 
-    def __enter__(self: ExitStackedT) -> ExitStackedT:
-        check_state(self._exit_stack is None)
-        es = self._exit_stack = contextlib.ExitStack()
-        es.__enter__()
-        return self
+        def __repr__(self) -> str:
+            return attr_repr(self, 'buffer')
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if (es := self._exit_stack) is None:
-            return None
-        self._exit_contexts()
-        return es.__exit__(exc_type, exc_val, exc_tb)
-
-    def _exit_contexts(self) -> None:
+    class ClosedError(Error):
         pass
 
-    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check_not_none(self._exit_stack)
-        return es.enter_context(cm)
+    #
+
+    DEFAULT_DELIMITERS: bytes = b'\n'
+
+    def __init__(
+            self,
+            delimiters: ta.Iterable[int] = DEFAULT_DELIMITERS,
+            *,
+            keep_ends: bool = False,
+            max_size: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        self._delimiters = frozenset(check_isinstance(d, int) for d in delimiters)
+        self._keep_ends = keep_ends
+        self._max_size = max_size
+
+        self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
+
+    #
+
+    @property
+    def is_closed(self) -> bool:
+        return self._buf is None
+
+    def tell(self) -> int:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+        return buf.tell()
+
+    def peek(self) -> bytes:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+        return buf.getvalue()
+
+    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[int]:
+        r = None  # type: int | None
+        for d in self._delimiters:
+            if (p := data.find(d, i)) >= 0:
+                if r is None or p < r:
+                    r = p
+        return r
+
+    def _append_and_reset(self, chunk: bytes) -> bytes:
+        buf = check_not_none(self._buf)
+        if not buf.tell():
+            return chunk
+
+        buf.write(chunk)
+        ret = buf.getvalue()
+        buf.seek(0)
+        buf.truncate()
+        return ret
+
+    class Incomplete(ta.NamedTuple):
+        b: bytes
+
+    def feed(self, data: ta.Union[bytes, bytearray]) -> ta.Generator[ta.Union[bytes, Incomplete], None, None]:
+        if (buf := self._buf) is None:
+            raise self.ClosedError(self)
+
+        if not data:
+            self._buf = None
+
+            if buf.tell():
+                yield self.Incomplete(buf.getvalue())
+
+            return
+
+        l = len(data)
+        i = 0
+        while i < l:
+            if (p := self._find_delim(data, i)) is None:
+                break
+
+            n = p + 1
+            if self._keep_ends:
+                p = n
+
+            yield self._append_and_reset(data[i:p])
+
+            i = n
+
+        if i >= l:
+            return
+
+        if self._max_size is None:
+            buf.write(data[i:])
+            return
+
+        while i < l:
+            remaining_data_len = l - i
+            remaining_buf_capacity = self._max_size - buf.tell()
+
+            if remaining_data_len < remaining_buf_capacity:
+                buf.write(data[i:])
+                return
+
+            p = i + remaining_buf_capacity
+            yield self.Incomplete(self._append_and_reset(data[i:p]))
+            i = p
 
 
-##
+class ReadableListBuffer:
+    def __init__(self) -> None:
+        super().__init__()
+        self._lst: list[bytes] = []
+
+    def feed(self, d: bytes) -> None:
+        if d:
+            self._lst.append(d)
+
+    def _chop(self, i: int, e: int) -> bytes:
+        lst = self._lst
+        d = lst[i]
+
+        o = b''.join([
+            *lst[:i],
+            d[:e],
+        ])
+
+        self._lst = [
+            *([d[e:]] if e < len(d) else []),
+            *lst[i + 1:],
+        ]
+
+        return o
+
+    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
+        if n is None:
+            o = b''.join(self._lst)
+            self._lst = []
+            return o
+
+        if not (lst := self._lst):
+            return None
+
+        c = 0
+        for i, d in enumerate(lst):
+            r = n - c
+            if (l := len(d)) >= r:
+                return self._chop(i, r)
+            c += l
+
+        return None
+
+    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+        if not (lst := self._lst):
+            return None
+
+        for i, d in enumerate(lst):
+            if (p := d.find(delim)) >= 0:
+                return self._chop(i, p + len(delim))
+
+        return None
 
 
-@contextlib.contextmanager
-def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
-    try:
-        yield fn
-    finally:
-        fn()
+class IncrementalWriteBuffer:
+    def __init__(
+            self,
+            data: bytes,
+            *,
+            write_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
 
+        check_not_empty(data)
+        self._len = len(data)
+        self._write_size = write_size
 
-@contextlib.contextmanager
-def attr_setting(obj, attr, val, *, default=None):  # noqa
-    not_set = object()
-    orig = getattr(obj, attr, not_set)
-    try:
-        setattr(obj, attr, val)
-        if orig is not not_set:
-            yield orig
-        else:
-            yield default
-    finally:
-        if orig is not_set:
-            delattr(obj, attr)
-        else:
-            setattr(obj, attr, orig)
+        self._lst = [
+            data[i:i + write_size]
+            for i in range(0, len(data), write_size)
+        ]
+        self._pos = 0
+
+    @property
+    def rem(self) -> int:
+        return self._len - self._pos
+
+    def write(self, fn: ta.Callable[[bytes], int]) -> int:
+        lst = check_not_empty(self._lst)
+
+        t = 0
+        for i, d in enumerate(lst):  # noqa
+            n = fn(check_not_empty(d))
+            if not n:
+                break
+            t += n
+
+        if t:
+            self._lst = [
+                *([d[n:]] if n < len(d) else []),
+                *lst[i + 1:],
+            ]
+            self._pos += t
+
+        return t
 
 
 ########################################
-# ../../../omlish/lite/fdio/handlers.py
+# ../../../omlish/io/fdio/handlers.py
 
 
 class FdioHandler(abc.ABC):
@@ -2686,7 +2855,7 @@ class SocketFdioHandler(FdioHandler, abc.ABC):
 
 
 ########################################
-# ../../../omlish/lite/fdio/kqueue.py
+# ../../../omlish/io/fdio/kqueue.py
 
 
 KqueueFdioPoller: ta.Optional[ta.Type[FdioPoller]]
@@ -2804,6 +2973,64 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
     KqueueFdioPoller = _KqueueFdioPoller
 else:
     KqueueFdioPoller = None
+
+
+########################################
+# ../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        check_state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.ExitStack()
+        es.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        self._exit_contexts()
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check_not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
 
 
 ########################################
@@ -4097,228 +4324,6 @@ class Injection:
 
 
 inj = Injection
-
-
-########################################
-# ../../../omlish/lite/io.py
-
-
-class DelimitingBuffer:
-    """
-    https://github.com/python-trio/trio/issues/796 :|
-    """
-
-    #
-
-    class Error(Exception):
-        def __init__(self, buffer: 'DelimitingBuffer') -> None:
-            super().__init__(buffer)
-            self.buffer = buffer
-
-        def __repr__(self) -> str:
-            return attr_repr(self, 'buffer')
-
-    class ClosedError(Error):
-        pass
-
-    #
-
-    DEFAULT_DELIMITERS: bytes = b'\n'
-
-    def __init__(
-            self,
-            delimiters: ta.Iterable[int] = DEFAULT_DELIMITERS,
-            *,
-            keep_ends: bool = False,
-            max_size: ta.Optional[int] = None,
-    ) -> None:
-        super().__init__()
-
-        self._delimiters = frozenset(check_isinstance(d, int) for d in delimiters)
-        self._keep_ends = keep_ends
-        self._max_size = max_size
-
-        self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
-
-    #
-
-    @property
-    def is_closed(self) -> bool:
-        return self._buf is None
-
-    def tell(self) -> int:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-        return buf.tell()
-
-    def peek(self) -> bytes:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-        return buf.getvalue()
-
-    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[int]:
-        r = None  # type: int | None
-        for d in self._delimiters:
-            if (p := data.find(d, i)) >= 0:
-                if r is None or p < r:
-                    r = p
-        return r
-
-    def _append_and_reset(self, chunk: bytes) -> bytes:
-        buf = check_not_none(self._buf)
-        if not buf.tell():
-            return chunk
-
-        buf.write(chunk)
-        ret = buf.getvalue()
-        buf.seek(0)
-        buf.truncate()
-        return ret
-
-    class Incomplete(ta.NamedTuple):
-        b: bytes
-
-    def feed(self, data: ta.Union[bytes, bytearray]) -> ta.Generator[ta.Union[bytes, Incomplete], None, None]:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-
-        if not data:
-            self._buf = None
-
-            if buf.tell():
-                yield self.Incomplete(buf.getvalue())
-
-            return
-
-        l = len(data)
-        i = 0
-        while i < l:
-            if (p := self._find_delim(data, i)) is None:
-                break
-
-            n = p + 1
-            if self._keep_ends:
-                p = n
-
-            yield self._append_and_reset(data[i:p])
-
-            i = n
-
-        if i >= l:
-            return
-
-        if self._max_size is None:
-            buf.write(data[i:])
-            return
-
-        while i < l:
-            remaining_data_len = l - i
-            remaining_buf_capacity = self._max_size - buf.tell()
-
-            if remaining_data_len < remaining_buf_capacity:
-                buf.write(data[i:])
-                return
-
-            p = i + remaining_buf_capacity
-            yield self.Incomplete(self._append_and_reset(data[i:p]))
-            i = p
-
-
-class ReadableListBuffer:
-    def __init__(self) -> None:
-        super().__init__()
-        self._lst: list[bytes] = []
-
-    def feed(self, d: bytes) -> None:
-        if d:
-            self._lst.append(d)
-
-    def _chop(self, i: int, e: int) -> bytes:
-        lst = self._lst
-        d = lst[i]
-
-        o = b''.join([
-            *lst[:i],
-            d[:e],
-        ])
-
-        self._lst = [
-            *([d[e:]] if e < len(d) else []),
-            *lst[i + 1:],
-        ]
-
-        return o
-
-    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
-        if n is None:
-            o = b''.join(self._lst)
-            self._lst = []
-            return o
-
-        if not (lst := self._lst):
-            return None
-
-        c = 0
-        for i, d in enumerate(lst):
-            r = n - c
-            if (l := len(d)) >= r:
-                return self._chop(i, r)
-            c += l
-
-        return None
-
-    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
-        if not (lst := self._lst):
-            return None
-
-        for i, d in enumerate(lst):
-            if (p := d.find(delim)) >= 0:
-                return self._chop(i, p + len(delim))
-
-        return None
-
-
-class IncrementalWriteBuffer:
-    def __init__(
-            self,
-            data: bytes,
-            *,
-            write_size: int = 0x10000,
-    ) -> None:
-        super().__init__()
-
-        check_non_empty(data)
-        self._len = len(data)
-        self._write_size = write_size
-
-        self._lst = [
-            data[i:i + write_size]
-            for i in range(0, len(data), write_size)
-        ]
-        self._pos = 0
-
-    @property
-    def rem(self) -> int:
-        return self._len - self._pos
-
-    def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check_non_empty(self._lst)
-
-        t = 0
-        for i, d in enumerate(lst):  # noqa
-            n = fn(check_non_empty(d))
-            if not n:
-                break
-            t += n
-
-        if t:
-            self._lst = [
-                *([d[n:]] if n < len(d) else []),
-                *lst[i + 1:],
-            ]
-            self._pos += t
-
-        return t
 
 
 ########################################
@@ -6321,7 +6326,7 @@ class ProcessGroup(
 
 
 ########################################
-# ../../../omlish/lite/fdio/corohttp.py
+# ../../../omlish/io/fdio/corohttp.py
 
 
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):

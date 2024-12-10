@@ -636,6 +636,11 @@ def check_non_empty_str(v: ta.Optional[str]) -> str:
     return v
 
 
+def check_arg(v: bool, msg: str = 'Illegal argument') -> None:
+    if not v:
+        raise ValueError(msg)
+
+
 def check_state(v: bool, msg: str = 'Illegal state') -> None:
     if not v:
         raise ValueError(msg)
@@ -688,7 +693,7 @@ def check_empty(v: SizedT) -> SizedT:
     return v
 
 
-def check_non_empty(v: SizedT) -> SizedT:
+def check_not_empty(v: SizedT) -> SizedT:
     if not len(v):
         raise ValueError(v)
     return v

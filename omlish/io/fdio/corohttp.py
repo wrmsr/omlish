@@ -2,15 +2,15 @@
 import socket
 import typing as ta
 
-from ..check import check_isinstance
-from ..check import check_none
-from ..check import check_not_none
-from ..check import check_state
-from ..http.coroserver import CoroHttpServer
-from ..http.handlers import HttpHandler
-from ..io import IncrementalWriteBuffer
-from ..io import ReadableListBuffer
-from ..socket import SocketAddress
+from ...lite.check import check_isinstance
+from ...lite.check import check_none
+from ...lite.check import check_not_none
+from ...lite.check import check_state
+from ...lite.http.coroserver import CoroHttpServer
+from ...lite.http.handlers import HttpHandler
+from ...lite.socket import SocketAddress
+from ..buffers import IncrementalWriteBuffer
+from ..buffers import ReadableListBuffer
 from .handlers import SocketFdioHandler
 
 

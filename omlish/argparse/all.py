@@ -2,14 +2,14 @@
 import argparse
 
 from .cli import (  # noqa
-    Arg,
-    arg,
+    ArgparseArg as Arg,
+    argparse_arg as arg,
 
-    CommandFn,
-    Command,
-    command,
+    ArgparseCommandFn as CommandFn,
+    ArgparseCommand as Command,
+    argparse_command as command,
 
-    Cli,
+    ArgparseCli as Cli,
 )
 
 

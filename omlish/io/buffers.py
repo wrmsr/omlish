@@ -1,11 +1,12 @@
 # ruff: noqa: UP007
+# @omlish-lite
 import io
 import typing as ta
 
-from .check import check_isinstance
-from .check import check_not_empty
-from .check import check_not_none
-from .strings import attr_repr
+from ..lite.check import check_isinstance
+from ..lite.check import check_not_empty
+from ..lite.check import check_not_none
+from ..lite.strings import attr_repr
 
 
 class DelimitingBuffer:
