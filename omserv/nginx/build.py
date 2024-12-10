@@ -10,7 +10,7 @@ from omlish import check
 from omlish import lang
 
 
-NGINX_VERSION = '1.27.1'
+NGINX_VERSION = '1.27.3'
 NGINX_SRC_URL = f'https://nginx.org/download/nginx-{NGINX_VERSION}.tar.gz'
 
 NGINX_VTS_VERSION = '0.2.2'
