@@ -5,7 +5,7 @@ import logging
 import traceback
 import typing as ta
 
-from omlish.lite.check import check_isinstance
+from omlish.lite.check import check
 from omlish.lite.strings import snake_case
 
 
@@ -24,7 +24,7 @@ class Command(abc.ABC, ta.Generic[CommandOutputT]):
 
     @ta.final
     async def execute(self, executor: 'CommandExecutor') -> CommandOutputT:
-        return check_isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
+        return check.isinstance(await executor.execute(self), self.Output)  # type: ignore[return-value]
 
 
 ##

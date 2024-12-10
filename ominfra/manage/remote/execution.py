@@ -6,10 +6,7 @@ import itertools
 import logging
 import typing as ta
 
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_none
-from omlish.lite.check import check_not_none
-from omlish.lite.check import check_state
+from omlish.lite.check import check
 from omlish.lite.logs import log
 
 from ..commands.base import Command
@@ -133,7 +130,7 @@ class _RemoteCommandHandler:
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
                     recv_task.result(),
                     (_RemoteProtocol.Message, type(None)),
                 )
@@ -202,8 +199,8 @@ class RemoteCommandExecutor(CommandExecutor):
     #
 
     async def start(self) -> None:
-        check_none(self._loop_task)
-        check_state(not self._stop.is_set())
+        check.none(self._loop_task)
+        check.state(not self._stop.is_set())
         self._loop_task = asyncio.create_task(self._loop())
 
     async def aclose(self) -> None:
@@ -239,12 +236,12 @@ class RemoteCommandExecutor(CommandExecutor):
             ], return_when=asyncio.FIRST_COMPLETED)
 
             if queue_task in done:
-                req = check_isinstance(queue_task.result(), RemoteCommandExecutor._Request)
+                req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
                 queue_task = None
                 await self._handle_request(req)
 
             if recv_task in done:
-                msg: ta.Optional[_RemoteProtocol.Message] = check_isinstance(
+                msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
                     recv_task.result(),
                     (_RemoteProtocol.Message, type(None)),
                 )
@@ -312,7 +309,7 @@ class RemoteCommandExecutor(CommandExecutor):
         if (e := r.exception) is not None:
             raise RemoteCommandError(e)
         else:
-            return check_not_none(r.output)
+            return check.not_none(r.output)
 
     # @ta.override
     async def try_execute(

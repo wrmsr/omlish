@@ -62,9 +62,7 @@ import textwrap
 import time
 import typing as ta
 
-from ..check import check_isinstance
-from ..check import check_none
-from ..check import check_not_none
+from ..check import check
 from ..socket import SocketAddress
 from ..socket import SocketHandler
 from .handlers import HttpHandler
@@ -406,13 +404,13 @@ class CoroHttpServer:
                     yield o
 
                 elif isinstance(o, self.AnyReadIo):
-                    i = check_isinstance((yield o), bytes)
+                    i = check.isinstance((yield o), bytes)
 
                 elif isinstance(o, self._Response):
                     i = None
                     r = self._preprocess_response(o)
                     b = self._build_response_bytes(r)
-                    check_none((yield self.WriteIo(b)))
+                    check.none((yield self.WriteIo(b)))
 
                 else:
                     raise TypeError(o)
@@ -435,7 +433,7 @@ class CoroHttpServer:
         sz = next(gen)
         while True:
             try:
-                line = check_isinstance((yield self.ReadLineIo(sz)), bytes)
+                line = check.isinstance((yield self.ReadLineIo(sz)), bytes)
                 sz = gen.send(line)
             except StopIteration as e:
                 parsed = e.value
@@ -454,11 +452,11 @@ class CoroHttpServer:
             yield self._build_error_response(err)
             return
 
-        parsed = check_isinstance(parsed, ParsedHttpRequest)
+        parsed = check.isinstance(parsed, ParsedHttpRequest)
 
         # Log
 
-        check_none((yield self.ParsedRequestLogIo(parsed)))
+        check.none((yield self.ParsedRequestLogIo(parsed)))
 
         # Handle CONTINUE
 
@@ -474,7 +472,7 @@ class CoroHttpServer:
 
         request_data: ta.Optional[bytes]
         if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = check_isinstance((yield self.ReadIo(int(cl))), bytes)
+            request_data = check.isinstance((yield self.ReadIo(int(cl))), bytes)
         else:
             request_data = None
 
@@ -482,7 +480,7 @@ class CoroHttpServer:
 
         handler_request = HttpHandlerRequest(
             client_address=self._client_address,
-            method=check_not_none(parsed.method),
+            method=check.not_none(parsed.method),
             path=parsed.path,
             headers=parsed.headers,
             data=request_data,

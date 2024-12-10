@@ -12,7 +12,7 @@ import os.path
 import subprocess
 import typing as ta
 
-from omlish.lite.check import check_state
+from omlish.lite.check import check
 from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
@@ -288,7 +288,7 @@ def parse_git_status_line(l: str) -> GitStatusItem:
     if len(fields) == 1:
         a, b = fields[0], None
     elif len(fields) == 3:
-        check_state(fields[1] == '->', l)
+        check.state(fields[1] == '->', l)
         a, b = fields[0], fields[2]
     else:
         raise ValueError(l)

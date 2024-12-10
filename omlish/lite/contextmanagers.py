@@ -2,8 +2,7 @@
 import contextlib
 import typing as ta
 
-from .check import check_not_none
-from .check import check_state
+from .check import check
 
 
 T = ta.TypeVar('T')
@@ -17,7 +16,7 @@ class ExitStacked:
     _exit_stack: ta.Optional[contextlib.ExitStack] = None
 
     def __enter__(self: ExitStackedT) -> ExitStackedT:
-        check_state(self._exit_stack is None)
+        check.state(self._exit_stack is None)
         es = self._exit_stack = contextlib.ExitStack()
         es.__enter__()
         return self
@@ -32,7 +31,7 @@ class ExitStacked:
         pass
 
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
-        es = check_not_none(self._exit_stack)
+        es = check.not_none(self._exit_stack)
         return es.enter_context(cm)
 
 

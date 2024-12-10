@@ -408,7 +408,7 @@ import time
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check_not_none
+from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_close
 from omlish.lite.subprocesses import subprocess_shell_wrap_exec
@@ -499,7 +499,7 @@ class JournalctlTailerWorker(ThreadWorker):
             stdout=subprocess.PIPE,
         ) as self._proc:
             try:
-                stdout = check_not_none(self._proc.stdout)
+                stdout = check.not_none(self._proc.stdout)
 
                 fd = stdout.fileno()
                 fl = fcntl.fcntl(fd, fcntl.F_GETFL)

@@ -5,8 +5,7 @@ import os.path
 import typing as ta
 
 from omdev.toml.parser import toml_loads
-from omlish.lite.check import check_isinstance
-from omlish.lite.check import check_not_isinstance
+from omlish.lite.check import check
 from omlish.lite.marshal import unmarshal_obj
 
 
@@ -72,7 +71,7 @@ def build_config_named_children(
     lst: ta.List[ConfigMapping] = []
     if isinstance(o, ta.Mapping):
         for k, v in o.items():
-            check_isinstance(v, ta.Mapping)
+            check.isinstance(v, ta.Mapping)
             if name_key in v:
                 n = v[name_key]
                 if k != n:
@@ -82,7 +81,7 @@ def build_config_named_children(
                 lst.append({name_key: k, **v})
 
     else:
-        check_not_isinstance(o, str)
+        check.not_isinstance(o, str)
         lst.extend(o)
 
     seen = set()

@@ -5,7 +5,7 @@ import time
 import typing as ta
 
 from omlish.io.fdio.pollers import FdioPoller
-from omlish.lite.check import check_isinstance
+from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.typing import Func1
 
@@ -106,7 +106,7 @@ class Supervisor:
         if self._process_groups.get(config.name) is not None:
             return False
 
-        group = check_isinstance(self._process_group_factory(config), ProcessGroup)
+        group = check.isinstance(self._process_group_factory(config), ProcessGroup)
         for process in group:
             process.after_setuid()
 
