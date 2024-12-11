@@ -1,9 +1,14 @@
 # ruff: noqa: UP006 UP007
+"""
+TODO:
+ - sequence all messages
+"""
 import abc
 import asyncio
 import dataclasses as dc
 import itertools
 import logging
+import time
 import typing as ta
 
 from omlish.lite.check import check
@@ -96,20 +101,28 @@ class _RemoteLogHandler(logging.Handler):
 
 
 class _RemoteCommandHandler:
+    DEFAULT_PING_INTERVAL_S: float = 3.
+
     def __init__(
             self,
             chan: RemoteChannel,
             executor: CommandExecutor,
             *,
             stop: ta.Optional[asyncio.Event] = None,
+            ping_interval_s: float = DEFAULT_PING_INTERVAL_S,
     ) -> None:
         super().__init__()
 
         self._chan = chan
         self._executor = executor
         self._stop = stop if stop is not None else asyncio.Event()
+        self._ping_interval_s = ping_interval_s
 
         self._cmds_by_seq: ta.Dict[int, _RemoteCommandHandler._Command] = {}
+
+        self._last_ping_send: ta.Optional[float] = None
+        self._ping_in_flight: bool = False
+        self._last_ping_recv: ta.Optional[float] = None
 
     @dc.dataclass(frozen=True)
     class _Command:
@@ -122,12 +135,16 @@ class _RemoteCommandHandler:
 
         while not self._stop.is_set():
             if recv_task is None:
-                recv_task = asyncio.create_task(_RemoteProtocol.Request.recv(self._chan))
+                recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
-            done, pending = await asyncio.wait([
-                stop_task,
-                recv_task,
-            ], return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(
+                [
+                    stop_task,
+                    recv_task,
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=self._ping_interval_s,
+            )
 
             if recv_task in done:
                 msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
@@ -141,12 +158,28 @@ class _RemoteCommandHandler:
 
                 await self._handle_message(msg)
 
+            if (
+                    (time.time() - (self._last_ping_send or 0.) >= self._ping_interval_s) and
+                    not self._ping_in_flight
+            ):
+                now = time.time()
+                self._last_ping_send = now
+                self._ping_in_flight = True
+                await _RemoteProtocol.PingRequest(
+                    time=now,
+                ).send(self._chan)
+
     async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
         if isinstance(msg, _RemoteProtocol.PingRequest):
             log.debug('Ping: %r', msg)
             await _RemoteProtocol.PingResponse(
                 time=msg.time,
             ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.PingResponse):
+            log.debug('Pong: %r', msg)
+            self._last_ping_recv = time.time()
+            self._ping_in_flight = False
 
         elif isinstance(msg, _RemoteProtocol.CommandRequest):
             fut = asyncio.create_task(self._handle_command_request(msg))
@@ -229,11 +262,14 @@ class RemoteCommandExecutor(CommandExecutor):
             if recv_task is None:
                 recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
-            done, pending = await asyncio.wait([
-                stop_task,
-                queue_task,
-                recv_task,
-            ], return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(
+                [
+                    stop_task,
+                    queue_task,
+                    recv_task,
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+            )
 
             if queue_task in done:
                 req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
@@ -281,6 +317,9 @@ class RemoteCommandExecutor(CommandExecutor):
             await _RemoteProtocol.PingResponse(
                 time=msg.time,
             ).send(self._chan)
+
+        elif isinstance(msg, _RemoteProtocol.PingResponse):
+            log.debug('Pong: %r', msg)
 
         elif isinstance(msg, _RemoteProtocol.LogResponse):
             log.info(msg.s)
