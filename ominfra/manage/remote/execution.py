@@ -124,6 +124,9 @@ class _RemoteCommandHandler:
         self._ping_in_flight: bool = False
         self._last_ping_recv: ta.Optional[float] = None
 
+    def stop(self) -> None:
+        self._stop.set()
+
     @dc.dataclass(frozen=True)
     class _Command:
         req: _RemoteProtocol.CommandRequest

@@ -68,6 +68,8 @@ class MainCli(ArgparseCli):
                 ) if self.args.pycharm_debug_port is not None else None,
 
                 timebomb_delay_s=self.args.remote_timebomb_delay_s,
+
+                use_in_process_remote_executor=True,
             ),
         )
 

@@ -5101,6 +5101,9 @@ class _RemoteCommandHandler:
         self._ping_in_flight: bool = False
         self._last_ping_recv: ta.Optional[float] = None
 
+    def stop(self) -> None:
+        self._stop.set()
+
     @dc.dataclass(frozen=True)
     class _Command:
         req: _RemoteProtocol.CommandRequest
@@ -6339,21 +6342,24 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
 
 
 class AsyncioBytesChannelTransport(asyncio.Transport):
-    def __init__(self, reader) -> None:
+    def __init__(self, reader: asyncio.StreamReader) -> None:
         super().__init__()
 
         self.reader = reader
         self.closed: asyncio.Future = asyncio.Future()
 
-    def write(self, data):
+    # @ta.override
+    def write(self, data: bytes) -> None:
         self.reader.feed_data(data)
 
-    def close(self):
+    # @ta.override
+    def close(self) -> None:
         self.reader.feed_eof()
         if not self.closed.done():
             self.closed.set_result(True)
 
-    def is_closing(self):
+    # @ta.override
+    def is_closing(self) -> bool:
         return self.closed.done()
 
 
@@ -6364,7 +6370,6 @@ def asyncio_create_bytes_channel(
         loop = asyncio.get_running_loop()
 
     reader = asyncio.StreamReader()
-
     protocol = asyncio.StreamReaderProtocol(reader)
     transport = AsyncioBytesChannelTransport(reader)
     writer = asyncio.StreamWriter(transport, protocol, reader, loop)
@@ -6400,16 +6405,17 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
             remote_chan,
             self._local_executor,
         )
-
         rch_task = asyncio.create_task(rch.run())  # noqa
+        try:
+            rce: RemoteCommandExecutor
+            async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
+                await rce.start()
 
-        await local_chan.send_obj(bs)
+                yield rce
 
-        rce: RemoteCommandExecutor
-        async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
-            await rce.start()
-
-            yield rce
+        finally:
+            rch.stop()
+            await rch_task
 
 
 ########################################
@@ -7404,6 +7410,8 @@ class MainCli(ArgparseCli):
                 ) if self.args.pycharm_debug_port is not None else None,
 
                 timebomb_delay_s=self.args.remote_timebomb_delay_s,
+
+                use_in_process_remote_executor=True,
             ),
         )
 
