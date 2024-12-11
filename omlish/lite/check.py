@@ -2,8 +2,6 @@
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
- - patch / override lite.check ?
-  - checker interface?
 """
 import collections
 import threading
