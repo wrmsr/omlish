@@ -15,6 +15,8 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
         main_config=bs.main_config,
         remote_config=bs.remote_config,
         system_config=bs.system_config,
+
+        main_bootstrap=bs,
     ))
 
     return injector
