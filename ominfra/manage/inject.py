@@ -15,6 +15,7 @@ from .remote.config import RemoteConfig
 from .remote.inject import bind_remote
 from .system.config import SystemConfig
 from .system.inject import bind_system
+from .bootstrap import MainBootstrap
 
 
 ##
@@ -22,9 +23,11 @@ from .system.inject import bind_system
 
 def bind_main(
         *,
-        main_config: MainConfig,
-        remote_config: RemoteConfig,
-        system_config: SystemConfig,
+        main_config: MainConfig = MainConfig(),
+        remote_config: RemoteConfig = RemoteConfig(),
+        system_config: SystemConfig = SystemConfig(),
+
+        main_bootstrap: ta.Optional[MainBootstrap] = None
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
@@ -43,6 +46,11 @@ def bind_main(
             system_config=system_config,
         ),
     ]
+
+    #
+
+    if main_bootstrap is not None:
+        lst.append(inj.bind(main_bootstrap))
 
     #
 
