@@ -17,7 +17,7 @@ import trio
 from ... import lang
 from ...diag import pydevd as pdu
 from ...testing import pytest as ptu
-from .. import asyncio as asu
+from ..asyncio import all as asu
 
 
 if ta.TYPE_CHECKING:
