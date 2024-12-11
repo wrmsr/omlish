@@ -394,7 +394,7 @@ class RemoteCommandExecutor(CommandExecutor):
             self,
             cmd: Command,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[logging.Logger] = None,  # noqa
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:

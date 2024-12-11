@@ -6,12 +6,14 @@ import typing as ta
 
 from omlish.lite.check import check
 
+from ..bootstrap import MainBootstrap
 from ..commands.base import CommandExecutor
 from ..commands.local import LocalCommandExecutor
+from ..remote.connection import InProcessRemoteExecutionConnector
+from ..remote.connection import PyremoteRemoteExecutionConnector
 from .targets import LocalManageTarget
 from .targets import ManageTarget
-from ..remote.connection import PyremoteRemoteExecutionConnector
-from ..remote.connection import InProcessRemoteExecutionConnector
+from ..remote.spawning import RemoteSpawning
 
 
 ##
@@ -31,6 +33,7 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
     _local_executor: LocalCommandExecutor
     _in_process_connector: InProcessRemoteExecutionConnector
     _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
 
     @contextlib.asynccontextmanager
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
@@ -40,6 +43,10 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
             yield self._local_executor
 
         elif lmt.mode == LocalManageTarget.Mode.SUBPROCESS:
+            tgt = RemoteSpawning.Target(
+                python=tgt.python,
+            )
+
             raise NotImplementedError
 
         elif lmt.mode == LocalManageTarget.Mode.FAKE_REMOTE:

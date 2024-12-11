@@ -8,9 +8,9 @@ from omlish.lite.check import check
 
 from ..commands.base import CommandExecutor
 from ..commands.local import LocalCommandExecutor
+from ..targets.connection import ManageTargetConnector
 from ..targets.targets import DirectManageTarget
 from ..targets.targets import ManageTarget
-from ..targets.connection import ManageTargetConnector
 from .connection import PyremoteRemoteExecutionConnector
 from .spawning import RemoteSpawning
 
