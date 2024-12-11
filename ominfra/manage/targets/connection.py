@@ -8,9 +8,8 @@ from omlish.lite.check import check
 
 from ..commands.base import CommandExecutor
 from ..commands.local import LocalCommandExecutor
-from .targets import DirectManageTarget
+from .targets import LocalManageTarget
 from .targets import ManageTarget
-from .targets import SubprocessManageTarget
 
 
 ##
@@ -26,10 +25,14 @@ class ManageTargetConnector(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class DirectManageTargetConnectorImpl(ManageTargetConnector):
+class LocalManageTargetConnectorImpl(ManageTargetConnector):
     _local_executor: LocalCommandExecutor
 
     @contextlib.asynccontextmanager
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
-        check.isinstance(tgt, DirectManageTarget)
+        # DIRECT = enum.auto()
+        # SUBPROCESS = enum.auto()
+        # FAKE_REMOTE = enum.auto()
+
+        lmt = check.isinstance(tgt, LocalManageTarget)
         yield self._local_executor

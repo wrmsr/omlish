@@ -1,9 +1,11 @@
 # ruff: noqa: UP006 UP007
 """
-It's desugaring.
+It's desugaring. Subprocess and locals are only leafs. Retain an origin?
+** TWO LAYERS ** - ManageTarget is user-facing, ConnectorTarget is bound, internal
 """
 import abc
 import dataclasses as dc
+import enum
 import typing as ta
 
 
@@ -14,15 +16,13 @@ class ManageTarget(abc.ABC):  # noqa
     pass
 
 
-#
-
-
 class RemoteManageTarget(ManageTarget, abc.ABC):
     pass
 
 
 class PhysicallyRemoteManageTarget(RemoteManageTarget, abc.ABC):
     pass
+
 
 
 @dc.dataclass(frozen=True)
@@ -44,30 +44,20 @@ class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
 ##
 
 
+@dc.dataclass(frozen=True)
 class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):  # noqa
-    pass
-
-
-@dc.dataclass(frozen=True)
-class DockerRunManageTarget(DockerManageTarget):
     image: ta.Optional[str] = None
-
-
-@dc.dataclass(frozen=True)
-class DockerExecManageTarget(DockerManageTarget):
     container_id: ta.Optional[str] = None
 
 
 ##
 
 
-class DirectManageTarget(ManageTarget):
-    pass
+@dc.dataclass(frozen=True)
+class LocalManageTarget(ManageTarget):
+    class Mode(enum.Enum):
+        DIRECT = enum.auto()
+        SUBPROCESS = enum.auto()
+        FAKE_REMOTE = enum.auto()
 
-
-class SubprocessManageTarget(ManageTarget):
-    pass
-
-
-class FakeRemoteManageTarget(ManageTarget):
-    pass
+    mode: Mode = Mode.DIRECT
