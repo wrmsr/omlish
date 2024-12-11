@@ -1,4 +1,12 @@
 # ruff: noqa: UP006 UP007
+"""
+Direct in_process=True remote=False
+Subprocess in_process=False remote=False
+FakeRemote in_process=True remote=False
+Ssh in_process=False remote=True
+DockerRun in_process=False remote=True
+DockerExec in_process=False remote=True
+"""
 import abc
 import dataclasses as dc
 import enum
