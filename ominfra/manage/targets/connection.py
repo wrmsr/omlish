@@ -13,6 +13,8 @@ from ..remote.connection import InProcessRemoteExecutionConnector
 from ..remote.connection import PyremoteRemoteExecutionConnector
 from .targets import LocalManageTarget
 from .targets import ManageTarget
+from .targets import InProcessConnectorTarget
+from .targets import SubprocessManageTarget
 from ..remote.spawning import RemoteSpawning
 
 
@@ -39,12 +41,21 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         lmt = check.isinstance(tgt, LocalManageTarget)
 
-        if lmt.mode == LocalManageTarget.Mode.DIRECT:
-            yield self._local_executor
+        if isinstance(lmt, InProcessConnectorTarget):
+            imt = check.isinstance(lmt, InProcessConnectorTarget)
 
-        elif lmt.mode == LocalManageTarget.Mode.SUBPROCESS:
-            tgt = RemoteSpawning.Target(
-                python=tgt.python,
+            if imt.mode == InProcessConnectorTarget.Mode.DIRECT:
+                yield self._local_executor
+
+            elif imt.mode == InProcessConnectorTarget.Mode.FAKE_REMOTE:
+                raise NotImplementedError
+
+            else:
+                raise TypeError(imt.modd)
+
+        elif isinstance(lmt, SubprocessManageTarget):
+            rt = RemoteSpawning.Target(
+                python=lmt.python,
             )
 
             raise NotImplementedError
