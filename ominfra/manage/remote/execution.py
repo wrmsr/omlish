@@ -120,7 +120,7 @@ class _RemoteCommandHandler:
 
         self._cmds_by_seq: ta.Dict[int, _RemoteCommandHandler._Command] = {}
 
-        self._last_ping_send: ta.Optional[float] = None
+        self._last_ping_send: float = 0.
         self._ping_in_flight: bool = False
         self._last_ping_recv: ta.Optional[float] = None
 
@@ -130,6 +130,8 @@ class _RemoteCommandHandler:
         fut: asyncio.Future
 
     async def run(self) -> None:
+        log.debug('_RemoteCommandHandler loop start: %r', self)
+
         stop_task = asyncio.create_task(self._stop.wait())
         recv_task: ta.Optional[asyncio.Task] = None
 
@@ -137,14 +139,39 @@ class _RemoteCommandHandler:
             if recv_task is None:
                 recv_task = asyncio.create_task(_RemoteProtocol.Message.recv(self._chan))
 
+            if not self._ping_in_flight:
+                if not self._last_ping_recv:
+                    ping_wait_time = 0.
+                else:
+                    ping_wait_time = self._ping_interval_s - (time.time() - self._last_ping_recv)
+            else:
+                ping_wait_time = float('inf')
+            wait_time = min(self._ping_interval_s, ping_wait_time)
+            log.debug('_RemoteCommandHandler loop wait: %f', wait_time)
+
             done, pending = await asyncio.wait(
                 [
                     stop_task,
                     recv_task,
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
-                timeout=self._ping_interval_s,
+                timeout=wait_time,
             )
+
+            #
+
+            if (
+                    (time.time() - self._last_ping_send >= self._ping_interval_s) and
+                    not self._ping_in_flight
+            ):
+                now = time.time()
+                self._last_ping_send = now
+                self._ping_in_flight = True
+                await _RemoteProtocol.PingRequest(
+                    time=now,
+                ).send(self._chan)
+
+            #
 
             if recv_task in done:
                 msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
@@ -158,16 +185,19 @@ class _RemoteCommandHandler:
 
                 await self._handle_message(msg)
 
-            if (
-                    (time.time() - (self._last_ping_send or 0.) >= self._ping_interval_s) and
-                    not self._ping_in_flight
-            ):
-                now = time.time()
-                self._last_ping_send = now
-                self._ping_in_flight = True
-                await _RemoteProtocol.PingRequest(
-                    time=now,
-                ).send(self._chan)
+        log.debug('_RemoteCommandHandler loop stopping: %r', self)
+
+        for task in [
+            stop_task,
+            recv_task,
+        ]:
+            if task is not None and not task.done():
+                task.cancel()
+
+        for cmd in self._cmds_by_seq.values():
+            cmd.fut.cancel()
+
+        log.debug('_RemoteCommandHandler loop exited: %r', self)
 
     async def _handle_message(self, msg: _RemoteProtocol.Message) -> None:
         if isinstance(msg, _RemoteProtocol.PingRequest):
@@ -177,7 +207,8 @@ class _RemoteCommandHandler:
             ).send(self._chan)
 
         elif isinstance(msg, _RemoteProtocol.PingResponse):
-            log.debug('Pong: %r', msg)
+            latency_s = time.time() - msg.time
+            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
             self._last_ping_recv = time.time()
             self._ping_in_flight = False
 
@@ -271,10 +302,14 @@ class RemoteCommandExecutor(CommandExecutor):
                 return_when=asyncio.FIRST_COMPLETED,
             )
 
+            #
+
             if queue_task in done:
                 req = check.isinstance(queue_task.result(), RemoteCommandExecutor._Request)
                 queue_task = None
-                await self._handle_request(req)
+                await self._handle_queued_request(req)
+
+            #
 
             if recv_task in done:
                 msg: ta.Optional[_RemoteProtocol.Message] = check.isinstance(
@@ -304,7 +339,7 @@ class RemoteCommandExecutor(CommandExecutor):
 
         log.debug('RemoteCommandExecutor loop exited: %r', self)
 
-    async def _handle_request(self, req: _Request) -> None:
+    async def _handle_queued_request(self, req: _Request) -> None:
         self._reqs_by_seq[req.seq] = req
         await _RemoteProtocol.CommandRequest(
             seq=req.seq,
@@ -319,7 +354,8 @@ class RemoteCommandExecutor(CommandExecutor):
             ).send(self._chan)
 
         elif isinstance(msg, _RemoteProtocol.PingResponse):
-            log.debug('Pong: %r', msg)
+            latency_s = time.time() - msg.time
+            log.debug('Pong: %0.2f ms %r', latency_s * 1000., msg)
 
         elif isinstance(msg, _RemoteProtocol.LogResponse):
             log.info(msg.s)
