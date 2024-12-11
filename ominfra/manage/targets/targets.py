@@ -71,5 +71,5 @@ class InProcessConnectorTarget(LocalManageTarget):
 
 
 @dc.dataclass(frozen=True)
-class SubprocessManageTarget(LocalConnectorTarget, PythonRemoteManageTarget):
+class SubprocessManageTarget(LocalManageTarget, PythonRemoteManageTarget):
     pass
