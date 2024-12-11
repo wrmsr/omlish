@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import abc
 import asyncio
 import contextlib
 import typing as ta
@@ -25,20 +24,7 @@ from .spawning import RemoteSpawning
 ##
 
 
-class RemoteExecutionConnector(abc.ABC):
-    @abc.abstractmethod
-    def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncContextManager[RemoteCommandExecutor]:
-        raise NotImplementedError
-
-
-##
-
-
-class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
+class PyremoteRemoteExecutionConnector:
     def __init__(
             self,
             *,
@@ -113,7 +99,7 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
 ##
 
 
-class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
+class InProcessRemoteExecutionConnector:
     def __init__(
             self,
             *,
@@ -126,11 +112,7 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
         self._local_executor = local_executor
 
     @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
         r0, w0 = asyncio_create_bytes_channel()
         r1, w1 = asyncio_create_bytes_channel()
 

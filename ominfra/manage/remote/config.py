@@ -20,5 +20,3 @@ class RemoteConfig:
     timebomb_delay_s: ta.Optional[float] = 60 * 60.
 
     heartbeat_interval_s: float = 3.
-
-    use_in_process_remote_executor: bool = False

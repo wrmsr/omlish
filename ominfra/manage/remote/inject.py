@@ -8,7 +8,6 @@ from omlish.lite.inject import inj
 from .config import RemoteConfig
 from .connection import InProcessRemoteExecutionConnector
 from .connection import PyremoteRemoteExecutionConnector
-from .connection import RemoteExecutionConnector
 from .payload import RemoteExecutionPayloadFile
 from .spawning import RemoteSpawning
 from .spawning import SubprocessRemoteSpawning
@@ -23,20 +22,10 @@ def bind_remote(
 
         inj.bind(SubprocessRemoteSpawning, singleton=True),
         inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
+
+        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
     ]
-
-    #
-
-    if remote_config.use_in_process_remote_executor:
-        lst.extend([
-            inj.bind(InProcessRemoteExecutionConnector, singleton=True),
-            inj.bind(RemoteExecutionConnector, to_key=InProcessRemoteExecutionConnector),
-        ])
-    else:
-        lst.extend([
-            inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
-            inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
-        ])
 
     #
 

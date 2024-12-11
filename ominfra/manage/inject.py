@@ -6,6 +6,7 @@ from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
 from omlish.lite.marshal import ObjMarshalerManager
 
+from .bootstrap import MainBootstrap
 from .commands.inject import bind_commands
 from .config import MainConfig
 from .deploy.inject import bind_deploy
@@ -15,7 +16,6 @@ from .remote.config import RemoteConfig
 from .remote.inject import bind_remote
 from .system.config import SystemConfig
 from .system.inject import bind_system
-from .bootstrap import MainBootstrap
 
 
 ##
