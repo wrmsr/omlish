@@ -8,12 +8,12 @@ import subprocess
 import sys
 import typing as ta
 
+from ...asyncs.asyncio.timeouts import asyncio_maybe_timeout
 from ..check import check
 from ..logs import log
 from ..subprocesses import DEFAULT_SUBPROCESS_TRY_EXCEPTIONS
 from ..subprocesses import prepare_subprocess_invocation
 from ..subprocesses import subprocess_common_context
-from .asyncio import asyncio_maybe_timeout
 
 
 T = ta.TypeVar('T')

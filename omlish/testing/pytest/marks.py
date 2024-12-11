@@ -7,9 +7,9 @@ from .plugins.managermarks import ManagerMark  # noqa
 
 
 if ta.TYPE_CHECKING:
-    from ...asyncs import asyncio as aiu
+    from ...asyncs.asyncio import all as aiu
 else:
-    aiu = lang.proxy_import('...asyncs.asyncio', __package__)
+    aiu = lang.proxy_import('...asyncs.asyncio.all', __package__)
 
 
 class drain_asyncio(ManagerMark):  # noqa
