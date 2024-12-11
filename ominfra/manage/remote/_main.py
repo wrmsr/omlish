@@ -20,7 +20,7 @@ from omlish.os.deathsig import set_process_deathsig
 
 from ...pyremote import pyremote_bootstrap_finalize
 from ..bootstrap import MainBootstrap
-from ..commands.execution import LocalCommandExecutor
+from ..commands.local import LocalCommandExecutor
 from .channel import RemoteChannel
 from .channel import RemoteChannelImpl
 from .execution import _RemoteCommandHandler

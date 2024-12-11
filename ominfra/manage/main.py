@@ -23,7 +23,7 @@ from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .commands.base import CommandExecutor
-from .commands.execution import LocalCommandExecutor
+from .commands.local import LocalCommandExecutor
 from .config import MainConfig
 from .remote.config import RemoteConfig
 from .remote.connection import RemoteExecutionConnector

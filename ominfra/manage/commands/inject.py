@@ -18,13 +18,13 @@ from .base import CommandNameMap
 from .base import CommandRegistration
 from .base import CommandRegistrations
 from .base import build_command_name_map
-from .execution import CommandExecutorMap
-from .execution import LocalCommandExecutor
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
+from .local import LocalCommandExecutor
 from .marshal import install_command_marshaling
 from .subprocess import SubprocessCommand
 from .subprocess import SubprocessCommandExecutor
+from .types import CommandExecutorMap
 
 
 ##
