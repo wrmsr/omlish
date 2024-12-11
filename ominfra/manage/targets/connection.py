@@ -10,6 +10,7 @@ from ..commands.base import CommandExecutor
 from ..commands.local import LocalCommandExecutor
 from .targets import DirectManageTarget
 from .targets import ManageTarget
+from .targets import SubprocessManageTarget
 
 
 ##
