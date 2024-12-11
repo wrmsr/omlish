@@ -80,7 +80,7 @@ services:
       - '35225:3306'
 
   omlish-s3:
-    image: 'adobe/s3mock:3.11.0'
+    image: 'adobe/s3mock:3.12.0'
     restart: 'unless-stopped'
     expose:
       - '9090'
@@ -104,7 +104,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.25.1-community'
+    image: 'neo4j:5.26.0-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
