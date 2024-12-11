@@ -113,24 +113,24 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
 
 
 class AsyncioBytesChannelTransport(asyncio.Transport):
-    def __init__(self, reader) -> None:
+    def __init__(self, reader: asyncio.StreamReader) -> None:
         super().__init__()
 
         self.reader = reader
         self.closed: asyncio.Future = asyncio.Future()
 
     # @ta.override
-    def write(self, data):
+    def write(self, data: bytes) -> None:
         self.reader.feed_data(data)
 
     # @ta.override
-    def close(self):
+    def close(self) -> None:
         self.reader.feed_eof()
         if not self.closed.done():
             self.closed.set_result(True)
 
     # @ta.override
-    def is_closing(self):
+    def is_closing(self) -> bool:
         return self.closed.done()
 
 
@@ -141,7 +141,6 @@ def asyncio_create_bytes_channel(
         loop = asyncio.get_running_loop()
 
     reader = asyncio.StreamReader()
-
     protocol = asyncio.StreamReaderProtocol(reader)
     transport = AsyncioBytesChannelTransport(reader)
     writer = asyncio.StreamWriter(transport, protocol, reader, loop)
@@ -177,13 +176,14 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
             remote_chan,
             self._local_executor,
         )
-
         rch_task = asyncio.create_task(rch.run())  # noqa
+        try:
+            rce: RemoteCommandExecutor
+            async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
+                await rce.start()
 
-        await local_chan.send_obj(bs)
+                yield rce
 
-        rce: RemoteCommandExecutor
-        async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
-            await rce.start()
-
-            yield rce
+        finally:
+            rch.stop()
+            await rch_task
