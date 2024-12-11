@@ -110,7 +110,7 @@ huggingface-hub==0.26.5
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==3.1.0; python_version < "3.13"  # !! includes arrow and pandas and shit
+datasets==3.2.0; python_version < "3.13"  # !! includes arrow and pandas and shit
 
 sentence-transformers==3.3.1; python_version < "3.13"
 sentencepiece==0.2.0; python_version < "3.13"
@@ -121,4 +121,4 @@ llama-cpp-python; sys_platform == "darwin"
 
 segno==1.6.1
 
-duckduckgo_search==6.3.7  # @omlish-venv !13t  # segfault lol
+duckduckgo_search==6.4.1 # @omlish-venv !13t  # segfault lol

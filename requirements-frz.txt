@@ -36,8 +36,8 @@ black==24.10.0
 bleach==6.2.0
 blinker==1.9.0
 blis==0.7.11
-boto3==1.35.77
-botocore==1.35.77
+boto3==1.35.78
+botocore==1.35.78
 Brotli==1.1.0
 bs4==0.0.2
 bsddb3==6.2.9
@@ -77,9 +77,9 @@ cymem==2.0.10
 Cython==3.0.11
 darkdetect==0.8.0
 dataclasses-json==0.6.7
-datasets==3.1.0
+datasets==3.2.0
 dateparser==1.2.0
-debugpy==1.8.9
+debugpy==1.8.10
 decorator==5.1.1
 deepdiff==8.0.1
 defusedxml==0.7.1
@@ -97,7 +97,7 @@ docutils==0.21.2
 docutils-stubs==0.0.22
 dspy==2.5.42
 duckdb==1.1.3
-duckduckgo_search==6.3.7
+duckduckgo_search==6.4.1
 durationpy==0.9
 einops==0.8.0
 elastic-transport==8.15.1
@@ -117,7 +117,7 @@ flake8==7.1.1
 Flake8-pyproject==1.2.3
 Flask==3.1.0
 flatbuffers==24.3.25
-fonttools==4.55.2
+fonttools==4.55.3
 fparser==0.1.4
 fqdn==1.5.1
 frozendict==2.4.6
@@ -209,11 +209,11 @@ keras==3.7.0
 keyring==25.5.0
 kiwisolver==1.4.7
 kubernetes==31.0.0
-langchain==0.3.10
+langchain==0.3.11
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
-langchain-community==0.3.10
-langchain-core==0.3.23
+langchain-community==0.3.11
+langchain-core==0.3.24
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -224,7 +224,7 @@ langchain-text-splitters==0.3.2
 langchainhub==0.1.21
 langcodes==3.5.0
 langdetect==1.0.9
-langgraph==0.2.57
+langgraph==0.2.58
 langgraph-checkpoint==2.0.8
 langgraph-sdk==0.1.43
 langsmith==0.1.125
@@ -466,7 +466,7 @@ spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.36
 sqlean.py==3.47.0
-sqlglot==25.34.1
+sqlglot==26.0.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 srsly==2.5.0
@@ -534,7 +534,7 @@ uvicorn==0.32.1
 uvloop==0.21.0
 voluptuous==0.15.2
 wasabi==1.1.3
-watchfiles==1.0.1
+watchfiles==1.0.3
 wcwidth==0.2.13
 weasel==0.4.1
 webcolors==24.11.1

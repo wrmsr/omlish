@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.77
+boto3>=1.35.78
 
 google-api-python-client==2.154.0
 google-cloud-compute==1.22.0
@@ -198,8 +198,8 @@ customtkinter==5.2.2
 
 langchain-anthropic==0.3.0
 langchain-chroma==0.1.4
-langchain-community==0.3.10
-langchain-core==0.3.23
+langchain-community==0.3.11
+langchain-core==0.3.24
 langchain-elasticsearch==0.3.0
 langchain-experimental==0.3.3
 langchain-huggingface==0.1.2
@@ -207,14 +207,14 @@ langchain-mistralai==0.2.3
 langchain-openai==0.2.12
 langchain-qdrant==0.2.0
 langchain-text-splitters==0.3.2
-langchain==0.3.10
+langchain==0.3.11
 
 # langchain-nomic==0.2.0
 # langchain-ollama==0.2.0
 
 langchainhub==0.1.21
 
-langgraph==0.2.57
+langgraph==0.2.58
 
 langsmith==0.1.125
 
