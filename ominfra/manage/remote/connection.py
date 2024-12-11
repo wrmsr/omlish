@@ -12,7 +12,7 @@ from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions
 from ...pyremote import pyremote_build_bootstrap_cmd
 from ..bootstrap import MainBootstrap
-from ..commands.execution import LocalCommandExecutor
+from ..commands.local import LocalCommandExecutor
 from ._main import _remote_execution_main  # noqa
 from .channel import RemoteChannelImpl
 from .execution import RemoteCommandExecutor
