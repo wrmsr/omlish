@@ -1,13 +1,7 @@
 # ruff: noqa: UP006 UP007
-import asyncio.base_subprocess
-import asyncio.subprocess
+# @omlish-lite
+import asyncio
 import typing as ta
-
-
-AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
-
-
-##
 
 
 ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
@@ -49,15 +43,3 @@ async def asyncio_open_stream_writer(
         None,
         loop,
     )
-
-
-##
-
-
-def asyncio_maybe_timeout(
-        fut: AwaitableT,
-        timeout: ta.Optional[float] = None,
-) -> AwaitableT:
-    if timeout is not None:
-        fut = asyncio.wait_for(fut, timeout)  # type: ignore
-    return fut

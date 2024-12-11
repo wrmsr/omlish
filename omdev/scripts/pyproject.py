@@ -92,7 +92,7 @@ TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
-# ../../omlish/lite/asyncio/asyncio.py
+# ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
 # ../../omlish/lite/cached.py
@@ -1779,54 +1779,7 @@ class WheelFile(zipfile.ZipFile):
 
 
 ########################################
-# ../../../omlish/lite/asyncio/asyncio.py
-
-
-##
-
-
-ASYNCIO_DEFAULT_BUFFER_LIMIT = 2 ** 16
-
-
-async def asyncio_open_stream_reader(
-        f: ta.IO,
-        loop: ta.Any = None,
-        *,
-        limit: int = ASYNCIO_DEFAULT_BUFFER_LIMIT,
-) -> asyncio.StreamReader:
-    if loop is None:
-        loop = asyncio.get_running_loop()
-
-    reader = asyncio.StreamReader(limit=limit, loop=loop)
-    await loop.connect_read_pipe(
-        lambda: asyncio.StreamReaderProtocol(reader, loop=loop),
-        f,
-    )
-
-    return reader
-
-
-async def asyncio_open_stream_writer(
-        f: ta.IO,
-        loop: ta.Any = None,
-) -> asyncio.StreamWriter:
-    if loop is None:
-        loop = asyncio.get_running_loop()
-
-    writer_transport, writer_protocol = await loop.connect_write_pipe(
-        lambda: asyncio.streams.FlowControlMixin(loop=loop),
-        f,
-    )
-
-    return asyncio.streams.StreamWriter(
-        writer_transport,
-        writer_protocol,
-        None,
-        loop,
-    )
-
-
-##
+# ../../../omlish/asyncs/asyncio/timeouts.py
 
 
 def asyncio_maybe_timeout(
