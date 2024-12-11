@@ -1852,8 +1852,6 @@ def async_cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
- - patch / override lite.check ?
-  - checker interface?
 """
 
 

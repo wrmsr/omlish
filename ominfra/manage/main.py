@@ -69,7 +69,7 @@ class MainCli(ArgparseCli):
 
                 timebomb_delay_s=self.args.remote_timebomb_delay_s,
 
-                use_in_process_remote_executor=True,
+                # use_in_process_remote_executor=True,
             ),
         )
 
