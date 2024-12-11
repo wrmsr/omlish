@@ -92,7 +92,6 @@ class DockerManageTargetConnectorImpl(ManageTargetConnector):
             yield rce
 
 
-
 ##
 
 
