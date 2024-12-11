@@ -107,6 +107,10 @@ class SshManageTargetConnectorImpl(ManageTargetConnector):
 
         # --shell='ssh -i /balls/balls.pem ec2-user@balls.balls.balls -q --python=python3.8
 
+        sh_parts: ta.List[str] = ['ssh']
+        if smt.key_file is not None:
+            sh_parts.extend(['-i', smt.key_file])
+
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
                     python=smt.python,
