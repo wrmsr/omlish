@@ -2591,6 +2591,8 @@ class RemoteConfig:
 
     heartbeat_interval_s: float = 3.
 
+    use_in_process_remote_executor: bool = False
+
 
 ########################################
 # ../remote/payload.py
@@ -6333,6 +6335,83 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
                 yield rce
 
 
+##
+
+
+class AsyncioBytesChannelTransport(asyncio.Transport):
+    def __init__(self, reader) -> None:
+        super().__init__()
+
+        self.reader = reader
+        self.closed: asyncio.Future = asyncio.Future()
+
+    def write(self, data):
+        self.reader.feed_data(data)
+
+    def close(self):
+        self.reader.feed_eof()
+        if not self.closed.done():
+            self.closed.set_result(True)
+
+    def is_closing(self):
+        return self.closed.done()
+
+
+def asyncio_create_bytes_channel(
+        loop: ta.Any = None,
+) -> ta.Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    reader = asyncio.StreamReader()
+
+    protocol = asyncio.StreamReaderProtocol(reader)
+    transport = AsyncioBytesChannelTransport(reader)
+    writer = asyncio.StreamWriter(transport, protocol, reader, loop)
+
+    return reader, writer
+
+
+class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
+    def __init__(
+            self,
+            *,
+            msh: ObjMarshalerManager,
+            local_executor: LocalCommandExecutor,
+    ) -> None:
+        super().__init__()
+
+        self._msh = msh
+        self._local_executor = local_executor
+
+    @contextlib.asynccontextmanager
+    async def connect(
+            self,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        r0, w0 = asyncio_create_bytes_channel()
+        r1, w1 = asyncio_create_bytes_channel()
+
+        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
+        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
+
+        rch = _RemoteCommandHandler(
+            remote_chan,
+            self._local_executor,
+        )
+
+        rch_task = asyncio.create_task(rch.run())  # noqa
+
+        await local_chan.send_obj(bs)
+
+        rce: RemoteCommandExecutor
+        async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
+            await rce.start()
+
+            yield rce
+
+
 ########################################
 # ../../../omdev/interp/pyenv.py
 """
@@ -6903,10 +6982,20 @@ def bind_remote(
 
         inj.bind(SubprocessRemoteSpawning, singleton=True),
         inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
-
-        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
-        inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
     ]
+
+    #
+
+    if remote_config.use_in_process_remote_executor:
+        lst.extend([
+            inj.bind(InProcessRemoteExecutionConnector, singleton=True),
+            inj.bind(RemoteExecutionConnector, to_key=InProcessRemoteExecutionConnector),
+        ])
+    else:
+        lst.extend([
+            inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+            inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
+        ])
 
     #
 
