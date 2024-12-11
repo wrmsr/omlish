@@ -48,20 +48,19 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
                 yield self._local_executor
 
             elif imt.mode == InProcessConnectorTarget.Mode.FAKE_REMOTE:
-                raise NotImplementedError
+                async with self._in_process_connector.connect() as rce:
+                    yield rce
 
             else:
                 raise TypeError(imt.modd)
 
         elif isinstance(lmt, SubprocessManageTarget):
-            rt = RemoteSpawning.Target(
-                python=lmt.python,
-            )
-
-            raise NotImplementedError
-
-        elif lmt.mode == LocalManageTarget.Mode.FAKE_REMOTE:
-            with self._in_process_connector.connect() as rce:
+            async with self._pyremote_connector.connect(
+                    RemoteSpawning.Target(
+                        python=lmt.python,
+                    ),
+                    self._bootstrap,
+            ) as rce:
                 yield rce
 
         else:
