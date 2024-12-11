@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 from omlish.lite.inject import Injector
 from omlish.lite.inject import inj
 from omlish.lite.logs import configure_standard_logging
