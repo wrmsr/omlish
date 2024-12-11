@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
+import enum
 import typing as ta
 
 
@@ -41,17 +42,17 @@ class DockerExecManageTarget(DockerManageTarget):
 ##
 
 
-class LocalManageTarget(abc.ABC):  # noqa
-    pass
+@dc.dataclass(frozen=True)
+class LocalManageTarget:
+    class Mode(enum.Enum):
+        DIRECT = enum.auto()
+        SUBPROCESS = enum.auto()
+        IN_PROCESS = enum.auto()
+
+    mode: Mode = Mode.DIRECT
 
 
-class DirectLocal(LocalManageTarget):
-    pass
+##
 
 
-class SubprocessLocalManageTarget(LocalManageTarget):
-    pass
-
-
-class InProcessLocalManageTarget(LocalManageTarget):
-    pass
+ManageTargetConnector = ta.Callable[[ManageTarget], ta.AsyncContextManager[CommandExecutor]]  # ta.TypeAlias
