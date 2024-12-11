@@ -74,12 +74,23 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
 
 @dc.dataclass(frozen=True)
 class DockerManageTargetConnectorImpl(ManageTargetConnector):
+    _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
+
     @contextlib.asynccontextmanager
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         dmt = check.isinstance(tgt, DockerManageTarget)
 
-        raise NotImplementedError
-        yield None  # noqa
+        # -s 'docker run -i python:3.12' '
+
+        async with self._pyremote_connector.connect(
+                RemoteSpawning.Target(
+                    python=dmt.python,
+                ),
+                self._bootstrap,
+        ) as rce:
+            yield rce
+
 
 
 ##
@@ -87,9 +98,19 @@ class DockerManageTargetConnectorImpl(ManageTargetConnector):
 
 @dc.dataclass(frozen=True)
 class SshManageTargetConnectorImpl(ManageTargetConnector):
+    _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
+
     @contextlib.asynccontextmanager
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         smt = check.isinstance(tgt, SshManageTarget)
 
-        raise NotImplementedError
-        yield None  # noqa
+        # --shell='ssh -i /balls/balls.pem ec2-user@balls.balls.balls -q --python=python3.8
+
+        async with self._pyremote_connector.connect(
+                RemoteSpawning.Target(
+                    python=smt.python,
+                ),
+                self._bootstrap,
+        ) as rce:
+            yield rce
