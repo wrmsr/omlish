@@ -11,9 +11,11 @@ from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions
 from ...pyremote import pyremote_build_bootstrap_cmd
 from ..bootstrap import MainBootstrap
+from ..commands.execution import LocalCommandExecutor
 from ._main import _remote_execution_main  # noqa
 from .channel import RemoteChannelImpl
 from .execution import RemoteCommandExecutor
+from .execution import _RemoteCommandHandler
 from .payload import RemoteExecutionPayloadFile
 from .payload import get_remote_payload_src
 from .spawning import RemoteSpawning
@@ -149,6 +151,7 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
             self,
             *,
             msh: ObjMarshalerManager,
+            local_executor: LocalCommandExecutor,
     ) -> None:
         super().__init__()
 
@@ -160,13 +163,11 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
             tgt: RemoteSpawning.Target,
             bs: MainBootstrap,
     ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        r0, w0 = asyncio_create_bytes_channel()
-        r1, w1 = asyncio_create_bytes_channel()
+        chan0 = RemoteChannelImpl(*asyncio_create_bytes_channel(), msh=self._msh)
+        chan1 = RemoteChannelImpl(*asyncio_create_bytes_channel(), msh=self._msh)
 
-        chan = RemoteChannelImpl(
-            proc.stdout,
-            proc.stdin,
-            msh=self._msh,
+        rch = _RemoteCommandHandler(
+
         )
 
         await chan.send_obj(bs)
