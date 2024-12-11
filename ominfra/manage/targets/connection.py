@@ -30,9 +30,12 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
 
     @contextlib.asynccontextmanager
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
-        # DIRECT = enum.auto()
-        # SUBPROCESS = enum.auto()
-        # FAKE_REMOTE = enum.auto()
-
         lmt = check.isinstance(tgt, LocalManageTarget)
-        yield self._local_executor
+        if lmt.mode == LocalManageTarget.Mode.DIRECT:
+            yield self._local_executor
+        elif lmt.mode == LocalManageTarget.Mode.SUBPROCESS:
+            raise NotImplementedError
+        elif lmt.mode == LocalManageTarget.Mode.FAKE_REMOTE:
+            raise NotImplementedError
+        else:
+            raise TypeError(lmt.mode)
