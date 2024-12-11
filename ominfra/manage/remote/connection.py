@@ -117,16 +117,19 @@ class AsyncioBytesChannelTransport(asyncio.Transport):
         super().__init__()
 
         self.reader = reader
-        self.closed = asyncio.Future()
+        self.closed: asyncio.Future = asyncio.Future()
 
+    # @ta.override
     def write(self, data):
         self.reader.feed_data(data)
 
+    # @ta.override
     def close(self):
         self.reader.feed_eof()
         if not self.closed.done():
             self.closed.set_result(True)
 
+    # @ta.override
     def is_closing(self):
         return self.closed.done()
 
@@ -156,6 +159,7 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
         super().__init__()
 
         self._msh = msh
+        self._local_executor = local_executor
 
     @contextlib.asynccontextmanager
     async def connect(
@@ -163,17 +167,23 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
             tgt: RemoteSpawning.Target,
             bs: MainBootstrap,
     ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        chan0 = RemoteChannelImpl(*asyncio_create_bytes_channel(), msh=self._msh)
-        chan1 = RemoteChannelImpl(*asyncio_create_bytes_channel(), msh=self._msh)
+        r0, w0 = asyncio_create_bytes_channel()
+        r1, w1 = asyncio_create_bytes_channel()
+
+        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
+        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
 
         rch = _RemoteCommandHandler(
-
+            remote_chan,
+            self._local_executor,
         )
 
-        await chan.send_obj(bs)
+        rch_task = asyncio.create_task(rch.run())  # noqa
+
+        await local_chan.send_obj(bs)
 
         rce: RemoteCommandExecutor
-        async with contextlib.aclosing(RemoteCommandExecutor(chan)) as rce:
+        async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
             await rce.start()
 
             yield rce
