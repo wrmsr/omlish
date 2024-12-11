@@ -11,11 +11,13 @@ from ..commands.base import CommandExecutor
 from ..commands.local import LocalCommandExecutor
 from ..remote.connection import InProcessRemoteExecutionConnector
 from ..remote.connection import PyremoteRemoteExecutionConnector
+from ..remote.spawning import RemoteSpawning
+from .targets import DockerManageTarget
+from .targets import InProcessConnectorTarget
 from .targets import LocalManageTarget
 from .targets import ManageTarget
-from .targets import InProcessConnectorTarget
+from .targets import SshManageTarget
 from .targets import SubprocessManageTarget
-from ..remote.spawning import RemoteSpawning
 
 
 ##
@@ -65,3 +67,29 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
 
         else:
             raise TypeError(lmt.mode)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DockerManageTargetConnectorImpl(ManageTargetConnector):
+    @contextlib.asynccontextmanager
+    async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
+        dmt = check.isinstance(tgt, DockerManageTarget)
+
+        raise NotImplementedError
+        yield None  # noqa
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SshManageTargetConnectorImpl(ManageTargetConnector):
+    @contextlib.asynccontextmanager
+    async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
+        smt = check.isinstance(tgt, SshManageTarget)
+
+        raise NotImplementedError
+        yield None  # noqa
