@@ -119,10 +119,10 @@ class Cli(ap.Cli):
         day_rev = check.not_none(get_first_commit_of_day(rev))
         base_rev = rev_parse(f'{day_rev}~1')
 
-        if self.args.diff or self.args.diff_stat:
-            os.execvp('git', ['git', 'diff', *(['--stat'] if self.args.diff_stat else []), base_rev, rev])
+        if self.args.diff or self.args.stat:
+            os.execvp('git', ['git', 'diff', *(['--stat'] if self.args.stat else []), base_rev, rev])
 
-        elif self.args.github:
+        elif self.args.github or self.args.open:
             rm_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin']).decode('utf-8').strip()
 
             if rm_url.startswith(git_pfx := 'git@github.com:'):
