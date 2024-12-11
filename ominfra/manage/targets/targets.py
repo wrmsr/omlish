@@ -19,6 +19,15 @@ class ManageTarget(abc.ABC):  # noqa
 #
 
 
+@dc.dataclass(frozen=True)
+class PythonRemoteManageTarget:
+    DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
+    python: str = DEFAULT_PYTHON
+
+
+#
+
+
 class RemoteManageTarget(ManageTarget, abc.ABC):
     pass
 
@@ -27,10 +36,7 @@ class PhysicallyRemoteManageTarget(RemoteManageTarget, abc.ABC):
     pass
 
 
-#
-
-
-class LocalConnectorTarget(ManageTarget, abc.ABC):
+class LocalManageTarget(ManageTarget, abc.ABC):
     pass
 
 
@@ -38,15 +44,6 @@ class LocalConnectorTarget(ManageTarget, abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class PythonRemoteManageTarget:
-    DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
-    python: str = DEFAULT_PYTHON
-
-
-##
-
-
-@dc.dataclass(frozen=True)self.args
 class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
     host: ta.Optional[str] = None
     username: ta.Optional[str] = None
@@ -65,7 +62,7 @@ class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):
 ##
 
 
-class InProcessConnectorTarget(LocalConnectorTarget):
+class InProcessConnectorTarget(LocalManageTarget):
     class Mode(enum.Enum):
         DIRECT = enum.auto()
         FAKE_REMOTE = enum.auto()
