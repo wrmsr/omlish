@@ -4826,27 +4826,6 @@ class RemoteChannelImpl(RemoteChannel):
 
 
 ########################################
-# ../system/commands.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class CheckSystemPackageCommand(Command['CheckSystemPackageCommand.Output']):
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        pass
-
-
-class CheckSystemPackageCommandExecutor(CommandExecutor[CheckSystemPackageCommand, CheckSystemPackageCommand.Output]):
-    async def execute(self, cmd: CheckSystemPackageCommand) -> CheckSystemPackageCommand.Output:
-        log.info('Checking system package!')
-
-        return CheckSystemPackageCommand.Output()
-
-
-########################################
 # ../../../omlish/lite/subprocesses.py
 
 
@@ -6416,6 +6395,43 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
         finally:
             rch.stop()
             await rch_task
+
+
+########################################
+# ../system/commands.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CheckSystemPackageCommand(Command['CheckSystemPackageCommand.Output']):
+    pkgs: ta.Sequence[str] = ()
+
+    def __post_init__(self) -> None:
+        check.not_isinstance(self.pkgs, str)
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        pkgs: ta.Sequence[SystemPackage]
+
+
+class CheckSystemPackageCommandExecutor(CommandExecutor[CheckSystemPackageCommand, CheckSystemPackageCommand.Output]):
+    def __init__(
+            self,
+            *,
+            mgr: SystemPackageManager,
+    ) -> None:
+        super().__init__()
+
+        self._mgr = mgr
+
+    async def execute(self, cmd: CheckSystemPackageCommand) -> CheckSystemPackageCommand.Output:
+        log.info('Checking system package!')
+
+        ret = await self._mgr.query(*cmd.pkgs)
+
+        return CheckSystemPackageCommand.Output(list(ret.values()))
 
 
 ########################################
