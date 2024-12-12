@@ -2035,8 +2035,8 @@ class _CachedNullary(_AbstractCachedNullary):
         return self._value
 
 
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
+def cached_nullary(fn: CallableT) -> CallableT:
+    return _CachedNullary(fn)  # type: ignore
 
 
 def static_init(fn: CallableT) -> CallableT:
@@ -4409,6 +4409,8 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
         return {'action': 'store_true'}
     elif ann is list:
         return {'action': 'append'}
+    elif is_optional_alias(ann):
+        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
     else:
         raise TypeError(ann)
 
@@ -5814,6 +5816,7 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
+ - newtypes?
 """
 
 
@@ -8040,12 +8043,8 @@ class SubprocessRemoteSpawning(RemoteSpawning):
     ) -> ta.AsyncGenerator[RemoteSpawning.Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
 
-        cmd = pc.cmd
-        if not debug:
-            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
-
         async with asyncio_subprocesses.popen(
-                *cmd,
+                *pc.cmd,
                 shell=pc.shell,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -8888,6 +8887,7 @@ class PyenvVersionInstaller:
             self._version,
         ]
 
+        full_args: ta.List[str]
         if self._given_install_name is not None:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
@@ -9759,6 +9759,22 @@ class ManageConfig:
 
 
 class MainCli(ArgparseCli):
+    config_file: ta.Optional[str] = argparse_arg('--config-file', help='Config file path')  # type: ignore
+
+    @cached_nullary
+    def config(self) -> ManageConfig:
+        if (cf := self.config_file) is None:
+            cf = os.path.expanduser('~/.omlish/manage.yml')
+            if not os.path.isfile(cf):
+                cf = None
+
+        if cf is None:
+            return ManageConfig()
+        else:
+            return read_config_file(cf, ManageConfig)
+
+    #
+
     @argparse_command(
         argparse_arg('--_payload-file'),
 
@@ -9772,19 +9788,10 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--deploy-home'),
 
-        argparse_arg('--config-file'),
-
         argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
     async def run(self) -> None:
-        if self.args.config_file is not None:
-            cfg = read_config_file(self.args.config_file, ManageConfig)
-        else:
-            cfg = ManageConfig()
-
-        #
-
         bs = MainBootstrap(
             main_config=MainConfig(
                 log_level='DEBUG' if self.args.debug else 'INFO',
@@ -9821,7 +9828,7 @@ class MainCli(ArgparseCli):
 
         tgt: ManageTarget
         if not (ts := self.args.target).startswith('{'):
-            tgt = check.not_none(cfg.targets)[ts]
+            tgt = check.not_none(self.config().targets)[ts]
         else:
             tgt = msh.unmarshal_obj(json.loads(ts), ManageTarget)
 

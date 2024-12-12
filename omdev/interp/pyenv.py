@@ -314,6 +314,7 @@ class PyenvVersionInstaller:
             self._version,
         ]
 
+        full_args: ta.List[str]
         if self._given_install_name is not None:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa
