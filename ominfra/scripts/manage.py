@@ -3138,68 +3138,6 @@ def get_remote_payload_src(
 
 
 ########################################
-# ../system/platforms.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Platform(abc.ABC):  # noqa
-    pass
-
-
-class LinuxPlatform(Platform, abc.ABC):
-    pass
-
-
-class UbuntuPlatform(LinuxPlatform):
-    pass
-
-
-class AmazonLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class GenericLinuxPlatform(LinuxPlatform):
-    pass
-
-
-class DarwinPlatform(Platform):
-    pass
-
-
-class UnknownPlatform(Platform):
-    pass
-
-
-##
-
-
-def get_system_platform() -> Platform:
-    plat = sys.platform
-
-    if plat == 'linux':
-        if (osr := LinuxOsRelease.read()) is None:
-            return GenericLinuxPlatform()
-
-        if osr.id == 'amzn':
-            return AmazonLinuxPlatform()
-
-        elif osr.id == 'ubuntu':
-            return UbuntuPlatform()
-
-        else:
-            return GenericLinuxPlatform()
-
-    elif plat == 'darwin':
-        return DarwinPlatform()
-
-    else:
-        return UnknownPlatform()
-
-
-########################################
 # ../targets/targets.py
 """
 It's desugaring. Subprocess and locals are only leafs. Retain an origin?
@@ -5488,12 +5426,72 @@ class RemoteChannelImpl(RemoteChannel):
 
 
 ########################################
-# ../system/config.py
+# ../system/platforms.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
-class SystemConfig:
-    platform: ta.Optional[Platform] = None
+class Platform(abc.ABC):  # noqa
+    pass
+
+
+class LinuxPlatform(Platform, abc.ABC):
+    pass
+
+
+class UbuntuPlatform(LinuxPlatform):
+    pass
+
+
+class AmazonLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class GenericLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class DarwinPlatform(Platform):
+    pass
+
+
+class UnknownPlatform(Platform):
+    pass
+
+
+##
+
+
+def _detect_system_platform() -> Platform:
+    plat = sys.platform
+
+    if plat == 'linux':
+        if (osr := LinuxOsRelease.read()) is None:
+            return GenericLinuxPlatform()
+
+        if osr.id == 'amzn':
+            return AmazonLinuxPlatform()
+
+        elif osr.id == 'ubuntu':
+            return UbuntuPlatform()
+
+        else:
+            return GenericLinuxPlatform()
+
+    elif plat == 'darwin':
+        return DarwinPlatform()
+
+    else:
+        return UnknownPlatform()
+
+
+@cached_nullary
+def detect_system_platform() -> Platform:
+    platform = _detect_system_platform()
+    log.info('Detected platform: %r', platform)
+    return platform
 
 
 ########################################
@@ -5678,19 +5676,6 @@ def subprocess_close(
         proc.stdin.close()
 
     proc.wait(timeout)
-
-
-########################################
-# ../bootstrap.py
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig = MainConfig()
-
-    remote_config: RemoteConfig = RemoteConfig()
-
-    system_config: SystemConfig = SystemConfig()
 
 
 ########################################
@@ -6110,6 +6095,15 @@ class RemoteCommandExecutor(CommandExecutor):
 
 
 ########################################
+# ../system/config.py
+
+
+@dc.dataclass(frozen=True)
+class SystemConfig:
+    platform: ta.Optional[Platform] = None
+
+
+########################################
 # ../../../omlish/lite/asyncio/subprocesses.py
 
 
@@ -6503,6 +6497,19 @@ INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
+# ../bootstrap.py
+
+
+@dc.dataclass(frozen=True)
+class MainBootstrap:
+    main_config: MainConfig = MainConfig()
+
+    remote_config: RemoteConfig = RemoteConfig()
+
+    system_config: SystemConfig = SystemConfig()
+
+
+########################################
 # ../commands/subprocess.py
 
 
@@ -6570,148 +6577,6 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             stdout=stdout,  # noqa
             stderr=stderr,  # noqa
         )
-
-
-########################################
-# ../remote/_main.py
-
-
-##
-
-
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
-        self._fn = fn
-
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
-
-
-##
-
-
-class _RemoteExecutionMain:
-    def __init__(
-            self,
-            chan: RemoteChannel,
-    ) -> None:
-        super().__init__()
-
-        self._chan = chan
-
-        self.__bootstrap: ta.Optional[MainBootstrap] = None
-        self.__injector: ta.Optional[Injector] = None
-
-    @property
-    def _bootstrap(self) -> MainBootstrap:
-        return check.not_none(self.__bootstrap)
-
-    @property
-    def _injector(self) -> Injector:
-        return check.not_none(self.__injector)
-
-    #
-
-    def _timebomb_main(
-            self,
-            delay_s: float,
-            *,
-            sig: int = signal.SIGINT,
-            code: int = 1,
-    ) -> None:
-        time.sleep(delay_s)
-
-        if (pgid := os.getpgid(0)) == os.getpid():
-            os.killpg(pgid, sig)
-
-        os._exit(code)  # noqa
-
-    @cached_nullary
-    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
-        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
-            return None
-
-        thr = threading.Thread(
-            target=functools.partial(self._timebomb_main, tbd),
-            name=f'{self.__class__.__name__}.timebomb',
-            daemon=True,
-        )
-
-        thr.start()
-
-        log.debug('Started timebomb thread: %r', thr)
-
-        return thr
-
-    #
-
-    @cached_nullary
-    def _log_handler(self) -> _RemoteLogHandler:
-        return _RemoteLogHandler(self._chan)
-
-    #
-
-    async def _setup(self) -> None:
-        check.none(self.__bootstrap)
-        check.none(self.__injector)
-
-        # Bootstrap
-
-        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
-
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
-
-        # Post-bootstrap
-
-        if self._bootstrap.remote_config.set_pgid:
-            if os.getpgid(0) != os.getpid():
-                log.debug('Setting pgid')
-                os.setpgid(0, 0)
-
-        if (ds := self._bootstrap.remote_config.deathsig) is not None:
-            log.debug('Setting deathsig: %s', ds)
-            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
-
-        self._timebomb_thread()
-
-        if self._bootstrap.remote_config.forward_logging:
-            log.debug('Installing log forwarder')
-            logging.root.addHandler(self._log_handler())
-
-    #
-
-    async def run(self) -> None:
-        await self._setup()
-
-        executor = self._injector[LocalCommandExecutor]
-
-        handler = _RemoteCommandHandler(self._chan, executor)
-
-        await handler.run()
-
-
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    async def inner() -> None:
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)
-
-        chan = RemoteChannelImpl(
-            input,
-            output,
-        )
-
-        await _RemoteExecutionMain(chan).run()
-
-    asyncio.run(inner())
 
 
 ########################################
@@ -7002,122 +6867,145 @@ class RunningInterpProvider(InterpProvider):
 
 
 ########################################
-# ../remote/connection.py
+# ../remote/_main.py
 
 
 ##
 
 
-class PyremoteRemoteExecutionConnector:
-    def __init__(
-            self,
-            *,
-            spawning: RemoteSpawning,
-            msh: ObjMarshalerManager,
-            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
-    ) -> None:
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
         super().__init__()
+        self._fn = fn
 
-        self._spawning = spawning
-        self._msh = msh
-        self._payload_file = payload_file
-
-    #
-
-    @cached_nullary
-    def _payload_src(self) -> str:
-        return get_remote_payload_src(file=self._payload_file)
-
-    @cached_nullary
-    def _remote_src(self) -> ta.Sequence[str]:
-        return [
-            self._payload_src(),
-            '_remote_execution_main()',
-        ]
-
-    @cached_nullary
-    def _spawn_src(self) -> str:
-        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
-
-    #
-
-    @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        spawn_src = self._spawn_src()
-        remote_src = self._remote_src()
-
-        async with self._spawning.spawn(
-                tgt,
-                spawn_src,
-                debug=bs.main_config.debug,
-        ) as proc:
-            res = await PyremoteBootstrapDriver(  # noqa
-                remote_src,
-                PyremoteBootstrapOptions(
-                    debug=bs.main_config.debug,
-                ),
-            ).async_run(
-                proc.stdout,
-                proc.stdin,
-            )
-
-            chan = RemoteChannelImpl(
-                proc.stdout,
-                proc.stdin,
-                msh=self._msh,
-            )
-
-            await chan.send_obj(bs)
-
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(chan)) as rce:
-                await rce.start()
-
-                yield rce
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
 
 
 ##
 
 
-class InProcessRemoteExecutionConnector:
+class _RemoteExecutionMain:
     def __init__(
             self,
-            *,
-            msh: ObjMarshalerManager,
-            local_executor: LocalCommandExecutor,
+            chan: RemoteChannel,
     ) -> None:
         super().__init__()
 
-        self._msh = msh
-        self._local_executor = local_executor
+        self._chan = chan
 
-    @contextlib.asynccontextmanager
-    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        r0, w0 = asyncio_create_bytes_channel()
-        r1, w1 = asyncio_create_bytes_channel()
+        self.__bootstrap: ta.Optional[MainBootstrap] = None
+        self.__injector: ta.Optional[Injector] = None
 
-        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
-        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
+    @property
+    def _bootstrap(self) -> MainBootstrap:
+        return check.not_none(self.__bootstrap)
 
-        rch = _RemoteCommandHandler(
-            remote_chan,
-            self._local_executor,
+    @property
+    def _injector(self) -> Injector:
+        return check.not_none(self.__injector)
+
+    #
+
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
         )
-        rch_task = asyncio.create_task(rch.run())  # noqa
-        try:
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
-                await rce.start()
 
-                yield rce
+        thr.start()
 
-        finally:
-            rch.stop()
-            await rch_task
+        log.debug('Started timebomb thread: %r', thr)
+
+        return thr
+
+    #
+
+    @cached_nullary
+    def _log_handler(self) -> _RemoteLogHandler:
+        return _RemoteLogHandler(self._chan)
+
+    #
+
+    async def _setup(self) -> None:
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
+
+        # Bootstrap
+
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
+
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
+        self._timebomb_thread()
+
+        if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
+            logging.root.addHandler(self._log_handler())
+
+    #
+
+    async def run(self) -> None:
+        await self._setup()
+
+        executor = self._injector[LocalCommandExecutor]
+
+        handler = _RemoteCommandHandler(self._chan, executor)
+
+        await handler.run()
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        chan = RemoteChannelImpl(
+            input,
+            output,
+        )
+
+        await _RemoteExecutionMain(chan).run()
+
+    asyncio.run(inner())
 
 
 ########################################
@@ -7715,6 +7603,223 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
+# ../remote/connection.py
+
+
+##
+
+
+class PyremoteRemoteExecutionConnector:
+    def __init__(
+            self,
+            *,
+            spawning: RemoteSpawning,
+            msh: ObjMarshalerManager,
+            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spawning = spawning
+        self._msh = msh
+        self._payload_file = payload_file
+
+    #
+
+    @cached_nullary
+    def _payload_src(self) -> str:
+        return get_remote_payload_src(file=self._payload_file)
+
+    @cached_nullary
+    def _remote_src(self) -> ta.Sequence[str]:
+        return [
+            self._payload_src(),
+            '_remote_execution_main()',
+        ]
+
+    @cached_nullary
+    def _spawn_src(self) -> str:
+        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def connect(
+            self,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        spawn_src = self._spawn_src()
+        remote_src = self._remote_src()
+
+        async with self._spawning.spawn(
+                tgt,
+                spawn_src,
+                debug=bs.main_config.debug,
+        ) as proc:
+            res = await PyremoteBootstrapDriver(  # noqa
+                remote_src,
+                PyremoteBootstrapOptions(
+                    debug=bs.main_config.debug,
+                ),
+            ).async_run(
+                proc.stdout,
+                proc.stdin,
+            )
+
+            chan = RemoteChannelImpl(
+                proc.stdout,
+                proc.stdin,
+                msh=self._msh,
+            )
+
+            await chan.send_obj(bs)
+
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(chan)) as rce:
+                await rce.start()
+
+                yield rce
+
+
+##
+
+
+class InProcessRemoteExecutionConnector:
+    def __init__(
+            self,
+            *,
+            msh: ObjMarshalerManager,
+            local_executor: LocalCommandExecutor,
+    ) -> None:
+        super().__init__()
+
+        self._msh = msh
+        self._local_executor = local_executor
+
+    @contextlib.asynccontextmanager
+    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        r0, w0 = asyncio_create_bytes_channel()
+        r1, w1 = asyncio_create_bytes_channel()
+
+        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
+        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
+
+        rch = _RemoteCommandHandler(
+            remote_chan,
+            self._local_executor,
+        )
+        rch_task = asyncio.create_task(rch.run())  # noqa
+        try:
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
+                await rce.start()
+
+                yield rce
+
+        finally:
+            rch.stop()
+            await rch_task
+
+
+########################################
+# ../../../omdev/interp/resolvers.py
+
+
+INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
+    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
+}
+
+
+class InterpResolver:
+    def __init__(
+            self,
+            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
+    ) -> None:
+        super().__init__()
+
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
+
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
+
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
+        )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return await tp.install_version(bv)
+
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+
+DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
+    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
+    PyenvInterpProvider(try_update=True),
+
+    RunningInterpProvider(),
+
+    SystemInterpProvider(),
+]])
+
+
+########################################
 # ../remote/inject.py
 
 
@@ -7877,101 +7982,33 @@ class SshManageTargetConnector(ManageTargetConnector):
 
 
 ########################################
-# ../../../omdev/interp/resolvers.py
+# ../commands/interp.py
 
 
-INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
-    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
-}
+##
 
 
-class InterpResolver:
-    def __init__(
-            self,
-            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
-    ) -> None:
-        super().__init__()
+@dc.dataclass(frozen=True)
+class InterpCommand(Command['InterpCommand.Output']):
+    spec: str
+    install: bool = False
 
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        exe: str
+        version: str
+        opts: InterpOpts
 
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
 
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
+class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
+    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
+        i = InterpSpecifier.parse(check.not_none(cmd.spec))
+        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        return InterpCommand.Output(
+            exe=o.exe,
+            version=str(o.version.version),
+            opts=o.version.opts,
         )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-
-DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
-    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
-    PyenvInterpProvider(try_update=True),
-
-    RunningInterpProvider(),
-
-    SystemInterpProvider(),
-]])
 
 
 ########################################
@@ -8001,36 +8038,6 @@ def bind_targets() -> InjectorBindings:
     #
 
     return inj.as_bindings(*lst)
-
-
-########################################
-# ../commands/interp.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpCommand(Command['InterpCommand.Output']):
-    spec: str
-    install: bool = False
-
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        exe: str
-        version: str
-        opts: InterpOpts
-
-
-class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
-    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
-        i = InterpSpecifier.parse(check.not_none(cmd.spec))
-        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
-        return InterpCommand.Output(
-            exe=o.exe,
-            version=str(o.version.version),
-            opts=o.version.opts,
-        )
 
 
 ########################################
@@ -8163,12 +8170,18 @@ def bind_system(
 
     #
 
-    platform = system_config.platform or get_system_platform()
+    platform = system_config.platform or detect_system_platform()
     lst.append(inj.bind(platform, key=Platform))
 
     #
 
-    if isinstance(platform, LinuxPlatform):
+    if isinstance(platform, AmazonLinuxPlatform):
+        lst.extend([
+            inj.bind(YumSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=YumSystemPackageManager),
+        ])
+
+    elif isinstance(platform, LinuxPlatform):
         lst.extend([
             inj.bind(AptSystemPackageManager, singleton=True),
             inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),

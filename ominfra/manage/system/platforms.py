@@ -2,6 +2,8 @@ import abc
 import dataclasses as dc
 import sys
 
+from omlish.lite.cached import cached_nullary
+from omlish.lite.logs import log
 from omlish.os.linux import LinuxOsRelease
 
 
@@ -40,7 +42,7 @@ class UnknownPlatform(Platform):
 ##
 
 
-def get_system_platform() -> Platform:
+def _detect_system_platform() -> Platform:
     plat = sys.platform
 
     if plat == 'linux':
@@ -61,3 +63,10 @@ def get_system_platform() -> Platform:
 
     else:
         return UnknownPlatform()
+
+
+@cached_nullary
+def detect_system_platform() -> Platform:
+    platform = _detect_system_platform()
+    log.info('Detected platform: %r', platform)
+    return platform
