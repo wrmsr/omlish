@@ -142,6 +142,7 @@ class SshManageTargetConnector(ManageTargetConnector):
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
+                    shell_quote=True,
                     python=smt.python,
                 ),
                 self._bootstrap,

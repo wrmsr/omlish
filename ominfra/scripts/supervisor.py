@@ -3787,6 +3787,20 @@ def attr_setting(obj, attr, val, *, default=None):  # noqa
             setattr(obj, attr, orig)
 
 
+##
+
+
+class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
+    def __init__(self, thing):
+        self.thing = thing
+
+    async def __aenter__(self):
+        return self.thing
+
+    async def __aexit__(self, *exc_info):
+        await self.thing.aclose()
+
+
 ########################################
 # ../../../omlish/lite/inject.py
 
