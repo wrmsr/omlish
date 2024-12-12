@@ -13,6 +13,8 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
+
+        deploy_config=bs.deploy_config,
         remote_config=bs.remote_config,
         system_config=bs.system_config,
 

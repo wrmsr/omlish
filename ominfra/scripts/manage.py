@@ -92,6 +92,10 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 CommandT = ta.TypeVar('CommandT', bound='Command')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
+# deploy/paths.py
+DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
+DeployPathSpec = ta.Literal['app', 'tag']  # ta.TypeAlias
+
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
@@ -528,6 +532,31 @@ class MainConfig:
     log_level: ta.Optional[str] = 'INFO'
 
     debug: bool = False
+
+
+########################################
+# ../deploy/config.py
+
+
+@dc.dataclass(frozen=True)
+class DeployConfig:
+    deploy_home: ta.Optional[str] = None
+
+
+########################################
+# ../deploy/types.py
+
+
+DeployHome = ta.NewType('DeployHome', str)
+
+DeployApp = ta.NewType('DeployApp', str)
+DeployTag = ta.NewType('DeployTag', str)
+DeployRev = ta.NewType('DeployRev', str)
+
+
+class DeployAppTag(ta.NamedTuple):
+    app: DeployApp
+    tag: DeployTag
 
 
 ########################################
@@ -3075,6 +3104,229 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
             raise NameError(name)
         dct[name] = cr.command_cls
     return CommandNameMap(dct)
+
+
+########################################
+# ../deploy/paths.py
+"""
+~deploy
+  deploy.pid (flock)
+  /app
+    /<appspec> - shallow clone
+  /conf
+    /env
+      <appspec>.env
+    /nginx
+      <appspec>.conf
+    /supervisor
+      <appspec>.conf
+  /venv
+    /<appspec>
+
+?
+  /logs
+    /wrmsr--omlish--<spec>
+
+spec = <name>--<rev>--<when>
+
+==
+
+for dn in [
+    'app',
+    'conf',
+    'conf/env',
+    'conf/nginx',
+    'conf/supervisor',
+    'venv',
+]:
+
+==
+
+"""
+
+
+##
+
+
+DEPLOY_PATH_SPEC_PLACEHOLDER = '@'
+DEPLOY_PATH_SPEC_SEPARATORS = '-.'
+
+DEPLOY_PATH_SPECS: ta.FrozenSet[str] = frozenset([
+    'app',
+    'tag',  # <rev>-<dt>
+])
+
+
+class DeployPathError(Exception):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DeployPathPart(abc.ABC):  # noqa
+    @property
+    @abc.abstractmethod
+    def kind(self) -> DeployPathKind:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        raise NotImplementedError
+
+
+#
+
+
+class DirDeployPathPart(DeployPathPart, abc.ABC):
+    @property
+    def kind(self) -> DeployPathKind:
+        return 'dir'
+
+    @classmethod
+    def parse(cls, s: str) -> 'DirDeployPathPart':
+        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
+            check.equal(s[0], DEPLOY_PATH_SPEC_PLACEHOLDER)
+            return SpecDirDeployPathPart(s[1:])
+        else:
+            return ConstDirDeployPathPart(s)
+
+
+class FileDeployPathPart(DeployPathPart, abc.ABC):
+    @property
+    def kind(self) -> DeployPathKind:
+        return 'file'
+
+    @classmethod
+    def parse(cls, s: str) -> 'FileDeployPathPart':
+        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
+            check.equal(s[0], DEPLOY_PATH_SPEC_PLACEHOLDER)
+            if not any(c in s for c in DEPLOY_PATH_SPEC_SEPARATORS):
+                return SpecFileDeployPathPart(s[1:], '')
+            else:
+                p = min(f for c in DEPLOY_PATH_SPEC_SEPARATORS if (f := s.find(c)) > 0)
+                return SpecFileDeployPathPart(s[1:p], s[p:])
+        else:
+            return ConstFileDeployPathPart(s)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ConstDeployPathPart(DeployPathPart, abc.ABC):
+    name: str
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+        check.not_in('/', self.name)
+        check.not_in(DEPLOY_PATH_SPEC_PLACEHOLDER, self.name)
+
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return self.name
+
+
+class ConstDirDeployPathPart(ConstDeployPathPart, DirDeployPathPart):
+    pass
+
+
+class ConstFileDeployPathPart(ConstDeployPathPart, FileDeployPathPart):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SpecDeployPathPart(DeployPathPart, abc.ABC):
+    spec: str  # DeployPathSpec
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.spec)
+        for c in [*DEPLOY_PATH_SPEC_SEPARATORS, DEPLOY_PATH_SPEC_PLACEHOLDER, '/']:
+            check.not_in(c, self.spec)
+        check.in_(self.spec, DEPLOY_PATH_SPECS)
+
+    def _render_spec(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        if specs is not None:
+            return specs[self.spec]  # type: ignore
+        else:
+            return DEPLOY_PATH_SPEC_PLACEHOLDER + self.spec
+
+
+@dc.dataclass(frozen=True)
+class SpecDirDeployPathPart(SpecDeployPathPart, DirDeployPathPart):
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return self._render_spec(specs)
+
+
+@dc.dataclass(frozen=True)
+class SpecFileDeployPathPart(SpecDeployPathPart, FileDeployPathPart):
+    suffix: str
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.suffix:
+            for c in [DEPLOY_PATH_SPEC_PLACEHOLDER, '/']:
+                check.not_in(c, self.suffix)
+
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return self._render_spec(specs) + self.suffix
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployPath:
+    parts: ta.Sequence[DeployPathPart]
+
+    def __post_init__(self) -> None:
+        check.not_empty(self.parts)
+        for p in self.parts[:-1]:
+            check.equal(p.kind, 'dir')
+
+        pd = {}
+        for i, p in enumerate(self.parts):
+            if isinstance(p, SpecDeployPathPart):
+                if p.spec in pd:
+                    raise DeployPathError('Duplicate specs in path', self)
+                pd[p.spec] = i
+
+        if 'tag' in pd:
+            if 'app' not in pd or pd['app'] >= pd['tag']:
+                raise DeployPathError('Tag spec in path without preceding app', self)
+
+    @property
+    def kind(self) -> ta.Literal['file', 'dir']:
+        return self.parts[-1].kind
+
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return os.path.join(  # noqa
+            *[p.render(specs) for p in self.parts],
+            *([''] if self.kind == 'dir' else []),
+        )
+
+    @classmethod
+    def parse(cls, s: str) -> 'DeployPath':
+        tail_parse: ta.Callable[[str], DeployPathPart]
+        if s.endswith('/'):
+            tail_parse = DirDeployPathPart.parse
+            s = s[:-1]
+        else:
+            tail_parse = FileDeployPathPart.parse
+        ps = check.non_empty_str(s).split('/')
+        return cls([
+            *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
+            tail_parse(ps[-1]),
+        ])
+
+
+##
+
+
+class DeployPathOwner(abc.ABC):
+    @abc.abstractmethod
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        raise NotImplementedError
 
 
 ########################################
@@ -6505,6 +6757,8 @@ INTERP_INSPECTOR = InterpInspector()
 class MainBootstrap:
     main_config: MainConfig = MainConfig()
 
+    deploy_config: DeployConfig = DeployConfig()
+
     remote_config: RemoteConfig = RemoteConfig()
 
     system_config: SystemConfig = SystemConfig()
@@ -6577,6 +6831,192 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
 
             stdout=stdout,  # noqa
             stderr=stderr,  # noqa
+        )
+
+
+########################################
+# ../deploy/git.py
+"""
+TODO:
+ - 'repos'?
+
+git/github.com/wrmsr/omlish <- bootstrap repo
+ - shallow clone off bootstrap into /apps
+
+github.com/wrmsr/omlish@rev
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployGitRepo:
+    host: ta.Optional[str] = None
+    username: ta.Optional[str] = None
+    path: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.not_in('..', check.non_empty_str(self.host))
+        check.not_in('.', check.non_empty_str(self.path))
+
+
+@dc.dataclass(frozen=True)
+class DeployGitSpec:
+    repo: DeployGitRepo
+    rev: DeployRev
+
+
+##
+
+
+class DeployGitManager(DeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: DeployHome,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_home = deploy_home
+        self._dir = os.path.join(deploy_home, 'git')
+
+        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
+
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            DeployPath.parse('git'),
+        }
+
+    class RepoDir:
+        def __init__(
+                self,
+                git: 'DeployGitManager',
+                repo: DeployGitRepo,
+        ) -> None:
+            super().__init__()
+
+            self._git = git
+            self._repo = repo
+            self._dir = os.path.join(
+                self._git._dir,  # noqa
+                check.non_empty_str(repo.host),
+                check.non_empty_str(repo.path),
+            )
+
+        @property
+        def repo(self) -> DeployGitRepo:
+            return self._repo
+
+        @property
+        def url(self) -> str:
+            if self._repo.username is not None:
+                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
+            else:
+                return f'https://{self._repo.host}/{self._repo.path}'
+
+        async def _call(self, *cmd: str) -> None:
+            await asyncio_subprocess_check_call(
+                *cmd,
+                cwd=self._dir,
+            )
+
+        @async_cached_nullary
+        async def init(self) -> None:
+            os.makedirs(self._dir, exist_ok=True)
+            if os.path.exists(os.path.join(self._dir, '.git')):
+                return
+
+            await self._call('git', 'init')
+            await self._call('git', 'remote', 'add', 'origin', self.url)
+
+        async def fetch(self, rev: DeployRev) -> None:
+            await self.init()
+            await self._call('git', 'fetch', '--depth=1', 'origin', rev)
+
+        async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
+            check.state(not os.path.exists(dst_dir))
+
+            await self.fetch(rev)
+
+            # FIXME: temp dir swap
+            os.makedirs(dst_dir)
+
+            dst_call = functools.partial(asyncio_subprocess_check_call, cwd=dst_dir)
+            await dst_call('git', 'init')
+
+            await dst_call('git', 'remote', 'add', 'local', self._dir)
+            await dst_call('git', 'fetch', '--depth=1', 'local', rev)
+            await dst_call('git', 'checkout', rev)
+
+    def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
+        try:
+            return self._repo_dirs[repo]
+        except KeyError:
+            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
+            return repo_dir
+
+    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+        await self.get_repo_dir(spec.repo).checkout(spec.rev, dst_dir)
+
+
+########################################
+# ../deploy/venvs.py
+"""
+TODO:
+ - interp
+ - share more code with pyproject?
+"""
+
+
+class DeployVenvManager(DeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: DeployHome,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_home = deploy_home
+        self._dir = os.path.join(deploy_home, 'venvs')
+
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            DeployPath.parse('venvs/@app/@tag/'),
+        }
+
+    async def setup_venv(
+            self,
+            app_dir: str,
+            venv_dir: str,
+            *,
+            use_uv: bool = True,
+    ) -> None:
+        sys_exe = 'python3'
+
+        await asyncio_subprocess_check_call(sys_exe, '-m', 'venv', venv_dir)
+
+        #
+
+        venv_exe = os.path.join(venv_dir, 'bin', 'python3')
+
+        #
+
+        reqs_txt = os.path.join(app_dir, 'requirements.txt')
+
+        if os.path.isfile(reqs_txt):
+            if use_uv:
+                await asyncio_subprocess_check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                pip_cmd = ['-m', 'uv', 'pip']
+            else:
+                pip_cmd = ['-m', 'pip']
+
+            await asyncio_subprocess_check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
+
+    async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
+        await self.setup_venv(
+            os.path.join(self._deploy_home, 'apps', app_tag.app, app_tag.tag),
+            os.path.join(self._deploy_home, 'venvs', app_tag.app, app_tag.tag),
         )
 
 
@@ -6865,6 +7305,66 @@ class RunningInterpProvider(InterpProvider):
             exe=sys.executable,
             version=self.version(),
         )
+
+
+########################################
+# ../deploy/apps.py
+
+
+def make_deploy_tag(
+        rev: DeployRev,
+        now: ta.Optional[datetime.datetime] = None,
+) -> DeployTag:
+    if now is None:
+        now = datetime.datetime.utcnow()  # noqa
+    now_fmt = '%Y%m%dT%H%M%S'
+    now_str = now.strftime(now_fmt)
+    return DeployTag('-'.join([rev, now_str]))
+
+
+class DeployAppManager(DeployPathOwner):
+    def __init__(
+            self,
+            *,
+            deploy_home: DeployHome,
+            git: DeployGitManager,
+            venvs: DeployVenvManager,
+    ) -> None:
+        super().__init__()
+
+        self._deploy_home = deploy_home
+        self._git = git
+        self._venvs = venvs
+
+        self._dir = os.path.join(deploy_home, 'apps')
+
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            DeployPath.parse('apps/@app/@tag'),
+        }
+
+    async def prepare_app(
+            self,
+            app: DeployApp,
+            rev: DeployRev,
+            repo: DeployGitRepo,
+    ):
+        app_tag = DeployAppTag(app, make_deploy_tag(rev))
+        app_dir = os.path.join(self._dir, app, app_tag.tag)
+
+        #
+
+        await self._git.checkout(
+            DeployGitSpec(
+                repo=repo,
+                rev=rev,
+            ),
+            app_dir,
+        )
+
+        #
+
+        await self._venvs.setup_app_venv(app_tag)
 
 
 ########################################
@@ -8149,10 +8649,21 @@ def bind_commands(
 
 
 def bind_deploy(
+        *,
+        deploy_config: DeployConfig,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(deploy_config),
+
+        inj.bind(DeployAppManager, singleton=True),
+        inj.bind(DeployGitManager, singleton=True),
+        inj.bind(DeployVenvManager, singleton=True),
+
         bind_command(DeployCommand, DeployCommandExecutor),
     ]
+
+    if (dh := deploy_config.deploy_home) is not None:
+        lst.append(inj.bind(dh, key=DeployHome))
 
     return inj.as_bindings(*lst)
 
@@ -8215,6 +8726,8 @@ def bind_system(
 def bind_main(
         *,
         main_config: MainConfig = MainConfig(),
+
+        deploy_config: DeployConfig = DeployConfig(),
         remote_config: RemoteConfig = RemoteConfig(),
         system_config: SystemConfig = SystemConfig(),
 
@@ -8227,7 +8740,9 @@ def bind_main(
             main_config=main_config,
         ),
 
-        bind_deploy(),
+        bind_deploy(
+            deploy_config=deploy_config,
+        ),
 
         bind_remote(
             remote_config=remote_config,
@@ -8276,6 +8791,8 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
 
     injector = inj.create_injector(bind_main(  # noqa
         main_config=bs.main_config,
+
+        deploy_config=bs.deploy_config,
         remote_config=bs.remote_config,
         system_config=bs.system_config,
 
