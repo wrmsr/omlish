@@ -209,7 +209,7 @@ class ArgparseCli:
                     if 'dest' in obj.kwargs:
                         obj.dest = obj.kwargs['dest']
                     else:
-                        obj.dest = obj.kwargs['dest'] = att  # type: ignore
+                        obj.dest = obj.kwargs['dest'] = att.replace('_', '-')  # type: ignore
 
                 parser.add_argument(*obj.args, **obj.kwargs)
 
