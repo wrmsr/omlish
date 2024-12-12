@@ -6,7 +6,6 @@ manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import asyncio
-import contextlib
 import json
 import sys
 import typing as ta
@@ -22,21 +21,15 @@ from omlish.lite.pycharm import PycharmRemoteDebug
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
-from .commands.base import CommandExecutor
-from .commands.local import LocalCommandExecutor
 from .config import MainConfig
 from .remote.config import RemoteConfig
-from .remote.connection import PyremoteRemoteExecutionConnector
-from .remote.spawning import RemoteSpawning
+from .targets.connection import ManageTargetConnector
+from .targets.inject import DockerManageTarget
 
 
 class MainCli(ArgparseCli):
     @argparse_command(
         argparse_arg('--_payload-file'),
-
-        argparse_arg('-s', '--shell'),
-        argparse_arg('-q', '--shell-quote', action='store_true'),
-        argparse_arg('--python', default='python3'),
 
         argparse_arg('--pycharm-debug-port', type=int),
         argparse_arg('--pycharm-debug-host'),
@@ -45,8 +38,6 @@ class MainCli(ArgparseCli):
         argparse_arg('--remote-timebomb-delay-s', type=float),
 
         argparse_arg('--debug', action='store_true'),
-
-        argparse_arg('--local', action='store_true'),
 
         argparse_arg('command', nargs='+'),
     )
@@ -68,8 +59,6 @@ class MainCli(ArgparseCli):
                 ) if self.args.pycharm_debug_port is not None else None,
 
                 timebomb_delay_s=self.args.remote_timebomb_delay_s,
-
-                # use_in_process_remote_executor=True,
             ),
         )
 
@@ -93,21 +82,11 @@ class MainCli(ArgparseCli):
 
         #
 
-        async with contextlib.AsyncExitStack() as es:
-            ce: CommandExecutor
+        tgt = DockerManageTarget(image='python:3.12')
 
-            if self.args.local:
-                ce = injector[LocalCommandExecutor]
+        #
 
-            else:
-                tgt = RemoteSpawning.Target(
-                    shell=self.args.shell,
-                    shell_quote=self.args.shell_quote,
-                    python=self.args.python,
-                )
-
-                ce = await es.enter_async_context(injector[PyremoteRemoteExecutionConnector].connect(tgt, bs))  # noqa
-
+        async with injector[ManageTargetConnector].connect(tgt) as ce:
             async def run_command(cmd: Command) -> None:
                 res = await ce.try_execute(
                     cmd,
