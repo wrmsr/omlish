@@ -37,7 +37,7 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
-from omlish.lite.subprocesses import subprocess_check_call
+from omlish.lite.subprocesses import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files
@@ -214,7 +214,7 @@ class BasePyprojectPackageGenerator(abc.ABC):
             output_dir: ta.Optional[str] = None,
             opts: BuildOpts = BuildOpts(),
     ) -> None:
-        subprocess_check_call(
+        subprocesses.check_call(
             sys.executable,
             '-m',
             'build',
@@ -230,14 +230,14 @@ class BasePyprojectPackageGenerator(abc.ABC):
             for fn in os.listdir(dist_dir):
                 tmp_dir = tempfile.mkdtemp()
 
-                subprocess_check_call(
+                subprocesses.check_call(
                     sys.executable,
                     '-m', 'venv',
                     'test-install',
                     cwd=tmp_dir,
                 )
 
-                subprocess_check_call(
+                subprocesses.check_call(
                     os.path.join(tmp_dir, 'test-install', 'bin', 'python3'),
                     '-m', 'pip',
                     'install',

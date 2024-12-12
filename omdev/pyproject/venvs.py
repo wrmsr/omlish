@@ -3,7 +3,7 @@ import glob
 import os.path
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -58,12 +58,12 @@ class Venv:
             return False
 
         log.info('Using interpreter %s', (ie := await self.interp_exe()))
-        await asyncio_subprocess_check_call(ie, '-m', 'venv', dn)
+        await asyncio_subprocesses.check_call(ie, '-m', 'venv', dn)
 
         ve = self.exe()
         uv = self._cfg.use_uv
 
-        await asyncio_subprocess_check_call(
+        await asyncio_subprocesses.check_call(
             ve,
             '-m', 'pip',
             'install', '-v', '--upgrade',
@@ -81,7 +81,7 @@ class Venv:
             #   Caused by: Failed to download distribution due to network timeout. Try increasing UV_HTTP_TIMEOUT (current value: 30s).  # noqa
             #   UV_CONCURRENT_DOWNLOADS=4 UV_HTTP_TIMEOUT=3600
 
-            await asyncio_subprocess_check_call(
+            await asyncio_subprocesses.check_call(
                 ve,
                 '-m',
                 *(['uv'] if uv else []),

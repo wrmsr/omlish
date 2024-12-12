@@ -13,7 +13,7 @@ import functools
 import os.path
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 
@@ -92,7 +92,7 @@ class DeployGitManager(DeployPathOwner):
                 return f'https://{self._repo.host}/{self._repo.path}'
 
         async def _call(self, *cmd: str) -> None:
-            await asyncio_subprocess_check_call(
+            await asyncio_subprocesses.check_call(
                 *cmd,
                 cwd=self._dir,
             )
@@ -118,7 +118,7 @@ class DeployGitManager(DeployPathOwner):
             # FIXME: temp dir swap
             os.makedirs(dst_dir)
 
-            dst_call = functools.partial(asyncio_subprocess_check_call, cwd=dst_dir)
+            dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_dir)
             await dst_call('git', 'init')
 
             await dst_call('git', 'remote', 'add', 'local', self._dir)
