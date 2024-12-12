@@ -16,7 +16,7 @@ class TestMarshal(unittest.TestCase):
             'ab/@app/cd',
             'ab/@app/cd/',
             'ab/@app/cd/foo',
-            'ab/@app/cd/@deploy.foo',
+            'ab/@app/cd/@tag.foo',
         ]:
             print()
             print(s)
@@ -27,14 +27,14 @@ class TestMarshal(unittest.TestCase):
             print(json_dumps_pretty(msh.marshal_obj(dp)))
 
         self.assertEqual(
-            DeployPath.parse('ab/@app/cd/@deploy.foo').render({'app': 'foo', 'deploy': 'bar'}),
+            DeployPath.parse('ab/@app/cd/@tag.foo').render({'app': 'foo', 'tag': 'bar'}),
             'ab/foo/cd/bar.foo',
         )
 
         for s in [
             'ab/@app/cd/@app.foo',
-            'ab/@deploy/cd/@app.foo',
-            'ab/@deploy',
+            'ab/@tag/cd/@app.foo',
+            'ab/@tag',
         ]:
             with self.assertRaises(DeployPathError):
                 DeployPath.parse(s)
