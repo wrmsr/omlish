@@ -26,7 +26,7 @@ from .commands.base import CommandExecutor
 from .commands.local import LocalCommandExecutor
 from .config import MainConfig
 from .remote.config import RemoteConfig
-from .remote.connection import RemoteExecutionConnector
+from .remote.connection import PyremoteRemoteExecutionConnector
 from .remote.spawning import RemoteSpawning
 
 
@@ -106,7 +106,7 @@ class MainCli(ArgparseCli):
                     python=self.args.python,
                 )
 
-                ce = await es.enter_async_context(injector[RemoteExecutionConnector].connect(tgt, bs))  # noqa
+                ce = await es.enter_async_context(injector[PyremoteRemoteExecutionConnector].connect(tgt, bs))  # noqa
 
             async def run_command(cmd: Command) -> None:
                 res = await ce.try_execute(

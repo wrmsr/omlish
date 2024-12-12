@@ -27,7 +27,7 @@ def bind_main(
         remote_config: RemoteConfig = RemoteConfig(),
         system_config: SystemConfig = SystemConfig(),
 
-        main_bootstrap: ta.Optional[MainBootstrap] = None
+        main_bootstrap: ta.Optional[MainBootstrap] = None,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
