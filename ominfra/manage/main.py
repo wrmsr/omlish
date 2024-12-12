@@ -8,12 +8,14 @@ manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 import asyncio
 import dataclasses as dc
 import json
+import os.path
 import sys
 import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_command
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
@@ -37,6 +39,22 @@ class ManageConfig:
 
 
 class MainCli(ArgparseCli):
+    config_file: str = argparse_arg(help='Config file path')
+
+    @cached_nullary
+    def config(self) -> ManageConfig:
+        if (cf := self.config_file) is None:
+            cf = os.path.expanduser('~/.omlish/manage.yml')
+            if not os.path.isfile(cf):
+                cf = None
+
+        if cf is None:
+            return ManageConfig()
+        else:
+            return read_config_file(cf, ManageConfig)
+
+    #
+
     @argparse_command(
         argparse_arg('--_payload-file'),
 
@@ -50,19 +68,10 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--deploy-home'),
 
-        argparse_arg('--config-file'),
-
         argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
     async def run(self) -> None:
-        if self.args.config_file is not None:
-            cfg = read_config_file(self.args.config_file, ManageConfig)
-        else:
-            cfg = ManageConfig()
-
-        #
-
         bs = MainBootstrap(
             main_config=MainConfig(
                 log_level='DEBUG' if self.args.debug else 'INFO',
@@ -99,7 +108,7 @@ class MainCli(ArgparseCli):
 
         tgt: ManageTarget
         if not (ts := self.args.target).startswith('{'):
-            tgt = check.not_none(cfg.targets)[ts]
+            tgt = check.not_none(self.config().targets)[ts]
         else:
             tgt = msh.unmarshal_obj(json.loads(ts), ManageTarget)
 
