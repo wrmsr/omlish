@@ -5245,12 +5245,12 @@ class ObjMarshalerManager:
     ) -> ObjMarshaler:
         if isinstance(ty, type):
             if abc.ABC in ty.__bases__:
-                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]
+                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]  # type: ignore
                 if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
                     ins = {ity: snake_case(ity.__qualname__[:-len(ty.__name__)]) for ity in impls}
                 else:
                     ins = {ity: ity.__qualname__ for ity in impls}
-                return PolymorphicObjMarshaler.of([  # type: ignore
+                return PolymorphicObjMarshaler.of([
                     PolymorphicObjMarshaler.Impl(
                         ity,
                         itn,

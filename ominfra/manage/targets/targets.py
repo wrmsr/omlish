@@ -15,7 +15,7 @@ from omlish.lite.check import check
 
 
 class ManageTarget(abc.ABC):  # noqa
-    def __init_subclass__(cls, **kwargs: ta.Any) -> ta.Any:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         check.state(cls.__name__.endswith('ManageTarget'))
@@ -62,7 +62,7 @@ class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
 
 
 @dc.dataclass(frozen=True)
-class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):  # noqa
+class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget):  # noqa
     image: ta.Optional[str] = None
     container_id: ta.Optional[str] = None
 
