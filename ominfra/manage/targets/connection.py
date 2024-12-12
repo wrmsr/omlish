@@ -39,8 +39,14 @@ ManageTargetConnectorMap = ta.NewType('ManageTargetConnectorMap', ta.Mapping[ta.
 class TypeSwitchedManageTargetConnector(ManageTargetConnector):
     connectors: ManageTargetConnectorMap
 
+    def get_connector(self, ty: ta.Type[ManageTarget]) -> ManageTargetConnector:
+        for k, v in self.connectors.items():
+            if issubclass(ty, k):
+                return v
+        raise KeyError(ty)
+
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
-        return self.connectors[type(tgt)].connect(tgt)
+        return self.get_connector(type(tgt)).connect(tgt)
 
 
 ##
