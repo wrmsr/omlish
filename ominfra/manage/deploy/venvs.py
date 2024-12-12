@@ -18,6 +18,7 @@ from .types import DeployHome
 class DeployVenvManager(DeployPathOwner):
     def __init__(
             self,
+            *,
             deploy_home: DeployHome,
     ) -> None:
         super().__init__()
