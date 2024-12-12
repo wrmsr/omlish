@@ -12,10 +12,12 @@ from .config import SystemConfig
 from .packages import AptSystemPackageManager
 from .packages import BrewSystemPackageManager
 from .packages import SystemPackageManager
-from .platforms import Platform
-from .platforms import LinuxPlatform
+from .packages import YumSystemPackageManager
+from .platforms import AmazonLinuxPlatform
 from .platforms import DarwinPlatform
-from .platforms import get_system_platform
+from .platforms import LinuxPlatform
+from .platforms import Platform
+from .platforms import detect_system_platform
 
 
 def bind_system(
@@ -28,12 +30,18 @@ def bind_system(
 
     #
 
-    platform = system_config.platform or get_system_platform()
+    platform = system_config.platform or detect_system_platform()
     lst.append(inj.bind(platform, key=Platform))
 
     #
 
-    if isinstance(platform, LinuxPlatform):
+    if isinstance(platform, AmazonLinuxPlatform):
+        lst.extend([
+            inj.bind(YumSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=YumSystemPackageManager),
+        ])
+
+    elif isinstance(platform, LinuxPlatform):
         lst.extend([
             inj.bind(AptSystemPackageManager, singleton=True),
             inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
