@@ -31,16 +31,33 @@ class DeployVenvManager(DeployPathOwner):
             DeployPath.parse('venvs/@app/@tag/'),
         }
 
-    async def setup_venv(self, app_dir: str, venv_dir: str) -> None:
+    async def setup_venv(
+            self,
+            app_dir: str,
+            venv_dir: str,
+            *,
+            use_uv: bool = True,
+    ) -> None:
         sys_exe = 'python3'
 
         await asyncio_subprocess_check_call(sys_exe, '-m', 'venv', venv_dir)
 
+        #
+
         venv_exe = os.path.join(venv_dir, 'bin', 'python3')
 
+        #
+
         reqs_txt = os.path.join(app_dir, 'requirements.txt')
+
         if os.path.isfile(reqs_txt):
-            await asyncio_subprocess_check_call(venv_exe, '-m', 'pip', 'install', '-r', reqs_txt)
+            if use_uv:
+                await asyncio_subprocess_check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                pip_cmd = ['-m', 'uv', 'pip']
+            else:
+                pip_cmd = ['-m', 'pip']
+
+            await asyncio_subprocess_check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
 
     async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
         await self.setup_venv(
