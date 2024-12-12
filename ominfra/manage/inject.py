@@ -16,6 +16,7 @@ from .remote.config import RemoteConfig
 from .remote.inject import bind_remote
 from .system.config import SystemConfig
 from .system.inject import bind_system
+from .targets.inject import bind_targets
 
 
 ##
@@ -45,6 +46,8 @@ def bind_main(
         bind_system(
             system_config=system_config,
         ),
+
+        bind_targets(),
     ]
 
     #

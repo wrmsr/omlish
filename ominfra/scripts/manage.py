@@ -2668,6 +2668,86 @@ def get_remote_payload_src(
 
 
 ########################################
+# ../targets/targets.py
+"""
+It's desugaring. Subprocess and locals are only leafs. Retain an origin?
+** TWO LAYERS ** - ManageTarget is user-facing, ConnectorTarget is bound, internal
+"""
+
+
+##
+
+
+class ManageTarget(abc.ABC):  # noqa
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class PythonRemoteManageTarget:
+    DEFAULT_PYTHON: ta.ClassVar[str] = 'python3'
+    python: str = DEFAULT_PYTHON
+
+
+#
+
+
+class RemoteManageTarget(ManageTarget, abc.ABC):
+    pass
+
+
+class PhysicallyRemoteManageTarget(RemoteManageTarget, abc.ABC):
+    pass
+
+
+class LocalManageTarget(ManageTarget, abc.ABC):
+    pass
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
+    host: ta.Optional[str] = None
+    username: ta.Optional[str] = None
+    key_file: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.host)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):  # noqa
+    image: ta.Optional[str] = None
+    container_id: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.arg(bool(self.image) ^ bool(self.container_id))
+
+
+##
+
+
+class InProcessConnectorTarget(LocalManageTarget):
+    class Mode(enum.Enum):
+        DIRECT = enum.auto()
+        FAKE_REMOTE = enum.auto()
+
+    mode: Mode = Mode.DIRECT
+
+
+@dc.dataclass(frozen=True)
+class SubprocessManageTarget(LocalManageTarget, PythonRemoteManageTarget):
+    pass
+
+
+########################################
 # ../../../omlish/argparse/cli.py
 """
 TODO:
@@ -7005,6 +7085,133 @@ def bind_remote(
 
 
 ########################################
+# ../targets/connection.py
+
+
+##
+
+
+class ManageTargetConnector(abc.ABC):
+    @abc.abstractmethod
+    def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
+        raise NotImplementedError
+
+
+##
+
+
+ManageTargetConnectorMap = ta.NewType('ManageTargetConnectorMap', ta.Mapping[ta.Type[ManageTarget], ManageTargetConnector])  # noqa
+
+
+@dc.dataclass(frozen=True)
+class TypeSwitchedManageTargetConnector(ManageTargetConnector):
+    connectors: ManageTargetConnectorMap
+
+    def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
+        return self.connectors[type(tgt)].connect(tgt)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LocalManageTargetConnector(ManageTargetConnector):
+    _local_executor: LocalCommandExecutor
+    _in_process_connector: InProcessRemoteExecutionConnector
+    _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
+
+    @contextlib.asynccontextmanager
+    async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
+        lmt = check.isinstance(tgt, LocalManageTarget)
+
+        if isinstance(lmt, InProcessConnectorTarget):
+            imt = check.isinstance(lmt, InProcessConnectorTarget)
+
+            if imt.mode == InProcessConnectorTarget.Mode.DIRECT:
+                yield self._local_executor
+
+            elif imt.mode == InProcessConnectorTarget.Mode.FAKE_REMOTE:
+                async with self._in_process_connector.connect() as rce:
+                    yield rce
+
+            else:
+                raise TypeError(imt.mode)
+
+        elif isinstance(lmt, SubprocessManageTarget):
+            async with self._pyremote_connector.connect(
+                    RemoteSpawning.Target(
+                        python=lmt.python,
+                    ),
+                    self._bootstrap,
+            ) as rce:
+                yield rce
+
+        else:
+            raise TypeError(lmt)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DockerManageTargetConnector(ManageTargetConnector):
+    _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
+
+    @contextlib.asynccontextmanager
+    async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
+        dmt = check.isinstance(tgt, DockerManageTarget)
+
+        sh_parts: ta.List[str] = ['docker']
+        if dmt.image is not None:
+            sh_parts.extend(['run', '-i', dmt.image])
+        elif dmt.container_id is not None:
+            sh_parts.extend(['exec', dmt.container_id])
+        else:
+            raise ValueError(dmt)
+
+        async with self._pyremote_connector.connect(
+                RemoteSpawning.Target(
+                    shell=' '.join(sh_parts),
+                    python=dmt.python,
+                ),
+                self._bootstrap,
+        ) as rce:
+            yield rce
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SshManageTargetConnector(ManageTargetConnector):
+    _pyremote_connector: PyremoteRemoteExecutionConnector
+    _bootstrap: MainBootstrap
+
+    @contextlib.asynccontextmanager
+    async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
+        smt = check.isinstance(tgt, SshManageTarget)
+
+        sh_parts: ta.List[str] = ['ssh']
+        if smt.key_file is not None:
+            sh_parts.extend(['-i', smt.key_file])
+        addr = check.not_none(smt.host)
+        if smt.username is not None:
+            addr = f'{smt.username}@{addr}'
+        sh_parts.append(addr)
+
+        async with self._pyremote_connector.connect(
+                RemoteSpawning.Target(
+                    shell=' '.join(sh_parts),
+                    python=smt.python,
+                ),
+                self._bootstrap,
+        ) as rce:
+            yield rce
+
+
+########################################
 # ../../../omdev/interp/resolvers.py
 
 
@@ -7100,6 +7307,35 @@ DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
 
     SystemInterpProvider(),
 ]])
+
+
+########################################
+# ../targets/inject.py
+
+
+def bind_targets() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(LocalManageTargetConnector, singleton=True),
+        inj.bind(DockerManageTargetConnector, singleton=True),
+        inj.bind(SshManageTargetConnector, singleton=True),
+
+        inj.bind(TypeSwitchedManageTargetConnector, singleton=True),
+        inj.bind(ManageTargetConnector, to_key=TypeSwitchedManageTargetConnector),
+    ]
+
+    #
+
+    def provide_manage_target_connector_map(injector: Injector) -> ManageTargetConnectorMap:
+        return ManageTargetConnectorMap({
+            LocalManageTarget: injector[LocalManageTargetConnector],
+            DockerManageTarget: injector[DockerManageTargetConnector],
+            SshManageTarget: injector[SshManageTargetConnector],
+        })
+    inj.bind(provide_manage_target_connector_map, singleton=True)
+
+    #
+
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -7321,6 +7557,8 @@ def bind_main(
         bind_system(
             system_config=system_config,
         ),
+
+        bind_targets(),
     ]
 
     #
