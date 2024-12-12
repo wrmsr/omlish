@@ -232,17 +232,26 @@ class Cli(ap.Cli):
 
             print(f'{svc_name}: {lt}')
 
+    #
+
     @ap.command()
     def dockly(self) -> None:
         os.execl(
             exe := docker_exe(),
             exe,
-            'run',
-            '-it',
-            '--rm',
-            '-v',
-            '/var/run/docker.sock:/var/run/docker.sock',
+            'run', '-it', '--rm',
+            '-v', '/var/run/docker.sock:/var/run/docker.sock',
             'lirantal/dockly',
+        )
+
+    @ap.command()
+    def lazy(self) -> None:
+        os.execl(
+            exe := docker_exe(),
+            exe,
+            'run', '-it', '--rm',
+            '-v', '/var/run/docker.sock:/var/run/docker.sock',
+            'lazyteam/lazydocker',
         )
 
 
