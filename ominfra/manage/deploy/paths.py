@@ -43,7 +43,7 @@ from omlish.lite.check import check
 
 
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathSpec = ta.Literal['app', 'deploy']  # ta.TypeAlias
+DeployPathSpec = ta.Literal['app', 'tag']  # ta.TypeAlias
 
 
 ##
@@ -54,7 +54,7 @@ DEPLOY_PATH_SPEC_SEPARATORS = '-.'
 
 DEPLOY_PATH_SPECS: ta.FrozenSet[str] = frozenset([
     'app',
-    'deploy',  # <rev>-<dt>
+    'tag',  # <rev>-<dt>
 ])
 
 
@@ -192,9 +192,9 @@ class DeployPath:
                     raise DeployPathError('Duplicate specs in path', self)
                 pd[p.spec] = i
 
-        if 'deploy' in pd:
-            if 'app' not in pd or pd['app'] >= pd['deploy']:
-                raise DeployPathError('Deploy specs in path without preceding app', self)
+        if 'tag' in pd:
+            if 'app' not in pd or pd['app'] >= pd['tag']:
+                raise DeployPathError('Tag spec in path without preceding app', self)
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
