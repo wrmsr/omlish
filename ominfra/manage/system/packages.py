@@ -79,14 +79,14 @@ class AptSystemPackageManager(SystemPackageManager):
     }
 
     async def update(self) -> None:
-        await asyncio_subprocess_check_call('apt', 'update', env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocess_check_call('sudo', 'apt', 'update', env={**os.environ, **self._APT_ENV})
 
     async def upgrade(self) -> None:
-        await asyncio_subprocess_check_call('apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocess_check_call('sudo', 'apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        await asyncio_subprocess_check_call('apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocess_check_call('sudo', 'apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
@@ -107,14 +107,14 @@ class AptSystemPackageManager(SystemPackageManager):
 
 class YumSystemPackageManager(SystemPackageManager):
     async def update(self) -> None:
-        await asyncio_subprocess_check_call('yum', 'check-update')
+        await asyncio_subprocess_check_call('sudo', 'yum', 'check-update')
 
     async def upgrade(self) -> None:
-        await asyncio_subprocess_check_call('yum', 'update')
+        await asyncio_subprocess_check_call('sudo', 'yum', 'update')
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        await asyncio_subprocess_check_call('yum', 'install', *pns)
+        await asyncio_subprocess_check_call('sudo', 'yum', 'install', *pns)
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
