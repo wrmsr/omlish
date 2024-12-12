@@ -7,41 +7,6 @@ git/github.com/wrmsr/omlish <- bootstrap repo
  - shallow clone off bootstrap into /apps
 
 github.com/wrmsr/omlish@rev
-
-==
-
-async def do_remote_deploy(
-        cr: cmds.CommandRunner,
-        rev: str = 'master',
-        *,
-        local_repo_path: str | None = None,
-        skip_submodules: bool = False,
-) -> None:
-    clone_script = [
-        ['git', 'init'],
-
-        *([
-            ['git', 'remote', 'add', 'local', local_repo_path],
-            ['git', 'fetch', '--depth=1', 'local', rev],
-        ] if local_repo_path is not None else ()),
-
-        ['git', 'remote', 'add', 'origin', 'https://github.com/wrmsr/omlish'],
-        ['git', 'fetch', '--depth=1', 'origin', rev],
-        ['git', 'checkout', rev],
-
-        *([['git', 'submodule', 'update', '--init']] if not skip_submodules else ()),
-
-        ['make', 'venv-deploy'],
-    ]
-
-    res = await cr.run_command(cr.Command([
-        'sh', '-c', render_script(
-            ['mkdir', 'omlish'],
-            ['cd', 'omlish'],
-            *clone_script,
-        ),
-    ]))
-    res.check()
 """
 import dataclasses as dc
 import functools
@@ -65,11 +30,8 @@ class DeployGitRepo:
     path: ta.Optional[str] = None
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.host)
-        check.non_empty_str(self.path)
-        check.not_in('.', self.path)
-        check.not_in('..', self.host)
-
+        check.not_in('..', check.non_empty_str(self.host))
+        check.not_in('.', check.non_empty_str(self.path))
 
 
 @dc.dataclass(frozen=True)
@@ -84,7 +46,7 @@ class DeployGitSpec:
 class DeployGitManager:
     def __init__(
             self,
-            deploy_home: DeployHome
+            deploy_home: DeployHome,
     ) -> None:
         super().__init__()
 
@@ -104,7 +66,7 @@ class DeployGitManager:
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._dir,
+                self._git._dir,  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
@@ -118,10 +80,10 @@ class DeployGitManager:
             return f'{self._repo.username or "git"}@{self._repo.host}:{self._repo.path}'
 
         async def _call(self, *cmd: str) -> None:
-             await asyncio_subprocess_check_call(
-                 *cmd,
-                 cwd=self._dir,
-             )
+            await asyncio_subprocess_check_call(
+                *cmd,
+                cwd=self._dir,
+            )
 
         @async_cached_nullary
         async def init(self) -> None:
