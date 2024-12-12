@@ -49,6 +49,8 @@ import os.path
 import typing as ta
 
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.cached import async_cached_nullary
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.logs import log
@@ -85,26 +87,53 @@ class DeployGitManager:
         super().__init__()
 
         self._deploy_home = deploy_home
-        self._git_dir = os.path.join(deploy_home, 'git')
+        self._dir = os.path.join(deploy_home, 'git')
 
-    async def fetch(self, spec: DeployGitSpec) -> None:
-        repo = spec.repo
-        repo_dir = os.path.join(
-            self._git_dir,
-            check.non_empty_str(repo.host),
-            check.non_empty_str(repo.path),
-        )
-        log.info('Repo dir: %s', repo_dir)
-        os.makedirs(repo_dir)
+    class RepoDir:
+        def __init__(
+                self,
+                git: 'DeployGitManager',
+                repo: DeployGitRepo,
+        ) -> None:
+            super().__init__()
 
-        call = functools.partial(asyncio_subprocess_check_call, cwd=repo_dir)
-        await call('git', 'init')
+            self._git = git
+            self._repo = repo
+            self._dir = os.path.join(
+                self._git._dir,
+                check.non_empty_str(repo.host),
+                check.non_empty_str(repo.path),
+            )
 
-        url = f'{repo.username or "git"}@{repo.host}:{repo.path}'
-        await call('git', 'remote', 'add', 'origin', url)
+        @property
+        def repo(self) -> DeployGitRepo:
+            return self._repo
 
-        await call('git', 'fetch', '--depth=1', 'origin', spec.rev)
-        await call('git', 'checkout', spec.rev)
+        @property
+        def url(self) -> str:
+            return f'{self._repo.username or "git"}@{self._repo.host}:{self._repo.path}'
+
+        async def _call(self, *cmd: str) -> None:
+             await asyncio_subprocess_check_call(
+                 *cmd,
+                 cwd=self._dir,
+             )
+
+        @async_cached_nullary
+        async def init(self) -> None:
+            os.makedirs(self._dir, exist_ok=True)
+
+            if os.path.exists(os.path.join(self._dir, '.git')):
+                return
+
+            await self._call('git', 'init')
+
+            await self._call('git', 'remote', 'add', 'origin', self.url)
+
+        async def fetch(self, rev: str) -> None:
+            await self.init()
+
+            await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 
 
 async def _a_main() -> None:
@@ -123,7 +152,8 @@ async def _a_main() -> None:
         rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3',
     )
 
-    await git.fetch(spec)
+    repo_dir = DeployGitManager.RepoDir(git, spec.repo)
+    await repo_dir.fetch(spec.rev)
 
 
 if __name__ == '__main__':

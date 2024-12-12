@@ -54,7 +54,7 @@ DEPLOY_PATH_SPEC_SEPARATORS = '-.'
 
 DEPLOY_PATH_SPECS: ta.FrozenSet[str] = frozenset([
     'app',
-    'deploy',
+    'deploy',  # <rev>-<dt>
 ])
 
 
