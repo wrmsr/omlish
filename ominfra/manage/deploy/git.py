@@ -50,13 +50,12 @@ import typing as ta
 
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
 from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
-from omlish.lite.logs import configure_standard_logging
-from omlish.lite.logs import log
+
+from .types import DeployHome
 
 
-DeployHome = ta.NewType('DeployHome', str)
+##
 
 
 @dc.dataclass(frozen=True)
@@ -79,6 +78,9 @@ class DeployGitSpec:
     rev: str
 
 
+##
+
+
 class DeployGitManager:
     def __init__(
             self,
@@ -88,6 +90,8 @@ class DeployGitManager:
 
         self._deploy_home = deploy_home
         self._dir = os.path.join(deploy_home, 'git')
+
+        self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
 
     class RepoDir:
         def __init__(
@@ -137,7 +141,7 @@ class DeployGitManager:
 
             await self.fetch(rev)
 
-            # FIXME: temp swap
+            # FIXME: temp dir swap
             os.makedirs(dst_dir)
 
             dst_call = functools.partial(asyncio_subprocess_check_call, cwd=dst_dir)
@@ -147,29 +151,12 @@ class DeployGitManager:
             await dst_call('git', 'fetch', '--depth=1', 'local', rev)
             await dst_call('git', 'checkout', rev)
 
+    def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
+        try:
+            return self._repo_dirs[repo]
+        except KeyError:
+            repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
+            return repo_dir
 
-async def _a_main() -> None:
-    configure_standard_logging('INFO')
-
-    import tempfile
-    deploy_home = DeployHome(tempfile.mkdtemp())
-
-    git = DeployGitManager(deploy_home)
-
-    spec = DeployGitSpec(
-        repo=DeployGitRepo(
-            host='github.com',
-            path='wrmsr/flaskthing',
-        ),
-        rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3',
-    )
-
-    repo_dir = DeployGitManager.RepoDir(git, spec.repo)
-
-    checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
-    await repo_dir.checkout(spec.rev, checkout_dir)
-
-
-if __name__ == '__main__':
-    import asyncio
-    asyncio.run(_a_main())
+    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
+        await self.get_repo_dir(spec.repo).checkout(spec.rev, dst_dir)
