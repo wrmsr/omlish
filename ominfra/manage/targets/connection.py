@@ -66,7 +66,7 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
                 yield rce
 
         else:
-            raise TypeError(lmt.mode)
+            raise TypeError(lmt)
 
 
 ##
@@ -109,7 +109,7 @@ class SshManageTargetConnectorImpl(ManageTargetConnector):
         sh_parts: ta.List[str] = ['ssh']
         if smt.key_file is not None:
             sh_parts.extend(['-i', smt.key_file])
-        addr = smt.host
+        addr = check.not_none(smt.host)
         if smt.username is not None:
             addr = f'{smt.username}@{addr}'
         sh_parts.append(addr)

@@ -2627,8 +2627,6 @@ class RemoteConfig:
 
     heartbeat_interval_s: float = 3.
 
-    use_in_process_remote_executor: bool = False
-
 
 ########################################
 # ../remote/payload.py
@@ -4667,28 +4665,6 @@ class MainBootstrap:
 
 
 ########################################
-# ../commands/execution.py
-
-
-CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
-
-
-class LocalCommandExecutor(CommandExecutor):
-    def __init__(
-            self,
-            *,
-            command_executors: CommandExecutorMap,
-    ) -> None:
-        super().__init__()
-
-        self._command_executors = command_executors
-
-    async def execute(self, cmd: Command) -> Command.Output:
-        ce: CommandExecutor = self._command_executors[type(cmd)]
-        return await ce.execute(cmd)
-
-
-########################################
 # ../commands/marshal.py
 
 
@@ -4711,6 +4687,13 @@ def install_command_marshaling(
                 for name, cmd in cmds.items()
             ]),
         )
+
+
+########################################
+# ../commands/types.py
+
+
+CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
 
 
 ########################################
@@ -5007,6 +4990,25 @@ def subprocess_close(
         proc.stdin.close()
 
     proc.wait(timeout)
+
+
+########################################
+# ../commands/local.py
+
+
+class LocalCommandExecutor(CommandExecutor):
+    def __init__(
+            self,
+            *,
+            command_executors: CommandExecutorMap,
+    ) -> None:
+        super().__init__()
+
+        self._command_executors = command_executors
+
+    async def execute(self, cmd: Command) -> Command.Output:
+        ce: CommandExecutor = self._command_executors[type(cmd)]
+        return await ce.execute(cmd)
 
 
 ########################################
@@ -5386,7 +5388,7 @@ class RemoteCommandExecutor(CommandExecutor):
             self,
             cmd: Command,
             *,
-            log: ta.Optional[logging.Logger] = None,
+            log: ta.Optional[logging.Logger] = None,  # noqa
             omit_exc_object: bool = False,
     ) -> CommandOutputOrException:
         try:
@@ -6268,20 +6270,7 @@ class RunningInterpProvider(InterpProvider):
 ##
 
 
-class RemoteExecutionConnector(abc.ABC):
-    @abc.abstractmethod
-    def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncContextManager[RemoteCommandExecutor]:
-        raise NotImplementedError
-
-
-##
-
-
-class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
+class PyremoteRemoteExecutionConnector:
     def __init__(
             self,
             *,
@@ -6356,7 +6345,7 @@ class PyremoteRemoteExecutionConnector(RemoteExecutionConnector):
 ##
 
 
-class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
+class InProcessRemoteExecutionConnector:
     def __init__(
             self,
             *,
@@ -6369,11 +6358,7 @@ class InProcessRemoteExecutionConnector(RemoteExecutionConnector):
         self._local_executor = local_executor
 
     @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
         r0, w0 = asyncio_create_bytes_channel()
         r1, w1 = asyncio_create_bytes_channel()
 
@@ -7004,20 +6989,10 @@ def bind_remote(
 
         inj.bind(SubprocessRemoteSpawning, singleton=True),
         inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
+
+        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
     ]
-
-    #
-
-    if remote_config.use_in_process_remote_executor:
-        lst.extend([
-            inj.bind(InProcessRemoteExecutionConnector, singleton=True),
-            inj.bind(RemoteExecutionConnector, to_key=InProcessRemoteExecutionConnector),
-        ])
-    else:
-        lst.extend([
-            inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
-            inj.bind(RemoteExecutionConnector, to_key=PyremoteRemoteExecutionConnector),
-        ])
 
     #
 
@@ -7324,9 +7299,11 @@ def bind_system(
 
 def bind_main(
         *,
-        main_config: MainConfig,
-        remote_config: RemoteConfig,
-        system_config: SystemConfig,
+        main_config: MainConfig = MainConfig(),
+        remote_config: RemoteConfig = RemoteConfig(),
+        system_config: SystemConfig = SystemConfig(),
+
+        main_bootstrap: ta.Optional[MainBootstrap] = None,
 ) -> InjectorBindings:
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(main_config),
@@ -7345,6 +7322,11 @@ def bind_main(
             system_config=system_config,
         ),
     ]
+
+    #
+
+    if main_bootstrap is not None:
+        lst.append(inj.bind(main_bootstrap))
 
     #
 
@@ -7379,6 +7361,8 @@ def main_bootstrap(bs: MainBootstrap) -> Injector:
         main_config=bs.main_config,
         remote_config=bs.remote_config,
         system_config=bs.system_config,
+
+        main_bootstrap=bs,
     ))
 
     return injector
@@ -7464,7 +7448,7 @@ class MainCli(ArgparseCli):
                     python=self.args.python,
                 )
 
-                ce = await es.enter_async_context(injector[RemoteExecutionConnector].connect(tgt, bs))  # noqa
+                ce = await es.enter_async_context(injector[PyremoteRemoteExecutionConnector].connect(tgt, bs))  # noqa
 
             async def run_command(cmd: Command) -> None:
                 res = await ce.try_execute(
