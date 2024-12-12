@@ -8,6 +8,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.check import check
+
 
 ##
 
@@ -49,6 +51,9 @@ class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
     username: ta.Optional[str] = None
     key_file: ta.Optional[str] = None
 
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.host)
+
 
 ##
 
@@ -57,6 +62,9 @@ class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
 class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):  # noqa
     image: ta.Optional[str] = None
     container_id: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.arg(bool(self.image) ^ bool(self.container_id))
 
 
 ##

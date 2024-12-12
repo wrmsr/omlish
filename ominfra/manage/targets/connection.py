@@ -32,8 +32,22 @@ class ManageTargetConnector(abc.ABC):
 ##
 
 
+ManageTargetConnectorMap = ta.NewType('ManageTargetConnectorMap', ta.Mapping[ta.Type[ManageTarget], ManageTargetConnector])  # noqa
+
+
 @dc.dataclass(frozen=True)
-class LocalManageTargetConnectorImpl(ManageTargetConnector):
+class TypeSwitchedManageTargetConnector(ManageTargetConnector):
+    connectors: ManageTargetConnectorMap
+
+    def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
+        return self.connectors[type(tgt)].connect(tgt)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LocalManageTargetConnector(ManageTargetConnector):
     _local_executor: LocalCommandExecutor
     _in_process_connector: InProcessRemoteExecutionConnector
     _pyremote_connector: PyremoteRemoteExecutionConnector
@@ -54,7 +68,7 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
                     yield rce
 
             else:
-                raise TypeError(imt.modd)
+                raise TypeError(imt.mode)
 
         elif isinstance(lmt, SubprocessManageTarget):
             async with self._pyremote_connector.connect(
@@ -73,7 +87,7 @@ class LocalManageTargetConnectorImpl(ManageTargetConnector):
 
 
 @dc.dataclass(frozen=True)
-class DockerManageTargetConnectorImpl(ManageTargetConnector):
+class DockerManageTargetConnector(ManageTargetConnector):
     _pyremote_connector: PyremoteRemoteExecutionConnector
     _bootstrap: MainBootstrap
 
@@ -82,7 +96,12 @@ class DockerManageTargetConnectorImpl(ManageTargetConnector):
         dmt = check.isinstance(tgt, DockerManageTarget)
 
         sh_parts: ta.List[str] = ['docker']
-        sh_parts.extend(['run', '-i', 'python3:12'])
+        if dmt.image is not None:
+            sh_parts.extend(['run', '-i', dmt.image])
+        elif dmt.container_id is not None:
+            sh_parts.extend(['exec', dmt.container_id])
+        else:
+            raise ValueError(dmt)
 
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
@@ -98,7 +117,7 @@ class DockerManageTargetConnectorImpl(ManageTargetConnector):
 
 
 @dc.dataclass(frozen=True)
-class SshManageTargetConnectorImpl(ManageTargetConnector):
+class SshManageTargetConnector(ManageTargetConnector):
     _pyremote_connector: PyremoteRemoteExecutionConnector
     _bootstrap: MainBootstrap
 
