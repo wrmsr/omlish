@@ -2557,7 +2557,8 @@ def configure_standard_logging(
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
- - nonstrict toggle
+ - namedtuple
+ - literals
 """
 
 
