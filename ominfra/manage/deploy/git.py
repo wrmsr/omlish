@@ -86,7 +86,10 @@ class DeployGitManager(DeployPathOwner):
 
         @property
         def url(self) -> str:
-            return f'{self._repo.username or "git"}@{self._repo.host}:{self._repo.path}'
+            if self._repo.username is not None:
+                return f'{self._repo.username}@{self._repo.host}:{self._repo.path}'
+            else:
+                return f'https://{self._repo.host}/{self._repo.path}'
 
         async def _call(self, *cmd: str) -> None:
             await asyncio_subprocess_check_call(
