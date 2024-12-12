@@ -1,4 +1,5 @@
 import abc
+import dataclasses as dc
 import sys
 
 from omlish.os.linux import LinuxOsRelease
@@ -7,6 +8,7 @@ from omlish.os.linux import LinuxOsRelease
 ##
 
 
+@dc.dataclass(frozen=True)
 class Platform(abc.ABC):  # noqa
     pass
 
