@@ -122,18 +122,30 @@ class DeployGitManager:
         @async_cached_nullary
         async def init(self) -> None:
             os.makedirs(self._dir, exist_ok=True)
-
             if os.path.exists(os.path.join(self._dir, '.git')):
                 return
 
             await self._call('git', 'init')
-
             await self._call('git', 'remote', 'add', 'origin', self.url)
 
         async def fetch(self, rev: str) -> None:
             await self.init()
-
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
+
+        async def checkout(self, rev: str, dst_dir: str) -> None:
+            check.state(not os.path.exists(dst_dir))
+
+            await self.fetch(rev)
+
+            # FIXME: temp swap
+            os.makedirs(dst_dir)
+
+            dst_call = functools.partial(asyncio_subprocess_check_call, cwd=dst_dir)
+            await dst_call('git', 'init')
+
+            await dst_call('git', 'remote', 'add', 'local', self._dir)
+            await dst_call('git', 'fetch', '--depth=1', 'local', rev)
+            await dst_call('git', 'checkout', rev)
 
 
 async def _a_main() -> None:
@@ -153,7 +165,9 @@ async def _a_main() -> None:
     )
 
     repo_dir = DeployGitManager.RepoDir(git, spec.repo)
-    await repo_dir.fetch(spec.rev)
+
+    checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
+    await repo_dir.checkout(spec.rev, checkout_dir)
 
 
 if __name__ == '__main__':
