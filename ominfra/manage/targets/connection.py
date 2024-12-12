@@ -13,7 +13,7 @@ from ..remote.connection import InProcessRemoteExecutionConnector
 from ..remote.connection import PyremoteRemoteExecutionConnector
 from ..remote.spawning import RemoteSpawning
 from .targets import DockerManageTarget
-from .targets import InProcessConnectorTarget
+from .targets import InProcessManageTarget
 from .targets import LocalManageTarget
 from .targets import ManageTarget
 from .targets import SshManageTarget
@@ -63,13 +63,13 @@ class LocalManageTargetConnector(ManageTargetConnector):
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         lmt = check.isinstance(tgt, LocalManageTarget)
 
-        if isinstance(lmt, InProcessConnectorTarget):
-            imt = check.isinstance(lmt, InProcessConnectorTarget)
+        if isinstance(lmt, InProcessManageTarget):
+            imt = check.isinstance(lmt, InProcessManageTarget)
 
-            if imt.mode == InProcessConnectorTarget.Mode.DIRECT:
+            if imt.mode == InProcessManageTarget.Mode.DIRECT:
                 yield self._local_executor
 
-            elif imt.mode == InProcessConnectorTarget.Mode.FAKE_REMOTE:
+            elif imt.mode == InProcessManageTarget.Mode.FAKE_REMOTE:
                 async with self._in_process_connector.connect() as rce:
                     yield rce
 

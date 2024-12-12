@@ -2833,14 +2833,18 @@ class ObjMarshalerManager:
     ) -> ObjMarshaler:
         if isinstance(ty, type):
             if abc.ABC in ty.__bases__:
+                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]
+                if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
+                    ins = {ity: snake_case(ity.__qualname__[:-len(ty.__name__)]) for ity in impls}
+                else:
+                    ins = {ity: ity.__qualname__ for ity in impls}
                 return PolymorphicObjMarshaler.of([  # type: ignore
                     PolymorphicObjMarshaler.Impl(
                         ity,
-                        ity.__qualname__,
+                        itn,
                         rec(ity),
                     )
-                    for ity in deep_subclasses(ty)
-                    if abc.ABC not in ity.__bases__
+                    for ity, itn in ins.items()
                 ])
 
             if issubclass(ty, enum.Enum):
