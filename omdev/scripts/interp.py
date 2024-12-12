@@ -531,8 +531,8 @@ class _CachedNullary(_AbstractCachedNullary):
         return self._value
 
 
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
+def cached_nullary(fn: CallableT) -> CallableT:
+    return _CachedNullary(fn)  # type: ignore
 
 
 def static_init(fn: CallableT) -> CallableT:
@@ -3008,6 +3008,7 @@ class PyenvVersionInstaller:
             self._version,
         ]
 
+        full_args: ta.List[str]
         if self._given_install_name is not None:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa

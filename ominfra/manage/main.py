@@ -39,7 +39,7 @@ class ManageConfig:
 
 
 class MainCli(ArgparseCli):
-    config_file: str = argparse_arg(help='Config file path')
+    config_file: ta.Optional[str] = argparse_arg('--config-file', help='Config file path')  # type: ignore
 
     @cached_nullary
     def config(self) -> ManageConfig:

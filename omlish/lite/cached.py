@@ -35,8 +35,8 @@ class _CachedNullary(_AbstractCachedNullary):
         return self._value
 
 
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
+def cached_nullary(fn: CallableT) -> CallableT:
+    return _CachedNullary(fn)  # type: ignore
 
 
 def static_init(fn: CallableT) -> CallableT:

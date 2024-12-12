@@ -1823,8 +1823,8 @@ class _CachedNullary(_AbstractCachedNullary):
         return self._value
 
 
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
+def cached_nullary(fn: CallableT) -> CallableT:
+    return _CachedNullary(fn)  # type: ignore
 
 
 def static_init(fn: CallableT) -> CallableT:
@@ -3316,6 +3316,8 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
         return {'action': 'store_true'}
     elif ann is list:
         return {'action': 'append'}
+    elif is_optional_alias(ann):
+        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
     else:
         raise TypeError(ann)
 
@@ -3756,6 +3758,7 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
+ - newtypes?
 """
 
 
@@ -6505,6 +6508,7 @@ class PyenvVersionInstaller:
             self._version,
         ]
 
+        full_args: ta.List[str]
         if self._given_install_name is not None:
             full_args = [
                 os.path.join(check.not_none(await self._pyenv.root()), 'plugins', 'python-build', 'bin', 'python-build'),  # noqa

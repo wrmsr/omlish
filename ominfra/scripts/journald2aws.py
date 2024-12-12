@@ -932,8 +932,8 @@ class _CachedNullary(_AbstractCachedNullary):
         return self._value
 
 
-def cached_nullary(fn):  # ta.Callable[..., T]) -> ta.Callable[..., T]:
-    return _CachedNullary(fn)
+def cached_nullary(fn: CallableT) -> CallableT:
+    return _CachedNullary(fn)  # type: ignore
 
 
 def static_init(fn: CallableT) -> CallableT:
@@ -2559,6 +2559,7 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
+ - newtypes?
 """
 
 
