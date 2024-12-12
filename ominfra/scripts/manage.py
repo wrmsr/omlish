@@ -2679,7 +2679,7 @@ It's desugaring. Subprocess and locals are only leafs. Retain an origin?
 
 
 class ManageTarget(abc.ABC):  # noqa
-    def __init_subclass__(cls, **kwargs: ta.Any) -> ta.Any:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         check.state(cls.__name__.endswith('ManageTarget'))
@@ -2726,7 +2726,7 @@ class SshManageTarget(PhysicallyRemoteManageTarget, PythonRemoteManageTarget):
 
 
 @dc.dataclass(frozen=True)
-class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):  # noqa
+class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget):  # noqa
     image: ta.Optional[str] = None
     container_id: ta.Optional[str] = None
 
@@ -4481,12 +4481,12 @@ class ObjMarshalerManager:
     ) -> ObjMarshaler:
         if isinstance(ty, type):
             if abc.ABC in ty.__bases__:
-                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]
+                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]  # type: ignore
                 if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
                     ins = {ity: snake_case(ity.__qualname__[:-len(ty.__name__)]) for ity in impls}
                 else:
                     ins = {ity: ity.__qualname__ for ity in impls}
-                return PolymorphicObjMarshaler.of([  # type: ignore
+                return PolymorphicObjMarshaler.of([
                     PolymorphicObjMarshaler.Impl(
                         ity,
                         itn,
@@ -7636,6 +7636,7 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
+        argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
     async def run(self) -> None:
@@ -7669,6 +7670,11 @@ class MainCli(ArgparseCli):
 
         msh = injector[ObjMarshalerManager]
 
+        ts = self.args.target
+        if not ts.startswith('{'):
+            ts = json.dumps({ts: {}})
+        tgt: ManageTarget = msh.unmarshal_obj(json.loads(ts), ManageTarget)
+
         cmds: ta.List[Command] = []
         cmd: Command
         for c in self.args.command:
@@ -7676,10 +7682,6 @@ class MainCli(ArgparseCli):
                 c = json.dumps({c: {}})
             cmd = msh.unmarshal_obj(json.loads(c), Command)
             cmds.append(cmd)
-
-        #
-
-        tgt = DockerManageTarget(image='python:3.12')
 
         #
 
