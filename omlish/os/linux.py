@@ -41,123 +41,82 @@ BUG_REPORT_URL="https://bugs.debian.org/"
 
 
 
-   To summarize: if the image updates are built and shipped as comprehensive units, IMAGE_ID+IMAGE_VERSION is the best fit. Otherwise, if updates eventually completely replace previously installed contents, as in a typical binary distribution, VERSION_ID should be used to identify major releases of the operating system.  BUILD_ID may be used instead or in addition to VERSION_ID when the original system image version is important.
 
-    # Presentation information and links
-    def home_url=(self) -> str:
-    def documentation_url=(self) -> str:
-    def support_url=(self) -> str:
-    def bug_report_url=(self) -> str:
-    def privacy_policy_url(self) -> str:
-        """
-       Links to resources on the Internet related to the operating system.  HOME_URL= should refer to the homepage of the operating system, or alternatively some homepage of the specific version of the operating system.  DOCUMENTATION_URL= should refer to the main documentation page for this operating system.  SUPPORT_URL= should refer to the main support page for the operating system, if there is any. This is primarily intended for operating systems which vendors provide support for.  BUG_REPORT_URL= should refer to the main bug reporting page for the operating system, if there is any. This is primarily intended for operating systems that rely on community QA.  PRIVACY_POLICY_URL= should refer to the main privacy policy page for the operating system, if there is any. These settings are optional, and providing only some of these settings is common. These URLs are intended to be exposed in "About this system" UIs behind links with captions such as "About this Operating System", "Obtain Support", "Report a Bug", or "Privacy Policy". The values should be in RFC3986 format[5], and should be "http:" or "https:" URLs, and possibly "mailto:" or "tel:". Only one URL shall be listed in each setting. If multiple resources need to be referenced, it is recommended to provide an online landing page linking all available resources.
-
-       Examples: "HOME_URL="https://fedoraproject.org/"", "BUG_REPORT_URL="https://bugzilla.redhat.com/"".
-       """
-
-   def support_end(self) -> str:
-       """
-       The date at which support for this version of the OS ends. (What exactly "lack of support" means varies between vendors, but generally users should assume that updates, including security fixes, will not be provided.) The value is a date in the ISO 8601 format "YYYY-MM-DD", and specifies the first day on which support is not provided.
-
-       For example, "SUPPORT_END=2001-01-01" means that the system was supported until the end of the last day of the previous millennium.
-
-       Added in version 252.
-       """
-
-   def logo(self) -> str:
-       """
-       A string, specifying the name of an icon as defined by freedesktop.org Icon Theme Specification[6]. This can be used by graphical applications to display an operating system's or distributor's logo. This field is optional and may not necessarily be implemented on all systems.
-
-       Examples: "LOGO=fedora-logo", "LOGO=distributor-logo-opensuse"
-
-       Added in version 240.
-       """
-
-   def ansi_color(self) -> str:
-       """
-       A suggested presentation color when showing the OS name on the console. This should be specified as string suitable for inclusion in the ESC [ m ANSI/ECMA-48 escape code for setting graphical rendition. This field is optional.
-
-       Examples: "ANSI_COLOR="0;31"" for red, "ANSI_COLOR="1;34"" for light blue, or "ANSI_COLOR="0;38;2;60;110;180"" for Fedora blue.
-       """
-
-   def vendor_name(self) -> str:
-       """
-       The name of the OS vendor. This is the name of the organization or company which produces the OS. This field is optional.
-
-       This name is intended to be exposed in "About this system" UIs or software update UIs when needed to distinguish the OS vendor from the OS itself. It is intended to be human readable.
-
-       Examples: "VENDOR_NAME="Fedora Project"" for Fedora Linux, "VENDOR_NAME="Canonical"" for Ubuntu.
-
-       Added in version 254.
-       """
-
-    def vendor_url(self) -> str:
-       """
-       The homepage of the OS vendor. This field is optional. The VENDOR_NAME= field should be set if this one is, although clients must be robust against either field not being set.
-
-       The value should be in RFC3986 format[5], and should be "http:" or "https:" URLs. Only one URL shall be listed in the setting.
-
-       Examples: "VENDOR_URL="https://fedoraproject.org/"", "VENDOR_URL="https://canonical.com/"".
-
-       Added in version 254.
-       """
-
-    # Distribution-level defaults and metadata
-
+    @property
     def default_hostname(self) -> str:
-       """
-       A string specifying the hostname if hostname(5) is not present and no other configuration source specifies the hostname. Must be either a single DNS label (a string composed of 7-bit ASCII lower-case characters and no spaces or dots, limited to the format allowed for DNS domain name labels), or a sequence of such labels separated by single dots that forms a valid DNS FQDN. The hostname must be at most 64 characters, which is a Linux limitation (DNS allows longer names).
+        """
+        A string specifying the hostname if hostname(5) is not present and no other configuration source specifies the hostname. Must be either a single DNS label (a string composed of 7-bit ASCII lower-case characters and no spaces or dots, limited to the format allowed for DNS domain name labels), or a sequence of such labels separated by single dots that forms a valid DNS FQDN. The hostname must be at most 64 characters, which is a Linux limitation (DNS allows longer names).
 
-       See org.freedesktop.hostname1(5) for a description of how systemd-hostnamed.service(8) determines the fallback hostname.
+        See org.freedesktop.hostname1(5) for a description of how systemd-hostnamed.service(8) determines the fallback hostname.
 
-       Added in version 248.
-       """
+        Added in version 248.
+        """
 
-   def architecture(self) -> str:
-       """
-       A string that specifies which CPU architecture the userspace binaries require. The architecture identifiers are the same as for ConditionArchitecture= described in systemd.unit(5). The field is optional and should only be used when just single architecture is supported. It may provide redundant information when used in a GPT partition with a GUID type that already encodes the architecture. If this is not the case, the architecture should be specified in e.g., an extension image, to prevent an incompatible host from loading it.
+        return self.raw['VENDOR_URL']
 
-       Added in version 252.
-       """
+    @property
+    def architecture(self) -> str:
+        """
+        A string that specifies which CPU architecture the userspace binaries require. The architecture identifiers are the same as for ConditionArchitecture= described in systemd.unit(5). The field is optional and should only be used when just single architecture is supported. It may provide redundant information when used in a GPT partition with a GUID type that already encodes the architecture. If this is not the case, the architecture should be specified in e.g., an extension image, to prevent an incompatible host from loading it.
 
-   def sysext_level(self) -> str:
-       """
-       A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the operating system extensions support level, to indicate which extension images are supported. See /usr/lib/extension-release.d/extension-release.IMAGE, initrd[2] and systemd-sysext(8)) for more information.
+        Added in version 252.
+        """
 
-       Examples: "SYSEXT_LEVEL=2", "SYSEXT_LEVEL=15.14".
+        return self.raw['VENDOR_URL']
 
-       Added in version 248.
-       """
+    @property
+    def sysext_level(self) -> str:
+        """
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the operating system extensions support level, to indicate which extension images are supported. See /usr/lib/extension-release.d/extension-release.IMAGE, initrd[2] and systemd-sysext(8)) for more information.
 
-   def confext_level(self) -> str:
-       """
-       Semantically the same as SYSEXT_LEVEL= but for confext images. See /etc/extension-release.d/extension-release.IMAGE for more information.
+        Examples: "SYSEXT_LEVEL=2", "SYSEXT_LEVEL=15.14".
 
-       Examples: "CONFEXT_LEVEL=2", "CONFEXT_LEVEL=15.14".
+        Added in version 248.
+        """
 
-       Added in version 254.
-       """
+        return self.raw['VENDOR_URL']
 
-   def sysext_scope(self) -> str:
-       """
-       Takes a space-separated list of one or more of the strings "system", "initrd" and "portable". This field is only supported in extension-release.d/ files and indicates what environments the system extension is applicable to: i.e. to regular systems, to initrds, or to portable service images. If unspecified, "SYSEXT_SCOPE=system portable" is implied, i.e. any system extension without this field is applicable to regular systems and to portable service environments, but not to initrd environments.
+    @property
+    def confext_level(self) -> str:
+        """
+        Semantically the same as SYSEXT_LEVEL= but for confext images. See /etc/extension-release.d/extension-release.IMAGE for more information.
 
-       Added in version 250.
-       """
+        Examples: "CONFEXT_LEVEL=2", "CONFEXT_LEVEL=15.14".
 
-   def confext_scope(self) -> str:
-       """
-       Semantically the same as SYSEXT_SCOPE= but for confext images.
+        Added in version 254.
+        """
 
-       Added in version 254.
-       """
+        return self.raw['VENDOR_URL']
 
-   def portable_prefixes(self) -> str:
-       """
-       Takes a space-separated list of one or more valid prefix match strings for the Portable Services[3] logic. This field serves two purposes: it is informational, identifying portable service images as such (and thus allowing them to be distinguished from other OS images, such as bootable system images). It is also used when a portable service image is attached: the specified or implied portable service prefix is checked against the list specified here, to enforce restrictions how images may be attached to a system.
+    @property
+    def sysext_scope(self) -> str:
+        """
+        Takes a space-separated list of one or more of the strings "system", "initrd" and "portable". This field is only supported in extension-release.d/ files and indicates what environments the system extension is applicable to: i.e. to regular systems, to initrds, or to portable service images. If unspecified, "SYSEXT_SCOPE=system portable" is implied, i.e. any system extension without this field is applicable to regular systems and to portable service environments, but not to initrd environments.
 
-       Added in versi
-       """
+        Added in version 250.
+        """
+
+        return self.raw['VENDOR_URL']
+
+    @property
+    def confext_scope(self) -> str:
+        """
+        Semantically the same as SYSEXT_SCOPE= but for confext images.
+
+        Added in version 254.
+        """
+
+        return self.raw['VENDOR_URL']
+
+    @property
+    def portable_prefixes(self) -> str:
+        """
+        Takes a space-separated list of one or more valid prefix match strings for the Portable Services[3] logic. This field serves two purposes: it is informational, identifying portable service images as such (and thus allowing them to be distinguished from other OS images, such as bootable system images). It is also used when a portable service image is attached: the specified or implied portable service prefix is checked against the list specified here, to enforce restrictions how images may be attached to a system.
+
+        Added in version 250.
+        """
+
+        return self.raw['VENDOR_URL']
 
 '''
 import dataclasses as dc
@@ -358,6 +317,128 @@ class LinuxOsRelease:
         """
 
         return self.raw['IMAGE_VERSION']
+
+    # To summarize: if the image updates are built and shipped as comprehensive units, IMAGE_ID+IMAGE_VERSION is the
+    # best fit. Otherwise, if updates eventually completely replace previously installed contents, as in a typical
+    # binary distribution, VERSION_ID should be used to identify major releases of the operating system.  BUILD_ID may
+    # be used instead or in addition to VERSION_ID when the original system image version is important.
+
+    #
+
+    # Presentation information and links
+
+    # Links to resources on the Internet related to the operating system.  HOME_URL= should refer to the homepage of the
+    # operating system, or alternatively some homepage of the specific version of the operating system.
+    # DOCUMENTATION_URL= should refer to the main documentation page for this operating system.  SUPPORT_URL= should
+    # refer to the main support page for the operating system, if there is any. This is primarily intended for operating
+    # systems which vendors provide support for.  BUG_REPORT_URL= should refer to the main bug reporting page for the
+    # operating system, if there is any. This is primarily intended for operating systems that rely on community QA.
+    # PRIVACY_POLICY_URL= should refer to the main privacy policy page for the operating system, if there is any. These
+    # settings are optional, and providing only some of these settings is common. These URLs are intended to be exposed
+    # in "About this system" UIs behind links with captions such as "About this Operating System", "Obtain Support",
+    # "Report a Bug", or "Privacy Policy". The values should be in RFC3986 format[5], and should be "http:" or "https:"
+    # URLs, and possibly "mailto:" or "tel:". Only one URL shall be listed in each setting. If multiple resources need
+    # to be referenced, it is recommended to provide an online landing page linking all available resources.
+
+    # Examples: "HOME_URL="https://fedoraproject.org/"", "BUG_REPORT_URL="https://bugzilla.redhat.com/"".
+
+    @property
+    def home_url(self) -> str:
+        return self.raw['HOME_URL']
+
+    @property
+    def documentation_url(self) -> str:
+        return self.raw['DOCUMENTATION_URL']
+
+    @property
+    def support_url(self) -> str:
+        return self.raw['SUPPORT_URL']
+
+    @property
+    def bug_report_url(self) -> str:
+        return self.raw['BUG_REPORT_URL']
+
+    @property
+    def privacy_policy_url(self) -> str:
+        return self.raw['PRIVACY_POLICY_URL']
+
+    @property
+    def support_end(self) -> str:
+        """
+        The date at which support for this version of the OS ends. (What exactly "lack of support" means varies between
+        vendors, but generally users should assume that updates, including security fixes, will not be provided.) The
+        value is a date in the ISO 8601 format "YYYY-MM-DD", and specifies the first day on which support is not
+        provided.
+
+        For example, "SUPPORT_END=2001-01-01" means that the system was supported until the end of the last day of the
+        previous millennium.
+
+        Added in version 252.
+        """
+
+        return self.raw['SUPPORT_END']
+
+    @property
+    def logo(self) -> str:
+        """
+        A string, specifying the name of an icon as defined by freedesktop.org Icon Theme Specification[6]. This can be
+        used by graphical applications to display an operating system's or distributor's logo. This field is optional
+        and may not necessarily be implemented on all systems.
+
+        Examples: "LOGO=fedora-logo", "LOGO=distributor-logo-opensuse"
+
+        Added in version 240.
+        """
+
+        return self.raw['LOGO']
+
+    @property
+    def ansi_color(self) -> str:
+        """
+        A suggested presentation color when showing the OS name on the console. This should be specified as string
+        suitable for inclusion in the ESC [ m ANSI/ECMA-48 escape code for setting graphical rendition. This field is
+        optional.
+
+        Examples: "ANSI_COLOR="0;31"" for red, "ANSI_COLOR="1;34"" for light blue, or "ANSI_COLOR="0;38;2;60;110;180""
+        for Fedora blue.
+        """
+
+        return self.raw['ANSI_COLOR']
+
+    @property
+    def vendor_name(self) -> str:
+        """
+        The name of the OS vendor. This is the name of the organization or company which produces the OS. This field is
+        optional.
+
+        This name is intended to be exposed in "About this system" UIs or software update UIs when needed to distinguish
+        the OS vendor from the OS itself. It is intended to be human readable.
+
+        Examples: "VENDOR_NAME="Fedora Project"" for Fedora Linux, "VENDOR_NAME="Canonical"" for Ubuntu.
+
+        Added in version 254.
+        """
+
+        return self.raw['VENDOR_NAME']
+
+    @property
+    def vendor_url(self) -> str:
+        """
+        The homepage of the OS vendor. This field is optional. The VENDOR_NAME= field should be set if this one is,
+        although clients must be robust against either field not being set.
+
+        The value should be in RFC3986 format[5], and should be "http:" or "https:" URLs. Only one URL shall be listed
+        in the setting.
+
+        Examples: "VENDOR_URL="https://fedoraproject.org/"", "VENDOR_URL="https://canonical.com/"".
+
+        Added in version 254.
+        """
+
+        return self.raw['VENDOR_URL']
+
+    # Distribution-level defaults and metadata
+
 
     #
 
