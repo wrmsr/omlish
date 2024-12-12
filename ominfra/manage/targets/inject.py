@@ -35,7 +35,7 @@ def bind_targets() -> InjectorBindings:
             DockerManageTarget: injector[DockerManageTargetConnector],
             SshManageTarget: injector[SshManageTargetConnector],
         })
-    inj.bind(provide_manage_target_connector_map, singleton=True)
+    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
 
     #
 

@@ -2679,7 +2679,10 @@ It's desugaring. Subprocess and locals are only leafs. Retain an origin?
 
 
 class ManageTarget(abc.ABC):  # noqa
-    pass
+    def __init_subclass__(cls, **kwargs: ta.Any) -> ta.Any:
+        super().__init_subclass__(**kwargs)
+
+        check.state(cls.__name__.endswith('ManageTarget'))
 
 
 #
@@ -2734,7 +2737,8 @@ class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):
 ##
 
 
-class InProcessConnectorTarget(LocalManageTarget):
+@dc.dataclass(frozen=True)
+class InProcessManageTarget(LocalManageTarget):
     class Mode(enum.Enum):
         DIRECT = enum.auto()
         FAKE_REMOTE = enum.auto()
@@ -4477,14 +4481,18 @@ class ObjMarshalerManager:
     ) -> ObjMarshaler:
         if isinstance(ty, type):
             if abc.ABC in ty.__bases__:
+                impls = [ity for ity in deep_subclasses(ty) if abc.ABC not in ity.__bases__]
+                if all(ity.__qualname__.endswith(ty.__name__) for ity in impls):
+                    ins = {ity: snake_case(ity.__qualname__[:-len(ty.__name__)]) for ity in impls}
+                else:
+                    ins = {ity: ity.__qualname__ for ity in impls}
                 return PolymorphicObjMarshaler.of([  # type: ignore
                     PolymorphicObjMarshaler.Impl(
                         ity,
-                        ity.__qualname__,
+                        itn,
                         rec(ity),
                     )
-                    for ity in deep_subclasses(ty)
-                    if abc.ABC not in ity.__bases__
+                    for ity, itn in ins.items()
                 ])
 
             if issubclass(ty, enum.Enum):
@@ -7107,8 +7115,14 @@ ManageTargetConnectorMap = ta.NewType('ManageTargetConnectorMap', ta.Mapping[ta.
 class TypeSwitchedManageTargetConnector(ManageTargetConnector):
     connectors: ManageTargetConnectorMap
 
+    def get_connector(self, ty: ta.Type[ManageTarget]) -> ManageTargetConnector:
+        for k, v in self.connectors.items():
+            if issubclass(ty, k):
+                return v
+        raise KeyError(ty)
+
     def connect(self, tgt: ManageTarget) -> ta.AsyncContextManager[CommandExecutor]:
-        return self.connectors[type(tgt)].connect(tgt)
+        return self.get_connector(type(tgt)).connect(tgt)
 
 
 ##
@@ -7125,13 +7139,13 @@ class LocalManageTargetConnector(ManageTargetConnector):
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         lmt = check.isinstance(tgt, LocalManageTarget)
 
-        if isinstance(lmt, InProcessConnectorTarget):
-            imt = check.isinstance(lmt, InProcessConnectorTarget)
+        if isinstance(lmt, InProcessManageTarget):
+            imt = check.isinstance(lmt, InProcessManageTarget)
 
-            if imt.mode == InProcessConnectorTarget.Mode.DIRECT:
+            if imt.mode == InProcessManageTarget.Mode.DIRECT:
                 yield self._local_executor
 
-            elif imt.mode == InProcessConnectorTarget.Mode.FAKE_REMOTE:
+            elif imt.mode == InProcessManageTarget.Mode.FAKE_REMOTE:
                 async with self._in_process_connector.connect() as rce:
                     yield rce
 
@@ -7331,7 +7345,7 @@ def bind_targets() -> InjectorBindings:
             DockerManageTarget: injector[DockerManageTargetConnector],
             SshManageTarget: injector[SshManageTargetConnector],
         })
-    inj.bind(provide_manage_target_connector_map, singleton=True)
+    lst.append(inj.bind(provide_manage_target_connector_map, singleton=True))
 
     #
 
@@ -7614,10 +7628,6 @@ class MainCli(ArgparseCli):
     @argparse_command(
         argparse_arg('--_payload-file'),
 
-        argparse_arg('-s', '--shell'),
-        argparse_arg('-q', '--shell-quote', action='store_true'),
-        argparse_arg('--python', default='python3'),
-
         argparse_arg('--pycharm-debug-port', type=int),
         argparse_arg('--pycharm-debug-host'),
         argparse_arg('--pycharm-debug-version'),
@@ -7625,8 +7635,6 @@ class MainCli(ArgparseCli):
         argparse_arg('--remote-timebomb-delay-s', type=float),
 
         argparse_arg('--debug', action='store_true'),
-
-        argparse_arg('--local', action='store_true'),
 
         argparse_arg('command', nargs='+'),
     )
@@ -7648,8 +7656,6 @@ class MainCli(ArgparseCli):
                 ) if self.args.pycharm_debug_port is not None else None,
 
                 timebomb_delay_s=self.args.remote_timebomb_delay_s,
-
-                # use_in_process_remote_executor=True,
             ),
         )
 
@@ -7673,21 +7679,11 @@ class MainCli(ArgparseCli):
 
         #
 
-        async with contextlib.AsyncExitStack() as es:
-            ce: CommandExecutor
+        tgt = DockerManageTarget(image='python:3.12')
 
-            if self.args.local:
-                ce = injector[LocalCommandExecutor]
+        #
 
-            else:
-                tgt = RemoteSpawning.Target(
-                    shell=self.args.shell,
-                    shell_quote=self.args.shell_quote,
-                    python=self.args.python,
-                )
-
-                ce = await es.enter_async_context(injector[PyremoteRemoteExecutionConnector].connect(tgt, bs))  # noqa
-
+        async with injector[ManageTargetConnector].connect(tgt) as ce:
             async def run_command(cmd: Command) -> None:
                 res = await ce.try_execute(
                     cmd,

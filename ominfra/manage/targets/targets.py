@@ -15,7 +15,10 @@ from omlish.lite.check import check
 
 
 class ManageTarget(abc.ABC):  # noqa
-    pass
+    def __init_subclass__(cls, **kwargs: ta.Any) -> ta.Any:
+        super().__init_subclass__(**kwargs)
+
+        check.state(cls.__name__.endswith('ManageTarget'))
 
 
 #
@@ -71,7 +74,7 @@ class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class InProcessConnectorTarget(LocalManageTarget):
+class InProcessManageTarget(LocalManageTarget):
     class Mode(enum.Enum):
         DIRECT = enum.auto()
         FAKE_REMOTE = enum.auto()
