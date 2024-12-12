@@ -26,6 +26,11 @@ class TestMarshal(unittest.TestCase):
             self.assertEqual(dp.render(), s)
             print(json_dumps_pretty(msh.marshal_obj(dp)))
 
+        self.assertEqual(
+            DeployPath.parse('ab/@app/cd/@deploy.foo').render({'app': 'foo', 'deploy': 'bar'}),
+            'ab/foo/cd/bar.foo',
+        )
+
         for s in [
             'ab/@app/cd/@app.foo',
             'ab/@deploy/cd/@app.foo',
