@@ -6,8 +6,7 @@ import subprocess
 import time
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_communicate
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_popen
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
@@ -51,7 +50,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
         proc: asyncio.subprocess.Process
-        async with asyncio_subprocess_popen(
+        async with asyncio_subprocesses.popen(
             *subprocess_maybe_shell_wrap_exec(*cmd.cmd),
 
             shell=cmd.shell,
@@ -65,7 +64,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             timeout=cmd.timeout,
         ) as proc:
             start_time = time.time()
-            stdout, stderr = await asyncio_subprocess_communicate(
+            stdout, stderr = await asyncio_subprocesses.communicate(
                 proc,
                 input=cmd.input,
                 timeout=cmd.timeout,

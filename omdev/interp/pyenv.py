@@ -18,9 +18,7 @@ import shutil
 import sys
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output_str
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_try_output
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
@@ -59,7 +57,7 @@ class Pyenv:
             return self._root_kw
 
         if shutil.which('pyenv'):
-            return await asyncio_subprocess_check_output_str('pyenv', 'root')
+            return await asyncio_subprocesses.check_output_str('pyenv', 'root')
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -88,7 +86,7 @@ class Pyenv:
         if await self.root() is None:
             return []
         ret = []
-        s = await asyncio_subprocess_check_output_str(await self.exe(), 'install', '--list')
+        s = await asyncio_subprocesses.check_output_str(await self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -103,7 +101,7 @@ class Pyenv:
             return False
         if not os.path.isdir(os.path.join(root, '.git')):
             return False
-        await asyncio_subprocess_check_call('git', 'pull', cwd=root)
+        await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
         return True
 
 
@@ -194,7 +192,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
-            dep_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', dep)
+            dep_prefix = await asyncio_subprocesses.check_output_str('brew', '--prefix', dep)
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts(
@@ -204,11 +202,11 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @async_cached_nullary
     async def brew_tcl_opts(self) -> PyenvInstallOpts:
-        if await asyncio_subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
+        if await asyncio_subprocesses.try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
-        tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
-        tcl_tk_ver_str = await asyncio_subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
+        tcl_tk_prefix = await asyncio_subprocesses.check_output_str('brew', '--prefix', 'tcl-tk')
+        tcl_tk_ver_str = await asyncio_subprocesses.check_output_str('brew', 'ls', '--versions', 'tcl-tk')
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts(conf_opts=[
@@ -329,7 +327,7 @@ class PyenvVersionInstaller:
                 *conf_args,
             ]
 
-        await asyncio_subprocess_check_call(
+        await asyncio_subprocesses.check_call(
             *full_args,
             env=env,
         )

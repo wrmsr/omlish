@@ -7,7 +7,7 @@ TODO:
 import os.path
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 
 from .paths import DeployPath
 from .paths import DeployPathOwner
@@ -40,7 +40,7 @@ class DeployVenvManager(DeployPathOwner):
     ) -> None:
         sys_exe = 'python3'
 
-        await asyncio_subprocess_check_call(sys_exe, '-m', 'venv', venv_dir)
+        await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
 
         #
 
@@ -52,12 +52,12 @@ class DeployVenvManager(DeployPathOwner):
 
         if os.path.isfile(reqs_txt):
             if use_uv:
-                await asyncio_subprocess_check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
                 pip_cmd = ['-m', 'uv', 'pip']
             else:
                 pip_cmd = ['-m', 'pip']
 
-            await asyncio_subprocess_check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
+            await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
 
     async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
         await self.setup_venv(

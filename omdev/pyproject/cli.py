@@ -36,7 +36,7 @@ import typing as ta
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_command
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
@@ -167,7 +167,7 @@ class PyprojectCli(ArgparseCli):
                 else:
                     docker_env[e] = os.environ.get(e, '')
 
-            await asyncio_subprocess_check_call(
+            await asyncio_subprocesses.check_call(
                 'docker',
                 'compose',
                 '-f', 'docker/compose.yml',
@@ -218,7 +218,7 @@ class PyprojectCli(ArgparseCli):
 
         elif cmd == 'test':
             await venv.create()
-            await asyncio_subprocess_check_call(venv.exe(), '-m', 'pytest', *(self.args.args or []), *venv.srcs())
+            await asyncio_subprocesses.check_call(venv.exe(), '-m', 'pytest', *(self.args.args or []), *venv.srcs())
 
         else:
             raise Exception(f'unknown subcommand: {cmd}')

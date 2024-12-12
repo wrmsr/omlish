@@ -5,7 +5,7 @@ import logging
 import sys
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_output
+from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.logs import log
 
 from ..packaging.versions import Version
@@ -83,7 +83,7 @@ class InterpInspector:
         return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
 
     async def _inspect(self, exe: str) -> InterpInspection:
-        output = await asyncio_subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
+        output = await asyncio_subprocesses.check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
         return self._build_inspection(exe, output.decode())
 
     async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
