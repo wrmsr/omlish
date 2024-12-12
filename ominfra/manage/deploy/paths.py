@@ -219,3 +219,12 @@ class DeployPath:
             *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
             tail_parse(ps[-1]),
         ])
+
+
+##
+
+
+class DeployPathOwner(abc.ABC):
+    @abc.abstractmethod
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        raise NotImplementedError

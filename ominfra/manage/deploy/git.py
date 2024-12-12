@@ -17,7 +17,10 @@ from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 
+from .paths import DeployPath
+from .paths import DeployPathOwner
 from .types import DeployHome
+from .types import DeployRev
 
 
 ##
@@ -37,13 +40,13 @@ class DeployGitRepo:
 @dc.dataclass(frozen=True)
 class DeployGitSpec:
     repo: DeployGitRepo
-    rev: str
+    rev: DeployRev
 
 
 ##
 
 
-class DeployGitManager:
+class DeployGitManager(DeployPathOwner):
     def __init__(
             self,
             deploy_home: DeployHome,
@@ -54,6 +57,11 @@ class DeployGitManager:
         self._dir = os.path.join(deploy_home, 'git')
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
+
+    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return {
+            DeployPath.parse('git'),
+        }
 
     class RepoDir:
         def __init__(
@@ -94,11 +102,11 @@ class DeployGitManager:
             await self._call('git', 'init')
             await self._call('git', 'remote', 'add', 'origin', self.url)
 
-        async def fetch(self, rev: str) -> None:
+        async def fetch(self, rev: DeployRev) -> None:
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 
-        async def checkout(self, rev: str, dst_dir: str) -> None:
+        async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
 
             await self.fetch(rev)
