@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007
-import sys
 import typing as ta
 
 from omlish.lite.inject import InjectorBindingOrBindings
@@ -13,7 +12,10 @@ from .config import SystemConfig
 from .packages import AptSystemPackageManager
 from .packages import BrewSystemPackageManager
 from .packages import SystemPackageManager
-from .types import SystemPlatform
+from .platforms import Platform
+from .platforms import LinuxPlatform
+from .platforms import DarwinPlatform
+from .platforms import get_system_platform
 
 
 def bind_system(
@@ -26,18 +28,18 @@ def bind_system(
 
     #
 
-    platform = system_config.platform or sys.platform
-    lst.append(inj.bind(platform, key=SystemPlatform))
+    platform = system_config.platform or get_system_platform()
+    lst.append(inj.bind(platform, key=Platform))
 
     #
 
-    if platform == 'linux':
+    if isinstance(platform, LinuxPlatform):
         lst.extend([
             inj.bind(AptSystemPackageManager, singleton=True),
             inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
         ])
 
-    elif platform == 'darwin':
+    elif isinstance(platform ,DarwinPlatform):
         lst.extend([
             inj.bind(BrewSystemPackageManager, singleton=True),
             inj.bind(SystemPackageManager, to_key=BrewSystemPackageManager),
