@@ -9,6 +9,7 @@ from omlish.lite.marshal import ObjMarshalerManager
 from .bootstrap import MainBootstrap
 from .commands.inject import bind_commands
 from .config import MainConfig
+from .deploy.config import DeployConfig
 from .deploy.inject import bind_deploy
 from .marshal import ObjMarshalerInstaller
 from .marshal import ObjMarshalerInstallers
@@ -25,6 +26,8 @@ from .targets.inject import bind_targets
 def bind_main(
         *,
         main_config: MainConfig = MainConfig(),
+
+        deploy_config: DeployConfig = DeployConfig(),
         remote_config: RemoteConfig = RemoteConfig(),
         system_config: SystemConfig = SystemConfig(),
 
@@ -37,7 +40,9 @@ def bind_main(
             main_config=main_config,
         ),
 
-        bind_deploy(),
+        bind_deploy(
+            deploy_config=deploy_config,
+        ),
 
         bind_remote(
             remote_config=remote_config,
