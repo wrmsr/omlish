@@ -5560,6 +5560,27 @@ def install_command_marshaling(
 
 
 ########################################
+# ../commands/ping.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class PingCommand(Command['PingCommand.Output']):
+    time: float = dc.field(default_factory=time.time)
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        time: float
+
+
+class PingCommandExecutor(CommandExecutor[PingCommand, PingCommand.Output]):
+    async def execute(self, cmd: PingCommand) -> PingCommand.Output:
+        return PingCommand.Output(cmd.time)
+
+
+########################################
 # ../commands/types.py
 
 
@@ -7308,6 +7329,106 @@ class RunningInterpProvider(InterpProvider):
 
 
 ########################################
+# ../commands/inject.py
+
+
+##
+
+
+def bind_command(
+        command_cls: ta.Type[Command],
+        executor_cls: ta.Optional[ta.Type[CommandExecutor]],
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(CommandRegistration(command_cls), array=True),
+    ]
+
+    if executor_cls is not None:
+        lst.extend([
+            inj.bind(executor_cls, singleton=True),
+            inj.bind(CommandExecutorRegistration(command_cls, executor_cls), array=True),
+        ])
+
+    return inj.as_bindings(*lst)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class _FactoryCommandExecutor(CommandExecutor):
+    factory: ta.Callable[[], CommandExecutor]
+
+    def execute(self, i: Command) -> ta.Awaitable[Command.Output]:
+        return self.factory().execute(i)
+
+
+##
+
+
+def bind_commands(
+        *,
+        main_config: MainConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind_array(CommandRegistration),
+        inj.bind_array_type(CommandRegistration, CommandRegistrations),
+
+        inj.bind_array(CommandExecutorRegistration),
+        inj.bind_array_type(CommandExecutorRegistration, CommandExecutorRegistrations),
+
+        inj.bind(build_command_name_map, singleton=True),
+    ]
+
+    #
+
+    def provide_obj_marshaler_installer(cmds: CommandNameMap) -> ObjMarshalerInstaller:
+        return ObjMarshalerInstaller(functools.partial(install_command_marshaling, cmds))
+
+    lst.append(inj.bind(provide_obj_marshaler_installer, array=True))
+
+    #
+
+    def provide_command_executor_map(
+            injector: Injector,
+            crs: CommandExecutorRegistrations,
+    ) -> CommandExecutorMap:
+        dct: ta.Dict[ta.Type[Command], CommandExecutor] = {}
+
+        cr: CommandExecutorRegistration
+        for cr in crs:
+            if cr.command_cls in dct:
+                raise KeyError(cr.command_cls)
+
+            factory = functools.partial(injector.provide, cr.executor_cls)
+            if main_config.debug:
+                ce = factory()
+            else:
+                ce = _FactoryCommandExecutor(factory)
+
+            dct[cr.command_cls] = ce
+
+        return CommandExecutorMap(dct)
+
+    lst.extend([
+        inj.bind(provide_command_executor_map, singleton=True),
+
+        inj.bind(LocalCommandExecutor, singleton=True, eager=main_config.debug),
+    ])
+
+    #
+
+    lst.extend([
+        bind_command(PingCommand, PingCommandExecutor),
+        bind_command(SubprocessCommand, SubprocessCommandExecutor),
+    ])
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
 # ../deploy/apps.py
 
 
@@ -8223,6 +8344,54 @@ class InProcessRemoteExecutionConnector:
 
 
 ########################################
+# ../system/inject.py
+
+
+def bind_system(
+        *,
+        system_config: SystemConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(system_config),
+    ]
+
+    #
+
+    platform = system_config.platform or detect_system_platform()
+    lst.append(inj.bind(platform, key=Platform))
+
+    #
+
+    if isinstance(platform, AmazonLinuxPlatform):
+        lst.extend([
+            inj.bind(YumSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=YumSystemPackageManager),
+        ])
+
+    elif isinstance(platform, LinuxPlatform):
+        lst.extend([
+            inj.bind(AptSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
+        ])
+
+    elif isinstance(platform, DarwinPlatform):
+        lst.extend([
+            inj.bind(BrewSystemPackageManager, singleton=True),
+            inj.bind(SystemPackageManager, to_key=BrewSystemPackageManager),
+        ])
+
+    #
+
+    lst.extend([
+        bind_command(CheckSystemPackageCommand, CheckSystemPackageCommandExecutor),
+    ])
+
+    #
+
+    return inj.as_bindings(*lst)
+
+
+########################################
 # ../../../omdev/interp/resolvers.py
 
 
@@ -8483,7 +8652,7 @@ class SshManageTargetConnector(ManageTargetConnector):
 
 
 ########################################
-# ../commands/interp.py
+# ../deploy/interp.py
 
 
 ##
@@ -8542,109 +8711,6 @@ def bind_targets() -> InjectorBindings:
 
 
 ########################################
-# ../commands/inject.py
-
-
-##
-
-
-def bind_command(
-        command_cls: ta.Type[Command],
-        executor_cls: ta.Optional[ta.Type[CommandExecutor]],
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(CommandRegistration(command_cls), array=True),
-    ]
-
-    if executor_cls is not None:
-        lst.extend([
-            inj.bind(executor_cls, singleton=True),
-            inj.bind(CommandExecutorRegistration(command_cls, executor_cls), array=True),
-        ])
-
-    return inj.as_bindings(*lst)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class _FactoryCommandExecutor(CommandExecutor):
-    factory: ta.Callable[[], CommandExecutor]
-
-    def execute(self, i: Command) -> ta.Awaitable[Command.Output]:
-        return self.factory().execute(i)
-
-
-##
-
-
-def bind_commands(
-        *,
-        main_config: MainConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind_array(CommandRegistration),
-        inj.bind_array_type(CommandRegistration, CommandRegistrations),
-
-        inj.bind_array(CommandExecutorRegistration),
-        inj.bind_array_type(CommandExecutorRegistration, CommandExecutorRegistrations),
-
-        inj.bind(build_command_name_map, singleton=True),
-    ]
-
-    #
-
-    def provide_obj_marshaler_installer(cmds: CommandNameMap) -> ObjMarshalerInstaller:
-        return ObjMarshalerInstaller(functools.partial(install_command_marshaling, cmds))
-
-    lst.append(inj.bind(provide_obj_marshaler_installer, array=True))
-
-    #
-
-    def provide_command_executor_map(
-            injector: Injector,
-            crs: CommandExecutorRegistrations,
-    ) -> CommandExecutorMap:
-        dct: ta.Dict[ta.Type[Command], CommandExecutor] = {}
-
-        cr: CommandExecutorRegistration
-        for cr in crs:
-            if cr.command_cls in dct:
-                raise KeyError(cr.command_cls)
-
-            factory = functools.partial(injector.provide, cr.executor_cls)
-            if main_config.debug:
-                ce = factory()
-            else:
-                ce = _FactoryCommandExecutor(factory)
-
-            dct[cr.command_cls] = ce
-
-        return CommandExecutorMap(dct)
-
-    lst.extend([
-        inj.bind(provide_command_executor_map, singleton=True),
-
-        inj.bind(LocalCommandExecutor, singleton=True, eager=main_config.debug),
-    ])
-
-    #
-
-    command_cls: ta.Any
-    executor_cls: ta.Any
-    for command_cls, executor_cls in [
-        (SubprocessCommand, SubprocessCommandExecutor),
-        (InterpCommand, InterpCommandExecutor),
-    ]:
-        lst.append(bind_command(command_cls, executor_cls))
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
 # ../deploy/inject.py
 
 
@@ -8660,58 +8726,12 @@ def bind_deploy(
         inj.bind(DeployVenvManager, singleton=True),
 
         bind_command(DeployCommand, DeployCommandExecutor),
+        bind_command(InterpCommand, InterpCommandExecutor),
     ]
 
     if (dh := deploy_config.deploy_home) is not None:
+        dh = os.path.abspath(os.path.expanduser(dh))
         lst.append(inj.bind(dh, key=DeployHome))
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../system/inject.py
-
-
-def bind_system(
-        *,
-        system_config: SystemConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(system_config),
-    ]
-
-    #
-
-    platform = system_config.platform or detect_system_platform()
-    lst.append(inj.bind(platform, key=Platform))
-
-    #
-
-    if isinstance(platform, AmazonLinuxPlatform):
-        lst.extend([
-            inj.bind(YumSystemPackageManager, singleton=True),
-            inj.bind(SystemPackageManager, to_key=YumSystemPackageManager),
-        ])
-
-    elif isinstance(platform, LinuxPlatform):
-        lst.extend([
-            inj.bind(AptSystemPackageManager, singleton=True),
-            inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
-        ])
-
-    elif isinstance(platform, DarwinPlatform):
-        lst.extend([
-            inj.bind(BrewSystemPackageManager, singleton=True),
-            inj.bind(SystemPackageManager, to_key=BrewSystemPackageManager),
-        ])
-
-    #
-
-    lst.extend([
-        bind_command(CheckSystemPackageCommand, CheckSystemPackageCommandExecutor),
-    ])
-
-    #
 
     return inj.as_bindings(*lst)
 
@@ -8818,6 +8838,8 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
+        argparse_arg('--deploy-home'),
+
         argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
@@ -8827,6 +8849,10 @@ class MainCli(ArgparseCli):
                 log_level='DEBUG' if self.args.debug else 'INFO',
 
                 debug=bool(self.args.debug),
+            ),
+
+            deploy_config=DeployConfig(
+                deploy_home=self.args.deploy_home,
             ),
 
             remote_config=RemoteConfig(

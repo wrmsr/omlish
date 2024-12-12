@@ -22,6 +22,7 @@ from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
 from .config import MainConfig
+from .deploy.config import DeployConfig
 from .remote.config import RemoteConfig
 from .targets.connection import ManageTargetConnector
 from .targets.targets import ManageTarget
@@ -39,6 +40,8 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
+        argparse_arg('--deploy-home'),
+
         argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
@@ -48,6 +51,10 @@ class MainCli(ArgparseCli):
                 log_level='DEBUG' if self.args.debug else 'INFO',
 
                 debug=bool(self.args.debug),
+            ),
+
+            deploy_config=DeployConfig(
+                deploy_home=self.args.deploy_home,
             ),
 
             remote_config=RemoteConfig(
