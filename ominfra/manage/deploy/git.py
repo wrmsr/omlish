@@ -49,6 +49,7 @@ class DeployGitSpec:
 class DeployGitManager(DeployPathOwner):
     def __init__(
             self,
+            *,
             deploy_home: DeployHome,
     ) -> None:
         super().__init__()
