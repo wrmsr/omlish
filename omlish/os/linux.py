@@ -40,56 +40,6 @@ BUG_REPORT_URL="https://bugs.debian.org/"
 
 
 
-    # Information about the version of the operating system
-   def version(self) -> str:
-       """
-       A string identifying the operating system version, excluding any OS name information, possibly including a release code name, and suitable for presentation to the user. This field is optional.
-
-       Examples: "VERSION=17", "VERSION="17 (Beefy Miracle)"".
-       """
-
-   def version_id(self) -> str:
-       """
-       A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the operating system version, excluding any OS name information or release code name, and suitable for processing by scripts or usage in generated filenames. This field is optional.
-
-       Examples: "VERSION_ID=17", "VERSION_ID=11.04".
-       """
-
-   def version_codename(self) -> str:
-       """
-       A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the operating system release code name, excluding any OS name information or release version, and suitable for processing by scripts or usage in generated filenames. This field is optional and may not be implemented on all systems.
-
-       Examples: "VERSION_CODENAME=buster", "VERSION_CODENAME=xenial".
-
-       Added in version 231.
-       """
-
-   def build_id(self) -> str:
-       """
-       A string uniquely identifying the system image originally used as the installation base. In most cases, VERSION_ID or IMAGE_ID+IMAGE_VERSION are updated when the entire system image is replaced during an update.  BUILD_ID may be used in distributions where the original installation image version is important: VERSION_ID would change during incremental system updates, but BUILD_ID would not. This field is optional.
-
-       Examples: "BUILD_ID="2013-03-20.3"", "BUILD_ID=201303203".
-
-       Added in version 200.
-       """
-
-   def image_id(self) -> str:
-       """
-       A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-"), identifying a specific image of the operating system. This is supposed to be used for environments where OS images are prepared, built, shipped and updated as comprehensive, consistent OS images. This field is optional and may not be implemented on all systems, in particularly not on those that are not managed via images but put together and updated from individual packages and on the local system.
-
-       Examples: "IMAGE_ID=vendorx-cashier-system", "IMAGE_ID=netbook-image".
-
-       Added in version 249.
-       """
-
-   def image_version(self) -> str:
-       """
-       A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the OS image version. This is supposed to be used together with IMAGE_ID described above, to discern different versions of the same image.
-
-       Examples: "IMAGE_VERSION=33", "IMAGE_VERSION=47.1rc1".
-
-       Added in version 249.
-       """
 
    To summarize: if the image updates are built and shipped as comprehensive units, IMAGE_ID+IMAGE_VERSION is the best fit. Otherwise, if updates eventually completely replace previously installed contents, as in a typical binary distribution, VERSION_ID should be used to identify major releases of the operating system.  BUILD_ID may be used instead or in addition to VERSION_ID when the original system image version is important.
 
@@ -323,6 +273,91 @@ class LinuxOsRelease:
         """
 
         return self.raw['variant_id']
+
+    # Information about the version of the operating system
+
+    @property
+    def version(self) -> str:
+        """
+        A string identifying the operating system version, excluding any OS name information, possibly including a
+        release code name, and suitable for presentation to the user. This field is optional.
+
+        Examples: "VERSION=17", "VERSION="17 (Beefy Miracle)"".
+        """
+
+        return self.raw['VERSION']
+
+    @property
+    def version_id(self) -> str:
+        """
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-")
+        identifying the operating system version, excluding any OS name information or release code name, and suitable
+        for processing by scripts or usage in generated filenames. This field is optional.
+
+        Examples: "VERSION_ID=17", "VERSION_ID=11.04".
+        """
+
+        return self.raw['VERSION_ID']
+
+    @property
+    def version_codename(self) -> str:
+        """
+        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the
+        operating system release code name, excluding any OS name information or release version, and suitable for
+        processing by scripts or usage in generated filenames. This field is optional and may not be implemented on all
+        systems.
+
+        Examples: "VERSION_CODENAME=buster", "VERSION_CODENAME=xenial".
+
+        Added in version 231.
+        """
+
+        return self.raw['VERSION_CODENAME']
+
+    @property
+    def build_id(self) -> str:
+        """
+        A string uniquely identifying the system image originally used as the installation base. In most cases,
+        VERSION_ID or IMAGE_ID+IMAGE_VERSION are updated when the entire system image is replaced during an update.
+        BUILD_ID may be used in distributions where the original installation image version is important: VERSION_ID
+        would change during incremental system updates, but BUILD_ID would not. This field is optional.
+
+        Examples: "BUILD_ID="2013-03-20.3"", "BUILD_ID=201303203".
+
+        Added in version 200.
+        """
+
+        return self.raw['BUILD_ID']
+
+    @property
+    def image_id(self) -> str:
+        """
+        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-"), identifying a
+        specific image of the operating system. This is supposed to be used for environments where OS images are
+        prepared, built, shipped and updated as comprehensive, consistent OS images. This field is optional and may not
+        be implemented on all systems, in particularly not on those that are not managed via images but put together and
+        updated from individual packages and on the local system.
+
+        Examples: "IMAGE_ID=vendorx-cashier-system", "IMAGE_ID=netbook-image".
+
+        Added in version 249.
+        """
+
+        return self.raw['IMAGE_ID']
+
+    @property
+    def image_version(self) -> str:
+        """
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-")
+        identifying the OS image version. This is supposed to be used together with IMAGE_ID described above, to discern
+        different versions of the same image.
+
+        Examples: "IMAGE_VERSION=33", "IMAGE_VERSION=47.1rc1".
+
+        Added in version 249.
+        """
+
+        return self.raw['IMAGE_VERSION']
 
     #
 
