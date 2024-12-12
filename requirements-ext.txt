@@ -143,9 +143,9 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.35.78
+boto3>=1.35.79
 
-google-api-python-client==2.154.0
+google-api-python-client==2.155.0
 google-cloud-compute==1.22.0
 
 cloudflare==3.1.0  # httpx
@@ -181,7 +181,7 @@ mitogen==0.3.19
 
 ##
 
-openai==1.57.2
+openai==1.57.3
 
 trl==0.12.1
 tf-keras==2.17.0
@@ -214,7 +214,7 @@ langchain==0.3.11
 
 langchainhub==0.1.21
 
-langgraph==0.2.58
+langgraph==0.2.59
 
 langsmith==0.1.125
 
@@ -280,7 +280,7 @@ instructor>=1.5.2  # FIXME: INSTRUCTOR.
 
 docopt==0.6.2
 
-rapidocr_onnxruntime==1.4.2
+rapidocr_onnxruntime==1.4.3
 
 gguf==0.10.0
 
