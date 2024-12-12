@@ -11,7 +11,6 @@ from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
 from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
 from omlish.lite.subprocesses import SubprocessChannelOption
-from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
 ##
@@ -82,12 +81,8 @@ class SubprocessRemoteSpawning(RemoteSpawning):
     ) -> ta.AsyncGenerator[RemoteSpawning.Spawned, None]:
         pc = self._prepare_cmd(tgt, src)
 
-        cmd = pc.cmd
-        if not debug:
-            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
-
         async with asyncio_subprocesses.popen(
-                *cmd,
+                *pc.cmd,
                 shell=pc.shell,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,

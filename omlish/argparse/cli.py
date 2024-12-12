@@ -14,6 +14,8 @@ import sys
 import typing as ta
 
 from ..lite.check import check
+from ..lite.reflect import get_optional_alias_arg
+from ..lite.reflect import is_optional_alias
 
 
 T = ta.TypeVar('T')
@@ -120,6 +122,8 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
         return {'action': 'store_true'}
     elif ann is list:
         return {'action': 'append'}
+    elif is_optional_alias(ann):
+        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
     else:
         raise TypeError(ann)
 
@@ -209,7 +213,7 @@ class ArgparseCli:
                     if 'dest' in obj.kwargs:
                         obj.dest = obj.kwargs['dest']
                     else:
-                        obj.dest = obj.kwargs['dest'] = att.replace('_', '-')  # type: ignore
+                        obj.dest = obj.kwargs['dest'] = att  # type: ignore
 
                 parser.add_argument(*obj.args, **obj.kwargs)
 
