@@ -91,16 +91,43 @@ class AptSystemPackageManager(SystemPackageManager):
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
         cmd = ['dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns]
-        stdout, stderr = await asyncio_subprocess_run(
+        out = await asyncio_subprocess_run(
             *cmd,
             capture_output=True,
             check=False,
         )
         d: ta.Dict[str, SystemPackage] = {}
-        for l in check.not_none(stdout).decode('utf-8').strip().splitlines():
+        for l in check.not_none(out.stdout).decode('utf-8').strip().splitlines():
             n, v = l.split('=', 1)
             d[n] = SystemPackage(
                 name=n,
                 version=v,
             )
+        return d
+
+
+class YumSystemPackageManager(SystemPackageManager):
+    async def update(self) -> None:
+        await asyncio_subprocess_check_call('yum', 'check-update')
+
+    async def upgrade(self) -> None:
+        await asyncio_subprocess_check_call('yum', 'update')
+
+    async def install(self, *packages: SystemPackageOrStr) -> None:
+        pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
+        await asyncio_subprocess_check_call('yum', 'install', *pns)
+
+    async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
+        pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
+        d: ta.Dict[str, SystemPackage] = {}
+        for pn in pns:
+            out = await asyncio_subprocess_run(
+                'rpm', '-q', pn,
+                capture_output=True,
+            )
+            if not out.proc.returncode:
+                d[pn] = SystemPackage(
+                    pn,
+                    check.not_none(out).decode().strip(),
+                )
         return d

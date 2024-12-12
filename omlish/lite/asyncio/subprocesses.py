@@ -2,6 +2,7 @@
 import asyncio.base_subprocess
 import asyncio.subprocess
 import contextlib
+import dataclasses as dc
 import functools
 import logging
 import subprocess
@@ -177,6 +178,13 @@ async def asyncio_subprocess_communicate(
     return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
 
+@dc.dataclass(frozen=True)
+class AsyncioSubprocessOutput:
+    proc: asyncio.subprocess.Process
+    stdout: ta.Optional[bytes]
+    stderr: ta.Optional[bytes]
+
+
 async def asyncio_subprocess_run(
         *args: str,
         input: ta.Any = None,  # noqa
@@ -184,7 +192,7 @@ async def asyncio_subprocess_run(
         check: bool = False,  # noqa
         capture_output: ta.Optional[bool] = None,
         **kwargs: ta.Any,
-) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+) -> AsyncioSubprocessOutput:
     if capture_output:
         kwargs.setdefault('stdout', subprocess.PIPE)
         kwargs.setdefault('stderr', subprocess.PIPE)
@@ -203,7 +211,11 @@ async def asyncio_subprocess_run(
             stderr=stderr,
         )
 
-    return stdout, stderr
+    return AsyncioSubprocessOutput(
+        proc,
+        stdout,
+        stderr,
+    )
 
 
 ##
@@ -216,7 +228,7 @@ async def asyncio_subprocess_check_call(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> None:
-    _, _ = await asyncio_subprocess_run(
+    await asyncio_subprocess_run(
         *args,
         stdout=stdout,
         input=input,
@@ -232,7 +244,7 @@ async def asyncio_subprocess_check_output(
         timeout: ta.Optional[float] = None,
         **kwargs: ta.Any,
 ) -> bytes:
-    stdout, stderr = await asyncio_subprocess_run(
+    out = await asyncio_subprocess_run(
         *args,
         stdout=asyncio.subprocess.PIPE,
         input=input,
@@ -241,7 +253,7 @@ async def asyncio_subprocess_check_output(
         **kwargs,
     )
 
-    return check.not_none(stdout)
+    return check.not_none(out.stdout)
 
 
 async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
