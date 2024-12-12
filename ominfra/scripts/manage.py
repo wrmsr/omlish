@@ -5788,150 +5788,15 @@ SUBPROCESS_CHANNEL_OPTION_VALUES: ta.Mapping[SubprocessChannelOption, int] = {
 _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
-def subprocess_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
-    return ('sh', '-c', ' '.join(map(shlex.quote, args)))
+def subprocess_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
+    return ('sh', '-c', ' '.join(map(shlex.quote, cmd)))
 
 
-def subprocess_maybe_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
+def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
     if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
-        return subprocess_shell_wrap_exec(*args)
+        return subprocess_shell_wrap_exec(*cmd)
     else:
-        return args
-
-
-def prepare_subprocess_invocation(
-        *args: str,
-        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-        quiet: bool = False,
-        shell: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
-    log.debug('prepare_subprocess_invocation: args=%r', args)
-    if extra_env:
-        log.debug('prepare_subprocess_invocation: extra_env=%r', extra_env)
-
-    if extra_env:
-        env = {**(env if env is not None else os.environ), **extra_env}
-
-    if quiet and 'stderr' not in kwargs:
-        if not log.isEnabledFor(logging.DEBUG):
-            kwargs['stderr'] = subprocess.DEVNULL
-
-    if not shell:
-        args = subprocess_maybe_shell_wrap_exec(*args)
-
-    return args, dict(
-        env=env,
-        shell=shell,
-        **kwargs,
-    )
-
-
-##
-
-
-@contextlib.contextmanager
-def subprocess_common_context(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[None]:
-    start_time = time.time()
-    try:
-        log.debug('subprocess_common_context.try: args=%r', args)
-        yield
-
-    except Exception as exc:  # noqa
-        log.debug('subprocess_common_context.except: exc=%r', exc)
-        raise
-
-    finally:
-        end_time = time.time()
-        elapsed_s = end_time - start_time
-        log.debug('subprocess_common_context.finally: elapsed_s=%f args=%r', elapsed_s, args)
-
-
-##
-
-
-def subprocess_check_call(
-        *args: str,
-        stdout: ta.Any = sys.stderr,
-        **kwargs: ta.Any,
-) -> None:
-    args, kwargs = prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
-    with subprocess_common_context(*args, **kwargs):
-        return subprocess.check_call(args, **kwargs)  # type: ignore
-
-
-def subprocess_check_output(
-        *args: str,
-        **kwargs: ta.Any,
-) -> bytes:
-    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
-    with subprocess_common_context(*args, **kwargs):
-        return subprocess.check_output(args, **kwargs)
-
-
-def subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
-    return subprocess_check_output(*args, **kwargs).decode().strip()
-
-
-##
-
-
-DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
-    FileNotFoundError,
-    subprocess.CalledProcessError,
-)
-
-
-def _subprocess_try_run(
-        fn: ta.Callable[..., T],
-        *args: ta.Any,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> ta.Union[T, Exception]:
-    try:
-        return fn(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
-        return e
-
-
-def subprocess_try_call(
-        *args: str,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> bool:
-    if isinstance(_subprocess_try_run(
-            subprocess_check_call,
-            *args,
-            try_exceptions=try_exceptions,
-            **kwargs,
-    ), Exception):
-        return False
-    else:
-        return True
-
-
-def subprocess_try_output(
-        *args: str,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> ta.Optional[bytes]:
-    if isinstance(ret := _subprocess_try_run(
-            subprocess_check_output,
-            *args,
-            try_exceptions=try_exceptions,
-            **kwargs,
-    ), Exception):
-        return None
-    else:
-        return ret
-
-
-def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
-    out = subprocess_try_output(*args, **kwargs)
-    return out.decode().strip() if out is not None else None
+        return cmd
 
 
 ##
@@ -5950,6 +5815,195 @@ def subprocess_close(
         proc.stdin.close()
 
     proc.wait(timeout)
+
+
+##
+
+
+class AbstractSubprocesses(abc.ABC):  # noqa
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = log
+
+    def __init__(
+            self,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._log = log if log is not None else self.DEFAULT_LOGGER
+        self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
+
+    #
+
+    def prepare_args(
+            self,
+            *cmd: str,
+            env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            quiet: bool = False,
+            shell: bool = False,
+            **kwargs: ta.Any,
+    ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+        if self._log:
+            self._log.debug('Subprocesses.prepare_args: cmd=%r', cmd)
+            if extra_env:
+                self._log.debug('Subprocesses.prepare_args: extra_env=%r', extra_env)
+
+        if extra_env:
+            env = {**(env if env is not None else os.environ), **extra_env}
+
+        if quiet and 'stderr' not in kwargs:
+            if self._log and not self._log.isEnabledFor(logging.DEBUG):
+                kwargs['stderr'] = subprocess.DEVNULL
+
+        if not shell:
+            cmd = subprocess_maybe_shell_wrap_exec(*cmd)
+
+        return cmd, dict(
+            env=env,
+            shell=shell,
+            **kwargs,
+        )
+
+    @contextlib.contextmanager
+    def wrap_call(self, *cmd: ta.Any, **kwargs: ta.Any) -> ta.Iterator[None]:
+        start_time = time.time()
+        try:
+            if self._log:
+                self._log.debug('Subprocesses.wrap_call.try: cmd=%r', cmd)
+            yield
+
+        except Exception as exc:  # noqa
+            if self._log:
+                self._log.debug('Subprocesses.wrap_call.except: exc=%r', exc)
+            raise
+
+        finally:
+            end_time = time.time()
+            elapsed_s = end_time - start_time
+            if self._log:
+                self._log.debug('sSubprocesses.wrap_call.finally: elapsed_s=%f cmd=%r', elapsed_s, cmd)
+
+    @contextlib.contextmanager
+    def prepare_and_wrap(
+            self,
+            *cmd: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Iterator[ta.Tuple[
+        ta.Tuple[ta.Any, ...],
+        ta.Dict[str, ta.Any],
+    ]]:
+        cmd, kwargs = self.prepare_args(*cmd, **kwargs)
+        with self.wrap_call(*cmd, **kwargs):
+            yield cmd, kwargs
+
+    #
+
+    DEFAULT_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+    )
+
+    def try_fn(
+            self,
+            fn: ta.Callable[..., T],
+            *cmd: str,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Union[T, Exception]:
+        if try_exceptions is None:
+            try_exceptions = self._try_exceptions
+
+        try:
+            return fn(*cmd, **kwargs)
+
+        except try_exceptions as e:  # noqa
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception('command failed')
+            return e
+
+    async def async_try_fn(
+            self,
+            fn: ta.Callable[..., ta.Awaitable[T]],
+            *cmd: ta.Any,
+            try_exceptions: ta.Optional[ta.Tuple[ta.Type[Exception], ...]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Union[T, Exception]:
+        if try_exceptions is None:
+            try_exceptions = self._try_exceptions
+
+        try:
+            return await fn(*cmd, **kwargs)
+
+        except try_exceptions as e:  # noqa
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception('command failed')
+            return e
+
+
+##
+
+
+class Subprocesses(AbstractSubprocesses):
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
+            subprocess.check_call(cmd, **kwargs)
+
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
+            return subprocess.check_output(cmd, **kwargs)
+
+    def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return self.check_output(*cmd, **kwargs).decode().strip()
+
+    #
+
+    def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(self.try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := self.try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
+
+
+subprocesses = Subprocesses()
 
 
 ########################################
@@ -6384,43 +6438,6 @@ class SystemConfig:
 ##
 
 
-@contextlib.asynccontextmanager
-async def asyncio_subprocess_popen(
-        *cmd: str,
-        shell: bool = False,
-        timeout: ta.Optional[float] = None,
-        **kwargs: ta.Any,
-) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
-    fac: ta.Any
-    if shell:
-        fac = functools.partial(
-            asyncio.create_subprocess_shell,
-            check.single(cmd),
-        )
-    else:
-        fac = functools.partial(
-            asyncio.create_subprocess_exec,
-            *cmd,
-        )
-
-    with subprocess_common_context(
-            *cmd,
-            shell=shell,
-            timeout=timeout,
-            **kwargs,
-    ):
-        proc: asyncio.subprocess.Process
-        proc = await fac(**kwargs)
-        try:
-            yield proc
-
-        finally:
-            await asyncio_maybe_timeout(proc.wait(), timeout)
-
-
-##
-
-
 class AsyncioProcessCommunicator:
     def __init__(
             self,
@@ -6531,148 +6548,147 @@ class AsyncioProcessCommunicator:
         return await asyncio_maybe_timeout(self._communicate(input), timeout)
 
 
-async def asyncio_subprocess_communicate(
-        proc: asyncio.subprocess.Process,
-        input: ta.Any = None,  # noqa
-        timeout: ta.Optional[float] = None,
-) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
-    return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
+##
 
 
-@dc.dataclass(frozen=True)
-class AsyncioSubprocessOutput:
-    proc: asyncio.subprocess.Process
-    stdout: ta.Optional[bytes]
-    stderr: ta.Optional[bytes]
+class AsyncioSubprocesses(AbstractSubprocesses):
+    async def communicate(
+            self,
+            proc: asyncio.subprocess.Process,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+    ) -> ta.Tuple[ta.Optional[bytes], ta.Optional[bytes]]:
+        return await AsyncioProcessCommunicator(proc).communicate(input, timeout)  # noqa
 
+    #
 
-async def asyncio_subprocess_run(
-        *args: str,
-        input: ta.Any = None,  # noqa
-        timeout: ta.Optional[float] = None,
-        check: bool = False,  # noqa
-        capture_output: ta.Optional[bool] = None,
-        **kwargs: ta.Any,
-) -> AsyncioSubprocessOutput:
-    if capture_output:
-        kwargs.setdefault('stdout', subprocess.PIPE)
-        kwargs.setdefault('stderr', subprocess.PIPE)
+    @contextlib.asynccontextmanager
+    async def popen(
+            self,
+            *cmd: str,
+            shell: bool = False,
+            timeout: ta.Optional[float] = None,
+            **kwargs: ta.Any,
+    ) -> ta.AsyncGenerator[asyncio.subprocess.Process, None]:
+        fac: ta.Any
+        if shell:
+            fac = functools.partial(
+                asyncio.create_subprocess_shell,
+                check.single(cmd),
+            )
+        else:
+            fac = functools.partial(
+                asyncio.create_subprocess_exec,
+                *cmd,
+            )
 
-    args, kwargs = prepare_subprocess_invocation(*args, **kwargs)
+        with self.prepare_and_wrap( *cmd, shell=shell, **kwargs) as (cmd, kwargs):  # noqa
+            proc: asyncio.subprocess.Process = await fac(**kwargs)
+            try:
+                yield proc
 
-    proc: asyncio.subprocess.Process
-    async with asyncio_subprocess_popen(*args, **kwargs) as proc:
-        stdout, stderr = await asyncio_subprocess_communicate(proc, input, timeout)
+            finally:
+                await asyncio_maybe_timeout(proc.wait(), timeout)
 
-    if check and proc.returncode:
-        raise subprocess.CalledProcessError(
-            proc.returncode,
-            args,
-            output=stdout,
-            stderr=stderr,
+    #
+
+    @dc.dataclass(frozen=True)
+    class RunOutput:
+        proc: asyncio.subprocess.Process
+        stdout: ta.Optional[bytes]
+        stderr: ta.Optional[bytes]
+
+    async def run(
+            self,
+            *cmd: str,
+            input: ta.Any = None,  # noqa
+            timeout: ta.Optional[float] = None,
+            check: bool = False,  # noqa
+            capture_output: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> RunOutput:
+        if capture_output:
+            kwargs.setdefault('stdout', subprocess.PIPE)
+            kwargs.setdefault('stderr', subprocess.PIPE)
+
+        proc: asyncio.subprocess.Process
+        async with self.popen(*cmd, **kwargs) as proc:
+            stdout, stderr = await self.communicate(proc, input, timeout)
+
+        if check and proc.returncode:
+            raise subprocess.CalledProcessError(
+                proc.returncode,
+                cmd,
+                output=stdout,
+                stderr=stderr,
+            )
+
+        return self.RunOutput(
+            proc,
+            stdout,
+            stderr,
         )
 
-    return AsyncioSubprocessOutput(
-        proc,
-        stdout,
-        stderr,
-    )
+    #
+
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, check=True, **kwargs) as (cmd, kwargs):  # noqa
+            await self.run(*cmd, **kwargs)
+
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
+            return check.not_none((await self.run(*cmd, **kwargs)).stdout)
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
 
 
-##
-
-
-async def asyncio_subprocess_check_call(
-        *args: str,
-        stdout: ta.Any = sys.stderr,
-        input: ta.Any = None,  # noqa
-        timeout: ta.Optional[float] = None,
-        **kwargs: ta.Any,
-) -> None:
-    await asyncio_subprocess_run(
-        *args,
-        stdout=stdout,
-        input=input,
-        timeout=timeout,
-        check=True,
-        **kwargs,
-    )
-
-
-async def asyncio_subprocess_check_output(
-        *args: str,
-        input: ta.Any = None,  # noqa
-        timeout: ta.Optional[float] = None,
-        **kwargs: ta.Any,
-) -> bytes:
-    out = await asyncio_subprocess_run(
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        input=input,
-        timeout=timeout,
-        check=True,
-        **kwargs,
-    )
-
-    return check.not_none(out.stdout)
-
-
-async def asyncio_subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
-    return (await asyncio_subprocess_check_output(*args, **kwargs)).decode().strip()
-
-
-##
-
-
-async def _asyncio_subprocess_try_run(
-        fn: ta.Callable[..., ta.Awaitable[T]],
-        *args: ta.Any,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> ta.Union[T, Exception]:
-    try:
-        return await fn(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
-        return e
-
-
-async def asyncio_subprocess_try_call(
-        *args: str,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> bool:
-    if isinstance(await _asyncio_subprocess_try_run(
-            asyncio_subprocess_check_call,
-            *args,
-            try_exceptions=try_exceptions,
-            **kwargs,
-    ), Exception):
-        return False
-    else:
-        return True
-
-
-async def asyncio_subprocess_try_output(
-        *args: str,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> ta.Optional[bytes]:
-    if isinstance(ret := await _asyncio_subprocess_try_run(
-            asyncio_subprocess_check_output,
-            *args,
-            try_exceptions=try_exceptions,
-            **kwargs,
-    ), Exception):
-        return None
-    else:
-        return ret
-
-
-async def asyncio_subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
-    out = await asyncio_subprocess_try_output(*args, **kwargs)
-    return out.decode().strip() if out is not None else None
+asyncio_subprocesses = AsyncioSubprocesses()
 
 
 ########################################
@@ -6749,7 +6765,7 @@ class InterpInspector:
         return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
 
     async def _inspect(self, exe: str) -> InterpInspection:
-        output = await asyncio_subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
+        output = await asyncio_subprocesses.check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
         return self._build_inspection(exe, output.decode())
 
     async def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
@@ -6823,7 +6839,7 @@ class SubprocessCommand(Command['SubprocessCommand.Output']):
 class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCommand.Output]):
     async def execute(self, cmd: SubprocessCommand) -> SubprocessCommand.Output:
         proc: asyncio.subprocess.Process
-        async with asyncio_subprocess_popen(
+        async with asyncio_subprocesses.popen(
             *subprocess_maybe_shell_wrap_exec(*cmd.cmd),
 
             shell=cmd.shell,
@@ -6837,7 +6853,7 @@ class SubprocessCommandExecutor(CommandExecutor[SubprocessCommand, SubprocessCom
             timeout=cmd.timeout,
         ) as proc:
             start_time = time.time()
-            stdout, stderr = await asyncio_subprocess_communicate(
+            stdout, stderr = await asyncio_subprocesses.communicate(
                 proc,
                 input=cmd.input,
                 timeout=cmd.timeout,
@@ -6937,7 +6953,7 @@ class DeployGitManager(DeployPathOwner):
                 return f'https://{self._repo.host}/{self._repo.path}'
 
         async def _call(self, *cmd: str) -> None:
-            await asyncio_subprocess_check_call(
+            await asyncio_subprocesses.check_call(
                 *cmd,
                 cwd=self._dir,
             )
@@ -6963,7 +6979,7 @@ class DeployGitManager(DeployPathOwner):
             # FIXME: temp dir swap
             os.makedirs(dst_dir)
 
-            dst_call = functools.partial(asyncio_subprocess_check_call, cwd=dst_dir)
+            dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_dir)
             await dst_call('git', 'init')
 
             await dst_call('git', 'remote', 'add', 'local', self._dir)
@@ -7015,7 +7031,7 @@ class DeployVenvManager(DeployPathOwner):
     ) -> None:
         sys_exe = 'python3'
 
-        await asyncio_subprocess_check_call(sys_exe, '-m', 'venv', venv_dir)
+        await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
 
         #
 
@@ -7027,12 +7043,12 @@ class DeployVenvManager(DeployPathOwner):
 
         if os.path.isfile(reqs_txt):
             if use_uv:
-                await asyncio_subprocess_check_call(venv_exe, '-m', 'pip', 'install', 'uv')
+                await asyncio_subprocesses.check_call(venv_exe, '-m', 'pip', 'install', 'uv')
                 pip_cmd = ['-m', 'uv', 'pip']
             else:
                 pip_cmd = ['-m', 'pip']
 
-            await asyncio_subprocess_check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
+            await asyncio_subprocesses.check_call(venv_exe, *pip_cmd,'install', '-r', reqs_txt)
 
     async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
         await self.setup_venv(
@@ -7117,7 +7133,7 @@ class SubprocessRemoteSpawning(RemoteSpawning):
         if not debug:
             cmd = subprocess_maybe_shell_wrap_exec(*cmd)
 
-        async with asyncio_subprocess_popen(
+        async with asyncio_subprocesses.popen(
                 *cmd,
                 shell=pc.shell,
                 stdin=subprocess.PIPE,
@@ -7179,10 +7195,10 @@ class SystemPackageManager(abc.ABC):
 
 class BrewSystemPackageManager(SystemPackageManager):
     async def update(self) -> None:
-        await asyncio_subprocess_check_call('brew', 'update')
+        await asyncio_subprocesses.check_call('brew', 'update')
 
     async def upgrade(self) -> None:
-        await asyncio_subprocess_check_call('brew', 'upgrade')
+        await asyncio_subprocesses.check_call('brew', 'upgrade')
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         es: ta.List[str] = []
@@ -7191,11 +7207,11 @@ class BrewSystemPackageManager(SystemPackageManager):
                 es.append(p.name + (f'@{p.version}' if p.version is not None else ''))
             else:
                 es.append(p)
-        await asyncio_subprocess_check_call('brew', 'install', *es)
+        await asyncio_subprocesses.check_call('brew', 'install', *es)
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
-        o = await asyncio_subprocess_check_output('brew', 'info', '--json', *pns)
+        o = await asyncio_subprocesses.check_output('brew', 'info', '--json', *pns)
         j = json.loads(o.decode())
         d: ta.Dict[str, SystemPackage] = {}
         for e in j:
@@ -7214,18 +7230,18 @@ class AptSystemPackageManager(SystemPackageManager):
     }
 
     async def update(self) -> None:
-        await asyncio_subprocess_check_call('sudo', 'apt', 'update', env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocesses.check_call('sudo', 'apt', 'update', env={**os.environ, **self._APT_ENV})
 
     async def upgrade(self) -> None:
-        await asyncio_subprocess_check_call('sudo', 'apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocesses.check_call('sudo', 'apt', 'upgrade', '-y', env={**os.environ, **self._APT_ENV})
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        await asyncio_subprocess_check_call('sudo', 'apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
+        await asyncio_subprocesses.check_call('sudo', 'apt', 'install', '-y', *pns, env={**os.environ, **self._APT_ENV})
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
-        out = await asyncio_subprocess_run(
+        out = await asyncio_subprocesses.run(
             'dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns,
             capture_output=True,
             check=False,
@@ -7242,20 +7258,20 @@ class AptSystemPackageManager(SystemPackageManager):
 
 class YumSystemPackageManager(SystemPackageManager):
     async def update(self) -> None:
-        await asyncio_subprocess_check_call('sudo', 'yum', 'check-update')
+        await asyncio_subprocesses.check_call('sudo', 'yum', 'check-update')
 
     async def upgrade(self) -> None:
-        await asyncio_subprocess_check_call('sudo', 'yum', 'update')
+        await asyncio_subprocesses.check_call('sudo', 'yum', 'update')
 
     async def install(self, *packages: SystemPackageOrStr) -> None:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]  # FIXME: versions
-        await asyncio_subprocess_check_call('sudo', 'yum', 'install', *pns)
+        await asyncio_subprocesses.check_call('sudo', 'yum', 'install', *pns)
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
         d: ta.Dict[str, SystemPackage] = {}
         for pn in pns:
-            out = await asyncio_subprocess_run(
+            out = await asyncio_subprocesses.run(
                 'rpm', '-q', pn,
                 capture_output=True,
             )
@@ -7704,7 +7720,7 @@ class Pyenv:
             return self._root_kw
 
         if shutil.which('pyenv'):
-            return await asyncio_subprocess_check_output_str('pyenv', 'root')
+            return await asyncio_subprocesses.check_output_str('pyenv', 'root')
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -7733,7 +7749,7 @@ class Pyenv:
         if await self.root() is None:
             return []
         ret = []
-        s = await asyncio_subprocess_check_output_str(await self.exe(), 'install', '--list')
+        s = await asyncio_subprocesses.check_output_str(await self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -7748,7 +7764,7 @@ class Pyenv:
             return False
         if not os.path.isdir(os.path.join(root, '.git')):
             return False
-        await asyncio_subprocess_check_call('git', 'pull', cwd=root)
+        await asyncio_subprocesses.check_call('git', 'pull', cwd=root)
         return True
 
 
@@ -7839,7 +7855,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
-            dep_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', dep)
+            dep_prefix = await asyncio_subprocesses.check_output_str('brew', '--prefix', dep)
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts(
@@ -7849,11 +7865,11 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @async_cached_nullary
     async def brew_tcl_opts(self) -> PyenvInstallOpts:
-        if await asyncio_subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
+        if await asyncio_subprocesses.try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
-        tcl_tk_prefix = await asyncio_subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
-        tcl_tk_ver_str = await asyncio_subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
+        tcl_tk_prefix = await asyncio_subprocesses.check_output_str('brew', '--prefix', 'tcl-tk')
+        tcl_tk_ver_str = await asyncio_subprocesses.check_output_str('brew', 'ls', '--versions', 'tcl-tk')
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts(conf_opts=[
@@ -7974,7 +7990,7 @@ class PyenvVersionInstaller:
                 *conf_args,
             ]
 
-        await asyncio_subprocess_check_call(
+        await asyncio_subprocesses.check_call(
             *full_args,
             env=env,
         )
