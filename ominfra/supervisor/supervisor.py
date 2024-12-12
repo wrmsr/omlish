@@ -1,6 +1,4 @@
 # ruff: noqa: UP006 UP007
-import errno
-import os
 import time
 import typing as ta
 
@@ -26,8 +24,7 @@ from .types import ExitNow
 from .types import Process
 from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
-from .utils.ostypes import Pid
-from .utils.ostypes import Rc
+from .utils.os import waitpid
 
 
 ##
@@ -232,7 +229,7 @@ class Supervisor:
         if depth >= 100:
             return
 
-        wp = waitpid()
+        wp = waitpid(log=log)
 
         if wp is None or not wp.pid:
             return
@@ -271,31 +268,3 @@ class Supervisor:
             if this_tick != last_tick:
                 self._ticks[period] = this_tick
                 self._event_callbacks.notify(event(this_tick, self))
-
-
-##
-
-
-class WaitedPid(ta.NamedTuple):
-    pid: Pid
-    sts: Rc
-
-
-def waitpid() -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
-    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-    # lying around.
-    try:
-        pid, sts = os.waitpid(-1, os.WNOHANG)
-    except OSError as exc:
-        code = exc.args[0]
-        if code not in (errno.ECHILD, errno.EINTR):
-            log.critical('waitpid error %r; a process may not be cleaned up properly', code)
-        if code == errno.EINTR:
-            log.debug('EINTR during reap')
-        return None
-    else:
-        return WaitedPid(pid, sts)  # type: ignore

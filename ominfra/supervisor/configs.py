@@ -245,6 +245,8 @@ class ServerConfig:
 
     groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
 
+    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
+
     @classmethod
     def new(
             cls,
