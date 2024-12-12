@@ -163,3 +163,135 @@ class SystemdInstallSection:
     # For template units (covered later) which can produce unit instances with unpredictable names, this can be used as
     # a fallback value for the name if an appropriate name is not provided.
     default_instance: ta.Optional[str] = None
+
+
+class SystemdServiceType(enum.Enum):
+    # The main process of the service is specified in the start line. This is the default if the Type= and Busname=
+    # directives are not set, but the ExecStart= is set. Any communication should be handled outside of the unit through
+    # a second unit of the appropriate type (like through a .socket unit if this unit must communicate using sockets).
+    SIMPLE = enum.auto()
+
+    # This service type is used when the service forks a child process, exiting the parent process almost immediately.
+    # This tells systemd that the process is still running even though the parent exited.
+    FORKING = enum.auto()
+
+    # This type indicates that the process will be short-lived and that systemd should wait for the process to exit
+    # before continuing on with other units. This is the default Type= and ExecStart= are not set. It is used for
+    # one-off tasks.
+    ONESHOT = enum.auto()
+
+    # This indicates that unit will take a name on the D-Bus bus. When this happens, systemd will continue to process
+    # the next unit.
+    DBUS = enum.auto()
+
+    # This indicates that the service will issue a notification when it has finished starting up. The systemd process
+    # will wait for this to happen before proceeding to other units.
+    NOTIFY = enum.auto()
+
+    # This indicates that the service will not be run until all jobs are dispatched.
+    IDLE = enum.auto()
+
+
+@dc.dataclass(frozen=True)
+class SystemdServiceSection:
+    # One of the basic things that should be specified within the [Service] section is the Type= of the service. This
+    # categorizes services by their process and daemonizing behavior. This is important because it tells systemd how to
+    # correctly manage the servie and find out its state.
+    type: SystemdServiceType = SystemdServiceType.SIMPLE
+
+    #
+
+    # This directive is commonly used with the oneshot type. It indicates that the service should be considered active
+    # even after the process exits.
+    remain_after_exit: ta.Optional[str] = None
+
+    # If the service type is marked as “forking”, this directive is used to set the path of the file that should contain
+    # the process ID number of the main child that should be monitored.
+    pidfile: ta.Optional[str] = None
+
+    # This directive should be set to the D-Bus bus name that the service will attempt to acquire when using the “dbus”
+    # service type.
+    bus_name: ta.Optional[str] = None
+
+    # This specifies access to the socket that should be used to listen for notifications when the “notify” service type
+    # is selected This can be “none”, “main”, or "all. The default, “none”, ignores all status messages. The “main”
+    # option will listen to messages from the main process and the “all” option will cause all members of the service’s
+    # control group to be processed.
+    notify_access: ta.Optional[str] = None
+
+    #
+
+    # This specifies the full path and the arguments of the command to be executed to start the process. This may only
+    # be specified once (except for “oneshot” services). If the path to the command is preceded by a dash “-” character,
+    # non-zero exit statuses will be accepted without marking the unit activation as failed.
+    exec_start: ta.Optional[str] = None
+
+    # This can be used to provide additional commands that should be executed before the main process is started. This
+    # can be used multiple times. Again, commands must specify a full path and they can be preceded by “-” to indicate
+    # that the failure of the command will be tolerated.
+    exec_start_pre: ta.Optional[str] = None
+
+    # This has the same exact qualities as ExecStartPre= except that it specifies commands that will be run after the
+    # main process is started.
+    exec_start_post: ta.Optional[str] = None
+
+    # This optional directive indicates the command necessary to reload the configuration of the service if available.
+    exec_reload: ta.Optional[str] = None
+
+    # This indicates the command needed to stop the service. If this is not given, the process will be killed
+    # immediately when the service is stopped.
+    exec_stop: ta.Optional[str] = None
+
+    # This can be used to specify commands to execute following the stop command.
+    exec_stop_post: ta.Optional[str] = None
+
+    # If automatically restarting the service is enabled, this specifies the amount of time to wait before attempting to
+    # restart the service.
+    restart_sec: ta.Optional[str] = None
+
+    # This indicates the circumstances under which systemd will attempt to automatically restart the service. This can
+    # be set to values like “always”, “on-success”, “on-failure”, “on-abnormal”, “on-abort”, or “on-watchdog”. These
+    # will trigger a restart according to the way that the service was stopped.
+    restart: ta.Optional[str] = None
+
+    # This configures the amount of time that systemd will wait when stopping or stopping the service before marking it
+    # as failed or forcefully killing it. You can set separate timeouts with TimeoutStartSec= and TimeoutStopSec= as
+    # well.
+    timeout_sec: ta.Optional[str] = None
+
+
+@dc.dataclass(frozen=True)
+class SystemdSocketSection:
+    # This defines an address for a stream socket which supports sequential, reliable communication. Services that use
+    # TCP should use this socket type.
+    listen_stream: ta.Optional[str] = None
+
+    # This defines an address for a datagram socket which supports fast, unreliable communication packets. Services that
+    # use UDP should set this socket type.
+    listen_datagram: ta.Optional[str] = None
+
+    # This defines an address for sequential, reliable communication with max length datagrams that preserves message
+    # boundaries. This is found most often for Unix sockets.
+    listen_sequential_packet: ta.Optional[str] = None
+
+    # Along with the other listening types, you can also specify a FIFO buffer instead of a socket.
+    listen_fifo: ta.Optional[str] = None
+
+    #
+
+    # This determines whether an additional instance of the service will be started for each connection. If set to false
+    # (the default), one instance will handle all connections.
+    accept: ta.Optional[str] = None
+
+    # With a Unix socket, specifies the owner of the socket. This will be the root user if left unset.
+    socket_user: ta.Optional[str] = None
+
+    # With a Unix socket, specifies the group owner of the socket. This will be the root group if neither this or the
+    # above are set. If only the SocketUser= is set, systemd will try to find a matching group.
+    socket_group: ta.Optional[str] = None
+
+    # For Unix sockets or FIFO buffers, this sets the permissions on the created entity.
+    socket_mode: ta.Optional[str] = None
+
+    # If the service name does not match the .socket name, the service can be specified with this directive.
+    service: ta.Optional[str] = None
