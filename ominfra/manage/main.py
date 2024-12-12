@@ -24,7 +24,7 @@ from .commands.base import Command
 from .config import MainConfig
 from .remote.config import RemoteConfig
 from .targets.connection import ManageTargetConnector
-from .targets.inject import DockerManageTarget
+from .targets.targets import ManageTarget
 
 
 class MainCli(ArgparseCli):
@@ -39,6 +39,7 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--debug', action='store_true'),
 
+        argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
     async def run(self) -> None:
@@ -72,6 +73,11 @@ class MainCli(ArgparseCli):
 
         msh = injector[ObjMarshalerManager]
 
+        ts = self.args.target
+        if not ts.startswith('{'):
+            ts = json.dumps({ts: {}})
+        tgt: ManageTarget = msh.unmarshal_obj(json.loads(ts), ManageTarget)
+
         cmds: ta.List[Command] = []
         cmd: Command
         for c in self.args.command:
@@ -79,10 +85,6 @@ class MainCli(ArgparseCli):
                 c = json.dumps({c: {}})
             cmd = msh.unmarshal_obj(json.loads(c), Command)
             cmds.append(cmd)
-
-        #
-
-        tgt = DockerManageTarget(image='python:3.12')
 
         #
 
