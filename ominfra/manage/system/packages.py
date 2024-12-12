@@ -90,9 +90,8 @@ class AptSystemPackageManager(SystemPackageManager):
 
     async def query(self, *packages: SystemPackageOrStr) -> ta.Mapping[str, SystemPackage]:
         pns = [p.name if isinstance(p, SystemPackage) else p for p in packages]
-        cmd = ['dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns]
         out = await asyncio_subprocess_run(
-            *cmd,
+            'dpkg-query', '-W', '-f=${Package}=${Version}\n', *pns,
             capture_output=True,
             check=False,
         )
@@ -128,6 +127,6 @@ class YumSystemPackageManager(SystemPackageManager):
             if not out.proc.returncode:
                 d[pn] = SystemPackage(
                     pn,
-                    check.not_none(out).decode().strip(),
+                    check.not_none(out.stdout).decode().strip(),
                 )
         return d
