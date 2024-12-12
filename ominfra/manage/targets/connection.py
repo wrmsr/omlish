@@ -81,10 +81,12 @@ class DockerManageTargetConnectorImpl(ManageTargetConnector):
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         dmt = check.isinstance(tgt, DockerManageTarget)
 
-        # -s 'docker run -i python:3.12' '
+        sh_parts: ta.List[str] = ['docker']
+        sh_parts.extend(['run', '-i', 'python3:12'])
 
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
+                    shell=' '.join(sh_parts),
                     python=dmt.python,
                 ),
                 self._bootstrap,
@@ -104,14 +106,17 @@ class SshManageTargetConnectorImpl(ManageTargetConnector):
     async def connect(self, tgt: ManageTarget) -> ta.AsyncGenerator[CommandExecutor, None]:
         smt = check.isinstance(tgt, SshManageTarget)
 
-        # --shell='ssh -i /balls/balls.pem ec2-user@balls.balls.balls -q --python=python3.8
-
         sh_parts: ta.List[str] = ['ssh']
         if smt.key_file is not None:
             sh_parts.extend(['-i', smt.key_file])
+        addr = smt.host
+        if smt.username is not None:
+            addr = f'{smt.username}@{addr}'
+        sh_parts.append(addr)
 
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
+                    shell=' '.join(sh_parts),
                     python=smt.python,
                 ),
                 self._bootstrap,

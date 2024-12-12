@@ -172,48 +172,63 @@ def _clamp_ofs(v: int, hi: int, ofs: int) -> str:
 
 FG8 = ControlSequence(
     lambda n: CSI + '38;5;' + str(n) + 'm',
-    '8-Bit Foreground Color')
+    '8-Bit Foreground Color',
+)
 FG8_STANDARD = ControlSequence(
     lambda n: CSI + '38;5;' + _clamp_ofs(n, 8, 0) + 'm',
-    '8-Bit Foreground Color (Standard)')
+    '8-Bit Foreground Color (Standard)',
+)
 FG8_HIGH_INTENSITY = ControlSequence(
     lambda n: CSI + '38;5;' + _clamp_ofs(n, 8, 8) + 'm',
-    '8-Bit Foreground Color (High Intensity)')
+    '8-Bit Foreground Color (High Intensity)',
+)
 FG8_216 = ControlSequence(
     lambda n: CSI + '38;5;' + _clamp_ofs(n, 216, 16) + 'm',
-    '8-Bit Foreground Color (High Intensity)')
+    '8-Bit Foreground Color (High Intensity)',
+)
 FG8_GRAYSCALE = ControlSequence(
     lambda n: CSI + '38;5;' + _clamp_ofs(n, 24, 232) + 'm',
-    '8-Bit Foreground Color (Grayscale)')
+    '8-Bit Foreground Color (Grayscale)',
+)
 FG8_RGB = ControlSequence(
     lambda r, g, b: CSI + '38;5;' + str(36 * r + 6 * g + b) + 'm',
-    '8-Bit Foreground Color (RGB)')
+    '8-Bit Foreground Color (RGB)',
+)
 
 BG8 = ControlSequence(
     lambda n: CSI + '48;5;' + str(n) + 'm',
-    '8-Bit Background Color')
+    '8-Bit Background Color',
+)
 BG8_STANDARD = ControlSequence(
     lambda n: CSI + '48;5;' + _clamp_ofs(n, 8, 0) + 'm',
-    '8-Bit Background Color (Standard)')
+    '8-Bit Background Color (Standard)',
+)
 BG8_HIGH_INTENSITY = ControlSequence(
     lambda n: CSI + '48;5;' + _clamp_ofs(n, 8, 8) + 'm',
-    '8-Bit Background Color (High Intensity)')
+    '8-Bit Background Color (High Intensity)',
+)
 BG8_216 = ControlSequence(
     lambda n: CSI + '48;5;' + _clamp_ofs(n, 216, 16) + 'm',
-    '8-Bit Background Color (High Intensity)')
+    '8-Bit Background Color (High Intensity)',
+)
 BG8_GRAYSCALE = ControlSequence(
     lambda n: CSI + '48;5;' + _clamp_ofs(n, 24, 232) + 'm',
-    '8-Bit Background Color (Grayscale)')
+    '8-Bit Background Color (Grayscale)',
+)
 BG8_RGB = ControlSequence(
     lambda r, g, b: CSI + '48;5;' + str(36 * r + 6 * g + b) + 'm',
-    '8-Bit Background Color (RGB)')
+    '8-Bit Background Color (RGB)',
+)
 
 FG24_RGB = ControlSequence(
     lambda r, g, b: CSI + '38;2;' + str(r) + ';' + str(g) + ';' + str(b) + 'm',
-    '24-Bit Foreground Color (RGB)')
+    '24-Bit Foreground Color (RGB)',
+)
 BG24_RGB = ControlSequence(
     lambda r, g, b: CSI + '48;2;' + str(r) + ';' + str(g) + ';' + str(b) + 'm',
-    '24-Bit Background Color (RGB)')
+    '24-Bit Background Color (RGB)',
+)
+
 
 ##
 
