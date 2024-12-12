@@ -6,6 +6,7 @@ manage.py -s 'docker run -i python:3.12'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
 """
 import asyncio
+import dataclasses as dc
 import json
 import sys
 import typing as ta
@@ -13,11 +14,13 @@ import typing as ta
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_command
+from omlish.lite.check import check
 from omlish.lite.logs import log  # noqa
 from omlish.lite.marshal import ObjMarshalerManager
 from omlish.lite.marshal import ObjMarshalOptions
 from omlish.lite.pycharm import PycharmRemoteDebug
 
+from ..configs import read_config_file
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap
 from .commands.base import Command
@@ -26,6 +29,11 @@ from .deploy.config import DeployConfig
 from .remote.config import RemoteConfig
 from .targets.connection import ManageTargetConnector
 from .targets.targets import ManageTarget
+
+
+@dc.dataclass(frozen=True)
+class ManageConfig:
+    targets: ta.Optional[ta.Mapping[str, ManageTarget]] = None
 
 
 class MainCli(ArgparseCli):
@@ -42,10 +50,19 @@ class MainCli(ArgparseCli):
 
         argparse_arg('--deploy-home'),
 
+        argparse_arg('--config-file'),
+
         argparse_arg('target'),
         argparse_arg('command', nargs='+'),
     )
     async def run(self) -> None:
+        if self.args.config_file is not None:
+            cfg = read_config_file(self.args.config_file, ManageConfig)
+        else:
+            cfg = ManageConfig()
+
+        #
+
         bs = MainBootstrap(
             main_config=MainConfig(
                 log_level='DEBUG' if self.args.debug else 'INFO',
@@ -80,10 +97,13 @@ class MainCli(ArgparseCli):
 
         msh = injector[ObjMarshalerManager]
 
-        ts = self.args.target
-        if not ts.startswith('{'):
-            ts = json.dumps({ts: {}})
-        tgt: ManageTarget = msh.unmarshal_obj(json.loads(ts), ManageTarget)
+        tgt: ManageTarget
+        if not (ts := self.args.target).startswith('{'):
+            tgt = check.not_none(cfg.targets)[ts]
+        else:
+            tgt = msh.unmarshal_obj(json.loads(ts), ManageTarget)
+
+        #
 
         cmds: ta.List[Command] = []
         cmd: Command
