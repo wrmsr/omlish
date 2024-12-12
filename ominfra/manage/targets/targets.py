@@ -70,6 +70,7 @@ class DockerManageTarget(RemoteManageTarget, PythonRemoteManageTarget, abc.ABC):
 ##
 
 
+@dc.dataclass(frozen=True)
 class InProcessConnectorTarget(LocalManageTarget):
     class Mode(enum.Enum):
         DIRECT = enum.auto()
