@@ -1,6 +1,6 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
-'''
+"""
 ➜  ~ cat /etc/os-release
 NAME="Amazon Linux"
 VERSION="2"
@@ -8,10 +8,6 @@ ID="amzn"
 ID_LIKE="centos rhel fedora"
 VERSION_ID="2"
 PRETTY_NAME="Amazon Linux 2"
-ANSI_COLOR="0;33"
-CPE_NAME="cpe:2.3:o:amazon:amazon_linux:2"
-HOME_URL="https://amazonlinux.com/"
-SUPPORT_END="2025-06-30"
 
 ➜  ~ cat /etc/os-release
 PRETTY_NAME="Ubuntu 22.04.5 LTS"
@@ -21,10 +17,6 @@ VERSION="22.04.5 LTS (Jammy Jellyfish)"
 VERSION_CODENAME=jammy
 ID=ubuntu
 ID_LIKE=debian
-HOME_URL="https://www.ubuntu.com/"
-SUPPORT_URL="https://help.ubuntu.com/"
-BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
-PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
 UBUNTU_CODENAME=jammy
 
 ➜  omlish git:(master) docker run -i python:3.12 cat /etc/os-release
@@ -34,96 +26,10 @@ VERSION_ID="12"
 VERSION="12 (bookworm)"
 VERSION_CODENAME=bookworm
 ID=debian
-HOME_URL="https://www.debian.org/"
-SUPPORT_URL="https://www.debian.org/support"
-BUG_REPORT_URL="https://bugs.debian.org/"
-
-
-
-
-
-    @property
-    def default_hostname(self) -> str:
-        """
-        A string specifying the hostname if hostname(5) is not present and no other configuration source specifies the hostname. Must be either a single DNS label (a string composed of 7-bit ASCII lower-case characters and no spaces or dots, limited to the format allowed for DNS domain name labels), or a sequence of such labels separated by single dots that forms a valid DNS FQDN. The hostname must be at most 64 characters, which is a Linux limitation (DNS allows longer names).
-
-        See org.freedesktop.hostname1(5) for a description of how systemd-hostnamed.service(8) determines the fallback hostname.
-
-        Added in version 248.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def architecture(self) -> str:
-        """
-        A string that specifies which CPU architecture the userspace binaries require. The architecture identifiers are the same as for ConditionArchitecture= described in systemd.unit(5). The field is optional and should only be used when just single architecture is supported. It may provide redundant information when used in a GPT partition with a GUID type that already encodes the architecture. If this is not the case, the architecture should be specified in e.g., an extension image, to prevent an incompatible host from loading it.
-
-        Added in version 252.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def sysext_level(self) -> str:
-        """
-        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the operating system extensions support level, to indicate which extension images are supported. See /usr/lib/extension-release.d/extension-release.IMAGE, initrd[2] and systemd-sysext(8)) for more information.
-
-        Examples: "SYSEXT_LEVEL=2", "SYSEXT_LEVEL=15.14".
-
-        Added in version 248.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def confext_level(self) -> str:
-        """
-        Semantically the same as SYSEXT_LEVEL= but for confext images. See /etc/extension-release.d/extension-release.IMAGE for more information.
-
-        Examples: "CONFEXT_LEVEL=2", "CONFEXT_LEVEL=15.14".
-
-        Added in version 254.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def sysext_scope(self) -> str:
-        """
-        Takes a space-separated list of one or more of the strings "system", "initrd" and "portable". This field is only supported in extension-release.d/ files and indicates what environments the system extension is applicable to: i.e. to regular systems, to initrds, or to portable service images. If unspecified, "SYSEXT_SCOPE=system portable" is implied, i.e. any system extension without this field is applicable to regular systems and to portable service environments, but not to initrd environments.
-
-        Added in version 250.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def confext_scope(self) -> str:
-        """
-        Semantically the same as SYSEXT_SCOPE= but for confext images.
-
-        Added in version 254.
-        """
-
-        return self.raw['VENDOR_URL']
-
-    @property
-    def portable_prefixes(self) -> str:
-        """
-        Takes a space-separated list of one or more valid prefix match strings for the Portable Services[3] logic. This field serves two purposes: it is informational, identifying portable service images as such (and thus allowing them to be distinguished from other OS images, such as bootable system images). It is also used when a portable service image is attached: the specified or implied portable service prefix is checked against the list specified here, to enforce restrictions how images may be attached to a system.
-
-        Added in version 250.
-        """
-
-        return self.raw['VENDOR_URL']
-
-'''
+"""
 import dataclasses as dc
 import os.path
 import typing as ta
-
-from omlish.lite.cached import cached_nullary
 
 
 @dc.dataclass(frozen=True)
@@ -150,7 +56,7 @@ class LinuxOsRelease:
     @property
     def id(self) -> str:
         """
-        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the
+        A lower-case string (no spaces or other characters outside of 0-9, a-z, ".", "_" and "-") identifying the
         operating system, excluding any version information and suitable for processing by scripts or usage in generated
         filenames. If not set, a default of "ID=linux" may be used. Note that even though this string may not include
         characters that require shell quoting, quoting may nevertheless be used.
@@ -222,7 +128,7 @@ class LinuxOsRelease:
     @property
     def variant_id(self) -> str:
         """
-        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-"), identifying a
+        A lower-case string (no spaces or other characters outside of 0-9, a-z, ".", "_" and "-"), identifying a
         specific variant or edition of the operating system. This may be interpreted by other packages in order to
         determine a divergent default configuration. This field is optional and may not be implemented on all systems.
 
@@ -249,7 +155,7 @@ class LinuxOsRelease:
     @property
     def version_id(self) -> str:
         """
-        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-")
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0-9, a-z, ".", "_" and "-")
         identifying the operating system version, excluding any OS name information or release code name, and suitable
         for processing by scripts or usage in generated filenames. This field is optional.
 
@@ -261,7 +167,7 @@ class LinuxOsRelease:
     @property
     def version_codename(self) -> str:
         """
-        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-") identifying the
+        A lower-case string (no spaces or other characters outside of 0-9, a-z, ".", "_" and "-") identifying the
         operating system release code name, excluding any OS name information or release version, and suitable for
         processing by scripts or usage in generated filenames. This field is optional and may not be implemented on all
         systems.
@@ -291,7 +197,7 @@ class LinuxOsRelease:
     @property
     def image_id(self) -> str:
         """
-        A lower-case string (no spaces or other characters outside of 0–9, a–z, ".", "_" and "-"), identifying a
+        A lower-case string (no spaces or other characters outside of 0-9, a-z, ".", "_" and "-"), identifying a
         specific image of the operating system. This is supposed to be used for environments where OS images are
         prepared, built, shipped and updated as comprehensive, consistent OS images. This field is optional and may not
         be implemented on all systems, in particularly not on those that are not managed via images but put together and
@@ -307,7 +213,7 @@ class LinuxOsRelease:
     @property
     def image_version(self) -> str:
         """
-        A lower-case string (mostly numeric, no spaces or other characters outside of 0–9, a–z, ".", "_" and "-")
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0-9, a-z, ".", "_" and "-")
         identifying the OS image version. This is supposed to be used together with IMAGE_ID described above, to discern
         different versions of the same image.
 
@@ -439,6 +345,101 @@ class LinuxOsRelease:
 
     # Distribution-level defaults and metadata
 
+    @property
+    def default_hostname(self) -> str:
+        """
+        A string specifying the hostname if hostname(5) is not present and no other configuration source specifies the
+        hostname. Must be either a single DNS label (a string composed of 7-bit ASCII lower-case characters and no
+        spaces or dots, limited to the format allowed for DNS domain name labels), or a sequence of such labels
+        separated by single dots that forms a valid DNS FQDN. The hostname must be at most 64 characters, which is a
+        Linux limitation (DNS allows longer names).
+
+        See org.freedesktop.hostname1(5) for a description of how systemd-hostnamed.service(8) determines the fallback
+        hostname.
+
+        Added in version 248.
+        """
+
+        return self.raw['DEFAULT_HOSTNAME']
+
+    @property
+    def architecture(self) -> str:
+        """
+        A string that specifies which CPU architecture the userspace binaries require. The architecture identifiers are
+        the same as for ConditionArchitecture= described in systemd.unit(5). The field is optional and should only be
+        used when just single architecture is supported. It may provide redundant information when used in a GPT
+        partition with a GUID type that already encodes the architecture. If this is not the case, the architecture
+        should be specified in e.g., an extension image, to prevent an incompatible host from loading it.
+
+        Added in version 252.
+        """
+
+        return self.raw['ARCHITECTURE']
+
+    @property
+    def sysext_level(self) -> str:
+        """
+        A lower-case string (mostly numeric, no spaces or other characters outside of 0-9, a-z, ".", "_" and "-")
+        identifying the operating system extensions support level, to indicate which extension images are supported. See
+        /usr/lib/extension-release.d/extension-release.IMAGE, initrd[2] and systemd-sysext(8)) for more information.
+
+        Examples: "SYSEXT_LEVEL=2", "SYSEXT_LEVEL=15.14".
+
+        Added in version 248.
+        """
+
+        return self.raw['SYSEXT_LEVEL']
+
+    @property
+    def confext_level(self) -> str:
+        """
+        Semantically the same as SYSEXT_LEVEL= but for confext images. See
+        /etc/extension-release.d/extension-release.IMAGE for more information.
+
+        Examples: "CONFEXT_LEVEL=2", "CONFEXT_LEVEL=15.14".
+
+        Added in version 254.
+        """
+
+        return self.raw['CONFEXT_LEVEL']
+
+    @property
+    def sysext_scope(self) -> str:
+        """
+        Takes a space-separated list of one or more of the strings "system", "initrd" and "portable". This field is only
+        supported in extension-release.d/ files and indicates what environments the system extension is applicable to:
+        i.e. to regular systems, to initrds, or to portable service images. If unspecified, "SYSEXT_SCOPE=system
+        portable" is implied, i.e. any system extension without this field is applicable to regular systems and to
+        portable service environments, but not to initrd environments.
+
+        Added in version 250.
+        """
+
+        return self.raw['SYSEXT_SCOPE']
+
+    @property
+    def confext_scope(self) -> str:
+        """
+        Semantically the same as SYSEXT_SCOPE= but for confext images.
+
+        Added in version 254.
+        """
+
+        return self.raw['CONFEXT_SCOPE']
+
+    @property
+    def portable_prefixes(self) -> str:
+        """
+        Takes a space-separated list of one or more valid prefix match strings for the Portable Services[3] logic. This
+        field serves two purposes: it is informational, identifying portable service images as such (and thus allowing
+        them to be distinguished from other OS images, such as bootable system images). It is also used when a portable
+        service image is attached: the specified or implied portable service prefix is checked against the list
+        specified here, to enforce restrictions how images may be attached to a system.
+
+        Added in version 250.
+        """
+
+        return self.raw['PORTABLE_PREFIXES']
 
     #
 
@@ -449,10 +450,7 @@ class LinuxOsRelease:
 
     @classmethod
     def read(cls, *paths: str) -> ta.Optional['LinuxOsRelease']:
-        if not paths:
-            paths = cls.DEFAULT_PATHS
-
-        for fp in paths:
+        for fp in (paths or cls.DEFAULT_PATHS):
             if not os.path.isfile(fp):
                 continue
             with open(fp) as f:

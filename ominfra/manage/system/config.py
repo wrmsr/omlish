@@ -2,7 +2,9 @@
 import dataclasses as dc
 import typing as ta
 
+from .platforms import Platform
+
 
 @dc.dataclass(frozen=True)
 class SystemConfig:
-    platform: ta.Optional[str] = None
+    platform: ta.Optional[Platform] = None
