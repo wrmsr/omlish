@@ -47,7 +47,7 @@ def bind_system(
             inj.bind(SystemPackageManager, to_key=AptSystemPackageManager),
         ])
 
-    elif isinstance(platform ,DarwinPlatform):
+    elif isinstance(platform, DarwinPlatform):
         lst.extend([
             inj.bind(BrewSystemPackageManager, singleton=True),
             inj.bind(SystemPackageManager, to_key=BrewSystemPackageManager),
