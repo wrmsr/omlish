@@ -1,6 +1,9 @@
 # ruff: noqa: UP006 UP007
+import os
 import tempfile
 import unittest
+
+from omlish.lite.asyncio.subprocesses import asyncio_subprocess_run
 
 from ..apps import DeployAppManager
 from ..git import DeployGitManager
@@ -13,6 +16,9 @@ from ..venvs import DeployVenvManager
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
+        if 'CI' in os.environ:
+            await asyncio_subprocess_run('ssh', '-y', '-T', 'git@github.com')
+
         deploy_home = DeployHome(tempfile.mkdtemp())
 
         #
