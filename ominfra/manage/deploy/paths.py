@@ -70,7 +70,7 @@ class DeployPathPart(abc.ABC):  # noqa
         raise NotImplementedError
 
     @abc.abstractmethod
-    def render(self) -> str:
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
         raise NotImplementedError
 
 
@@ -121,7 +121,7 @@ class ConstDeployPathPart(DeployPathPart, abc.ABC):
         check.not_in('/', self.name)
         check.not_in(DEPLOY_PATH_SPEC_PLACEHOLDER, self.name)
 
-    def render(self) -> str:
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
         return self.name
 
 
@@ -146,11 +146,17 @@ class SpecDeployPathPart(DeployPathPart, abc.ABC):
             check.not_in(c, self.spec)
         check.in_(self.spec, DEPLOY_PATH_SPECS)
 
+    def _render_spec(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        if specs is not None:
+            return specs[self.spec]  # type: ignore
+        else:
+            return DEPLOY_PATH_SPEC_PLACEHOLDER + self.spec
+
 
 @dc.dataclass(frozen=True)
 class SpecDirDeployPathPart(SpecDeployPathPart, DirDeployPathPart):
-    def render(self) -> str:
-        return DEPLOY_PATH_SPEC_PLACEHOLDER + self.spec
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return self._render_spec(specs)
 
 
 @dc.dataclass(frozen=True)
@@ -163,8 +169,8 @@ class SpecFileDeployPathPart(SpecDeployPathPart, FileDeployPathPart):
             for c in [DEPLOY_PATH_SPEC_PLACEHOLDER, '/']:
                 check.not_in(c, self.suffix)
 
-    def render(self) -> str:
-        return DEPLOY_PATH_SPEC_PLACEHOLDER + self.spec + self.suffix
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+        return self._render_spec(specs) + self.suffix
 
 
 ##
@@ -194,9 +200,9 @@ class DeployPath:
     def kind(self) -> ta.Literal['file', 'dir']:
         return self.parts[-1].kind
 
-    def render(self) -> str:
+    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
         return os.path.join(  # noqa
-            *[p.render() for p in self.parts],
+            *[p.render(specs) for p in self.parts],
             *([''] if self.kind == 'dir' else []),
         )
 
