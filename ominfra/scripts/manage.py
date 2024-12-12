@@ -3144,6 +3144,7 @@ def get_remote_payload_src(
 ##
 
 
+@dc.dataclass(frozen=True)
 class Platform(abc.ABC):  # noqa
     pass
 
