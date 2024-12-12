@@ -27,7 +27,7 @@ async def do_remote_deploy(
 
         ['git', 'remote', 'add', 'origin', 'https://github.com/wrmsr/omlish'],
         ['git', 'fetch', '--depth=1', 'origin', rev],
-        ['git', 'checkout', f'origin/{rev}'],
+        ['git', 'checkout', rev],
 
         *([['git', 'submodule', 'update', '--init']] if not skip_submodules else ()),
 
@@ -44,13 +44,14 @@ async def do_remote_deploy(
     res.check()
 """
 import dataclasses as dc
+import functools
 import os.path
 import typing as ta
 
-from omlish.lite.check import check
 from omlish.lite.asyncio.subprocesses import asyncio_subprocess_check_call
-from omlish.lite.logs import log
+from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging
+from omlish.lite.logs import log
 
 
 DeployHome = ta.NewType('DeployHome', str)
@@ -84,16 +85,26 @@ class DeployGitManager:
         super().__init__()
 
         self._deploy_home = deploy_home
-        self._git_path = os.path.join(deploy_home, 'git')
+        self._git_dir = os.path.join(deploy_home, 'git')
 
-    async def init(self, repo: DeployGitRepo) -> None:
-        repo_path = os.path.join(
-            self._git_path,
+    async def fetch(self, spec: DeployGitSpec) -> None:
+        repo = spec.repo
+        repo_dir = os.path.join(
+            self._git_dir,
             check.non_empty_str(repo.host),
             check.non_empty_str(repo.path),
         )
-        log.info('Repo path: %s', repo_path)
-        os.makedirs(repo_path)
+        log.info('Repo dir: %s', repo_dir)
+        os.makedirs(repo_dir)
+
+        call = functools.partial(asyncio_subprocess_check_call, cwd=repo_dir)
+        await call('git', 'init')
+
+        url = f'{repo.username or "git"}@{repo.host}:{repo.path}'
+        await call('git', 'remote', 'add', 'origin', url)
+
+        await call('git', 'fetch', '--depth=1', 'origin', spec.rev)
+        await call('git', 'checkout', spec.rev)
 
 
 async def _a_main() -> None:
@@ -104,12 +115,15 @@ async def _a_main() -> None:
 
     git = DeployGitManager(deploy_home)
 
-    repo = DeployGitRepo(
-        host='github.com',
-        path='wrmsr/flaskthing',
+    spec = DeployGitSpec(
+        repo=DeployGitRepo(
+            host='github.com',
+            path='wrmsr/flaskthing',
+        ),
+        rev='e9de238fc8cb73f7e0cc245139c0a45b33294fe3',
     )
 
-    await git.init(repo)
+    await git.fetch(spec)
 
 
 if __name__ == '__main__':
