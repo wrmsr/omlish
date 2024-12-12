@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007
+# ruff: noqa: PT009 PT027 UP006 UP007
 import unittest
 
 from omlish.lite import marshal as msh
