@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish.asyncs.asyncio.channels import asyncio_create_bytes_channel
 from omlish.lite.cached import cached_nullary
+from omlish.lite.contextmanagers import aclosing
 from omlish.lite.marshal import ObjMarshalerManager
 
 from ...pyremote import PyremoteBootstrapDriver
@@ -90,7 +91,7 @@ class PyremoteRemoteExecutionConnector:
             await chan.send_obj(bs)
 
             rce: RemoteCommandExecutor
-            async with contextlib.aclosing(RemoteCommandExecutor(chan)) as rce:
+            async with aclosing(RemoteCommandExecutor(chan)) as rce:
                 await rce.start()
 
                 yield rce
@@ -126,7 +127,7 @@ class InProcessRemoteExecutionConnector:
         rch_task = asyncio.create_task(rch.run())  # noqa
         try:
             rce: RemoteCommandExecutor
-            async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
+            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
                 await rce.start()
 
                 yield rce

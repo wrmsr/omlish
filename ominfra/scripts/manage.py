@@ -95,6 +95,9 @@ CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
+# ../../omlish/lite/contextmanagers.py
+ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
+
 # ../../omlish/lite/inject.py
 U = ta.TypeVar('U')
 InjectorKeyCls = ta.Union[type, ta.NewType]
@@ -3021,6 +3024,78 @@ class ArgparseCli:
             return 0
 
         return await fn()
+
+
+########################################
+# ../../../omlish/lite/contextmanagers.py
+
+
+##
+
+
+class ExitStacked:
+    _exit_stack: ta.Optional[contextlib.ExitStack] = None
+
+    def __enter__(self: ExitStackedT) -> ExitStackedT:
+        check.state(self._exit_stack is None)
+        es = self._exit_stack = contextlib.ExitStack()
+        es.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (es := self._exit_stack) is None:
+            return None
+        self._exit_contexts()
+        return es.__exit__(exc_type, exc_val, exc_tb)
+
+    def _exit_contexts(self) -> None:
+        pass
+
+    def _enter_context(self, cm: ta.ContextManager[T]) -> T:
+        es = check.not_none(self._exit_stack)
+        return es.enter_context(cm)
+
+
+##
+
+
+@contextlib.contextmanager
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
+    try:
+        yield fn
+    finally:
+        fn()
+
+
+@contextlib.contextmanager
+def attr_setting(obj, attr, val, *, default=None):  # noqa
+    not_set = object()
+    orig = getattr(obj, attr, not_set)
+    try:
+        setattr(obj, attr, val)
+        if orig is not not_set:
+            yield orig
+        else:
+            yield default
+    finally:
+        if orig is not_set:
+            delattr(obj, attr)
+        else:
+            setattr(obj, attr, orig)
+
+
+##
+
+
+class aclosing(contextlib.AbstractAsyncContextManager):  # noqa
+    def __init__(self, thing):
+        self.thing = thing
+
+    async def __aenter__(self):
+        return self.thing
+
+    async def __aexit__(self, *exc_info):
+        await self.thing.aclose()
 
 
 ########################################
@@ -6424,7 +6499,7 @@ class PyremoteRemoteExecutionConnector:
             await chan.send_obj(bs)
 
             rce: RemoteCommandExecutor
-            async with contextlib.aclosing(RemoteCommandExecutor(chan)) as rce:
+            async with aclosing(RemoteCommandExecutor(chan)) as rce:
                 await rce.start()
 
                 yield rce
@@ -6460,7 +6535,7 @@ class InProcessRemoteExecutionConnector:
         rch_task = asyncio.create_task(rch.run())  # noqa
         try:
             rce: RemoteCommandExecutor
-            async with contextlib.aclosing(RemoteCommandExecutor(local_chan)) as rce:
+            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
                 await rce.start()
 
                 yield rce
@@ -7218,6 +7293,7 @@ class SshManageTargetConnector(ManageTargetConnector):
         async with self._pyremote_connector.connect(
                 RemoteSpawning.Target(
                     shell=' '.join(sh_parts),
+                    shell_quote=True,
                     python=smt.python,
                 ),
                 self._bootstrap,
