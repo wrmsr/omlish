@@ -51,7 +51,7 @@ class DeployAppManager(DeployPathOwner):
 
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
-            DeployPath.parse('apps/@app/@tag'),
+            DeployPath.parse('apps/@app/@tag/'),
         }
 
     async def prepare_app(
