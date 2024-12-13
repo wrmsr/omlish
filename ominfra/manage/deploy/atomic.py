@@ -3,6 +3,9 @@ import abc
 import typing as ta
 
 
+DeployAtomicPathSwapState = ta.Literal['new', 'open', 'committed', 'aborted']  # ta.TypeAlias
+
+
 class DeployAtomicPathSwap(abc.ABC):
     def __init__(
             self,
@@ -13,15 +16,31 @@ class DeployAtomicPathSwap(abc.ABC):
 
         self._auto_commit = auto_commit
 
-        self._state: ta.Literal['new', 'open', 'committed', 'aborted'] = 'new'
+        self._state: DeployAtomicPathSwapState = 'new'
+
+    #
 
     @property
-    def state(self) -> ta.Literal['new', 'open', 'committed', 'aborted']:
+    def state(self) -> DeployAtomicPathSwapState:
         return self._state
 
-    def _check_open(self) -> None:
-        if self._state != 'open':
-            raise RuntimeError('Atomic path swap not open')
+    def _check_state(self, *states: DeployAtomicPathSwapState) -> None:
+        if self._state not in states:
+            raise RuntimeError('Atomic path swap not in correct state: %r, %r', self._state, states)
+
+    #
+
+    @abc.abstractmethod
+    def _open(self) -> None:
+        raise NotImplementedError
+
+    def open(self) -> None:
+        if self._state == 'open':
+            return
+        self._check_state('new')
+        self._commit()
+
+    #
 
     @abc.abstractmethod
     def _commit(self) -> None:
@@ -30,8 +49,10 @@ class DeployAtomicPathSwap(abc.ABC):
     def commit(self) -> None:
         if self._state == 'committed':
             return
-        self._check_open()
+        self._check_state('open')
         self._commit()
+
+    #
 
     @abc.abstractmethod
     def _abort(self) -> None:
@@ -40,10 +61,13 @@ class DeployAtomicPathSwap(abc.ABC):
     def abort(self) -> None:
         if self._state == 'aborted':
             return
-        self._check_open()
+        self._check_state('open')
         self._abort()
 
+    #
+
     def __enter__(self) -> 'DeployAtomicPathSwap':
+        self.open()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

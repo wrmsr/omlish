@@ -222,10 +222,10 @@ class DeployPath:
         else:
             tail_parse = FileDeployPathPart.parse
         ps = check.non_empty_str(s).split('/')
-        return cls(tuple([
+        return cls((
             *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
             tail_parse(ps[-1]),
-        ]))
+        ))
 
 
 ##
