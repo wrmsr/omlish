@@ -1,15 +1,16 @@
 python
+import argparse
+import atexit
 import os
 import sys
 import time
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import argparse
-import signal
-import atexit
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
+
 
 class TimeServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/time":
+        if self.path == '/time':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
@@ -19,6 +20,7 @@ class TimeServer(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             self.wfile.write(b'404 Not Found')
+
 
 def daemonize():
     try:
@@ -47,8 +49,10 @@ def daemonize():
 
     atexit.register(remove_pidfile, pidfile)
 
+
 def remove_pidfile(pidfile):
     os.remove(pidfile)
+
 
 def start_server():
     server_address = ('', 8000)
@@ -56,19 +60,25 @@ def start_server():
     print(f'Started httpd on port {httpd.server_address[1]}')
     httpd.serve_forever()
 
+
 def check_server():
     pidfile = '/var/run/time_server.pid'
     if os.path.exists(pidfile):
-        with open(pidfile, 'r') as f:
+        with open(pidfile) as f:
             pid = int(f.read().strip())
         if os.path.exists(f'/proc/{pid}'):
             return True
     return False
 
+
 def cli():
     parser = argparse.ArgumentParser(description='A simple time server.')
-    parser.add_argument('--start', action='store_true', help='Start the server in the background.')
-    parser.add_argument('--time', action='store_true', help='Print the current time from the server.')
+    parser.add_argument(
+        '--start', action='store_true', help='Start the server in the background.',
+    )
+    parser.add_argument(
+        '--time', action='store_true', help='Print the current time from the server.',
+    )
     args = parser.parse_args()
 
     if args.start:
@@ -85,8 +95,10 @@ def cli():
             start_server()
         time.sleep(2)  # Wait for the server to start
         import requests
+
         response = requests.get('http://localhost:8000/time')
         print(response.text)
+
 
 if __name__ == '__main__':
     cli()

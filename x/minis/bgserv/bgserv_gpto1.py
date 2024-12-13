@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import os
 import sys
-import time
-import socket
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import time
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
+
 
 PIDFILE = '/tmp/my_server.pid'
 PORT = 8888
@@ -12,6 +13,7 @@ IDLE_TIMEOUT = 10 * 60  # 10 minutes in seconds
 
 # We'll use a global variable to track the last request time in the daemon.
 last_request_time = None
+
 
 def is_running():
     """
@@ -22,7 +24,7 @@ def is_running():
         return False
 
     try:
-        with open(PIDFILE, 'r') as f:
+        with open(PIDFILE) as f:
             pid_str = f.read().strip()
         if not pid_str:
             return False
@@ -34,6 +36,7 @@ def is_running():
         return False
 
     return True
+
 
 def start_server_daemon():
     """
@@ -64,6 +67,7 @@ def start_server_daemon():
 
     run_server()
 
+
 def run_server():
     """
     Run the HTTP server on localhost:PORT. The server handles only /time.
@@ -79,12 +83,12 @@ def run_server():
             if self.path == '/time':
                 last_request_time = time.time()  # Update last request time
                 self.send_response(200)
-                self.send_header("Content-type", "text/plain")
+                self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 current_time_str = time.ctime()
                 self.wfile.write(current_time_str.encode('utf-8'))
             else:
-                self.send_error(404, "Not Found")
+                self.send_error(404, 'Not Found')
 
     httpd = HTTPServer(('127.0.0.1', PORT), TimeHandler)
 
@@ -107,6 +111,7 @@ def run_server():
         if os.path.exists(PIDFILE):
             os.remove(PIDFILE)
 
+
 def get_time():
     """
     CLI call for 'time' command: ensures the server is running, then
@@ -122,23 +127,26 @@ def get_time():
         # Using only the standard library, so we can do a manual socket approach
         # or simply use urllib if allowed. urllib is part of the standard library:
         import urllib.request
+
         with urllib.request.urlopen(f'http://127.0.0.1:{PORT}/time') as resp:
             body = resp.read().decode('utf-8')
             print(body)
     except Exception as e:
-        print(f"Error connecting to server: {e}", file=sys.stderr)
+        print(f'Error connecting to server: {e}', file=sys.stderr)
+
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python myservice.py time")
+        print('Usage: python myservice.py time')
         sys.exit(1)
 
     cmd = sys.argv[1].lower()
     if cmd == 'time':
         get_time()
     else:
-        print(f"Unknown command: {cmd}")
+        print(f'Unknown command: {cmd}')
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

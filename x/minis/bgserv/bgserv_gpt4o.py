@@ -1,27 +1,32 @@
 """
 """
+
+import atexit
 import os
 import sys
 import time
-import atexit
-import socket
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
+
 
 # Configuration
-HOST = "127.0.0.1"
+HOST = '127.0.0.1'
 PORT = 8080
-PIDFILE = "/tmp/simple_http_server.pid"
+PIDFILE = '/tmp/simple_http_server.pid'
 INACTIVITY_TIMEOUT = 600  # 10 minutes
+
 
 # HTTP request handler
 class TimeRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/time":
+        if self.path == '/time':
             self.send_response(200)
-            self.send_header("Content-type", "text/plain")
+            self.send_header('Content-type', 'text/plain')
             self.end_headers()
-            self.wfile.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S").encode("utf-8"))
+            self.wfile.write(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S').encode('utf-8'),
+            )
         else:
             self.send_response(404)
             self.end_headers()
@@ -41,15 +46,15 @@ def daemonize():
     # Redirect standard file descriptors
     sys.stdout.flush()
     sys.stderr.flush()
-    with open("/dev/null", "r") as f:
+    with open('/dev/null') as f:
         os.dup2(f.fileno(), sys.stdin.fileno())
-    with open("/dev/null", "a+") as f:
+    with open('/dev/null', 'a+') as f:
         os.dup2(f.fileno(), sys.stdout.fileno())
         os.dup2(f.fileno(), sys.stderr.fileno())
 
     # Write PID to file
-    with open(PIDFILE, "w") as f:
-        f.write(str(os.getpid()) + "\n")
+    with open(PIDFILE, 'w') as f:
+        f.write(str(os.getpid()) + '\n')
 
     # Register cleanup
     atexit.register(lambda: os.remove(PIDFILE))
@@ -61,7 +66,7 @@ def start_server():
         while True:
             time.sleep(1)
             if time.time() - httpd.last_request_time > INACTIVITY_TIMEOUT:
-                print("Server inactive. Shutting down.")
+                print('Server inactive. Shutting down.')
                 os._exit(0)
 
     server = HTTPServer((HOST, PORT), TimeRequestHandler)
@@ -69,9 +74,10 @@ def start_server():
 
     # Start timeout check thread
     import threading
+
     threading.Thread(target=timeout_check, args=(server,), daemon=True).start()
 
-    print(f"Server running at http://{HOST}:{PORT}")
+    print(f'Server running at http://{HOST}:{PORT}')
     server.serve_forever()
 
 
@@ -79,7 +85,7 @@ def start_server():
 def is_server_running():
     if os.path.exists(PIDFILE):
         try:
-            with open(PIDFILE, "r") as f:
+            with open(PIDFILE) as f:
                 pid = int(f.read().strip())
             os.kill(pid, 0)  # Check if the process is running
             return True
@@ -91,23 +97,23 @@ def is_server_running():
 # CLI entry point
 def cli():
     if is_server_running():
-        print(f"Server is already running at http://{HOST}:{PORT}.")
+        print(f'Server is already running at http://{HOST}:{PORT}.')
         sys.exit(0)
 
-    print("Starting server as a background daemon...")
+    print('Starting server as a background daemon...')
     daemonize()
     start_server()
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "stop":
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'stop':
         # Stop the server
         if is_server_running():
-            with open(PIDFILE, "r") as f:
+            with open(PIDFILE) as f:
                 pid = int(f.read().strip())
             os.kill(pid, 15)
-            print("Server stopped.")
+            print('Server stopped.')
         else:
-            print("Server is not running.")
+            print('Server is not running.')
     else:
         cli()

@@ -1,4 +1,12 @@
 """
+https://www.freedesktop.org/software/systemd/man/latest/systemd.syntax.html
+https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html
+https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html
+https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html
+
+
+==
+
 https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
 
 ==
@@ -25,6 +33,11 @@ WantedBy=multi-user.target
 import dataclasses as dc
 import enum
 import typing as ta
+
+
+class SystemdSettingName:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError
 
 
 class SystemdUnitType(enum.Enum):
@@ -130,7 +143,7 @@ class SystemdUnitSection:
     # Similar to the directives that start with Condition, these directives check for different aspects of the running
     # environment to decide whether the unit should activate. However, unlike the Condition directives, a negative
     # result causes a failure with this directive.
-    assert_: ta.Optional[str] = None
+    assert_: ta.Optional[str] = dc.field(default=None, metadata={SystemdSettingName: 'assert'})
 
 
 @dc.dataclass(frozen=True)
@@ -207,7 +220,7 @@ class SystemdServiceSection:
 
     # If the service type is marked as “forking”, this directive is used to set the path of the file that should contain
     # the process ID number of the main child that should be monitored.
-    pidfile: ta.Optional[str] = None
+    pidfile: ta.Optional[str] = dc.field(default=None, metadata={SystemdSettingName: 'PIDFile'})
 
     # This directive should be set to the D-Bus bus name that the service will attempt to acquire when using the “dbus”
     # service type.
