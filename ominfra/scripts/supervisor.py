@@ -5760,6 +5760,7 @@ TODO:
  - structured
  - prefixed
  - debug
+ - optional noisy? noisy will never be lite - some kinda configure_standard callback mechanism?
 """
 
 
@@ -5796,8 +5797,9 @@ class StandardLogFormatter(logging.Formatter):
 ##
 
 
-class StandardLogHandler(ProxyLogHandler):
-    pass
+class StandardConfiguredLogHandler(ProxyLogHandler):
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError('This class serves only as a marker and should not be subclassed.')
 
 
 ##
@@ -5828,7 +5830,7 @@ def configure_standard_logging(
         target: ta.Optional[logging.Logger] = None,
         force: bool = False,
         handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-) -> ta.Optional[StandardLogHandler]:
+) -> ta.Optional[StandardConfiguredLogHandler]:
     with _locking_logging_module_lock():
         if target is None:
             target = logging.root
@@ -5836,7 +5838,7 @@ def configure_standard_logging(
         #
 
         if not force:
-            if any(isinstance(h, StandardLogHandler) for h in list(target.handlers)):
+            if any(isinstance(h, StandardConfiguredLogHandler) for h in list(target.handlers)):
                 return None
 
         #
@@ -5870,7 +5872,7 @@ def configure_standard_logging(
 
         #
 
-        return StandardLogHandler(handler)
+        return StandardConfiguredLogHandler(handler)
 
 
 ########################################
