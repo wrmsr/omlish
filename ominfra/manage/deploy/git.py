@@ -8,40 +8,20 @@ git/github.com/wrmsr/omlish <- bootstrap repo
 
 github.com/wrmsr/omlish@rev
 """
-import dataclasses as dc
 import functools
 import os.path
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.cached import cached_nullary
 from omlish.lite.cached import async_cached_nullary
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
 from .paths import DeployPath
 from .paths import DeployPathOwner
+from .specs import DeployGitRepo
 from .types import DeployHome
 from .types import DeployRev
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployGitRepo:
-    host: ta.Optional[str] = None
-    username: ta.Optional[str] = None
-    path: ta.Optional[str] = None
-
-    def __post_init__(self) -> None:
-        check.not_in('..', check.non_empty_str(self.host))
-        check.not_in('.', check.non_empty_str(self.path))
-
-
-@dc.dataclass(frozen=True)
-class DeployGitSpec:
-    repo: DeployGitRepo
-    rev: DeployRev
 
 
 ##
@@ -136,5 +116,5 @@ class DeployGitManager(DeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
-        await self.get_repo_dir(spec.repo).checkout(spec.rev, dst_dir)
+    async def checkout(self, repo: DeployGitRepo, rev: DeployRev, dst_dir: str) -> None:
+        await self.get_repo_dir(repo).checkout(rev, dst_dir)
