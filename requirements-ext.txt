@@ -12,7 +12,7 @@
 # thinc
 ##
 
-matplotlib==3.9.3
+matplotlib==3.9.4
 
 evaluate==0.4.3
 
@@ -146,7 +146,7 @@ einops==0.8.0
 boto3>=1.35.79
 
 google-api-python-client==2.155.0
-google-cloud-compute==1.22.0
+google-cloud-compute==1.23.0
 
 cloudflare==3.1.0  # httpx
 
@@ -181,7 +181,7 @@ mitogen==0.3.19
 
 ##
 
-openai==1.57.3
+openai==1.57.4
 
 trl==0.12.1
 tf-keras==2.17.0
@@ -282,7 +282,7 @@ docopt==0.6.2
 
 rapidocr_onnxruntime==1.4.3
 
-gguf==0.10.0
+gguf==0.11.0
 
 pytesseract==0.3.13
 
@@ -292,7 +292,7 @@ trafilatura==1.12.2
 qdrant-client==1.12.1
 
 mlx==0.21.1; sys_platform == "darwin"
-mlx-lm==0.20.2; sys_platform == "darwin"
+mlx-lm==0.20.4; sys_platform == "darwin"
 
 flask==3.1.0
 
