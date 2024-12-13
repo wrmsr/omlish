@@ -18,11 +18,11 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
         #
 
         app = DeployApp('flaskthing')
-        rev = DeployRev('c065adef7e27b56c3ecf6caec0edf24f59cf0790')
+        rev = DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3')
 
         repo = DeployGitRepo(
             host='github.com',
-            path='piku/sample-python-app',
+            path='wrmsr/flaskthing',
         )
 
         #
