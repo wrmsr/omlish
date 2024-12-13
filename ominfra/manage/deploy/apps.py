@@ -8,9 +8,9 @@ from omlish.lite.check import check
 
 from .git import DeployGitManager
 from .git import DeployGitRepo
-from .git import DeployGitSpec
 from .paths import DeployPath
 from .paths import DeployPathOwner
+from .specs import DeploySpec
 from .types import DeployApp
 from .types import DeployAppTag
 from .types import DeployHome
@@ -55,20 +55,16 @@ class DeployAppManager(DeployPathOwner):
 
     async def prepare_app(
             self,
-            app: DeployApp,
-            rev: DeployRev,
-            repo: DeployGitRepo,
+            spec: DeploySpec,
     ):
-        app_tag = DeployAppTag(app, make_deploy_tag(rev))
-        app_dir = os.path.join(self._dir(), app, app_tag.tag)
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev))
+        app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
         await self._git.checkout(
-            DeployGitSpec(
-                repo=repo,
-                rev=rev,
-            ),
+            spec.repo,
+            spec.rev,
             app_dir,
         )
 
