@@ -14,6 +14,7 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses import subprocesses
 
 
 ##
@@ -38,42 +39,36 @@ def git_clone_subtree(
         '-c', 'advice.detachedHead=false',
     ]
 
-    subprocess.check_call(
-        subprocess_maybe_shell_wrap_exec(
-            'git',
-            *git_opts,
-            'clone',
-            '-n',
-            '--depth=1',
-            '--filter=tree:0',
-            *(['-b', branch] if branch else []),
-            '--single-branch',
-            repo_url,
-            repo_dir,
-        ),
+    subprocesses.check_call(
+        'git',
+        *git_opts,
+        'clone',
+        '-n',
+        '--depth=1',
+        '--filter=tree:0',
+        *(['-b', branch] if branch else []),
+        '--single-branch',
+        repo_url,
+        repo_dir,
         cwd=base_dir,
     )
 
     rd = os.path.join(base_dir, repo_dir)
-    subprocess.check_call(
-        subprocess_maybe_shell_wrap_exec(
-            'git',
-            *git_opts,
-            'sparse-checkout',
-            'set',
-            '--no-cone',
-            *repo_subtrees,
-        ),
+    subprocesses.check_call(
+        'git',
+        *git_opts,
+        'sparse-checkout',
+        'set',
+        '--no-cone',
+        *repo_subtrees,
         cwd=rd,
     )
 
-    subprocess.check_call(
-        subprocess_maybe_shell_wrap_exec(
-            'git',
-            *git_opts,
-            'checkout',
-            *([rev] if rev else []),
-        ),
+    subprocesses.check_call(
+        'git',
+        *git_opts,
+        'checkout',
+        *([rev] if rev else []),
         cwd=rd,
     )
 
@@ -82,7 +77,7 @@ def get_git_revision(
         *,
         cwd: ta.Optional[str] = None,
 ) -> ta.Optional[str]:
-    subprocess.check_output(subprocess_maybe_shell_wrap_exec('git', '--version'))
+    subprocesses.check_output('git', '--version')
 
     if cwd is None:
         cwd = os.getcwd()
@@ -98,22 +93,24 @@ def get_git_revision(
     ).returncode:
         return None
 
-    has_untracked = bool(subprocess.check_output(subprocess_maybe_shell_wrap_exec(
+    has_untracked = bool(subprocesses.check_output(
         'git',
         'ls-files',
         '.',
         '--exclude-standard',
         '--others',
-    ), cwd=cwd).decode().strip())
+        cwd=cwd,
+    ).decode().strip())
 
-    dirty_rev = subprocess.check_output(subprocess_maybe_shell_wrap_exec(
+    dirty_rev = subprocesses.check_output(
         'git',
         'describe',
         '--match=NeVeRmAtCh',
         '--always',
         '--abbrev=40',
         '--dirty',
-    ), cwd=cwd).decode().strip()
+        cwd=cwd,
+    ).decode().strip()
 
     return dirty_rev + ('-untracked' if has_untracked else '')
 
