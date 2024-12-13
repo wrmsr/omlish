@@ -8,7 +8,7 @@ from ..lite.socket import SocketAddress
 from .parsing import HttpHeaders
 
 
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']
+HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
