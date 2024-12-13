@@ -113,7 +113,7 @@ class TestMarshalDataclasses(AbstractTestMarshal):
         with self.assertRaises(KeyError):  # noqa
             msh.unmarshal_obj(dict(i=24, j=25), Foo)
 
-        m = dc.replace(msh.get_obj_marshaler(Foo), nonstrict=True)  # type: ignore
+        m = dc.replace(msh.get_obj_marshaler(Foo), non_strict=True)  # type: ignore
         u = m.unmarshal(
             dict(i=24, j=25),
             msh.ObjMarshalContext(
@@ -207,3 +207,15 @@ class TestMarshalEnum(AbstractTestMarshal):
             FooEnum.X,
         ]:
             self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
+
+
+##
+
+
+class FooNamedTuple(ta.NamedTuple):
+    x: int
+
+
+class NamedTupleTest(AbstractTestMarshal):
+    def test_namedtuple(self):
+        self._assert_marshal((FooNamedTuple(420), FooNamedTuple))
