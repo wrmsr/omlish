@@ -9821,7 +9821,7 @@ class DockerManageTargetConnector(ManageTargetConnector):
         if dmt.image is not None:
             sh_parts.extend(['run', '-i', dmt.image])
         elif dmt.container_id is not None:
-            sh_parts.extend(['exec', dmt.container_id])
+            sh_parts.extend(['exec', '-i', dmt.container_id])
         else:
             raise ValueError(dmt)
 
