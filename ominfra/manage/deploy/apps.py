@@ -7,11 +7,9 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
 from .git import DeployGitManager
-from .git import DeployGitRepo
 from .paths import DeployPath
 from .paths import DeployPathOwner
 from .specs import DeploySpec
-from .types import DeployApp
 from .types import DeployAppTag
 from .types import DeployHome
 from .types import DeployRev

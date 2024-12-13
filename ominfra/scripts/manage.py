@@ -100,7 +100,7 @@ CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
 
 # deploy/paths.py
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
-DeployPathSpec = ta.Literal['app', 'tag']  # ta.TypeAlias
+DeployPathPlaceholder = ta.Literal['app', 'tag']  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCommandFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -1363,6 +1363,9 @@ class MainConfig:
 
 ########################################
 # ../deploy/config.py
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -3939,22 +3942,22 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 ~deploy
   deploy.pid (flock)
   /app
-    /<appspec> - shallow clone
+    /<appplaceholder> - shallow clone
   /conf
     /env
-      <appspec>.env
+      <appplaceholder>.env
     /nginx
-      <appspec>.conf
+      <appplaceholder>.conf
     /supervisor
-      <appspec>.conf
+      <appplaceholder>.conf
   /venv
-    /<appspec>
+    /<appplaceholder>
 
 ?
   /logs
-    /wrmsr--omlish--<spec>
+    /wrmsr--omlish--<placeholder>
 
-spec = <name>--<rev>--<when>
+placeholder = <name>--<rev>--<when>
 
 ==
 
@@ -3975,10 +3978,10 @@ for dn in [
 ##
 
 
-DEPLOY_PATH_SPEC_PLACEHOLDER = '@'
-DEPLOY_PATH_SPEC_SEPARATORS = '-.'
+DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER = '@'
+DEPLOY_PATH_PLACEHOLDER_SEPARATORS = '-.'
 
-DEPLOY_PATH_SPECS: ta.FrozenSet[str] = frozenset([
+DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
     'tag',  # <rev>-<dt>
 ])
@@ -3996,7 +3999,7 @@ class DeployPathPart(abc.ABC):  # noqa
         raise NotImplementedError
 
     @abc.abstractmethod
-    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         raise NotImplementedError
 
 
@@ -4010,9 +4013,9 @@ class DirDeployPathPart(DeployPathPart, abc.ABC):
 
     @classmethod
     def parse(cls, s: str) -> 'DirDeployPathPart':
-        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
-            check.equal(s[0], DEPLOY_PATH_SPEC_PLACEHOLDER)
-            return SpecDirDeployPathPart(s[1:])
+        if DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER in s:
+            check.equal(s[0], DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER)
+            return PlaceholderDirDeployPathPart(s[1:])
         else:
             return ConstDirDeployPathPart(s)
 
@@ -4024,13 +4027,13 @@ class FileDeployPathPart(DeployPathPart, abc.ABC):
 
     @classmethod
     def parse(cls, s: str) -> 'FileDeployPathPart':
-        if DEPLOY_PATH_SPEC_PLACEHOLDER in s:
-            check.equal(s[0], DEPLOY_PATH_SPEC_PLACEHOLDER)
-            if not any(c in s for c in DEPLOY_PATH_SPEC_SEPARATORS):
-                return SpecFileDeployPathPart(s[1:], '')
+        if DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER in s:
+            check.equal(s[0], DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER)
+            if not any(c in s for c in DEPLOY_PATH_PLACEHOLDER_SEPARATORS):
+                return PlaceholderFileDeployPathPart(s[1:], '')
             else:
-                p = min(f for c in DEPLOY_PATH_SPEC_SEPARATORS if (f := s.find(c)) > 0)
-                return SpecFileDeployPathPart(s[1:p], s[p:])
+                p = min(f for c in DEPLOY_PATH_PLACEHOLDER_SEPARATORS if (f := s.find(c)) > 0)
+                return PlaceholderFileDeployPathPart(s[1:p], s[p:])
         else:
             return ConstFileDeployPathPart(s)
 
@@ -4045,9 +4048,9 @@ class ConstDeployPathPart(DeployPathPart, abc.ABC):
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
         check.not_in('/', self.name)
-        check.not_in(DEPLOY_PATH_SPEC_PLACEHOLDER, self.name)
+        check.not_in(DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, self.name)
 
-    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         return self.name
 
 
@@ -4063,40 +4066,40 @@ class ConstFileDeployPathPart(ConstDeployPathPart, FileDeployPathPart):
 
 
 @dc.dataclass(frozen=True)
-class SpecDeployPathPart(DeployPathPart, abc.ABC):
-    spec: str  # DeployPathSpec
+class PlaceholderDeployPathPart(DeployPathPart, abc.ABC):
+    placeholder: str  # DeployPathPlaceholder
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.spec)
-        for c in [*DEPLOY_PATH_SPEC_SEPARATORS, DEPLOY_PATH_SPEC_PLACEHOLDER, '/']:
-            check.not_in(c, self.spec)
-        check.in_(self.spec, DEPLOY_PATH_SPECS)
+        check.non_empty_str(self.placeholder)
+        for c in [*DEPLOY_PATH_PLACEHOLDER_SEPARATORS, DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
+            check.not_in(c, self.placeholder)
+        check.in_(self.placeholder, DEPLOY_PATH_PLACEHOLDERS)
 
-    def _render_spec(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
-        if specs is not None:
-            return specs[self.spec]  # type: ignore
+    def _render_placeholder(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+        if placeholders is not None:
+            return placeholders[self.placeholder]  # type: ignore
         else:
-            return DEPLOY_PATH_SPEC_PLACEHOLDER + self.spec
+            return DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER + self.placeholder
 
 
 @dc.dataclass(frozen=True)
-class SpecDirDeployPathPart(SpecDeployPathPart, DirDeployPathPart):
-    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
-        return self._render_spec(specs)
+class PlaceholderDirDeployPathPart(PlaceholderDeployPathPart, DirDeployPathPart):
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+        return self._render_placeholder(placeholders)
 
 
 @dc.dataclass(frozen=True)
-class SpecFileDeployPathPart(SpecDeployPathPart, FileDeployPathPart):
+class PlaceholderFileDeployPathPart(PlaceholderDeployPathPart, FileDeployPathPart):
     suffix: str
 
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.suffix:
-            for c in [DEPLOY_PATH_SPEC_PLACEHOLDER, '/']:
+            for c in [DEPLOY_PATH_PLACEHOLDER_PLACEHOLDER, '/']:
                 check.not_in(c, self.suffix)
 
-    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
-        return self._render_spec(specs) + self.suffix
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
+        return self._render_placeholder(placeholders) + self.suffix
 
 
 ##
@@ -4113,22 +4116,22 @@ class DeployPath:
 
         pd = {}
         for i, p in enumerate(self.parts):
-            if isinstance(p, SpecDeployPathPart):
-                if p.spec in pd:
-                    raise DeployPathError('Duplicate specs in path', self)
-                pd[p.spec] = i
+            if isinstance(p, PlaceholderDeployPathPart):
+                if p.placeholder in pd:
+                    raise DeployPathError('Duplicate placeholders in path', self)
+                pd[p.placeholder] = i
 
         if 'tag' in pd:
             if 'app' not in pd or pd['app'] >= pd['tag']:
-                raise DeployPathError('Tag spec in path without preceding app', self)
+                raise DeployPathError('Tag placeholder in path without preceding app', self)
 
     @property
     def kind(self) -> ta.Literal['file', 'dir']:
         return self.parts[-1].kind
 
-    def render(self, specs: ta.Optional[ta.Mapping[DeployPathSpec, str]] = None) -> str:
+    def render(self, placeholders: ta.Optional[ta.Mapping[DeployPathPlaceholder, str]] = None) -> str:
         return os.path.join(  # noqa
-            *[p.render(specs) for p in self.parts],
+            *[p.render(placeholders) for p in self.parts],
             *([''] if self.kind == 'dir' else []),
         )
 
@@ -4154,6 +4157,34 @@ class DeployPathOwner(abc.ABC):
     @abc.abstractmethod
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         raise NotImplementedError
+
+
+########################################
+# ../deploy/specs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployGitRepo:
+    host: ta.Optional[str] = None
+    username: ta.Optional[str] = None
+    path: ta.Optional[str] = None
+
+    def __post_init__(self) -> None:
+        check.not_in('..', check.non_empty_str(self.host))
+        check.not_in('.', check.non_empty_str(self.path))
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeploySpec:
+    app: DeployApp
+    repo: DeployGitRepo
+    rev: DeployRev
 
 
 ########################################
@@ -7855,38 +7886,21 @@ github.com/wrmsr/omlish@rev
 ##
 
 
-@dc.dataclass(frozen=True)
-class DeployGitRepo:
-    host: ta.Optional[str] = None
-    username: ta.Optional[str] = None
-    path: ta.Optional[str] = None
-
-    def __post_init__(self) -> None:
-        check.not_in('..', check.non_empty_str(self.host))
-        check.not_in('.', check.non_empty_str(self.path))
-
-
-@dc.dataclass(frozen=True)
-class DeployGitSpec:
-    repo: DeployGitRepo
-    rev: DeployRev
-
-
-##
-
-
 class DeployGitManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: DeployHome,
+            deploy_home: ta.Optional[DeployHome] = None,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
-        self._dir = os.path.join(deploy_home, 'git')
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
+
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), 'git')
 
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -7904,7 +7918,7 @@ class DeployGitManager(DeployPathOwner):
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._dir,  # noqa
+                self._git._dir(),  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
@@ -7961,8 +7975,8 @@ class DeployGitManager(DeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, spec: DeployGitSpec, dst_dir: str) -> None:
-        await self.get_repo_dir(spec.repo).checkout(spec.rev, dst_dir)
+    async def checkout(self, repo: DeployGitRepo, rev: DeployRev, dst_dir: str) -> None:
+        await self.get_repo_dir(repo).checkout(rev, dst_dir)
 
 
 ########################################
@@ -7978,12 +7992,15 @@ class DeployVenvManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: DeployHome,
+            deploy_home: ta.Optional[DeployHome] = None,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
-        self._dir = os.path.join(deploy_home, 'venvs')
+
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), 'venvs')
 
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -8020,8 +8037,8 @@ class DeployVenvManager(DeployPathOwner):
 
     async def setup_app_venv(self, app_tag: DeployAppTag) -> None:
         await self.setup_venv(
-            os.path.join(self._deploy_home, 'apps', app_tag.app, app_tag.tag),
-            os.path.join(self._deploy_home, 'venvs', app_tag.app, app_tag.tag),
+            os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
+            os.path.join(self._dir(), app_tag.app, app_tag.tag),
         )
 
 
@@ -8420,14 +8437,14 @@ def make_deploy_tag(
         now = datetime.datetime.utcnow()  # noqa
     now_fmt = '%Y%m%dT%H%M%S'
     now_str = now.strftime(now_fmt)
-    return DeployTag('-'.join([rev, now_str]))
+    return DeployTag('-'.join([now_str, rev]))
 
 
 class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: DeployHome,
+            deploy_home: ta.Optional[DeployHome] = None,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
@@ -8437,7 +8454,9 @@ class DeployAppManager(DeployPathOwner):
         self._git = git
         self._venvs = venvs
 
-        self._dir = os.path.join(deploy_home, 'apps')
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), 'apps')
 
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -8446,20 +8465,16 @@ class DeployAppManager(DeployPathOwner):
 
     async def prepare_app(
             self,
-            app: DeployApp,
-            rev: DeployRev,
-            repo: DeployGitRepo,
+            spec: DeploySpec,
     ):
-        app_tag = DeployAppTag(app, make_deploy_tag(rev))
-        app_dir = os.path.join(self._dir, app, app_tag.tag)
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev))
+        app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
         await self._git.checkout(
-            DeployGitSpec(
-                repo=repo,
-                rev=rev,
-            ),
+            spec.repo,
+            spec.rev,
             app_dir,
         )
 
