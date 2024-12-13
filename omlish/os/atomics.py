@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import abc
 import os
 import shutil
@@ -9,17 +10,17 @@ from omlish.lite.check import check
 from omlish.lite.strings import attr_repr
 
 
-DeployAtomicPathSwapKind = ta.Literal['dir', 'file']
-DeployAtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
+AtomicPathSwapKind = ta.Literal['dir', 'file']
+AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
 
 ##
 
 
-class DeployAtomicPathSwap(abc.ABC):
+class AtomicPathSwap(abc.ABC):
     def __init__(
             self,
-            kind: DeployAtomicPathSwapKind,
+            kind: AtomicPathSwapKind,
             dst_path: str,
             *,
             auto_commit: bool = False,
@@ -30,13 +31,13 @@ class DeployAtomicPathSwap(abc.ABC):
         self._dst_path = dst_path
         self._auto_commit = auto_commit
 
-        self._state: DeployAtomicPathSwapState = 'open'
+        self._state: AtomicPathSwapState = 'open'
 
     def __repr__(self) -> str:
         return attr_repr(self, 'kind', 'dst_path', 'tmp_path')
 
     @property
-    def kind(self) -> DeployAtomicPathSwapKind:
+    def kind(self) -> AtomicPathSwapKind:
         return self._kind
 
     @property
@@ -51,10 +52,10 @@ class DeployAtomicPathSwap(abc.ABC):
     #
 
     @property
-    def state(self) -> DeployAtomicPathSwapState:
+    def state(self) -> AtomicPathSwapState:
         return self._state
 
-    def _check_state(self, *states: DeployAtomicPathSwapState) -> None:
+    def _check_state(self, *states: AtomicPathSwapState) -> None:
         if self._state not in states:
             raise RuntimeError(f'Atomic path swap not in correct state: {self._state}, {states}')
 
@@ -90,7 +91,7 @@ class DeployAtomicPathSwap(abc.ABC):
 
     #
 
-    def __enter__(self) -> 'DeployAtomicPathSwap':
+    def __enter__(self) -> 'AtomicPathSwap':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -104,30 +105,27 @@ class DeployAtomicPathSwap(abc.ABC):
             self.abort()
 
 
-#
-
-
-class DeployAtomicPathSwapping(abc.ABC):
+class AtomicPathSwapping(abc.ABC):
     @abc.abstractmethod
     def begin_atomic_path_swap(
             self,
-            kind: DeployAtomicPathSwapKind,
+            kind: AtomicPathSwapKind,
             dst_path: str,
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             **kwargs: ta.Any,
-    ) -> DeployAtomicPathSwap:
+    ) -> AtomicPathSwap:
         raise NotImplementedError
 
 
 ##
 
 
-class OsRenameDeployAtomicPathSwap(DeployAtomicPathSwap):
+class OsRenameAtomicPathSwap(AtomicPathSwap):
     def __init__(
             self,
-            kind: DeployAtomicPathSwapKind,
+            kind: AtomicPathSwapKind,
             dst_path: str,
             tmp_path: str,
             **kwargs: ta.Any,
@@ -158,7 +156,7 @@ class OsRenameDeployAtomicPathSwap(DeployAtomicPathSwap):
         shutil.rmtree(self._tmp_path, ignore_errors=True)
 
 
-class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
+class TempDirAtomicPathSwapping(AtomicPathSwapping):
     def __init__(
             self,
             *,
@@ -174,13 +172,13 @@ class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
 
     def begin_atomic_path_swap(
             self,
-            kind: DeployAtomicPathSwapKind,
+            kind: AtomicPathSwapKind,
             dst_path: str,
             *,
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             **kwargs: ta.Any,
-    ) -> DeployAtomicPathSwap:
+    ) -> AtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
         if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
@@ -199,7 +197,7 @@ class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
         else:
             raise TypeError(kind)
 
-        return OsRenameDeployAtomicPathSwap(
+        return OsRenameAtomicPathSwap(
             kind,
             dst_path,
             tmp_path,

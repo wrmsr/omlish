@@ -10,8 +10,8 @@ import typing as ta
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.os.atomics import AtomicPathSwapping
 
-from .atomics import DeployAtomicPathSwapping
 from .paths import DeployPath
 from .paths import DeployPathOwner
 from .types import DeployAppTag
@@ -23,7 +23,7 @@ class DeployVenvManager(DeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
-            atomics: DeployAtomicPathSwapping,
+            atomics: AtomicPathSwapping,
     ) -> None:
         super().__init__()
 

@@ -3,18 +3,18 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
+from omlish.os.atomics import AtomicPathSwap
+from omlish.os.atomics import AtomicPathSwapKind
+from omlish.os.atomics import AtomicPathSwapping
+from omlish.os.atomics import TempDirAtomicPathSwapping
 
-from .atomics import DeployAtomicPathSwap
-from .atomics import DeployAtomicPathSwapKind
-from .atomics import DeployAtomicPathSwapping
-from .atomics import TempDirDeployAtomicPathSwapping
 from .paths import SingleDirDeployPathOwner
 from .types import DeployHome
 
 
 class DeployTmpManager(
     SingleDirDeployPathOwner,
-    DeployAtomicPathSwapping,
+    AtomicPathSwapping,
 ):
     def __init__(
             self,
@@ -27,18 +27,18 @@ class DeployTmpManager(
         )
 
     @cached_nullary
-    def _swapping(self) -> DeployAtomicPathSwapping:
-        return TempDirDeployAtomicPathSwapping(
+    def _swapping(self) -> AtomicPathSwapping:
+        return TempDirAtomicPathSwapping(
             temp_dir=self._make_dir(),
             root_dir=check.non_empty_str(self._deploy_home),
         )
 
     def begin_atomic_path_swap(
             self,
-            kind: DeployAtomicPathSwapKind,
+            kind: AtomicPathSwapKind,
             dst_path: str,
             **kwargs: ta.Any,
-    ) -> DeployAtomicPathSwap:
+    ) -> AtomicPathSwap:
         return self._swapping().begin_atomic_path_swap(
             kind,
             dst_path,
