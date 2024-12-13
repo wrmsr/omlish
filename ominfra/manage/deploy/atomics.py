@@ -115,6 +115,8 @@ class DeployAtomicPathSwapping(abc.ABC):
             dst_path: str,
             *,
             name_hint: ta.Optional[str] = None,
+            make_dirs: bool = False,
+            **kwargs: ta.Any,
     ) -> DeployAtomicPathSwap:
         raise NotImplementedError
 
@@ -176,10 +178,18 @@ class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
             dst_path: str,
             *,
             name_hint: ta.Optional[str] = None,
+            make_dirs: bool = False,
+            **kwargs: ta.Any,
     ) -> DeployAtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
         if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
+
+        dst_dir = os.path.dirname(dst_path)
+        if make_dirs:
+            os.makedirs(dst_dir, exist_ok=True)
+        if not os.path.isdir(dst_dir):
+            raise RuntimeError(f'Atomic path swap dst dir does not exist: {dst_dir}')
 
         if kind == 'dir':
             tmp_path = tempfile.mkdtemp(prefix=name_hint, dir=self._temp_dir)
@@ -193,4 +203,5 @@ class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
             kind,
             dst_path,
             tmp_path,
+            **kwargs,
         )
