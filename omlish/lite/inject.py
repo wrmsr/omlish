@@ -610,7 +610,7 @@ class InjectorBinder:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
-    _FN_TYPES: ta.Tuple[type, ...] = (
+    _FN_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         types.FunctionType,
         types.MethodType,
 
@@ -632,7 +632,7 @@ class InjectorBinder:
             cls._FN_TYPES = (*cls._FN_TYPES, icls)
         return icls
 
-    _BANNED_BIND_TYPES: ta.Tuple[type, ...] = (
+    _BANNED_BIND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         InjectorProvider,
     )
 
@@ -811,45 +811,35 @@ def bind_injector_eager_key(key: ta.Any) -> InjectorBinding:
 ##
 
 
-class Injection:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
+class InjectionApi:
     # keys
 
-    @classmethod
-    def as_key(cls, o: ta.Any) -> InjectorKey:
+    def as_key(self, o: ta.Any) -> InjectorKey:
         return as_injector_key(o)
 
-    @classmethod
-    def array(cls, o: ta.Any) -> InjectorKey:
+    def array(self, o: ta.Any) -> InjectorKey:
         return dc.replace(as_injector_key(o), array=True)
 
-    @classmethod
-    def tag(cls, o: ta.Any, t: ta.Any) -> InjectorKey:
+    def tag(self, o: ta.Any, t: ta.Any) -> InjectorKey:
         return dc.replace(as_injector_key(o), tag=t)
 
     # bindings
 
-    @classmethod
-    def as_bindings(cls, *args: InjectorBindingOrBindings) -> InjectorBindings:
+    def as_bindings(self, *args: InjectorBindingOrBindings) -> InjectorBindings:
         return as_injector_bindings(*args)
 
-    @classmethod
-    def override(cls, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
+    def override(self, p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:
         return injector_override(p, *args)
 
     # injector
 
-    @classmethod
-    def create_injector(cls, *args: InjectorBindingOrBindings, parent: ta.Optional[Injector] = None) -> Injector:
+    def create_injector(self, *args: InjectorBindingOrBindings, parent: ta.Optional[Injector] = None) -> Injector:
         return _Injector(as_injector_bindings(*args), parent)
 
     # binder
 
-    @classmethod
     def bind(
-            cls,
+            self,
             obj: ta.Any,
             *,
             key: ta.Any = None,
@@ -884,32 +874,29 @@ class Injection:
 
     # helpers
 
-    @classmethod
     def bind_factory(
-            cls,
+            self,
             fn: ta.Callable[..., T],
             cls_: U,
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
-        return cls.bind(make_injector_factory(fn, cls_, ann))
+        return self.bind(make_injector_factory(fn, cls_, ann))
 
-    @classmethod
     def bind_array(
-            cls,
+            self,
             obj: ta.Any = None,
             *,
             tag: ta.Any = None,
     ) -> InjectorBindingOrBindings:
         return bind_injector_array(obj, tag=tag)
 
-    @classmethod
     def bind_array_type(
-            cls,
+            self,
             ele: ta.Union[InjectorKey, InjectorKeyCls],
             cls_: U,
             ann: ta.Any = None,
     ) -> InjectorBindingOrBindings:
-        return cls.bind(make_injector_array_type(ele, cls_, ann))
+        return self.bind(make_injector_array_type(ele, cls_, ann))
 
 
-inj = Injection
+inj = InjectionApi()
