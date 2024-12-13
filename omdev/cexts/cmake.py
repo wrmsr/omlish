@@ -34,7 +34,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import logs
+from omlish.logs import all as logs
 
 from .. import cmake
 from .. import magic

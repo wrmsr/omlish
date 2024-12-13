@@ -191,7 +191,7 @@ def run_mp(ctx: mp.context.BaseContext | None = None) -> dict[str, ta.Any]:
 
 
 def _main() -> None:
-    from omlish.logs import configure_standard_logging
+    from omlish.logs.all import configure_standard_logging
     configure_standard_logging('DEBUG')
 
     strategies = {

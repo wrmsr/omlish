@@ -25,7 +25,7 @@ import os.path
 import sys
 import typing as ta
 
-from omlish import logs
+from omlish.logs import all as logs
 
 from .base import Precheck
 from .base import PrecheckContext

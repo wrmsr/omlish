@@ -10,12 +10,12 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import logs
 from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.docker import all as dck
 from omlish.formats import json
 from omlish.formats import yaml
+from omlish.logs import all as logs
 
 from ..cli import CliModule
 
