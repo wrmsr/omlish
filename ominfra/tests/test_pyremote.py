@@ -16,7 +16,7 @@ class TestPyremote(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), '..', 'pyremote.py')) as f:
             pyr_src = f.read()
 
-        main_src = '\n'.join([
+        payload_src = '\n'.join([
             pyr_src,
             'rt = pyremote_bootstrap_finalize()',
             'b = rt.input.read()',
@@ -39,7 +39,7 @@ class TestPyremote(unittest.TestCase):
         stdout = check.not_none(proc.stdout)
 
         res = pyremote.PyremoteBootstrapDriver(
-            main_src,
+            payload_src,
             opts,
         ).run(stdout, stdin)
         self.assertEqual(res.pid, proc.pid)

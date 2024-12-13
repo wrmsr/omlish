@@ -162,7 +162,7 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
     # Get pid
     pid = os.getpid()
 
-    # Two copies of main src to be sent to parent
+    # Two copies of payload src to be sent to parent
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
@@ -201,17 +201,17 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Write pid
         os.write(1, struct.pack('<Q', pid))
 
-        # Read main src from stdin
-        main_z_len = struct.unpack('<I', os.read(0, 4))[0]
-        if len(main_z := os.fdopen(0, 'rb').read(main_z_len)) != main_z_len:
+        # Read payload src from stdin
+        payload_z_len = struct.unpack('<I', os.read(0, 4))[0]
+        if len(payload_z := os.fdopen(0, 'rb').read(payload_z_len)) != payload_z_len:
             raise EOFError
-        main_src = zlib.decompress(main_z)
+        payload_src = zlib.decompress(payload_z)
 
-        # Write both copies of main src. Must write to w0 (parent stdin) before w1 (copy pipe) as pipe will likely fill
-        # and block and need to be drained by pyremote_bootstrap_finalize running in parent.
+        # Write both copies of payload src. Must write to w0 (parent stdin) before w1 (copy pipe) as pipe will likely
+        # fill and block and need to be drained by pyremote_bootstrap_finalize running in parent.
         for w in [w0, w1]:
             fp = os.fdopen(w, 'wb', 0)
-            fp.write(main_src)
+            fp.write(payload_src)
             fp.close()
 
         # Write second ack
@@ -275,7 +275,7 @@ class PyremotePayloadRuntime:
     input: ta.BinaryIO
     output: ta.BinaryIO
     context_name: str
-    main_src: str
+    payload_src: str
     options: PyremoteBootstrapOptions
     env_info: PyremoteEnvInfo
 
@@ -283,9 +283,9 @@ class PyremotePayloadRuntime:
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     # If src file var is not present we need to do initial finalization
     if _PYREMOTE_BOOTSTRAP_SRC_FILE_VAR not in os.environ:
-        # Read second copy of main src
+        # Read second copy of payload src
         r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
-        main_src = r1.read().decode('utf-8')
+        payload_src = r1.read().decode('utf-8')
         r1.close()
 
         # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in
@@ -303,7 +303,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
             # Write temp source file
             import tempfile
             tfd, tfn = tempfile.mkstemp('-pyremote.py')
-            os.write(tfd, main_src.encode('utf-8'))
+            os.write(tfd, payload_src.encode('utf-8'))
             os.close(tfd)
 
             # Set vars
@@ -322,7 +322,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
         # Read temp source file
         with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
-            main_src = sf.read()
+            payload_src = sf.read()
 
     # Restore vars
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
@@ -355,7 +355,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         input=input,
         output=output,
         context_name=context_name,
-        main_src=main_src,
+        payload_src=payload_src,
         options=options,
         env_info=env_info,
     )
@@ -367,33 +367,33 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 class PyremoteBootstrapDriver:
     def __init__(
             self,
-            main_src: ta.Union[str, ta.Sequence[str]],
+            payload_src: ta.Union[str, ta.Sequence[str]],
             options: PyremoteBootstrapOptions = PyremoteBootstrapOptions(),
     ) -> None:
         super().__init__()
 
-        self._main_src = main_src
+        self._payload_src = payload_src
         self._options = options
 
-        self._prepared_main_src = self._prepare_main_src(main_src, options)
-        self._main_z = zlib.compress(self._prepared_main_src.encode('utf-8'))
+        self._prepared_payload_src = self._prepare_payload_src(payload_src, options)
+        self._payload_z = zlib.compress(self._prepared_payload_src.encode('utf-8'))
 
         self._options_json = json.dumps(dc.asdict(options), indent=None, separators=(',', ':')).encode('utf-8')  # noqa
     #
 
     @classmethod
-    def _prepare_main_src(
+    def _prepare_payload_src(
             cls,
-            main_src: ta.Union[str, ta.Sequence[str]],
+            payload_src: ta.Union[str, ta.Sequence[str]],
             options: PyremoteBootstrapOptions,
     ) -> str:
         parts: ta.List[str]
-        if isinstance(main_src, str):
-            parts = [main_src]
+        if isinstance(payload_src, str):
+            parts = [payload_src]
         else:
-            parts = list(main_src)
+            parts = list(payload_src)
 
-        if (mn := options.main_name_override) is not None:
+        if (mn := options.payload_name_override) is not None:
             parts.insert(0, f'__name__ = {mn!r}')
 
         if len(parts) == 1:
@@ -427,9 +427,9 @@ class PyremoteBootstrapDriver:
         d = yield from self._read(8)
         pid = struct.unpack('<Q', d)[0]
 
-        # Write main src
-        yield from self._write(struct.pack('<I', len(self._main_z)))
-        yield from self._write(self._main_z)
+        # Write payload src
+        yield from self._write(struct.pack('<I', len(self._payload_z)))
+        yield from self._write(self._payload_z)
 
         # Read second ack (after writing src copies)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
