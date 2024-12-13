@@ -2,10 +2,10 @@ import functools
 import logging
 
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
-def error_logging(log=log):  # noqa
+def error_logging(log=_log):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):

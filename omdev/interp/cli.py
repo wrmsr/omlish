@@ -12,8 +12,8 @@ import asyncio
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
+from omlish.logs.standard import configure_standard_logging
 
 from .resolvers import DEFAULT_INTERP_RESOLVER
 from .resolvers import INTERP_PROVIDER_TYPES_BY_NAME

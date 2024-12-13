@@ -11,7 +11,7 @@ from omlish.os.sizes import PAGE_SIZE
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import log
-from omlish.lite.logs import configure_standard_logging
+from omlish.logs.standard import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 from omlish.subprocesses import subprocesses
 

@@ -2544,6 +2544,13 @@ json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON
 
 
 ########################################
+# ../../../omlish/lite/logs.py
+
+
+log = logging.getLogger(__name__)
+
+
+########################################
 # ../../../omlish/lite/maybes.py
 
 
@@ -2755,6 +2762,116 @@ def format_num_bytes(num_bytes: int) -> str:
                 return f'{value:.2f}{suffix}'
 
     return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
+# ../../../omlish/logs/filters.py
+
+
+class TidLogFilter(logging.Filter):
+    def filter(self, record):
+        record.tid = threading.get_native_id()
+        return True
+
+
+########################################
+# ../../../omlish/logs/proxy.py
+
+
+class ProxyLogFilterer(logging.Filterer):
+    def __init__(self, underlying: logging.Filterer) -> None:  # noqa
+        self._underlying = underlying
+
+    @property
+    def underlying(self) -> logging.Filterer:
+        return self._underlying
+
+    @property
+    def filters(self):
+        return self._underlying.filters
+
+    @filters.setter
+    def filters(self, filters):
+        self._underlying.filters = filters
+
+    def addFilter(self, filter):  # noqa
+        self._underlying.addFilter(filter)
+
+    def removeFilter(self, filter):  # noqa
+        self._underlying.removeFilter(filter)
+
+    def filter(self, record):
+        return self._underlying.filter(record)
+
+
+class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
+    def __init__(self, underlying: logging.Handler) -> None:  # noqa
+        ProxyLogFilterer.__init__(self, underlying)
+
+    _underlying: logging.Handler
+
+    @property
+    def underlying(self) -> logging.Handler:
+        return self._underlying
+
+    def get_name(self):
+        return self._underlying.get_name()
+
+    def set_name(self, name):
+        self._underlying.set_name(name)
+
+    @property
+    def name(self):
+        return self._underlying.name
+
+    @property
+    def level(self):
+        return self._underlying.level
+
+    @level.setter
+    def level(self, level):
+        self._underlying.level = level
+
+    @property
+    def formatter(self):
+        return self._underlying.formatter
+
+    @formatter.setter
+    def formatter(self, formatter):
+        self._underlying.formatter = formatter
+
+    def createLock(self):
+        self._underlying.createLock()
+
+    def acquire(self):
+        self._underlying.acquire()
+
+    def release(self):
+        self._underlying.release()
+
+    def setLevel(self, level):
+        self._underlying.setLevel(level)
+
+    def format(self, record):
+        return self._underlying.format(record)
+
+    def emit(self, record):
+        self._underlying.emit(record)
+
+    def handle(self, record):
+        return self._underlying.handle(record)
+
+    def setFormatter(self, fmt):
+        self._underlying.setFormatter(fmt)
+
+    def flush(self):
+        self._underlying.flush()
+
+    def close(self):
+        self._underlying.close()
+
+    def handleError(self, record):
+        self._underlying.handleError(record)
 
 
 ########################################
@@ -4248,6 +4365,75 @@ def get_remote_payload_src(
 
 
 ########################################
+# ../system/platforms.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Platform(abc.ABC):  # noqa
+    pass
+
+
+class LinuxPlatform(Platform, abc.ABC):
+    pass
+
+
+class UbuntuPlatform(LinuxPlatform):
+    pass
+
+
+class AmazonLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class GenericLinuxPlatform(LinuxPlatform):
+    pass
+
+
+class DarwinPlatform(Platform):
+    pass
+
+
+class UnknownPlatform(Platform):
+    pass
+
+
+##
+
+
+def _detect_system_platform() -> Platform:
+    plat = sys.platform
+
+    if plat == 'linux':
+        if (osr := LinuxOsRelease.read()) is None:
+            return GenericLinuxPlatform()
+
+        if osr.id == 'amzn':
+            return AmazonLinuxPlatform()
+
+        elif osr.id == 'ubuntu':
+            return UbuntuPlatform()
+
+        else:
+            return GenericLinuxPlatform()
+
+    elif plat == 'darwin':
+        return DarwinPlatform()
+
+    else:
+        return UnknownPlatform()
+
+
+@cached_nullary
+def detect_system_platform() -> Platform:
+    platform = _detect_system_platform()
+    log.info('Detected platform: %r', platform)
+    return platform
+
+
+########################################
 # ../targets/targets.py
 """
 It's desugaring. Subprocess and locals are only leafs. Retain an origin?
@@ -5571,276 +5757,6 @@ inj = Injection
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-"""
-TODO:
- - translate json keys
- - debug
-"""
-
-
-log = logging.getLogger(__name__)
-
-
-##
-
-
-class TidLogFilter(logging.Filter):
-
-    def filter(self, record):
-        record.tid = threading.get_native_id()
-        return True
-
-
-##
-
-
-class JsonLogFormatter(logging.Formatter):
-
-    KEYS: ta.Mapping[str, bool] = {
-        'name': False,
-        'msg': False,
-        'args': False,
-        'levelname': False,
-        'levelno': False,
-        'pathname': False,
-        'filename': False,
-        'module': False,
-        'exc_info': True,
-        'exc_text': True,
-        'stack_info': True,
-        'lineno': False,
-        'funcName': False,
-        'created': False,
-        'msecs': False,
-        'relativeCreated': False,
-        'thread': False,
-        'threadName': False,
-        'processName': False,
-        'process': False,
-    }
-
-    def format(self, record: logging.LogRecord) -> str:
-        dct = {
-            k: v
-            for k, o in self.KEYS.items()
-            for v in [getattr(record, k)]
-            if not (o and v is None)
-        }
-        return json_dumps_compact(dct)
-
-
-##
-
-
-STANDARD_LOG_FORMAT_PARTS = [
-    ('asctime', '%(asctime)-15s'),
-    ('process', 'pid=%(process)-6s'),
-    ('thread', 'tid=%(thread)x'),
-    ('levelname', '%(levelname)s'),
-    ('name', '%(name)s'),
-    ('separator', '::'),
-    ('message', '%(message)s'),
-]
-
-
-class StandardLogFormatter(logging.Formatter):
-
-    @staticmethod
-    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
-        return ' '.join(v for k, v in parts)
-
-    converter = datetime.datetime.fromtimestamp  # type: ignore
-
-    def formatTime(self, record, datefmt=None):
-        ct = self.converter(record.created)  # type: ignore
-        if datefmt:
-            return ct.strftime(datefmt)  # noqa
-        else:
-            t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)  # noqa
-
-
-##
-
-
-class ProxyLogFilterer(logging.Filterer):
-    def __init__(self, underlying: logging.Filterer) -> None:  # noqa
-        self._underlying = underlying
-
-    @property
-    def underlying(self) -> logging.Filterer:
-        return self._underlying
-
-    @property
-    def filters(self):
-        return self._underlying.filters
-
-    @filters.setter
-    def filters(self, filters):
-        self._underlying.filters = filters
-
-    def addFilter(self, filter):  # noqa
-        self._underlying.addFilter(filter)
-
-    def removeFilter(self, filter):  # noqa
-        self._underlying.removeFilter(filter)
-
-    def filter(self, record):
-        return self._underlying.filter(record)
-
-
-class ProxyLogHandler(ProxyLogFilterer, logging.Handler):
-    def __init__(self, underlying: logging.Handler) -> None:  # noqa
-        ProxyLogFilterer.__init__(self, underlying)
-
-    _underlying: logging.Handler
-
-    @property
-    def underlying(self) -> logging.Handler:
-        return self._underlying
-
-    def get_name(self):
-        return self._underlying.get_name()
-
-    def set_name(self, name):
-        self._underlying.set_name(name)
-
-    @property
-    def name(self):
-        return self._underlying.name
-
-    @property
-    def level(self):
-        return self._underlying.level
-
-    @level.setter
-    def level(self, level):
-        self._underlying.level = level
-
-    @property
-    def formatter(self):
-        return self._underlying.formatter
-
-    @formatter.setter
-    def formatter(self, formatter):
-        self._underlying.formatter = formatter
-
-    def createLock(self):
-        self._underlying.createLock()
-
-    def acquire(self):
-        self._underlying.acquire()
-
-    def release(self):
-        self._underlying.release()
-
-    def setLevel(self, level):
-        self._underlying.setLevel(level)
-
-    def format(self, record):
-        return self._underlying.format(record)
-
-    def emit(self, record):
-        self._underlying.emit(record)
-
-    def handle(self, record):
-        return self._underlying.handle(record)
-
-    def setFormatter(self, fmt):
-        self._underlying.setFormatter(fmt)
-
-    def flush(self):
-        self._underlying.flush()
-
-    def close(self):
-        self._underlying.close()
-
-    def handleError(self, record):
-        self._underlying.handleError(record)
-
-
-##
-
-
-class StandardLogHandler(ProxyLogHandler):
-    pass
-
-
-##
-
-
-@contextlib.contextmanager
-def _locking_logging_module_lock() -> ta.Iterator[None]:
-    if hasattr(logging, '_acquireLock'):
-        logging._acquireLock()  # noqa
-        try:
-            yield
-        finally:
-            logging._releaseLock()  # type: ignore  # noqa
-
-    elif hasattr(logging, '_lock'):
-        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
-        with logging._lock:  # noqa
-            yield
-
-    else:
-        raise Exception("Can't find lock in logging module")
-
-
-def configure_standard_logging(
-        level: ta.Union[int, str] = logging.INFO,
-        *,
-        json: bool = False,
-        target: ta.Optional[logging.Logger] = None,
-        force: bool = False,
-        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-) -> ta.Optional[StandardLogHandler]:
-    with _locking_logging_module_lock():
-        if target is None:
-            target = logging.root
-
-        #
-
-        if not force:
-            if any(isinstance(h, StandardLogHandler) for h in list(target.handlers)):
-                return None
-
-        #
-
-        if handler_factory is not None:
-            handler = handler_factory()
-        else:
-            handler = logging.StreamHandler()
-
-        #
-
-        formatter: logging.Formatter
-        if json:
-            formatter = JsonLogFormatter()
-        else:
-            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
-        handler.setFormatter(formatter)
-
-        #
-
-        handler.addFilter(TidLogFilter())
-
-        #
-
-        target.addHandler(handler)
-
-        #
-
-        if level is not None:
-            target.setLevel(level)
-
-        #
-
-        return StandardLogHandler(handler)
-
-
-########################################
 # ../../../omlish/lite/marshal.py
 """
 TODO:
@@ -6303,6 +6219,60 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# ../../../omlish/logs/json.py
+"""
+TODO:
+ - translate json keys
+"""
+
+
+class JsonLogFormatter(logging.Formatter):
+    KEYS: ta.Mapping[str, bool] = {
+        'name': False,
+        'msg': False,
+        'args': False,
+        'levelname': False,
+        'levelno': False,
+        'pathname': False,
+        'filename': False,
+        'module': False,
+        'exc_info': True,
+        'exc_text': True,
+        'stack_info': True,
+        'lineno': False,
+        'funcName': False,
+        'created': False,
+        'msecs': False,
+        'relativeCreated': False,
+        'thread': False,
+        'threadName': False,
+        'processName': False,
+        'process': False,
+    }
+
+    def __init__(
+            self,
+            *args: ta.Any,
+            json_dumps: ta.Optional[ta.Callable[[ta.Any], str]] = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        if json_dumps is None:
+            json_dumps = json_dumps_compact
+        self._json_dumps = json_dumps
+
+    def format(self, record: logging.LogRecord) -> str:
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
+        return self._json_dumps(dct)
+
+
+########################################
 # ../../../omdev/interp/types.py
 
 
@@ -6645,72 +6615,132 @@ class RemoteChannelImpl(RemoteChannel):
 
 
 ########################################
-# ../system/platforms.py
-
-
-##
+# ../system/config.py
 
 
 @dc.dataclass(frozen=True)
-class Platform(abc.ABC):  # noqa
-    pass
+class SystemConfig:
+    platform: ta.Optional[Platform] = None
 
 
-class LinuxPlatform(Platform, abc.ABC):
-    pass
+########################################
+# ../../../omlish/logs/standard.py
+"""
+TODO:
+ - structured
+ - prefixed
+ - debug
+"""
 
 
-class UbuntuPlatform(LinuxPlatform):
-    pass
+##
 
 
-class AmazonLinuxPlatform(LinuxPlatform):
-    pass
+STANDARD_LOG_FORMAT_PARTS = [
+    ('asctime', '%(asctime)-15s'),
+    ('process', 'pid=%(process)-6s'),
+    ('thread', 'tid=%(thread)x'),
+    ('levelname', '%(levelname)s'),
+    ('name', '%(name)s'),
+    ('separator', '::'),
+    ('message', '%(message)s'),
+]
 
 
-class GenericLinuxPlatform(LinuxPlatform):
-    pass
+class StandardLogFormatter(logging.Formatter):
+    @staticmethod
+    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
+        return ' '.join(v for k, v in parts)
+
+    converter = datetime.datetime.fromtimestamp  # type: ignore
+
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)  # type: ignore
+        if datefmt:
+            return ct.strftime(datefmt)  # noqa
+        else:
+            t = ct.strftime('%Y-%m-%d %H:%M:%S')
+            return '%s.%03d' % (t, record.msecs)  # noqa
 
 
-class DarwinPlatform(Platform):
-    pass
+##
 
 
-class UnknownPlatform(Platform):
+class StandardLogHandler(ProxyLogHandler):
     pass
 
 
 ##
 
 
-def _detect_system_platform() -> Platform:
-    plat = sys.platform
+@contextlib.contextmanager
+def _locking_logging_module_lock() -> ta.Iterator[None]:
+    if hasattr(logging, '_acquireLock'):
+        logging._acquireLock()  # noqa
+        try:
+            yield
+        finally:
+            logging._releaseLock()  # type: ignore  # noqa
 
-    if plat == 'linux':
-        if (osr := LinuxOsRelease.read()) is None:
-            return GenericLinuxPlatform()
-
-        if osr.id == 'amzn':
-            return AmazonLinuxPlatform()
-
-        elif osr.id == 'ubuntu':
-            return UbuntuPlatform()
-
-        else:
-            return GenericLinuxPlatform()
-
-    elif plat == 'darwin':
-        return DarwinPlatform()
+    elif hasattr(logging, '_lock'):
+        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
+        with logging._lock:  # noqa
+            yield
 
     else:
-        return UnknownPlatform()
+        raise Exception("Can't find lock in logging module")
 
 
-@cached_nullary
-def detect_system_platform() -> Platform:
-    platform = _detect_system_platform()
-    log.info('Detected platform: %r', platform)
-    return platform
+def configure_standard_logging(
+        level: ta.Union[int, str] = logging.INFO,
+        *,
+        json: bool = False,
+        target: ta.Optional[logging.Logger] = None,
+        force: bool = False,
+        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
+) -> ta.Optional[StandardLogHandler]:
+    with _locking_logging_module_lock():
+        if target is None:
+            target = logging.root
+
+        #
+
+        if not force:
+            if any(isinstance(h, StandardLogHandler) for h in list(target.handlers)):
+                return None
+
+        #
+
+        if handler_factory is not None:
+            handler = handler_factory()
+        else:
+            handler = logging.StreamHandler()
+
+        #
+
+        formatter: logging.Formatter
+        if json:
+            formatter = JsonLogFormatter()
+        else:
+            formatter = StandardLogFormatter(StandardLogFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+        handler.setFormatter(formatter)
+
+        #
+
+        handler.addFilter(TidLogFilter())
+
+        #
+
+        target.addHandler(handler)
+
+        #
+
+        if level is not None:
+            target.setLevel(level)
+
+        #
+
+        return StandardLogHandler(handler)
 
 
 ########################################
@@ -7039,6 +7069,21 @@ class AbstractAsyncSubprocesses(BaseSubprocesses):
             return None
         else:
             return ret.decode().strip()
+
+
+########################################
+# ../bootstrap.py
+
+
+@dc.dataclass(frozen=True)
+class MainBootstrap:
+    main_config: MainConfig = MainConfig()
+
+    deploy_config: DeployConfig = DeployConfig()
+
+    remote_config: RemoteConfig = RemoteConfig()
+
+    system_config: SystemConfig = SystemConfig()
 
 
 ########################################
@@ -7458,15 +7503,6 @@ class RemoteCommandExecutor(CommandExecutor):
 
 
 ########################################
-# ../system/config.py
-
-
-@dc.dataclass(frozen=True)
-class SystemConfig:
-    platform: ta.Optional[Platform] = None
-
-
-########################################
 # ../../../omlish/asyncs/asyncio/subprocesses.py
 
 
@@ -7786,21 +7822,6 @@ INTERP_INSPECTOR = InterpInspector()
 
 
 ########################################
-# ../bootstrap.py
-
-
-@dc.dataclass(frozen=True)
-class MainBootstrap:
-    main_config: MainConfig = MainConfig()
-
-    deploy_config: DeployConfig = DeployConfig()
-
-    remote_config: RemoteConfig = RemoteConfig()
-
-    system_config: SystemConfig = SystemConfig()
-
-
-########################################
 # ../commands/subprocess.py
 
 
@@ -8040,6 +8061,148 @@ class DeployVenvManager(DeployPathOwner):
             os.path.join(check.non_empty_str(self._deploy_home), 'apps', app_tag.app, app_tag.tag),
             os.path.join(self._dir(), app_tag.app, app_tag.tag),
         )
+
+
+########################################
+# ../remote/_main.py
+
+
+##
+
+
+class _RemoteExecutionLogHandler(logging.Handler):
+    def __init__(self, fn: ta.Callable[[str], None]) -> None:
+        super().__init__()
+        self._fn = fn
+
+    def emit(self, record):
+        msg = self.format(record)
+        self._fn(msg)
+
+
+##
+
+
+class _RemoteExecutionMain:
+    def __init__(
+            self,
+            chan: RemoteChannel,
+    ) -> None:
+        super().__init__()
+
+        self._chan = chan
+
+        self.__bootstrap: ta.Optional[MainBootstrap] = None
+        self.__injector: ta.Optional[Injector] = None
+
+    @property
+    def _bootstrap(self) -> MainBootstrap:
+        return check.not_none(self.__bootstrap)
+
+    @property
+    def _injector(self) -> Injector:
+        return check.not_none(self.__injector)
+
+    #
+
+    def _timebomb_main(
+            self,
+            delay_s: float,
+            *,
+            sig: int = signal.SIGINT,
+            code: int = 1,
+    ) -> None:
+        time.sleep(delay_s)
+
+        if (pgid := os.getpgid(0)) == os.getpid():
+            os.killpg(pgid, sig)
+
+        os._exit(code)  # noqa
+
+    @cached_nullary
+    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
+        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
+            return None
+
+        thr = threading.Thread(
+            target=functools.partial(self._timebomb_main, tbd),
+            name=f'{self.__class__.__name__}.timebomb',
+            daemon=True,
+        )
+
+        thr.start()
+
+        log.debug('Started timebomb thread: %r', thr)
+
+        return thr
+
+    #
+
+    @cached_nullary
+    def _log_handler(self) -> _RemoteLogHandler:
+        return _RemoteLogHandler(self._chan)
+
+    #
+
+    async def _setup(self) -> None:
+        check.none(self.__bootstrap)
+        check.none(self.__injector)
+
+        # Bootstrap
+
+        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
+
+        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
+            pycharm_debug_connect(prd)
+
+        self.__injector = main_bootstrap(self._bootstrap)
+
+        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
+
+        # Post-bootstrap
+
+        if self._bootstrap.remote_config.set_pgid:
+            if os.getpgid(0) != os.getpid():
+                log.debug('Setting pgid')
+                os.setpgid(0, 0)
+
+        if (ds := self._bootstrap.remote_config.deathsig) is not None:
+            log.debug('Setting deathsig: %s', ds)
+            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
+
+        self._timebomb_thread()
+
+        if self._bootstrap.remote_config.forward_logging:
+            log.debug('Installing log forwarder')
+            logging.root.addHandler(self._log_handler())
+
+    #
+
+    async def run(self) -> None:
+        await self._setup()
+
+        executor = self._injector[LocalCommandExecutor]
+
+        handler = _RemoteCommandHandler(self._chan, executor)
+
+        await handler.run()
+
+
+def _remote_execution_main() -> None:
+    rt = pyremote_bootstrap_finalize()  # noqa
+
+    async def inner() -> None:
+        input = await asyncio_open_stream_reader(rt.input)  # noqa
+        output = await asyncio_open_stream_writer(rt.output)
+
+        chan = RemoteChannelImpl(
+            input,
+            output,
+        )
+
+        await _RemoteExecutionMain(chan).run()
+
+    asyncio.run(inner())
 
 
 ########################################
@@ -8484,145 +8647,122 @@ class DeployAppManager(DeployPathOwner):
 
 
 ########################################
-# ../remote/_main.py
+# ../remote/connection.py
 
 
 ##
 
 
-class _RemoteExecutionLogHandler(logging.Handler):
-    def __init__(self, fn: ta.Callable[[str], None]) -> None:
-        super().__init__()
-        self._fn = fn
-
-    def emit(self, record):
-        msg = self.format(record)
-        self._fn(msg)
-
-
-##
-
-
-class _RemoteExecutionMain:
+class PyremoteRemoteExecutionConnector:
     def __init__(
             self,
-            chan: RemoteChannel,
+            *,
+            spawning: RemoteSpawning,
+            msh: ObjMarshalerManager,
+            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
     ) -> None:
         super().__init__()
 
-        self._chan = chan
-
-        self.__bootstrap: ta.Optional[MainBootstrap] = None
-        self.__injector: ta.Optional[Injector] = None
-
-    @property
-    def _bootstrap(self) -> MainBootstrap:
-        return check.not_none(self.__bootstrap)
-
-    @property
-    def _injector(self) -> Injector:
-        return check.not_none(self.__injector)
+        self._spawning = spawning
+        self._msh = msh
+        self._payload_file = payload_file
 
     #
 
-    def _timebomb_main(
+    @cached_nullary
+    def _payload_src(self) -> str:
+        return get_remote_payload_src(file=self._payload_file)
+
+    @cached_nullary
+    def _remote_src(self) -> ta.Sequence[str]:
+        return [
+            self._payload_src(),
+            '_remote_execution_main()',
+        ]
+
+    @cached_nullary
+    def _spawn_src(self) -> str:
+        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+
+    #
+
+    @contextlib.asynccontextmanager
+    async def connect(
             self,
-            delay_s: float,
+            tgt: RemoteSpawning.Target,
+            bs: MainBootstrap,
+    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        spawn_src = self._spawn_src()
+        remote_src = self._remote_src()
+
+        async with self._spawning.spawn(
+                tgt,
+                spawn_src,
+                debug=bs.main_config.debug,
+        ) as proc:
+            res = await PyremoteBootstrapDriver(  # noqa
+                remote_src,
+                PyremoteBootstrapOptions(
+                    debug=bs.main_config.debug,
+                ),
+            ).async_run(
+                proc.stdout,
+                proc.stdin,
+            )
+
+            chan = RemoteChannelImpl(
+                proc.stdout,
+                proc.stdin,
+                msh=self._msh,
+            )
+
+            await chan.send_obj(bs)
+
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(chan)) as rce:
+                await rce.start()
+
+                yield rce
+
+
+##
+
+
+class InProcessRemoteExecutionConnector:
+    def __init__(
+            self,
             *,
-            sig: int = signal.SIGINT,
-            code: int = 1,
+            msh: ObjMarshalerManager,
+            local_executor: LocalCommandExecutor,
     ) -> None:
-        time.sleep(delay_s)
+        super().__init__()
 
-        if (pgid := os.getpgid(0)) == os.getpid():
-            os.killpg(pgid, sig)
+        self._msh = msh
+        self._local_executor = local_executor
 
-        os._exit(code)  # noqa
+    @contextlib.asynccontextmanager
+    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
+        r0, w0 = asyncio_create_bytes_channel()
+        r1, w1 = asyncio_create_bytes_channel()
 
-    @cached_nullary
-    def _timebomb_thread(self) -> ta.Optional[threading.Thread]:
-        if (tbd := self._bootstrap.remote_config.timebomb_delay_s) is None:
-            return None
+        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
+        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
 
-        thr = threading.Thread(
-            target=functools.partial(self._timebomb_main, tbd),
-            name=f'{self.__class__.__name__}.timebomb',
-            daemon=True,
+        rch = _RemoteCommandHandler(
+            remote_chan,
+            self._local_executor,
         )
+        rch_task = asyncio.create_task(rch.run())  # noqa
+        try:
+            rce: RemoteCommandExecutor
+            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
+                await rce.start()
 
-        thr.start()
+                yield rce
 
-        log.debug('Started timebomb thread: %r', thr)
-
-        return thr
-
-    #
-
-    @cached_nullary
-    def _log_handler(self) -> _RemoteLogHandler:
-        return _RemoteLogHandler(self._chan)
-
-    #
-
-    async def _setup(self) -> None:
-        check.none(self.__bootstrap)
-        check.none(self.__injector)
-
-        # Bootstrap
-
-        self.__bootstrap = check.not_none(await self._chan.recv_obj(MainBootstrap))
-
-        if (prd := self._bootstrap.remote_config.pycharm_remote_debug) is not None:
-            pycharm_debug_connect(prd)
-
-        self.__injector = main_bootstrap(self._bootstrap)
-
-        self._chan.set_marshaler(self._injector[ObjMarshalerManager])
-
-        # Post-bootstrap
-
-        if self._bootstrap.remote_config.set_pgid:
-            if os.getpgid(0) != os.getpid():
-                log.debug('Setting pgid')
-                os.setpgid(0, 0)
-
-        if (ds := self._bootstrap.remote_config.deathsig) is not None:
-            log.debug('Setting deathsig: %s', ds)
-            set_process_deathsig(int(signal.Signals[f'SIG{ds.upper()}']))
-
-        self._timebomb_thread()
-
-        if self._bootstrap.remote_config.forward_logging:
-            log.debug('Installing log forwarder')
-            logging.root.addHandler(self._log_handler())
-
-    #
-
-    async def run(self) -> None:
-        await self._setup()
-
-        executor = self._injector[LocalCommandExecutor]
-
-        handler = _RemoteCommandHandler(self._chan, executor)
-
-        await handler.run()
-
-
-def _remote_execution_main() -> None:
-    rt = pyremote_bootstrap_finalize()  # noqa
-
-    async def inner() -> None:
-        input = await asyncio_open_stream_reader(rt.input)  # noqa
-        output = await asyncio_open_stream_writer(rt.output)
-
-        chan = RemoteChannelImpl(
-            input,
-            output,
-        )
-
-        await _RemoteExecutionMain(chan).run()
-
-    asyncio.run(inner())
+        finally:
+            rch.stop()
+            await rch_task
 
 
 ########################################
@@ -9221,122 +9361,31 @@ class SystemInterpProvider(InterpProvider):
 
 
 ########################################
-# ../remote/connection.py
+# ../remote/inject.py
 
 
-##
+def bind_remote(
+        *,
+        remote_config: RemoteConfig,
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(remote_config),
 
+        inj.bind(SubprocessRemoteSpawning, singleton=True),
+        inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
 
-class PyremoteRemoteExecutionConnector:
-    def __init__(
-            self,
-            *,
-            spawning: RemoteSpawning,
-            msh: ObjMarshalerManager,
-            payload_file: ta.Optional[RemoteExecutionPayloadFile] = None,
-    ) -> None:
-        super().__init__()
-
-        self._spawning = spawning
-        self._msh = msh
-        self._payload_file = payload_file
+        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
+        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
+    ]
 
     #
 
-    @cached_nullary
-    def _payload_src(self) -> str:
-        return get_remote_payload_src(file=self._payload_file)
-
-    @cached_nullary
-    def _remote_src(self) -> ta.Sequence[str]:
-        return [
-            self._payload_src(),
-            '_remote_execution_main()',
-        ]
-
-    @cached_nullary
-    def _spawn_src(self) -> str:
-        return pyremote_build_bootstrap_cmd(__package__ or 'manage')
+    if (pf := remote_config.payload_file) is not None:
+        lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
 
     #
 
-    @contextlib.asynccontextmanager
-    async def connect(
-            self,
-            tgt: RemoteSpawning.Target,
-            bs: MainBootstrap,
-    ) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        spawn_src = self._spawn_src()
-        remote_src = self._remote_src()
-
-        async with self._spawning.spawn(
-                tgt,
-                spawn_src,
-                debug=bs.main_config.debug,
-        ) as proc:
-            res = await PyremoteBootstrapDriver(  # noqa
-                remote_src,
-                PyremoteBootstrapOptions(
-                    debug=bs.main_config.debug,
-                ),
-            ).async_run(
-                proc.stdout,
-                proc.stdin,
-            )
-
-            chan = RemoteChannelImpl(
-                proc.stdout,
-                proc.stdin,
-                msh=self._msh,
-            )
-
-            await chan.send_obj(bs)
-
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(chan)) as rce:
-                await rce.start()
-
-                yield rce
-
-
-##
-
-
-class InProcessRemoteExecutionConnector:
-    def __init__(
-            self,
-            *,
-            msh: ObjMarshalerManager,
-            local_executor: LocalCommandExecutor,
-    ) -> None:
-        super().__init__()
-
-        self._msh = msh
-        self._local_executor = local_executor
-
-    @contextlib.asynccontextmanager
-    async def connect(self) -> ta.AsyncGenerator[RemoteCommandExecutor, None]:
-        r0, w0 = asyncio_create_bytes_channel()
-        r1, w1 = asyncio_create_bytes_channel()
-
-        remote_chan = RemoteChannelImpl(r0, w1, msh=self._msh)
-        local_chan = RemoteChannelImpl(r1, w0, msh=self._msh)
-
-        rch = _RemoteCommandHandler(
-            remote_chan,
-            self._local_executor,
-        )
-        rch_task = asyncio.create_task(rch.run())  # noqa
-        try:
-            rce: RemoteCommandExecutor
-            async with aclosing(RemoteCommandExecutor(local_chan)) as rce:
-                await rce.start()
-
-                yield rce
-
-        finally:
-            rch.stop()
-            await rch_task
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -9381,132 +9430,6 @@ def bind_system(
     lst.extend([
         bind_command(CheckSystemPackageCommand, CheckSystemPackageCommandExecutor),
     ])
-
-    #
-
-    return inj.as_bindings(*lst)
-
-
-########################################
-# ../../../omdev/interp/resolvers.py
-
-
-INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
-    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
-}
-
-
-class InterpResolver:
-    def __init__(
-            self,
-            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
-    ) -> None:
-        super().__init__()
-
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
-
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
-
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
-        )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-
-DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
-    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
-    PyenvInterpProvider(try_update=True),
-
-    RunningInterpProvider(),
-
-    SystemInterpProvider(),
-]])
-
-
-########################################
-# ../remote/inject.py
-
-
-def bind_remote(
-        *,
-        remote_config: RemoteConfig,
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(remote_config),
-
-        inj.bind(SubprocessRemoteSpawning, singleton=True),
-        inj.bind(RemoteSpawning, to_key=SubprocessRemoteSpawning),
-
-        inj.bind(PyremoteRemoteExecutionConnector, singleton=True),
-        inj.bind(InProcessRemoteExecutionConnector, singleton=True),
-    ]
-
-    #
-
-    if (pf := remote_config.payload_file) is not None:
-        lst.append(inj.bind(pf, key=RemoteExecutionPayloadFile))
 
     #
 
@@ -9648,33 +9571,101 @@ class SshManageTargetConnector(ManageTargetConnector):
 
 
 ########################################
-# ../deploy/interp.py
+# ../../../omdev/interp/resolvers.py
 
 
-##
+INTERP_PROVIDER_TYPES_BY_NAME: ta.Mapping[str, ta.Type[InterpProvider]] = {
+    cls.name: cls for cls in deep_subclasses(InterpProvider) if abc.ABC not in cls.__bases__  # type: ignore
+}
 
 
-@dc.dataclass(frozen=True)
-class InterpCommand(Command['InterpCommand.Output']):
-    spec: str
-    install: bool = False
+class InterpResolver:
+    def __init__(
+            self,
+            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
+    ) -> None:
+        super().__init__()
 
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        exe: str
-        version: str
-        opts: InterpOpts
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
 
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
 
-class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
-    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
-        i = InterpSpecifier.parse(check.not_none(cmd.spec))
-        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
-        return InterpCommand.Output(
-            exe=o.exe,
-            version=str(o.version.version),
-            opts=o.version.opts,
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
         )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return await tp.install_version(bv)
+
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+
+DEFAULT_INTERP_RESOLVER = InterpResolver([(p.name, p) for p in [
+    # pyenv is preferred to system interpreters as it tends to have more support for things like tkinter
+    PyenvInterpProvider(try_update=True),
+
+    RunningInterpProvider(),
+
+    SystemInterpProvider(),
+]])
 
 
 ########################################
@@ -9704,6 +9695,36 @@ def bind_targets() -> InjectorBindings:
     #
 
     return inj.as_bindings(*lst)
+
+
+########################################
+# ../deploy/interp.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpCommand(Command['InterpCommand.Output']):
+    spec: str
+    install: bool = False
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        exe: str
+        version: str
+        opts: InterpOpts
+
+
+class InterpCommandExecutor(CommandExecutor[InterpCommand, InterpCommand.Output]):
+    async def execute(self, cmd: InterpCommand) -> InterpCommand.Output:
+        i = InterpSpecifier.parse(check.not_none(cmd.spec))
+        o = check.not_none(await DEFAULT_INTERP_RESOLVER.resolve(i, install=cmd.install))
+        return InterpCommand.Output(
+            exe=o.exe,
+            version=str(o.version.version),
+            opts=o.version.opts,
+        )
 
 
 ########################################

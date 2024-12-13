@@ -1,13 +1,14 @@
+# @omlish-lite
 import logging
 import unittest
 
-from .. import logs
+from ..json import JsonLogFormatter
 
 
 class TestLogs(unittest.TestCase):
     def test_logs(self):
         for f in [
-            logs.JsonLogFormatter(),
+            JsonLogFormatter(),
         ]:
             handler = logging.StreamHandler()
             handler.setFormatter(f)

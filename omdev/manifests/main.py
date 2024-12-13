@@ -6,7 +6,7 @@ import multiprocessing as mp
 import os.path
 
 from omlish.lite.json import json_dumps_pretty
-from omlish.lite.logs import configure_standard_logging
+from omlish.logs.standard import configure_standard_logging
 
 from .build import ManifestBuilder
 from .build import check_package_manifests

@@ -3,11 +3,10 @@ import logging
 import typing as ta
 
 from .. import term
-from ..lite.logs import StandardLogFormatter
+from .standard import StandardLogFormatter
 
 
 class ColorLogFormatter(StandardLogFormatter):
-
     LEVEL_COLORS: ta.Mapping[int, term.SGRs.FG] = {
         logging.WARNING: term.SGRs.FG.BRIGHT_YELLOW,
         logging.ERROR: term.SGRs.FG.BRIGHT_RED,
