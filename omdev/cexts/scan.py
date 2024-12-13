@@ -3,7 +3,7 @@ import logging
 import os.path
 import typing as ta
 
-from omlish import logs
+from omlish.logs import all as logs
 
 from .magic import CextMagic
 

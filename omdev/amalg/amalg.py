@@ -41,8 +41,8 @@ import tokenize_rt as trt
 from omlish import check
 from omlish import collections as col
 from omlish import lang
-from omlish import logs
 from omlish.lite.runtime import REQUIRED_PYTHON_VERSION
+from omlish.logs import all as logs
 
 from .. import magic
 from .. import tokens as tks

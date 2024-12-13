@@ -12,12 +12,12 @@ import anyio.abc
 
 from omlish import inject as inj
 from omlish import lang
-from omlish import logs
 from omlish.asyncs import all as au
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
 from omlish.formats import dotenv
 from omlish.http.asgi import AsgiApp
+from omlish.logs import all as logs
 from omserv import server
 from omserv.node import registry as nr
 

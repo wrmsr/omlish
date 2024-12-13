@@ -6,7 +6,7 @@ import typing as ta
 
 import tokenize_rt as trt
 
-from omlish import logs
+from omlish.logs import all as logs
 
 from .. import tokens as tks
 from ..cli import CliModule

@@ -12,13 +12,13 @@ import typing as ta
 import anyio
 
 from omlish import inject as inj
-from omlish import logs
 from omlish.http.asgi import AsgiApp_
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
+from omlish.logs import all as logs
 
 from ...config import Config
 from ...workers import serve

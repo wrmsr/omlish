@@ -2,7 +2,7 @@ import logging  # noqa
 
 import pytest  # noqa
 
-from ... import logs  # noqa
+from ...logs import all as logs  # noqa
 from ...testing import pytest as ptu
 from ..threadlets import GreenletThreadlets
 from ..threadlets import Threadlets

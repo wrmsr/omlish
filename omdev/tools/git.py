@@ -10,9 +10,9 @@ import urllib.parse
 
 from omlish import check
 from omlish import lang
-from omlish import logs
 from omlish.argparse import all as ap
 from omlish.formats import json
+from omlish.logs import all as logs
 
 from ..cli import CliModule
 from ..git import GitStatusItem
