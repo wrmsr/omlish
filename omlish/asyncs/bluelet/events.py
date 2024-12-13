@@ -68,7 +68,7 @@ class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 class BlueletFuture(ta.Generic[BlueletEventT, R]):
     event: BlueletEventT
     done: bool = False
-    result: R = None
+    result: ta.Optional[R] = None
 
     def __await__(self):
         if not self.done:

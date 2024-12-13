@@ -38,8 +38,6 @@ import types
 import typing as ta
 import weakref
 
-from omlish.lite.logs import log
-
 from .core import BlueletCoro
 from .core import BlueletExcInfo
 from .core import CoreBlueletEvent
@@ -81,7 +79,11 @@ class BlueletCoroException(Exception):  # noqa
 ##
 
 
-def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableBlueletEvent]:
+def _bluelet_event_select(
+        events: ta.Iterable[BlueletEvent],
+        *,
+        log: ta.Optional[logging.Logger] = None,
+) -> ta.Set[WaitableBlueletEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
@@ -121,14 +123,17 @@ def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableB
 
     # Perform select() if we have any waitables.
     if rlist or wlist or xlist:
-        log.debug('_bluelet_event_select: +select: %r %r %r %r', rlist, wlist, xlist, timeout)
+        if log:
+            log.debug('_bluelet_event_select: +select: %r %r %r %r', rlist, wlist, xlist, timeout)
         rready, wready, xready = select.select(rlist, wlist, xlist, timeout)
-        log.debug('_bluelet_event_select: -select: %r %r %r', rready, wready, xready)
+        if log:
+            log.debug('_bluelet_event_select: -select: %r %r %r', rready, wready, xready)
 
     else:
         rready, wready, xready = [], [], []
         if timeout:
-            log.debug('_bluelet_event_select: sleep: %r', timeout)
+            if log:
+                log.debug('_bluelet_event_select: sleep: %r', timeout)
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
@@ -171,10 +176,16 @@ class _BlueletRunner:
     can add to by spawning new coroutines.
     """
 
-    def __init__(self, root_coro: BlueletCoro) -> None:
+    def __init__(
+            self,
+            root_coro: BlueletCoro,
+            *,
+            log: ta.Optional[logging.Logger] = None,
+    ) -> None:
         super().__init__()
 
         self._root_coro = root_coro
+        self._log = log
 
         # The "coros" dictionary keeps track of all the currently-executing and suspended coroutines. It maps
         # coroutines to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting
@@ -189,7 +200,8 @@ class _BlueletRunner:
         self._joiners: ta.MutableMapping[BlueletCoro, ta.List[BlueletCoro]] = collections.defaultdict(list)
 
         # History of spawned coroutines for joining of already completed coroutines.
-        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[BlueletEvent]] = weakref.WeakKeyDictionary({self._root_coro: None})  # noqa
+        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[BlueletEvent]] = \
+            weakref.WeakKeyDictionary({self._root_coro: None})
 
     def _complete_coro(self, coro: BlueletCoro, return_value: ta.Any) -> None:
         """
@@ -239,8 +251,8 @@ class _BlueletRunner:
                 # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
                 next_event = DelegationBlueletEvent(next_event)
 
-            if isinstance(next_event, types.CoroutineType):
-                next_event = DelegationBlueletEvent(_BlueletAwaitableDriver(next_event)())
+            if isinstance(next_event, types.CoroutineType):  # type: ignore[unreachable]
+                next_event = DelegationBlueletEvent(_BlueletAwaitableDriver(next_event)())  # type: ignore[unreachable]
 
             if not isinstance(next_event, BlueletEvent):
                 raise TypeError(next_event)
@@ -268,11 +280,13 @@ class _BlueletRunner:
         self._coros.clear()
 
     def _handle_core_event(self, coro: BlueletCoro, event: CoreBlueletEvent) -> bool:
-        log.debug(f'{__class__.__name__}._handle_core_event: %r %r', coro, event)
+        if self._log:
+            self._log.debug(f'{self.__class__.__name__}._handle_core_event: %r %r', coro, event)
 
         if isinstance(event, SpawnBlueletEvent):
-            self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
-            self._history[event.spawned] = None  # Record in history.
+            sc = ta.cast(BlueletCoro, event.spawned)  # FIXME
+            self._coros[sc] = ValueBlueletEvent(None)  # Spawn.
+            self._history[sc] = None  # Record in history.
             self._advance_coro(coro, None)
             return True
 
@@ -316,7 +330,8 @@ class _BlueletRunner:
             raise TypeError(event)
 
     def _step(self) -> ta.Optional[BlueletCoroException]:
-        log.debug(f'{__class__.__name__}._step')
+        if self._log:
+            self._log.debug(f'{self.__class__.__name__}._step')  # Noqa
 
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
@@ -328,7 +343,7 @@ class _BlueletRunner:
                     elif isinstance(event, WaitableBlueletEvent):
                         pass
                     else:
-                        raise TypeError(f'Unknown event type: {event}')
+                        raise TypeError(f'Unknown event type: {event}')  # noqa
 
                 # Only start the select when nothing else is ready.
                 if not have_ready:
@@ -355,8 +370,8 @@ class _BlueletRunner:
                     self._advance_coro(event2coro[event], value)
 
         except BlueletCoroException as te:
-            if log.isEnabledFor(logging.DEBUG):
-                log.exception(f'{__class__.__name__}._step')
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception(f'{self.__class__.__name__}._step')
 
             # Exception raised from inside a coro.
             event = ExceptionBlueletEvent(te.exc_info)
@@ -369,10 +384,10 @@ class _BlueletRunner:
                 return te
 
         except BaseException:  # noqa
-            ei = BlueletCoroException._exc_info()
+            ei = BlueletCoroException._exc_info()  # noqa
 
-            if log.isEnabledFor(logging.DEBUG):
-                log.exception(f'{__class__.__name__}._step')
+            if self._log and self._log.isEnabledFor(logging.DEBUG):
+                self._log.exception(f'{self.__class__.__name__}._step')
 
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
             self._coros = {self._root_coro: ExceptionBlueletEvent(ei)}  # noqa

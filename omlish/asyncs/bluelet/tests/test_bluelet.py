@@ -23,12 +23,12 @@ class TestDelegation(unittest.TestCase):
 
         def exc_child():
             yield bl.null()
-            raise Exception()
+            raise Exception
 
         def exc_parent():
             try:
                 yield exc_child()
-            except Exception as exc:
+            except Exception as exc:  # noqa
                 print('Parent caught:', repr(exc))
 
         def exc_grandparent():

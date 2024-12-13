@@ -76,7 +76,6 @@ class SpawnBlueletEvent(CoreBlueletEvent):
     spawned: BlueletSpawnable
 
 
-
 @dc.dataclass(frozen=True, eq=False)
 class JoinBlueletEvent(CoreBlueletEvent):
     """Suspend the coro until the specified child coro has completed."""
@@ -105,7 +104,7 @@ class DelegationBlueletEvent(CoreBlueletEvent):
 class ReturnBlueletEvent(CoreBlueletEvent, ta.Generic[T]):
     """Return a value the current coro's delegator at the point of delegation. Ends the current (delegate) coro."""
 
-    value: T
+    value: ta.Optional[T]
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -167,7 +166,7 @@ class _CoreBlueletApi:
 
         return DelegationBlueletEvent(spawned)
 
-    def end(self, value: T = None) -> ReturnBlueletEvent[T]:
+    def end(self, value: ta.Optional[T] = None) -> ReturnBlueletEvent[T]:
         """Event: ends the coroutine and returns a value to its delegator."""
 
         return ReturnBlueletEvent(value)
