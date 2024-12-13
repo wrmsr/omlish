@@ -1,11 +1,5 @@
 # ruff: noqa: UP006 UP007
 # @omlish-lite
-"""
-git status
-  --porcelain=v1
-  --ignore-submodules
-  2>/dev/null
-"""
 import dataclasses as dc
 import enum
 import os.path
@@ -14,108 +8,6 @@ import typing as ta
 
 from omlish.lite.check import check
 from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
-from omlish.subprocesses import subprocesses
-
-
-##
-
-
-def git_clone_subtree(
-        *,
-        base_dir: str,
-        repo_url: str,
-        repo_dir: str,
-        branch: ta.Optional[str] = None,
-        rev: ta.Optional[str] = None,
-        repo_subtrees: ta.Sequence[str],
-) -> None:
-    if not bool(branch) ^ bool(rev):
-        raise ValueError('must set branch or rev')
-
-    if isinstance(repo_subtrees, str):
-        raise TypeError(repo_subtrees)
-
-    git_opts = [
-        '-c', 'advice.detachedHead=false',
-    ]
-
-    subprocesses.check_call(
-        'git',
-        *git_opts,
-        'clone',
-        '-n',
-        '--depth=1',
-        '--filter=tree:0',
-        *(['-b', branch] if branch else []),
-        '--single-branch',
-        repo_url,
-        repo_dir,
-        cwd=base_dir,
-    )
-
-    rd = os.path.join(base_dir, repo_dir)
-    subprocesses.check_call(
-        'git',
-        *git_opts,
-        'sparse-checkout',
-        'set',
-        '--no-cone',
-        *repo_subtrees,
-        cwd=rd,
-    )
-
-    subprocesses.check_call(
-        'git',
-        *git_opts,
-        'checkout',
-        *([rev] if rev else []),
-        cwd=rd,
-    )
-
-
-def get_git_revision(
-        *,
-        cwd: ta.Optional[str] = None,
-) -> ta.Optional[str]:
-    subprocesses.check_output('git', '--version')
-
-    if cwd is None:
-        cwd = os.getcwd()
-
-    if subprocess.run(  # noqa
-        subprocess_maybe_shell_wrap_exec(
-            'git',
-            'rev-parse',
-            '--is-inside-work-tree',
-        ),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ).returncode:
-        return None
-
-    has_untracked = bool(subprocesses.check_output(
-        'git',
-        'ls-files',
-        '.',
-        '--exclude-standard',
-        '--others',
-        cwd=cwd,
-    ).decode().strip())
-
-    dirty_rev = subprocesses.check_output(
-        'git',
-        'describe',
-        '--match=NeVeRmAtCh',
-        '--always',
-        '--abbrev=40',
-        '--dirty',
-        cwd=cwd,
-    ).decode().strip()
-
-    return dirty_rev + ('-untracked' if has_untracked else '')
-
-
-##
 
 
 _GIT_STATUS_LINE_ESCAPE_CODES: ta.Mapping[str, str] = {

@@ -4,7 +4,7 @@ from omlish import __about__ as about
 from omlish import cached
 from omlish import dataclasses as dc
 
-from ...git import get_git_revision
+from ...git.revisions import get_git_revision
 from .consts import SERIALIZATION_VERSION
 from .specs import Spec
 
