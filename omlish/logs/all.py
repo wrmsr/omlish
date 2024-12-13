@@ -27,7 +27,7 @@ from .standard import (  # noqa
     STANDARD_LOG_FORMAT_PARTS,
     StandardLogFormatter,
 
-    StandardLogHandler,
+    StandardConfiguredLogHandler,
 
     configure_standard_logging,
 )
