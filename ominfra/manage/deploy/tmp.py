@@ -37,11 +37,10 @@ class DeployTmpManager(
             self,
             kind: DeployAtomicPathSwapKind,
             dst_path: str,
-            *,
-            name_hint: ta.Optional[str] = None,
+            **kwargs: ta.Any,
     ) -> DeployAtomicPathSwap:
         return self._swapping().begin_atomic_path_swap(
             kind,
             dst_path,
-            name_hint=name_hint,
+            **kwargs,
         )
