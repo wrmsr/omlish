@@ -3,7 +3,7 @@ accelerate==1.2.0
 aiohappyeyeballs==2.4.4
 aiohttp==3.11.10
 aiomysql==0.2.0
-aiosignal==1.3.1
+aiosignal==1.3.2
 aiosqlite==0.20.0
 alembic==1.14.0
 annotated-types==0.7.0
@@ -79,7 +79,7 @@ darkdetect==0.8.0
 dataclasses-json==0.6.7
 datasets==3.2.0
 dateparser==1.2.0
-debugpy==1.8.9
+debugpy==1.8.11
 decorator==5.1.1
 deepdiff==8.0.1
 defusedxml==0.7.1
@@ -128,14 +128,14 @@ future==1.0.0
 gast==0.6.0
 geopandas==1.0.1
 gevent==24.11.1
-gguf==0.10.0
+gguf==0.11.0
 gitdb==4.0.11
 GitPython==3.1.43
 google-api-core==2.24.0
 google-api-python-client==2.155.0
 google-auth==2.37.0
 google-auth-httplib2==0.2.0
-google-cloud-compute==1.22.0
+google-cloud-compute==1.23.0
 google-pasta==0.2.0
 googleapis-common-protos==1.66.0
 gprof2dot==2024.6.6
@@ -187,7 +187,7 @@ jiter==0.6.1
 jmespath==1.0.1
 joblib==1.4.2
 json5==0.10.0
-json_repair==0.30.3
+json_repair==0.31.0
 jsonpatch==1.33
 jsonpath-python==1.0.6
 jsonpointer==3.0.0
@@ -254,7 +254,7 @@ Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 marshmallow==3.23.1
-matplotlib==3.9.3
+matplotlib==3.9.4
 matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
@@ -262,7 +262,7 @@ mistune==3.0.2
 mitogen==0.3.19
 ml-dtypes==0.4.1
 mlx==0.21.1
-mlx-lm==0.20.2
+mlx-lm==0.20.4
 mmh3==5.0.1
 monotonic==1.6
 more-itertools==10.5.0
@@ -272,7 +272,7 @@ multidict==6.1.0
 multiprocess==0.70.16
 murmurhash==1.0.11
 mwparserfromhell==0.6.6
-mycli==1.28.0
+mycli==1.29.2
 mypy==1.13.0
 mypy-extensions==1.0.0
 mysql-connector-python==9.1.0
@@ -297,7 +297,7 @@ olefile==0.47
 onnx==1.17.0
 onnx2torch==1.5.15
 onnxruntime==1.20.1
-openai==1.57.3
+openai==1.57.4
 opencv-python==4.10.0.84
 opentelemetry-api==1.29.0
 opentelemetry-exporter-otlp-proto-grpc==1.15.0
@@ -322,7 +322,7 @@ paramiko==3.5.0
 parso==0.8.4
 pathspec==0.12.1
 pcpp==1.30
-peft @ git+https://github.com/huggingface/peft.git@5cdade973eb345b0a8aeda52f3c2fb4199d0a028
+peft @ git+https://github.com/huggingface/peft.git@ae55fdcc5c4830e0f9fb6e56f16555bafca392de
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -361,7 +361,7 @@ pyclipper==1.3.0.post6
 pycodestyle==2.12.1
 pycparser==2.22
 pydantic==2.10.3
-pydantic-settings==2.6.1
+pydantic-settings==2.7.0
 pydantic_core==2.27.1
 pyflakes==3.2.0
 pyfzf==0.3.1
@@ -388,7 +388,7 @@ pyserial-asyncio==0.6
 pyspnego==0.11.2
 pytesseract==0.3.13
 pytest==8.3.4
-pytest-asyncio==0.24.0
+pytest-asyncio==0.25.0
 pytest-benchmark==5.1.0
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
@@ -485,7 +485,7 @@ terminado==0.18.1
 tf_keras==2.17.0
 thinc==8.2.5
 threadpoolctl==3.5.0
-tifffile==2024.9.20
+tifffile==2024.12.12
 tiktoken==0.8.0
 tinycss2==1.4.0
 tld==0.13
