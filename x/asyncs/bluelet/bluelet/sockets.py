@@ -1,9 +1,9 @@
+# ruff: noqa: UP007
 # Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import socket
@@ -12,7 +12,7 @@ import typing as ta
 from .core import BlueletCoro
 from .core import ReturnBlueletEvent
 from .core import ValueBlueletEvent
-from .core import bluelet_spawn
+from .core import _CoreBlueletApi
 from .events import BlueletEvent
 from .events import BlueletWaitables
 from .events import WaitableBlueletEvent
@@ -131,9 +131,6 @@ class SocketBlueletEvent(BlueletEvent, abc.ABC):  # noqa
     pass
 
 
-#
-
-
 @dc.dataclass(frozen=True, eq=False)
 class AcceptBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
@@ -148,9 +145,6 @@ class AcceptBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
         return BlueletConnection(sock, addr)
 
 
-#
-
-
 @dc.dataclass(frozen=True, eq=False)
 class ReceiveBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
@@ -163,9 +157,6 @@ class ReceiveBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
 
     def fire(self) -> bytes:
         return self.conn.sock.recv(self.bufsize)
-
-
-#
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -190,33 +181,33 @@ class SendBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
 ##
 
 
-def bluelet_connect(host: str, port: int) -> BlueletEvent:
-    """Event: connect to a network address and return a Connection object for communicating on the socket."""
+class _SocketsBlueletApi(_CoreBlueletApi):
+    def connect(self, host: str, port: int) -> BlueletEvent:
+        """Event: connect to a network address and return a Connection object for communicating on the socket."""
 
-    addr = (host, port)
-    sock = socket.create_connection(addr)
-    return ValueBlueletEvent(BlueletConnection(sock, addr))
+        addr = (host, port)
+        sock = socket.create_connection(addr)
+        return ValueBlueletEvent(BlueletConnection(sock, addr))
 
+    def server(self, host: str, port: int, func) -> BlueletCoro:
+        """
+        A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine
+        that takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on
+        the listening socket.
+        """
 
-def bluelet_server(host: str, port: int, func) -> BlueletCoro:
-    """
-    A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine that
-    takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on the
-    listening socket.
-    """
+        def handler(conn):
+            try:
+                yield func(conn)
+            finally:
+                conn.close()
 
-    def handler(conn):
+        listener = BlueletListener(host, port)
         try:
-            yield func(conn)
+            while True:
+                conn = yield listener.accept()
+                yield self.spawn(handler(conn))
+        except KeyboardInterrupt:
+            pass
         finally:
-            conn.close()
-
-    listener = BlueletListener(host, port)
-    try:
-        while True:
-            conn = yield listener.accept()
-            yield bluelet_spawn(handler(conn))
-    except KeyboardInterrupt:
-        pass
-    finally:
-        listener.close()
+            listener.close()

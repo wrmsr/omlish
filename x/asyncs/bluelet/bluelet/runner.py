@@ -1,5 +1,12 @@
+# ruff: noqa: UP006 UP007
+# Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 TODO:
+ - use fdio
  - wrap coros in Tasks :|
  - (unit)tests lol
  - * subprocesses
@@ -14,16 +21,11 @@ TODO:
  - run_thread? whatever?
 
 Subprocs:
- - https://github.com/python/cpython/issues/120804 - GH-120804: Remove get_child_watcher and set_child_watcher from asyncio 
+ - https://github.com/python/cpython/issues/120804 - GH-120804: Remove get_child_watcher and set_child_watcher from
+   asyncio
  - https://github.com/python/cpython/pull/17063/files bpo-38692: Add os.pidfd_open
  - clone PidfdChildWatcher + ThreadedChildWatcher
-"""  # noqa
-# Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
-# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# ruff: noqa: UP006 UP007
+"""
 import collections
 import dataclasses as dc
 import errno
@@ -226,7 +228,7 @@ class _BlueletRunner:
             # Coro is done.
             self._complete_coro(coro, None)
 
-        except:  # noqa
+        except BaseException:  # noqa
             # Coro raised some other exception.
             del self._coros[coro]
             # Note: Don't use `raise from` as this should support 3.8.
@@ -366,7 +368,7 @@ class _BlueletRunner:
                 # The coro is root-level. Raise in client code.
                 return te
 
-        except:  # noqa
+        except BaseException:  # noqa
             ei = BlueletCoroException._exc_info()
 
             if log.isEnabledFor(logging.DEBUG):
@@ -390,5 +392,9 @@ class _BlueletRunner:
             exit_ce.reraise()
 
 
-def bluelet_run(root_coro: BlueletCoro) -> None:
-    _BlueletRunner(root_coro).run()
+##
+
+
+class _RunnerBlueletApi:
+    def run(self, root_coro: BlueletCoro) -> None:
+        _BlueletRunner(root_coro).run()
