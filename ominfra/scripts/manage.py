@@ -118,7 +118,7 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 # ../configs.py
 ConfigMapping = ta.Mapping[str, ta.Any]
 
-# ../../omlish/lite/subprocesses.py
+# ../../omlish/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 # system/packages.py
@@ -1539,7 +1539,7 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
     # Get pid
     pid = os.getpid()
 
-    # Two copies of main src to be sent to parent
+    # Two copies of payload src to be sent to parent
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
@@ -1578,17 +1578,17 @@ def _pyremote_bootstrap_main(context_name: str) -> None:
         # Write pid
         os.write(1, struct.pack('<Q', pid))
 
-        # Read main src from stdin
-        main_z_len = struct.unpack('<I', os.read(0, 4))[0]
-        if len(main_z := os.fdopen(0, 'rb').read(main_z_len)) != main_z_len:
+        # Read payload src from stdin
+        payload_z_len = struct.unpack('<I', os.read(0, 4))[0]
+        if len(payload_z := os.fdopen(0, 'rb').read(payload_z_len)) != payload_z_len:
             raise EOFError
-        main_src = zlib.decompress(main_z)
+        payload_src = zlib.decompress(payload_z)
 
-        # Write both copies of main src. Must write to w0 (parent stdin) before w1 (copy pipe) as pipe will likely fill
-        # and block and need to be drained by pyremote_bootstrap_finalize running in parent.
+        # Write both copies of payload src. Must write to w0 (parent stdin) before w1 (copy pipe) as pipe will likely
+        # fill and block and need to be drained by pyremote_bootstrap_finalize running in parent.
         for w in [w0, w1]:
             fp = os.fdopen(w, 'wb', 0)
-            fp.write(main_src)
+            fp.write(payload_src)
             fp.close()
 
         # Write second ack
@@ -1652,7 +1652,7 @@ class PyremotePayloadRuntime:
     input: ta.BinaryIO
     output: ta.BinaryIO
     context_name: str
-    main_src: str
+    payload_src: str
     options: PyremoteBootstrapOptions
     env_info: PyremoteEnvInfo
 
@@ -1660,9 +1660,9 @@ class PyremotePayloadRuntime:
 def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
     # If src file var is not present we need to do initial finalization
     if _PYREMOTE_BOOTSTRAP_SRC_FILE_VAR not in os.environ:
-        # Read second copy of main src
+        # Read second copy of payload src
         r1 = os.fdopen(_PYREMOTE_BOOTSTRAP_SRC_FD, 'rb', 0)
-        main_src = r1.read().decode('utf-8')
+        payload_src = r1.read().decode('utf-8')
         r1.close()
 
         # Reap boostrap child. Must be done after reading second copy of source because source may be too big to fit in
@@ -1680,7 +1680,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
             # Write temp source file
             import tempfile
             tfd, tfn = tempfile.mkstemp('-pyremote.py')
-            os.write(tfd, main_src.encode('utf-8'))
+            os.write(tfd, payload_src.encode('utf-8'))
             os.close(tfd)
 
             # Set vars
@@ -1699,7 +1699,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 
         # Read temp source file
         with open(os.environ.pop(_PYREMOTE_BOOTSTRAP_SRC_FILE_VAR)) as sf:
-            main_src = sf.read()
+            payload_src = sf.read()
 
     # Restore vars
     sys.executable = os.environ.pop(_PYREMOTE_BOOTSTRAP_ARGV0_VAR)
@@ -1732,7 +1732,7 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
         input=input,
         output=output,
         context_name=context_name,
-        main_src=main_src,
+        payload_src=payload_src,
         options=options,
         env_info=env_info,
     )
@@ -1744,31 +1744,31 @@ def pyremote_bootstrap_finalize() -> PyremotePayloadRuntime:
 class PyremoteBootstrapDriver:
     def __init__(
             self,
-            main_src: ta.Union[str, ta.Sequence[str]],
+            payload_src: ta.Union[str, ta.Sequence[str]],
             options: PyremoteBootstrapOptions = PyremoteBootstrapOptions(),
     ) -> None:
         super().__init__()
 
-        self._main_src = main_src
+        self._payload_src = payload_src
         self._options = options
 
-        self._prepared_main_src = self._prepare_main_src(main_src, options)
-        self._main_z = zlib.compress(self._prepared_main_src.encode('utf-8'))
+        self._prepared_payload_src = self._prepare_payload_src(payload_src, options)
+        self._payload_z = zlib.compress(self._prepared_payload_src.encode('utf-8'))
 
         self._options_json = json.dumps(dc.asdict(options), indent=None, separators=(',', ':')).encode('utf-8')  # noqa
     #
 
     @classmethod
-    def _prepare_main_src(
+    def _prepare_payload_src(
             cls,
-            main_src: ta.Union[str, ta.Sequence[str]],
+            payload_src: ta.Union[str, ta.Sequence[str]],
             options: PyremoteBootstrapOptions,
     ) -> str:
         parts: ta.List[str]
-        if isinstance(main_src, str):
-            parts = [main_src]
+        if isinstance(payload_src, str):
+            parts = [payload_src]
         else:
-            parts = list(main_src)
+            parts = list(payload_src)
 
         if (mn := options.main_name_override) is not None:
             parts.insert(0, f'__name__ = {mn!r}')
@@ -1804,9 +1804,9 @@ class PyremoteBootstrapDriver:
         d = yield from self._read(8)
         pid = struct.unpack('<Q', d)[0]
 
-        # Write main src
-        yield from self._write(struct.pack('<I', len(self._main_z)))
-        yield from self._write(self._main_z)
+        # Write payload src
+        yield from self._write(struct.pack('<I', len(self._payload_z)))
+        yield from self._write(self._payload_z)
 
         # Read second ack (after writing src copies)
         yield from self._expect(_PYREMOTE_BOOTSTRAP_ACK1)
@@ -6683,7 +6683,7 @@ def detect_system_platform() -> Platform:
 
 
 ########################################
-# ../../../omlish/lite/subprocesses.py
+# ../../../omlish/subprocesses.py
 
 
 ##
@@ -6734,8 +6734,8 @@ def subprocess_close(
 ##
 
 
-class AbstractSubprocesses(abc.ABC):  # noqa
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = log
+class BaseSubprocesses(abc.ABC):  # noqa
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
 
     def __init__(
             self,
@@ -6747,6 +6747,9 @@ class AbstractSubprocesses(abc.ABC):  # noqa
 
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
+
+    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+        self._log = log
 
     #
 
@@ -6859,23 +6862,25 @@ class AbstractSubprocesses(abc.ABC):  # noqa
 ##
 
 
-class Subprocesses(AbstractSubprocesses):
+class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+    @abc.abstractmethod
     def check_call(
             self,
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
     ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
-            subprocess.check_call(cmd, **kwargs)
+        raise NotImplementedError
 
+    @abc.abstractmethod
     def check_output(
             self,
             *cmd: str,
             **kwargs: ta.Any,
     ) -> bytes:
-        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
-            return subprocess.check_output(cmd, **kwargs)
+        raise NotImplementedError
+
+    #
 
     def check_output_str(
             self,
@@ -6917,7 +6922,92 @@ class Subprocesses(AbstractSubprocesses):
             return ret.decode().strip()
 
 
+##
+
+
+class Subprocesses(AbstractSubprocesses):
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
+            subprocess.check_call(cmd, **kwargs)
+
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
+            return subprocess.check_output(cmd, **kwargs)
+
+
 subprocesses = Subprocesses()
+
+
+##
+
+
+class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
 
 
 ########################################
@@ -7346,7 +7436,7 @@ class SystemConfig:
 
 
 ########################################
-# ../../../omlish/lite/asyncio/subprocesses.py
+# ../../../omlish/asyncs/asyncio/subprocesses.py
 
 
 ##
@@ -7357,6 +7447,8 @@ class AsyncioProcessCommunicator:
             self,
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
+            *,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
@@ -7365,6 +7457,7 @@ class AsyncioProcessCommunicator:
 
         self._proc = proc
         self._loop = loop
+        self._log = log
 
         self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
             proc._transport,  # type: ignore  # noqa
@@ -7380,19 +7473,19 @@ class AsyncioProcessCommunicator:
         try:
             if input is not None:
                 stdin.write(input)
-                if self._debug:
-                    log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
+                if self._debug and self._log is not None:
+                    self._log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
 
             await stdin.drain()
 
         except (BrokenPipeError, ConnectionResetError) as exc:
             # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
             # exceptions.
-            if self._debug:
-                log.debug('%r communicate: stdin got %r', self, exc)
+            if self._debug and self._log is not None:
+                self._log.debug('%r communicate: stdin got %r', self, exc)
 
-        if self._debug:
-            log.debug('%r communicate: close stdin', self)
+        if self._debug and self._log is not None:
+            self._log.debug('%r communicate: close stdin', self)
 
         stdin.close()
 
@@ -7408,15 +7501,15 @@ class AsyncioProcessCommunicator:
             check.equal(fd, 1)
             stream = check.not_none(self._proc.stdout)
 
-        if self._debug:
+        if self._debug and self._log is not None:
             name = 'stdout' if fd == 1 else 'stderr'
-            log.debug('%r communicate: read %s', self, name)
+            self._log.debug('%r communicate: read %s', self, name)
 
         output = await stream.read()
 
-        if self._debug:
+        if self._debug and self._log is not None:
             name = 'stdout' if fd == 1 else 'stderr'
-            log.debug('%r communicate: close %s', self, name)
+            self._log.debug('%r communicate: close %s', self, name)
 
         transport.close()
 
@@ -7465,7 +7558,7 @@ class AsyncioProcessCommunicator:
 ##
 
 
-class AsyncioSubprocesses(AbstractSubprocesses):
+class AsyncioSubprocesses(AbstractAsyncSubprocesses):
     async def communicate(
             self,
             proc: asyncio.subprocess.Process,
@@ -7561,45 +7654,6 @@ class AsyncioSubprocesses(AbstractSubprocesses):
     ) -> bytes:
         with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
             return check.not_none((await self.run(*cmd, **kwargs)).stdout)
-
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
-
-    #
-
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
 
 
 asyncio_subprocesses = AsyncioSubprocesses()

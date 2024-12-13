@@ -13,7 +13,7 @@ from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
-from omlish.lite.subprocesses import subprocesses
+from omlish.subprocesses import subprocesses
 
 from .incl.foo import foo
 

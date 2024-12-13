@@ -6,11 +6,11 @@ import subprocess
 import time
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
-from omlish.lite.subprocesses import SubprocessChannelOption
-from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
+from omlish.subprocesses import SubprocessChannelOption
+from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .base import Command
 from .base import CommandExecutor

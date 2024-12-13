@@ -9,7 +9,7 @@ import textwrap
 import typing as ta
 
 from omlish import cached
-from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .. import magic
 from .base import Precheck

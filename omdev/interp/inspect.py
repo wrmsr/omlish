@@ -5,7 +5,7 @@ import logging
 import sys
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.logs import log
 
 from ..packaging.versions import Version

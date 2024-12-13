@@ -4,10 +4,10 @@ import json
 import socket
 import typing as ta
 
+from omlish.http.coro.fdio import CoroHttpServerConnectionFdioHandler
 from omlish.http.handlers import HttpHandler
 from omlish.http.handlers import HttpHandlerRequest
 from omlish.http.handlers import HttpHandlerResponse
-from omlish.io.fdio.corohttp import CoroHttpServerConnectionFdioHandler
 from omlish.io.fdio.handlers import SocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import defer

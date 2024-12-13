@@ -7,10 +7,10 @@ import shlex
 import subprocess
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.check import check
-from omlish.lite.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
-from omlish.lite.subprocesses import SubprocessChannelOption
+from omlish.subprocesses import SUBPROCESS_CHANNEL_OPTION_VALUES
+from omlish.subprocesses import SubprocessChannelOption
 
 
 ##

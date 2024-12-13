@@ -13,7 +13,7 @@ import subprocess
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
+from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
 
 
 ##

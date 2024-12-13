@@ -37,7 +37,7 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.logs import log
-from omlish.lite.subprocesses import subprocesses
+from omlish.subprocesses import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files

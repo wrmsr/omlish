@@ -63,18 +63,18 @@ import textwrap
 import time
 import typing as ta
 
-from ..lite.check import check
-from ..lite.socket import SocketAddress
-from ..lite.socket import SocketHandler
-from .handlers import HttpHandler
-from .handlers import HttpHandlerRequest
-from .handlers import UnsupportedMethodHttpHandlerError
-from .parsing import EmptyParsedHttpResult
-from .parsing import HttpRequestParser
-from .parsing import ParsedHttpRequest
-from .parsing import ParseHttpRequestError
-from .versions import HttpProtocolVersion
-from .versions import HttpProtocolVersions
+from ...lite.check import check
+from ...lite.socket import SocketAddress
+from ...lite.socket import SocketHandler
+from ..handlers import HttpHandler
+from ..handlers import HttpHandlerRequest
+from ..handlers import UnsupportedMethodHttpHandlerError
+from ..parsing import EmptyParsedHttpResult
+from ..parsing import HttpRequestParser
+from ..parsing import ParsedHttpRequest
+from ..parsing import ParseHttpRequestError
+from ..versions import HttpProtocolVersion
+from ..versions import HttpProtocolVersions
 
 
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
