@@ -38,7 +38,13 @@ class DeployAtomicPathSwap(abc.ABC):
         if self._state == 'open':
             return
         self._check_state('new')
-        self._commit()
+        try:
+            self._open()
+        except Exception:  # noqa
+            self._abort()
+            raise
+        else:
+            self._state = 'open'
 
     #
 
@@ -50,7 +56,13 @@ class DeployAtomicPathSwap(abc.ABC):
         if self._state == 'committed':
             return
         self._check_state('open')
-        self._commit()
+        try:
+            self._commit()
+        except Exception:  # noqa
+            self._abort()
+            raise
+        else:
+            self._state = 'committed'
 
     #
 
@@ -61,8 +73,8 @@ class DeployAtomicPathSwap(abc.ABC):
     def abort(self) -> None:
         if self._state == 'aborted':
             return
-        self._check_state('open')
         self._abort()
+        self._state = 'aborted'
 
     #
 
