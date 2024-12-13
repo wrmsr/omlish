@@ -393,7 +393,7 @@ class PyremoteBootstrapDriver:
         else:
             parts = list(payload_src)
 
-        if (mn := options.payload_name_override) is not None:
+        if (mn := options.main_name_override) is not None:
             parts.insert(0, f'__name__ = {mn!r}')
 
         if len(parts) == 1:

@@ -1,14 +1,15 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import socket
 import typing as ta
 
-from ...http.coroserver import CoroHttpServer
-from ...http.handlers import HttpHandler
+from ...io.buffers import IncrementalWriteBuffer
+from ...io.buffers import ReadableListBuffer
+from ...io.fdio.handlers import SocketFdioHandler
 from ...lite.check import check
 from ...lite.socket import SocketAddress
-from ..buffers import IncrementalWriteBuffer
-from ..buffers import ReadableListBuffer
-from .handlers import SocketFdioHandler
+from ..handlers import HttpHandler
+from .server import CoroHttpServer
 
 
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):

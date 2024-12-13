@@ -36,7 +36,7 @@ import typing as ta
 from omlish.argparse.cli import ArgparseCli
 from omlish.argparse.cli import argparse_arg
 from omlish.argparse.cli import argparse_command
-from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.logs import configure_standard_logging

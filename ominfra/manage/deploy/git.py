@@ -13,7 +13,7 @@ import functools
 import os.path
 import typing as ta
 
-from omlish.lite.asyncio.subprocesses import asyncio_subprocesses
+from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 
