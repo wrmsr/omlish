@@ -2,31 +2,33 @@
 import tempfile
 import unittest
 
+from omlish.lite.inject import inj
+
 from ..apps import DeployAppManager
-from ..git import DeployGitManager
+from ..config import DeployConfig
 from ..git import DeployGitRepo
+from ..inject import bind_deploy
 from ..specs import DeploySpec
 from ..types import DeployApp
 from ..types import DeployHome
 from ..types import DeployRev
-from ..venvs import DeployVenvManager
 
 
 class TestDeploy(unittest.IsolatedAsyncioTestCase):
     async def test_deploy(self):
-        deploy_home = DeployHome(tempfile.mkdtemp())
+        deploy_config = DeployConfig(
+            deploy_home=DeployHome(tempfile.mkdtemp()),
+        )
+
+        injector = inj.create_injector(
+            bind_deploy(
+                deploy_config=deploy_config,
+            ),
+        )
 
         #
 
-        apps = DeployAppManager(
-            deploy_home=deploy_home,
-            git=DeployGitManager(
-                deploy_home=deploy_home,
-            ),
-            venvs=DeployVenvManager(
-                deploy_home=deploy_home,
-            ),
-        )
+        apps = injector[DeployAppManager]
 
         #
 

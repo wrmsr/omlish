@@ -19,12 +19,13 @@ from .venvs import DeployVenvManager
 
 def make_deploy_tag(
         rev: DeployRev,
-        now: ta.Optional[datetime.datetime] = None,
+        *,
+        utcnow: ta.Optional[datetime.datetime] = None,
 ) -> DeployTag:
-    if now is None:
-        now = datetime.datetime.utcnow()  # noqa
-    now_fmt = '%Y%m%dT%H%M%S'
-    now_str = now.strftime(now_fmt)
+    if utcnow is None:
+        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+    now_fmt = '%Y%m%dT%H%M%SZ'
+    now_str = utcnow.strftime(now_fmt)
     return DeployTag('-'.join([now_str, rev]))
 
 
