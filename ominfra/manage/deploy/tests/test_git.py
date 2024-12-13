@@ -2,6 +2,7 @@ import os.path
 import tempfile
 import unittest
 
+from ..atomics import TempDirDeployAtomicPathSwapping
 from ..git import DeployGitManager
 from ..git import DeployGitRepo
 from ..types import DeployHome
@@ -14,6 +15,7 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
 
         git = DeployGitManager(
             deploy_home=deploy_home,
+            atomics=TempDirDeployAtomicPathSwapping(),
         )
 
         repo = DeployGitRepo(
