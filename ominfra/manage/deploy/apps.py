@@ -3,6 +3,9 @@ import datetime
 import os.path
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check
+
 from .git import DeployGitManager
 from .git import DeployGitRepo
 from .git import DeployGitSpec
@@ -31,7 +34,7 @@ class DeployAppManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: DeployHome,
+            deploy_home: ta.Optional[DeployHome] = None,
             git: DeployGitManager,
             venvs: DeployVenvManager,
     ) -> None:
@@ -41,7 +44,9 @@ class DeployAppManager(DeployPathOwner):
         self._git = git
         self._venvs = venvs
 
-        self._dir = os.path.join(deploy_home, 'apps')
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), 'apps')
 
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -55,7 +60,7 @@ class DeployAppManager(DeployPathOwner):
             repo: DeployGitRepo,
     ):
         app_tag = DeployAppTag(app, make_deploy_tag(rev))
-        app_dir = os.path.join(self._dir, app, app_tag.tag)
+        app_dir = os.path.join(self._dir(), app, app_tag.tag)
 
         #
 
