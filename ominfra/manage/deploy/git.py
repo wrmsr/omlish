@@ -16,6 +16,7 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 
+from .atomics import DeployAtomicPathSwapping
 from .paths import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
 from .types import DeployHome
@@ -30,11 +31,14 @@ class DeployGitManager(SingleDirDeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+            atomics: DeployAtomicPathSwapping,
     ) -> None:
         super().__init__(
             owned_dir='git',
             deploy_home=deploy_home,
         )
+
+        self._atomics = atomics
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
 

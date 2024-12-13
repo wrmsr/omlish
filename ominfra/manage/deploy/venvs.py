@@ -11,6 +11,7 @@ from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
+from .atomics import DeployAtomicPathSwapping
 from .paths import DeployPath
 from .paths import DeployPathOwner
 from .types import DeployAppTag
@@ -22,10 +23,12 @@ class DeployVenvManager(DeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+            atomics: DeployAtomicPathSwapping,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
+        self._atomics = atomics
 
     @cached_nullary
     def _dir(self) -> str:
