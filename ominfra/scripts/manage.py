@@ -24,6 +24,7 @@ import decimal
 import enum
 import fractions
 import functools
+import hashlib
 import inspect
 import itertools
 import json
@@ -1387,6 +1388,7 @@ DeployHome = ta.NewType('DeployHome', str)
 DeployApp = ta.NewType('DeployApp', str)
 DeployTag = ta.NewType('DeployTag', str)
 DeployRev = ta.NewType('DeployRev', str)
+DeployKey = ta.NewType('DeployKey', str)
 
 
 class DeployAppTag(ta.NamedTuple):
@@ -4540,6 +4542,13 @@ class DeploySpec:
     app: DeployApp
     repo: DeployGitRepo
     rev: DeployRev
+
+    def __post_init__(self) -> None:
+        hash(self)
+
+    @cached_nullary
+    def key(self) -> DeployKey:
+        return DeployKey(hashlib.sha256(repr(self).encode('utf-8')).hexdigest()[:8])
 
 
 ########################################
@@ -8873,6 +8882,7 @@ def bind_commands(
 
 def make_deploy_tag(
         rev: DeployRev,
+        key: DeployKey,
         *,
         utcnow: ta.Optional[datetime.datetime] = None,
 ) -> DeployTag:
@@ -8880,7 +8890,7 @@ def make_deploy_tag(
         utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
     now_fmt = '%Y%m%dT%H%M%SZ'
     now_str = utcnow.strftime(now_fmt)
-    return DeployTag('-'.join([now_str, rev]))
+    return DeployTag('-'.join([now_str, rev, key]))
 
 
 class DeployAppManager(DeployPathOwner):
@@ -8910,7 +8920,7 @@ class DeployAppManager(DeployPathOwner):
             self,
             spec: DeploySpec,
     ):
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev))
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev, spec.key()))
         app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
