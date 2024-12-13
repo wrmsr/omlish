@@ -25,14 +25,22 @@ class DeployGitRepo:
         check.not_in('.', check.non_empty_str(self.path))
 
 
+@dc.dataclass(frozen=True)
+class DeployGitCheckout:
+    repo: DeployGitRepo
+    rev: DeployRev
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.rev)
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
-    repo: DeployGitRepo
-    rev: DeployRev
+    checkout: DeployGitCheckout
 
     def __post_init__(self) -> None:
         hash(self)

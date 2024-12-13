@@ -5,6 +5,7 @@ import unittest
 from ..atomics import TempDirDeployAtomicPathSwapping
 from ..git import DeployGitManager
 from ..git import DeployGitRepo
+from ..specs import DeployGitCheckout
 from ..types import DeployHome
 from ..types import DeployRev
 
@@ -18,16 +19,17 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
             atomics=TempDirDeployAtomicPathSwapping(),
         )
 
-        repo = DeployGitRepo(
-            host='github.com',
-            path='wrmsr/flaskthing',
+        checkout = DeployGitCheckout(
+            repo=DeployGitRepo(
+                host='github.com',
+                path='wrmsr/flaskthing',
+            ),
+            rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
         )
-        rev = DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3')
 
         checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
 
         await git.checkout(
-            repo,
-            rev,
+            checkout,
             checkout_dir,
         )

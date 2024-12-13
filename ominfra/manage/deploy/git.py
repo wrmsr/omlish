@@ -18,6 +18,7 @@ from omlish.lite.check import check
 
 from .atomics import DeployAtomicPathSwapping
 from .paths import SingleDirDeployPathOwner
+from .specs import DeployGitCheckout
 from .specs import DeployGitRepo
 from .types import DeployHome
 from .types import DeployRev
@@ -88,7 +89,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 
-        async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
+        async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
             with self._git._atomics.begin_atomic_path_swap(  # noqa
                     'dir',
@@ -96,14 +97,14 @@ class DeployGitManager(SingleDirDeployPathOwner):
                     auto_commit=True,
                     make_dirs=True,
             ) as dst_swap:
-                await self.fetch(rev)
+                await self.fetch(checkout.rev)
 
                 dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
                 await dst_call('git', 'init')
 
                 await dst_call('git', 'remote', 'add', 'local', self._dir)
-                await dst_call('git', 'fetch', '--depth=1', 'local', rev)
-                await dst_call('git', 'checkout', rev)
+                await dst_call('git', 'fetch', '--depth=1', 'local', checkout.rev)
+                await dst_call('git', 'checkout', checkout.rev)
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
@@ -112,5 +113,5 @@ class DeployGitManager(SingleDirDeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, repo: DeployGitRepo, rev: DeployRev, dst_dir: str) -> None:
-        await self.get_repo_dir(repo).checkout(rev, dst_dir)
+    async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
+        await self.get_repo_dir(checkout.repo).checkout(checkout, dst_dir)
