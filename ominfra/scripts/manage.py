@@ -4534,14 +4534,22 @@ class DeployGitRepo:
         check.not_in('.', check.non_empty_str(self.path))
 
 
+@dc.dataclass(frozen=True)
+class DeployGitCheckout:
+    repo: DeployGitRepo
+    rev: DeployRev
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.rev)
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
-    repo: DeployGitRepo
-    rev: DeployRev
+    checkout: DeployGitCheckout
 
     def __post_init__(self) -> None:
         hash(self)
@@ -8256,7 +8264,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 
-        async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
+        async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
             with self._git._atomics.begin_atomic_path_swap(  # noqa
                     'dir',
@@ -8264,14 +8272,14 @@ class DeployGitManager(SingleDirDeployPathOwner):
                     auto_commit=True,
                     make_dirs=True,
             ) as dst_swap:
-                await self.fetch(rev)
+                await self.fetch(checkout.rev)
 
                 dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
                 await dst_call('git', 'init')
 
                 await dst_call('git', 'remote', 'add', 'local', self._dir)
-                await dst_call('git', 'fetch', '--depth=1', 'local', rev)
-                await dst_call('git', 'checkout', rev)
+                await dst_call('git', 'fetch', '--depth=1', 'local', checkout.rev)
+                await dst_call('git', 'checkout', checkout.rev)
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
@@ -8280,8 +8288,8 @@ class DeployGitManager(SingleDirDeployPathOwner):
             repo_dir = self._repo_dirs[repo] = DeployGitManager.RepoDir(self, repo)
             return repo_dir
 
-    async def checkout(self, repo: DeployGitRepo, rev: DeployRev, dst_dir: str) -> None:
-        await self.get_repo_dir(repo).checkout(rev, dst_dir)
+    async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
+        await self.get_repo_dir(checkout.repo).checkout(checkout, dst_dir)
 
 
 ########################################
@@ -8919,15 +8927,14 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeploySpec,
-    ):
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev, spec.key()))
+    ) -> None:
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.checkout.rev, spec.key()))
         app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
         await self._git.checkout(
-            spec.repo,
-            spec.rev,
+            spec.checkout,
             app_dir,
         )
 
