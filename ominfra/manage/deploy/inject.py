@@ -14,6 +14,7 @@ from .config import DeployConfig
 from .git import DeployGitManager
 from .interp import InterpCommand
 from .interp import InterpCommandExecutor
+from .tmp import DeployTmpManager
 from .types import DeployHome
 from .venvs import DeployVenvManager
 
@@ -27,6 +28,7 @@ def bind_deploy(
 
         inj.bind(DeployAppManager, singleton=True),
         inj.bind(DeployGitManager, singleton=True),
+        inj.bind(DeployTmpManager, singleton=True),
         inj.bind(DeployVenvManager, singleton=True),
 
         bind_command(DeployCommand, DeployCommandExecutor),
