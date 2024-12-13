@@ -12,7 +12,7 @@ import asyncio
 import typing as ta
 
 from omlish.lite.check import check
-from omlish.lite.runtime import check_runtime_version
+from omlish.lite.runtime import check_lite_runtime_version
 from omlish.logs.standard import configure_standard_logging
 
 from .resolvers import DEFAULT_INTERP_RESOLVER
@@ -58,7 +58,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    check_runtime_version()
+    check_lite_runtime_version()
     configure_standard_logging()
 
     parser = _build_parser()

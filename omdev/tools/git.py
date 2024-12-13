@@ -15,8 +15,8 @@ from omlish.formats import json
 from omlish.logs import all as logs
 
 from ..cli import CliModule
-from ..git import GitStatusItem
-from ..git import get_git_status
+from ..git.status import GitStatusItem
+from ..git.status import get_git_status
 
 
 def rev_parse(rev: str) -> str:

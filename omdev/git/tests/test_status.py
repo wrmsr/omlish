@@ -4,9 +4,9 @@ import tempfile
 
 from omlish.subprocesses import subprocess_maybe_shell_wrap_exec
 
-from ..git import GitStatusItem
-from ..git import GitStatusState
-from ..git import get_git_status
+from ..status import GitStatusItem
+from ..status import GitStatusState
+from ..status import get_git_status
 
 
 def test_parse_git_status():

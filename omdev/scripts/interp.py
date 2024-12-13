@@ -1806,12 +1806,12 @@ def is_debugger_attached() -> bool:
     return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
 
 
-REQUIRED_PYTHON_VERSION = (3, 8)
+LITE_REQUIRED_PYTHON_VERSION = (3, 8)
 
 
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+def check_lite_runtime_version() -> None:
+    if sys.version_info < LITE_REQUIRED_PYTHON_VERSION:
+        raise OSError(f'Requires python {LITE_REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -3488,7 +3488,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 async def _async_main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    check_runtime_version()
+    check_lite_runtime_version()
     configure_standard_logging()
 
     parser = _build_parser()

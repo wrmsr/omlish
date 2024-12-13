@@ -27,7 +27,7 @@ from omlish import marshal as msh
 from omlish.formats import json
 from omlish.os.files import touch
 
-from ... import git
+from ...git.subtrees import git_clone_subtree
 from .actions import Action
 from .actions import ExtractAction
 from .manifests import Manifest
@@ -148,7 +148,7 @@ class Cache:
 
             log.info('Cloning git repo: %s -> %s', spec.url, tmp_dir)
 
-            git.git_clone_subtree(
+            git_clone_subtree(
                 base_dir=tmp_dir,
                 repo_url=spec.url,
                 repo_dir='data',
