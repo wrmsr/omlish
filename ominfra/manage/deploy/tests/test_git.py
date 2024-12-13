@@ -4,7 +4,6 @@ import unittest
 
 from ..git import DeployGitManager
 from ..git import DeployGitRepo
-from ..git import DeployGitSpec
 from ..types import DeployHome
 from ..types import DeployRev
 
@@ -17,13 +16,16 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
             deploy_home=deploy_home,
         )
 
-        spec = DeployGitSpec(
-            repo=DeployGitRepo(
-                host='github.com',
-                path='wrmsr/flaskthing',
-            ),
-            rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
+        repo = DeployGitRepo(
+            host='github.com',
+            path='wrmsr/flaskthing',
         )
+        rev = DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3')
+
         checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
 
-        await git.checkout(spec, checkout_dir)
+        await git.checkout(
+            repo,
+            rev,
+            checkout_dir,
+        )
