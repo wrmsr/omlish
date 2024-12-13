@@ -1,40 +1,11 @@
 # ruff: noqa: UP006 UP007
 """
-~deploy
-  deploy.pid (flock)
-  /app
-    /<appplaceholder> - shallow clone
-  /conf
-    /env
-      <appplaceholder>.env
-    /nginx
-      <appplaceholder>.conf
-    /supervisor
-      <appplaceholder>.conf
-  /venv
-    /<appplaceholder>
-
-  /tmp
-
-?
-  /logs
-    /wrmsr--omlish--<placeholder>
-
-placeholder = <name>--<rev>--<when>
-
-==
-
-for dn in [
-    'app',
-    'conf',
-    'conf/env',
-    'conf/nginx',
-    'conf/supervisor',
-    'venv',
-]:
-
-==
-
+TODO:
+ - run/pidfile
+ - logs/...
+ - current symlink
+ - conf/{nginx,supervisor}
+ - env/?
 """
 import abc
 import dataclasses as dc
@@ -59,7 +30,7 @@ DEPLOY_PATH_PLACEHOLDER_SEPARATORS = '-.'
 
 DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
-    'tag',  # <rev>-<dt>
+    'tag',
 ])
 
 
