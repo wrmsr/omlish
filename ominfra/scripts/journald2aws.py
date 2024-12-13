@@ -78,7 +78,7 @@ ConfigMapping = ta.Mapping[str, ta.Any]
 # ../../../threadworkers.py
 ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
-# ../../../../omlish/lite/subprocesses.py
+# ../../../../omlish/subprocesses.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
@@ -3575,7 +3575,7 @@ class ThreadWorkerGroup:
 
 
 ########################################
-# ../../../../../omlish/lite/subprocesses.py
+# ../../../../../omlish/subprocesses.py
 
 
 ##
@@ -3626,8 +3626,8 @@ def subprocess_close(
 ##
 
 
-class AbstractSubprocesses(abc.ABC):  # noqa
-    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = log
+class BaseSubprocesses(abc.ABC):  # noqa
+    DEFAULT_LOGGER: ta.ClassVar[ta.Optional[logging.Logger]] = None
 
     def __init__(
             self,
@@ -3639,6 +3639,9 @@ class AbstractSubprocesses(abc.ABC):  # noqa
 
         self._log = log if log is not None else self.DEFAULT_LOGGER
         self._try_exceptions = try_exceptions if try_exceptions is not None else self.DEFAULT_TRY_EXCEPTIONS
+
+    def set_logger(self, log: ta.Optional[logging.Logger]) -> None:
+        self._log = log
 
     #
 
@@ -3751,23 +3754,25 @@ class AbstractSubprocesses(abc.ABC):  # noqa
 ##
 
 
-class Subprocesses(AbstractSubprocesses):
+class AbstractSubprocesses(BaseSubprocesses, abc.ABC):
+    @abc.abstractmethod
     def check_call(
             self,
             *cmd: str,
             stdout: ta.Any = sys.stderr,
             **kwargs: ta.Any,
     ) -> None:
-        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
-            subprocess.check_call(cmd, **kwargs)
+        raise NotImplementedError
 
+    @abc.abstractmethod
     def check_output(
             self,
             *cmd: str,
             **kwargs: ta.Any,
     ) -> bytes:
-        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
-            return subprocess.check_output(cmd, **kwargs)
+        raise NotImplementedError
+
+    #
 
     def check_output_str(
             self,
@@ -3809,7 +3814,92 @@ class Subprocesses(AbstractSubprocesses):
             return ret.decode().strip()
 
 
+##
+
+
+class Subprocesses(AbstractSubprocesses):
+    def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        with self.prepare_and_wrap(*cmd, stdout=stdout, **kwargs) as (cmd, kwargs):  # noqa
+            subprocess.check_call(cmd, **kwargs)
+
+    def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        with self.prepare_and_wrap(*cmd, **kwargs) as (cmd, kwargs):  # noqa
+            return subprocess.check_output(cmd, **kwargs)
+
+
 subprocesses = Subprocesses()
+
+
+##
+
+
+class AbstractAsyncSubprocesses(BaseSubprocesses):
+    @abc.abstractmethod
+    async def check_call(
+            self,
+            *cmd: str,
+            stdout: ta.Any = sys.stderr,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def check_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bytes:
+        raise NotImplementedError
+
+    #
+
+    async def check_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> str:
+        return (await self.check_output(*cmd, **kwargs)).decode().strip()
+
+    #
+
+    async def try_call(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> bool:
+        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
+            return False
+        else:
+            return True
+
+    async def try_output(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[bytes]:
+        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
+            return None
+        else:
+            return ret
+
+    async def try_output_str(
+            self,
+            *cmd: str,
+            **kwargs: ta.Any,
+    ) -> ta.Optional[str]:
+        if (ret := await self.try_output(*cmd, **kwargs)) is None:
+            return None
+        else:
+            return ret.decode().strip()
 
 
 ########################################

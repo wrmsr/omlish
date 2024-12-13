@@ -1,8 +1,9 @@
 # ruff: noqa: PT009 PT027
+# @omlish-lite
 import subprocess
 import unittest
 
-from ..check import check
+from ..lite.check import check
 from ..subprocesses import subprocesses
 
 

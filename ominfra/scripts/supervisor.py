@@ -142,9 +142,9 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
 ConfigMapping = ta.Mapping[str, ta.Any]
 
 # ../../omlish/http/handlers.py
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']
+HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
 
-# ../../omlish/http/coroserver.py
+# ../../omlish/http/coro/server.py
 CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
 
 
@@ -6145,7 +6145,7 @@ def parse_logging_level(value: ta.Union[str, int]) -> int:
 
 
 ########################################
-# ../../../omlish/http/coroserver.py
+# ../../../omlish/http/coro/server.py
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
@@ -6885,7 +6885,7 @@ class ProcessGroup(
 
 
 ########################################
-# ../../../omlish/io/fdio/corohttp.py
+# ../../../omlish/http/coro/fdio.py
 
 
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):

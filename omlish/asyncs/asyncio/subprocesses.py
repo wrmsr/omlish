@@ -1,17 +1,18 @@
 # ruff: noqa: UP006 UP007
+# @omlish-lite
 import asyncio.base_subprocess
 import asyncio.subprocess
 import contextlib
 import dataclasses as dc
 import functools
+import logging
 import subprocess
 import sys
 import typing as ta
 
-from ...asyncs.asyncio.timeouts import asyncio_maybe_timeout
-from ..check import check
-from ..logs import log
-from ..subprocesses import AbstractSubprocesses
+from ...lite.check import check
+from ...subprocesses import AbstractAsyncSubprocesses
+from .timeouts import asyncio_maybe_timeout
 
 
 T = ta.TypeVar('T')
@@ -25,6 +26,8 @@ class AsyncioProcessCommunicator:
             self,
             proc: asyncio.subprocess.Process,
             loop: ta.Optional[ta.Any] = None,
+            *,
+            log: ta.Optional[logging.Logger] = None,
     ) -> None:
         super().__init__()
 
@@ -33,6 +36,7 @@ class AsyncioProcessCommunicator:
 
         self._proc = proc
         self._loop = loop
+        self._log = log
 
         self._transport: asyncio.base_subprocess.BaseSubprocessTransport = check.isinstance(
             proc._transport,  # type: ignore  # noqa
@@ -48,19 +52,19 @@ class AsyncioProcessCommunicator:
         try:
             if input is not None:
                 stdin.write(input)
-                if self._debug:
-                    log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
+                if self._debug and self._log is not None:
+                    self._log.debug('%r communicate: feed stdin (%s bytes)', self, len(input))
 
             await stdin.drain()
 
         except (BrokenPipeError, ConnectionResetError) as exc:
             # communicate() ignores BrokenPipeError and ConnectionResetError. write() and drain() can raise these
             # exceptions.
-            if self._debug:
-                log.debug('%r communicate: stdin got %r', self, exc)
+            if self._debug and self._log is not None:
+                self._log.debug('%r communicate: stdin got %r', self, exc)
 
-        if self._debug:
-            log.debug('%r communicate: close stdin', self)
+        if self._debug and self._log is not None:
+            self._log.debug('%r communicate: close stdin', self)
 
         stdin.close()
 
@@ -76,15 +80,15 @@ class AsyncioProcessCommunicator:
             check.equal(fd, 1)
             stream = check.not_none(self._proc.stdout)
 
-        if self._debug:
+        if self._debug and self._log is not None:
             name = 'stdout' if fd == 1 else 'stderr'
-            log.debug('%r communicate: read %s', self, name)
+            self._log.debug('%r communicate: read %s', self, name)
 
         output = await stream.read()
 
-        if self._debug:
+        if self._debug and self._log is not None:
             name = 'stdout' if fd == 1 else 'stderr'
-            log.debug('%r communicate: close %s', self, name)
+            self._log.debug('%r communicate: close %s', self, name)
 
         transport.close()
 
@@ -133,7 +137,7 @@ class AsyncioProcessCommunicator:
 ##
 
 
-class AsyncioSubprocesses(AbstractSubprocesses):
+class AsyncioSubprocesses(AbstractAsyncSubprocesses):
     async def communicate(
             self,
             proc: asyncio.subprocess.Process,
@@ -229,45 +233,6 @@ class AsyncioSubprocesses(AbstractSubprocesses):
     ) -> bytes:
         with self.prepare_and_wrap(*cmd, stdout=subprocess.PIPE, check=True, **kwargs) as (cmd, kwargs):  # noqa
             return check.not_none((await self.run(*cmd, **kwargs)).stdout)
-
-    async def check_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> str:
-        return (await self.check_output(*cmd, **kwargs)).decode().strip()
-
-    #
-
-    async def try_call(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> bool:
-        if isinstance(await self.async_try_fn(self.check_call, *cmd, **kwargs), Exception):
-            return False
-        else:
-            return True
-
-    async def try_output(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[bytes]:
-        if isinstance(ret := await self.async_try_fn(self.check_output, *cmd, **kwargs), Exception):
-            return None
-        else:
-            return ret
-
-    async def try_output_str(
-            self,
-            *cmd: str,
-            **kwargs: ta.Any,
-    ) -> ta.Optional[str]:
-        if (ret := await self.try_output(*cmd, **kwargs)) is None:
-            return None
-        else:
-            return ret.decode().strip()
 
 
 asyncio_subprocesses = AsyncioSubprocesses()
