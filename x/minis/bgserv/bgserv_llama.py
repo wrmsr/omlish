@@ -1,4 +1,3 @@
-python
 import argparse
 import atexit
 import http.server
@@ -111,7 +110,8 @@ def main():
 
     time_parser = subparsers.add_parser('time', help='Get the current time')
     start_server_parser = subparsers.add_parser(
-        'start-server', help='Start the time server',
+        'start-server',
+        help='Start the time server',
     )
 
     args = parser.parse_args()

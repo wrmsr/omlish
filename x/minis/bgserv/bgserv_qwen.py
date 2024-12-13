@@ -1,4 +1,3 @@
-python
 import http.server
 import os
 import signal

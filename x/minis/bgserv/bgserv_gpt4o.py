@@ -1,6 +1,3 @@
-"""
-"""
-
 import atexit
 import os
 import sys

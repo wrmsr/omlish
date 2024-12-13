@@ -1,4 +1,3 @@
-python
 import argparse
 import atexit
 import os
@@ -74,10 +73,14 @@ def check_server():
 def cli():
     parser = argparse.ArgumentParser(description='A simple time server.')
     parser.add_argument(
-        '--start', action='store_true', help='Start the server in the background.',
+        '--start',
+        action='store_true',
+        help='Start the server in the background.',
     )
     parser.add_argument(
-        '--time', action='store_true', help='Print the current time from the server.',
+        '--time',
+        action='store_true',
+        help='Print the current time from the server.',
     )
     args = parser.parse_args()
 
