@@ -41,6 +41,7 @@ import string
 import struct
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -97,6 +98,10 @@ CallableVersionOperator = ta.Callable[['Version', str], bool]
 # commands/base.py
 CommandT = ta.TypeVar('CommandT', bound='Command')
 CommandOutputT = ta.TypeVar('CommandOutputT', bound='Command.Output')
+
+# deploy/atomics.py
+DeployAtomicPathSwapKind = ta.Literal['dir', 'file']
+DeployAtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
 # deploy/paths.py
 DeployPathKind = ta.Literal['dir', 'file']  # ta.TypeAlias
@@ -4054,6 +4059,204 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
 
 
 ########################################
+# ../deploy/atomics.py
+
+
+##
+
+
+class DeployAtomicPathSwap(abc.ABC):
+    def __init__(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            *,
+            auto_commit: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._kind = kind
+        self._dst_path = dst_path
+        self._auto_commit = auto_commit
+
+        self._state: DeployAtomicPathSwapState = 'open'
+
+    def __repr__(self) -> str:
+        return attr_repr(self, 'kind', 'dst_path', 'tmp_path')
+
+    @property
+    def kind(self) -> DeployAtomicPathSwapKind:
+        return self._kind
+
+    @property
+    def dst_path(self) -> str:
+        return self._dst_path
+
+    @property
+    @abc.abstractmethod
+    def tmp_path(self) -> str:
+        raise NotImplementedError
+
+    #
+
+    @property
+    def state(self) -> DeployAtomicPathSwapState:
+        return self._state
+
+    def _check_state(self, *states: DeployAtomicPathSwapState) -> None:
+        if self._state not in states:
+            raise RuntimeError(f'Atomic path swap not in correct state: {self._state}, {states}')
+
+    #
+
+    @abc.abstractmethod
+    def _commit(self) -> None:
+        raise NotImplementedError
+
+    def commit(self) -> None:
+        if self._state == 'committed':
+            return
+        self._check_state('open')
+        try:
+            self._commit()
+        except Exception:  # noqa
+            self._abort()
+            raise
+        else:
+            self._state = 'committed'
+
+    #
+
+    @abc.abstractmethod
+    def _abort(self) -> None:
+        raise NotImplementedError
+
+    def abort(self) -> None:
+        if self._state == 'aborted':
+            return
+        self._abort()
+        self._state = 'aborted'
+
+    #
+
+    def __enter__(self) -> 'DeployAtomicPathSwap':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if (
+                exc_type is None and
+                self._auto_commit and
+                self._state == 'open'
+        ):
+            self.commit()
+        else:
+            self.abort()
+
+
+#
+
+
+class DeployAtomicPathSwapping(abc.ABC):
+    @abc.abstractmethod
+    def begin_atomic_path_swap(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            *,
+            name_hint: ta.Optional[str] = None,
+            make_dirs: bool = False,
+            **kwargs: ta.Any,
+    ) -> DeployAtomicPathSwap:
+        raise NotImplementedError
+
+
+##
+
+
+class OsRenameDeployAtomicPathSwap(DeployAtomicPathSwap):
+    def __init__(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            tmp_path: str,
+            **kwargs: ta.Any,
+    ) -> None:
+        if kind == 'dir':
+            check.state(os.path.isdir(tmp_path))
+        elif kind == 'file':
+            check.state(os.path.isfile(tmp_path))
+        else:
+            raise TypeError(kind)
+
+        super().__init__(
+            kind,
+            dst_path,
+            **kwargs,
+        )
+
+        self._tmp_path = tmp_path
+
+    @property
+    def tmp_path(self) -> str:
+        return self._tmp_path
+
+    def _commit(self) -> None:
+        os.rename(self._tmp_path, self._dst_path)
+
+    def _abort(self) -> None:
+        shutil.rmtree(self._tmp_path, ignore_errors=True)
+
+
+class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
+    def __init__(
+            self,
+            *,
+            temp_dir: ta.Optional[str] = None,
+            root_dir: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        if root_dir is not None:
+            root_dir = os.path.abspath(root_dir)
+        self._root_dir = root_dir
+        self._temp_dir = temp_dir
+
+    def begin_atomic_path_swap(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            *,
+            name_hint: ta.Optional[str] = None,
+            make_dirs: bool = False,
+            **kwargs: ta.Any,
+    ) -> DeployAtomicPathSwap:
+        dst_path = os.path.abspath(dst_path)
+        if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
+            raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
+
+        dst_dir = os.path.dirname(dst_path)
+        if make_dirs:
+            os.makedirs(dst_dir, exist_ok=True)
+        if not os.path.isdir(dst_dir):
+            raise RuntimeError(f'Atomic path swap dst dir does not exist: {dst_dir}')
+
+        if kind == 'dir':
+            tmp_path = tempfile.mkdtemp(prefix=name_hint, dir=self._temp_dir)
+        elif kind == 'file':
+            fd, tmp_path = tempfile.mkstemp(prefix=name_hint, dir=self._temp_dir)
+            os.close(fd)
+        else:
+            raise TypeError(kind)
+
+        return OsRenameDeployAtomicPathSwap(
+            kind,
+            dst_path,
+            tmp_path,
+            **kwargs,
+        )
+
+
+########################################
 # ../deploy/paths.py
 """
 ~deploy
@@ -4069,6 +4272,8 @@ def build_command_name_map(crs: CommandRegistrations) -> CommandNameMap:
       <appplaceholder>.conf
   /venv
     /<appplaceholder>
+
+  /tmp
 
 ?
   /logs
@@ -4227,6 +4432,8 @@ class DeployPath:
     parts: ta.Sequence[DeployPathPart]
 
     def __post_init__(self) -> None:
+        hash(self)
+
         check.not_empty(self.parts)
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
@@ -4261,10 +4468,10 @@ class DeployPath:
         else:
             tail_parse = FileDeployPathPart.parse
         ps = check.non_empty_str(s).split('/')
-        return cls([
+        return cls((
             *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
             tail_parse(ps[-1]),
-        ])
+        ))
 
 
 ##
@@ -4272,8 +4479,39 @@ class DeployPath:
 
 class DeployPathOwner(abc.ABC):
     @abc.abstractmethod
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         raise NotImplementedError
+
+
+class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
+    def __init__(
+            self,
+            *args: ta.Any,
+            owned_dir: str,
+            deploy_home: ta.Optional[DeployHome],
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        check.not_in('/', owned_dir)
+        self._owned_dir: str = check.non_empty_str(owned_dir)
+
+        self._deploy_home = deploy_home
+
+        self._owned_deploy_paths = frozenset([DeployPath.parse(self._owned_dir + '/')])
+
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), self._owned_dir)
+
+    @cached_nullary
+    def _make_dir(self) -> str:
+        if not os.path.isdir(d := self._dir()):
+            os.makedirs(d, exist_ok=True)
+        return d
+
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+        return self._owned_deploy_paths
 
 
 ########################################
@@ -6524,6 +6762,44 @@ class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]
 
 
 ########################################
+# ../deploy/tmp.py
+
+
+class DeployTmpManager(
+    SingleDirDeployPathOwner,
+    DeployAtomicPathSwapping,
+):
+    def __init__(
+            self,
+            *,
+            deploy_home: ta.Optional[DeployHome] = None,
+    ) -> None:
+        super().__init__(
+            owned_dir='tmp',
+            deploy_home=deploy_home,
+        )
+
+    @cached_nullary
+    def _swapping(self) -> DeployAtomicPathSwapping:
+        return TempDirDeployAtomicPathSwapping(
+            temp_dir=self._make_dir(),
+            root_dir=check.non_empty_str(self._deploy_home),
+        )
+
+    def begin_atomic_path_swap(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            **kwargs: ta.Any,
+    ) -> DeployAtomicPathSwap:
+        return self._swapping().begin_atomic_path_swap(
+            kind,
+            dst_path,
+            **kwargs,
+        )
+
+
+########################################
 # ../marshal.py
 
 
@@ -7909,26 +8185,21 @@ github.com/wrmsr/omlish@rev
 ##
 
 
-class DeployGitManager(DeployPathOwner):
+class DeployGitManager(SingleDirDeployPathOwner):
     def __init__(
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+            atomics: DeployAtomicPathSwapping,
     ) -> None:
-        super().__init__()
+        super().__init__(
+            owned_dir='git',
+            deploy_home=deploy_home,
+        )
 
-        self._deploy_home = deploy_home
+        self._atomics = atomics
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
-
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), 'git')
-
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return {
-            DeployPath.parse('git'),
-        }
 
     class RepoDir:
         def __init__(
@@ -7941,7 +8212,7 @@ class DeployGitManager(DeployPathOwner):
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._dir(),  # noqa
+                self._git._make_dir(),  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
@@ -7978,18 +8249,20 @@ class DeployGitManager(DeployPathOwner):
 
         async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
+            with self._git._atomics.begin_atomic_path_swap(  # noqa
+                    'dir',
+                    dst_dir,
+                    auto_commit=True,
+                    make_dirs=True,
+            ) as dst_swap:
+                await self.fetch(rev)
 
-            await self.fetch(rev)
+                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
+                await dst_call('git', 'init')
 
-            # FIXME: temp dir swap
-            os.makedirs(dst_dir)
-
-            dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_dir)
-            await dst_call('git', 'init')
-
-            await dst_call('git', 'remote', 'add', 'local', self._dir)
-            await dst_call('git', 'fetch', '--depth=1', 'local', rev)
-            await dst_call('git', 'checkout', rev)
+                await dst_call('git', 'remote', 'add', 'local', self._dir)
+                await dst_call('git', 'fetch', '--depth=1', 'local', rev)
+                await dst_call('git', 'checkout', rev)
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
@@ -8016,16 +8289,18 @@ class DeployVenvManager(DeployPathOwner):
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
+            atomics: DeployAtomicPathSwapping,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
+        self._atomics = atomics
 
     @cached_nullary
     def _dir(self) -> str:
         return os.path.join(check.non_empty_str(self._deploy_home), 'venvs')
 
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             DeployPath.parse('venvs/@app/@tag/'),
         }
@@ -8039,6 +8314,8 @@ class DeployVenvManager(DeployPathOwner):
     ) -> None:
         sys_exe = 'python3'
 
+        # !! NOTE: (most) venvs cannot be relocated, so an atomic swap can't be used. it's up to the path manager to
+        # garbage collect orphaned dirs.
         await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
 
         #
@@ -8596,12 +8873,13 @@ def bind_commands(
 
 def make_deploy_tag(
         rev: DeployRev,
-        now: ta.Optional[datetime.datetime] = None,
+        *,
+        utcnow: ta.Optional[datetime.datetime] = None,
 ) -> DeployTag:
-    if now is None:
-        now = datetime.datetime.utcnow()  # noqa
-    now_fmt = '%Y%m%dT%H%M%S'
-    now_str = now.strftime(now_fmt)
+    if utcnow is None:
+        utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+    now_fmt = '%Y%m%dT%H%M%SZ'
+    now_str = utcnow.strftime(now_fmt)
     return DeployTag('-'.join([now_str, rev]))
 
 
@@ -8623,7 +8901,7 @@ class DeployAppManager(DeployPathOwner):
     def _dir(self) -> str:
         return os.path.join(check.non_empty_str(self._deploy_home), 'apps')
 
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             DeployPath.parse('apps/@app/@tag'),
         }
@@ -9740,9 +10018,18 @@ def bind_deploy(
     lst: ta.List[InjectorBindingOrBindings] = [
         inj.bind(deploy_config),
 
+        #
+
         inj.bind(DeployAppManager, singleton=True),
+
         inj.bind(DeployGitManager, singleton=True),
+
+        inj.bind(DeployTmpManager, singleton=True),
+        inj.bind(DeployAtomicPathSwapping, to_key=DeployTmpManager),
+
         inj.bind(DeployVenvManager, singleton=True),
+
+        #
 
         bind_command(DeployCommand, DeployCommandExecutor),
         bind_command(InterpCommand, InterpCommandExecutor),

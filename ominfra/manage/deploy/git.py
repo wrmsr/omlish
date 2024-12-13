@@ -53,7 +53,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._dir(),  # noqa
+                self._git._make_dir(),  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
@@ -90,7 +90,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
-            with self._git._atomics.begin_atomic_path_swap(
+            with self._git._atomics.begin_atomic_path_swap(  # noqa
                     'dir',
                     dst_dir,
                     auto_commit=True,

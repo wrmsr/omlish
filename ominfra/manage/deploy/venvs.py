@@ -48,6 +48,8 @@ class DeployVenvManager(DeployPathOwner):
     ) -> None:
         sys_exe = 'python3'
 
+        # !! NOTE: (most) venvs cannot be relocated, so an atomic swap can't be used. it's up to the path manager to
+        # garbage collect orphaned dirs.
         await asyncio_subprocesses.check_call(sys_exe, '-m', 'venv', venv_dir)
 
         #
