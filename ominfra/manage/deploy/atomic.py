@@ -9,14 +9,20 @@ DeployAtomicPathSwapState = ta.Literal['new', 'open', 'committed', 'aborted']  #
 class DeployAtomicPathSwap(abc.ABC):
     def __init__(
             self,
+            path: str,
             *,
             auto_commit: bool = False,
     ) -> None:
         super().__init__()
 
+        self._path = path
         self._auto_commit = auto_commit
 
         self._state: DeployAtomicPathSwapState = 'new'
+
+    @property
+    def path(self) -> str:
+        return self._path
 
     #
 
@@ -97,5 +103,5 @@ class DeployAtomicPathSwap(abc.ABC):
 
 class DeployAtomicPathSwapping(abc.ABC):
     @abc.abstractmethod
-    def begin_atomic_path_swap(self) -> DeployAtomicPathSwap:
+    def begin_atomic_path_swap(self, path: str) -> DeployAtomicPathSwap:
         raise NotImplementedError
