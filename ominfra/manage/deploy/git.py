@@ -14,6 +14,7 @@ import os.path
 import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omlish.lite.cached import cached_nullary
 from omlish.lite.cached import async_cached_nullary
 from omlish.lite.check import check
 
@@ -50,14 +51,17 @@ class DeployGitManager(DeployPathOwner):
     def __init__(
             self,
             *,
-            deploy_home: DeployHome,
+            deploy_home: ta.Optional[DeployHome] = None,
     ) -> None:
         super().__init__()
 
         self._deploy_home = deploy_home
-        self._dir = os.path.join(deploy_home, 'git')
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
+
+    @cached_nullary
+    def _dir(self) -> str:
+        return os.path.join(check.non_empty_str(self._deploy_home), 'git')
 
     def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
@@ -75,7 +79,7 @@ class DeployGitManager(DeployPathOwner):
             self._git = git
             self._repo = repo
             self._dir = os.path.join(
-                self._git._dir,  # noqa
+                self._git._dir(),  # noqa
                 check.non_empty_str(repo.host),
                 check.non_empty_str(repo.path),
             )
