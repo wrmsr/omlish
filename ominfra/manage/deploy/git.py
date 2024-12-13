@@ -14,11 +14,9 @@ import typing as ta
 
 from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
-from .paths import DeployPath
-from .paths import DeployPathOwner
+from .paths import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
 from .types import DeployHome
 from .types import DeployRev
@@ -27,26 +25,18 @@ from .types import DeployRev
 ##
 
 
-class DeployGitManager(DeployPathOwner):
+class DeployGitManager(SingleDirDeployPathOwner):
     def __init__(
             self,
             *,
             deploy_home: ta.Optional[DeployHome] = None,
     ) -> None:
-        super().__init__()
-
-        self._deploy_home = deploy_home
+        super().__init__(
+            owned_dir='git',
+            deploy_home=deploy_home,
+        )
 
         self._repo_dirs: ta.Dict[DeployGitRepo, DeployGitManager.RepoDir] = {}
-
-    @cached_nullary
-    def _dir(self) -> str:
-        return os.path.join(check.non_empty_str(self._deploy_home), 'git')
-
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
-        return {
-            DeployPath.parse('git'),
-        }
 
     class RepoDir:
         def __init__(

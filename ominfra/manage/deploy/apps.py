@@ -46,7 +46,7 @@ class DeployAppManager(DeployPathOwner):
     def _dir(self) -> str:
         return os.path.join(check.non_empty_str(self._deploy_home), 'apps')
 
-    def get_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
+    def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return {
             DeployPath.parse('apps/@app/@tag'),
         }
