@@ -1,7 +1,6 @@
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
- - namedtuple
  - literals
 """
 # ruff: noqa: UP006 UP007
@@ -14,6 +13,7 @@ import decimal
 import enum
 import fractions
 import functools
+import inspect
 import threading
 import typing as ta
 import uuid
@@ -38,7 +38,7 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 class ObjMarshalOptions:
     raw_bytes: bool = False
-    nonstrict_dataclasses: bool = False
+    non_strict_fields: bool = False
 
 
 class ObjMarshaler(abc.ABC):
@@ -167,10 +167,10 @@ class IterableObjMarshaler(ObjMarshaler):
 
 
 @dc.dataclass(frozen=True)
-class DataclassObjMarshaler(ObjMarshaler):
+class FieldsObjMarshaler(ObjMarshaler):
     ty: type
     fs: ta.Mapping[str, ObjMarshaler]
-    nonstrict: bool = False
+    non_strict: bool = False
 
     def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
         return {
@@ -182,7 +182,7 @@ class DataclassObjMarshaler(ObjMarshaler):
         return self.ty(**{
             k: self.fs[k].unmarshal(v, ctx)
             for k, v in o.items()
-            if not (self.nonstrict or ctx.options.nonstrict_dataclasses) or k in self.fs
+            if not (self.non_strict or ctx.options.non_strict_fields) or k in self.fs
         })
 
 
@@ -314,7 +314,7 @@ class ObjMarshalerManager:
             ty: ta.Any,
             rec: ta.Callable[[ta.Any], ObjMarshaler],
             *,
-            nonstrict_dataclasses: bool = False,
+            non_strict_fields: bool = False,
     ) -> ObjMarshaler:
         if isinstance(ty, type):
             if abc.ABC in ty.__bases__:
@@ -336,10 +336,17 @@ class ObjMarshalerManager:
                 return EnumObjMarshaler(ty)
 
             if dc.is_dataclass(ty):
-                return DataclassObjMarshaler(
+                return FieldsObjMarshaler(
                     ty,
                     {f.name: rec(f.type) for f in dc.fields(ty)},
-                    nonstrict=nonstrict_dataclasses,
+                    non_strict=non_strict_fields,
+                )
+
+            if issubclass(ty, tuple) and hasattr(ty, '_fields'):
+                return FieldsObjMarshaler(
+                    ty,
+                    {p.name: rec(p.annotation) for p in inspect.signature(ty).parameters.values()},
+                    non_strict=non_strict_fields,
                 )
 
         if is_new_type(ty):
