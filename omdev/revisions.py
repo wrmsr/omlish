@@ -18,7 +18,7 @@ from omlish.lite.check import check
 from omlish.lite.logs import log
 from omlish.logs.standard import configure_standard_logging
 
-from .git import get_git_revision
+from .git.revisions import get_git_revision
 from .wheelfile import WheelFile
 
 

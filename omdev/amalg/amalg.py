@@ -41,7 +41,7 @@ import tokenize_rt as trt
 from omlish import check
 from omlish import collections as col
 from omlish import lang
-from omlish.lite.runtime import REQUIRED_PYTHON_VERSION
+from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 from omlish.logs import all as logs
 
 from .. import magic
@@ -595,11 +595,11 @@ def gen_amalg(
     out.write('\n\n')
 
     version_check_fail_msg = (
-        f'Requires python {REQUIRED_PYTHON_VERSION!r}, '
+        f'Requires python {LITE_REQUIRED_PYTHON_VERSION!r}, '
         f'got {{sys.version_info}} from {{sys.executable}}'
     )
     out.write(textwrap.dedent(f"""
-    if sys.version_info < {REQUIRED_PYTHON_VERSION!r}:
+    if sys.version_info < {LITE_REQUIRED_PYTHON_VERSION!r}:
         raise OSError(f{version_check_fail_msg!r})  # noqa
     """).lstrip())
     out.write('\n\n')

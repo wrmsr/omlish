@@ -48,7 +48,7 @@ import typing as ta
 
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.marshal import unmarshal_obj
-from omlish.lite.runtime import check_runtime_version
+from omlish.lite.runtime import check_lite_runtime_version
 
 from ..configs import DeployConfig
 from .base import Deployment
@@ -100,7 +100,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    check_runtime_version()
+    check_lite_runtime_version()
 
     if getattr(sys, 'platform') != 'linux':  # noqa
         raise OSError('must run on linux')
