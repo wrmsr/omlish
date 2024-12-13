@@ -186,6 +186,8 @@ class DeployPath:
     parts: ta.Sequence[DeployPathPart]
 
     def __post_init__(self) -> None:
+        hash(self)
+
         check.not_empty(self.parts)
         for p in self.parts[:-1]:
             check.equal(p.kind, 'dir')
@@ -220,10 +222,10 @@ class DeployPath:
         else:
             tail_parse = FileDeployPathPart.parse
         ps = check.non_empty_str(s).split('/')
-        return cls([
+        return cls(tuple([
             *([DirDeployPathPart.parse(p) for p in ps[:-1]] if len(ps) > 1 else []),
             tail_parse(ps[-1]),
-        ])
+        ]))
 
 
 ##
