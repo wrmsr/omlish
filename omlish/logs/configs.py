@@ -1,3 +1,6 @@
+"""
+https://docs.python.org/3/howto/logging.html#configuring-logging
+"""
 import dataclasses as dc
 import typing as ta
 
