@@ -90,18 +90,20 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
         async def checkout(self, rev: DeployRev, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
+            with self._git._atomics.begin_atomic_path_swap(
+                    'dir',
+                    dst_dir,
+                    auto_commit=True,
+                    make_dirs=True,
+            ) as dst_swap:
+                await self.fetch(rev)
 
-            await self.fetch(rev)
+                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
+                await dst_call('git', 'init')
 
-            # FIXME: temp dir swap
-            os.makedirs(dst_dir)
-
-            dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_dir)
-            await dst_call('git', 'init')
-
-            await dst_call('git', 'remote', 'add', 'local', self._dir)
-            await dst_call('git', 'fetch', '--depth=1', 'local', rev)
-            await dst_call('git', 'checkout', rev)
+                await dst_call('git', 'remote', 'add', 'local', self._dir)
+                await dst_call('git', 'fetch', '--depth=1', 'local', rev)
+                await dst_call('git', 'checkout', rev)
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
