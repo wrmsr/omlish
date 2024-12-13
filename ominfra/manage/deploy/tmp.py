@@ -29,7 +29,7 @@ class DeployTmpManager(
     @cached_nullary
     def _swapping(self) -> DeployAtomicPathSwapping:
         return TempDirDeployAtomicPathSwapping(
-            temp_dir=self._dir(),
+            temp_dir=self._make_dir(),
             root_dir=check.non_empty_str(self._deploy_home),
         )
 

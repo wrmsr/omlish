@@ -258,5 +258,11 @@ class SingleDirDeployPathOwner(DeployPathOwner, abc.ABC):
     def _dir(self) -> str:
         return os.path.join(check.non_empty_str(self._deploy_home), self._owned_dir)
 
+    @cached_nullary
+    def _make_dir(self) -> str:
+        if not os.path.isdir(d := self._dir()):
+            os.makedirs(d, exist_ok=True)
+        return d
+
     def get_owned_deploy_paths(self) -> ta.AbstractSet[DeployPath]:
         return self._owned_deploy_paths
