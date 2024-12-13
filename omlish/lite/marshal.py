@@ -3,7 +3,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
- - newtypes?
 """
 # ruff: noqa: UP006 UP007
 import abc
@@ -22,8 +21,10 @@ import weakref  # noqa
 
 from .check import check
 from .reflect import deep_subclasses
+from .reflect import get_new_type_supertype
 from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
+from .reflect import is_new_type
 from .reflect import is_union_alias
 from .strings import snake_case
 
@@ -340,6 +341,9 @@ class ObjMarshalerManager:
                     {f.name: rec(f.type) for f in dc.fields(ty)},
                     nonstrict=nonstrict_dataclasses,
                 )
+
+        if is_new_type(ty):
+            return rec(get_new_type_supertype(ty))
 
         if is_generic_alias(ty):
             try:

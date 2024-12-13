@@ -28,6 +28,34 @@ class TestGit(unittest.IsolatedAsyncioTestCase):
         )
 
         checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
+        print(checkout_dir)
+
+        await git.checkout(
+            checkout,
+            checkout_dir,
+        )
+
+    async def test_git_subtree(self):
+        deploy_home = DeployHome(tempfile.mkdtemp())
+
+        git = DeployGitManager(
+            deploy_home=deploy_home,
+            atomics=TempDirDeployAtomicPathSwapping(),
+        )
+
+        checkout = DeployGitCheckout(
+            repo=DeployGitRepo(
+                host='github.com',
+                path='wrmsr/flaskthing',
+            ),
+            rev=DeployRev('e9de238fc8cb73f7e0cc245139c0a45b33294fe3'),
+            subtrees=(
+                'flaskthing/templates/*.html',
+            ),
+        )
+
+        checkout_dir = os.path.join(deploy_home, 'apps', 'foo')
+        print(checkout_dir)
 
         await git.checkout(
             checkout,

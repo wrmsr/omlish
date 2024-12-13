@@ -44,4 +44,8 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
+        from omlish.lite.json import json_dumps_compact
+        from omlish.lite.marshal import marshal_obj
+        print(json_dumps_compact(marshal_obj(spec)))
+
         await apps.prepare_app(spec)

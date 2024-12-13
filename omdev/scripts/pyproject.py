@@ -2378,6 +2378,10 @@ def is_new_type(spec: ta.Any) -> bool:
         return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
 
 
+def get_new_type_supertype(spec: ta.Any) -> ta.Any:
+    return spec.__supertype__
+
+
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
@@ -3682,7 +3686,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
- - newtypes?
 """
 
 
@@ -3995,6 +3998,9 @@ class ObjMarshalerManager:
                     {f.name: rec(f.type) for f in dc.fields(ty)},
                     nonstrict=nonstrict_dataclasses,
                 )
+
+        if is_new_type(ty):
+            return rec(get_new_type_supertype(ty))
 
         if is_generic_alias(ty):
             try:
