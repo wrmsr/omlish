@@ -5,10 +5,10 @@ import typing as ta
 from omlish.lite.inject import InjectorBindingOrBindings
 from omlish.lite.inject import InjectorBindings
 from omlish.lite.inject import inj
+from omlish.os.atomics import AtomicPathSwapping
 
 from ..commands.inject import bind_command
 from .apps import DeployAppManager
-from .atomics import DeployAtomicPathSwapping
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor
 from .config import DeployConfig
@@ -34,7 +34,7 @@ def bind_deploy(
         inj.bind(DeployGitManager, singleton=True),
 
         inj.bind(DeployTmpManager, singleton=True),
-        inj.bind(DeployAtomicPathSwapping, to_key=DeployTmpManager),
+        inj.bind(AtomicPathSwapping, to_key=DeployTmpManager),
 
         inj.bind(DeployVenvManager, singleton=True),
 
