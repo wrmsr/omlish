@@ -8,7 +8,7 @@ from omlish.lite.inject import inj
 
 from ..commands.inject import bind_command
 from .apps import DeployAppManager
-from .atomic import DeployAtomicPathSwapping
+from .atomics import DeployAtomicPathSwapping
 from .commands import DeployCommand
 from .commands import DeployCommandExecutor
 from .config import DeployConfig

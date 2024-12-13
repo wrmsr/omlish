@@ -1,14 +1,13 @@
 # ruff: noqa: UP006 UP007
-import os.path
-import tempfile
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 
-from .atomic import DeployAtomicPathSwap
-from .atomic import DeployAtomicPathSwapKind
-from .atomic import DeployAtomicPathSwapping
-from .atomic import OsRenameDeployAtomicPathSwap
+from .atomics import DeployAtomicPathSwap
+from .atomics import DeployAtomicPathSwapKind
+from .atomics import DeployAtomicPathSwapping
+from .atomics import TempDirDeployAtomicPathSwapping
 from .paths import SingleDirDeployPathOwner
 from .types import DeployHome
 
@@ -27,6 +26,13 @@ class DeployTmpManager(
             deploy_home=deploy_home,
         )
 
+    @cached_nullary
+    def _swapping(self) -> DeployAtomicPathSwapping:
+        return TempDirDeployAtomicPathSwapping(
+            temp_dir=self._dir(),
+            root_dir=check.non_empty_str(self._deploy_home),
+        )
+
     def begin_atomic_path_swap(
             self,
             kind: DeployAtomicPathSwapKind,
@@ -34,20 +40,8 @@ class DeployTmpManager(
             *,
             name_hint: ta.Optional[str] = None,
     ) -> DeployAtomicPathSwap:
-        dst_path = os.path.abspath(dst_path)
-        if not dst_path.startswith(check.non_empty_str(self._deploy_home)):
-            raise RuntimeError(f'Atomic path swap dst must be in deploy home: {dst_path}, {self._deploy_home}')
-
-        if kind == 'dir':
-            tmp_path = tempfile.mkdtemp(prefix=name_hint, dir=self._dir())
-        elif kind == 'file':
-            fd, tmp_path = tempfile.mkstemp(prefix=name_hint, dir=self._dir())
-            os.close(fd)
-        else:
-            raise TypeError(kind)
-
-        return OsRenameDeployAtomicPathSwap(
+        return self._swapping().begin_atomic_path_swap(
             kind,
             dst_path,
-            tmp_path,
+            name_hint=name_hint,
         )

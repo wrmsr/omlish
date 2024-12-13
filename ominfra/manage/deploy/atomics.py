@@ -2,6 +2,7 @@
 import abc
 import os
 import shutil
+import tempfile
 import typing as ta
 
 from omlish.lite.check import check
@@ -153,3 +154,43 @@ class OsRenameDeployAtomicPathSwap(DeployAtomicPathSwap):
 
     def _abort(self) -> None:
         shutil.rmtree(self._tmp_path, ignore_errors=True)
+
+
+class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
+    def __init__(
+            self,
+            *,
+            temp_dir: ta.Optional[str] = None,
+            root_dir: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        if root_dir is not None:
+            root_dir = os.path.abspath(root_dir)
+        self._root_dir = root_dir
+        self._temp_dir = temp_dir
+
+    def begin_atomic_path_swap(
+            self,
+            kind: DeployAtomicPathSwapKind,
+            dst_path: str,
+            *,
+            name_hint: ta.Optional[str] = None,
+    ) -> DeployAtomicPathSwap:
+        dst_path = os.path.abspath(dst_path)
+        if self._root_dir is not None and not dst_path.startswith(check.non_empty_str(self._root_dir)):
+            raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
+
+        if kind == 'dir':
+            tmp_path = tempfile.mkdtemp(prefix=name_hint, dir=self._temp_dir)
+        elif kind == 'file':
+            fd, tmp_path = tempfile.mkstemp(prefix=name_hint, dir=self._temp_dir)
+            os.close(fd)
+        else:
+            raise TypeError(kind)
+
+        return OsRenameDeployAtomicPathSwap(
+            kind,
+            dst_path,
+            tmp_path,
+        )
