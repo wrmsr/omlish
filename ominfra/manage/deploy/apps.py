@@ -24,7 +24,7 @@ def make_deploy_tag(
         now = datetime.datetime.utcnow()  # noqa
     now_fmt = '%Y%m%dT%H%M%S'
     now_str = now.strftime(now_fmt)
-    return DeployTag('-'.join([rev, now_str]))
+    return DeployTag('-'.join([now_str, rev]))
 
 
 class DeployAppManager(DeployPathOwner):
