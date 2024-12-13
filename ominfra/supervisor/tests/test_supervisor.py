@@ -5,8 +5,8 @@ import typing as ta
 import unittest
 
 from omlish.lite.inject import inj
-from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import is_debugger_attached
+from omlish.logs.standard import configure_standard_logging
 
 from ...configs import read_config_file
 from ..configs import ServerConfig
