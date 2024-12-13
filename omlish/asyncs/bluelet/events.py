@@ -12,7 +12,9 @@ import typing as ta
 
 R = ta.TypeVar('R')
 
-BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')
+BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')  # ta.TypeAlias
+
+BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
 
 
 ##
@@ -33,9 +35,6 @@ class BlueletEvent(abc.ABC):  # noqa
 
 class BlueletHasFileno(ta.Protocol):
     def fileno(self) -> int: ...
-
-
-BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
