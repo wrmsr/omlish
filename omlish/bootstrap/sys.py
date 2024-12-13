@@ -21,8 +21,8 @@ from .base import SimpleBootstrap
 
 if ta.TYPE_CHECKING:
     from .. import libc
-    from .. import logs
     from ..formats import dotenv
+    from ..logs import all as logs
     from ..os import pidfile
 
 else:

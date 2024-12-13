@@ -13,10 +13,10 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import logs
 from omlish.diag import pycharm
 from omlish.formats import dotenv
 from omlish.formats import json
+from omlish.logs import all as logs
 
 from ..backends.anthropic import AnthropicChatModel
 from ..backends.google import GoogleChatModel

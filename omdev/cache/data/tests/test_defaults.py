@@ -9,7 +9,7 @@ from .. import specs
 
 @pytest.mark.online
 def test_default():
-    from omlish import logs
+    from omlish.logs import all as logs
 
     logs.configure_standard_logging('INFO')
 

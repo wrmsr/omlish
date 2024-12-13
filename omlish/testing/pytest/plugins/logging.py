@@ -1,4 +1,4 @@
-from .... import logs
+from ....logs import all as logs
 from ._registry import register
 
 

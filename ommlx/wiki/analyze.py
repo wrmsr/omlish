@@ -44,10 +44,10 @@ import sqlalchemy.exc
 from omlish import cached
 from omlish import concurrent as cfu
 from omlish import lang
-from omlish import logs
 from omlish import marshal as msh
 from omlish import multiprocessing as mpu
 from omlish.formats import json
+from omlish.logs import all as logs
 
 from . import models as mdl
 from .text import mfh  # noqa
