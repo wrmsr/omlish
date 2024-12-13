@@ -30,8 +30,13 @@ class DeployGitCheckout:
     repo: DeployGitRepo
     rev: DeployRev
 
+    subtrees: ta.Optional[ta.Sequence[str]] = None
+
     def __post_init__(self) -> None:
         check.non_empty_str(self.rev)
+        if self.subtrees is not None:
+            for st in self.subtrees:
+                check.non_empty_str(st)
 
 
 ##

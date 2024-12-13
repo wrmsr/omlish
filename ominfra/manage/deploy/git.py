@@ -70,11 +70,15 @@ class DeployGitManager(SingleDirDeployPathOwner):
             else:
                 return f'https://{self._repo.host}/{self._repo.path}'
 
+        #
+
         async def _call(self, *cmd: str) -> None:
             await asyncio_subprocesses.check_call(
                 *cmd,
                 cwd=self._dir,
             )
+
+        #
 
         @async_cached_nullary
         async def init(self) -> None:
@@ -89,6 +93,20 @@ class DeployGitManager(SingleDirDeployPathOwner):
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
 
+        #
+
+        async def _full_checkout(self, checkout, tmp_dir: str) -> None:
+            dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=tmp_dir)
+
+            await dst_call('git', 'init')
+
+            await dst_call('git', 'remote', 'add', 'local', self._dir)
+            await dst_call('git', 'fetch', '--depth=1', 'local', checkout.rev)
+            await dst_call('git', 'checkout', checkout.rev)
+
+        async def _subtree_checkout(self, checkout, tmp_dir: str) -> None:
+            raise NotImplementedError
+
         async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
             with self._git._atomics.begin_atomic_path_swap(  # noqa
@@ -99,12 +117,11 @@ class DeployGitManager(SingleDirDeployPathOwner):
             ) as dst_swap:
                 await self.fetch(checkout.rev)
 
-                dst_call = functools.partial(asyncio_subprocesses.check_call, cwd=dst_swap.tmp_path)
-                await dst_call('git', 'init')
-
-                await dst_call('git', 'remote', 'add', 'local', self._dir)
-                await dst_call('git', 'fetch', '--depth=1', 'local', checkout.rev)
-                await dst_call('git', 'checkout', checkout.rev)
+                tmp_dir = dst_swap.tmp_path
+                if checkout.subtrees is not None:
+                    await self._subtree_checkout(checkout, tmp_dir=tmp_dir)
+                else:
+                    await self._full_checkout(checkout, tmp_dir=tmp_dir)
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
