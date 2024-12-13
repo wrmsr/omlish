@@ -2692,6 +2692,10 @@ def is_new_type(spec: ta.Any) -> bool:
         return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
 
 
+def get_new_type_supertype(spec: ta.Any) -> ta.Any:
+    return spec.__supertype__
+
+
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
@@ -4261,41 +4265,12 @@ class TempDirDeployAtomicPathSwapping(DeployAtomicPathSwapping):
 ########################################
 # ../deploy/paths.py
 """
-~deploy
-  deploy.pid (flock)
-  /app
-    /<appplaceholder> - shallow clone
-  /conf
-    /env
-      <appplaceholder>.env
-    /nginx
-      <appplaceholder>.conf
-    /supervisor
-      <appplaceholder>.conf
-  /venv
-    /<appplaceholder>
-
-  /tmp
-
-?
-  /logs
-    /wrmsr--omlish--<placeholder>
-
-placeholder = <name>--<rev>--<when>
-
-==
-
-for dn in [
-    'app',
-    'conf',
-    'conf/env',
-    'conf/nginx',
-    'conf/supervisor',
-    'venv',
-]:
-
-==
-
+TODO:
+ - run/pidfile
+ - logs/...
+ - current symlink
+ - conf/{nginx,supervisor}
+ - env/?
 """
 
 
@@ -4307,7 +4282,7 @@ DEPLOY_PATH_PLACEHOLDER_SEPARATORS = '-.'
 
 DEPLOY_PATH_PLACEHOLDERS: ta.FrozenSet[str] = frozenset([
     'app',
-    'tag',  # <rev>-<dt>
+    'tag',
 ])
 
 
@@ -4539,8 +4514,14 @@ class DeployGitCheckout:
     repo: DeployGitRepo
     rev: DeployRev
 
+    subtrees: ta.Optional[ta.Sequence[str]] = None
+
     def __post_init__(self) -> None:
+        hash(self)
         check.non_empty_str(self.rev)
+        if self.subtrees is not None:
+            for st in self.subtrees:
+                check.non_empty_str(st)
 
 
 ##
@@ -6018,7 +5999,6 @@ TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
  - namedtuple
  - literals
- - newtypes?
 """
 
 
@@ -6331,6 +6311,9 @@ class ObjMarshalerManager:
                     {f.name: rec(f.type) for f in dc.fields(ty)},
                     nonstrict=nonstrict_dataclasses,
                 )
+
+        if is_new_type(ty):
+            return rec(get_new_type_supertype(ty))
 
         if is_generic_alias(ty):
             try:
@@ -6755,27 +6738,6 @@ class PingCommandExecutor(CommandExecutor[PingCommand, PingCommand.Output]):
 
 
 CommandExecutorMap = ta.NewType('CommandExecutorMap', ta.Mapping[ta.Type[Command], CommandExecutor])
-
-
-########################################
-# ../deploy/commands.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployCommand(Command['DeployCommand.Output']):
-    @dc.dataclass(frozen=True)
-    class Output(Command.Output):
-        pass
-
-
-class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
-    async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
-        log.info('Deploying!')
-
-        return DeployCommand.Output()
 
 
 ########################################
@@ -8245,11 +8207,15 @@ class DeployGitManager(SingleDirDeployPathOwner):
             else:
                 return f'https://{self._repo.host}/{self._repo.path}'
 
+        #
+
         async def _call(self, *cmd: str) -> None:
             await asyncio_subprocesses.check_call(
                 *cmd,
                 cwd=self._dir,
             )
+
+        #
 
         @async_cached_nullary
         async def init(self) -> None:
@@ -8263,6 +8229,8 @@ class DeployGitManager(SingleDirDeployPathOwner):
         async def fetch(self, rev: DeployRev) -> None:
             await self.init()
             await self._call('git', 'fetch', '--depth=1', 'origin', rev)
+
+        #
 
         async def checkout(self, checkout: DeployGitCheckout, dst_dir: str) -> None:
             check.state(not os.path.exists(dst_dir))
@@ -8279,7 +8247,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
 
                 await dst_call('git', 'remote', 'add', 'local', self._dir)
                 await dst_call('git', 'fetch', '--depth=1', 'local', checkout.rev)
-                await dst_call('git', 'checkout', checkout.rev)
+                await dst_call('git', 'checkout', checkout.rev, *(checkout.subtrees or []))
 
     def get_repo_dir(self, repo: DeployGitRepo) -> RepoDir:
         try:
@@ -9655,6 +9623,34 @@ class SystemInterpProvider(InterpProvider):
                 version=ev,
             )
         raise KeyError(version)
+
+
+########################################
+# ../deploy/commands.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployCommand(Command['DeployCommand.Output']):
+    spec: DeploySpec
+
+    @dc.dataclass(frozen=True)
+    class Output(Command.Output):
+        pass
+
+
+@dc.dataclass(frozen=True)
+class DeployCommandExecutor(CommandExecutor[DeployCommand, DeployCommand.Output]):
+    _apps: DeployAppManager
+
+    async def execute(self, cmd: DeployCommand) -> DeployCommand.Output:
+        log.info('Deploying! %r', cmd.spec)
+
+        await self._apps.prepare_app(cmd.spec)
+
+        return DeployCommand.Output()
 
 
 ########################################

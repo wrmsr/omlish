@@ -1086,6 +1086,10 @@ def is_new_type(spec: ta.Any) -> bool:
         return isinstance(spec, types.FunctionType) and spec.__code__ is ta.NewType.__code__.co_consts[1]  # type: ignore  # noqa
 
 
+def get_new_type_supertype(spec: ta.Any) -> ta.Any:
+    return spec.__supertype__
+
+
 def deep_subclasses(cls: ta.Type[T]) -> ta.Iterator[ta.Type[T]]:
     seen = set()
     todo = list(reversed(cls.__subclasses__()))
