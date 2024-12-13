@@ -57,15 +57,14 @@ class DeployAppManager(DeployPathOwner):
     async def prepare_app(
             self,
             spec: DeploySpec,
-    ):
-        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.rev, spec.key()))
+    ) -> None:
+        app_tag = DeployAppTag(spec.app, make_deploy_tag(spec.checkout.rev, spec.key()))
         app_dir = os.path.join(self._dir(), spec.app, app_tag.tag)
 
         #
 
         await self._git.checkout(
-            spec.repo,
-            spec.rev,
+            spec.checkout,
             app_dir,
         )
 
