@@ -44,7 +44,7 @@ class DeployVenvManager(DeployPathOwner):
             self,
             app_dir: str,
             venv_dir: str,
-            spec: DeployVenvSpec,
+            # spec: DeployVenvSpec,
             *,
             use_uv: bool = True,
     ) -> None:
