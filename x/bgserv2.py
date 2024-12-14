@@ -1,4 +1,4 @@
-import asyncio
+import trio
 
 from omlish.http.asgi import stub_lifespan
 from omserv.server import Config
@@ -21,7 +21,7 @@ async def _a_main() -> None:
 
             await send({
                 'type': 'http.response.body',
-                'body': 'hi',
+                'body': 'hi\n'.encode('utf-8'),
             })
 
     await serve(
@@ -31,4 +31,4 @@ async def _a_main() -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(_a_main())
+    trio.run(_a_main)
