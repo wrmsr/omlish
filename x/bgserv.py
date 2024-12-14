@@ -7,6 +7,8 @@ import time
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 
+from omlish.
+
 
 PIDFILE = '/tmp/my_server.pid'
 PORT = 8888
