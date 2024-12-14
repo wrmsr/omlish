@@ -7,7 +7,7 @@ import time
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 
-from omlish.
+from omlish.os.pidfile import Pidfile
 
 
 PIDFILE = '/tmp/my_server.pid'
@@ -26,19 +26,8 @@ def is_running():
     if not os.path.isfile(PIDFILE):
         return False
 
-    try:
-        with open(PIDFILE) as f:
-            pid_str = f.read().strip()
-        if not pid_str:
-            return False
-        pid = int(pid_str)
-
-        # Signal 0 just checks if the process exists (no kill performed)
-        os.kill(pid, 0)
-    except (OSError, ValueError):
-        return False
-
-    return True
+    with Pidfile(PIDFILE) as pf:
+        return not pf.try_lock()
 
 
 def start_server_daemon():
@@ -64,10 +53,9 @@ def start_server_daemon():
     sys.stderr.flush()
 
     # Write daemon PID to pidfile
-    with open(PIDFILE, 'w') as f:
-        f.write(str(os.getpid()))
-
-    run_server()
+    with Pidfile(PIDFILE) as pf:  # noqa
+        pf.write()
+        run_server()
 
 
 def run_server():
@@ -108,12 +96,7 @@ def run_server():
     watcher_thread = threading.Thread(target=idle_watcher, daemon=True)
     watcher_thread.start()
 
-    try:
-        httpd.serve_forever()
-    finally:
-        # Cleanup after shutdown
-        if os.path.exists(PIDFILE):
-            os.remove(PIDFILE)
+    httpd.serve_forever()
 
 
 def get_time():
