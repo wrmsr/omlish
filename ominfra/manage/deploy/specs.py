@@ -44,9 +44,27 @@ class DeployGitCheckout:
 
 
 @dc.dataclass(frozen=True)
+class DeployVenvSpec:
+    interp: ta.Optional[str] = None
+
+    requirements_files: ta.Optional[ta.Sequence[str]] = None
+    extra_dependencies: ta.Optional[ta.Sequence[str]] = None
+
+    use_uv: bool = False
+
+    def __post_init__(self) -> None:
+        hash(self)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
 class DeploySpec:
     app: DeployApp
     checkout: DeployGitCheckout
+
+    venv: ta.Optional[DeployVenvSpec] = None
 
     def __post_init__(self) -> None:
         hash(self)
