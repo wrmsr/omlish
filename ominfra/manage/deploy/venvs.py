@@ -14,6 +14,7 @@ from omlish.os.atomics import AtomicPathSwapping
 
 from .paths import DeployPath
 from .paths import DeployPathOwner
+from .specs import DeployVenvSpec
 from .types import DeployAppTag
 from .types import DeployHome
 
@@ -43,6 +44,7 @@ class DeployVenvManager(DeployPathOwner):
             self,
             app_dir: str,
             venv_dir: str,
+            spec: DeployVenvSpec,
             *,
             use_uv: bool = True,
     ) -> None:
