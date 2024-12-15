@@ -24,6 +24,20 @@
     }
   },
   {
+    "module": ".io.compress.codecs",
+    "attr": "_BZ2_LAZY_CODEC",
+    "file": "omlish/io/compress/codecs.py",
+    "line": 12,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.codecs",
+        "attr_name": "BZ2_CODEC",
+        "name": "bz2",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".secrets.pwgen",
     "attr": "_CLI_MODULE",
     "file": "omlish/secrets/pwgen.py",

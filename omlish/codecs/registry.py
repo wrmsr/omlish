@@ -1,4 +1,3 @@
-import dataclasses as dc
 import importlib
 import threading
 import typing as ta
@@ -7,23 +6,13 @@ from .. import cached
 from .. import check
 from .. import lang
 from .base import Codec
+from .base import LazyLoadedCodec
 
 
 if ta.TYPE_CHECKING:
     from ..manifests import load as manifest_load
 else:
     manifest_load = lang.proxy_import('..manifests.load', __package__)
-
-
-##
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class LazyLoadedCodec:
-    mod_name: str
-    attr_name: str
-    name: str
-    aliases: ta.Collection[str] | None = None
 
 
 ##
@@ -81,7 +70,7 @@ class CodecRegistry:
             if isinstance(codec_or_lazy, LazyLoadedCodec):
                 mod = importlib.import_module(codec_or_lazy.mod_name)
                 codec = check.isinstance(getattr(mod, codec_or_lazy.attr_name), Codec)
-                self._by_name = codec
+                self._by_name[name] = codec
                 self._post_load(codec)
             else:
                 codec = check.isinstance(codec_or_lazy, Codec)
@@ -100,7 +89,10 @@ class CodecRegistry:
 
 @cached.function
 def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
-    raise NotImplementedError
+    ldr = manifest_load.MANIFEST_LOADER
+    pkgs = {__package__.split('.')[0], *ldr.discover()}
+    mns = ldr.load(*pkgs, only=[LazyLoadedCodec])
+    return [m.value for m in mns]
 
 
 def _install_manifest_lazy_loaded_codecs(registry: CodecRegistry) -> None:

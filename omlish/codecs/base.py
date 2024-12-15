@@ -62,3 +62,23 @@ class Codec:
 
     new: ta.Callable[..., EagerCodec]
     new_incremental: ta.Callable[..., IncrementalCodec] | None = None
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class LazyLoadedCodec:
+    mod_name: str
+    attr_name: str
+    name: str
+    aliases: ta.Collection[str] | None = None
+
+    @classmethod
+    def new(cls, mod_name: str, attr_name: str, codec: Codec) -> 'LazyLoadedCodec':
+        return cls(
+            mod_name=mod_name,
+            attr_name=attr_name,
+            name=codec.name,
+            aliases=codec.aliases,
+        )
