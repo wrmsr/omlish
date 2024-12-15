@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: N802
 """
 https://github.com/hauntsaninja/pyp/tree/5af2a583fcac2e0f57272ee2112eb76cb0449191
 """
@@ -13,6 +14,8 @@ import sys
 import textwrap
 import traceback
 import typing as ta
+
+from omlish import check
 
 
 def pypprint(*args: ta.Any, **kwargs: ta.Any) -> None:
@@ -30,7 +33,7 @@ def pypprint(*args: ta.Any, **kwargs: ta.Any) -> None:
     x = args[0]
     if isinstance(x, dict):
         for k, v in x.items():
-            print(f"{k}:", v, **kwargs)
+            print(f'{k}:', v, **kwargs)
     elif isinstance(x, ta.Iterable) and not isinstance(x, str):
         for i in x:
             print(i, **kwargs)
@@ -57,7 +60,7 @@ class NameFinder(ast.NodeVisitor):
         self.wildcard_imports: list[str] = []
         for tree in trees:
             self.visit(tree)
-        assert len(self._scopes) == 1
+        check.equal(len(self._scopes), 1)
 
     @property
     def top_level_defined(self) -> set[str]:
@@ -74,7 +77,7 @@ class NameFinder(ast.NodeVisitor):
     def generic_visit(self, node: ast.AST) -> None:
         def order(f_v: tuple[str, ta.Any]) -> int:
             # This ordering fixes comprehensions, dict comps, loops, assignments
-            return {"generators": -3, "iter": -3, "key": -2, "value": -1}.get(f_v[0], 0)
+            return {'generators': -3, 'iter': -3, 'key': -2, 'value': -1}.get(f_v[0], 0)
 
         # Adapted from ast.NodeVisitor.generic_visit, but re-orders traversal a little
         for _, value in sorted(ast.iter_fields(node), key=order):
@@ -106,8 +109,8 @@ class NameFinder(ast.NodeVisitor):
     def visit_NamedExpr(self, node: ta.Any) -> None:
         self.visit(node.value)
         # PEP 572 has weird scoping rules
-        assert isinstance(node.target, ast.Name)
-        assert isinstance(node.target.ctx, ast.Store)
+        check.isinstance(node.target, ast.Name)
+        check.isinstance(node.target.ctx, ast.Store)
         scope_index = len(self._scopes) - 1
         comp_index = len(self._comprehension_scopes) - 1
         while comp_index >= 0 and scope_index == self._comprehension_scopes[comp_index]:
@@ -116,13 +119,13 @@ class NameFinder(ast.NodeVisitor):
         self._scopes[scope_index].add(node.target.id)
 
     def visit_alias(self, node: ast.alias) -> None:
-        if node.name != "*":
+        if node.name != '*':
             self._scopes[-1].add(
-                node.asname if node.asname is not None else node.name.split(".")[0]
+                node.asname if node.asname is not None else node.name.split('.')[0],
             )
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        if node.module is not None and "*" in (a.name for a in node.names):
+        if node.module is not None and '*' in (a.name for a in node.names):
             self.wildcard_imports.append(node.module)
         self.generic_visit(node)
 
@@ -169,7 +172,7 @@ class NameFinder(ast.NodeVisitor):
             return
 
         self.flexible_visit(node.type)
-        assert node.name is not None
+        check.not_none(node.name)
         self._scopes[-1].add(node.name)
         self.flexible_visit(node.body)
         self._scopes[-1].remove(node.name)
@@ -198,9 +201,9 @@ def dfs_walk(node: ast.AST) -> ta.Iterator[ast.AST]:
 
 
 MAGIC_VARS = {
-    "index": {"i", "idx", "index"},
-    "loop": {"line", "x", "l"},
-    "input": {"lines", "stdin"},
+    'index': {'i', 'idx', 'index'},
+    'loop': {'line', 'x', 'l'},
+    'input': {'lines', 'stdin'},
 }
 
 
@@ -215,15 +218,15 @@ class PypError(Exception):
 def get_config_contents() -> str:
     """Returns the empty string if no config file is specified."""
 
-    config_file = os.environ.get("PYP_CONFIG_PATH")
+    config_file = os.environ.get('PYP_CONFIG_PATH')
     if config_file is None:
-        return ""
+        return ''
     try:
-        with open(config_file, "r") as f:
+        with open(config_file) as f:
             return f.read()
     except FileNotFoundError:
-        print(f"warning: Config file not found at PYP_CONFIG_PATH={config_file}", file=sys.stderr)
-        return ""
+        print(f'warning: Config file not found at PYP_CONFIG_PATH={config_file}', file=sys.stderr)
+        return ''
 
 
 class PypConfig:
@@ -243,8 +246,8 @@ class PypConfig:
         try:
             config_ast = ast.parse(config_contents)
         except SyntaxError as e:
-            error = f": {e.text!r}" if e.text else ""
-            raise PypError(f"Config has invalid syntax{error}") from e
+            error = f': {e.text!r}' if e.text else ''
+            raise PypError(f'Config has invalid syntax{error}') from e
 
         # List of config parts
         self.parts: list[ast.stmt] = config_ast.body
@@ -259,10 +262,10 @@ class PypConfig:
         # Modules from which automatic imports work without qualification, ordered by AST encounter
         self.wildcard_imports: list[str] = []
 
-        self.shebang: str = "#!/usr/bin/env python3"
-        if config_contents.startswith("#!"):
-            self.shebang = "\n".join(
-                itertools.takewhile(lambda line: line.startswith("#"), config_contents.splitlines())
+        self.shebang: str = '#!/usr/bin/env python3'
+        if config_contents.startswith('#!'):
+            self.shebang = '\n'.join(
+                itertools.takewhile(lambda line: line.startswith('#'), config_contents.splitlines()),
             )
 
         top_level: tuple[ta.Any, ...] = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
@@ -270,18 +273,18 @@ class PypConfig:
         for index, part in enumerate(self.parts):
             if not isinstance(part, top_level):
                 node_type = type(
-                    part.value if isinstance(part, ast.Expr) else part
+                    part.value if isinstance(part, ast.Expr) else part,
                 ).__name__.lower()
                 raise PypError(
-                    "Config only supports a subset of Python at top level; "
-                    f"unsupported construct ({node_type}) on line {part.lineno}"
+                    'Config only supports a subset of Python at top level; '
+                    f'unsupported construct ({node_type}) on line {part.lineno}',
                 )
             f = NameFinder(part)
             for name in f.top_level_defined:
                 if self.name_to_def.get(name, index) != index:
-                    raise PypError(f"Config has multiple definitions of {repr(name)}")
+                    raise PypError(f'Config has multiple definitions of {name!r}')
                 if is_magic_var(name):
-                    raise PypError(f"Config cannot redefine built-in magic variable {repr(name)}")
+                    raise PypError(f'Config cannot redefine built-in magic variable {name!r}')
                 self.name_to_def[name] = index
                 self.def_to_names[index].append(name)
             self.requires[index] = f.undefined
@@ -308,11 +311,11 @@ class PypTransform:
     ) -> None:
         def parse_input(code: list[str]) -> ast.Module:
             try:
-                return ast.parse(textwrap.dedent("\n".join(code).strip()))
+                return ast.parse(textwrap.dedent('\n'.join(code).strip()))
             except SyntaxError as e:
                 message = traceback.format_exception_only(type(e), e)
-                message[0] = "Invalid input\n\n"
-                raise PypError("".join(message).strip()) from e
+                message[0] = 'Invalid input\n\n'
+                raise PypError(''.join(message).strip()) from e
 
         self.before_tree = parse_input(before)
         self.tree = parse_input(code)
@@ -326,7 +329,7 @@ class PypTransform:
         # We'll always use sys in ``build_input``, so add it to undefined.
         # This lets config define it or lets us automatically import it later
         # (If before defines it, we'll just let it override the import...)
-        self.undefined.add("sys")
+        self.undefined.add('sys')
 
         self.define_pypprint = define_pypprint
         self.config = config
@@ -384,7 +387,7 @@ class PypTransform:
         """Return a name related to ``name`` that does not conflict with existing definitions."""
 
         while name in self.defined or name in self.undefined:
-            name += "_"
+            name += '_'
         return name
 
     def build_output(self) -> None:
@@ -395,7 +398,7 @@ class PypTransform:
         an expression, modifying the tree to print it.
         """
 
-        if self.undefined & {"print", "pprint", "pp", "pypprint"}:  # has an explicit print
+        if self.undefined & {'print', 'pprint', 'pp', 'pypprint'}:  # has an explicit print
             return
 
         def inner(body: list[ast.stmt], use_pypprint: bool = False) -> bool:
@@ -407,12 +410,12 @@ class PypTransform:
             if not isinstance(body[-1], ast.Expr):
                 if (
                     # If the last thing in the tree is a statement that has a body
-                    hasattr(body[-1], "body")
+                    hasattr(body[-1], 'body')
                     # and doesn't have an orelse, since users could expect the print in that branch
-                    and not getattr(body[-1], "orelse", [])
+                    and not getattr(body[-1], 'orelse', [])
                     # and doesn't enter a new scope
                     and not isinstance(
-                        body[-1], (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+                        body[-1], (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef),
                     )
                 ):
                     # ...then recursively look for a standalone expression
@@ -423,19 +426,19 @@ class PypTransform:
                 output = body[-1].value.id
                 body.pop()
             else:
-                output = self.get_valid_name_in_top_scope("output")
+                output = self.get_valid_name_in_top_scope('output')
                 self.define(output)
                 body[-1] = ast.Assign(
                     targets=[ast.Name(id=output, ctx=ast.Store())],
                     value=body[-1].value,
                 )
 
-            print_fn = "print"
+            print_fn = 'print'
             if use_pypprint:
-                print_fn = "pypprint"
-                self.undefined.add("pypprint")
+                print_fn = 'pypprint'
+                self.undefined.add('pypprint')
 
-            if_print = ast.parse(f"if {output} is not None: {print_fn}({output})").body[0]
+            if_print = ast.parse(f'if {output} is not None: {print_fn}({output})').body[0]
             body.append(if_print)
 
             self.implicit_print = if_print.body[0].value  # type: ignore
@@ -449,17 +452,17 @@ class PypTransform:
         if not success:
             raise PypError(
                 "Code doesn't generate any output; either explicitly print something, end with an expression that pyp "
-                "can print, or explicitly end with `pass`."
+                "can print, or explicitly end with `pass`.",
             )
 
     def use_pypprint_for_implicit_print(self) -> None:
         """If we implicitly print, use pypprint instead of print."""
 
         if self.implicit_print is not None:
-            self.implicit_print.func.id = "pypprint"  # type: ignore
+            self.implicit_print.func.id = 'pypprint'  # type: ignore
 
             # Make sure we import it later
-            self.undefined.add("pypprint")
+            self.undefined.add('pypprint')
 
     def build_input(self) -> None:
         """
@@ -470,44 +473,44 @@ class PypTransform:
 
         possible_vars = {typ: names & self.undefined for typ, names in MAGIC_VARS.items()}
 
-        if (possible_vars["loop"] or possible_vars["index"]) and possible_vars["input"]:
-            loop_names = ", ".join(possible_vars["loop"] or possible_vars["index"])
-            input_names = ", ".join(possible_vars["input"])
-            raise PypError(f"Candidates found for both loop variable ({loop_names}) and input variable ({input_names})")
+        if (possible_vars['loop'] or possible_vars['index']) and possible_vars['input']:
+            loop_names = ', '.join(possible_vars['loop'] or possible_vars['index'])
+            input_names = ', '.join(possible_vars['input'])
+            raise PypError(f'Candidates found for both loop variable ({loop_names}) and input variable ({input_names})')
 
         for typ, names in possible_vars.items():
             if len(names) > 1:
-                names_str = ", ".join(names)
-                raise PypError(f"Multiple candidates for {typ} variable: {names_str}")
+                names_str = ', '.join(names)
+                raise PypError(f'Multiple candidates for {typ} variable: {names_str}')
 
-        if possible_vars["loop"] or possible_vars["index"]:
+        if possible_vars['loop'] or possible_vars['index']:
             # We'll loop over stdin and define loop / index variables
-            idx_var = possible_vars["index"].pop() if possible_vars["index"] else None
-            loop_var = possible_vars["loop"].pop() if possible_vars["loop"] else None
+            idx_var = possible_vars['index'].pop() if possible_vars['index'] else None
+            loop_var = possible_vars['loop'].pop() if possible_vars['loop'] else None
 
             if loop_var:
                 self.define(loop_var)
             if idx_var:
                 self.define(idx_var)
             if loop_var is None:
-                loop_var = "_"
+                loop_var = '_'
 
             if idx_var:
-                for_loop = f"for {idx_var}, {loop_var} in enumerate(sys.stdin): "
+                for_loop = f'for {idx_var}, {loop_var} in enumerate(sys.stdin): '
             else:
-                for_loop = f"for {loop_var} in sys.stdin: "
+                for_loop = f'for {loop_var} in sys.stdin: '
             for_loop += f"{loop_var} = {loop_var}.rstrip('\\n')"
 
             loop: ast.For = ast.parse(for_loop).body[0]  # type: ignore
             loop.body.extend(self.tree.body)
             self.tree.body = [loop]
-        elif possible_vars["input"]:
+        elif possible_vars['input']:
             # We'll read from stdin and define the necessary input variable
-            input_var = possible_vars["input"].pop()
+            input_var = possible_vars['input'].pop()
             self.define(input_var)
 
-            if input_var == "stdin":
-                input_assign = ast.parse(f"{input_var} = sys.stdin")
+            if input_var == 'stdin':
+                input_assign = ast.parse(f'{input_var} = sys.stdin')
             else:
                 input_assign = ast.parse(f"{input_var} = [x.rstrip('\\n') for x in sys.stdin]")
 
@@ -515,9 +518,9 @@ class PypTransform:
             self.use_pypprint_for_implicit_print()
         else:
             no_pipe_assertion = ast.parse(
-                "assert sys.stdin.isatty() or not sys.stdin.read(), "
+                'assert sys.stdin.isatty() or not sys.stdin.read(), '
                 """"The command doesn't process input, but input is present. """
-                '''Maybe you meant to use a magic variable like `stdin` or `x`?"'''
+                '''Maybe you meant to use a magic variable like `stdin` or `x`?"''',
             )
             self.tree.body = no_pipe_assertion.body + self.tree.body
             self.use_pypprint_for_implicit_print()
@@ -525,18 +528,18 @@ class PypTransform:
     def build_missing_imports(self) -> None:
         """Modifies the AST to import undefined names."""
 
-        self.undefined -= set(dir(__import__("builtins")))
+        self.undefined -= set(dir(__import__('builtins')))
 
         # Optimisation: we will almost always define sys and pypprint. However, in order for us to get to `import sys`,
         # we'll need to examine our wildcard imports, which in the presence of config, could be slow.
-        if "pypprint" in self.undefined:
-            pypprint_def = inspect.getsource(pypprint) if self.define_pypprint else "from pyp import pypprint"
+        if 'pypprint' in self.undefined:
+            pypprint_def = inspect.getsource(pypprint) if self.define_pypprint else 'from pyp import pypprint'
             self.before_tree.body = ast.parse(pypprint_def).body + self.before_tree.body
-            self.undefined.remove("pypprint")
+            self.undefined.remove('pypprint')
 
-        if "sys" in self.undefined:
-            self.before_tree.body = ast.parse("import sys").body + self.before_tree.body
-            self.undefined.remove("sys")
+        if 'sys' in self.undefined:
+            self.before_tree.body = ast.parse('import sys').body + self.before_tree.body
+            self.undefined.remove('sys')
 
         # Now short circuit if we can
         if not self.undefined:
@@ -547,13 +550,13 @@ class PypTransform:
                 mod = importlib.import_module(module)
             except ImportError as e:
                 raise PypError(
-                    f"Config contains wildcard import from {module}, but {module} failed to import"
+                    f'Config contains wildcard import from {module}, but {module} failed to import',
                 ) from e
-            return getattr(mod, "__all__", (n for n in dir(mod) if not n.startswith("_")))
+            return getattr(mod, '__all__', (n for n in dir(mod) if not n.startswith('_')))
 
-        subimports = {"Path": "pathlib", "pp": "pprint"}
+        subimports = {'Path': 'pathlib', 'pp': 'pprint'}
         wildcard_imports = (
-            ["itertools", "math", "collections"]
+            ['itertools', 'math', 'collections']
             + self.config.wildcard_imports
             + self.wildcard_imports
         )
@@ -561,8 +564,8 @@ class PypTransform:
 
         def get_import_for_name(name: str) -> str:
             if name in subimports:
-                return f"from {subimports[name]} import {name}"
-            return f"import {name}"
+                return f'from {subimports[name]} import {name}'
+            return f'import {name}'
 
         self.before_tree.body = [
             ast.parse(stmt).body[0] for stmt in sorted(map(get_import_for_name, self.undefined))
@@ -576,7 +579,7 @@ class PypTransform:
         self.build_input()
         self.build_missing_imports()
 
-        ret = ast.parse("")
+        ret = ast.parse('')
         ret.body = self.before_tree.body + self.tree.body + self.after_tree.body
         # Add fake line numbers to the nodes, so we can generate a traceback on error
         i = 0
@@ -611,7 +614,7 @@ def run_pyp(args: argparse.Namespace) -> None:
         return
 
     try:
-        exec(compile(tree, filename="<pyp>", mode="exec"), {})
+        exec(compile(tree, filename='<pyp>', mode='exec'), {})
 
     except Exception as e:
         # On error, reconstruct a traceback into the generated code
@@ -619,7 +622,7 @@ def run_pyp(args: argparse.Namespace) -> None:
         try:
             line_to_node: dict[int, ast.AST] = {}
             for node in dfs_walk(tree):
-                line_to_node.setdefault(getattr(node, "lineno", -1), node)
+                line_to_node.setdefault(getattr(node, 'lineno', -1), node)
 
             def code_for_line(lineno: int) -> str:
                 node = line_to_node[lineno]
@@ -632,51 +635,52 @@ def run_pyp(args: argparse.Namespace) -> None:
             # Time to commit several sins against CPython implementation details
             tb_except = traceback.TracebackException(type(e), e, e.__traceback__.tb_next)  # type: ignore
             for fs in tb_except.stack:
-                if fs.filename == "<pyp>":
+                if fs.filename == '<pyp>':
                     if fs.lineno is None:
-                        raise AssertionError("When would this happen?")
+                        raise RuntimeError('When would this happen?')
+
                     if sys.version_info >= (3, 13):
                         fs._lines = code_for_line(fs.lineno)  # type: ignore[attr-defined]
                         fs.colno = None
-                        fs.lineno = "PYP_REDACTED"  # type: ignore[assignment]
+                        fs.lineno = 'PYP_REDACTED'  # type: ignore[assignment]
                     else:
                         fs._line = code_for_line(fs.lineno)  # type: ignore[attr-defined]
-                        fs.lineno = "PYP_REDACTED"  # type: ignore[assignment]
+                        fs.lineno = 'PYP_REDACTED'  # type: ignore[assignment]
 
             tb_format = tb_except.format()
-            assert "Traceback (most recent call last)" in next(tb_format)
+            check.in_('Traceback (most recent call last)', next(tb_format))
 
-            message = "Possible reconstructed traceback (most recent call last):\n"
-            message += "".join(tb_format).strip("\n")
-            message = message.replace(", line PYP_REDACTED", "")
+            message = 'Possible reconstructed traceback (most recent call last):\n'
+            message += ''.join(tb_format).strip('\n')
+            message = message.replace(', line PYP_REDACTED', '')
         except Exception:  # noqa
-            message = "".join(traceback.format_exception_only(type(e), e)).strip()
+            message = ''.join(traceback.format_exception_only(type(e), e)).strip()
 
         if isinstance(e, ModuleNotFoundError):
             message += (
-                "\n\nNote pyp treats undefined names as modules to automatically import. Perhaps you forgot to define "
-                "something or PYP_CONFIG_PATH is set incorrectly?"
+                '\n\nNote pyp treats undefined names as modules to automatically import. Perhaps you forgot to define '
+                'something or PYP_CONFIG_PATH is set incorrectly?'
             )
 
         if args.before and isinstance(e, NameError):
             var = str(e)
             var = var[var.find("'") + 1 : var.rfind("'")]
-            if var in ("lines", "stdin"):
+            if var in ('lines', 'stdin'):
                 message += (
-                    "\n\nNote code in `--before` runs before any magic variables are defined and should not process "
-                    "input. Your command should work by simply removing `--before`, so instead passing in multiple "
-                    "statements in the main section of your code."
+                    '\n\nNote code in `--before` runs before any magic variables are defined and should not process '
+                    'input. Your command should work by simply removing `--before`, so instead passing in multiple '
+                    'statements in the main section of your code.'
                 )
 
         raise PypError(
-            "Code raised the following exception, consider using --explain to investigate:\n\n"
-            f"{message}"
+            'Code raised the following exception, consider using --explain to investigate:\n\n'
+            f'{message}',
         ) from e
 
 
 def parse_options(args: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="pyp",
+        prog='pyp',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
             "Easily run Python at the shell!\n\n"
@@ -690,35 +694,35 @@ def parse_options(args: list[str]) -> argparse.Namespace:
             "- If the magic is ever too mysterious, use --explain"
         ),
     )
-    parser.add_argument("code", nargs="+", help="Python you want to run")
+    parser.add_argument('code', nargs='+', help='Python you want to run')
     parser.add_argument(
-        "--explain",
-        "--script",
-        action="store_true",
-        help="Prints the Python that would get run, instead of running it",
+        '--explain',
+        '--script',
+        action='store_true',
+        help='Prints the Python that would get run, instead of running it',
     )
     parser.add_argument(
-        "-b",
-        "--before",
-        action="append",
+        '-b',
+        '--before',
+        action='append',
         default=[],
-        metavar="CODE",
-        help="Python to run before processing input",
+        metavar='CODE',
+        help='Python to run before processing input',
     )
     parser.add_argument(
-        "-a",
-        "--after",
-        action="append",
+        '-a',
+        '--after',
+        action='append',
         default=[],
-        metavar="CODE",
-        help="Python to run after processing input",
+        metavar='CODE',
+        help='Python to run after processing input',
     )
     parser.add_argument(
-        "--define-pypprint",
-        action="store_true",
-        help="Defines pypprint, if used, instead of importing it from pyp.",
+        '--define-pypprint',
+        action='store_true',
+        help='Defines pypprint, if used, instead of importing it from pyp.',
     )
-    parser.add_argument("--version", action="version", version=f"pyp {__version__}")
+    parser.add_argument('--version', action='version')
     return parser.parse_args(args)
 
 
@@ -726,9 +730,9 @@ def main() -> None:
     try:
         run_pyp(parse_options(sys.argv[1:]))
     except PypError as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(f'error: {e}', file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
