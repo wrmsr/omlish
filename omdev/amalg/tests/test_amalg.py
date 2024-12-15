@@ -1,6 +1,6 @@
 import os.path
 
-from ..amalg import gen_amalg
+from ..amalg import AmalgGenerator
 
 
 def test_amalg() -> None:
@@ -24,10 +24,10 @@ def test_amalg() -> None:
     ]:
         main_path = os.path.abspath(os.path.join(src_base_dir, main_file))
 
-        src = gen_amalg(
+        src = AmalgGenerator(
             main_path,
             mounts=mounts,
-        )
+        ).gen_amalg()
 
         assert '_foo_main' not in src
         lit = iter(src.splitlines()[1:])
