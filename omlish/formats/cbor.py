@@ -25,7 +25,7 @@ def load(s: bytes) -> ta.Any:
 ##
 
 
-CBOR_CODEC = make_bytes_object_codec('cbor2', dump, load)
+CBOR_CODEC = make_bytes_object_codec('cbor', dump, load)
 
 # @omlish-manifest
 _CBOR_LAZY_CODEC = make_object_lazy_loaded_codec(__name__, 'CBOR_CODEC', CBOR_CODEC)
