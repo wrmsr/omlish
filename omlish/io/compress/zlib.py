@@ -9,12 +9,17 @@ from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
 from .base import Compression
 from .base import IncrementalCompression
+from .codecs import make_compression_codec
+from .codecs import make_compression_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
     import zlib
 else:
     zlib = lang.proxy_import('zlib')
+
+
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -58,3 +63,12 @@ class ZlibCompression(Compression, IncrementalCompression):
             ),
             trailing_error=OSError,
         )()
+
+
+##
+
+
+ZLIB_CODEC = make_compression_codec('zlib', ZlibCompression)
+
+# @omlish-manifest
+_ZLIB_LAZY_CODEC = make_compression_lazy_loaded_codec(__name__, 'ZLIB_CODEC', ZLIB_CODEC)

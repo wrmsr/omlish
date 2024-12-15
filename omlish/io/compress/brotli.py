@@ -3,6 +3,8 @@ import typing as ta
 
 from ... import lang
 from .base import Compression
+from .codecs import make_compression_codec
+from .codecs import make_compression_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
@@ -11,8 +13,11 @@ else:
     brotli = lang.proxy_import('brotli')
 
 
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class SnappyCompression(Compression):
+class BrotliCompression(Compression):
     mode: int | None = None
     quality: int | None = None
     lgwin: int | None = None
@@ -31,3 +36,12 @@ class SnappyCompression(Compression):
         return brotli.decompress(
             d,
         )
+
+
+##
+
+
+BROTLI_CODEC = make_compression_codec('brotli', BrotliCompression)
+
+# @omlish-manifest
+_BROTLI_LAZY_CODEC = make_compression_lazy_loaded_codec(__name__, 'BROTLI_CODEC', BROTLI_CODEC)

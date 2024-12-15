@@ -9,12 +9,17 @@ from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
 from .base import Compression
 from .base import IncrementalCompression
+from .codecs import make_compression_codec
+from .codecs import make_compression_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
     import lzma
 else:
     lzma = lang.proxy_import('lzma')
+
+
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -65,3 +70,12 @@ class LzmaCompression(Compression, IncrementalCompression):
             ),
             trailing_error=lzma.LZMAError,
         )()
+
+
+##
+
+
+LZMA_CODEC = make_compression_codec('lzma', LzmaCompression)
+
+# @omlish-manifest
+_LZMA_LAZY_CODEC = make_compression_lazy_loaded_codec(__name__, 'LZMA_CODEC', LZMA_CODEC)

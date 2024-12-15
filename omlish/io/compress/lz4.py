@@ -6,12 +6,17 @@ from ... import lang
 from ..generators import BytesSteppedGenerator
 from .base import Compression
 from .base import IncrementalCompression
+from .codecs import make_compression_codec
+from .codecs import make_compression_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
     import lz4.frame as lz4_frame
 else:
     lz4_frame = lang.proxy_import('lz4.frame')
+
+
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -75,3 +80,12 @@ class Lz4Compression(Compression, IncrementalCompression):
                     return
                 if (o := decompressor.decompress(i)):
                     yield o
+
+
+##
+
+
+LZ4_CODEC = make_compression_codec('lz4', Lz4Compression)
+
+# @omlish-manifest
+_LZ4_LAZY_CODEC = make_compression_lazy_loaded_codec(__name__, 'LZ4_CODEC', LZ4_CODEC)
