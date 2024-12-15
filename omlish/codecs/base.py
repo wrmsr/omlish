@@ -4,11 +4,6 @@ TODO:
 
 ==
 
-base64_codec
-base64, base_64
-Convert the operand to multiline MIME base64 (the result always includes a trailing '\n').
-base64.encodebytes() / base64.decodebytes()
-
 hex_codec
 hex
 Convert the operand to hexadecimal representation, with two digits per byte.
@@ -18,10 +13,6 @@ quopri_codec
 quopri, quotedprintable, quoted_printable
 Convert the operand to MIME quoted printable.
 quopri.encode() with quotetabs=True / quopri.decode()
-
-uu_codec
-uu
-Convert the operand using uuencode.
 """
 import abc
 import typing as ta
@@ -89,8 +80,8 @@ class Codec:
         coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),  # type: ignore
     )
 
-    input: rfl.Type
-    output: rfl.Type
+    input: rfl.Type = dc.xfield(coerce=rfl.type_)
+    output: rfl.Type = dc.xfield(coerce=rfl.type_)
 
     options: type | None = None
 

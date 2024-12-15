@@ -8,6 +8,7 @@ from .. import check
 from .. import lang
 from .base import Codec
 from .base import LazyLoadedCodec
+from .standard import STANDARD_CODECS
 
 
 if ta.TYPE_CHECKING:
@@ -94,6 +95,13 @@ class CodecRegistry:
 ##
 
 
+def _install_standard_codecs(registry: CodecRegistry) -> None:
+    registry.register(*STANDARD_CODECS)
+
+
+##
+
+
 @cached.function
 def _build_manifest_lazy_loaded_codecs() -> ta.Sequence[LazyLoadedCodec]:
     ldr = manifest_load.MANIFEST_LOADER
@@ -110,7 +118,10 @@ def _install_manifest_lazy_loaded_codecs(registry: CodecRegistry) -> None:
 
 
 REGISTRY = CodecRegistry(
-    late_load_callbacks=[_install_manifest_lazy_loaded_codecs],
+    late_load_callbacks=[
+        _install_standard_codecs,
+        _install_manifest_lazy_loaded_codecs,
+    ],
 )
 
 register = REGISTRY.register

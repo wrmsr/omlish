@@ -19,6 +19,7 @@ from .bytes import (  # noqa
     BASE32_HEX,
     BASE64_HEX,
     BASE64_URLSAFE,
+    HEX,
 )
 
 from .funcs import (  # noqa
