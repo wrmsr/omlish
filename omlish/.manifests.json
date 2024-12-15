@@ -24,15 +24,115 @@
     }
   },
   {
-    "module": ".io.compress.codecs",
-    "attr": "_BZ2_LAZY_CODEC",
-    "file": "omlish/io/compress/codecs.py",
-    "line": 12,
+    "module": ".io.compress.brotli",
+    "attr": "_BROTLI_LAZY_CODEC",
+    "file": "omlish/io/compress/brotli.py",
+    "line": 46,
     "value": {
       "$.codecs.base.LazyLoadedCodec": {
-        "mod_name": "omlish.io.compress.codecs",
+        "mod_name": "omlish.io.compress.brotli",
+        "attr_name": "BROTLI_CODEC",
+        "name": "brotli",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.bz2",
+    "attr": "_BZ2_LAZY_CODEC",
+    "file": "omlish/io/compress/bz2.py",
+    "line": 60,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.bz2",
         "attr_name": "BZ2_CODEC",
         "name": "bz2",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.gzip",
+    "attr": "_GZIP_LAZY_CODEC",
+    "file": "omlish/io/compress/gzip.py",
+    "line": 349,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.gzip",
+        "attr_name": "GZIP_CODEC",
+        "name": "gzip",
+        "aliases": [
+          "gz"
+        ]
+      }
+    }
+  },
+  {
+    "module": ".io.compress.lz4",
+    "attr": "_LZ4_LAZY_CODEC",
+    "file": "omlish/io/compress/lz4.py",
+    "line": 90,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.lz4",
+        "attr_name": "LZ4_CODEC",
+        "name": "lz4",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.lzma",
+    "attr": "_LZMA_LAZY_CODEC",
+    "file": "omlish/io/compress/lzma.py",
+    "line": 80,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.lzma",
+        "attr_name": "LZMA_CODEC",
+        "name": "lzma",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.snappy",
+    "attr": "_SNAPPY_LAZY_CODEC",
+    "file": "omlish/io/compress/snappy.py",
+    "line": 33,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.snappy",
+        "attr_name": "SNAPPY_CODEC",
+        "name": "snappy",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.zlib",
+    "attr": "_ZLIB_LAZY_CODEC",
+    "file": "omlish/io/compress/zlib.py",
+    "line": 73,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.zlib",
+        "attr_name": "ZLIB_CODEC",
+        "name": "zlib",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".io.compress.zstd",
+    "attr": "_ZSTD_LAZY_CODEC",
+    "file": "omlish/io/compress/zstd.py",
+    "line": 43,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.io.compress.zstd",
+        "attr_name": "ZSTD_CODEC",
+        "name": "zstd",
         "aliases": null
       }
     }

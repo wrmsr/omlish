@@ -75,7 +75,12 @@ class LazyLoadedCodec:
     aliases: ta.Collection[str] | None = None
 
     @classmethod
-    def new(cls, mod_name: str, attr_name: str, codec: Codec) -> 'LazyLoadedCodec':
+    def new(
+            cls,
+            mod_name: str,
+            attr_name: str,
+            codec: Codec,
+    ) -> 'LazyLoadedCodec':
         return cls(
             mod_name=mod_name,
             attr_name=attr_name,
