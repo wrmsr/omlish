@@ -19,4 +19,5 @@ class ChainEagerCodec(EagerCodec[ta.Any, ta.Any]):
         return v
 
 
-chain = ChainEagerCodec
+def chain(*codecs: EagerCodec) -> ChainEagerCodec:
+    return ChainEagerCodec(codecs)
