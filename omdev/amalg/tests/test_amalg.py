@@ -1,6 +1,6 @@
 import os.path
 
-from ..amalg import AmalgGenerator
+from ..gen import AmalgGenerator
 
 
 def test_amalg() -> None:
