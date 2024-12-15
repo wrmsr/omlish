@@ -1,18 +1,6 @@
 """
 TODO:
  - bytes-like - bytearray, memoryview
-
-==
-
-hex_codec
-hex
-Convert the operand to hexadecimal representation, with two digits per byte.
-binascii.b2a_hex() / binascii.a2b_hex()
-
-quopri_codec
-quopri, quotedprintable, quoted_printable
-Convert the operand to MIME quoted printable.
-quopri.encode() with quotetabs=True / quopri.decode()
 """
 import abc
 import typing as ta
