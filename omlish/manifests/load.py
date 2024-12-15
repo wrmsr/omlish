@@ -9,6 +9,7 @@ import dataclasses as dc
 import importlib.machinery
 import importlib.resources
 import json
+import threading
 import typing as ta
 
 from .types import Manifest
@@ -24,6 +25,8 @@ class ManifestLoader:
             module_remap: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> None:
         super().__init__()
+
+        self._lock = threading.RLock()
 
         self._module_remap = module_remap or {}
         self._module_reverse_remap = {v: k for k, v in self._module_remap.items()}
@@ -56,7 +59,7 @@ class ManifestLoader:
 
     #
 
-    def load_cls(self, key: str) -> type:
+    def _load_cls(self, key: str) -> type:
         try:
             return self._cls_cache[key]
         except KeyError:
@@ -83,7 +86,13 @@ class ManifestLoader:
         self._cls_cache[key] = cls
         return cls
 
-    def load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
+    def load_cls(self, key: str) -> type:
+        with self._lock:
+            return self._load_cls(key)
+
+    #
+
+    def _load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
@@ -104,7 +113,13 @@ class ManifestLoader:
 
         return lst
 
-    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+    def load_contents(self, obj: ta.Any, pkg_name: str) -> ta.Sequence[Manifest]:
+        with self._lock:
+            return self.load_contents(obj, pkg_name)
+
+    #
+
+    def _load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
         try:
             return self._raw_cache[pkg_name]
         except KeyError:
@@ -120,12 +135,18 @@ class ManifestLoader:
         if not isinstance(obj, (list, tuple)):
             raise TypeError(obj)
 
-        lst = self.load_contents(obj, pkg_name)
+        lst = self._load_contents(obj, pkg_name)
 
         self._raw_cache[pkg_name] = lst
         return lst
 
-    def load(
+    def load_raw(self, pkg_name: str) -> ta.Optional[ta.Sequence[Manifest]]:
+        with self._lock:
+            return self._load_raw(pkg_name)
+
+    #
+
+    def _load(
             self,
             *pkg_names: str,
             only: ta.Optional[ta.Iterable[type]] = None,
@@ -149,13 +170,24 @@ class ManifestLoader:
                 if only_keys is not None and key not in only_keys:
                     continue
 
-                cls = self.load_cls(key)
+                cls = self._load_cls(key)
                 value = cls(**value_dct)
 
                 manifest = dc.replace(manifest, value=value)
                 lst.append(manifest)
 
         return lst
+
+    def load(
+            self,
+            *pkg_names: str,
+            only: ta.Optional[ta.Iterable[type]] = None,
+    ) -> ta.Sequence[Manifest]:
+        with self._lock:
+            return self._load(
+                *pkg_names,
+                only=only,
+            )
 
     #
 
@@ -169,3 +201,9 @@ class ManifestLoader:
             ep.value
             for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP)
         ]
+
+
+##
+
+
+MANIFEST_LOADER = ManifestLoader()
