@@ -1,0 +1,2 @@
+class PypError(Exception):
+    pass
