@@ -34,6 +34,7 @@ import typing as ta
 
 import tokenize_rt as trt
 
+from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import lang
@@ -92,10 +93,10 @@ def make_src_file(
     tokens = trt.src_to_tokens(src)
     lines = tks.split_lines(tokens)
 
-    hls, cls = split_header_lines(lines)
+    header_lines, cls = split_header_lines(lines)
 
-    hls = strip_header_lines(hls)
-    rnls, hls = col.partition(hls, lambda l: tks.join_toks(l).startswith('# ruff: noqa: '))
+    header_lines = strip_header_lines(header_lines)
+    rnls, header_lines = col.partition(header_lines, lambda l: tks.join_toks(l).startswith('# ruff: noqa: '))
 
     imps: list[Import] = []
     tys: list[Typing] = []
@@ -147,7 +148,7 @@ def make_src_file(
         tokens=tokens,
         lines=lines,
 
-        header_lines=hls,
+        header_lines=header_lines,
         imports=imps,
         typings=tys,
         content_lines=ctls,
@@ -173,163 +174,185 @@ OUTPUT_COMMENT = '# @omlish-amalg-output '
 SCAN_COMMENT = '# @omlish-amalg '
 
 
-def gen_amalg(
-        main_path: str,
-        *,
-        mounts: ta.Mapping[str, str],
-        output_dir: str | None = None,
-) -> str:
-    src_files: dict[str, SrcFile] = {}
-    todo = [main_path]
-    while todo:
-        src_path = todo.pop()
-        if src_path in src_files:
-            continue
+class AmalgGenerator:
+    def __init__(
+            self,
+            main_path: str,
+            *,
+            mounts: ta.Mapping[str, str],
+            output_dir: str | None = None,
+    ) -> None:
+        super().__init__()
 
-        f = make_src_file(
-            src_path,
-            mounts=mounts,
+        self._main_path = main_path
+        self._mounts = mounts
+        self._output_dir = output_dir
+
+    @cached.function
+    def _src_files(self) -> dict[str, SrcFile]:
+        src_files: dict[str, SrcFile] = {}
+        todo = [self._main_path]
+        while todo:
+            src_path = todo.pop()
+            if src_path in src_files:
+                continue
+
+            f = make_src_file(
+                src_path,
+                mounts=self._mounts,
+            )
+            src_files[src_path] = f
+
+            for imp in f.imports:
+                if (mp := imp.mod_path) is not None:
+                    todo.append(mp)
+
+        return src_files
+
+    @cached.function
+    def _main_file(self) -> SrcFile:
+        return self._src_files()[self._main_path]
+
+    @cached.function
+    def _header_lines(self) -> list[Tokens]:
+        header_lines = []
+
+        if self._main_file().header_lines:
+            header_lines.extend([
+                hl
+                for hlts in self._main_file().header_lines
+                if not (hl := tks.join_toks(hlts)).startswith(SCAN_COMMENT)
+            ])
+
+        if self._output_dir is not None:
+            ogf = os.path.relpath(self._main_path, self._output_dir)
+        else:
+            ogf = os.path.basename(self._main_path)
+
+        additional_header_lines = [
+            '#!/usr/bin/env python3\n',
+            '# noinspection DuplicatedCode\n',
+            '# @omlish-lite\n',
+            '# @omlish-script\n',
+            f'{OUTPUT_COMMENT.strip()} {ogf}\n',
+        ]
+
+        ruff_disables = sorted({
+            *lang.flatten(f.ruff_noqa for f in self._src_files().values()),
+            *RUFF_DISABLES,
+        })
+        if ruff_disables:
+            additional_header_lines.append(f'# ruff: noqa: {" ".join(sorted(ruff_disables))}\n')
+
+        return [*additional_header_lines, *header_lines]
+
+    @cached.function
+    def gen_amalg(self) -> str:
+        src_files = self._src_files()
+
+        ##
+
+        out = io.StringIO()
+
+        ##
+
+        out.write(''.join(self._header_lines()))
+
+        ##
+
+        all_imps = [i for f in src_files.values() for i in f.imports]
+        gl_imps = [i for i in all_imps if i.mod_path is None]
+
+        dct: dict = {
+            ('sys', None, None): ['import sys\n'],
+        }
+        if any(sf.has_binary_resources for sf in src_files.values()):
+            dct[('base64', None, None)] = ['import base64\n']
+        for imp in gl_imps:
+            dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
+        for _, l in sorted(dct.items()):
+            il = l[0]
+            out.write(il if isinstance(il, str) else tks.join_toks(il.toks))
+        if dct:
+            out.write('\n\n')
+
+        ##
+
+        out.write(SECTION_SEP)
+        out.write('\n\n')
+
+        version_check_fail_msg = (
+            f'Requires python {LITE_REQUIRED_PYTHON_VERSION!r}, '
+            f'got {{sys.version_info}} from {{sys.executable}}'
         )
-        src_files[src_path] = f
-
-        for imp in f.imports:
-            if (mp := imp.mod_path) is not None:
-                todo.append(mp)
-
-    ##
-
-    out = io.StringIO()
-
-    ##
-
-    hls = []
-
-    mf = src_files[main_path]
-    if mf.header_lines:
-        hls.extend([
-            hl
-            for hlts in mf.header_lines
-            if not (hl := tks.join_toks(hlts)).startswith(SCAN_COMMENT)
-        ])
-
-    if output_dir is not None:
-        ogf = os.path.relpath(main_path, output_dir)
-    else:
-        ogf = os.path.basename(main_path)
-
-    nhls = []
-    nhls.extend([
-        '#!/usr/bin/env python3\n',
-        '# noinspection DuplicatedCode\n',
-        '# @omlish-lite\n',
-        '# @omlish-script\n',
-        f'{OUTPUT_COMMENT.strip()} {ogf}\n',
-    ])
-
-    ruff_disables = sorted({
-        *lang.flatten(f.ruff_noqa for f in src_files.values()),
-        *RUFF_DISABLES,
-    })
-    if ruff_disables:
-        nhls.append(f'# ruff: noqa: {" ".join(sorted(ruff_disables))}\n')
-
-    hls = [*nhls, *hls]
-    out.write(''.join(hls))
-
-    ##
-
-    all_imps = [i for f in src_files.values() for i in f.imports]
-    gl_imps = [i for i in all_imps if i.mod_path is None]
-
-    dct: dict = {
-        ('sys', None, None): ['import sys\n'],
-    }
-    if any(sf.has_binary_resources for sf in src_files.values()):
-        dct[('base64', None, None)] = ['import base64\n']
-    for imp in gl_imps:
-        dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
-    for _, l in sorted(dct.items()):
-        il = l[0]
-        out.write(il if isinstance(il, str) else tks.join_toks(il.toks))
-    if dct:
+        out.write(textwrap.dedent(f"""
+        if sys.version_info < {LITE_REQUIRED_PYTHON_VERSION!r}:
+            raise OSError(f{version_check_fail_msg!r})  # noqa
+        """).lstrip())
         out.write('\n\n')
 
-    ##
+        ##
 
-    out.write(SECTION_SEP)
-    out.write('\n\n')
+        ts = list(col.toposort({  # noqa
+            f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
+            for f in src_files.values()
+        }))
+        sfs = [sf for ss in ts for sf in sorted(ss)]
 
-    version_check_fail_msg = (
-        f'Requires python {LITE_REQUIRED_PYTHON_VERSION!r}, '
-        f'got {{sys.version_info}} from {{sys.executable}}'
-    )
-    out.write(textwrap.dedent(f"""
-    if sys.version_info < {LITE_REQUIRED_PYTHON_VERSION!r}:
-        raise OSError(f{version_check_fail_msg!r})  # noqa
-    """).lstrip())
-    out.write('\n\n')
+        ##
 
-    ##
+        tyd: dict[str, list[Typing]] = {}
+        tys = set()
+        for sf in sfs:
+            f = src_files[sf]
+            for ty in f.typings:
+                if ty.src not in tys:
+                    tyd.setdefault(f.path, []).append(ty)
+                    tys.add(ty.src)
+        if tys:
+            out.write(SECTION_SEP)
+            out.write('\n\n')
+        for i, (sf, ftys) in enumerate(tyd.items()):
+            f = src_files[sf]
+            if i:
+                out.write('\n')
+            if f is not self._main_file():
+                rp = os.path.relpath(f.path, os.path.dirname(self._main_file().path))
+            else:
+                rp = os.path.basename(f.path)
+            out.write(f'# {rp}\n')
+            for ty in ftys:
+                out.write(ty.src)
+        if tys:
+            out.write('\n\n')
 
-    ts = list(col.toposort({  # noqa
-        f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
-        for f in src_files.values()
-    }))
-    sfs = [sf for ss in ts for sf in sorted(ss)]
+        ##
 
-    ##
+        main_file = self._main_file()
+        for i, sf in enumerate(sfs):
+            f = src_files[sf]
+            out.write(SECTION_SEP)
+            if f is not main_file:
+                rp = os.path.relpath(f.path, main_file.path)
+            else:
+                rp = os.path.basename(f.path)
+            out.write(f'# {rp}\n')
+            if f is not main_file and f.header_lines:
+                out.write(tks.join_lines(f.header_lines))
+            out.write(f'\n\n')
+            cls = f.content_lines
+            if f is not main_file:
+                cls = strip_main_lines(cls)
+            sf_src = tks.join_lines(cls)
+            out.write(sf_src.strip())
+            if i < len(sfs) - 1:
+                out.write('\n\n\n')
+            else:
+                out.write('\n')
 
-    tyd: dict[str, list[Typing]] = {}
-    tys = set()
-    for sf in sfs:
-        f = src_files[sf]
-        for ty in f.typings:
-            if ty.src not in tys:
-                tyd.setdefault(f.path, []).append(ty)
-                tys.add(ty.src)
-    if tys:
-        out.write(SECTION_SEP)
-        out.write('\n\n')
-    for i, (sf, ftys) in enumerate(tyd.items()):
-        f = src_files[sf]
-        if i:
-            out.write('\n')
-        if f is not mf:
-            rp = os.path.relpath(f.path, os.path.dirname(mf.path))
-        else:
-            rp = os.path.basename(f.path)
-        out.write(f'# {rp}\n')
-        for ty in ftys:
-            out.write(ty.src)
-    if tys:
-        out.write('\n\n')
+        ##
 
-    ##
-
-    for i, sf in enumerate(sfs):
-        f = src_files[sf]
-        out.write(SECTION_SEP)
-        if f is not mf:
-            rp = os.path.relpath(f.path, mf.path)
-        else:
-            rp = os.path.basename(f.path)
-        out.write(f'# {rp}\n')
-        if f is not mf and f.header_lines:
-            out.write(tks.join_lines(f.header_lines))
-        out.write(f'\n\n')
-        cls = f.content_lines
-        if f is not mf:
-            cls = strip_main_lines(cls)
-        sf_src = tks.join_lines(cls)
-        out.write(sf_src.strip())
-        if i < len(sfs) - 1:
-            out.write('\n\n\n')
-        else:
-            out.write('\n')
-
-    ##
-
-    return out.getvalue()
+        return out.getvalue()
 
 
 ##
@@ -343,11 +366,11 @@ def _gen_one(
 ) -> None:
     log.info('Generating: %s -> %s', input_path, output_path)
 
-    src = gen_amalg(
+    src = AmalgGenerator(
         input_path,
         mounts=mounts,
         output_dir=os.path.dirname(output_path if output_path is not None else input_path),
-    )
+    ).gen_amalg()
 
     if output_path is not None:
         with open(output_path, 'w') as f:
