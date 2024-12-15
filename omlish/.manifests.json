@@ -66,6 +66,34 @@
     }
   },
   {
+    "module": ".formats.json5",
+    "attr": "_JSON5_LAZY_CODEC",
+    "file": "omlish/formats/json5.py",
+    "line": 30,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.json5",
+        "attr_name": "JSON5_CODEC",
+        "name": "json5",
+        "aliases": null
+      }
+    }
+  },
+  {
+    "module": ".formats.pickle",
+    "attr": "_PICKLE_LAZY_CODEC",
+    "file": "omlish/formats/pickle.py",
+    "line": 30,
+    "value": {
+      "$.codecs.base.LazyLoadedCodec": {
+        "mod_name": "omlish.formats.pickle",
+        "attr_name": "PICKLE_CODEC",
+        "name": "pickle",
+        "aliases": null
+      }
+    }
+  },
+  {
     "module": ".formats.toml",
     "attr": "_TOML_LAZY_CODEC",
     "file": "omlish/formats/toml.py",

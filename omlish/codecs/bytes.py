@@ -1,4 +1,5 @@
 import base64
+import binascii
 import typing as ta
 
 from .. import check
@@ -102,5 +103,13 @@ BASE64_URLSAFE = make_bytes_encoding_codec(
     ['b64-urlsafe'],
     base64.urlsafe_b64encode,
     base64.urlsafe_b64decode,
+    append_to=STANDARD_CODECS,
+)
+
+HEX = make_bytes_encoding_codec(
+    'hex',
+    [],
+    binascii.b2a_hex,
+    binascii.a2b_hex,
     append_to=STANDARD_CODECS,
 )
